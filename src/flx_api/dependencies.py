@@ -43,7 +43,7 @@ logger = structlog.get_logger(__name__)
 security = HTTPBearer()
 
 
-async def get_grpc_channel() -> AsyncGenerator[grpc.aio.Channel, None]:  # type: ignore[no-any-unimported]
+async def get_grpc_channel() -> AsyncGenerator[grpc.aio.Channel]:  # type: ignore[no-any-unimported]
     """Get gRPC channel for API to daemon communication.
 
     Creates and manages a gRPC channel with proper configuration for

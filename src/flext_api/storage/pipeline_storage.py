@@ -2,7 +2,7 @@
 
 import threading
 import uuid
-from typing import Any, Optional
+from typing import Any
 
 
 class ThreadSafePipelineStorage:
@@ -25,7 +25,7 @@ class ThreadSafePipelineStorage:
             }
             return pipeline_id
 
-    def get_pipeline(self, pipeline_id: str) -> Optional[dict[str, Any]]:
+    def get_pipeline(self, pipeline_id: str) -> dict[str, Any] | None:
         """Get pipeline by ID."""
         with self._lock:
             return self._pipelines.get(pipeline_id)

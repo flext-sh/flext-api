@@ -19,6 +19,7 @@ plugin management functionality.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from fastapi import Depends, HTTPException, Request
@@ -408,5 +409,4 @@ async def get_plugin_health_db(
     }
 
 
-# Import for datetime usage
-from datetime import UTC, datetime
+# Import moved to top of file

@@ -18,8 +18,8 @@ FastAPI's built-in OpenAPI (Swagger) and ReDoc interfaces.
 
 import asyncio
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,7 +38,7 @@ class FlextAPI:
 
     def __init__(self, debug: bool = False) -> None:
         self.debug = debug
-        self.app: Optional[FastAPI] = None
+        self.app: FastAPI | None = None
         self.initialized = False
         self._background_tasks: set = set()
 
@@ -125,7 +125,7 @@ class FlextAPI:
         logger.info("FLEXT API shutdown complete")
 
     @asynccontextmanager
-    async def lifespan(self) -> AsyncGenerator[FastAPI, None]:
+    async def lifespan(self) -> AsyncGenerator[FastAPI]:
         """Context manager for API lifespan management."""
         await self.initialize()
         try:

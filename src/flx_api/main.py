@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import operator
 import sys
 import threading
 import time
@@ -15,9 +16,14 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.security import HTTPBearer
-from flx_auth.jwt_service import JWTService
+from flx_auth.jwt_service import JWTService, _get_jwt_config
 from flx_auth.security import decode_jwt_token
-from flx_auth.user_service import UserCreationRequest, UserService
+from flx_auth.tokens import TokenManager
+from flx_auth.user_service import (
+    UserCreationRequest,
+    UserService,
+    UserServiceInMemoryUserRepository,
+)
 from flx_core.config.domain_config import get_config, get_domain_constants
 from flx_core.universe import universal_http
 
@@ -45,14 +51,32 @@ from flx_api.models.pipeline import (
     PipelineStatus,
     PipelineUpdateRequest,
 )
+
+# Import models from later in the file to fix E402 violations
 from flx_api.models.plugin import (
+    PluginConfigRequest,
     PluginInstallationResponse,
     PluginInstallRequest,
     PluginListResponse,
     PluginResponse,
+    PluginStatsResponse,
+    PluginUninstallRequest,
     PluginUpdateRequest,
 )
-from flx_api.models.system import SystemHealthResponse, SystemMetricsResponse
+from flx_api.models.system import (
+    MaintenanceRequest,
+    MaintenanceResponse,
+    SystemAlertResponse,
+    SystemBackupRequest,
+    SystemBackupResponse,
+    SystemConfigurationRequest,
+    SystemHealthCheckRequest,
+    SystemHealthResponse,
+    SystemMetricsResponse,
+    SystemRestoreRequest,
+    SystemServiceResponse,
+    SystemStatusResponse,
+)
 
 
 class APIResponse(BaseModel):
@@ -722,11 +746,7 @@ async def universal_api_endpoint(command: str, request: Request) -> dict[str, ob
 
 # --- AUTHENTICATION ENDPOINTS ---
 
-import operator
-
-from flx_auth.jwt_service import _get_jwt_config
-from flx_auth.tokens import TokenManager
-from flx_auth.user_service import UserServiceInMemoryUserRepository
+# Auth imports moved to top of file
 
 jwt_service = JWTService(config=_get_jwt_config())
 user_repository = UserServiceInMemoryUserRepository()
@@ -1794,25 +1814,11 @@ async def list_pipelines(
 
 # --- PLUGIN MANAGEMENT ENDPOINTS ---
 
-from flx_api.models.plugin import (
-    PluginConfigRequest,
-    PluginStatsResponse,
-    PluginUninstallRequest,
-)
+# Imports moved to top of file to fix E402 violations
 
 # --- SYSTEM MANAGEMENT ENDPOINTS ---
-from flx_api.models.system import (
-    MaintenanceRequest,
-    MaintenanceResponse,
-    SystemAlertResponse,
-    SystemBackupRequest,
-    SystemBackupResponse,
-    SystemConfigurationRequest,
-    SystemHealthCheckRequest,
-    SystemRestoreRequest,
-    SystemServiceResponse,
-    SystemStatusResponse,
-)
+
+# Imports moved to top of file to fix E402 violations
 
 
 @app.post("/plugins/install", response_model=PluginInstallationResponse)

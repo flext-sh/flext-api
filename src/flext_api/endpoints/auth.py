@@ -16,7 +16,7 @@ auth_router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
 
 
-@auth_router.post("/login", response_model=LoginResponse)
+@auth_router.post("/login")
 async def login(login_data: LoginRequest) -> LoginResponse:
     """User login endpoint with JWT token generation.
 
@@ -37,7 +37,7 @@ async def login(login_data: LoginRequest) -> LoginResponse:
     )
 
 
-@auth_router.post("/register", response_model=RegisterResponse)
+@auth_router.post("/register")
 async def register(register_data: RegisterRequest) -> RegisterResponse:
     """User registration endpoint for creating new accounts."""
     # Implementation placeholder - will be connected to actual auth service
@@ -53,7 +53,7 @@ async def register(register_data: RegisterRequest) -> RegisterResponse:
     )
 
 
-@auth_router.post("/logout", response_model=APIResponse)
+@auth_router.post("/logout")
 async def logout(request: Request) -> APIResponse:
     """User logout endpoint with token revocation."""
     return APIResponse(
@@ -62,7 +62,7 @@ async def logout(request: Request) -> APIResponse:
     )
 
 
-@auth_router.get("/profile", response_model=UserAPI)
+@auth_router.get("/profile")
 async def get_profile(request: Request) -> UserAPI:
     """Get authenticated user profile information."""
     # Implementation placeholder - will extract from JWT token

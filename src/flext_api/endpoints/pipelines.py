@@ -1,7 +1,7 @@
 """Pipeline management endpoints for FLEXT API."""
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import Annotated, Any
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query, Request
@@ -28,7 +28,7 @@ class PipelineListParams(BaseModel):
     search: str | None = None
 
 
-@pipelines_router.post("", response_model=PipelineResponse)
+@pipelines_router.post("")
 async def create_pipeline(
     pipeline_data: PipelineCreateRequest,
     request: Request,
@@ -58,14 +58,14 @@ async def create_pipeline(
     )
 
 
-@pipelines_router.get("/{pipeline_id}", response_model=PipelineResponse)
+@pipelines_router.get("/{pipeline_id}")
 async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:
     """Get pipeline by ID with complete metadata."""
     # Implementation placeholder - will query from storage
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
-@pipelines_router.put("/{pipeline_id}", response_model=PipelineResponse)
+@pipelines_router.put("/{pipeline_id}")
 async def update_pipeline(
     pipeline_id: str,
     pipeline_data: PipelineUpdateRequest,
@@ -76,7 +76,7 @@ async def update_pipeline(
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
-@pipelines_router.delete("/{pipeline_id}", response_model=APIResponse)
+@pipelines_router.delete("/{pipeline_id}")
 async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
     """Delete pipeline with safety checks."""
     # Implementation placeholder - will delete from storage
@@ -102,13 +102,13 @@ async def execute_pipeline(
     }
 
 
-@pipelines_router.get("", response_model=dict[str, Any])
+@pipelines_router.get("")
 async def list_pipelines(
     request: Request,
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
-    status: str | None = Query(default=None),
-    search: str | None = Query(default=None),
+    page: Annotated[int, Query(default=1, ge=1)],
+    page_size: Annotated[int, Query(default=20, ge=1, le=100)],
+    status: Annotated[str | None, Query(default=None)],
+    search: Annotated[str | None, Query(default=None)],
 ) -> dict[str, Any]:
     """List pipelines with filtering and pagination."""
     # Implementation placeholder - will query from storage

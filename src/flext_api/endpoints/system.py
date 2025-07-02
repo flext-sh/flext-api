@@ -1,7 +1,7 @@
 """System management endpoints for FLEXT API."""
 
 from datetime import datetime
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
@@ -24,21 +24,21 @@ from flext_api.models.system import (
 system_router = APIRouter(prefix="/system", tags=["system"])
 
 
-@system_router.get("/status", response_model=SystemStatusResponse)
+@system_router.get("/status")
 async def get_system_status(request: Request) -> SystemStatusResponse:
     """Get comprehensive system status information."""
     # Implementation placeholder
     raise HTTPException(status_code=501, detail="System status not yet implemented")
 
 
-@system_router.get("/services", response_model=list[SystemServiceResponse])
+@system_router.get("/services")
 async def get_system_services(request: Request) -> list[SystemServiceResponse]:
     """Get detailed information about all system services."""
     # Implementation placeholder
     raise HTTPException(status_code=501, detail="System services not yet implemented")
 
 
-@system_router.get("/services/{service_name}", response_model=SystemServiceResponse)
+@system_router.get("/services/{service_name}")
 async def get_system_service(
     service_name: str,
     request: Request,
@@ -50,7 +50,7 @@ async def get_system_service(
     )
 
 
-@system_router.post("/maintenance", response_model=MaintenanceResponse)
+@system_router.post("/maintenance")
 async def start_maintenance(
     maintenance_data: MaintenanceRequest,
     request: Request,
@@ -62,7 +62,7 @@ async def start_maintenance(
     )
 
 
-@system_router.get("/maintenance/{maintenance_id}", response_model=MaintenanceResponse)
+@system_router.get("/maintenance/{maintenance_id}")
 async def get_maintenance_status(
     maintenance_id: str,
     request: Request,
@@ -74,14 +74,14 @@ async def get_maintenance_status(
     )
 
 
-@system_router.post("/maintenance/{maintenance_id}/stop", response_model=APIResponse)
+@system_router.post("/maintenance/{maintenance_id}/stop")
 async def stop_maintenance(maintenance_id: str, request: Request) -> APIResponse:
     """Stop ongoing maintenance operation."""
     # Implementation placeholder
     raise HTTPException(status_code=501, detail="Maintenance stop not yet implemented")
 
 
-@system_router.post("/backup", response_model=SystemBackupResponse)
+@system_router.post("/backup")
 async def create_system_backup(
     backup_data: SystemBackupRequest,
     request: Request,
@@ -94,10 +94,10 @@ async def create_system_backup(
 @system_router.get("/backups")
 async def list_system_backups(
     request: Request,
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
-    backup_type: str | None = Query(default=None),
-    created_after: datetime | None = Query(default=None),
+    page: Annotated[int, Query(default=1, ge=1)],
+    page_size: Annotated[int, Query(default=20, ge=1, le=100)],
+    backup_type: Annotated[str | None, Query(default=None)],
+    created_after: Annotated[datetime | None, Query(default=None)],
 ) -> dict[str, Any]:
     """List available system backups with filtering and pagination."""
     # Implementation placeholder
@@ -106,7 +106,7 @@ async def list_system_backups(
     )
 
 
-@system_router.get("/backups/{backup_id}", response_model=SystemBackupResponse)
+@system_router.get("/backups/{backup_id}")
 async def get_system_backup(backup_id: str, request: Request) -> SystemBackupResponse:
     """Get detailed information about a specific backup."""
     # Implementation placeholder
@@ -115,7 +115,7 @@ async def get_system_backup(backup_id: str, request: Request) -> SystemBackupRes
     )
 
 
-@system_router.post("/restore/{backup_id}", response_model=APIResponse)
+@system_router.post("/restore/{backup_id}")
 async def restore_system_backup(
     backup_id: str,
     restore_data: SystemRestoreRequest,
@@ -126,7 +126,7 @@ async def restore_system_backup(
     raise HTTPException(status_code=501, detail="System restore not yet implemented")
 
 
-@system_router.post("/health-check", response_model=SystemHealthResponse)
+@system_router.post("/health-check")
 async def perform_health_check(
     health_data: SystemHealthCheckRequest,
     request: Request,
@@ -138,20 +138,20 @@ async def perform_health_check(
     )
 
 
-@system_router.get("/alerts", response_model=list[SystemAlertResponse])
+@system_router.get("/alerts")
 async def get_system_alerts(
     request: Request,
-    severity: str | None = Query(default=None),
-    acknowledged: bool | None = Query(default=None),
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
+    severity: Annotated[str | None, Query(default=None)],
+    acknowledged: Annotated[bool | None, Query(default=None)],
+    page: Annotated[int, Query(default=1, ge=1)],
+    page_size: Annotated[int, Query(default=20, ge=1, le=100)],
 ) -> list[SystemAlertResponse]:
     """Get system alerts with filtering options."""
     # Implementation placeholder
     raise HTTPException(status_code=501, detail="System alerts not yet implemented")
 
 
-@system_router.post("/alerts/{alert_id}/acknowledge", response_model=APIResponse)
+@system_router.post("/alerts/{alert_id}/acknowledge")
 async def acknowledge_alert(alert_id: str, request: Request) -> APIResponse:
     """Acknowledge a system alert."""
     # Implementation placeholder
@@ -160,25 +160,25 @@ async def acknowledge_alert(alert_id: str, request: Request) -> APIResponse:
     )
 
 
-@system_router.post("/alerts/{alert_id}/resolve", response_model=APIResponse)
+@system_router.post("/alerts/{alert_id}/resolve")
 async def resolve_alert(alert_id: str, request: Request) -> APIResponse:
     """Resolve a system alert."""
     # Implementation placeholder
     raise HTTPException(status_code=501, detail="Alert resolution not yet implemented")
 
 
-@system_router.get("/metrics", response_model=SystemMetricsResponse)
+@system_router.get("/metrics")
 async def get_system_metrics(
     request: Request,
-    include_historical: bool = Query(default=False),
-    time_range_hours: int = Query(default=24, ge=1, le=168),
+    include_historical: Annotated[bool, Query(default=False)],
+    time_range_hours: Annotated[int, Query(default=24, ge=1, le=168)],
 ) -> SystemMetricsResponse:
     """Get comprehensive system metrics and performance data."""
     # Implementation placeholder
     raise HTTPException(status_code=501, detail="System metrics not yet implemented")
 
 
-@system_router.put("/configuration", response_model=APIResponse)
+@system_router.put("/configuration")
 async def update_system_configuration(
     config_data: SystemConfigurationRequest,
     request: Request,

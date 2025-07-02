@@ -1,5 +1,7 @@
 """Authentication routes for FLEXT API."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from flext_auth.service import (
@@ -26,10 +28,10 @@ def get_auth_service() -> AuthenticationService:
     return AuthenticationService(user_repository=user_repo, role_repository=role_repo)
 
 
-@router.post("/register", response_model=RegisterResponse)
+@router.post("/register")
 async def register_user(
     request: RegisterRequest,
-    auth_service: AuthenticationService = Depends(get_auth_service),
+    auth_service: Annotated[AuthenticationService, Depends(get_auth_service)],
 ) -> RegisterResponse:
     """Register a new user."""
     try:
@@ -52,10 +54,10 @@ async def register_user(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.post("/login", response_model=LoginResponse)
+@router.post("/login")
 async def login_user(
     request: LoginRequest,
-    auth_service: AuthenticationService = Depends(get_auth_service),
+    auth_service: Annotated[AuthenticationService, Depends(get_auth_service)],
 ) -> LoginResponse:
     """Authenticate user and return tokens."""
     try:
@@ -81,10 +83,10 @@ async def login_user(
         )
 
 
-@router.post("/refresh", response_model=LoginResponse)
+@router.post("/refresh")
 async def refresh_tokens(
     refresh_token: str,
-    auth_service: AuthenticationService = Depends(get_auth_service),
+    auth_service: Annotated[AuthenticationService, Depends(get_auth_service)],
 ) -> LoginResponse:
     """Refresh access token using refresh token."""
     try:
@@ -110,8 +112,8 @@ async def refresh_tokens(
 
 @router.post("/logout")
 async def logout_user(
-    token: str = Depends(security),
-    auth_service: AuthenticationService = Depends(get_auth_service),
+    token: Annotated[str, Depends(security)],
+    auth_service: Annotated[AuthenticationService, Depends(get_auth_service)],
 ) -> dict[str, str]:
     """Logout user by revoking token."""
     try:
