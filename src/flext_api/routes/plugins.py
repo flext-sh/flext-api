@@ -11,14 +11,14 @@ from flext_api.models.plugin import (
 router = APIRouter(prefix="/plugins", tags=["plugins"])
 
 
-@router.get("/", response_model=list[PluginResponse])
+@router.get("/")
 async def list_plugins() -> list[PluginResponse]:
     """List all installed plugins."""
     # In a real implementation, this would query plugin registry
     return []
 
 
-@router.post("/install", response_model=PluginInstallationResponse)
+@router.post("/install")
 async def install_plugin(request: PluginInstallRequest) -> PluginInstallationResponse:
     """Install a new plugin."""
     try:
@@ -37,7 +37,7 @@ async def install_plugin(request: PluginInstallRequest) -> PluginInstallationRes
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Installation failed: {str(e)}",
+            detail=f"Installation failed: {e!s}",
         )
 
 
@@ -54,11 +54,11 @@ async def uninstall_plugin(plugin_name: str) -> dict[str, str]:
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Uninstallation failed: {str(e)}",
+            detail=f"Uninstallation failed: {e!s}",
         )
 
 
-@router.get("/{plugin_name}", response_model=PluginResponse)
+@router.get("/{plugin_name}")
 async def get_plugin(plugin_name: str) -> PluginResponse:
     """Get plugin details."""
     # In a real implementation, this would query plugin registry

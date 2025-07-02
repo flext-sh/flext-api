@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import operator
 import sys
 import threading
 import time
@@ -15,9 +16,14 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.security import HTTPBearer
-from flext_auth.jwt_service import JWTService
+from flext_auth.jwt_service import JWTService, _get_jwt_config
 from flext_auth.security import decode_jwt_token
-from flext_auth.user_service import UserCreationRequest, UserService
+from flext_auth.tokens import TokenManager
+from flext_auth.user_service import (
+    UserCreationRequest,
+    UserService,
+    UserServiceInMemoryUserRepository,
+)
 from flext_core.config.domain_config import get_config, get_domain_constants
 from flext_core.universe import universal_http
 
@@ -45,14 +51,34 @@ from flext_api.models.pipeline import (
     PipelineStatus,
     PipelineUpdateRequest,
 )
+
+# Plugin-related imports
 from flext_api.models.plugin import (
+    PluginConfigRequest,
     PluginInstallationResponse,
     PluginInstallRequest,
     PluginListResponse,
     PluginResponse,
+    PluginStatsResponse,
+    PluginUninstallRequest,
     PluginUpdateRequest,
 )
-from flext_api.models.system import SystemHealthResponse, SystemMetricsResponse
+
+# System management imports
+from flext_api.models.system import (
+    MaintenanceRequest,
+    MaintenanceResponse,
+    SystemAlertResponse,
+    SystemBackupRequest,
+    SystemBackupResponse,
+    SystemConfigurationRequest,
+    SystemHealthCheckRequest,
+    SystemHealthResponse,
+    SystemMetricsResponse,
+    SystemRestoreRequest,
+    SystemServiceResponse,
+    SystemStatusResponse,
+)
 
 
 class APIResponse(BaseModel):
@@ -731,11 +757,7 @@ async def universal_api_endpoint(command: str, request: Request) -> dict[str, ob
 
 # --- AUTHENTICATION ENDPOINTS ---
 
-import operator
-
-from flext_auth.jwt_service import _get_jwt_config
-from flext_auth.tokens import TokenManager
-from flext_auth.user_service import UserServiceInMemoryUserRepository
+# Authentication imports moved to top of file
 
 jwt_service = JWTService(config=_get_jwt_config())
 user_repository = UserServiceInMemoryUserRepository()
@@ -1810,25 +1832,10 @@ async def list_pipelines(
 
 # --- PLUGIN MANAGEMENT ENDPOINTS ---
 
-from flext_api.models.plugin import (
-    PluginConfigRequest,
-    PluginStatsResponse,
-    PluginUninstallRequest,
-)
+# Plugin imports moved to top of file
 
 # --- SYSTEM MANAGEMENT ENDPOINTS ---
-from flext_api.models.system import (
-    MaintenanceRequest,
-    MaintenanceResponse,
-    SystemAlertResponse,
-    SystemBackupRequest,
-    SystemBackupResponse,
-    SystemConfigurationRequest,
-    SystemHealthCheckRequest,
-    SystemRestoreRequest,
-    SystemServiceResponse,
-    SystemStatusResponse,
-)
+# System imports moved to top of file
 
 
 @app.post("/plugins/install", response_model=PluginInstallationResponse)

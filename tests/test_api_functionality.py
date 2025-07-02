@@ -1,20 +1,19 @@
 """Comprehensive tests for flext-api functionality."""
 
-import json
+import importlib.util
 
 import pytest
 
 
 def test_api_imports() -> None:
     """Test that API modules can be imported."""
-    try:
-        import json
-        import os
-        import sys
-
-        assert True
-    except ImportError:
-        pytest.fail("API module imports failed")
+    # Use find_spec for availability testing
+    if (
+        importlib.util.find_spec("json") is None
+        or importlib.util.find_spec("os") is None
+        or importlib.util.find_spec("sys") is None
+    ):
+        pytest.fail("Standard library module imports failed")
 
 
 def test_json_response_handling() -> None:
@@ -44,7 +43,7 @@ def test_request_validation() -> None:
         "path": "/api/test",
         "headers": {"Content-Type": "application/json"},
     }
-    assert valid_request["method"] in ["GET", "POST", "PUT", "DELETE"]
+    assert valid_request["method"] in {"GET", "POST", "PUT", "DELETE"}
     assert valid_request["path"].startswith("/")
 
 
@@ -73,7 +72,7 @@ class TestAPIEndpoints:
 
 
 @pytest.mark.parametrize(
-    "method,expected_safe",
+    ("method", "expected_safe"),
     [
         ("GET", True),
         ("POST", False),

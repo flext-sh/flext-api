@@ -1,7 +1,7 @@
 """Plugin management endpoints for FLEXT API."""
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
@@ -20,7 +20,7 @@ from flext_api.models.system import APIResponse
 plugins_router = APIRouter(prefix="/plugins", tags=["plugins"])
 
 
-@plugins_router.post("/install", response_model=PluginInstallationResponse)
+@plugins_router.post("/install")
 async def install_plugin(
     plugin_data: PluginInstallRequest,
     request: Request,
@@ -35,14 +35,14 @@ async def install_plugin(
     )
 
 
-@plugins_router.get("", response_model=PluginListResponse)
+@plugins_router.get("")
 async def list_plugins(
     request: Request,
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
-    category: str | None = Query(default=None),
-    status: str | None = Query(default=None),
-    search: str | None = Query(default=None),
+    page: Annotated[int, Query(default=1, ge=1)],
+    page_size: Annotated[int, Query(default=20, ge=1, le=100)],
+    category: Annotated[str | None, Query(default=None)],
+    status: Annotated[str | None, Query(default=None)],
+    search: Annotated[str | None, Query(default=None)],
 ) -> PluginListResponse:
     """List plugins with filtering and pagination."""
     # Implementation placeholder - will query from plugin registry
@@ -55,7 +55,7 @@ async def list_plugins(
     )
 
 
-@plugins_router.get("/{plugin_name}", response_model=PluginResponse)
+@plugins_router.get("/{plugin_name}")
 async def get_plugin(plugin_name: str, request: Request) -> PluginResponse:
     """Get plugin by name with complete metadata."""
     # Implementation placeholder - will query from plugin registry
@@ -71,7 +71,7 @@ async def get_plugin(plugin_name: str, request: Request) -> PluginResponse:
     )
 
 
-@plugins_router.put("/{plugin_name}/config", response_model=PluginResponse)
+@plugins_router.put("/{plugin_name}/config")
 async def update_plugin_config(
     plugin_name: str,
     config_data: PluginConfigRequest,
@@ -99,7 +99,7 @@ async def update_plugin_config(
     )
 
 
-@plugins_router.put("/{plugin_name}/update", response_model=PluginInstallationResponse)
+@plugins_router.put("/{plugin_name}/update")
 async def update_plugin(
     plugin_name: str,
     update_data: PluginUpdateRequest,
@@ -110,7 +110,7 @@ async def update_plugin(
     raise HTTPException(status_code=501, detail="Plugin update not yet implemented")
 
 
-@plugins_router.delete("/{plugin_name}", response_model=APIResponse)
+@plugins_router.delete("/{plugin_name}")
 async def uninstall_plugin(
     plugin_name: str,
     uninstall_data: PluginUninstallRequest,
@@ -123,7 +123,7 @@ async def uninstall_plugin(
     )
 
 
-@plugins_router.get("/stats", response_model=PluginStatsResponse)
+@plugins_router.get("/stats")
 async def get_plugin_stats(request: Request) -> PluginStatsResponse:
     """Get comprehensive plugin statistics."""
     return PluginStatsResponse(

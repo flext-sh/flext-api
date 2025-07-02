@@ -79,17 +79,17 @@ def validate_command(args: Any) -> int:
     try:
         errors = 0
 
-        # Check imports
-        try:
-            from .app import app
-        except ImportError:
+        # Check imports using find_spec
+        import importlib.util
+
+        if importlib.util.find_spec("flext_api.app") is None:
             errors += 1
 
-        # Check dependencies
-        try:
-            import fastapi
-            import uvicorn
-        except ImportError:
+        # Check dependencies using find_spec
+        if (
+            importlib.util.find_spec("fastapi") is None
+            or importlib.util.find_spec("uvicorn") is None
+        ):
             errors += 1
 
         # Check environment variables
@@ -110,8 +110,7 @@ def validate_command(args: Any) -> int:
 
         if errors == 0:
             return 0
-        else:
-            return 1
+        return 1
 
     except Exception:
         return 1
@@ -131,8 +130,7 @@ def health_command(args: Any) -> int:
         if response.status_code == 200:
             response.json()
             return 0
-        else:
-            return 1
+        return 1
 
     except ImportError:
         return 1
@@ -201,9 +199,8 @@ Examples:
     # Execute command
     if hasattr(args, "func"):
         return args.func(args)
-    else:
-        parser.print_help()
-        return 1
+    parser.print_help()
+    return 1
 
 
 if __name__ == "__main__":

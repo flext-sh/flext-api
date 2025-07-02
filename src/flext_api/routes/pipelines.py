@@ -15,7 +15,7 @@ from flext_api.models.pipeline import (
 router = APIRouter(prefix="/pipelines", tags=["pipelines"])
 
 
-@router.post("/", response_model=PipelineResponse)
+@router.post("/")
 async def create_pipeline(request: PipelineCreateRequest) -> PipelineResponse:
     """Create a new pipeline."""
     try:
@@ -38,7 +38,7 @@ async def create_pipeline(request: PipelineCreateRequest) -> PipelineResponse:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.get("/", response_model=list[PipelineResponse])
+@router.get("/")
 async def list_pipelines() -> list[PipelineResponse]:
     """List all pipelines."""
     # In a real implementation, this would query the database
@@ -46,7 +46,7 @@ async def list_pipelines() -> list[PipelineResponse]:
     return []
 
 
-@router.get("/{pipeline_id}", response_model=PipelineResponse)
+@router.get("/{pipeline_id}")
 async def get_pipeline(pipeline_id: str) -> PipelineResponse:
     """Get pipeline by ID."""
     # In a real implementation, this would query the database
@@ -55,7 +55,7 @@ async def get_pipeline(pipeline_id: str) -> PipelineResponse:
     )
 
 
-@router.put("/{pipeline_id}", response_model=PipelineResponse)
+@router.put("/{pipeline_id}")
 async def update_pipeline(
     pipeline_id: str, request: PipelineUpdateRequest
 ) -> PipelineResponse:
@@ -96,11 +96,11 @@ async def execute_pipeline(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Execution failed: {str(e)}",
+            detail=f"Execution failed: {e!s}",
         )
 
 
-@router.get("/{pipeline_id}/status", response_model=PipelineStatus)
+@router.get("/{pipeline_id}/status")
 async def get_pipeline_status(pipeline_id: str) -> PipelineStatus:
     """Get pipeline execution status."""
     # In a real implementation, this would query execution status

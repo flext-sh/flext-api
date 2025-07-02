@@ -55,7 +55,7 @@ async def get_metrics() -> dict[str, Any]:
         }
     except Exception as e:
         return {
-            "error": f"Failed to get metrics: {str(e)}",
+            "error": f"Failed to get metrics: {e!s}",
             "system": {},
             "application": {},
         }
