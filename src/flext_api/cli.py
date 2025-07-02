@@ -47,21 +47,19 @@ def serve_command(args: Any) -> int:
 def routes_command(args: Any) -> int:
     """List available API routes."""
     try:
-
         # Try to import the app and list routes
         try:
             from .app import app
 
             routes = []
             for route in app.routes:
-                if hasattr(route, 'methods') and hasattr(route, 'path'):
+                if hasattr(route, "methods") and hasattr(route, "path"):
                     methods = list(route.methods)
                     path = route.path
-                    name = getattr(route, 'name', 'unnamed')
+                    name = getattr(route, "name", "unnamed")
                     routes.append((methods, path, name))
 
             if routes:
-
                 for methods, path, name in routes:
                     ", ".join(sorted(methods))
             else:
@@ -79,7 +77,6 @@ def routes_command(args: Any) -> int:
 def validate_command(args: Any) -> int:
     """Validate API configuration."""
     try:
-
         errors = 0
 
         # Check imports
@@ -97,6 +94,7 @@ def validate_command(args: Any) -> int:
 
         # Check environment variables
         import os
+
         env_vars = [
             ("FLEXT_API_HOST", "API host"),
             ("FLEXT_API_PORT", "API port"),
@@ -167,20 +165,13 @@ Examples:
     # Serve command
     serve_parser = subparsers.add_parser("serve", help="Start API server")
     serve_parser.add_argument(
-        "--host",
-        default="127.0.0.1",
-        help="Host to bind to (default: 127.0.0.1)"
+        "--host", default="127.0.0.1", help="Host to bind to (default: 127.0.0.1)"
     )
     serve_parser.add_argument(
-        "--port",
-        type=int,
-        default=8000,
-        help="Port to bind to (default: 8000)"
+        "--port", type=int, default=8000, help="Port to bind to (default: 8000)"
     )
     serve_parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Enable debug mode with auto-reload"
+        "--debug", action="store_true", help="Enable debug mode with auto-reload"
     )
     serve_parser.set_defaults(func=serve_command)
 
@@ -189,21 +180,18 @@ Examples:
     routes_parser.set_defaults(func=routes_command)
 
     # Validate command
-    validate_parser = subparsers.add_parser("validate", help="Validate API configuration")
+    validate_parser = subparsers.add_parser(
+        "validate", help="Validate API configuration"
+    )
     validate_parser.set_defaults(func=validate_command)
 
     # Health command
     health_parser = subparsers.add_parser("health", help="Check API health")
     health_parser.add_argument(
-        "--host",
-        default="127.0.0.1",
-        help="API host to check (default: 127.0.0.1)"
+        "--host", default="127.0.0.1", help="API host to check (default: 127.0.0.1)"
     )
     health_parser.add_argument(
-        "--port",
-        type=int,
-        default=8000,
-        help="API port to check (default: 8000)"
+        "--port", type=int, default=8000, help="API port to check (default: 8000)"
     )
     health_parser.set_defaults(func=health_command)
 

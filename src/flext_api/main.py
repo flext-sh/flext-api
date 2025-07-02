@@ -235,7 +235,10 @@ class ThreadSafePipelineStorage:
             self._lock.release()
 
     def update_pipeline_status(
-        self, pipeline_id: str, status: str, execution_id: str | None = None,
+        self,
+        pipeline_id: str,
+        status: str,
+        execution_id: str | None = None,
     ) -> bool:
         """Enhanced thread-safe pipeline status update with atomic operation."""
         if not self._acquire_lock_with_timeout():
@@ -281,7 +284,10 @@ class ThreadSafePipelineStorage:
             self._lock.release()
 
     def check_and_update_status(
-        self, pipeline_id: str, expected_status: str, new_status: str,
+        self,
+        pipeline_id: str,
+        expected_status: str,
+        new_status: str,
     ) -> bool:
         """Enhanced thread-safe compare-and-swap status update."""
         if not self._acquire_lock_with_timeout():
@@ -550,7 +556,8 @@ app.state.limiter = limiter
 
 # Define rate limit handler with proper typing
 async def rate_limit_handler(
-    request: Request, exc: RateLimitExceeded,
+    request: Request,
+    exc: RateLimitExceeded,
 ) -> StarletteResponse:
     """Handle rate limit exceeded exceptions with proper typing.
 
@@ -609,7 +616,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint,
+        self,
+        request: Request,
+        call_next: RequestResponseEndpoint,
     ) -> StarletteResponse:
         """Dispatch middleware for JWT authentication validation.
 
@@ -925,7 +934,8 @@ async def register(register_data: RegisterRequest) -> RegisterResponse:
 
 @app.post("/pipelines", response_model=PipelineResponse)
 async def create_pipeline(
-    pipeline_data: PipelineCreateRequest, request: Request,
+    pipeline_data: PipelineCreateRequest,
+    request: Request,
 ) -> PipelineResponse:
     """Create a new pipeline with enterprise validation.
 
@@ -1198,7 +1208,8 @@ def _get_pipeline_record(pipeline_id: str) -> dict[str, Any]:
 
 
 def _verify_pipeline_access(
-    pipeline_record: dict[str, Any], user: dict[str, Any],
+    pipeline_record: dict[str, Any],
+    user: dict[str, Any],
 ) -> None:
     """Verify user has access to update the pipeline."""
     username = user.get("username", "")
@@ -1220,7 +1231,8 @@ def _check_pipeline_update_preconditions(pipeline_record: dict[str, Any]) -> Non
 
 
 def _update_pipeline_properties(
-    pipeline_record: dict[str, Any], pipeline_data: PipelineUpdateRequest,
+    pipeline_record: dict[str, Any],
+    pipeline_data: PipelineUpdateRequest,
 ) -> None:
     """Update pipeline properties from request data.
 
@@ -1276,7 +1288,9 @@ def _create_pipeline_response(pipeline_record: dict[str, Any]) -> PipelineRespon
 
 @app.put("/pipelines/{pipeline_id}", response_model=PipelineResponse)
 async def update_pipeline(
-    pipeline_id: str, pipeline_data: PipelineUpdateRequest, request: Request,
+    pipeline_id: str,
+    pipeline_data: PipelineUpdateRequest,
+    request: Request,
 ) -> PipelineResponse:
     """Update existing pipeline configuration.
 
@@ -1486,7 +1500,9 @@ async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
 
 @app.post("/pipelines/{pipeline_id}/execute")
 async def execute_pipeline(
-    pipeline_id: str, execution_data: PipelineExecutionRequest, request: Request,
+    pipeline_id: str,
+    execution_data: PipelineExecutionRequest,
+    request: Request,
 ) -> dict[str, str]:
     """Execute pipeline with configuration overrides.
 
@@ -1817,7 +1833,8 @@ from flext_api.models.system import (
 
 @app.post("/plugins/install", response_model=PluginInstallationResponse)
 async def install_plugin(
-    plugin_data: PluginInstallRequest, request: Request,
+    plugin_data: PluginInstallRequest,
+    request: Request,
 ) -> PluginInstallationResponse:
     """Install a new plugin with enterprise validation.
 
@@ -1914,7 +1931,9 @@ async def get_plugin(plugin_name: str, request: Request) -> PluginResponse:
 
 @app.put("/plugins/{plugin_name}/config", response_model=PluginResponse)
 async def update_plugin_config(
-    plugin_name: str, config_data: PluginConfigRequest, request: Request,
+    plugin_name: str,
+    config_data: PluginConfigRequest,
+    request: Request,
 ) -> PluginResponse:
     """Update plugin configuration.
 
@@ -2018,7 +2037,9 @@ async def update_plugin_config(
 
 @app.put("/plugins/{plugin_name}/update")
 async def update_plugin(
-    plugin_name: str, update_data: PluginUpdateRequest, request: Request,
+    plugin_name: str,
+    update_data: PluginUpdateRequest,
+    request: Request,
 ) -> PluginInstallationResponse:
     """Update plugin to specified version.
 
@@ -2056,7 +2077,9 @@ async def update_plugin(
 
 @app.delete("/plugins/{plugin_name}")
 async def uninstall_plugin(
-    plugin_name: str, uninstall_data: PluginUninstallRequest, request: Request,
+    plugin_name: str,
+    uninstall_data: PluginUninstallRequest,
+    request: Request,
 ) -> APIResponse:
     """Uninstall plugin with safety checks.
 
@@ -2238,7 +2261,8 @@ async def get_system_services(request: Request) -> list[SystemServiceResponse]:
 
 @app.get("/system/services/{service_name}", response_model=SystemServiceResponse)
 async def get_system_service(
-    service_name: str, request: Request,
+    service_name: str,
+    request: Request,
 ) -> SystemServiceResponse:
     """Get detailed information about a specific system service.
 
@@ -2274,7 +2298,8 @@ async def get_system_service(
 
 @app.post("/system/maintenance", response_model=MaintenanceResponse)
 async def start_maintenance(
-    maintenance_data: MaintenanceRequest, request: Request,
+    maintenance_data: MaintenanceRequest,
+    request: Request,
 ) -> MaintenanceResponse:
     """Start system maintenance mode with enterprise safety checks.
 
@@ -2311,7 +2336,8 @@ async def start_maintenance(
 
 @app.get("/system/maintenance/{maintenance_id}", response_model=MaintenanceResponse)
 async def get_maintenance_status(
-    maintenance_id: str, request: Request,
+    maintenance_id: str,
+    request: Request,
 ) -> MaintenanceResponse:
     """Get status of ongoing or completed maintenance operation.
 
@@ -2381,7 +2407,8 @@ async def stop_maintenance(maintenance_id: str, request: Request) -> APIResponse
 
 @app.post("/system/backup", response_model=SystemBackupResponse)
 async def create_system_backup(
-    backup_data: SystemBackupRequest, request: Request,
+    backup_data: SystemBackupRequest,
+    request: Request,
 ) -> SystemBackupResponse:
     """Create comprehensive system backup with enterprise features.
 
@@ -2495,7 +2522,9 @@ async def get_system_backup(backup_id: str, request: Request) -> SystemBackupRes
 
 @app.post("/system/restore/{backup_id}")
 async def restore_system_backup(
-    backup_id: str, restore_data: SystemRestoreRequest, request: Request,
+    backup_id: str,
+    restore_data: SystemRestoreRequest,
+    request: Request,
 ) -> APIResponse:
     """Restore system from backup with enterprise safety checks.
 
@@ -2533,7 +2562,8 @@ async def restore_system_backup(
 
 @app.post("/system/health-check", response_model=SystemHealthResponse)
 async def perform_health_check(
-    health_data: SystemHealthCheckRequest, request: Request,
+    health_data: SystemHealthCheckRequest,
+    request: Request,
 ) -> SystemHealthResponse:
     """Perform comprehensive system health check.
 
@@ -2681,7 +2711,9 @@ async def resolve_alert(alert_id: str, request: Request) -> APIResponse:
 
 @app.get("/system/metrics", response_model=SystemMetricsResponse)
 async def get_system_metrics(
-    request: Request, include_historical: bool = False, time_range_hours: int = 24,
+    request: Request,
+    include_historical: bool = False,
+    time_range_hours: int = 24,
 ) -> SystemMetricsResponse:
     """Get comprehensive system metrics and performance data.
 
@@ -2719,7 +2751,8 @@ async def get_system_metrics(
 
 @app.put("/system/configuration", response_model=APIResponse)
 async def update_system_configuration(
-    config_data: SystemConfigurationRequest, request: Request,
+    config_data: SystemConfigurationRequest,
+    request: Request,
 ) -> APIResponse:
     """Update system configuration with enterprise validation.
 

@@ -232,7 +232,7 @@ graph TD
 
 | Service           | Connection Type | Purpose                | Configuration           |
 | ----------------- | --------------- | ---------------------- | ----------------------- |
-| **FLEXT Daemon**    | gRPC (SSL/TLS)  | Command execution      | `config.network.grpc_*` |
+| **FLEXT Daemon**  | gRPC (SSL/TLS)  | Command execution      | `config.network.grpc_*` |
 | **Redis**         | TCP/Unix Socket | Rate limiting, caching | `config.redis.*`        |
 | **Database**      | SQLAlchemy      | Data persistence       | `config.database.*`     |
 | **Load Balancer** | HTTP/HTTPS      | Traffic distribution   | Health endpoints        |

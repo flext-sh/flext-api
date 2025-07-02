@@ -16,7 +16,7 @@ async def health_check() -> dict[str, Any]:
         "status": "healthy",
         "timestamp": datetime.now(UTC).isoformat(),
         "version": "1.0.0",
-        "uptime": "unknown"  # Would track actual uptime in production
+        "uptime": "unknown",  # Would track actual uptime in production
     }
 
 
@@ -37,7 +37,7 @@ async def get_metrics() -> dict[str, Any]:
         # Get basic system metrics
         cpu_percent = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
+        disk = psutil.disk_usage("/")
 
         return {
             "system": {
@@ -45,19 +45,19 @@ async def get_metrics() -> dict[str, Any]:
                 "memory_percent": memory.percent,
                 "memory_available_gb": round(memory.available / (1024**3), 2),
                 "disk_percent": round((disk.used / disk.total) * 100, 2),
-                "disk_free_gb": round(disk.free / (1024**3), 2)
+                "disk_free_gb": round(disk.free / (1024**3), 2),
             },
             "application": {
                 "active_connections": 0,  # Would track real connections
                 "requests_per_minute": 0,  # Would track from metrics
-                "average_response_time": 0.0  # Would track from metrics
-            }
+                "average_response_time": 0.0,  # Would track from metrics
+            },
         }
     except Exception as e:
         return {
             "error": f"Failed to get metrics: {str(e)}",
             "system": {},
-            "application": {}
+            "application": {},
         }
 
 
@@ -68,5 +68,5 @@ async def get_version() -> dict[str, str]:
         "api_version": "1.0.0",
         "build_date": "2025-06-30",
         "commit_hash": "unknown",
-        "python_version": "3.13"
+        "python_version": "3.13",
     }

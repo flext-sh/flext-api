@@ -105,11 +105,11 @@ src/flext_api/websocket/
 
 ### 🔗 Integration Dependencies
 
-| Library                    | Purpose               | Integration Point           |
-| -------------------------- | --------------------- | --------------------------- |
+| Library                      | Purpose               | Integration Point           |
+| ---------------------------- | --------------------- | --------------------------- |
 | **flext_core.serialization** | Serializer factory    | `get_serializer()` function |
 | **flext_core.events**        | Event bus integration | Domain event publishing     |
-| **typing**                 | Type safety           | Python 3.13 type hints      |
+| **typing**                   | Type safety           | Python 3.13 type hints      |
 
 ## 🌐 CONNECTION MANAGER ARCHITECTURE
 

@@ -1,6 +1,5 @@
 """Plugin management routes for FLEXT API."""
 
-
 from fastapi import APIRouter, HTTPException, status
 
 from flext_api.models.plugin import (
@@ -33,12 +32,12 @@ async def install_plugin(request: PluginInstallRequest) -> PluginInstallationRes
             plugin_name=request.plugin_name,
             version=request.version or "latest",
             status="installed",
-            message=f"Plugin {request.plugin_name} installed successfully"
+            message=f"Plugin {request.plugin_name} installed successfully",
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Installation failed: {str(e)}"
+            detail=f"Installation failed: {str(e)}",
         )
 
 
@@ -51,13 +50,11 @@ async def uninstall_plugin(plugin_name: str) -> dict[str, str]:
         # 2. Remove plugin files
         # 3. Unregister from plugin registry
 
-        return {
-            "message": f"Plugin {plugin_name} uninstalled successfully"
-        }
+        return {"message": f"Plugin {plugin_name} uninstalled successfully"}
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Uninstallation failed: {str(e)}"
+            detail=f"Uninstallation failed: {str(e)}",
         )
 
 
@@ -66,8 +63,7 @@ async def get_plugin(plugin_name: str) -> PluginResponse:
     """Get plugin details."""
     # In a real implementation, this would query plugin registry
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Plugin not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail="Plugin not found"
     )
 
 
