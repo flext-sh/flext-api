@@ -1,8 +1,9 @@
 """FLEXT REST API package initialization.
 
-This package provides the RESTful API interface for the FLEXT Meltano Enterprise platform
-using FastAPI framework. It serves as the primary programmatic interface for external
-clients and services to interact with FLEXT functionality, including:
+This package provides the RESTful API interface for the FLEXT Meltano Enterprise
+platform using FastAPI framework. It serves as the primary programmatic
+interface for external clients and services to interact with FLEXT functionality,
+including:
 
 - Pipeline management and orchestration
 - Plugin configuration and lifecycle management
@@ -15,11 +16,10 @@ The API follows RESTful principles and provides automatic API documentation thro
 FastAPI's built-in OpenAPI (Swagger) and ReDoc interfaces.
 """
 
-
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import AsyncGenerator, Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -66,7 +66,7 @@ class FlextAPI:
         # Add security middleware
         self.app.add_middleware(
             TrustedHostMiddleware,
-            allowed_hosts=["localhost", "127.0.0.1", "*.flext.sh"]
+            allowed_hosts=["localhost", "127.0.0.1", "*.flext.sh"],
         )
 
         # Add CORS middleware for web interface
@@ -80,25 +80,25 @@ class FlextAPI:
 
         # Health check endpoint
         @self.app.get("/health")
-        async def health_check():
-            """API health check endpoint."""
+        async def health_check() -> dict[str, str | bool]:
+            """Check API health status."""
             return {
                 "status": "healthy",
                 "service": "flext-api",
                 "version": "1.0.0",
-                "debug": self.debug
+                "debug": self.debug,
             }
 
         # Root endpoint
         @self.app.get("/")
-        async def root():
-            """API root endpoint with service information."""
+        async def root() -> dict[str, str | None]:
+            """Get API root service information."""
             return {
                 "service": "FLEXT API",
                 "description": "FLEXT Meltano Enterprise Platform API",
                 "version": "1.0.0",
                 "docs": "/docs" if self.debug else None,
-                "health": "/health"
+                "health": "/health",
             }
 
         self.initialized = True
@@ -125,7 +125,7 @@ class FlextAPI:
         logger.info("FLEXT API shutdown complete")
 
     @asynccontextmanager
-    async def lifespan(self):
+    async def lifespan(self) -> AsyncGenerator[FastAPI, None]:
         """Context manager for API lifespan management."""
         await self.initialize()
         try:
