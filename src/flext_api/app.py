@@ -42,7 +42,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["localhost", "127.0.0.1", "*.flext.com", "testserver"]
+        allowed_hosts=["localhost", "127.0.0.1", "*.flext.com", "testserver"],
     )
 
     # Include all routers
@@ -58,7 +58,7 @@ def create_app() -> FastAPI:
             "message": "FLEXT API is running",
             "version": "1.0.0",
             "docs": "/docs",
-            "health": "/system/health"
+            "health": "/system/health",
         }
 
     return app
@@ -70,9 +70,5 @@ app = create_app()
 
 if __name__ == "__main__":
     uvicorn.run(
-        "flext_api.app:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
+        "flext_api.app:app", host="0.0.0.0", port=8000, reload=True, log_level="info"
     )

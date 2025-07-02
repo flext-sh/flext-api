@@ -23,10 +23,7 @@ def get_auth_service() -> AuthenticationService:
     """Dependency to get authentication service."""
     user_repo = ServiceInMemoryUserRepository()
     role_repo = ServiceInMemoryRoleRepository()
-    return AuthenticationService(
-        user_repository=user_repo,
-        role_repository=role_repo
-    )
+    return AuthenticationService(user_repository=user_repo, role_repository=role_repo)
 
 
 @router.post("/register", response_model=RegisterResponse)
@@ -40,7 +37,7 @@ async def register_user(
             username=request.username,
             email=request.email,
             password=request.password,
-            roles=[request.role] if request.role else ["viewer"]
+            roles=[request.role] if request.role else ["viewer"],
         )
 
         return RegisterResponse(
@@ -49,13 +46,10 @@ async def register_user(
             username=user.username,
             email=user.email,
             role=request.role or "viewer",
-            created_at="2024-01-01T00:00:00Z"  # Would use actual timestamp in production
+            created_at="2024-01-01T00:00:00Z",  # Would use actual timestamp in production
         )
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.post("/login", response_model=LoginResponse)
@@ -68,7 +62,7 @@ async def login_user(
         token_pair = await auth_service.authenticate(
             username_or_email=request.email,
             password=request.password,
-            ip_address=None  # Would be extracted from request in production
+            ip_address=None,  # Would be extracted from request in production
         )
 
         return LoginResponse(
@@ -79,12 +73,11 @@ async def login_user(
             user={"username": "test_user", "email": request.email},
             session_id="session-123",
             permissions=["read", "write"],
-            roles=["user"]
+            roles=["user"],
         )
     except ValueError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
         )
 
 
@@ -96,8 +89,7 @@ async def refresh_tokens(
     """Refresh access token using refresh token."""
     try:
         token_pair = await auth_service.refresh_tokens(
-            refresh_token=refresh_token,
-            ip_address=None
+            refresh_token=refresh_token, ip_address=None
         )
 
         return LoginResponse(
@@ -108,12 +100,11 @@ async def refresh_tokens(
             user={"username": "refresh_user", "email": "refresh@example.com"},
             session_id="session-456",
             permissions=["read", "write"],
-            roles=["user"]
+            roles=["user"],
         )
     except ValueError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
         )
 
 
@@ -128,6 +119,5 @@ async def logout_user(
         return {"message": "Logged out successfully"}
     except Exception:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Logout failed"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Logout failed"
         )

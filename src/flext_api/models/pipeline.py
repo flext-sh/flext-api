@@ -534,7 +534,8 @@ class ExecutionResponse(DomainBaseModel):
 
     @classmethod
     def from_execution_response(
-        cls, response: PipelineExecutionResponse,
+        cls,
+        response: PipelineExecutionResponse,
     ) -> ExecutionResponse:
         """Convert from modern PipelineExecutionResponse."""
         # Calculate duration from start/end times - ZERO TOLERANCE: Real implementation

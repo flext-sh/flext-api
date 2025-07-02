@@ -119,7 +119,7 @@ def get_grpc_stub(  # type: ignore[no-any-unimported]
         Provides dependency injection for clean separation of concerns.
 
     """
-    return flext_pb2_grpc.FlextServiceStub(channel)  # type: ignore[no-untyped-call]
+    return flext_pb2_grpc.FlextServiceStub(channel)
 
 
 def get_current_user(

@@ -1,6 +1,5 @@
 """Pipeline management routes for FLEXT API."""
 
-
 from fastapi import APIRouter, HTTPException, status
 from flext_core.domain.entities import Pipeline
 from flext_core.domain.value_objects import PipelineName
@@ -23,7 +22,7 @@ async def create_pipeline(request: PipelineCreateRequest) -> PipelineResponse:
         pipeline = Pipeline(
             name=PipelineName(request.name),
             description=request.description or "",
-            created_by=request.created_by or "api_user"
+            created_by=request.created_by or "api_user",
         )
 
         return PipelineResponse(
@@ -33,13 +32,10 @@ async def create_pipeline(request: PipelineCreateRequest) -> PipelineResponse:
             status="created",
             created_by=pipeline.created_by,
             created_at=pipeline.created_at,
-            is_active=pipeline.is_active
+            is_active=pipeline.is_active,
         )
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.get("/", response_model=list[PipelineResponse])
@@ -55,21 +51,18 @@ async def get_pipeline(pipeline_id: str) -> PipelineResponse:
     """Get pipeline by ID."""
     # In a real implementation, this would query the database
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Pipeline not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail="Pipeline not found"
     )
 
 
 @router.put("/{pipeline_id}", response_model=PipelineResponse)
 async def update_pipeline(
-    pipeline_id: str,
-    request: PipelineUpdateRequest
+    pipeline_id: str, request: PipelineUpdateRequest
 ) -> PipelineResponse:
     """Update pipeline configuration."""
     # In a real implementation, this would update the database
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Pipeline not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail="Pipeline not found"
     )
 
 
@@ -78,15 +71,13 @@ async def delete_pipeline(pipeline_id: str) -> dict[str, str]:
     """Delete a pipeline."""
     # In a real implementation, this would delete from database
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Pipeline not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail="Pipeline not found"
     )
 
 
 @router.post("/{pipeline_id}/execute")
 async def execute_pipeline(
-    pipeline_id: str,
-    request: PipelineExecutionRequest
+    pipeline_id: str, request: PipelineExecutionRequest
 ) -> dict[str, str]:
     """Execute a pipeline."""
     try:
@@ -100,12 +91,12 @@ async def execute_pipeline(
         return {
             "message": "Pipeline execution started",
             "execution_id": "exec_" + pipeline_id,
-            "status": "queued"
+            "status": "queued",
         }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Execution failed: {str(e)}"
+            detail=f"Execution failed: {str(e)}",
         )
 
 
@@ -114,8 +105,5 @@ async def get_pipeline_status(pipeline_id: str) -> PipelineStatus:
     """Get pipeline execution status."""
     # In a real implementation, this would query execution status
     return PipelineStatus(
-        pipeline_id=pipeline_id,
-        status="idle",
-        last_execution=None,
-        next_execution=None
+        pipeline_id=pipeline_id, status="idle", last_execution=None, next_execution=None
     )

@@ -116,7 +116,7 @@ def get_grpc_stub(  # type: ignore[no-any-unimported]
         Provides dependency injection for clean separation of concerns.
 
     """
-    return flx_pb2_grpc.FlxServiceStub(channel)  # type: ignore[no-untyped-call]
+    return flx_pb2_grpc.FlxServiceStub(channel)
 
 
 def get_current_user(

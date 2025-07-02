@@ -31,8 +31,8 @@ COPY pyproject.toml .
 RUN pip install -e .
 
 # Create directories and set permissions
-RUN mkdir -p /app/logs && \
-    chown -R flext:flext /app
+RUN mkdir -p /app/logs \
+    && chown -R flext:flext /app
 
 # Switch to non-root user
 USER flext
