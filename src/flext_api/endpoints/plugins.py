@@ -84,8 +84,7 @@ async def update_plugin_config(
 
     if not isinstance(config_data.configuration, dict):
         raise HTTPException(
-            status_code=400,
-            detail="Plugin configuration must be a valid dictionary"
+            status_code=400, detail="Plugin configuration must be a valid dictionary"
         )
 
     return PluginResponse(
@@ -119,7 +118,9 @@ async def uninstall_plugin(
 ) -> APIResponse:
     """Uninstall plugin with safety checks."""
     # Implementation placeholder
-    raise HTTPException(status_code=501, detail="Plugin uninstallation not yet implemented")
+    raise HTTPException(
+        status_code=501, detail="Plugin uninstallation not yet implemented"
+    )
 
 
 @plugins_router.get("/stats", response_model=PluginStatsResponse)
@@ -141,4 +142,6 @@ async def get_plugin_stats(request: Request) -> PluginStatsResponse:
 async def check_plugin_health(plugin_name: str, request: Request) -> dict[str, Any]:
     """Perform health check on specific plugin."""
     # Implementation placeholder
-    raise HTTPException(status_code=501, detail="Plugin health check not yet implemented")
+    raise HTTPException(
+        status_code=501, detail="Plugin health check not yet implemented"
+    )

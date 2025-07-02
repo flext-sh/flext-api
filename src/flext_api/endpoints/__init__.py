@@ -9,9 +9,4 @@ from .pipelines import pipelines_router
 from .plugins import plugins_router
 from .system import system_router
 
-__all__ = [
-    "auth_router",
-    "pipelines_router",
-    "plugins_router",
-    "system_router"
-]
+__all__ = ["auth_router", "pipelines_router", "plugins_router", "system_router"]

@@ -35,29 +35,37 @@ class APIResponse(DomainBaseModel):
     success: bool = Field(description="Whether the operation was successful")
     message: str = Field(description="Human-readable response message")
     data: Any = Field(default=None, description="Response data payload")
-    errors: list[str] = Field(default_factory=list, description="List of error messages")
+    errors: list[str] = Field(
+        default_factory=list, description="List of error messages"
+    )
     timestamp: str = Field(description="Response timestamp")
 
     @classmethod
-    def success_response(cls, data: Any = None, message: str = "Operation successful") -> APIResponse:
+    def success_response(
+        cls, data: Any = None, message: str = "Operation successful"
+    ) -> APIResponse:
         """Create a successful API response."""
         from datetime import datetime
+
         return cls(
             success=True,
             message=message,
             data=data,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now().isoformat(),
         )
 
     @classmethod
-    def error_response(cls, errors: list[str], message: str = "Operation failed") -> APIResponse:
+    def error_response(
+        cls, errors: list[str], message: str = "Operation failed"
+    ) -> APIResponse:
         """Create an error API response."""
         from datetime import datetime
+
         return cls(
             success=False,
             message=message,
             errors=errors,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now().isoformat(),
         )
 
 

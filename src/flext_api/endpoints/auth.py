@@ -1,6 +1,5 @@
 """Authentication endpoints for FLEXT API."""
 
-
 from fastapi import APIRouter, Request
 from fastapi.security import HTTPBearer
 
@@ -34,7 +33,7 @@ async def login(login_data: LoginRequest) -> LoginResponse:
             roles=["user"],
             is_active=True,
             is_admin=False,
-        )
+        ),
     )
 
 
