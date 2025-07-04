@@ -63,7 +63,7 @@ async def get_plugin(plugin_name: str) -> PluginResponse:
     """Get plugin details."""
     # In a real implementation, this would query plugin registry
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail="Plugin not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail="Plugin not found",
     )
 
 

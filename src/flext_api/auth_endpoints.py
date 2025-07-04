@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from flext_auth.jwt_service import JWTService
 from flext_auth.session_manager import EnterpriseSessionManager
@@ -36,22 +36,29 @@ from flext_core.config.domain_config import get_config
 from flext_core.infrastructure.persistence.session_manager import get_db_session
 
 from flext_api.models.auth import (
-    LoginRequest,
     LoginResponse,
-    LogoutRequest,
-    RefreshTokenRequest,
-    RegisterRequest,
     RegisterResponse,
     SessionListResponse,
     SessionResponse,
 )
 
 if TYPE_CHECKING:
+    from fastapi import Request
     from sqlalchemy.ext.asyncio import AsyncSession
+
+    from flext_api.models.auth import (
+        LoginRequest,
+        LogoutRequest,
+        RefreshTokenRequest,
+        RegisterRequest,
+    )
 
 # Configuration and dependencies
 config = get_config()
 security = HTTPBearer()
+
+# Constants
+TOKEN_TYPE_BEARER = "bearer"  # noqa: S105
 
 # Initialize services
 jwt_service = JWTService()
@@ -61,28 +68,134 @@ token_manager = TokenManager(storage=InMemoryTokenStorage())
 auth_router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
+def _raise_invalid_token_error() -> None:
+    """Raise HTTPException for invalid or expired token."""
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or expired token",
+    )
+
+
+def _raise_revoked_token_error() -> None:
+    """Raise HTTPException for revoked or invalid token."""
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Token revoked or invalid",
+    )
+
+
+def _raise_authentication_error(error: Exception) -> None:
+    """Raise HTTPException for authentication failure."""
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=f"Authentication failed: {error!s}",
+    ) from error
+
+
+def _raise_login_failed_error(message: str) -> None:
+    """Raise HTTPException for login failure."""
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=message,
+    )
+
+
+def _raise_session_creation_error() -> None:
+    """Raise HTTPException for session creation failure."""
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Failed to create session",
+    )
+
+
+def _raise_registration_failed_error(message: str) -> None:
+    """Raise HTTPException for registration failure."""
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=message,
+    )
+
+
+def _raise_invalid_refresh_token_error() -> None:
+    """Raise HTTPException for invalid refresh token."""
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid refresh token",
+    )
+
+
+def _raise_invalid_token_claims_error() -> None:
+    """Raise HTTPException for invalid token claims."""
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token claims",
+    )
+
+
+def _raise_no_active_sessions_error() -> None:
+    """Raise HTTPException for no active sessions."""
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="No active sessions found",
+    )
+
+
+def _raise_logout_failed_error() -> None:
+    """Raise HTTPException for logout failure."""
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Failed to logout",
+    )
+
+
+def _raise_session_retrieval_error() -> None:
+    """Raise HTTPException for session retrieval failure."""
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Failed to retrieve sessions",
+    )
+
+
+def _raise_session_not_found_error() -> None:
+    """Raise HTTPException for session not found."""
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Session not found",
+    )
+
+
+def _raise_session_termination_error() -> None:
+    """Raise HTTPException for session termination failure."""
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Failed to terminate session",
+    )
+
+
+def _raise_server_error(message: str, error: Exception) -> None:
+    """Raise HTTPException for server errors."""
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail=message,
+    ) from error
+
+
 async def get_current_user(
-    request: Request,
-    token: str = Depends(security),
-    session: AsyncSession = Depends(get_db_session),
+    _request: Request,
+    token: Annotated[str, Depends(security)],
+    _session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> dict[str, Any]:
     """Get current authenticated user from JWT token."""
     try:
         # Validate JWT token
         claims = jwt_service.decode_token(token.credentials)
         if not claims:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired token",
-            )
+            _raise_invalid_token_error()
 
         # Validate token with token manager
         is_valid = await token_manager.validate_token(claims.get("jti", ""))
         if not is_valid:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token revoked or invalid",
-            )
+            _raise_revoked_token_error()
 
         # Return user info from claims
         return {
@@ -93,15 +206,16 @@ async def get_current_user(
             "permissions": claims.get("permissions", []),
         }
 
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed: {e!s}",
-        ) from e
+    except HTTPException:
+        raise
+    except (ValueError, KeyError, AttributeError) as e:
+        _raise_authentication_error(e)
+    except (TypeError, RuntimeError, ImportError) as e:
+        _raise_authentication_error(e)
 
 
 async def get_session_manager(
-    session: AsyncSession = Depends(get_db_session),
+    session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> EnterpriseSessionManager:
     """Get enterprise session manager instance."""
     return EnterpriseSessionManager(db_session=session)
@@ -151,14 +265,12 @@ async def login_user(
             client_ip = request.client.host if request.client else None
             user_agent = request.headers.get("user-agent")
 
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=(
-                    auth_result.error.message
-                    if auth_result.error
-                    else "Authentication failed"
-                ),
+            message = (
+                auth_result.error.message
+                if auth_result.error
+                else "Authentication failed"
             )
+            _raise_login_failed_error(message)
 
         user_response = auth_result.value
 
@@ -183,10 +295,7 @@ async def login_user(
         )
 
         if not session_result.success:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create session",
-            )
+            _raise_session_creation_error()
 
         session_metadata = session_result.value
 
@@ -207,7 +316,7 @@ async def login_user(
         return LoginResponse(
             access_token=access_token,
             refresh_token=refresh_token,
-            token_type="bearer",
+            token_type=TOKEN_TYPE_BEARER,
             expires_in=config.security.jwt_access_token_expire_minutes * 60,
             user=user_response,
             session_id=session_metadata.session_id,
@@ -217,17 +326,16 @@ async def login_user(
 
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Login failed: {e!s}",
-        ) from e
+    except (ValueError, KeyError, AttributeError, TypeError) as e:
+        _raise_server_error(f"Login failed: {e!s}", e)
+    except (TypeError, RuntimeError, ImportError) as e:
+        _raise_server_error(f"Login failed: {e!s}", e)
 
 
 @auth_router.post("/register", response_model=RegisterResponse)
 async def register_user(
     register_data: RegisterRequest,
-    request: Request,
+    _request: Request,
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> RegisterResponse:
     """Register new user with role assignment and validation.
@@ -258,14 +366,12 @@ async def register_user(
         # Register user
         creation_result = await user_service.create_user(user_creation_request)
         if not creation_result.success:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=(
-                    creation_result.error.message
-                    if creation_result.error
-                    else "Registration failed"
-                ),
+            message = (
+                creation_result.error.message
+                if creation_result.error
+                else "Registration failed"
             )
+            _raise_registration_failed_error(message)
 
         user_response = creation_result.value
 
@@ -282,18 +388,17 @@ async def register_user(
 
     except HTTPException:
         raise
+    except (ValueError, KeyError, AttributeError, TypeError) as e:
+        _raise_server_error(f"Registration failed: {e!s}", e)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {e!s}",
-        ) from e
+        _raise_server_error(f"Registration failed: {e!s}", e)
 
 
 @auth_router.post("/refresh", response_model=LoginResponse)
 async def refresh_tokens(
     refresh_data: RefreshTokenRequest,
-    request: Request,
-    session: Annotated[AsyncSession, Depends(get_db_session)],
+    _request: Request,
+    _session: Annotated[AsyncSession, Depends(get_db_session)],
     session_manager: Annotated[EnterpriseSessionManager, Depends(get_session_manager)],
 ) -> LoginResponse:
     """Refresh access token using refresh token.
@@ -314,25 +419,16 @@ async def refresh_tokens(
         # Validate refresh token
         claims = jwt_service.decode_token(refresh_data.refresh_token)
         if not claims or claims.get("type") != "refresh":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid refresh token",
-            )
+            _raise_invalid_refresh_token_error()
 
         user_id = claims.get("sub")
         if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token claims",
-            )
+            _raise_invalid_token_claims_error()
 
         # Get user sessions for permission refresh
         sessions_result = await session_manager.get_user_sessions(user_id)
         if not sessions_result.success or not sessions_result.value:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="No active sessions found",
-            )
+            _raise_no_active_sessions_error()
 
         # Use the first active session for token refresh
         session_metadata = sessions_result.value[0]
@@ -360,7 +456,7 @@ async def refresh_tokens(
         return LoginResponse(
             access_token=access_token,
             refresh_token=refresh_token,
-            token_type="bearer",
+            token_type=TOKEN_TYPE_BEARER,
             expires_in=config.security.jwt_access_token_expire_minutes * 60,
             user=user_response,
             session_id=session_metadata.session_id,
@@ -370,11 +466,10 @@ async def refresh_tokens(
 
     except HTTPException:
         raise
+    except (ValueError, KeyError, AttributeError, TypeError) as e:
+        _raise_server_error(f"Token refresh failed: {e!s}", e)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Token refresh failed: {e!s}",
-        ) from e
+        _raise_server_error(f"Token refresh failed: {e!s}", e)
 
 
 @auth_router.post("/logout")
@@ -419,23 +514,19 @@ async def logout_user(
             )
 
         if not result.success:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to logout",
-            )
-
-        return {
-            "message": "Logout successful",
-            "user_id": user_id,
-        }
+            _raise_logout_failed_error()
+        else:
+            return {
+                "message": "Logout successful",
+                "user_id": user_id,
+            }
 
     except HTTPException:
         raise
+    except (ValueError, KeyError, AttributeError, TypeError) as e:
+        _raise_server_error(f"Logout failed: {e!s}", e)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Logout failed: {e!s}",
-        ) from e
+        _raise_server_error(f"Logout failed: {e!s}", e)
 
 
 @auth_router.get("/sessions", response_model=SessionListResponse)
@@ -460,10 +551,7 @@ async def get_user_sessions(
 
         sessions_result = await session_manager.get_user_sessions(user_id)
         if not sessions_result.success:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to retrieve sessions",
-            )
+            _raise_session_retrieval_error()
 
         # Convert session metadata to response format
         session_responses = []
@@ -477,7 +565,8 @@ async def get_user_sessions(
                 created_at=session_metadata.created_at,
                 last_accessed=session_metadata.last_accessed,
                 expires_at=session_metadata.expires_at,
-                is_current=True,  # TODO: Determine current session
+                is_current=True,  # TODO(@flext-team): Determine current session
+                # Issue: https://github.com/flext-sh/flext-api/issues/123
                 roles=list(session_metadata.roles),
                 permissions=list(session_metadata.permissions),
             )
@@ -490,17 +579,16 @@ async def get_user_sessions(
 
     except HTTPException:
         raise
+    except (ValueError, KeyError, AttributeError, TypeError) as e:
+        _raise_server_error(f"Failed to get sessions: {e!s}", e)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get sessions: {e!s}",
-        ) from e
+        _raise_server_error(f"Failed to get sessions: {e!s}", e)
 
 
 @auth_router.delete("/sessions/{session_id}")
 async def terminate_session(
     session_id: str,
-    current_user: Annotated[dict[str, Any], Depends(get_current_user)],
+    _current_user: Annotated[dict[str, Any], Depends(get_current_user)],
     session_manager: Annotated[EnterpriseSessionManager, Depends(get_session_manager)],
 ) -> dict[str, str]:
     """Terminate specific session.
@@ -524,24 +612,17 @@ async def terminate_session(
 
         if not result.success:
             if result.error and result.error.error_type == "NotFoundError":
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Session not found",
-                )
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to terminate session",
-            )
-
-        return result.value
+                _raise_session_not_found_error()
+            _raise_session_termination_error()
+        else:
+            return result.value
 
     except HTTPException:
         raise
+    except (ValueError, KeyError, AttributeError, TypeError) as e:
+        _raise_server_error(f"Failed to terminate session: {e!s}", e)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to terminate session: {e!s}",
-        ) from e
+        _raise_server_error(f"Failed to terminate session: {e!s}", e)
 
 
 @auth_router.get("/profile")
@@ -569,11 +650,10 @@ async def get_user_profile(
             "is_authenticated": True,
         }
 
+    except (ValueError, KeyError, AttributeError, TypeError) as e:
+        _raise_server_error(f"Failed to get profile: {e!s}", e)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get profile: {e!s}",
-        ) from e
+        _raise_server_error(f"Failed to get profile: {e!s}", e)
 
 
 @auth_router.get("/permissions")
@@ -625,18 +705,17 @@ async def get_user_permissions(
             "permission_count": len(current_user["permissions"]),
         }
 
+    except (ValueError, KeyError, AttributeError, TypeError) as e:
+        _raise_server_error(f"Failed to get permissions: {e!s}", e)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get permissions: {e!s}",
-        ) from e
+        _raise_server_error(f"Failed to get permissions: {e!s}", e)
 
 
 @auth_router.get("/health")
 async def auth_health_check() -> dict[str, Any]:
     """Authentication service health check.
 
-    Returns
+    Returns:
     -------
         dict: Health status and service information
 

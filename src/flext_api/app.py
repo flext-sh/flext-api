@@ -17,7 +17,7 @@ from flext_api.routes import (
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     """Application lifespan management."""
     yield
 
@@ -70,5 +70,5 @@ app = create_app()
 
 if __name__ == "__main__":
     uvicorn.run(
-        "flext_api.app:app", host="0.0.0.0", port=8000, reload=True, log_level="info"
+        "flext_api.app:app", host="127.0.0.1", port=8000, reload=True, log_level="info",
     )

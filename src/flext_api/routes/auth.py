@@ -48,10 +48,13 @@ async def register_user(
             username=user.username,
             email=user.email,
             role=request.role or "viewer",
-            created_at="2024-01-01T00:00:00Z",  # Would use actual timestamp in production
+            # Would use actual timestamp in production
+            created_at="2024-01-01T00:00:00Z",
         )
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from e
 
 
 @router.post("/login")
@@ -70,17 +73,17 @@ async def login_user(
         return LoginResponse(
             access_token=token_pair.access_token,
             refresh_token=token_pair.refresh_token,
-            token_type="bearer",
+            token_type="bearer",  # noqa: S106
             expires_in=3600,
             user={"username": "test_user", "email": request.email},
             session_id="session-123",
             permissions=["read", "write"],
             roles=["user"],
         )
-    except ValueError:
+    except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-        )
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials",
+        ) from e
 
 
 @router.post("/refresh")
@@ -91,23 +94,23 @@ async def refresh_tokens(
     """Refresh access token using refresh token."""
     try:
         token_pair = await auth_service.refresh_tokens(
-            refresh_token=refresh_token, ip_address=None
+            refresh_token=refresh_token, ip_address=None,
         )
 
         return LoginResponse(
             access_token=token_pair.access_token,
             refresh_token=token_pair.refresh_token,
-            token_type="bearer",
+            token_type="bearer",  # noqa: S106
             expires_in=3600,
             user={"username": "refresh_user", "email": "refresh@example.com"},
             session_id="session-456",
             permissions=["read", "write"],
             roles=["user"],
         )
-    except ValueError:
+    except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
-        )
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token",
+        ) from e
 
 
 @router.post("/logout")
@@ -118,8 +121,9 @@ async def logout_user(
     """Logout user by revoking token."""
     try:
         await auth_service.revoke_token(token.credentials)
-        return {"message": "Logged out successfully"}
-    except Exception:
+    except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Logout failed"
-        )
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Logout failed",
+        ) from e
+    else:
+        return {"message": "Logged out successfully"}

@@ -36,7 +36,12 @@ class FlextAPI:
     monitoring, and comprehensive error handling.
     """
 
-    def __init__(self, debug: bool = False) -> None:
+    def __init__(self, *, debug: bool = False) -> None:
+        """Initialize FLEXT API application instance.
+
+        Args:
+            debug: Enable debug mode with OpenAPI documentation endpoints.
+        """
         self.debug = debug
         self.app: FastAPI | None = None
         self.initialized = False

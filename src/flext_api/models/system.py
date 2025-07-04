@@ -10,8 +10,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.pydantic_base import DomainBaseModel
-from pydantic import Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -29,43 +28,43 @@ class SystemStatus(StrEnum):
     STOPPING = "stopping"
 
 
-class APIResponse(DomainBaseModel):
+class APIResponse(BaseModel):
     """Standard API response model."""
 
     success: bool = Field(description="Whether the operation was successful")
     message: str = Field(description="Human-readable response message")
     data: Any = Field(default=None, description="Response data payload")
     errors: list[str] = Field(
-        default_factory=list, description="List of error messages"
+        default_factory=list, description="List of error messages",
     )
     timestamp: str = Field(description="Response timestamp")
 
     @classmethod
     def success_response(
-        cls, data: Any = None, message: str = "Operation successful"
+        cls, data: object = None, message: str = "Operation successful",
     ) -> APIResponse:
         """Create a successful API response."""
-        from datetime import datetime
+        from datetime import UTC, datetime
 
         return cls(
             success=True,
             message=message,
             data=data,
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
     @classmethod
     def error_response(
-        cls, errors: list[str], message: str = "Operation failed"
+        cls, errors: list[str], message: str = "Operation failed",
     ) -> APIResponse:
         """Create an error API response."""
-        from datetime import datetime
+        from datetime import UTC, datetime
 
         return cls(
             success=False,
             message=message,
             errors=errors,
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
 
@@ -103,7 +102,7 @@ class AlertSeverity(StrEnum):
 # --- Request Models ---
 
 
-class MaintenanceRequest(DomainBaseModel):
+class MaintenanceRequest(BaseModel):
     """Request model for system maintenance operations."""
 
     mode: MaintenanceMode = Field(
@@ -150,7 +149,7 @@ class MaintenanceRequest(DomainBaseModel):
     )
 
 
-class SystemConfigurationRequest(DomainBaseModel):
+class SystemConfigurationRequest(BaseModel):
     """Request model for system configuration updates."""
 
     configuration_updates: dict[str, Any] = Field(
@@ -182,7 +181,7 @@ class SystemConfigurationRequest(DomainBaseModel):
     )
 
 
-class SystemBackupRequest(DomainBaseModel):
+class SystemBackupRequest(BaseModel):
     """Request model for system backup operations."""
 
     backup_type: str = Field(
@@ -239,7 +238,7 @@ class SystemBackupRequest(DomainBaseModel):
         return v
 
 
-class SystemRestoreRequest(DomainBaseModel):
+class SystemRestoreRequest(BaseModel):
     """Request model for system restore operations."""
 
     backup_id: UUID = Field(
@@ -275,7 +274,7 @@ class SystemRestoreRequest(DomainBaseModel):
     )
 
 
-class SystemHealthCheckRequest(DomainBaseModel):
+class SystemHealthCheckRequest(BaseModel):
     """Request model for system health checks."""
 
     check_types: list[str] = Field(
@@ -323,7 +322,7 @@ class SystemHealthCheckRequest(DomainBaseModel):
 # --- Response Models ---
 
 
-class SystemStatusResponse(DomainBaseModel):
+class SystemStatusResponse(BaseModel):
     """Response model for system status information."""
 
     status: SystemStatus = Field(description="Overall system status")
@@ -399,7 +398,7 @@ class SystemStatusResponse(DomainBaseModel):
     )
 
 
-class SystemServiceResponse(DomainBaseModel):
+class SystemServiceResponse(BaseModel):
     """Response model for individual service information."""
 
     service_name: str = Field(description="Service name")
@@ -425,7 +424,7 @@ class SystemServiceResponse(DomainBaseModel):
     )
 
 
-class MaintenanceResponse(DomainBaseModel):
+class MaintenanceResponse(BaseModel):
     """Response model for maintenance operations."""
 
     maintenance_id: UUID = Field(description="Unique maintenance identifier")
@@ -453,7 +452,7 @@ class MaintenanceResponse(DomainBaseModel):
     metadata: dict[str, Any] = Field(description="Additional maintenance metadata")
 
 
-class SystemBackupResponse(DomainBaseModel):
+class SystemBackupResponse(BaseModel):
     """Response model for backup operations."""
 
     backup_id: UUID = Field(description="Unique backup identifier")
@@ -482,7 +481,7 @@ class SystemBackupResponse(DomainBaseModel):
     )
 
 
-class SystemHealthResponse(DomainBaseModel):
+class SystemHealthResponse(BaseModel):
     """Response model for system health information."""
 
     overall_health: SystemStatus = Field(description="Overall system health status")
@@ -515,7 +514,7 @@ class SystemHealthResponse(DomainBaseModel):
     check_duration_seconds: float = Field(description="Health check duration")
 
 
-class SystemAlertResponse(DomainBaseModel):
+class SystemAlertResponse(BaseModel):
     """Response model for system alerts."""
 
     alert_id: UUID = Field(description="Unique alert identifier")
@@ -543,7 +542,7 @@ class SystemAlertResponse(DomainBaseModel):
     metadata: dict[str, Any] = Field(description="Additional alert metadata")
 
 
-class SystemMetricsResponse(DomainBaseModel):
+class SystemMetricsResponse(BaseModel):
     """Response model for system metrics."""
 
     timestamp: datetime = Field(description="Metrics collection timestamp")
@@ -564,7 +563,7 @@ class SystemMetricsResponse(DomainBaseModel):
 # --- List and Filter Models ---
 
 
-class SystemListResponse(DomainBaseModel):
+class SystemListResponse(BaseModel):
     """Response model for system list operations."""
 
     systems: list[SystemStatusResponse] = Field(description="List of systems")
@@ -575,7 +574,7 @@ class SystemListResponse(DomainBaseModel):
     maintenance_count: int = Field(description="Number of systems in maintenance")
 
 
-class SystemFilterRequest(DomainBaseModel):
+class SystemFilterRequest(BaseModel):
     """Request model for filtering system information."""
 
     status: SystemStatus | None = Field(

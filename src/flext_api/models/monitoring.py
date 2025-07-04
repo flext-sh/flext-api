@@ -1,4 +1,7 @@
-"""Pydantic models for the Monitoring API, defining data structures for health and statistics."""
+"""Pydantic models for the Monitoring API.
+
+Defining data structures for health and statistics.
+"""
 
 from datetime import datetime
 from typing import Any

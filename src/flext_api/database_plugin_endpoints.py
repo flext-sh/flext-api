@@ -20,9 +20,9 @@ plugin management functionality.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, NoReturn
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException
 from flext_core.config.domain_config import get_config
 from flext_core.infrastructure.persistence.plugin_repository import (
     DatabasePluginRepository,
@@ -30,7 +30,30 @@ from flext_core.infrastructure.persistence.plugin_repository import (
 from flext_core.infrastructure.persistence.session_manager import get_db_session
 from pydantic import BaseModel, Field
 
+
+# Helper functions for exception handling
+def _raise_bad_request_error(message: str) -> NoReturn:
+    """Raise HTTPException for bad request errors."""
+    raise HTTPException(status_code=400, detail=message)
+
+
+def _raise_unauthorized_error(message: str) -> NoReturn:
+    """Raise HTTPException for unauthorized errors."""
+    raise HTTPException(status_code=401, detail=message)
+
+
+def _raise_not_found_error(message: str) -> NoReturn:
+    """Raise HTTPException for not found errors."""
+    raise HTTPException(status_code=404, detail=message)
+
+
+def _raise_internal_error(message: str) -> NoReturn:
+    """Raise HTTPException for internal server errors."""
+    raise HTTPException(status_code=500, detail=message)
+
+
 if TYPE_CHECKING:
+    from fastapi import Request
     from sqlalchemy.ext.asyncio import AsyncSession
 
     from flext_api.models.plugin import (
@@ -66,12 +89,13 @@ class PluginListParams(BaseModel):
 async def install_plugin_db(
     plugin_data: PluginInstallRequest,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> PluginInstallationResponse:
     """Install a plugin using database repository.
 
     Database-backed implementation of plugin installation with enterprise
-    features including installation tracking, dependency resolution, and lifecycle management.
+    features including installation tracking, dependency resolution,
+    and lifecycle management.
 
     Args:
     ----
@@ -108,16 +132,17 @@ async def install_plugin_db(
         return result.value
     error = result.error
     if error.error_type == "ValidationError":
-        raise HTTPException(status_code=400, detail=error.message)
-    if error.error_type == "InternalError":
-        raise HTTPException(status_code=500, detail=error.message)
-    raise HTTPException(status_code=500, detail="Unknown error occurred")
+        _raise_bad_request_error(error.message)
+    elif error.error_type == "InternalError":
+        _raise_internal_error(error.message)
+    else:
+        _raise_internal_error("Unknown error occurred")
 
 
 async def get_plugin_db(
     plugin_name: str,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> PluginResponse:
     """Retrieve a plugin using database repository.
 
@@ -160,19 +185,20 @@ async def get_plugin_db(
         return result.value
     error = result.error
     if error.error_type == "NotFoundError":
-        raise HTTPException(status_code=404, detail=error.message)
+        _raise_not_found_error(error.message)
     if error.error_type == "ValidationError":
-        raise HTTPException(status_code=400, detail=error.message)
-    if error.error_type == "InternalError":
-        raise HTTPException(status_code=500, detail=error.message)
-    raise HTTPException(status_code=500, detail="Unknown error occurred")
+        _raise_bad_request_error(error.message)
+    elif error.error_type == "InternalError":
+        _raise_internal_error(error.message)
+    else:
+        _raise_internal_error("Unknown error occurred")
 
 
 async def update_plugin_db(
     plugin_name: str,
     plugin_data: PluginUpdateRequest,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> PluginResponse:
     """Update a plugin configuration using database repository.
 
@@ -217,18 +243,19 @@ async def update_plugin_db(
         return result.value
     error = result.error
     if error.error_type == "NotFoundError":
-        raise HTTPException(status_code=404, detail=error.message)
+        _raise_not_found_error(error.message)
     if error.error_type == "ValidationError":
-        raise HTTPException(status_code=400, detail=error.message)
-    if error.error_type == "InternalError":
-        raise HTTPException(status_code=500, detail=error.message)
-    raise HTTPException(status_code=500, detail="Unknown error occurred")
+        _raise_bad_request_error(error.message)
+    elif error.error_type == "InternalError":
+        _raise_internal_error(error.message)
+    else:
+        _raise_internal_error("Unknown error occurred")
 
 
 async def uninstall_plugin_db(
     plugin_name: str,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> dict[str, str]:
     """Uninstall a plugin using database repository.
 
@@ -271,18 +298,19 @@ async def uninstall_plugin_db(
         return result.value
     error = result.error
     if error.error_type == "NotFoundError":
-        raise HTTPException(status_code=404, detail=error.message)
+        _raise_not_found_error(error.message)
     if error.error_type == "ValidationError":
-        raise HTTPException(status_code=400, detail=error.message)
-    if error.error_type == "InternalError":
-        raise HTTPException(status_code=500, detail=error.message)
-    raise HTTPException(status_code=500, detail="Unknown error occurred")
+        _raise_bad_request_error(error.message)
+    elif error.error_type == "InternalError":
+        _raise_internal_error(error.message)
+    else:
+        _raise_internal_error("Unknown error occurred")
 
 
 async def list_plugins_db(
     request: Request,
-    params: PluginListParams = PluginListParams(),
-    session: AsyncSession = Depends(get_db_session),
+    params: PluginListParams = PluginListParams(),  # noqa: B008
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> PluginListResponse:
     """List plugins using database repository.
 
@@ -331,16 +359,17 @@ async def list_plugins_db(
         return result.value
     error = result.error
     if error.error_type == "ValidationError":
-        raise HTTPException(status_code=400, detail=error.message)
-    if error.error_type == "InternalError":
-        raise HTTPException(status_code=500, detail=error.message)
-    raise HTTPException(status_code=500, detail="Unknown error occurred")
+        _raise_bad_request_error(error.message)
+    elif error.error_type == "InternalError":
+        _raise_internal_error(error.message)
+    else:
+        _raise_internal_error("Unknown error occurred")
 
 
 async def get_plugin_health_db(
     plugin_name: str,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> dict[str, Any]:
     """Get plugin health status using database repository.
 
@@ -381,12 +410,12 @@ async def get_plugin_health_db(
     if not plugin_result.is_success:
         error = plugin_result.error
         if error.error_type == "NotFoundError":
-            raise HTTPException(status_code=404, detail=error.message)
-        raise HTTPException(status_code=500, detail=error.message)
+            _raise_not_found_error(error.message)
+        _raise_internal_error(error.message)
 
     plugin = plugin_result.value
 
-    # TODO: Implement actual health checking logic
+    # TODO @admin: Implement actual health checking logic  # noqa: TD003,FIX002
     # For now, return basic health information based on status
     health_status = "healthy" if plugin.status == "installed" else "unknown"
 
@@ -400,11 +429,11 @@ async def get_plugin_health_db(
         "checks": {
             "installation": plugin.status == "installed",
             "configuration": bool(plugin.configuration),
-            "dependencies": True,  # TODO: Implement dependency checking
+            "dependencies": True,  # TODO @admin: deps  # noqa: TD003,FIX002
         },
         "metrics": {
-            "uptime": "unknown",  # TODO: Implement uptime tracking
-            "last_used": "unknown",  # TODO: Implement usage tracking
+            "uptime": "unknown",  # TODO @admin: uptime  # noqa: TD003,FIX002
+            "last_used": "unknown",  # TODO @admin: usage  # noqa: TD003,FIX002
         },
     }
 
