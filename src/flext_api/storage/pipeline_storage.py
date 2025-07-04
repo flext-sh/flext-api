@@ -16,7 +16,7 @@ class ThreadSafePipelineStorage:
     def create_pipeline(self, pipeline_data: dict[str, Any]) -> str:
         """Create a new pipeline and return its ID."""
         with self._lock:
-            pipeline_id = pipeline_data.get("id", str(uuid.uuid4()))
+            pipeline_id: str = pipeline_data.get("id") or str(uuid.uuid4())
             self._pipelines[pipeline_id] = {
                 **pipeline_data,
                 "id": pipeline_id,

@@ -11,19 +11,19 @@ class UserAPI(BaseModel):
     Represents an authenticated user with roles and authorization capabilities
     for secure API access and resource management.
 
-    Attributes
+    Attributes:
     ----------
         username: User identification string.
         roles: List of user roles for authorization.
         is_active: Whether the user account is active.
         is_REDACTED_LDAP_BIND_PASSWORD: Whether the user has REDACTED_LDAP_BIND_PASSWORDistrative privileges.
 
-    Methods
+    Methods:
     -------
         has_role(): Check if user has a specific role.
         is_authorized(): Check if user is authorized for required roles.
 
-    Examples
+    Examples:
     --------
         Basic usage of the class:
 
@@ -60,18 +60,20 @@ class LoginRequest(BaseModel):
     Captures user credentials for authentication processing with validation
     and security for secure login operations.
 
-    Attributes
+    Attributes:
     ----------
         email: User email for authentication.
         password: User password for authentication.
         device_info: Optional device information for tracking.
 
-    Examples
+    Examples:
     --------
         Basic usage of the class:
 
         ```python
-        request = LoginRequest(email="user@example.com", password="your_secure_password")
+        request = LoginRequest(
+            email="user@example.com", password="your_secure_password"
+        )
         ```
 
     """
@@ -90,7 +92,7 @@ class LoginResponse(BaseModel):
     Returns JWT authentication tokens and user profile information after
     successful login for secure API access.
 
-    Attributes
+    Attributes:
     ----------
         access_token: JWT access token for API authentication.
         refresh_token: JWT refresh token for token renewal.
@@ -101,7 +103,7 @@ class LoginResponse(BaseModel):
         permissions: User permissions for authorization.
         roles: User roles for RBAC.
 
-    Examples
+    Examples:
     --------
         Basic usage of the class:
 
@@ -136,13 +138,13 @@ class TokenData(BaseModel):
     Represents the decoded JWT token payload containing user identity and
     authorization information for request processing.
 
-    Attributes
+    Attributes:
     ----------
         username: User identification from token payload.
         roles: List of user roles extracted from token.
         exp: Token expiration timestamp.
 
-    Examples
+    Examples:
     --------
         Basic usage of the class:
 
@@ -215,14 +217,14 @@ class RegisterRequest(BaseModel):
     Captures user registration data with validation for creating new
     user accounts with appropriate security and data validation.
 
-    Attributes
+    Attributes:
     ----------
         username: Desired username for the new account.
         password: Secure password for account protection.
         email: Valid email address for account verification.
         role: Optional role to assign to user.
 
-    Examples
+    Examples:
     --------
         Basic usage of the class:
 
@@ -248,7 +250,7 @@ class RegisterResponse(BaseModel):
     Returns confirmation of successful user account creation with
     basic user information for registration confirmation.
 
-    Attributes
+    Attributes:
     ----------
         user_id: User unique identifier.
         username: Username.
@@ -257,7 +259,7 @@ class RegisterResponse(BaseModel):
         created_at: Account creation timestamp.
         message: Confirmation message for successful registration.
 
-    Examples
+    Examples:
     --------
         Basic usage of the class:
 

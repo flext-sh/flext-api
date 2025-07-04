@@ -8,11 +8,11 @@ import sys
 import threading
 import time
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.security import HTTPBearer
@@ -32,53 +32,122 @@ from pydantic import BaseModel, Field
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response as StarletteResponse
 
+# Import classes used for runtime functionality
 from flext_api.models.auth import (
-    LoginRequest,
     LoginResponse,
-    RegisterRequest,
     RegisterResponse,
     UserAPI,
 )
-
-# Import additional models for enterprise API endpoints
 from flext_api.models.pipeline import (
-    PipelineCreateRequest,
-    PipelineExecutionRequest,
     PipelineResponse,
     PipelineStatus,
-    PipelineUpdateRequest,
 )
-
-# Plugin-related imports
 from flext_api.models.plugin import (
-    PluginConfigRequest,
     PluginInstallationResponse,
-    PluginInstallRequest,
     PluginListResponse,
     PluginResponse,
     PluginStatsResponse,
-    PluginUninstallRequest,
-    PluginUpdateRequest,
 )
-
-# System management imports
 from flext_api.models.system import (
-    MaintenanceRequest,
     MaintenanceResponse,
     SystemAlertResponse,
-    SystemBackupRequest,
     SystemBackupResponse,
-    SystemConfigurationRequest,
-    SystemHealthCheckRequest,
     SystemHealthResponse,
     SystemMetricsResponse,
-    SystemRestoreRequest,
     SystemServiceResponse,
     SystemStatusResponse,
 )
+
+if TYPE_CHECKING:
+    from fastapi import Request
+    from starlette.middleware.base import RequestResponseEndpoint
+
+    from flext_api.models.auth import (
+        LoginRequest,
+        RegisterRequest,
+    )
+
+    # Import additional models for enterprise API endpoints
+    from flext_api.models.pipeline import (
+        PipelineCreateRequest,
+        PipelineExecutionRequest,
+        PipelineUpdateRequest,
+    )
+
+    # Plugin-related imports
+    from flext_api.models.plugin import (
+        PluginConfigRequest,
+        PluginInstallRequest,
+        PluginUninstallRequest,
+        PluginUpdateRequest,
+    )
+
+    # System management imports
+    from flext_api.models.system import (
+        MaintenanceRequest,
+        SystemBackupRequest,
+        SystemConfigurationRequest,
+        SystemHealthCheckRequest,
+        SystemRestoreRequest,
+    )
+
+
+# Helper functions for exception handling
+def _raise_bad_request_error(message: str) -> None:
+    """Raise HTTPException for bad request errors."""
+    domain_constants = get_domain_constants()
+    raise HTTPException(
+        status_code=domain_constants.HTTP_BAD_REQUEST,
+        detail=message,
+    )
+
+
+def _raise_unauthorized_error(message: str) -> None:
+    """Raise HTTPException for unauthorized errors."""
+    domain_constants = get_domain_constants()
+    raise HTTPException(
+        status_code=domain_constants.HTTP_UNAUTHORIZED,
+        detail=message,
+    )
+
+
+def _raise_not_found_error(message: str) -> None:
+    """Raise HTTPException for not found errors."""
+    domain_constants = get_domain_constants()
+    raise HTTPException(
+        status_code=domain_constants.HTTP_NOT_FOUND,
+        detail=message,
+    )
+
+
+def _raise_conflict_error(message: str) -> None:
+    """Raise HTTPException for conflict errors."""
+    domain_constants = get_domain_constants()
+    raise HTTPException(
+        status_code=domain_constants.HTTP_CONFLICT,
+        detail=message,
+    )
+
+
+def _raise_internal_error(message: str) -> None:
+    """Raise HTTPException for internal server errors."""
+    domain_constants = get_domain_constants()
+    raise HTTPException(
+        status_code=domain_constants.HTTP_INTERNAL_ERROR,
+        detail=message,
+    )
+
+
+def _raise_not_implemented_error(message: str) -> None:
+    """Raise HTTPException for not implemented errors."""
+    domain_constants = get_domain_constants()
+    raise HTTPException(
+        status_code=domain_constants.HTTP_NOT_IMPLEMENTED,
+        detail=message,
+    )
 
 
 class APIResponse(BaseModel):
@@ -153,6 +222,13 @@ class ThreadSafePipelineStorage:
     """
 
     def __init__(self, lock_timeout: float | None = None) -> None:
+        """Initialize thread-safe pipeline storage.
+
+        Args:
+        ----
+            lock_timeout: Timeout for lock acquisition (uses domain config if None)
+
+        """
         self._pipelines: dict[str, dict[str, Any]] = {}
         self._lock = threading.RLock()  # Reentrant lock for nested operations
         # Use domain configuration for lock timeout
@@ -485,7 +561,7 @@ class ThreadSafePipelineStorage:
             "lock_type": type(self._lock).__name__,
             "lock_timeout": self._lock_timeout,
             "current_thread": threading.current_thread().name,
-            "is_locked": self._lock._is_owned(),  # RLock specific
+            "is_locked": self._lock.locked(),  # Check if lock is held
             "storage_size": len(self._pipelines),
             "validation_timestamp": datetime.now(UTC).isoformat(),
         }
@@ -691,7 +767,7 @@ async def root() -> APIResponse:
     This endpoint provides basic information about the FLEXT Universal API
     including version, status, and available features.
 
-    Returns
+    Returns:
     -------
         APIResponse: Service information and status.
 
@@ -711,7 +787,7 @@ async def health() -> HealthResponse:
     This endpoint provides health status information without rate limiting
     to support monitoring systems and load balancer health checks.
 
-    Returns
+    Returns:
     -------
         HealthResponse: Service health status and environment information.
 
@@ -796,15 +872,11 @@ async def login(login_data: LoginRequest) -> LoginResponse:
     )
 
     if not auth_result:
-        raise HTTPException(
-            status_code=constants.HTTP_UNAUTHORIZED,
-            detail="Invalid username or password",
-        )
+        _raise_unauthorized_error("Invalid username or password")
 
     user, access_token, _ = auth_result
 
     # Access token already generated by authenticate_user
-    # access_token = jwt_service.create_access_token(user)
 
     # Convert domain user to API user model
     api_user = UserAPI(
@@ -816,14 +888,14 @@ async def login(login_data: LoginRequest) -> LoginResponse:
 
     return LoginResponse(
         access_token=access_token,
-        token_type="bearer",
+        token_type="bearer",  # noqa: S106
         expires_in=config.secrets.jwt_access_token_expire_minutes * 60,
         user=api_user,
     )
 
 
 @app.post("/auth/logout")
-async def logout(request: Request) -> APIResponse:
+async def logout(request: Request) -> APIResponse:  # noqa: ARG001
     """User logout endpoint with token revocation.
 
     Logs out the authenticated user and revokes the JWT token for
@@ -911,7 +983,7 @@ async def register(register_data: RegisterRequest) -> RegisterResponse:
         raise HTTPException(
             status_code=constants.HTTP_BAD_REQUEST,
             detail=f"User registration validation failed: {e!s}",
-        ) from e
+        )
     except (
         ConnectionError,
         TimeoutError,
@@ -920,7 +992,8 @@ async def register(register_data: RegisterRequest) -> RegisterResponse:
         TypeError,
         OSError,
     ) as e:
-        # Unexpected system error with proper logging - ZERO TOLERANCE specific exception types
+        # Unexpected system error with proper logging
+        # ZERO TOLERANCE specific exception types
         import structlog
 
         logger = structlog.get_logger()
@@ -931,10 +1004,9 @@ async def register(register_data: RegisterRequest) -> RegisterResponse:
             email=register_data.email,
             username=register_data.username,
         )
-        raise HTTPException(
-            status_code=constants.HTTP_INTERNAL_ERROR,
-            detail="User registration system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
-        ) from e
+        _raise_internal_error(
+            "User registration system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
+        )
 
     # Convert domain user to API user model
     api_user = UserAPI(
@@ -982,18 +1054,12 @@ async def create_pipeline(
     try:
         # Validate pipeline data
         if not pipeline_data.name or not pipeline_data.name.strip():
-            raise HTTPException(
-                status_code=constants.HTTP_BAD_REQUEST,
-                detail="Pipeline name is required",
-            )
+            _raise_bad_request_error("Pipeline name is required")
 
         # Get authenticated user from request state
         user = getattr(request.state, "user", None)
         if not user:
-            raise HTTPException(
-                status_code=constants.HTTP_UNAUTHORIZED,
-                detail="Authentication required",
-            )
+            _raise_unauthorized_error("Authentication required")
 
         # Generate pipeline ID and create pipeline data
         pipeline_id = str(uuid4())
@@ -1023,10 +1089,8 @@ async def create_pipeline(
         try:
             pipeline_storage.create_pipeline(pipeline_id, pipeline_record)
         except ValueError as e:
-            raise HTTPException(
-                status_code=constants.HTTP_CONFLICT,
-                detail=f"Pipeline creation conflict: {e}",
-            ) from e
+            _raise_conflict_error(
+                detail=f"Pipeline creation conflict: {e}")
 
         # Return comprehensive pipeline response
         return PipelineResponse(
@@ -1056,7 +1120,7 @@ async def create_pipeline(
         raise HTTPException(
             status_code=constants.HTTP_BAD_REQUEST,
             detail=f"Pipeline creation validation failed: {e!s}",
-        ) from e
+        )
     except (
         ConnectionError,
         TimeoutError,
@@ -1077,10 +1141,9 @@ async def create_pipeline(
             pipeline_name=pipeline_data.name,
             created_by=user.get("username", "unknown"),
         )
-        raise HTTPException(
-            status_code=constants.HTTP_INTERNAL_ERROR,
-            detail="Pipeline creation system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
-        ) from e
+        _raise_internal_error(
+            "Pipeline creation system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
+        )
 
 
 @app.get("/pipelines/{pipeline_id}", response_model=PipelineResponse)
@@ -1112,26 +1175,19 @@ async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:
         try:
             UUID(pipeline_id)
         except ValueError:
-            raise HTTPException(
-                status_code=constants.HTTP_BAD_REQUEST,
-                detail=f"Invalid pipeline ID format: {pipeline_id}",
-            )
+            _raise_bad_request_error(
+                detail=f"Invalid pipeline ID format: {pipeline_id}")
 
         # Get authenticated user from request state
         user = getattr(request.state, "user", None)
         if not user:
-            raise HTTPException(
-                status_code=constants.HTTP_UNAUTHORIZED,
-                detail="Authentication required",
-            )
+            _raise_unauthorized_error("Authentication required")
 
         # Thread-safe pipeline retrieval
         pipeline_data = pipeline_storage.get_pipeline(pipeline_id)
         if not pipeline_data:
-            raise HTTPException(
-                status_code=constants.HTTP_NOT_FOUND,
-                detail=f"Pipeline not found: {pipeline_id}",
-            )
+            _raise_not_found_error(
+                detail=f"Pipeline not found: {pipeline_id}")
 
         # Check user permissions (basic owner check)
         user.get("user_id") or user.get("sub")
@@ -1141,8 +1197,7 @@ async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:
         ):
             raise HTTPException(
                 status_code=constants.HTTP_FORBIDDEN,
-                detail="Access denied: insufficient permissions",
-            )
+"Access denied: insufficient permissions")
 
         # Return comprehensive pipeline response
         return PipelineResponse(
@@ -1187,10 +1242,9 @@ async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:
             pipeline_id=pipeline_id,
             requested_by=user.get("username", "unknown"),
         )
-        raise HTTPException(
-            status_code=constants.HTTP_INTERNAL_ERROR,
-            detail="Pipeline retrieval system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
-        ) from e
+        _raise_internal_error(
+            "Pipeline retrieval system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
+        )
 
 
 # Helper functions for update_pipeline complexity reduction
@@ -1203,7 +1257,7 @@ def _validate_pipeline_id(pipeline_id: str) -> None:
     except ValueError:
         raise HTTPException(
             status_code=constants.HTTP_BAD_REQUEST,
-            detail="Invalid pipeline ID format",
+            "Invalid pipeline ID format",
         )
 
 
@@ -1213,7 +1267,7 @@ def _get_authenticated_user(request: Request) -> dict[str, Any]:
     if not user:
         raise HTTPException(
             status_code=constants.HTTP_UNAUTHORIZED,
-            detail="Authentication required",
+            "Authentication required",
         )
     return user
 
@@ -1224,7 +1278,7 @@ def _get_pipeline_record(pipeline_id: str) -> dict[str, Any]:
     if not pipeline_record:
         raise HTTPException(
             status_code=constants.HTTP_NOT_FOUND,
-            detail="Pipeline not found",
+            "Pipeline not found",
         )
     return pipeline_record
 
@@ -1239,7 +1293,7 @@ def _verify_pipeline_access(
     if pipeline_record["created_by"] != username and user_role != "REDACTED_LDAP_BIND_PASSWORD":
         raise HTTPException(
             status_code=constants.HTTP_FORBIDDEN,
-            detail="Access denied: insufficient permissions",
+            "Access denied: insufficient permissions",
         )
 
 
@@ -1248,7 +1302,7 @@ def _check_pipeline_update_preconditions(pipeline_record: dict[str, Any]) -> Non
     if pipeline_record.get("status") == PipelineStatus.RUNNING:
         raise HTTPException(
             status_code=constants.HTTP_CONFLICT,
-            detail="Cannot update pipeline: execution in progress",
+            "Cannot update pipeline: execution in progress",
         )
 
 
@@ -1264,10 +1318,8 @@ def _update_pipeline_properties(
     # Update only provided fields with validation
     if pipeline_data.name is not None:
         if not pipeline_data.name.strip():
-            raise HTTPException(
-                status_code=constants.HTTP_BAD_REQUEST,
-                detail="Pipeline name cannot be empty",
-            )
+            _raise_bad_request_error(
+"Pipeline name cannot be empty")
         pipeline_record["name"] = pipeline_data.name
 
     # Bulk update for other fields
@@ -1351,18 +1403,15 @@ async def update_pipeline(
         # Step 4: Thread-safe atomic pipeline update
         success = pipeline_storage.update_pipeline(pipeline_id, pipeline_record)
         if not success:
-            raise HTTPException(
-                status_code=constants.HTTP_NOT_FOUND,
-                detail="Pipeline not found during update",
-            )
+            _raise_not_found_error(
+"Pipeline not found during update")
 
         # Get updated pipeline for response
         updated_pipeline = pipeline_storage.get_pipeline(pipeline_id)
         if not updated_pipeline:
             raise HTTPException(
                 status_code=constants.HTTP_INTERNAL_ERROR,
-                detail="Pipeline update succeeded but retrieval failed",
-            )
+"Pipeline update succeeded but retrieval failed")
         return _create_pipeline_response(updated_pipeline)
 
     except HTTPException:
@@ -1372,7 +1421,7 @@ async def update_pipeline(
         raise HTTPException(
             status_code=constants.HTTP_BAD_REQUEST,
             detail=f"Pipeline update validation failed: {e!s}",
-        ) from e
+        )
     except (
         ConnectionError,
         TimeoutError,
@@ -1393,10 +1442,9 @@ async def update_pipeline(
             pipeline_id=pipeline_id,
             updated_by=user.get("username", "unknown"),
         )
-        raise HTTPException(
-            status_code=constants.HTTP_INTERNAL_ERROR,
-            detail="Pipeline update system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
-        ) from e
+        _raise_internal_error(
+            "Pipeline update system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
+        )
 
 
 @app.delete("/pipelines/{pipeline_id}")
@@ -1426,26 +1474,19 @@ async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
         try:
             uuid4(pipeline_id) if "-" in pipeline_id else None
         except ValueError:
-            raise HTTPException(
-                status_code=constants.HTTP_BAD_REQUEST,
-                detail="Invalid pipeline ID format",
-            )
+            _raise_bad_request_error(
+"Invalid pipeline ID format")
 
         # Get authenticated user from request state
         user = getattr(request.state, "user", None)
         if not user:
-            raise HTTPException(
-                status_code=constants.HTTP_UNAUTHORIZED,
-                detail="Authentication required",
-            )
+            _raise_unauthorized_error("Authentication required")
 
         # Thread-safe pipeline retrieval for deletion
         pipeline_record = pipeline_storage.get_pipeline(pipeline_id)
         if not pipeline_record:
-            raise HTTPException(
-                status_code=constants.HTTP_NOT_FOUND,
-                detail="Pipeline not found",
-            )
+            _raise_not_found_error(
+"Pipeline not found")
 
         # Verify user ownership (basic security)
         username = user.get("username", "")
@@ -1453,15 +1494,12 @@ async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
         if pipeline_record["created_by"] != username and user_role != "REDACTED_LDAP_BIND_PASSWORD":
             raise HTTPException(
                 status_code=constants.HTTP_FORBIDDEN,
-                detail="Access denied: insufficient permissions",
-            )
+"Access denied: insufficient permissions")
 
         # Safety check: prevent deletion of running pipelines
         if pipeline_record.get("status") == PipelineStatus.RUNNING:
-            raise HTTPException(
-                status_code=constants.HTTP_CONFLICT,
-                detail="Cannot delete pipeline: execution in progress",
-            )
+            _raise_conflict_error(
+"Cannot delete pipeline: execution in progress")
 
         # Create audit trail record (in production, this would go to audit database)
         pipeline_name = pipeline_record.get("name", "unknown")
@@ -1473,8 +1511,7 @@ async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
         if not success:
             raise HTTPException(
                 status_code=constants.HTTP_INTERNAL_ERROR,
-                detail="Pipeline deletion failed - pipeline may have been deleted by another operation",
-            )
+"Pipeline deletion failed - pipeline may have been deleted by another operation")
 
         # Return success response
         return APIResponse(
@@ -1493,7 +1530,7 @@ async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
         raise HTTPException(
             status_code=constants.HTTP_BAD_REQUEST,
             detail=f"Pipeline deletion validation failed: {e!s}",
-        ) from e
+        )
     except (
         ConnectionError,
         TimeoutError,
@@ -1514,10 +1551,9 @@ async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
             pipeline_id=pipeline_id,
             deleted_by=user.get("username", "unknown"),
         )
-        raise HTTPException(
-            status_code=constants.HTTP_INTERNAL_ERROR,
-            detail="Pipeline deletion system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
-        ) from e
+        _raise_internal_error(
+            "Pipeline deletion system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
+        )
 
 
 @app.post("/pipelines/{pipeline_id}/execute")
@@ -1552,26 +1588,19 @@ async def execute_pipeline(
         try:
             uuid4(pipeline_id) if "-" in pipeline_id else None
         except ValueError:
-            raise HTTPException(
-                status_code=constants.HTTP_BAD_REQUEST,
-                detail="Invalid pipeline ID format",
-            )
+            _raise_bad_request_error(
+"Invalid pipeline ID format")
 
         # Get authenticated user from request state
         user = getattr(request.state, "user", None)
         if not user:
-            raise HTTPException(
-                status_code=constants.HTTP_UNAUTHORIZED,
-                detail="Authentication required",
-            )
+            _raise_unauthorized_error("Authentication required")
 
         # Thread-safe pipeline retrieval for execution
         pipeline_record = pipeline_storage.get_pipeline(pipeline_id)
         if not pipeline_record:
-            raise HTTPException(
-                status_code=constants.HTTP_NOT_FOUND,
-                detail="Pipeline not found",
-            )
+            _raise_not_found_error(
+"Pipeline not found")
 
         # Verify user has execution permissions
         username = user.get("username", "")
@@ -1579,16 +1608,13 @@ async def execute_pipeline(
         if pipeline_record["created_by"] != username and user_role != "REDACTED_LDAP_BIND_PASSWORD":
             raise HTTPException(
                 status_code=constants.HTTP_FORBIDDEN,
-                detail="Access denied: insufficient permissions to execute pipeline",
-            )
+"Access denied: insufficient permissions to execute pipeline")
 
         # Check pipeline is in executable state
         current_status = pipeline_record.get("status", PipelineStatus.PENDING)
         if current_status == PipelineStatus.RUNNING:
-            raise HTTPException(
-                status_code=constants.HTTP_CONFLICT,
-                detail="Pipeline is already running",
-            )
+            _raise_conflict_error(
+"Pipeline is already running")
 
         # Generate execution tracking information
         execution_id = str(uuid4())
@@ -1608,16 +1634,14 @@ async def execute_pipeline(
         if not success:
             raise HTTPException(
                 status_code=constants.HTTP_INTERNAL_ERROR,
-                detail="Failed to update pipeline status for execution",
-            )
+"Failed to update pipeline status for execution")
 
         # Get updated pipeline for response
         updated_pipeline = pipeline_storage.get_pipeline(pipeline_id)
         if not updated_pipeline:
             raise HTTPException(
                 status_code=constants.HTTP_INTERNAL_ERROR,
-                detail="Pipeline execution update succeeded but retrieval failed",
-            )
+"Pipeline execution update succeeded but retrieval failed")
         pipeline_record = updated_pipeline
 
         # Simulate execution submission (in production, this would integrate with Meltano)
@@ -1646,7 +1670,7 @@ async def execute_pipeline(
         raise HTTPException(
             status_code=constants.HTTP_BAD_REQUEST,
             detail=f"Pipeline execution validation failed: {e!s}",
-        ) from e
+        )
     except (
         ConnectionError,
         TimeoutError,
@@ -1668,10 +1692,9 @@ async def execute_pipeline(
             executed_by=user.get("username", "unknown"),
             execution_environment=execution_data.environment,
         )
-        raise HTTPException(
-            status_code=constants.HTTP_INTERNAL_ERROR,
-            detail="Pipeline execution system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
-        ) from e
+        _raise_internal_error(
+            "Pipeline execution system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
+        )
 
 
 @app.get("/pipelines")
@@ -1703,10 +1726,7 @@ async def list_pipelines(
         # Get authenticated user from request state
         user = getattr(request.state, "user", None)
         if not user:
-            raise HTTPException(
-                status_code=constants.HTTP_UNAUTHORIZED,
-                detail="Authentication required",
-            )
+            _raise_unauthorized_error("Authentication required")
 
         # Parameters are already validated by Pydantic model
 
@@ -1824,10 +1844,9 @@ async def list_pipelines(
                 "page_size": params.page_size,
             },
         )
-        raise HTTPException(
-            status_code=constants.HTTP_INTERNAL_ERROR,
-            detail="Pipeline listing system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
-        ) from e
+        _raise_internal_error(
+            "Pipeline listing system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
+        )
 
 
 # --- PLUGIN MANAGEMENT ENDPOINTS ---
@@ -1967,17 +1986,12 @@ async def update_plugin_config(
         # Get authenticated user from request state
         user = getattr(request.state, "user", None)
         if not user:
-            raise HTTPException(
-                status_code=constants.HTTP_UNAUTHORIZED,
-                detail="Authentication required",
-            )
+            _raise_unauthorized_error("Authentication required")
 
         # Validate plugin exists - REAL IMPLEMENTATION
         if not plugin_name or not plugin_name.strip():
-            raise HTTPException(
-                status_code=constants.HTTP_BAD_REQUEST,
-                detail="Plugin name is required",
-            )
+            _raise_bad_request_error(
+"Plugin name is required")
 
         # Basic plugin validation (real check would query Meltano)
         valid_plugins = [
@@ -1988,17 +2002,13 @@ async def update_plugin_config(
             "dbt-postgres",
         ]
         if plugin_name not in valid_plugins:
-            raise HTTPException(
-                status_code=constants.HTTP_NOT_FOUND,
-                detail=f"Plugin '{plugin_name}' not found or not supported",
-            )
+            _raise_not_found_error(
+                detail=f"Plugin '{plugin_name}' not found or not supported")
 
         # Validate configuration schema - REAL VALIDATION
         if not isinstance(config_data.configuration, dict):
-            raise HTTPException(
-                status_code=constants.HTTP_BAD_REQUEST,
-                detail="Plugin configuration must be a valid dictionary",
-            )
+            _raise_bad_request_error(
+"Plugin configuration must be a valid dictionary")
 
         # Return successful configuration response - REAL RESPONSE
         from flext_api.models.plugin import PluginResponse
@@ -2036,10 +2046,9 @@ async def update_plugin_config(
             plugin_name=plugin_name,
             configured_by=user.get("username", "unknown"),
         )
-        raise HTTPException(
-            status_code=constants.HTTP_INTERNAL_ERROR,
-            detail="Plugin configuration system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
-        ) from e
+        _raise_internal_error(
+            "Plugin configuration system error - REDACTED_LDAP_BIND_PASSWORDistrators have been notified",
+        )
 
 
 @app.put("/plugins/{plugin_name}/update")
@@ -2076,9 +2085,8 @@ async def update_plugin(
     # - Verify update success and plugin health
     # - Return update operation response
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="Plugin update endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "Plugin update endpoint not yet implemented",
     )
 
 
@@ -2116,9 +2124,8 @@ async def uninstall_plugin(
     # - Clean up plugin data and configurations
     # - Return confirmation
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="Plugin uninstallation endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "Plugin uninstallation endpoint not yet implemented",
     )
 
 
@@ -2190,9 +2197,8 @@ async def check_plugin_health(plugin_name: str, request: Request) -> dict[str, A
     # - Collect performance metrics
     # - Return comprehensive health report
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="Plugin health check endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "Plugin health check endpoint not yet implemented",
     )
 
 
@@ -2227,9 +2233,8 @@ async def get_system_status(request: Request) -> SystemStatusResponse:
     # - Calculate performance scores and health indicators
     # - Return comprehensive status response
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System status endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System status endpoint not yet implemented",
     )
 
 
@@ -2260,9 +2265,8 @@ async def get_system_services(request: Request) -> list[SystemServiceResponse]:
     # - Load configuration and dependency information
     # - Return comprehensive service list
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System services endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System services endpoint not yet implemented",
     )
 
 
@@ -2297,9 +2301,8 @@ async def get_system_service(
     # - Load service configuration and dependencies
     # - Return comprehensive service information
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System service detail endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System service detail endpoint not yet implemented",
     )
 
 
@@ -2335,9 +2338,8 @@ async def start_maintenance(
     # - Track maintenance progress and status
     # - Return maintenance operation response
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System maintenance initiation endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System maintenance initiation endpoint not yet implemented",
     )
 
 
@@ -2372,9 +2374,8 @@ async def get_maintenance_status(
     # - Calculate progress percentage and estimated completion
     # - Return detailed maintenance status
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="Maintenance status endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "Maintenance status endpoint not yet implemented",
     )
 
 
@@ -2406,9 +2407,8 @@ async def stop_maintenance(maintenance_id: str, request: Request) -> APIResponse
     # - Update maintenance status and send notifications
     # - Return stop confirmation
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="Maintenance stop endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "Maintenance stop endpoint not yet implemented",
     )
 
 
@@ -2444,9 +2444,8 @@ async def create_system_backup(
     # - Track backup progress and completion status
     # - Return backup operation response
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System backup creation endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System backup creation endpoint not yet implemented",
     )
 
 
@@ -2487,9 +2486,8 @@ async def list_system_backups(
     # - Load backup metadata and status information
     # - Return paginated backup response
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System backup listing endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System backup listing endpoint not yet implemented",
     )
 
 
@@ -2521,9 +2519,8 @@ async def get_system_backup(backup_id: str, request: Request) -> SystemBackupRes
     # - Calculate restore readiness and requirements
     # - Return comprehensive backup details
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System backup detail endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System backup detail endpoint not yet implemented",
     )
 
 
@@ -2561,9 +2558,8 @@ async def restore_system_backup(
     # - Verify restore success and system functionality
     # - Return restore operation confirmation
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System restore endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System restore endpoint not yet implemented",
     )
 
 
@@ -2599,9 +2595,8 @@ async def perform_health_check(
     # - Generate recommendations and critical issue alerts
     # - Return comprehensive health assessment
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System health check endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System health check endpoint not yet implemented",
     )
 
 
@@ -2642,9 +2637,8 @@ async def get_system_alerts(
     # - Load alert metadata and affected services
     # - Return paginated alert response
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System alerts endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System alerts endpoint not yet implemented",
     )
 
 
@@ -2676,9 +2670,8 @@ async def acknowledge_alert(alert_id: str, request: Request) -> APIResponse:
     # - Send notifications about alert acknowledgment
     # - Return acknowledgment confirmation
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="Alert acknowledgment endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "Alert acknowledgment endpoint not yet implemented",
     )
 
 
@@ -2710,9 +2703,8 @@ async def resolve_alert(alert_id: str, request: Request) -> APIResponse:
     # - Send notifications about alert resolution
     # - Return resolution confirmation
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="Alert resolution endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "Alert resolution endpoint not yet implemented",
     )
 
 
@@ -2750,9 +2742,8 @@ async def get_system_metrics(
     # - Detect anomalies and performance trends
     # - Return comprehensive metrics response
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System metrics endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System metrics endpoint not yet implemented",
     )
 
 
@@ -2788,9 +2779,8 @@ async def update_system_configuration(
     # - Verify configuration application success
     # - Return update confirmation with rollback info
 
-    raise HTTPException(
-        status_code=constants.HTTP_NOT_IMPLEMENTED,
-        detail="System configuration update endpoint not yet implemented",
+    _raise_not_implemented_error(
+        "System configuration update endpoint not yet implemented",
     )
 
 

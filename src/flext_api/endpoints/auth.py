@@ -25,8 +25,8 @@ async def login(login_data: LoginRequest) -> LoginResponse:
     """
     # Implementation placeholder - will be connected to actual auth service
     return LoginResponse(
-        access_token="placeholder_token",
-        token_type="bearer",
+        access_token="placeholder_token",  # noqa: S106
+        token_type="bearer",  # noqa: S106
         expires_in=3600,
         user=UserAPI(
             username=login_data.username,
@@ -54,7 +54,7 @@ async def register(register_data: RegisterRequest) -> RegisterResponse:
 
 
 @auth_router.post("/logout")
-async def logout(request: Request) -> APIResponse:
+async def logout(request: Request) -> APIResponse:  # noqa: ARG001  # noqa: ARG001
     """User logout endpoint with token revocation."""
     return APIResponse(
         message="Logged out successfully",
@@ -63,7 +63,7 @@ async def logout(request: Request) -> APIResponse:
 
 
 @auth_router.get("/profile")
-async def get_profile(request: Request) -> UserAPI:
+async def get_profile(request: Request) -> UserAPI:  # noqa: ARG001  # noqa: ARG001
     """Get authenticated user profile information."""
     # Implementation placeholder - will extract from JWT token
     return UserAPI(

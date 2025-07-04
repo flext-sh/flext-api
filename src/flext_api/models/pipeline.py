@@ -7,12 +7,11 @@ Follows enterprise patterns with Python 3.13 type system.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.pydantic_base import DomainBaseModel
-from pydantic import Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -60,7 +59,7 @@ class RefreshMode(StrEnum):
 # --- Request Models ---
 
 
-class PipelineCreateRequest(DomainBaseModel):
+class PipelineCreateRequest(BaseModel):
     """Request model for creating new pipelines."""
 
     name: str = Field(
@@ -129,7 +128,7 @@ class PipelineCreateRequest(DomainBaseModel):
         return [tag.lower().strip() for tag in v if tag.strip()]
 
 
-class PipelineUpdateRequest(DomainBaseModel):
+class PipelineUpdateRequest(BaseModel):
     """Request model for updating existing pipelines."""
 
     name: str | None = Field(
@@ -199,7 +198,7 @@ class PipelineUpdateRequest(DomainBaseModel):
         return [tag.lower().strip() for tag in v if tag.strip()]
 
 
-class PipelineExecutionRequest(DomainBaseModel):
+class PipelineExecutionRequest(BaseModel):
     """Request model for pipeline execution."""
 
     refresh_mode: RefreshMode = Field(
@@ -237,7 +236,7 @@ class PipelineExecutionRequest(DomainBaseModel):
     )
 
 
-class PipelineExecutionStopRequest(DomainBaseModel):
+class PipelineExecutionStopRequest(BaseModel):
     """Request model for stopping pipeline execution."""
 
     force: bool = Field(
@@ -254,7 +253,7 @@ class PipelineExecutionStopRequest(DomainBaseModel):
 # --- Response Models ---
 
 
-class PipelineResponse(DomainBaseModel):
+class PipelineResponse(BaseModel):
     """Response model for pipeline information."""
 
     pipeline_id: UUID = Field(description="Unique pipeline identifier")
@@ -299,7 +298,7 @@ class PipelineResponse(DomainBaseModel):
     )
 
 
-class PipelineExecutionResponse(DomainBaseModel):
+class PipelineExecutionResponse(BaseModel):
     """Response model for pipeline execution information."""
 
     execution_id: UUID = Field(description="Unique execution identifier")
@@ -330,7 +329,7 @@ class PipelineExecutionResponse(DomainBaseModel):
     created_by: str | None = Field(description="Execution initiator")
 
 
-class PipelineListResponse(DomainBaseModel):
+class PipelineListResponse(BaseModel):
     """Response model for pipeline list operations."""
 
     pipelines: list[PipelineResponse] = Field(description="List of pipelines")
@@ -341,7 +340,7 @@ class PipelineListResponse(DomainBaseModel):
     has_previous: bool = Field(description="Whether there are previous pages")
 
 
-class PipelineExecutionListResponse(DomainBaseModel):
+class PipelineExecutionListResponse(BaseModel):
     """Response model for pipeline execution list operations."""
 
     executions: list[PipelineExecutionResponse] = Field(
@@ -354,7 +353,7 @@ class PipelineExecutionListResponse(DomainBaseModel):
     has_previous: bool = Field(description="Whether there are previous pages")
 
 
-class PipelineStatsResponse(DomainBaseModel):
+class PipelineStatsResponse(BaseModel):
     """Response model for pipeline statistics."""
 
     total_pipelines: int = Field(description="Total number of pipelines")
@@ -376,7 +375,7 @@ class PipelineStatsResponse(DomainBaseModel):
 # --- Search and Filter Models ---
 
 
-class PipelineFilterRequest(DomainBaseModel):
+class PipelineFilterRequest(BaseModel):
     """Request model for filtering pipelines."""
 
     pipeline_type: PipelineType | None = Field(
@@ -433,7 +432,7 @@ class PipelineFilterRequest(DomainBaseModel):
     )
 
 
-class PipelineExecutionFilterRequest(DomainBaseModel):
+class PipelineExecutionFilterRequest(BaseModel):
     """Request model for filtering pipeline executions."""
 
     pipeline_id: UUID | None = Field(
@@ -485,7 +484,7 @@ class PipelineExecutionFilterRequest(DomainBaseModel):
 # --- Legacy Models for Backward Compatibility ---
 
 
-class RunPipelineRequest(DomainBaseModel):
+class RunPipelineRequest(BaseModel):
     """Legacy model for pipeline execution - maps to PipelineExecutionRequest."""
 
     full_refresh: bool = Field(
@@ -507,7 +506,7 @@ class RunPipelineRequest(DomainBaseModel):
         )
 
 
-class ExecutionResponse(DomainBaseModel):
+class ExecutionResponse(BaseModel):
     """Legacy model for execution response - maps to PipelineExecutionResponse."""
 
     id: str = Field(description="The unique identifier of the execution")
@@ -558,7 +557,7 @@ class ExecutionResponse(DomainBaseModel):
             id=str(response.execution_id),
             pipeline_id=str(response.pipeline_id),
             status=response.status.value,
-            started_at=response.started_at or datetime.now(),
+            started_at=response.started_at or datetime.now(UTC),
             finished_at=response.completed_at,
             duration_seconds=duration_seconds,
             error_message=(

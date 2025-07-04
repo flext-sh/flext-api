@@ -19,10 +19,10 @@ enterprise-grade persistent database functionality.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, NoReturn
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException
 from flext_core.config.domain_config import get_config
 from flext_core.infrastructure.persistence.pipeline_repository import (
     DatabasePipelineRepository,
@@ -32,7 +32,30 @@ from pydantic import BaseModel, Field
 
 from flext_api.models.auth import APIResponse
 
+
+# Helper functions for exception handling
+def _raise_bad_request_error(message: str) -> NoReturn:
+    """Raise HTTPException for bad request errors."""
+    raise HTTPException(status_code=400, detail=message)
+
+
+def _raise_unauthorized_error(message: str) -> NoReturn:
+    """Raise HTTPException for unauthorized errors."""
+    raise HTTPException(status_code=401, detail=message)
+
+
+def _raise_not_found_error(message: str) -> NoReturn:
+    """Raise HTTPException for not found errors."""
+    raise HTTPException(status_code=404, detail=message)
+
+
+def _raise_internal_error(message: str) -> NoReturn:
+    """Raise HTTPException for internal server errors."""
+    raise HTTPException(status_code=500, detail=message)
+
+
 if TYPE_CHECKING:
+    from fastapi import Request
     from sqlalchemy.ext.asyncio import AsyncSession
 
     from flext_api.models.pipeline import (
@@ -66,7 +89,7 @@ class PipelineListParams(BaseModel):
 async def create_pipeline_db(
     pipeline_data: PipelineCreateRequest,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> PipelineResponse:
     """Create a new pipeline using database repository.
 
@@ -108,16 +131,17 @@ async def create_pipeline_db(
         return result.value
     error = result.error
     if error.error_type == "ValidationError":
-        raise HTTPException(status_code=400, detail=error.message)
-    if error.error_type == "InternalError":
-        raise HTTPException(status_code=500, detail=error.message)
-    raise HTTPException(status_code=500, detail="Unknown error occurred")
+        _raise_bad_request_error(error.message)
+    elif error.error_type == "InternalError":
+        _raise_internal_error(error.message)
+    else:
+        _raise_internal_error("Unknown error occurred")
 
 
 async def get_pipeline_db(
     pipeline_id: str,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> PipelineResponse:
     """Retrieve a pipeline using database repository.
 
@@ -143,10 +167,7 @@ async def get_pipeline_db(
     try:
         uuid_id = UUID(pipeline_id)
     except ValueError:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid pipeline ID format",
-        )
+        _raise_bad_request_error("Invalid pipeline ID format")
 
     # Get authenticated user from request state
     user = getattr(request.state, "user", None)
@@ -169,19 +190,19 @@ async def get_pipeline_db(
         return result.value
     error = result.error
     if error.error_type == "NotFoundError":
-        raise HTTPException(status_code=404, detail=error.message)
+        _raise_not_found_error(error.message)
     if error.error_type == "ValidationError":
-        raise HTTPException(status_code=400, detail=error.message)
+        _raise_bad_request_error(error.message)
     if error.error_type == "InternalError":
-        raise HTTPException(status_code=500, detail=error.message)
-    raise HTTPException(status_code=500, detail="Unknown error occurred")
+        _raise_internal_error(error.message)
+    _raise_internal_error("Unknown error occurred")
 
 
 async def update_pipeline_db(
     pipeline_id: str,
     pipeline_data: PipelineUpdateRequest,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> PipelineResponse:
     """Update an existing pipeline using database repository.
 
@@ -208,10 +229,7 @@ async def update_pipeline_db(
     try:
         uuid_id = UUID(pipeline_id)
     except ValueError:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid pipeline ID format",
-        )
+        _raise_bad_request_error("Invalid pipeline ID format")
 
     # Get authenticated user from request state
     user = getattr(request.state, "user", None)
@@ -235,18 +253,18 @@ async def update_pipeline_db(
         return result.value
     error = result.error
     if error.error_type == "NotFoundError":
-        raise HTTPException(status_code=404, detail=error.message)
+        _raise_not_found_error(error.message)
     if error.error_type == "ValidationError":
-        raise HTTPException(status_code=400, detail=error.message)
+        _raise_bad_request_error(error.message)
     if error.error_type == "InternalError":
-        raise HTTPException(status_code=500, detail=error.message)
-    raise HTTPException(status_code=500, detail="Unknown error occurred")
+        _raise_internal_error(error.message)
+    _raise_internal_error("Unknown error occurred")
 
 
 async def delete_pipeline_db(
     pipeline_id: str,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> APIResponse:
     """Delete a pipeline using database repository.
 
@@ -272,10 +290,7 @@ async def delete_pipeline_db(
     try:
         uuid_id = UUID(pipeline_id)
     except ValueError:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid pipeline ID format",
-        )
+        _raise_bad_request_error("Invalid pipeline ID format")
 
     # Get authenticated user from request state
     user = getattr(request.state, "user", None)
@@ -305,18 +320,18 @@ async def delete_pipeline_db(
         )
     error = result.error
     if error.error_type == "NotFoundError":
-        raise HTTPException(status_code=404, detail=error.message)
+        _raise_not_found_error(error.message)
     if error.error_type == "ValidationError":
-        raise HTTPException(status_code=400, detail=error.message)
+        _raise_bad_request_error(error.message)
     if error.error_type == "InternalError":
-        raise HTTPException(status_code=500, detail=error.message)
-    raise HTTPException(status_code=500, detail="Unknown error occurred")
+        _raise_internal_error(error.message)
+    _raise_internal_error("Unknown error occurred")
 
 
 async def list_pipelines_db(
     request: Request,
-    params: PipelineListParams = PipelineListParams(),
-    session: AsyncSession = Depends(get_db_session),
+    params: PipelineListParams = PipelineListParams(),  # noqa: B008
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> dict[str, Any]:
     """List pipelines using database repository.
 
@@ -364,17 +379,18 @@ async def list_pipelines_db(
         return result.value
     error = result.error
     if error.error_type == "ValidationError":
-        raise HTTPException(status_code=400, detail=error.message)
-    if error.error_type == "InternalError":
-        raise HTTPException(status_code=500, detail=error.message)
-    raise HTTPException(status_code=500, detail="Unknown error occurred")
+        _raise_bad_request_error(error.message)
+    elif error.error_type == "InternalError":
+        _raise_internal_error(error.message)
+    else:
+        _raise_internal_error("Unknown error occurred")
 
 
 async def execute_pipeline_db(
     pipeline_id: str,
     execution_data: PipelineExecutionRequest,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> dict[str, str]:
     """Execute pipeline with database-backed state management.
 
@@ -401,10 +417,7 @@ async def execute_pipeline_db(
     try:
         uuid_id = UUID(pipeline_id)
     except ValueError:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid pipeline ID format",
-        )
+        _raise_bad_request_error("Invalid pipeline ID format")
 
     # Get authenticated user from request state
     user = getattr(request.state, "user", None)
@@ -425,12 +438,13 @@ async def execute_pipeline_db(
     if not pipeline_result.is_success:
         error = pipeline_result.error
         if error.error_type == "NotFoundError":
-            raise HTTPException(status_code=404, detail=error.message)
-        raise HTTPException(status_code=500, detail=error.message)
+            _raise_not_found_error(error.message)
+        _raise_internal_error(error.message)
 
     pipeline = pipeline_result.value
 
-    # TODO: Implement actual execution logic with Meltano integration
+    # TODO @REDACTED_LDAP_BIND_PASSWORD: Implement actual execution logic  # noqa: TD003,FIX002
+    # Issue: https://github.com/enterprise/flext-api/issues/123
     # For now, return execution tracking information
     from datetime import UTC, datetime
     from uuid import uuid4

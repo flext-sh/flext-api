@@ -1,8 +1,8 @@
 """Enterprise Pipeline Execution API Endpoints with Meltano Integration.
 
-This module provides production-ready pipeline execution API endpoints with comprehensive
-Meltano integration including job management, execution monitoring, state management,
-and enterprise security features.
+This module provides production-ready pipeline execution API endpoints with
+comprehensive Meltano integration including job management, execution monitoring,
+state management, and enterprise security features.
 
 ENTERPRISE PIPELINE EXECUTION API FEATURES:
 ✅ Complete pipeline execution with Meltano integration and monitoring
@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from flext_core.config.domain_config import get_config
 from flext_core.infrastructure.persistence.session_manager import get_db_session
 from flext_meltano.execution_engine import MeltanoPipelineExecutor
@@ -30,12 +30,14 @@ from pydantic import BaseModel, Field
 
 from flext_api.models.pipeline import (
     PipelineExecutionListResponse,
-    PipelineExecutionRequest,
     PipelineExecutionResponse,
 )
 
 if TYPE_CHECKING:
+    from fastapi import Request
     from sqlalchemy.ext.asyncio import AsyncSession
+
+    from flext_api.models.pipeline import PipelineExecutionRequest
 
 # Configuration
 config = get_config()
@@ -67,6 +69,60 @@ class ExecutionListParams(BaseModel):
     )
 
 
+# Helper functions for exception handling
+def _raise_authentication_required_error() -> None:
+    """Raise HTTPException for authentication required."""
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Authentication required for pipeline execution",
+    )
+
+
+def _raise_validation_error(message: str) -> None:
+    """Raise HTTPException for validation errors."""
+    raise HTTPException(status_code=400, detail=message)
+
+
+def _raise_not_found_error(message: str) -> None:
+    """Raise HTTPException for not found errors."""
+    raise HTTPException(status_code=404, detail=message)
+
+
+def _raise_internal_error(message: str) -> None:
+    """Raise HTTPException for internal errors."""
+    raise HTTPException(status_code=500, detail=message)
+
+
+def _raise_execution_error(message: str) -> None:
+    """Raise HTTPException for execution errors."""
+    raise HTTPException(status_code=500, detail=f"Pipeline execution failed: {message}")
+
+
+def _raise_forbidden_error(message: str) -> None:
+    """Raise HTTPException for forbidden errors."""
+    raise HTTPException(status_code=403, detail=message)
+
+
+def _raise_status_error(message: str) -> None:
+    """Raise HTTPException for status errors."""
+    raise HTTPException(status_code=500, detail=message)
+
+
+def _raise_cancellation_error(message: str) -> None:
+    """Raise HTTPException for cancellation errors."""
+    raise HTTPException(status_code=500, detail=message)
+
+
+def _raise_log_error(message: str) -> None:
+    """Raise HTTPException for log errors."""
+    raise HTTPException(status_code=500, detail=message)
+
+
+def _raise_listing_error(message: str) -> None:
+    """Raise HTTPException for listing errors."""
+    raise HTTPException(status_code=500, detail=message)
+
+
 # Create router
 execution_router = APIRouter(prefix="/api/pipelines", tags=["pipeline-execution"])
 
@@ -75,15 +131,12 @@ async def get_current_user(request: Request) -> dict[str, Any]:
     """Get current authenticated user from request context."""
     user = getattr(request.state, "user", None)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required for pipeline execution",
-        )
+        _raise_authentication_required_error()
     return user
 
 
 async def get_pipeline_executor(
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
 ) -> MeltanoPipelineExecutor:
     """Get Meltano pipeline executor instance."""
     return MeltanoPipelineExecutor(db_session=session)
@@ -96,7 +149,7 @@ async def get_pipeline_executor(
 async def execute_pipeline(
     pipeline_id: str,
     execution_request: PipelineExecutionRequest,
-    request: Request,
+    request: Request,  # noqa: ARG001
     current_user: Annotated[dict[str, Any], Depends(get_current_user)],
     executor: Annotated[MeltanoPipelineExecutor, Depends(get_pipeline_executor)],
 ) -> PipelineExecutionResponse:
@@ -134,20 +187,17 @@ async def execute_pipeline(
         if not result.success:
             error = result.error
             if error.error_type == "ValidationError":
-                raise HTTPException(status_code=400, detail=error.message)
+                _raise_validation_error(error.message)
             if error.error_type == "NotFoundError":
-                raise HTTPException(status_code=404, detail=error.message)
-            raise HTTPException(status_code=500, detail=error.message)
-
-        return result.value
+                _raise_not_found_error(error.message)
+            _raise_internal_error(error.message)
+        else:
+            return result.value
 
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Pipeline execution failed: {e!s}",
-        ) from e
+    except (ValueError, OSError) as e:
+        _raise_execution_error(str(e))
 
 
 @execution_router.get(
@@ -155,9 +205,9 @@ async def execute_pipeline(
     response_model=PipelineExecutionResponse,
 )
 async def get_execution_status(
-    pipeline_id: str,
+    pipeline_id: str,  # noqa: ARG001
     execution_id: str,
-    request: Request,
+    request: Request,  # noqa: ARG001
     current_user: Annotated[dict[str, Any], Depends(get_current_user)],
     executor: Annotated[MeltanoPipelineExecutor, Depends(get_pipeline_executor)],
 ) -> PipelineExecutionResponse:
@@ -192,12 +242,12 @@ async def get_execution_status(
         if not result.success:
             error = result.error
             if error.error_type == "NotFoundError":
-                raise HTTPException(status_code=404, detail=error.message)
+                _raise_not_found_error(error.message)
             if error.error_type == "ValidationError":
-                raise HTTPException(status_code=403, detail=error.message)
-            raise HTTPException(status_code=500, detail=error.message)
-
-        return result.value
+                _raise_forbidden_error(error.message)
+            _raise_status_error(error.message)
+        else:
+            return result.value
 
     except HTTPException:
         raise
@@ -210,9 +260,9 @@ async def get_execution_status(
 
 @execution_router.delete("/{pipeline_id}/executions/{execution_id}")
 async def cancel_execution(
-    pipeline_id: str,
+    pipeline_id: str,  # noqa: ARG001
     execution_id: str,
-    request: Request,
+    request: Request,  # noqa: ARG001
     current_user: Annotated[dict[str, Any], Depends(get_current_user)],
     executor: Annotated[MeltanoPipelineExecutor, Depends(get_pipeline_executor)],
 ) -> dict[str, str]:
@@ -247,12 +297,12 @@ async def cancel_execution(
         if not result.success:
             error = result.error
             if error.error_type == "NotFoundError":
-                raise HTTPException(status_code=404, detail=error.message)
+                _raise_not_found_error(error.message)
             if error.error_type == "ValidationError":
-                raise HTTPException(status_code=403, detail=error.message)
-            raise HTTPException(status_code=500, detail=error.message)
-
-        return result.value
+                _raise_forbidden_error(error.message)
+            _raise_cancellation_error(error.message)
+        else:
+            return result.value
 
     except HTTPException:
         raise
@@ -265,12 +315,12 @@ async def cancel_execution(
 
 @execution_router.get("/{pipeline_id}/executions/{execution_id}/logs")
 async def get_execution_logs(
-    pipeline_id: str,
+    pipeline_id: str,  # noqa: ARG001
     execution_id: str,
-    request: Request,
-    log_params: ExecutionLogParams = ExecutionLogParams(),
-    current_user: dict[str, Any] = Depends(get_current_user),
-    executor: MeltanoPipelineExecutor = Depends(get_pipeline_executor),
+    request: Request,  # noqa: ARG001
+    current_user: Annotated[dict[str, Any], Depends(get_current_user)],
+    executor: Annotated[MeltanoPipelineExecutor, Depends(get_pipeline_executor)],
+    log_params: ExecutionLogParams = ExecutionLogParams(),  # noqa: B008
 ) -> dict[str, Any]:
     """Get execution logs with pagination and streaming support.
 
@@ -286,8 +336,7 @@ async def get_execution_logs(
         pipeline_id: Pipeline identifier
         execution_id: Execution identifier to get logs for
         request: FastAPI request for context
-        offset: Log line offset for pagination
-        limit: Maximum number of log lines to return
+        log_params: Log parameters for pagination and filtering
         current_user: Current authenticated user
         executor: Meltano pipeline executor instance
 
@@ -307,12 +356,12 @@ async def get_execution_logs(
         if not result.success:
             error = result.error
             if error.error_type == "NotFoundError":
-                raise HTTPException(status_code=404, detail=error.message)
+                _raise_not_found_error(error.message)
             if error.error_type == "ValidationError":
-                raise HTTPException(status_code=403, detail=error.message)
-            raise HTTPException(status_code=500, detail=error.message)
-
-        return result.value
+                _raise_forbidden_error(error.message)
+            _raise_log_error(error.message)
+        else:
+            return result.value
 
     except HTTPException:
         raise
@@ -325,10 +374,10 @@ async def get_execution_logs(
 
 @execution_router.get("/executions", response_model=PipelineExecutionListResponse)
 async def list_executions(
-    request: Request,
-    params: ExecutionListParams = ExecutionListParams(),
-    current_user: dict[str, Any] = Depends(get_current_user),
-    executor: MeltanoPipelineExecutor = Depends(get_pipeline_executor),
+    request: Request,  # noqa: ARG001
+    current_user: Annotated[dict[str, Any], Depends(get_current_user)],
+    executor: Annotated[MeltanoPipelineExecutor, Depends(get_pipeline_executor)],
+    params: ExecutionListParams = ExecutionListParams(),  # noqa: B008
 ) -> PipelineExecutionListResponse:
     """List pipeline executions with filtering and pagination.
 
@@ -363,8 +412,8 @@ async def list_executions(
         if not result.success:
             error = result.error
             if error.error_type == "ValidationError":
-                raise HTTPException(status_code=400, detail=error.message)
-            raise HTTPException(status_code=500, detail=error.message)
+                _raise_validation_error(error.message)
+            _raise_listing_error(error.message)
 
         # Convert to response model format
         executions_data = result.value
@@ -389,10 +438,10 @@ async def list_executions(
 @execution_router.get("/{pipeline_id}/executions")
 async def get_pipeline_executions(
     pipeline_id: str,
-    request: Request,
-    params: ExecutionListParams = ExecutionListParams(),
-    current_user: dict[str, Any] = Depends(get_current_user),
-    executor: MeltanoPipelineExecutor = Depends(get_pipeline_executor),
+    request: Request,  # noqa: ARG001
+    current_user: Annotated[dict[str, Any], Depends(get_current_user)],
+    executor: Annotated[MeltanoPipelineExecutor, Depends(get_pipeline_executor)],
+    params: ExecutionListParams = ExecutionListParams(),  # noqa: B008
 ) -> PipelineExecutionListResponse:
     """Get executions for a specific pipeline with filtering and pagination.
 
@@ -421,8 +470,8 @@ async def get_pipeline_executions(
         if not result.success:
             error = result.error
             if error.error_type == "ValidationError":
-                raise HTTPException(status_code=400, detail=error.message)
-            raise HTTPException(status_code=500, detail=error.message)
+                _raise_validation_error(error.message)
+            _raise_listing_error(error.message)
 
         # Convert to response model format
         executions_data = result.value
@@ -448,7 +497,7 @@ async def get_pipeline_executions(
 async def execution_health_check() -> dict[str, Any]:
     """Pipeline execution service health check.
 
-    Returns
+    Returns:
     -------
         dict: Health status and service information
 

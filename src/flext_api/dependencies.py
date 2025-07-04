@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
 
-import grpc
+import grpc  # type: ignore[import-untyped]
 
 # ZERO TOLERANCE - JWT is REQUIRED for enterprise authentication
 import jwt
@@ -17,22 +17,30 @@ import structlog
 # ZERO TOLERANCE - PyJWT is REQUIRED and guaranteed to have encode/decode in 2025
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from flext_core.config.domain_config import get_config, get_domain_constants
-from flext_core.infrastructure.containers import ApplicationContainer
+from fastapi.security import HTTPBearer
+from flext_core.config.domain_config import (  # type: ignore[import-untyped]
+    get_config,
+    get_domain_constants,
+)
+from flext_core.infrastructure.containers import (
+    ApplicationContainer,  # type: ignore[import-untyped]
+)
 
 # ZERO TOLERANCE - Import modern Redis rate limiting implementation
-from flext_core.security.redis_rate_limiting import RedisRateLimitManager
-from flext_core.security.ssl_utils import (
+from flext_core.security.redis_rate_limiting import (
+    RedisRateLimitManager,  # type: ignore[import-untyped]
+)
+from flext_core.security.ssl_utils import (  # type: ignore[import-untyped]
     _create_ssl_credentials,
     get_grpc_channel_target,
 )
-from flext_grpc.proto import flext_pb2_grpc
+from flext_grpc.proto import flext_pb2_grpc  # type: ignore[import-untyped]
 from jwt.exceptions import InvalidTokenError as JWTError
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
+    from fastapi.security import HTTPAuthorizationCredentials
     from flext_core.events.event_bus import HybridEventBus
     from flext_core.infrastructure.persistence.unit_of_work import UnitOfWork
     from flext_core.services.execution_service import ExecutionService
@@ -119,7 +127,7 @@ def get_grpc_stub(  # type: ignore[no-any-unimported]
         Provides dependency injection for clean separation of concerns.
 
     """
-    return flext_pb2_grpc.FlextServiceStub(channel)
+    return flext_pb2_grpc.FlextServiceStub(channel)  # type: ignore[no-untyped-call]
 
 
 def get_current_user(
@@ -284,44 +292,44 @@ async def check_rate_limit_async(key: str) -> bool:
 
 @inject
 def get_pipeline_service(
-    service: PipelineService = Provide[ApplicationContainer.services.pipeline_service],
-) -> PipelineService:
+    service: PipelineService = Provide[ApplicationContainer.services.pipeline_service],  # type: ignore[misc]
+) -> PipelineService:  # type: ignore[no-any-unimported]
     """Get pipeline service with dependency injection."""
-    return service
+    return service  # type: ignore[no-any-return]
 
 
 @inject
 def get_execution_service(
-    service: ExecutionService = Provide[
+    service: ExecutionService = Provide[  # type: ignore[misc]
         ApplicationContainer.services.execution_service
     ],
-) -> ExecutionService:
+) -> ExecutionService:  # type: ignore[no-any-unimported]
     """Get execution service with dependency injection."""
-    return service
+    return service  # type: ignore[no-any-return]
 
 
 @inject
 def get_plugin_service(
-    service: PluginService = Provide[ApplicationContainer.services.plugin_service],
-) -> PluginService:
+    service: PluginService = Provide[ApplicationContainer.services.plugin_service],  # type: ignore[misc]
+) -> PluginService:  # type: ignore[no-any-unimported]
     """Get plugin service with dependency injection."""
-    return service
+    return service  # type: ignore[no-any-return]
 
 
 @inject
 def get_event_bus(
-    event_bus: HybridEventBus = Provide[ApplicationContainer.eventing.event_bus],
-) -> HybridEventBus:
+    event_bus: HybridEventBus = Provide[ApplicationContainer.eventing.event_bus],  # type: ignore[misc]
+) -> HybridEventBus:  # type: ignore[no-any-unimported]
     """Get event bus for domain event publishing."""
-    return event_bus
+    return event_bus  # type: ignore[no-any-return]
 
 
 @inject
 def get_unit_of_work(
-    uow: UnitOfWork = Provide[ApplicationContainer.database.unit_of_work],
-) -> UnitOfWork:
+    uow: UnitOfWork = Provide[ApplicationContainer.database.unit_of_work],  # type: ignore[misc]
+) -> UnitOfWork:  # type: ignore[no-any-unimported]
     """Get unit of work for transaction management."""
-    return uow
+    return uow  # type: ignore[no-any-return]
 
 
 async def check_rate_limit(
@@ -329,7 +337,7 @@ async def check_rate_limit(
 ) -> None:
     """Check rate limit for current user using modern Redis implementation.
 
-    Raises
+    Raises:
     ------
         HTTPException: When rate limit is exceeded for the authenticated user
 

@@ -10,8 +10,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.pydantic_base import DomainBaseModel
-from pydantic import Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -53,7 +52,7 @@ class PluginSource(StrEnum):
 # --- Request Models ---
 
 
-class PluginInstallRequest(DomainBaseModel):
+class PluginInstallRequest(BaseModel):
     """Request model for plugin installation."""
 
     name: str = Field(
@@ -105,7 +104,7 @@ class PluginInstallRequest(DomainBaseModel):
         return v.lower()
 
 
-class PluginUninstallRequest(DomainBaseModel):
+class PluginUninstallRequest(BaseModel):
     """Request model for plugin uninstallation."""
 
     force: bool = Field(
@@ -122,7 +121,7 @@ class PluginUninstallRequest(DomainBaseModel):
     )
 
 
-class PluginUpdateRequest(DomainBaseModel):
+class PluginUpdateRequest(BaseModel):
     """Request model for plugin updates."""
 
     version: str | None = Field(
@@ -140,7 +139,7 @@ class PluginUpdateRequest(DomainBaseModel):
     )
 
 
-class PluginConfigRequest(DomainBaseModel):
+class PluginConfigRequest(BaseModel):
     """Request model for plugin configuration updates."""
 
     configuration: dict[str, Any] = Field(
@@ -160,7 +159,7 @@ class PluginConfigRequest(DomainBaseModel):
     )
 
 
-class PluginDiscoveryRequest(DomainBaseModel):
+class PluginDiscoveryRequest(BaseModel):
     """Request model for plugin discovery."""
 
     plugin_type: PluginType | None = Field(
@@ -196,7 +195,7 @@ class PluginDiscoveryRequest(DomainBaseModel):
 # --- Response Models ---
 
 
-class PluginResponse(DomainBaseModel):
+class PluginResponse(BaseModel):
     """Response model for plugin information."""
 
     plugin_id: UUID = Field(description="Unique plugin identifier")
@@ -261,7 +260,7 @@ class PluginResponse(DomainBaseModel):
     )
 
 
-class PluginInstallationResponse(DomainBaseModel):
+class PluginInstallationResponse(BaseModel):
     """Response model for plugin installation operations."""
 
     operation_id: UUID = Field(description="Unique operation identifier")
@@ -283,7 +282,7 @@ class PluginInstallationResponse(DomainBaseModel):
     )
 
 
-class PluginListResponse(DomainBaseModel):
+class PluginListResponse(BaseModel):
     """Response model for plugin list operations."""
 
     plugins: list[PluginResponse] = Field(description="List of plugins")
@@ -295,7 +294,7 @@ class PluginListResponse(DomainBaseModel):
     has_previous: bool = Field(description="Whether there are previous pages")
 
 
-class PluginDiscoveryResponse(DomainBaseModel):
+class PluginDiscoveryResponse(BaseModel):
     """Response model for plugin discovery operations."""
 
     available_plugins: list[dict[str, Any]] = Field(description="Available plugins")
@@ -311,7 +310,7 @@ class PluginDiscoveryResponse(DomainBaseModel):
     has_previous: bool = Field(description="Whether there are previous pages")
 
 
-class PluginHealthResponse(DomainBaseModel):
+class PluginHealthResponse(BaseModel):
     """Response model for plugin health information."""
 
     plugin_name: str = Field(description="Plugin name")
@@ -332,7 +331,7 @@ class PluginHealthResponse(DomainBaseModel):
     )
 
 
-class PluginStatsResponse(DomainBaseModel):
+class PluginStatsResponse(BaseModel):
     """Response model for plugin statistics."""
 
     total_plugins: int = Field(description="Total number of plugins")
@@ -353,7 +352,7 @@ class PluginStatsResponse(DomainBaseModel):
 # --- Filter and Search Models ---
 
 
-class PluginFilterRequest(DomainBaseModel):
+class PluginFilterRequest(BaseModel):
     """Request model for filtering plugins."""
 
     plugin_type: PluginType | None = Field(
@@ -417,7 +416,7 @@ class PluginFilterRequest(DomainBaseModel):
 # --- Legacy Models for Backward Compatibility ---
 
 
-class LegacyPluginInstallRequest(DomainBaseModel):
+class LegacyPluginInstallRequest(BaseModel):
     """Legacy plugin installation request model."""
 
     name: str = Field(description="The name of the plugin to install")
@@ -441,7 +440,7 @@ class LegacyPluginInstallRequest(DomainBaseModel):
         )
 
 
-class LegacyPluginResponse(DomainBaseModel):
+class LegacyPluginResponse(BaseModel):
     """Legacy plugin response model."""
 
     name: str = Field(description="The name of the plugin")

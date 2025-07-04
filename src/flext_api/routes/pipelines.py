@@ -51,18 +51,18 @@ async def get_pipeline(pipeline_id: str) -> PipelineResponse:
     """Get pipeline by ID."""
     # In a real implementation, this would query the database
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail="Pipeline not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail="Pipeline not found",
     )
 
 
 @router.put("/{pipeline_id}")
 async def update_pipeline(
-    pipeline_id: str, request: PipelineUpdateRequest
+    pipeline_id: str, request: PipelineUpdateRequest,
 ) -> PipelineResponse:
     """Update pipeline configuration."""
     # In a real implementation, this would update the database
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail="Pipeline not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail="Pipeline not found",
     )
 
 
@@ -71,13 +71,13 @@ async def delete_pipeline(pipeline_id: str) -> dict[str, str]:
     """Delete a pipeline."""
     # In a real implementation, this would delete from database
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail="Pipeline not found"
+        status_code=status.HTTP_404_NOT_FOUND, detail="Pipeline not found",
     )
 
 
 @router.post("/{pipeline_id}/execute")
 async def execute_pipeline(
-    pipeline_id: str, request: PipelineExecutionRequest
+    pipeline_id: str, request: PipelineExecutionRequest,
 ) -> dict[str, str]:
     """Execute a pipeline."""
     try:
@@ -105,5 +105,5 @@ async def get_pipeline_status(pipeline_id: str) -> PipelineStatus:
     """Get pipeline execution status."""
     # In a real implementation, this would query execution status
     return PipelineStatus(
-        pipeline_id=pipeline_id, status="idle", last_execution=None, next_execution=None
+        pipeline_id=pipeline_id, status="idle", last_execution=None, next_execution=None,
     )

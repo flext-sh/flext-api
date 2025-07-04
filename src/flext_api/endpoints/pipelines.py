@@ -31,7 +31,7 @@ class PipelineListParams(BaseModel):
 @pipelines_router.post("")
 async def create_pipeline(
     pipeline_data: PipelineCreateRequest,
-    request: Request,
+    request: Request,  # noqa: ARG001
 ) -> PipelineResponse:
     """Create a new pipeline with enterprise validation."""
     pipeline_id = str(uuid4())
@@ -59,7 +59,7 @@ async def create_pipeline(
 
 
 @pipelines_router.get("/{pipeline_id}")
-async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:
+async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:  # noqa: ARG001  # noqa: ARG001
     """Get pipeline by ID with complete metadata."""
     # Implementation placeholder - will query from storage
     raise HTTPException(status_code=501, detail="Not implemented yet")
@@ -67,9 +67,9 @@ async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:
 
 @pipelines_router.put("/{pipeline_id}")
 async def update_pipeline(
-    pipeline_id: str,
-    pipeline_data: PipelineUpdateRequest,
-    request: Request,
+    pipeline_id: str,  # noqa: ARG001
+    pipeline_data: PipelineUpdateRequest,  # noqa: ARG001
+    request: Request,  # noqa: ARG001
 ) -> PipelineResponse:
     """Update existing pipeline configuration."""
     # Implementation placeholder - will update in storage
@@ -77,7 +77,7 @@ async def update_pipeline(
 
 
 @pipelines_router.delete("/{pipeline_id}")
-async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
+async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:  # noqa: ARG001  # noqa: ARG001
     """Delete pipeline with safety checks."""
     # Implementation placeholder - will delete from storage
     raise HTTPException(status_code=501, detail="Not implemented yet")
@@ -86,8 +86,8 @@ async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
 @pipelines_router.post("/{pipeline_id}/execute")
 async def execute_pipeline(
     pipeline_id: str,
-    execution_data: PipelineExecutionRequest,
-    request: Request,
+    execution_data: PipelineExecutionRequest,  # noqa: ARG001
+    request: Request,  # noqa: ARG001
 ) -> dict[str, str]:
     """Execute pipeline with configuration overrides."""
     execution_id = str(uuid4())
@@ -104,7 +104,7 @@ async def execute_pipeline(
 
 @pipelines_router.get("")
 async def list_pipelines(
-    request: Request,
+    request: Request,  # noqa: ARG001
     page: Annotated[int, Query(default=1, ge=1)],
     page_size: Annotated[int, Query(default=20, ge=1, le=100)],
     status: Annotated[str | None, Query(default=None)],
