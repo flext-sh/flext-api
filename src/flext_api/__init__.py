@@ -1,29 +1,33 @@
-"""FLEXT REST API package initialization.
+"""FLEXT API - Enterprise FastAPI Gateway with Zero Tolerance for Technical Debt.
 
-This package provides the RESTful API interface for the FLEXT Meltano Enterprise
-platform using FastAPI framework. It serves as the primary programmatic
-interface for external clients and services to interact with FLEXT functionality,
-including:
-
-- Pipeline management and orchestration
-- Plugin configuration and lifecycle management
-- Authentication and authorization services
-- Real-time monitoring and metrics
-- WebSocket support for live updates
-- Integration with the FLEXT core domain services
-
-The API follows RESTful principles and provides automatic API documentation through
-FastAPI's built-in OpenAPI (Swagger) and ReDoc interfaces.
+Professional imports with proper package management.
 """
+
+from __future__ import annotations
+
+# Version
+__version__ = "0.6.0"
+
+# Professional imports from installed flext-core package
+try:
+    from flext_core import ServiceResult, ValueObject, get_config
+    __all__ = ["ServiceResult", "ValueObject", "__version__", "get_config"]
+except ImportError as e:
+    print(f"Warning: Could not import flext-core: {e}")
+    __all__ = ["__version__"]
+
 
 import asyncio
 import logging
-from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 logger = logging.getLogger(__name__)
 
