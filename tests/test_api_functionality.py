@@ -1,6 +1,7 @@
 """Comprehensive tests for flext-api functionality."""
 
 import importlib.util
+import json
 
 import pytest
 

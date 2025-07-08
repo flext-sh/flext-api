@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+from flext_core import ValueObject  # Use flext-core base classes
 from pydantic import BaseModel, Field
 
 
-class UserAPI(BaseModel):
+class UserAPI(ValueObject):
     """API User model for authentication with role-based access control.
 
     Represents an authenticated user with roles and authorization capabilities
     for secure API access and resource management.
+
+    Uses flext-core ValueObject as base for immutability and validation.
 
     Attributes:
     ----------

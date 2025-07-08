@@ -1197,7 +1197,7 @@ async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:
         ):
             raise HTTPException(
                 status_code=constants.HTTP_FORBIDDEN,
-"Access denied: insufficient permissions")
+                detail="Access denied: insufficient permissions")
 
         # Return comprehensive pipeline response
         return PipelineResponse(
@@ -1257,7 +1257,7 @@ def _validate_pipeline_id(pipeline_id: str) -> None:
     except ValueError:
         raise HTTPException(
             status_code=constants.HTTP_BAD_REQUEST,
-            "Invalid pipeline ID format",
+            detail="Invalid pipeline ID format",
         )
 
 
@@ -1267,7 +1267,7 @@ def _get_authenticated_user(request: Request) -> dict[str, Any]:
     if not user:
         raise HTTPException(
             status_code=constants.HTTP_UNAUTHORIZED,
-            "Authentication required",
+            detail="Authentication required",
         )
     return user
 
@@ -1278,7 +1278,7 @@ def _get_pipeline_record(pipeline_id: str) -> dict[str, Any]:
     if not pipeline_record:
         raise HTTPException(
             status_code=constants.HTTP_NOT_FOUND,
-            "Pipeline not found",
+            detail="Pipeline not found",
         )
     return pipeline_record
 
@@ -1293,7 +1293,7 @@ def _verify_pipeline_access(
     if pipeline_record["created_by"] != username and user_role != "admin":
         raise HTTPException(
             status_code=constants.HTTP_FORBIDDEN,
-            "Access denied: insufficient permissions",
+            detail="Access denied: insufficient permissions",
         )
 
 
@@ -1302,7 +1302,7 @@ def _check_pipeline_update_preconditions(pipeline_record: dict[str, Any]) -> Non
     if pipeline_record.get("status") == PipelineStatus.RUNNING:
         raise HTTPException(
             status_code=constants.HTTP_CONFLICT,
-            "Cannot update pipeline: execution in progress",
+            detail="Cannot update pipeline: execution in progress",
         )
 
 
@@ -1411,7 +1411,7 @@ async def update_pipeline(
         if not updated_pipeline:
             raise HTTPException(
                 status_code=constants.HTTP_INTERNAL_ERROR,
-"Pipeline update succeeded but retrieval failed")
+                detail="Pipeline update succeeded but retrieval failed")
         return _create_pipeline_response(updated_pipeline)
 
     except HTTPException:
@@ -1494,7 +1494,7 @@ async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
         if pipeline_record["created_by"] != username and user_role != "admin":
             raise HTTPException(
                 status_code=constants.HTTP_FORBIDDEN,
-"Access denied: insufficient permissions")
+                detail="Access denied: insufficient permissions")
 
         # Safety check: prevent deletion of running pipelines
         if pipeline_record.get("status") == PipelineStatus.RUNNING:
@@ -1511,7 +1511,7 @@ async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
         if not success:
             raise HTTPException(
                 status_code=constants.HTTP_INTERNAL_ERROR,
-"Pipeline deletion failed - pipeline may have been deleted by another operation")
+                detail="Pipeline deletion failed - pipeline may have been deleted by another operation")
 
         # Return success response
         return APIResponse(
@@ -1608,7 +1608,7 @@ async def execute_pipeline(
         if pipeline_record["created_by"] != username and user_role != "admin":
             raise HTTPException(
                 status_code=constants.HTTP_FORBIDDEN,
-"Access denied: insufficient permissions to execute pipeline")
+                detail="Access denied: insufficient permissions to execute pipeline")
 
         # Check pipeline is in executable state
         current_status = pipeline_record.get("status", PipelineStatus.PENDING)
@@ -1634,14 +1634,14 @@ async def execute_pipeline(
         if not success:
             raise HTTPException(
                 status_code=constants.HTTP_INTERNAL_ERROR,
-"Failed to update pipeline status for execution")
+                detail="Failed to update pipeline status for execution")
 
         # Get updated pipeline for response
         updated_pipeline = pipeline_storage.get_pipeline(pipeline_id)
         if not updated_pipeline:
             raise HTTPException(
                 status_code=constants.HTTP_INTERNAL_ERROR,
-"Pipeline execution update succeeded but retrieval failed")
+                detail="Pipeline execution update succeeded but retrieval failed")
         pipeline_record = updated_pipeline
 
         # Simulate execution submission (in production, this would integrate with Meltano)
