@@ -211,6 +211,8 @@ class FlextAPIStorage:
                 reason=request.reason,
                 started_at=now,
                 estimated_end=request.scheduled_start,
+                actual_end=None,  # Not finished yet
+                duration_minutes=0,  # Not finished yet
                 affected_services=request.affected_services,
                 progress_percentage=0.0,
                 current_step="Initializing maintenance",

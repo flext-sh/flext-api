@@ -93,20 +93,20 @@ class TestSystemEndpoints:
         """Test enabling and disabling maintenance mode."""
         # Enable maintenance mode
         maintenance_data = {
-            "mode": "scheduled",
+            "mode": "planned",  # Changed from scheduled to planned
             "reason": "System maintenance in progress",  # Changed from message to reason
         }
         response = self.client.post("/api/v1/system/maintenance", json=maintenance_data)
         assert response.status_code == 200
         data = response.json()
-        assert data["mode"] == "scheduled"
+        assert data["mode"] == "planned"
         assert data["reason"] == "System maintenance in progress"
         assert data["status"] == "started"
 
         # Check status reflects maintenance mode
         response = self.client.get("/api/v1/system/status")
         assert response.status_code == 200
-        assert response.json()["maintenance_mode"] == "scheduled"
+        assert response.json()["maintenance_mode"] == "planned"
 
         # Disable maintenance mode
         disable_data = {"mode": "none", "reason": "Maintenance completed"}
