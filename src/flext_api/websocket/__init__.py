@@ -5,7 +5,7 @@ between the FLEXT API server and connected clients. It enables live updates and 
 capabilities essential for monitoring pipeline executions and system events.
 
 Key features:
-- Connection lifecycle management with automatic reconnection
+            - Connection lifecycle management with automatic reconnection
 - Message broadcasting to multiple connected clients
 - Event-based communication patterns for system notifications
 - Pipeline execution progress streaming
@@ -14,7 +14,7 @@ Key features:
 - Room-based communication for multi-tenant scenarios
 
 The WebSocket implementation follows enterprise patterns with:
-- Proper error handling and graceful degradation
+            - Proper error handling and graceful degradation
 - Connection pooling and resource management
 - Message validation and serialization
 - Security through authentication tokens

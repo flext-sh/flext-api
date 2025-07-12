@@ -1,32 +1,38 @@
-"""Authentication models for FLEXT API."""
+"""Authentication models for FLEXT API.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+This module provides Pydantic models for authentication.
+"""
 
 from __future__ import annotations
 
-from flext_core import ValueObject  # Use flext-core base classes
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from flext_core.domain.pydantic_base import APIRequest
+from flext_core.domain.pydantic_base import APIResponse
 
 
-class UserAPI(ValueObject):
+class UserAPI(APIResponse):
     """API User model for authentication with role-based access control.
 
     Represents an authenticated user with roles and authorization capabilities
     for secure API access and resource management.
 
-    Uses flext-core ValueObject as base for immutability and validation.
-
-    Attributes:
+    Attributes
     ----------
         username: User identification string.
         roles: List of user roles for authorization.
         is_active: Whether the user account is active.
         is_REDACTED_LDAP_BIND_PASSWORD: Whether the user has REDACTED_LDAP_BIND_PASSWORDistrative privileges.
 
-    Methods:
+    Methods
     -------
         has_role(): Check if user has a specific role.
         is_authorized(): Check if user is authorized for required roles.
 
-    Examples:
+    Examples
     --------
         Basic usage of the class:
 
@@ -51,237 +57,86 @@ class UserAPI(ValueObject):
         if not self.is_active:
             return False
 
+        if self.is_REDACTED_LDAP_BIND_PASSWORD:
+            return True
+
         if not required_roles:
             return True
 
         return any(self.has_role(role) for role in required_roles)
 
 
-class LoginRequest(BaseModel):
-    """Login request model for user authentication.
+class LoginRequest(APIRequest):
+    """Request model for user login."""
 
-    Captures user credentials for authentication processing with validation
-    and security for secure login operations.
-
-    Attributes:
-    ----------
-        email: User email for authentication.
-        password: User password for authentication.
-        device_info: Optional device information for tracking.
-
-    Examples:
-    --------
-        Basic usage of the class:
-
-        ```python
-        request = LoginRequest(
-            email="user@example.com", password="your_secure_password"
-        )
-        ```
-
-    """
-
-    email: str = Field(..., description="User email address")
-    password: str = Field(..., description="Password")
+    username: str = Field(..., description="Username or email")
+    password: str = Field(..., min_length=1, description="User password")
     device_info: dict[str, str] | None = Field(
         default=None,
-        description="Device information",
+        description="Optional device information",
     )
 
 
-class LoginResponse(BaseModel):
-    """Login response model containing authentication tokens and user information.
-
-    Returns JWT authentication tokens and user profile information after
-    successful login for secure API access.
-
-    Attributes:
-    ----------
-        access_token: JWT access token for API authentication.
-        refresh_token: JWT refresh token for token renewal.
-        token_type: Type of authentication token (default: bearer).
-        expires_in: Token expiration time in seconds.
-        user: User information and profile data.
-        session_id: Session identifier for tracking.
-        permissions: User permissions for authorization.
-        roles: User roles for RBAC.
-
-    Examples:
-    --------
-        Basic usage of the class:
-
-        ```python
-        constants = get_domain_constants()
-        response = LoginResponse(
-            access_token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.example",
-            refresh_token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.refresh",
-            expires_in=constants.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-            user=user_instance,
-            session_id="session-123",
-            permissions=["read", "write"],
-            roles=["user"]
-        )
-        ```
-
-    """
+class LoginResponse(APIResponse):
+    """Response model for user login."""
 
     access_token: str = Field(..., description="JWT access token")
-    refresh_token: str = Field(..., description="JWT refresh token")
+    refresh_token: str | None = Field(default=None, description="JWT refresh token")
     token_type: str = Field(default="bearer", description="Token type")
     expires_in: int = Field(..., description="Token expiration in seconds")
-    user: UserAPI | dict[str, str] = Field(..., description="User information")
-    session_id: str = Field(..., description="Session identifier")
-    permissions: list[str] = Field(default_factory=list, description="User permissions")
-    roles: list[str] = Field(default_factory=list, description="User roles")
-
-
-class TokenData(BaseModel):
-    """Token payload data model for JWT authentication.
-
-    Represents the decoded JWT token payload containing user identity and
-    authorization information for request processing.
-
-    Attributes:
-    ----------
-        username: User identification from token payload.
-        roles: List of user roles extracted from token.
-        exp: Token expiration timestamp.
-
-    Examples:
-    --------
-        Basic usage of the class:
-
-        ```python
-        token_data = TokenData(
-            username="user",
-            roles=["REDACTED_LDAP_BIND_PASSWORD"],
-            exp=1234567890
-        )
-        ```
-
-    """
-
-    username: str = Field(..., description="Username")
-    roles: list[str] = Field(default_factory=list, description="User roles")
-    exp: int = Field(..., description="Expiration timestamp")
-
-
-class RefreshTokenRequest(BaseModel):
-    """Token refresh request model."""
-
-    refresh_token: str = Field(..., description="JWT refresh token")
-
-
-class LogoutRequest(BaseModel):
-    """User logout request model."""
-
-    session_id: str | None = Field(
-        default=None,
-        description="Specific session to terminate",
-    )
-    all_sessions: bool = Field(default=False, description="Terminate all user sessions")
-
-
-class SessionResponse(BaseModel):
-    """Session information response model."""
-
-    session_id: str = Field(..., description="Session unique identifier")
-    user_id: str = Field(..., description="User identifier")
-    ip_address: str | None = Field(description="Client IP address")
-    user_agent: str | None = Field(description="Client user agent")
-    device_info: dict[str, str] = Field(
-        default_factory=dict,
-        description="Device information",
-    )
-    created_at: str = Field(..., description="Session creation timestamp")
-    last_accessed: str = Field(..., description="Last access timestamp")
-    expires_at: str = Field(..., description="Session expiration timestamp")
-    is_current: bool = Field(..., description="Whether this is the current session")
-    roles: list[str] = Field(
-        default_factory=list,
-        description="User roles in this session",
-    )
+    user: UserAPI = Field(..., description="User information")
+    session_id: str | None = Field(default=None, description="Session identifier")
     permissions: list[str] = Field(
         default_factory=list,
-        description="Effective permissions",
+        description="User permissions",
     )
+    roles: list[str] = Field(default_factory=list, description="User roles")
 
 
-class SessionListResponse(BaseModel):
-    """List of user sessions response model."""
-
-    sessions: list[SessionResponse] = Field(..., description="List of user sessions")
-    total_count: int = Field(..., description="Total number of sessions")
-
-
-class RegisterRequest(BaseModel):
-    """User registration request model with validation.
-
-    Captures user registration data with validation for creating new
-    user accounts with appropriate security and data validation.
-
-    Attributes:
-    ----------
-        username: Desired username for the new account.
-        password: Secure password for account protection.
-        email: Valid email address for account verification.
-        role: Optional role to assign to user.
-
-    Examples:
-    --------
-        Basic usage of the class:
-
-        ```python
-        request = RegisterRequest(
-            username="newuser",
-            password="secure_password",
-            email="user@example.com"
-        )
-        ```
-
-    """
+class RegisterRequest(APIRequest):
+    """Request model for user registration."""
 
     username: str = Field(..., min_length=3, max_length=50, description="Username")
-    password: str = Field(..., min_length=8, description="Password")
     email: str = Field(..., description="Email address")
-    role: str | None = Field(default=None, description="User role")
+    password: str = Field(..., min_length=8, description="Password")
+    roles: list[str] = Field(default_factory=lambda: ["user"], description="User roles")
 
 
-class RegisterResponse(BaseModel):
-    """User registration response model with account creation confirmation.
+class RegisterResponse(APIResponse):
+    """Response model for user registration."""
 
-    Returns confirmation of successful user account creation with
-    basic user information for registration confirmation.
+    user: UserAPI = Field(..., description="Created user information")
+    created: bool = Field(default=True, description="Whether user was created")
 
-    Attributes:
-    ----------
-        user_id: User unique identifier.
-        username: Username.
-        email: User email address.
-        role: User role.
-        created_at: Account creation timestamp.
-        message: Confirmation message for successful registration.
 
-    Examples:
-    --------
-        Basic usage of the class:
+class TokenRefreshRequest(APIRequest):
+    """Request model for token refresh."""
 
-        ```python
-        response = RegisterResponse(
-            user_id="123",
-            username="newuser",
-            email="user@example.com",
-            role="user",
-            created_at="2024-01-01T00: 00:00Z",
-            message="User created successfully"
-        )
-        ```
+    refresh_token: str = Field(..., description="Refresh token")
 
-    """
 
-    user_id: str = Field(..., description="User unique identifier")
-    username: str = Field(..., description="Username")
-    email: str = Field(..., description="User email address")
-    role: str = Field(..., description="User role")
-    created_at: str = Field(..., description="Account creation timestamp")
-    message: str = Field(..., description="Registration confirmation message")
+class TokenRefreshResponse(APIResponse):
+    """Response model for token refresh."""
+
+    access_token: str = Field(..., description="New access token")
+    refresh_token: str = Field(..., description="New refresh token")
+    token_type: str = Field(default="bearer", description="Token type")
+    expires_in: int = Field(..., description="Token expiration in seconds")
+
+
+class LogoutRequest(APIRequest):
+    """Request model for user logout."""
+
+    session_id: str = Field(..., description="Session to terminate")
+
+
+class UserProfileResponse(APIResponse):
+    """Response model for user profile."""
+
+    user: UserAPI = Field(..., description="User information")
+    permissions: list[str] = Field(
+        default_factory=list,
+        description="User permissions",
+    )
+    last_login: str | None = Field(default=None, description="Last login timestamp")
+    session_count: int = Field(default=0, description="Active session count")

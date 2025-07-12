@@ -1,146 +1,79 @@
-"""FLEXT API - Enterprise FastAPI Gateway with Zero Tolerance for Technical Debt.
+"""FLEXT API - Enterprise FastAPI Gateway.
 
-Professional imports with proper package management.
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+
+Built on flext-core foundation for robust API gateway functionality.
+Uses modern Python 3.13 patterns and clean architecture.
 """
 
 from __future__ import annotations
 
-# Version
-__version__ = "0.6.0"
+__version__ = "0.1.0"
 
-# Professional imports from installed flext-core package
+# Domain layer exports (when available)
 try:
-    from flext_core import ServiceResult, ValueObject, get_config
-    __all__ = ["ServiceResult", "ValueObject", "__version__", "get_config"]
-except ImportError as e:
-    print(f"Warning: Could not import flext-core: {e}")
-    __all__ = ["__version__"]
+    from flext_api.domain.entities import APIRequest
+    from flext_api.domain.entities import APIResponse
+    from flext_api.domain.entities import Pipeline
+    from flext_api.domain.entities import Plugin
+    from flext_api.domain.repositories import PipelineRepository
+    from flext_api.domain.repositories import PluginRepository
+    from flext_api.domain.value_objects import PipelineId
+    from flext_api.domain.value_objects import PluginId
+    from flext_api.domain.value_objects import RequestId
+except ImportError:
+    # Domain layer not yet refactored
+    pass
 
+# Application layer exports (when available)
+try:
+    from flext_api.application.services import APIService
+    from flext_api.application.services import PipelineService
+    from flext_api.application.services import PluginService
+except ImportError:
+    # Application layer not yet refactored
+    pass
 
-import asyncio
-import logging
-from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING
+# Configuration using flext-core patterns
+try:
+    from flext_api.config import APISettings
+    from flext_api.config import get_api_settings
+except ImportError:
+    # Legacy config not available yet
+    pass
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
+# FastAPI app exports
+try:
+    from flext_api.main import app
+    from flext_api.main import create_app
+except ImportError:
+    # Main app module has syntax errors, will be refactored
+    pass
 
-if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
-
-logger = logging.getLogger(__name__)
-
-
-class FlextAPI:
-    """FLEXT API Application - Enterprise FastAPI Gateway.
-
-    Provides RESTful API interface for the FLEXT Meltano Enterprise platform
-    with production-ready features including authentication, rate limiting,
-    monitoring, and comprehensive error handling.
-    """
-
-    def __init__(self, *, debug: bool = False) -> None:
-        """Initialize FLEXT API application instance.
-
-        Args:
-            debug: Enable debug mode with OpenAPI documentation endpoints.
-        """
-        self.debug = debug
-        self.app: FastAPI | None = None
-        self.initialized = False
-        self._background_tasks: set = set()
-
-    async def initialize(self) -> FastAPI:
-        """Initialize FastAPI application with enterprise middleware and routes.
-
-        Returns:
-            FastAPI: Configured application instance
-
-        """
-        if self.initialized:
-            return self.app
-
-        # Create FastAPI app with enterprise configuration
-        self.app = FastAPI(
-            title="FLEXT API",
-            description="FLEXT Meltano Enterprise Platform API",
-            version="1.0.0",
-            debug=self.debug,
-            openapi_url="/api/v1/openapi.json" if self.debug else None,
-            docs_url="/docs" if self.debug else None,
-            redoc_url="/redoc" if self.debug else None,
-        )
-
-        # Add security middleware
-        self.app.add_middleware(
-            TrustedHostMiddleware,
-            allowed_hosts=["localhost", "127.0.0.1", "*.flext.sh"],
-        )
-
-        # Add CORS middleware for web interface
-        self.app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["http://localhost:3000", "https://*.flext.sh"],
-            allow_credentials=True,
-            allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
-            allow_headers=["*"],
-        )
-
-        # Health check endpoint
-        @self.app.get("/health")
-        async def health_check() -> dict[str, str | bool]:
-            """Check API health status."""
-            return {
-                "status": "healthy",
-                "service": "flext-api",
-                "version": "1.0.0",
-                "debug": self.debug,
-            }
-
-        # Root endpoint
-        @self.app.get("/")
-        async def root() -> dict[str, str | None]:
-            """Get API root service information."""
-            return {
-                "service": "FLEXT API",
-                "description": "FLEXT Meltano Enterprise Platform API",
-                "version": "1.0.0",
-                "docs": "/docs" if self.debug else None,
-                "health": "/health",
-            }
-
-        self.initialized = True
-        logger.info("FLEXT API initialized successfully")
-        return self.app
-
-    async def shutdown(self) -> None:
-        """Graceful shutdown of API services."""
-        if not self.initialized:
-            return
-
-        logger.info("Shutting down FLEXT API...")
-
-        # Cancel background tasks
-        for task in self._background_tasks:
-            if not task.done():
-                task.cancel()
-
-        # Wait for tasks to complete
-        if self._background_tasks:
-            await asyncio.gather(*self._background_tasks, return_exceptions=True)
-
-        self.initialized = False
-        logger.info("FLEXT API shutdown complete")
-
-    @asynccontextmanager
-    async def lifespan(self) -> AsyncGenerator[FastAPI]:
-        """Context manager for API lifespan management."""
-        await self.initialize()
-        try:
-            yield self.app
-        finally:
-            await self.shutdown()
-
-
-__all__ = ["FlextAPI"]
+# Core exports that are always available
+__all__ = [
+    "APIRequest",
+    "APIResponse",
+    "APIService",
+    # Configuration (when available)
+    "APISettings",
+    # Domain entities (when available)
+    "Pipeline",
+    # Value objects (when available)
+    "PipelineId",
+    # Repository interfaces (when available)
+    "PipelineRepository",
+    # Application services (when available)
+    "PipelineService",
+    "Plugin",
+    "PluginId",
+    "PluginRepository",
+    "PluginService",
+    "RequestId",
+    # Version
+    "__version__",
+    # FastAPI app (when available)
+    "app",
+    "create_app",
+    "get_api_settings",
+]

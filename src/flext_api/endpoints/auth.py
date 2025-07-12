@@ -1,15 +1,20 @@
-"""Authentication endpoints for FLEXT API."""
+"""Authentication endpoints for FLEXT API.
 
-from fastapi import APIRouter, Request
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+This module provides the authentication endpoints for the FLEXT API.
+"""
+
+from fastapi import APIRouter
+from fastapi import Request
 from fastapi.security import HTTPBearer
 
-from flext_api.models.auth import (
-    LoginRequest,
-    LoginResponse,
-    RegisterRequest,
-    RegisterResponse,
-    UserAPI,
-)
+from flext_api.models.auth import LoginRequest
+from flext_api.models.auth import LoginResponse
+from flext_api.models.auth import RegisterRequest
+from flext_api.models.auth import RegisterResponse
+from flext_api.models.auth import UserAPI
 from flext_api.models.system import APIResponse
 
 auth_router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -18,15 +23,10 @@ security = HTTPBearer()
 
 @auth_router.post("/login")
 async def login(login_data: LoginRequest) -> LoginResponse:
-    """User login endpoint with JWT token generation.
-
-    Authenticates user credentials and returns JWT access tokens for
-    secure API access with enterprise-grade security patterns.
-    """
     # Implementation placeholder - will be connected to actual auth service
     return LoginResponse(
-        access_token="placeholder_token",  # noqa: S106
-        token_type="bearer",  # noqa: S106
+        access_token="placeholder_token",
+        token_type="bearer",
         expires_in=3600,
         user=UserAPI(
             username=login_data.username,
@@ -39,7 +39,6 @@ async def login(login_data: LoginRequest) -> LoginResponse:
 
 @auth_router.post("/register")
 async def register(register_data: RegisterRequest) -> RegisterResponse:
-    """User registration endpoint for creating new accounts."""
     # Implementation placeholder - will be connected to actual auth service
     return RegisterResponse(
         message="User registered successfully",
@@ -54,8 +53,7 @@ async def register(register_data: RegisterRequest) -> RegisterResponse:
 
 
 @auth_router.post("/logout")
-async def logout(request: Request) -> APIResponse:  # noqa: ARG001  # noqa: ARG001
-    """User logout endpoint with token revocation."""
+async def logout(request: Request) -> APIResponse:
     return APIResponse(
         message="Logged out successfully",
         status="success",
@@ -63,8 +61,7 @@ async def logout(request: Request) -> APIResponse:  # noqa: ARG001  # noqa: ARG0
 
 
 @auth_router.get("/profile")
-async def get_profile(request: Request) -> UserAPI:  # noqa: ARG001  # noqa: ARG001
-    """Get authenticated user profile information."""
+async def get_profile(request: Request) -> UserAPI:
     # Implementation placeholder - will extract from JWT token
     return UserAPI(
         username="current_user",

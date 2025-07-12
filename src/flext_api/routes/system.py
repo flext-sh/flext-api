@@ -1,6 +1,7 @@
 """System and health check routes for FLEXT API."""
 
-from datetime import UTC, datetime
+from datetime import UTC
+from datetime import datetime
 from typing import Any
 
 import psutil
@@ -11,7 +12,6 @@ router = APIRouter(prefix="/system", tags=["system"])
 
 @router.get("/health")
 async def health_check() -> dict[str, Any]:
-    """Comprehensive health check."""
     return {
         "status": "healthy",
         "timestamp": datetime.now(UTC).isoformat(),
@@ -22,7 +22,6 @@ async def health_check() -> dict[str, Any]:
 
 @router.get("/ready")
 async def readiness_check() -> dict[str, str]:
-    """Kubernetes readiness probe."""
     # In production, this would check:
     # - Database connectivity
     # - Redis connectivity
@@ -32,7 +31,6 @@ async def readiness_check() -> dict[str, str]:
 
 @router.get("/metrics")
 async def get_metrics() -> dict[str, Any]:
-    """Get system metrics."""
     try:
         # Get basic system metrics
         cpu_percent = psutil.cpu_percent(interval=1)
@@ -63,7 +61,6 @@ async def get_metrics() -> dict[str, Any]:
 
 @router.get("/version")
 async def get_version() -> dict[str, str]:
-    """Get API version information."""
     return {
         "api_version": "1.0.0",
         "build_date": "2025-06-30",

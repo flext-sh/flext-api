@@ -1,25 +1,35 @@
-"""Pipeline management endpoints for FLEXT API."""
+"""Pipeline management endpoints for FLEXT API.
 
-from datetime import UTC, datetime
-from typing import Annotated, Any
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+This module provides the pipeline management endpoints for the FLEXT API.
+"""
+
+from datetime import UTC
+from datetime import datetime
+from typing import Annotated
+from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query, Request
-from pydantic import BaseModel, Field
+from fastapi import APIRouter
+from fastapi import HTTPException
+from fastapi import Query
+from fastapi import Request
+from pydantic import Field
 
-from flext_api.models.pipeline import (
-    PipelineCreateRequest,
-    PipelineExecutionRequest,
-    PipelineResponse,
-    PipelineStatus,
-    PipelineUpdateRequest,
-)
+from flext_api.models.pipeline import PipelineCreateRequest
+from flext_api.models.pipeline import PipelineExecutionRequest
+from flext_api.models.pipeline import PipelineResponse
+from flext_api.models.pipeline import PipelineStatus
+from flext_api.models.pipeline import PipelineUpdateRequest
 from flext_api.models.system import APIResponse
+from flext_core import APIBaseModel
 
 pipelines_router = APIRouter(prefix="/pipelines", tags=["pipelines"])
 
 
-class PipelineListParams(BaseModel):
+class PipelineListParams(APIBaseModel):
     """Parameters for listing pipelines."""
 
     page: int = Field(default=1, ge=1)
@@ -29,11 +39,7 @@ class PipelineListParams(BaseModel):
 
 
 @pipelines_router.post("")
-async def create_pipeline(
-    pipeline_data: PipelineCreateRequest,
-    request: Request,  # noqa: ARG001
-) -> PipelineResponse:
-    """Create a new pipeline with enterprise validation."""
+async def create_pipeline(pipeline_data: PipelineCreateRequest, request: Request) -> PipelineResponse:
     pipeline_id = str(uuid4())
     created_at = datetime.now(UTC)
 
@@ -59,37 +65,25 @@ async def create_pipeline(
 
 
 @pipelines_router.get("/{pipeline_id}")
-async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:  # noqa: ARG001  # noqa: ARG001
-    """Get pipeline by ID with complete metadata."""
+async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:
     # Implementation placeholder - will query from storage
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
 @pipelines_router.put("/{pipeline_id}")
-async def update_pipeline(
-    pipeline_id: str,  # noqa: ARG001
-    pipeline_data: PipelineUpdateRequest,  # noqa: ARG001
-    request: Request,  # noqa: ARG001
-) -> PipelineResponse:
-    """Update existing pipeline configuration."""
+async def update_pipeline(pipeline_id: str, pipeline_data: PipelineUpdateRequest, request: Request) -> PipelineResponse:
     # Implementation placeholder - will update in storage
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
 @pipelines_router.delete("/{pipeline_id}")
-async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:  # noqa: ARG001  # noqa: ARG001
-    """Delete pipeline with safety checks."""
+async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
     # Implementation placeholder - will delete from storage
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
 @pipelines_router.post("/{pipeline_id}/execute")
-async def execute_pipeline(
-    pipeline_id: str,
-    execution_data: PipelineExecutionRequest,  # noqa: ARG001
-    request: Request,  # noqa: ARG001
-) -> dict[str, str]:
-    """Execute pipeline with configuration overrides."""
+async def execute_pipeline(pipeline_id: str, execution_data: PipelineExecutionRequest, request: Request) -> dict[str, str]:
     execution_id = str(uuid4())
     execution_started_at = datetime.now(UTC)
 
@@ -104,13 +98,12 @@ async def execute_pipeline(
 
 @pipelines_router.get("")
 async def list_pipelines(
-    request: Request,  # noqa: ARG001
+    request: Request,
     page: Annotated[int, Query(default=1, ge=1)],
     page_size: Annotated[int, Query(default=20, ge=1, le=100)],
     status: Annotated[str | None, Query(default=None)],
     search: Annotated[str | None, Query(default=None)],
 ) -> dict[str, Any]:
-    """List pipelines with filtering and pagination."""
     # Implementation placeholder - will query from storage
     return {
         "pipelines": [],

@@ -1,7 +1,7 @@
 # FLX API - Enterprise API Gateway
 
 > **Regras do Projeto**: Consulte `../../.github/instructions/regras.instructions.md` para padrões obrigatórios
-> 
+>
 > **Padrão de documentação**: Veja [../../docs/HOW_TO_DOCUMENT.md](../../docs/HOW_TO_DOCUMENT.md)
 
 ## 🧭 Navegação
@@ -200,14 +200,17 @@ Part of the FLX Platform - Enterprise License
 ## 🔗 Cross-References
 
 ### Prerequisites
+
 - [../../docs/HOW_TO_DOCUMENT.md](../../docs/HOW_TO_DOCUMENT.md) — Guia de padronização de documentação
 - [../../.github/instructions/regras.instructions.md](../../.github/instructions/regras.instructions.md) — Regras obrigatórias do projeto
 
 ### Next Steps
+
 - [../../docs/architecture/index.md](../../docs/architecture/index.md) — Detalhes da arquitetura
 - [../../docs/development/index.md](../../docs/development/index.md) — Padrões de desenvolvimento
 
 ### Related Topics
+
 - [../../docs/STANDARDIZATION_MASTER_PLAN.md](../../docs/STANDARDIZATION_MASTER_PLAN.md) — Estratégia de padronização
 - [../../docs/INCOMPLETE_CODE_REPORT.md](../../docs/INCOMPLETE_CODE_REPORT.md) — Relatório de código incompleto
 

@@ -1,5 +1,8 @@
 """Enterprise Authentication API Endpoints with RBAC and Session Management.
 
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 This module provides production-ready authentication API endpoints with enterprise
 features including role-based access control (RBAC), session management,
 comprehensive security monitoring, and audit logging.
@@ -20,45 +23,45 @@ with production-ready API endpoints and comprehensive security integration.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import TYPE_CHECKING
+from typing import Annotated
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter
+from fastapi import Depends
+from fastapi import HTTPException
+from fastapi import status
 from fastapi.security import HTTPBearer
 from flext_auth.jwt_service import JWTService
 from flext_auth.session_manager import EnterpriseSessionManager
-from flext_auth.tokens import InMemoryTokenStorage, TokenManager
-from flext_auth.user_service import (
-    UserCreationRequest,
-    UserService,
-    UserServiceLoginRequest,
-)
-from flext_core.config.domain_config import get_config
-from flext_core.infrastructure.persistence.session_manager import get_db_session
+from flext_auth.tokens import InMemoryTokenStorage
+from flext_auth.tokens import TokenManager
+from flext_auth.user_service import UserCreationRequest
+from flext_auth.user_service import UserService
+from flext_auth.user_service import UserServiceLoginRequest
 
-from flext_api.models.auth import (
-    LoginResponse,
-    RegisterResponse,
-    SessionListResponse,
-    SessionResponse,
-)
+from flext_api.dependencies import get_db_session
+from flext_api.models.auth import LoginResponse
+from flext_api.models.auth import RegisterResponse
+from flext_api.models.auth import SessionListResponse
+from flext_api.models.auth import SessionResponse
+from flext_core.config.domain_config import get_config
 
 if TYPE_CHECKING:
     from fastapi import Request
     from sqlalchemy.ext.asyncio import AsyncSession
 
-    from flext_api.models.auth import (
-        LoginRequest,
-        LogoutRequest,
-        RefreshTokenRequest,
-        RegisterRequest,
-    )
+    from flext_api.models.auth import LoginRequest
+    from flext_api.models.auth import LogoutRequest
+    from flext_api.models.auth import RefreshTokenRequest
+    from flext_api.models.auth import RegisterRequest
 
 # Configuration and dependencies
 config = get_config()
 security = HTTPBearer()
 
 # Constants
-TOKEN_TYPE_BEARER = "bearer"  # noqa: S105
+TOKEN_TYPE_BEARER = "bearer"
 
 # Initialize services
 jwt_service = JWTService()
@@ -69,7 +72,7 @@ auth_router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
 def _raise_invalid_token_error() -> None:
-    """Raise HTTPException for invalid or expired token."""
+    """Raise an HTTP exception for an invalid token."""
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid or expired token",
@@ -77,7 +80,7 @@ def _raise_invalid_token_error() -> None:
 
 
 def _raise_revoked_token_error() -> None:
-    """Raise HTTPException for revoked or invalid token."""
+    """Raise an HTTP exception for a revoked token."""
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Token revoked or invalid",
@@ -85,7 +88,7 @@ def _raise_revoked_token_error() -> None:
 
 
 def _raise_authentication_error(error: Exception) -> None:
-    """Raise HTTPException for authentication failure."""
+    """Raise an HTTP exception for authentication errors."""
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=f"Authentication failed: {error!s}",
@@ -93,7 +96,7 @@ def _raise_authentication_error(error: Exception) -> None:
 
 
 def _raise_login_failed_error(message: str) -> None:
-    """Raise HTTPException for login failure."""
+    """Raise an HTTP exception for login failures."""
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=message,
@@ -101,7 +104,7 @@ def _raise_login_failed_error(message: str) -> None:
 
 
 def _raise_session_creation_error() -> None:
-    """Raise HTTPException for session creation failure."""
+    """Raise an HTTP exception for session creation failures."""
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="Failed to create session",
@@ -109,7 +112,7 @@ def _raise_session_creation_error() -> None:
 
 
 def _raise_registration_failed_error(message: str) -> None:
-    """Raise HTTPException for registration failure."""
+    """Raise an HTTP exception for registration failures."""
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail=message,
@@ -117,7 +120,7 @@ def _raise_registration_failed_error(message: str) -> None:
 
 
 def _raise_invalid_refresh_token_error() -> None:
-    """Raise HTTPException for invalid refresh token."""
+    """Raise an HTTP exception for invalid refresh tokens."""
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid refresh token",
@@ -125,7 +128,7 @@ def _raise_invalid_refresh_token_error() -> None:
 
 
 def _raise_invalid_token_claims_error() -> None:
-    """Raise HTTPException for invalid token claims."""
+    """Raise an HTTP exception for invalid token claims."""
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid token claims",
@@ -133,7 +136,7 @@ def _raise_invalid_token_claims_error() -> None:
 
 
 def _raise_no_active_sessions_error() -> None:
-    """Raise HTTPException for no active sessions."""
+    """Raise an HTTP exception for no active sessions."""
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="No active sessions found",
@@ -141,7 +144,7 @@ def _raise_no_active_sessions_error() -> None:
 
 
 def _raise_logout_failed_error() -> None:
-    """Raise HTTPException for logout failure."""
+    """Raise an HTTP exception for logout failures."""
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="Failed to logout",
@@ -149,7 +152,7 @@ def _raise_logout_failed_error() -> None:
 
 
 def _raise_session_retrieval_error() -> None:
-    """Raise HTTPException for session retrieval failure."""
+    """Raise an HTTP exception for session retrieval failures."""
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="Failed to retrieve sessions",
@@ -157,7 +160,7 @@ def _raise_session_retrieval_error() -> None:
 
 
 def _raise_session_not_found_error() -> None:
-    """Raise HTTPException for session not found."""
+    """Raise an HTTP exception for session not found."""
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Session not found",
@@ -165,7 +168,7 @@ def _raise_session_not_found_error() -> None:
 
 
 def _raise_session_termination_error() -> None:
-    """Raise HTTPException for session termination failure."""
+    """Raise an HTTP exception for session termination failures."""
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="Failed to terminate session",
@@ -173,7 +176,7 @@ def _raise_session_termination_error() -> None:
 
 
 def _raise_server_error(message: str, error: Exception) -> None:
-    """Raise HTTPException for server errors."""
+    """Raise an HTTP exception for server errors."""
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail=message,
@@ -185,7 +188,7 @@ async def get_current_user(
     token: Annotated[str, Depends(security)],
     _session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> dict[str, Any]:
-    """Get current authenticated user from JWT token."""
+    """Get the current user from the JWT token."""
     try:
         # Validate JWT token
         claims = jwt_service.decode_token(token.credentials)
@@ -217,7 +220,7 @@ async def get_current_user(
 async def get_session_manager(
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> EnterpriseSessionManager:
-    """Get enterprise session manager instance."""
+    """Get the session manager."""
     return EnterpriseSessionManager(db_session=session)
 
 
@@ -228,25 +231,16 @@ async def login_user(
     session: Annotated[AsyncSession, Depends(get_db_session)],
     session_manager: Annotated[EnterpriseSessionManager, Depends(get_session_manager)],
 ) -> LoginResponse:
-    """Authenticate user and create session with RBAC permissions.
-
-    Provides comprehensive user authentication with enterprise features:
-    - Password validation and security checks
-    - Session creation with device tracking
-    - Role-based permissions assignment
-    - Security event logging and audit trails
-    - Rate limiting and suspicious activity detection
+    """Login a user.
 
     Args:
-    ----
-        login_data: User login credentials and device information
-        request: FastAPI request for IP and device tracking
-        session: Database session for user operations
-        session_manager: Enterprise session manager
+        login_data: The login data.
+        request: The request.
+        session: The database session.
+        session_manager: The session manager.
 
     Returns:
-    -------
-        LoginResponse: Authentication response with tokens and session info
+        A dictionary with the login response.
 
     """
     try:
@@ -267,8 +261,7 @@ async def login_user(
 
             message = (
                 auth_result.error.message
-                if auth_result.error
-                else "Authentication failed"
+                if auth_result.error else "Authentication failed"
             )
             _raise_login_failed_error(message)
 
@@ -280,8 +273,7 @@ async def login_user(
         device_info = {
             "platform": (
                 login_data.device_info.get("platform", "unknown")
-                if login_data.device_info
-                else "unknown"
+                if login_data.device_info else "unknown"
             ),
             "browser": user_agent,
             "ip_address": client_ip,
@@ -328,7 +320,7 @@ async def login_user(
         raise
     except (ValueError, KeyError, AttributeError, TypeError) as e:
         _raise_server_error(f"Login failed: {e!s}", e)
-    except (TypeError, RuntimeError, ImportError) as e:
+    except (RuntimeError, ImportError) as e:
         _raise_server_error(f"Login failed: {e!s}", e)
 
 
@@ -338,17 +330,18 @@ async def register_user(
     _request: Request,
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> RegisterResponse:
-    """Register new user with role assignment and validation.
+    """Register a user.
 
     Args:
-    ----
-        register_data: User registration information
-        request: FastAPI request for audit logging
-        session: Database session for user operations
+        register_data: The registration data.
+        _request: The request.
+        session: The database session.
+
+    Raises:
+        HTTPException: If the registration fails.
 
     Returns:
-    -------
-        RegisterResponse: Registration confirmation with user details
+        A dictionary with the registration response.
 
     """
     try:
@@ -368,8 +361,7 @@ async def register_user(
         if not creation_result.success:
             message = (
                 creation_result.error.message
-                if creation_result.error
-                else "Registration failed"
+                if creation_result.error else "Registration failed"
             )
             _raise_registration_failed_error(message)
 
@@ -401,18 +393,19 @@ async def refresh_tokens(
     _session: Annotated[AsyncSession, Depends(get_db_session)],
     session_manager: Annotated[EnterpriseSessionManager, Depends(get_session_manager)],
 ) -> LoginResponse:
-    """Refresh access token using refresh token.
+    """Refresh tokens.
 
     Args:
-    ----
-        refresh_data: Refresh token request
-        request: FastAPI request for security tracking
-        session: Database session for operations
-        session_manager: Enterprise session manager
+        refresh_data: The refresh data.
+        _request: The request.
+        _session: The database session.
+        session_manager: The session manager.
+
+    Raises:
+        HTTPException: If the refresh fails.
 
     Returns:
-    -------
-        LoginResponse: New access and refresh tokens
+        A dictionary with the login response.
 
     """
     try:
@@ -478,19 +471,7 @@ async def logout_user(
     current_user: Annotated[dict[str, Any], Depends(get_current_user)],
     session_manager: Annotated[EnterpriseSessionManager, Depends(get_session_manager)],
 ) -> dict[str, str]:
-    """Logout user and terminate session.
-
-    Args:
-    ----
-        logout_data: Logout request with session termination options
-        current_user: Current authenticated user
-        session_manager: Enterprise session manager
-
-    Returns:
-    -------
-        dict: Logout confirmation message
-
-    """
+    """Logout a user."""
     try:
         user_id = current_user["user_id"]
 
@@ -534,16 +515,17 @@ async def get_user_sessions(
     current_user: Annotated[dict[str, Any], Depends(get_current_user)],
     session_manager: Annotated[EnterpriseSessionManager, Depends(get_session_manager)],
 ) -> SessionListResponse:
-    """Get all active sessions for current user.
+    """Get the user's sessions.
 
     Args:
-    ----
-        current_user: Current authenticated user
-        session_manager: Enterprise session manager
+        current_user: The current user.
+        session_manager: The session manager.
+
+    Raises:
+        HTTPException: If the session retrieval fails.
 
     Returns:
-    -------
-        SessionListResponse: List of active sessions with metadata
+        A dictionary with the user's sessions.
 
     """
     try:
@@ -591,17 +573,18 @@ async def terminate_session(
     _current_user: Annotated[dict[str, Any], Depends(get_current_user)],
     session_manager: Annotated[EnterpriseSessionManager, Depends(get_session_manager)],
 ) -> dict[str, str]:
-    """Terminate specific session.
+    """Terminate a session.
 
     Args:
-    ----
-        session_id: Session identifier to terminate
-        current_user: Current authenticated user
-        session_manager: Enterprise session manager
+        session_id: The ID of the session to terminate.
+        _current_user: The current user.
+        session_manager: The session manager.
+
+    Raises:
+        HTTPException: If the session termination fails.
 
     Returns:
-    -------
-        dict: Termination confirmation message
+        A dictionary with a message and the session ID.
 
     """
     try:
@@ -629,15 +612,13 @@ async def terminate_session(
 async def get_user_profile(
     current_user: Annotated[dict[str, Any], Depends(get_current_user)],
 ) -> dict[str, Any]:
-    """Get current user profile with permissions and roles.
+    """Get the user's profile.
 
     Args:
-    ----
-        current_user: Current authenticated user
+        current_user: The current user.
 
     Returns:
-    -------
-        dict: User profile with complete permission and role information
+        A dictionary with the user's profile.
 
     """
     try:
@@ -661,16 +642,14 @@ async def get_user_permissions(
     current_user: Annotated[dict[str, Any], Depends(get_current_user)],
     session_manager: Annotated[EnterpriseSessionManager, Depends(get_session_manager)],
 ) -> dict[str, Any]:
-    """Get current user permissions with role hierarchy.
+    """Get the user's permissions.
 
     Args:
-    ----
-        current_user: Current authenticated user
-        session_manager: Enterprise session manager for RBAC operations
+        current_user: The current user.
+        session_manager: The session manager.
 
     Returns:
-    -------
-        dict: Complete permission information with role inheritance
+        A dictionary with the user's permissions.
 
     """
     try:
@@ -713,11 +692,10 @@ async def get_user_permissions(
 
 @auth_router.get("/health")
 async def auth_health_check() -> dict[str, Any]:
-    """Authentication service health check.
+    """Check the health of the authentication service.
 
     Returns:
-    -------
-        dict: Health status and service information
+        A dictionary with the health of the authentication service.
 
     """
     return {
