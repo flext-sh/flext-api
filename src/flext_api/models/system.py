@@ -7,9 +7,8 @@ Zero tolerance for duplication.
 
 from __future__ import annotations
 
-from datetime import datetime
+from typing import TYPE_CHECKING
 from typing import Any
-from uuid import UUID
 
 from pydantic import Field
 from pydantic import field_validator
@@ -17,6 +16,10 @@ from pydantic import field_validator
 from flext_core.domain.pydantic_base import APIRequest
 from flext_core.domain.pydantic_base import APIResponse
 from flext_core.domain.types import StrEnum
+
+if TYPE_CHECKING:
+    from datetime import datetime
+    from uuid import UUID
 
 
 class SystemStatus(StrEnum):

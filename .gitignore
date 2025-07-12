@@ -116,6 +116,15 @@ dmypy.json
 *.swo
 *~
 
+# Cursor AI
+.cursor/
+.cursorrules
+
+# Claude AI
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+
 # ============================================================================
 # OS SPECIFIC FILES
 # ============================================================================
@@ -169,7 +178,7 @@ docker-compose.override.yml
 .env.production
 
 # ============================================================================
-# PROJECT SPECIFIC
+# PROJECT SPECIFIC - FLEXT-API
 # ============================================================================
 
 # Archive directory (for moved junk files)
@@ -179,22 +188,30 @@ archive/
 docs/api/
 api-docs/
 
-# ============================================================================
-# AI GENERATED CONTENT (ARCHIVED)
-# ============================================================================
+# Reports directory
+reports/
 
-# AI assistant files
-.claude/
-.cursor/
-.cursorrules
-CLAUDE*.md
+# Old requirements.txt (use pyproject.toml)
+requirements.txt
+
+# Dev backups
+.dev_deps_backup_*
+*_backup_*
+
+# AI-generated reports and migration files
 *_REPORT.md
+*_REPORT_*.md
+CONFIG_MIGRATION*.md
+FLEXT_*_MIGRATION*.md
+DEVELOPMENT_STANDARDS.md
+DUPLICATION_REPORT.md
 
 # Manual fix scripts
 fix_*.py
 fix_*.go
 *_fix.*
 *_validation.*
+validate_*.*
 
 # ============================================================================
 # ALWAYS INCLUDE EXCEPTIONS
