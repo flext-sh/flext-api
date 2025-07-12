@@ -26,7 +26,6 @@ from flext_core.domain.types import ServiceResult
 from flext_observability.logging import get_logger
 
 if TYPE_CHECKING:
-
     from fastapi.security import HTTPAuthorizationCredentials
     from sqlalchemy.ext.asyncio import AsyncSession
 

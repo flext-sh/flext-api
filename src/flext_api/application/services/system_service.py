@@ -30,7 +30,9 @@ class SystemService:
     coordinating with flext-observability and domain entities.
     """
 
-    def __init__(self, health_monitor: HealthMonitor, metrics_collector: MetricsCollector) -> None:
+    def __init__(
+        self, health_monitor: HealthMonitor, metrics_collector: MetricsCollector
+    ) -> None:
         self.health_monitor = health_monitor
         self.metrics_collector = metrics_collector
 
@@ -166,7 +168,9 @@ class SystemService:
             logger.exception("System backup failed", error=str(e))
             return ServiceResult.fail(f"System backup failed: {e}")
 
-    async def maintenance_mode(self, enabled: bool, message: str | None = None) -> ServiceResult[dict]:
+    async def maintenance_mode(
+        self, enabled: bool, message: str | None = None
+    ) -> ServiceResult[dict]:
         """Update system maintenance mode.
 
         Args:

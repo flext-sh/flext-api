@@ -61,7 +61,7 @@ config = get_config()
 security = HTTPBearer()
 
 # Constants
-TOKEN_TYPE_BEARER = "bearer"
+TOKEN_TYPE_BEARER = "bearer"  # noqa: S105
 
 # Initialize services
 jwt_service = JWTService()
@@ -261,7 +261,8 @@ async def login_user(
 
             message = (
                 auth_result.error.message
-                if auth_result.error else "Authentication failed"
+                if auth_result.error
+                else "Authentication failed"
             )
             _raise_login_failed_error(message)
 
@@ -273,7 +274,8 @@ async def login_user(
         device_info = {
             "platform": (
                 login_data.device_info.get("platform", "unknown")
-                if login_data.device_info else "unknown"
+                if login_data.device_info
+                else "unknown"
             ),
             "browser": user_agent,
             "ip_address": client_ip,
@@ -361,7 +363,8 @@ async def register_user(
         if not creation_result.success:
             message = (
                 creation_result.error.message
-                if creation_result.error else "Registration failed"
+                if creation_result.error
+                else "Registration failed"
             )
             _raise_registration_failed_error(message)
 

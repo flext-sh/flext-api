@@ -22,7 +22,7 @@ from flext_core.domain.pydantic_base import DomainValueObject
 class ServerConfig(DomainValueObject):
     """Server configuration value object."""
 
-    host: str = Field("0.0.0.0", description="API server host")
+    host: str = Field("0.0.0.0", description="API server host")  # noqa: S104
     port: int = Field(8000, ge=1, le=65535, description="API server port")
     workers: int = Field(4, ge=1, le=100, description="Number of worker processes")
     reload: bool = Field(False, description="Enable auto-reload in development")
@@ -217,7 +217,7 @@ def create_development_api_config() -> APISettings:
             enabled=False,
         ),
         security=SecurityConfig(
-            secret_key="development-secret-key-change-in-production",
+            secret_key="development-secret-key-change-in-production",  # noqa: S106
             access_token_expire_minutes=60,
         ),
     )

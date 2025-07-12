@@ -265,7 +265,6 @@ class PostgreSQLPluginRepository(
 
         """
         async with self.get_session() as session:
-
             # Convert to SQLAlchemy model
             plugin_model = self._to_model(plugin)
 

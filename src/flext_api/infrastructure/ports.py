@@ -539,8 +539,7 @@ class UvicornServer(ServerService):
             "status": (
                 "running" if self.server and not self.server.should_exit else "stopped"
             ),
-            "host":
-            self.config.host,
+            "host": self.config.host,
             "port": self.config.port,
             "workers": self.config.workers,
             "reload": self.config.reload,

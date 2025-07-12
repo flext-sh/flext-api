@@ -139,8 +139,7 @@ class APIContainer(Container):
     )
 
     cache_service: CacheService = DependencyProvider(
-        lambda config:
-            RedisCache(config) if config.cache_backend == "redis" else None,
+        lambda config: RedisCache(config) if config.cache_backend == "redis" else None,
         config,
     )
 

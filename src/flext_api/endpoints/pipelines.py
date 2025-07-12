@@ -39,7 +39,9 @@ class PipelineListParams(APIBaseModel):
 
 
 @pipelines_router.post("")
-async def create_pipeline(pipeline_data: PipelineCreateRequest, request: Request) -> PipelineResponse:
+async def create_pipeline(
+    pipeline_data: PipelineCreateRequest, request: Request
+) -> PipelineResponse:
     pipeline_id = str(uuid4())
     created_at = datetime.now(UTC)
 
@@ -71,7 +73,9 @@ async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:
 
 
 @pipelines_router.put("/{pipeline_id}")
-async def update_pipeline(pipeline_id: str, pipeline_data: PipelineUpdateRequest, request: Request) -> PipelineResponse:
+async def update_pipeline(
+    pipeline_id: str, pipeline_data: PipelineUpdateRequest, request: Request
+) -> PipelineResponse:
     # Implementation placeholder - will update in storage
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
@@ -83,7 +87,9 @@ async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
 
 
 @pipelines_router.post("/{pipeline_id}/execute")
-async def execute_pipeline(pipeline_id: str, execution_data: PipelineExecutionRequest, request: Request) -> dict[str, str]:
+async def execute_pipeline(
+    pipeline_id: str, execution_data: PipelineExecutionRequest, request: Request
+) -> dict[str, str]:
     execution_id = str(uuid4())
     execution_started_at = datetime.now(UTC)
 

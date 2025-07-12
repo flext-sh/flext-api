@@ -45,7 +45,9 @@ async def get_system_services(request: Request) -> list[SystemServiceResponse]:
 
 
 @system_router.get("/services/{service_name}")
-async def get_system_service(service_name: str, request: Request) -> SystemServiceResponse:
+async def get_system_service(
+    service_name: str, request: Request
+) -> SystemServiceResponse:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,
@@ -54,7 +56,9 @@ async def get_system_service(service_name: str, request: Request) -> SystemServi
 
 
 @system_router.post("/maintenance")
-async def start_maintenance(maintenance_data: MaintenanceRequest, request: Request) -> MaintenanceResponse:
+async def start_maintenance(
+    maintenance_data: MaintenanceRequest, request: Request
+) -> MaintenanceResponse:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,
@@ -63,7 +67,9 @@ async def start_maintenance(maintenance_data: MaintenanceRequest, request: Reque
 
 
 @system_router.get("/maintenance/{maintenance_id}")
-async def get_maintenance_status(maintenance_id: str, request: Request) -> MaintenanceResponse:
+async def get_maintenance_status(
+    maintenance_id: str, request: Request
+) -> MaintenanceResponse:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,
@@ -78,7 +84,9 @@ async def stop_maintenance(maintenance_id: str, request: Request) -> APIResponse
 
 
 @system_router.post("/backup")
-async def create_system_backup(backup_data: SystemBackupRequest, request: Request) -> SystemBackupResponse:
+async def create_system_backup(
+    backup_data: SystemBackupRequest, request: Request
+) -> SystemBackupResponse:
     # Implementation placeholder
     raise HTTPException(status_code=501, detail="System backup not yet implemented")
 
@@ -108,13 +116,17 @@ async def get_system_backup(backup_id: str, request: Request) -> SystemBackupRes
 
 
 @system_router.post("/restore/{backup_id}")
-async def restore_system_backup(backup_id: str, restore_data: SystemRestoreRequest, request: Request) -> APIResponse:
+async def restore_system_backup(
+    backup_id: str, restore_data: SystemRestoreRequest, request: Request
+) -> APIResponse:
     # Implementation placeholder
     raise HTTPException(status_code=501, detail="System restore not yet implemented")
 
 
 @system_router.post("/health-check")
-async def perform_health_check(health_data: SystemHealthCheckRequest, request: Request) -> SystemHealthResponse:
+async def perform_health_check(
+    health_data: SystemHealthCheckRequest, request: Request
+) -> SystemHealthResponse:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,
@@ -160,7 +172,9 @@ async def get_system_metrics(
 
 
 @system_router.put("/configuration")
-async def update_system_configuration(config_data: SystemConfigurationRequest, request: Request) -> APIResponse:
+async def update_system_configuration(
+    config_data: SystemConfigurationRequest, request: Request
+) -> APIResponse:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,
