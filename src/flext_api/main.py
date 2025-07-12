@@ -111,7 +111,7 @@ class FlextAPIStorage:
                     "avg_response_time_ms": 45.2,
                     "error_rate_percent": 0.1,
                 },
-                active_alerts=list(self.alerts.values()),
+                active_alerts=[alert.model_dump() for alert in self.alerts.values()],
                 plugin_count=len(self.plugins),
                 active_pipelines=len(
                     [p for p in self.pipelines.values() if p.get("status") == "running"]
