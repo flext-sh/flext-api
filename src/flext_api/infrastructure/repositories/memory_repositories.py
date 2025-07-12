@@ -189,7 +189,13 @@ class InMemoryPluginRepository:
                 return plugin
         return None
 
-    async def list_plugins(self, plugin_type: str | None = None, enabled: bool | None = None, limit: int = 20, offset: int = 0) -> list[Plugin]:
+    async def list_plugins(
+        self,
+        plugin_type: str | None = None,
+        enabled: bool | None = None,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> list[Plugin]:
         """List plugins with optional filtering.
 
         Args:

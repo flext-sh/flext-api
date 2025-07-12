@@ -335,7 +335,9 @@ async def list_executions(
         filtered_executions = executions
         if params.pipeline_id:
             filtered_executions = [
-                ex for ex in filtered_executions if ex["pipeline_id"] == params.pipeline_id
+                ex
+                for ex in filtered_executions
+                if ex["pipeline_id"] == params.pipeline_id
             ]
         if params.status:
             filtered_executions = [

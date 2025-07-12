@@ -94,7 +94,9 @@ class PipelineExecutionService(ABC):
         """Execute pipeline and return execution ID."""
 
     @abstractmethod
-    async def get_execution_status(self, execution_id: str) -> ServiceResult[dict[str, Any]]:
+    async def get_execution_status(
+        self, execution_id: str
+    ) -> ServiceResult[dict[str, Any]]:
         """Get pipeline execution status."""
 
     @abstractmethod
@@ -169,7 +171,9 @@ class APIAuthenticationService(ABC):
     """API authentication service port."""
 
     @abstractmethod
-    async def authenticate_request(self, request: APIRequest) -> ServiceResult[dict[str, Any]]:
+    async def authenticate_request(
+        self, request: APIRequest
+    ) -> ServiceResult[dict[str, Any]]:
         """Authenticate API request."""
 
     @abstractmethod

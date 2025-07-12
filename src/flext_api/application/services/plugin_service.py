@@ -34,7 +34,18 @@ class PluginService:
     def __init__(self, plugin_repo: PluginRepository) -> None:
         self.plugin_repo = plugin_repo
 
-    async def install_plugin(self, name: str, type: str, version: str, description: str | None = None, config: dict | None = None, author: str | None = None, repository_url: str | None = None, documentation_url: str | None = None, capabilities: list[str] | None = None) -> ServiceResult[Plugin]:
+    async def install_plugin(
+        self,
+        name: str,
+        type: str,
+        version: str,
+        description: str | None = None,
+        config: dict | None = None,
+        author: str | None = None,
+        repository_url: str | None = None,
+        documentation_url: str | None = None,
+        capabilities: list[str] | None = None,
+    ) -> ServiceResult[Plugin]:
         """Install a new plugin.
 
         Args:
@@ -86,7 +97,7 @@ class PluginService:
             return ServiceResult.ok(saved_plugin)
 
         except Exception as e:
-            logger.error("Failed to install plugin", error=str(e), exc_info=True)
+            logger.exception("Failed to install plugin", error=str(e))
             return ServiceResult.fail(f"Failed to install plugin: {e}")
 
     async def get_plugin(self, plugin_id: UUID) -> ServiceResult[Plugin]:
@@ -114,7 +125,13 @@ class PluginService:
             )
             return ServiceResult.fail(f"Failed to get plugin: {e}")
 
-    async def list_plugins(self, type: str | None = None, enabled: bool | None = None, limit: int = 20, offset: int = 0) -> ServiceResult[list[Plugin]]:
+    async def list_plugins(
+        self,
+        type: str | None = None,
+        enabled: bool | None = None,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> ServiceResult[list[Plugin]]:
         """List plugins with optional filtering.
 
         Args:
@@ -141,7 +158,15 @@ class PluginService:
             logger.exception("Failed to list plugins", error=str(e))
             return ServiceResult.fail(f"Failed to list plugins: {e}")
 
-    async def update_plugin(self, plugin_id: UUID, name: str | None = None, description: str | None = None, config: dict | None = None, enabled: bool | None = None, capabilities: list[str] | None = None) -> ServiceResult[Plugin]:
+    async def update_plugin(
+        self,
+        plugin_id: UUID,
+        name: str | None = None,
+        description: str | None = None,
+        config: dict | None = None,
+        enabled: bool | None = None,
+        capabilities: list[str] | None = None,
+    ) -> ServiceResult[Plugin]:
         """Update an existing plugin.
 
         Args:

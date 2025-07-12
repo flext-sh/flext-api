@@ -1,4 +1,3 @@
-
 """Configuration for FLEXT-API infrastructure.
 
 Copyright (c) 2025 Flext. All rights reserved.

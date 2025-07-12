@@ -35,7 +35,14 @@ class PipelineService:
     def __init__(self, pipeline_repo: PipelineRepository) -> None:
         self.pipeline_repo = pipeline_repo
 
-    async def create_pipeline(self, name: str, description: str | None = None, config: dict | None = None, owner_id: UUID | None = None, project_id: UUID | None = None) -> ServiceResult[Pipeline]:
+    async def create_pipeline(
+        self,
+        name: str,
+        description: str | None = None,
+        config: dict | None = None,
+        owner_id: UUID | None = None,
+        project_id: UUID | None = None,
+    ) -> ServiceResult[Pipeline]:
         """Create a new pipeline.
 
         Args:
@@ -78,7 +85,7 @@ class PipelineService:
             return ServiceResult.success(saved_pipeline)
 
         except Exception as e:
-            logger.error("Failed to create pipeline", error=str(e), exc_info=True)
+            logger.exception("Failed to create pipeline", error=str(e))
             return ServiceResult.failure(f"Failed to create pipeline: {e}")
 
     async def get_pipeline(self, pipeline_id: UUID) -> ServiceResult[Pipeline]:

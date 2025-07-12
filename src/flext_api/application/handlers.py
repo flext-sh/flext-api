@@ -145,7 +145,7 @@ class CreatePluginCommand(Command):
     def __init__(
         self,
         name: str,
-        type: str,
+        type: str,  # noqa: A002
         version: str,
         description: str | None = None,
         config: dict | None = None,
@@ -181,7 +181,7 @@ class ListPluginsCommand(Command):
         self,
         limit: int = 20,
         offset: int = 0,
-        type: str | None = None,
+        type: str | None = None,  # noqa: A002
         enabled: bool | None = None,
     ) -> None:
         self.limit = limit

@@ -30,7 +30,9 @@ plugins_router = APIRouter(prefix="/plugins", tags=["plugins"])
 
 
 @plugins_router.post("/install")
-async def install_plugin(plugin_data: PluginInstallRequest, request: Request) -> PluginInstallationResponse:
+async def install_plugin(
+    plugin_data: PluginInstallRequest, request: Request
+) -> PluginInstallationResponse:
     # Implementation placeholder - will use actual plugin manager
     return PluginInstallationResponse(
         success=True,
@@ -75,7 +77,9 @@ async def get_plugin(plugin_name: str, request: Request) -> PluginResponse:
 
 
 @plugins_router.put("/{plugin_name}/config")
-async def update_plugin_config(plugin_name: str, config_data: PluginConfigRequest, request: Request) -> PluginResponse:
+async def update_plugin_config(
+    plugin_name: str, config_data: PluginConfigRequest, request: Request
+) -> PluginResponse:
     # Basic validation
     if not plugin_name or not plugin_name.strip():
         raise HTTPException(status_code=400, detail="Plugin name is required")
@@ -99,13 +103,17 @@ async def update_plugin_config(plugin_name: str, config_data: PluginConfigReques
 
 
 @plugins_router.put("/{plugin_name}/update")
-async def update_plugin(plugin_name: str, update_data: PluginUpdateRequest, request: Request) -> PluginInstallationResponse:
+async def update_plugin(
+    plugin_name: str, update_data: PluginUpdateRequest, request: Request
+) -> PluginInstallationResponse:
     # Implementation placeholder
     raise HTTPException(status_code=501, detail="Plugin update not yet implemented")
 
 
 @plugins_router.delete("/{plugin_name}")
-async def uninstall_plugin(plugin_name: str, uninstall_data: PluginUninstallRequest, request: Request) -> APIResponse:
+async def uninstall_plugin(
+    plugin_name: str, uninstall_data: PluginUninstallRequest, request: Request
+) -> APIResponse:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,

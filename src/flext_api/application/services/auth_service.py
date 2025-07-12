@@ -103,7 +103,7 @@ class AuthService:
             )
 
         except Exception as e:
-            logger.error("Login failed", email=email, error=str(e), exc_info=True)
+            logger.exception("Login failed", email=email, error=str(e))
             return ServiceResult.fail(f"Login failed: {e}")
 
     async def logout(self, session_id: str) -> ServiceResult[bool]:

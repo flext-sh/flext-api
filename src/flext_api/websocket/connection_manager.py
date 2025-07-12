@@ -1,5 +1,3 @@
-
-
 """WebSocket connection manager for real-time communication.
 
 This module implements WebSocket connection management functionality

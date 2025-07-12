@@ -113,7 +113,9 @@ class FlextAPIStorage:
                 },
                 active_alerts=list(self.alerts.values()),
                 plugin_count=len(self.plugins),
-                active_pipelines=len([p for p in self.pipelines.values() if p.get("status") == "running"]),
+                active_pipelines=len(
+                    [p for p in self.pipelines.values() if p.get("status") == "running"]
+                ),
                 environment="development",
             )
 
@@ -123,7 +125,9 @@ class FlextAPIStorage:
             logger.exception(f"Error getting system status: {e}")
             return ServiceResult.fail(f"Failed to get system status: {e!s}")
 
-    def create_alert(self, severity: AlertSeverity, title: str, message: str) -> ServiceResult[SystemAlertResponse]:
+    def create_alert(
+        self, severity: AlertSeverity, title: str, message: str
+    ) -> ServiceResult[SystemAlertResponse]:
         """Create new system alert."""
         try:
             alert_id = uuid4()
@@ -148,7 +152,9 @@ class FlextAPIStorage:
             logger.exception(f"Error creating alert: {e}")
             return ServiceResult.fail(f"Failed to create alert: {e!s}")
 
-    def get_metrics(self, metric_name: str | None = None) -> ServiceResult[list[SystemMetricsResponse]]:
+    def get_metrics(
+        self, metric_name: str | None = None
+    ) -> ServiceResult[list[SystemMetricsResponse]]:
         """Get system metrics."""
         try:
             if metric_name and metric_name in self.metrics:
@@ -186,7 +192,9 @@ class FlextAPIStorage:
             logger.exception(f"Error getting metrics: {e}")
             return ServiceResult.fail(f"Failed to get metrics: {e!s}")
 
-    def start_maintenance(self, request: MaintenanceRequest) -> ServiceResult[MaintenanceResponse]:
+    def start_maintenance(
+        self, request: MaintenanceRequest
+    ) -> ServiceResult[MaintenanceResponse]:
         """Start system maintenance."""
         try:
             maintenance_id = uuid4()
@@ -223,7 +231,9 @@ class FlextAPIStorage:
             logger.exception(f"Error starting maintenance: {e}")
             return ServiceResult.fail(f"Failed to start maintenance: {e!s}")
 
-    def create_backup(self, request: SystemBackupRequest) -> ServiceResult[SystemBackupResponse]:
+    def create_backup(
+        self, request: SystemBackupRequest
+    ) -> ServiceResult[SystemBackupResponse]:
         """Create system backup."""
         try:
             backup_id = uuid4()
@@ -262,7 +272,9 @@ class FlextAPIStorage:
             logger.exception(f"Error creating backup: {e}")
             return ServiceResult.fail(f"Failed to create backup: {e!s}")
 
-    def create_pipeline(self, name: str, extractor: str, loader: str) -> ServiceResult[dict[str, Any]]:
+    def create_pipeline(
+        self, name: str, extractor: str, loader: str
+    ) -> ServiceResult[dict[str, Any]]:
         """Create new pipeline."""
         try:
             pipeline_id = str(uuid4())
@@ -569,4 +581,5 @@ async def get_plugin(plugin_name: str):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

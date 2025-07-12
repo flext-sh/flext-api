@@ -7,8 +7,10 @@ Zero tolerance for duplication.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 from typing import Any
+from uuid import UUID
 
 from pydantic import Field
 from pydantic import field_validator
@@ -16,10 +18,6 @@ from pydantic import field_validator
 from flext_core.domain.pydantic_base import APIRequest
 from flext_core.domain.pydantic_base import APIResponse
 from flext_core.domain.types import StrEnum
-
-if TYPE_CHECKING:
-    from datetime import datetime
-    from uuid import UUID
 
 
 class SystemStatus(StrEnum):
@@ -384,15 +382,27 @@ class SystemAlertResponse(APIResponse):
     title: str = Field(max_length=200, description="Alert title")
     message: str = Field(max_length=1000, description="Alert message")
     service_name: str | None = Field(default=None, description="Affected service name")
-    service_type: ServiceType | None = Field(default=None, description="Affected service type")
+    service_type: ServiceType | None = Field(
+        default=None, description="Affected service type"
+    )
     created_at: datetime = Field(description="Alert creation timestamp")
-    updated_at: datetime | None = Field(default=None, description="Alert last update timestamp")
-    acknowledged: bool = Field(default=False, description="Whether alert is acknowledged")
-    acknowledged_by: str | None = Field(default=None, description="User who acknowledged alert")
-    acknowledged_at: datetime | None = Field(default=None, description="Alert acknowledgment timestamp")
+    updated_at: datetime | None = Field(
+        default=None, description="Alert last update timestamp"
+    )
+    acknowledged: bool = Field(
+        default=False, description="Whether alert is acknowledged"
+    )
+    acknowledged_by: str | None = Field(
+        default=None, description="User who acknowledged alert"
+    )
+    acknowledged_at: datetime | None = Field(
+        default=None, description="Alert acknowledgment timestamp"
+    )
     resolved: bool = Field(default=False, description="Whether alert is resolved")
     resolved_by: str | None = Field(default=None, description="User who resolved alert")
-    resolved_at: datetime | None = Field(default=None, description="Alert resolution timestamp")
+    resolved_at: datetime | None = Field(
+        default=None, description="Alert resolution timestamp"
+    )
     alert_count: int = Field(default=1, ge=1, description="Number of similar alerts")
     first_occurrence: datetime = Field(description="First occurrence of this alert")
     last_occurrence: datetime = Field(description="Last occurrence of this alert")
@@ -402,7 +412,9 @@ class SystemAlertResponse(APIResponse):
     )
     tags: list[str] = Field(default_factory=list, description="Alert tags")
     source: str | None = Field(default=None, description="Alert source system")
-    correlation_id: str | None = Field(default=None, description="Alert correlation identifier")
+    correlation_id: str | None = Field(
+        default=None, description="Alert correlation identifier"
+    )
     escalation_level: int = Field(
         default=0,
         ge=0,
@@ -424,7 +436,9 @@ class SystemMetricsResponse(APIResponse):
     unit: str | None = Field(default=None, description="Metric unit")
     timestamp: datetime = Field(description="Metric collection timestamp")
     service_name: str | None = Field(default=None, description="Source service name")
-    service_type: ServiceType | None = Field(default=None, description="Source service type")
+    service_type: ServiceType | None = Field(
+        default=None, description="Source service type"
+    )
     labels: dict[str, str] = Field(
         default_factory=dict,
         description="Metric labels",
@@ -443,7 +457,9 @@ class SystemMetricsResponse(APIResponse):
         default_factory=list,
         description="Associated alert rules",
     )
-    aggregation_period: str | None = Field(default=None, description="Aggregation period")
+    aggregation_period: str | None = Field(
+        default=None, description="Aggregation period"
+    )
     collection_interval_seconds: int = Field(
         default=60,
         ge=1,

@@ -29,7 +29,9 @@ from flext_api.routes import pipelines_router
 from flext_api.routes import plugins_router
 from flext_api.routes import system_router
 
-# Use centralized logger from flext-observability
+# Import LogLevel and LoggingConfig at the top
+from flext_core import LogLevel
+from flext_observability.logging import LoggingConfig
 from flext_observability.logging import get_logger
 from flext_observability.logging import setup_logging
 
@@ -41,10 +43,6 @@ configure_api_dependencies()
 
 # Initialize settings with DI container
 settings = get_api_settings()
-
-# Setup logging using flext-observability with LoggingConfig
-from flext_core import LogLevel
-from flext_observability.logging import LoggingConfig
 
 # Convert string to LogLevel enum
 log_level_str = settings.log_level.lower()
@@ -74,7 +72,7 @@ if settings.rate_limit_enabled:
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     """Application lifespan management."""
-    logger.info(f"Starting FLEXT API version {settings.project_version}")
+    logger.info("Starting FLEXT API version %s", settings.project_version)
     yield
     logger.info("Shutting down FLEXT API")
 
@@ -140,7 +138,10 @@ app = create_app()
 def main() -> None:
     """Run the main application entry point."""
     logger.info(
-        f"Starting FLEXT API server - {settings.project_name} v{settings.project_version} ({settings.environment})",
+        "Starting FLEXT API server - %s v%s (%s)",
+        settings.project_name,
+        settings.project_version,
+        settings.environment,
     )
 
     uvicorn.run(
