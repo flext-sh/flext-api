@@ -1,223 +1,145 @@
-"""Command-line interface for FLEXT API."""
+"""FLEXT API CLI - Command Line Interface.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+This module provides CLI commands for API operations.
+Uses flext-cli patterns for consistency.
+"""
 
 from __future__ import annotations
 
-import argparse
-import sys
-from typing import TYPE_CHECKING
+import click
+import httpx
+import uvicorn
 
-if TYPE_CHECKING:
-    import argparse as argparse_types
-
-# Constants
-HTTP_OK = 200
+from flext_api.config import get_api_settings
 
 
-def info_command(_args: argparse_types.Namespace) -> int:
-    """Show FLEXT API information."""
-    return 0
+@click.group()
+@click.version_option(version="0.7.0", prog_name="flext-api")
+def cli() -> None:
+    """FLEXT API CLI - Command Line Interface."""
 
 
-def serve_command(args: argparse_types.Namespace) -> int:
-    """Start the API server."""
+@cli.command()
+def config() -> None:
+    """Display the API configuration."""
+    settings = get_api_settings()
+    click.echo(f"Project: {settings.project_name}")
+    click.echo(f"Version: {settings.project_version}")
+    click.echo(f"Environment: {settings.environment}")
+    click.echo(f"Debug: {settings.debug}")
+    click.echo(f"Server: {settings.server.host}:{settings.server.port}")
+    click.echo(f"Workers: {settings.server.workers}")
+    click.echo(f"Database: {settings.database_url}")
+    click.echo(f"Redis: {settings.redis_url}")
+    click.echo(f"CORS Origins: {', '.join(settings.cors.origins)}")
+    click.echo(
+        f"Rate Limiting: {'Enabled' if settings.rate_limit.enabled else 'Disabled'}",
+    )
+
+
+@cli.command()
+def test() -> None:
+    """Test the API configuration.
+
+    Raises:
+        click.Abort: If the configuration fails.
+
+    """
     try:
-        host = args.host
-        port = args.port
-        debug = args.debug
+        settings = get_api_settings()
+        click.echo("✅ Configuration loaded successfully")
+        click.echo(f"Project: {settings.project_name}")
+        click.echo(f"Environment: {settings.environment}")
+        click.echo(f"Server: {settings.server.host}:{settings.server.port}")
+        click.echo("✅ FLEXT API system is working")
+    except Exception as e:
+        click.echo(f"❌ Error: {e}")
+        raise click.Abort from e
 
-        # Import and start server
-        try:
-            import uvicorn
 
-            from flext_api.app import app
+@cli.command()
+@click.option("--host", default=None, help="Host to bind to")
+@click.option("--port", default=None, type=int, help="Port to bind to")
+@click.option("--workers", default=None, type=int, help="Number of workers")
+@click.option("--reload", is_flag=True, help="Enable auto-reload")
+def serve(
+    host: str | None,
+    port: int | None,
+    workers: int | None,
+    reload: bool,
+) -> None:
+    """Start the API server.
 
-            uvicorn.run(
-                app,
-                host=host,
-                port=port,
-                reload=debug,
-                log_level="debug" if debug else "info",
-            )
+    Raises:
+        click.Abort: If the server fails to start.
 
-        except ImportError:
-            return 1
+    """
+    settings = get_api_settings()
+
+    # Use CLI options or fall back to config
+    server_host = host or settings.server.host
+    server_port = port or settings.server.port
+    server_workers = workers or settings.server.workers
+    server_reload = reload or settings.server.reload
+
+    click.echo("🚀 Starting FLEXT API server...")
+    click.echo(f"Host: {server_host}")
+    click.echo(f"Port: {server_port}")
+    click.echo(f"Workers: {server_workers}")
+    click.echo(f"Reload: {server_reload}")
+
+    try:
+        """Start the API server."""
+        uvicorn.run(
+            "flext_api.app:create_app",
+            factory=True,
+            host=server_host,
+            port=server_port,
+            workers=server_workers if not server_reload else 1,
+            reload=server_reload,
+            log_level=settings.log_level.lower(),
+        )
+    except Exception as e:
+        click.echo(f"❌ Failed to start server: {e}")
+        raise click.Abort from e
+
+
+@cli.command()
+def health() -> None:
+    """Check the health of the API.
+
+    Raises:
+        click.Abort: If the API is not healthy.
+
+    """
+    settings = get_api_settings()
+    url = f"http://{settings.server.host}:{settings.server.port}/health"
+
+    try:
+        with httpx.Client() as client:
+            response = client.get(url, timeout=5.0)
+
+        if response.status_code == 200:
+            click.echo("✅ API is healthy")
+            data = response.json()
+            click.echo(f"Status: {data.get('status', 'unknown')}")
+            click.echo(f"Version: {data.get('version', 'unknown')}")
         else:
-            return 0
-
-    except KeyboardInterrupt:
-        return 0
-    except (ImportError, OSError, RuntimeError):
-        return 1
-
-
-def routes_command(_args: argparse_types.Namespace) -> int:
-    """List available API routes."""
-    try:
-        # Try to import the app and list routes
-        try:
-            from flext_api.app import app
-
-            routes = []
-            for route in app.routes:
-                if hasattr(route, "methods") and hasattr(route, "path"):
-                    methods = list(route.methods)
-                    route_path = route.path
-                    route_name = getattr(route, "name", "unnamed")
-                    routes.append((methods, route_path, route_name))
-
-            if routes:
-                for methods, route_path, route_name in routes:
-                    print(f"{', '.join(sorted(methods))} {route_path} ({route_name})")
-            else:
-                print("No routes found")
-
-        except ImportError:
-            print("Failed to import app")
-            return 1
-        else:
-            return 0
-
-    except (ImportError, AttributeError):
-        return 1
+            click.echo(f"❌ API health check failed: {response.status_code}")
+            raise click.Abort
+    except httpx.RequestError as e:
+        click.echo(f"❌ Could not connect to API: {e}")
+        click.echo(f"Make sure the server is running on {url}")
+        raise click.Abort from e
 
 
-def validate_command(_args: argparse_types.Namespace) -> int:
-    """Validate API configuration."""
-    try:
-        errors = 0
-
-        # Check imports using find_spec
-        import importlib.util
-
-        if importlib.util.find_spec("flext_api.app") is None:
-            print("Error: flext_api.app module not found")
-            errors += 1
-
-        # Check dependencies using find_spec
-        if (
-            importlib.util.find_spec("fastapi") is None
-            or importlib.util.find_spec("uvicorn") is None
-        ):
-            print("Error: FastAPI or Uvicorn dependencies not found")
-            errors += 1
-
-        # Check environment variables
-        import os
-
-        env_vars = [
-            ("FLEXT_API_HOST", "API host"),
-            ("FLEXT_API_PORT", "API port"),
-            ("FLEXT_API_DEBUG", "Debug mode"),
-        ]
-
-        for var_name, description in env_vars:
-            value = os.environ.get(var_name)
-            if value:
-                print(f"Found {description}: {value}")
-            else:
-                print(f"Optional {description} not set")
-
-        if errors == 0:
-            print("Validation successful")
-            return 0
-        print(f"Validation failed with {errors} errors")
-        return 1
-
-    except (ImportError, OSError):
-        return 1
-
-
-def health_command(args: argparse_types.Namespace) -> int:
-    """Check API health status."""
-    try:
-        import requests
-
-        host = args.host
-        port = args.port
-        url = f"http://{host}:{port}/health"
-
-        response = requests.get(url, timeout=5)
-
-        if response.status_code == HTTP_OK:
-            health_data = response.json()
-            print(f"API is healthy: {health_data}")
-            return 0
-        print(f"API health check failed with status {response.status_code}")
-        return 1
-
-    except ImportError:
-        print("requests library not available")
-        return 1
-    except (requests.RequestException, OSError) as e:
-        print(f"Health check failed: {e}")
-        return 1
-
-
-def main() -> int:
-    """Main CLI entry point."""
-    parser = argparse.ArgumentParser(
-        description="FLEXT API - REST Gateway CLI",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  flext-api info                           # Show API information
-  flext-api serve                          # Start API server
-  flext-api serve --host 0.0.0.0 --port 8080  # Custom host/port
-  flext-api routes                         # List API routes
-  flext-api validate                       # Validate configuration
-  flext-api health                         # Check API health
-        """,
-    )
-
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
-
-    # Info command
-    info_parser = subparsers.add_parser("info", help="Show API information")
-    info_parser.set_defaults(func=info_command)
-
-    # Serve command
-    serve_parser = subparsers.add_parser("serve", help="Start API server")
-    serve_parser.add_argument(
-        "--host", default="127.0.0.1", help="Host to bind to (default: 127.0.0.1)",
-    )
-    serve_parser.add_argument(
-        "--port", type=int, default=8000, help="Port to bind to (default: 8000)",
-    )
-    serve_parser.add_argument(
-        "--debug", action="store_true", help="Enable debug mode with auto-reload",
-    )
-    serve_parser.set_defaults(func=serve_command)
-
-    # Routes command
-    routes_parser = subparsers.add_parser("routes", help="List API routes")
-    routes_parser.set_defaults(func=routes_command)
-
-    # Validate command
-    validate_parser = subparsers.add_parser(
-        "validate", help="Validate API configuration",
-    )
-    validate_parser.set_defaults(func=validate_command)
-
-    # Health command
-    health_parser = subparsers.add_parser("health", help="Check API health")
-    health_parser.add_argument(
-        "--host", default="127.0.0.1", help="API host to check (default: 127.0.0.1)",
-    )
-    health_parser.add_argument(
-        "--port", type=int, default=8000, help="API port to check (default: 8000)",
-    )
-    health_parser.set_defaults(func=health_command)
-
-    # Parse arguments
-    args = parser.parse_args()
-
-    # Execute command
-    if hasattr(args, "func"):
-        result = args.func(args)
-        return int(result) if result is not None else 0
-    parser.print_help()
-    return 1
+def main() -> None:
+    """Main entry point for the CLI."""
+    cli()
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

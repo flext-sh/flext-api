@@ -1,61 +1,86 @@
-"""Pydantic models for the Monitoring API.
+"""Monitoring and health check API models using flext-core patterns.
 
-Defining data structures for health and statistics.
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+This module provides models for system health monitoring, statistics,
+and component status reporting.
 """
 
-from datetime import datetime
-from typing import Any
+from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from typing import TYPE_CHECKING
 
+from pydantic import Field
 
-class ComponentHealthAPI(BaseModel):
-    """API model for component health status serialization."""
+from flext_core.domain.pydantic_base import APIResponse
 
-    healthy: bool = Field(..., description="Whether the component is healthy.")
-    message: str = Field(..., description="A status message from the component.")
-    metadata: dict[str, Any] = Field(
-        ...,
-        description="Additional metadata about the component's status.",
-    )
+if TYPE_CHECKING:
+    from flext_core.domain.shared_models import ComponentHealth
+
+# ComponentHealthAPI removed - use ComponentHealth from flext_core instead
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(APIResponse):
     """Represents the overall health of the system, including all its components."""
 
     healthy: bool = Field(..., description="The overall health status of the system.")
-    components: dict[str, ComponentHealthAPI] = Field(
-        ...,
-        description="A dictionary of health statuses for individual components.",
+    components: list[ComponentHealth] = Field(
+        default_factory=list,
+        description="A list of component health statuses.",
     )
-    timestamp: datetime = Field(
-        ...,
-        description="The timestamp when the health check was performed.",
+    checks_performed: int = Field(
+        default=0,
+        description="The number of health checks performed.",
     )
+    checks_passed: int = Field(
+        default=0,
+        description="The number of health checks that passed.",
+    )
+    timestamp: str = Field(..., description="The timestamp of the health check.")
 
 
-class SystemStatsResponse(BaseModel):
+class APIInfoResponse(APIResponse):
+    """API service information response."""
+
+    service: str = Field(..., description="Service name")
+    status: str = Field(..., description="Service status")
+    environment: str = Field(..., description="Environment name")
+    version: str = Field(..., description="API version")
+
+
+class SimpleHealthResponse(APIResponse):
+    """Simple health check response."""
+
+    status: str = Field(..., description="Health status")
+    environment: str = Field(..., description="Environment name")
+    debug: str = Field(..., description="Debug mode status")
+
+
+class SystemStatsResponse(APIResponse):
     """Represents key performance and usage statistics for the system."""
 
     active_pipelines: int = Field(
-        ...,
+        default=0,
         description="The number of currently active pipelines.",
     )
+    total_pipelines: int = Field(
+        default=0,
+        description="The total number of pipelines in the system.",
+    )
+    successful_executions: int = Field(
+        default=0,
+        description="The number of successful pipeline executions.",
+    )
+    failed_executions: int = Field(
+        default=0,
+        description="The number of failed pipeline executions.",
+    )
     total_executions: int = Field(
-        ...,
-        description="The total number of pipeline executions since startup.",
-    )
-    success_rate: float = Field(
-        ...,
-        description="The success rate of pipeline executions as a percentage.",
-    )
-    uptime_seconds: int = Field(..., description="The system uptime in seconds.")
-    cpu_usage: float = Field(..., description="The current CPU usage as a percentage.")
-    memory_usage: float = Field(
-        ...,
-        description="The current memory usage in megabytes.",
+        default=0,
+        description="The total number of pipeline executions.",
     )
     active_connections: int = Field(
-        ...,
+        default=0,
         description="The number of active client connections.",
     )

@@ -7,7 +7,7 @@ import pytest
 
 
 def test_api_imports() -> None:
-    """Test that API modules can be imported."""
+    """Test that API imports work correctly."""
     # Use find_spec for availability testing
     if (
         importlib.util.find_spec("json") is None
@@ -57,13 +57,13 @@ class TestAPIEndpoints:
         assert response["status"] == "healthy"
 
     def test_authentication(self) -> None:
-        """Test authentication mechanisms."""
+        """Test authentication functionality."""
         # Mock authentication
         token = "mock_token_12345"
         assert len(token) > 10
 
     def test_error_responses(self) -> None:
-        """Test error response formatting."""
+        """Test error response handling."""
         error_response = {
             "error": "Not Found",
             "code": 404,
@@ -82,7 +82,7 @@ class TestAPIEndpoints:
     ],
 )
 def test_http_methods_safety(method, expected_safe) -> None:
-    """Test HTTP methods safety classification."""
+    """Test HTTP method safety classification."""
     safe_methods = ["GET", "HEAD", "OPTIONS"]
     is_safe = method in safe_methods
     assert is_safe == expected_safe

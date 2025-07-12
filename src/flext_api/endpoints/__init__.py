@@ -1,5 +1,8 @@
 """API endpoints for FLEXT API.
 
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 This module provides the API endpoint definitions for the FLEXT platform,
 organized by functional areas for maintainability and scalability.
 """

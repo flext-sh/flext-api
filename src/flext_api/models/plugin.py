@@ -1,31 +1,24 @@
 """Plugin API Models - Enterprise Plugin Management.
 
-This module provides comprehensive Pydantic models for plugin management
-operations including installation, configuration, discovery, and lifecycle management.
-Follows enterprise patterns with Python 3.13 type system.
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+This module provides Pydantic models for plugin management.
 """
 
 from __future__ import annotations
 
-from enum import StrEnum
-from typing import TYPE_CHECKING, Any
+from datetime import datetime
+from typing import Any
+from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field
+from pydantic import field_validator
 
-if TYPE_CHECKING:
-    from datetime import datetime
-    from uuid import UUID
-
-
-class PluginType(StrEnum):
-    """Plugin type enumeration."""
-
-    EXTRACTOR = "extractor"
-    LOADER = "loader"
-    TRANSFORMER = "transformer"
-    ORCHESTRATOR = "orchestrator"
-    UTILITY = "utility"
-    CUSTOM = "custom"
+from flext_core.domain.pydantic_base import APIRequest
+from flext_core.domain.pydantic_base import APIResponse
+from flext_core.domain.types import PluginType
+from flext_core.domain.types import StrEnum
 
 
 class PluginStatus(StrEnum):
@@ -52,7 +45,7 @@ class PluginSource(StrEnum):
 # --- Request Models ---
 
 
-class PluginInstallRequest(BaseModel):
+class PluginInstallRequest(APIRequest):
     """Request model for plugin installation."""
 
     name: str = Field(
@@ -97,14 +90,25 @@ class PluginInstallRequest(BaseModel):
     @field_validator("name")
     @classmethod
     def validate_name(cls, v: str) -> str:
-        """Validate plugin name format."""
+        """Validate plugin name format.
+
+        Args:
+            v: Plugin name to validate.
+
+        Returns:
+            Validated plugin name.
+
+        Raises:
+            ValueError: If name format is invalid.
+
+        """
         if not v.replace("-", "").replace("_", "").isalnum():
             msg = "Plugin name must contain only alphanumeric characters, hyphens, and underscores"
             raise ValueError(msg)
         return v.lower()
 
 
-class PluginUninstallRequest(BaseModel):
+class PluginUninstallRequest(APIRequest):
     """Request model for plugin uninstallation."""
 
     force: bool = Field(
@@ -121,7 +125,7 @@ class PluginUninstallRequest(BaseModel):
     )
 
 
-class PluginUpdateRequest(BaseModel):
+class PluginUpdateRequest(APIRequest):
     """Request model for plugin updates."""
 
     version: str | None = Field(
@@ -139,7 +143,7 @@ class PluginUpdateRequest(BaseModel):
     )
 
 
-class PluginConfigRequest(BaseModel):
+class PluginConfigRequest(APIRequest):
     """Request model for plugin configuration updates."""
 
     configuration: dict[str, Any] = Field(
@@ -159,7 +163,7 @@ class PluginConfigRequest(BaseModel):
     )
 
 
-class PluginDiscoveryRequest(BaseModel):
+class PluginDiscoveryRequest(APIRequest):
     """Request model for plugin discovery."""
 
     plugin_type: PluginType | None = Field(
@@ -195,7 +199,7 @@ class PluginDiscoveryRequest(BaseModel):
 # --- Response Models ---
 
 
-class PluginResponse(BaseModel):
+class PluginResponse(APIResponse):
     """Response model for plugin information."""
 
     plugin_id: UUID = Field(description="Unique plugin identifier")
@@ -260,7 +264,7 @@ class PluginResponse(BaseModel):
     )
 
 
-class PluginInstallationResponse(BaseModel):
+class PluginInstallationResponse(APIResponse):
     """Response model for plugin installation operations."""
 
     operation_id: UUID = Field(description="Unique operation identifier")
@@ -282,7 +286,7 @@ class PluginInstallationResponse(BaseModel):
     )
 
 
-class PluginListResponse(BaseModel):
+class PluginListResponse(APIResponse):
     """Response model for plugin list operations."""
 
     plugins: list[PluginResponse] = Field(description="List of plugins")
@@ -294,7 +298,7 @@ class PluginListResponse(BaseModel):
     has_previous: bool = Field(description="Whether there are previous pages")
 
 
-class PluginDiscoveryResponse(BaseModel):
+class PluginDiscoveryResponse(APIResponse):
     """Response model for plugin discovery operations."""
 
     available_plugins: list[dict[str, Any]] = Field(description="Available plugins")
@@ -310,7 +314,7 @@ class PluginDiscoveryResponse(BaseModel):
     has_previous: bool = Field(description="Whether there are previous pages")
 
 
-class PluginHealthResponse(BaseModel):
+class PluginHealthResponse(APIResponse):
     """Response model for plugin health information."""
 
     plugin_name: str = Field(description="Plugin name")
@@ -331,7 +335,7 @@ class PluginHealthResponse(BaseModel):
     )
 
 
-class PluginStatsResponse(BaseModel):
+class PluginStatsResponse(APIResponse):
     """Response model for plugin statistics."""
 
     total_plugins: int = Field(description="Total number of plugins")
@@ -352,7 +356,7 @@ class PluginStatsResponse(BaseModel):
 # --- Filter and Search Models ---
 
 
-class PluginFilterRequest(BaseModel):
+class PluginFilterRequest(APIRequest):
     """Request model for filtering plugins."""
 
     plugin_type: PluginType | None = Field(
@@ -416,7 +420,7 @@ class PluginFilterRequest(BaseModel):
 # --- Legacy Models for Backward Compatibility ---
 
 
-class LegacyPluginInstallRequest(BaseModel):
+class LegacyPluginInstallRequest(APIRequest):
     """Legacy plugin installation request model."""
 
     name: str = Field(description="The name of the plugin to install")
@@ -424,23 +428,30 @@ class LegacyPluginInstallRequest(BaseModel):
     variant: str | None = Field(description="The variant of the plugin to install")
 
     def to_modern_request(self) -> PluginInstallRequest:
-        """Convert to modern PluginInstallRequest."""
+        """Convert legacy request to modern format.
+
+        Returns:
+            Modern plugin install request.
+
+        """
         plugin_type_mapping = {
-            "extractor": PluginType.EXTRACTOR,
-            "loader": PluginType.LOADER,
-            "transformer": PluginType.TRANSFORMER,
-            "orchestrator": PluginType.ORCHESTRATOR,
+            "extractor": PluginType.TAP,
+            "tap": PluginType.TAP,
+            "loader": PluginType.TARGET,
+            "target": PluginType.TARGET,
+            "transformer": PluginType.TRANSFORM,
+            "transform": PluginType.TRANSFORM,
             "utility": PluginType.UTILITY,
         }
 
         return PluginInstallRequest(
             name=self.name,
-            plugin_type=plugin_type_mapping.get(self.type, PluginType.CUSTOM),
+            plugin_type=plugin_type_mapping.get(self.type, PluginType.UTILITY),
             variant=self.variant,
         )
 
 
-class LegacyPluginResponse(BaseModel):
+class LegacyPluginResponse(APIResponse):
     """Legacy plugin response model."""
 
     name: str = Field(description="The name of the plugin")
@@ -455,7 +466,15 @@ class LegacyPluginResponse(BaseModel):
 
     @classmethod
     def from_modern_response(cls, response: PluginResponse) -> LegacyPluginResponse:
-        """Convert from modern PluginResponse."""
+        """Convert modern response to legacy format.
+
+        Args:
+            response: Modern plugin response.
+
+        Returns:
+            Legacy plugin response.
+
+        """
         return cls(
             name=response.name,
             type=response.plugin_type,

@@ -1,31 +1,36 @@
-"""Plugin management endpoints for FLEXT API."""
+"""Plugin management endpoints for FLEXT API.
 
-from datetime import UTC, datetime
-from typing import Annotated, Any
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
 
-from fastapi import APIRouter, HTTPException, Query, Request
+This module provides the plugin management endpoints for the FLEXT API.
+"""
 
-from flext_api.models.plugin import (
-    PluginConfigRequest,
-    PluginInstallationResponse,
-    PluginInstallRequest,
-    PluginListResponse,
-    PluginResponse,
-    PluginStatsResponse,
-    PluginUninstallRequest,
-    PluginUpdateRequest,
-)
+from datetime import UTC
+from datetime import datetime
+from typing import Annotated
+from typing import Any
+
+from fastapi import APIRouter
+from fastapi import HTTPException
+from fastapi import Query
+from fastapi import Request
+
+from flext_api.models.plugin import PluginConfigRequest
+from flext_api.models.plugin import PluginInstallationResponse
+from flext_api.models.plugin import PluginInstallRequest
+from flext_api.models.plugin import PluginListResponse
+from flext_api.models.plugin import PluginResponse
+from flext_api.models.plugin import PluginStatsResponse
+from flext_api.models.plugin import PluginUninstallRequest
+from flext_api.models.plugin import PluginUpdateRequest
 from flext_api.models.system import APIResponse
 
 plugins_router = APIRouter(prefix="/plugins", tags=["plugins"])
 
 
 @plugins_router.post("/install")
-async def install_plugin(
-    plugin_data: PluginInstallRequest,
-    request: Request,  # noqa: ARG001
-) -> PluginInstallationResponse:
-    """Install a new plugin with enterprise validation."""
+async def install_plugin(plugin_data: PluginInstallRequest, request: Request) -> PluginInstallationResponse:
     # Implementation placeholder - will use actual plugin manager
     return PluginInstallationResponse(
         success=True,
@@ -37,17 +42,16 @@ async def install_plugin(
 
 @plugins_router.get("")
 async def list_plugins(
-    request: Request,  # noqa: ARG001
+    request: Request,
     page: Annotated[int, Query(default=1, ge=1)],
     page_size: Annotated[int, Query(default=20, ge=1, le=100)],
-    category: Annotated[str | None, Query(default=None)],  # noqa: ARG001
-    status: Annotated[str | None, Query(default=None)],  # noqa: ARG001
-    search: Annotated[str | None, Query(default=None)],  # noqa: ARG001
+    category: Annotated[str | None, Query(default=None)],
+    status: Annotated[str | None, Query(default=None)],
+    search: Annotated[str | None, Query(default=None)],
 ) -> PluginListResponse:
-    """List plugins with filtering and pagination."""
     # Implementation placeholder - will query from plugin registry
     return PluginListResponse(
-        plugins=[],
+        plugins=[],  # TODO: Initialize in __post_init__
         total_count=0,
         page=page,
         page_size=page_size,
@@ -56,8 +60,7 @@ async def list_plugins(
 
 
 @plugins_router.get("/{plugin_name}")
-async def get_plugin(plugin_name: str, request: Request) -> PluginResponse:  # noqa: ARG001
-    """Get plugin by name with complete metadata."""
+async def get_plugin(plugin_name: str, request: Request) -> PluginResponse:
     # Implementation placeholder - will query from plugin registry
     return PluginResponse(
         name=plugin_name,
@@ -72,19 +75,15 @@ async def get_plugin(plugin_name: str, request: Request) -> PluginResponse:  # n
 
 
 @plugins_router.put("/{plugin_name}/config")
-async def update_plugin_config(
-    plugin_name: str,
-    config_data: PluginConfigRequest,
-    request: Request,  # noqa: ARG001
-) -> PluginResponse:
-    """Update plugin configuration."""
+async def update_plugin_config(plugin_name: str, config_data: PluginConfigRequest, request: Request) -> PluginResponse:
     # Basic validation
     if not plugin_name or not plugin_name.strip():
         raise HTTPException(status_code=400, detail="Plugin name is required")
 
     if not isinstance(config_data.configuration, dict):
         raise HTTPException(
-            status_code=400, detail="Plugin configuration must be a valid dictionary",
+            status_code=400,
+            detail="Plugin configuration must be a valid dictionary",
         )
 
     return PluginResponse(
@@ -100,32 +99,22 @@ async def update_plugin_config(
 
 
 @plugins_router.put("/{plugin_name}/update")
-async def update_plugin(
-    plugin_name: str,  # noqa: ARG001
-    update_data: PluginUpdateRequest,  # noqa: ARG001
-    request: Request,  # noqa: ARG001
-) -> PluginInstallationResponse:
-    """Update plugin to specified version."""
+async def update_plugin(plugin_name: str, update_data: PluginUpdateRequest, request: Request) -> PluginInstallationResponse:
     # Implementation placeholder
     raise HTTPException(status_code=501, detail="Plugin update not yet implemented")
 
 
 @plugins_router.delete("/{plugin_name}")
-async def uninstall_plugin(
-    plugin_name: str,  # noqa: ARG001
-    uninstall_data: PluginUninstallRequest,  # noqa: ARG001
-    request: Request,  # noqa: ARG001
-) -> APIResponse:
-    """Uninstall plugin with safety checks."""
+async def uninstall_plugin(plugin_name: str, uninstall_data: PluginUninstallRequest, request: Request) -> APIResponse:
     # Implementation placeholder
     raise HTTPException(
-        status_code=501, detail="Plugin uninstallation not yet implemented",
+        status_code=501,
+        detail="Plugin uninstallation not yet implemented",
     )
 
 
 @plugins_router.get("/stats")
-async def get_plugin_stats(request: Request) -> PluginStatsResponse:  # noqa: ARG001
-    """Get comprehensive plugin statistics."""
+async def get_plugin_stats(request: Request) -> PluginStatsResponse:
     return PluginStatsResponse(
         total_plugins=0,
         installed_plugins=0,
@@ -139,9 +128,9 @@ async def get_plugin_stats(request: Request) -> PluginStatsResponse:  # noqa: AR
 
 
 @plugins_router.post("/{plugin_name}/health-check")
-async def check_plugin_health(plugin_name: str, request: Request) -> dict[str, Any]:  # noqa: ARG001
-    """Perform health check on specific plugin."""
+async def check_plugin_health(plugin_name: str, request: Request) -> dict[str, Any]:
     # Implementation placeholder
     raise HTTPException(
-        status_code=501, detail="Plugin health check not yet implemented",
+        status_code=501,
+        detail="Plugin health check not yet implemented",
     )

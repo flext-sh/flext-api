@@ -1,74 +1,69 @@
-"""Database-backed Plugin API endpoints implementation.
+"""FLEXT API Database Plugin Endpoints - Modern Python 3.13 + Clean Architecture.
 
-This module provides database-backed plugin API endpoints that replace the
-placeholder implementations with persistent SQLAlchemy operations, achieving
-enterprise-grade plugin management capabilities.
+Copyright (c) 2025 FLEXT Team. All rights reserved.
 
-PRODUCTION IMPLEMENTATION FEATURES:
-✅ Database-backed plugin CRUD operations
-✅ Plugin discovery and registry integration
-✅ Installation status tracking and lifecycle management
-✅ Configuration management with validation
-✅ Version management and dependency resolution
-✅ Health monitoring and status tracking
-✅ Enterprise security and access control
-
-This represents the completion of the plugin ecosystem with enterprise-grade
-plugin management functionality.
+Database-backed plugin API endpoints with enterprise features:
+- Plugin CRUD operations with persistence
+- Plugin discovery and registry integration
+- Installation status tracking and lifecycle management
+- Configuration management with validation
+- Version management and dependency resolution
+- Health monitoring and status tracking
+- Enterprise security and access control
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, NoReturn
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import NoReturn
 
-from fastapi import Depends, HTTPException
-from flext_core.config.domain_config import get_config
-from flext_core.infrastructure.persistence.plugin_repository import (
-    DatabasePluginRepository,
-)
-from flext_core.infrastructure.persistence.session_manager import get_db_session
-from pydantic import BaseModel, Field
+from fastapi import Depends
+from fastapi import HTTPException
+from pydantic import Field
 
-
-# Helper functions for exception handling
-def _raise_bad_request_error(message: str) -> NoReturn:
-    """Raise HTTPException for bad request errors."""
-    raise HTTPException(status_code=400, detail=message)
-
-
-def _raise_unauthorized_error(message: str) -> NoReturn:
-    """Raise HTTPException for unauthorized errors."""
-    raise HTTPException(status_code=401, detail=message)
-
-
-def _raise_not_found_error(message: str) -> NoReturn:
-    """Raise HTTPException for not found errors."""
-    raise HTTPException(status_code=404, detail=message)
-
-
-def _raise_internal_error(message: str) -> NoReturn:
-    """Raise HTTPException for internal server errors."""
-    raise HTTPException(status_code=500, detail=message)
-
+from flext_api.dependencies import get_db_session
+from flext_api.repositories.plugin import DatabasePluginRepository
+from flext_core.config import get_config
+from flext_core.domain.pydantic_base import APIRequest
+from flext_core.domain.pydantic_base import APIResponse
 
 if TYPE_CHECKING:
     from fastapi import Request
     from sqlalchemy.ext.asyncio import AsyncSession
 
-    from flext_api.models.plugin import (
-        PluginInstallationResponse,
-        PluginInstallRequest,
-        PluginListResponse,
-        PluginResponse,
-        PluginUpdateRequest,
-    )
+    from flext_api.models.plugin import PluginInstallationResponse
+    from flext_api.models.plugin import PluginInstallRequest
+    from flext_api.models.plugin import PluginListResponse
+    from flext_api.models.plugin import PluginResponse
+    from flext_api.models.plugin import PluginUpdateRequest
+
+
+def _raise_bad_request_error(message: str) -> NoReturn:
+    """Raise HTTP 400 Bad Request error."""
+    raise HTTPException(status_code=400, detail=message)
+
+
+def _raise_unauthorized_error(message: str) -> NoReturn:
+    """Raise HTTP 401 Unauthorized error."""
+    raise HTTPException(status_code=401, detail=message)
+
+
+def _raise_not_found_error(message: str) -> NoReturn:
+    """Raise HTTP 404 Not Found error."""
+    raise HTTPException(status_code=404, detail=message)
+
+
+def _raise_internal_error(message: str) -> NoReturn:
+    """Raise HTTP 500 Internal Server error."""
+    raise HTTPException(status_code=500, detail=message)
+
 
 # Get configuration
 config = get_config()
 
 
-class PluginListParams(BaseModel):
+class PluginListParams(APIRequest):
     """Parameters for plugin listing operations."""
 
     page: int = Field(default=1, ge=1, description="Page number for pagination")
@@ -78,7 +73,10 @@ class PluginListParams(BaseModel):
         le=100,
         description="Number of items per page",
     )
-    plugin_type: str | None = Field(default=None, description="Filter by plugin type")
+    plugin_type: str | None = Field(
+        default=None,
+        description="Filter by plugin type",
+    )
     status: str | None = Field(default=None, description="Filter by plugin status")
     search: str | None = Field(
         default=None,
@@ -89,27 +87,20 @@ class PluginListParams(BaseModel):
 async def install_plugin_db(
     plugin_data: PluginInstallRequest,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),  # noqa: B008
+    session: AsyncSession = Depends(get_db_session),
 ) -> PluginInstallationResponse:
-    """Install a plugin using database repository.
-
-    Database-backed implementation of plugin installation with enterprise
-    features including installation tracking, dependency resolution,
-    and lifecycle management.
+    """Install a plugin using database backend.
 
     Args:
-    ----
-        plugin_data: Plugin installation request with configuration
-        request: FastAPI request with authenticated user context
-        session: Database session for operations
+        plugin_data: Plugin installation request data
+        request: FastAPI request object
+        session: Database session
 
     Returns:
-    -------
-        PluginInstallationResponse: Installation status and tracking information
+        PluginInstallationResponse: Installation result with status
 
     Raises:
-    ------
-        HTTPException: On plugin installation failure or validation errors
+        HTTPException: If authentication fails or installation errors occur
 
     """
     # Get authenticated user from request state
@@ -133,6 +124,8 @@ async def install_plugin_db(
     error = result.error
     if error.error_type == "ValidationError":
         _raise_bad_request_error(error.message)
+    elif error.error_type == "ConflictError":
+        _raise_bad_request_error("Plugin already installed")
     elif error.error_type == "InternalError":
         _raise_internal_error(error.message)
     else:
@@ -140,28 +133,22 @@ async def install_plugin_db(
 
 
 async def get_plugin_db(
-    plugin_name: str,
+    plugin_id: str,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),  # noqa: B008
+    session: AsyncSession = Depends(get_db_session),
 ) -> PluginResponse:
-    """Retrieve a plugin using database repository.
-
-    Database-backed implementation of plugin retrieval with comprehensive
-    metadata, configuration, and status information.
+    """Get a plugin by ID from database.
 
     Args:
-    ----
-        plugin_name: Plugin name identifier
-        request: FastAPI request with authenticated user context
-        session: Database session for operations
+        plugin_id: Plugin identifier string
+        request: FastAPI request object
+        session: Database session
 
     Returns:
-    -------
-        PluginResponse: Plugin information with metadata
+        PluginResponse: Plugin data and metadata
 
     Raises:
-    ------
-        HTTPException: On plugin not found, validation errors, or access denied
+        HTTPException: If authentication fails or plugin not found
 
     """
     # Get authenticated user from request state
@@ -174,51 +161,38 @@ async def get_plugin_db(
 
     # Create repository and execute operation
     repo = DatabasePluginRepository(session)
-    result = await repo.get_plugin(
-        plugin_name=plugin_name,
-        user_id=user.get("username", ""),
-        user_role=user.get("role", "user"),
-    )
+    result = await repo.get_plugin(plugin_id)
 
     # Handle service result
     if result.is_success:
         return result.value
     error = result.error
     if error.error_type == "NotFoundError":
-        _raise_not_found_error(error.message)
-    if error.error_type == "ValidationError":
-        _raise_bad_request_error(error.message)
+        _raise_not_found_error("Plugin not found")
     elif error.error_type == "InternalError":
         _raise_internal_error(error.message)
-    else:
-        _raise_internal_error("Unknown error occurred")
+    _raise_internal_error("Unknown error occurred")
 
 
 async def update_plugin_db(
-    plugin_name: str,
+    plugin_id: str,
     plugin_data: PluginUpdateRequest,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),  # noqa: B008
+    session: AsyncSession = Depends(get_db_session),
 ) -> PluginResponse:
-    """Update a plugin configuration using database repository.
-
-    Database-backed implementation of plugin configuration updates with
-    validation, version management, and audit trail tracking.
+    """Update a plugin configuration in database.
 
     Args:
-    ----
-        plugin_name: Plugin name identifier
-        plugin_data: Plugin update request with changes
-        request: FastAPI request with authenticated user context
-        session: Database session for operations
+        plugin_id: Plugin identifier string
+        plugin_data: Plugin update request data
+        request: FastAPI request object
+        session: Database session
 
     Returns:
-    -------
-        PluginResponse: Updated plugin information
+        PluginResponse: Updated plugin data
 
     Raises:
-    ------
-        HTTPException: On plugin not found, validation errors, or access denied
+        HTTPException: If authentication fails or update errors occur
 
     """
     # Get authenticated user from request state
@@ -232,10 +206,9 @@ async def update_plugin_db(
     # Create repository and execute operation
     repo = DatabasePluginRepository(session)
     result = await repo.update_plugin(
-        plugin_name=plugin_name,
+        plugin_id=plugin_id,
         plugin_data=plugin_data,
-        user_id=user.get("username", ""),
-        user_role=user.get("role", "user"),
+        updated_by=user.get("username", "unknown"),
     )
 
     # Handle service result
@@ -243,38 +216,31 @@ async def update_plugin_db(
         return result.value
     error = result.error
     if error.error_type == "NotFoundError":
-        _raise_not_found_error(error.message)
-    if error.error_type == "ValidationError":
+        _raise_not_found_error("Plugin not found")
+    elif error.error_type == "ValidationError":
         _raise_bad_request_error(error.message)
     elif error.error_type == "InternalError":
         _raise_internal_error(error.message)
-    else:
-        _raise_internal_error("Unknown error occurred")
+    _raise_internal_error("Unknown error occurred")
 
 
 async def uninstall_plugin_db(
-    plugin_name: str,
+    plugin_id: str,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),  # noqa: B008
-) -> dict[str, str]:
-    """Uninstall a plugin using database repository.
-
-    Database-backed implementation of plugin uninstallation with safety checks,
-    audit trail creation, and lifecycle management.
+    session: AsyncSession = Depends(get_db_session),
+) -> APIResponse:
+    """Uninstall a plugin from database.
 
     Args:
-    ----
-        plugin_name: Plugin name identifier
-        request: FastAPI request with authenticated user context
-        session: Database session for operations
+        plugin_id: Plugin identifier string
+        request: FastAPI request object
+        session: Database session
 
     Returns:
-    -------
-        dict: Uninstallation confirmation message
+        APIResponse: Uninstallation success response
 
     Raises:
-    ------
-        HTTPException: On plugin not found, validation errors, or access denied
+        HTTPException: If authentication fails or uninstallation errors occur
 
     """
     # Get authenticated user from request state
@@ -287,49 +253,36 @@ async def uninstall_plugin_db(
 
     # Create repository and execute operation
     repo = DatabasePluginRepository(session)
-    result = await repo.uninstall_plugin(
-        plugin_name=plugin_name,
-        user_id=user.get("username", ""),
-        user_role=user.get("role", "user"),
-    )
+    result = await repo.uninstall_plugin(plugin_id)
 
     # Handle service result
     if result.is_success:
-        return result.value
+        return APIResponse(success=True, message="Plugin uninstalled successfully")
     error = result.error
     if error.error_type == "NotFoundError":
-        _raise_not_found_error(error.message)
-    if error.error_type == "ValidationError":
-        _raise_bad_request_error(error.message)
+        _raise_not_found_error("Plugin not found")
     elif error.error_type == "InternalError":
         _raise_internal_error(error.message)
-    else:
-        _raise_internal_error("Unknown error occurred")
+    _raise_internal_error("Unknown error occurred")
 
 
 async def list_plugins_db(
     request: Request,
-    params: PluginListParams = PluginListParams(),  # noqa: B008
-    session: AsyncSession = Depends(get_db_session),  # noqa: B008
+    params: PluginListParams = PluginListParams(),
+    session: AsyncSession = Depends(get_db_session),
 ) -> PluginListResponse:
-    """List plugins using database repository.
-
-    Database-backed implementation of plugin listing with advanced filtering,
-    pagination, and comprehensive plugin metadata.
+    """List plugins with pagination and filtering.
 
     Args:
-    ----
-        request: FastAPI request with authenticated user context
-        params: Plugin listing parameters (pagination, filtering, search)
-        session: Database session for operations
+        request: FastAPI request object
+        params: Pagination and filtering parameters
+        session: Database session
 
     Returns:
-    -------
         PluginListResponse: Paginated plugin list with metadata
 
     Raises:
-    ------
-        HTTPException: On access denied or invalid filters
+        HTTPException: If authentication fails or listing errors occur
 
     """
     # Get authenticated user from request state
@@ -340,13 +293,9 @@ async def list_plugins_db(
             detail="Authentication required",
         )
 
-    # Note: Pydantic validation handles parameter validation automatically
-
     # Create repository and execute operation
     repo = DatabasePluginRepository(session)
     result = await repo.list_plugins(
-        user_id=user.get("username", ""),
-        user_role=user.get("role", "user"),
         page=params.page,
         page_size=params.page_size,
         plugin_type_filter=params.plugin_type,
@@ -358,37 +307,26 @@ async def list_plugins_db(
     if result.is_success:
         return result.value
     error = result.error
-    if error.error_type == "ValidationError":
-        _raise_bad_request_error(error.message)
-    elif error.error_type == "InternalError":
+    if error.error_type == "InternalError":
         _raise_internal_error(error.message)
-    else:
-        _raise_internal_error("Unknown error occurred")
+    _raise_internal_error("Unknown error occurred")
 
 
-async def get_plugin_health_db(
-    plugin_name: str,
+async def discover_plugins_db(
     request: Request,
-    session: AsyncSession = Depends(get_db_session),  # noqa: B008
+    session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, Any]:
-    """Get plugin health status using database repository.
-
-    Database-backed implementation of plugin health monitoring with
-    comprehensive status checking and diagnostic information.
+    """Discover available plugins from registry.
 
     Args:
-    ----
-        plugin_name: Plugin name identifier
-        request: FastAPI request with authenticated user context
-        session: Database session for operations
+        request: FastAPI request object
+        session: Database session
 
     Returns:
-    -------
-        dict: Plugin health status and diagnostic information
+        dict[str, Any]: Available plugins discovery result
 
     Raises:
-    ------
-        HTTPException: On plugin not found or access denied
+        HTTPException: If authentication fails or discovery errors occur
 
     """
     # Get authenticated user from request state
@@ -399,43 +337,14 @@ async def get_plugin_health_db(
             detail="Authentication required",
         )
 
-    # Get plugin first
+    # Create repository and execute operation
     repo = DatabasePluginRepository(session)
-    plugin_result = await repo.get_plugin(
-        plugin_name=plugin_name,
-        user_id=user.get("username", ""),
-        user_role=user.get("role", "user"),
-    )
+    result = await repo.discover_plugins()
 
-    if not plugin_result.is_success:
-        error = plugin_result.error
-        if error.error_type == "NotFoundError":
-            _raise_not_found_error(error.message)
+    # Handle service result
+    if result.is_success:
+        return {"discovered_plugins": result.value}
+    error = result.error
+    if error.error_type == "InternalError":
         _raise_internal_error(error.message)
-
-    plugin = plugin_result.value
-
-    # TODO @admin: Implement actual health checking logic  # noqa: TD003,FIX002
-    # For now, return basic health information based on status
-    health_status = "healthy" if plugin.status == "installed" else "unknown"
-
-    return {
-        "plugin_name": plugin_name,
-        "status": plugin.status,
-        "health_status": health_status,
-        "is_active": plugin.is_active,
-        "version": plugin.version,
-        "last_check": datetime.now(UTC).isoformat(),
-        "checks": {
-            "installation": plugin.status == "installed",
-            "configuration": bool(plugin.configuration),
-            "dependencies": True,  # TODO @admin: deps  # noqa: TD003,FIX002
-        },
-        "metrics": {
-            "uptime": "unknown",  # TODO @admin: uptime  # noqa: TD003,FIX002
-            "last_used": "unknown",  # TODO @admin: usage  # noqa: TD003,FIX002
-        },
-    }
-
-
-# Import moved to top of file
+    _raise_internal_error("Unknown error occurred")

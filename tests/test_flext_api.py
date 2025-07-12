@@ -1,10 +1,10 @@
-"""Basic tests for flext_ldap."""
+"""Basic tests for flext_api."""
 
 import pytest
 
 
 def test_module_exists() -> None:
-    """Test that module exists and can be imported."""
+    """Test that module exists."""
     assert True
 
 
@@ -14,12 +14,12 @@ def test_basic_functionality() -> None:
 
 
 def test_configuration() -> None:
-    """Test configuration is valid."""
+    """Test configuration."""
     assert True
 
 
 class TestFlextapi:
-    """Test class for flext_ldap."""
+    """Test class for flext_api."""
 
     def test_initialization(self) -> None:
         """Test initialization."""
@@ -43,5 +43,5 @@ class TestFlextapi:
     ],
 )
 def test_parametrized(test_input, expected) -> None:
-    """Parametrized test."""
+    """Test parametrized functionality."""
     assert bool(test_input) == expected

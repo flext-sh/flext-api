@@ -1,55 +1,62 @@
-"""Pydantic models for the FLEXT API - Enterprise Management Models."""
+"""Pydantic models for the FLEXT API - Enterprise Management Models.
 
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+This module provides Pydantic models for the FLEXT API, including authentication,
+monitoring, pipeline, plugin, and system models.
+"""
+
+# Re-export shared models from flext_core
 # Monitoring models
 # Authentication models
-from flext_api.models.auth import (
-    LoginRequest,
-    LoginResponse,
-    RegisterRequest,
-    RegisterResponse,
-    UserAPI,
-)
-from flext_api.models.monitoring import HealthResponse, SystemStatsResponse
+from flext_api.models.auth import LoginRequest
+from flext_api.models.auth import LoginResponse
+from flext_api.models.auth import RegisterRequest
+from flext_api.models.auth import RegisterResponse
+from flext_api.models.auth import UserAPI
+from flext_api.models.monitoring import HealthResponse
+from flext_api.models.monitoring import SystemStatsResponse
 
 # Pipeline models
-from flext_api.models.pipeline import (
-    ExecutionResponse,
-    PipelineCreateRequest,
-    PipelineExecutionRequest,
-    PipelineExecutionResponse,
-    PipelineListResponse,
-    PipelineResponse,
-    PipelineStatsResponse,
-    PipelineUpdateRequest,
-    RunPipelineRequest,
-)
+from flext_api.models.pipeline import ExecutionResponse
+from flext_api.models.pipeline import PipelineCreateRequest
+from flext_api.models.pipeline import PipelineExecutionRequest
+from flext_api.models.pipeline import PipelineExecutionResponse
+from flext_api.models.pipeline import PipelineListResponse
+from flext_api.models.pipeline import PipelineResponse
+from flext_api.models.pipeline import PipelineStatsResponse
+from flext_api.models.pipeline import PipelineUpdateRequest
+from flext_api.models.pipeline import RunPipelineRequest
 
 # Plugin models
-from flext_api.models.plugin import (
-    PluginConfigRequest,
-    PluginInstallationResponse,
-    PluginInstallRequest,
-    PluginListResponse,
-    PluginResponse,
-    PluginStatsResponse,
-    PluginUninstallRequest,
-    PluginUpdateRequest,
-)
+from flext_api.models.plugin import PluginConfigRequest
+from flext_api.models.plugin import PluginInstallationResponse
+from flext_api.models.plugin import PluginInstallRequest
+from flext_api.models.plugin import PluginListResponse
+from flext_api.models.plugin import PluginResponse
+from flext_api.models.plugin import PluginStatsResponse
+from flext_api.models.plugin import PluginUninstallRequest
+from flext_api.models.plugin import PluginUpdateRequest
 
 # System models
-from flext_api.models.system import (
-    MaintenanceRequest,
-    MaintenanceResponse,
-    SystemBackupRequest,
-    SystemBackupResponse,
-    SystemConfigurationRequest,
-    SystemHealthResponse,
-    SystemStatusResponse,
-)
+from flext_api.models.system import MaintenanceRequest
+from flext_api.models.system import MaintenanceResponse
+from flext_api.models.system import SystemBackupRequest
+from flext_api.models.system import SystemBackupResponse
+from flext_api.models.system import SystemConfigurationRequest
+from flext_api.models.system import SystemStatusResponse
+
+# Re-export shared models from flext_core
+from flext_core.domain.pydantic_base import APIResponse
+from flext_core.domain.types import PluginType
 
 __all__ = [
-    # Legacy compatibility
+    # Re-exported from flext_core
+    "APIResponse",
+    # Pipeline models
     "ExecutionResponse",
+    # Monitoring models
     "HealthResponse",
     # Authentication models
     "LoginRequest",
@@ -57,7 +64,6 @@ __all__ = [
     # System models
     "MaintenanceRequest",
     "MaintenanceResponse",
-    # Modern pipeline models
     "PipelineCreateRequest",
     "PipelineExecutionRequest",
     "PipelineExecutionResponse",
@@ -65,13 +71,14 @@ __all__ = [
     "PipelineResponse",
     "PipelineStatsResponse",
     "PipelineUpdateRequest",
-    # Modern plugin models
+    # Plugin models
     "PluginConfigRequest",
     "PluginInstallRequest",
     "PluginInstallationResponse",
     "PluginListResponse",
     "PluginResponse",
     "PluginStatsResponse",
+    "PluginType",
     "PluginUninstallRequest",
     "PluginUpdateRequest",
     "RegisterRequest",
@@ -80,7 +87,6 @@ __all__ = [
     "SystemBackupRequest",
     "SystemBackupResponse",
     "SystemConfigurationRequest",
-    "SystemHealthResponse",
     "SystemStatsResponse",
     "SystemStatusResponse",
     "UserAPI",

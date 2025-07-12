@@ -1,34 +1,36 @@
+
+
 """WebSocket connection manager for real-time communication.
 
 This module implements WebSocket connection management functionality
 for real-time pipeline monitoring and system event broadcasting.
 
 Module provides:
-    - Connection lifecycle management
-    - Subscription management
-    - Broadcast capabilities
+- Connection lifecycle management
+- Subscription management
+- Broadcast capabilities
 
 Note:
 ----
     Supports real-time pipeline updates and system monitoring events.
 
-
 """
 
-import structlog
 from fastapi import WebSocket
+from websockets.exceptions import ConnectionClosed
 
 # ZERO TOLERANCE - Use high-performance msgspec instead of standard library JSON
 from flext_core.serialization.msgspec_adapters import get_serializer
-from websockets.exceptions import ConnectionClosed
+from flext_observability.logging import get_logger
 
-logger = structlog.get_logger()
+logger = get_logger(__name__)
 
 
 class ConnectionManager:
-    r"""ConnectionManager - Resource Manager.
+    """ConnectionManager - Resource Manager.
 
-    Gerencia recursos e lifecycle de componentes específicos. Implementa padrões de gestão de recursos enterprise.
+    Gerencia recursos e lifecycle de componentes específicos.
+    Implementa padrões de gestão de recursos enterprise.
 
     Arquitetura: Enterprise Patterns
     Padrões: SOLID principles, clean code
@@ -56,7 +58,8 @@ class ConnectionManager:
     Uso típico da classe:
 
     ```python
-    instance = ConnectionManager()\n    result = instance.method()
+    instance = ConnectionManager()
+    result = instance.method()
     ```
 
     See Also:
@@ -70,10 +73,8 @@ class ConnectionManager:
 
     """
 
-    """Manages WebSocket connections."""
-
     def __init__(self) -> None:
-        """Initialize connection manager with high-performance serialization."""
+        """Initialize the ConnectionManager."""
         self._active_connections: dict[str, WebSocket] = {}
         self._subscriptions: dict[str, set[str]] = {}
         self.logger = logger.bind(component="ws_manager")
@@ -81,33 +82,11 @@ class ConnectionManager:
         self._serializer = get_serializer()
 
     async def startup(self) -> None:
-        """Perform startup tasks for WebSocket manager.
-
-        Initializes the WebSocket manager and prepares it for accepting
-        connections. This method is called during application startup
-        to ensure the manager is ready to handle client connections.
-
-        Note:
-        ----
-            Provides graceful initialization
-            and proper logging for monitoring.
-
-        """
+        """Start the WebSocket manager."""
         self.logger.info("WebSocket manager starting up")
 
     async def shutdown(self) -> None:
-        """Perform shutdown tasks for WebSocket manager.
-
-        Gracefully closes all active WebSocket connections and cleans up
-        resources. This method is called during application shutdown to
-        ensure all clients are properly disconnected.
-
-        Note:
-        ----
-            Provides graceful shutdown and
-            proper resource cleanup.
-
-        """
+        """Shutdown the WebSocket manager."""
         self.logger.info("WebSocket manager shutting down")
 
         # Close all connections
@@ -115,22 +94,7 @@ class ConnectionManager:
             await self.disconnect(client_id)
 
     async def connect(self, websocket: WebSocket, client_id: str) -> None:
-        """Accept a new WebSocket connection.
-
-        Accepts a new WebSocket connection from a client, registers it
-        in the active connections pool, and sends a welcome message.
-
-        Args:
-        ----
-            websocket: The WebSocket connection object
-            client_id: Unique identifier for the client
-
-        Note:
-        ----
-            Provides modern connection tracking
-            and client notification.
-
-        """
+        """Connect a new WebSocket client."""
         await websocket.accept()
         self._active_connections[client_id] = websocket
         self.logger.info("Client connected", client_id=client_id)
@@ -142,29 +106,12 @@ class ConnectionManager:
             "client_id": client_id,
         }
         await self.send_personal_message(
-            self._serializer.encode_json_str(
-                dict(welcome_msg),
-            ),  # Cast to dict[str, object]
+            self._serializer.encode_json_str(welcome_msg),
             client_id,
         )
 
     async def disconnect(self, client_id: str) -> None:
-        """Disconnect a client.
-
-        Removes a client from the active connections pool and cleans up
-        any associated subscriptions. This method is called when a client
-        disconnects or when the server needs to close a connection.
-
-        Args:
-        ----
-            client_id: Unique identifier of the client to disconnect
-
-        Note:
-        ----
-            Provides proper cleanup of
-            connections and subscriptions.
-
-        """
+        """Disconnect a WebSocket client."""
         if client_id in self._active_connections:
             del self._active_connections[client_id]
 
@@ -174,7 +121,7 @@ class ConnectionManager:
             self.logger.info("Client disconnected", client_id=client_id)
 
     async def send_personal_message(self, message: str, client_id: str) -> None:
-        """Send message to specific client."""
+        """Send a message to a specific client."""
         if client_id in self._active_connections:
             websocket = self._active_connections[client_id]
             try:
@@ -188,7 +135,7 @@ class ConnectionManager:
                 await self.disconnect(client_id)
 
     async def broadcast(self, message: str) -> None:
-        """Broadcast message to all connected clients."""
+        """Broadcast a message to all connected clients."""
         disconnected: list[str] = []
 
         for client_id, websocket in self._active_connections.items():
@@ -207,7 +154,7 @@ class ConnectionManager:
             await self.disconnect(client_id)
 
     async def broadcast_to_subscribers(self, event_type: str, message: str) -> None:
-        """Broadcast message to subscribers of specific event."""
+        """Broadcast a message to subscribers of a specific event type."""
         disconnected: list[str] = []
 
         for client_id, subscriptions in self._subscriptions.items():
@@ -228,7 +175,7 @@ class ConnectionManager:
             await self.disconnect(client_id)
 
     async def subscribe(self, client_id: str, event_type: str) -> None:
-        """Subscribe client to event type."""
+        """Subscribe a client to an event type."""
         if client_id not in self._subscriptions:
             self._subscriptions[client_id] = set()
 
@@ -253,7 +200,7 @@ class ConnectionManager:
         )
 
     async def unsubscribe(self, client_id: str, event_type: str) -> None:
-        """Unsubscribe client from event type."""
+        """Unsubscribe a client from an event type."""
         if client_id in self._subscriptions:
             self._subscriptions[client_id].discard(event_type)
 
@@ -276,11 +223,11 @@ class ConnectionManager:
             )
 
     def get_connection_count(self) -> int:
-        """Get number of active connections."""
+        """Get the number of active connections."""
         return len(self._active_connections)
 
     def get_subscriber_count(self, event_type: str) -> int:
-        """Get number of subscribers for event type."""
+        """Get the number of subscribers for an event type."""
         count = 0
         for subscriptions in self._subscriptions.values():
             if event_type in subscriptions:

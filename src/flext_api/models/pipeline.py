@@ -1,4 +1,7 @@
-"""Pipeline API Models - Enterprise Pipeline Management.
+"""Pipeline API Models - Enterprise Pipeline Management (FLEXT).
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
 
 This module provides comprehensive Pydantic models for pipeline management
 operations including creation, updates, execution, and status tracking.
@@ -7,25 +10,15 @@ Follows enterprise patterns with Python 3.13 type system.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any
+from typing import Any
+from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field
+from pydantic import field_validator
 
-if TYPE_CHECKING:
-    from uuid import UUID
-
-
-class PipelineStatus(StrEnum):
-    """Pipeline execution status enumeration."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    SUCCESS = "success"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    PAUSED = "paused"
+from flext_core.domain.pydantic_base import DomainBaseModel
 
 
 class ExecutionStatus(StrEnum):
@@ -56,10 +49,23 @@ class RefreshMode(StrEnum):
     FULL = "full"
 
 
+class PipelineStatus(StrEnum):
+    """Pipeline status enumeration for tracking pipeline states."""
+
+    CREATED = "created"
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    PAUSED = "paused"
+    ARCHIVED = "archived"
+
+
 # --- Request Models ---
 
 
-class PipelineCreateRequest(BaseModel):
+class PipelineCreateRequest(DomainBaseModel):
     """Request model for creating new pipelines."""
 
     name: str = Field(
@@ -128,7 +134,7 @@ class PipelineCreateRequest(BaseModel):
         return [tag.lower().strip() for tag in v if tag.strip()]
 
 
-class PipelineUpdateRequest(BaseModel):
+class PipelineUpdateRequest(DomainBaseModel):
     """Request model for updating existing pipelines."""
 
     name: str | None = Field(
@@ -198,7 +204,7 @@ class PipelineUpdateRequest(BaseModel):
         return [tag.lower().strip() for tag in v if tag.strip()]
 
 
-class PipelineExecutionRequest(BaseModel):
+class PipelineExecutionRequest(DomainBaseModel):
     """Request model for pipeline execution."""
 
     refresh_mode: RefreshMode = Field(
@@ -236,7 +242,7 @@ class PipelineExecutionRequest(BaseModel):
     )
 
 
-class PipelineExecutionStopRequest(BaseModel):
+class PipelineExecutionStopRequest(DomainBaseModel):
     """Request model for stopping pipeline execution."""
 
     force: bool = Field(
@@ -253,7 +259,7 @@ class PipelineExecutionStopRequest(BaseModel):
 # --- Response Models ---
 
 
-class PipelineResponse(BaseModel):
+class PipelineResponse(DomainBaseModel):
     """Response model for pipeline information."""
 
     pipeline_id: UUID = Field(description="Unique pipeline identifier")
@@ -298,7 +304,7 @@ class PipelineResponse(BaseModel):
     )
 
 
-class PipelineExecutionResponse(BaseModel):
+class PipelineExecutionResponse(DomainBaseModel):
     """Response model for pipeline execution information."""
 
     execution_id: UUID = Field(description="Unique execution identifier")
@@ -329,7 +335,7 @@ class PipelineExecutionResponse(BaseModel):
     created_by: str | None = Field(description="Execution initiator")
 
 
-class PipelineListResponse(BaseModel):
+class PipelineListResponse(DomainBaseModel):
     """Response model for pipeline list operations."""
 
     pipelines: list[PipelineResponse] = Field(description="List of pipelines")
@@ -340,7 +346,7 @@ class PipelineListResponse(BaseModel):
     has_previous: bool = Field(description="Whether there are previous pages")
 
 
-class PipelineExecutionListResponse(BaseModel):
+class PipelineExecutionListResponse(DomainBaseModel):
     """Response model for pipeline execution list operations."""
 
     executions: list[PipelineExecutionResponse] = Field(
@@ -353,7 +359,7 @@ class PipelineExecutionListResponse(BaseModel):
     has_previous: bool = Field(description="Whether there are previous pages")
 
 
-class PipelineStatsResponse(BaseModel):
+class PipelineStatsResponse(DomainBaseModel):
     """Response model for pipeline statistics."""
 
     total_pipelines: int = Field(description="Total number of pipelines")
@@ -375,7 +381,7 @@ class PipelineStatsResponse(BaseModel):
 # --- Search and Filter Models ---
 
 
-class PipelineFilterRequest(BaseModel):
+class PipelineFilterRequest(DomainBaseModel):
     """Request model for filtering pipelines."""
 
     pipeline_type: PipelineType | None = Field(
@@ -432,7 +438,7 @@ class PipelineFilterRequest(BaseModel):
     )
 
 
-class PipelineExecutionFilterRequest(BaseModel):
+class PipelineExecutionFilterRequest(DomainBaseModel):
     """Request model for filtering pipeline executions."""
 
     pipeline_id: UUID | None = Field(
@@ -484,7 +490,7 @@ class PipelineExecutionFilterRequest(BaseModel):
 # --- Legacy Models for Backward Compatibility ---
 
 
-class RunPipelineRequest(BaseModel):
+class RunPipelineRequest(DomainBaseModel):
     """Legacy model for pipeline execution - maps to PipelineExecutionRequest."""
 
     full_refresh: bool = Field(
@@ -502,11 +508,11 @@ class RunPipelineRequest(BaseModel):
             refresh_mode=(
                 RefreshMode.FULL if self.full_refresh else RefreshMode.INCREMENTAL
             ),
-            configuration_override=self.env_vars or {},
+            environment_variables=self.env_vars or {},
         )
 
 
-class ExecutionResponse(BaseModel):
+class ExecutionResponse(DomainBaseModel):
     """Legacy model for execution response - maps to PipelineExecutionResponse."""
 
     id: str = Field(description="The unique identifier of the execution")
@@ -533,14 +539,13 @@ class ExecutionResponse(BaseModel):
 
     @classmethod
     def from_execution_response(
-        cls,
-        response: PipelineExecutionResponse,
+        cls, response: PipelineExecutionResponse,
     ) -> ExecutionResponse:
         """Convert from modern PipelineExecutionResponse."""
         # Calculate duration from start/end times - ZERO TOLERANCE: Real implementation
         duration_seconds = None
-        if response.started_at and response.completed_at:
-            duration_delta = response.completed_at - response.started_at
+        if response.started_at and response.finished_at:
+            duration_delta = response.finished_at - response.started_at
             duration_seconds = int(duration_delta.total_seconds())
 
         # Extract records processed from metadata - ZERO TOLERANCE: Real tracking
@@ -557,16 +562,12 @@ class ExecutionResponse(BaseModel):
             id=str(response.execution_id),
             pipeline_id=str(response.pipeline_id),
             status=response.status.value,
-            started_at=response.started_at or datetime.now(UTC),
-            finished_at=response.completed_at,
+            started_at=response.started_at or datetime.now(),
+            finished_at=response.finished_at,
             duration_seconds=duration_seconds,
             error_message=(
-                response.message if response.status == ExecutionStatus.FAILED else None
+                response.error_message if response.status == ExecutionStatus.FAILED else None
             ),
             records_processed=records_processed,
             triggered_by=triggered_by,
         )
-
-
-# Note: Removed duplicate PipelineExecutionResponse and PipelineExecutionListResponse
-# to avoid F811 redefinition errors. The original definitions above are sufficient.
