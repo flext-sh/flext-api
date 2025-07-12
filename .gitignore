@@ -1,226 +1,7 @@
 # ============================================================================
-# FLEXT WORKSPACE STANDARD - COMPREHENSIVE .gitignore
-# Python 3.13 | Go | Node.js | Docker | Singer/Meltano
+# FLEXT-API PROJECT .gitignore
+# Go + Python REST API Gateway
 # ============================================================================
-
-# ============================================================================
-# PYTHON BUILD AND RUNTIME ARTIFACTS
-# ============================================================================
-
-# Python cache and compiled files
-__pycache__/
-*.py[cod]
-*$py.class
-*.pyc
-*.pyo
-*.pyd
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-pip-wheel-metadata/
-*.dist-info/
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
-junit.xml
-test-results/
-reports/
-
-# ============================================================================
-# VIRTUAL ENVIRONMENTS
-# ============================================================================
-
-# All virtual environment patterns
-.env
-.venv/
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-.venv.bkp/
-*/venv/
-*/.venv/
-*/ENV/
-*/env/
-**/.venv/
-**/venv/
-**/ENV/
-**/env/
-
-# ============================================================================
-# PACKAGE MANAGERS AND DEPENDENCIES
-# ============================================================================
-
-# Poetry - keep only root lock file
-**/poetry.lock
-!/poetry.lock
-
-# pip
-pip-wheel-metadata/
-
-# pipenv
-Pipfile.lock
-
-# pdm
-pdm.lock
-.pdm.toml
-
-# PEP 582
-__pypackages__/
-
-# ============================================================================
-# ENVIRONMENT AND CONFIGURATION
-# ============================================================================
-
-# Environment files
-.env
-.env.*
-!.env.example
-!.env.template
-.env.local
-.env.*.local
-.env.production
-.env.prod
-
-# ============================================================================
-# IDE AND EDITOR FILES
-# ============================================================================
-
-# VS Code
-.vscode/
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# JetBrains IDEs
-.idea/
-
-# Cursor AI
-.cursor/
-.cursorignore
-
-# Vim/Neovim
-*.swp
-*.swo
-*~
-.netrwhist
-Session.vim
-Sessionx.vim
-
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-auto-save-list
-tramp
-.\#*
-
-# Sublime Text
-*.sublime-*
-
-# Other editors
-.fleet/
-
-# ============================================================================
-# OS SPECIFIC FILES
-# ============================================================================
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
-*.lnk
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-
-# Linux
-*~
-.nfs*
-
-# ============================================================================
-# DEVELOPMENT TOOLS
-# ============================================================================
-
-# Type checkers
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.pyre/
-.pytype/
-
-# Linting and formatting
-.ruff_cache/
-.black
-.isort.cfg
-
-# Testing frameworks
-.pytest_cache/
-
-# Documentation
-docs/_build/
-docs/build/
-_build/
-.sphinx/
-/site
 
 # ============================================================================
 # GO SPECIFIC
@@ -239,321 +20,193 @@ _build/
 # Go coverage
 *.out
 
-# Go mod cache
-go.sum
+# Go mod cache - keep go.sum for dependency verification
+# go.sum should be committed
 
-# Go workspace file
+# Go workspace file  
 go.work
 
+# Air (Go hot reload) temporary files
+tmp/
+.air/
+
 # ============================================================================
-# NODE.JS SPECIFIC
+# PYTHON SPECIFIC
 # ============================================================================
 
-# Node modules
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
 
-# Yarn
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# npm
-.npm
-.npmrc
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# Dependency directories
-jspm_packages/
-
-# Build outputs
-dist/
+# Distribution / packaging
+.Python
 build/
-out/
-.next/
-.nuxt/
-.vercel/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv/
+env/
+venv/
+ENV/
 
 # ============================================================================
-# DOCKER AND CONTAINERIZATION
+# TESTING AND QUALITY
 # ============================================================================
 
-# Docker
-.dockerignore
-docker-compose.override.yml
-docker-compose.local.yml
-*.tar.gz
+# Test coverage
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+cover/
 
-# Kubernetes secrets
-k8s-secrets.yaml
-*.secret.yaml
+# Testing frameworks
+.pytest_cache/
+.tox/
+.nox/
 
 # ============================================================================
-# DATABASES
+# DEVELOPMENT TOOLS
 # ============================================================================
 
-# SQLite
-*.sqlite
-*.sqlite3
-*.db
-*.sqlite3-journal
-*.sqlite3-shm
-*.sqlite3-wal
+# Type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
-# PostgreSQL
-*.backup
-*.dump
+# Linting and formatting
+.ruff_cache/
+
+# ============================================================================
+# IDE AND EDITOR FILES
+# ============================================================================
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# JetBrains IDEs
+.idea/
+
+# Vim/Neovim
+*.swp
+*.swo
+*~
+
+# ============================================================================
+# OS SPECIFIC FILES
+# ============================================================================
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+._*
+
+# Linux
+*~
+.nfs*
 
 # ============================================================================
 # LOGS AND OUTPUT
 # ============================================================================
 
 # Log files
-logs/
 *.log
+logs/
 log/
-output/
-outputs/
-temp/
-tmp/
 
 # Runtime data
 runtime/
 cache/
 .cache/
-pids/
-*.pid
-*.seed
-*.pid.lock
 
 # ============================================================================
-# BACKUP AND TEMPORARY FILES
+# DOCKER AND DEPLOYMENT
 # ============================================================================
 
-# Backup files
-*.backup
-*.syntax_backup
-*.bak
-*.bkp
-*.tmp
-*.orig
-*.rej
-*.diff
-*.patch
-*_backup*
-*_bak*
-*_temp*
-backup_*
-backup/
-backups/
-bak/
-temp_*/
-tmp_*/
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Kubernetes secrets
+*.secret.yaml
 
 # ============================================================================
-# JUPYTER AND NOTEBOOKS
+# ENVIRONMENT AND CONFIGURATION
 # ============================================================================
 
-.ipynb_checkpoints/
-**/.ipynb_checkpoints/
-*.ipynb
-*/.ipynb_checkpoints/*
-
-# IPython
-profile_default/
-ipython_config.py
+# Environment files
+.env
+.env.*
+!.env.example
+.env.local
+.env.production
 
 # ============================================================================
-# SECURITY SENSITIVE FILES
+# PROJECT SPECIFIC
 # ============================================================================
 
-# Private keys and certificates
-*.pem
-*.key
-*.crt
-*.p12
-*.pfx
-*.jks
-secret*
-*.secret
-credentials.json
-auth.json
-service-account*.json
-
-# API keys and tokens
-api_keys.json
-tokens.json
-*.token
-
-# SSL certificates
-ssl/
-certs/
-wallet/
-*.wallet
-
-# ============================================================================
-# SINGER/MELTANO SPECIFIC
-# ============================================================================
-
-# Meltano
-.meltano/
-.meltano-*
-meltano.db
-meltano-*.db
-**/.meltano/run/
-**/.meltano/logs/
-**/.meltano/transformers/
-**/.meltano/extractors/
-**/.meltano/loaders/
-**/.meltano/run_test/
-plugins/
-
-# Singer
-*.state
-*.state.json
-state.json
-*_state.json
-catalogs/
-catalog.json
-*.catalog.json
-
-# dbt
-target/
-dbt_packages/
-dbt_modules/
-dbt.log
-
-# ============================================================================
-# FLEXT WORKSPACE SPECIFIC
-# ============================================================================
-
-# Multi-agent coordination
-.token
-.token*
-
-# Project scaffolding
-.scaffold-tracking/
-.doc-reorg
-.standardization_backup/
-.lock*
+# Archive directory (for moved junk files)
 archive/
-archives/
-pyproject_backups/
 
-# Generated content
-schemas/
-reference/
-ldif_output/
-deprecated*/
-oracle-documentation/
-
-# Analysis and temporary work
-analysis_temp/
-docs-refactored/
-meltano-plugins-extracted/
-
-# Backup patterns
-*_source_*/
-*_current_*/
-*_backup_*/
-*_original_*/
-*_extracted_*/
-*_migrated_*/
-flx*_backup_*/
-flext*_backup_*/
+# API documentation (if auto-generated)
+docs/api/
+api-docs/
 
 # ============================================================================
-# PROJECT SPECIFIC PATTERNS
+# AI GENERATED CONTENT (ARCHIVED)
 # ============================================================================
 
-# Data pipeline artifacts
-data/
-extracted/
-loaded/
-transformed/
-pipeline_state/
-execution_logs/
-workflow_data/
-sync_state/
-migration_state/
+# AI assistant files
+.claude/
+.cursor/
+.cursorrules
+CLAUDE*.md
+*_REPORT.md
 
-# LDAP specific
-*.ldif.bak
-ldap_data/
-ldap_backup/
-
-# Oracle specific
-*.ora
-tnsnames.ora
-sqlnet.ora
-cwallet.sso
-ewallet.p12
-oracle_connection.log
-oracle_trace_*.log
-*.dmp
-*.exp
-*.log.sql
-
-# Test artifacts
-test_output/
-test_data/
-e2e_results/
-
-# Monitoring
-metrics/
-monitoring/
-prometheus/
-grafana/
-*.prom
-*.metrics
-health_*.json
-status_*.json
-
-# ============================================================================
-# ARCHIVE AND COMPRESSED FILES
-# ============================================================================
-
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
-*.bz2
-*.xz
+# Manual fix scripts
+fix_*.py
+fix_*.go
+*_fix.*
+*_validation.*
 
 # ============================================================================
 # ALWAYS INCLUDE EXCEPTIONS
 # ============================================================================
 
-# Important: Use ! to force include critical files
-!.env.example
-!.env.template
+# Important: Force include critical files
+!go.mod
+!go.sum
 !pyproject.toml
 !Makefile
 !README.md
-!CLAUDE.md
-!CLAUDE.local.md
-!docker-compose.yml
-!Dockerfile
-!.gitignore
 !.pre-commit-config.yaml
-!meltano.yml
-!go.mod
-!package.json
-
-# ============================================================================
-# END OF FLEXT WORKSPACE STANDARD .gitignore
-# ============================================================================
+!.env.example
+!Dockerfile
+!docker-compose.yml
