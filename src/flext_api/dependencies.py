@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Annotated
+from typing import Never
 
 from fastapi import Depends
 from fastapi import HTTPException
@@ -83,7 +84,7 @@ async def get_db_session() -> AsyncSession:
     return MockAsyncSession()  # type: ignore[return-value]
 
 
-async def get_grpc_channel():  # -> AsyncGenerator[grpc.aio.Channel]:
+async def get_grpc_channel() -> Never:  # -> AsyncGenerator[grpc.aio.Channel]:
     """Get gRPC channel - temporarily disabled to avoid protobuf issues."""
     # TODO: Re-enable when gRPC protobuf dependencies are resolved
     raise HTTPException(
