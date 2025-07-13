@@ -50,7 +50,7 @@ class PluginService:
 
         Args:
             name: Plugin name.
-            type: Plugin type.
+            plugin_type: Plugin type.
             version: Plugin version.
             description: Optional plugin description.
             config: Optional plugin configuration.
@@ -249,7 +249,7 @@ class PluginService:
                 version=plugin.version,
             )
 
-            return ServiceResult.ok(True)
+            return ServiceResult.ok(data={"uninstalled": True, "plugin_id": str(plugin_id)})
 
         except Exception as e:
             logger.exception(
@@ -291,6 +291,6 @@ class PluginService:
                 p.name == name and p.version == version for p in existing_plugins
             )
 
-        except Exception:
+        except (ConnectionError, TimeoutError, ValueError):
             # If we can't check, assume no duplicate to avoid blocking installation
             return False
