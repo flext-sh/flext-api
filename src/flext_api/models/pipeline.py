@@ -14,14 +14,12 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
+from uuid import UUID
 
 from pydantic import Field
 from pydantic import field_validator
 
 from flext_core.domain.pydantic_base import DomainBaseModel
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 
 class ExecutionStatus(StrEnum):
