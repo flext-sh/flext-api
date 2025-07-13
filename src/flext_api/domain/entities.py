@@ -162,7 +162,7 @@ class Plugin(DomainEntity):
     documentation_url: str | None = Field(None, max_length=500)
 
     # Validation
-    schema: dict[str, Any] | None = Field(default=None)
+    validation_schema: dict[str, Any] | None = Field(default=None)
     capabilities: list[str] = Field(default_factory=list)
 
     # API-specific fields

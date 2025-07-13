@@ -14,11 +14,13 @@ from typing import Any
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from flext_core.domain.entities import Pipeline as APIPipeline
-    from flext_core.domain.entities import Plugin as APIPlugin
+    from flext_core.domain.pipeline import Pipeline as APIPipeline
     from flext_core.domain.pydantic_base import APIRequest
     from flext_core.domain.pydantic_base import APIResponse
     from flext_core.domain.types import ServiceResult
+
+    # Use a generic dict for Plugin since there's no Plugin entity in flext-core
+    APIPlugin = dict[str, Any]
 
 
 # ==============================================================================

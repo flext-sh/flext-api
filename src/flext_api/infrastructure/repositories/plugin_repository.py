@@ -209,7 +209,8 @@ class PluginRepository:
 
     async def count_plugins(
         self,
-        type: str | None = None,
+        plugin_type: str | None = None,
+        *,
         enabled: bool | None = None,
     ) -> int:
         """Count plugins with optional filters.

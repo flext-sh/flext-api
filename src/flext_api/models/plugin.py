@@ -486,4 +486,5 @@ class LegacyPluginResponse(APIResponse):
             description=response.description,
             installed=response.status == PluginStatus.INSTALLED,
             installed_at=response.installed_at,
+            message=None,
         )
