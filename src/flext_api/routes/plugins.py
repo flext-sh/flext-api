@@ -26,8 +26,8 @@ async def install_plugin(request: PluginInstallRequest) -> PluginInstallationRes
         # 3. Install and register plugin
         # 4. Return installation status
 
-        from uuid import uuid4
         from datetime import datetime
+        from uuid import uuid4
         return PluginInstallationResponse(
             operation_id=uuid4(),
             plugin_name=request.name,
