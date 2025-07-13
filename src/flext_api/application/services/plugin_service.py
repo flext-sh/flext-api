@@ -37,7 +37,7 @@ class PluginService:
     async def install_plugin(
         self,
         name: str,
-        type: str,
+        plugin_type: str,
         version: str,
         description: str | None = None,
         config: dict | None = None,
@@ -66,7 +66,7 @@ class PluginService:
         try:
             plugin = Plugin(
                 name=name,
-                type=type,
+                type=plugin_type,
                 version=version,
                 description=description,
                 config=config or {},

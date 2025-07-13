@@ -571,7 +571,7 @@ class ExecutionResponse(DomainBaseModel):
             duration_seconds=duration_seconds,
             error_message=(
                 response.error_message
-                if response.status == ExecutionStatus.FAILED
+                if response.status == PipelineStatus.FAILED
                 else None
             ),
             records_processed=records_processed,

@@ -10,6 +10,7 @@ and component status reporting.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from datetime import datetime
 
 from pydantic import Field
 
@@ -37,7 +38,7 @@ class HealthResponse(APIResponse):
         default=0,
         description="The number of health checks that passed.",
     )
-    timestamp: str = Field(..., description="The timestamp of the health check.")
+    health_timestamp: datetime = Field(..., description="The timestamp of the health check.")
 
 
 class APIInfoResponse(APIResponse):

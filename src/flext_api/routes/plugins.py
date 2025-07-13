@@ -26,11 +26,16 @@ async def install_plugin(request: PluginInstallRequest) -> PluginInstallationRes
         # 3. Install and register plugin
         # 4. Return installation status
 
+        from uuid import uuid4
+        from datetime import datetime
         return PluginInstallationResponse(
-            plugin_name=request.plugin_name,
-            version=request.version or "latest",
+            operation_id=uuid4(),
+            plugin_name=request.name,
             status="installed",
-            message=f"Plugin {request.plugin_name} installed successfully",
+            started_at=datetime.now(),
+            success=True,
+            installed_version=request.version or "latest",
+            message=f"Plugin {request.name} installed successfully",
         )
     except Exception as e:
         raise HTTPException(

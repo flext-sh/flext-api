@@ -182,6 +182,7 @@ class ListPluginsCommand(Command):
         limit: int = 20,
         offset: int = 0,
         type: str | None = None,  # noqa: A002
+        *,
         enabled: bool | None = None,
     ) -> None:
         self.limit = limit
@@ -199,6 +200,7 @@ class UpdatePluginCommand(Command):
         name: str | None = None,
         description: str | None = None,
         config: dict | None = None,
+        *,
         enabled: bool | None = None,
     ) -> None:
         self.plugin_id = plugin_id
@@ -408,7 +410,7 @@ class DeletePipelineHandler(CommandHandler[DeletePipelineCommand, bool]):
             if not success:
                 return ServiceResult.fail(f"Pipeline {command.pipeline_id} not found")
 
-            return ServiceResult.ok(True)
+            return ServiceResult.ok(data=True)
         except (ValueError, KeyError, RuntimeError) as e:
             return ServiceResult.fail(f"Failed to delete pipeline: {e!s}")
 
@@ -562,7 +564,7 @@ class DeletePluginHandler(CommandHandler[DeletePluginCommand, bool]):
             if not success:
                 return ServiceResult.fail(f"Plugin {command.plugin_id} not found")
 
-            return ServiceResult.ok(True)
+            return ServiceResult.ok(data=True)
         except (ValueError, KeyError, RuntimeError) as e:
             return ServiceResult.fail(f"Failed to delete plugin: {e!s}")
 
@@ -573,7 +575,7 @@ class GetSystemInfoHandler(CommandHandler[GetSystemInfoCommand, dict]):
     def __init__(self, config: APIConfig) -> None:
         self.config = config
 
-    async def handle(self, command: GetSystemInfoCommand) -> ServiceResult[dict]:
+    async def handle(self, _command: GetSystemInfoCommand) -> ServiceResult[dict]:
         """Handle get system info command.
 
         Args:
@@ -611,7 +613,7 @@ class GetSystemHealthHandler(CommandHandler[GetSystemHealthCommand, dict]):
         self.health_service = health_service
         self.config = config
 
-    async def handle(self, command: GetSystemHealthCommand) -> ServiceResult[dict]:
+    async def handle(self, _command: GetSystemHealthCommand) -> ServiceResult[dict]:
         """Handle get system health command.
 
         Args:

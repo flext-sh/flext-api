@@ -228,7 +228,7 @@ class PipelineService:
 
             logger.info("Pipeline deleted successfully", pipeline_id=str(pipeline_id))
 
-            return ServiceResult.success(True)
+            return ServiceResult.success(data=True)
 
         except Exception as e:
             logger.exception(
