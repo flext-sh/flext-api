@@ -119,18 +119,18 @@ class APISettings(BaseSettings):
     port: int = Field(8000, ge=1, le=65535, description="API server port")
     workers: int = Field(4, ge=1, le=100, description="Number of worker processes")
     reload: bool = Field(False, description="Enable auto-reload in development")
-    
+
     # CORS settings
     cors_enabled: bool = Field(True, description="Enable CORS")
     cors_origins: list[str] = Field(
         default_factory=lambda: ["http://localhost:3000"],
         description="Allowed CORS origins",
     )
-    
+
     # Rate limiting
     rate_limit_enabled: bool = Field(True, description="Enable rate limiting")
     rate_limit_per_minute: int = Field(100, ge=1, le=10000, description="Requests per minute")
-    
+
     # Security
     secret_key: str = Field(
         "change-this-secret-in-production",

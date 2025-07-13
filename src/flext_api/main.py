@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from datetime import UTC
 from datetime import datetime
 from datetime import timezone
 from typing import Any
@@ -43,7 +44,7 @@ class FlextAPIStorage:
 
     def __init__(self) -> None:
         self.system_status = SystemStatus.HEALTHY
-        self.uptime_start = datetime.now(timezone.utc)
+        self.uptime_start = datetime.now(UTC)
         self.alerts: dict[str, SystemAlertResponse] = {}
         self.metrics: dict[str, SystemMetricsResponse] = {}
         self.maintenance_mode = MaintenanceMode.NONE
@@ -85,7 +86,7 @@ class FlextAPIStorage:
     def get_system_status(self) -> ServiceResult[SystemStatusResponse]:
         """Get current system status using ServiceResult pattern."""
         try:
-            uptime_seconds = int((datetime.now(timezone.utc) - self.uptime_start).total_seconds())
+            uptime_seconds = int((datetime.now(UTC) - self.uptime_start).total_seconds())
 
             response = SystemStatusResponse(
                 status=self.system_status,
@@ -132,7 +133,7 @@ class FlextAPIStorage:
         """Create new system alert."""
         try:
             alert_id = uuid4()
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
 
             alert = SystemAlertResponse(
                 alert_id=alert_id,
@@ -168,19 +169,19 @@ class FlextAPIStorage:
                         metric_name="cpu_usage",
                         metric_type="gauge",
                         value=45.2,
-                        timestamp=datetime.now(timezone.utc),
+                        timestamp=datetime.now(UTC),
                     ),
                     SystemMetricsResponse(
                         metric_name="memory_usage",
                         metric_type="gauge",
                         value=62.8,
-                        timestamp=datetime.now(timezone.utc),
+                        timestamp=datetime.now(UTC),
                     ),
                     SystemMetricsResponse(
                         metric_name="request_count",
                         metric_type="counter",
                         value=1250.0,
-                        timestamp=datetime.now(timezone.utc),
+                        timestamp=datetime.now(UTC),
                     ),
                 ]
 
@@ -199,7 +200,7 @@ class FlextAPIStorage:
         """Start system maintenance."""
         try:
             maintenance_id = uuid4()
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
 
             self.maintenance_mode = request.mode
             self.maintenance_message = request.notification_message
@@ -240,7 +241,7 @@ class FlextAPIStorage:
         """Create system backup."""
         try:
             backup_id = uuid4()
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
 
             # Simulate backup creation
             backup = SystemBackupResponse(
@@ -281,7 +282,7 @@ class FlextAPIStorage:
         """Create new pipeline."""
         try:
             pipeline_id = str(uuid4())
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
 
             pipeline = {
                 "id": pipeline_id,
@@ -322,7 +323,7 @@ class FlextAPIStorage:
                 return ServiceResult.fail(f"Pipeline {pipeline_id} not found")
 
             execution_id = str(uuid4())
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
 
             execution = {
                 "execution_id": execution_id,
@@ -349,10 +350,11 @@ class FlextAPIStorage:
 storage = FlextAPIStorage()
 
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     """Application lifespan manager."""
     logger.info("FLEXT API starting up...")
 
@@ -391,6 +393,7 @@ app.add_middleware(
 
 # Exception handlers
 from fastapi import Request
+
 
 @app.exception_handler(ValidationError)
 async def validation_exception_handler(_request: Request, exc: ValidationError) -> JSONResponse:
