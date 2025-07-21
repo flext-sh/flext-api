@@ -1,295 +1,217 @@
-"""Pytest configuration and shared fixtures for FLEXT-API.
+"""Pytest configuration for flext-api tests.
 
-Modern test configuration for FastAPI with async support.
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-import asyncio
-import sys
-from pathlib import Path
-from typing import TYPE_CHECKING
+import os
+from collections.abc import AsyncGenerator  # noqa: TC003
 from typing import Any
+from unittest.mock import AsyncMock
 
 import pytest
-import pytest_asyncio
 from fastapi.testclient import TestClient
-from httpx import AsyncClient
 
-# Import all modules at top level to avoid PLC0415
-try:
-    from flext_api.database import create_test_database
-    from flext_api.database import get_session
-    from flext_api.main import create_app
-    from flext_api.repositories import PipelineRepository
-    from flext_api.services import PipelineService
-except ImportError:
-    # Handle import failures gracefully in test environment
-    create_app = None
-    create_test_database = None
-    get_session = None
-    PipelineRepository = None
-    PipelineService = None
+# Use centralized test environment setup - eliminates duplication
+from flext_core.testing import (
+    get_project_root_fixture,
+    get_test_environment_fixture,
+    setup_flext_test_environment,
+)
 
-if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+# Setup standard FLEXT test environment
+setup_flext_test_environment()
+os.environ["FLEXT_API_TESTING"] = "true"  # API-specific setting
 
-    from _pytest.config import Config
-    from _pytest.nodes import Item
-    from fastapi import FastAPI
-
-
-# Add project root to path for imports
-PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
-
-
-# ============================================================================
-# Pytest Configuration
-# ============================================================================
-
-
-def pytest_configure(config: Config) -> None:
-    """Configure pytest with custom markers."""
-    # Register custom markers
-    config.addinivalue_line(
-        "markers",
-        "unit: Unit tests that don't require external dependencies",
-    )
-    config.addinivalue_line(
-        "markers",
-        "integration: Integration tests that may require external services",
-    )
-    config.addinivalue_line(
-        "markers",
-        "slow: Tests that take more than 1 second to run",
-    )
-    config.addinivalue_line(
-        "markers",
-        "smoke: Quick smoke tests for CI/CD",
-    )
-    config.addinivalue_line(
-        "markers",
-        "e2e: End-to-end tests",
-    )
-    config.addinivalue_line(
-        "markers",
-        "api: API endpoint tests",
-    )
-    config.addinivalue_line(
-        "markers",
-        "auth: Authentication tests",
-    )
-
-
-def pytest_collection_modifyitems(config: Config, items: list[Item]) -> None:
-    """Modify collected test items with auto-markers."""
-    for item in items:
-        # Auto-mark based on test location
-        if "unit" in str(item.fspath):
-            item.add_marker(pytest.mark.unit)
-        elif "integration" in str(item.fspath):
-            item.add_marker(pytest.mark.integration)
-        elif "e2e" in str(item.fspath):
-            item.add_marker(pytest.mark.e2e)
-
-
-# ============================================================================
-# Event Loop Configuration
-# ============================================================================
-
-
-@pytest.fixture(scope="session")
-def event_loop_policy() -> asyncio.AbstractEventLoopPolicy:
-    """Get event loop policy for async tests."""
-    return asyncio.DefaultEventLoopPolicy()
-
-
-# ============================================================================
-# FastAPI App Fixtures
-# ============================================================================
+# Use centralized fixtures - eliminates duplication across conftest.py files
+set_test_environment = get_test_environment_fixture()
+project_root = get_project_root_fixture()
 
 
 @pytest.fixture
-def app() -> FastAPI:
-    """Create FastAPI app for testing."""
-    if create_app is None:
-        pytest.skip("flext_api.main not available")
-    return create_app(testing=True)
-
-
-@pytest.fixture
-def client(app: FastAPI) -> TestClient:
-    """Create test client."""
-    return TestClient(app)
-
-
-@pytest_asyncio.fixture
-async def async_client(app: FastAPI) -> AsyncIterator[AsyncClient]:
-    """Create async test client."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        yield ac
-
-
-# ============================================================================
-# Authentication Fixtures
-# ============================================================================
-
-
-@pytest.fixture
-def auth_headers() -> dict[str, str]:
-    """Get auth headers for testing."""
-    return {"Authorization": "Bearer test-token-123"}
-
-
-@pytest.fixture
-def admin_headers() -> dict[str, str]:
-    """Get admin headers for testing."""
-    return {"Authorization": "Bearer admin-test-token-456"}
-
-
-@pytest_asyncio.fixture
-async def authenticated_client(
-    async_client: AsyncClient,
-    auth_headers: dict[str, str],
-) -> AsyncClient:
-    """Create authenticated client."""
-    async_client.headers.update(auth_headers)
-    return async_client
-
-
-# ============================================================================
-# Database Fixtures
-# ============================================================================
-
-
-@pytest_asyncio.fixture
-async def test_db() -> AsyncIterator[Any]:
-    """Create test database session."""
-    if create_test_database is None or get_session is None:
-        pytest.skip("flext_api.database not available")
-
-    # Create test database
-    engine = await create_test_database()
-
-    async with get_session(engine) as session:
-        yield session
-
-    # Cleanup
-    await engine.dispose()
-
-
-# ============================================================================
-# Repository Fixtures
-# ============================================================================
-
-
-@pytest_asyncio.fixture
-async def pipeline_repository(test_db: Any) -> AsyncIterator[Any]:
-    """Create pipeline repository for testing."""
-    if PipelineRepository is None:
-        pytest.skip("flext_api.repositories not available")
-
-    repo = PipelineRepository(session=test_db)
-    yield repo
-
-
-# ============================================================================
-# Service Fixtures
-# ============================================================================
-
-
-@pytest_asyncio.fixture
-async def pipeline_service(pipeline_repository: Any) -> AsyncIterator[Any]:
-    """Create pipeline service for testing."""
-    if PipelineService is None:
-        pytest.skip("flext_api.services not available")
-
-    service = PipelineService(repository=pipeline_repository)
-    yield service
-
-
-# ============================================================================
-# Test Data Fixtures
-# ============================================================================
+def sample_api_config() -> dict[str, Any]:
+    """Sample API configuration for testing."""
+    return {
+        "environment": "test",
+        "debug": True,
+        "log_level": "DEBUG",
+        "database_url": "sqlite:///:memory:",
+        "redis_url": "redis://localhost:6379/1",
+    }
 
 
 @pytest.fixture
 def sample_pipeline_data() -> dict[str, Any]:
-    """Get sample pipeline data for testing."""
+    """Sample pipeline data for testing."""
     return {
         "name": "test-pipeline",
-        "description": "Test pipeline for API tests",
+        "description": "A test pipeline for unit tests",
+        "extractor": "tap-postgres",
+        "loader": "target-snowflake",
         "config": {
-            "source": "postgres",
-            "destination": "snowflake",
-            "schedule": "@daily",
-        },
-        "metadata": {
-            "owner": "test_user",
-            "team": "data_team",
+            "source": {"host": "localhost", "port": 5432},
+            "destination": {"account": "test-account"},
         },
     }
 
 
 @pytest.fixture
 def sample_plugin_data() -> dict[str, Any]:
-    """Get sample plugin data for testing."""
+    """Sample plugin data for testing."""
     return {
-        "name": "test-plugin",
+        "name": "tap-postgres",
         "type": "extractor",
         "version": "1.0.0",
         "config": {
-            "connection_string": "postgresql://localhost/test",
-            "batch_size": 1000,
+            "host": "localhost",
+            "port": 5432,
+            "database": "test_db",
         },
     }
 
 
-# ============================================================================
-# Mock Fixtures
-# ============================================================================
-
-
 @pytest.fixture
-def mock_external_service(mocker: Any) -> Any:
-    """Create mock external service."""
-    mock = mocker.Mock()
-    mock.validate.return_value = True
-    mock.execute.return_value = {"status": "success"}
-    return mock
-
-
-@pytest.fixture
-def mock_grpc_client(mocker: Any) -> Any:
-    """Create mock gRPC client."""
-    mock = mocker.Mock()
-    mock.CreatePipeline.return_value = mocker.Mock(id="pipeline-123")
-    return mock
-
-
-# ============================================================================
-# Response Fixtures
-# ============================================================================
-
-
-@pytest.fixture
-def success_response() -> dict[str, Any]:
-    """Get success response for testing."""
+def sample_user_data() -> dict[str, Any]:
+    """Sample user data for testing."""
     return {
-        "status": "success",
-        "data": {},
-        "message": "Operation completed successfully",
+        "username": "testuser",
+        "email": "test@example.com",
+        "password": "securepassword123",
+        "role": "user",
     }
 
 
 @pytest.fixture
-def error_response() -> dict[str, Any]:
-    """Get error response for testing."""
-    return {
-        "status": "error",
-        "error": {
-            "code": "TEST_ERROR",
-            "message": "Test error occurred",
-        },
+def mock_auth_service() -> AsyncMock:
+    """Mock authentication service."""
+    mock_service = AsyncMock()
+    mock_service.login.return_value.is_successful = True
+    mock_service.login.return_value.data = {
+        "access_token": "test-token",
+        "token_type": "bearer",
+        "expires_in": 3600,
     }
+    return mock_service
+
+
+@pytest.fixture
+def mock_pipeline_repository() -> AsyncMock:
+    """Mock pipeline repository."""
+    mock_repo = AsyncMock()
+    mock_repo.create_pipeline.return_value.is_successful = True
+    mock_repo.create_pipeline.return_value.data = {
+        "pipeline_id": "test-pipeline-id",
+        "status": "created",
+    }
+    return mock_repo
+
+
+@pytest.fixture
+def mock_plugin_service() -> AsyncMock:
+    """Mock plugin service."""
+    mock_service = AsyncMock()
+    mock_service.install_plugin.return_value.is_successful = True
+    mock_service.install_plugin.return_value.data = {
+        "plugin_name": "tap-postgres",
+        "status": "installed",
+    }
+    return mock_service
+
+
+@pytest.fixture
+async def api_client() -> AsyncGenerator[TestClient]:
+    """FastAPI test client."""
+    from flext_api.main import app
+
+    with TestClient(app) as client:
+        yield client
+
+
+@pytest.fixture(autouse=True)
+def reset_storage() -> None:
+    """Reset storage state between tests to ensure isolation."""
+    from flext_api.main import storage
+    from flext_api.models.system import MaintenanceMode, SystemStatusType
+
+    # Reset system status to healthy
+    storage.system_status = SystemStatusType.HEALTHY
+    storage.maintenance_mode = MaintenanceMode.NONE
+    storage.maintenance_message = None
+
+
+@pytest.fixture
+def auth_headers() -> dict[str, str]:
+    """Authentication headers for API requests."""
+    return {
+        "Authorization": "Bearer test-token",
+        "Content-Type": "application/json",
+    }
+
+
+# Pytest configuration
+def pytest_configure(config: pytest.Config) -> None:
+    """Configure pytest with custom markers."""
+    config.addinivalue_line(
+        "markers",
+        "unit: mark test as unit test (fast, isolated)",
+    )
+    config.addinivalue_line(
+        "markers",
+        "integration: mark test as integration test (may require external services)",
+    )
+    config.addinivalue_line(
+        "markers",
+        "slow: mark test as slow running",
+    )
+    config.addinivalue_line(
+        "markers",
+        "api: mark test as API endpoint test",
+    )
+    config.addinivalue_line(
+        "markers",
+        "auth: mark test as authentication-related",
+    )
+    config.addinivalue_line(
+        "markers",
+        "pipeline: mark test as pipeline-related",
+    )
+    config.addinivalue_line(
+        "markers",
+        "plugin: mark test as plugin-related",
+    )
+
+
+def pytest_collection_modifyitems(
+    config: pytest.Config,
+    items: list[pytest.Item],
+) -> None:
+    """Modify test collection to add markers based on test location."""
+    for item in items:
+        # Add unit marker to all tests in unit directory
+        if "/unit/" in str(item.fspath):
+            item.add_marker(pytest.mark.unit)
+        # Add integration marker to all tests in integration directory
+        elif "/integration/" in str(item.fspath):
+            item.add_marker(pytest.mark.integration)
+            item.add_marker(pytest.mark.slow)
+        # Add e2e marker to all tests in e2e directory
+        elif "/e2e/" in str(item.fspath):
+            item.add_marker(pytest.mark.slow)
+
+        # Add API marker to API-related tests
+        if "api" in item.name.lower() or "endpoint" in item.name.lower():
+            item.add_marker(pytest.mark.api)
+
+        # Add auth marker to authentication tests
+        if "auth" in item.name.lower():
+            item.add_marker(pytest.mark.auth)
+
+        # Add pipeline marker to pipeline tests
+        if "pipeline" in item.name.lower():
+            item.add_marker(pytest.mark.pipeline)
+
+        # Add plugin marker to plugin tests
+        if "plugin" in item.name.lower():
+            item.add_marker(pytest.mark.plugin)

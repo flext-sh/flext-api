@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-"""Test module."""
+"""Integration tests for FLEXT API."""
 
-import pytest
-
-
-def test_basic() -> None:
-    """Basic test."""
-    assert True
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])
+from __future__ import annotations

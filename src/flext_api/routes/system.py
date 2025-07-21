@@ -1,8 +1,8 @@
 """System and health check routes for FLEXT API."""
 
-from datetime import UTC
-from datetime import datetime
-from typing import Any
+from __future__ import annotations
+
+from datetime import UTC, datetime
 
 import psutil
 from fastapi import APIRouter
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/system", tags=["system"])
 
 
 @router.get("/health")
-async def health_check() -> dict[str, Any]:
+async def health_check() -> dict[str, str]:
     return {
         "status": "healthy",
         "timestamp": datetime.now(UTC).isoformat(),
@@ -30,7 +30,7 @@ async def readiness_check() -> dict[str, str]:
 
 
 @router.get("/metrics")
-async def get_metrics() -> dict[str, Any]:
+async def get_metrics() -> dict[str, dict[str, int | float] | str]:
     try:
         # Get basic system metrics
         cpu_percent = psutil.cpu_percent(interval=1)
@@ -51,7 +51,12 @@ async def get_metrics() -> dict[str, Any]:
                 "average_response_time": 0.0,  # Would track from metrics
             },
         }
-    except Exception as e:
+    except (OSError, PermissionError, ValueError, AttributeError) as e:
+        # System metrics collection can fail due to:
+        # - OSError: System call failures or unavailable resources
+        # - PermissionError: Insufficient permissions for system information
+        # - ValueError: Invalid system parameters
+        # - AttributeError: Missing system attributes
         return {
             "error": f"Failed to get metrics: {e!s}",
             "system": {},

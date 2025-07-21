@@ -7,6 +7,8 @@ This module provides the API endpoint definitions for the FLEXT platform,
 organized by functional areas for maintainability and scalability.
 """
 
+from __future__ import annotations
+
 from flext_api.endpoints.auth import auth_router
 from flext_api.endpoints.pipelines import pipelines_router
 from flext_api.endpoints.plugins import plugins_router

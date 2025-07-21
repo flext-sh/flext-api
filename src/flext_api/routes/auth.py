@@ -7,24 +7,27 @@ This module provides REST endpoints for authentication using
 the application services and clean architecture patterns.
 """
 
-from typing import Annotated
+from __future__ import annotations
 
-from fastapi import APIRouter
-from fastapi import Depends
-from fastapi import HTTPException
-from fastapi import status
+from typing import TYPE_CHECKING, Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
-
-from flext_api.application.services.auth_service import AuthService
-from flext_api.dependencies import get_auth_service
-from flext_api.dependencies import get_current_user
-from flext_api.models.auth import LoginRequest
-from flext_api.models.auth import LoginResponse
-from flext_api.models.auth import RegisterRequest
-from flext_api.models.auth import RegisterResponse
 
 # Use centralized logger from flext-observability - ELIMINATE DUPLICATION
 from flext_observability.logging import get_logger
+
+from flext_api.dependencies import get_auth_service, get_current_user
+from flext_api.models.auth import (
+    LoginRequest,
+    LoginResponse,
+    RegisterRequest,
+    RegisterResponse,
+    UserAPI,
+)
+
+if TYPE_CHECKING:
+    from flext_api.application.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
@@ -34,7 +37,7 @@ logger = get_logger(__name__)
 @router.post("/register")
 async def register_user(
     request: RegisterRequest,
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    _auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> RegisterResponse:
     """Register a new user.
 
@@ -48,15 +51,19 @@ async def register_user(
     """
     # For development, just return success
     # In production, this would create a real user
-    logger.info(f"Registration attempt for user: {request.username}")
+    logger.info("Registration attempt for user: %s", request.username)
+
+    # Create user object
+    user = UserAPI(
+        username=request.username,
+        roles=request.roles,
+        is_active=True,
+        is_admin="admin" in request.roles,
+    )
 
     return RegisterResponse(
-        message="User registered successfully",
-        user_id="dev-user-id",
-        username=request.username,
-        email=request.email,
-        role=request.role or "viewer",
-        created_at="2025-07-09T00:00:00Z",
+        user=user,
+        created=True,
     )
 
 
@@ -79,14 +86,12 @@ async def login_user(
 
     """
     try:
-        # Use email as username for login
-        username = (
-            request.email.split("@")[0] if "@" in request.email else request.email
-        )
+        # Use username for login (request has username field, not email)
+        username = request.username
 
         result = await auth_service.login(username, request.password)
 
-        if not result.success:
+        if not result.is_success:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=result.error or "Invalid credentials",
@@ -94,20 +99,27 @@ async def login_user(
 
         token_data = result.unwrap()
 
+        # Create user object
+        user = UserAPI(
+            username=token_data["username"],
+            roles=token_data.get("roles", ["user"]),
+            is_active=True,
+            is_admin="admin" in token_data.get("roles", []),
+        )
+
         return LoginResponse(
             access_token=token_data["access_token"],
-            refresh_token=token_data["access_token"],  # Same as access for simplicity
-            token_type=token_data["token_type"],
-            expires_in=token_data["expires_in"],
-            user={
-                "username": token_data["username"],
-                "email": f"{token_data['username']}@flext.local",
-            },
+            refresh_token=token_data.get("refresh_token", token_data["access_token"]),
+            token_type=token_data.get("token_type", "bearer"),
+            expires_in=token_data.get("expires_in", 3600),
+            user=user,
             session_id=f"session-{hash(token_data['username'])}",
             permissions=(
-                ["read", "write"] if "admin" in token_data["roles"] else ["read"]
+                ["read", "write"]
+                if "admin" in token_data.get("roles", [])
+                else ["read"]
             ),
-            roles=token_data["roles"],
+            roles=token_data.get("roles", ["user"]),
         )
 
     except HTTPException:
@@ -142,7 +154,7 @@ async def refresh_tokens(
         # For simplicity, validate the refresh token as a regular token
         result = await auth_service.validate_token(refresh_token)
 
-        if not result.success:
+        if not result.is_success:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid refresh token",
@@ -150,10 +162,10 @@ async def refresh_tokens(
 
         user = result.unwrap()
 
-        # Create new token
-        token_result = await auth_service.create_token(user.username)
+        # Create new token using existing login method
+        token_result = await auth_service.login(user.username, "refresh")
 
-        if not token_result.success:
+        if not token_result.is_success:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create new token",
@@ -161,15 +173,23 @@ async def refresh_tokens(
 
         token_data = token_result.unwrap()
 
+        # Create user object
+        user_obj = UserAPI(
+            username=user.username,
+            roles=getattr(user, "roles", ["user"]),
+            is_active=True,
+            is_admin=getattr(user, "is_admin", False),
+        )
+
         return LoginResponse(
             access_token=token_data["access_token"],
-            refresh_token=token_data["access_token"],
-            token_type=token_data["token_type"],
-            expires_in=token_data["expires_in"],
-            user={"username": user.username, "email": user.email},
+            refresh_token=token_data.get("refresh_token", token_data["access_token"]),
+            token_type=token_data.get("token_type", "bearer"),
+            expires_in=token_data.get("expires_in", 3600),
+            user=user_obj,
             session_id=f"session-{hash(user.username)}",
-            permissions=["read", "write"] if user.is_admin else ["read"],
-            roles=user.roles,
+            permissions=["read", "write"] if user_obj.is_admin else ["read"],
+            roles=user_obj.roles,
         )
 
     except HTTPException:
@@ -184,8 +204,8 @@ async def refresh_tokens(
 
 @router.post("/logout")
 async def logout_user(
-    token: Annotated[str, Depends(security)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    _token: Annotated[str, Depends(security)],
+    _auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> dict[str, str]:
     """Logout a user.
 
@@ -205,8 +225,8 @@ async def logout_user(
 
 @router.get("/me")
 async def get_current_user_info(
-    current_user: Annotated[dict, Depends(get_current_user)],
-) -> dict:
+    current_user: Annotated[dict[str, object], Depends(get_current_user)],
+) -> dict[str, object]:
     """Get current user information.
 
     Args:

@@ -7,25 +7,32 @@ Zero tolerance for duplication.
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import TYPE_CHECKING
+from datetime import datetime  # noqa: TC003
+from enum import StrEnum
 from typing import Any
-from uuid import UUID
+from uuid import UUID  # noqa: TC003
 
-from pydantic import Field
+from flext_core import Field
+from flext_core.domain.pydantic_base import APIRequest, APIResponse
+from flext_core.domain.shared_models import (
+    HealthStatus,
+)
 from pydantic import field_validator
 
-from flext_core.domain.pydantic_base import APIRequest
-from flext_core.domain.pydantic_base import APIResponse
-from flext_core.domain.types import StrEnum
+# Use centralized health status from shared types
+SystemStatus = HealthStatus  # Maps to standardized health status
 
 
-class SystemStatus(StrEnum):
-    """System status enumeration."""
+# API-specific system status that includes standard health states
+class SystemStatusType(StrEnum):
+    """System status type including health and operational states."""
 
+    # Standard health states from HealthStatus
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
+
+    # API-specific operational states
     MAINTENANCE = "maintenance"
     STARTING = "starting"
     STOPPING = "stopping"
@@ -207,7 +214,7 @@ class SystemBackupRequest(APIRequest):
         """
         allowed_types = ["full", "incremental", "configuration", "database", "plugins"]
         if v not in allowed_types:
-            msg = f"Backup type must be one of: {', '.join(allowed_types)}"
+            msg = f"Backup type must be one of {allowed_types}, got {v}"
             raise ValueError(msg)
         return v
 
@@ -218,7 +225,7 @@ class SystemBackupRequest(APIRequest):
 class SystemStatusResponse(APIResponse):
     """Response model for system status information."""
 
-    status: SystemStatus = Field(description="Overall system status")
+    status: SystemStatusType = Field(description="Overall system status")
     version: str = Field(description="System version")
     uptime_seconds: int = Field(description="System uptime in seconds")
     maintenance_mode: MaintenanceMode = Field(description="Current maintenance mode")
@@ -296,7 +303,7 @@ class SystemServiceResponse(APIResponse):
 
     service_name: str = Field(description="Service name")
     service_type: ServiceType = Field(description="Service type")
-    status: SystemStatus = Field(description="Service status")
+    status: SystemStatusType = Field(description="Service status")
     version: str | None = Field(description="Service version")
     uptime_seconds: int = Field(description="Service uptime in seconds")
     health_checks: list[dict[str, Any]] = Field(
@@ -383,25 +390,31 @@ class SystemAlertResponse(APIResponse):
     message: str = Field(max_length=1000, description="Alert message")
     service_name: str | None = Field(default=None, description="Affected service name")
     service_type: ServiceType | None = Field(
-        default=None, description="Affected service type"
+        default=None,
+        description="Affected service type",
     )
     created_at: datetime = Field(description="Alert creation timestamp")
     updated_at: datetime | None = Field(
-        default=None, description="Alert last update timestamp"
+        default=None,
+        description="Alert last update timestamp",
     )
     acknowledged: bool = Field(
-        default=False, description="Whether alert is acknowledged"
+        default=False,
+        description="Whether alert is acknowledged",
     )
     acknowledged_by: str | None = Field(
-        default=None, description="User who acknowledged alert"
+        default=None,
+        description="User who acknowledged alert",
     )
     acknowledged_at: datetime | None = Field(
-        default=None, description="Alert acknowledgment timestamp"
+        default=None,
+        description="Alert acknowledgment timestamp",
     )
     resolved: bool = Field(default=False, description="Whether alert is resolved")
     resolved_by: str | None = Field(default=None, description="User who resolved alert")
     resolved_at: datetime | None = Field(
-        default=None, description="Alert resolution timestamp"
+        default=None,
+        description="Alert resolution timestamp",
     )
     alert_count: int = Field(default=1, ge=1, description="Number of similar alerts")
     first_occurrence: datetime = Field(description="First occurrence of this alert")
@@ -413,7 +426,8 @@ class SystemAlertResponse(APIResponse):
     tags: list[str] = Field(default_factory=list, description="Alert tags")
     source: str | None = Field(default=None, description="Alert source system")
     correlation_id: str | None = Field(
-        default=None, description="Alert correlation identifier"
+        default=None,
+        description="Alert correlation identifier",
     )
     escalation_level: int = Field(
         default=0,
@@ -437,7 +451,8 @@ class SystemMetricsResponse(APIResponse):
     timestamp: datetime = Field(description="Metric collection timestamp")
     service_name: str | None = Field(default=None, description="Source service name")
     service_type: ServiceType | None = Field(
-        default=None, description="Source service type"
+        default=None,
+        description="Source service type",
     )
     labels: dict[str, str] = Field(
         default_factory=dict,
@@ -458,7 +473,8 @@ class SystemMetricsResponse(APIResponse):
         description="Associated alert rules",
     )
     aggregation_period: str | None = Field(
-        default=None, description="Aggregation period"
+        default=None,
+        description="Aggregation period",
     )
     collection_interval_seconds: int = Field(
         default=60,
@@ -476,3 +492,96 @@ class SystemMetricsResponse(APIResponse):
         default_factory=dict,
         description="Additional metric metadata",
     )
+
+
+# --- Missing Models ---
+
+
+class SystemRestoreRequest(APIRequest):
+    """Request model for system restore operations."""
+
+    backup_id: UUID = Field(description="Backup ID to restore from")
+    restore_type: str = Field(
+        description="Type of restore (full, partial, configuration_only)",
+    )
+    target_environment: str | None = Field(
+        default=None,
+        description="Target environment for restore",
+    )
+    overwrite_existing: bool = Field(
+        default=False,
+        description="Whether to overwrite existing data",
+    )
+    verify_before_restore: bool = Field(
+        default=True,
+        description="Verify backup integrity before restore",
+    )
+    stop_services: bool = Field(
+        default=True,
+        description="Stop services during restore",
+    )
+    metadata: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Additional restore metadata",
+    )
+
+
+class SystemHealthCheckRequest(APIRequest):
+    """Request model for system health checks."""
+
+    check_type: str = Field(
+        default="full",
+        description="Type of health check (full, quick, specific)",
+    )
+    services: list[ServiceType] = Field(
+        default_factory=list,
+        description="Specific services to check (empty means all)",
+    )
+    include_performance_metrics: bool = Field(
+        default=True,
+        description="Include performance metrics in health check",
+    )
+    timeout_seconds: int = Field(
+        default=30,
+        ge=1,
+        le=300,
+        description="Timeout for health check in seconds",
+    )
+    detailed_output: bool = Field(
+        default=False,
+        description="Include detailed diagnostic output",
+    )
+
+
+class SystemHealthResponse(APIResponse):
+    """Response model for system health checks."""
+
+    overall_status: SystemStatusType = Field(description="Overall system health status")
+    check_timestamp: datetime = Field(description="When the health check was performed")
+    check_duration_seconds: float = Field(description="Time taken for health check")
+    services_checked: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="Individual service health results",
+    )
+    performance_metrics: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Performance metrics collected during check",
+    )
+    issues_found: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="List of issues found during health check",
+    )
+    recommendations: list[str] = Field(
+        default_factory=list,
+        description="Recommendations for improving system health",
+    )
+    next_check_recommended: datetime | None = Field(
+        default=None,
+        description="Recommended time for next health check",
+    )
+
+
+# Model definitions complete
+
+# NOTE: model_rebuild() calls removed to prevent import circular dependency issues
+# Pydantic will resolve forward references automatically when needed

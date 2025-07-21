@@ -9,6 +9,8 @@ repositories, external service adapters, and persistence.
 Uses flext-core patterns for clean architecture implementation.
 """
 
+from __future__ import annotations
+
 from flext_api.infrastructure.repositories.pipeline_repository import PipelineRepository
 from flext_api.infrastructure.repositories.plugin_repository import PluginRepository
 

@@ -8,41 +8,35 @@ This module provides Pydantic models for plugin management.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from datetime import datetime  # noqa: TC003
+from enum import StrEnum
 from typing import Any
+from uuid import UUID  # noqa: TC003
 
-from pydantic import Field
+from flext_core import Field
+from flext_core.domain.pydantic_base import APIRequest, APIResponse
+from flext_core.domain.shared_types import (
+    EntityStatus,
+    PluginType,
+)
 from pydantic import field_validator
 
-from flext_core.domain.pydantic_base import APIRequest
-from flext_core.domain.pydantic_base import APIResponse
-from flext_core.domain.types import PluginType
-from flext_core.domain.types import StrEnum
-
-if TYPE_CHECKING:
-    from datetime import datetime
-    from uuid import UUID
+# Use centralized plugin types
+PluginStatus = EntityStatus  # Maps plugin status to standard entity status
 
 
-class PluginStatus(StrEnum):
-    """Plugin status enumeration."""
-
-    INSTALLED = "installed"
-    NOT_INSTALLED = "not_installed"
-    INSTALLING = "installing"
-    UNINSTALLING = "uninstalling"
-    ERROR = "error"
-    UPDATING = "updating"
-
-
+# API-specific plugin enums
 class PluginSource(StrEnum):
-    """Plugin source enumeration."""
+    """Plugin installation source."""
 
     HUB = "hub"
-    PYPI = "pypi"
-    GIT = "git"
+    GITHUB = "github"
     LOCAL = "local"
-    CUSTOM = "custom"
+    PYPI = "pypi"
+
+
+# Plugin capabilities map to the centralized PluginType
+PluginCapability = PluginType  # Use centralized plugin type enum
 
 
 # --- Request Models ---
@@ -106,7 +100,10 @@ class PluginInstallRequest(APIRequest):
 
         """
         if not v.replace("-", "").replace("_", "").isalnum():
-            msg = "Plugin name must contain only alphanumeric characters, hyphens, and underscores"
+            msg = (
+                "Plugin name must contain only alphanumeric characters, "
+                "hyphens, and underscores"
+            )
             raise ValueError(msg)
         return v.lower()
 
@@ -484,7 +481,34 @@ class LegacyPluginResponse(APIResponse):
             variant=response.variant,
             version=response.version,
             description=response.description,
-            installed=response.status == PluginStatus.INSTALLED,
+            installed=response.status == "installed",
             installed_at=response.installed_at,
-            message=None,
         )
+
+
+# Model definitions complete
+
+# NOTE: model_rebuild() calls removed to prevent import circular dependency issues
+# Pydantic will resolve forward references automatically when needed
+
+# Export the imported enums for external use
+__all__ = [
+    # Response models
+    "LegacyPluginResponse",
+    # Enums
+    "PluginCapability",
+    # Request models
+    "PluginConfigRequest",
+    "PluginDiscoveryRequest",
+    "PluginDiscoveryResponse",
+    "PluginInstallRequest",
+    "PluginInstallationResponse",
+    "PluginListResponse",
+    "PluginResponse",
+    "PluginSource",
+    "PluginStatsResponse",
+    "PluginStatus",
+    "PluginType",
+    "PluginUninstallRequest",
+    "PluginUpdateRequest",
+]

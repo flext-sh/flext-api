@@ -6,16 +6,19 @@ SPDX-License-Identifier: MIT
 This module provides the authentication endpoints for the FLEXT API.
 """
 
-from fastapi import APIRouter
-from fastapi import Request
+from __future__ import annotations
+
+from fastapi import APIRouter, Request
 from fastapi.security import HTTPBearer
 
-from flext_api.models.auth import LoginRequest
-from flext_api.models.auth import LoginResponse
-from flext_api.models.auth import RegisterRequest
-from flext_api.models.auth import RegisterResponse
-from flext_api.models.auth import UserAPI
-from flext_api.models.system import APIResponse
+from flext_api.models.auth import (
+    APIResponse,
+    LoginRequest,
+    LoginResponse,
+    RegisterRequest,
+    RegisterResponse,
+    UserAPI,
+)
 
 auth_router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
@@ -23,10 +26,21 @@ security = HTTPBearer()
 
 @auth_router.post("/login")
 async def login(login_data: LoginRequest) -> LoginResponse:
+    """Login endpoint.
+
+    Args:
+        login_data: LoginRequest
+
+    Returns:
+        LoginResponse
+
+    """
     # Implementation placeholder - will be connected to actual auth service
+    placeholder_token = "placeholder_token"
+    bearer_type = "bearer"
     return LoginResponse(
-        access_token="placeholder_token",
-        token_type="bearer",
+        access_token=placeholder_token,
+        token_type=bearer_type,
         expires_in=3600,
         user=UserAPI(
             username=login_data.username,
@@ -39,9 +53,17 @@ async def login(login_data: LoginRequest) -> LoginResponse:
 
 @auth_router.post("/register")
 async def register(register_data: RegisterRequest) -> RegisterResponse:
+    """Register endpoint.
+
+    Args:
+        register_data: RegisterRequest
+
+    Returns:
+        RegisterResponse
+
+    """
     # Implementation placeholder - will be connected to actual auth service
     return RegisterResponse(
-        message="User registered successfully",
         user=UserAPI(
             username=register_data.username,
             roles=register_data.roles or ["user"],
@@ -53,15 +75,30 @@ async def register(register_data: RegisterRequest) -> RegisterResponse:
 
 
 @auth_router.post("/logout")
-async def logout(request: Request) -> APIResponse:
-    return APIResponse(
-        message="Logged out successfully",
-        status="success",
-    )
+async def logout(_request: Request) -> APIResponse:
+    """Logout endpoint.
+
+    Args:
+        _request: Request
+
+    Returns:
+        APIResponse
+
+    """
+    return APIResponse()
 
 
 @auth_router.get("/profile")
-async def get_profile(request: Request) -> UserAPI:
+async def get_profile(_request: Request) -> UserAPI:
+    """Get profile endpoint.
+
+    Args:
+        _request: Request
+
+    Returns:
+        UserAPI
+
+    """
     # Implementation placeholder - will extract from JWT token
     return UserAPI(
         username="current_user",

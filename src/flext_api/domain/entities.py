@@ -3,51 +3,55 @@
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
-This module provides the domain entities for the FLEXT API.
+REFACTORED: Uses flext-core domain entities - NO duplication.
 """
 
 from __future__ import annotations
 
-from datetime import UTC
-from datetime import datetime
-from typing import TYPE_CHECKING
+from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any
 
 from flext_core.domain.constants import ConfigDefaults
 
-# TimestampMixin functionality already included in DomainEntity
-from flext_core.domain.pydantic_base import DomainEntity
-from flext_core.domain.pydantic_base import DomainEvent
-from flext_core.domain.pydantic_base import Field
-from flext_core.domain.types import StrEnum
+# Use flext-core domain entities - NO duplication
+from flext_core.domain.pipeline import (
+    Pipeline,  # Use flext-core Pipeline
+    PipelineExecution,  # Use flext-core PipelineExecution
+)
 
-if TYPE_CHECKING:
-    from flext_core.domain.types import EntityId
-    from flext_core.domain.types import PipelineId
-    from flext_core.domain.types import PluginId
-    from flext_core.domain.types import UserId
+# Import types needed at runtime for Pydantic model_rebuild()
+# Import types properly
+from flext_core.domain.pydantic_base import (
+    APIResponse,
+    DomainEntity,
+    Field,
+)
+from flext_core.domain.shared_models import (
+    PluginMetadata,  # Use flext-core PluginMetadata
+)
+
+# Import types needed at runtime for Pydantic model_rebuild()
+from flext_core.domain.types import (
+    EntityId,  # Moved from TYPE_CHECKING since used at runtime
+    PluginType,  # Use flext-core PluginType
+    UserId,
+)
+from pydantic import field_validator
+
+from flext_api.domain.events import (
+    PipelineCreatedEvent,
+    PipelineExecutedEvent,
+    PluginRegisteredEvent,
+)
+
+# Export flext-core entities for API usage - NO DUPLICATION
+PipelineEntity = Pipeline  # Use flext-core Pipeline aggregate
+ExecutionEntity = PipelineExecution  # Use flext-core PipelineExecution
+PluginEntity = PluginMetadata  # Use flext-core PluginMetadata
 
 
-class PipelineStatus(StrEnum):
-    """Pipeline execution status using StrEnum for type safety."""
-
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    RUNNING = "running"
-    FAILED = "failed"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
-
-
-class PluginType(StrEnum):
-    """Plugin type enumeration using StrEnum for type safety."""
-
-    TAP = "tap"
-    TARGET = "target"
-    TRANSFORM = "transform"
-    UTILITY = "utility"
-    CUSTOM = "custom"
+# PluginType already imported from flext-core - NO duplication needed
 
 
 class HttpMethod(StrEnum):
@@ -62,7 +66,23 @@ class HttpMethod(StrEnum):
     OPTIONS = "OPTIONS"
 
 
-class Pipeline(DomainEntity):
+class PipelineStatus(StrEnum):
+    """Pipeline status enumeration."""
+
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    DRAFT = "draft"
+    ARCHIVED = "archived"
+    FAILED = "failed"
+    RUNNING = "running"
+    SCHEDULED = "scheduled"
+
+
+# Pipeline and Plugin are imported from flext-core - NO duplication
+# Only API-specific entities are defined here
+
+
+class APIPipeline(DomainEntity):
     """API Pipeline domain entity using enhanced mixins for code reduction."""
 
     name: str = Field(
@@ -71,7 +91,7 @@ class Pipeline(DomainEntity):
         max_length=ConfigDefaults.MAX_ENTITY_NAME_LENGTH,
     )
     description: str | None = Field(
-        None,
+        default=None,
         max_length=ConfigDefaults.MAX_ERROR_MESSAGE_LENGTH,
     )
     pipeline_status: PipelineStatus = Field(
@@ -80,9 +100,12 @@ class Pipeline(DomainEntity):
     )
     config: dict[str, Any] = Field(default_factory=dict)
 
+    # Timestamps
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
     # Relationships - using typed IDs
-    owner_id: UserId | None = Field(None, description="Pipeline owner")
-    project_id: EntityId | None = Field(None, description="Associated project")
+    owner_id: UserId | None = Field(default=None, description="Pipeline owner")
+    project_id: EntityId | None = Field(default=None, description="Associated project")
 
     # Metrics
     last_run_at: datetime | None = None
@@ -92,7 +115,7 @@ class Pipeline(DomainEntity):
 
     # API-specific fields
     endpoint: str | None = Field(
-        None,
+        default=None,
         description="API endpoint path",
         max_length=500,
     )
@@ -120,7 +143,7 @@ class Pipeline(DomainEntity):
         """Check if the pipeline is active."""
         return self.pipeline_status == PipelineStatus.ACTIVE
 
-    def record_execution(self, success: bool = True) -> None:
+    def record_execution(self, *, success: bool = True) -> None:
         """Record the execution of the pipeline."""
         self.run_count += 1
         self.last_run_at = datetime.now(UTC)
@@ -147,19 +170,25 @@ class Plugin(DomainEntity):
         pattern=r"^\d+\.\d+\.\d+$",
     )
     description: str | None = Field(
-        None,
+        default=None,
         max_length=ConfigDefaults.MAX_ERROR_MESSAGE_LENGTH,
     )
     plugin_config: dict[str, Any] = Field(default_factory=dict)
     enabled: bool = Field(default=True)
 
+    @field_validator("plugin_config", mode="before")
+    @classmethod
+    def validate_plugin_config(cls, v: dict[str, object] | None) -> dict[str, object]:
+        """Ensure plugin_config is never None."""
+        return v if v is not None else {}
+
     # Metadata
     author: str | None = Field(
-        None,
+        default=None,
         max_length=ConfigDefaults.MAX_ENTITY_NAME_LENGTH,
     )
-    repository_url: str | None = Field(None, max_length=500)
-    documentation_url: str | None = Field(None, max_length=500)
+    repository_url: str | None = Field(default=None, max_length=500)
+    documentation_url: str | None = Field(default=None, max_length=500)
 
     # Validation
     validation_schema: dict[str, Any] | None = Field(default=None)
@@ -209,18 +238,18 @@ class RequestLog(DomainEntity):
     body: dict[str, Any] | None = None
 
     # Request metadata - using typed IDs
-    user_id: UserId | None = Field(None, description="User making the request")
-    ip_address: str | None = Field(None, max_length=45)  # IPv6 max length
-    user_agent: str | None = Field(None, max_length=500)
+    user_id: UserId | None = Field(default=None, description="User making the request")
+    ip_address: str | None = Field(default=None, max_length=45)  # IPv6 max length
+    user_agent: str | None = Field(default=None, max_length=500)
     request_id: str | None = Field(
-        None,
+        default=None,
         max_length=ConfigDefaults.MAX_ENTITY_NAME_LENGTH,
     )
 
     # Response data
-    status_code: int | None = Field(None, ge=100, le=599)
-    response_time_ms: int | None = Field(None, ge=0)
-    response_size: int | None = Field(None, ge=0)
+    status_code: int | None = Field(default=None, ge=100, le=599)
+    response_time_ms: int | None = Field(default=None, ge=0)
+    response_size: int | None = Field(default=None, ge=0)
 
     @property
     def was_successful(self) -> bool:
@@ -272,16 +301,16 @@ class ResponseLog(DomainEntity):
         description="Response time in milliseconds",
         ge=0,
     )
-    content_type: str | None = Field(None, max_length=255)
-    content_length: int | None = Field(None, ge=0)
+    content_type: str | None = Field(default=None, max_length=255)
+    content_length: int | None = Field(default=None, ge=0)
 
     # Error information
     error_message: str | None = Field(
-        None,
+        default=None,
         max_length=ConfigDefaults.MAX_ERROR_MESSAGE_LENGTH,
     )
     error_code: str | None = Field(
-        None,
+        default=None,
         max_length=ConfigDefaults.MAX_ENTITY_NAME_LENGTH,
     )
 
@@ -326,34 +355,174 @@ class ResponseLog(DomainEntity):
         return self.response_time_ms < 100
 
 
-# Domain Events for API
-class PipelineCreatedEvent(DomainEvent):
-    """Event raised when pipeline is created."""
-
-    pipeline_id: PipelineId
-    pipeline_name: str | None = Field(default=None, description="Pipeline name")
+# Events imported at top to avoid E402
 
 
-class PipelineExecutedEvent(DomainEvent):
-    """Event raised when pipeline is executed."""
+class APIRequest(DomainEntity):
+    """API Request domain entity for tracking and auditing API requests."""
 
-    pipeline_id: PipelineId
-    execution_id: EntityId
-    success: bool
-    duration_ms: int
+    # Request identification
+    request_id: str = Field(..., description="Unique request identifier")
+    endpoint: str = Field(..., description="API endpoint being accessed")
+    method: str = Field(..., description="HTTP method (GET, POST, etc.)")
+
+    # Request metadata
+    headers: dict[str, str] = Field(default_factory=dict, description="Request headers")
+    query_params: dict[str, str] = Field(
+        default_factory=dict,
+        description="Query parameters",
+    )
+    path_params: dict[str, str] = Field(
+        default_factory=dict,
+        description="Path parameters",
+    )
+
+    # Request payload
+    body: dict[str, Any] | None = Field(default=None, description="Request body data")
+    content_type: str | None = Field(
+        default=None,
+        description="Content type of request",
+    )
+
+    # Client information
+    client_ip: str | None = Field(default=None, description="Client IP address")
+    user_agent: str | None = Field(default=None, description="Client user agent")
+    client_id: str | None = Field(
+        default=None,
+        description="Client identifier if authenticated",
+    )
+
+    # Authentication
+    user_id: UserId | None = Field(default=None, description="Authenticated user ID")
+    session_id: str | None = Field(default=None, description="Session identifier")
+
+    # Timing and status
+    request_timestamp: datetime = Field(
+        default_factory=lambda: datetime.now(UTC),
+        description="When the request was received",
+    )
+    processing_started_at: datetime | None = Field(
+        default=None,
+        description="When processing started",
+    )
+
+    def start_processing(self) -> None:
+        """Mark request as started processing."""
+        self.processing_started_at = datetime.now(UTC)
 
 
-class PluginRegisteredEvent(DomainEvent):
-    """Event raised when plugin is registered."""
-
-    plugin_id: PluginId
-    plugin_name: str
-    plugin_type: PluginType
-    version: str
+# Add alias for backward compatibility
+ApiRequest = APIRequest
 
 
-class ApiRequestReceivedEvent(DomainEvent):
-    """Event raised when API request is received."""
+# ApiRequestReceivedEvent removed - use from flext_api.domain.events instead
 
-    request_id: EntityId
-    method: HttpMethod | None = Field(default=None, description="HTTP method")
+
+class APIResponseLog(DomainEntity):
+    """API Response log domain entity for tracking and auditing API responses."""
+
+    # Response identification
+    request_id: str = Field(..., description="Corresponding request identifier")
+    response_id: str = Field(..., description="Unique response identifier")
+
+    # Response data
+    status_code: int = Field(..., description="HTTP status code")
+    headers: dict[str, str] = Field(
+        default_factory=dict,
+        description="Response headers",
+    )
+    body: dict[str, Any] | None = Field(default=None, description="Response body data")
+    content_type: str = Field(
+        default="application/json",
+        description="Response content type",
+    )
+
+    # Timing information
+    response_timestamp: datetime = Field(
+        default_factory=lambda: datetime.now(UTC),
+        description="When the response was sent",
+    )
+    processing_duration_ms: int | None = Field(
+        default=None,
+        description="Processing time in milliseconds",
+    )
+
+    # Response metadata
+    size_bytes: int | None = Field(default=None, description="Response size in bytes")
+    cache_status: str | None = Field(
+        default=None,
+        description="Cache status (HIT, MISS, etc.)",
+    )
+
+    # Error information (if applicable)
+    error_code: str | None = Field(
+        default=None,
+        description="Error code if response indicates an error",
+    )
+    error_message: str | None = Field(
+        default=None,
+        description="Error message if applicable",
+    )
+
+    # Performance metrics
+    database_query_count: int = Field(
+        default=0,
+        description="Number of database queries",
+    )
+    cache_hit_count: int = Field(default=0, description="Number of cache hits")
+    external_api_calls: int = Field(
+        default=0,
+        description="Number of external API calls",
+    )
+
+    def mark_as_error(self, error_code: str, error_message: str) -> None:
+        """Mark response as an error."""
+        self.error_code = error_code
+        self.error_message = error_message
+
+    def set_processing_duration(self, start_time: datetime) -> None:
+        """Calculate and set processing duration."""
+        if self.response_timestamp and start_time:
+            duration = self.response_timestamp - start_time
+            self.processing_duration_ms = int(duration.total_seconds() * 1000)
+
+    @property
+    def is_success(self) -> bool:
+        """Check if the API response indicates success."""
+        return 200 <= self.status_code < 300
+
+    @property
+    def is_client_error(self) -> bool:
+        """Check if the API response indicates client error."""
+        return 400 <= self.status_code < 500
+
+    @property
+    def is_server_error(self) -> bool:
+        """Check if the API response indicates server error."""
+        return self.status_code >= 500
+
+
+# Export all public entities for MyPy
+__all__ = [
+    "APIPipeline",
+    "APIRequest",
+    "APIResponse",
+    "APIResponseLog",
+    "ConfigDefaults",
+    "HttpMethod",
+    "Pipeline",
+    "PipelineCreatedEvent",
+    "PipelineExecutedEvent",
+    "PipelineExecution",
+    "PipelineStatus",
+    "Plugin",
+    "PluginMetadata",
+    "PluginRegisteredEvent",
+    "PluginType",
+    "RequestLog",
+    "ResponseLog",
+    "UserId",
+]
+
+# NOTE: model_rebuild() calls removed to prevent import circular dependency issues
+# Pydantic will resolve forward references automatically when needed
