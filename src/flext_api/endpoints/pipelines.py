@@ -6,25 +6,22 @@ SPDX-License-Identifier: MIT
 This module provides the pipeline management endpoints for the FLEXT API.
 """
 
-from datetime import UTC
-from datetime import datetime
+from __future__ import annotations
+
 from typing import Annotated
-from typing import Any
-from uuid import uuid4
+from uuid import UUID
 
-from fastapi import APIRouter
-from fastapi import HTTPException
-from fastapi import Query
-from fastapi import Request
-from pydantic import Field
+from fastapi import APIRouter, HTTPException, Query, Request
+from flext_core.domain.pydantic_base import DomainBaseModel as APIBaseModel, Field
+from flext_core.domain.shared_types import EntityStatus
 
-from flext_api.models.pipeline import PipelineCreateRequest
-from flext_api.models.pipeline import PipelineExecutionRequest
-from flext_api.models.pipeline import PipelineResponse
-from flext_api.models.pipeline import PipelineStatus
-from flext_api.models.pipeline import PipelineUpdateRequest
-from flext_api.models.system import APIResponse
-from flext_core import APIBaseModel
+from flext_api.dependencies import get_pipeline_service
+from flext_api.models.pipeline import (
+    PipelineCreateRequest,
+    PipelineListResponse,
+    PipelineResponse,
+    PipelineType,
+)
 
 pipelines_router = APIRouter(prefix="/pipelines", tags=["pipelines"])
 
@@ -40,89 +37,168 @@ class PipelineListParams(APIBaseModel):
 
 @pipelines_router.post("")
 async def create_pipeline(
-    pipeline_data: PipelineCreateRequest, request: Request
+    pipeline_data: PipelineCreateRequest,
+    _request: Request,
 ) -> PipelineResponse:
-    pipeline_id = str(uuid4())
-    created_at = datetime.now(UTC)
+    """Create pipeline endpoint."""
+    try:
+        pipeline_service = get_pipeline_service()
 
-    return PipelineResponse(
-        pipeline_id=pipeline_id,
-        name=pipeline_data.name,
-        description=pipeline_data.description,
-        pipeline_type=pipeline_data.pipeline_type,
-        status=PipelineStatus.PENDING,
-        refresh_mode=getattr(pipeline_data, "refresh_mode", "incremental"),
-        configuration=pipeline_data.configuration or {},
-        schedule=pipeline_data.schedule,
-        tags=pipeline_data.tags or [],
-        created_at=created_at,
-        updated_at=created_at,
-        created_by="current_user",  # Will be extracted from auth context
-        last_execution_id=None,
-        last_execution_status=None,
-        last_execution_at=None,
-        execution_count=0,
-        success_rate=0.0,
-    )
+        # Create pipeline using the service to ensure it's stored
+        config = pipeline_data.configuration or {}
+        config.update(
+            {
+                "extractor": pipeline_data.extractor,
+                "loader": pipeline_data.loader,
+                "transform": pipeline_data.transform,
+                "environment": pipeline_data.environment,
+                "pipeline_type": pipeline_data.pipeline_type,
+                "schedule": pipeline_data.schedule,
+                "tags": pipeline_data.tags or [],
+            },
+        )
+
+        pipeline_result = await pipeline_service.create_pipeline(
+            name=pipeline_data.name,
+            description=pipeline_data.description,
+            config=config,
+            owner_id=None,
+            project_id=None,
+        )
+
+        if not pipeline_result.is_success:
+            raise HTTPException(status_code=400, detail=pipeline_result.error)
+
+        pipeline = pipeline_result.unwrap()
+
+        return PipelineResponse(
+            pipeline_id=pipeline.id,
+            name=pipeline.name,
+            description=pipeline.description,
+            extractor=config.get("extractor", ""),
+            loader=config.get("loader", ""),
+            transform=config.get("transform"),
+            configuration=config,
+            status=EntityStatus.ACTIVE if pipeline.pipeline_is_active else EntityStatus.INACTIVE,
+            pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
+            environment=config.get("environment", "development"),
+            schedule=config.get("schedule"),
+            tags=config.get("tags", []),
+            created_at=pipeline.created_at,
+            updated_at=pipeline.updated_at,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to create pipeline: {e}",
+        ) from e
 
 
 @pipelines_router.get("/{pipeline_id}")
-async def get_pipeline(pipeline_id: str, request: Request) -> PipelineResponse:
-    # Implementation placeholder - will query from storage
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+async def get_pipeline(pipeline_id: str, _request: Request) -> PipelineResponse:
+    """Get pipeline by ID."""
+    try:
+        pipeline_service = get_pipeline_service()
 
+        # Convert string ID to UUID for service call
+        try:
+            uuid_id = UUID(pipeline_id)
+        except ValueError as e:
+            raise HTTPException(
+                status_code=400, detail="Invalid pipeline ID format",
+            ) from e
 
-@pipelines_router.put("/{pipeline_id}")
-async def update_pipeline(
-    pipeline_id: str, pipeline_data: PipelineUpdateRequest, request: Request
-) -> PipelineResponse:
-    # Implementation placeholder - will update in storage
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+        pipeline_result = await pipeline_service.get_pipeline(uuid_id)
 
+        if not pipeline_result.is_success:
+            raise HTTPException(status_code=404, detail="Pipeline not found")
 
-@pipelines_router.delete("/{pipeline_id}")
-async def delete_pipeline(pipeline_id: str, request: Request) -> APIResponse:
-    # Implementation placeholder - will delete from storage
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+        pipeline = pipeline_result.unwrap()
+        config = pipeline.config or {}
 
+        return PipelineResponse(
+            pipeline_id=pipeline.id,
+            name=pipeline.name,
+            description=pipeline.description,
+            extractor=config.get("extractor", ""),
+            loader=config.get("loader", ""),
+            transform=config.get("transform"),
+            configuration=config,
+            status=EntityStatus.ACTIVE if pipeline.pipeline_is_active else EntityStatus.INACTIVE,
+            pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
+            environment=config.get("environment", "development"),
+            schedule=config.get("schedule"),
+            tags=config.get("tags", []),
+            created_at=pipeline.created_at,
+            updated_at=pipeline.updated_at,
+        )
 
-@pipelines_router.post("/{pipeline_id}/execute")
-async def execute_pipeline(
-    pipeline_id: str, execution_data: PipelineExecutionRequest, request: Request
-) -> dict[str, str]:
-    execution_id = str(uuid4())
-    execution_started_at = datetime.now(UTC)
-
-    return {
-        "execution_id": execution_id,
-        "pipeline_id": pipeline_id,
-        "status": "submitted",
-        "started_at": execution_started_at.isoformat(),
-        "message": "Pipeline execution submitted successfully",
-    }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get pipeline: {e}",
+        ) from e
 
 
 @pipelines_router.get("")
 async def list_pipelines(
-    request: Request,
-    page: Annotated[int, Query(default=1, ge=1)],
-    page_size: Annotated[int, Query(default=20, ge=1, le=100)],
-    status: Annotated[str | None, Query(default=None)],
-    search: Annotated[str | None, Query(default=None)],
-) -> dict[str, Any]:
-    # Implementation placeholder - will query from storage
-    return {
-        "pipelines": [],
-        "pagination": {
-            "page": page,
-            "page_size": page_size,
-            "total_count": 0,
-            "total_pages": 0,
-            "has_next": False,
-            "has_previous": False,
-        },
-        "filters": {
-            "status": status,
-            "search": search,
-        },
-    }
+    params: Annotated[PipelineListParams, Query()],
+    _request: Request,
+) -> PipelineListResponse:
+    """List pipelines with pagination."""
+    try:
+        pipeline_service = get_pipeline_service()
+
+        # Calculate offset from page and page_size
+        offset = (params.page - 1) * params.page_size
+
+        pipelines_result = await pipeline_service.list_pipelines(
+            limit=params.page_size,
+            offset=offset,
+        )
+
+        if not pipelines_result.is_success:
+            raise HTTPException(status_code=500, detail=pipelines_result.error)
+
+        pipelines = pipelines_result.unwrap()
+
+        # Convert pipelines to response format
+        pipeline_responses = []
+        for pipeline in pipelines:
+            config = pipeline.config or {}
+            pipeline_responses.append(
+                PipelineResponse(
+                    pipeline_id=pipeline.id,
+                    name=pipeline.name,
+                    description=pipeline.description,
+                    extractor=config.get("extractor", ""),
+                    loader=config.get("loader", ""),
+                    transform=config.get("transform"),
+                    configuration=config,
+                    status=EntityStatus.ACTIVE if pipeline.pipeline_is_active else EntityStatus.INACTIVE,
+                    pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
+                    environment=config.get("environment", "development"),
+                    schedule=config.get("schedule"),
+                    tags=config.get("tags", []),
+                    created_at=pipeline.created_at,
+                    updated_at=pipeline.updated_at,
+                ),
+            )
+
+        return PipelineListResponse(
+            pipelines=pipeline_responses,
+            total_count=len(pipeline_responses),
+            page=params.page,
+            page_size=params.page_size,
+            has_next=False,  # Simple implementation for now
+            has_previous=params.page > 1,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to list pipelines: {e}",
+        ) from e

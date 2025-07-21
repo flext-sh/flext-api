@@ -10,15 +10,25 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core.domain.pydantic_base import DomainEvent
-from flext_core.domain.pydantic_base import Field
+from flext_core.domain.pydantic_base import DomainEvent, Field
 
 if TYPE_CHECKING:
-    from flext_api.domain.entities import PluginType
-    from flext_core.domain.types import EntityId
-    from flext_core.domain.types import PipelineId
-    from flext_core.domain.types import PluginId
-    from flext_core.domain.types import UserId
+    from flext_core.domain.shared_types import (
+        EntityId,
+        PipelineId,
+        PluginId,
+        PluginType,
+        UserId,
+    )
+else:
+    # Runtime imports for model_rebuild to work
+    from flext_core.domain.shared_types import (  # noqa: TC002
+        EntityId,
+        PipelineId,
+        PluginId,
+        PluginType,
+        UserId,
+    )
 
 
 # Pipeline Events
@@ -26,7 +36,7 @@ class PipelineCreatedEvent(DomainEvent):
     """Event raised when pipeline is created."""
 
     pipeline_id: PipelineId
-    pipeline_name = Field(..., min_length=1)
+    pipeline_name: str = Field(..., min_length=1)
     owner_id: UserId | None = None
     project_id: EntityId | None = None
 
@@ -43,14 +53,14 @@ class PipelineDeletedEvent(DomainEvent):
     """Event raised when pipeline is deleted."""
 
     pipeline_id: PipelineId
-    deleted_by = None
+    deleted_by: UserId | None = None
 
 
 class PipelineExecutedEvent(DomainEvent):
     """Event raised when pipeline is executed."""
 
     pipeline_id: PipelineId
-    execution_id = Field(ge=0)
+    execution_id: int = Field(ge=0)
     error_message: str | None = None
 
 
@@ -59,9 +69,9 @@ class PluginRegisteredEvent(DomainEvent):
     """Event raised when plugin is registered."""
 
     plugin_id: PluginId
-    plugin_name = Field(..., min_length=1)
+    plugin_name: str = Field(..., min_length=1)
     plugin_type: PluginType
-    version: str
+    version: str = Field(..., pattern=r"^\d+\.\d+\.\d+$")
 
 
 class PluginUpdatedEvent(DomainEvent):
@@ -76,7 +86,7 @@ class PluginDisabledEvent(DomainEvent):
     """Event raised when plugin is disabled."""
 
     plugin_id: PluginId
-    disabled_by = None
+    disabled_by: UserId | None = None
     reason: str | None = None
 
 
@@ -84,7 +94,7 @@ class PluginEnabledEvent(DomainEvent):
     """Event raised when plugin is enabled."""
 
     plugin_id: PluginId
-    enabled_by = None
+    enabled_by: UserId | None = None
 
 
 # API Request Events
@@ -92,7 +102,7 @@ class ApiRequestReceivedEvent(DomainEvent):
     """Event raised when API request is received."""
 
     request_id: EntityId
-    method = None
+    method: str | None = None
     ip_address: str | None = None
 
 
@@ -100,7 +110,7 @@ class ApiRequestCompletedEvent(DomainEvent):
     """Event raised when API request is completed."""
 
     request_id: EntityId
-    status_code = Field(ge=100, le=599)
+    status_code: int = Field(ge=100, le=599)
     response_time_ms: int = Field(ge=0)
     success: bool
 
@@ -110,7 +120,7 @@ class ApiRateLimitExceededEvent(DomainEvent):
 
     user_id: UserId | None = None
     ip_address: str
-    limit = Field(default=1, ge=1)
+    limit: int = Field(default=1, ge=1)
 
 
 # Authentication Events
@@ -118,7 +128,7 @@ class ApiAuthenticationFailedEvent(DomainEvent):
     """Event raised when authentication fails."""
 
     request_id: EntityId
-    reason = None
+    reason: str | None = None
     attempted_token: str | None = None  # Partial token for debugging
 
 
@@ -129,3 +139,7 @@ class ApiAuthorizationFailedEvent(DomainEvent):
     user_id: UserId
     required_permission: str
     endpoint: str
+
+
+# NOTE: model_rebuild() calls removed to prevent import circular dependency issues
+# Pydantic will resolve forward references automatically when needed

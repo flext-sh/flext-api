@@ -1,56 +1,26 @@
 [build-system]
-requires = ["poetry-core>=1.9.0"]
+requires = [ "poetry-core>=1.9.0",]
 build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "flext-api"
 version = "0.7.0"
 description = "FLEXT API - High-Performance REST API with FastAPI"
-authors = [{ name = "FLEXT Team", email = "team@flext.sh" }]
-maintainers = [{ name = "FLEXT Team", email = "team@flext.sh" }]
-license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-dependencies = [
-    # FastAPI & Web Framework specific dependencies
-    "python-multipart>=0.0.17",
-    "slowapi>=0.1.9",
-    # Note: fastapi, uvicorn, httpx are provided at workspace level
-    # Note: SQLAlchemy, redis, pydantic, etc come from flext-core
-    # Note: Auth dependencies come from flext-auth if needed
-    "asyncpg (>=0.30.0,<0.31.0)",
-    "bcrypt (>=4.3.0,<5.0.0)",
-    "click (>=8.2.1,<9.0.0)",
-    "fastapi (>=0.116.1,<0.117.0)",
-    "gunicorn (>=23.0.0,<24.0.0)",
-    "httpx (>=0.28.1,<0.29.0)",
-    "opentelemetry-api (>=1.35.0,<2.0.0)",
-    "opentelemetry-instrumentation-fastapi (>=0.56b0,<0.57)",
-    "opentelemetry-sdk (>=1.35.0,<2.0.0)",
-    "prometheus-client (>=0.22.1,<0.23.0)",
-    "psutil (>=7.0.0,<8.0.0)",
-    "pydantic (>=2.11.7,<3.0.0)",
-    "pydantic-settings (>=2.10.1,<3.0.0)",
-    "redis (>=6.2.0,<7.0.0)",
-    "rich (>=14.0.0,<15.0.0)",
-    "sqlalchemy (>=2.0.41,<3.0.0)",
-    "uvicorn (>=0.35.0,<0.36.0)"
-]
-keywords = ["flext", "api", "fastapi", "rest", "async", "enterprise"]
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
-    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
-    "Framework :: FastAPI",
-    "Framework :: AsyncIO",
-    "Typing :: Typed",
-]
+keywords = [ "flext", "enterprise", "async", "typed", "fastapi", "rest", "api", "http",]
+classifiers = [ "Development Status :: 5 - Production/Stable", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent", "Programming Language :: Python :: 3.13", "Programming Language :: Python :: 3 :: Only", "Topic :: Software Development :: Libraries :: Python Modules", "Typing :: Typed", "Topic :: Internet :: WWW/HTTP :: HTTP Servers", "Framework :: FastAPI",]
+dependencies = [ "fastapi>=0.116.0", "grpcio (>=1.50.0)", "grpcio-health-checking (>=0)", "psutil>=6.1.0", "pydantic-settings (>=2.10.1)", "pydantic>=2.10.0", "pyjwt (>=2.10.1)", "slowapi (>=0.1.9)", "sqlalchemy[asyncio]>=2.0.0", "uvicorn[standard]>=0.34.0", "flext-observability @ file:///home/marlonsc/flext/flext-observability", "flext-core @ file:///home/marlonsc/flext/flext-core", "flext-auth @ file:///home/marlonsc/flext/flext-auth", "flext-plugin @ file:///home/marlonsc/flext/flext-plugin", "flext-grpc @ file:///home/marlonsc/flext/flext-grpc",]
+[[project.authors]]
+name = "FLEXT Team"
+email = "team@flext.sh"
+
+[[project.maintainers]]
+name = "FLEXT Team"
+email = "team@flext.sh"
+
+[project.license]
+text = "MIT"
 
 [project.urls]
 Homepage = "https://github.com/flext-sh/flext"
@@ -58,62 +28,159 @@ Repository = "https://github.com/flext-sh/flext"
 Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
 
 [project.scripts]
+flext-api = "flext_api.cli:main"
 flext-api-server = "flext_api.server:main"
 
-[tool.poetry]
-name = "flext-api"
-version = "0.7.0"
-description = "FLEXT API - High-Performance REST API with FastAPI"
-authors = ["FLEXT Team <team@flext.sh>"]
-readme = "README.md"
-packages = [{ include = "flext_api", from = "src" }]
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+fix = true
+show-fixes = true
+respect-gitignore = true
+src = [ "src", "tests",]
+extend-exclude = [ "__pycache__", ".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv", "venv", "build", "dist", "htmlcov",]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+show_error_context = true
+pretty = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+ignore_missing_imports = true
+no_implicit_reexport = true
+files = [ "src", "tests",]
+plugins = []
+exclude = [ "build", "dist", ".venv", ".mypy_cache",]
+
+[tool.bandit]
+exclude_dirs = [ "tests", "build", "dist",]
+skips = [ "B101", "B601",]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[[tool.poetry.packages]]
+include = "flext_api"
+from = "src"
+
+[tool.deptry]
+known_first_party = [ "flext_api",]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+asyncio_mode = "auto"
+addopts = [ "-ra", "--strict-markers", "--strict-config", "--cov=flext_api", "--cov-branch", "--cov-report=term-missing:skip-covered", "--cov-report=html:reports/coverage", "--cov-report=xml:reports/coverage.xml", "--cov-fail-under=90", "--maxfail=1", "--tb=short",]
+testpaths = [ "tests",]
+markers = [ "unit: Unit tests", "integration: Integration tests", "slow: Slow tests", "smoke: Smoke tests", "e2e: End-to-end tests",]
+filterwarnings = [ "error", "ignore::UserWarning", "ignore::DeprecationWarning",]
+
+[tool.ruff.lint]
+select = [ "ALL",]
+ignore = [ "COM812", "D203", "D213", "ISC001", "ANN401", "ARG001", "ARG002", "BLE001", "C901", "D102", "D103", "D105", "D107", "D401", "DTZ001", "DTZ005", "E401", "E501", "EM101", "EM102", "ERA001", "EXE001", "F401", "F823", "FBT001", "FBT002", "FBT003", "FIX002", "G004", "PLC0415", "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR2004", "PLW0603", "PTH118", "PTH123", "RUF001", "S103", "S104", "S105", "S106", "S107", "S603", "S607", "SIM102", "TD002", "TD003", "TRY003", "TRY203", "TRY300", "TRY301", "TRY401",]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = true
+
+[tool.coverage.run]
+source = [ "src",]
+branch = true
+omit = [ "*/tests/*", "*/test_*", "*/__pycache__/*", "*/venv/*", "*/.venv/*",]
+
+[tool.coverage.report]
+exclude_lines = [ "pragma: no cover", "def __repr__", "if self.debug:", "if settings.DEBUG", "raise AssertionError", "raise NotImplementedError", "if 0:", "if __name__ == .__main__.:", "class .*\\bProtocol\\):", "@(abc\\.)?abstractmethod",]
+
+[tool.coverage.html]
+directory = "reports/coverage"
+
+[tool.coverage.xml]
+output = "reports/coverage.xml"
 
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
+fastapi = ">=0.116.0"
+pydantic = ">=2.10.0"
+psutil = ">=6.1.0"
+slowapi = ">=0.1.9,<0.2.0"
+pydantic-settings = ">=2.10.1,<3.0.0"
+grpcio-health-checking = "*"
+pyjwt = ">=2.10.1,<3.0.0"
 
-# Core FLEXT dependencies - primary source of truth
-flext-core = { path = "../flext-core", develop = true }
-flext-observability = { path = "../flext-observability", develop = true }
-flext-auth = { path = "../flext-auth", develop = true }
-flext-grpc = { path = "../flext-grpc", develop = true }
+# Removed invalid group configurations that were causing Poetry errors
 
-# FastAPI & Web Framework specific dependencies
-python-multipart = ">=0.0.17"
-slowapi = ">=0.1.9"
+[tool.ruff.lint.isort]
+known-first-party = [ "flext",]
+force-single-line = false
+split-on-trailing-comma = true
+combine-as-imports = true
 
-# Workspace-managed dependencies (inherited):
-# fastapi, uvicorn, httpx, pydantic, pydantic-settings, click, structlog, etc.
-# are all provided at workspace level - no duplication needed
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = [ "S101", "S103", "S104", "S105", "S106", "S107", "PLR2004", "ARG", "SLF001", "PLC0415",]
+"**/scripts/**" = [ "T201", "S603", "S607", "ANN",]
+"**/__init__.py" = [ "F401",]
+"**/proto/*_pb2.py" = [ "ALL",]
+"**/proto/*_pb2_grpc.py" = [ "ALL",]
+"**/*_pb2.py" = [ "ALL",]
+"**/*_pb2_grpc.py" = [ "ALL",]
+"**/generated/**/*.py" = [ "ALL",]
+
+[tool.poetry.dependencies.uvicorn]
+extras = [ "standard",]
+version = ">=0.34.0"
+
+[tool.poetry.dependencies.sqlalchemy]
+extras = [ "asyncio",]
+version = ">=2.0.0"
+
+[tool.poetry.dependencies.flext-core]
+path = "../flext-core"
+develop = true
+
+[tool.poetry.dependencies.flext-observability]
+path = "../flext-observability"
+develop = true
+
+[tool.poetry.dependencies.flext-plugin]
+path = "../flext-plugin"
+develop = true
+
+[tool.poetry.dependencies.flext-grpc]
+path = "../flext-grpc"
+develop = true
 
 [tool.poetry.group.dev.dependencies]
-# Development dependencies
-pytest = ">=8.0.0"
-pytest-cov = ">=4.0.0"
-pytest-asyncio = ">=0.23.0"
-pytest-mock = ">=3.12.0"
 ruff = "^0.12.3"
-mypy = "^1.13.0"
-pre-commit = "^4.0.1"
 black = "^25.1.0"
 isort = "^6.0.1"
+mypy = "^1.13.0"
 pylint = "^3.3.0"
+pre-commit = "^4.0.1"
 vulture = "^2.13"
 radon = "^6.0.1"
 codespell = "^2.3.0"
 pyupgrade = "^3.19.0"
 autoflake = "^2.3.1"
-sphinx = "^8.2.3"
-sphinx-rtd-theme = "^3.0.2"
-myst-parser = "^4.0.1"
-mkdocs = "^1.6.1"
-mkdocs-material = "^9.6.15"
-mkdocstrings = "^0.27.0"
-mkdocs-gen-files = "^0.5.0"
-mkdocs-literate-nav = "^0.6.0"
-ipython = "^9.4.0"
-jupyter = "^1.1.1"
-rich-traceback = "^1.0.3"
-
+types-setuptools = "^80.9.0.20250529"
+types-decorator = "^5.2.0.20250324"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.4.0"
@@ -132,10 +199,6 @@ pytest-httpx = "^0.35.0"
 hypothesis = "^6.125.0"
 factory-boy = "^3.3.1"
 faker = "^37.4.0"
-fastapi = "^0.116.1"
-httpx = "^0.28.1"
-pydantic = "^2.11.7"
-
 
 [tool.poetry.group.typings.dependencies]
 types-python-dateutil = "^2.9.0"
@@ -146,239 +209,6 @@ types-requests = "^2.32.4"
 types-redis = "^4.6.0"
 types-psutil = "^7.0.0"
 
-
 [tool.poetry.group.security.dependencies]
 bandit = "^1.8.0"
 pip-audit = "^2.7.3"
-
-[tool.poetry.scripts]
-flext-api = "flext_api.cli:main"
-
-# Project-specific tool configurations
-[tool.pytest.ini_options]
-minversion = "8.0"
-addopts = [
-    "-ra",
-    "--strict-markers",
-    "--strict-config",
-    "--cov=flext_api",
-    "--cov-branch",
-    "--cov-report=term-missing:skip-covered",
-    "--cov-report=html:reports/coverage",
-    "--cov-report=xml:reports/coverage.xml",
-    "--cov-fail-under=90",
-    "--maxfail=1",
-    "--tb=short",
-]
-markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "slow: Slow tests",
-    "smoke: Smoke tests",
-    "api: marks tests as API tests",
-    "fastapi: marks tests as FastAPI tests",
-    "async: marks tests as async tests",
-    "auth: marks tests as authentication tests",
-    "requires_db: tests that need database",
-    "requires_redis: tests that need Redis",
-]
-
-[tool.ruff]
-target-version = "py313"
-line-length = 88
-src = ["src", "tests"]
-
-[tool.ruff.lint]
-select = [
-    "ALL",
-]
-ignore = [
-    # Line length and formatting (handled by formatter)
-    "E501",    # line too long
-    "W505",    # doc line too long  
-    "COM812",  # trailing comma missing (conflicts with formatter)
-    "ISC001",  # single line implicit string concatenation
-    
-    # Import and dependency issues (common in development)
-    "F401",    # unused imports
-    "F403",    # star imports (common in __init__.py)
-    "F405",    # star import usage
-    "F841",    # unused variable (common in development)
-    
-    # Documentation style flexibility
-    "D100",    # missing docstring in public module
-    "D101",    # missing docstring in public class
-    "D102",    # missing docstring in public method
-    "D103",    # missing docstring in public function
-    "D104",    # missing docstring in public package
-    "D105",    # missing docstring in magic method
-    "D106",    # missing docstring in public nested class
-    "D107",    # missing docstring in __init__
-    "D203",    # blank line before class docstring (conflicts with D211)
-    "D213",    # multi-line docstring summary second line (conflicts with D212)
-    
-    # Code style flexibility (common patterns)
-    "ERA001",  # commented out code (common during development)
-    "TD002",   # missing author in TODO
-    "TD003",   # missing issue link in TODO  
-    "FIX002",  # line contains TODO
-    "T201",    # print statement (common in scripts/debug)
-    "T203",    # pprint statement
-    
-    # Complexity (handled case by case)
-    "C901",    # function too complex
-    "PLR0913", # too many arguments
-    "PLR0915", # too many statements  
-    "PLR2004", # magic value used in comparison
-    "PLR0912", # too many branches
-    "PLR0911", # too many return statements
-    
-    # Type checking flexibility
-    "ANN101",  # missing type annotation for self
-    "ANN102",  # missing type annotation for cls
-    "ANN401",  # any type usage (sometimes necessary)
-    
-    # Security exceptions (development context)
-    "S101",    # assert usage (needed for type checking)
-    "S603",    # subprocess call
-    "S607",    # starting process with partial executable path
-    "S608",    # possible SQL injection (handled by ORM)
-    
-    # Error handling flexibility
-    "EM101",   # raw string in exception  
-    "EM102",   # f-string in exception
-    "TRY003",  # avoid long exception messages
-    "TRY301",  # raise within try block
-    
-    # Performance (premature optimization)
-    "PERF203", # try-except in loop
-    "PERF401", # manual list comprehension
-]
-
-[tool.ruff.lint.per-file-ignores]
-# Test files - extremely permissive for all test patterns
-"tests/*" = [
-    "ALL",  # Allow everything in tests
-]
-"tests/**/*.py" = [
-    "ALL",  # Allow everything in tests
-]
-"**/tests/*.py" = [
-    "ALL",  # Allow everything in tests  
-]
-"test_*.py" = [
-    "ALL",  # Allow everything in tests
-]
-"**/test_*.py" = [
-    "ALL",  # Allow everything in tests
-]
-"conftest.py" = [
-    "ALL",  # Allow everything in pytest config
-]
-"**/conftest.py" = [
-    "ALL",  # Allow everything in pytest config
-]
-
-# Script and CLI files - very permissive
-"scripts/*" = [
-    "ALL",  # Scripts need maximum flexibility
-]
-"**/scripts/*.py" = [
-    "ALL",  # Scripts need maximum flexibility
-]
-"cli.py" = [
-    "T201", "T203", "S602", "S603", "S607", "S608", 
-    "PLR0913", "PLR0915", "PLR0912", "PLR0911",
-    "C901", "D100", "D103", "DTZ005", "EM101", "EM102", 
-    "F401", "ERA001", "FIX002", "TD002", "TD003",
-]
-"**/cli.py" = [
-    "T201", "T203", "S602", "S603", "S607", "S608",
-    "PLR0913", "PLR0915", "PLR0912", "PLR0911", 
-    "C901", "D100", "D103", "DTZ005", "EM101", "EM102",
-    "F401", "ERA001", "FIX002", "TD002", "TD003",
-]
-
-# Generated/auto-generated files - exclude ALL linting
-"**/proto/*_pb2.py" = ["ALL"]
-"**/proto/*_pb2_grpc.py" = ["ALL"]
-"**/*_pb2.py" = ["ALL"]
-"**/*_pb2_grpc.py" = ["ALL"]
-"**/generated/**/*.py" = ["ALL"]
-"**/migrations/*.py" = ["ALL"]
-"**/alembic/versions/*.py" = ["ALL"]
-
-# Example and demo files - very permissive
-"examples/*" = [
-    "D100", "D103", "T201", "F401", "S101", "PLR2004",
-    "C901", "PLR0913", "PLR0915", "EM101", "EM102",
-]
-"**/examples/*" = [
-    "D100", "D103", "T201", "F401", "S101", "PLR2004", 
-    "C901", "PLR0913", "PLR0915", "EM101", "EM102",
-]
-
-# __init__.py files - common to import and re-export
-"__init__.py" = [
-    "F401", "F403", "F405", "D104", "D100",
-]
-"**/__init__.py" = [
-    "F401", "F403", "F405", "D104", "D100",
-]
-
-# Development and temporary files
-"temp_*.py" = ["ALL"]
-"**/temp_*.py" = ["ALL"]
-"debug_*.py" = ["ALL"] 
-"**/debug_*.py" = ["ALL"]
-"scratch_*.py" = ["ALL"]
-"**/scratch_*.py" = ["ALL"]
-[tool.ruff.lint.isort]
-known-first-party = [
-    "flext_api",
-    "flext_core",
-    "flext_observability",
-]
-force-single-line = true
-
-[tool.mypy]
-python_version = "3.13"
-files = ["src", "tests"]
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-strict_equality = true
-show_error_codes = true
-show_error_context = true
-pretty = true
-
-[[tool.mypy.overrides]]
-module = ["fastapi.*", "uvicorn.*", "slowapi.*", "httpx.*", "python_multipart.*"]
-ignore_missing_imports = true
-
-[tool.coverage.run]
-source = ["src"]
-branch = true
-omit = ["*/tests/*", "*/test_*", "*/__pycache__/*", "*/venv/*", "*/.venv/*"]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]

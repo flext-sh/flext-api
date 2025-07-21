@@ -10,57 +10,46 @@ Follows enterprise patterns with Python 3.13 type system.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
-from typing import TYPE_CHECKING
 from typing import Any
-from uuid import UUID
 
-from pydantic import Field
+from flext_core import Field
+from flext_core.domain.pydantic_base import DomainBaseModel
+from flext_core.domain.shared_types import (
+    EntityStatus,
+    PipelineId,
+    TraceStatus,
+)
 from pydantic import field_validator
 
-from flext_core.domain.pydantic_base import DomainBaseModel
+# Use centralized status enums from flext-core
+ExecutionStatus = TraceStatus  # Maps to standardized execution statuses
+PipelineStatus = EntityStatus  # Maps to standardized entity statuses
 
 
-class ExecutionStatus(StrEnum):
-    """Pipeline execution status enumeration for job tracking."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    TIMEOUT = "timeout"
-
-
+# API-specific pipeline type that includes plugin types
 class PipelineType(StrEnum):
-    """Pipeline type enumeration."""
+    """Pipeline type enumeration including plugin types and pipeline-specific types."""
 
-    EXTRACT = "extract"
-    LOAD = "load"
+    # Standard plugin types from PluginType
+    EXTRACTOR = "extractor"
+    LOADER = "loader"
     TRANSFORM = "transform"
+    ORCHESTRATOR = "orchestrator"
+    UTILITY = "utility"
+
+    # Pipeline-specific types
     ETL = "etl"
     CUSTOM = "custom"
 
 
+# Map Singer protocol replication to pipeline refresh mode
 class RefreshMode(StrEnum):
-    """Pipeline refresh mode enumeration."""
+    """Pipeline refresh mode using Singer protocol standards."""
 
-    INCREMENTAL = "incremental"
-    FULL = "full"
-
-
-class PipelineStatus(StrEnum):
-    """Pipeline status enumeration for tracking pipeline states."""
-
-    CREATED = "created"
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    PAUSED = "paused"
-    ARCHIVED = "archived"
+    INCREMENTAL = "INCREMENTAL"
+    FULL = "FULL_TABLE"  # Maps to Singer FULL_TABLE replication
 
 
 # --- Request Models ---
@@ -124,7 +113,10 @@ class PipelineCreateRequest(DomainBaseModel):
     def validate_name(cls, v: str) -> str:
         """Validate pipeline name format."""
         if not v.replace("-", "").replace("_", "").isalnum():
-            msg = "Pipeline name must contain only alphanumeric characters, hyphens, and underscores"
+            msg = (
+                "Pipeline name must contain only alphanumeric characters, "
+                "hyphens, and underscores"
+            )
             raise ValueError(msg)
         return v.lower()
 
@@ -192,7 +184,10 @@ class PipelineUpdateRequest(DomainBaseModel):
     def validate_name(cls, v: str | None) -> str | None:
         """Validate pipeline name format."""
         if v is not None and not v.replace("-", "").replace("_", "").isalnum():
-            msg = "Pipeline name must contain only alphanumeric characters, hyphens, and underscores"
+            msg = (
+                "Pipeline name must contain only alphanumeric characters, "
+                "hyphens, and underscores"
+            )
             raise ValueError(msg)
         return v.lower() if v else v
 
@@ -263,7 +258,7 @@ class PipelineExecutionStopRequest(DomainBaseModel):
 class PipelineResponse(DomainBaseModel):
     """Response model for pipeline information."""
 
-    pipeline_id: UUID = Field(description="Unique pipeline identifier")
+    pipeline_id: PipelineId = Field(description="Unique pipeline identifier")
     name: str = Field(description="Pipeline name")
     description: str | None = Field(description="Pipeline description")
     pipeline_type: PipelineType = Field(description="Pipeline type")
@@ -286,7 +281,7 @@ class PipelineResponse(DomainBaseModel):
     created_at: datetime = Field(description="Pipeline creation timestamp")
     updated_at: datetime = Field(description="Pipeline last update timestamp")
     created_by: str | None = Field(default=None, description="Pipeline creator")
-    last_execution_id: UUID | None = Field(
+    last_execution_id: PipelineId | None = Field(
         default=None,
         description="Last execution ID",
     )
@@ -308,8 +303,8 @@ class PipelineResponse(DomainBaseModel):
 class PipelineExecutionResponse(DomainBaseModel):
     """Response model for pipeline execution information."""
 
-    execution_id: UUID = Field(description="Unique execution identifier")
-    pipeline_id: UUID = Field(description="Pipeline identifier")
+    execution_id: PipelineId = Field(description="Unique execution identifier")
+    pipeline_id: PipelineId = Field(description="Pipeline identifier")
     pipeline_name: str = Field(description="Pipeline name")
     status: PipelineStatus = Field(description="Execution status")
     refresh_mode: RefreshMode = Field(description="Execution refresh mode")
@@ -442,7 +437,7 @@ class PipelineFilterRequest(DomainBaseModel):
 class PipelineExecutionFilterRequest(DomainBaseModel):
     """Request model for filtering pipeline executions."""
 
-    pipeline_id: UUID | None = Field(
+    pipeline_id: PipelineId | None = Field(
         default=None,
         description="Filter by pipeline ID",
     )
@@ -564,14 +559,20 @@ class ExecutionResponse(DomainBaseModel):
             id=str(response.execution_id),
             pipeline_id=str(response.pipeline_id),
             status=response.status.value,
-            started_at=response.started_at or datetime.now(),
+            started_at=response.started_at or datetime.now(tz=UTC),
             finished_at=response.finished_at,
             duration_seconds=duration_seconds,
             error_message=(
                 response.error_message
-                if response.status == PipelineStatus.FAILED
+                if str(response.status).upper() == "FAILED"
                 else None
             ),
             records_processed=records_processed,
             triggered_by=triggered_by,
         )
+
+
+# Model definitions complete
+
+# NOTE: model_rebuild() calls removed to prevent import circular dependency issues
+# Pydantic will resolve forward references automatically when needed

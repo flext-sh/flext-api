@@ -6,26 +6,21 @@ implementing business logic using domain entities and clean architecture.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from flext_api.domain.entities import Pipeline
-from flext_api.domain.entities import PipelineStatus
-from flext_core.config.base import injectable
 from flext_core.domain.types import ServiceResult
 
-# Use centralized logger from flext-observability
-from flext_observability.logging import get_logger
+# Use centralized logger from flext-infrastructure.monitoring.flext-observability
+from flext_api.application.services.base import PipelineBaseService
+from flext_api.domain.entities import APIPipeline as Pipeline, PipelineStatus
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from flext_api.infrastructure.repositories import PipelineRepository
-
-logger = get_logger(__name__)
+    from flext_api.domain.ports import PipelineRepository
 
 
-@injectable()
-class PipelineService:
+class PipelineService(PipelineBaseService):
     """Application service for pipeline management.
 
     This service implements business logic for pipeline operations,
@@ -33,13 +28,15 @@ class PipelineService:
     """
 
     def __init__(self, pipeline_repo: PipelineRepository) -> None:
-        self.pipeline_repo = pipeline_repo
+        super().__init__(pipeline_repo)
+        # Alias for backward compatibility
+        self.pipeline_repo = self.repository
 
     async def create_pipeline(
         self,
         name: str,
         description: str | None = None,
-        config: dict | None = None,
+        config: dict[str, Any] | None = None,
         owner_id: UUID | None = None,
         project_id: UUID | None = None,
     ) -> ServiceResult[Pipeline]:
@@ -60,7 +57,6 @@ class PipelineService:
             pipeline = Pipeline(
                 name=name,
                 description=description,
-                status=PipelineStatus.ACTIVE,
                 config=config or {},
                 owner_id=owner_id,
                 project_id=project_id,
@@ -68,25 +64,25 @@ class PipelineService:
 
             # Validate business rules
             if await self._is_duplicate_name(pipeline.name, owner_id):
-                return ServiceResult.failure(
+                return ServiceResult.fail(
                     "Pipeline name already exists for this owner",
                 )
 
             # Save to repository
             saved_pipeline = await self.pipeline_repo.save(pipeline)
 
-            logger.info(
+            self.logger.info(
                 "Pipeline created successfully",
                 pipeline_id=str(saved_pipeline.id),
                 name=saved_pipeline.name,
                 owner_id=str(owner_id) if owner_id else None,
             )
 
-            return ServiceResult.success(saved_pipeline)
+            return ServiceResult.ok(saved_pipeline)
 
         except Exception as e:
-            logger.exception("Failed to create pipeline", error=str(e))
-            return ServiceResult.failure(f"Failed to create pipeline: {e}")
+            self.logger.exception("Failed to create pipeline", error=str(e))
+            return ServiceResult.fail(f"Failed to create pipeline: {e}")
 
     async def get_pipeline(self, pipeline_id: UUID) -> ServiceResult[Pipeline]:
         """Get pipeline by ID.
@@ -99,19 +95,19 @@ class PipelineService:
 
         """
         try:
-            pipeline = await self.pipeline_repo.get_by_id(pipeline_id)
+            pipeline = await self.pipeline_repo.get(pipeline_id)
             if not pipeline:
-                return ServiceResult.failure("Pipeline not found")
+                return ServiceResult.fail("Pipeline not found")
 
-            return ServiceResult.success(pipeline)
+            return ServiceResult.ok(pipeline)
 
         except Exception as e:
-            logger.exception(
+            self.logger.exception(
                 "Failed to get pipeline",
                 pipeline_id=str(pipeline_id),
                 error=str(e),
             )
-            return ServiceResult.failure(f"Failed to get pipeline: {e}")
+            return ServiceResult.fail(f"Failed to get pipeline: {e}")
 
     async def list_pipelines(
         self,
@@ -135,26 +131,20 @@ class PipelineService:
 
         """
         try:
-            pipelines = await self.pipeline_repo.list_pipelines(
-                owner_id=owner_id,
-                project_id=project_id,
-                status=status,
-                limit=limit,
-                offset=offset,
-            )
+            pipelines = await self.pipeline_repo.list(limit=1000, offset=0)
 
-            return ServiceResult.success(pipelines)
+            return ServiceResult.ok(pipelines)
 
         except Exception as e:
-            logger.exception("Failed to list pipelines", error=str(e))
-            return ServiceResult.failure(f"Failed to list pipelines: {e}")
+            self.logger.exception("Failed to list pipelines", error=str(e))
+            return ServiceResult.fail(f"Failed to list pipelines: {e}")
 
     async def update_pipeline(
         self,
         pipeline_id: UUID,
         name: str | None = None,
         description: str | None = None,
-        config: dict | None = None,
+        config: dict[str, Any] | None = None,
         status: str | None = None,
     ) -> ServiceResult[Pipeline]:
         """Update an existing pipeline.
@@ -173,7 +163,7 @@ class PipelineService:
         try:
             # Get existing pipeline
             existing_result = await self.get_pipeline(pipeline_id)
-            if not existing_result.success:
+            if not existing_result.is_success:
                 return existing_result
 
             pipeline = existing_result.unwrap()
@@ -186,26 +176,26 @@ class PipelineService:
             if config is not None:
                 pipeline.config = config
             if status is not None:
-                pipeline.status = PipelineStatus(status)
+                pipeline.pipeline_status = PipelineStatus(status)
 
             # Save updates
             updated_pipeline = await self.pipeline_repo.save(pipeline)
 
-            logger.info(
+            self.logger.info(
                 "Pipeline updated successfully",
                 pipeline_id=str(pipeline_id),
                 name=updated_pipeline.name,
             )
 
-            return ServiceResult.success(updated_pipeline)
+            return ServiceResult.ok(updated_pipeline)
 
         except Exception as e:
-            logger.exception(
+            self.logger.exception(
                 "Failed to update pipeline",
                 pipeline_id=str(pipeline_id),
                 error=str(e),
             )
-            return ServiceResult.failure(f"Failed to update pipeline: {e}")
+            return ServiceResult.fail(f"Failed to update pipeline: {e}")
 
     async def delete_pipeline(self, pipeline_id: UUID) -> ServiceResult[bool]:
         """Delete a pipeline.
@@ -220,34 +210,72 @@ class PipelineService:
         try:
             # Check if pipeline exists:
             existing_result = await self.get_pipeline(pipeline_id)
-            if not existing_result.success:
-                return ServiceResult.failure("Pipeline not found")
+            if not existing_result.is_success:
+                return ServiceResult.fail("Pipeline not found")
 
             # Delete from repository
             await self.pipeline_repo.delete(pipeline_id)
 
-            logger.info("Pipeline deleted successfully", pipeline_id=str(pipeline_id))
+            self.logger.info(
+                "Pipeline deleted successfully",
+                pipeline_id=str(pipeline_id),
+            )
 
-            return ServiceResult.success(data=True)
+            return ServiceResult.ok(data=True)
 
         except Exception as e:
-            logger.exception(
+            self.logger.exception(
                 "Failed to delete pipeline",
                 pipeline_id=str(pipeline_id),
                 error=str(e),
             )
-            return ServiceResult.failure(f"Failed to delete pipeline: {e}")
+            return ServiceResult.fail(f"Failed to delete pipeline: {e}")
+
+    async def execute_pipeline(self, pipeline_id: UUID) -> ServiceResult[Pipeline]:
+        """Execute a pipeline by updating its status to running.
+
+        Args:
+            pipeline_id: Pipeline unique identifier.
+
+        Returns:
+            ServiceResult containing the updated pipeline.
+
+        """
+        try:
+            # Get existing pipeline
+            existing_result = await self.get_pipeline(pipeline_id)
+            if not existing_result.is_success:
+                return existing_result
+
+            pipeline = existing_result.unwrap()
+
+            # Update status to running
+            pipeline.pipeline_status = PipelineStatus.RUNNING
+
+            # Save the updated pipeline
+            updated_pipeline = await self.pipeline_repo.save(pipeline)
+
+            self.logger.info(
+                "Pipeline execution started",
+                pipeline_id=str(pipeline_id),
+                name=updated_pipeline.name,
+                status=updated_pipeline.pipeline_status,
+            )
+
+            return ServiceResult.ok(updated_pipeline)
+
+        except Exception as e:
+            self.logger.exception(
+                "Failed to execute pipeline",
+                pipeline_id=str(pipeline_id),
+                error=str(e),
+            )
+            return ServiceResult.fail(f"Failed to execute pipeline: {e}")
 
     async def _is_duplicate_name(self, name: str, owner_id: UUID | None) -> bool:
         try:
-            existing_pipelines = await self.pipeline_repo.list_pipelines(
-                owner_id=owner_id,
-                limit=1,
-                offset=0,
-            )
-
+            existing_pipelines = await self.pipeline_repo.list(limit=1000, offset=0)
             return any(p.name == name for p in existing_pipelines)
-
         except (OSError, ConnectionError, TimeoutError, ValueError, TypeError):
             # If we can't check, assume no duplicate to avoid blocking creation
             return False

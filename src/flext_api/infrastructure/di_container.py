@@ -8,6 +8,8 @@ This module provides the dependency injection configuration for the FLEXT API.
 
 from __future__ import annotations
 
+from flext_core.config import get_container
+
 from flext_api.application.services.auth_service import AuthService
 from flext_api.application.services.pipeline_service import PipelineService
 from flext_api.application.services.plugin_service import PluginService
@@ -16,10 +18,6 @@ from flext_api.config import get_api_settings
 from flext_api.infrastructure.repositories.memory_repositories import (
     InMemoryPipelineRepository,
 )
-from flext_api.infrastructure.repositories.memory_repositories import (
-    InMemoryPluginRepository,
-)
-from flext_core.config import get_container
 
 
 def configure_api_dependencies() -> None:
@@ -31,18 +29,14 @@ def configure_api_dependencies() -> None:
 
     # Register repositories as singletons
     container.register_singleton(
-        "PipelineRepository",
         InMemoryPipelineRepository,
-    )
-    container.register_singleton(
-        "PluginRepository",
-        InMemoryPluginRepository,
+        factory=InMemoryPipelineRepository,
     )
 
     # Register auth service
     container.register_singleton(
-        "AuthService",
         AuthService,
+        factory=AuthService,
     )
 
     # Application services are auto-registered via @injectable decorator

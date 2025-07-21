@@ -1,37 +1,10 @@
 # ============================================================================
-# FLEXT-API PROJECT .gitignore
-# Go + Python REST API Gateway
+# FLEXT PYTHON PROJECT STANDARD .gitignore TEMPLATE
+# Python 3.13 | Poetry | Testing | Development Tools
 # ============================================================================
 
 # ============================================================================
-# GO SPECIFIC
-# ============================================================================
-
-# Go build artifacts
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# Go test binary, built with `go test -c`
-*.test
-
-# Go coverage
-*.out
-
-# Go mod cache - keep go.sum for dependency verification
-# go.sum should be committed
-
-# Go workspace file  
-go.work
-
-# Air (Go hot reload) temporary files
-tmp/
-.air/
-
-# ============================================================================
-# PYTHON SPECIFIC
+# PYTHON BUILD AND RUNTIME ARTIFACTS
 # ============================================================================
 
 # Python cache and compiled files
@@ -41,6 +14,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.so
 
 # Distribution / packaging
 .Python
@@ -56,174 +30,347 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
+pip-wheel-metadata/
+*.dist-info/
 
-# Virtual environments
-.env
-.venv/
-env/
-venv/
-ENV/
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
 
 # ============================================================================
-# TESTING AND QUALITY
+# TESTING AND COVERAGE
 # ============================================================================
 
-# Test coverage
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
 .coverage
 .coverage.*
-htmlcov/
+.cache
+nosetests.xml
 coverage.xml
 *.cover
 *.py,cover
-cover/
-
-# Testing frameworks
+.hypothesis/
 .pytest_cache/
-.tox/
-.nox/
+cover/
+.coverage_html/
+junit.xml
+coverage.json
+.benchmarks/
 
 # ============================================================================
-# DEVELOPMENT TOOLS
+# DEVELOPMENT TOOLS AND CACHE
 # ============================================================================
 
-# Type checkers
+# mypy
 .mypy_cache/
 .dmypy.json
 dmypy.json
 
-# Linting and formatting
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Ruff
 .ruff_cache/
 
+# Bandit
+.bandit
+
+# pylint
+.pylint.d/
+
 # ============================================================================
-# IDE AND EDITOR FILES
+# VIRTUAL ENVIRONMENTS AND DEPENDENCIES
 # ============================================================================
 
-# VS Code
+# virtualenv
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Poetry - keep lock file for reproducible builds
+# poetry.lock  # KEEP THIS FILE COMMENTED OUT
+
+# Pipenv
+Pipfile.lock.bak
+
+# PDM
+.pdm.toml
+.pdm-python
+.pdm-build/
+
+# ============================================================================
+# IDEs AND EDITORS
+# ============================================================================
+
+# VSCode
 .vscode/
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
+*.code-workspace
 
-# JetBrains IDEs
+# PyCharm
 .idea/
+*.iml
+*.ipr
+*.iws
 
-# Vim/Neovim
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
 *.swp
 *.swo
 *~
 
-# Cursor AI
-.cursor/
-.cursorrules
-
-# Claude AI
-.claude/
-CLAUDE.md
-internal.invalid.md
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
 
 # ============================================================================
-# OS SPECIFIC FILES
+# SYSTEM FILES
 # ============================================================================
-
-# Windows
-Thumbs.db
-Desktop.ini
 
 # macOS
 .DS_Store
+.AppleDouble
+.LSOverride
 ._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
 
 # Linux
 *~
+.fuse_hidden*
+.directory
+.Trash-*
 .nfs*
 
 # ============================================================================
-# LOGS AND OUTPUT
+# DOCUMENTATION AND REPORTS
 # ============================================================================
 
-# Log files
+# Sphinx documentation
+docs/_build/
+docs/build/
+.buildinfo
+
+# MkDocs
+site/
+
+# Reports
+reports/
+*.report
+*.json.report
+
+# ============================================================================
+# LOGS AND TEMPORARY FILES
+# ============================================================================
+
+# Logs
 *.log
 logs/
 log/
 
-# Runtime data
-runtime/
-cache/
-.cache/
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.swp
+*.swo
+.tmp/
+tmp/
 
 # ============================================================================
-# DOCKER AND DEPLOYMENT
+# DATABASE AND DATA FILES
+# ============================================================================
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+*.db3
+
+# Data files
+*.csv.bak
+*.json.bak
+*.xml.bak
+data/
+*.data
+
+# ============================================================================
+# SINGER/MELTANO SPECIFIC
+# ============================================================================
+
+# Meltano
+.meltano/
+.secrets/
+catalog.json
+tap_done
+target_done
+state.json
+output/
+
+# DBT
+target/
+dbt_packages/
+logs/
+
+# ============================================================================
+# DOCKER AND CONTAINERS
 # ============================================================================
 
 # Docker
-.dockerignore
+.dockerignore.bak
 docker-compose.override.yml
 
-# Kubernetes secrets
-*.secret.yaml
-
 # ============================================================================
-# ENVIRONMENT AND CONFIGURATION
+# CONFIGURATION AND SECRETS
 # ============================================================================
 
-# Environment files
+# Environment variables
 .env
-.env.*
-!.env.example
 .internal.invalid
-.env.production
+.env.*.local
+.envrc
+
+# Secrets and credentials
+.secrets
+*.key
+*.pem
+*.crt
+*.csr
+*_key
+*_secret
+.credentials
+secrets/
+
+# Configuration backups
+*.conf.bak
+*.config.bak
+*.toml.bak
 
 # ============================================================================
-# PROJECT SPECIFIC - FLEXT-API
+# PROJECT SPECIFIC - FORBID ANTI-PATTERNS
 # ============================================================================
 
 # Archive directory (for moved junk files)
 archive/
 
-# API documentation (if auto-generated)
-docs/api/
-api-docs/
-
-# Reports directory
+# Reports directory (for metrics, coverage, etc.)
 reports/
 
 # Old requirements.txt (use pyproject.toml)
 requirements.txt
 
-# Dev backups
-.dev_deps_backup_*
-*_backup_*
+# Manual fix scripts - FORBIDDEN
+fix_*.py
+*_fix.py
+*_validation.py
+validate_*.py
 
-# AI-generated reports and migration files
+# AI-generated reports and migration files - FORBIDDEN
 *_REPORT.md
 *_REPORT_*.md
 CONFIG_MIGRATION*.md
 FLEXT_*_MIGRATION*.md
 DEVELOPMENT_STANDARDS.md
+FLEXT_*_PATTERNS.md
+LOGGING_MIGRATION.md
+STRICT_COMPLIANCE.md
+LEVEL1_*.md
 DUPLICATION_REPORT.md
 
-# Manual fix scripts
-fix_*.py
-fix_*.go
-*_fix.*
-*_validation.*
-validate_*.*
+# ============================================================================
+# MISCELLANEOUS
+# ============================================================================
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# Custom additions
+*.local
+*.user 
+
+# ============================================================================
+# AI ASSISTANT FILES
+# ============================================================================
+CLAUDE.md
+internal.invalid.md
+.claude/
+.cursor/
 
 # ============================================================================
 # ALWAYS INCLUDE EXCEPTIONS
 # ============================================================================
 
 # Important: Force include critical files
-!go.mod
-!go.sum
 !pyproject.toml
 !Makefile
 !README.md
 !.pre-commit-config.yaml
 !.env.example
-!Dockerfile
-!docker-compose.yml

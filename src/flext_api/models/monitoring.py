@@ -9,14 +9,14 @@ and component status reporting.
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import TYPE_CHECKING
 
-from pydantic import Field
-
+from flext_core import Field
 from flext_core.domain.pydantic_base import APIResponse
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from flext_core.domain.shared_models import ComponentHealth
 
 # ComponentHealthAPI removed - use ComponentHealth from flext_core instead
@@ -38,7 +38,10 @@ class HealthResponse(APIResponse):
         default=0,
         description="The number of health checks that passed.",
     )
-    health_timestamp: datetime = Field(..., description="The timestamp of the health check.")
+    health_timestamp: datetime = Field(
+        ...,
+        description="The timestamp of the health check.",
+    )
 
 
 class APIInfoResponse(APIResponse):

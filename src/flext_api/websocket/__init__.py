@@ -1,8 +1,8 @@
 """WebSocket communication package for FLEXT API.
 
 This package provides WebSocket functionality for real-time bidirectional communication
-between the FLEXT API server and connected clients. It enables live updates and streaming
-capabilities essential for monitoring pipeline executions and system events.
+between the FLEXT API server and connected clients. It enables live updates and
+streaming capabilities essential for monitoring pipeline executions and system events.
 
 Key features:
             - Connection lifecycle management with automatic reconnection
@@ -20,3 +20,5 @@ The WebSocket implementation follows enterprise patterns with:
 - Security through authentication tokens
 - Rate limiting to prevent abuse
 """
+
+from __future__ import annotations

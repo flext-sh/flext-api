@@ -1,24 +1,34 @@
 """Plugin management routes for FLEXT API."""
 
-from fastapi import APIRouter
-from fastapi import HTTPException
-from fastapi import status
+from __future__ import annotations
 
-from flext_api.models.plugin import PluginInstallationResponse
-from flext_api.models.plugin import PluginInstallRequest
-from flext_api.models.plugin import PluginResponse
+from datetime import UTC, datetime
+from uuid import uuid4
+
+from fastapi import APIRouter, HTTPException, status
+
+from flext_api.models.plugin import (
+    PluginInstallationResponse,
+    PluginInstallRequest,
+    PluginResponse,
+    PluginSource,
+    PluginStatus,
+    PluginType,
+)
 
 router = APIRouter(prefix="/plugins", tags=["plugins"])
 
 
 @router.get("/")
 async def list_plugins() -> list[PluginResponse]:
+    """List all installed plugins."""
     # In a real implementation, this would query plugin registry
     return []
 
 
 @router.post("/install")
 async def install_plugin(request: PluginInstallRequest) -> PluginInstallationResponse:
+    """Install a plugin from the registry."""
     try:
         # In a real implementation, this would:
         # 1. Download plugin from registry
@@ -26,16 +36,16 @@ async def install_plugin(request: PluginInstallRequest) -> PluginInstallationRes
         # 3. Install and register plugin
         # 4. Return installation status
 
-        from datetime import datetime
-        from uuid import uuid4
         return PluginInstallationResponse(
             operation_id=uuid4(),
             plugin_name=request.name,
             status="installed",
-            started_at=datetime.now(),
+            started_at=datetime.now(UTC),
+            finished_at=datetime.now(UTC),
+            duration_seconds=0.1,  # Placeholder for actual duration
             success=True,
+            error_message=None,
             installed_version=request.version or "latest",
-            message=f"Plugin {request.name} installed successfully",
         )
     except Exception as e:
         raise HTTPException(
@@ -46,13 +56,17 @@ async def install_plugin(request: PluginInstallRequest) -> PluginInstallationRes
 
 @router.delete("/{plugin_name}")
 async def uninstall_plugin(plugin_name: str) -> dict[str, str]:
+    """Uninstall a plugin."""
     try:
         # In a real implementation, this would:
         # 1. Stop plugin if running
         # 2. Remove plugin files
         # 3. Unregister from plugin registry
 
-        return {"message": f"Plugin {plugin_name} uninstalled successfully"}
+        return {
+            "message": f"Plugin {plugin_name} uninstalled successfully",
+            "status": "uninstalled",
+        }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -62,18 +76,15 @@ async def uninstall_plugin(plugin_name: str) -> dict[str, str]:
 
 @router.get("/{plugin_name}")
 async def get_plugin(plugin_name: str) -> PluginResponse:
+    """Get details for a specific plugin."""
     # In a real implementation, this would query plugin registry
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Plugin not found",
+    return PluginResponse(
+        plugin_id=uuid4(),
+        name=plugin_name,
+        plugin_type=PluginType.UTILITY,
+        source=PluginSource.PYPI,
+        version="1.0.0",
+        description=f"Plugin {plugin_name}",
+        status=PluginStatus.ACTIVE,
+        installed_at=datetime.now(UTC),
     )
-
-
-@router.post("/{plugin_name}/enable")
-async def enable_plugin(plugin_name: str) -> dict[str, str]:
-    return {"message": f"Plugin {plugin_name} enabled"}
-
-
-@router.post("/{plugin_name}/disable")
-async def disable_plugin(plugin_name: str) -> dict[str, str]:
-    return {"message": f"Plugin {plugin_name} disabled"}

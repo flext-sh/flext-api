@@ -8,10 +8,21 @@ This module provides Pydantic models for authentication.
 
 from __future__ import annotations
 
-from pydantic import Field
+from flext_core import Field
+from flext_core.domain.pydantic_base import APIRequest, APIResponse
 
-from flext_core.domain.pydantic_base import APIRequest
-from flext_core.domain.pydantic_base import APIResponse
+__all__ = [
+    "APIResponse",  # Re-export from flext_core
+    "LoginRequest",
+    "LoginResponse",
+    "LogoutRequest",
+    "RefreshTokenRequest",
+    "RegisterRequest",
+    "RegisterResponse",
+    "SessionListResponse",
+    "SessionResponse",
+    "UserAPI",
+]
 
 
 class UserAPI(APIResponse):
@@ -124,10 +135,17 @@ class TokenRefreshResponse(APIResponse):
     expires_in: int = Field(..., description="Token expiration in seconds")
 
 
+class RefreshTokenRequest(APIRequest):
+    """Request model for token refresh."""
+
+    refresh_token: str = Field(..., description="Refresh token")
+
+
 class LogoutRequest(APIRequest):
     """Request model for user logout."""
 
-    session_id: str = Field(..., description="Session to terminate")
+    session_id: str | None = Field(default=None, description="Session to terminate")
+    all_sessions: bool = Field(default=False, description="Terminate all sessions")
 
 
 class UserProfileResponse(APIResponse):
@@ -140,3 +158,35 @@ class UserProfileResponse(APIResponse):
     )
     last_login: str | None = Field(default=None, description="Last login timestamp")
     session_count: int = Field(default=0, description="Active session count")
+
+
+class SessionResponse(APIResponse):
+    """Response model for session information."""
+
+    session_id: str = Field(..., description="Session identifier")
+    user_id: str = Field(..., description="User identifier")
+    ip_address: str | None = Field(default=None, description="Client IP address")
+    user_agent: str | None = Field(default=None, description="User agent string")
+    device_info: dict[str, str] = Field(
+        default_factory=dict,
+        description="Device information",
+    )
+    created_at: str = Field(..., description="Session creation timestamp")
+    last_accessed: str = Field(..., description="Last access timestamp")
+    expires_at: str = Field(..., description="Session expiration timestamp")
+    is_current: bool = Field(
+        default=False,
+        description="Whether this is the current session",
+    )
+    roles: list[str] = Field(default_factory=list, description="User roles")
+    permissions: list[str] = Field(default_factory=list, description="User permissions")
+
+
+class SessionListResponse(APIResponse):
+    """Response model for session list."""
+
+    sessions: list[SessionResponse] = Field(
+        default_factory=list,
+        description="List of sessions",
+    )
+    total_count: int = Field(default=0, description="Total number of sessions")

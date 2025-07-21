@@ -6,10 +6,9 @@ Uses flext-core DomainValueObject - NO duplication.
 
 from __future__ import annotations
 
-from pydantic import Field
-from pydantic import field_validator
-
+from flext_core import Field
 from flext_core.domain.pydantic_base import DomainValueObject
+from pydantic import field_validator
 
 
 class ApiEndpoint(DomainValueObject):
@@ -177,7 +176,7 @@ class ApiVersion(DomainValueObject):
 
         """
         if v < 0:
-            msg = "Version numbers must be non-negative"
+            msg = "Version number cannot be negative"
             raise ValueError(msg)
         return v
 
@@ -217,9 +216,9 @@ class ApiVersion(DomainValueObject):
 class CorsOrigin(DomainValueObject):
     """CORS origin value object with validation."""
 
-    origin: str = Field(..., description="CORS origin URL")
+    url: str = Field(..., description="CORS origin URL")
 
-    @field_validator("origin")
+    @field_validator("url")
     @classmethod
     def validate_origin_format(cls, v: str) -> str:
         """Validate CORS origin format.
@@ -268,12 +267,12 @@ class ApiKey(DomainValueObject):
         """
         # Minimum length validation
         if len(v) < 16:
-            msg = "API key must be at least 16 characters"
+            msg = "API key must be at least 16 characters long"
             raise ValueError(msg)
 
         # Must be alphanumeric with optional hyphens
         if not v.replace("-", "").isalnum():
-            msg = "API key must be alphanumeric with optional hyphens"
+            msg = "API key must contain only alphanumeric characters and hyphens"
             raise ValueError(msg)
 
         return v
@@ -294,29 +293,107 @@ class ApiKey(DomainValueObject):
 class RequestTimeout(DomainValueObject):
     """Request timeout configuration value object."""
 
-    seconds: int = Field(
-        default=60,
+    value: int = Field(
+        default=30,
         ge=1,
-        le=600,
-        description="Timeout in seconds",
+        le=300,
+        description="Request timeout in seconds",
     )
 
-    @property
-    def milliseconds(self) -> int:
-        """Convert timeout to milliseconds.
+    @field_validator("value")
+    @classmethod
+    def validate_timeout_range(cls, v: int) -> int:
+        """Validate timeout is within acceptable range.
+
+        Args:
+            v: Timeout value to validate.
 
         Returns:
-            Timeout value in milliseconds.
+            Validated timeout value.
+
+        Raises:
+            ValueError: If timeout is out of acceptable range.
 
         """
-        return self.seconds * 1000
+        if not 1 <= v <= 300:
+            msg = "Timeout must be between 1 and 300 seconds"
+            raise ValueError(msg)
+        return v
 
-    @property
-    def is_long_timeout(self) -> bool:
-        """Check if timeout is considered long.
+
+class PipelineId(DomainValueObject):
+    """Pipeline identifier value object."""
+
+    value: str = Field(
+        ...,
+        min_length=1,
+        max_length=100,
+        pattern=r"^[a-zA-Z0-9_-]+$",
+        description="Pipeline unique identifier",
+    )
+
+    @field_validator("value")
+    @classmethod
+    def validate_id_format(cls, v: str) -> str:
+        """Validate pipeline ID format.
+
+        Args:
+            v: Pipeline ID to validate.
 
         Returns:
-            True if timeout exceeds 120 seconds.
+            Validated pipeline ID.
 
         """
-        return self.seconds > 120
+        return v.strip()
+
+
+class PluginId(DomainValueObject):
+    """Plugin identifier value object."""
+
+    value: str = Field(
+        ...,
+        min_length=1,
+        max_length=100,
+        pattern=r"^[a-zA-Z0-9_-]+$",
+        description="Plugin unique identifier",
+    )
+
+    @field_validator("value")
+    @classmethod
+    def validate_id_format(cls, v: str) -> str:
+        """Validate plugin ID format.
+
+        Args:
+            v: Plugin ID to validate.
+
+        Returns:
+            Validated plugin ID.
+
+        """
+        return v.strip()
+
+
+class RequestId(DomainValueObject):
+    """Request identifier value object."""
+
+    value: str = Field(
+        ...,
+        min_length=1,
+        max_length=200,
+        pattern=r"^[a-zA-Z0-9_-]+$",
+        description="Request unique identifier",
+    )
+
+    @field_validator("value")
+    @classmethod
+    def validate_id_format(cls, v: str) -> str:
+        """Validate request ID format.
+
+        Args:
+            v: Request ID to validate.
+
+        Returns:
+            Validated request ID.
+
+        """
+        return v.strip()

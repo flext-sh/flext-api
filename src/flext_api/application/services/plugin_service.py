@@ -6,25 +6,21 @@ implementing business logic using domain entities and clean architecture.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from flext_api.domain.entities import Plugin
-from flext_core.config.base import injectable
 from flext_core.domain.types import ServiceResult
 
-# Use centralized logger from flext-observability
-from flext_observability.logging import get_logger
+# Use centralized logger from flext-infrastructure.monitoring.flext-observability
+from flext_api.application.services.base import PluginBaseService
+from flext_api.domain.entities import Plugin, PluginType
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from flext_api.infrastructure.repositories import PluginRepository
-
-logger = get_logger(__name__)
+    from flext_api.domain.ports import PluginRepository
 
 
-@injectable()
-class PluginService:
+class PluginService(PluginBaseService):
     """Application service for plugin management.
 
     This service implements business logic for plugin operations,
@@ -32,15 +28,17 @@ class PluginService:
     """
 
     def __init__(self, plugin_repo: PluginRepository) -> None:
-        self.plugin_repo = plugin_repo
+        super().__init__(plugin_repo)
+        # Alias for backward compatibility
+        self.plugin_repo = self.repository
 
     async def install_plugin(
         self,
         name: str,
-        plugin_type: str,
+        plugin_type: PluginType | str,
         version: str,
         description: str | None = None,
-        config: dict | None = None,
+        config: dict[str, Any] | None = None,
         author: str | None = None,
         repository_url: str | None = None,
         documentation_url: str | None = None,
@@ -66,10 +64,12 @@ class PluginService:
         try:
             plugin = Plugin(
                 name=name,
-                type=plugin_type,
+                plugin_type=PluginType(plugin_type)
+                if isinstance(plugin_type, str)
+                else plugin_type,
                 version=version,
                 description=description,
-                config=config or {},
+                plugin_config=config or {},
                 enabled=True,
                 author=author,
                 repository_url=repository_url,
@@ -86,18 +86,18 @@ class PluginService:
             # Save to repository
             saved_plugin = await self.plugin_repo.save(plugin)
 
-            logger.info(
+            self.logger.info(
                 "Plugin installed successfully",
                 plugin_id=str(saved_plugin.id),
                 name=saved_plugin.name,
                 version=saved_plugin.version,
-                type=saved_plugin.type,
+                type=saved_plugin.plugin_type,
             )
 
             return ServiceResult.ok(saved_plugin)
 
         except Exception as e:
-            logger.exception("Failed to install plugin", error=str(e))
+            self.logger.exception("Failed to install plugin", error=str(e))
             return ServiceResult.fail(f"Failed to install plugin: {e}")
 
     async def get_plugin(self, plugin_id: UUID) -> ServiceResult[Plugin]:
@@ -111,14 +111,14 @@ class PluginService:
 
         """
         try:
-            plugin = await self.plugin_repo.get_by_id(plugin_id)
+            plugin = await self.plugin_repo.get(plugin_id)
             if not plugin:
                 return ServiceResult.fail("Plugin not found")
 
             return ServiceResult.ok(plugin)
 
         except Exception as e:
-            logger.exception(
+            self.logger.exception(
                 "Failed to get plugin",
                 plugin_id=str(plugin_id),
                 error=str(e),
@@ -127,7 +127,8 @@ class PluginService:
 
     async def list_plugins(
         self,
-        type: str | None = None,
+        plugin_type: str | None = None,
+        *,
         enabled: bool | None = None,
         limit: int = 20,
         offset: int = 0,
@@ -135,7 +136,7 @@ class PluginService:
         """List plugins with optional filtering.
 
         Args:
-            type: Optional plugin type filter.
+            plugin_type: Optional plugin type filter.
             enabled: Optional enabled status filter.
             limit: Maximum number of results.
             offset: Results offset for pagination.
@@ -145,8 +146,8 @@ class PluginService:
 
         """
         try:
-            plugins = await self.plugin_repo.list_plugins(
-                type=type,
+            plugins = await self.plugin_repo.list(
+                plugin_type=plugin_type,
                 enabled=enabled,
                 limit=limit,
                 offset=offset,
@@ -155,7 +156,7 @@ class PluginService:
             return ServiceResult.ok(plugins)
 
         except Exception as e:
-            logger.exception("Failed to list plugins", error=str(e))
+            self.logger.exception("Failed to list plugins", error=str(e))
             return ServiceResult.fail(f"Failed to list plugins: {e}")
 
     async def update_plugin(
@@ -163,7 +164,8 @@ class PluginService:
         plugin_id: UUID,
         name: str | None = None,
         description: str | None = None,
-        config: dict | None = None,
+        config: dict[str, Any] | None = None,
+        *,
         enabled: bool | None = None,
         capabilities: list[str] | None = None,
     ) -> ServiceResult[Plugin]:
@@ -184,7 +186,7 @@ class PluginService:
         try:
             # Get existing plugin
             existing_result = await self.get_plugin(plugin_id)
-            if not existing_result.success:
+            if not existing_result.is_success:
                 return existing_result
 
             plugin = existing_result.unwrap()
@@ -195,7 +197,7 @@ class PluginService:
             if description is not None:
                 plugin.description = description
             if config is not None:
-                plugin.config = config
+                plugin.plugin_config = config
             if enabled is not None:
                 plugin.enabled = enabled
             if capabilities is not None:
@@ -204,7 +206,7 @@ class PluginService:
             # Save updates
             updated_plugin = await self.plugin_repo.save(plugin)
 
-            logger.info(
+            self.logger.info(
                 "Plugin updated successfully",
                 plugin_id=str(plugin_id),
                 name=updated_plugin.name,
@@ -214,14 +216,17 @@ class PluginService:
             return ServiceResult.ok(updated_plugin)
 
         except Exception as e:
-            logger.exception(
+            self.logger.exception(
                 "Failed to update plugin",
                 plugin_id=str(plugin_id),
                 error=str(e),
             )
             return ServiceResult.fail(f"Failed to update plugin: {e}")
 
-    async def uninstall_plugin(self, plugin_id: UUID) -> ServiceResult[bool]:
+    async def uninstall_plugin(
+        self,
+        plugin_id: UUID,
+    ) -> ServiceResult[dict[str, object]]:
         """Uninstall a plugin.
 
         Args:
@@ -234,7 +239,7 @@ class PluginService:
         try:
             # Check if plugin exists:
             existing_result = await self.get_plugin(plugin_id)
-            if not existing_result.success:
+            if not existing_result.is_success:
                 return ServiceResult.fail("Plugin not found")
 
             plugin = existing_result.unwrap()
@@ -242,17 +247,19 @@ class PluginService:
             # Delete from repository
             await self.plugin_repo.delete(plugin_id)
 
-            logger.info(
+            self.logger.info(
                 "Plugin uninstalled successfully",
                 plugin_id=str(plugin_id),
                 name=plugin.name,
                 version=plugin.version,
             )
 
-            return ServiceResult.ok(data={"uninstalled": True, "plugin_id": str(plugin_id)})
+            return ServiceResult.ok(
+                {"uninstalled": True, "plugin_id": str(plugin_id)},
+            )
 
         except Exception as e:
-            logger.exception(
+            self.logger.exception(
                 "Failed to uninstall plugin",
                 plugin_id=str(plugin_id),
                 error=str(e),
@@ -285,12 +292,10 @@ class PluginService:
 
     async def _is_duplicate_plugin(self, name: str, version: str) -> bool:
         try:
-            existing_plugins = await self.plugin_repo.list_plugins(limit=1000)
-
+            existing_plugins = await self.plugin_repo.list(limit=1000)
             return any(
                 p.name == name and p.version == version for p in existing_plugins
             )
-
         except (ConnectionError, TimeoutError, ValueError):
             # If we can't check, assume no duplicate to avoid blocking installation
             return False
