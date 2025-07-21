@@ -79,7 +79,9 @@ async def create_pipeline(
             loader=config.get("loader", ""),
             transform=config.get("transform"),
             configuration=config,
-            status=EntityStatus.ACTIVE if pipeline.pipeline_is_active else EntityStatus.INACTIVE,
+            status=EntityStatus.ACTIVE
+            if pipeline.is_pipeline_active
+            else EntityStatus.INACTIVE,
             pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
             environment=config.get("environment", "development"),
             schedule=config.get("schedule"),
@@ -91,7 +93,8 @@ async def create_pipeline(
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Failed to create pipeline: {e}",
+            status_code=500,
+            detail=f"Failed to create pipeline: {e}",
         ) from e
 
 
@@ -106,7 +109,8 @@ async def get_pipeline(pipeline_id: str, _request: Request) -> PipelineResponse:
             uuid_id = UUID(pipeline_id)
         except ValueError as e:
             raise HTTPException(
-                status_code=400, detail="Invalid pipeline ID format",
+                status_code=400,
+                detail="Invalid pipeline ID format",
             ) from e
 
         pipeline_result = await pipeline_service.get_pipeline(uuid_id)
@@ -125,7 +129,9 @@ async def get_pipeline(pipeline_id: str, _request: Request) -> PipelineResponse:
             loader=config.get("loader", ""),
             transform=config.get("transform"),
             configuration=config,
-            status=EntityStatus.ACTIVE if pipeline.pipeline_is_active else EntityStatus.INACTIVE,
+            status=EntityStatus.ACTIVE
+            if pipeline.is_pipeline_active
+            else EntityStatus.INACTIVE,
             pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
             environment=config.get("environment", "development"),
             schedule=config.get("schedule"),
@@ -138,7 +144,8 @@ async def get_pipeline(pipeline_id: str, _request: Request) -> PipelineResponse:
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Failed to get pipeline: {e}",
+            status_code=500,
+            detail=f"Failed to get pipeline: {e}",
         ) from e
 
 
@@ -177,7 +184,9 @@ async def list_pipelines(
                     loader=config.get("loader", ""),
                     transform=config.get("transform"),
                     configuration=config,
-                    status=EntityStatus.ACTIVE if pipeline.pipeline_is_active else EntityStatus.INACTIVE,
+                    status=EntityStatus.ACTIVE
+                    if pipeline.is_pipeline_active
+                    else EntityStatus.INACTIVE,
                     pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
                     environment=config.get("environment", "development"),
                     schedule=config.get("schedule"),
@@ -200,5 +209,6 @@ async def list_pipelines(
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Failed to list pipelines: {e}",
+            status_code=500,
+            detail=f"Failed to list pipelines: {e}",
         ) from e

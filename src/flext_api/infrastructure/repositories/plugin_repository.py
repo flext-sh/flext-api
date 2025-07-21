@@ -12,14 +12,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 # Import runtime dependencies
-from uuid import UUID  # noqa: TC003
-
 from flext_core.domain.types import ServiceResult
 from flext_observability.logging import get_logger
 
 from flext_api.domain.ports import PluginRepository
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
     from flext_api.domain.entities import Plugin
 
 logger = get_logger(__name__)
@@ -83,7 +83,7 @@ class InMemoryPluginRepository(PluginRepository):
             limit: Maximum number of plugins to return.
             offset: Number of plugins to skip.
             plugin_type: Filter by plugin type.
-            enabled: Filter by enabled status.
+            status: Filter by plugin status.
 
         Returns:
             List of plugin entities.
@@ -147,12 +147,12 @@ class InMemoryPluginRepository(PluginRepository):
             if plugin_id in self._storage:
                 plugin = self._storage.pop(plugin_id)
                 logger.info("Plugin deleted successfully: %s", plugin.name)
-                return True
+                return ServiceResult.ok(True)
             logger.warning("Plugin not found for deletion: %s", plugin_id)
-            return False
-        except Exception:
+            return ServiceResult.fail(f"Plugin {plugin_id} not found")
+        except Exception as e:
             logger.exception("Failed to delete plugin: %s", plugin_id)
-            return False
+            return ServiceResult.fail(f"Failed to delete plugin: {e}")
 
     async def exists(self, plugin_id: UUID) -> bool:
         """Check if plugin exists.
@@ -172,20 +172,38 @@ class InMemoryPluginRepository(PluginRepository):
             logger.exception("Failed to check plugin existence: %s", plugin_id)
             return False
 
-    async def count(self) -> int:
-        """Get total count of plugins.
+    async def count(
+        self,
+        plugin_type: str | None = None,
+        status: str | None = None,
+    ) -> ServiceResult[int]:
+        """Count plugins with optional filtering.
+
+        Args:
+            plugin_type: Filter by plugin type.
+            status: Filter by status.
 
         Returns:
-            Total number of plugins in repository.
+            ServiceResult containing count of matching plugins.
 
         """
         try:
-            count = len(self._storage)
+            # Use list method to get filtered plugins and count them
+            result = await self.list(
+                limit=1000000,  # Large limit to get all
+                offset=0,
+                plugin_type=plugin_type,
+                status=status,
+            )
+            if not result.is_success:
+                return ServiceResult.fail(result.error or "Failed to count plugins")
+
+            count = len(result.data or [])
             logger.debug("Plugin count: %d", count)
-            return count
-        except Exception:
+            return ServiceResult.ok(count)
+        except Exception as e:
             logger.exception("Failed to count plugins")
-            return 0
+            return ServiceResult.fail(f"Failed to count plugins: {e}")
 
     async def find_by_name(self, name: str) -> Plugin | None:
         """Find plugin by name.
@@ -208,7 +226,29 @@ class InMemoryPluginRepository(PluginRepository):
             logger.exception("Failed to find plugin by name: %s", name)
             return None
 
+    async def save(self, plugin: Plugin) -> ServiceResult[Plugin]:
+        """Save plugin (create or update based on existence).
+
+        Args:
+            plugin: Plugin entity to save.
+
+        Returns:
+            ServiceResult containing saved plugin or error.
+
+        """
+        try:
+            # Check if plugin exists
+            if plugin.id in self._storage:
+                # Update existing plugin
+                return await self.update(plugin)
+            # Create new plugin
+            return await self.create(plugin)
+
+        except Exception as e:
+            logger.exception("Failed to save plugin")
+            return ServiceResult.fail(f"Failed to save plugin: {e}")
+
 
 __all__ = [
-    "PluginRepository",
+    "InMemoryPluginRepository",
 ]

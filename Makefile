@@ -220,7 +220,7 @@ export PYTHONUNBUFFERED := 1
 export FLEXT_API_HOST := 0.0.0.0
 export FLEXT_API_PORT := 8000
 export FLEXT_API_RELOAD := true
-export FLEXT_API_LOG_LEVEL := debug
+export FLEXT_API_LOG_LEVEL := DEBUG
 
 # Poetry settings
 export POETRY_VENV_IN_PROJECT := false

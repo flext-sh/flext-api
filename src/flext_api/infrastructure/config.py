@@ -24,10 +24,14 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 if TYPE_CHECKING:
-    from flext_core.domain.shared_types import MemoryMB, PositiveInt
+    from flext_core.domain.shared_types import LogLevel, MemoryMB, PositiveInt
 else:
     # Runtime imports for actual usage
-    from flext_core.domain.shared_types import MemoryMB, PositiveInt  # noqa: TC002
+    from flext_core.domain.shared_types import (
+        LogLevel,
+        MemoryMB,
+        PositiveInt,
+    )
 
 
 class APIConfig(
@@ -58,6 +62,31 @@ class APIConfig(
         default="postgresql://localhost/flext_api",
         description="Database connection URL",
     )
+
+    # Override log_level to ensure proper enum value
+    log_level: LogLevel = Field(
+        default=LogLevel.INFO, description="Log level for the API",
+    )
+
+    @classmethod
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        """Initialize subclass with custom validation."""
+        super().__init_subclass__(**kwargs)
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize with case-insensitive log level handling."""
+        # Convert lowercase log_level to uppercase if provided
+        if "log_level" in kwargs and isinstance(kwargs["log_level"], str):
+            kwargs["log_level"] = kwargs["log_level"].upper()
+
+        # Also handle environment variables that may come through pydantic-settings
+        import os
+        env_log_level = os.getenv("FLEXT_API_LOG_LEVEL")
+        if env_log_level and isinstance(env_log_level, str):
+            # Override kwargs with properly formatted env var
+            kwargs["log_level"] = env_log_level.upper()
+
+        super().__init__(**kwargs)
 
     # Redis configuration (not using RedisConfigMixin due to URL pattern mismatch)
     redis_url: str = Field(

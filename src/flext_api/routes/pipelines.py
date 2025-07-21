@@ -19,9 +19,24 @@ from flext_api.models.pipeline import (
     PipelineCreateRequest,
     PipelineListResponse,
     PipelineResponse,
+    PipelineStatus as APIPipelineStatus,
 )
 
 pipelines_router = APIRouter(prefix="/pipelines", tags=["pipelines"])
+
+
+def _convert_pipeline_status(domain_status: object) -> APIPipelineStatus:
+    """Convert domain PipelineStatus to API PipelineStatus."""
+    # Convert domain status string to API status
+    status_map = {
+        "ACTIVE": APIPipelineStatus.ACTIVE,
+        "INACTIVE": APIPipelineStatus.INACTIVE,
+        "RUNNING": APIPipelineStatus.ACTIVE,  # Map running to active
+        "COMPLETED": APIPipelineStatus.ACTIVE,  # Map completed to active
+        "FAILED": APIPipelineStatus.INACTIVE,  # Map failed to inactive
+    }
+    status_str = str(domain_status).upper()
+    return status_map.get(status_str, APIPipelineStatus.ACTIVE)
 
 
 class PipelineListParams(APIBaseModel):
@@ -77,7 +92,7 @@ async def create_pipeline(
             loader=config.get("loader", ""),
             transform=config.get("transform"),
             configuration=pipeline.config,
-            status=pipeline.pipeline_status,
+            status=_convert_pipeline_status(pipeline.pipeline_status),
             pipeline_type=config.get("pipeline_type", "batch"),
             environment=config.get("environment", "development"),
             schedule=config.get("schedule"),
@@ -90,7 +105,8 @@ async def create_pipeline(
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Failed to create pipeline: {e}",
+            status_code=500,
+            detail=f"Failed to create pipeline: {e}",
         ) from e
 
 
@@ -105,7 +121,8 @@ async def get_pipeline(pipeline_id: str, _request: Request) -> PipelineResponse:
             uuid_id = UUID(pipeline_id)
         except ValueError as e:
             raise HTTPException(
-                status_code=400, detail="Invalid pipeline ID format",
+                status_code=400,
+                detail="Invalid pipeline ID format",
             ) from e
 
         pipeline_result = await pipeline_service.get_pipeline(uuid_id)
@@ -124,7 +141,7 @@ async def get_pipeline(pipeline_id: str, _request: Request) -> PipelineResponse:
             loader=config.get("loader", ""),
             transform=config.get("transform"),
             configuration=config,
-            status=pipeline.pipeline_status,
+            status=_convert_pipeline_status(pipeline.pipeline_status),
             pipeline_type=config.get("pipeline_type", "batch"),
             environment=config.get("environment", "development"),
             schedule=config.get("schedule"),
@@ -137,7 +154,8 @@ async def get_pipeline(pipeline_id: str, _request: Request) -> PipelineResponse:
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Failed to get pipeline: {e}",
+            status_code=500,
+            detail=f"Failed to get pipeline: {e}",
         ) from e
 
 
@@ -176,7 +194,7 @@ async def list_pipelines(
                     loader=config.get("loader", ""),
                     transform=config.get("transform"),
                     configuration=config,
-                    status=pipeline.pipeline_status,
+                    status=_convert_pipeline_status(pipeline.pipeline_status),
                     pipeline_type=config.get("pipeline_type", "batch"),
                     environment=config.get("environment", "development"),
                     schedule=config.get("schedule"),
@@ -191,7 +209,8 @@ async def list_pipelines(
             total_count=len(pipeline_responses),
             page=params.page,
             page_size=params.page_size,
-            has_next=len(pipeline_responses) == params.page_size,  # If we got a full page, there might be more
+            has_next=len(pipeline_responses)
+            == params.page_size,  # If we got a full page, there might be more
             has_previous=params.page > 1,
         )
 
@@ -199,5 +218,6 @@ async def list_pipelines(
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Failed to list pipelines: {e}",
+            status_code=500,
+            detail=f"Failed to list pipelines: {e}",
         ) from e

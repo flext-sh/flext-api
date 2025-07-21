@@ -24,9 +24,8 @@ from flext_api.application.services.pipeline_service import PipelineService
 from flext_api.application.services.plugin_service import PluginService
 from flext_api.application.services.system_service import SystemService
 from flext_api.config import get_api_settings
-from flext_api.domain.ports import PluginRepository
 from flext_api.infrastructure.ports import JWTAuthService
-from flext_api.infrastructure.repositories.memory_repositories import (
+from flext_api.infrastructure.repositories import (
     InMemoryPipelineRepository,
 )
 
@@ -52,13 +51,10 @@ class MetricsCollector:
 
 
 if TYPE_CHECKING:
-    from uuid import UUID
-
     from fastapi.security import HTTPAuthorizationCredentials
     from sqlalchemy.ext.asyncio import AsyncSession
 
-    from flext_api.domain.entities import Plugin
-    from flext_api.domain.ports import AuthService
+    from flext_api.domain.ports import AuthService, PluginRepository
 
 # Configure logger
 logger = get_logger(__name__)
@@ -297,58 +293,27 @@ def get_pipeline_service() -> PipelineService:
     return PipelineService(pipeline_repo=_pipeline_repository_instance)
 
 
+# Global repository instance
+_plugin_repository_instance: PluginRepository | None = None
+
+
 def get_plugin_service() -> PluginService:
     """Get plugin service from DI container."""
     plugin_service = getattr(container, "_services", {}).get("PluginService")
     if plugin_service:
         return plugin_service  # type: ignore[no-any-return]
 
-    # Create in-memory repository that actually works
+    # Use the proper repository implementation with singleton pattern
+    from flext_api.infrastructure.repositories.plugin_repository import (
+        InMemoryPluginRepository,
+    )
 
-    class InMemoryPluginRepository(PluginRepository):
-        def __init__(self) -> None:
-            self._storage: dict[str, Plugin] = {}
+    # Global repository instance
+    global _plugin_repository_instance
+    if _plugin_repository_instance is None:
+        _plugin_repository_instance = InMemoryPluginRepository()
 
-        async def save(self, plugin: Plugin) -> Plugin:
-            if not hasattr(plugin, "id") or not plugin.id:
-                # Set a new UUID as string since EntityId is a type alias for str
-                from uuid import uuid4
-
-                plugin.id = uuid4()  # Keep as UUID type to match entity
-            self._storage[str(plugin.id)] = plugin
-            return plugin
-
-        async def get(self, plugin_id: UUID) -> Plugin | None:
-            return self._storage.get(str(plugin_id))
-
-        async def list(
-            self,
-            limit: int = 20,
-            offset: int = 0,
-            plugin_type: str | None = None,
-            *,
-            enabled: bool | None = None,
-        ) -> list[Plugin]:
-            all_plugins = list(self._storage.values())
-            if plugin_type:
-                all_plugins = [
-                    p
-                    for p in all_plugins
-                    if getattr(p, "plugin_type", None) == plugin_type
-                ]
-            if enabled is not None:
-                all_plugins = [
-                    p for p in all_plugins if getattr(p, "enabled", True) == enabled
-                ]
-            return all_plugins[offset : offset + limit]
-
-        async def delete(self, plugin_id: UUID) -> bool:
-            if str(plugin_id) in self._storage:
-                del self._storage[str(plugin_id)]
-                return True
-            return False
-
-    return PluginService(plugin_repo=InMemoryPluginRepository())
+    return PluginService(plugin_repo=_plugin_repository_instance)
 
 
 def get_system_service() -> SystemService:

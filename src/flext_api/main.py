@@ -10,13 +10,11 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 # Use centralized logging from flext-observability
 from flext_observability.logging import get_logger
-from pydantic import ValidationError
 
 from flext_api.endpoints.auth import auth_router
 from flext_api.endpoints.pipelines import pipelines_router
@@ -89,27 +87,8 @@ app.include_router(plugins_router, prefix="/api/v1")
 app.include_router(system_router, prefix="/api/v1")
 
 
-# Exception handlers
-
-
-@app.exception_handler(ValidationError)
-async def validation_exception_handler(
-    _request: Request,
-    exc: ValidationError,
-) -> JSONResponse:
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": "Validation error", "errors": exc.errors()},
-    )
-
-
-@app.exception_handler(Exception)
-async def general_exception_handler(_request: Request, exc: Exception) -> JSONResponse:
-    logger.error("Unhandled exception: %s", exc)
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "Internal server error"},
-    )
+# Exception handlers are now handled by SOLID-compliant exception handler factory
+# See infrastructure/exception_handlers.py for extensible exception handling
 
 
 # Health endpoints

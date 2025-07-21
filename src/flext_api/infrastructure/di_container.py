@@ -15,7 +15,7 @@ from flext_api.application.services.pipeline_service import PipelineService
 from flext_api.application.services.plugin_service import PluginService
 from flext_api.application.services.system_service import SystemService
 from flext_api.config import get_api_settings
-from flext_api.infrastructure.repositories.memory_repositories import (
+from flext_api.infrastructure.repositories.pipeline_repository import (
     InMemoryPipelineRepository,
 )
 

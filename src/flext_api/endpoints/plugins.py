@@ -49,19 +49,19 @@ async def install_plugin(
         PluginInstallationResponse
 
     """
+    # Validate plugin request first, outside try block
+    if not plugin_data.name or not plugin_data.version:
+        raise HTTPException(
+            status_code=400,
+            detail="Plugin name and version required",
+        )
+
     try:
         # Use real plugin manager from flext-infrastructure.plugins.flext-plugin
         from flext_plugin.manager import PluginManager
 
         plugin_manager = PluginManager()
         now = datetime.now(UTC)
-
-        # Validate plugin request
-        if not plugin_data.name or not plugin_data.version:
-            raise HTTPException(
-                status_code=400,
-                detail="Plugin name and version required",
-            )
 
         # Install plugin with real implementation
         installation_result = await plugin_manager.install_plugin(  # type: ignore[attr-defined]
@@ -93,6 +93,12 @@ async def install_plugin(
         raise HTTPException(
             status_code=503,
             detail="Plugin manager not available - install flext-plugin",
+        ) from e
+    except AttributeError as e:
+        # Handle case where install_plugin method doesn't exist
+        raise HTTPException(
+            status_code=503,
+            detail=f"Plugin manager method not available: {e}",
         ) from e
     except Exception as e:
         raise HTTPException(
@@ -329,13 +335,17 @@ async def update_plugin(
             dependencies_installed=update_result.dependencies or [],
         )
 
-    # TODO: Implement try block
     except ImportError as e:
         raise HTTPException(
             status_code=503,
             detail="Plugin manager not available - install flext-plugin",
         ) from e
-    # TODO: Implement try block
+    except AttributeError as e:
+        # Handle case where update_plugin method doesn't exist
+        raise HTTPException(
+            status_code=503,
+            detail=f"Plugin manager method not available: {e}",
+        ) from e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Plugin update failed: {e}") from e
 
@@ -382,13 +392,17 @@ async def uninstall_plugin(
 
         return APIResponse()
 
-    # TODO: Implement try block
     except ImportError as e:
         raise HTTPException(
             status_code=503,
             detail="Plugin manager not available - install flext-plugin",
         ) from e
-    # TODO: Implement try block
+    except AttributeError as e:
+        # Handle case where uninstall_plugin method doesn't exist
+        raise HTTPException(
+            status_code=503,
+            detail=f"Plugin manager method not available: {e}",
+        ) from e
     except Exception as e:
         raise HTTPException(
             status_code=500,

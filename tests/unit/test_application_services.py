@@ -531,7 +531,7 @@ class TestPluginService:
             version="1.0.0",
             plugin_type=PluginType.TAP,
         )
-        mock_plugin_repo.list.return_value = [existing_plugin]
+        mock_plugin_repo.list.return_value = ServiceResult.ok([existing_plugin])
 
         result = await plugin_service.install_plugin(
             name="test-plugin",

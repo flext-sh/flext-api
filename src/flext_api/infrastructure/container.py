@@ -13,12 +13,13 @@ from typing import TYPE_CHECKING, Any
 
 from flext_core.config.base import get_container
 
-from flext_api.infrastructure.repositories.memory_repositories import (
+from flext_api.domain.ports import PipelineRepository, PluginRepository
+from flext_api.infrastructure.repositories.pipeline_repository import (
     InMemoryPipelineRepository,
+)
+from flext_api.infrastructure.repositories.plugin_repository import (
     InMemoryPluginRepository,
 )
-from flext_api.infrastructure.repositories.pipeline_repository import PipelineRepository
-from flext_api.infrastructure.repositories.plugin_repository import PluginRepository
 
 if TYPE_CHECKING:
     from flext_core.config.base import DIContainer
@@ -34,22 +35,14 @@ class FlextAPIContainer:
 
     def _configure_dependencies(self) -> None:
         """Configure all infrastructure dependencies."""
-        # Register repository implementations
+        # Register repository implementations (no need to register concrete with concrete)
         self._container.register_singleton(
+            PipelineRepository,  # type: ignore[type-abstract]
             InMemoryPipelineRepository,
-            InMemoryPipelineRepository,
         )
         self._container.register_singleton(
+            PluginRepository,  # type: ignore[type-abstract]
             InMemoryPluginRepository,
-            InMemoryPluginRepository,
-        )
-        self._container.register_singleton(
-            PipelineRepository,
-            PipelineRepository,
-        )
-        self._container.register_singleton(
-            PluginRepository,
-            PluginRepository,
         )
 
     def get(self, service_type: type[Any]) -> Any:
