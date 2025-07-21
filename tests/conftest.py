@@ -7,8 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import AsyncGenerator  # noqa: TC003
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock
 
 import pytest
@@ -20,6 +19,9 @@ from flext_core.testing import (
     get_test_environment_fixture,
     setup_flext_test_environment,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 # Setup standard FLEXT test environment
 setup_flext_test_environment()

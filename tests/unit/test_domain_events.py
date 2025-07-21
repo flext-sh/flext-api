@@ -43,7 +43,7 @@ class TestDomainEventBase:
 
         # Should have base DomainEvent fields
         assert hasattr(event, "event_id")
-        assert hasattr(event, "created_at")
+        assert hasattr(event, "timestamp")
         assert isinstance(event.event_id, type(uuid4()))
         assert isinstance(event.timestamp, datetime)
 
@@ -139,7 +139,7 @@ class TestPipelineEvents:
 
         assert isinstance(created_event, DomainEvent)
         assert hasattr(created_event, "event_id")
-        assert hasattr(created_event, "created_at")
+        assert hasattr(created_event, "timestamp")
 
 
 class TestPluginEvents:
@@ -222,7 +222,7 @@ class TestPluginEvents:
 
         assert isinstance(registered_event, DomainEvent)
         assert hasattr(registered_event, "event_id")
-        assert hasattr(registered_event, "created_at")
+        assert hasattr(registered_event, "timestamp")
 
 
 class TestApiEvents:
@@ -286,7 +286,7 @@ class TestApiEvents:
 
         assert isinstance(received_event, DomainEvent)
         assert hasattr(received_event, "event_id")
-        assert hasattr(received_event, "created_at")
+        assert hasattr(received_event, "timestamp")
 
 
 class TestEventValidation:
@@ -505,9 +505,9 @@ class TestEventTimestamps:
 
         after_creation = datetime.now(UTC)
 
-        assert hasattr(event, "created_at")
+        assert hasattr(event, "timestamp")
         assert isinstance(event.timestamp, datetime)
-        assert before_creation <= event.created_at <= after_creation
+        assert before_creation <= event.timestamp <= after_creation
 
     def test_events_have_unique_ids(self) -> None:
         """Test that events get unique identifiers."""

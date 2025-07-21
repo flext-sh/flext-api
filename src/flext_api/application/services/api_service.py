@@ -120,7 +120,7 @@ class APIService(DualRepositoryService):
         try:
             # Create API response with available constructor arguments
             # Some arguments may not be available in base APIResponse
-            api_response = APIResponse(message="API response tracked")
+            api_response = APIResponse()
 
             # Set properties if they exist
             if hasattr(api_response, "request_id"):

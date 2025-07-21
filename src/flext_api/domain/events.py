@@ -12,17 +12,10 @@ from typing import TYPE_CHECKING
 
 from flext_core.domain.pydantic_base import DomainEvent, Field
 
+# Runtime imports for model_rebuild to work - needed for Pydantic validation
+
 if TYPE_CHECKING:
     from flext_core.domain.shared_types import (
-        EntityId,
-        PipelineId,
-        PluginId,
-        PluginType,
-        UserId,
-    )
-else:
-    # Runtime imports for model_rebuild to work
-    from flext_core.domain.shared_types import (  # noqa: TC002
         EntityId,
         PipelineId,
         PluginId,

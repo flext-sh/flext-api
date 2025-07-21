@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.models import ServiceResult
+from flext_core.domain.types import ServiceResult
 
 from flext_api.domain.entities import APIPipeline as Pipeline
 
@@ -16,8 +16,8 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from flext_api.config import APISettings
+    from flext_api.domain.ports import PipelineRepository
     from flext_api.infrastructure.ports import AuthService
-    from flext_api.infrastructure.repositories import PipelineRepository
 
 
 # ==============================================================================
@@ -153,7 +153,10 @@ class CreatePipelineHandler:
                 name=command.pipeline_name,
                 description=command.description,
             )
-            saved_pipeline = await self.repository.save(pipeline)
+            saved_result = await self.repository.create(pipeline)
+            if not saved_result.is_success:
+                return saved_result
+            saved_pipeline = saved_result.unwrap()
             return ServiceResult.ok(saved_pipeline)
         except Exception as e:
             return ServiceResult.fail(f"Failed to create pipeline: {e}")

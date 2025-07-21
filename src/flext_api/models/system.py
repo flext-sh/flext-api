@@ -7,10 +7,8 @@ Zero tolerance for duplication.
 
 from __future__ import annotations
 
-from datetime import datetime  # noqa: TC003
 from enum import StrEnum
-from typing import Any
-from uuid import UUID  # noqa: TC003
+from typing import TYPE_CHECKING, Any
 
 from flext_core import Field
 from flext_core.domain.pydantic_base import APIRequest, APIResponse
@@ -18,6 +16,10 @@ from flext_core.domain.shared_models import (
     HealthStatus,
 )
 from pydantic import field_validator
+
+if TYPE_CHECKING:
+    from datetime import datetime
+    from uuid import UUID
 
 # Use centralized health status from shared types
 SystemStatus = HealthStatus  # Maps to standardized health status

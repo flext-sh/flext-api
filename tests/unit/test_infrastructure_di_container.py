@@ -11,7 +11,7 @@ from flext_api.application.services.pipeline_service import PipelineService
 from flext_api.application.services.plugin_service import PluginService
 from flext_api.application.services.system_service import SystemService
 from flext_api.infrastructure.di_container import configure_api_dependencies
-from flext_api.infrastructure.repositories.memory_repositories import (
+from flext_api.infrastructure.repositories.pipeline_repository import (
     InMemoryPipelineRepository,
 )
 
@@ -201,7 +201,7 @@ def test_system_service_can_be_imported() -> None:
 
 def test_memory_repository_can_be_imported() -> None:
     """Test that InMemoryPipelineRepository can be imported correctly."""
-    from flext_api.infrastructure.repositories.memory_repositories import (
+    from flext_api.infrastructure.repositories.pipeline_repository import (
         InMemoryPipelineRepository,
     )
 

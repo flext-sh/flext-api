@@ -33,10 +33,14 @@ class TestJWTAuthService:
     def test_jwt_auth_service_initialization(self, real_config: APIConfig) -> None:
         """Test JWT auth service initializes correctly with REAL config."""
         service = JWTAuthService(real_config)
-        # Check that secret key is not empty and has reasonable length
-        assert len(service.secret_key) >= 16  # Reasonable minimum length
-        assert service.algorithm == "HS256"
-        assert service.token_expire_minutes == 30
+        # Check that token manager is properly initialized (SRP compliance)
+        assert service.token_manager is not None
+        assert len(service.token_manager.secret_key) >= 16  # Reasonable minimum length
+        assert service.token_manager.algorithm == "HS256"
+        assert service.token_manager.expire_minutes == 30
+        # Check that authorization strategy is initialized (DIP compliance)
+        assert service.authorization_strategy is not None
+        assert service.authorization_strategy.get_strategy_name() == "basic"
 
     @pytest.mark.asyncio
     async def test_generate_and_authenticate_token(

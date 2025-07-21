@@ -28,6 +28,7 @@ from slowapi.util import get_remote_address
 
 from flext_api.config import get_api_settings
 from flext_api.infrastructure.di_container import configure_api_dependencies
+from flext_api.infrastructure.exception_handlers import create_exception_handler_factory
 from flext_api.routes import (
     auth_router,
     pipelines_router,
@@ -94,6 +95,10 @@ def create_app() -> FastAPI:
         openapi_url=settings.openapi_url,
         lifespan=lifespan,
     )
+
+    # Configure SOLID-compliant exception handlers
+    exception_factory = create_exception_handler_factory()
+    exception_factory.configure_handlers(app)
 
     # Add rate limiting if enabled
     if limiter:

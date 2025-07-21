@@ -26,7 +26,6 @@ from flext_api.models.system import (
     SystemMetricsResponse,
     SystemRestoreRequest,
     SystemServiceResponse,
-    SystemStatus,
     SystemStatusResponse,
     SystemStatusType,
 )
@@ -99,7 +98,6 @@ async def get_system_service(
         service_status = SystemStatusType.HEALTHY
 
     return SystemServiceResponse(
-        message=f"Service '{service_name}' details retrieved successfully",
         service_name=service_name,
         service_type=service_type,
         status=service_status,

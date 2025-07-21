@@ -11,13 +11,16 @@ from typing import TYPE_CHECKING, TypeVar
 # Use centralized logger from flext-observability - ELIMINATE DUPLICATION
 from flext_observability.logging import get_logger
 
-from flext_api.domain.repositories import PipelineRepository, PluginRepository
+from flext_api.domain.ports import PipelineRepository, PluginRepository
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
     from flext_auth.application.services import (
         AuthService as FlextAuthService,
         SessionService,
     )
+    from flext_core.domain.types import ServiceResult
     from flext_observability.monitoring.health import HealthMonitor
     from flext_observability.monitoring.metrics import MetricsCollector
 
@@ -25,6 +28,10 @@ if TYPE_CHECKING:
         APIRequestRepository,
         APIResponseRepository,
     )
+
+# Runtime imports for ISP interfaces
+from abc import ABC, abstractmethod
+from typing import Any
 
 # Generic type for repository injection
 TRepository = TypeVar("TRepository")
@@ -128,6 +135,84 @@ class MonitoringService(BaseAPIService):
         super().__init__()
         self.health_monitor = health_monitor
         self.metrics_collector = metrics_collector
+
+
+# ==============================================================================
+# INTERFACE SEGREGATION PRINCIPLE: Focused Service Interfaces
+# ==============================================================================
+
+
+class PipelineReader(ABC):
+    """Interface for pipeline read operations (ISP compliance)."""
+
+    @abstractmethod
+    async def get_pipeline(self, pipeline_id: UUID) -> ServiceResult[Any]:
+        """Get pipeline by ID."""
+
+    @abstractmethod
+    async def list_pipelines(
+        self,
+        owner_id: UUID | None = None,
+        project_id: UUID | None = None,
+        status: str | None = None,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> ServiceResult[list[Any]]:
+        """List pipelines with filtering."""
+
+
+class PipelineWriter(ABC):
+    """Interface for pipeline write operations (ISP compliance)."""
+
+    @abstractmethod
+    async def create_pipeline(
+        self,
+        name: str,
+        description: str | None = None,
+        config: dict[str, Any] | None = None,
+        owner_id: UUID | None = None,
+        project_id: UUID | None = None,
+    ) -> ServiceResult[Any]:
+        """Create a new pipeline."""
+
+    @abstractmethod
+    async def update_pipeline(
+        self,
+        pipeline_id: UUID,
+        name: str | None = None,
+        description: str | None = None,
+        config: dict[str, Any] | None = None,
+        status: str | None = None,
+    ) -> ServiceResult[Any]:
+        """Update existing pipeline."""
+
+    @abstractmethod
+    async def delete_pipeline(self, pipeline_id: UUID) -> ServiceResult[bool]:
+        """Delete pipeline."""
+
+
+class PipelineExecutor(ABC):
+    """Interface for pipeline execution operations (ISP compliance)."""
+
+    @abstractmethod
+    async def execute_pipeline(self, pipeline_id: UUID) -> ServiceResult[Any]:
+        """Execute pipeline."""
+
+
+class PipelineValidator(ABC):
+    """Interface for pipeline validation operations (ISP compliance)."""
+
+    @abstractmethod
+    async def validate_pipeline_config(
+        self, config: dict[str, Any] | None,
+    ) -> ServiceResult[bool]:
+        """Validate pipeline configuration."""
+
+    @abstractmethod
+    async def validate_pipeline_name(
+        self, name: str, owner_id: UUID | None,
+    ) -> ServiceResult[bool]:
+        """Validate pipeline name uniqueness."""
 
 
 # Convenience type aliases for specific service patterns

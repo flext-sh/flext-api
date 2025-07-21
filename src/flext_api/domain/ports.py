@@ -8,9 +8,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
-from uuid import UUID  # noqa: TC003
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
     from flext_core.domain.types import ServiceResult
 
     from flext_api.domain.entities import (
@@ -64,6 +65,10 @@ class PipelineRepository(ABC):
     ) -> ServiceResult[int]:
         """Count pipelines with optional filtering."""
 
+    @abstractmethod
+    async def save(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+        """Save pipeline (create or update based on existence)."""
+
 
 class PluginRepository(ABC):
     """Plugin repository port."""
@@ -101,6 +106,10 @@ class PluginRepository(ABC):
         status: str | None = None,
     ) -> ServiceResult[int]:
         """Count plugins with optional filtering."""
+
+    @abstractmethod
+    async def save(self, plugin: Plugin) -> ServiceResult[Plugin]:
+        """Save plugin (create or update based on existence)."""
 
 
 class RequestRepository(ABC):

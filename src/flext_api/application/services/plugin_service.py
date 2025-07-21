@@ -84,7 +84,10 @@ class PluginService(PluginBaseService):
                 )
 
             # Save to repository
-            saved_plugin = await self.plugin_repo.save(plugin)
+            saved_result = await self.plugin_repo.create(plugin)
+            if not saved_result.is_success:
+                return saved_result
+            saved_plugin = saved_result.unwrap()
 
             self.logger.info(
                 "Plugin installed successfully",
@@ -111,10 +114,11 @@ class PluginService(PluginBaseService):
 
         """
         try:
-            plugin = await self.plugin_repo.get(plugin_id)
-            if not plugin:
-                return ServiceResult.fail("Plugin not found")
+            plugin_result = await self.plugin_repo.get(plugin_id)
+            if not plugin_result.is_success:
+                return plugin_result
 
+            plugin = plugin_result.unwrap()
             return ServiceResult.ok(plugin)
 
         except Exception as e:
@@ -146,13 +150,17 @@ class PluginService(PluginBaseService):
 
         """
         try:
-            plugins = await self.plugin_repo.list(
+            plugins_result = await self.plugin_repo.list(
                 plugin_type=plugin_type,
-                enabled=enabled,
+                status="active" if enabled else None,
                 limit=limit,
                 offset=offset,
             )
 
+            if not plugins_result.is_success:
+                return plugins_result
+
+            plugins = plugins_result.unwrap()
             return ServiceResult.ok(plugins)
 
         except Exception as e:
@@ -204,7 +212,10 @@ class PluginService(PluginBaseService):
                 plugin.capabilities = capabilities
 
             # Save updates
-            updated_plugin = await self.plugin_repo.save(plugin)
+            updated_result = await self.plugin_repo.update(plugin)
+            if not updated_result.is_success:
+                return updated_result
+            updated_plugin = updated_result.unwrap()
 
             self.logger.info(
                 "Plugin updated successfully",
@@ -245,7 +256,11 @@ class PluginService(PluginBaseService):
             plugin = existing_result.unwrap()
 
             # Delete from repository
-            await self.plugin_repo.delete(plugin_id)
+            delete_result = await self.plugin_repo.delete(plugin_id)
+            if not delete_result.is_success:
+                return ServiceResult.fail(
+                    delete_result.error or "Failed to delete plugin",
+                )
 
             self.logger.info(
                 "Plugin uninstalled successfully",
@@ -255,7 +270,12 @@ class PluginService(PluginBaseService):
             )
 
             return ServiceResult.ok(
-                {"uninstalled": True, "plugin_id": str(plugin_id)},
+                {
+                    "plugin_id": str(plugin_id),
+                    "name": plugin.name,
+                    "version": plugin.version,
+                    "uninstalled": True,
+                },
             )
 
         except Exception as e:
@@ -292,7 +312,11 @@ class PluginService(PluginBaseService):
 
     async def _is_duplicate_plugin(self, name: str, version: str) -> bool:
         try:
-            existing_plugins = await self.plugin_repo.list(limit=1000)
+            plugins_result = await self.plugin_repo.list(limit=1000)
+            if not plugins_result.is_success:
+                return False  # Assume no duplicates if we can't check
+
+            existing_plugins = plugins_result.unwrap()
             return any(
                 p.name == name and p.version == version for p in existing_plugins
             )

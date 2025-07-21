@@ -26,7 +26,7 @@ def test_install_plugin_endpoint(client: TestClient) -> None:
 
     response = client.post("/api/v1/plugins/install", json=plugin_data)
 
-    assert response.status_code == 500
+    assert response.status_code == 503
     data = response.json()
     assert "install_plugin" in data["detail"]
     assert "'PluginManager' object has no attribute 'install_plugin'" in data["detail"]
@@ -36,7 +36,7 @@ def test_list_plugins_endpoint_default(client: TestClient) -> None:
     """Test list plugins endpoint - registry not available."""
     response = client.get("/api/v1/plugins")
 
-    assert response.status_code == 500
+    assert response.status_code == 503
     data = response.json()
     assert "Plugin registry not available" in data["detail"]
 
@@ -47,7 +47,7 @@ def test_list_plugins_endpoint_with_params(client: TestClient) -> None:
         "/api/v1/plugins?page=2&page_size=10&category=taps&status=installed",
     )
 
-    assert response.status_code == 500
+    assert response.status_code == 503
     data = response.json()
     assert "Plugin registry not available" in data["detail"]
 
@@ -79,7 +79,7 @@ def test_get_plugin_endpoint(client: TestClient) -> None:
     assert data["plugin_type"] == "tap"  # Should be "tap" since name starts with "tap-"
     assert data["description"] == "LDAP tap for user/group extraction"
     assert data["configuration"] == {}
-    assert data["status"] == "installed"
+    assert data["status"] == "active"
     assert data["source"] == "hub"
     assert "plugin_id" in data
     assert "updated_at" in data
@@ -112,7 +112,7 @@ def test_update_plugin_config_endpoint(client: TestClient) -> None:
     assert data["plugin_type"] == "tap"  # Should be "tap" since name starts with "tap-"
     assert "configuration updated successfully" in data["description"]
     assert data["configuration"] == config_data["configuration"]
-    assert data["status"] == "installed"
+    assert data["status"] == "active"
     assert data["source"] == "hub"
     assert "plugin_id" in data
     assert "updated_at" in data
@@ -131,7 +131,7 @@ def test_update_plugin_config_target_type(client: TestClient) -> None:
     assert (
         data["plugin_type"] == "target"
     )  # Should be "target" since name doesn't start with "tap-"
-    assert data["status"] == "installed"
+    assert data["status"] == "active"
     assert "plugin_id" in data
 
 
@@ -163,11 +163,11 @@ def test_update_plugin_config_invalid_config(client: TestClient) -> None:
 def test_update_plugin_endpoint_not_implemented(client: TestClient) -> None:
     """Test update plugin endpoint - method not available in PluginManager."""
     plugin_name = "tap-csv"
-    update_data = {"version": "2.0.0", "force": False}
+    update_data = {"version": "2.0.0", "force_update": False}
 
     response = client.put(f"/api/v1/plugins/{plugin_name}/update", json=update_data)
 
-    assert response.status_code == 500
+    assert response.status_code == 503
     data = response.json()
     assert "update_plugin" in data["detail"]
     assert "'PluginManager' object has no attribute 'update_plugin'" in data["detail"]
@@ -179,7 +179,7 @@ def test_uninstall_plugin_endpoint_not_implemented(client: TestClient) -> None:
 
     response = client.delete(f"/api/v1/plugins/{plugin_name}")
 
-    assert response.status_code == 500
+    assert response.status_code == 503
     data = response.json()
     assert "uninstall_plugin" in data["detail"]
     assert (
@@ -210,7 +210,7 @@ def test_check_plugin_health_endpoint_not_implemented(client: TestClient) -> Non
 
     response = client.post(f"/api/v1/plugins/{plugin_name}/health-check")
 
-    assert response.status_code == 500
+    assert response.status_code == 503
     data = response.json()
     assert "check_plugin_health" in data["detail"]
     assert (
@@ -225,7 +225,7 @@ def test_install_plugin_minimal_data(client: TestClient) -> None:
 
     response = client.post("/api/v1/plugins/install", json=plugin_data)
 
-    assert response.status_code == 500
+    assert response.status_code == 400
     data = response.json()
     assert "Plugin name and version required" in data["detail"]
 
@@ -270,6 +270,6 @@ def test_list_plugins_with_search_param(client: TestClient) -> None:
     """Test list plugins with search parameter - registry not available."""
     response = client.get("/api/v1/plugins?search=postgres")
 
-    assert response.status_code == 500
+    assert response.status_code == 503
     data = response.json()
     assert "Plugin registry not available" in data["detail"]

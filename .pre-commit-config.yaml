@@ -108,7 +108,6 @@ repos:
         entry: poetry lock
         language: system
         pass_filenames: false
-        args: [--no-update]
 
   # Standard file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks

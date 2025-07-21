@@ -10,14 +10,15 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 # Import runtime dependencies
-from uuid import UUID  # noqa: TC003
-
 from flext_core.domain.types import ServiceResult
 from flext_observability.logging import get_logger
 
 from flext_api.domain.ports import PipelineRepository
 
 if TYPE_CHECKING:
+    import builtins
+    from uuid import UUID
+
     from flext_core.domain.pipeline import PipelineExecution
 
     from flext_api.domain.entities import APIPipeline
@@ -38,11 +39,11 @@ class InMemoryPipelineRepository(PipelineRepository):
         self._executions: dict[str, PipelineExecution] = {}
         logger.info("InMemoryPipelineRepository initialized")
 
-    async def create(self, pipeline: Pipeline) -> ServiceResult[Pipeline]:
+    async def create(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
         """Create a new pipeline.
 
         Args:
-            pipeline: Pipeline entity to create.
+            pipeline: APIPipeline entity to create.
 
         Returns:
             ServiceResult containing created pipeline or error.
@@ -62,7 +63,7 @@ class InMemoryPipelineRepository(PipelineRepository):
             logger.exception("Failed to create pipeline")
             return ServiceResult.fail(f"Failed to create pipeline: {e}")
 
-    async def get(self, pipeline_id: UUID) -> ServiceResult[Pipeline]:
+    async def get(self, pipeline_id: UUID) -> ServiceResult[APIPipeline]:
         """Get pipeline by ID.
 
         Args:
@@ -84,11 +85,11 @@ class InMemoryPipelineRepository(PipelineRepository):
             logger.exception("Failed to get pipeline")
             return ServiceResult.fail(f"Failed to get pipeline: {e}")
 
-    async def update(self, pipeline: Pipeline) -> ServiceResult[Pipeline]:
+    async def update(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
         """Update existing pipeline.
 
         Args:
-            pipeline: Pipeline entity with updated data.
+            pipeline: APIPipeline entity with updated data.
 
         Returns:
             ServiceResult containing updated pipeline or error.
@@ -151,7 +152,7 @@ class InMemoryPipelineRepository(PipelineRepository):
         owner_id: UUID | None = None,
         project_id: UUID | None = None,
         status: str | None = None,
-    ) -> ServiceResult[list[Pipeline]]:
+    ) -> ServiceResult[list[APIPipeline]]:
         """List pipelines with optional filters and pagination.
 
         Args:
@@ -168,9 +169,16 @@ class InMemoryPipelineRepository(PipelineRepository):
         try:
             pipelines = list(self._pipelines.values())
 
-            # Apply filters - only status filter implemented since Pipeline doesn't have owner/project
+            # Apply filters
             if status:
-                pipelines = [p for p in pipelines if p.pipeline_status.value == status]
+                # pipeline_status is already a string (enum value), so compare directly
+                pipelines = [p for p in pipelines if p.pipeline_status == status]
+
+            if owner_id:
+                pipelines = [p for p in pipelines if p.owner_id == owner_id]
+
+            if project_id:
+                pipelines = [p for p in pipelines if p.project_id == project_id]
 
             # Sort by creation date (newest first)
             pipelines.sort(key=lambda p: p.created_at, reverse=True)
@@ -231,8 +239,31 @@ class InMemoryPipelineRepository(PipelineRepository):
             logger.exception("Failed to count pipelines")
             return ServiceResult.fail(f"Failed to count pipelines: {e}")
 
+    async def save(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+        """Save pipeline (create or update based on existence).
+
+        Args:
+            pipeline: APIPipeline entity to save.
+
+        Returns:
+            ServiceResult containing saved pipeline or error.
+
+        """
+        try:
+            # Check if pipeline exists
+            if pipeline.id in self._pipelines:
+                # Update existing pipeline
+                return await self.update(pipeline)
+            # Create new pipeline
+            return await self.create(pipeline)
+
+        except Exception as e:
+            logger.exception("Failed to save pipeline")
+            return ServiceResult.fail(f"Failed to save pipeline: {e}")
+
     async def create_execution(
-        self, execution: PipelineExecution,
+        self,
+        execution: PipelineExecution,
     ) -> ServiceResult[PipelineExecution]:
         """Create a new pipeline execution.
 
@@ -266,7 +297,8 @@ class InMemoryPipelineRepository(PipelineRepository):
             return ServiceResult.fail(f"Failed to create execution: {e}")
 
     async def get_execution(
-        self, execution_id: str,
+        self,
+        execution_id: str,
     ) -> ServiceResult[PipelineExecution]:
         """Get execution by ID.
 
@@ -290,7 +322,8 @@ class InMemoryPipelineRepository(PipelineRepository):
             return ServiceResult.fail(f"Failed to get execution: {e}")
 
     async def update_execution(
-        self, execution: PipelineExecution,
+        self,
+        execution: PipelineExecution,
     ) -> ServiceResult[PipelineExecution]:
         """Update existing execution.
 
@@ -321,7 +354,7 @@ class InMemoryPipelineRepository(PipelineRepository):
         status: str | None = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> ServiceResult[list[PipelineExecution]]:
+    ) -> ServiceResult[builtins.list[PipelineExecution]]:
         """List executions with optional filters and pagination.
 
         Args:
@@ -341,7 +374,9 @@ class InMemoryPipelineRepository(PipelineRepository):
             if pipeline_id:
                 executions = [e for e in executions if e.pipeline_id == pipeline_id]
             if status:
-                executions = [e for e in executions if e.execution_status.value == status]
+                executions = [
+                    e for e in executions if e.execution_status.value == status
+                ]
 
             # Sort by start time (newest first)
             executions.sort(key=lambda e: e.started_at or e.created_at, reverse=True)

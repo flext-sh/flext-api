@@ -32,7 +32,7 @@ from flext_api.domain.ports import (
 )
 
 if TYPE_CHECKING:
-    from flext_api.domain.entities import APIPipeline as Pipeline, Plugin
+    from flext_api.domain.entities import APIPipeline, Plugin
 
 
 class TestRepositoryPorts:
@@ -234,13 +234,13 @@ class TestPortImplementation:
 
         class MockPipelineRepository(PipelineRepository):
             def __init__(self) -> None:
-                self._storage: dict[UUID, Pipeline] = {}
+                self._storage: dict[UUID, APIPipeline] = {}
 
-            async def create(self, pipeline: Pipeline) -> ServiceResult[Pipeline]:
+            async def create(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
                 self._storage[pipeline.id] = pipeline
                 return ServiceResult.ok(pipeline)
 
-            async def update(self, pipeline: Pipeline) -> ServiceResult[Pipeline]:
+            async def update(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
                 if pipeline.id in self._storage:
                     self._storage[pipeline.id] = pipeline
                     return ServiceResult.ok(pipeline)
@@ -254,7 +254,7 @@ class TestPortImplementation:
             ) -> ServiceResult[int]:
                 return ServiceResult.ok(len(self._storage))
 
-            async def get(self, pipeline_id: UUID) -> ServiceResult[Pipeline]:
+            async def get(self, pipeline_id: UUID) -> ServiceResult[APIPipeline]:
                 pipeline = self._storage.get(pipeline_id)
                 if pipeline:
                     return ServiceResult.ok(pipeline)
@@ -267,7 +267,7 @@ class TestPortImplementation:
                 owner_id: UUID | None = None,
                 project_id: UUID | None = None,
                 status: str | None = None,
-            ) -> ServiceResult[list[Pipeline]]:
+            ) -> ServiceResult[list[APIPipeline]]:
                 pipelines = list(self._storage.values())[offset : offset + limit]
                 return ServiceResult.ok(pipelines)
 
@@ -276,6 +276,11 @@ class TestPortImplementation:
                     del self._storage[pipeline_id]
                     return ServiceResult.ok(True)
                 return ServiceResult.ok(False)
+
+            async def save(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+                if pipeline.id in self._storage:
+                    return await self.update(pipeline)
+                return await self.create(pipeline)
 
         # Should be able to instantiate
         repo = MockPipelineRepository()
@@ -341,6 +346,11 @@ class TestPortImplementation:
                     self._storage.pop(plugin_id)
                     return ServiceResult.ok(True)
                 return ServiceResult.ok(False)
+
+            async def save(self, plugin: Plugin) -> ServiceResult[Plugin]:
+                if plugin.id in self._storage:
+                    return await self.update(plugin)
+                return await self.create(plugin)
 
         # Should be able to instantiate
         repo = MockPluginRepository()

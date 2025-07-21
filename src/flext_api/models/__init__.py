@@ -13,9 +13,8 @@ monitoring, pipeline, plugin, and system models.
 # Re-export shared models from flext_core
 from __future__ import annotations
 
-from flext_core.domain.pydantic_base import (
-    DomainBaseModel as APIResponse,  # Use DomainBaseModel as base for API responses
-)
+# Note: APIResponse is imported from flext_core.domain.pydantic_base directly where needed
+# No alias needed to avoid forward reference conflicts
 from flext_core.domain.types import PluginType
 
 from flext_api.models.auth import (
@@ -63,8 +62,7 @@ from flext_api.models.system import (
 )
 
 __all__ = [
-    # Re-exported from flext_core
-    "APIResponse",
+    # Re-exported from flext_core (removed APIResponse to avoid conflicts)
     # Pipeline models
     "ExecutionResponse",
     # Monitoring models

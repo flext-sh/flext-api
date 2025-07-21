@@ -390,8 +390,8 @@ def test_create_backup_via_main_app(client: TestClient) -> None:
         "compression": True,
         "encryption": False,
         "include_logs": False,
-        "include_config": True,
-        "include_data": True,
+        "include_configuration": True,
+        "include_database": True,
         "metadata": {"schedule": "daily"},
     }
 

@@ -10,12 +10,21 @@ from typing import TYPE_CHECKING, Any
 
 from flext_core.domain.types import ServiceResult
 
+# Import entities for repository signatures (not in TYPE_CHECKING to avoid forward refs)
+# Import abstract repository interfaces
+from flext_api.domain.ports import PipelineRepository, PluginRepository
+
 # Import specific repository implementations
-from flext_api.infrastructure.repositories.pipeline_repository import PipelineRepository
-from flext_api.infrastructure.repositories.plugin_repository import PluginRepository
+from flext_api.infrastructure.repositories.pipeline_repository import (
+    InMemoryPipelineRepository,
+)
+from flext_api.infrastructure.repositories.plugin_repository import (
+    InMemoryPluginRepository,
+)
 
 if TYPE_CHECKING:
     from flext_api.domain.entities import APIRequest, APIResponse
+    # No TYPE_CHECKING imports needed
 
 
 class APIRequestRepository(ABC):
@@ -148,6 +157,8 @@ __all__ = [
     "APIResponseRepository",
     "InMemoryAPIRequestRepository",
     "InMemoryAPIResponseRepository",
+    "InMemoryPipelineRepository",
+    "InMemoryPluginRepository",
     "PipelineRepository",
     "PluginRepository",
 ]

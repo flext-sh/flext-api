@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime  # noqa: TC003
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import UUID  # noqa: TC003
 
 from flext_core import Field

@@ -20,9 +20,7 @@ if TYPE_CHECKING:
     )
 else:
     # Runtime imports needed for actual usage
-    from flext_auth.application.services import (
-        AuthService as FlextAuthService,  # noqa: TC002
-    )
+    pass
 
 
 class AuthService(AuthenticationService):
@@ -253,7 +251,7 @@ class AuthService(AuthenticationService):
                     username=username_obj,
                     email=email,
                     password=password,
-                    role=role or "user",
+                    roles=[role or "user"],
                 )
 
                 if not result.is_success:
@@ -335,7 +333,6 @@ class AuthService(AuthenticationService):
             token_data = result.unwrap()
 
             user = UserAPI(
-                message="User data",
                 username=token_data["username"],
                 roles=token_data.get("roles", []),
                 is_active=token_data.get("is_active", True),
