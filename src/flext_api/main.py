@@ -55,7 +55,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
         "FLEXT API has started successfully",
     )
 
-    if not startup_alert.is_success:
+    if not startup_alert.success:
         logger.error("Failed to create startup alert: %s", startup_alert.error)
 
     yield
@@ -150,13 +150,20 @@ async def get_system_status() -> SystemStatusResponse:
     """Get comprehensive system status."""
     result = storage.get_system_status()
 
-    if not result.is_success:
+    if not result.success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=result.error,
         )
 
-    return result.unwrap()
+    if result.data is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Service returned None",
+        )
+
+    from typing import cast
+    return cast("SystemStatusResponse", result.data)
 
 
 @app.get("/api/v1/system/alerts", response_model=list[SystemAlertResponse])
@@ -174,13 +181,20 @@ async def create_system_alert(
     """Create new system alert."""
     result = storage.create_alert(severity, title, message)
 
-    if not result.is_success:
+    if not result.success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=result.error,
         )
 
-    return result.unwrap()
+    if result.data is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Service returned None",
+        )
+
+    from typing import cast
+    return cast("SystemAlertResponse", result.data)
 
 
 @app.get("/api/v1/system/metrics", response_model=list[SystemMetricsResponse])
@@ -190,13 +204,20 @@ async def get_system_metrics(
     """Get system metrics."""
     result = storage.get_metrics(metric_name)
 
-    if not result.is_success:
+    if not result.success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=result.error,
         )
 
-    return result.unwrap()
+    if result.data is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Service returned None",
+        )
+
+    from typing import cast
+    return cast("list[SystemMetricsResponse]", result.data)
 
 
 @app.post("/api/v1/system/maintenance", response_model=MaintenanceResponse)
@@ -204,13 +225,20 @@ async def start_maintenance(request: MaintenanceRequest) -> MaintenanceResponse:
     """Start system maintenance."""
     result = storage.start_maintenance(request)
 
-    if not result.is_success:
+    if not result.success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=result.error,
         )
 
-    return result.unwrap()
+    if result.data is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Service returned None",
+        )
+
+    from typing import cast
+    return cast("MaintenanceResponse", result.data)
 
 
 @app.post("/api/v1/system/backup", response_model=SystemBackupResponse)
@@ -218,13 +246,20 @@ async def create_backup(request: SystemBackupRequest) -> SystemBackupResponse:
     """Create system backup."""
     result = storage.create_backup(request)
 
-    if not result.is_success:
+    if not result.success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=result.error,
         )
 
-    return result.unwrap()
+    if result.data is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Service returned None",
+        )
+
+    from typing import cast
+    return cast("SystemBackupResponse", result.data)
 
 
 @app.get("/api/v1/system/backups", response_model=list[SystemBackupResponse])
@@ -242,13 +277,20 @@ async def execute_pipeline(pipeline_id: str) -> dict[str, Any]:
     """Execute pipeline."""
     result = storage.execute_pipeline(pipeline_id)
 
-    if not result.is_success:
+    if not result.success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=result.error,
         )
 
-    return result.unwrap()
+    if result.data is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Service returned None",
+        )
+
+    from typing import cast
+    return cast("dict[str, Any]", result.data)
 
 
 # Plugin endpoints are handled by plugins_router - no duplicate endpoints needed

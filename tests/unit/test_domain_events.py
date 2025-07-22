@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-from flext_core.domain.pydantic_base import DomainEvent
+from flext_core import DomainEvent, EntityId, UserId
 
 from flext_api.domain.entities import PluginType
 from flext_api.domain.events import (
@@ -36,7 +36,7 @@ class TestDomainEventBase:
         """Test DomainEvent has required base fields."""
         # Create a simple event to test base functionality
         event = ApiRequestReceivedEvent(
-            request_id=uuid4(),
+            request_id=EntityId(str(uuid4())),
             method="GET",
             ip_address="127.0.0.1",
         )
@@ -53,10 +53,10 @@ class TestPipelineEvents:
 
     def test_pipeline_created_event(self) -> None:
         """Test PipelineCreatedEvent creation."""
-        pipeline_id = uuid4()
+        pipeline_id = str(uuid4())
         pipeline_name = "test-pipeline"
-        owner_id = uuid4()
-        project_id = uuid4()
+        owner_id = UserId(str(uuid4()))
+        project_id = EntityId(str(uuid4()))
 
         event = PipelineCreatedEvent(
             pipeline_id=pipeline_id,
@@ -74,7 +74,7 @@ class TestPipelineEvents:
 
     def test_pipeline_created_event_minimal(self) -> None:
         """Test PipelineCreatedEvent with minimal required fields."""
-        pipeline_id = uuid4()
+        pipeline_id = str(uuid4())
         pipeline_name = "test-pipeline"
 
         event = PipelineCreatedEvent(
@@ -89,9 +89,9 @@ class TestPipelineEvents:
 
     def test_pipeline_updated_event(self) -> None:
         """Test PipelineUpdatedEvent creation."""
-        pipeline_id = uuid4()
+        pipeline_id = str(uuid4())
         changes: dict[str, object] = {"name": "new-name", "status": "active"}
-        updated_by = uuid4()
+        updated_by = UserId(str(uuid4()))
 
         event = PipelineUpdatedEvent(
             pipeline_id=pipeline_id,
@@ -105,7 +105,7 @@ class TestPipelineEvents:
 
     def test_pipeline_updated_event_minimal(self) -> None:
         """Test PipelineUpdatedEvent with minimal fields."""
-        pipeline_id = uuid4()
+        pipeline_id = str(uuid4())
 
         event = PipelineUpdatedEvent(
             pipeline_id=pipeline_id,
@@ -117,8 +117,8 @@ class TestPipelineEvents:
 
     def test_pipeline_deleted_event(self) -> None:
         """Test PipelineDeletedEvent creation."""
-        pipeline_id = uuid4()
-        deleted_by = uuid4()
+        pipeline_id = str(uuid4())
+        deleted_by = UserId(str(uuid4()))
 
         event = PipelineDeletedEvent(
             pipeline_id=pipeline_id,
@@ -130,7 +130,7 @@ class TestPipelineEvents:
 
     def test_pipeline_events_inheritance(self) -> None:
         """Test pipeline events inherit from DomainEvent properly."""
-        pipeline_id = uuid4()
+        pipeline_id = str(uuid4())
 
         created_event = PipelineCreatedEvent(
             pipeline_id=pipeline_id,
@@ -147,9 +147,9 @@ class TestPluginEvents:
 
     def test_plugin_registered_event(self) -> None:
         """Test PluginRegisteredEvent creation."""
-        plugin_id = uuid4()
+        plugin_id = str(uuid4())
         plugin_name = "tap-csv"
-        plugin_type = PluginType.TAP
+        plugin_type = PluginType.EXTRACTOR
         version = "1.0.0"
 
         event = PluginRegisteredEvent(
@@ -166,9 +166,9 @@ class TestPluginEvents:
 
     def test_plugin_updated_event(self) -> None:
         """Test PluginUpdatedEvent creation."""
-        plugin_id = uuid4()
+        plugin_id = str(uuid4())
         changes = {"version": "1.1.0", "enabled": True}
-        updated_by = uuid4()
+        updated_by = UserId(str(uuid4()))
 
         event = PluginUpdatedEvent(
             plugin_id=plugin_id,
@@ -182,8 +182,8 @@ class TestPluginEvents:
 
     def test_plugin_disabled_event(self) -> None:
         """Test PluginDisabledEvent creation."""
-        plugin_id = uuid4()
-        disabled_by = uuid4()
+        plugin_id = str(uuid4())
+        disabled_by = UserId(str(uuid4()))
         reason = "Security vulnerability"
 
         event = PluginDisabledEvent(
@@ -198,8 +198,8 @@ class TestPluginEvents:
 
     def test_plugin_enabled_event(self) -> None:
         """Test PluginEnabledEvent creation."""
-        plugin_id = uuid4()
-        enabled_by = uuid4()
+        plugin_id = str(uuid4())
+        enabled_by = UserId(str(uuid4()))
 
         event = PluginEnabledEvent(
             plugin_id=plugin_id,
@@ -211,12 +211,12 @@ class TestPluginEvents:
 
     def test_plugin_events_inheritance(self) -> None:
         """Test plugin events inherit from DomainEvent properly."""
-        plugin_id = uuid4()
+        plugin_id = str(uuid4())
 
         registered_event = PluginRegisteredEvent(
             plugin_id=plugin_id,
             plugin_name="test-plugin",
-            plugin_type=PluginType.TAP,
+            plugin_type=PluginType.EXTRACTOR,
             version="1.0.0",
         )
 
@@ -230,7 +230,7 @@ class TestApiEvents:
 
     def test_api_request_received_event(self) -> None:
         """Test ApiRequestReceivedEvent creation."""
-        request_id = uuid4()
+        request_id = EntityId(str(uuid4()))
         method = "POST"
         ip_address = "192.168.1.100"
 
@@ -246,7 +246,7 @@ class TestApiEvents:
 
     def test_api_request_received_event_minimal(self) -> None:
         """Test ApiRequestReceivedEvent with minimal fields."""
-        request_id = uuid4()
+        request_id = EntityId(str(uuid4()))
 
         event = ApiRequestReceivedEvent(
             request_id=request_id,
@@ -258,7 +258,7 @@ class TestApiEvents:
 
     def test_api_request_completed_event(self) -> None:
         """Test ApiRequestCompletedEvent creation."""
-        request_id = uuid4()
+        request_id = EntityId(str(uuid4()))
         status_code = 200
         response_time_ms = 150
         success = True
@@ -277,7 +277,7 @@ class TestApiEvents:
 
     def test_api_events_inheritance(self) -> None:
         """Test API events inherit from DomainEvent properly."""
-        request_id = uuid4()
+        request_id = EntityId(str(uuid4()))
 
         received_event = ApiRequestReceivedEvent(
             request_id=request_id,
@@ -294,7 +294,7 @@ class TestEventValidation:
 
     def test_pipeline_name_validation(self) -> None:
         """Test pipeline name must be non-empty."""
-        pipeline_id = uuid4()
+        pipeline_id = str(uuid4())
 
         # Valid name should work
         event = PipelineCreatedEvent(
@@ -312,9 +312,9 @@ class TestEventValidation:
 
     def test_plugin_version_validation(self) -> None:
         """Test plugin version format validation."""
-        plugin_id = uuid4()
+        plugin_id = str(uuid4())
         plugin_name = "test-plugin"
-        plugin_type = PluginType.TAP
+        plugin_type = PluginType.EXTRACTOR
 
         # Valid semantic version should work
         valid_versions = ["1.0.0", "10.20.30", "0.1.0"]
@@ -340,7 +340,7 @@ class TestEventValidation:
 
     def test_status_code_validation(self) -> None:
         """Test API status code validation."""
-        request_id = uuid4()
+        request_id = EntityId(str(uuid4()))
 
         # Valid status codes should work
         valid_codes = [200, 201, 400, 404, 500]
@@ -366,7 +366,7 @@ class TestEventValidation:
 
     def test_response_time_validation(self) -> None:
         """Test response time must be non-negative."""
-        request_id = uuid4()
+        request_id = EntityId(str(uuid4()))
 
         # Valid response times should work
         valid_times = [0, 1, 100, 5000]
@@ -394,7 +394,7 @@ class TestEventSerialization:
 
     def test_pipeline_event_serialization(self) -> None:
         """Test pipeline event serialization."""
-        pipeline_id = uuid4()
+        pipeline_id = str(uuid4())
         pipeline_name = "test-pipeline"
 
         event = PipelineCreatedEvent(
@@ -410,9 +410,9 @@ class TestEventSerialization:
 
     def test_plugin_event_serialization(self) -> None:
         """Test plugin event serialization."""
-        plugin_id = uuid4()
+        plugin_id = str(uuid4())
         plugin_name = "test-plugin"
-        plugin_type = PluginType.TAP
+        plugin_type = PluginType.EXTRACTOR
         version = "1.0.0"
 
         event = PluginRegisteredEvent(
@@ -431,7 +431,7 @@ class TestEventSerialization:
 
     def test_api_event_serialization(self) -> None:
         """Test API event serialization."""
-        request_id = uuid4()
+        request_id = EntityId(str(uuid4()))
         method = "POST"
         ip_address = "127.0.0.1"
 
@@ -454,7 +454,7 @@ class TestEventEquality:
 
     def test_events_equal_by_content(self) -> None:
         """Test events are equal when content is the same."""
-        pipeline_id = uuid4()
+        pipeline_id = str(uuid4())
         pipeline_name = "test-pipeline"
 
         _event1 = PipelineCreatedEvent(
@@ -473,8 +473,8 @@ class TestEventEquality:
 
     def test_events_different_when_content_differs(self) -> None:
         """Test events are different when content differs."""
-        pipeline_id1 = uuid4()
-        pipeline_id2 = uuid4()
+        pipeline_id1 = str(uuid4())
+        pipeline_id2 = str(uuid4())
 
         event1 = PipelineCreatedEvent(
             pipeline_id=pipeline_id1,
@@ -499,7 +499,7 @@ class TestEventTimestamps:
         before_creation = datetime.now(UTC)
 
         event = PipelineCreatedEvent(
-            pipeline_id=uuid4(),
+            pipeline_id=str(uuid4()),
             pipeline_name="test-pipeline",
         )
 
@@ -512,12 +512,12 @@ class TestEventTimestamps:
     def test_events_have_unique_ids(self) -> None:
         """Test that events get unique identifiers."""
         event1 = PipelineCreatedEvent(
-            pipeline_id=uuid4(),
+            pipeline_id=str(uuid4()),
             pipeline_name="pipeline-1",
         )
 
         event2 = PipelineCreatedEvent(
-            pipeline_id=uuid4(),
+            pipeline_id=str(uuid4()),
             pipeline_name="pipeline-2",
         )
 

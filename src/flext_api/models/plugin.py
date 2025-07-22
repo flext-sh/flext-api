@@ -5,21 +5,23 @@ SPDX-License-Identifier: MIT
 
 This module provides Pydantic models for plugin management.
 """
-
 from __future__ import annotations
 
-from datetime import datetime  # noqa: TC003
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
-from uuid import UUID  # noqa: TC003
 
-from flext_core import Field
-from flext_core.domain.pydantic_base import APIRequest, APIResponse
-from flext_core.domain.shared_types import (
+from flext_core import (
+    APIRequest,
+    APIResponse,
     EntityStatus,
+    Field,
     PluginType,
 )
 from pydantic import field_validator
+
+if TYPE_CHECKING:
+    from datetime import datetime
+    from uuid import UUID
 
 # Use centralized plugin types
 PluginStatus = EntityStatus  # Maps plugin status to standard entity status
@@ -40,8 +42,6 @@ PluginCapability = PluginType  # Use centralized plugin type enum
 
 
 # --- Request Models ---
-
-
 class PluginInstallRequest(APIRequest):
     """Request model for plugin installation."""
 
@@ -197,8 +197,6 @@ class PluginDiscoveryRequest(APIRequest):
 
 
 # --- Response Models ---
-
-
 class PluginResponse(APIResponse):
     """Response model for plugin information."""
 
@@ -354,8 +352,6 @@ class PluginStatsResponse(APIResponse):
 
 
 # --- Filter and Search Models ---
-
-
 class PluginFilterRequest(APIRequest):
     """Request model for filtering plugins."""
 
@@ -418,8 +414,6 @@ class PluginFilterRequest(APIRequest):
 
 
 # --- Legacy Models for Backward Compatibility ---
-
-
 class LegacyPluginInstallRequest(APIRequest):
     """Legacy plugin installation request model."""
 
@@ -435,15 +429,14 @@ class LegacyPluginInstallRequest(APIRequest):
 
         """
         plugin_type_mapping = {
-            "extractor": PluginType.TAP,
-            "tap": PluginType.TAP,
-            "loader": PluginType.TARGET,
-            "target": PluginType.TARGET,
-            "transformer": PluginType.TRANSFORM,
-            "transform": PluginType.TRANSFORM,
+            "extractor": PluginType.EXTRACTOR,
+            "tap": PluginType.EXTRACTOR,
+            "loader": PluginType.LOADER,
+            "target": PluginType.LOADER,
+            "transformer": PluginType.TRANSFORMER,
+            "transform": PluginType.TRANSFORMER,
             "utility": PluginType.UTILITY,
         }
-
         return PluginInstallRequest(
             name=self.name,
             plugin_type=plugin_type_mapping.get(self.type, PluginType.UTILITY),
@@ -487,10 +480,8 @@ class LegacyPluginResponse(APIResponse):
 
 
 # Model definitions complete
-
 # NOTE: model_rebuild() calls removed to prevent import circular dependency issues
 # Pydantic will resolve forward references automatically when needed
-
 # Export the imported enums for external use
 __all__ = [
     # Response models

@@ -89,7 +89,7 @@ def sample_user_data() -> dict[str, Any]:
 def mock_auth_service() -> AsyncMock:
     """Mock authentication service."""
     mock_service = AsyncMock()
-    mock_service.login.return_value.is_successful = True
+    mock_service.login.return_value.successful = True
     mock_service.login.return_value.data = {
         "access_token": "test-token",
         "token_type": "bearer",
@@ -102,7 +102,7 @@ def mock_auth_service() -> AsyncMock:
 def mock_pipeline_repository() -> AsyncMock:
     """Mock pipeline repository."""
     mock_repo = AsyncMock()
-    mock_repo.create_pipeline.return_value.is_successful = True
+    mock_repo.create_pipeline.return_value.successful = True
     mock_repo.create_pipeline.return_value.data = {
         "pipeline_id": "test-pipeline-id",
         "status": "created",
@@ -114,7 +114,7 @@ def mock_pipeline_repository() -> AsyncMock:
 def mock_plugin_service() -> AsyncMock:
     """Mock plugin service."""
     mock_service = AsyncMock()
-    mock_service.install_plugin.return_value.is_successful = True
+    mock_service.install_plugin.return_value.successful = True
     mock_service.install_plugin.return_value.data = {
         "plugin_name": "tap-postgres",
         "status": "installed",

@@ -33,23 +33,35 @@ def test_install_plugin_endpoint(client: TestClient) -> None:
 
 
 def test_list_plugins_endpoint_default(client: TestClient) -> None:
-    """Test list plugins endpoint - registry not available."""
+    """Test list plugins endpoint - returns empty list when no plugins."""
     response = client.get("/api/v1/plugins")
 
-    assert response.status_code == 503
+    assert response.status_code == 200
     data = response.json()
-    assert "Plugin registry not available" in data["detail"]
+    assert data["plugins"] == []
+    assert data["total_count"] == 0
+    assert data["installed_count"] == 0
+    assert data["page"] == 1
+    assert data["page_size"] == 20
+    assert data["has_next"] is False
+    assert data["has_previous"] is False
 
 
 def test_list_plugins_endpoint_with_params(client: TestClient) -> None:
-    """Test list plugins endpoint with custom parameters - registry not available."""
+    """Test list plugins endpoint with custom parameters - returns empty list."""
     response = client.get(
         "/api/v1/plugins?page=2&page_size=10&category=taps&status=installed",
     )
 
-    assert response.status_code == 503
+    assert response.status_code == 200
     data = response.json()
-    assert "Plugin registry not available" in data["detail"]
+    assert data["plugins"] == []
+    assert data["total_count"] == 0
+    assert data["installed_count"] == 0
+    assert data["page"] == 2
+    assert data["page_size"] == 10
+    assert data["has_next"] is False
+    assert data["has_previous"] is True
 
 
 def test_list_plugins_endpoint_invalid_page(client: TestClient) -> None:

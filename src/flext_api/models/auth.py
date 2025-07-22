@@ -8,8 +8,7 @@ This module provides Pydantic models for authentication.
 
 from __future__ import annotations
 
-from flext_core import Field
-from flext_core.domain.pydantic_base import APIRequest, APIResponse
+from flext_core import APIRequest, APIResponse, Field
 
 __all__ = [
     "APIResponse",  # Re-export from flext_core

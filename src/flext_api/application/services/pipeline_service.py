@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import EntityId, ServiceResult, UserId
 
 # Use centralized logger from flext-infrastructure.monitoring.flext-observability
 from flext_api.application.services.base import (
@@ -52,7 +52,7 @@ class PipelineService(
         config: dict[str, Any] | None = None,
         owner_id: UUID | None = None,
         project_id: UUID | None = None,
-    ) -> ServiceResult[Pipeline]:
+    ) -> ServiceResult[Any]:
         """Create a new pipeline.
 
         Args:
@@ -71,31 +71,29 @@ class PipelineService(
                 name=name,
                 description=description,
                 config=config or {},
-                owner_id=owner_id,
-                project_id=project_id,
+                owner_id=str(owner_id) if owner_id else None,
+                project_id=str(project_id) if project_id else None,
             )
 
             # Validate pipeline name (ISP compliance)
             name_validation = await self.validate_pipeline_name(pipeline.name, owner_id)
-            if not name_validation.is_success:
-                return ServiceResult.fail(
-                    name_validation.error or "Pipeline name validation failed",
+            if not name_validation.success:
+                return ServiceResult.fail(name_validation.error or "Pipeline name validation failed",
                 )
 
             # Validate pipeline configuration (ISP compliance)
             config_validation = await self.validate_pipeline_config(pipeline.config)
-            if not config_validation.is_success:
-                return ServiceResult.fail(
-                    config_validation.error
+            if not config_validation.success:
+                return ServiceResult.fail(config_validation.error
                     or "Pipeline configuration validation failed",
                 )
 
             # Save to repository
             save_result = await self.pipeline_repo.create(pipeline)
-            if not save_result.is_success:
+            if not save_result.success:
                 return save_result
 
-            saved_pipeline = save_result.unwrap()
+            saved_pipeline = save_result.data
 
             self.logger.info(
                 "Pipeline created successfully",
@@ -110,7 +108,7 @@ class PipelineService(
             self.logger.exception("Failed to create pipeline", error=str(e))
             return ServiceResult.fail(f"Failed to create pipeline: {e}")
 
-    async def get_pipeline(self, pipeline_id: UUID) -> ServiceResult[Pipeline]:
+    async def get_pipeline(self, pipeline_id: UUID) -> ServiceResult[Any]:
         """Get pipeline by ID.
 
         Args:
@@ -122,10 +120,10 @@ class PipelineService(
         """
         try:
             pipeline_result = await self.pipeline_repo.get(pipeline_id)
-            if not pipeline_result.is_success:
+            if not pipeline_result.success:
                 return pipeline_result
 
-            pipeline = pipeline_result.unwrap()
+            pipeline = pipeline_result.data
             return ServiceResult.ok(pipeline)
 
         except Exception as e:
@@ -143,7 +141,7 @@ class PipelineService(
         status: str | None = None,
         limit: int = 20,
         offset: int = 0,
-    ) -> ServiceResult[list[Pipeline]]:
+    ) -> ServiceResult[Any]:
         """List pipelines with optional filtering.
 
         Args:
@@ -165,10 +163,10 @@ class PipelineService(
                 project_id=project_id,
                 status=status,
             )
-            if not pipelines_result.is_success:
+            if not pipelines_result.success:
                 return pipelines_result
 
-            pipelines = pipelines_result.unwrap()
+            pipelines = pipelines_result.data
             return ServiceResult.ok(pipelines)
 
         except Exception as e:
@@ -182,7 +180,7 @@ class PipelineService(
         description: str | None = None,
         config: dict[str, Any] | None = None,
         status: str | None = None,
-    ) -> ServiceResult[Pipeline]:
+    ) -> ServiceResult[Any]:
         """Update an existing pipeline.
 
         Args:
@@ -199,10 +197,10 @@ class PipelineService(
         try:
             # Get existing pipeline
             existing_result = await self.get_pipeline(pipeline_id)
-            if not existing_result.is_success:
+            if not existing_result.success:
                 return existing_result
 
-            pipeline = existing_result.unwrap()
+            pipeline = existing_result.data
 
             # Apply updates
             if name is not None:
@@ -216,10 +214,10 @@ class PipelineService(
 
             # Save updates
             update_result = await self.pipeline_repo.update(pipeline)
-            if not update_result.is_success:
+            if not update_result.success:
                 return update_result
 
-            updated_pipeline = update_result.unwrap()
+            updated_pipeline = update_result.data
 
             self.logger.info(
                 "Pipeline updated successfully",
@@ -237,7 +235,7 @@ class PipelineService(
             )
             return ServiceResult.fail(f"Failed to update pipeline: {e}")
 
-    async def delete_pipeline(self, pipeline_id: UUID) -> ServiceResult[bool]:
+    async def delete_pipeline(self, pipeline_id: UUID) -> ServiceResult[Any]:
         """Delete a pipeline.
 
         Args:
@@ -250,7 +248,7 @@ class PipelineService(
         try:
             # Check if pipeline exists:
             existing_result = await self.get_pipeline(pipeline_id)
-            if not existing_result.is_success:
+            if not existing_result.success:
                 return ServiceResult.fail("Pipeline not found")
 
             # Delete from repository
@@ -261,7 +259,7 @@ class PipelineService(
                 pipeline_id=str(pipeline_id),
             )
 
-            return ServiceResult.ok(data=True)
+            return ServiceResult.ok(True)
 
         except Exception as e:
             self.logger.exception(
@@ -271,7 +269,7 @@ class PipelineService(
             )
             return ServiceResult.fail(f"Failed to delete pipeline: {e}")
 
-    async def execute_pipeline(self, pipeline_id: UUID) -> ServiceResult[Pipeline]:
+    async def execute_pipeline(self, pipeline_id: UUID) -> ServiceResult[Any]:
         """Execute a pipeline by updating its status to running.
 
         Args:
@@ -284,20 +282,20 @@ class PipelineService(
         try:
             # Get existing pipeline
             existing_result = await self.get_pipeline(pipeline_id)
-            if not existing_result.is_success:
+            if not existing_result.success:
                 return existing_result
 
-            pipeline = existing_result.unwrap()
+            pipeline = existing_result.data
 
             # Update status to running
             pipeline.pipeline_status = PipelineStatus.RUNNING
 
             # Save the updated pipeline
             update_result = await self.pipeline_repo.update(pipeline)
-            if not update_result.is_success:
+            if not update_result.success:
                 return update_result
 
-            updated_pipeline = update_result.unwrap()
+            updated_pipeline = update_result.data
 
             self.logger.info(
                 "Pipeline execution started",
@@ -314,15 +312,16 @@ class PipelineService(
                 pipeline_id=str(pipeline_id),
                 error=str(e),
             )
-            return ServiceResult.fail(f"Failed to execute pipeline: {e}")
+            return ServiceResult.fail(f"Failed to execute pipeline: {e}",
+            )
 
     async def _is_duplicate_name(self, name: str, owner_id: UUID | None) -> bool:
         try:
             pipelines_result = await self.pipeline_repo.list(limit=1000, offset=0)
-            if not pipelines_result.is_success:
+            if not pipelines_result.success:
                 return False  # Assume no duplicates if we can't check
 
-            existing_pipelines = pipelines_result.unwrap()
+            existing_pipelines = pipelines_result.data
             return any(p.name == name for p in existing_pipelines)
         except (OSError, ConnectionError, TimeoutError, ValueError, TypeError):
             # If we can't check, assume no duplicate to avoid blocking creation
@@ -333,8 +332,9 @@ class PipelineService(
     # ==============================================================================
 
     async def validate_pipeline_config(
-        self, config: dict[str, Any] | None,
-    ) -> ServiceResult[bool]:
+        self,
+        config: dict[str, Any] | None,
+    ) -> ServiceResult[Any]:
         """Validate pipeline configuration (ISP compliance).
 
         Args:
@@ -347,38 +347,44 @@ class PipelineService(
         try:
             # Basic validation rules
             if config is None or not isinstance(config, dict):
-                return ServiceResult.fail("Configuration must be a dictionary")
-
-            # Check for required configuration keys
-            required_keys = ["source", "target"]
-            missing_keys = [key for key in required_keys if key not in config]
-            if missing_keys:
-                return ServiceResult.fail(
-                    f"Missing required configuration keys: {missing_keys}",
+                return ServiceResult.fail("Configuration must be a dictionary",
                 )
 
-            # Validate source configuration
-            source_config = config.get("source", {})
-            if not isinstance(source_config, dict):
-                return ServiceResult.fail("Source configuration must be a dictionary")
+            # Check for required configuration keys (updated to new terminology)
+            required_keys = ["extractor", "loader"]
+            missing_keys = [key for key in required_keys if key not in config]
+            if missing_keys:
+                return ServiceResult.fail(f"Missing required configuration keys: {missing_keys}",
+                )
 
-            # Validate target configuration
-            target_config = config.get("target", {})
-            if not isinstance(target_config, dict):
-                return ServiceResult.fail("Target configuration must be a dictionary")
+            # Validate extractor configuration
+            extractor_config = config.get("extractor")
+            if extractor_config is not None and not isinstance(extractor_config, str):
+                return ServiceResult.fail("Extractor must be a string plugin name",
+                )
+
+            # Validate loader configuration
+            loader_config = config.get("loader")
+            if loader_config is not None and not isinstance(loader_config, str):
+                return ServiceResult.fail("Loader must be a string plugin name",
+                )
 
             self.logger.info("Pipeline configuration validated successfully")
             return ServiceResult.ok(True)
 
         except Exception as e:
             self.logger.exception(
-                "Failed to validate pipeline configuration", error=str(e),
+                "Failed to validate pipeline configuration",
+                error=str(e),
             )
-            return ServiceResult.fail(f"Configuration validation failed: {e}")
+            return ServiceResult.fail(f"Configuration validation failed: {e}",
+            )
 
     async def validate_pipeline_name(
-        self, name: str, owner_id: UUID | None,
-    ) -> ServiceResult[bool]:
+        self,
+        name: str,
+        owner_id: UUID | None,
+    ) -> ServiceResult[Any]:
         """Validate pipeline name uniqueness (ISP compliance).
 
         Args:
@@ -392,14 +398,15 @@ class PipelineService(
         try:
             # Basic name validation
             if not name or not name.strip():
-                return ServiceResult.fail("Pipeline name cannot be empty")
+                return ServiceResult.fail("Pipeline name cannot be empty",
+                )
 
             if len(name) < 3:
-                return ServiceResult.fail("Pipeline name must be at least 3 characters")
+                return ServiceResult.fail("Pipeline name must be at least 3 characters",
+                )
 
             if len(name) > 100:
-                return ServiceResult.fail(
-                    "Pipeline name must be 100 characters or less",
+                return ServiceResult.fail("Pipeline name must be 100 characters or less",
                 )
 
             # Check for invalid characters
@@ -407,20 +414,22 @@ class PipelineService(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_",
             )
             if invalid_chars:
-                return ServiceResult.fail(
-                    f"Pipeline name contains invalid characters: {invalid_chars}",
+                return ServiceResult.fail(f"Pipeline name contains invalid characters: {invalid_chars}",
                 )
 
             # Check for uniqueness
             is_duplicate = await self._is_duplicate_name(name, owner_id)
             if is_duplicate:
-                return ServiceResult.fail(f"Pipeline name '{name}' already exists")
+                return ServiceResult.fail(f"Pipeline name '{name}' already exists",
+                )
 
             self.logger.info("Pipeline name validated successfully", name=name)
             return ServiceResult.ok(True)
 
         except Exception as e:
             self.logger.exception(
-                "Failed to validate pipeline name", name=name, error=str(e),
+                "Failed to validate pipeline name",
+                name=name,
+                error=str(e),
             )
             return ServiceResult.fail(f"Name validation failed: {e}")

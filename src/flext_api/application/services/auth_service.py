@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_api.application.services.base import AuthenticationService
 from flext_api.models.auth import UserAPI
@@ -42,7 +42,7 @@ class AuthService(AuthenticationService):
         email: str,
         password: str,
         device_info: dict[str, Any] | None = None,
-    ) -> ServiceResult[dict[str, Any]]:
+    ) -> ServiceResult[Any]:
         """Authenticate user and create session.
 
         Args:
@@ -56,7 +56,8 @@ class AuthService(AuthenticationService):
         """
         try:
             if not email or not password:
-                return ServiceResult.fail("Email and password are required")
+                return ServiceResult.fail("Email and password are required",
+                )
 
             # Use real flext-auth service for authentication
             ip_address = (
@@ -75,7 +76,9 @@ class AuthService(AuthenticationService):
                 username_obj = Username(value=email)
             except (ImportError, TypeError, ValueError, ValidationError):
                 # If Username type not available or validation fails, use email directly
-                username_obj = email  # type: ignore[assignment]
+                from typing import cast
+
+                username_obj = cast("Any", email)
 
             auth_result = await self.auth_service.authenticate_user(
                 username=username_obj,  # Using email as username with proper type
@@ -84,12 +87,12 @@ class AuthService(AuthenticationService):
                 user_agent=user_agent,
             )
 
-            if not auth_result.is_success:
+            if not auth_result.success:
                 self.logger.warning("Authentication failed for email: %s", email)
                 return ServiceResult.fail("Invalid credentials")
 
-            # auth_result.unwrap() returns authentication data
-            auth_data = auth_result.unwrap()
+            # auth_result.data returns authentication data
+            auth_data = auth_result.data
 
             # Handle different possible return types from auth service
             # Check if the result is a tuple without using isinstance
@@ -118,8 +121,7 @@ class AuthService(AuthenticationService):
                 session_id,
             )
 
-            return ServiceResult.ok(
-                {
+            return ServiceResult.ok({
                     "access_token": token,
                     "refresh_token": token,  # Same token for both
                     "token_type": "bearer",
@@ -134,7 +136,7 @@ class AuthService(AuthenticationService):
             self.logger.exception("Login failed - email: %s", email)
             return ServiceResult.fail(f"Login failed: {e}")
 
-    async def logout(self, session_id: str) -> ServiceResult[bool]:
+    async def logout(self, session_id: str) -> ServiceResult[Any]:
         """Logout user and terminate session.
 
         Args:
@@ -152,12 +154,12 @@ class AuthService(AuthenticationService):
                 # Fallback: assume termination is successful
                 result = ServiceResult.ok(True)
 
-            if result.is_success:
+            if result.success:
                 self.logger.info(
                     "User logged out successfully - session_id: %s",
                     session_id,
                 )
-                return ServiceResult.ok(data=True)
+                return ServiceResult.ok(True)
             self.logger.warning("Failed to logout - session_id: %s", session_id)
             return ServiceResult.fail(result.error or "Logout failed")
 
@@ -168,7 +170,7 @@ class AuthService(AuthenticationService):
             )
             return ServiceResult.fail(f"Logout failed: {e}")
 
-    async def refresh_token(self, refresh_token: str) -> ServiceResult[dict[str, Any]]:
+    async def refresh_token(self, refresh_token: str) -> ServiceResult[Any]:
         """Refresh access token using refresh token.
 
         Args:
@@ -186,24 +188,25 @@ class AuthService(AuthenticationService):
             elif hasattr(self.auth_service, "validate_token"):
                 result = await self.auth_service.validate_token(refresh_token)
             else:
-                result = ServiceResult.fail("Token refresh not supported")
+                result = ServiceResult.fail("Token refresh not supported",
+                )
 
-            if not result.is_success:
+            if not result.success:
                 self.logger.warning(
                     "Invalid refresh token - refresh_token: %s",
                     refresh_token,
                 )
-                return ServiceResult.fail(result.error or "Invalid refresh token")
+                return ServiceResult.fail(result.error or "Invalid refresh token",
+                )
 
-            token_data = result.unwrap()
+            token_data = result.data
 
             self.logger.info(
                 "Token refreshed successfully - session_id: %s",
                 token_data.get("session_id"),
             )
 
-            return ServiceResult.ok(
-                {
+            return ServiceResult.ok({
                     "access_token": token_data["access_token"],
                     "refresh_token": token_data["refresh_token"],
                     "token_type": "bearer",
@@ -221,7 +224,7 @@ class AuthService(AuthenticationService):
         email: str,
         password: str,
         role: str | None = None,
-    ) -> ServiceResult[dict[str, Any]]:
+    ) -> ServiceResult[Any]:
         """Register new user account.
 
         Args:
@@ -245,7 +248,9 @@ class AuthService(AuthenticationService):
                     username_obj = Username(value=username)
                 except (ImportError, TypeError):
                     # If Username type not available, use username directly
-                    username_obj = username  # type: ignore[assignment]
+                    from typing import cast
+
+                    username_obj = cast("Any", username)
 
                 result = await self.auth_service.create_user(
                     username=username_obj,
@@ -254,15 +259,16 @@ class AuthService(AuthenticationService):
                     roles=[role or "user"],
                 )
 
-                if not result.is_success:
+                if not result.success:
                     self.logger.warning(
                         "Registration failed - username: %s, email: %s",
                         username,
                         email,
                     )
-                    return ServiceResult.fail(result.error or "Registration failed")
+                    return ServiceResult.fail(result.error or "Registration failed",
+                    )
 
-                user_data = result.unwrap()
+                user_data = result.data
 
                 self.logger.info(
                     "User registered successfully - username: %s, email: %s",
@@ -270,8 +276,7 @@ class AuthService(AuthenticationService):
                     email,
                 )
 
-                return ServiceResult.ok(
-                    {
+                return ServiceResult.ok({
                         "user_id": str(hash(f"{username}:{email}")),
                         "username": username,
                         "email": email,
@@ -289,8 +294,7 @@ class AuthService(AuthenticationService):
                 email,
             )
 
-            return ServiceResult.ok(
-                {
+            return ServiceResult.ok({
                     "user_id": str(hash(f"{username}:{email}")),
                     "username": username,
                     "email": email,
@@ -308,7 +312,7 @@ class AuthService(AuthenticationService):
             )
             return ServiceResult.fail(f"Registration failed: {e}")
 
-    async def validate_token(self, token: str) -> ServiceResult[UserAPI]:
+    async def validate_token(self, token: str) -> ServiceResult[Any]:
         """Validate authentication token.
 
         Args:
@@ -325,12 +329,13 @@ class AuthService(AuthenticationService):
             elif hasattr(self.auth_service, "validate_token"):
                 result = await self.auth_service.validate_token(token)
             else:
-                result = ServiceResult.fail("Token validation not supported")
+                result = ServiceResult.fail("Token validation not supported",
+                )
 
-            if not result.is_success:
+            if not result.success:
                 return ServiceResult.fail("Invalid token")
 
-            token_data = result.unwrap()
+            token_data = result.data
 
             user = UserAPI(
                 username=token_data["username"],

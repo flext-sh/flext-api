@@ -34,7 +34,7 @@ from flext_api.models.system import (
 from flext_api.storage import storage
 
 if TYPE_CHECKING:
-    from flext_core.domain.pydantic_base import APIResponse
+    from flext_core import APIResponse
 
 system_router = APIRouter(prefix="/system", tags=["system"])
 
@@ -44,13 +44,18 @@ async def get_system_status(_request: Request) -> SystemStatusResponse:
     """Get comprehensive system status using real storage functionality."""
     result = storage.get_system_status()
 
-    if not result.is_success:
+    if not result.success:
         raise HTTPException(
             status_code=500,
             detail=f"Failed to get system status: {result.error}",
         )
 
-    return result.unwrap()
+    if result.data is None:
+        raise HTTPException(
+            status_code=500,
+            detail="System status returned None",
+        )
+    return result.data
 
 
 @system_router.get("/services")
@@ -67,13 +72,18 @@ async def get_system_service(
     """Get detailed information about a specific system service."""
     # Get system status to check if service exists
     status_result = storage.get_system_status()
-    if not status_result.is_success:
+    if not status_result.success:
         raise HTTPException(
             status_code=500,
             detail=f"Failed to get system status: {status_result.error}",
         )
 
-    system_status = status_result.unwrap()
+    system_status = status_result.data
+    if system_status is None:
+        raise HTTPException(
+            status_code=500,
+            detail="System status returned None",
+        )
 
     # Check if service exists in the services list
     service_info = None
@@ -144,13 +154,18 @@ async def start_maintenance(
     # Use the actual storage method for starting maintenance
     result = storage.start_maintenance(maintenance_data)
 
-    if not result.is_success:
+    if not result.success:
         raise HTTPException(
             status_code=500,
             detail=f"Failed to start maintenance: {result.error}",
         )
 
-    return result.unwrap()
+    if result.data is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Maintenance operation returned None",
+        )
+    return result.data
 
 
 @system_router.get("/maintenance/{maintenance_id}")
@@ -183,13 +198,18 @@ async def create_system_backup(
     # Use the actual storage method for creating backup
     result = storage.create_backup(backup_data)
 
-    if not result.is_success:
+    if not result.success:
         raise HTTPException(
             status_code=500,
             detail=f"Failed to create backup: {result.error}",
         )
 
-    return result.unwrap()
+    if result.data is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Backup operation returned None",
+        )
+    return result.data
 
 
 @system_router.get("/backups")
@@ -278,13 +298,18 @@ async def get_system_metrics(
     """Get system metrics using real storage functionality."""
     result = storage.get_metrics()
 
-    if not result.is_success:
+    if not result.success:
         raise HTTPException(
             status_code=500,
             detail=f"Failed to get metrics: {result.error}",
         )
 
-    return result.unwrap()
+    if result.data is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Metrics operation returned None",
+        )
+    return result.data
 
 
 @system_router.get("/info")

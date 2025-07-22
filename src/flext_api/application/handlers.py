@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_api.domain.entities import APIPipeline as Pipeline
 
@@ -134,7 +134,7 @@ class AuthenticationHandler:
     def __init__(self, auth_service: AuthService) -> None:
         self.auth_service = auth_service
 
-    async def handle(self, _command: AuthenticateCommand) -> ServiceResult[object]:
+    async def handle(self, _command: AuthenticateCommand) -> ServiceResult[Any]:
         """Handle authentication command."""
         # Simplified implementation
         return ServiceResult.ok({"authenticated": True})
@@ -146,7 +146,7 @@ class CreatePipelineHandler:
     def __init__(self, repository: PipelineRepository) -> None:
         self.repository = repository
 
-    async def handle(self, command: CreatePipelineCommand) -> ServiceResult[Pipeline]:
+    async def handle(self, command: CreatePipelineCommand) -> ServiceResult[Any]:
         """Handle create pipeline command."""
         try:
             pipeline = Pipeline(
@@ -154,9 +154,9 @@ class CreatePipelineHandler:
                 description=command.description,
             )
             saved_result = await self.repository.create(pipeline)
-            if not saved_result.is_success:
+            if not saved_result.success:
                 return saved_result
-            saved_pipeline = saved_result.unwrap()
+            saved_pipeline = saved_result.data
             return ServiceResult.ok(saved_pipeline)
         except Exception as e:
             return ServiceResult.fail(f"Failed to create pipeline: {e}")
@@ -171,10 +171,9 @@ class GetSystemInfoHandler:
     async def handle(
         self,
         _command: GetSystemInfoCommand,
-    ) -> ServiceResult[dict[str, Any]]:
+    ) -> ServiceResult[Any]:
         """Handle get system info command."""
-        return ServiceResult.ok(
-            {
+        return ServiceResult.ok({
                 "name": "FLEXT API",
                 "status": "running",
                 "environment": getattr(self.config, "environment", "development"),
@@ -191,10 +190,9 @@ class GetSystemHealthHandler:
     async def handle(
         self,
         _command: GetSystemHealthCommand,
-    ) -> ServiceResult[dict[str, Any]]:
+    ) -> ServiceResult[Any]:
         """Handle get system health command."""
-        return ServiceResult.ok(
-            {
+        return ServiceResult.ok({
                 "status": "healthy",
                 "timestamp": "2025-01-20T00:00:00Z",
                 "components": {

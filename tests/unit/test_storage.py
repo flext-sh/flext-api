@@ -26,13 +26,13 @@ def test_get_system_status(storage: FlextAPIStorage) -> None:
     result = storage.get_system_status()
 
     # Debug info if test fails
-    if not result.is_success:
+    if not result.success:
         # Use pytest to show the error instead of print
         pytest.fail(f"Error: {result.error}")
 
-    assert result.is_success
+    assert result.success
 
-    status = result.unwrap()
+    status = result.data
     # SystemStatus enum values should be string
     assert str(status.status) == "healthy"
     assert status.version == "1.0.0"
@@ -48,13 +48,13 @@ def test_create_alert(storage: FlextAPIStorage) -> None:
     )
 
     # Debug info if test fails
-    if not result.is_success:
+    if not result.success:
         # Use pytest to show the error instead of print
         pytest.fail(f"Error: {result.error}")
 
-    assert result.is_success
+    assert result.success
 
-    alert = result.unwrap()
+    alert = result.data
     assert alert.title == "Test Alert"
     assert alert.message == "This is a test alert"
     assert alert.severity == AlertSeverity.INFO
@@ -68,13 +68,13 @@ def test_get_metrics(storage: FlextAPIStorage) -> None:
     result = storage.get_metrics()
 
     # Debug info if test fails
-    if not result.is_success:
+    if not result.success:
         # Use pytest to show the error instead of print
         pytest.fail(f"Error: {result.error}")
 
-    assert result.is_success
+    assert result.success
 
-    metrics = result.unwrap()
+    metrics = result.data
     assert len(metrics) == 3  # CPU, memory, request count
 
     metric_names = [m.metric_name for m in metrics]
@@ -96,13 +96,13 @@ def test_create_backup(storage: FlextAPIStorage) -> None:
     result = storage.create_backup(backup_request)
 
     # Debug info if test fails
-    if not result.is_success:
+    if not result.success:
         # Use pytest to show the error instead of print
         pytest.fail(f"Error: {result.error}")
 
-    assert result.is_success
+    assert result.success
 
-    backup = result.unwrap()
+    backup = result.data
     assert backup.backup_type == "full"
     assert backup.description == "Test backup"
     assert backup.encrypted is True
@@ -115,9 +115,9 @@ def test_create_backup(storage: FlextAPIStorage) -> None:
 def test_create_pipeline(storage: FlextAPIStorage) -> None:
     """Test creating pipeline."""
     result = storage.create_pipeline("test-pipeline", "tap-oracle-oic", "target-ldap")
-    assert result.is_success
+    assert result.success
 
-    pipeline = result.unwrap()
+    pipeline = result.data
     assert pipeline["name"] == "test-pipeline"
     assert pipeline["extractor"] == "tap-oracle-oic"
     assert pipeline["loader"] == "target-ldap"
@@ -135,13 +135,13 @@ def test_get_pipeline(storage: FlextAPIStorage) -> None:
         "tap-oracle-oic",
         "target-ldap",
     )
-    pipeline_id = create_result.unwrap()["id"]
+    pipeline_id = create_result.data["id"]
 
     # Now get it
     result = storage.get_pipeline(pipeline_id)
-    assert result.is_success
+    assert result.success
 
-    pipeline = result.unwrap()
+    pipeline = result.data
     assert pipeline["id"] == pipeline_id
     assert pipeline["name"] == "test-pipeline"
 
@@ -154,13 +154,13 @@ def test_execute_pipeline(storage: FlextAPIStorage) -> None:
         "tap-oracle-oic",
         "target-ldap",
     )
-    pipeline_id = create_result.unwrap()["id"]
+    pipeline_id = create_result.data["id"]
 
     # Now execute it
     result = storage.execute_pipeline(pipeline_id)
-    assert result.is_success
+    assert result.success
 
-    execution = result.unwrap()
+    execution = result.data
     assert execution["pipeline_id"] == pipeline_id
     assert execution["status"] == "running"
     assert "execution_id" in execution
@@ -176,7 +176,7 @@ def test_execute_pipeline(storage: FlextAPIStorage) -> None:
 def test_get_nonexistent_pipeline(storage: FlextAPIStorage) -> None:
     """Test getting nonexistent pipeline."""
     result = storage.get_pipeline("nonexistent-id")
-    assert not result.is_success
+    assert not result.success
     assert result.error is not None
     assert "not found" in str(result.error)
 
@@ -184,6 +184,6 @@ def test_get_nonexistent_pipeline(storage: FlextAPIStorage) -> None:
 def test_execute_nonexistent_pipeline(storage: FlextAPIStorage) -> None:
     """Test executing nonexistent pipeline."""
     result = storage.execute_pipeline("nonexistent-id")
-    assert not result.is_success
+    assert not result.success
     assert result.error is not None
     assert "not found" in str(result.error)

@@ -33,11 +33,13 @@ class BaseExceptionHandler:
 
     async def handle(self, request: Request, exc: Exception) -> JSONResponse:
         """Handle exception and return JSON response."""
-        raise NotImplementedError("Subclasses must implement handle method")
+        msg = "Subclasses must implement handle method"
+        raise NotImplementedError(msg)
 
     def get_exception_type(self) -> type[Exception]:
         """Get the exception type this handler processes."""
-        raise NotImplementedError("Subclasses must implement get_exception_type method")
+        msg = "Subclasses must implement get_exception_type method"
+        raise NotImplementedError(msg)
 
 
 class ValidationExceptionHandler(BaseExceptionHandler):
@@ -188,7 +190,7 @@ class GenericExceptionHandler(BaseExceptionHandler):
     async def handle(self, request: Request, exc: Exception) -> JSONResponse:
         """Handle unexpected exceptions with safe error responses."""
         # Log the full exception for debugging
-        self.logger.exception(
+        self.logger.error(
             "Unhandled exception on %s %s",
             request.method,
             request.url.path,

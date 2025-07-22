@@ -8,7 +8,7 @@ This module provides the dependency injection configuration for the FLEXT API.
 
 from __future__ import annotations
 
-from flext_core.config import get_container
+from flext_core import get_container
 
 from flext_api.application.services.auth_service import AuthService
 from flext_api.application.services.pipeline_service import PipelineService

@@ -9,10 +9,10 @@ using clean architecture and dependency injection patterns.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 # Import runtime dependencies
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 from flext_observability.logging import get_logger
 
 from flext_api.domain.ports import PluginRepository
@@ -36,11 +36,12 @@ class InMemoryPluginRepository(PluginRepository):
         """Initialize plugin repository."""
         self._storage: dict[UUID, Plugin] = {}
 
-    async def create(self, plugin: Plugin) -> ServiceResult[Plugin]:
+    async def create(self, plugin: Plugin) -> ServiceResult[Any]:
         """Create a new plugin."""
         try:
             if plugin.id in self._storage:
-                return ServiceResult.fail(f"Plugin {plugin.id} already exists")
+                return ServiceResult.fail(f"Plugin {plugin.id} already exists",
+                )
 
             self._storage[plugin.id] = plugin
             logger.info("Plugin created successfully: %s", plugin.name)
@@ -49,7 +50,7 @@ class InMemoryPluginRepository(PluginRepository):
             logger.exception("Failed to create plugin: %s", plugin.name)
             return ServiceResult.fail(f"Failed to create plugin: {e}")
 
-    async def get(self, plugin_id: UUID) -> ServiceResult[Plugin]:
+    async def get(self, plugin_id: UUID) -> ServiceResult[Any]:
         """Get plugin by ID.
 
         Args:
@@ -76,7 +77,7 @@ class InMemoryPluginRepository(PluginRepository):
         offset: int = 0,
         plugin_type: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[list[Plugin]]:
+    ) -> ServiceResult[Any]:
         """List plugins with filtering and pagination.
 
         Args:
@@ -120,11 +121,12 @@ class InMemoryPluginRepository(PluginRepository):
             logger.exception("Failed to list plugins")
             return ServiceResult.fail(f"Failed to list plugins: {e}")
 
-    async def update(self, plugin: Plugin) -> ServiceResult[Plugin]:
+    async def update(self, plugin: Plugin) -> ServiceResult[Any]:
         """Update existing plugin."""
         try:
             if plugin.id not in self._storage:
-                return ServiceResult.fail(f"Plugin {plugin.id} not found")
+                return ServiceResult.fail(f"Plugin {plugin.id} not found",
+                )
 
             self._storage[plugin.id] = plugin
             logger.info("Plugin updated successfully: %s", plugin.name)
@@ -133,7 +135,7 @@ class InMemoryPluginRepository(PluginRepository):
             logger.exception("Failed to update plugin: %s", plugin.name)
             return ServiceResult.fail(f"Failed to update plugin: {e}")
 
-    async def delete(self, plugin_id: UUID) -> ServiceResult[bool]:
+    async def delete(self, plugin_id: UUID) -> ServiceResult[Any]:
         """Delete plugin by ID.
 
         Args:
@@ -176,7 +178,7 @@ class InMemoryPluginRepository(PluginRepository):
         self,
         plugin_type: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[int]:
+    ) -> ServiceResult[Any]:
         """Count plugins with optional filtering.
 
         Args:
@@ -195,8 +197,9 @@ class InMemoryPluginRepository(PluginRepository):
                 plugin_type=plugin_type,
                 status=status,
             )
-            if not result.is_success:
-                return ServiceResult.fail(result.error or "Failed to count plugins")
+            if not result.success:
+                return ServiceResult.fail(result.error or "Failed to count plugins",
+                )
 
             count = len(result.data or [])
             logger.debug("Plugin count: %d", count)
@@ -226,7 +229,7 @@ class InMemoryPluginRepository(PluginRepository):
             logger.exception("Failed to find plugin by name: %s", name)
             return None
 
-    async def save(self, plugin: Plugin) -> ServiceResult[Plugin]:
+    async def save(self, plugin: Plugin) -> ServiceResult[Any]:
         """Save plugin (create or update based on existence).
 
         Args:

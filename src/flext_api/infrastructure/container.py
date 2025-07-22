@@ -9,9 +9,9 @@ for the FLEXT API infrastructure components.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from flext_core.config.base import get_container
+from flext_core import DIContainer, get_container
 
 from flext_api.domain.ports import PipelineRepository, PluginRepository
 from flext_api.infrastructure.repositories.pipeline_repository import (
@@ -21,8 +21,7 @@ from flext_api.infrastructure.repositories.plugin_repository import (
     InMemoryPluginRepository,
 )
 
-if TYPE_CHECKING:
-    from flext_core.config.base import DIContainer
+# TYPE_CHECKING imports here if needed
 
 
 class FlextAPIContainer:
@@ -35,13 +34,15 @@ class FlextAPIContainer:
 
     def _configure_dependencies(self) -> None:
         """Configure all infrastructure dependencies."""
+        from typing import cast
+
         # Register repository implementations (no need to register concrete with concrete)
         self._container.register_singleton(
-            PipelineRepository,  # type: ignore[type-abstract]
+            cast("type[Any]", PipelineRepository),  # Abstract base properly typed
             InMemoryPipelineRepository,
         )
         self._container.register_singleton(
-            PluginRepository,  # type: ignore[type-abstract]
+            cast("type[Any]", PluginRepository),  # Abstract base properly typed
             InMemoryPluginRepository,
         )
 

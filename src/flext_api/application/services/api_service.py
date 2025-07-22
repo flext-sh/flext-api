@@ -10,7 +10,7 @@ import asyncio
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_api.application.services.base import DualRepositoryService
 from flext_api.domain.entities import APIRequest, APIResponse
@@ -46,7 +46,7 @@ class APIService(DualRepositoryService):
         body: dict[str, Any] | None = None,
         client_ip: str | None = None,
         user_agent: str | None = None,
-    ) -> ServiceResult[APIRequest]:
+    ) -> ServiceResult[Any]:
         """Track incoming API request.
 
         Args:
@@ -92,7 +92,8 @@ class APIService(DualRepositoryService):
                 "Failed to track API request - request_id: %s",
                 request_id,
             )
-            return ServiceResult.fail(f"Failed to track API request: {e}")
+            return ServiceResult.fail(f"Failed to track API request: {e}",
+            )
 
     async def track_response(
         self,
@@ -102,7 +103,7 @@ class APIService(DualRepositoryService):
         headers: dict[str, str] | None = None,
         body: dict[str, Any] | None = None,
         processing_start_time: datetime | None = None,
-    ) -> ServiceResult[APIResponse]:
+    ) -> ServiceResult[Any]:
         """Track API response.
 
         Args:
@@ -158,13 +159,14 @@ class APIService(DualRepositoryService):
                 "Failed to track API response - request_id: %s",
                 request_id,
             )
-            return ServiceResult.fail(f"Failed to track API response: {e}")
+            return ServiceResult.fail(f"Failed to track API response: {e}",
+            )
 
     async def get_request_metrics(
         self,
         start_time: datetime | None = None,
         end_time: datetime | None = None,
-    ) -> ServiceResult[dict[str, Any]]:
+    ) -> ServiceResult[Any]:
         """Get API request metrics.
 
         Args:
@@ -177,7 +179,8 @@ class APIService(DualRepositoryService):
         """
         try:
             if not self.request_repo:
-                return ServiceResult.fail("Request repository not available")
+                return ServiceResult.fail("Request repository not available",
+                )
 
             # Mock metrics for now - replace with actual repository queries
             metrics = {
@@ -199,9 +202,10 @@ class APIService(DualRepositoryService):
 
         except Exception as e:
             self.logger.exception("Failed to calculate API request metrics")
-            return ServiceResult.fail(f"Failed to calculate metrics: {e}")
+            return ServiceResult.fail(f"Failed to calculate metrics: {e}",
+            )
 
-    async def health_check(self) -> ServiceResult[dict[str, Any]]:
+    async def health_check(self) -> ServiceResult[Any]:
         """Perform API service health check.
 
         Returns:

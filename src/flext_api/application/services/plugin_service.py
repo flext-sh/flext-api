@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 # Use centralized logger from flext-infrastructure.monitoring.flext-observability
 from flext_api.application.services.base import PluginBaseService
@@ -43,7 +43,7 @@ class PluginService(PluginBaseService):
         repository_url: str | None = None,
         documentation_url: str | None = None,
         capabilities: list[str] | None = None,
-    ) -> ServiceResult[Plugin]:
+    ) -> ServiceResult[Any]:
         """Install a new plugin.
 
         Args:
@@ -79,15 +79,16 @@ class PluginService(PluginBaseService):
 
             # Validate business rules
             if await self._is_duplicate_plugin(plugin.name, plugin.version):
-                return ServiceResult.fail(
-                    "Plugin with same name and version already exists",
+                return ServiceResult.fail("Plugin with same name and version already exists",
                 )
 
             # Save to repository
             saved_result = await self.plugin_repo.create(plugin)
-            if not saved_result.is_success:
+            if not saved_result.success:
                 return saved_result
-            saved_plugin = saved_result.unwrap()
+            saved_plugin = saved_result.data
+            if saved_plugin is None:
+                return ServiceResult.fail("Plugin creation returned None")
 
             self.logger.info(
                 "Plugin installed successfully",
@@ -103,7 +104,7 @@ class PluginService(PluginBaseService):
             self.logger.exception("Failed to install plugin", error=str(e))
             return ServiceResult.fail(f"Failed to install plugin: {e}")
 
-    async def get_plugin(self, plugin_id: UUID) -> ServiceResult[Plugin]:
+    async def get_plugin(self, plugin_id: UUID) -> ServiceResult[Any]:
         """Get plugin by ID.
 
         Args:
@@ -115,10 +116,10 @@ class PluginService(PluginBaseService):
         """
         try:
             plugin_result = await self.plugin_repo.get(plugin_id)
-            if not plugin_result.is_success:
+            if not plugin_result.success:
                 return plugin_result
 
-            plugin = plugin_result.unwrap()
+            plugin = plugin_result.data
             return ServiceResult.ok(plugin)
 
         except Exception as e:
@@ -136,7 +137,7 @@ class PluginService(PluginBaseService):
         enabled: bool | None = None,
         limit: int = 20,
         offset: int = 0,
-    ) -> ServiceResult[list[Plugin]]:
+    ) -> ServiceResult[Any]:
         """List plugins with optional filtering.
 
         Args:
@@ -157,10 +158,10 @@ class PluginService(PluginBaseService):
                 offset=offset,
             )
 
-            if not plugins_result.is_success:
+            if not plugins_result.success:
                 return plugins_result
 
-            plugins = plugins_result.unwrap()
+            plugins = plugins_result.data
             return ServiceResult.ok(plugins)
 
         except Exception as e:
@@ -176,7 +177,7 @@ class PluginService(PluginBaseService):
         *,
         enabled: bool | None = None,
         capabilities: list[str] | None = None,
-    ) -> ServiceResult[Plugin]:
+    ) -> ServiceResult[Any]:
         """Update an existing plugin.
 
         Args:
@@ -194,10 +195,12 @@ class PluginService(PluginBaseService):
         try:
             # Get existing plugin
             existing_result = await self.get_plugin(plugin_id)
-            if not existing_result.is_success:
+            if not existing_result.success:
                 return existing_result
 
-            plugin = existing_result.unwrap()
+            plugin = existing_result.data
+            if plugin is None:
+                return ServiceResult.fail("Plugin retrieval returned None")
 
             # Apply updates
             if name is not None:
@@ -213,9 +216,11 @@ class PluginService(PluginBaseService):
 
             # Save updates
             updated_result = await self.plugin_repo.update(plugin)
-            if not updated_result.is_success:
+            if not updated_result.success:
                 return updated_result
-            updated_plugin = updated_result.unwrap()
+            updated_plugin = updated_result.data
+            if updated_plugin is None:
+                return ServiceResult.fail("Plugin update returned None")
 
             self.logger.info(
                 "Plugin updated successfully",
@@ -237,7 +242,7 @@ class PluginService(PluginBaseService):
     async def uninstall_plugin(
         self,
         plugin_id: UUID,
-    ) -> ServiceResult[dict[str, object]]:
+    ) -> ServiceResult[Any]:
         """Uninstall a plugin.
 
         Args:
@@ -250,16 +255,17 @@ class PluginService(PluginBaseService):
         try:
             # Check if plugin exists:
             existing_result = await self.get_plugin(plugin_id)
-            if not existing_result.is_success:
+            if not existing_result.success:
                 return ServiceResult.fail("Plugin not found")
 
-            plugin = existing_result.unwrap()
+            plugin = existing_result.data
+            if plugin is None:
+                return ServiceResult.fail("Plugin retrieval returned None")
 
             # Delete from repository
             delete_result = await self.plugin_repo.delete(plugin_id)
-            if not delete_result.is_success:
-                return ServiceResult.fail(
-                    delete_result.error or "Failed to delete plugin",
+            if not delete_result.success:
+                return ServiceResult.fail(delete_result.error or "Failed to delete plugin",
                 )
 
             self.logger.info(
@@ -269,8 +275,7 @@ class PluginService(PluginBaseService):
                 version=plugin.version,
             )
 
-            return ServiceResult.ok(
-                {
+            return ServiceResult.ok({
                     "plugin_id": str(plugin_id),
                     "name": plugin.name,
                     "version": plugin.version,
@@ -284,9 +289,10 @@ class PluginService(PluginBaseService):
                 plugin_id=str(plugin_id),
                 error=str(e),
             )
-            return ServiceResult.fail(f"Failed to uninstall plugin: {e}")
+            return ServiceResult.fail(f"Failed to uninstall plugin: {e}",
+            )
 
-    async def enable_plugin(self, plugin_id: UUID) -> ServiceResult[Plugin]:
+    async def enable_plugin(self, plugin_id: UUID) -> ServiceResult[Any]:
         """Enable a plugin.
 
         Args:
@@ -298,7 +304,7 @@ class PluginService(PluginBaseService):
         """
         return await self.update_plugin(plugin_id, enabled=True)
 
-    async def disable_plugin(self, plugin_id: UUID) -> ServiceResult[Plugin]:
+    async def disable_plugin(self, plugin_id: UUID) -> ServiceResult[Any]:
         """Disable a plugin.
 
         Args:
@@ -313,10 +319,12 @@ class PluginService(PluginBaseService):
     async def _is_duplicate_plugin(self, name: str, version: str) -> bool:
         try:
             plugins_result = await self.plugin_repo.list(limit=1000)
-            if not plugins_result.is_success:
+            if not plugins_result.success:
                 return False  # Assume no duplicates if we can't check
 
-            existing_plugins = plugins_result.unwrap()
+            existing_plugins = plugins_result.data
+            if existing_plugins is None:
+                return False  # Assume no duplicates if data is None
             return any(
                 p.name == name and p.version == version for p in existing_plugins
             )

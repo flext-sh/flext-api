@@ -7,19 +7,18 @@ NO MOCKS, NO FAKES - Real repository with ServiceResult patterns.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 # Import runtime dependencies
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 from flext_observability.logging import get_logger
 
 from flext_api.domain.ports import PipelineRepository
 
 if TYPE_CHECKING:
-    import builtins
     from uuid import UUID
 
-    from flext_core.domain.pipeline import PipelineExecution
+    from flext_core import PipelineExecution
 
     from flext_api.domain.entities import APIPipeline
 
@@ -39,7 +38,7 @@ class InMemoryPipelineRepository(PipelineRepository):
         self._executions: dict[str, PipelineExecution] = {}
         logger.info("InMemoryPipelineRepository initialized")
 
-    async def create(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+    async def create(self, pipeline: APIPipeline) -> ServiceResult[Any]:
         """Create a new pipeline.
 
         Args:
@@ -51,7 +50,8 @@ class InMemoryPipelineRepository(PipelineRepository):
         """
         try:
             if pipeline.id in self._pipelines:
-                return ServiceResult.fail(f"Pipeline {pipeline.id} already exists")
+                return ServiceResult.fail(f"Pipeline {pipeline.id} already exists",
+                )
 
             # Store the pipeline
             self._pipelines[pipeline.id] = pipeline
@@ -63,7 +63,7 @@ class InMemoryPipelineRepository(PipelineRepository):
             logger.exception("Failed to create pipeline")
             return ServiceResult.fail(f"Failed to create pipeline: {e}")
 
-    async def get(self, pipeline_id: UUID) -> ServiceResult[APIPipeline]:
+    async def get(self, pipeline_id: UUID) -> ServiceResult[Any]:
         """Get pipeline by ID.
 
         Args:
@@ -75,7 +75,8 @@ class InMemoryPipelineRepository(PipelineRepository):
         """
         try:
             if pipeline_id not in self._pipelines:
-                return ServiceResult.fail(f"Pipeline {pipeline_id} not found")
+                return ServiceResult.fail(f"Pipeline {pipeline_id} not found",
+                )
 
             pipeline = self._pipelines[pipeline_id]
             logger.debug("Retrieved pipeline: %s", pipeline_id)
@@ -85,7 +86,7 @@ class InMemoryPipelineRepository(PipelineRepository):
             logger.exception("Failed to get pipeline")
             return ServiceResult.fail(f"Failed to get pipeline: {e}")
 
-    async def update(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+    async def update(self, pipeline: APIPipeline) -> ServiceResult[Any]:
         """Update existing pipeline.
 
         Args:
@@ -97,7 +98,8 @@ class InMemoryPipelineRepository(PipelineRepository):
         """
         try:
             if pipeline.id not in self._pipelines:
-                return ServiceResult.fail(f"Pipeline {pipeline.id} not found")
+                return ServiceResult.fail(f"Pipeline {pipeline.id} not found",
+                )
 
             # Update timestamp
             pipeline.updated_at = datetime.now(UTC)
@@ -112,7 +114,7 @@ class InMemoryPipelineRepository(PipelineRepository):
             logger.exception("Failed to update pipeline")
             return ServiceResult.fail(f"Failed to update pipeline: {e}")
 
-    async def delete(self, pipeline_id: UUID) -> ServiceResult[bool]:
+    async def delete(self, pipeline_id: UUID) -> ServiceResult[Any]:
         """Delete pipeline by ID.
 
         Args:
@@ -124,7 +126,8 @@ class InMemoryPipelineRepository(PipelineRepository):
         """
         try:
             if pipeline_id not in self._pipelines:
-                return ServiceResult.fail(f"Pipeline {pipeline_id} not found")
+                return ServiceResult.fail(f"Pipeline {pipeline_id} not found",
+                )
 
             # Remove pipeline
             del self._pipelines[pipeline_id]
@@ -152,7 +155,7 @@ class InMemoryPipelineRepository(PipelineRepository):
         owner_id: UUID | None = None,
         project_id: UUID | None = None,
         status: str | None = None,
-    ) -> ServiceResult[list[APIPipeline]]:
+    ) -> ServiceResult[Any]:
         """List pipelines with optional filters and pagination.
 
         Args:
@@ -206,7 +209,7 @@ class InMemoryPipelineRepository(PipelineRepository):
         owner_id: UUID | None = None,
         project_id: UUID | None = None,
         status: str | None = None,
-    ) -> ServiceResult[int]:
+    ) -> ServiceResult[Any]:
         """Count pipelines matching criteria.
 
         Args:
@@ -228,8 +231,9 @@ class InMemoryPipelineRepository(PipelineRepository):
                 offset=0,
             )
 
-            if not result.is_success:
-                return ServiceResult.fail(result.error or "Failed to count pipelines")
+            if not result.success:
+                return ServiceResult.fail(result.error or "Failed to count pipelines",
+                )
 
             count = len(result.data or [])
             logger.debug("Counted %d pipelines", count)
@@ -239,7 +243,7 @@ class InMemoryPipelineRepository(PipelineRepository):
             logger.exception("Failed to count pipelines")
             return ServiceResult.fail(f"Failed to count pipelines: {e}")
 
-    async def save(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+    async def save(self, pipeline: APIPipeline) -> ServiceResult[Any]:
         """Save pipeline (create or update based on existence).
 
         Args:
@@ -264,7 +268,7 @@ class InMemoryPipelineRepository(PipelineRepository):
     async def create_execution(
         self,
         execution: PipelineExecution,
-    ) -> ServiceResult[PipelineExecution]:
+    ) -> ServiceResult[Any]:
         """Create a new pipeline execution.
 
         Args:
@@ -276,11 +280,13 @@ class InMemoryPipelineRepository(PipelineRepository):
         """
         try:
             if execution.id in self._executions:
-                return ServiceResult.fail(f"Execution {execution.id} already exists")
+                return ServiceResult.fail(f"Execution {execution.id} already exists",
+                )
 
             # Verify pipeline exists
             if execution.pipeline_id not in self._pipelines:
-                return ServiceResult.fail(f"Pipeline {execution.pipeline_id} not found")
+                return ServiceResult.fail(f"Pipeline {execution.pipeline_id} not found",
+                )
 
             # Store execution
             self._executions[str(execution.id)] = execution
@@ -294,12 +300,13 @@ class InMemoryPipelineRepository(PipelineRepository):
 
         except Exception as e:
             logger.exception("Failed to create execution")
-            return ServiceResult.fail(f"Failed to create execution: {e}")
+            return ServiceResult.fail(f"Failed to create execution: {e}",
+            )
 
     async def get_execution(
         self,
         execution_id: str,
-    ) -> ServiceResult[PipelineExecution]:
+    ) -> ServiceResult[Any]:
         """Get execution by ID.
 
         Args:
@@ -311,7 +318,8 @@ class InMemoryPipelineRepository(PipelineRepository):
         """
         try:
             if execution_id not in self._executions:
-                return ServiceResult.fail(f"Execution {execution_id} not found")
+                return ServiceResult.fail(f"Execution {execution_id} not found",
+                )
 
             execution = self._executions[execution_id]
             logger.debug("Retrieved execution: %s", execution_id)
@@ -324,7 +332,7 @@ class InMemoryPipelineRepository(PipelineRepository):
     async def update_execution(
         self,
         execution: PipelineExecution,
-    ) -> ServiceResult[PipelineExecution]:
+    ) -> ServiceResult[Any]:
         """Update existing execution.
 
         Args:
@@ -336,7 +344,8 @@ class InMemoryPipelineRepository(PipelineRepository):
         """
         try:
             if execution.id not in self._executions:
-                return ServiceResult.fail(f"Execution {execution.id} not found")
+                return ServiceResult.fail(f"Execution {execution.id} not found",
+                )
 
             # Store updated execution
             self._executions[str(execution.id)] = execution
@@ -346,7 +355,8 @@ class InMemoryPipelineRepository(PipelineRepository):
 
         except Exception as e:
             logger.exception("Failed to update execution")
-            return ServiceResult.fail(f"Failed to update execution: {e}")
+            return ServiceResult.fail(f"Failed to update execution: {e}",
+            )
 
     async def list_executions(
         self,
@@ -354,7 +364,7 @@ class InMemoryPipelineRepository(PipelineRepository):
         status: str | None = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> ServiceResult[builtins.list[PipelineExecution]]:
+    ) -> ServiceResult[Any]:
         """List executions with optional filters and pagination.
 
         Args:

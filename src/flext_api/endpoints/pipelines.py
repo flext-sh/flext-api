@@ -12,8 +12,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, Request
-from flext_core.domain.pydantic_base import DomainBaseModel as APIBaseModel, Field
-from flext_core.domain.shared_types import EntityStatus
+from flext_core import DomainBaseModel as APIBaseModel, EntityStatus, Field
 
 from flext_api.dependencies import get_pipeline_service
 from flext_api.models.pipeline import (
@@ -66,10 +65,12 @@ async def create_pipeline(
             project_id=None,
         )
 
-        if not pipeline_result.is_success:
+        if not pipeline_result.success:
             raise HTTPException(status_code=400, detail=pipeline_result.error)
 
-        pipeline = pipeline_result.unwrap()
+        pipeline = pipeline_result.data
+        if pipeline is None:
+            raise HTTPException(status_code=500, detail="Pipeline creation returned None")
 
         return PipelineResponse(
             pipeline_id=pipeline.id,
@@ -115,10 +116,13 @@ async def get_pipeline(pipeline_id: str, _request: Request) -> PipelineResponse:
 
         pipeline_result = await pipeline_service.get_pipeline(uuid_id)
 
-        if not pipeline_result.is_success:
+        if not pipeline_result.success:
             raise HTTPException(status_code=404, detail="Pipeline not found")
 
-        pipeline = pipeline_result.unwrap()
+        pipeline = pipeline_result.data
+        if pipeline is None:
+            raise HTTPException(status_code=500, detail="Pipeline fetch returned None")
+
         config = pipeline.config or {}
 
         return PipelineResponse(
@@ -166,10 +170,12 @@ async def list_pipelines(
             offset=offset,
         )
 
-        if not pipelines_result.is_success:
+        if not pipelines_result.success:
             raise HTTPException(status_code=500, detail=pipelines_result.error)
 
-        pipelines = pipelines_result.unwrap()
+        pipelines = pipelines_result.data
+        if pipelines is None:
+            raise HTTPException(status_code=500, detail="Pipeline list returned None")
 
         # Convert pipelines to response format
         pipeline_responses = []

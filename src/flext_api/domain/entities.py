@@ -12,29 +12,19 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from flext_core.domain.constants import ConfigDefaults
-
 # Use flext-core domain entities - NO duplication
-from flext_core.domain.pipeline import (
-    Pipeline,  # Use flext-core Pipeline
-    PipelineExecution,  # Use flext-core PipelineExecution
-)
-
-# Import types needed at runtime for Pydantic model_rebuild()
-# Import types properly
-from flext_core.domain.pydantic_base import (
+from flext_core import (
     APIResponse,
+    ConfigDefaults,
     DomainEntity,
+    EntityId,
     Field,
-)
-from flext_core.domain.shared_models import (
-    PluginMetadata,  # Use flext-core PluginMetadata
-)
-
-# Import types needed at runtime for Pydantic model_rebuild()
-from flext_core.domain.types import (
-    EntityId,  # Moved from TYPE_CHECKING since used at runtime
-    PluginType,  # Use flext-core PluginType
+    Pipeline,
+    PipelineExecution,
+    PipelineId,
+    PluginId,
+    PluginMetadata,
+    PluginType,
     UserId,
 )
 from pydantic import field_validator
@@ -46,6 +36,7 @@ from flext_api.domain.events import (
 )
 
 # Export flext-core entities for API usage - NO DUPLICATION
+# Type aliases for backward compatibility
 PipelineEntity = Pipeline  # Use flext-core Pipeline aggregate
 ExecutionEntity = PipelineExecution  # Use flext-core PipelineExecution
 PluginEntity = PluginMetadata  # Use flext-core PluginMetadata
@@ -209,19 +200,35 @@ class Plugin(DomainEntity):
     )
 
     @property
+    def is_extractor(self) -> bool:
+        """Check if the plugin is an extractor (formerly tap)."""
+        return self.plugin_type == PluginType.EXTRACTOR
+
+    @property
+    def is_loader(self) -> bool:
+        """Check if the plugin is a loader (formerly target)."""
+        return self.plugin_type == PluginType.LOADER
+
+    @property
+    def is_transformer(self) -> bool:
+        """Check if the plugin is a transformer (formerly transform)."""
+        return self.plugin_type == PluginType.TRANSFORMER
+
+    # Backward compatibility aliases (deprecated)
+    @property
     def is_tap(self) -> bool:
-        """Check if the plugin is a tap."""
-        return self.plugin_type == PluginType.TAP
+        """Check if the plugin is a tap (deprecated, use is_extractor)."""
+        return self.plugin_type == PluginType.EXTRACTOR
 
     @property
     def is_target(self) -> bool:
-        """Check if the plugin is a target."""
-        return self.plugin_type == PluginType.TARGET
+        """Check if the plugin is a target (deprecated, use is_loader)."""
+        return self.plugin_type == PluginType.LOADER
 
     @property
     def is_transform(self) -> bool:
-        """Check if the plugin is a transform."""
-        return self.plugin_type == PluginType.TRANSFORM
+        """Check if the plugin is a transform (deprecated, use is_transformer)."""
+        return self.plugin_type == PluginType.TRANSFORMER
 
 
 class RequestLog(DomainEntity):
@@ -510,12 +517,13 @@ __all__ = [
     "APIResponseLog",
     "ConfigDefaults",
     "HttpMethod",
-    "Pipeline",
     "PipelineCreatedEvent",
     "PipelineExecutedEvent",
     "PipelineExecution",
+    "PipelineId",
     "PipelineStatus",
     "Plugin",
+    "PluginId",
     "PluginMetadata",
     "PluginRegisteredEvent",
     "PluginType",

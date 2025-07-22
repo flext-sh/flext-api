@@ -8,20 +8,15 @@ This module provides the domain events for the FLEXT API.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from flext_core.domain.pydantic_base import DomainEvent, Field
-
-# Runtime imports for model_rebuild to work - needed for Pydantic validation
-
-if TYPE_CHECKING:
-    from flext_core.domain.shared_types import (
-        EntityId,
-        PipelineId,
-        PluginId,
-        PluginType,
-        UserId,
-    )
+from flext_core import (
+    DomainEvent,
+    EntityId,
+    Field,
+    PipelineId,
+    PluginId,
+    PluginType,
+    UserId,
+)
 
 
 # Pipeline Events
