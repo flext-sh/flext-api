@@ -91,13 +91,20 @@ async def login_user(
 
         result = await auth_service.login(username, request.password)
 
-        if not result.is_success:
+        if not result.success:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=result.error or "Invalid credentials",
             )
 
-        token_data = result.unwrap()
+        token_data = result.data
+
+        # Type guard: ensure token_data is not None
+        if token_data is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Login failed: No token data returned",
+            )
 
         # Create user object
         user = UserAPI(
@@ -154,24 +161,38 @@ async def refresh_tokens(
         # For simplicity, validate the refresh token as a regular token
         result = await auth_service.validate_token(refresh_token)
 
-        if not result.is_success:
+        if not result.success:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid refresh token",
             )
 
-        user = result.unwrap()
+        user = result.data
+
+        # Type guard: ensure user data is not None
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token: No user data",
+            )
 
         # Create new token using existing login method
         token_result = await auth_service.login(user.username, "refresh")
 
-        if not token_result.is_success:
+        if not token_result.success:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create new token",
             )
 
-        token_data = token_result.unwrap()
+        token_data = token_result.data
+
+        # Type guard: ensure token_data is not None
+        if token_data is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create new token: No token data returned",
+            )
 
         # Create user object
         user_obj = UserAPI(

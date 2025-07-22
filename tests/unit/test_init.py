@@ -277,7 +277,7 @@ class TestModuleStructure:
         try:
             # Test importing various combinations that might cause circular imports
             from flext_api.config import APISettings
-            from flext_api.domain.entities import Pipeline
+            from flext_api.domain.entities import APIPipeline as Pipeline
             from flext_api.infrastructure.di_container import configure_api_dependencies
 
             # All should import successfully

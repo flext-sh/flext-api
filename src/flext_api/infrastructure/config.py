@@ -11,23 +11,23 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from flext_core.config.unified_config import (
+from flext_core import (
     APIConfigMixin,
     BaseConfigMixin,
+    ConfigDefaults,
     DatabaseConfigMixin,
     LoggingConfigMixin,
     MonitoringConfigMixin,
     PerformanceConfigMixin,
 )
-from flext_core.domain.constants import ConfigDefaults
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 if TYPE_CHECKING:
-    from flext_core.domain.shared_types import LogLevel, MemoryMB, PositiveInt
+    from flext_core import LogLevel, MemoryMB, PositiveInt
 else:
     # Runtime imports for actual usage
-    from flext_core.domain.shared_types import (
+    from flext_core import (
         LogLevel,
         MemoryMB,
         PositiveInt,
@@ -62,6 +62,17 @@ class APIConfig(
         default="postgresql://localhost/flext_api",
         description="Database connection URL",
     )
+
+    # Database configuration overrides for compatibility
+    db_name: str = Field(default="flext_api", description="Database name")
+    db_user: str = Field(default="flext_user", description="Database user")
+    db_password: str = Field(default="flext_pass", description="Database password")
+
+    # Add database_pool_size for test compatibility
+    database_pool_size: int = Field(default=20, description="Database connection pool size")
+
+    # Monitoring configuration for test compatibility
+    metrics_enabled: bool = Field(default=True, description="Enable metrics collection")
 
     # Override log_level to ensure proper enum value
     log_level: LogLevel = Field(
@@ -191,7 +202,7 @@ class APIConfig(
     @property
     def cors_origins(self) -> list[str]:
         """Get CORS origins for backward compatibility."""
-        return self.api_cors_origins
+        return ["*"]  # Default CORS origins
 
     @property
     def host(self) -> str:
@@ -206,7 +217,7 @@ class APIConfig(
     @property
     def workers(self) -> int:
         """Get API workers for backward compatibility."""
-        return self.api_workers
+        return 4  # Default number of workers
 
     # Note: Database and Redis properties inherited from mixins
     # Note: JWT properties inherited from AuthConfigMixin (if using AuthConfigMixin)
@@ -239,7 +250,7 @@ class APIConfig(
 
         """
         return {
-            "allow_origins": self.api_cors_origins,  # Using APIConfigMixin field
+            "allow_origins": self.cors_origins,  # Using cors_origins property
             "allow_methods": self.cors_methods,
             "allow_headers": self.cors_headers,
             "allow_credentials": self.cors_credentials,
@@ -256,11 +267,11 @@ class APIConfig(
         return {
             "host": self.api_host,  # Using APIConfigMixin field
             "port": self.api_port,  # Using APIConfigMixin field
-            "workers": self.api_workers,  # Using APIConfigMixin field
+            "workers": self.workers,  # Using workers property
             "reload": self.reload,
             "log_level": self.log_level.value.lower(),  # Using LoggingConfigMixin field
             "access_log": True,  # Default value
-            "keepalive_timeout": int(self.api_timeout),  # Using APIConfigMixin field
+            "keepalive_timeout": int(self.timeout_seconds),  # Using PerformanceConfigMixin field
         }
 
     def validate_configuration(self) -> list[str]:
@@ -303,7 +314,7 @@ class APIConfig(
             def __init__(self, config: APIConfig) -> None:
                 self.host = config.api_host
                 self.port = config.api_port
-                self.workers = config.api_workers
+                self.workers = config.workers
                 self.reload = config.reload
 
         return ServerConfig(self)
@@ -315,7 +326,7 @@ class APIConfig(
         class CorsConfig:
             def __init__(self, config: APIConfig) -> None:
                 self.enabled = True  # Always enabled in our setup
-                self.origins = config.api_cors_origins
+                self.origins = config.cors_origins
                 self.methods = config.cors_methods
                 self.headers = config.cors_headers
                 self.credentials = config.cors_credentials

@@ -8,8 +8,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
+# Import entities for repository signatures (needed at runtime for Pydantic)
 # Import entities for repository signatures (not in TYPE_CHECKING to avoid forward refs)
 # Import abstract repository interfaces
 from flext_api.domain.ports import PipelineRepository, PluginRepository
@@ -31,15 +32,15 @@ class APIRequestRepository(ABC):
     """Repository interface for API Request entities."""
 
     @abstractmethod
-    async def save(self, request: APIRequest) -> ServiceResult[APIRequest]:
+    async def save(self, request: APIRequest) -> ServiceResult[Any]:
         """Save an API request."""
 
     @abstractmethod
-    async def get_by_id(self, request_id: str) -> ServiceResult[APIRequest | None]:
-        """Get API request by ID."""
+    async def find_by_id(self, request_id: str) -> ServiceResult[Any]:
+        """Find API request by ID."""
 
     @abstractmethod
-    async def get_by_endpoint(self, endpoint: str) -> ServiceResult[list[APIRequest]]:
+    async def get_by_endpoint(self, endpoint: str) -> ServiceResult[Any]:
         """Get API requests by endpoint."""
 
 
@@ -47,21 +48,21 @@ class APIResponseRepository(ABC):
     """Repository interface for API Response entities."""
 
     @abstractmethod
-    async def save(self, response: APIResponse) -> ServiceResult[APIResponse]:
+    async def save(self, response: APIResponse) -> ServiceResult[Any]:
         """Save an API response."""
 
     @abstractmethod
     async def get_by_request_id(
         self,
         request_id: str,
-    ) -> ServiceResult[APIResponse | None]:
+    ) -> ServiceResult[Any]:
         """Get API response by request ID."""
 
     @abstractmethod
     async def get_by_status_code(
         self,
         status_code: int,
-    ) -> ServiceResult[list[APIResponse]]:
+    ) -> ServiceResult[Any]:
         """Get API responses by status code."""
 
 
@@ -72,23 +73,24 @@ class InMemoryAPIRequestRepository(APIRequestRepository):
         """Initialize the repository."""
         self._requests: dict[str, APIRequest] = {}
 
-    async def save(self, request: APIRequest) -> ServiceResult[APIRequest]:
+    async def save(self, request: APIRequest) -> ServiceResult[Any]:
         """Save an API request."""
         try:
             self._requests[request.request_id] = request
             return ServiceResult.ok(request)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return ServiceResult.fail(f"Failed to save API request: {e}")
+            return ServiceResult.fail(f"Failed to save API request: {e}",
+            )
 
-    async def get_by_id(self, request_id: str) -> ServiceResult[APIRequest | None]:
-        """Get API request by ID."""
+    async def find_by_id(self, request_id: str) -> ServiceResult[Any]:
+        """Find API request by ID."""
         try:
             request = self._requests.get(request_id)
             return ServiceResult.ok(request)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return ServiceResult.fail(f"Failed to get API request: {e}")
 
-    async def get_by_endpoint(self, endpoint: str) -> ServiceResult[list[APIRequest]]:
+    async def get_by_endpoint(self, endpoint: str) -> ServiceResult[Any]:
         """Get API requests by endpoint."""
         try:
             requests = [
@@ -96,7 +98,8 @@ class InMemoryAPIRequestRepository(APIRequestRepository):
             ]
             return ServiceResult.ok(requests)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return ServiceResult.fail(f"Failed to get API requests by endpoint: {e}")
+            return ServiceResult.fail(f"Failed to get API requests by endpoint: {e}",
+            )
 
 
 class InMemoryAPIResponseRepository(APIResponseRepository):
@@ -106,7 +109,7 @@ class InMemoryAPIResponseRepository(APIResponseRepository):
         """Initialize the repository."""
         self._responses: dict[str, APIResponse] = {}
 
-    async def save(self, response: APIResponse) -> ServiceResult[APIResponse]:
+    async def save(self, response: APIResponse) -> ServiceResult[Any]:
         """Save an API response."""
         try:
             # Use a safe key since response_id may not exist on APIResponse
@@ -114,12 +117,13 @@ class InMemoryAPIResponseRepository(APIResponseRepository):
             self._responses[response_key] = response
             return ServiceResult.ok(response)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return ServiceResult.fail(f"Failed to save API response: {e}")
+            return ServiceResult.fail(f"Failed to save API response: {e}",
+            )
 
     async def get_by_request_id(
         self,
         request_id: str,
-    ) -> ServiceResult[APIResponse | None]:
+    ) -> ServiceResult[Any]:
         """Get API response by request ID."""
         try:
             response = next(
@@ -132,12 +136,13 @@ class InMemoryAPIResponseRepository(APIResponseRepository):
             )
             return ServiceResult.ok(response)
         except (KeyError, ValueError, TypeError, AttributeError, StopIteration) as e:
-            return ServiceResult.fail(f"Failed to get API response: {e}")
+            return ServiceResult.fail(f"Failed to get API response: {e}",
+            )
 
     async def get_by_status_code(
         self,
         status_code: int,
-    ) -> ServiceResult[list[APIResponse]]:
+    ) -> ServiceResult[Any]:
         """Get API responses by status code."""
         try:
             responses = [
@@ -147,8 +152,7 @@ class InMemoryAPIResponseRepository(APIResponseRepository):
             ]
             return ServiceResult.ok(responses)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return ServiceResult.fail(
-                f"Failed to get API responses by status code: {e}",
+            return ServiceResult.fail(f"Failed to get API responses by status code: {e}",
             )
 
 

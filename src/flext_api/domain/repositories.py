@@ -10,8 +10,9 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from flext_api.domain.entities import Pipeline, Plugin
-    from flext_api.domain.value_objects import PipelineId, PluginId
+    from flext_core import Pipeline, PipelineId, PluginId
+
+    from flext_api.domain.entities import Plugin
 
 
 class PipelineRepository(ABC):
@@ -30,8 +31,8 @@ class PipelineRepository(ABC):
         """
 
     @abstractmethod
-    async def get_by_id(self, pipeline_id: PipelineId) -> Pipeline | None:
-        """Get pipeline by ID.
+    async def find_by_id(self, pipeline_id: PipelineId) -> Pipeline | None:
+        """Find pipeline by ID.
 
         Args:
             pipeline_id: Pipeline identifier
@@ -79,8 +80,8 @@ class PluginRepository(ABC):
         """
 
     @abstractmethod
-    async def get_by_id(self, plugin_id: PluginId) -> Plugin | None:
-        """Get plugin by ID.
+    async def find_by_id(self, plugin_id: PluginId) -> Plugin | None:
+        """Find plugin by ID.
 
         Args:
             plugin_id: Plugin identifier

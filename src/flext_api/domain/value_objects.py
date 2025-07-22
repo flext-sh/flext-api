@@ -6,8 +6,7 @@ Uses flext-core DomainValueObject - NO duplication.
 
 from __future__ import annotations
 
-from flext_core import Field
-from flext_core.domain.pydantic_base import DomainValueObject
+from flext_core import DomainValueObject, Field
 from pydantic import field_validator
 
 

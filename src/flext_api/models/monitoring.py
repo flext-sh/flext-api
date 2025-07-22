@@ -11,13 +11,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core import Field
-from flext_core.domain.pydantic_base import APIResponse
+from flext_core import APIResponse, ComponentHealth, Field
 
 if TYPE_CHECKING:
     from datetime import datetime
-
-    from flext_core.domain.shared_models import ComponentHealth
 
 # ComponentHealthAPI removed - use ComponentHealth from flext_core instead
 

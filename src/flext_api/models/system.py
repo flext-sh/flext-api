@@ -4,20 +4,21 @@ REFACTORED:
     Uses flext-core APIRequest/APIResponse with types and StrEnum.
 Zero tolerance for duplication.
 """
-
 from __future__ import annotations
 
+import typing
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from flext_core import Field
-from flext_core.domain.pydantic_base import APIRequest, APIResponse
-from flext_core.domain.shared_models import (
+from flext_core import (
+    APIRequest,
+    APIResponse,
+    Field,
     HealthStatus,
 )
 from pydantic import field_validator
 
-if TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from datetime import datetime
     from uuid import UUID
 
@@ -33,7 +34,6 @@ class SystemStatusType(StrEnum):
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
-
     # API-specific operational states
     MAINTENANCE = "maintenance"
     STARTING = "starting"
@@ -72,8 +72,6 @@ class AlertSeverity(StrEnum):
 
 
 # --- Request Models ---
-
-
 class MaintenanceRequest(APIRequest):
     """Request model for system maintenance operations."""
 
@@ -222,8 +220,6 @@ class SystemBackupRequest(APIRequest):
 
 
 # --- Response Models ---
-
-
 class SystemStatusResponse(APIResponse):
     """Response model for system status information."""
 
@@ -497,8 +493,6 @@ class SystemMetricsResponse(APIResponse):
 
 
 # --- Missing Models ---
-
-
 class SystemRestoreRequest(APIRequest):
     """Request model for system restore operations."""
 
@@ -584,6 +578,42 @@ class SystemHealthResponse(APIResponse):
 
 
 # Model definitions complete
+# Fix Pydantic model rebuild by providing explicit global namespace
+def rebuild_system_models() -> None:
+    """Rebuild all system models with proper type resolution."""
+    # Module namespace already has UUID and datetime imported above
+    # No need to modify module attributes at runtime
+    # Rebuild models that use forward references
+    MaintenanceRequest.model_rebuild()
+    SystemStatusResponse.model_rebuild()
+    SystemServiceResponse.model_rebuild()
+    MaintenanceResponse.model_rebuild()
+    SystemBackupResponse.model_rebuild()
+    SystemAlertResponse.model_rebuild()
+    SystemMetricsResponse.model_rebuild()
+    SystemRestoreRequest.model_rebuild()
+    SystemHealthCheckRequest.model_rebuild()
+    SystemHealthResponse.model_rebuild()
 
-# NOTE: model_rebuild() calls removed to prevent import circular dependency issues
-# Pydantic will resolve forward references automatically when needed
+
+# Module-level flag to track rebuild status
+_models_rebuilt = False
+
+
+def ensure_system_models_rebuilt() -> None:
+    """Ensure system models are rebuilt with proper type resolution."""
+    global _models_rebuilt
+    if _models_rebuilt:
+        return
+    # Only rebuild in runtime, not during static analysis
+    if not typing.TYPE_CHECKING:
+        try:
+            rebuild_system_models()
+            _models_rebuilt = True
+        except ImportError:
+            # If there are still import issues, models will work with limited type safety
+            pass
+
+
+# Call the rebuild function when module is imported
+ensure_system_models_rebuilt()

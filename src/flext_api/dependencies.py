@@ -12,8 +12,8 @@ from typing import TYPE_CHECKING, Annotated, Any
 import psutil
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer
-from flext_core.config.base import get_container
-from flext_core.domain.types import ServiceResult
+from flext_core import get_container
+from flext_core.domain.shared_types import ServiceResult
 
 # Use centralized logger from flext-observability - ELIMINATE DUPLICATION
 from flext_observability.logging import get_logger
@@ -142,9 +142,11 @@ def get_grpc_stub(
     """Get gRPC service stub for flext-api.grpc.flext-grpc integration."""
     try:
         # Import flext-api.grpc.flext-grpc protobuf dynamically
+        from typing import cast
+
         from flext_grpc.proto import flext_pb2_grpc
 
-        stub = flext_pb2_grpc.FlextServiceStub(channel)  # type: ignore[no-untyped-call]
+        stub = flext_pb2_grpc.FlextServiceStub(channel)
         logger.info("gRPC stub created successfully")
         return stub
 
@@ -187,14 +189,14 @@ async def get_current_user(
                     self,
                     *_args: Any,
                     **_kwargs: Any,
-                ) -> ServiceResult[tuple[Any, Any]]:
+                ) -> ServiceResult[Any]:
                     return ServiceResult.fail("Stub auth service")
 
                 async def create_user(
                     self,
                     *_args: Any,
                     **_kwargs: Any,
-                ) -> ServiceResult[dict[str, Any]]:
+                ) -> ServiceResult[Any]:
                     return ServiceResult.fail("Stub auth service")
 
             class StubSessionManager:
@@ -202,30 +204,35 @@ async def get_current_user(
                     self,
                     *_args: Any,
                     **_kwargs: Any,
-                ) -> ServiceResult[bool]:
+                ) -> ServiceResult[Any]:
                     return ServiceResult.fail("Stub session manager")
 
                 async def refresh_token(
                     self,
                     *_args: Any,
                     **_kwargs: Any,
-                ) -> ServiceResult[dict[str, Any]]:
+                ) -> ServiceResult[Any]:
                     return ServiceResult.fail("Stub session manager")
 
                 async def validate_token(
                     self,
                     *_args: Any,
                     **_kwargs: Any,
-                ) -> ServiceResult[dict[str, Any]]:
+                ) -> ServiceResult[Any]:
                     return ServiceResult.fail("Stub session manager")
 
-            auth_service = AppAuthService(StubAuthService(), StubSessionManager())  # type: ignore[arg-type]
+            from typing import cast
+
+
+            auth_service = AppAuthService(
+                cast("Any", StubAuthService()), cast("Any", StubSessionManager()),
+            )
 
         # Validate token
         result = await auth_service.validate_token(credentials.credentials)
 
-        if result.is_success:
-            user = result.unwrap()
+        if result.success and result.data is not None:
+            user = result.data
             return {
                 "id": user.username,
                 "username": user.username,
@@ -268,7 +275,9 @@ def get_auth_service() -> AuthService:
     """Get authentication service from DI container."""
     auth_service = getattr(container, "_services", {}).get("AuthService")
     if auth_service:
-        return auth_service  # type: ignore[no-any-return]
+        from typing import cast
+
+        return cast("AuthService", auth_service)
 
     # Return the real JWT auth service implementation
     return JWTAuthService(settings)
@@ -284,7 +293,9 @@ def get_pipeline_service() -> PipelineService:
 
     pipeline_service = getattr(container, "_services", {}).get("PipelineService")
     if pipeline_service:
-        return pipeline_service  # type: ignore[no-any-return]
+        from typing import cast
+
+        return cast("PipelineService", pipeline_service)
 
     # Create singleton repository instance if it doesn't exist
     if _pipeline_repository_instance is None:
@@ -301,7 +312,9 @@ def get_plugin_service() -> PluginService:
     """Get plugin service from DI container."""
     plugin_service = getattr(container, "_services", {}).get("PluginService")
     if plugin_service:
-        return plugin_service  # type: ignore[no-any-return]
+        from typing import cast
+
+        return cast("PluginService", plugin_service)
 
     # Use the proper repository implementation with singleton pattern
     from flext_api.infrastructure.repositories.plugin_repository import (
@@ -321,13 +334,17 @@ def get_system_service() -> SystemService:
     try:
         system_service = getattr(container, "_services", {}).get("SystemService")
         if system_service:
-            return system_service  # type: ignore[no-any-return]
+            from typing import cast
+
+            return cast("SystemService", system_service)
     except Exception as e:
         # Fall through to create default service
         logger.debug("Could not get SystemService from container: %s", e)
 
     # Create real health monitor and metrics collector
-    class RealHealthMonitor(HealthMonitor):
+    from flext_observability.health import HealthChecker
+
+    class RealHealthMonitor(HealthChecker):
         def get_health_status(self) -> dict[str, Any]:
             try:
                 # Actual health checks
@@ -349,12 +366,18 @@ def get_system_service() -> SystemService:
             except (OSError, psutil.Error) as e:
                 return {"status": "error", "error": f"Health check failed: {e}"}
 
-    class RealMetricsCollector(MetricsCollector):
+    from flext_observability.metrics import (
+        MetricsCollector as ObservabilityMetricsCollector,
+    )
+
+    class RealMetricsCollector(ObservabilityMetricsCollector):
         def collect_metrics(self) -> dict[str, Any]:
             try:
-                return self.get_system_metrics()
+                return self._collect_system_metrics()
             except Exception as e:
-                return {"error": f"Failed to collect metrics: {e}"}
+                from flext_core.domain.shared_types import ServiceResult
+                result: ServiceResult[dict[str, Any]] = ServiceResult.fail(f"Failed to collect metrics: {e}")
+                return {"error": result.error}
 
         def get_system_metrics(self) -> dict[str, Any]:
             try:

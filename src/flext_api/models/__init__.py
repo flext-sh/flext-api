@@ -15,7 +15,7 @@ from __future__ import annotations
 
 # Note: APIResponse is imported from flext_core.domain.pydantic_base directly where needed
 # No alias needed to avoid forward reference conflicts
-from flext_core.domain.types import PluginType
+from flext_core import PluginType
 
 from flext_api.models.auth import (
     LoginRequest,

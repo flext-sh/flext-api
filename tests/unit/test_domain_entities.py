@@ -5,6 +5,7 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
+from flext_core.domain.shared_types import PluginType
 
 from flext_api.domain.entities import (
     APIPipeline,
@@ -16,7 +17,6 @@ from flext_api.domain.entities import (
     PipelineStatus,
     Plugin,
     PluginRegisteredEvent,
-    PluginType,
     RequestLog,
     ResponseLog,
 )
@@ -44,20 +44,20 @@ class TestPluginType:
 
     def test_plugin_type_values(self) -> None:
         """Test plugin type enum values."""
-        assert PluginType.TAP.value == "tap"
-        assert PluginType.TARGET.value == "target"
-        assert PluginType.TRANSFORM.value == "transform"
+        assert PluginType.EXTRACTOR.value == "extractor"
+        assert PluginType.LOADER.value == "loader"
+        assert PluginType.TRANSFORMER.value == "transformer"
         assert PluginType.UTILITY.value == "utility"
+        assert PluginType.ORCHESTRATOR.value == "orchestrator"
 
     def test_plugin_type_iteration(self) -> None:
         """Test plugin type enumeration."""
         types = list(PluginType)
-        assert len(types) == 6  # TAP, TARGET, TRANSFORM, UTILITY, DBT, ORCHESTRATOR
-        assert PluginType.TAP in types
-        assert PluginType.TARGET in types
-        assert PluginType.TRANSFORM in types
+        assert len(types) == 5  # EXTRACTOR, LOADER, TRANSFORMER, ORCHESTRATOR, UTILITY
+        assert PluginType.EXTRACTOR in types
+        assert PluginType.LOADER in types
+        assert PluginType.TRANSFORMER in types
         assert PluginType.UTILITY in types
-        assert PluginType.DBT in types
         assert PluginType.ORCHESTRATOR in types
 
 
@@ -199,7 +199,7 @@ class TestPlugin:
         """Test plugin initialization."""
         plugin = Plugin(
             name="tap-csv",
-            plugin_type=PluginType.TAP,
+            plugin_type=PluginType.EXTRACTOR,
             version="1.0.0",
             description="CSV tap plugin",
             plugin_config={"input_file": "data.csv"},
@@ -212,7 +212,7 @@ class TestPlugin:
         )
 
         assert plugin.name == "tap-csv"
-        assert plugin.plugin_type == PluginType.TAP
+        assert plugin.plugin_type == PluginType.EXTRACTOR
         assert plugin.version == "1.0.0"
         assert plugin.description == "CSV tap plugin"
         assert plugin.plugin_config == {"input_file": "data.csv"}
@@ -225,13 +225,13 @@ class TestPlugin:
 
     def test_plugin_type_properties(self) -> None:
         """Test plugin type checking properties."""
-        tap_plugin = Plugin(name="tap-test", plugin_type=PluginType.TAP)
+        tap_plugin = Plugin(name="tap-test", plugin_type=PluginType.EXTRACTOR)
 
-        target_plugin = Plugin(name="target-test", plugin_type=PluginType.TARGET)
+        target_plugin = Plugin(name="target-test", plugin_type=PluginType.LOADER)
 
         transform_plugin = Plugin(
             name="transform-test",
-            plugin_type=PluginType.TRANSFORM,
+            plugin_type=PluginType.TRANSFORMER,
         )
 
         assert tap_plugin.is_tap is True
@@ -381,17 +381,17 @@ class TestResponseLog:
             response_time_ms=200,
         )
 
-        assert success_response.is_success is True
+        assert success_response.success is True
         assert success_response.is_client_error is False
         assert success_response.is_server_error is False
         assert success_response.is_fast_response is True
 
-        assert client_error_response.is_success is False
+        assert client_error_response.success is False
         assert client_error_response.is_client_error is True
         assert client_error_response.is_server_error is False
         assert client_error_response.is_fast_response is True
 
-        assert server_error_response.is_success is False
+        assert server_error_response.success is False
         assert server_error_response.is_client_error is False
         assert server_error_response.is_server_error is True
         assert server_error_response.is_fast_response is False
@@ -464,15 +464,15 @@ class TestAPIResponseLog:
             status_code=503,
         )
 
-        assert success_response.is_success is True
+        assert success_response.success is True
         assert success_response.is_client_error is False
         assert success_response.is_server_error is False
 
-        assert client_error_response.is_success is False
+        assert client_error_response.success is False
         assert client_error_response.is_client_error is True
         assert client_error_response.is_server_error is False
 
-        assert server_error_response.is_success is False
+        assert server_error_response.success is False
         assert server_error_response.is_client_error is False
         assert server_error_response.is_server_error is True
 
@@ -519,5 +519,5 @@ class TestDomainEvents:
 
         assert event.plugin_id == plugin_id
         assert event.plugin_name == "tap-csv"
-        assert event.plugin_type == PluginType.TAP
+        assert event.plugin_type == PluginType.EXTRACTOR
         assert event.version == "1.0.0"

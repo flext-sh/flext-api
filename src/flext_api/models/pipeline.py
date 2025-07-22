@@ -14,10 +14,10 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from flext_core import Field
-from flext_core.domain.pydantic_base import DomainBaseModel
-from flext_core.domain.shared_types import (
+from flext_core import (
+    DomainBaseModel,
     EntityStatus,
+    Field,
     PipelineId,
     TraceStatus,
 )

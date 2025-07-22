@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, Mock
 from uuid import UUID, uuid4
 
 import pytest
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_api.domain.ports import (
     APIAuthenticationService,
@@ -46,7 +46,6 @@ class TestRepositoryPorts:
     def test_pipeline_repository_required_methods(self) -> None:
         """Test PipelineRepository defines required methods."""
         required_methods = ["save", "get", "list", "delete"]
-
         for method_name in required_methods:
             assert hasattr(PipelineRepository, method_name), (
                 f"PipelineRepository missing {method_name} method"
@@ -60,7 +59,6 @@ class TestRepositoryPorts:
     def test_plugin_repository_required_methods(self) -> None:
         """Test PluginRepository defines required methods."""
         required_methods = ["save", "get", "list", "delete"]
-
         for method_name in required_methods:
             assert hasattr(PluginRepository, method_name), (
                 f"PluginRepository missing {method_name} method"
@@ -93,7 +91,6 @@ class TestServicePorts:
             "generate_token",
             "validate_token",
         ]
-
         for method_name in required_methods:
             assert hasattr(AuthService, method_name), (
                 f"AuthService missing {method_name} method"
@@ -107,7 +104,6 @@ class TestServicePorts:
     def test_cache_service_required_methods(self) -> None:
         """Test CacheService defines required methods."""
         required_methods = ["get", "set", "delete", "clear"]
-
         for method_name in required_methods:
             assert hasattr(CacheService, method_name), (
                 f"CacheService missing {method_name} method"
@@ -144,7 +140,6 @@ class TestManagementServicePorts:
             "get_execution_status",
             "cancel_execution",
         ]
-
         for method_name in required_methods:
             assert hasattr(PipelineExecutionService, method_name), (
                 f"PipelineExecutionService missing {method_name} method"
@@ -162,7 +157,6 @@ class TestManagementServicePorts:
             "uninstall_plugin",
             "update_plugin_config",
         ]
-
         for method_name in required_methods:
             assert hasattr(PluginManagementService, method_name), (
                 f"PluginManagementService missing {method_name} method"
@@ -240,7 +234,7 @@ class TestPortImplementation:
                 self._storage[pipeline.id] = pipeline
                 return ServiceResult.ok(pipeline)
 
-            async def update(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+            async def update(self, pipeline: APIPipeline) -> ServiceResult[Any]:
                 if pipeline.id in self._storage:
                     self._storage[pipeline.id] = pipeline
                     return ServiceResult.ok(pipeline)
@@ -251,7 +245,7 @@ class TestPortImplementation:
                 owner_id: UUID | None = None,
                 project_id: UUID | None = None,
                 status: str | None = None,
-            ) -> ServiceResult[int]:
+            ) -> ServiceResult[Any]:
                 return ServiceResult.ok(len(self._storage))
 
             async def get(self, pipeline_id: UUID) -> ServiceResult[APIPipeline]:
@@ -267,17 +261,17 @@ class TestPortImplementation:
                 owner_id: UUID | None = None,
                 project_id: UUID | None = None,
                 status: str | None = None,
-            ) -> ServiceResult[list[APIPipeline]]:
+            ) -> ServiceResult[Any]:
                 pipelines = list(self._storage.values())[offset : offset + limit]
                 return ServiceResult.ok(pipelines)
 
-            async def delete(self, pipeline_id: UUID) -> ServiceResult[bool]:
+            async def delete(self, pipeline_id: UUID) -> ServiceResult[Any]:
                 if pipeline_id in self._storage:
                     del self._storage[pipeline_id]
                     return ServiceResult.ok(True)
                 return ServiceResult.ok(False)
 
-            async def save(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+            async def save(self, pipeline: APIPipeline) -> ServiceResult[Any]:
                 if pipeline.id in self._storage:
                     return await self.update(pipeline)
                 return await self.create(pipeline)
@@ -293,11 +287,11 @@ class TestPortImplementation:
             def __init__(self) -> None:
                 self._storage: dict[UUID, Plugin] = {}
 
-            async def create(self, plugin: Plugin) -> ServiceResult[Plugin]:
+            async def create(self, plugin: Plugin) -> ServiceResult[Any]:
                 self._storage[plugin.id] = plugin
                 return ServiceResult.ok(plugin)
 
-            async def update(self, plugin: Plugin) -> ServiceResult[Plugin]:
+            async def update(self, plugin: Plugin) -> ServiceResult[Any]:
                 if plugin.id in self._storage:
                     self._storage[plugin.id] = plugin
                     return ServiceResult.ok(plugin)
@@ -307,10 +301,10 @@ class TestPortImplementation:
                 self,
                 plugin_type: str | None = None,
                 status: str | None = None,
-            ) -> ServiceResult[int]:
+            ) -> ServiceResult[Any]:
                 return ServiceResult.ok(len(self._storage))
 
-            async def get(self, plugin_id: UUID) -> ServiceResult[Plugin]:
+            async def get(self, plugin_id: UUID) -> ServiceResult[Any]:
                 plugin = self._storage.get(plugin_id)
                 if plugin:
                     return ServiceResult.ok(plugin)
@@ -322,32 +316,29 @@ class TestPortImplementation:
                 offset: int = 0,
                 plugin_type: str | None = None,
                 status: str | None = None,
-            ) -> ServiceResult[list[Plugin]]:
+            ) -> ServiceResult[Any]:
                 """List plugins with pagination and filtering."""
                 # Create filtered list without modifying storage
                 plugins = list(self._storage.values())
-
                 # Filter by plugin type if provided
                 if plugin_type:
                     plugins = [p for p in plugins if p.plugin_type == plugin_type]
-
                 # Filter by status if provided (map to enabled for now)
                 if status is not None:
                     # Simple status mapping: "active" -> enabled=True, others -> enabled=False
                     enabled_filter = status.lower() == "active"
                     plugins = [p for p in plugins if p.enabled == enabled_filter]
-
                 # Apply pagination
                 paginated_plugins = plugins[offset : offset + limit]
                 return ServiceResult.ok(paginated_plugins)
 
-            async def delete(self, plugin_id: UUID) -> ServiceResult[bool]:
+            async def delete(self, plugin_id: UUID) -> ServiceResult[Any]:
                 if plugin_id in self._storage:
                     self._storage.pop(plugin_id)
                     return ServiceResult.ok(True)
                 return ServiceResult.ok(False)
 
-            async def save(self, plugin: Plugin) -> ServiceResult[Plugin]:
+            async def save(self, plugin: Plugin) -> ServiceResult[Any]:
                 if plugin.id in self._storage:
                     return await self.update(plugin)
                 return await self.create(plugin)
@@ -447,28 +438,21 @@ class TestPortMocking:
                 return await self.authenticate(token)
 
         service = TestAuthService()
-
         # Test authenticate
         result = await service.authenticate("valid")
         assert result is not None
         assert result["user_id"] == "test_user"
-
         invalid_result = await service.authenticate("invalid")
         assert invalid_result is None
-
         # Test authorize
-
         test_user_uuid = UUID("12345678-1234-5678-1234-567812345678")
         authorized = await service.authorize(test_user_uuid, "pipelines", "read")
         assert authorized is True
-
         unauthorized = await service.authorize(test_user_uuid, "REDACTED_LDAP_BIND_PASSWORD", "delete")
         assert unauthorized is False
-
         # Test generate_token
         token = await service.generate_token({"user_id": "test_user"})
         assert token == "generated_token_test_user"
-
         # Test validate_token
         validated = await service.validate_token("valid")
         assert validated is not None
@@ -505,27 +489,22 @@ class TestPortMocking:
                 return True
 
         service = TestCacheService()
-
         # Test get with existing key
         value = await service.get("initial_key")
         assert value == "initial_value"
-
         # Test get with missing key
         value = await service.get("nonexistent")
         assert value is None
-
         # Test set
         result = await service.set("new_key", "new_value")
         assert result is True
         value = await service.get("new_key")
         assert value == "new_value"
-
         # Test delete
         result = await service.delete("new_key")
         assert result is True
         value = await service.get("new_key")
         assert value is None
-
         # Test clear
         result = await service.clear()
         assert result is True
@@ -544,7 +523,7 @@ class TestPortMocking:
                 self,
                 pipeline_id: UUID,
                 config: dict[str, str] | None = None,
-            ) -> ServiceResult[str]:
+            ) -> ServiceResult[Any]:
                 execution_id = f"exec_{pipeline_id}_{len(self._executions)}"
                 self._executions[execution_id] = {
                     "pipeline_id": pipeline_id,
@@ -556,7 +535,7 @@ class TestPortMocking:
             async def get_execution_status(
                 self,
                 execution_id: str,
-            ) -> ServiceResult[dict[str, str]]:
+            ) -> ServiceResult[Any]:
                 """Get execution status."""
                 if execution_id in self._executions:
                     execution_data = self._executions[execution_id]
@@ -568,7 +547,7 @@ class TestPortMocking:
             async def cancel_execution(
                 self,
                 execution_id: str,
-            ) -> ServiceResult[bool]:
+            ) -> ServiceResult[Any]:
                 """Cancel execution."""
                 if execution_id in self._executions:
                     self._executions[execution_id]["status"] = "cancelled"
@@ -576,30 +555,26 @@ class TestPortMocking:
                 return ServiceResult.fail(f"Execution {execution_id} not found")
 
         service = TestPipelineExecutionService()
-
         # Test execute_pipeline
         pipeline_id = uuid4()
         result = await service.execute_pipeline(pipeline_id, {"param": "value"})
-        assert result.is_success
-        execution_id = result.unwrap()
+        assert result.success
+        execution_id = result.data
         assert execution_id.startswith(f"exec_{pipeline_id}")
-
         # Test get_execution_status
         status_result = await service.get_execution_status(execution_id)
-        assert status_result.is_success
-        status = status_result.unwrap()
+        assert status_result.success
+        status = status_result.data
         assert status["pipeline_id"] == str(pipeline_id)
         assert status["status"] == "running"
         assert status["config"] == str({"param": "value"})
-
         # Test cancel_execution
         cancel_result = await service.cancel_execution(execution_id)
-        assert cancel_result.is_success
-        assert cancel_result.unwrap() is True
-
+        assert cancel_result.success
+        assert cancel_result.data is True
         # Verify cancellation
         status_result = await service.get_execution_status(execution_id)
-        status = status_result.unwrap()
+        status = status_result.data
         assert status["status"] == "cancelled"
 
 
@@ -613,38 +588,27 @@ class TestPortInteroperability:
         auth_service = Mock(spec=AuthService)
         auth_service.authenticate = AsyncMock(return_value={"user_id": "test"})
         auth_service.authorize = AsyncMock(return_value=True)
-
         pipeline_repo = Mock(spec=PipelineRepository)
         pipeline_repo.list = AsyncMock(return_value=[])
-
         plugin_repo = Mock(spec=PluginRepository)
         plugin_repo.list = AsyncMock(return_value=[])
-
         cache_service = Mock(spec=CacheService)
         cache_service.get = AsyncMock(return_value="cached_value")
-
         health_service = Mock(spec=HealthCheckService)
         health_service.check_health = AsyncMock(return_value={"status": "healthy"})
-
         # Test they can all be used together
         user = await auth_service.authenticate("token")
         assert user["user_id"] == "test"
-
         authorized = await auth_service.authorize("test", "resource", "action")
         assert authorized is True
-
         pipelines = await pipeline_repo.list()
         assert pipelines == []
-
         plugins = await plugin_repo.list()
         assert plugins == []
-
         cached_value = await cache_service.get("key")
         assert cached_value == "cached_value"
-
         health = await health_service.check_health()
         assert health["status"] == "healthy"
-
         # Verify all mocks were called
         auth_service.authenticate.assert_called_once()
         auth_service.authorize.assert_called_once()
@@ -676,7 +640,6 @@ class TestPortInteroperability:
             APIAuthenticationService,
             APIResponseBuilder,
         ]
-
         for port in ports:
             assert issubclass(port, ABC), f"{port.__name__} should inherit from ABC"
             assert hasattr(port, "__abstractmethods__"), (
@@ -696,7 +659,6 @@ class TestPortContractValidation:
             CacheService,
             HealthCheckService,
         ]
-
         for port_class in abstract_ports:
             with pytest.raises(TypeError):
                 port_class()  # Should raise TypeError due to abstract methods
@@ -743,7 +705,6 @@ class TestPortContractValidation:
         # These should instantiate without error
         auth_service = ConcreteAuthService()
         assert isinstance(auth_service, AuthService)
-
         cache_service = ConcreteCacheService()
         assert isinstance(cache_service, CacheService)
 
@@ -764,7 +725,6 @@ class TestPortContractValidation:
 
         # These should raise TypeError due to missing abstract methods
         with pytest.raises(TypeError, match="abstract"):
-            IncompleteAuthService()  # type: ignore[abstract]
-
+            IncompleteAuthService()
         with pytest.raises(TypeError, match="abstract"):
-            IncompleteCacheService()  # type: ignore[abstract]
+            IncompleteCacheService()

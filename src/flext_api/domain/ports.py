@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from flext_core.domain.types import ServiceResult
+    from flext_core.domain.shared_types import ServiceResult
 
     from flext_api.domain.entities import (
         APIPipeline,
@@ -30,11 +30,11 @@ class PipelineRepository(ABC):
     """Pipeline repository port."""
 
     @abstractmethod
-    async def create(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+    async def create(self, pipeline: APIPipeline) -> ServiceResult[Any]:
         """Create a new pipeline."""
 
     @abstractmethod
-    async def get(self, pipeline_id: UUID) -> ServiceResult[APIPipeline]:
+    async def get(self, pipeline_id: UUID) -> ServiceResult[Any]:
         """Get pipeline by ID."""
 
     @abstractmethod
@@ -45,15 +45,15 @@ class PipelineRepository(ABC):
         owner_id: UUID | None = None,
         project_id: UUID | None = None,
         status: str | None = None,
-    ) -> ServiceResult[list[APIPipeline]]:
+    ) -> ServiceResult[Any]:
         """List pipelines with optional filtering."""
 
     @abstractmethod
-    async def update(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+    async def update(self, pipeline: APIPipeline) -> ServiceResult[Any]:
         """Update existing pipeline."""
 
     @abstractmethod
-    async def delete(self, pipeline_id: UUID) -> ServiceResult[bool]:
+    async def delete(self, pipeline_id: UUID) -> ServiceResult[Any]:
         """Delete pipeline by ID."""
 
     @abstractmethod
@@ -62,11 +62,11 @@ class PipelineRepository(ABC):
         owner_id: UUID | None = None,
         project_id: UUID | None = None,
         status: str | None = None,
-    ) -> ServiceResult[int]:
+    ) -> ServiceResult[Any]:
         """Count pipelines with optional filtering."""
 
     @abstractmethod
-    async def save(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+    async def save(self, pipeline: APIPipeline) -> ServiceResult[Any]:
         """Save pipeline (create or update based on existence)."""
 
 
@@ -74,11 +74,11 @@ class PluginRepository(ABC):
     """Plugin repository port."""
 
     @abstractmethod
-    async def create(self, plugin: Plugin) -> ServiceResult[Plugin]:
+    async def create(self, plugin: Plugin) -> ServiceResult[Any]:
         """Create a new plugin."""
 
     @abstractmethod
-    async def get(self, plugin_id: UUID) -> ServiceResult[Plugin]:
+    async def get(self, plugin_id: UUID) -> ServiceResult[Any]:
         """Get plugin by ID."""
 
     @abstractmethod
@@ -88,15 +88,15 @@ class PluginRepository(ABC):
         offset: int = 0,
         plugin_type: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[list[Plugin]]:
+    ) -> ServiceResult[Any]:
         """List plugins with optional filtering."""
 
     @abstractmethod
-    async def update(self, plugin: Plugin) -> ServiceResult[Plugin]:
+    async def update(self, plugin: Plugin) -> ServiceResult[Any]:
         """Update existing plugin."""
 
     @abstractmethod
-    async def delete(self, plugin_id: UUID) -> ServiceResult[bool]:
+    async def delete(self, plugin_id: UUID) -> ServiceResult[Any]:
         """Delete plugin by ID."""
 
     @abstractmethod
@@ -104,11 +104,11 @@ class PluginRepository(ABC):
         self,
         plugin_type: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[int]:
+    ) -> ServiceResult[Any]:
         """Count plugins with optional filtering."""
 
     @abstractmethod
-    async def save(self, plugin: Plugin) -> ServiceResult[Plugin]:
+    async def save(self, plugin: Plugin) -> ServiceResult[Any]:
         """Save plugin (create or update based on existence)."""
 
 
@@ -346,18 +346,18 @@ class PipelineExecutionService(ABC):
         self,
         pipeline_id: UUID,
         config: dict[str, Any] | None = None,
-    ) -> ServiceResult[str]:
+    ) -> ServiceResult[Any]:
         """Execute pipeline and return execution ID."""
 
     @abstractmethod
     async def get_execution_status(
         self,
         execution_id: str,
-    ) -> ServiceResult[dict[str, Any]]:
+    ) -> ServiceResult[Any]:
         """Get pipeline execution status."""
 
     @abstractmethod
-    async def cancel_execution(self, execution_id: str) -> ServiceResult[bool]:
+    async def cancel_execution(self, execution_id: str) -> ServiceResult[Any]:
         """Cancel pipeline execution."""
 
 
@@ -370,11 +370,11 @@ class PluginManagementService(ABC):
         name: str,
         version: str,
         config: dict[str, Any] | None = None,
-    ) -> ServiceResult[Plugin]:
+    ) -> ServiceResult[Any]:
         """Install plugin from registry."""
 
     @abstractmethod
-    async def uninstall_plugin(self, plugin_id: UUID) -> ServiceResult[bool]:
+    async def uninstall_plugin(self, plugin_id: UUID) -> ServiceResult[Any]:
         """Uninstall plugin."""
 
     @abstractmethod
@@ -382,7 +382,7 @@ class PluginManagementService(ABC):
         self,
         plugin_id: UUID,
         config: dict[str, Any],
-    ) -> ServiceResult[Plugin]:
+    ) -> ServiceResult[Any]:
         """Update plugin configuration."""
 
 
@@ -400,7 +400,7 @@ class NotificationService(ABC):
         user_id: str,
         message: str,
         msg_type: str = "info",
-    ) -> ServiceResult[bool]:
+    ) -> ServiceResult[Any]:
         """Send notification to recipient."""
 
 
@@ -415,7 +415,7 @@ class AuditService(ABC):
         entity_type: str,
         entity_id: str,
         metadata: dict[str, Any] | None = None,
-    ) -> ServiceResult[bool]:
+    ) -> ServiceResult[Any]:
         """Log user action for audit trail."""
 
 
@@ -431,7 +431,7 @@ class APIAuthenticationService(ABC):
     async def authenticate_request(
         self,
         request: RequestLog,
-    ) -> ServiceResult[dict[str, Any]]:
+    ) -> ServiceResult[Any]:
         """Authenticate API request."""
 
     @abstractmethod
@@ -440,7 +440,7 @@ class APIAuthenticationService(ABC):
         user_id: str,
         action: str,
         resource: str,
-    ) -> ServiceResult[bool]:
+    ) -> ServiceResult[Any]:
         """Authorize user action on resource."""
 
 

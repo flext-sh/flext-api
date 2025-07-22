@@ -61,7 +61,7 @@ class TestInMemoryPipelineRepository:
         """Test saving pipeline to repository."""
         result = await repository.save(sample_pipeline)
 
-        assert result.is_success
+        assert result.success
         assert result.data == sample_pipeline
         assert sample_pipeline.id in repository._pipelines
         assert repository._pipelines[sample_pipeline.id] == sample_pipeline
@@ -78,13 +78,13 @@ class TestInMemoryPipelineRepository:
 
         # Get by ID
         result = await repository.get(sample_pipeline.id)
-        assert result.is_success
+        assert result.success
         assert result.data == sample_pipeline
 
         # Get non-existing pipeline
         non_existing_id = uuid4()
         result = await repository.get(non_existing_id)
-        assert not result.is_success
+        assert not result.success
 
     @pytest.mark.asyncio
     async def test_list_pipelines_basic(self, repository: Any) -> None:
@@ -100,8 +100,8 @@ class TestInMemoryPipelineRepository:
 
         # List all pipelines
         result = await repository.list()
-        assert result.is_success
-        pipelines = result.unwrap()
+        assert result.success
+        pipelines = result.data
         assert len(pipelines) == 3
 
         # Pipelines should be sorted by created_at descending
@@ -124,8 +124,8 @@ class TestInMemoryPipelineRepository:
 
         # Filter by owner1
         result = await repository.list(owner_id=owner1)
-        assert result.is_success
-        pipelines = result.unwrap()
+        assert result.success
+        pipelines = result.data
         assert len(pipelines) == 2
         assert all(p.owner_id == owner1 for p in pipelines)
 
@@ -145,8 +145,8 @@ class TestInMemoryPipelineRepository:
 
         # Filter by project1
         result = await repository.list(project_id=project1)
-        assert result.is_success
-        pipelines = result.unwrap()
+        assert result.success
+        pipelines = result.data
         assert len(pipelines) == 2
         assert all(p.project_id == project1 for p in pipelines)
 
@@ -163,8 +163,8 @@ class TestInMemoryPipelineRepository:
 
         # Filter by ACTIVE status
         result = await repository.list(status="active")
-        assert result.is_success
-        pipelines = result.unwrap()
+        assert result.success
+        pipelines = result.data
         assert len(pipelines) == 2
         assert all(p.pipeline_status == PipelineStatus.ACTIVE for p in pipelines)
 
@@ -179,7 +179,7 @@ class TestInMemoryPipelineRepository:
 
         # Use invalid status - should return empty list (no pipelines match invalid status)
         result = await repository.list(status="invalid_status")
-        assert result.is_success
+        assert result.success
         pipelines = result.data or []
         assert len(pipelines) == 0  # No pipelines match invalid status
 
@@ -193,20 +193,20 @@ class TestInMemoryPipelineRepository:
 
         # Get first 2 pipelines
         result = await repository.list(limit=2, offset=0)
-        assert result.is_success
-        pipelines = result.unwrap()
+        assert result.success
+        pipelines = result.data
         assert len(pipelines) == 2
 
         # Get next 2 pipelines
         result = await repository.list(limit=2, offset=2)
-        assert result.is_success
-        pipelines = result.unwrap()
+        assert result.success
+        pipelines = result.data
         assert len(pipelines) == 2
 
         # Get last pipeline
         result = await repository.list(limit=2, offset=4)
-        assert result.is_success
-        pipelines = result.unwrap()
+        assert result.success
+        pipelines = result.data
         assert len(pipelines) == 1
 
     @pytest.mark.asyncio
@@ -218,21 +218,21 @@ class TestInMemoryPipelineRepository:
 
         # Delete pipeline
         result = await repository.delete(sample_pipeline.id)
-        assert result.is_success
+        assert result.success
         assert result.data is True
         assert sample_pipeline.id not in repository._pipelines
 
         # Try to delete non-existing pipeline
         non_existing_id = uuid4()
         result = await repository.delete(non_existing_id)
-        assert not result.is_success
+        assert not result.success
 
     @pytest.mark.asyncio
     async def test_count_pipelines(self, repository: Any) -> None:
         """Test counting pipelines in repository."""
         # Initially empty
         count_result = await repository.count()
-        assert count_result.is_success
+        assert count_result.success
         assert count_result.data == 0
 
         # Add some pipelines
@@ -241,7 +241,7 @@ class TestInMemoryPipelineRepository:
             await repository.save(pipeline)
 
         count_result = await repository.count()
-        assert count_result.is_success
+        assert count_result.success
         assert count_result.data == 3
 
 
@@ -279,7 +279,7 @@ class TestInMemoryPluginRepository:
         """Test saving plugin to repository."""
         result = await repository.save(sample_plugin)
 
-        assert result.is_success
+        assert result.success
         assert result.data == sample_plugin
         assert sample_plugin.id in repository._storage
         assert repository._storage[sample_plugin.id] == sample_plugin
@@ -292,13 +292,13 @@ class TestInMemoryPluginRepository:
 
         # Get by ID
         result = await repository.get(sample_plugin.id)
-        assert result.is_success
+        assert result.success
         assert result.data == sample_plugin
 
         # Get non-existing plugin
         non_existing_id = uuid4()
         result = await repository.get(non_existing_id)
-        assert not result.is_success
+        assert not result.success
 
     @pytest.mark.asyncio
     async def test_get_plugin_by_name(
@@ -332,7 +332,7 @@ class TestInMemoryPluginRepository:
 
         # List all plugins
         result = await repository.list()
-        assert result.is_success
+        assert result.success
         plugins = result.data or []
         assert len(plugins) == 3
 
@@ -354,7 +354,7 @@ class TestInMemoryPluginRepository:
 
         # Filter by TAP type
         result = await repository.list(plugin_type="tap")
-        assert result.is_success
+        assert result.success
         plugins = result.data or []
         assert len(plugins) == 2
         assert all(p.plugin_type == PluginType.TAP for p in plugins)
@@ -373,7 +373,7 @@ class TestInMemoryPluginRepository:
         # Repository doesn't support enabled filtering in its interface,
         # so we test by listing all and manually filtering
         result = await repository.list()
-        assert result.is_success
+        assert result.success
         plugins = result.data or []
 
         # Filter manually for enabled status
@@ -394,19 +394,19 @@ class TestInMemoryPluginRepository:
 
         # Get first 2 plugins
         result = await repository.list(limit=2, offset=0)
-        assert result.is_success
+        assert result.success
         plugins = result.data or []
         assert len(plugins) == 2
 
         # Get next 2 plugins
         result = await repository.list(limit=2, offset=2)
-        assert result.is_success
+        assert result.success
         plugins = result.data or []
         assert len(plugins) == 2
 
         # Get last plugin
         result = await repository.list(limit=2, offset=4)
-        assert result.is_success
+        assert result.success
         plugins = result.data or []
         assert len(plugins) == 1
 
@@ -423,7 +423,7 @@ class TestInMemoryPluginRepository:
 
         # Filter by TAP type only (repository doesn't support enabled filtering)
         result = await repository.list(plugin_type="tap")
-        assert result.is_success
+        assert result.success
         plugins = result.data or []
 
         # Filter manually for enabled status since repository doesn't support it
@@ -440,21 +440,21 @@ class TestInMemoryPluginRepository:
 
         # Delete plugin
         result = await repository.delete(sample_plugin.id)
-        assert result.is_success
+        assert result.success
         assert result.data is True
         assert sample_plugin.id not in repository._storage
 
         # Try to delete non-existing plugin
         non_existing_id = uuid4()
         result = await repository.delete(non_existing_id)
-        assert not result.is_success
+        assert not result.success
 
     @pytest.mark.asyncio
     async def test_count_plugins(self, repository: Any) -> None:
         """Test counting plugins in repository."""
         # Initially empty
         count_result = await repository.count()
-        assert count_result.is_success
+        assert count_result.success
         assert count_result.data == 0
 
         # Add some plugins
@@ -463,7 +463,7 @@ class TestInMemoryPluginRepository:
             await repository.save(plugin)
 
         count_result = await repository.count()
-        assert count_result.is_success
+        assert count_result.success
         assert count_result.data == 3
 
     @pytest.mark.asyncio
@@ -489,9 +489,9 @@ class TestInMemoryPluginRepository:
         # Each repository should have only its own plugin
         count1_result = await repo1.count()
         count2_result = await repo2.count()
-        assert count1_result.is_success
+        assert count1_result.success
         assert count1_result.data == 1
-        assert count2_result.is_success
+        assert count2_result.success
         assert count2_result.data == 1
 
         # Note: get_by_name_and_version method does not exist in interface
@@ -499,8 +499,8 @@ class TestInMemoryPluginRepository:
         plugins1_result = await repo1.list()
         plugins2_result = await repo2.list()
 
-        assert plugins1_result.is_success
-        assert plugins2_result.is_success
+        assert plugins1_result.success
+        assert plugins2_result.success
 
         # Check that each repo contains only its own plugin
         plugins1 = plugins1_result.data or []
@@ -536,7 +536,8 @@ class TestRepositoryLogging:
             await repository.save(pipeline)
 
             mock_logger.info.assert_called_once_with(
-                "Created pipeline: %s", pipeline.id,
+                "Created pipeline: %s",
+                pipeline.id,
             )
 
     @pytest.mark.asyncio
@@ -555,7 +556,8 @@ class TestRepositoryLogging:
             await repository.save(plugin)
 
             mock_logger.info.assert_called_once_with(
-                "Plugin created successfully: %s", plugin.name,
+                "Plugin created successfully: %s",
+                plugin.name,
             )
 
     @pytest.mark.asyncio
@@ -578,7 +580,8 @@ class TestRepositoryLogging:
             await repository.delete(pipeline.id)
 
             mock_logger.info.assert_called_once_with(
-                "Deleted pipeline: %s", pipeline.id,
+                "Deleted pipeline: %s",
+                pipeline.id,
             )
 
     @pytest.mark.asyncio
@@ -599,5 +602,6 @@ class TestRepositoryLogging:
             await repository.delete(plugin.id)
 
             mock_logger.info.assert_called_once_with(
-                "Plugin deleted successfully: %s", plugin.name,
+                "Plugin deleted successfully: %s",
+                plugin.name,
             )

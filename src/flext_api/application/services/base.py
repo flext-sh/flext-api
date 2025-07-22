@@ -6,7 +6,8 @@ used across all application services, following DRY principles and Clean Archite
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, TypeVar
 
 # Use centralized logger from flext-observability - ELIMINATE DUPLICATION
 from flext_observability.logging import get_logger
@@ -20,18 +21,19 @@ if TYPE_CHECKING:
         AuthService as FlextAuthService,
         SessionService,
     )
-    from flext_core.domain.types import ServiceResult
-    from flext_observability.monitoring.health import HealthMonitor
-    from flext_observability.monitoring.metrics import MetricsCollector
+    from flext_core.domain.shared_types import ServiceResult
+    from flext_observability.metrics import MetricsCollector
 
     from flext_api.infrastructure.repositories import (
         APIRequestRepository,
         APIResponseRepository,
     )
 
-# Runtime imports for ISP interfaces
-from abc import ABC, abstractmethod
-from typing import Any
+# Note: Using HealthChecker instead of HealthMonitor
+if TYPE_CHECKING:
+    from flext_observability.health import HealthChecker
+else:
+    HealthChecker = Any
 
 # Generic type for repository injection
 TRepository = TypeVar("TRepository")
@@ -122,7 +124,7 @@ class MonitoringService(BaseAPIService):
 
     def __init__(
         self,
-        health_monitor: HealthMonitor | None = None,
+        health_monitor: HealthChecker | None = None,
         metrics_collector: MetricsCollector | None = None,
     ) -> None:
         """Initialize monitoring service with monitoring dependencies.
@@ -157,7 +159,7 @@ class PipelineReader(ABC):
         status: str | None = None,
         limit: int = 20,
         offset: int = 0,
-    ) -> ServiceResult[list[Any]]:
+    ) -> ServiceResult[Any]:
         """List pipelines with filtering."""
 
 
@@ -187,7 +189,7 @@ class PipelineWriter(ABC):
         """Update existing pipeline."""
 
     @abstractmethod
-    async def delete_pipeline(self, pipeline_id: UUID) -> ServiceResult[bool]:
+    async def delete_pipeline(self, pipeline_id: UUID) -> ServiceResult[Any]:
         """Delete pipeline."""
 
 
@@ -204,14 +206,17 @@ class PipelineValidator(ABC):
 
     @abstractmethod
     async def validate_pipeline_config(
-        self, config: dict[str, Any] | None,
-    ) -> ServiceResult[bool]:
+        self,
+        config: dict[str, Any] | None,
+    ) -> ServiceResult[Any]:
         """Validate pipeline configuration."""
 
     @abstractmethod
     async def validate_pipeline_name(
-        self, name: str, owner_id: UUID | None,
-    ) -> ServiceResult[bool]:
+        self,
+        name: str,
+        owner_id: UUID | None,
+    ) -> ServiceResult[Any]:
         """Validate pipeline name uniqueness."""
 
 

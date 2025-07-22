@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_api.application.services.auth_service import AuthService
 from flext_api.application.services.plugin_service import PluginService
@@ -58,17 +58,15 @@ class TestAuthService:
         mock_session.id = "session123"
         mock_session.token = "token123"
 
-        mock_auth_service.authenticate_user.return_value = ServiceResult.ok(
-            (
+        mock_auth_service.authenticate_user.return_value = ServiceResult.ok((
                 mock_user,
                 mock_session,
-            ),
-        )
+            ))
 
         result = await auth_service.login("test@example.com", "password123")
 
-        assert result.is_success
-        data = result.unwrap()
+        assert result.success
+        data = result.data
         assert data["access_token"] == "token123"
         assert data["token_type"] == "bearer"
         assert data["username"] == "testuser"
@@ -82,13 +80,11 @@ class TestAuthService:
         mock_auth_service: AsyncMock,
     ) -> None:
         """Test login with invalid credentials."""
-        mock_auth_service.authenticate_user.return_value = ServiceResult.fail(
-            "Invalid credentials",
-        )
+        mock_auth_service.authenticate_user.return_value = ServiceResult.fail("Invalid credentials")
 
         result = await auth_service.login("test@example.com", "wrongpassword")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Invalid credentials" in result.error
 
@@ -97,7 +93,7 @@ class TestAuthService:
         """Test login with missing email."""
         result = await auth_service.login("", "password123")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Email and password are required" in result.error
 
@@ -106,7 +102,7 @@ class TestAuthService:
         """Test login with missing password."""
         result = await auth_service.login("test@example.com", "")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Email and password are required" in result.error
 
@@ -124,12 +120,10 @@ class TestAuthService:
         mock_session.id = "session123"
         mock_session.token = "token123"
 
-        mock_auth_service.authenticate_user.return_value = ServiceResult.ok(
-            (
+        mock_auth_service.authenticate_user.return_value = ServiceResult.ok((
                 mock_user,
                 mock_session,
-            ),
-        )
+            ))
 
         device_info = {"ip_address": "192.168.1.1", "user_agent": "Mozilla/5.0"}
 
@@ -139,7 +133,7 @@ class TestAuthService:
             device_info,
         )
 
-        assert result.is_success
+        assert result.success
 
         # Verify device info was passed to auth service
         call_args = mock_auth_service.authenticate_user.call_args
@@ -157,8 +151,8 @@ class TestAuthService:
 
         result = await auth_service.logout("session123")
 
-        assert result.is_success
-        assert result.unwrap() is True
+        assert result.success
+        assert result.data is True
 
         mock_session_manager.terminate_session.assert_called_once_with("session123")
 
@@ -169,13 +163,11 @@ class TestAuthService:
         mock_session_manager: AsyncMock,
     ) -> None:
         """Test logout failure."""
-        mock_session_manager.terminate_session.return_value = ServiceResult.fail(
-            "Session not found",
-        )
+        mock_session_manager.terminate_session.return_value = ServiceResult.fail("Session not found")
 
         result = await auth_service.logout("invalid_session")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Session not found" in result.error
 
@@ -197,8 +189,8 @@ class TestAuthService:
 
         result = await auth_service.refresh_token("refresh123")
 
-        assert result.is_success
-        data = result.unwrap()
+        assert result.success
+        data = result.data
         assert data["access_token"] == "new_token123"
         assert data["token_type"] == "bearer"
         assert data["expires_in"] == 3600
@@ -210,13 +202,11 @@ class TestAuthService:
         mock_session_manager: AsyncMock,
     ) -> None:
         """Test refresh with invalid token."""
-        mock_session_manager.refresh_token.return_value = ServiceResult.fail(
-            "Invalid refresh token",
-        )
+        mock_session_manager.refresh_token.return_value = ServiceResult.fail("Invalid refresh token")
 
         result = await auth_service.refresh_token("invalid_refresh")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Invalid refresh token" in result.error
 
@@ -238,8 +228,8 @@ class TestAuthService:
             "password123",
         )
 
-        assert result.is_success
-        data = result.unwrap()
+        assert result.success
+        data = result.data
         assert data["username"] == "testuser"
         assert data["email"] == "test@example.com"
         assert data["role"] == "user"
@@ -260,8 +250,8 @@ class TestAuthService:
             "password123",
         )
 
-        assert result.is_success
-        data = result.unwrap()
+        assert result.success
+        data = result.data
         assert data["username"] == "testuser"
         assert data["email"] == "test@example.com"
         assert data["message"] == "User created successfully"
@@ -285,13 +275,13 @@ class TestAuthService:
             "REDACTED_LDAP_BIND_PASSWORD",
         )
 
-        assert result.is_success
-        data = result.unwrap()
+        assert result.success
+        data = result.data
         assert data["role"] == "REDACTED_LDAP_BIND_PASSWORD"
 
         # Verify role was passed to auth service
         call_args = mock_auth_service.create_user.call_args
-        assert call_args.kwargs["role"] == "REDACTED_LDAP_BIND_PASSWORD"
+        assert call_args.kwargs["roles"] == ["REDACTED_LDAP_BIND_PASSWORD"]
 
     @pytest.mark.asyncio
     async def test_register_failure(
@@ -300,9 +290,7 @@ class TestAuthService:
         mock_auth_service: AsyncMock,
     ) -> None:
         """Test registration failure."""
-        mock_auth_service.create_user.return_value = ServiceResult.fail(
-            "Username already exists",
-        )
+        mock_auth_service.create_user.return_value = ServiceResult.fail("Username already exists")
 
         result = await auth_service.register(
             "existing_user",
@@ -310,7 +298,7 @@ class TestAuthService:
             "password123",
         )
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Username already exists" in result.error
 
@@ -332,8 +320,8 @@ class TestAuthService:
 
         result = await auth_service.validate_token("valid_token")
 
-        assert result.is_success
-        user = result.unwrap()
+        assert result.success
+        user = result.data
         assert isinstance(user, UserAPI)
         assert user.username == "testuser"
         assert user.roles == ["user"]
@@ -347,13 +335,11 @@ class TestAuthService:
         mock_session_manager: AsyncMock,
     ) -> None:
         """Test validation with invalid token."""
-        mock_session_manager.validate_token.return_value = ServiceResult.fail(
-            "Token expired",
-        )
+        mock_session_manager.validate_token.return_value = ServiceResult.fail("Token expired")
 
         result = await auth_service.validate_token("invalid_token")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Invalid token" in result.error
 
@@ -370,7 +356,7 @@ class TestAuthService:
 
         result = await auth_service.login("test@example.com", "password123")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Login failed: Database connection failed" in result.error
 
@@ -387,7 +373,7 @@ class TestAuthService:
 
         result = await auth_service.logout("session123")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Logout failed: Redis connection failed" in result.error
 
@@ -431,8 +417,8 @@ class TestPluginService:
         sample_plugin: Plugin,
     ) -> None:
         """Test successful plugin installation."""
-        mock_plugin_repo.save.return_value = sample_plugin
-        mock_plugin_repo.list.return_value = []  # No duplicates
+        mock_plugin_repo.create.return_value = ServiceResult.ok(sample_plugin)
+        mock_plugin_repo.list.return_value = ServiceResult.ok([])  # No duplicates
 
         result = await plugin_service.install_plugin(
             name="test-plugin",
@@ -442,13 +428,13 @@ class TestPluginService:
             author="Test Author",
         )
 
-        assert result.is_success
-        plugin = result.unwrap()
+        assert result.success
+        plugin = result.data
         assert plugin.name == "test-plugin"
         assert plugin.plugin_type == PluginType.TAP
         assert plugin.version == "1.0.0"
 
-        mock_plugin_repo.save.assert_called_once()
+        mock_plugin_repo.create.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_install_plugin_with_string_type(
@@ -458,8 +444,8 @@ class TestPluginService:
         sample_plugin: Plugin,
     ) -> None:
         """Test plugin installation with string plugin type."""
-        mock_plugin_repo.save.return_value = sample_plugin
-        mock_plugin_repo.list.return_value = []
+        mock_plugin_repo.create.return_value = ServiceResult.ok(sample_plugin)
+        mock_plugin_repo.list.return_value = ServiceResult.ok([])
 
         result = await plugin_service.install_plugin(
             name="test-plugin",
@@ -467,8 +453,8 @@ class TestPluginService:
             version="1.0.0",
         )
 
-        assert result.is_success
-        plugin = result.unwrap()
+        assert result.success
+        plugin = result.data
         assert plugin.plugin_type == PluginType.TAP
 
     @pytest.mark.asyncio
@@ -495,8 +481,8 @@ class TestPluginService:
             enabled=True,
         )
 
-        mock_plugin_repo.save.return_value = expected_plugin
-        mock_plugin_repo.list.return_value = []
+        mock_plugin_repo.create.return_value = ServiceResult.ok(expected_plugin)
+        mock_plugin_repo.list.return_value = ServiceResult.ok([])
 
         result = await plugin_service.install_plugin(
             name="test-plugin",
@@ -510,8 +496,8 @@ class TestPluginService:
             capabilities=capabilities,
         )
 
-        assert result.is_success
-        plugin = result.unwrap()
+        assert result.success
+        plugin = result.data
         assert plugin.plugin_config == config
         assert plugin.author == "Test Author"
         assert plugin.repository_url == "https://github.com/test/plugin"
@@ -539,7 +525,7 @@ class TestPluginService:
             version="1.0.0",
         )
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Plugin with same name and version already exists" in result.error
 
@@ -552,12 +538,12 @@ class TestPluginService:
     ) -> None:
         """Test successful plugin retrieval."""
         plugin_id = sample_plugin.id
-        mock_plugin_repo.get.return_value = sample_plugin
+        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
 
         result = await plugin_service.get_plugin(plugin_id)
 
-        assert result.is_success
-        plugin = result.unwrap()
+        assert result.success
+        plugin = result.data
         assert plugin.name == "test-plugin"
 
         mock_plugin_repo.get.assert_called_once_with(plugin_id)
@@ -570,11 +556,11 @@ class TestPluginService:
     ) -> None:
         """Test getting non-existent plugin."""
         plugin_id = uuid4()
-        mock_plugin_repo.get.return_value = None
+        mock_plugin_repo.get.return_value = ServiceResult.fail("Plugin not found")
 
         result = await plugin_service.get_plugin(plugin_id)
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Plugin not found" in result.error
 
@@ -589,12 +575,12 @@ class TestPluginService:
             Plugin(name="plugin1", plugin_type=PluginType.TAP),
             Plugin(name="plugin2", plugin_type=PluginType.TARGET),
         ]
-        mock_plugin_repo.list.return_value = plugins
+        mock_plugin_repo.list.return_value = ServiceResult.ok(plugins)
 
         result = await plugin_service.list_plugins()
 
-        assert result.is_success
-        plugin_list = result.unwrap()
+        assert result.success
+        plugin_list = result.data
         assert len(plugin_list) == 2
         assert plugin_list[0].name == "plugin1"
         assert plugin_list[1].name == "plugin2"
@@ -607,7 +593,7 @@ class TestPluginService:
     ) -> None:
         """Test plugin listing with filters."""
         plugins = [Plugin(name="tap-plugin", plugin_type=PluginType.TAP, enabled=True)]
-        mock_plugin_repo.list.return_value = plugins
+        mock_plugin_repo.list.return_value = ServiceResult.ok(plugins)
 
         result = await plugin_service.list_plugins(
             plugin_type="tap",
@@ -616,12 +602,12 @@ class TestPluginService:
             offset=0,
         )
 
-        assert result.is_success
+        assert result.success
 
         # Verify filters were passed to repository
         call_args = mock_plugin_repo.list.call_args
         assert call_args.kwargs["plugin_type"] == "tap"
-        assert call_args.kwargs["enabled"] is True
+        assert call_args.kwargs["status"] == "active"
         assert call_args.kwargs["limit"] == 10
         assert call_args.kwargs["offset"] == 0
 
@@ -634,7 +620,7 @@ class TestPluginService:
     ) -> None:
         """Test successful plugin update."""
         plugin_id = sample_plugin.id
-        mock_plugin_repo.get.return_value = sample_plugin
+        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
 
         # Create updated plugin
         updated_plugin = Plugin(
@@ -645,7 +631,7 @@ class TestPluginService:
             description="Updated description",
             enabled=False,
         )
-        mock_plugin_repo.save.return_value = updated_plugin
+        mock_plugin_repo.update.return_value = ServiceResult.ok(updated_plugin)
 
         result = await plugin_service.update_plugin(
             plugin_id,
@@ -654,8 +640,8 @@ class TestPluginService:
             enabled=False,
         )
 
-        assert result.is_success
-        plugin = result.unwrap()
+        assert result.success
+        plugin = result.data
         assert plugin.name == "updated-plugin"
         assert plugin.description == "Updated description"
         assert plugin.enabled is False
@@ -668,11 +654,11 @@ class TestPluginService:
     ) -> None:
         """Test updating non-existent plugin."""
         plugin_id = uuid4()
-        mock_plugin_repo.get.return_value = None
+        mock_plugin_repo.get.return_value = ServiceResult.fail("Plugin not found")
 
         result = await plugin_service.update_plugin(plugin_id, name="new-name")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Plugin not found" in result.error
 
@@ -685,8 +671,8 @@ class TestPluginService:
     ) -> None:
         """Test updating plugin with config and capabilities."""
         plugin_id = sample_plugin.id
-        mock_plugin_repo.get.return_value = sample_plugin
-        mock_plugin_repo.save.return_value = sample_plugin
+        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
+        mock_plugin_repo.update.return_value = ServiceResult.ok(sample_plugin)
 
         new_config = {"new_setting": "value"}
         new_capabilities = ["read", "write", "execute"]
@@ -697,7 +683,7 @@ class TestPluginService:
             capabilities=new_capabilities,
         )
 
-        assert result.is_success
+        assert result.success
 
     @pytest.mark.asyncio
     async def test_uninstall_plugin_success(
@@ -708,13 +694,13 @@ class TestPluginService:
     ) -> None:
         """Test successful plugin uninstallation."""
         plugin_id = sample_plugin.id
-        mock_plugin_repo.get.return_value = sample_plugin
-        mock_plugin_repo.delete.return_value = True
+        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
+        mock_plugin_repo.delete.return_value = ServiceResult.ok(True)
 
         result = await plugin_service.uninstall_plugin(plugin_id)
 
-        assert result.is_success
-        data = result.unwrap()
+        assert result.success
+        data = result.data
         assert data["uninstalled"] is True
         assert data["plugin_id"] == str(plugin_id)
 
@@ -728,11 +714,11 @@ class TestPluginService:
     ) -> None:
         """Test uninstalling non-existent plugin."""
         plugin_id = uuid4()
-        mock_plugin_repo.get.return_value = None
+        mock_plugin_repo.get.return_value = ServiceResult.fail("Plugin not found")
 
         result = await plugin_service.uninstall_plugin(plugin_id)
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Plugin not found" in result.error
 
@@ -746,7 +732,7 @@ class TestPluginService:
         """Test enabling a plugin."""
         plugin_id = sample_plugin.id
         sample_plugin.enabled = False  # Start disabled
-        mock_plugin_repo.get.return_value = sample_plugin
+        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
 
         # Create enabled version
         enabled_plugin = Plugin(
@@ -756,12 +742,12 @@ class TestPluginService:
             version=sample_plugin.version,
             enabled=True,
         )
-        mock_plugin_repo.save.return_value = enabled_plugin
+        mock_plugin_repo.update.return_value = ServiceResult.ok(enabled_plugin)
 
         result = await plugin_service.enable_plugin(plugin_id)
 
-        assert result.is_success
-        plugin = result.unwrap()
+        assert result.success
+        plugin = result.data
         assert plugin.enabled is True
 
     @pytest.mark.asyncio
@@ -774,7 +760,7 @@ class TestPluginService:
         """Test disabling a plugin."""
         plugin_id = sample_plugin.id
         sample_plugin.enabled = True  # Start enabled
-        mock_plugin_repo.get.return_value = sample_plugin
+        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
 
         # Create disabled version
         disabled_plugin = Plugin(
@@ -784,12 +770,12 @@ class TestPluginService:
             version=sample_plugin.version,
             enabled=False,
         )
-        mock_plugin_repo.save.return_value = disabled_plugin
+        mock_plugin_repo.update.return_value = ServiceResult.ok(disabled_plugin)
 
         result = await plugin_service.disable_plugin(plugin_id)
 
-        assert result.is_success
-        plugin = result.unwrap()
+        assert result.success
+        plugin = result.data
         assert plugin.enabled is False
 
     @pytest.mark.asyncio
@@ -801,11 +787,11 @@ class TestPluginService:
         """Test duplicate check handles repository errors gracefully."""
         # Mock repository error during duplicate check
         mock_plugin_repo.list.side_effect = ConnectionError("Database unavailable")
-        mock_plugin_repo.save.return_value = Plugin(
-            name="test",
-            plugin_type=PluginType.TAP,
-            version="1.0.0",
-        )
+        mock_plugin_repo.create.return_value = ServiceResult.ok(Plugin(
+                name="test",
+                plugin_type=PluginType.TAP,
+                version="1.0.0",
+            ))
 
         # Should not fail installation due to duplicate check error
         result = await plugin_service.install_plugin(
@@ -814,9 +800,7 @@ class TestPluginService:
             version="1.0.0",
         )
 
-        assert (
-            result.is_success
-        )  # Installation proceeds despite duplicate check failure
+        assert result.success  # Installation proceeds despite duplicate check failure
 
     @pytest.mark.asyncio
     async def test_install_plugin_exception_handling(
@@ -825,8 +809,8 @@ class TestPluginService:
         mock_plugin_repo: AsyncMock,
     ) -> None:
         """Test plugin installation exception handling."""
-        mock_plugin_repo.list.return_value = []
-        mock_plugin_repo.save.side_effect = Exception("Database error")
+        mock_plugin_repo.list.return_value = ServiceResult.ok([])
+        mock_plugin_repo.create.side_effect = Exception("Database error")
 
         result = await plugin_service.install_plugin(
             name="test-plugin",
@@ -834,7 +818,7 @@ class TestPluginService:
             version="1.0.0",
         )
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Failed to install plugin: Database error" in result.error
 
@@ -850,7 +834,7 @@ class TestPluginService:
 
         result = await plugin_service.get_plugin(plugin_id)
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Failed to get plugin: Database error" in result.error
 
@@ -865,7 +849,7 @@ class TestPluginService:
 
         result = await plugin_service.list_plugins()
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Failed to list plugins: Database error" in result.error
 
@@ -881,7 +865,7 @@ class TestPluginService:
 
         result = await plugin_service.update_plugin(plugin_id, name="new-name")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Failed to get plugin: Database error" in result.error
 
@@ -897,6 +881,6 @@ class TestPluginService:
 
         result = await plugin_service.uninstall_plugin(plugin_id)
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Plugin not found" in result.error

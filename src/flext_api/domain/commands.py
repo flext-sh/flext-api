@@ -14,8 +14,7 @@ from pydantic import BaseModel, Field
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from flext_core.domain.types import ServiceResult
-
+    from flext_core.domain.shared_types import ServiceResult
 
 # ==============================================================================
 # SINGLE RESPONSIBILITY PRINCIPLE: Command Base Class
