@@ -91,7 +91,7 @@ class FlextApiMetrics(TypedDict):
 # TYPE UNIONS - SIMPLIFIED TYPE HINTS
 # ==============================================================================
 
-FlextApiData = Union[dict[str, Any], list[Any], str, int, float, bool, None]
+FlextApiData = dict[str, Any] | list[Any] | str | int | float | bool | None
 FlextApiHeaders = dict[str, str]
 FlextApiParams = dict[str, Any]
 FlextApiCallback = Callable[[FlextApiResponse], None]
@@ -177,7 +177,7 @@ def flext_api_config_dict(
 # DECORATORS - ELIMINATE COMMON PATTERNS
 # ==============================================================================
 
-def flext_api_with_retry(retries: int = 3, delay: float = 1.0):
+def flext_api_with_retry(retries: int = 3, delay: float = 1.0) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator to add retry logic - eliminates retry boilerplate."""
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
@@ -549,20 +549,23 @@ class FlextApiClientBuilder:
 
     def build(self) -> FlextApiApplicationClient:
         """Build the configured client."""
+        # Create base client
+        client = FlextApiApplicationClient(self._base_url)
+
         # Deduplicate mixins
         unique_mixins = list(dict.fromkeys(self._mixins))
 
-        # Create dynamic class with selected mixins
-        if unique_mixins:
-            client_class = type(
-                "DynamicFlextApiClient",
-                (*tuple(unique_mixins), FlextApiApplicationClient),
-                {}
-            )
-        else:
-            client_class = FlextApiApplicationClient
+        # Apply mixins by copying their methods to the client
+        for mixin_class in unique_mixins:
+            # Initialize mixin state on client
+            mixin_instance = mixin_class()
 
-        client = client_class(self._base_url)
+            # Copy mixin attributes to client
+            for attr_name in dir(mixin_instance):
+                if not attr_name.startswith("_") or attr_name.startswith(("_cache", "_metrics", "_auth", "_validators", "_request_context", "_default_headers")):
+                    attr_value = getattr(mixin_instance, attr_name)
+                    if callable(attr_value) or not attr_name.startswith("__"):
+                        setattr(client, attr_name, attr_value)
 
         # Configure client
         if self._auth_token and hasattr(client, "auth_set_token"):
