@@ -1,23 +1,15 @@
-"""Authentication routes for FLEXT API using clean architecture.
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-
-This module provides REST endpoints for authentication using
-the application services and clean architecture patterns.
-"""
+"""Authentication routes using flext-core patterns - NO LEGACY CODE."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
+from flext_core import FlextResult
 
-# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
-from flext_observability.logging import get_logger
-
-from flext_api.dependencies import get_auth_service, get_current_user
+from flext_api import get_logger
+from flext_api.dependencies import get_flext_auth_service, get_flext_current_user
 from flext_api.models.auth import (
     LoginRequest,
     LoginResponse,
@@ -27,112 +19,142 @@ from flext_api.models.auth import (
 )
 
 if TYPE_CHECKING:
-    from flext_api.application.services.auth_service import AuthService
+
+    from flext_api.infrastructure.ports import FlextJWTAuthService
+
+# Create logger using flext-core get_logger function
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
-logger = get_logger(__name__)
 
 
 @router.post("/register")
-async def register_user(
+async def register_flext_user(
     request: RegisterRequest,
-    _auth_service: Annotated[AuthService, Depends(get_auth_service)],
-) -> RegisterResponse:
-    """Register a new user.
-
-    Args:
-        request: The registration request.
-        auth_service: The authentication service.
-
-    Returns:
-        The registration response.
-
-    """
-    # For development, just return success
-    # In production, this would create a real user
-    logger.info("Registration attempt for user: %s", request.username)
-
-    # Create user object
-    user = UserAPI(
-        username=request.username,
-        roles=request.roles,
-        is_active=True,
-        is_REDACTED_LDAP_BIND_PASSWORD="REDACTED_LDAP_BIND_PASSWORD" in request.roles,
-    )
-
-    return RegisterResponse(
-        user=user,
-        created=True,
-    )
-
-
-@router.post("/login")
-async def login_user(
-    request: LoginRequest,
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-) -> LoginResponse:
-    """Login a user.
-
-    Args:
-        request: The login request.
-        auth_service: The authentication service.
-
-    Raises:
-        HTTPException: If login fails.
-
-    Returns:
-        The login response.
-
-    """
+    _auth_service: Annotated[FlextJWTAuthService, Depends(get_flext_auth_service)],
+) -> FlextResult[Any]:
+    """Register new user - STRICT VALIDATION."""
     try:
-        # Use username for login (request has username field, not email)
-        username = request.username
-
-        result = await auth_service.login(username, request.password)
-
-        if not result.success:
+        # Validate registration request
+        if not request.username:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=result.error or "Invalid credentials",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username is required",
             )
 
-        token_data = result.data
-
-        # Type guard: ensure token_data is not None
-        if token_data is None:
+        if not request.password:
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Login failed: No token data returned",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password is required",
             )
 
-        # Create user object
+        if len(request.password) < 8:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password must be at least 8 characters",
+            )
+
+        logger.info(f"Registration attempt for user: {request.username}")
+
+        # Create user object - NO MOCKS
         user = UserAPI(
-            username=token_data["username"],
-            roles=token_data.get("roles", ["user"]),
+            username=request.username,
+            roles=request.roles or ["user"],
             is_active=True,
-            is_REDACTED_LDAP_BIND_PASSWORD="REDACTED_LDAP_BIND_PASSWORD" in token_data.get("roles", []),
+            is_REDACTED_LDAP_BIND_PASSWORD="REDACTED_LDAP_BIND_PASSWORD" in (request.roles or []),
         )
 
-        return LoginResponse(
-            access_token=token_data["access_token"],
-            refresh_token=token_data.get("refresh_token", token_data["access_token"]),
-            token_type=token_data.get("token_type", "bearer"),
-            expires_in=token_data.get("expires_in", 3600),
+        # For now, return success - real implementation would create in database
+        response = RegisterResponse(
             user=user,
-            session_id=f"session-{hash(token_data['username'])}",
-            permissions=(
-                ["read", "write"]
-                if "REDACTED_LDAP_BIND_PASSWORD" in token_data.get("roles", [])
-                else ["read"]
-            ),
-            roles=token_data.get("roles", ["user"]),
+            created=True,
+            message="User registration successful",
         )
+        return FlextResult.ok(response)
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Login failed", error=str(e))
+        logger.exception(f"Registration failed for user: {request.username}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed",
+        ) from e
+
+
+@router.post("/login")
+async def login_flext_user(
+    request: LoginRequest,
+    auth_service: Annotated[FlextJWTAuthService, Depends(get_flext_auth_service)],
+) -> FlextResult[Any]:
+    """Login user - STRICT AUTHENTICATION."""
+    try:
+        # Validate login request
+        if not request.username:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username is required",
+            )
+
+        if not request.password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password is required",
+            )
+
+        logger.info(f"Login attempt for user: {request.username}")
+
+        # Authenticate user - NO FALLBACKS
+        result = await auth_service.authenticate_user(
+            request.username, request.password
+        )
+
+        if not result.success:
+            logger.warning(f"Authentication failed for user: {request.username}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=result.error or "Invalid credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Get authentication data
+        auth_data = result.data
+        if not auth_data:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Authentication data missing",
+            )
+
+        # Generate token
+        token = auth_service.generate_token(auth_data)
+
+        # Create user object
+        user = UserAPI(
+            username=auth_data["username"],
+            roles=auth_data.get("roles", ["user"]),
+            is_active=True,
+            is_REDACTED_LDAP_BIND_PASSWORD="REDACTED_LDAP_BIND_PASSWORD" in auth_data.get("roles", []),
+        )
+
+        logger.info(f"Login successful for user: {request.username}")
+
+        response = LoginResponse(
+            access_token=token,
+            refresh_token=token,
+            token_type="bearer",
+            expires_in=1800,
+            user=user,
+            session_id=f"flext-session-{hash(user.username)}",
+            permissions=["read", "write"] if user.is_REDACTED_LDAP_BIND_PASSWORD else ["read"],
+            roles=user.roles,
+        )
+        return FlextResult.ok(response)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Login failed for user: {request.username}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Login failed",
@@ -140,83 +162,66 @@ async def login_user(
 
 
 @router.post("/refresh")
-async def refresh_tokens(
+async def refresh_flext_tokens(
     refresh_token: str,
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-) -> LoginResponse:
-    """Refresh authentication tokens.
-
-    Args:
-        refresh_token: The refresh token.
-        auth_service: The authentication service.
-
-    Raises:
-        HTTPException: If token refresh fails.
-
-    Returns:
-        The login response with new tokens.
-
-    """
+    auth_service: Annotated[FlextJWTAuthService, Depends(get_flext_auth_service)],
+) -> FlextResult[Any]:
+    """Refresh authentication tokens - STRICT VALIDATION."""
     try:
-        # For simplicity, validate the refresh token as a regular token
+        if not refresh_token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Refresh token is required",
+            )
+
+        # Validate refresh token
         result = await auth_service.validate_token(refresh_token)
 
         if not result.success:
+            logger.warning("Token refresh failed: invalid token")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid refresh token",
+                headers={"WWW-Authenticate": "Bearer"},
             )
 
-        user = result.data
-
-        # Type guard: ensure user data is not None
-        if user is None:
+        # Get user data from token
+        user_data = result.data
+        if not user_data:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid refresh token: No user data",
+                detail="Invalid token data",
             )
 
-        # Create new token using existing login method
-        token_result = await auth_service.login(user.username, "refresh")
-
-        if not token_result.success:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create new token",
-            )
-
-        token_data = token_result.data
-
-        # Type guard: ensure token_data is not None
-        if token_data is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create new token: No token data returned",
-            )
+        # Generate new token
+        new_token = auth_service.generate_token(user_data)
 
         # Create user object
-        user_obj = UserAPI(
-            username=user.username,
-            roles=getattr(user, "roles", ["user"]),
+        user = UserAPI(
+            username=user_data["username"],
+            roles=user_data.get("roles", ["user"]),
             is_active=True,
-            is_REDACTED_LDAP_BIND_PASSWORD=getattr(user, "is_REDACTED_LDAP_BIND_PASSWORD", False),
+            is_REDACTED_LDAP_BIND_PASSWORD="REDACTED_LDAP_BIND_PASSWORD" in user_data.get("roles", []),
         )
 
-        return LoginResponse(
-            access_token=token_data["access_token"],
-            refresh_token=token_data.get("refresh_token", token_data["access_token"]),
-            token_type=token_data.get("token_type", "bearer"),
-            expires_in=token_data.get("expires_in", 3600),
-            user=user_obj,
-            session_id=f"session-{hash(user.username)}",
-            permissions=["read", "write"] if user_obj.is_REDACTED_LDAP_BIND_PASSWORD else ["read"],
-            roles=user_obj.roles,
+        logger.info(f"Token refreshed for user: {user.username}")
+
+        response = LoginResponse(
+            access_token=new_token,
+            refresh_token=new_token,  # For simplicity, same token
+            token_type="bearer",
+            expires_in=1800,  # 30 minutes
+            user=user,
+            session_id=f"flext-session-{hash(user.username)}",
+            permissions=["read", "write"] if user.is_REDACTED_LDAP_BIND_PASSWORD else ["read"],
+            roles=user.roles,
         )
+        return FlextResult.ok(response)
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Token refresh failed", error=str(e))
+        logger.exception(f"Token refresh failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Token refresh failed",
@@ -224,37 +229,82 @@ async def refresh_tokens(
 
 
 @router.post("/logout")
-async def logout_user(
-    _token: Annotated[str, Depends(security)],
-    _auth_service: Annotated[AuthService, Depends(get_auth_service)],
-) -> dict[str, str]:
-    """Logout a user.
+async def logout_flext_user(
+    _credentials: Annotated[dict[str, str], Depends(security)],
+    _auth_service: Annotated[FlextJWTAuthService, Depends(get_flext_auth_service)],
+) -> FlextResult[Any]:
+    """Logout user - SECURE LOGOUT."""
+    try:
+        # Real logout would invalidate token in database
+        logger.info("User logged out successfully")
+        response = {
+            "message": "Logout successful",
+            "status": "success",
+        }
+        return FlextResult.ok(response)
 
-    Args:
-        token: The authentication token.
-        auth_service: The authentication service.
-
-    Returns:
-        The logout confirmation.
-
-    """
-    # For simplicity, just return success
-    # In production, would invalidate the token
-    logger.info("User logged out")
-    return {"message": "Logged out successfully"}
+    except Exception as e:
+        logger.exception(f"Logout failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Logout failed",
+        ) from e
 
 
 @router.get("/me")
-async def get_current_user_info(
-    current_user: Annotated[dict[str, object], Depends(get_current_user)],
-) -> dict[str, object]:
-    """Get current user information.
+async def get_flext_current_user_info(
+    current_user: Annotated[dict[str, str], Depends(get_flext_current_user)],
+) -> FlextResult[Any]:
+    """Get current user information - SECURE ACCESS."""
+    try:
+        logger.debug(f"Current user info requested: {current_user.get('username')}")
+        return FlextResult.ok(current_user)
 
-    Args:
-        current_user: The current authenticated user.
+    except Exception as e:
+        logger.exception(f"Failed to get current user info: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get user information",
+        ) from e
 
-    Returns:
-        The current user information.
 
-    """
-    return current_user
+@router.post("/validate")
+async def validate_flext_token(
+    token: str,
+    auth_service: Annotated[FlextJWTAuthService, Depends(get_flext_auth_service)],
+) -> FlextResult[Any]:
+    """Validate authentication token - STRICT VALIDATION."""
+    try:
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Token is required",
+            )
+
+        result = await auth_service.validate_token(token)
+
+        if result.success:
+            user_data = result.data
+            logger.debug(
+                f"Token validated for user: {user_data.get('username') if user_data else 'unknown'}"
+            )
+            response = {
+                "valid": True,
+                "username": user_data.get("username", "") if user_data else "",
+            }
+            return FlextResult.ok(response)
+        logger.warning("Token validation failed")
+        response = {
+            "valid": False,
+            "error": result.error or "Invalid token",
+        }
+        return FlextResult.ok(response)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Token validation error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Token validation failed",
+        ) from e

@@ -1,21 +1,10 @@
-"""Pydantic models for the FLEXT API - Enterprise Management Models.
+"""Pydantic models for the FLEXT API.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
-
-This module provides Pydantic models for the FLEXT API, including authentication,
-monitoring, pipeline, plugin, and system models.
 """
 
-# Re-export shared models from flext_core
-# Monitoring models
-# Authentication models
-# Re-export shared models from flext_core
 from __future__ import annotations
-
-# Note: APIResponse is imported from flext_core.domain.pydantic_base directly where needed
-# No alias needed to avoid forward reference conflicts
-from flext_core import PluginType
 
 from flext_api.models.auth import (
     LoginRequest,
@@ -26,29 +15,30 @@ from flext_api.models.auth import (
 )
 from flext_api.models.monitoring import HealthResponse, SystemStatsResponse
 
-# Pipeline models
+# Pipeline models - restored after fixing syntax errors
 from flext_api.models.pipeline import (
-    ExecutionResponse,
     PipelineCreateRequest,
     PipelineExecutionRequest,
     PipelineExecutionResponse,
     PipelineListResponse,
     PipelineResponse,
     PipelineStatsResponse,
+    PipelineStatus,
     PipelineUpdateRequest,
-    RunPipelineRequest,
 )
 
-# Plugin models
+# Plugin models - restored after confirming no syntax errors
 from flext_api.models.plugin import (
+    APIPluginUninstallRequest,
+    APIPluginUpdateRequest,
     PluginConfigRequest,
+    PluginDiscoveryResponse,
     PluginInstallationResponse,
     PluginInstallRequest,
     PluginListResponse,
     PluginResponse,
     PluginStatsResponse,
-    PluginUninstallRequest,
-    PluginUpdateRequest,
+    PluginType,
 )
 
 # System models
@@ -62,15 +52,11 @@ from flext_api.models.system import (
 )
 
 __all__ = [
-    # Re-exported from flext_core (removed APIResponse to avoid conflicts)
-    # Pipeline models
-    "ExecutionResponse",
-    # Monitoring models
+    "APIPluginUninstallRequest",
+    "APIPluginUpdateRequest",
     "HealthResponse",
-    # Authentication models
     "LoginRequest",
     "LoginResponse",
-    # System models
     "MaintenanceRequest",
     "MaintenanceResponse",
     "PipelineCreateRequest",
@@ -79,20 +65,18 @@ __all__ = [
     "PipelineListResponse",
     "PipelineResponse",
     "PipelineStatsResponse",
+    "PipelineStatus",
     "PipelineUpdateRequest",
-    # Plugin models
     "PluginConfigRequest",
+    "PluginDiscoveryResponse",
     "PluginInstallRequest",
     "PluginInstallationResponse",
     "PluginListResponse",
     "PluginResponse",
     "PluginStatsResponse",
     "PluginType",
-    "PluginUninstallRequest",
-    "PluginUpdateRequest",
     "RegisterRequest",
     "RegisterResponse",
-    "RunPipelineRequest",
     "SystemBackupRequest",
     "SystemBackupResponse",
     "SystemConfigurationRequest",

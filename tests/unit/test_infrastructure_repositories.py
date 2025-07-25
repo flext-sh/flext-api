@@ -9,32 +9,32 @@ from uuid import uuid4
 import pytest
 
 from flext_api.domain.entities import (
-    APIPipeline as Pipeline,
+    FlextAPIPipeline as Pipeline,
     PipelineStatus,
     Plugin,
     PluginType,
 )
 from flext_api.infrastructure.repositories.pipeline_repository import (
-    InMemoryPipelineRepository,
+    FlextInMemoryPipelineRepository,
 )
 
 
-class TestInMemoryPipelineRepository:
-    """Test InMemoryPipelineRepository implementation."""
+class TestFlextInMemoryPipelineRepository:
+    """Test FlextInMemoryPipelineRepository implementation."""
 
     @pytest.fixture
     def repository(self) -> Any:
         """Create REAL repository instance for testing."""
         # Use the REAL implementation - bypass decorator for testing
         from flext_api.infrastructure.repositories.pipeline_repository import (
-            InMemoryPipelineRepository,
+            FlextInMemoryPipelineRepository,
         )
 
         # Get the actual class implementation (bypassing decorator)
         actual_class = (
-            InMemoryPipelineRepository.__wrapped__
-            if hasattr(InMemoryPipelineRepository, "__wrapped__")
-            else InMemoryPipelineRepository
+            FlextInMemoryPipelineRepository.__wrapped__
+            if hasattr(FlextInMemoryPipelineRepository, "__wrapped__")
+            else FlextInMemoryPipelineRepository
         )
 
         # Create actual repository instance - NO MOCKS
@@ -177,7 +177,7 @@ class TestInMemoryPipelineRepository:
         pipeline1 = Pipeline(name="pipeline-1", pipeline_status=PipelineStatus.ACTIVE)
         await repository.save(pipeline1)
 
-        # Use invalid status - should return empty list (no pipelines match invalid status)
+        # Use invalid status - should return empty list (no matches)
         result = await repository.list(status="invalid_status")
         assert result.success
         pipelines = result.data or []
@@ -245,25 +245,25 @@ class TestInMemoryPipelineRepository:
         assert count_result.data == 3
 
 
-class TestInMemoryPluginRepository:
-    """Test InMemoryPluginRepository implementation."""
+class TestFlextFlextInMemoryPluginRepository:
+    """Test FlextFlextInMemoryPluginRepository implementation."""
 
     @pytest.fixture
     def repository(self) -> Any:
         """Create repository instance for testing."""
         # Import the actual implementation from infrastructure
         from flext_api.infrastructure.repositories.plugin_repository import (
-            InMemoryPluginRepository,
+            FlextFlextInMemoryPluginRepository,
         )
 
-        return InMemoryPluginRepository()
+        return FlextFlextInMemoryPluginRepository()
 
     @pytest.fixture
     def sample_plugin(self) -> Any:
         """Create sample plugin for testing."""
         return Plugin(
             name="test-plugin",
-            plugin_type=PluginType.TAP,
+            plugin_type=PluginType.EXTRACTOR,
             version="1.0.0",
             description="Test plugin description",
             author="Test Author",
@@ -322,7 +322,7 @@ class TestInMemoryPluginRepository:
     async def test_list_plugins_basic(self, repository: Any) -> None:
         """Test listing plugins with basic functionality."""
         # Create multiple plugins
-        plugin1 = Plugin(name="plugin-a", plugin_type=PluginType.TAP)
+        plugin1 = Plugin(name="plugin-a", plugin_type=PluginType.EXTRACTOR)
         plugin2 = Plugin(name="plugin-b", plugin_type=PluginType.TARGET)
         plugin3 = Plugin(name="plugin-c", plugin_type=PluginType.TRANSFORM)
 
@@ -344,9 +344,9 @@ class TestInMemoryPluginRepository:
     @pytest.mark.asyncio
     async def test_list_plugins_with_type_filter(self, repository: Any) -> None:
         """Test listing plugins filtered by type."""
-        plugin1 = Plugin(name="plugin-1", plugin_type=PluginType.TAP)
+        plugin1 = Plugin(name="plugin-1", plugin_type=PluginType.EXTRACTOR)
         plugin2 = Plugin(name="plugin-2", plugin_type=PluginType.TARGET)
-        plugin3 = Plugin(name="plugin-3", plugin_type=PluginType.TAP)
+        plugin3 = Plugin(name="plugin-3", plugin_type=PluginType.EXTRACTOR)
 
         await repository.save(plugin1)
         await repository.save(plugin2)
@@ -357,7 +357,7 @@ class TestInMemoryPluginRepository:
         assert result.success
         plugins = result.data or []
         assert len(plugins) == 2
-        assert all(p.plugin_type == PluginType.TAP for p in plugins)
+        assert all(p.plugin_type == PluginType.EXTRACTOR for p in plugins)
 
     @pytest.mark.asyncio
     async def test_list_plugins_with_enabled_filter(self, repository: Any) -> None:
@@ -413,8 +413,16 @@ class TestInMemoryPluginRepository:
     @pytest.mark.asyncio
     async def test_list_plugins_with_multiple_filters(self, repository: Any) -> None:
         """Test listing plugins with multiple filters."""
-        plugin1 = Plugin(name="plugin-1", plugin_type=PluginType.TAP, enabled=True)
-        plugin2 = Plugin(name="plugin-2", plugin_type=PluginType.TAP, enabled=False)
+        plugin1 = Plugin(
+            name="plugin-1",
+            plugin_type=PluginType.EXTRACTOR,
+            enabled=True,
+        )
+        plugin2 = Plugin(
+            name="plugin-2",
+            plugin_type=PluginType.EXTRACTOR,
+            enabled=False,
+        )
         plugin3 = Plugin(name="plugin-3", plugin_type=PluginType.TARGET, enabled=True)
 
         await repository.save(plugin1)
@@ -470,13 +478,17 @@ class TestInMemoryPluginRepository:
     async def test_repository_independence(self) -> None:
         """Test that repository instances are independent."""
         from flext_api.infrastructure.repositories.plugin_repository import (
-            InMemoryPluginRepository,
+            FlextFlextInMemoryPluginRepository,
         )
 
-        repo1 = InMemoryPluginRepository()
-        repo2 = InMemoryPluginRepository()
+        repo1 = FlextFlextInMemoryPluginRepository()
+        repo2 = FlextFlextInMemoryPluginRepository()
 
-        plugin1 = Plugin(name="plugin-1", version="1.0.0", plugin_type=PluginType.TAP)
+        plugin1 = Plugin(
+            name="plugin-1",
+            version="1.0.0",
+            plugin_type=PluginType.EXTRACTOR,
+        )
         plugin2 = Plugin(
             name="plugin-2",
             version="1.0.0",
@@ -523,9 +535,9 @@ class TestRepositoryLogging:
         """Test pipeline repository logs operations correctly."""
         # Use the REAL implementation directly - bypass decorator if present
         actual_class = (
-            InMemoryPipelineRepository.__wrapped__
-            if hasattr(InMemoryPipelineRepository, "__wrapped__")
-            else InMemoryPipelineRepository
+            FlextInMemoryPipelineRepository.__wrapped__
+            if hasattr(FlextInMemoryPipelineRepository, "__wrapped__")
+            else FlextInMemoryPipelineRepository
         )
         repository = actual_class()
         pipeline = Pipeline(name="test-pipeline")
@@ -544,11 +556,11 @@ class TestRepositoryLogging:
     async def test_plugin_repository_logging(self) -> None:
         """Test plugin repository logs operations correctly."""
         from flext_api.infrastructure.repositories.plugin_repository import (
-            InMemoryPluginRepository,
+            FlextInMemoryPluginRepository,
         )
 
-        repository = InMemoryPluginRepository()
-        plugin = Plugin(name="test-plugin", plugin_type=PluginType.TAP)
+        repository = FlextInMemoryPluginRepository()
+        plugin = Plugin(name="test-plugin", plugin_type=PluginType.EXTRACTOR)
 
         with patch(
             "flext_api.infrastructure.repositories.plugin_repository.logger",
@@ -565,9 +577,9 @@ class TestRepositoryLogging:
         """Test pipeline repository logs delete operations correctly."""
         # Use the REAL implementation directly - bypass decorator if present
         actual_class = (
-            InMemoryPipelineRepository.__wrapped__
-            if hasattr(InMemoryPipelineRepository, "__wrapped__")
-            else InMemoryPipelineRepository
+            FlextInMemoryPipelineRepository.__wrapped__
+            if hasattr(FlextInMemoryPipelineRepository, "__wrapped__")
+            else FlextInMemoryPipelineRepository
         )
         repository = actual_class()
         pipeline = Pipeline(name="test-pipeline")
@@ -588,10 +600,10 @@ class TestRepositoryLogging:
     async def test_plugin_delete_logging(self) -> None:
         """Test plugin repository logs delete operations correctly."""
         from flext_api.infrastructure.repositories.plugin_repository import (
-            InMemoryPluginRepository,
+            FlextInMemoryPluginRepository,
         )
 
-        repository = InMemoryPluginRepository()
+        repository = FlextInMemoryPluginRepository()
         plugin = Plugin(name="test-plugin")
 
         await repository.save(plugin)

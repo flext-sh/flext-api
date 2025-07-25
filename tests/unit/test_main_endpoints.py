@@ -78,7 +78,9 @@ def test_create_pipeline_endpoint(client: TestClient) -> None:
     assert data["name"] == "test-pipeline"
     assert data["extractor"] == "tap-postgresql"
     assert data["loader"] == "target-jsonl"
-    assert data["status"] == "active"  # APIPipeline default status is ACTIVE
+    assert (
+        data["pipeline_status"] == "active"
+    )  # FlextAPIPipeline default status is ACTIVE
     assert "created_at" in data
     assert "configuration" in data
     # Pipeline response includes execution tracking fields
@@ -411,6 +413,6 @@ def test_execute_pipeline_updates_pipeline_state(client: TestClient) -> None:
 
     # Verify state changes
     assert updated_pipeline["status"] == "running"
-    # The last_execution_id field exists but is None (execution tracking not implemented)
+    # The last_execution_id field exists but is None (not implemented)
     assert "last_execution_id" in updated_pipeline
     assert updated_pipeline["last_execution_id"] is None

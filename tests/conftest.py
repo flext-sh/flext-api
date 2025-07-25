@@ -7,29 +7,34 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
+
+# Test environment setup - local implementation
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
 
-# Use centralized test environment setup - eliminates duplication
-from flext_core.testing import (
-    get_project_root_fixture,
-    get_test_environment_fixture,
-    setup_flext_test_environment,
-)
-
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-# Setup standard FLEXT test environment
-setup_flext_test_environment()
-os.environ["FLEXT_API_TESTING"] = "true"  # API-specific setting
+# Setup test environment
+os.environ["FLEXT_API_TESTING"] = "true"
 
-# Use centralized fixtures - eliminates duplication across conftest.py files
-set_test_environment = get_test_environment_fixture()
-project_root = get_project_root_fixture()
+
+# Project root fixture
+@pytest.fixture
+def project_root() -> Path:
+    """Get project root directory."""
+    return Path(__file__).parent.parent
+
+
+@pytest.fixture
+def set_test_environment() -> None:
+    """Set test environment variables."""
+    os.environ["ENVIRONMENT"] = "test"
+    os.environ["LOG_LEVEL"] = "DEBUG"
 
 
 @pytest.fixture
@@ -124,11 +129,22 @@ def mock_plugin_service() -> AsyncMock:
 
 @pytest.fixture
 async def api_client() -> AsyncGenerator[TestClient]:
-    """FastAPI test client."""
-    from flext_api.main import app
+    """FastAPI test client with mocked database."""
+    # Mock database dependencies to avoid psycopg2 requirement
+    with (
+        patch("flext_api.dependencies.create_async_engine") as mock_engine,
+        patch("flext_api.dependencies.async_session_factory") as mock_session,
+        patch("flext_api.dependencies.engine") as mock_db_engine,
+    ):
+        # Configure mocks to avoid database connection
+        mock_engine.return_value = AsyncMock()
+        mock_session.return_value = AsyncMock()
+        mock_db_engine.return_value = AsyncMock()
 
-    with TestClient(app) as client:
-        yield client
+        from flext_api.main import app
+
+        with TestClient(app) as client:
+            yield client
 
 
 @pytest.fixture(autouse=True)

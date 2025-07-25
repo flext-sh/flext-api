@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from flext_core.domain.shared_types import ServiceResult
+    from flext_core import FlextResult
 
 # ==============================================================================
 # SINGLE RESPONSIBILITY PRINCIPLE: Query Base Class
@@ -228,7 +228,7 @@ class QueryHandler(ABC):
     """Interface for query handlers (DIP compliance)."""
 
     @abstractmethod
-    async def handle(self, query: Query) -> ServiceResult[Any]:
+    async def handle(self, query: Query) -> FlextResult[Any]:
         """Handle a query and return result."""
 
     @abstractmethod

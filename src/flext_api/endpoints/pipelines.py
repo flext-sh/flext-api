@@ -8,24 +8,38 @@ This module provides the pipeline management endpoints for the FLEXT API.
 
 from __future__ import annotations
 
-from typing import Annotated
-from uuid import UUID
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query, Request
-from flext_core import DomainBaseModel as APIBaseModel, EntityStatus, Field
+from pydantic import Field
 
-from flext_api.dependencies import get_pipeline_service
+from flext_api import get_logger
+from flext_api.base import FlextApiBaseRequest
+from flext_api.common import (
+    ensure_service_available,
+    handle_api_exceptions,
+    validate_uuid,
+)
+from flext_api.dependencies import get_flext_pipeline_service
 from flext_api.models.pipeline import (
+    EntityStatus,
     PipelineCreateRequest,
     PipelineListResponse,
     PipelineResponse,
+    PipelineStatus,
     PipelineType,
 )
 
-pipelines_router = APIRouter(prefix="/pipelines", tags=["pipelines"])
+if TYPE_CHECKING:
+    from flext_core import FlextResult
+
+# Create logger using flext-core get_logger function
+logger = get_logger(__name__)
+
+pipelines_router = APIRouter(prefix="/api/v1/pipelines", tags=["pipelines"])
 
 
-class PipelineListParams(APIBaseModel):
+class FlextPipelineListParams(FlextApiBaseRequest):
     """Parameters for listing pipelines."""
 
     page: int = Field(default=1, ge=1)
@@ -35,31 +49,29 @@ class PipelineListParams(APIBaseModel):
 
 
 @pipelines_router.post("")
-async def create_pipeline(
-    pipeline_data: PipelineCreateRequest,
-    _request: Request,
-) -> PipelineResponse:
+async def create_pipeline(request: PipelineCreateRequest) -> FlextResult[Any]:
     """Create pipeline endpoint."""
     try:
-        pipeline_service = get_pipeline_service()
+        pipeline_service = get_flext_pipeline_service()
+        ensure_service_available(pipeline_service, "Pipeline service")
 
         # Create pipeline using the service to ensure it's stored
-        config = pipeline_data.configuration or {}
+        config = request.configuration or {}
         config.update(
             {
-                "extractor": pipeline_data.extractor,
-                "loader": pipeline_data.loader,
-                "transform": pipeline_data.transform,
-                "environment": pipeline_data.environment,
-                "pipeline_type": pipeline_data.pipeline_type,
-                "schedule": pipeline_data.schedule,
-                "tags": pipeline_data.tags or [],
+                "extractor": request.extractor,
+                "loader": request.loader,
+                "transform": request.transform,
+                "environment": request.environment,
+                "pipeline_type": request.pipeline_type,
+                "schedule": request.schedule,
+                "tags": request.tags or [],
             },
         )
 
         pipeline_result = await pipeline_service.create_pipeline(
-            name=pipeline_data.name,
-            description=pipeline_data.description,
+            name=request.name,
+            description=request.description,
             config=config,
             owner_id=None,
             project_id=None,
@@ -70,9 +82,12 @@ async def create_pipeline(
 
         pipeline = pipeline_result.data
         if pipeline is None:
-            raise HTTPException(status_code=500, detail="Pipeline creation returned None")
+            raise HTTPException(
+                status_code=500,
+                detail="Pipeline creation returned None",
+            )
 
-        return PipelineResponse(
+        response = PipelineResponse(
             pipeline_id=pipeline.id,
             name=pipeline.name,
             description=pipeline.description,
@@ -80,9 +95,9 @@ async def create_pipeline(
             loader=config.get("loader", ""),
             transform=config.get("transform"),
             configuration=config,
-            status=EntityStatus.ACTIVE
+            pipeline_status=PipelineStatus.ACTIVE
             if pipeline.is_pipeline_active
-            else EntityStatus.INACTIVE,
+            else PipelineStatus.INACTIVE,
             pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
             environment=config.get("environment", "development"),
             schedule=config.get("schedule"),
@@ -90,9 +105,13 @@ async def create_pipeline(
             created_at=pipeline.created_at,
             updated_at=pipeline.updated_at,
         )
+
+        from flext_core import FlextResult
+        return FlextResult.ok(response)
     except HTTPException:
         raise
     except Exception as e:
+        logger.exception("Failed to create pipeline")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to create pipeline: {e}",
@@ -100,121 +119,118 @@ async def create_pipeline(
 
 
 @pipelines_router.get("/{pipeline_id}")
-async def get_pipeline(pipeline_id: str, _request: Request) -> PipelineResponse:
+@handle_api_exceptions("get pipeline")
+async def get_pipeline(pipeline_id: str, _request: Request) -> FlextResult[PipelineResponse]:
     """Get pipeline by ID."""
-    try:
-        pipeline_service = get_pipeline_service()
+    pipeline_service = get_flext_pipeline_service()
+    ensure_service_available(pipeline_service, "Pipeline service")
 
-        # Convert string ID to UUID for service call
-        try:
-            uuid_id = UUID(pipeline_id)
-        except ValueError as e:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid pipeline ID format",
-            ) from e
+    # Convert string ID to UUID for service call
+    uuid_id = validate_uuid(pipeline_id, "pipeline ID")
 
-        pipeline_result = await pipeline_service.get_pipeline(uuid_id)
+    pipeline_result = await pipeline_service.get_pipeline(uuid_id)
 
-        if not pipeline_result.success:
-            raise HTTPException(status_code=404, detail="Pipeline not found")
+    if not pipeline_result.success:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
 
-        pipeline = pipeline_result.data
-        if pipeline is None:
-            raise HTTPException(status_code=500, detail="Pipeline fetch returned None")
+    pipeline = pipeline_result.data
+    if pipeline is None:
+        raise HTTPException(status_code=500, detail="Pipeline fetch returned None")
 
-        config = pipeline.config or {}
+    config = pipeline.config or {}
 
-        return PipelineResponse(
-            pipeline_id=pipeline.id,
-            name=pipeline.name,
-            description=pipeline.description,
-            extractor=config.get("extractor", ""),
-            loader=config.get("loader", ""),
-            transform=config.get("transform"),
-            configuration=config,
-            status=EntityStatus.ACTIVE
-            if pipeline.is_pipeline_active
-            else EntityStatus.INACTIVE,
-            pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
-            environment=config.get("environment", "development"),
-            schedule=config.get("schedule"),
-            tags=config.get("tags", []),
-            created_at=pipeline.created_at,
-            updated_at=pipeline.updated_at,
-        )
+    response = PipelineResponse(
+        pipeline_id=pipeline.id,
+        name=pipeline.name,
+        description=pipeline.description,
+        extractor=config.get("extractor", ""),
+        loader=config.get("loader", ""),
+        transform=config.get("transform"),
+        configuration=config,
+        pipeline_status=PipelineStatus.ACTIVE
+        if pipeline.is_pipeline_active
+        else PipelineStatus.INACTIVE,
+        pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
+        environment=config.get("environment", "development"),
+        schedule=config.get("schedule"),
+        tags=config.get("tags", []),
+        created_at=pipeline.created_at,
+        updated_at=pipeline.updated_at,
+    )
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to get pipeline: {e}",
-        ) from e
+    from flext_core import FlextResult
+    return FlextResult.ok(response)
+
+    # Exception handling now done by @handle_api_exceptions decorator
 
 
 @pipelines_router.get("")
+@handle_api_exceptions("list pipelines")
 async def list_pipelines(
-    params: Annotated[PipelineListParams, Query()],
-    _request: Request,
-) -> PipelineListResponse:
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+    status: Annotated[str | None, Query()] = None,
+    search: Annotated[str | None, Query()] = None,
+) -> FlextResult[dict[str, Any]]:
     """List pipelines with pagination."""
-    try:
-        pipeline_service = get_pipeline_service()
+    pipeline_service = get_flext_pipeline_service()
+    ensure_service_available(pipeline_service, "Pipeline service")
 
-        # Calculate offset from page and page_size
-        offset = (params.page - 1) * params.page_size
+    # Calculate offset from page and page_size
+    offset = (page - 1) * page_size
 
-        pipelines_result = await pipeline_service.list_pipelines(
-            limit=params.page_size,
-            offset=offset,
-        )
+    pipelines_result = await pipeline_service.list_pipelines(
+        limit=page_size,
+        offset=offset,
+    )
 
-        if not pipelines_result.success:
-            raise HTTPException(status_code=500, detail=pipelines_result.error)
+    if not pipelines_result.success:
+        raise HTTPException(status_code=500, detail=pipelines_result.error)
 
-        pipelines = pipelines_result.data
-        if pipelines is None:
-            raise HTTPException(status_code=500, detail="Pipeline list returned None")
+    pipelines = pipelines_result.data
+    if pipelines is None:
+        raise HTTPException(status_code=500, detail="Pipeline list returned None")
 
-        # Convert pipelines to response format
-        pipeline_responses = []
-        for pipeline in pipelines:
-            config = pipeline.config or {}
-            pipeline_responses.append(
-                PipelineResponse(
-                    pipeline_id=pipeline.id,
-                    name=pipeline.name,
-                    description=pipeline.description,
-                    extractor=config.get("extractor", ""),
-                    loader=config.get("loader", ""),
-                    transform=config.get("transform"),
-                    configuration=config,
-                    status=EntityStatus.ACTIVE
-                    if pipeline.is_pipeline_active
-                    else EntityStatus.INACTIVE,
-                    pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
-                    environment=config.get("environment", "development"),
-                    schedule=config.get("schedule"),
-                    tags=config.get("tags", []),
-                    created_at=pipeline.created_at,
-                    updated_at=pipeline.updated_at,
-                ),
+    # Convert pipelines to response format
+    pipeline_responses = []
+    for pipeline in pipelines:
+        config = pipeline.config or {}
+        pipeline_responses.append(
+            PipelineResponse(
+                pipeline_id=pipeline.id,
+                name=pipeline.name,
+                description=pipeline.description,
+                extractor=config.get("extractor", ""),
+                loader=config.get("loader", ""),
+                transform=config.get("transform"),
+                configuration=config,
+                pipeline_status=PipelineStatus.ACTIVE
+                if pipeline.is_pipeline_active
+                else PipelineStatus.INACTIVE,
+                pipeline_type=PipelineType(config.get("pipeline_type", "etl")),
+                environment=config.get("environment", "development"),
+                schedule=config.get("schedule"),
+                tags=config.get("tags", []),
+                created_at=pipeline.created_at,
+                updated_at=pipeline.updated_at,
             )
-
-        return PipelineListResponse(
-            pipelines=pipeline_responses,
-            total_count=len(pipeline_responses),
-            page=params.page,
-            page_size=params.page_size,
-            has_next=False,  # Simple implementation for now
-            has_previous=params.page > 1,
         )
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to list pipelines: {e}",
-        ) from e
+    response = {
+        "pipelines": pipeline_responses,
+        "total_count": len(pipeline_responses),
+        "page": page,
+        "page_size": page_size,
+        "has_next": False,  # Simple implementation for now
+        "has_previous": page > 1,
+    }
+
+    from flext_core import FlextResult
+    return FlextResult.ok(response)
+
+    # Exception handling now done by @handle_api_exceptions decorator
+
+
+# Rebuild models to resolve forward references
+PipelineListResponse.model_rebuild()
+PipelineResponse.model_rebuild()

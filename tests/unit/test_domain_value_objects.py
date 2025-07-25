@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from flext_core import DomainValueObject
+from flext_core import DomainValueObject as FlextValueObject
 from pydantic import ValidationError
 
 from flext_api.domain.value_objects import (
@@ -91,9 +91,9 @@ class TestApiEndpoint:
             assert endpoint.is_idempotent is False
 
     def test_api_endpoint_inheritance(self) -> None:
-        """Test ApiEndpoint inherits from DomainValueObject."""
+        """Test ApiEndpoint inherits from FlextValueObject."""
         endpoint = ApiEndpoint(path="/test")
-        assert isinstance(endpoint, DomainValueObject)
+        assert isinstance(endpoint, FlextValueObject)
 
 
 class TestRateLimit:
@@ -420,7 +420,7 @@ class TestValueObjectInheritance:
     """Test value object inheritance and base functionality."""
 
     def test_value_objects_inherit_from_domain_value_object(self) -> None:
-        """Test all value objects inherit from DomainValueObject."""
+        """Test all value objects inherit from FlextValueObject."""
         value_objects = [
             ApiEndpoint(path="/test"),
             RateLimit(),
@@ -434,14 +434,14 @@ class TestValueObjectInheritance:
         ]
 
         for vo in value_objects:
-            assert isinstance(vo, DomainValueObject)
+            assert isinstance(vo, FlextValueObject)
 
     def test_value_objects_are_immutable(self) -> None:
         """Test value objects are immutable after creation."""
         _endpoint = ApiEndpoint(path="/test", method="GET")
 
         # Should not be able to modify after creation
-        # (This depends on DomainValueObject implementation)
+        # (This depends on FlextValueObject implementation)
         # For Pydantic models, fields are typically not directly mutable
 
     def test_value_objects_equality(self) -> None:

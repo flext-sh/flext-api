@@ -6,13 +6,13 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from flext_api.application.services.auth_service import AuthService
+from flext_api.application.services.auth_service import FlextAuthService
 from flext_api.application.services.pipeline_service import PipelineService
 from flext_api.application.services.plugin_service import PluginService
 from flext_api.application.services.system_service import SystemService
 from flext_api.infrastructure.di_container import configure_api_dependencies
 from flext_api.infrastructure.repositories.pipeline_repository import (
-    InMemoryPipelineRepository,
+    FlextInMemoryPipelineRepository,
 )
 
 
@@ -56,14 +56,14 @@ def test_configure_api_dependencies(
 
     # Verify repository registered as singleton
     mock_container.register_singleton.assert_any_call(
-        InMemoryPipelineRepository,
-        factory=InMemoryPipelineRepository,
+        FlextInMemoryPipelineRepository,
+        factory=FlextInMemoryPipelineRepository,
     )
 
     # Verify auth service registered as singleton
     mock_container.register_singleton.assert_any_call(
-        AuthService,
-        factory=AuthService,
+        FlextAuthService,
+        factory=FlextAuthService,
     )
 
     # Verify settings dependency configuration called
@@ -130,15 +130,15 @@ def test_configure_api_dependencies_singleton_registrations(
     # Should have at least 2 singleton registrations (repository and auth service)
     assert len(calls) >= 2
 
-    # Verify InMemoryPipelineRepository registration
+    # Verify FlextInMemoryPipelineRepository registration
     repo_call = calls[0]
-    assert repo_call[0][0] == InMemoryPipelineRepository
-    assert repo_call[1]["factory"] == InMemoryPipelineRepository
+    assert repo_call[0][0] == FlextInMemoryPipelineRepository
+    assert repo_call[1]["factory"] == FlextInMemoryPipelineRepository
 
-    # Verify AuthService registration
+    # Verify FlextAuthService registration
     auth_call = calls[1]
-    assert auth_call[0][0] == AuthService
-    assert auth_call[1]["factory"] == AuthService
+    assert auth_call[0][0] == FlextAuthService
+    assert auth_call[1]["factory"] == FlextAuthService
 
 
 @patch("flext_api.infrastructure.di_container.get_container")
@@ -154,7 +154,7 @@ def test_configure_api_dependencies_service_imports(
     mock_get_settings.return_value = mock_settings
 
     # Test that all service classes can be imported and referenced
-    services = [AuthService, PipelineService, PluginService, SystemService]
+    services = [FlextAuthService, PipelineService, PluginService, SystemService]
 
     for service in services:
         assert service is not None
@@ -168,11 +168,11 @@ def test_configure_api_dependencies_service_imports(
 
 
 def test_auth_service_can_be_imported() -> None:
-    """Test that AuthService can be imported correctly."""
-    from flext_api.application.services.auth_service import AuthService
+    """Test that FlextAuthService can be imported correctly."""
+    from flext_api.application.services.auth_service import FlextAuthService
 
-    assert AuthService is not None
-    assert hasattr(AuthService, "__init__")
+    assert FlextAuthService is not None
+    assert hasattr(FlextAuthService, "__init__")
 
 
 def test_pipeline_service_can_be_imported() -> None:
@@ -200,10 +200,10 @@ def test_system_service_can_be_imported() -> None:
 
 
 def test_memory_repository_can_be_imported() -> None:
-    """Test that InMemoryPipelineRepository can be imported correctly."""
+    """Test that FlextInMemoryPipelineRepository can be imported correctly."""
     from flext_api.infrastructure.repositories.pipeline_repository import (
-        InMemoryPipelineRepository,
+        FlextInMemoryPipelineRepository,
     )
 
-    assert InMemoryPipelineRepository is not None
-    assert hasattr(InMemoryPipelineRepository, "__init__")
+    assert FlextInMemoryPipelineRepository is not None
+    assert hasattr(FlextInMemoryPipelineRepository, "__init__")

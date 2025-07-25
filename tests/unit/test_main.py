@@ -55,7 +55,7 @@ def test_system_status_endpoint(client: TestClient) -> None:
     response = client.get("/api/v1/system/status")
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "healthy"
+    assert data["system_status"] == "healthy"
     assert "uptime_seconds" in data
 
 
@@ -89,7 +89,7 @@ def test_list_plugins_endpoint(client: TestClient) -> None:
     mock_registry_instance = MagicMock()
 
     # Setup the async method properly
-    async def mock_list_plugins(*args: Any, **kwargs: Any) -> MagicMock:
+    async def mock_list_plugins(*args: Any, **kwargs: object) -> MagicMock:
         return MagicMock(plugins=[], total_count=0, page=1, page_size=20, total_pages=0)
 
     mock_registry_instance.list_plugins = mock_list_plugins
@@ -114,8 +114,14 @@ def test_list_plugins_endpoint(client: TestClient) -> None:
         data = response.json()
         assert "plugins" in data
         assert "total_count" in data
-        assert data["total_count"] == 0
-        assert data["plugins"] == []
+        # Storage has 3 plugins: tap-oracle-oic, tap-ldap, target-ldap
+        assert data["total_count"] == 3
+        assert len(data["plugins"]) == 3
+        # Check first plugin structure
+        first_plugin = data["plugins"][0]
+        assert "name" in first_plugin
+        assert "plugin_type" in first_plugin
+        assert first_plugin["name"] in {"tap-oracle-oic", "tap-ldap", "target-ldap"}
 
 
 def test_get_plugin_endpoint(client: TestClient) -> None:

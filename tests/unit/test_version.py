@@ -13,7 +13,7 @@ class TestVersionModule:
 
         assert __version__ is not None
         assert isinstance(__version__, str)
-        assert __version__ == "0.1.0"
+        assert __version__ == "0.8.0"
 
     def test_version_format(self) -> None:
         """Test that version follows semantic versioning format."""
@@ -170,4 +170,4 @@ class TestVersionModule:
 
         assert isinstance(version, str)
         assert len(version) > 0
-        assert version == "0.1.0"
+        assert version == "0.8.0"

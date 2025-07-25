@@ -10,15 +10,13 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from uuid import UUID
-
-    from flext_core.domain.shared_types import ServiceResult
+    from flext_core import FlextResult
 
     from flext_api.domain.entities import (
-        APIPipeline,
+        APIResponseLog,
+        FlextAPIPipeline,
+        FlextAPIRequest,
         Plugin,
-        RequestLog,
-        ResponseLog,
     )
 
 # ==============================================================================
@@ -30,11 +28,11 @@ class PipelineRepository(ABC):
     """Pipeline repository port."""
 
     @abstractmethod
-    async def create(self, pipeline: APIPipeline) -> ServiceResult[Any]:
+    async def create(self, pipeline: FlextAPIPipeline) -> FlextResult[Any]:
         """Create a new pipeline."""
 
     @abstractmethod
-    async def get(self, pipeline_id: UUID) -> ServiceResult[Any]:
+    async def get(self, pipeline_id: str) -> FlextResult[Any]:
         """Get pipeline by ID."""
 
     @abstractmethod
@@ -42,31 +40,31 @@ class PipelineRepository(ABC):
         self,
         limit: int = 20,
         offset: int = 0,
-        owner_id: UUID | None = None,
-        project_id: UUID | None = None,
+        owner_id: str | None = None,
+        project_id: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """List pipelines with optional filtering."""
 
     @abstractmethod
-    async def update(self, pipeline: APIPipeline) -> ServiceResult[Any]:
+    async def update(self, pipeline: FlextAPIPipeline) -> FlextResult[Any]:
         """Update existing pipeline."""
 
     @abstractmethod
-    async def delete(self, pipeline_id: UUID) -> ServiceResult[Any]:
+    async def delete(self, pipeline_id: str) -> FlextResult[Any]:
         """Delete pipeline by ID."""
 
     @abstractmethod
     async def count(
         self,
-        owner_id: UUID | None = None,
-        project_id: UUID | None = None,
+        owner_id: str | None = None,
+        project_id: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Count pipelines with optional filtering."""
 
     @abstractmethod
-    async def save(self, pipeline: APIPipeline) -> ServiceResult[Any]:
+    async def save(self, pipeline: FlextAPIPipeline) -> FlextResult[Any]:
         """Save pipeline (create or update based on existence)."""
 
 
@@ -74,11 +72,11 @@ class PluginRepository(ABC):
     """Plugin repository port."""
 
     @abstractmethod
-    async def create(self, plugin: Plugin) -> ServiceResult[Any]:
+    async def create(self, plugin: Plugin) -> FlextResult[Any]:
         """Create a new plugin."""
 
     @abstractmethod
-    async def get(self, plugin_id: UUID) -> ServiceResult[Any]:
+    async def get(self, plugin_id: str) -> FlextResult[Any]:
         """Get plugin by ID."""
 
     @abstractmethod
@@ -88,15 +86,15 @@ class PluginRepository(ABC):
         offset: int = 0,
         plugin_type: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """List plugins with optional filtering."""
 
     @abstractmethod
-    async def update(self, plugin: Plugin) -> ServiceResult[Any]:
+    async def update(self, plugin: Plugin) -> FlextResult[Any]:
         """Update existing plugin."""
 
     @abstractmethod
-    async def delete(self, plugin_id: UUID) -> ServiceResult[Any]:
+    async def delete(self, plugin_id: str) -> FlextResult[Any]:
         """Delete plugin by ID."""
 
     @abstractmethod
@@ -104,11 +102,11 @@ class PluginRepository(ABC):
         self,
         plugin_type: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Count plugins with optional filtering."""
 
     @abstractmethod
-    async def save(self, plugin: Plugin) -> ServiceResult[Any]:
+    async def save(self, plugin: Plugin) -> FlextResult[Any]:
         """Save plugin (create or update based on existence)."""
 
 
@@ -116,11 +114,11 @@ class RequestRepository(ABC):
     """Request repository port."""
 
     @abstractmethod
-    async def save(self, request: RequestLog) -> RequestLog:
+    async def save(self, request: FlextAPIRequest) -> FlextAPIRequest:
         """Save request to storage."""
 
     @abstractmethod
-    async def get(self, request_id: UUID) -> RequestLog | None:
+    async def get(self, request_id: str) -> FlextAPIRequest | None:
         """Get request by ID."""
 
     @abstractmethod
@@ -128,12 +126,12 @@ class RequestRepository(ABC):
         self,
         limit: int = 20,
         offset: int = 0,
-        user_id: UUID | None = None,
-    ) -> list[RequestLog]:
+        user_id: str | None = None,
+    ) -> list[FlextAPIRequest]:
         """List requests with optional filtering."""
 
     @abstractmethod
-    async def delete(self, request_id: UUID) -> bool:
+    async def delete(self, request_id: str) -> bool:
         """Delete request by ID."""
 
 
@@ -141,11 +139,11 @@ class ResponseRepository(ABC):
     """Response repository port."""
 
     @abstractmethod
-    async def save(self, response: ResponseLog) -> ResponseLog:
+    async def save(self, response: APIResponseLog) -> APIResponseLog:
         """Save response to storage."""
 
     @abstractmethod
-    async def get(self, response_id: UUID) -> ResponseLog | None:
+    async def get(self, response_id: str) -> APIResponseLog | None:
         """Get response by ID."""
 
     @abstractmethod
@@ -153,12 +151,12 @@ class ResponseRepository(ABC):
         self,
         limit: int = 20,
         offset: int = 0,
-        request_id: UUID | None = None,
-    ) -> list[ResponseLog]:
+        request_id: str | None = None,
+    ) -> list[APIResponseLog]:
         """List responses with optional filtering."""
 
     @abstractmethod
-    async def delete(self, response_id: UUID) -> bool:
+    async def delete(self, response_id: str) -> bool:
         """Delete response by ID."""
 
 
@@ -175,7 +173,7 @@ class AuthService(ABC):
         """Authenticate a user with token."""
 
     @abstractmethod
-    async def authorize(self, user_id: UUID, resource: str, action: str) -> bool:
+    async def authorize(self, user_id: str, resource: str, action: str) -> bool:
         """Authorize user action on resource."""
 
     @abstractmethod
@@ -199,8 +197,7 @@ class CacheService(ABC):
         self,
         key: str,
         value: str | bytes | dict[str, object],
-        ttl: int | None = None,
-    ) -> bool:
+        ttl: int | None = None) -> bool:
         """Set value in cache."""
 
     @abstractmethod
@@ -236,11 +233,11 @@ class MetricsService(ABC):
     """Metrics service port."""
 
     @abstractmethod
-    async def record_request(self, request: RequestLog) -> None:
+    async def record_request(self, request: FlextAPIRequest) -> None:
         """Record API request metrics."""
 
     @abstractmethod
-    async def record_response(self, response: ResponseLog) -> None:
+    async def record_response(self, response: APIResponseLog) -> None:
         """Record API response metrics."""
 
     @abstractmethod
@@ -292,11 +289,11 @@ class ValidationService(ABC):
     """Validation service port."""
 
     @abstractmethod
-    async def validate_request(self, request: RequestLog) -> Any:
+    async def validate_request(self, request: FlextAPIRequest) -> Any:
         """Validate API request."""
 
     @abstractmethod
-    async def validate_pipeline(self, pipeline: APIPipeline) -> Any:
+    async def validate_pipeline(self, pipeline: FlextAPIPipeline) -> Any:
         """Validate pipeline configuration."""
 
     @abstractmethod
@@ -307,8 +304,7 @@ class ValidationService(ABC):
     async def validate_schema(
         self,
         data: dict[str, Any],
-        schema: dict[str, Any],
-    ) -> Any:
+        schema: dict[str, Any]) -> FlextResult[Any]:
         """Validate data against schema."""
 
 
@@ -329,8 +325,7 @@ class WebFrameworkService(ABC):
         app: Any,
         path: str,
         handler: Any,
-        methods: list[str],
-    ) -> None:
+        methods: list[str]) -> FlextResult[Any]:
         """Add route to application."""
 
     @abstractmethod
@@ -344,20 +339,18 @@ class PipelineExecutionService(ABC):
     @abstractmethod
     async def execute_pipeline(
         self,
-        pipeline_id: UUID,
-        config: dict[str, Any] | None = None,
-    ) -> ServiceResult[Any]:
+        pipeline_id: str,
+        config: dict[str, Any] | None = None) -> FlextResult[Any]:
         """Execute pipeline and return execution ID."""
 
     @abstractmethod
     async def get_execution_status(
         self,
-        execution_id: str,
-    ) -> ServiceResult[Any]:
+        execution_id: str) -> FlextResult[Any]:
         """Get pipeline execution status."""
 
     @abstractmethod
-    async def cancel_execution(self, execution_id: str) -> ServiceResult[Any]:
+    async def cancel_execution(self, execution_id: str) -> FlextResult[Any]:
         """Cancel pipeline execution."""
 
 
@@ -369,20 +362,18 @@ class PluginManagementService(ABC):
         self,
         name: str,
         version: str,
-        config: dict[str, Any] | None = None,
-    ) -> ServiceResult[Any]:
+        config: dict[str, Any] | None = None) -> FlextResult[Any]:
         """Install plugin from registry."""
 
     @abstractmethod
-    async def uninstall_plugin(self, plugin_id: UUID) -> ServiceResult[Any]:
+    async def uninstall_plugin(self, plugin_id: str) -> FlextResult[Any]:
         """Uninstall plugin."""
 
     @abstractmethod
     async def update_plugin_config(
         self,
-        plugin_id: UUID,
-        config: dict[str, Any],
-    ) -> ServiceResult[Any]:
+        plugin_id: str,
+        config: dict[str, Any]) -> FlextResult[Any]:
         """Update plugin configuration."""
 
 
@@ -399,8 +390,7 @@ class NotificationService(ABC):
         self,
         user_id: str,
         message: str,
-        msg_type: str = "info",
-    ) -> ServiceResult[Any]:
+        msg_type: str = "info") -> FlextResult[Any]:
         """Send notification to recipient."""
 
 
@@ -414,8 +404,7 @@ class AuditService(ABC):
         action: str,
         entity_type: str,
         entity_id: str,
-        metadata: dict[str, Any] | None = None,
-    ) -> ServiceResult[Any]:
+        metadata: dict[str, Any] | None = None) -> FlextResult[Any]:
         """Log user action for audit trail."""
 
 
@@ -430,8 +419,7 @@ class APIAuthenticationService(ABC):
     @abstractmethod
     async def authenticate_request(
         self,
-        request: RequestLog,
-    ) -> ServiceResult[Any]:
+        request: FlextAPIRequest) -> FlextResult[Any]:
         """Authenticate API request."""
 
     @abstractmethod
@@ -439,8 +427,7 @@ class APIAuthenticationService(ABC):
         self,
         user_id: str,
         action: str,
-        resource: str,
-    ) -> ServiceResult[Any]:
+        resource: str) -> FlextResult[Any]:
         """Authorize user action on resource."""
 
 
@@ -451,8 +438,7 @@ class APIResponseBuilder(ABC):
     def build_success_response(
         self,
         data: Any,
-        message: str | None = None,
-    ) -> ResponseLog:
+        message: str | None = None) -> APIResponseLog:
         """Build successful API response."""
 
     @abstractmethod
@@ -461,5 +447,5 @@ class APIResponseBuilder(ABC):
         error: str,
         status_code: int = 400,
         extra_data: dict[str, Any] | None = None,
-    ) -> ResponseLog:
+    ) -> APIResponseLog:
         """Build error API response."""

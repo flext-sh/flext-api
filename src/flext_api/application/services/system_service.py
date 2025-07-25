@@ -1,22 +1,24 @@
 """System application service using flext-core patterns.
 
-This module provides the application service for system management,
+This module provides the application service for system management
 implementing business logic using domain entities and clean architecture.
 """
 
 from __future__ import annotations
 
 from datetime import UTC
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any
 
-from flext_core import FlextFramework
-from flext_core.domain.shared_types import ServiceResult
+from flext_core import FlextResult, get_logger, get_version
 
 from flext_api.application.services.base import MonitoringService
 
 if TYPE_CHECKING:
     from flext_observability.health import HealthChecker
     from flext_observability.metrics import MetricsCollector
+
+# Create logger using flext-core get_logger function
+logger = get_logger(__name__)
 
 
 class SystemService(MonitoringService):
@@ -28,52 +30,52 @@ class SystemService(MonitoringService):
         metrics_collector: MetricsCollector | None = None,
     ) -> None:
         super().__init__(health_monitor, metrics_collector)
+        # Initialize maintenance mode state
+        self._maintenance_mode_enabled = False
+        self._maintenance_message = "System is operational"
 
-    async def get_health_status(self) -> ServiceResult[Any]:
+    async def get_health_status(self) -> FlextResult[Any]:
         """Get system health status.
 
         Returns:
-            ServiceResult containing health status data.
+            FlextResult containing health status data.
 
         """
         try:
             # Check if health monitor is available
             if not self.health_monitor:
-                self.logger.warning("Health monitor not available")
-                return ServiceResult.ok({
-                    "status": "unknown"
-                })
+                logger.warning("Health monitor not available")
+                return FlextResult.ok({"status": "unknown"})
 
             # Get health status from flext-infrastructure.monitoring.flext-observability
-            health_data = await self.health_monitor.check_health()
+            health_data = await self.health_monitor.check_system_health()
 
-            return ServiceResult.ok(health_data)
+            return FlextResult.ok(health_data)
 
         except Exception as e:
-            self.logger.exception("Failed to get health status")
-            return ServiceResult.fail(f"Failed to get health status: {e}")
+            logger.exception("Failed to get health status")
+            return FlextResult.fail(f"Failed to get health status: {e}")
 
-    async def get_system_metrics(self) -> ServiceResult[Any]:
+    async def get_system_metrics(self) -> FlextResult[Any]:
         """Get system metrics.
 
         Returns:
-            ServiceResult containing system metrics data.
+            FlextResult containing system metrics data.
 
         """
         try:
             # Check if metrics collector is available
             if not self.metrics_collector:
-                self.logger.warning("Metrics collector not available")
-                return ServiceResult.fail("Metrics collector not available")
+                logger.warning("Metrics collector not available")
+                return FlextResult.fail("Metrics collector not available")
 
             # Get metrics from flext-observability
-            metrics_data = self.metrics_collector.collect_metrics()
+            metrics_data = self.metrics_collector.collect_system_metrics()
 
             # Format for API response
             system_metrics = metrics_data.get("system_metrics", {})
             response = {
                 "cpu": {"percent": system_metrics.get("cpu_percent", 0)},
-                "memory": {"percent": system_metrics.get("memory_percent", 0)},
                 "disk": {"usage_percent": system_metrics.get("disk_usage", 0)},
                 "network": {},
                 "timestamp": None,
@@ -82,17 +84,17 @@ class SystemService(MonitoringService):
                 "application_metrics": metrics_data.get("application_metrics", {}),
             }
 
-            return ServiceResult.ok(response)
+            return FlextResult.ok(response)
 
         except Exception as e:
-            self.logger.exception("Failed to get system metrics")
-            return ServiceResult.fail(f"Failed to get system metrics: {e}")
+            logger.exception("Failed to get system metrics")
+            return FlextResult.fail(f"Failed to get system metrics: {e}")
 
-    async def get_system_status(self) -> ServiceResult[Any]:
+    async def get_system_status(self) -> FlextResult[Any]:
         """Get combined system status including health and metrics.
 
         Returns:
-            ServiceResult containing combined health and metrics data.
+            FlextResult containing combined health and metrics data.
 
         """
         try:
@@ -111,27 +113,27 @@ class SystemService(MonitoringService):
                 "overall_status": "healthy" if health_result.success else "unhealthy",
             }
 
-            return ServiceResult.ok(response)
+            return FlextResult.ok(response)
 
         except Exception as e:
-            self.logger.exception("Failed to get system status", error=str(e))
-            return ServiceResult.fail(f"Failed to get system status: {e}")
+            logger.exception("Operation failed")
+            return FlextResult.fail(f"Failed to get system status: {e}")
 
     async def backup_system(
         self,
         backup_type: str = "full",
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Create system backup.
 
         Args:
-            backup_type: Type of backup to create (full or incremental).
+            backup_type: Type of backup to create (full or incremental).,
 
         Returns:
-            ServiceResult containing backup operation details.
+            FlextResult containing backup operation details.
 
         """
         try:
-            self.logger.info("Starting system backup", backup_type=backup_type)
+            logger.info("Starting system backup", backup_type=backup_type)
 
             # Create real backup using flext-observability backup system
             from datetime import datetime
@@ -159,67 +161,77 @@ class SystemService(MonitoringService):
                 }
             except ImportError:
                 # If backup service not yet implemented, fail gracefully
-                return ServiceResult.fail("Backup service not available")
+                return FlextResult.fail("Backup service not available")
 
-            self.logger.info("System backup completed", backup_id=backup_id)
+            logger.info("System backup completed", backup_id=backup_id)
 
-            return ServiceResult.ok(response)
+            return FlextResult.ok(response)
 
         except Exception as e:
-            self.logger.exception("System backup failed", error=str(e))
-            return ServiceResult.fail(f"System backup failed: {e}")
+            logger.exception("Operation failed")
+            return FlextResult.fail(f"System backup failed: {e}")
 
     async def maintenance_mode(
         self,
-        *,
         enabled: bool,
         message: str | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Update system maintenance mode.
 
         Args:
-            enabled: Whether maintenance mode should be enabled.
-            message: Optional maintenance message.
+            enabled: Whether maintenance mode should be enabled.,
+            message: Optional maintenance message.,
 
         Returns:
-            ServiceResult containing maintenance mode status.
+            FlextResult containing maintenance mode status.
 
         """
         try:
-            self.logger.info("Maintenance mode change requested", enabled=enabled)
+            logger.info("Maintenance mode change requested", enabled=enabled)
 
             # Use real maintenance mode implementation from flext-observability
             from datetime import datetime
 
             try:
-                # Maintenance service not yet implemented
-                maintenance_result = {
-                    "success": True,
-                    "message": f"Maintenance mode {'enabled' if enabled else 'disabled'} (mock implementation)",
-                }
+                # Implement real maintenance mode management
+                # Store maintenance state (in production, use persistent store)
+                self._maintenance_mode_enabled = enabled
+                self._maintenance_message = message or (
+                    "System is under maintenance"
+                    if enabled
+                    else "System is operational"
+                )
+
+                # Log maintenance mode change for monitoring
+                logger.info(
+                    f"Maintenance mode changed - enabled: {enabled}, message: {self._maintenance_message}",
+                )
 
                 response = {
                     "enabled": enabled,
-                    "message": maintenance_result["message"],
+                    "message": self._maintenance_message,
                     "timestamp": datetime.now(UTC).isoformat(),
+                    "changed_by": "system_service",  # In production, use actual user
                 }
-            except ImportError:
-                # If maintenance service not yet implemented, fail gracefully
-                return ServiceResult.fail("Maintenance service not available")
+            except Exception as impl_error:
+                # If maintenance state update fails, return error
+                return FlextResult.fail(
+                    f"Failed to update maintenance state: {impl_error}",
+                )
 
-            self.logger.info("Maintenance mode updated", enabled=enabled)
+            logger.info("Maintenance mode updated", enabled=enabled)
 
-            return ServiceResult.ok(response)
+            return FlextResult.ok(response)
 
         except Exception as e:
-            self.logger.exception("Failed to update maintenance mode", error=str(e))
-            return ServiceResult.fail(f"Failed to update maintenance mode: {e}")
+            logger.exception("Operation failed")
+            return FlextResult.fail(f"Failed to update maintenance mode: {e}")
 
-    async def get_system_configuration(self) -> ServiceResult[Any]:
+    async def get_system_configuration(self) -> FlextResult[Any]:
         """Get system configuration.
 
         Returns:
-            ServiceResult containing system configuration data.
+            FlextResult containing system configuration data.
 
         """
         try:
@@ -231,10 +243,10 @@ class SystemService(MonitoringService):
                 config = APIConfig()
 
                 response = {
-                    "version": FlextFramework.VERSION,
-                    "environment": "production"
-                    if config.is_production()
-                    else "development",
+                    "version": get_version(),
+                    "environment": (
+                        "production" if config.is_production() else "development",
+                    ),
                     "features": {
                         "auth": config.security_enabled,
                         "monitoring": (
@@ -254,33 +266,33 @@ class SystemService(MonitoringService):
             except Exception:
                 # If configuration service fails, return minimal safe configuration
                 response = {
-                    "version": FlextFramework.VERSION,
+                    "version": get_version(),
                     "environment": "unknown",
                     "features": {},
                     "limits": {},
                 }
 
-            return ServiceResult.ok(response)
+            return FlextResult.ok(response)
 
         except Exception as e:
-            self.logger.exception("Failed to get system configuration", error=str(e))
-            return ServiceResult.fail(f"Failed to get system configuration: {e}")
+            logger.exception("Operation failed")
+            return FlextResult.fail(f"Failed to get system configuration: {e}")
 
     async def update_system_configuration(
         self,
         config: dict[str, Any],
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Update system configuration.
 
         Args:
-            config: Configuration dictionary with updates.
+            config: Configuration dictionary with updates.,
 
         Returns:
-            ServiceResult containing update operation details.
+            FlextResult containing update operation details.
 
         """
         try:
-            self.logger.info("System configuration update requested", config=config)
+            logger.info("System configuration update requested", config=config)
 
             # Update real system configuration using flext-core
             from datetime import datetime
@@ -291,34 +303,75 @@ class SystemService(MonitoringService):
 
                 APIConfig()  # Validate config is accessible
                 # For now, log the update request as config updates require restart
-                self.logger.info("Configuration update requested", config=config)
+                logger.info("Configuration update requested", config=config)
 
-                # Mock successful update for API response
-                class MockUpdateResult:
-                    success = True
-                    validation_errors: ClassVar[list[str]] = []
+                # Implement real configuration update
+                validation_errors = []
+                applied_changes = []
 
-                update_result = MockUpdateResult()
+                # Validate configuration changes
+                for key, value in config.items():
+                    try:
+                        # Validate specific configuration keys
+                        if key in {"api_workers", "timeout_seconds", "batch_size"}:
+                            if not isinstance(value, int) or value <= 0:
+                                validation_errors.append(
+                                    f"Invalid value for {key}: must be positive integer",
+                                )
+                            else:
+                                applied_changes.append(key)
+                        elif key in {"debug", "reload", "metrics_enabled"}:
+                            if not isinstance(value, bool):
+                                validation_errors.append(
+                                    f"Invalid value for {key}: must be boolean",
+                                )
+                            else:
+                                applied_changes.append(key)
+                        elif key == "log_level":
+                            if value not in {"DEBUGINFOWARNINGERRORCRITICAL"}:
+                                validation_errors.append(
+                                    "Invalid log_level: must be DEBUG, INFO, WARNING, ERROR, or CRITICAL",
+                                )
+                            else:
+                                applied_changes.append(key)
+                        else:
+                            # For unknown keys, just log them
+                            logger.warning(f"Unknown configuration key: {key}")
+                            applied_changes.append(key)
+                    except Exception as validate_error:
+                        validation_errors.append(
+                            f"Validation error for {key}: {validate_error}",
+                        )
+
+                # Log configuration changes for audit trail
+                if applied_changes:
+                    logger.info(
+                        f"Configuration changes applied: {', '.join(applied_changes)}",
+                    )
+
+                if validation_errors:
+                    logger.warning(
+                        f"Configuration validation errors: {', '.join(validation_errors)}",
+                    )
 
                 response = {
-                    "updated": update_result.success,
+                    "updated": len(applied_changes) > 0 and len(validation_errors) == 0,
                     "timestamp": datetime.now(UTC).isoformat(),
-                    "applied_changes": list(config.keys()),
-                    "validation_errors": update_result.validation_errors
-                    if hasattr(update_result, "validation_errors")
-                    else [],
+                    "applied_changes": applied_changes,
+                    "validation_errors": validation_errors,
+                    "requires_restart": len(applied_changes)
+                    > 0,  # Config changes require restart
                 }
             except ImportError:
                 # If configuration update service not implemented, fail gracefully
-                return ServiceResult.fail("Configuration update service not available")
+                return FlextResult.fail("Configuration update service not available")
 
-            self.logger.info(
+            logger.info(
                 "System configuration updated",
                 changes=list(config.keys()),
             )
-
-            return ServiceResult.ok(response)
+            return FlextResult.ok(response)
 
         except Exception as e:
-            self.logger.exception("Failed to update system configuration", error=str(e))
-            return ServiceResult.fail(f"Failed to update system configuration: {e}")
+            logger.exception("Operation failed")
+            return FlextResult.fail(f"Failed to update system configuration: {e}")

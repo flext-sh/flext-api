@@ -37,20 +37,20 @@ async def install_plugin(request: PluginInstallRequest) -> PluginInstallationRes
         # 4. Return installation status
 
         return PluginInstallationResponse(
-            operation_id=uuid4(),
             plugin_name=request.name,
-            status="installed",
-            started_at=datetime.now(UTC),
-            finished_at=datetime.now(UTC),
-            duration_seconds=0.1,  # Placeholder for actual duration
-            success=True,
-            error_message=None,
+            plugin_type=request.plugin_type,
             installed_version=request.version or "latest",
+            source=request.source,
+            installation_time_seconds=0.1,  # Placeholder for actual duration
+            config_applied=False,
+            restart_required=False,
+            warnings=[],
+            post_install_notes="Plugin installed successfully"
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Installation failed: {e!s}",
+            detail=f"Installation failed: {e!s}"
         ) from e
 
 
@@ -65,12 +65,12 @@ async def uninstall_plugin(plugin_name: str) -> dict[str, str]:
 
         return {
             "message": f"Plugin {plugin_name} uninstalled successfully",
-            "status": "uninstalled",
+            "status": "uninstalled"
         }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Uninstallation failed: {e!s}",
+            detail=f"Uninstallation failed: {e!s}"
         ) from e
 
 
@@ -79,12 +79,11 @@ async def get_plugin(plugin_name: str) -> PluginResponse:
     """Get details for a specific plugin."""
     # In a real implementation, this would query plugin registry
     return PluginResponse(
-        plugin_id=uuid4(),
         name=plugin_name,
         plugin_type=PluginType.UTILITY,
-        source=PluginSource.PYPI,
+        source=PluginSource.PIP,
         version="1.0.0",
+        status=PluginStatus.INSTALLED,
         description=f"Plugin {plugin_name}",
-        status=PluginStatus.ACTIVE,
-        installed_at=datetime.now(UTC),
+        installed_at=datetime.now(UTC)
     )

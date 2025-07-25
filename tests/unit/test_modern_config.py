@@ -24,7 +24,7 @@ class TestAPISettings:
         assert config.project_version == "0.1.0"
         assert config.server.host == "0.0.0.0"
         assert config.server.port == 8000
-        assert config.log_level.value == "INFO"
+        assert config.log_level == "INFO"
         assert config.docs.description == "Enterprise Data Integration API"
         assert "postgresql://" in config.database_url
         assert "flext_api" in config.database_url
@@ -50,7 +50,7 @@ class TestAPISettings:
 
         assert config.server.host == "api.flext.com"
         assert config.server.port == 443
-        assert config.log_level.value == "ERROR"
+        assert config.log_level == "ERROR"
         assert config.database_url == "postgresql://user:pass@localhost/flext"
         assert config.security.secret_key == "production-secret"
         assert config.server.reload is False
@@ -110,7 +110,7 @@ class TestAPISettings:
         config = APISettings()
 
         # Default configuration - debug is inherited from BaseSettings
-        assert config.log_level.value == "INFO"
+        assert config.log_level == "INFO"
 
         # Environment should be development by default
         assert config.environment == "development"
@@ -137,7 +137,7 @@ class TestAPISettings:
         assert config.project_version == "0.1.0"
         assert "postgresql://" in config.database_url
         assert "flext_api" in config.database_url
-        assert config.log_level.value == "INFO"
+        assert config.log_level == "INFO"
 
     def test_create_development_api_config(self) -> None:
         """Test development configuration factory."""
@@ -212,7 +212,7 @@ class TestAPISettings:
         """Test logging configuration."""
         config = APISettings()
 
-        assert config.log_level.value == "INFO"
+        assert config.log_level == "INFO"
         assert "%(asctime)s" in config.log_format
 
     def test_config_factory_env_isolation(self) -> None:

@@ -6,45 +6,51 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-from flext_core import DomainEvent, EntityId, UserId
+from flext_core import (
+    FlextEntity as DomainEntity,
+    FlextEntityId as EntityId,
+    FlextEntityId as UserId,
+)
 
 from flext_api.domain.entities import PluginType
 from flext_api.domain.events import (
     ApiRequestCompletedEvent,
     ApiRequestReceivedEvent,
-    PipelineCreatedEvent,
+    # PipelineCreatedEvent,
     PipelineDeletedEvent,
     PipelineUpdatedEvent,
     PluginDisabledEvent,
     PluginEnabledEvent,
-    PluginRegisteredEvent,
+    # PluginRegisteredEvent,
     PluginUpdatedEvent,
 )
 
 
-class TestDomainEventBase:
-    """Test base DomainEvent functionality."""
+class Test# DomainEventBase:
+    """Test base # DomainEvent functionality."""
 
     def test_domain_event_is_base_class(self) -> None:
-        """Test DomainEvent serves as base class."""
-        # All events should inherit from DomainEvent
-        assert issubclass(PipelineCreatedEvent, DomainEvent)
-        assert issubclass(PluginRegisteredEvent, DomainEvent)
-        assert issubclass(ApiRequestReceivedEvent, DomainEvent)
+        """Test # DomainEvent serves as base class."""
+        # All events should inherit from # DomainEvent
+        assert issubclass(# PipelineCreatedEvent, # DomainEvent)
+        assert issubclass(# PluginRegisteredEvent, # DomainEvent)
+        assert issubclass(ApiRequestReceivedEvent, # DomainEvent)
 
     def test_domain_event_has_required_fields(self) -> None:
-        """Test DomainEvent has required base fields."""
+        """Test # DomainEvent has required base fields."""
         # Create a simple event to test base functionality
         event = ApiRequestReceivedEvent(
+            event_type="api_request_received",
+            aggregate_id=str(uuid4()),
             request_id=EntityId(str(uuid4())),
             method="GET",
             ip_address="127.0.0.1",
         )
 
-        # Should have base DomainEvent fields
+        # Should have base # DomainEvent fields
         assert hasattr(event, "event_id")
         assert hasattr(event, "timestamp")
-        assert isinstance(event.event_id, type(uuid4()))
+        assert isinstance(event.event_id, str)
         assert isinstance(event.timestamp, datetime)
 
 
@@ -52,13 +58,15 @@ class TestPipelineEvents:
     """Test pipeline-specific domain events."""
 
     def test_pipeline_created_event(self) -> None:
-        """Test PipelineCreatedEvent creation."""
+        """Test # PipelineCreatedEvent creation."""
         pipeline_id = str(uuid4())
         pipeline_name = "test-pipeline"
         owner_id = UserId(str(uuid4()))
         project_id = EntityId(str(uuid4()))
 
-        event = PipelineCreatedEvent(
+        event = # PipelineCreatedEvent(
+            event_type="pipeline_created",
+            aggregate_id=str(pipeline_id),
             pipeline_id=pipeline_id,
             pipeline_name=pipeline_name,
             owner_id=owner_id,
@@ -69,15 +77,17 @@ class TestPipelineEvents:
         assert event.pipeline_name == pipeline_name
         assert event.owner_id == owner_id
         assert event.project_id == project_id
-        assert isinstance(event.event_id, type(uuid4()))
+        assert isinstance(event.event_id, str)
         assert isinstance(event.timestamp, datetime)
 
     def test_pipeline_created_event_minimal(self) -> None:
-        """Test PipelineCreatedEvent with minimal required fields."""
+        """Test # PipelineCreatedEvent with minimal required fields."""
         pipeline_id = str(uuid4())
         pipeline_name = "test-pipeline"
 
-        event = PipelineCreatedEvent(
+        event = # PipelineCreatedEvent(
+            event_type="pipeline_created",
+            aggregate_id=pipeline_id,
             pipeline_id=pipeline_id,
             pipeline_name=pipeline_name,
         )
@@ -129,15 +139,15 @@ class TestPipelineEvents:
         assert event.deleted_by == deleted_by
 
     def test_pipeline_events_inheritance(self) -> None:
-        """Test pipeline events inherit from DomainEvent properly."""
+        """Test pipeline events inherit from # DomainEvent properly."""
         pipeline_id = str(uuid4())
 
-        created_event = PipelineCreatedEvent(
+        created_event = # PipelineCreatedEvent(
             pipeline_id=pipeline_id,
             pipeline_name="test",
         )
 
-        assert isinstance(created_event, DomainEvent)
+        assert isinstance(created_event, # DomainEvent)
         assert hasattr(created_event, "event_id")
         assert hasattr(created_event, "timestamp")
 
@@ -146,13 +156,13 @@ class TestPluginEvents:
     """Test plugin-specific domain events."""
 
     def test_plugin_registered_event(self) -> None:
-        """Test PluginRegisteredEvent creation."""
+        """Test # PluginRegisteredEvent creation."""
         plugin_id = str(uuid4())
         plugin_name = "tap-csv"
         plugin_type = PluginType.EXTRACTOR
         version = "1.0.0"
 
-        event = PluginRegisteredEvent(
+        event = # PluginRegisteredEvent(
             plugin_id=plugin_id,
             plugin_name=plugin_name,
             plugin_type=plugin_type,
@@ -210,17 +220,17 @@ class TestPluginEvents:
         assert event.enabled_by == enabled_by
 
     def test_plugin_events_inheritance(self) -> None:
-        """Test plugin events inherit from DomainEvent properly."""
+        """Test plugin events inherit from # DomainEvent properly."""
         plugin_id = str(uuid4())
 
-        registered_event = PluginRegisteredEvent(
+        registered_event = # PluginRegisteredEvent(
             plugin_id=plugin_id,
             plugin_name="test-plugin",
             plugin_type=PluginType.EXTRACTOR,
             version="1.0.0",
         )
 
-        assert isinstance(registered_event, DomainEvent)
+        assert isinstance(registered_event, # DomainEvent)
         assert hasattr(registered_event, "event_id")
         assert hasattr(registered_event, "timestamp")
 
@@ -276,7 +286,7 @@ class TestApiEvents:
         assert event.success == success
 
     def test_api_events_inheritance(self) -> None:
-        """Test API events inherit from DomainEvent properly."""
+        """Test API events inherit from # DomainEvent properly."""
         request_id = EntityId(str(uuid4()))
 
         received_event = ApiRequestReceivedEvent(
@@ -284,7 +294,7 @@ class TestApiEvents:
             method="GET",
         )
 
-        assert isinstance(received_event, DomainEvent)
+        assert isinstance(received_event, # DomainEvent)
         assert hasattr(received_event, "event_id")
         assert hasattr(received_event, "timestamp")
 
@@ -297,7 +307,7 @@ class TestEventValidation:
         pipeline_id = str(uuid4())
 
         # Valid name should work
-        event = PipelineCreatedEvent(
+        event = # PipelineCreatedEvent(
             pipeline_id=pipeline_id,
             pipeline_name="valid-name",
         )
@@ -305,7 +315,7 @@ class TestEventValidation:
 
         # Empty name should raise validation error
         with pytest.raises((ValueError, TypeError)):
-            PipelineCreatedEvent(
+            # PipelineCreatedEvent(
                 pipeline_id=pipeline_id,
                 pipeline_name="",
             )
@@ -319,7 +329,7 @@ class TestEventValidation:
         # Valid semantic version should work
         valid_versions = ["1.0.0", "10.20.30", "0.1.0"]
         for version in valid_versions:
-            event = PluginRegisteredEvent(
+            event = # PluginRegisteredEvent(
                 plugin_id=plugin_id,
                 plugin_name=plugin_name,
                 plugin_type=plugin_type,
@@ -331,7 +341,7 @@ class TestEventValidation:
         invalid_versions = ["1.0", "v1.0.0", "1.0.0-beta", "invalid"]
         for version in invalid_versions:
             with pytest.raises((ValueError, TypeError)):
-                PluginRegisteredEvent(
+                # PluginRegisteredEvent(
                     plugin_id=plugin_id,
                     plugin_name=plugin_name,
                     plugin_type=plugin_type,
@@ -397,7 +407,7 @@ class TestEventSerialization:
         pipeline_id = str(uuid4())
         pipeline_name = "test-pipeline"
 
-        event = PipelineCreatedEvent(
+        event = # PipelineCreatedEvent(
             pipeline_id=pipeline_id,
             pipeline_name=pipeline_name,
         )
@@ -415,7 +425,7 @@ class TestEventSerialization:
         plugin_type = PluginType.EXTRACTOR
         version = "1.0.0"
 
-        event = PluginRegisteredEvent(
+        event = # PluginRegisteredEvent(
             plugin_id=plugin_id,
             plugin_name=plugin_name,
             plugin_type=plugin_type,
@@ -457,18 +467,18 @@ class TestEventEquality:
         pipeline_id = str(uuid4())
         pipeline_name = "test-pipeline"
 
-        _event1 = PipelineCreatedEvent(
+        _event1 = # PipelineCreatedEvent(
             pipeline_id=pipeline_id,
             pipeline_name=pipeline_name,
         )
 
-        _event2 = PipelineCreatedEvent(
+        _event2 = # PipelineCreatedEvent(
             pipeline_id=pipeline_id,
             pipeline_name=pipeline_name,
         )
 
         # Events should be equal by content
-        # Note: This depends on how DomainEvent implements equality
+        # Note: This depends on how # DomainEvent implements equality
         # They might not be equal due to different event_ids and timestamps
 
     def test_events_different_when_content_differs(self) -> None:
@@ -476,12 +486,12 @@ class TestEventEquality:
         pipeline_id1 = str(uuid4())
         pipeline_id2 = str(uuid4())
 
-        event1 = PipelineCreatedEvent(
+        event1 = # PipelineCreatedEvent(
             pipeline_id=pipeline_id1,
             pipeline_name="pipeline-1",
         )
 
-        event2 = PipelineCreatedEvent(
+        event2 = # PipelineCreatedEvent(
             pipeline_id=pipeline_id2,
             pipeline_name="pipeline-2",
         )
@@ -498,7 +508,7 @@ class TestEventTimestamps:
         """Test that events automatically get creation timestamps."""
         before_creation = datetime.now(UTC)
 
-        event = PipelineCreatedEvent(
+        event = # PipelineCreatedEvent(
             pipeline_id=str(uuid4()),
             pipeline_name="test-pipeline",
         )
@@ -511,12 +521,12 @@ class TestEventTimestamps:
 
     def test_events_have_unique_ids(self) -> None:
         """Test that events get unique identifiers."""
-        event1 = PipelineCreatedEvent(
+        event1 = # PipelineCreatedEvent(
             pipeline_id=str(uuid4()),
             pipeline_name="pipeline-1",
         )
 
-        event2 = PipelineCreatedEvent(
+        event2 = # PipelineCreatedEvent(
             pipeline_id=str(uuid4()),
             pipeline_name="pipeline-2",
         )

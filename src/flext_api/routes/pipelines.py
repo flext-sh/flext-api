@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, status
 
+from flext_api.common import (
+    handle_api_exceptions,
+    validate_uuid,
+)
 from flext_api.models.pipeline import (
     PipelineCreateRequest,
     PipelineExecutionRequest,
@@ -17,10 +21,11 @@ from flext_api.models.pipeline import (
     PipelineUpdateRequest,
 )
 
-pipelines_router = APIRouter(prefix="/pipelines", tags=["pipelines"])
+pipelines_router = APIRouter(prefix="/api/v1/pipelines", tags=["pipelines"])
 
 
 @pipelines_router.get("/")
+@handle_api_exceptions("list pipelines")
 async def list_pipelines() -> list[PipelineResponse]:
     """List all pipelines."""
     # In a real implementation, this would query pipeline repository
@@ -28,49 +33,40 @@ async def list_pipelines() -> list[PipelineResponse]:
 
 
 @pipelines_router.post("/")
+@handle_api_exceptions("create pipeline")
 async def create_pipeline(request: PipelineCreateRequest) -> PipelineResponse:
     """Create a new pipeline."""
-    try:
-        # In a real implementation, this would:
-        # 1. Validate pipeline configuration
-        # 2. Store in repository
-        # 3. Return created pipeline
+    # In a real implementation, this would:
+    # 1. Validate pipeline configuration
+    # 2. Store in repository
+    # 3. Return created pipeline
 
-        return PipelineResponse(
-            pipeline_id=str(uuid4()),
-            name=request.name,
-            description=request.description,
-            pipeline_type=request.pipeline_type,
-            extractor=request.extractor,
-            loader=request.loader,
-            transform=request.transform,
-            configuration=request.configuration,
-            environment=request.environment,
-            schedule=request.schedule,
-            tags=request.tags,
-            metadata=request.metadata,
-            status=PipelineStatus.ACTIVE,
-            created_at=datetime.now(UTC),
-            updated_at=datetime.now(UTC),
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Pipeline creation failed: {e!s}",
-        ) from e
+    return PipelineResponse(
+        pipeline_id=uuid4(),
+        name=request.name,
+        description=request.description,
+        pipeline_type=request.pipeline_type,
+        extractor=request.extractor,
+        loader=request.loader,
+        transform=request.transform,
+        configuration=request.configuration,
+        environment=request.environment,
+        schedule=request.schedule,
+        tags=request.tags,
+        metadata=request.metadata,
+        pipeline_status=PipelineStatus.ACTIVE,
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+    # Exception handling now done by @handle_api_exceptions decorator
 
 
 @pipelines_router.get("/{pipeline_id}")
+@handle_api_exceptions("get pipeline")
 async def get_pipeline(pipeline_id: str) -> PipelineResponse:
     """Get a specific pipeline by ID."""
     # In a real implementation, this would query pipeline repository
-    try:
-        pipeline_uuid = UUID(pipeline_id)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid pipeline ID format: {e!s}",
-        ) from e
+    pipeline_uuid = validate_uuid(pipeline_id, "pipeline ID")
 
     # Check for specific test case UUID that should return 404
     if str(pipeline_uuid) == "00000000-0000-0000-0000-000000000000":
@@ -80,7 +76,7 @@ async def get_pipeline(pipeline_id: str) -> PipelineResponse:
         )
 
     return PipelineResponse(
-        pipeline_id=str(pipeline_uuid),
+        pipeline_id=pipeline_uuid,
         name="example-pipeline",
         description="Example pipeline",
         pipeline_type=PipelineType.ETL,
@@ -89,124 +85,88 @@ async def get_pipeline(pipeline_id: str) -> PipelineResponse:
         transform=None,
         configuration={},
         environment="dev",
-        status=PipelineStatus.ACTIVE,
+        pipeline_status=PipelineStatus.ACTIVE,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
 
 
 @pipelines_router.put("/{pipeline_id}")
+@handle_api_exceptions("update pipeline")
 async def update_pipeline(
-    pipeline_id: str, request: PipelineUpdateRequest,
+    pipeline_id: str,
+    request: PipelineUpdateRequest,
 ) -> PipelineResponse:
     """Update an existing pipeline."""
-    try:
-        # Validate pipeline ID format
-        try:
-            pipeline_uuid = UUID(pipeline_id)
-        except ValueError as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid pipeline ID format: {e!s}",
-            ) from e
+    # Validate pipeline ID format
+    pipeline_uuid = validate_uuid(pipeline_id, "pipeline ID")
 
-        # In a real implementation, this would:
-        # 1. Validate pipeline exists
-        # 2. Update in repository
-        # 3. Return updated pipeline
+    # In a real implementation, this would:
+    # 1. Validate pipeline exists
+    # 2. Update in repository
+    # 3. Return updated pipeline
 
-        return PipelineResponse(
-            pipeline_id=str(pipeline_uuid),
-            name=request.name or "updated-pipeline",
-            description=request.description,
-            pipeline_type=PipelineType.ETL,
-            extractor=request.extractor or "tap-updated",
-            loader=request.loader or "target-updated",
-            transform=request.transform,
-            configuration=request.configuration or {},
-            environment="dev",
-            status=PipelineStatus.ACTIVE,
-            created_at=datetime.now(UTC),
-            updated_at=datetime.now(UTC),
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Pipeline update failed: {e!s}",
-        ) from e
+    return PipelineResponse(
+        pipeline_id=pipeline_uuid,
+        name=request.name or "updated-pipeline",
+        description=request.description,
+        pipeline_type=PipelineType.ETL,
+        extractor=request.extractor or "tap-updated",
+        loader=request.loader or "target-updated",
+        transform=request.transform,
+        configuration=request.configuration or {},
+        environment="dev",
+        pipeline_status=PipelineStatus.ACTIVE,
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+    # Exception handling now done by @handle_api_exceptions decorator
 
 
 @pipelines_router.delete("/{pipeline_id}")
+@handle_api_exceptions("delete pipeline")
 async def delete_pipeline(pipeline_id: str) -> dict[str, str]:
     """Delete a pipeline."""
-    try:
-        # Validate pipeline ID format
-        try:
-            UUID(pipeline_id)
-        except ValueError as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid pipeline ID format: {e!s}",
-            ) from e
+    # Validate pipeline ID format
+    validate_uuid(pipeline_id, "pipeline ID")
 
-        # In a real implementation, this would:
-        # 1. Validate pipeline exists
-        # 2. Stop if running
-        # 3. Remove from repository
+    # In a real implementation, this would:
+    # 1. Validate pipeline exists
+    # 2. Stop if running
+    # 3. Remove from repository
 
-        return {
-            "message": f"Pipeline {pipeline_id} deleted successfully",
-            "status": "deleted",
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Pipeline deletion failed: {e!s}",
-        ) from e
+    return {
+        "message": f"Pipeline {pipeline_id} deleted successfully",
+        "status": "deleted",
+    }
+    # Exception handling now done by @handle_api_exceptions decorator
 
 
 @pipelines_router.post("/{pipeline_id}/execute")
+@handle_api_exceptions("execute pipeline")
 async def execute_pipeline(
-    pipeline_id: str, request: PipelineExecutionRequest,
+    pipeline_id: str,
+    request: PipelineExecutionRequest,
 ) -> PipelineExecutionResponse:
     """Execute a pipeline."""
-    try:
-        # Validate pipeline ID format
-        try:
-            pipeline_uuid = UUID(pipeline_id)
-        except ValueError as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid pipeline ID format: {e!s}",
-            ) from e
+    # Validate pipeline ID format
+    pipeline_uuid = validate_uuid(pipeline_id, "pipeline ID")
 
-        # In a real implementation, this would:
-        # 1. Validate pipeline exists and is active
-        # 2. Queue pipeline execution
-        # 3. Return execution status
+    # In a real implementation, this would:
+    # 1. Validate pipeline exists and is active
+    # 2. Queue pipeline execution
+    # 3. Return execution status
 
-        return PipelineExecutionResponse(
-            execution_id=str(uuid4()),
-            pipeline_id=str(pipeline_uuid),
-            pipeline_name="example-pipeline",
-            status=PipelineStatus.ACTIVE,
-            refresh_mode=request.refresh_mode,
-            environment=request.environment,
-            configuration=request.configuration,
-            started_at=datetime.now(UTC),
-            finished_at=None,
-            duration_seconds=None,
-            error_message=None,
-            created_by=None,
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Pipeline execution failed: {e!s}",
-        ) from e
+    return PipelineExecutionResponse(
+        execution_id=uuid4(),
+        pipeline_id=pipeline_uuid,
+        status=PipelineStatus.RUNNING,
+        started_at=datetime.now(UTC),
+        completed_at=None,
+        duration_seconds=None,
+        parameters=request.parameters,
+        result=None,
+        error_message=None,
+        logs_url=None,
+    )
+    # Exception handling now done by @handle_api_exceptions decorator

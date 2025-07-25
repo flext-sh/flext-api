@@ -8,23 +8,15 @@ This module provides Pydantic models for authentication.
 
 from __future__ import annotations
 
-from flext_core import APIRequest, APIResponse, Field
+from typing import Any
 
-__all__ = [
-    "APIResponse",  # Re-export from flext_core
-    "LoginRequest",
-    "LoginResponse",
-    "LogoutRequest",
-    "RefreshTokenRequest",
-    "RegisterRequest",
-    "RegisterResponse",
-    "SessionListResponse",
-    "SessionResponse",
-    "UserAPI",
-]
+from flext_core import FlextResult
+from pydantic import Field
+
+from flext_api.base import FlextApiBaseRequest as FlextAPIRequest, FlextAPIResponse
 
 
-class UserAPI(APIResponse):
+class UserAPI(FlextAPIResponse[dict[str, Any]]):
     """API User model for authentication with role-based access control.
 
     Represents an authenticated user with roles and authorization capabilities
@@ -32,10 +24,10 @@ class UserAPI(APIResponse):
 
     Attributes
     ----------
-        username: User identification string.
-        roles: List of user roles for authorization.
-        is_active: Whether the user account is active.
-        is_REDACTED_LDAP_BIND_PASSWORD: Whether the user has REDACTED_LDAP_BIND_PASSWORDistrative privileges.
+        username: User identification string.,
+        roles: List of user roles for authorization.,
+        is_active: Whether the user account is active.,
+        is_REDACTED_LDAP_BIND_PASSWORD: Whether the user has REDACTED_LDAP_BIND_PASSWORDistrative privileges.,
 
     Methods
     -------
@@ -76,18 +68,21 @@ class UserAPI(APIResponse):
         return any(self.has_role(role) for role in required_roles)
 
 
-class LoginRequest(APIRequest):
+class LoginRequest(FlextAPIRequest):
     """Request model for user login."""
 
     username: str = Field(..., description="Username or email")
     password: str = Field(..., min_length=1, description="User password")
     device_info: dict[str, str] | None = Field(
-        default=None,
-        description="Optional device information",
+        default=None, description="Optional device information"
     )
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules for login request."""
+        return FlextResult.ok(None)
 
-class LoginResponse(APIResponse):
+
+class LoginResponse(FlextAPIResponse[dict[str, Any]]):
     """Response model for user login."""
 
     access_token: str = Field(..., description="JWT access token")
@@ -96,14 +91,11 @@ class LoginResponse(APIResponse):
     expires_in: int = Field(..., description="Token expiration in seconds")
     user: UserAPI = Field(..., description="User information")
     session_id: str | None = Field(default=None, description="Session identifier")
-    permissions: list[str] = Field(
-        default_factory=list,
-        description="User permissions",
-    )
+    permissions: list[str] = Field(default_factory=list, description="User permissions")
     roles: list[str] = Field(default_factory=list, description="User roles")
 
 
-class RegisterRequest(APIRequest):
+class RegisterRequest(FlextAPIRequest):
     """Request model for user registration."""
 
     username: str = Field(..., min_length=3, max_length=50, description="Username")
@@ -111,21 +103,29 @@ class RegisterRequest(APIRequest):
     password: str = Field(..., min_length=8, description="Password")
     roles: list[str] = Field(default_factory=lambda: ["user"], description="User roles")
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules for user registration."""
+        return FlextResult.ok(None)
 
-class RegisterResponse(APIResponse):
+
+class RegisterResponse(FlextAPIResponse[dict[str, Any]]):
     """Response model for user registration."""
 
     user: UserAPI = Field(..., description="Created user information")
     created: bool = Field(default=True, description="Whether user was created")
 
 
-class TokenRefreshRequest(APIRequest):
+class TokenRefreshRequest(FlextAPIRequest):
     """Request model for token refresh."""
 
     refresh_token: str = Field(..., description="Refresh token")
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules for token refresh."""
+        return FlextResult.ok(None)
 
-class TokenRefreshResponse(APIResponse):
+
+class TokenRefreshResponse(FlextAPIResponse[dict[str, Any]]):
     """Response model for token refresh."""
 
     access_token: str = Field(..., description="New access token")
@@ -134,32 +134,37 @@ class TokenRefreshResponse(APIResponse):
     expires_in: int = Field(..., description="Token expiration in seconds")
 
 
-class RefreshTokenRequest(APIRequest):
+class RefreshTokenRequest(FlextAPIRequest):
     """Request model for token refresh."""
 
     refresh_token: str = Field(..., description="Refresh token")
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules for refresh token request."""
+        return FlextResult.ok(None)
 
-class LogoutRequest(APIRequest):
+
+class LogoutRequest(FlextAPIRequest):
     """Request model for user logout."""
 
     session_id: str | None = Field(default=None, description="Session to terminate")
     all_sessions: bool = Field(default=False, description="Terminate all sessions")
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules for logout request."""
+        return FlextResult.ok(None)
 
-class UserProfileResponse(APIResponse):
+
+class UserProfileResponse(FlextAPIResponse[dict[str, Any]]):
     """Response model for user profile."""
 
     user: UserAPI = Field(..., description="User information")
-    permissions: list[str] = Field(
-        default_factory=list,
-        description="User permissions",
-    )
+    permissions: list[str] = Field(default_factory=list, description="User permissions")
     last_login: str | None = Field(default=None, description="Last login timestamp")
     session_count: int = Field(default=0, description="Active session count")
 
 
-class SessionResponse(APIResponse):
+class SessionResponse(FlextAPIResponse[dict[str, Any]]):
     """Response model for session information."""
 
     session_id: str = Field(..., description="Session identifier")
@@ -167,25 +172,35 @@ class SessionResponse(APIResponse):
     ip_address: str | None = Field(default=None, description="Client IP address")
     user_agent: str | None = Field(default=None, description="User agent string")
     device_info: dict[str, str] = Field(
-        default_factory=dict,
-        description="Device information",
+        default_factory=dict, description="Device information"
     )
     created_at: str = Field(..., description="Session creation timestamp")
     last_accessed: str = Field(..., description="Last access timestamp")
     expires_at: str = Field(..., description="Session expiration timestamp")
     is_current: bool = Field(
-        default=False,
-        description="Whether this is the current session",
+        default=False, description="Whether this is the current session"
     )
     roles: list[str] = Field(default_factory=list, description="User roles")
     permissions: list[str] = Field(default_factory=list, description="User permissions")
 
 
-class SessionListResponse(APIResponse):
+class SessionListResponse(FlextAPIResponse[dict[str, Any]]):
     """Response model for session list."""
 
     sessions: list[SessionResponse] = Field(
-        default_factory=list,
-        description="List of sessions",
+        default_factory=list, description="List of sessions"
     )
     total_count: int = Field(default=0, description="Total number of sessions")
+
+
+__all__ = [
+    "LoginRequest",
+    "LoginResponse",
+    "LogoutRequest",
+    "RefreshTokenRequest",
+    "RegisterRequest",
+    "RegisterResponse",
+    "SessionListResponse",
+    "SessionResponse",
+    "UserAPI",
+]

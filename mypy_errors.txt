@@ -1,0 +1,347 @@
+🔍 Running type checking...
+src/flext_api/application/services/auth_service.py: note: In member "logout" of class "FlextAuthService":
+src/flext_api/application/services/auth_service.py:119: error: Returning Any from function declared to return
+"FlextResult[Any]"  [no-any-return]
+                        return result
+                        ^~~~~~~~~~~~~
+src/flext_api/application/services/auth_service.py:121: error: Returning Any from function declared to return
+"FlextResult[Any]"  [no-any-return]
+                    return result
+                    ^~~~~~~~~~~~~
+src/flext_api/application/services/auth_service.py: note: In member "refresh_token" of class "FlextAuthService":
+src/flext_api/application/services/auth_service.py:154: error: Returning Any from function declared to return
+"FlextResult[Any]"  [no-any-return]
+                        return result
+                        ^~~~~~~~~~~~~
+src/flext_api/application/services/auth_service.py:156: error: Returning Any from function declared to return
+"FlextResult[Any]"  [no-any-return]
+                    return result
+                    ^~~~~~~~~~~~~
+src/flext_api/application/services/auth_service.py: note: In member "register" of class "FlextAuthService":
+src/flext_api/application/services/auth_service.py:198: error: Returning Any from function declared to return
+"FlextResult[Any]"  [no-any-return]
+                        return result
+                        ^~~~~~~~~~~~~
+src/flext_api/application/services/auth_service.py:200: error: Returning Any from function declared to return
+"FlextResult[Any]"  [no-any-return]
+                    return result
+                    ^~~~~~~~~~~~~
+src/flext_api/application/services/auth_service.py: note: In member "validate_token" of class "FlextAuthService":
+src/flext_api/application/services/auth_service.py:235: error: Returning Any from function declared to return
+"FlextResult[Any]"  [no-any-return]
+                        return result
+                        ^~~~~~~~~~~~~
+src/flext_api/application/services/auth_service.py:237: error: Returning Any from function declared to return
+"FlextResult[Any]"  [no-any-return]
+                    return result
+                    ^~~~~~~~~~~~~
+src/flext_api/infrastructure/di_container.py: note: In function "configure_api_dependencies":
+src/flext_api/infrastructure/di_container.py:76: error: Module "flext_api.infrastructure.ports" has no
+attribute "FlextApiGrpcPort"  [attr-defined]
+                from flext_api.infrastructure.ports import FlextApiGrpcPort
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/application/services/api_service.py: note: In member "track_response" of class "FlextAPIService":
+src/flext_api/application/services/api_service.py:116: error: Unexpected keyword argument
+"processing_start_time" for "APIResponseLog"  [call-arg]
+                api_response = APIResponseLog(
+                               ^
+src/flext_api/application/services/api_service.py:143: error: "fail" of "FlextResult" gets multiple values for
+keyword argument "error"  [misc]
+                return FlextResult.fail(f"Failed to track API response: {e}", error=str(e))
+                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/application/services/api_service.py: note: In member "get_request_metrics" of class "FlextAPIService":
+src/flext_api/application/services/api_service.py:160: error: "fail" of "FlextResult" gets multiple values for
+keyword argument "error"  [misc]
+                    return FlextResult.fail(
+                           ^
+src/flext_api/application/services/api_service.py:171: error: Argument 1 to "len" has incompatible type
+"FlextResult[Any]"; expected "Sized"  [arg-type]
+                    total_requests = len(all_requests)
+                                         ^~~~~~~~~~~~
+src/flext_api/application/services/api_service.py:172: error: Argument 1 to "_count_by_attribute" of
+"FlextAPIService" has incompatible type "FlextResult[Any]"; expected "list[Any]"  [arg-type]
+                    requests_by_method = self._count_by_attribute(all_requests, "method")
+                                                                  ^~~~~~~~~~~~
+src/flext_api/application/services/api_service.py:174: error: Argument 1 to "_count_by_attribute" of
+"FlextAPIService" has incompatible type "FlextResult[Any]"; expected "list[Any]"  [arg-type]
+                        all_requests, "endpoint"
+                        ^~~~~~~~~~~~
+src/flext_api/application/services/api_service.py:179: error: "tuple[str, Any]" has no attribute "request_id" 
+[attr-defined]
+                        [req.request_id for req in all_requests]
+                         ^~~~~~~~~~~~~~
+src/flext_api/application/services/api_service.py:182: error: Argument 1 to "_count_by_attribute" of
+"FlextAPIService" has incompatible type "FlextResult[Any]"; expected "list[Any]"  [arg-type]
+                        all_responses, "status_code"
+                        ^~~~~~~~~~~~~
+src/flext_api/application/services/api_service.py:187: error: "tuple[str, Any]" has no attribute
+"processing_duration_ms"  [attr-defined]
+                        resp.processing_duration_ms
+                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/application/services/api_service.py:190: error: "tuple[str, Any]" has no attribute
+"processing_duration_ms"  [attr-defined]
+                        and resp.processing_duration_ms
+                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/application/services/api_service.py:200: error: "tuple[str, Any]" has no attribute "status_code" 
+[attr-defined]
+                        if hasattr(resp, "status_code") and resp.status_code >= 400
+                                                            ^~~~~~~~~~~~~~~~
+src/flext_api/application/services/api_service.py:226: error: Incompatible types in assignment (expression has
+type "dict[str, object]", variable has type
+"tuple[dict[str, str | dict[str, str | None] | dict[str, int] | Any | float]]")  [assignment]
+                    metrics = {
+                              ^
+src/flext_api/application/services/api_service.py:245: error: "fail" of "FlextResult" gets multiple values for
+keyword argument "error"  [misc]
+                return FlextResult.fail(f"Failed to calculate metrics: {e}", error=str(e))
+                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/application/services/api_service.py: note: In member "_get_requests_in_period" of class "FlextAPIService":
+src/flext_api/application/services/api_service.py:261: error: Incompatible return value type (got
+"list[Never]", expected "FlextResult[Any]")  [return-value]
+                return []
+                       ^~
+src/flext_api/application/services/api_service.py:269: error: Incompatible return value type (got "list[Any]",
+expected "FlextResult[Any]")  [return-value]
+                    return result if isinstance(result, list) else []
+                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/application/services/api_service.py:275: error: Incompatible return value type (got "list[Any]",
+expected "FlextResult[Any]")  [return-value]
+                        return all_requests if isinstance(all_requests, list) else []
+                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/application/services/api_service.py:286: error: Incompatible return value type (got "list[Any]",
+expected "FlextResult[Any]")  [return-value]
+                    return filtered
+                           ^~~~~~~~
+src/flext_api/application/services/api_service.py:287: error: Incompatible return value type (got
+"list[Never]", expected "FlextResult[Any]")  [return-value]
+                return []
+                       ^~
+src/flext_api/application/services/api_service.py:290: error: Incompatible return value type (got
+"list[Never]", expected "FlextResult[Any]")  [return-value]
+                return []
+                       ^~
+src/flext_api/application/services/api_service.py: note: In member "_get_responses_for_requests" of class "FlextAPIService":
+src/flext_api/application/services/api_service.py:305: error: Incompatible return value type (got
+"list[Never]", expected "FlextResult[Any]")  [return-value]
+                return []
+                       ^~
+src/flext_api/application/services/api_service.py:324: error: Incompatible return value type (got "list[Any]",
+expected "FlextResult[Any]")  [return-value]
+                return responses
+                       ^~~~~~~~~
+src/flext_api/application/services/api_service.py:327: error: Incompatible return value type (got
+"list[Never]", expected "FlextResult[Any]")  [return-value]
+                return []
+                       ^~
+src/flext_api/__init__.py: note: In function "flext_api_create_service":
+src/flext_api/__init__.py:156: error: Argument 1 to "FlextAPIService" has incompatible type
+"dict[str, object]"; expected "APIRequestRepository | None"  [arg-type]
+        return FlextAPIService(config or {})
+                               ^~~~~~~~~~~~
+src/flext_api/__init__.py: note: In function "flext_api_create_pipeline_service":
+src/flext_api/__init__.py:171: error: Missing positional argument "pipeline_repo" in call to "PipelineService" 
+[call-arg]
+        return PipelineService()
+               ^~~~~~~~~~~~~~~~~
+src/flext_api/__init__.py: note: In function "flext_api_create_plugin_service":
+src/flext_api/__init__.py:176: error: Missing positional argument "plugin_repo" in call to "PluginService" 
+[call-arg]
+        return PluginService()
+               ^~~~~~~~~~~~~~~
+src/flext_api/__init__.py: note: In function "flext_api_create_health_check":
+src/flext_api/__init__.py:195: error: Missing positional arguments "entity_name", "is_healthy" in call to
+"create_health_check_response"  [call-arg]
+        return create_health_check_response()
+               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py: note: In function "get_flext_db_session":
+src/flext_api/dependencies.py:53: error: The return type of an async generator function should be
+"AsyncGenerator" or one of its supertypes  [misc]
+    async def get_flext_db_session() -> AsyncSession:
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py: note: In function "get_flext_grpc_channel":
+src/flext_api/dependencies.py:76: error: Module "flext_api.infrastructure.ports" has no attribute
+"FlextApiGrpcPort"  [attr-defined]
+            from flext_api.infrastructure.ports import FlextApiGrpcPort
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py: note: In function "get_flext_grpc_stub":
+src/flext_api/dependencies.py:98: error: Incompatible return value type (got "None", expected
+"FlextResult[Any]")  [return-value]
+                return None
+                       ^~~~
+src/flext_api/dependencies.py:101: error: Module "flext_api.infrastructure.ports" has no attribute
+"FlextApiGrpcPort"  [attr-defined]
+            from flext_api.infrastructure.ports import FlextApiGrpcPort
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py:107: error: Returning Any from function declared to return "FlextResult[Any]" 
+[no-any-return]
+                return stub
+                ^~~~~~~~~~~
+src/flext_api/dependencies.py:109: error: Incompatible return value type (got "None", expected
+"FlextResult[Any]")  [return-value]
+            return None
+                   ^~~~
+src/flext_api/dependencies.py:113: error: Incompatible return value type (got "None", expected
+"FlextResult[Any]")  [return-value]
+            return None
+                   ^~~~
+src/flext_api/dependencies.py: note: In function "get_flext_current_user":
+src/flext_api/dependencies.py:152: error: Unexpected keyword argument "username" for "info" of "Logger" 
+[call-arg]
+            logger.info("User authenticated", username=user_data.get("username"))
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py:153: error: Incompatible return value type (got "dict[str, Any]", expected
+"FlextResult[Any]")  [return-value]
+            return user_data
+                   ^~~~~~~~~
+src/flext_api/dependencies.py: note: In function "require_flext_REDACTED_LDAP_BIND_PASSWORD":
+src/flext_api/dependencies.py:177: error: Incompatible return value type (got "dict[str, Any]", expected
+"FlextResult[Any]")  [return-value]
+        return user
+               ^~~~
+src/flext_api/dependencies.py: note: In function "get_flext_pipeline_service":
+src/flext_api/dependencies.py:210: error: Module "flext_api.infrastructure.container" has no attribute
+"get_container"; maybe "get_api_container" or "get_flext_container"?  [attr-defined]
+            from flext_api.infrastructure.container import get_container
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py:215: error: Returning Any from function declared to return "PipelineService" 
+[no-any-return]
+                return service
+                ^~~~~~~~~~~~~~
+src/flext_api/dependencies.py:216: error: Missing positional argument "pipeline_repo" in call to
+"PipelineService"  [call-arg]
+            return PipelineService()
+                   ^~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py:219: error: Missing positional argument "pipeline_repo" in call to
+"PipelineService"  [call-arg]
+            return PipelineService()
+                   ^~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py: note: In function "get_flext_plugin_service":
+src/flext_api/dependencies.py:226: error: Module "flext_api.infrastructure.container" has no attribute
+"get_container"; maybe "get_api_container" or "get_flext_container"?  [attr-defined]
+            from flext_api.infrastructure.container import get_container
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py:231: error: Returning Any from function declared to return "PluginService" 
+[no-any-return]
+                return service
+                ^~~~~~~~~~~~~~
+src/flext_api/dependencies.py:232: error: Missing positional argument "plugin_repo" in call to "PluginService" 
+[call-arg]
+            return PluginService()
+                   ^~~~~~~~~~~~~~~
+src/flext_api/dependencies.py:235: error: Missing positional argument "plugin_repo" in call to "PluginService" 
+[call-arg]
+            return PluginService()
+                   ^~~~~~~~~~~~~~~
+src/flext_api/dependencies.py: note: In function "get_flext_system_service":
+src/flext_api/dependencies.py:272: error: Module "psutil" does not explicitly export attribute "sys" 
+[attr-defined]
+                            "platform": psutil.sys.platform,
+                                        ^~~~~~~~~~
+src/flext_api/dependencies.py:273: error: Module "psutil" does not explicitly export attribute "sys" 
+[attr-defined]
+                            "python_version": psutil.sys.version,
+                                              ^~~~~~~~~~
+src/flext_api/dependencies.py:293: error: Argument "health_monitor" to "SystemService" has incompatible type
+"FlextRealHealthMonitor"; expected "HealthChecker | None"  [arg-type]
+                health_monitor=FlextRealHealthMonitor(),
+                               ^~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py:294: error: Argument "metrics_collector" to "SystemService" has incompatible type
+"FlextRealMetricsCollector"; expected "MetricsCollector | None"  [arg-type]
+                metrics_collector=FlextRealMetricsCollector())
+                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py: note: In function "check_flext_grpc_health":
+src/flext_api/dependencies.py:309: error: Module "flext_api.infrastructure.ports" has no attribute
+"FlextApiGrpcPort"  [attr-defined]
+            from flext_api.infrastructure.ports import FlextApiGrpcPort
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/dependencies.py:313: error: Returning Any from function declared to return "bool" 
+[no-any-return]
+                return await grpc_service.health_check()
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/endpoints/plugins.py:23: error: Cannot find implementation or library stub for module named
+"flext_api.models.plugin"  [import-not-found]
+    from flext_api.models.plugin import (
+    ^
+src/flext_api/endpoints/plugins.py:23: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+src/flext_api/endpoints/plugins.py: note: In function "resolve_plugin_source":
+src/flext_api/endpoints/plugins.py:65: error: Returning Any from function declared to return "str" 
+[no-any-return]
+                    return plugin_request.pip_url
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/endpoints/plugins.py:76: error: Returning Any from function declared to return "str" 
+[no-any-return]
+                    return plugin_request.pip_url
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/endpoints/plugins.py:86: error: Returning Any from function declared to return "str" 
+[no-any-return]
+                    return plugin_request.pip_url
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/flext_api/endpoints/plugins.py: note: In function "install_plugin":
+src/flext_api/endpoints/plugins.py:217: error: Item "None" of "dict[str, Any] | None" has no attribute "get" 
+[union-attr]
+                plugin_name=plugin.get("plugin_name", plugin_data.name),
+                            ^~~~~~~~~~
+src/flext_api/endpoints/plugins.py:227: error: Item "None" of "dict[str, Any] | None" has no attribute "get" 
+[union-attr]
+                        "message": f"Plugin '{plugin.get('plugin_name', plugin_data.name)}' installed succ...
+                                              ^~~~~~~~~~
+src/flext_api/endpoints/plugins.py:230: error: Item "None" of "dict[str, Any] | None" has no attribute "get" 
+[union-attr]
+                installed_version=plugin.get("variant", "original"),
+                                  ^~~~~~~~~~
+src/flext_api/endpoints/plugins.py: note: In function "update_plugin_config":
+src/flext_api/endpoints/plugins.py:479: error: Returning Any from function declared to return
+"FlextResult[Any]"  [no-any-return]
+                    return PluginResponse(
+                    ^
+src/flext_api/routes/auth.py: note: In function "register_flext_user":
+src/flext_api/routes/auth.py:69: error: Incompatible return value type (got "RegisterResponse", expected
+"FlextResult[Any]")  [return-value]
+            return RegisterResponse(
+                   ^
+src/flext_api/routes/auth.py: note: In function "login_flext_user":
+src/flext_api/routes/auth.py:141: error: Incompatible return value type (got "LoginResponse", expected
+"FlextResult[Any]")  [return-value]
+            return LoginResponse(
+                   ^
+src/flext_api/routes/auth.py: note: In function "refresh_flext_tokens":
+src/flext_api/routes/auth.py:207: error: Incompatible return value type (got "LoginResponse", expected
+"FlextResult[Any]")  [return-value]
+            return LoginResponse(
+                   ^
+src/flext_api/routes/auth.py: note: In function "logout_flext_user":
+src/flext_api/routes/auth.py:237: error: Incompatible return value type (got "dict[str, str]", expected
+"FlextResult[Any]")  [return-value]
+            return {
+                   ^
+src/flext_api/routes/auth.py: note: In function "get_flext_current_user_info":
+src/flext_api/routes/auth.py:257: error: Incompatible return value type (got "dict[str, str]", expected
+"FlextResult[Any]")  [return-value]
+            return current_user
+                   ^~~~~~~~~~~~
+src/flext_api/routes/auth.py: note: In function "validate_flext_token":
+src/flext_api/routes/auth.py:287: error: Incompatible return value type (got "dict[str, bool | Any | str]",
+expected "FlextResult[Any]")  [return-value]
+                return {
+                       ^
+src/flext_api/routes/auth.py:292: error: Incompatible return value type (got "dict[str, object]", expected
+"FlextResult[Any]")  [return-value]
+            return {
+                   ^
+src/flext_api/endpoints/system.py: note: In function "get_system_service":
+src/flext_api/endpoints/system.py:111: error: Incompatible return value type (got "SystemServiceResponse",
+expected "FlextResult[Any]")  [return-value]
+        return SystemServiceResponse(
+               ^
+src/flext_api/endpoints/system.py: note: In function "start_maintenance":
+src/flext_api/endpoints/system.py:171: error: Incompatible return value type (got "MaintenanceResponse | Any",
+expected "FlextResult[Any]")  [return-value]
+            MaintenanceResponse(**result.data)
+            ^
+src/flext_api/endpoints/system.py: note: In function "create_system_backup":
+src/flext_api/endpoints/system.py:218: error: Incompatible return value type (got "SystemBackupResponse | Any",
+expected "FlextResult[Any]")  [return-value]
+            SystemBackupResponse(**result.data)
+            ^
+Found 77 errors in 8 files (checked 53 source files)
+make: *** [Makefile:134: type-check] Error 1

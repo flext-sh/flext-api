@@ -7,7 +7,7 @@ from uuid import uuid4
 import pytest
 
 from flext_api.infrastructure.config import APIConfig
-from flext_api.infrastructure.ports import JWTAuthService
+from flext_api.infrastructure.ports import FlextJWTAuthService
 
 # COMMENTED OUT - These test classes are for non-existent port implementations
 # Once the actual infrastructure port implementations are added, these tests can be
@@ -22,8 +22,8 @@ from flext_api.infrastructure.ports import JWTAuthService
 #     # ... tests commented out until JWTSecurityService is implemented
 
 
-class TestJWTAuthService:
-    """Test REAL JWTAuthService implementation."""
+class TestFlextJWTAuthService:
+    """Test REAL FlextJWTAuthService implementation."""
 
     @pytest.fixture
     def real_config(self) -> APIConfig:
@@ -32,7 +32,7 @@ class TestJWTAuthService:
 
     def test_jwt_auth_service_initialization(self, real_config: APIConfig) -> None:
         """Test JWT auth service initializes correctly with REAL config."""
-        service = JWTAuthService(real_config)
+        service = FlextJWTAuthService(real_config)
         # Check that token manager is properly initialized (SRP compliance)
         assert service.token_manager is not None
         assert len(service.token_manager.secret_key) >= 16  # Reasonable minimum length
@@ -48,7 +48,7 @@ class TestJWTAuthService:
         real_config: APIConfig,
     ) -> None:
         """Test generating REAL JWT token and authenticating it."""
-        service = JWTAuthService(real_config)
+        service = FlextJWTAuthService(real_config)
 
         # Generate a real JWT token
         user_data = {
@@ -73,7 +73,7 @@ class TestJWTAuthService:
     @pytest.mark.asyncio
     async def test_authenticate_invalid_token(self, real_config: APIConfig) -> None:
         """Test authenticating with invalid token."""
-        service = JWTAuthService(real_config)
+        service = FlextJWTAuthService(real_config)
 
         result = await service.authenticate("invalid_token")
         assert result is None
@@ -81,7 +81,7 @@ class TestJWTAuthService:
     @pytest.mark.asyncio
     async def test_authorize_user(self, real_config: APIConfig) -> None:
         """Test authorizing user access."""
-        service = JWTAuthService(real_config)
+        service = FlextJWTAuthService(real_config)
 
         user_id = uuid4()
         result = await service.authorize(user_id, "resource", "read")
@@ -93,7 +93,7 @@ class TestJWTAuthService:
         real_config: APIConfig,
     ) -> None:
         """Test that validate_token returns same as authenticate."""
-        service = JWTAuthService(real_config)
+        service = FlextJWTAuthService(real_config)
 
         # Generate a real token
         user_data = {"user_id": "test_user_456", "username": "test_validate"}
