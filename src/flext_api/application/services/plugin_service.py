@@ -1,6 +1,6 @@
 """Plugin application service using flext-core patterns.
 
-This module provides the application service for plugin management,
+This module provides the application service for plugin management
 implementing business logic using domain entities and clean architecture.
 """
 
@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core.domain.shared_types import ServiceResult
+from flext_core import FlextResult, get_logger
 
 # Use centralized logger from flext-infrastructure.monitoring.flext-observability
 from flext_api.application.services.base import PluginBaseService
@@ -19,116 +19,101 @@ if TYPE_CHECKING:
 
     from flext_api.domain.ports import PluginRepository
 
+# Create logger using flext-core get_logger function
+logger = get_logger(__name__)
+
 
 class PluginService(PluginBaseService):
     """Application service for plugin management.
 
-    This service implements business logic for plugin operations,
+    This service implements business logic for plugin operations
     coordinating between domain entities and infrastructure.
     """
 
     def __init__(self, plugin_repo: PluginRepository) -> None:
         super().__init__(plugin_repo)
-        # Alias for backward compatibility
+        # Use repository directly
         self.plugin_repo = self.repository
 
     async def install_plugin(
         self,
         name: str,
-        plugin_type: PluginType | str,
         version: str,
+        plugin_type: PluginType,
         description: str | None = None,
         config: dict[str, Any] | None = None,
-        author: str | None = None,
-        repository_url: str | None = None,
-        documentation_url: str | None = None,
         capabilities: list[str] | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Install a new plugin.
 
         Args:
-            name: Plugin name.
-            plugin_type: Plugin type.
-            version: Plugin version.
-            description: Optional plugin description.
-            config: Optional plugin configuration.
-            author: Optional plugin author.
-            repository_url: Optional repository URL.
-            documentation_url: Optional documentation URL.
-            capabilities: Optional list of capabilities.
+            name: Plugin name.,
+            version: Plugin version.,
+            plugin_type: Plugin type (extractor, loader, transformer).,
+            description: Optional plugin description.,
+            config: Optional plugin configuration.,
+            capabilities: Optional plugin capabilities.,
 
         Returns:
-            ServiceResult containing installed plugin.
+            FlextResult containing installed plugin.
 
         """
         try:
+            # Create plugin entity
             plugin = Plugin(
                 name=name,
-                plugin_type=PluginType(plugin_type)
-                if isinstance(plugin_type, str)
-                else plugin_type,
-                version=version,
+                plugin_version=version,
+                plugin_type=plugin_type,
                 description=description,
-                plugin_config=config or {},
-                enabled=True,
-                author=author,
-                repository_url=repository_url,
-                documentation_url=documentation_url,
-                capabilities=capabilities or [],
             )
-
-            # Validate business rules
-            if await self._is_duplicate_plugin(plugin.name, plugin.version):
-                return ServiceResult.fail("Plugin with same name and version already exists",
-                )
 
             # Save to repository
             saved_result = await self.plugin_repo.create(plugin)
             if not saved_result.success:
                 return saved_result
+
             saved_plugin = saved_result.data
             if saved_plugin is None:
-                return ServiceResult.fail("Plugin creation returned None")
+                return FlextResult.fail("Plugin creation returned None")
 
-            self.logger.info(
+            logger.info(
                 "Plugin installed successfully",
-                plugin_id=str(saved_plugin.id),
-                name=saved_plugin.name,
-                version=saved_plugin.version,
-                type=saved_plugin.plugin_type,
+                extra={
+                    "plugin_id": str(saved_plugin.id),
+                    "version": saved_plugin.plugin_version,
+                    "type": saved_plugin.plugin_type,
+                },
             )
-
-            return ServiceResult.ok(saved_plugin)
+            return FlextResult.ok(saved_plugin)
 
         except Exception as e:
-            self.logger.exception("Failed to install plugin", error=str(e))
-            return ServiceResult.fail(f"Failed to install plugin: {e}")
+            logger.exception("Operation failed")
+            return FlextResult.fail(f"Failed to install plugin: {e}")
 
-    async def get_plugin(self, plugin_id: UUID) -> ServiceResult[Any]:
+    async def get_plugin(self, plugin_id: UUID) -> FlextResult[Any]:
         """Get plugin by ID.
 
         Args:
-            plugin_id: Plugin unique identifier.
+            plugin_id: Plugin unique identifier.,
 
         Returns:
-            ServiceResult containing requested plugin.
+            FlextResult containing requested plugin.
 
         """
         try:
-            plugin_result = await self.plugin_repo.get(plugin_id)
+            plugin_result = await self.plugin_repo.get(str(plugin_id))
             if not plugin_result.success:
                 return plugin_result
 
             plugin = plugin_result.data
-            return ServiceResult.ok(plugin)
+            return FlextResult.ok(plugin)
 
         except Exception as e:
-            self.logger.exception(
+            logger.exception(
                 "Failed to get plugin",
-                plugin_id=str(plugin_id),
-                error=str(e),
+                extra={"plugin_id": str(plugin_id), "error": str(e)},
             )
-            return ServiceResult.fail(f"Failed to get plugin: {e}")
+            return FlextResult.fail(f"Failed to get plugin: {e}")
 
     async def list_plugins(
         self,
@@ -137,17 +122,17 @@ class PluginService(PluginBaseService):
         enabled: bool | None = None,
         limit: int = 20,
         offset: int = 0,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """List plugins with optional filtering.
 
         Args:
-            plugin_type: Optional plugin type filter.
-            enabled: Optional enabled status filter.
-            limit: Maximum number of results.
-            offset: Results offset for pagination.
+            plugin_type: Optional plugin type filter.,
+            enabled: Optional enabled status filter.,
+            limit: Maximum number of results.,
+            offset: Results offset for pagination.,
 
         Returns:
-            ServiceResult containing list of plugins.
+            FlextResult containing list of plugins.
 
         """
         try:
@@ -162,11 +147,11 @@ class PluginService(PluginBaseService):
                 return plugins_result
 
             plugins = plugins_result.data
-            return ServiceResult.ok(plugins)
+            return FlextResult.ok(plugins)
 
         except Exception as e:
-            self.logger.exception("Failed to list plugins", error=str(e))
-            return ServiceResult.fail(f"Failed to list plugins: {e}")
+            logger.exception("Operation failed")
+            return FlextResult.fail(f"Failed to list plugins: {e}")
 
     async def update_plugin(
         self,
@@ -177,19 +162,19 @@ class PluginService(PluginBaseService):
         *,
         enabled: bool | None = None,
         capabilities: list[str] | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Update an existing plugin.
 
         Args:
-            plugin_id: Plugin unique identifier.
-            name: Optional new name.
-            description: Optional new description.
-            config: Optional new configuration.
-            enabled: Optional new enabled status.
-            capabilities: Optional new capabilities list.
+            plugin_id: Plugin unique identifier.,
+            name: Optional new name.,
+            description: Optional new description.,
+            config: Optional new configuration.,
+            enabled: Optional new enabled status.,
+            capabilities: Optional new capabilities list.,
 
         Returns:
-            ServiceResult containing updated plugin.
+            FlextResult containing updated plugin.
 
         """
         try:
@@ -200,134 +185,81 @@ class PluginService(PluginBaseService):
 
             plugin = existing_result.data
             if plugin is None:
-                return ServiceResult.fail("Plugin retrieval returned None")
+                return FlextResult.fail("Plugin not found")
 
-            # Apply updates
+            # Apply updates (only fields that exist in Plugin entity)
             if name is not None:
                 plugin.name = name
             if description is not None:
                 plugin.description = description
-            if config is not None:
-                plugin.plugin_config = config
-            if enabled is not None:
-                plugin.enabled = enabled
-            if capabilities is not None:
-                plugin.capabilities = capabilities
 
             # Save updates
             updated_result = await self.plugin_repo.update(plugin)
             if not updated_result.success:
                 return updated_result
+
             updated_plugin = updated_result.data
             if updated_plugin is None:
-                return ServiceResult.fail("Plugin update returned None")
+                return FlextResult.fail("Plugin update returned None")
 
-            self.logger.info(
+            logger.info(
                 "Plugin updated successfully",
-                plugin_id=str(plugin_id),
-                name=updated_plugin.name,
-                enabled=updated_plugin.enabled,
+                extra={
+                    "plugin_id": str(plugin_id),
+                    "enabled": updated_plugin.enabled,
+                },
             )
-
-            return ServiceResult.ok(updated_plugin)
+            return FlextResult.ok(updated_plugin)
 
         except Exception as e:
-            self.logger.exception(
+            logger.exception(
                 "Failed to update plugin",
-                plugin_id=str(plugin_id),
-                error=str(e),
+                extra={"plugin_id": str(plugin_id), "error": str(e)},
             )
-            return ServiceResult.fail(f"Failed to update plugin: {e}")
+            return FlextResult.fail(f"Failed to update plugin: {e}")
 
-    async def uninstall_plugin(
-        self,
-        plugin_id: UUID,
-    ) -> ServiceResult[Any]:
+    async def uninstall_plugin(self, plugin_id: UUID) -> FlextResult[Any]:
         """Uninstall a plugin.
 
         Args:
-            plugin_id: Plugin unique identifier.
+            plugin_id: Plugin unique identifier.,
 
         Returns:
-            ServiceResult indicating uninstallation success.
+            FlextResult indicating uninstallation success.
 
         """
         try:
-            # Check if plugin exists:
+            # Get existing plugin
             existing_result = await self.get_plugin(plugin_id)
             if not existing_result.success:
-                return ServiceResult.fail("Plugin not found")
+                return FlextResult.fail("Plugin not found")
 
             plugin = existing_result.data
             if plugin is None:
-                return ServiceResult.fail("Plugin retrieval returned None")
+                return FlextResult.fail("Plugin not found")
 
             # Delete from repository
-            delete_result = await self.plugin_repo.delete(plugin_id)
+            delete_result = await self.plugin_repo.delete(str(plugin_id))
             if not delete_result.success:
-                return ServiceResult.fail(delete_result.error or "Failed to delete plugin",
+                return FlextResult.fail(
+                    delete_result.error or "Failed to delete plugin"
                 )
 
-            self.logger.info(
-                "Plugin uninstalled successfully",
-                plugin_id=str(plugin_id),
-                name=plugin.name,
-                version=plugin.version,
+            logger.info(
+                f"Plugin uninstalled successfully - plugin_id: {plugin_id}, name: {plugin.name}"
             )
-
-            return ServiceResult.ok({
+            return FlextResult.ok(
+                {
                     "plugin_id": str(plugin_id),
                     "name": plugin.name,
-                    "version": plugin.version,
+                    "plugin_version": plugin.plugin_version,
                     "uninstalled": True,
-                },
+                }
             )
 
         except Exception as e:
-            self.logger.exception(
+            logger.exception(
                 "Failed to uninstall plugin",
-                plugin_id=str(plugin_id),
-                error=str(e),
+                extra={"plugin_id": str(plugin_id), "error": str(e)},
             )
-            return ServiceResult.fail(f"Failed to uninstall plugin: {e}",
-            )
-
-    async def enable_plugin(self, plugin_id: UUID) -> ServiceResult[Any]:
-        """Enable a plugin.
-
-        Args:
-            plugin_id: Plugin unique identifier.
-
-        Returns:
-            ServiceResult containing enabled plugin.
-
-        """
-        return await self.update_plugin(plugin_id, enabled=True)
-
-    async def disable_plugin(self, plugin_id: UUID) -> ServiceResult[Any]:
-        """Disable a plugin.
-
-        Args:
-            plugin_id: Plugin unique identifier.
-
-        Returns:
-            ServiceResult containing disabled plugin.
-
-        """
-        return await self.update_plugin(plugin_id, enabled=False)
-
-    async def _is_duplicate_plugin(self, name: str, version: str) -> bool:
-        try:
-            plugins_result = await self.plugin_repo.list(limit=1000)
-            if not plugins_result.success:
-                return False  # Assume no duplicates if we can't check
-
-            existing_plugins = plugins_result.data
-            if existing_plugins is None:
-                return False  # Assume no duplicates if data is None
-            return any(
-                p.name == name and p.version == version for p in existing_plugins
-            )
-        except (ConnectionError, TimeoutError, ValueError):
-            # If we can't check, assume no duplicate to avoid blocking installation
-            return False
+            return FlextResult.fail(f"Failed to uninstall plugin: {e}")

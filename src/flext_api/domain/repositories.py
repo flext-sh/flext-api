@@ -10,9 +10,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from flext_core import Pipeline, PipelineId, PluginId
-
-    from flext_api.domain.entities import Plugin
+    from flext_api.domain.entities import Pipeline, PipelineId, Plugin, PluginId
 
 
 class PipelineRepository(ABC):
@@ -23,7 +21,7 @@ class PipelineRepository(ABC):
         """Save a pipeline entity.
 
         Args:
-            pipeline: Pipeline entity to save
+            pipeline: Pipeline entity to save,
 
         Returns:
             Saved pipeline entity
@@ -35,7 +33,7 @@ class PipelineRepository(ABC):
         """Find pipeline by ID.
 
         Args:
-            pipeline_id: Pipeline identifier
+            pipeline_id: Pipeline identifier,
 
         Returns:
             Pipeline entity if found, None otherwise
@@ -56,7 +54,7 @@ class PipelineRepository(ABC):
         """Delete pipeline by ID.
 
         Args:
-            pipeline_id: Pipeline identifier
+            pipeline_id: Pipeline identifier,
 
         Returns:
             True if deleted, False if not found
@@ -72,7 +70,7 @@ class PluginRepository(ABC):
         """Save a plugin entity.
 
         Args:
-            plugin: Plugin entity to save
+            plugin: Plugin entity to save,
 
         Returns:
             Saved plugin entity
@@ -84,7 +82,7 @@ class PluginRepository(ABC):
         """Find plugin by ID.
 
         Args:
-            plugin_id: Plugin identifier
+            plugin_id: Plugin identifier,
 
         Returns:
             Plugin entity if found, None otherwise
@@ -105,7 +103,7 @@ class PluginRepository(ABC):
         """Delete plugin by ID.
 
         Args:
-            plugin_id: Plugin identifier
+            plugin_id: Plugin identifier,
 
         Returns:
             True if deleted, False if not found

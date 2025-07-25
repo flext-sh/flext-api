@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from flext_core.domain.shared_types import ServiceResult
+    from flext_core import FlextResult
 
 # ==============================================================================
 # SINGLE RESPONSIBILITY PRINCIPLE: Command Base Class
@@ -167,7 +167,7 @@ class CommandHandler(ABC):
     """Interface for command handlers (DIP compliance)."""
 
     @abstractmethod
-    async def handle(self, command: Command) -> ServiceResult[Any]:
+    async def handle(self, command: Command) -> FlextResult[Any]:
         """Handle a command and return result."""
 
     @abstractmethod

@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+# APIStatus is defined locally, NOT in flext-core
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
-from flext_core.domain.shared_types import ServiceResult
-from flext_observability.logging import get_logger
+from flext_core import FlextError, FlextResult
 
+from flext_api import get_logger
+from flext_api.base import APIStatus
 from flext_api.models.system import (
     AlertSeverity,
     MaintenanceMode,
@@ -22,11 +24,12 @@ from flext_api.models.system import (
     SystemStatusType,
 )
 
+# Create logger using flext-core get_logger function
 logger = get_logger(__name__)
 
 
 class FlextAPIStorage:
-    """Thread-safe storage using flext-core ServiceResult patterns."""
+    """Thread-safe storage using flext-core FlextResult patterns."""
 
     def __init__(self) -> None:
         try:
@@ -72,17 +75,17 @@ class FlextAPIStorage:
         except Exception as e:
             logger.exception("Failed to initialize FlextAPIStorage")
             msg = f"Storage initialization failed: {e}"
-            raise RuntimeError(msg) from e
+            raise FlextError(msg) from e
 
-    def get_system_status(self) -> ServiceResult[Any]:
-        """Get current system status using ServiceResult pattern."""
+    def get_system_status(self) -> FlextResult[Any]:
+        """Get current system status using FlextResult pattern."""
         try:
             uptime_seconds = int(
-                (datetime.now(UTC) - self.uptime_start).total_seconds(),
+                (datetime.now(UTC) - self.uptime_start).total_seconds()
             )
 
             response = SystemStatusResponse(
-                status=self.system_status,
+                system_status=self.system_status,
                 version="1.0.0",
                 uptime_seconds=uptime_seconds,
                 maintenance_mode=self.maintenance_mode,
@@ -109,27 +112,22 @@ class FlextAPIStorage:
                 active_alerts=[alert.model_dump() for alert in self.alerts.values()],
                 plugin_count=len(self.plugins),
                 active_pipelines=len(
-                    [
-                        p
-                        for p in self.pipelines.values()
-                        if p.get("status") == "running"
-                    ],
+                    [p for p in self.pipelines.values() if p.get("status") == "running"]
                 ),
                 environment="development",
             )
 
-            return ServiceResult.ok(response)
+            return FlextResult.ok(response)
 
         except (ValueError, TypeError, RuntimeError, OSError) as e:
-            return ServiceResult.fail(f"Failed to get system status: {e!s}",
-            )
+            return FlextResult.fail(f"Failed to get system status: {e!s}")
 
     def create_alert(
         self,
         severity: AlertSeverity,
         title: str,
         message: str,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Create new system alert."""
         try:
             alert_id = uuid4()
@@ -147,19 +145,19 @@ class FlextAPIStorage:
 
             self.alerts[str(alert_id)] = alert
 
-            return ServiceResult.ok(alert)
+            return FlextResult.ok(alert)
 
         except (ValueError, TypeError, RuntimeError, OSError) as e:
-            return ServiceResult.fail(f"Failed to create alert: {e!s}")
+            return FlextResult.fail(f"Failed to create alert: {e!s}")
 
     def get_metrics(
         self,
         metric_name: str | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Get system metrics."""
         try:
             if metric_name and metric_name in self.metrics:
-                return ServiceResult.ok([self.metrics[metric_name]])
+                return FlextResult.ok([self.metrics[metric_name]])
 
             # Generate sample metrics if none exist
             if not self.metrics:
@@ -187,15 +185,15 @@ class FlextAPIStorage:
                 for metric in sample_metrics:
                     self.metrics[metric.metric_name] = metric
 
-            return ServiceResult.ok(list(self.metrics.values()))
+            return FlextResult.ok(list(self.metrics.values()))
 
         except (ValueError, TypeError, RuntimeError, OSError) as e:
-            return ServiceResult.fail(f"Failed to get metrics: {e!s}")
+            return FlextResult.fail(f"Failed to get metrics: {e!s}")
 
     def start_maintenance(
         self,
         request: MaintenanceRequest,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Start system maintenance."""
         try:
             maintenance_id = uuid4()
@@ -208,7 +206,8 @@ class FlextAPIStorage:
             response = MaintenanceResponse(
                 maintenance_id=maintenance_id,
                 mode=request.mode,
-                status="started",
+                maintenance_status="started",  # Required field
+                status=APIStatus.PROCESSING,
                 reason=request.reason,
                 started_at=now,
                 estimated_end=request.scheduled_start,
@@ -227,16 +226,15 @@ class FlextAPIStorage:
                 metadata=request.metadata,
             )
 
-            return ServiceResult.ok(response)
+            return FlextResult.ok(response)
 
         except (ValueError, TypeError, RuntimeError, OSError) as e:
-            return ServiceResult.fail(f"Failed to start maintenance: {e!s}",
-            )
+            return FlextResult.fail(f"Failed to start maintenance: {e!s}")
 
     def create_backup(
         self,
         request: SystemBackupRequest,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Create system backup."""
         try:
             backup_id = uuid4()
@@ -246,7 +244,8 @@ class FlextAPIStorage:
             backup = SystemBackupResponse(
                 backup_id=backup_id,
                 backup_type=request.backup_type,
-                status="completed",
+                backup_status="completed",  # Required field
+                status=APIStatus.SUCCESS,
                 created_at=now,
                 completed_at=now,
                 duration_seconds=30,
@@ -268,17 +267,17 @@ class FlextAPIStorage:
 
             self.backups[str(backup_id)] = backup
 
-            return ServiceResult.ok(backup)
+            return FlextResult.ok(backup)
 
         except (ValueError, TypeError, RuntimeError, OSError) as e:
-            return ServiceResult.fail(f"Failed to create backup: {e!s}")
+            return FlextResult.fail(f"Failed to create backup: {e!s}")
 
     def create_pipeline(
         self,
         name: str,
         extractor: str,
         loader: str,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Create new pipeline."""
         try:
             pipeline_id = str(uuid4())
@@ -297,30 +296,27 @@ class FlextAPIStorage:
 
             self.pipelines[pipeline_id] = pipeline
 
-            return ServiceResult.ok(pipeline)
+            return FlextResult.ok(pipeline)
 
         except (ValueError, TypeError, RuntimeError, OSError) as e:
-            return ServiceResult.fail(f"Failed to create pipeline: {e!s}",
-            )
+            return FlextResult.fail(f"Failed to create pipeline: {e!s}")
 
-    def get_pipeline(self, pipeline_id: str) -> ServiceResult[Any]:
+    def get_pipeline(self, pipeline_id: str) -> FlextResult[Any]:
         """Get pipeline by ID."""
         try:
             if pipeline_id not in self.pipelines:
-                return ServiceResult.fail(f"Pipeline {pipeline_id} not found",
-                )
+                return FlextResult.fail(f"Pipeline {pipeline_id} not found")
 
-            return ServiceResult.ok(self.pipelines[pipeline_id])
+            return FlextResult.ok(self.pipelines[pipeline_id])
 
         except (ValueError, TypeError, RuntimeError, OSError) as e:
-            return ServiceResult.fail(f"Failed to get pipeline: {e!s}")
+            return FlextResult.fail(f"Failed to get pipeline: {e!s}")
 
-    def execute_pipeline(self, pipeline_id: str) -> ServiceResult[Any]:
+    def execute_pipeline(self, pipeline_id: str) -> FlextResult[Any]:
         """Execute pipeline."""
         try:
             if pipeline_id not in self.pipelines:
-                return ServiceResult.fail(f"Pipeline {pipeline_id} not found",
-                )
+                return FlextResult.fail(f"Pipeline {pipeline_id} not found")
 
             execution_id = str(uuid4())
             now = datetime.now(UTC)
@@ -338,11 +334,10 @@ class FlextAPIStorage:
             self.pipelines[pipeline_id]["status"] = "running"
             self.pipelines[pipeline_id]["last_execution"] = execution_id
 
-            return ServiceResult.ok(execution)
+            return FlextResult.ok(execution)
 
         except (ValueError, TypeError, RuntimeError, OSError) as e:
-            return ServiceResult.fail(f"Failed to execute pipeline: {e!s}",
-            )
+            return FlextResult.fail(f"Failed to execute pipeline: {e!s}")
 
 
 # Initialize storage

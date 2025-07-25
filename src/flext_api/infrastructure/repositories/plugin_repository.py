@@ -12,20 +12,18 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 # Import runtime dependencies
-from flext_core.domain.shared_types import ServiceResult
-from flext_observability.logging import get_logger
+from flext_core import FlextResult, get_logger
 
 from flext_api.domain.ports import PluginRepository
 
 if TYPE_CHECKING:
-    from uuid import UUID
-
     from flext_api.domain.entities import Plugin
 
+# Create logger using flext-core get_logger function
 logger = get_logger(__name__)
 
 
-class InMemoryPluginRepository(PluginRepository):
+class FlextInMemoryPluginRepository(PluginRepository):
     """Repository for plugin persistence.
 
     This repository handles plugin data persistence using
@@ -34,27 +32,26 @@ class InMemoryPluginRepository(PluginRepository):
 
     def __init__(self) -> None:
         """Initialize plugin repository."""
-        self._storage: dict[UUID, Plugin] = {}
+        self._storage: dict[str, Plugin] = {}
 
-    async def create(self, plugin: Plugin) -> ServiceResult[Any]:
+    async def create(self, plugin: Plugin) -> FlextResult[Any]:
         """Create a new plugin."""
         try:
             if plugin.id in self._storage:
-                return ServiceResult.fail(f"Plugin {plugin.id} already exists",
-                )
+                return FlextResult.fail(f"Plugin {plugin.id} already exists")
 
             self._storage[plugin.id] = plugin
-            logger.info("Plugin created successfully: %s", plugin.name)
-            return ServiceResult.ok(plugin)
+            logger.info(f"Plugin created successfully: {plugin.name}")
+            return FlextResult.ok(plugin)
         except Exception as e:
-            logger.exception("Failed to create plugin: %s", plugin.name)
-            return ServiceResult.fail(f"Failed to create plugin: {e}")
+            logger.exception(f"Failed to create plugin: {plugin.name}")
+            return FlextResult.fail(f"Failed to create plugin: {e}")
 
-    async def get(self, plugin_id: UUID) -> ServiceResult[Any]:
+    async def get(self, plugin_id: str) -> FlextResult[Any]:
         """Get plugin by ID.
 
         Args:
-            plugin_id: Plugin unique identifier.
+            plugin_id: Plugin unique identifier.,
 
         Returns:
             Plugin entity if found, None otherwise.
@@ -63,28 +60,28 @@ class InMemoryPluginRepository(PluginRepository):
         try:
             plugin = self._storage.get(plugin_id)
             if plugin:
-                logger.debug("Plugin found: %s", plugin.name)
-                return ServiceResult.ok(plugin)
-            logger.debug("Plugin not found: %s", plugin_id)
-            return ServiceResult.fail(f"Plugin {plugin_id} not found")
+                logger.debug(f"Plugin found: {plugin.name}")
+                return FlextResult.ok(plugin)
+            logger.debug(f"Plugin not found: {plugin_id}")
+            return FlextResult.fail(f"Plugin {plugin_id} not found")
         except Exception as e:
-            logger.exception("Failed to get plugin: %s", plugin_id)
-            return ServiceResult.fail(f"Failed to get plugin: {e}")
+            logger.exception(f"Failed to get plugin: {plugin_id}")
+            return FlextResult.fail(f"Failed to get plugin: {e}")
 
     async def list(
         self,
-        limit: int = 20,
+        limit: int = 2,
         offset: int = 0,
         plugin_type: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """List plugins with filtering and pagination.
 
         Args:
-            limit: Maximum number of plugins to return.
-            offset: Number of plugins to skip.
-            plugin_type: Filter by plugin type.
-            status: Filter by plugin status.
+            limit: Maximum number of plugins to return.,
+            offset: Number of plugins to skip.,
+            plugin_type: Filter by plugin type.,
+            status: Filter by plugin status.,
 
         Returns:
             List of plugin entities.
@@ -110,36 +107,32 @@ class InMemoryPluginRepository(PluginRepository):
             paginated = all_plugins[offset : offset + limit]
 
             logger.debug(
-                "Listed %d plugins (limit=%d, offset=%d)",
-                len(paginated),
-                limit,
-                offset,
+                f"Listed {len(paginated)} plugins (limit={limit}, offset={offset})"
             )
-            return ServiceResult.ok(paginated)
+            return FlextResult.ok(paginated)
 
         except Exception as e:
             logger.exception("Failed to list plugins")
-            return ServiceResult.fail(f"Failed to list plugins: {e}")
+            return FlextResult.fail(f"Failed to list plugins: {e}")
 
-    async def update(self, plugin: Plugin) -> ServiceResult[Any]:
+    async def update(self, plugin: Plugin) -> FlextResult[Any]:
         """Update existing plugin."""
         try:
             if plugin.id not in self._storage:
-                return ServiceResult.fail(f"Plugin {plugin.id} not found",
-                )
+                return FlextResult.fail(f"Plugin {plugin.id} not found")
 
             self._storage[plugin.id] = plugin
-            logger.info("Plugin updated successfully: %s", plugin.name)
-            return ServiceResult.ok(plugin)
+            logger.info(f"Plugin updated successfully: {plugin.name}")
+            return FlextResult.ok(plugin)
         except Exception as e:
-            logger.exception("Failed to update plugin: %s", plugin.name)
-            return ServiceResult.fail(f"Failed to update plugin: {e}")
+            logger.exception(f"Failed to update plugin: {plugin.name}")
+            return FlextResult.fail(f"Failed to update plugin: {e}")
 
-    async def delete(self, plugin_id: UUID) -> ServiceResult[Any]:
+    async def delete(self, plugin_id: str) -> FlextResult[Any]:
         """Delete plugin by ID.
 
         Args:
-            plugin_id: Plugin unique identifier.
+            plugin_id: Plugin unique identifier.,
 
         Returns:
             True if plugin was deleted, False if not found.
@@ -148,19 +141,19 @@ class InMemoryPluginRepository(PluginRepository):
         try:
             if plugin_id in self._storage:
                 plugin = self._storage.pop(plugin_id)
-                logger.info("Plugin deleted successfully: %s", plugin.name)
-                return ServiceResult.ok(True)
-            logger.warning("Plugin not found for deletion: %s", plugin_id)
-            return ServiceResult.fail(f"Plugin {plugin_id} not found")
+                logger.info(f"Plugin deleted successfully: {plugin.name}")
+                return FlextResult.ok(True)
+            logger.warning(f"Plugin not found for deletion: {plugin_id}")
+            return FlextResult.fail(f"Plugin {plugin_id} not found")
         except Exception as e:
-            logger.exception("Failed to delete plugin: %s", plugin_id)
-            return ServiceResult.fail(f"Failed to delete plugin: {e}")
+            logger.exception(f"Failed to delete plugin: {plugin_id}")
+            return FlextResult.fail(f"Failed to delete plugin: {e}")
 
-    async def exists(self, plugin_id: UUID) -> bool:
+    async def exists(self, plugin_id: str) -> bool:
         """Check if plugin exists.
 
         Args:
-            plugin_id: Plugin unique identifier.
+            plugin_id: Plugin unique identifier.,
 
         Returns:
             True if plugin exists, False otherwise.
@@ -168,25 +161,25 @@ class InMemoryPluginRepository(PluginRepository):
         """
         try:
             exists = plugin_id in self._storage
-            logger.debug("Plugin exists check: %s = %s", plugin_id, exists)
+            logger.debug(f"Plugin exists check: {plugin_id} = {exists}")
             return exists
         except Exception:
-            logger.exception("Failed to check plugin existence: %s", plugin_id)
+            logger.exception(f"Failed to check plugin existence: {plugin_id}")
             return False
 
     async def count(
         self,
         plugin_type: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Count plugins with optional filtering.
 
         Args:
-            plugin_type: Filter by plugin type.
-            status: Filter by status.
+            plugin_type: Filter by plugin type.,
+            status: Filter by status.,
 
         Returns:
-            ServiceResult containing count of matching plugins.
+            FlextResult containing count of matching plugins.
 
         """
         try:
@@ -198,21 +191,20 @@ class InMemoryPluginRepository(PluginRepository):
                 status=status,
             )
             if not result.success:
-                return ServiceResult.fail(result.error or "Failed to count plugins",
-                )
+                return FlextResult.fail(result.error or "Failed to count plugins")
 
             count = len(result.data or [])
-            logger.debug("Plugin count: %d", count)
-            return ServiceResult.ok(count)
+            logger.debug(f"Plugin count: {count}")
+            return FlextResult.ok(count)
         except Exception as e:
             logger.exception("Failed to count plugins")
-            return ServiceResult.fail(f"Failed to count plugins: {e}")
+            return FlextResult.fail(f"Failed to count plugins: {e}")
 
     async def find_by_name(self, name: str) -> Plugin | None:
         """Find plugin by name.
 
         Args:
-            name: Plugin name to search for.
+            name: Plugin name to search for.,
 
         Returns:
             Plugin entity if found, None otherwise.
@@ -221,22 +213,22 @@ class InMemoryPluginRepository(PluginRepository):
         try:
             for plugin in self._storage.values():
                 if plugin.name == name:
-                    logger.debug("Plugin found by name: %s", name)
+                    logger.debug(f"Plugin found by name: {name}")
                     return plugin
-            logger.debug("Plugin not found by name: %s", name)
+            logger.debug(f"Plugin not found by name: {name}")
             return None
         except Exception:
-            logger.exception("Failed to find plugin by name: %s", name)
+            logger.exception(f"Failed to find plugin by name: {name}")
             return None
 
-    async def save(self, plugin: Plugin) -> ServiceResult[Any]:
+    async def save(self, plugin: Plugin) -> FlextResult[Any]:
         """Save plugin (create or update based on existence).
 
         Args:
-            plugin: Plugin entity to save.
+            plugin: Plugin entity to save.,
 
         Returns:
-            ServiceResult containing saved plugin or error.
+            FlextResult containing saved plugin or error.
 
         """
         try:
@@ -249,9 +241,7 @@ class InMemoryPluginRepository(PluginRepository):
 
         except Exception as e:
             logger.exception("Failed to save plugin")
-            return ServiceResult.fail(f"Failed to save plugin: {e}")
+            return FlextResult.fail(f"Failed to save plugin: {e}")
 
 
-__all__ = [
-    "InMemoryPluginRepository",
-]
+__all__ = ["FlextInMemoryPluginRepository"]

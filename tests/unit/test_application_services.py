@@ -6,16 +6,16 @@ from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
-from flext_core.domain.shared_types import ServiceResult
+from flext_core import FlextResult
 
-from flext_api.application.services.auth_service import AuthService
+from flext_api.application.services.auth_service import FlextAuthService
 from flext_api.application.services.plugin_service import PluginService
 from flext_api.domain.entities import Plugin, PluginType
 from flext_api.models.auth import UserAPI
 
 
-class TestAuthService:
-    """Test AuthService implementation."""
+class TestFlextAuthService:
+    """Test FlextAuthService implementation."""
 
     @pytest.fixture
     def mock_auth_service(self) -> AsyncMock:
@@ -36,18 +36,14 @@ class TestAuthService:
 
     @pytest.fixture
     def auth_service(
-        self,
-        mock_auth_service: AsyncMock,
-        mock_session_manager: AsyncMock,
-    ) -> AuthService:
-        """Create AuthService instance for testing."""
-        return AuthService(mock_auth_service, mock_session_manager)
+        self, mock_auth_service: AsyncMock, mock_session_manager: AsyncMock
+    ) -> FlextAuthService:
+        """Create FlextAuthService instance for testing."""
+        return FlextAuthService(mock_auth_service, mock_session_manager)
 
     @pytest.mark.asyncio
     async def test_login_success(
-        self,
-        auth_service: AuthService,
-        mock_auth_service: AsyncMock,
+        self, auth_service: FlextAuthService, mock_auth_service: AsyncMock
     ) -> None:
         """Test successful login."""
         # Mock successful authentication
@@ -58,10 +54,9 @@ class TestAuthService:
         mock_session.id = "session123"
         mock_session.token = "token123"
 
-        mock_auth_service.authenticate_user.return_value = ServiceResult.ok((
-                mock_user,
-                mock_session,
-            ))
+        mock_auth_service.authenticate_user.return_value = FlextResult.ok(
+            (mock_user, mock_session)
+        )
 
         result = await auth_service.login("test@example.com", "password123")
 
@@ -75,12 +70,12 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_login_invalid_credentials(
-        self,
-        auth_service: AuthService,
-        mock_auth_service: AsyncMock,
+        self, auth_service: FlextAuthService, mock_auth_service: AsyncMock
     ) -> None:
         """Test login with invalid credentials."""
-        mock_auth_service.authenticate_user.return_value = ServiceResult.fail("Invalid credentials")
+        mock_auth_service.authenticate_user.return_value = FlextResult.fail(
+            "Invalid credentials"
+        )
 
         result = await auth_service.login("test@example.com", "wrongpassword")
 
@@ -89,7 +84,7 @@ class TestAuthService:
         assert "Invalid credentials" in result.error
 
     @pytest.mark.asyncio
-    async def test_login_missing_email(self, auth_service: AuthService) -> None:
+    async def test_login_missing_email(self, auth_service: FlextAuthService) -> None:
         """Test login with missing email."""
         result = await auth_service.login("", "password123")
 
@@ -98,7 +93,7 @@ class TestAuthService:
         assert "Email and password are required" in result.error
 
     @pytest.mark.asyncio
-    async def test_login_missing_password(self, auth_service: AuthService) -> None:
+    async def test_login_missing_password(self, auth_service: FlextAuthService) -> None:
         """Test login with missing password."""
         result = await auth_service.login("test@example.com", "")
 
@@ -108,9 +103,7 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_login_with_device_info(
-        self,
-        auth_service: AuthService,
-        mock_auth_service: AsyncMock,
+        self, auth_service: FlextAuthService, mock_auth_service: AsyncMock
     ) -> None:
         """Test login with device information."""
         mock_user = Mock()
@@ -120,17 +113,14 @@ class TestAuthService:
         mock_session.id = "session123"
         mock_session.token = "token123"
 
-        mock_auth_service.authenticate_user.return_value = ServiceResult.ok((
-                mock_user,
-                mock_session,
-            ))
+        mock_auth_service.authenticate_user.return_value = FlextResult.ok(
+            (mock_user, mock_session)
+        )
 
         device_info = {"ip_address": "192.168.1.1", "user_agent": "Mozilla/5.0"}
 
         result = await auth_service.login(
-            "test@example.com",
-            "password123",
-            device_info,
+            "test@example.com", "password123", device_info
         )
 
         assert result.success
@@ -142,12 +132,10 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_logout_success(
-        self,
-        auth_service: AuthService,
-        mock_session_manager: AsyncMock,
+        self, auth_service: FlextAuthService, mock_session_manager: AsyncMock
     ) -> None:
         """Test successful logout."""
-        mock_session_manager.terminate_session.return_value = ServiceResult.ok(True)
+        mock_session_manager.terminate_session.return_value = FlextResult.ok(True)
 
         result = await auth_service.logout("session123")
 
@@ -158,12 +146,12 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_logout_failure(
-        self,
-        auth_service: AuthService,
-        mock_session_manager: AsyncMock,
+        self, auth_service: FlextAuthService, mock_session_manager: AsyncMock
     ) -> None:
         """Test logout failure."""
-        mock_session_manager.terminate_session.return_value = ServiceResult.fail("Session not found")
+        mock_session_manager.terminate_session.return_value = FlextResult.fail(
+            "Session not found"
+        )
 
         result = await auth_service.logout("invalid_session")
 
@@ -173,9 +161,7 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_refresh_token_success(
-        self,
-        auth_service: AuthService,
-        mock_session_manager: AsyncMock,
+        self, auth_service: FlextAuthService, mock_session_manager: AsyncMock
     ) -> None:
         """Test successful token refresh."""
         token_data = {
@@ -185,7 +171,7 @@ class TestAuthService:
             "session_id": "session123",
         }
 
-        mock_session_manager.refresh_token.return_value = ServiceResult.ok(token_data)
+        mock_session_manager.refresh_token.return_value = FlextResult.ok(token_data)
 
         result = await auth_service.refresh_token("refresh123")
 
@@ -197,12 +183,12 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_refresh_token_invalid(
-        self,
-        auth_service: AuthService,
-        mock_session_manager: AsyncMock,
+        self, auth_service: FlextAuthService, mock_session_manager: AsyncMock
     ) -> None:
         """Test refresh with invalid token."""
-        mock_session_manager.refresh_token.return_value = ServiceResult.fail("Invalid refresh token")
+        mock_session_manager.refresh_token.return_value = FlextResult.fail(
+            "Invalid refresh token"
+        )
 
         result = await auth_service.refresh_token("invalid_refresh")
 
@@ -212,20 +198,16 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_register_success(
-        self,
-        auth_service: AuthService,
-        mock_auth_service: AsyncMock,
+        self, auth_service: FlextAuthService, mock_auth_service: AsyncMock
     ) -> None:
         """Test successful user registration."""
         mock_user_data = Mock()
         mock_user_data.roles = ["user"]
 
-        mock_auth_service.create_user.return_value = ServiceResult.ok(mock_user_data)
+        mock_auth_service.create_user.return_value = FlextResult.ok(mock_user_data)
 
         result = await auth_service.register(
-            "testuser",
-            "test@example.com",
-            "password123",
+            "testuser", "test@example.com", "password123"
         )
 
         assert result.success
@@ -236,18 +218,14 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_register_without_create_user_method(
-        self,
-        auth_service: AuthService,
-        mock_auth_service: AsyncMock,
+        self, auth_service: FlextAuthService, mock_auth_service: AsyncMock
     ) -> None:
         """Test registration when auth service doesn't have create_user method."""
         # Remove create_user method from mock
         del mock_auth_service.create_user
 
         result = await auth_service.register(
-            "testuser",
-            "test@example.com",
-            "password123",
+            "testuser", "test@example.com", "password123"
         )
 
         assert result.success
@@ -258,21 +236,16 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_register_with_custom_role(
-        self,
-        auth_service: AuthService,
-        mock_auth_service: AsyncMock,
+        self, auth_service: FlextAuthService, mock_auth_service: AsyncMock
     ) -> None:
         """Test registration with custom role."""
         mock_user_data = Mock()
         mock_user_data.roles = ["admin"]
 
-        mock_auth_service.create_user.return_value = ServiceResult.ok(mock_user_data)
+        mock_auth_service.create_user.return_value = FlextResult.ok(mock_user_data)
 
         result = await auth_service.register(
-            "admin_user",
-            "admin@example.com",
-            "password123",
-            "admin",
+            "admin_user", "admin@example.com", "password123", "admin"
         )
 
         assert result.success
@@ -285,17 +258,15 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_register_failure(
-        self,
-        auth_service: AuthService,
-        mock_auth_service: AsyncMock,
+        self, auth_service: FlextAuthService, mock_auth_service: AsyncMock
     ) -> None:
         """Test registration failure."""
-        mock_auth_service.create_user.return_value = ServiceResult.fail("Username already exists")
+        mock_auth_service.create_user.return_value = FlextResult.fail(
+            "Username already exists"
+        )
 
         result = await auth_service.register(
-            "existing_user",
-            "test@example.com",
-            "password123",
+            "existing_user", "test@example.com", "password123"
         )
 
         assert not result.success
@@ -304,9 +275,7 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_validate_token_success(
-        self,
-        auth_service: AuthService,
-        mock_session_manager: AsyncMock,
+        self, auth_service: FlextAuthService, mock_session_manager: AsyncMock
     ) -> None:
         """Test successful token validation."""
         token_data = {
@@ -316,7 +285,7 @@ class TestAuthService:
             "is_admin": False,
         }
 
-        mock_session_manager.validate_token.return_value = ServiceResult.ok(token_data)
+        mock_session_manager.validate_token.return_value = FlextResult.ok(token_data)
 
         result = await auth_service.validate_token("valid_token")
 
@@ -330,12 +299,12 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_validate_token_invalid(
-        self,
-        auth_service: AuthService,
-        mock_session_manager: AsyncMock,
+        self, auth_service: FlextAuthService, mock_session_manager: AsyncMock
     ) -> None:
         """Test validation with invalid token."""
-        mock_session_manager.validate_token.return_value = ServiceResult.fail("Token expired")
+        mock_session_manager.validate_token.return_value = FlextResult.fail(
+            "Token expired"
+        )
 
         result = await auth_service.validate_token("invalid_token")
 
@@ -345,13 +314,11 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_login_exception_handling(
-        self,
-        auth_service: AuthService,
-        mock_auth_service: AsyncMock,
+        self, auth_service: FlextAuthService, mock_auth_service: AsyncMock
     ) -> None:
         """Test login exception handling."""
         mock_auth_service.authenticate_user.side_effect = Exception(
-            "Database connection failed",
+            "Database connection failed"
         )
 
         result = await auth_service.login("test@example.com", "password123")
@@ -362,13 +329,11 @@ class TestAuthService:
 
     @pytest.mark.asyncio
     async def test_logout_exception_handling(
-        self,
-        auth_service: AuthService,
-        mock_session_manager: AsyncMock,
+        self, auth_service: FlextAuthService, mock_session_manager: AsyncMock
     ) -> None:
         """Test logout exception handling."""
         mock_session_manager.terminate_session.side_effect = Exception(
-            "Redis connection failed",
+            "Redis connection failed"
         )
 
         result = await auth_service.logout("session123")
@@ -402,7 +367,7 @@ class TestPluginService:
         """Create sample plugin for testing."""
         return Plugin(
             name="test-plugin",
-            plugin_type=PluginType.TAP,
+            plugin_type=PluginType.EXTRACTOR,
             version="1.0.0",
             description="Test plugin",
             enabled=True,
@@ -417,12 +382,12 @@ class TestPluginService:
         sample_plugin: Plugin,
     ) -> None:
         """Test successful plugin installation."""
-        mock_plugin_repo.create.return_value = ServiceResult.ok(sample_plugin)
-        mock_plugin_repo.list.return_value = ServiceResult.ok([])  # No duplicates
+        mock_plugin_repo.create.return_value = FlextResult.ok(sample_plugin)
+        mock_plugin_repo.list.return_value = FlextResult.ok([])  # No duplicates
 
         result = await plugin_service.install_plugin(
             name="test-plugin",
-            plugin_type=PluginType.TAP,
+            plugin_type=PluginType.EXTRACTOR,
             version="1.0.0",
             description="Test plugin",
             author="Test Author",
@@ -431,7 +396,7 @@ class TestPluginService:
         assert result.success
         plugin = result.data
         assert plugin.name == "test-plugin"
-        assert plugin.plugin_type == PluginType.TAP
+        assert plugin.plugin_type == PluginType.EXTRACTOR
         assert plugin.version == "1.0.0"
 
         mock_plugin_repo.create.assert_called_once()
@@ -444,8 +409,8 @@ class TestPluginService:
         sample_plugin: Plugin,
     ) -> None:
         """Test plugin installation with string plugin type."""
-        mock_plugin_repo.create.return_value = ServiceResult.ok(sample_plugin)
-        mock_plugin_repo.list.return_value = ServiceResult.ok([])
+        mock_plugin_repo.create.return_value = FlextResult.ok(sample_plugin)
+        mock_plugin_repo.list.return_value = FlextResult.ok([])
 
         result = await plugin_service.install_plugin(
             name="test-plugin",
@@ -455,13 +420,11 @@ class TestPluginService:
 
         assert result.success
         plugin = result.data
-        assert plugin.plugin_type == PluginType.TAP
+        assert plugin.plugin_type == PluginType.EXTRACTOR
 
     @pytest.mark.asyncio
     async def test_install_plugin_with_full_config(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test plugin installation with full configuration."""
         config = {"input_file": "data.csv", "delimiter": ","}
@@ -470,7 +433,7 @@ class TestPluginService:
         # Create a plugin with the expected configuration
         expected_plugin = Plugin(
             name="test-plugin",
-            plugin_type=PluginType.TAP,
+            plugin_type=PluginType.EXTRACTOR,
             version="1.0.0",
             description="Test plugin",
             plugin_config=config,
@@ -481,12 +444,12 @@ class TestPluginService:
             enabled=True,
         )
 
-        mock_plugin_repo.create.return_value = ServiceResult.ok(expected_plugin)
-        mock_plugin_repo.list.return_value = ServiceResult.ok([])
+        mock_plugin_repo.create.return_value = FlextResult.ok(expected_plugin)
+        mock_plugin_repo.list.return_value = FlextResult.ok([])
 
         result = await plugin_service.install_plugin(
             name="test-plugin",
-            plugin_type=PluginType.TAP,
+            plugin_type=PluginType.EXTRACTOR,
             version="1.0.0",
             description="Test plugin",
             config=config,
@@ -506,23 +469,17 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_install_plugin_duplicate(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test installing duplicate plugin."""
         # Mock existing plugin with same name and version
         existing_plugin = Plugin(
-            name="test-plugin",
-            version="1.0.0",
-            plugin_type=PluginType.TAP,
+            name="test-plugin", version="1.0.0", plugin_type=PluginType.EXTRACTOR
         )
-        mock_plugin_repo.list.return_value = ServiceResult.ok([existing_plugin])
+        mock_plugin_repo.list.return_value = FlextResult.ok([existing_plugin])
 
         result = await plugin_service.install_plugin(
-            name="test-plugin",
-            plugin_type=PluginType.TAP,
-            version="1.0.0",
+            name="test-plugin", plugin_type=PluginType.EXTRACTOR, version="1.0.0"
         )
 
         assert not result.success
@@ -538,7 +495,7 @@ class TestPluginService:
     ) -> None:
         """Test successful plugin retrieval."""
         plugin_id = sample_plugin.id
-        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
+        mock_plugin_repo.get.return_value = FlextResult.ok(sample_plugin)
 
         result = await plugin_service.get_plugin(plugin_id)
 
@@ -550,13 +507,11 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_get_plugin_not_found(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test getting non-existent plugin."""
         plugin_id = uuid4()
-        mock_plugin_repo.get.return_value = ServiceResult.fail("Plugin not found")
+        mock_plugin_repo.get.return_value = FlextResult.fail("Plugin not found")
 
         result = await plugin_service.get_plugin(plugin_id)
 
@@ -566,16 +521,14 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_list_plugins_basic(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test basic plugin listing."""
         plugins = [
-            Plugin(name="plugin1", plugin_type=PluginType.TAP),
+            Plugin(name="plugin1", plugin_type=PluginType.EXTRACTOR),
             Plugin(name="plugin2", plugin_type=PluginType.TARGET),
         ]
-        mock_plugin_repo.list.return_value = ServiceResult.ok(plugins)
+        mock_plugin_repo.list.return_value = FlextResult.ok(plugins)
 
         result = await plugin_service.list_plugins()
 
@@ -587,19 +540,16 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_list_plugins_with_filters(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test plugin listing with filters."""
-        plugins = [Plugin(name="tap-plugin", plugin_type=PluginType.TAP, enabled=True)]
-        mock_plugin_repo.list.return_value = ServiceResult.ok(plugins)
+        plugins = [
+            Plugin(name="tap-plugin", plugin_type=PluginType.EXTRACTOR, enabled=True),
+        ]
+        mock_plugin_repo.list.return_value = FlextResult.ok(plugins)
 
         result = await plugin_service.list_plugins(
-            plugin_type="tap",
-            enabled=True,
-            limit=10,
-            offset=0,
+            plugin_type="tap", enabled=True, limit=10, offset=0
         )
 
         assert result.success
@@ -620,7 +570,7 @@ class TestPluginService:
     ) -> None:
         """Test successful plugin update."""
         plugin_id = sample_plugin.id
-        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
+        mock_plugin_repo.get.return_value = FlextResult.ok(sample_plugin)
 
         # Create updated plugin
         updated_plugin = Plugin(
@@ -631,7 +581,7 @@ class TestPluginService:
             description="Updated description",
             enabled=False,
         )
-        mock_plugin_repo.update.return_value = ServiceResult.ok(updated_plugin)
+        mock_plugin_repo.update.return_value = FlextResult.ok(updated_plugin)
 
         result = await plugin_service.update_plugin(
             plugin_id,
@@ -648,13 +598,11 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_update_plugin_not_found(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test updating non-existent plugin."""
         plugin_id = uuid4()
-        mock_plugin_repo.get.return_value = ServiceResult.fail("Plugin not found")
+        mock_plugin_repo.get.return_value = FlextResult.fail("Plugin not found")
 
         result = await plugin_service.update_plugin(plugin_id, name="new-name")
 
@@ -671,16 +619,14 @@ class TestPluginService:
     ) -> None:
         """Test updating plugin with config and capabilities."""
         plugin_id = sample_plugin.id
-        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
-        mock_plugin_repo.update.return_value = ServiceResult.ok(sample_plugin)
+        mock_plugin_repo.get.return_value = FlextResult.ok(sample_plugin)
+        mock_plugin_repo.update.return_value = FlextResult.ok(sample_plugin)
 
         new_config = {"new_setting": "value"}
         new_capabilities = ["read", "write", "execute"]
 
         result = await plugin_service.update_plugin(
-            plugin_id,
-            config=new_config,
-            capabilities=new_capabilities,
+            plugin_id, config=new_config, capabilities=new_capabilities
         )
 
         assert result.success
@@ -694,8 +640,8 @@ class TestPluginService:
     ) -> None:
         """Test successful plugin uninstallation."""
         plugin_id = sample_plugin.id
-        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
-        mock_plugin_repo.delete.return_value = ServiceResult.ok(True)
+        mock_plugin_repo.get.return_value = FlextResult.ok(sample_plugin)
+        mock_plugin_repo.delete.return_value = FlextResult.ok(True)
 
         result = await plugin_service.uninstall_plugin(plugin_id)
 
@@ -708,13 +654,11 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_uninstall_plugin_not_found(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test uninstalling non-existent plugin."""
         plugin_id = uuid4()
-        mock_plugin_repo.get.return_value = ServiceResult.fail("Plugin not found")
+        mock_plugin_repo.get.return_value = FlextResult.fail("Plugin not found")
 
         result = await plugin_service.uninstall_plugin(plugin_id)
 
@@ -732,7 +676,7 @@ class TestPluginService:
         """Test enabling a plugin."""
         plugin_id = sample_plugin.id
         sample_plugin.enabled = False  # Start disabled
-        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
+        mock_plugin_repo.get.return_value = FlextResult.ok(sample_plugin)
 
         # Create enabled version
         enabled_plugin = Plugin(
@@ -742,7 +686,7 @@ class TestPluginService:
             version=sample_plugin.version,
             enabled=True,
         )
-        mock_plugin_repo.update.return_value = ServiceResult.ok(enabled_plugin)
+        mock_plugin_repo.update.return_value = FlextResult.ok(enabled_plugin)
 
         result = await plugin_service.enable_plugin(plugin_id)
 
@@ -760,7 +704,7 @@ class TestPluginService:
         """Test disabling a plugin."""
         plugin_id = sample_plugin.id
         sample_plugin.enabled = True  # Start enabled
-        mock_plugin_repo.get.return_value = ServiceResult.ok(sample_plugin)
+        mock_plugin_repo.get.return_value = FlextResult.ok(sample_plugin)
 
         # Create disabled version
         disabled_plugin = Plugin(
@@ -770,7 +714,7 @@ class TestPluginService:
             version=sample_plugin.version,
             enabled=False,
         )
-        mock_plugin_repo.update.return_value = ServiceResult.ok(disabled_plugin)
+        mock_plugin_repo.update.return_value = FlextResult.ok(disabled_plugin)
 
         result = await plugin_service.disable_plugin(plugin_id)
 
@@ -780,42 +724,32 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_duplicate_check_with_repository_error(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test duplicate check handles repository errors gracefully."""
         # Mock repository error during duplicate check
         mock_plugin_repo.list.side_effect = ConnectionError("Database unavailable")
-        mock_plugin_repo.create.return_value = ServiceResult.ok(Plugin(
-                name="test",
-                plugin_type=PluginType.TAP,
-                version="1.0.0",
-            ))
+        mock_plugin_repo.create.return_value = FlextResult.ok(
+            Plugin(name="test", plugin_type=PluginType.EXTRACTOR, version="1.0.0")
+        )
 
         # Should not fail installation due to duplicate check error
         result = await plugin_service.install_plugin(
-            name="test-plugin",
-            plugin_type=PluginType.TAP,
-            version="1.0.0",
+            name="test-plugin", plugin_type=PluginType.EXTRACTOR, version="1.0.0"
         )
 
         assert result.success  # Installation proceeds despite duplicate check failure
 
     @pytest.mark.asyncio
     async def test_install_plugin_exception_handling(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test plugin installation exception handling."""
-        mock_plugin_repo.list.return_value = ServiceResult.ok([])
+        mock_plugin_repo.list.return_value = FlextResult.ok([])
         mock_plugin_repo.create.side_effect = Exception("Database error")
 
         result = await plugin_service.install_plugin(
-            name="test-plugin",
-            plugin_type=PluginType.TAP,
-            version="1.0.0",
+            name="test-plugin", plugin_type=PluginType.EXTRACTOR, version="1.0.0"
         )
 
         assert not result.success
@@ -824,9 +758,7 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_get_plugin_exception_handling(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test get plugin exception handling."""
         plugin_id = uuid4()
@@ -840,9 +772,7 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_list_plugins_exception_handling(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test list plugins exception handling."""
         mock_plugin_repo.list.side_effect = Exception("Database error")
@@ -855,9 +785,7 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_update_plugin_exception_handling(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test update plugin exception handling."""
         plugin_id = uuid4()
@@ -871,9 +799,7 @@ class TestPluginService:
 
     @pytest.mark.asyncio
     async def test_uninstall_plugin_exception_handling(
-        self,
-        plugin_service: PluginService,
-        mock_plugin_repo: AsyncMock,
+        self, plugin_service: PluginService, mock_plugin_repo: AsyncMock
     ) -> None:
         """Test uninstall plugin exception handling."""
         plugin_id = uuid4()

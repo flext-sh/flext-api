@@ -11,6 +11,10 @@ from __future__ import annotations
 # Note: Using string values instead of enums until flext-core enums are available
 from flext_api.infrastructure.config import APIConfig
 
+# All code should use APIConfig directly
+# Alias for backward compatibility
+APISettings = APIConfig
+
 # Global settings instance
 _settings: APIConfig | None = None
 
@@ -19,7 +23,7 @@ def get_api_settings() -> APIConfig:
     """Get API configuration settings.
 
     Returns:
-        APIConfig: Consolidated API configuration using flext-core patterns.
+        APIConfig: Consolidated API configuration using flext-core patterns.,
 
     """
     global _settings
@@ -32,7 +36,7 @@ def create_development_api_config() -> APIConfig:
     """Create development API configuration.
 
     Returns:
-        APIConfig: Development configuration.
+        APIConfig: Development configuration.,
 
     """
     return APIConfig(
@@ -45,7 +49,7 @@ def create_production_api_config() -> APIConfig:
     """Create production API configuration.
 
     Returns:
-        APIConfig: Production configuration.
+        APIConfig: Production configuration.,
 
     """
     return APIConfig(
@@ -54,12 +58,8 @@ def create_production_api_config() -> APIConfig:
     )
 
 
-# Export the configuration class for backward compatibility
-APISettings = APIConfig
-
 __all__ = [
     "APIConfig",
-    "APISettings",
     "create_development_api_config",
     "create_production_api_config",
     "get_api_settings",

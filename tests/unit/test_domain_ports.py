@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, Mock
 from uuid import UUID, uuid4
 
 import pytest
-from flext_core.domain.shared_types import ServiceResult
+from flext_core import FlextResult
 
 from flext_api.domain.ports import (
     APIAuthenticationService,
@@ -32,7 +32,7 @@ from flext_api.domain.ports import (
 )
 
 if TYPE_CHECKING:
-    from flext_api.domain.entities import APIPipeline, Plugin
+    from flext_api.domain.entities import FlextAPIPipeline, Plugin
 
 
 class TestRepositoryPorts:
@@ -206,10 +206,7 @@ class TestPortImplementation:
                 return None
 
             async def authorize(
-                self,
-                user_id: UUID,
-                resource: str,
-                action: str,
+                self, user_id: UUID, resource: str, action: str
             ) -> bool:
                 return str(user_id) == "123"
 
@@ -228,31 +225,33 @@ class TestPortImplementation:
 
         class MockPipelineRepository(PipelineRepository):
             def __init__(self) -> None:
-                self._storage: dict[UUID, APIPipeline] = {}
+                self._storage: dict[UUID, FlextAPIPipeline] = {}
 
-            async def create(self, pipeline: APIPipeline) -> ServiceResult[APIPipeline]:
+            async def create(
+                self, pipeline: FlextAPIPipeline
+            ) -> FlextResult[FlextAPIPipeline]:
                 self._storage[pipeline.id] = pipeline
-                return ServiceResult.ok(pipeline)
+                return FlextResult.ok(pipeline)
 
-            async def update(self, pipeline: APIPipeline) -> ServiceResult[Any]:
+            async def update(self, pipeline: FlextAPIPipeline) -> FlextResult[Any]:
                 if pipeline.id in self._storage:
                     self._storage[pipeline.id] = pipeline
-                    return ServiceResult.ok(pipeline)
-                return ServiceResult.fail(f"Pipeline {pipeline.id} not found")
+                    return FlextResult.ok(pipeline)
+                return FlextResult.fail(f"Pipeline {pipeline.id} not found")
 
             async def count(
                 self,
                 owner_id: UUID | None = None,
                 project_id: UUID | None = None,
                 status: str | None = None,
-            ) -> ServiceResult[Any]:
-                return ServiceResult.ok(len(self._storage))
+            ) -> FlextResult[Any]:
+                return FlextResult.ok(len(self._storage))
 
-            async def get(self, pipeline_id: UUID) -> ServiceResult[APIPipeline]:
+            async def get(self, pipeline_id: UUID) -> FlextResult[FlextAPIPipeline]:
                 pipeline = self._storage.get(pipeline_id)
                 if pipeline:
-                    return ServiceResult.ok(pipeline)
-                return ServiceResult.fail(f"Pipeline {pipeline_id} not found")
+                    return FlextResult.ok(pipeline)
+                return FlextResult.fail(f"Pipeline {pipeline_id} not found")
 
             async def list(
                 self,
@@ -261,17 +260,17 @@ class TestPortImplementation:
                 owner_id: UUID | None = None,
                 project_id: UUID | None = None,
                 status: str | None = None,
-            ) -> ServiceResult[Any]:
+            ) -> FlextResult[Any]:
                 pipelines = list(self._storage.values())[offset : offset + limit]
-                return ServiceResult.ok(pipelines)
+                return FlextResult.ok(pipelines)
 
-            async def delete(self, pipeline_id: UUID) -> ServiceResult[Any]:
+            async def delete(self, pipeline_id: UUID) -> FlextResult[Any]:
                 if pipeline_id in self._storage:
                     del self._storage[pipeline_id]
-                    return ServiceResult.ok(True)
-                return ServiceResult.ok(False)
+                    return FlextResult.ok(True)
+                return FlextResult.ok(False)
 
-            async def save(self, pipeline: APIPipeline) -> ServiceResult[Any]:
+            async def save(self, pipeline: FlextAPIPipeline) -> FlextResult[Any]:
                 if pipeline.id in self._storage:
                     return await self.update(pipeline)
                 return await self.create(pipeline)
@@ -287,28 +286,26 @@ class TestPortImplementation:
             def __init__(self) -> None:
                 self._storage: dict[UUID, Plugin] = {}
 
-            async def create(self, plugin: Plugin) -> ServiceResult[Any]:
+            async def create(self, plugin: Plugin) -> FlextResult[Any]:
                 self._storage[plugin.id] = plugin
-                return ServiceResult.ok(plugin)
+                return FlextResult.ok(plugin)
 
-            async def update(self, plugin: Plugin) -> ServiceResult[Any]:
+            async def update(self, plugin: Plugin) -> FlextResult[Any]:
                 if plugin.id in self._storage:
                     self._storage[plugin.id] = plugin
-                    return ServiceResult.ok(plugin)
-                return ServiceResult.fail(f"Plugin {plugin.id} not found")
+                    return FlextResult.ok(plugin)
+                return FlextResult.fail(f"Plugin {plugin.id} not found")
 
             async def count(
-                self,
-                plugin_type: str | None = None,
-                status: str | None = None,
-            ) -> ServiceResult[Any]:
-                return ServiceResult.ok(len(self._storage))
+                self, plugin_type: str | None = None, status: str | None = None
+            ) -> FlextResult[Any]:
+                return FlextResult.ok(len(self._storage))
 
-            async def get(self, plugin_id: UUID) -> ServiceResult[Any]:
+            async def get(self, plugin_id: UUID) -> FlextResult[Any]:
                 plugin = self._storage.get(plugin_id)
                 if plugin:
-                    return ServiceResult.ok(plugin)
-                return ServiceResult.fail(f"Plugin {plugin_id} not found")
+                    return FlextResult.ok(plugin)
+                return FlextResult.fail(f"Plugin {plugin_id} not found")
 
             async def list(
                 self,
@@ -316,7 +313,7 @@ class TestPortImplementation:
                 offset: int = 0,
                 plugin_type: str | None = None,
                 status: str | None = None,
-            ) -> ServiceResult[Any]:
+            ) -> FlextResult[Any]:
                 """List plugins with pagination and filtering."""
                 # Create filtered list without modifying storage
                 plugins = list(self._storage.values())
@@ -325,20 +322,20 @@ class TestPortImplementation:
                     plugins = [p for p in plugins if p.plugin_type == plugin_type]
                 # Filter by status if provided (map to enabled for now)
                 if status is not None:
-                    # Simple status mapping: "active" -> enabled=True, others -> enabled=False
+                    # Simple mapping: "active" -> enabled=True, others -> False
                     enabled_filter = status.lower() == "active"
                     plugins = [p for p in plugins if p.enabled == enabled_filter]
                 # Apply pagination
                 paginated_plugins = plugins[offset : offset + limit]
-                return ServiceResult.ok(paginated_plugins)
+                return FlextResult.ok(paginated_plugins)
 
-            async def delete(self, plugin_id: UUID) -> ServiceResult[Any]:
+            async def delete(self, plugin_id: UUID) -> FlextResult[Any]:
                 if plugin_id in self._storage:
                     self._storage.pop(plugin_id)
-                    return ServiceResult.ok(True)
-                return ServiceResult.ok(False)
+                    return FlextResult.ok(True)
+                return FlextResult.ok(False)
 
-            async def save(self, plugin: Plugin) -> ServiceResult[Any]:
+            async def save(self, plugin: Plugin) -> FlextResult[Any]:
                 if plugin.id in self._storage:
                     return await self.update(plugin)
                 return await self.create(plugin)
@@ -419,13 +416,10 @@ class TestPortMocking:
                 )
 
             async def authorize(
-                self,
-                user_id: UUID,
-                resource: str,
-                action: str,
+                self, user_id: UUID, resource: str, action: str
             ) -> bool:
                 return str(
-                    user_id,
+                    user_id
                 ) == "12345678-1234-5678-1234-567812345678" and action in {
                     "read",
                     "list",
@@ -520,39 +514,31 @@ class TestPortMocking:
                 self._executions: dict[str, dict[str, object]] = {}
 
             async def execute_pipeline(
-                self,
-                pipeline_id: UUID,
-                config: dict[str, str] | None = None,
-            ) -> ServiceResult[Any]:
+                self, pipeline_id: UUID, config: dict[str, str] | None = None
+            ) -> FlextResult[Any]:
                 execution_id = f"exec_{pipeline_id}_{len(self._executions)}"
                 self._executions[execution_id] = {
                     "pipeline_id": pipeline_id,
                     "status": "running",
                     "config": config,
                 }
-                return ServiceResult.ok(execution_id)
+                return FlextResult.ok(execution_id)
 
-            async def get_execution_status(
-                self,
-                execution_id: str,
-            ) -> ServiceResult[Any]:
+            async def get_execution_status(self, execution_id: str) -> FlextResult[Any]:
                 """Get execution status."""
                 if execution_id in self._executions:
                     execution_data = self._executions[execution_id]
                     # Convert to dict[str, str] as expected by interface
                     status_dict = {k: str(v) for k, v in execution_data.items()}
-                    return ServiceResult.ok(status_dict)
-                return ServiceResult.fail(f"Execution {execution_id} not found")
+                    return FlextResult.ok(status_dict)
+                return FlextResult.fail(f"Execution {execution_id} not found")
 
-            async def cancel_execution(
-                self,
-                execution_id: str,
-            ) -> ServiceResult[Any]:
+            async def cancel_execution(self, execution_id: str) -> FlextResult[Any]:
                 """Cancel execution."""
                 if execution_id in self._executions:
                     self._executions[execution_id]["status"] = "cancelled"
-                    return ServiceResult.ok(True)
-                return ServiceResult.fail(f"Execution {execution_id} not found")
+                    return FlextResult.ok(True)
+                return FlextResult.fail(f"Execution {execution_id} not found")
 
         service = TestPipelineExecutionService()
         # Test execute_pipeline
@@ -671,10 +657,7 @@ class TestPortContractValidation:
                 return None
 
             async def authorize(
-                self,
-                user_id: UUID,
-                resource: str,
-                action: str,
+                self, user_id: UUID, resource: str, action: str
             ) -> bool:
                 return False
 

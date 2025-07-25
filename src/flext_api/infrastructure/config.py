@@ -9,44 +9,23 @@ from flext-core for maximum code reduction and standardization.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import Any, ClassVar
 
-from flext_core import (
-    APIConfigMixin,
-    BaseConfigMixin,
-    ConfigDefaults,
-    DatabaseConfigMixin,
-    LoggingConfigMixin,
-    MonitoringConfigMixin,
-    PerformanceConfigMixin,
-)
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-if TYPE_CHECKING:
-    from flext_core import LogLevel, MemoryMB, PositiveInt
-else:
-    # Runtime imports for actual usage
-    from flext_core import (
-        LogLevel,
-        MemoryMB,
-        PositiveInt,
-    )
 
+class APIConfig(BaseSettings):
+    """API configuration using FLEXT Core patterns.
 
-class APIConfig(
-    BaseConfigMixin,
-    LoggingConfigMixin,
-    DatabaseConfigMixin,
-    APIConfigMixin,
-    MonitoringConfigMixin,
-    PerformanceConfigMixin,
-    BaseSettings,
-):
-    """API configuration using unified composition mixins.
+    NOTE: This should inherit from FlextCoreSettings when available.,
+    For now, using BaseSettings with FLEXT patterns.
+    """
 
-    This configuration eliminates ALL duplication by using composition mixins
-    from flext-core. All API server settings are provided by APIConfigMixin.
+    """API configuration using modern Pydantic BaseSettings.
+
+    This configuration provides all necessary API server settings
+    using modern Pydantic patterns.
     """
 
     model_config = SettingsConfigDict(
@@ -56,46 +35,47 @@ class APIConfig(
         extra="ignore",
     )
 
-    # Override required fields from BaseConfigMixin with defaults
+    # Core configuration fields
     project_name: str = Field(default="FLEXT API", description="Project name")
+    project_version: str = Field(default="0.7.0", description="Project version")
     database_url: str = Field(
         default="postgresql://localhost/flext_api",
         description="Database connection URL",
     )
 
-    # Database configuration overrides for compatibility
+    # Database configuration
     db_name: str = Field(default="flext_api", description="Database name")
     db_user: str = Field(default="flext_user", description="Database user")
     db_password: str = Field(default="flext_pass", description="Database password")
-
-    # Add database_pool_size for test compatibility
-    database_pool_size: int = Field(default=20, description="Database connection pool size")
-
-    # Monitoring configuration for test compatibility
-    metrics_enabled: bool = Field(default=True, description="Enable metrics collection")
-
-    # Override log_level to ensure proper enum value
-    log_level: LogLevel = Field(
-        default=LogLevel.INFO, description="Log level for the API",
+    database_pool_size: int = Field(
+        default=20,
+        description="Database connection pool size",
     )
 
-    @classmethod
-    def __init_subclass__(cls, **kwargs: Any) -> None:
-        """Initialize subclass with custom validation."""
-        super().__init_subclass__(**kwargs)
+    # API server configuration (using api_host/api_port to avoid property conflicts)
+    api_host: str = Field(default="localhost", description="API server host")
+    api_port: int = Field(default=8000, description="API server port")
+    debug: bool = Field(default=False, description="Enable debug mode")
+    reload: bool = Field(default=False, description="Enable auto-reload")
 
-    def __init__(self, **kwargs: Any) -> None:
+    # Monitoring configuration
+    metrics_enabled: bool = Field(default=True, description="Enable metrics collection")
+
+    # Logging configuration
+    log_level: str = Field(default="INFO", description="Log level for the API")
+    log_format: str = Field(default="text", description="Log format (text or json)")
+
+    # Performance configuration
+    timeout_seconds: int = Field(default=30, description="Request timeout in seconds")
+
+    def __init__(self, **kwargs: object) -> None:
         """Initialize with case-insensitive log level handling."""
         # Convert lowercase log_level to uppercase if provided
         if "log_level" in kwargs and isinstance(kwargs["log_level"], str):
             kwargs["log_level"] = kwargs["log_level"].upper()
 
-        # Also handle environment variables that may come through pydantic-settings
-        import os
-        env_log_level = os.getenv("FLEXT_API_LOG_LEVEL")
-        if env_log_level and isinstance(env_log_level, str):
-            # Override kwargs with properly formatted env var
-            kwargs["log_level"] = env_log_level.upper()
+        # Environment variables are automatically handled by pydantic-settings
+        # No manual os.getenv() needed - this is handled by model_config
 
         super().__init__(**kwargs)
 
@@ -104,7 +84,7 @@ class APIConfig(
         default="redis://localhost:6379/0",
         description="Redis connection URL",
     )
-    redis_pool_size: PositiveInt = Field(
+    redis_pool_size: int = Field(
         default=10,
         description="Redis connection pool size",
     )
@@ -118,7 +98,6 @@ class APIConfig(
     # - api_host, api_port, api_workers, api_timeout, api_cors_origins
 
     # Additional API-specific settings
-    reload: bool = Field(default=False, description="Auto-reload in development")
 
     # CORS settings (additional to APIConfigMixin)
     cors_methods: ClassVar[list[str]] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
@@ -129,11 +108,11 @@ class APIConfig(
     # API settings (additional to BaseConfigMixin)
     title: str = Field(
         default="FLEXT API",
-        max_length=ConfigDefaults.MAX_ENTITY_NAME_LENGTH,
+        max_length=100,
     )
     description: str = Field(
         default="Enterprise Data Integration API",
-        max_length=ConfigDefaults.MAX_ERROR_MESSAGE_LENGTH,
+        max_length=500,
     )
     docs_url: str = Field(default="/docs")
     redoc_url: str = Field(default="/redoc")
@@ -149,24 +128,24 @@ class APIConfig(
 
     # Rate limiting settings
     rate_limit_enabled: bool = True
-    rate_limit_per_minute: PositiveInt = 100
-    rate_limit_burst: PositiveInt = 200
+    rate_limit_per_minute: int = 100
+    rate_limit_burst: int = 200
 
     # Security settings
     security_enabled: bool = True
-    trusted_hosts: ClassVar[list[str]] = ["localhost", "127.0.0.1"]
+    trusted_hosts: ClassVar[list[str]] = ["localhost", "127.0.0.1", "testserver"]
 
     # Pagination settings (can use inherited batch_size from PerformanceConfigMixin)
-    default_page_size: PositiveInt = Field(default=ConfigDefaults.DEFAULT_PAGE_SIZE)
-    max_page_size: PositiveInt = Field(default=ConfigDefaults.MAX_PAGE_SIZE)
+    default_page_size: int = Field(default=100)
+    max_page_size: int = Field(default=100)
 
     # File upload settings
-    max_file_size: MemoryMB = 10  # 10MB using MemoryMB type
+    max_file_size: int = 10  # 10MB using int type
     allowed_file_types: ClassVar[list[str]] = [".json", ".yaml", ".yml", ".csv"]
 
     # Background tasks settings
     background_tasks_enabled: bool = True
-    task_queue_size: PositiveInt = 1000
+    task_queue_size: int = 1000
 
     # Feature flags
     websocket_enabled: bool = True
@@ -187,59 +166,57 @@ class APIConfig(
             return self.database_url.replace(
                 "postgresql://",
                 "postgresql+asyncpg://",
-                1,
             )
         return self.database_url
 
-    # Additional fields for backward compatibility with app.py
-    # Note: project_name and project_version inherited from BaseConfigMixin
-
     @property
     def version(self) -> str:
-        """Get project version for backward compatibility."""
+        """Get project version."""
         return self.project_version
 
     @property
     def cors_origins(self) -> list[str]:
-        """Get CORS origins for backward compatibility."""
+        """Get CORS origins."""
         return ["*"]  # Default CORS origins
 
     @property
     def host(self) -> str:
-        """Get API host for backward compatibility."""
+        """Get API host."""
         return self.api_host
 
     @property
     def port(self) -> int:
-        """Get API port for backward compatibility."""
+        """Get API port."""
         return self.api_port
 
     @property
     def workers(self) -> int:
-        """Get API workers for backward compatibility."""
+        """Get API workers."""
         return 4  # Default number of workers
 
-    # Note: Database and Redis properties inherited from mixins
-    # Note: JWT properties inherited from AuthConfigMixin (if using AuthConfigMixin)
-    # JWT properties for backward compatibility until full auth integration
-
-    @property
-    def secret_key(self) -> str:
-        """Get JWT secret key for backward compatibility."""
-        # Read from environment or use default for testing
-        import os
-
-        return os.getenv("FLEXT_API_SECRET_KEY", "test-secret-key-for-real-jwt")
+    # JWT Security Configuration - Using Pydantic fields instead of manual os.getenv
+    secret_key: SecretStr = Field(
+        default=SecretStr("test-secret-key-for-development-only"),
+        description="JWT secret key - MUST be overridden in production",
+    )
+    jwt_algorithm: str = Field(
+        default="HS256",
+        description="JWT signing algorithm",
+    )
+    access_token_expire_minutes: int = Field(
+        default=30,
+        description="Access token expiration in minutes",
+    )
 
     @property
     def algorithm(self) -> str:
         """Get JWT algorithm for backward compatibility."""
-        return "HS256"
+        return self.jwt_algorithm
 
     @property
-    def access_token_expire_minutes(self) -> int:
-        """Get access token expiration for backward compatibility."""
-        return 30
+    def secret_key_str(self) -> str:
+        """Get JWT secret key as string for backward compatibility."""
+        return self.secret_key.get_secret_value()
 
     @property
     def cors_config(self) -> dict[str, list[str] | bool]:
@@ -269,9 +246,11 @@ class APIConfig(
             "port": self.api_port,  # Using APIConfigMixin field
             "workers": self.workers,  # Using workers property
             "reload": self.reload,
-            "log_level": self.log_level.value.lower(),  # Using LoggingConfigMixin field
+            "log_level": self.log_level.lower(),  # log_level is string
             "access_log": True,  # Default value
-            "keepalive_timeout": int(self.timeout_seconds),  # Using PerformanceConfigMixin field
+            "keepalive_timeout": int(
+                self.timeout_seconds
+            ),  # Using PerformanceConfigMixin field
         }
 
     def validate_configuration(self) -> list[str]:
@@ -288,27 +267,34 @@ class APIConfig(
 
         if self.default_page_size < 1 or self.default_page_size > self.max_page_size:
             errors.append(
-                f"Default page size must be between 1 and {self.max_page_size}",
+                f"Default page size must be between 1 and {self.max_page_size}"
             )
 
-        if self.max_file_size < 1:  # 1MB minimum (MemoryMB type)
+        if self.max_file_size < 1:  # 1MB minimum (int type)
             errors.append("Max file size must be at least 1MB")
 
         return errors
+
+    def is_development(self) -> bool:
+        """Check if running in development mode."""
+        return self.debug or self.reload
+
+    def is_production(self) -> bool:
+        """Check if running in production mode."""
+        return not self.is_development()
 
     def configure_dependencies(self, container: Any) -> None:
         """Configure dependency injection container.
 
         Args:
-            container: Dependency injection container to configure.
+            container: Dependency injection container to configure.,
 
         """
         # For now, just pass - can be extended later for DI configuration
 
-    # Nested configuration objects for backward compatibility
     @property
     def server(self) -> Any:
-        """Get server configuration for backward compatibility."""
+        """Get server configuration."""
 
         class ServerConfig:
             def __init__(self, config: APIConfig) -> None:
@@ -321,7 +307,7 @@ class APIConfig(
 
     @property
     def cors(self) -> Any:
-        """Get CORS configuration for backward compatibility."""
+        """Get CORS configuration."""
 
         class CorsConfig:
             def __init__(self, config: APIConfig) -> None:
@@ -335,7 +321,7 @@ class APIConfig(
 
     @property
     def rate_limit(self) -> Any:
-        """Get rate limit configuration for backward compatibility."""
+        """Get rate limit configuration."""
 
         class RateLimitConfig:
             def __init__(self, config: APIConfig) -> None:
@@ -347,7 +333,7 @@ class APIConfig(
 
     @property
     def docs(self) -> Any:
-        """Get documentation configuration for backward compatibility."""
+        """Get documentation configuration."""
 
         class DocsConfig:
             def __init__(self, config: APIConfig) -> None:
@@ -362,12 +348,12 @@ class APIConfig(
 
     @property
     def security(self) -> Any:
-        """Get security configuration for backward compatibility."""
+        """Get security configuration."""
 
         class SecurityConfig:
             def __init__(self, config: APIConfig) -> None:
-                self.secret_key = config.secret_key
-                self.algorithm = config.algorithm
+                self.secret_key = config.secret_key.get_secret_value()
+                self.algorithm = config.jwt_algorithm
                 self.access_token_expire_minutes = config.access_token_expire_minutes
                 self.enabled = config.security_enabled
                 self.trusted_hosts = config.trusted_hosts

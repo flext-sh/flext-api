@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
+from flext_api import get_logger
 from flext_api.models.system import (
     MaintenanceRequest,
     MaintenanceResponse,
@@ -34,9 +35,14 @@ from flext_api.models.system import (
 from flext_api.storage import storage
 
 if TYPE_CHECKING:
-    from flext_core import APIResponse
+    from flext_core import FlextResult
 
-system_router = APIRouter(prefix="/system", tags=["system"])
+    from flext_api.base import FlextAPIResponse
+
+# Create logger using flext-core get_logger function
+logger = get_logger(__name__)
+
+system_router = APIRouter(prefix="/api/v1/system", tags=["system"])
 
 
 @system_router.get("/status")
@@ -46,16 +52,18 @@ async def get_system_status(_request: Request) -> SystemStatusResponse:
 
     if not result.success:
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to get system status: {result.error}",
+            status_code=500, detail=f"Failed to get system status: {result.error}"
         )
 
     if result.data is None:
-        raise HTTPException(
-            status_code=500,
-            detail="System status returned None",
-        )
-    return result.data
+        raise HTTPException(status_code=500, detail="System status returned None")
+
+    # Cast to correct type since we verified result.data is not None
+    return (
+        SystemStatusResponse(**result.data)
+        if isinstance(result.data, dict)
+        else result.data
+    )
 
 
 @system_router.get("/services")
@@ -65,10 +73,7 @@ async def get_system_services(_request: Request) -> list[SystemServiceResponse]:
 
 
 @system_router.get("/services/{service_name}")
-async def get_system_service(
-    service_name: str,
-    request: Request,
-) -> SystemServiceResponse:
+async def get_system_service(service_name: str, request: Request) -> FlextResult[Any]:
     """Get detailed information about a specific system service."""
     # Get system status to check if service exists
     status_result = storage.get_system_status()
@@ -80,10 +85,7 @@ async def get_system_service(
 
     system_status = status_result.data
     if system_status is None:
-        raise HTTPException(
-            status_code=500,
-            detail="System status returned None",
-        )
+        raise HTTPException(status_code=500, detail="System status returned None")
 
     # Check if service exists in the services list
     service_info = None
@@ -94,8 +96,7 @@ async def get_system_service(
 
     if not service_info:
         raise HTTPException(
-            status_code=404,
-            detail=f"Service '{service_name}' not found",
+            status_code=404, detail=f"Service '{service_name}' not found"
         )
 
     # Create detailed service response using real data
@@ -107,10 +108,11 @@ async def get_system_service(
         service_type = ServiceType.API  # Default
         service_status = SystemStatusType.HEALTHY
 
-    return SystemServiceResponse(
+    response = SystemServiceResponse(
         service_name=service_name,
         service_type=service_type,
         status=service_status,
+        service_status=service_info.get("status", "healthy"),
         version="1.0.0",
         uptime_seconds=service_info.get("uptime", 0),
         health_checks=[
@@ -119,7 +121,7 @@ async def get_system_service(
                 "status": "healthy",
                 "last_check": datetime.now(UTC).isoformat(),
                 "response_time_ms": 12.5,
-            },
+            }
         ],
         metrics={
             "requests_per_second": 45.2,
@@ -144,12 +146,14 @@ async def get_system_service(
         performance_score=95.5,
     )
 
+    from flext_core import FlextResult
+    return FlextResult.ok(response)
+
 
 @system_router.post("/maintenance")
 async def start_maintenance(
-    maintenance_data: MaintenanceRequest,
-    request: Request,
-) -> MaintenanceResponse:
+    maintenance_data: MaintenanceRequest, request: Request
+) -> FlextResult[Any]:
     """Start system maintenance using real storage functionality."""
     # Use the actual storage method for starting maintenance
     result = storage.start_maintenance(maintenance_data)
@@ -165,14 +169,21 @@ async def start_maintenance(
             status_code=500,
             detail="Maintenance operation returned None",
         )
-    return result.data
+
+    response = (
+        MaintenanceResponse(**result.data)
+        if isinstance(result.data, dict)
+        else result.data
+    )
+
+    from flext_core import FlextResult
+    return FlextResult.ok(response)
 
 
 @system_router.get("/maintenance/{maintenance_id}")
 async def get_maintenance_status(
-    maintenance_id: str,
-    request: Request,
-) -> MaintenanceResponse:
+    maintenance_id: str, request: Request
+) -> FlextResult[Any]:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,
@@ -181,7 +192,7 @@ async def get_maintenance_status(
 
 
 @system_router.post("/maintenance/{maintenance_id}/stop")
-async def stop_maintenance(maintenance_id: str, _request: Request) -> APIResponse:
+async def stop_maintenance(maintenance_id: str, _request: Request) -> FlextResult[Any]:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,
@@ -191,9 +202,8 @@ async def stop_maintenance(maintenance_id: str, _request: Request) -> APIRespons
 
 @system_router.post("/backup")
 async def create_system_backup(
-    backup_data: SystemBackupRequest,
-    _request: Request,
-) -> SystemBackupResponse:
+    backup_data: SystemBackupRequest, _request: Request
+) -> FlextResult[Any]:
     """Create system backup using real storage functionality."""
     # Use the actual storage method for creating backup
     result = storage.create_backup(backup_data)
@@ -209,7 +219,15 @@ async def create_system_backup(
             status_code=500,
             detail="Backup operation returned None",
         )
-    return result.data
+
+    response = (
+        SystemBackupResponse(**result.data)
+        if isinstance(result.data, dict)
+        else result.data
+    )
+
+    from flext_core import FlextResult
+    return FlextResult.ok(response)
 
 
 @system_router.get("/backups")
@@ -235,10 +253,8 @@ async def get_system_backup(backup_id: str, _request: Request) -> SystemBackupRe
 
 @system_router.post("/restore/{backup_id}")
 async def restore_system_backup(
-    backup_id: str,
-    _request: Request,
-    _restore_data: SystemRestoreRequest | None = None,
-) -> APIResponse:
+    backup_id: str, _request: Request, _restore_data: SystemRestoreRequest | None = None
+) -> FlextAPIResponse[Any]:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,
@@ -248,8 +264,7 @@ async def restore_system_backup(
 
 @system_router.post("/health-check")
 async def perform_health_check(
-    _request: Request,
-    _health_data: SystemHealthCheckRequest | None = None,
+    _request: Request, _health_data: SystemHealthCheckRequest | None = None
 ) -> SystemHealthResponse:
     # Implementation placeholder
     raise HTTPException(
@@ -271,7 +286,7 @@ async def get_system_alerts(
 
 
 @system_router.post("/alerts/{alert_id}/acknowledge")
-async def acknowledge_alert(alert_id: str, _request: Request) -> APIResponse:
+async def acknowledge_alert(alert_id: str, _request: Request) -> FlextAPIResponse[Any]:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,
@@ -280,7 +295,7 @@ async def acknowledge_alert(alert_id: str, _request: Request) -> APIResponse:
 
 
 @system_router.post("/alerts/{alert_id}/resolve")
-async def resolve_alert(alert_id: str, _request: Request) -> APIResponse:
+async def resolve_alert(alert_id: str, _request: Request) -> FlextAPIResponse[Any]:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,
@@ -291,7 +306,6 @@ async def resolve_alert(alert_id: str, _request: Request) -> APIResponse:
 @system_router.get("/metrics")
 async def get_system_metrics(
     request: Request,
-    *,
     _include_historical: Annotated[bool, Query()] = False,
     _time_range_hours: Annotated[int, Query(ge=1, le=168)] = 24,
 ) -> list[SystemMetricsResponse]:
@@ -309,7 +323,11 @@ async def get_system_metrics(
             status_code=500,
             detail="Metrics operation returned None",
         )
-    return result.data
+
+    return [
+        SystemMetricsResponse(**item) if isinstance(item, dict) else item
+        for item in result.data
+    ]
 
 
 @system_router.get("/info")
@@ -339,7 +357,7 @@ async def get_system_logs(
                 "level": "INFO",
                 "message": "System operational",
                 "module": "system",
-            },
+            }
         ],
         "total": 1,
         "level_filter": _level,
@@ -371,9 +389,8 @@ async def get_system_config(_request: Request) -> dict[str, Any]:
 
 @system_router.put("/configuration")
 async def update_system_configuration(
-    _request: Request,
-    _config_data: SystemConfigurationRequest | None = None,
-) -> APIResponse:
+    _request: Request, _config_data: SystemConfigurationRequest | None = None
+) -> FlextAPIResponse[Any]:
     # Implementation placeholder
     raise HTTPException(
         status_code=501,

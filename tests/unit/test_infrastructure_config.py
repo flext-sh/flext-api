@@ -19,7 +19,7 @@ class TestAPIConfig:
         assert config.version == "0.1.0"
         assert config.host == "0.0.0.0"
         assert config.port == 8000
-        assert config.log_level.value == "INFO"
+        assert config.log_level == "INFO"
         assert config.description == "Enterprise Data Integration API"
         assert "postgresql://" in config.database_url
         assert "flext_api" in config.database_url
@@ -47,7 +47,7 @@ class TestAPIConfig:
 
         assert config.host == "api.flext.com"
         assert config.port == 443
-        assert config.log_level.value == "ERROR"
+        assert config.log_level == "ERROR"
         assert config.database_url == "postgresql://user:pass@localhost/flext"
         assert config.secret_key == "production-secret"
         assert config.reload is False

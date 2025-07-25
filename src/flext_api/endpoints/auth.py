@@ -11,8 +11,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 from fastapi.security import HTTPBearer
 
+from flext_api.base import FlextAPIResponse
 from flext_api.models.auth import (
-    APIResponse,
     LoginRequest,
     LoginResponse,
     RegisterRequest,
@@ -20,27 +20,48 @@ from flext_api.models.auth import (
     UserAPI,
 )
 
-auth_router = APIRouter(prefix="/auth", tags=["authentication"])
+auth_router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 security = HTTPBearer()
 
 
 @auth_router.post("/login")
-async def login(login_data: LoginRequest) -> LoginResponse:
+async def login(login_data: LoginRequest, request: Request) -> LoginResponse:
     """Login endpoint.
 
     Args:
-        login_data: LoginRequest
+        login_data: LoginRequest,
+        request: Request,
 
     Returns:
         LoginResponse
 
     """
-    # Implementation placeholder - will be connected to actual auth service
-    placeholder_token = "placeholder_token"
-    bearer_type = "bearer"
+    from flext_api.dependencies import get_flext_auth_service
+
+    auth_service = get_flext_auth_service()
+
+    # Use real authentication service
+    auth_result = await auth_service.authenticate_user(
+        username=login_data.username, password=login_data.password
+    )
+
+    if not auth_result.success:
+        from fastapi import HTTPException, status
+
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Generate JWT token for authenticated user
+    token = auth_service.generate_token(
+        {"username": login_data.username, "roles": ["user"]}
+    )
+
     return LoginResponse(
-        access_token=placeholder_token,
-        token_type=bearer_type,
+        access_token=token,
+        token_type="bearer",
         expires_in=3600,
         user=UserAPI(
             username=login_data.username,
@@ -56,7 +77,7 @@ async def register(register_data: RegisterRequest) -> RegisterResponse:
     """Register endpoint.
 
     Args:
-        register_data: RegisterRequest
+        register_data: RegisterRequest,
 
     Returns:
         RegisterResponse
@@ -75,17 +96,17 @@ async def register(register_data: RegisterRequest) -> RegisterResponse:
 
 
 @auth_router.post("/logout")
-async def logout(_request: Request) -> APIResponse:
+async def logout(_request: Request) -> FlextAPIResponse[dict[str, str]]:
     """Logout endpoint.
 
     Args:
-        _request: Request
+        _request: Request,
 
     Returns:
-        APIResponse
+        FlextAPIResponse
 
     """
-    return APIResponse()
+    return FlextAPIResponse.success({"message": "Logged out successfully"})
 
 
 @auth_router.get("/profile")
@@ -93,7 +114,7 @@ async def get_profile(_request: Request) -> UserAPI:
     """Get profile endpoint.
 
     Args:
-        _request: Request
+        _request: Request,
 
     Returns:
         UserAPI

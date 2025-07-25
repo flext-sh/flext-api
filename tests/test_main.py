@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-from unittest.mock import MagicMock, patch
-
 import pytest
 from fastapi.testclient import TestClient
 
@@ -55,7 +52,7 @@ def test_system_status_endpoint(client: TestClient) -> None:
     response = client.get("/api/v1/system/status")
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "healthy"
+    assert data["system_status"] == "healthy"
     assert "uptime_seconds" in data
 
 
@@ -69,28 +66,21 @@ def test_list_pipelines_endpoint(client: TestClient) -> None:
 
 
 def test_list_plugins_endpoint(client: TestClient) -> None:
-    """Test list plugins endpoint with mocked plugin registry."""
-    # Create a complete mock module with PluginRegistry
-    mock_plugin_module = MagicMock()
-    mock_registry_instance = MagicMock()
+    """Test list plugins endpoint with storage data."""
+    response = client.get("/api/v1/plugins")
 
-    # Setup the async method properly
-    async def mock_list_plugins(*args: Any, **kwargs: Any) -> MagicMock:
-        return MagicMock(plugins=[], total_count=0, page=1, page_size=20, total_pages=0)
-
-    mock_registry_instance.list_plugins = mock_list_plugins
-    mock_plugin_module.PluginRegistry = lambda: mock_registry_instance
-
-    # Mock the import completely
-    with patch.dict("sys.modules", {"flext_plugin.registry": mock_plugin_module}):
-        response = client.get("/api/v1/plugins")
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "plugins" in data
-        assert "total_count" in data
-        assert data["total_count"] == 0
-        assert data["plugins"] == []
+    assert response.status_code == 200
+    data = response.json()
+    assert "plugins" in data
+    assert "total_count" in data
+    # Storage has 3 plugins: tap-oracle-oic, tap-ldap, target-ldap
+    assert data["total_count"] == 3
+    assert len(data["plugins"]) == 3
+    # Check first plugin
+    first_plugin = data["plugins"][0]
+    assert "name" in first_plugin
+    assert "plugin_type" in first_plugin
+    assert first_plugin["name"] in {"tap-oracle-oic", "tap-ldap", "target-ldap"}
 
 
 def test_get_plugin_endpoint(client: TestClient) -> None:

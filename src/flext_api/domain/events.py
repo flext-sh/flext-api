@@ -8,15 +8,38 @@ This module provides the domain events for the FLEXT API.
 
 from __future__ import annotations
 
-from flext_core import (
-    DomainEvent,
-    EntityId,
-    Field,
-    PipelineId,
-    PluginId,
-    PluginType,
-    UserId,
-)
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
+from uuid import uuid4
+
+# Import ONLY what actually exists in flext-core
+# FlextEntity already imported in the correct modules
+# EntityId type will be properly defined
+from pydantic import BaseModel, Field
+
+# PluginType import moved to TYPE_CHECKING block
+if TYPE_CHECKING:
+    from flext_api.domain.entities import PluginType
+
+
+class DomainEvent(BaseModel):
+    """Base domain event class."""
+
+    event_id: str = Field(default_factory=lambda: str(uuid4()))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    event_type: str = Field(...)
+    aggregate_id: str = Field(...)
+
+
+# Type aliases
+EntityId = str
+# Field imported from pydantic above
+PipelineId = str
+PluginId = str
+UserId = str
+
+
+# PluginType imported from flext-core above
 
 
 # Pipeline Events
@@ -127,7 +150,3 @@ class ApiAuthorizationFailedEvent(DomainEvent):
     user_id: UserId
     required_permission: str
     endpoint: str
-
-
-# NOTE: model_rebuild() calls removed to prevent import circular dependency issues
-# Pydantic will resolve forward references automatically when needed

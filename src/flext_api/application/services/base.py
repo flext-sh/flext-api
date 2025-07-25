@@ -1,7 +1,9 @@
-"""Base service classes to eliminate code duplication across FLEXT API services.
+"""Base service classes for FLEXT API application layer.
 
-This module provides foundational base classes that encapsulate common patterns
-used across all application services, following DRY principles and Clean Architecture.
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+REFACTORED: Uses DI for flext-auth integration - NO direct imports.
 """
 
 from __future__ import annotations
@@ -9,19 +11,14 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, TypeVar
 
-# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
-from flext_observability.logging import get_logger
+from flext_core import get_logger
 
 from flext_api.domain.ports import PipelineRepository, PluginRepository
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from flext_auth.application.services import (
-        AuthService as FlextAuthService,
-        SessionService,
-    )
-    from flext_core.domain.shared_types import ServiceResult
+    from flext_core import FlextResult
     from flext_observability.metrics import MetricsCollector
 
     from flext_api.infrastructure.repositories import (
@@ -62,7 +59,7 @@ class SingleRepositoryService[TRepository](BaseAPIService):
         """Initialize service with single repository dependency.
 
         Args:
-            repository: The repository instance for this service
+            repository: The repository instance for this service,
 
         """
         super().__init__()
@@ -72,7 +69,7 @@ class SingleRepositoryService[TRepository](BaseAPIService):
 class DualRepositoryService(BaseAPIService):
     """Base class for services that depend on two repositories.
 
-    Eliminates duplication in services like APIService that manage
+    Eliminates duplication in services like FlextAPIService that manage
     multiple related repositories (request_repo, response_repo).
     """
 
@@ -84,8 +81,8 @@ class DualRepositoryService(BaseAPIService):
         """Initialize service with dual repository dependencies.
 
         Args:
-            primary_repo: Primary repository (optional)
-            secondary_repo: Secondary repository (optional)
+            primary_repo: Primary repository (optional),
+            secondary_repo: Secondary repository (optional),
 
         """
         super().__init__()
@@ -97,27 +94,51 @@ class AuthenticationService(BaseAPIService):
     """Base class for authentication-related services.
 
     Eliminates duplication in AuthService initialization pattern.
+    Uses DI for flext-auth integration - NO direct imports.
     """
 
     def __init__(
         self,
-        auth_service: FlextAuthService,
-        session_service: SessionService,
+        auth_service: Any = None,  # Will be injected via DI
+        session_service: Any = None,  # Will be injected via DI
     ) -> None:
         """Initialize authentication service with auth dependencies.
 
         Args:
-            auth_service: Core authentication service
-            session_service: Session management service
+            auth_service: Core authentication service (injected via DI),
+            session_service: Session management service (injected via DI),
 
         """
         super().__init__()
         self.auth_service = auth_service
         self.session_service = session_service
 
+    def _get_auth_service(self) -> Any:
+        """Get auth service from DI container."""
+        try:
+            from flext_api.infrastructure.ports import FlextApiAuthPort
+
+            return FlextApiAuthPort.get_instance()
+        except Exception as e:
+            self.logger.warning(f"Failed to get auth service from DI: {e}")
+            return self.auth_service
+
+    def _get_session_service(self) -> Any:
+        """Get session service from DI container."""
+        try:
+            from flext_api.infrastructure.ports import FlextApiAuthPort
+
+            auth_port = FlextApiAuthPort.get_instance()
+            if auth_port and hasattr(auth_port, "session_service"):
+                return auth_port.session_service
+            return self.session_service
+        except Exception as e:
+            self.logger.warning(f"Failed to get session service from DI: {e}")
+            return self.session_service
+
 
 class MonitoringService(BaseAPIService):
-    """Base class for system monitoring services.
+    """Base class for monitoring-related services.
 
     Eliminates duplication in SystemService initialization pattern.
     """
@@ -130,8 +151,8 @@ class MonitoringService(BaseAPIService):
         """Initialize monitoring service with monitoring dependencies.
 
         Args:
-            health_monitor: Health monitoring component (optional)
-            metrics_collector: Metrics collection component (optional)
+            health_monitor: Health monitoring service,
+            metrics_collector: Metrics collection service,
 
         """
         super().__init__()
@@ -140,15 +161,15 @@ class MonitoringService(BaseAPIService):
 
 
 # ==============================================================================
-# INTERFACE SEGREGATION PRINCIPLE: Focused Service Interfaces
+# PIPELINE SERVICE INTERFACES
 # ==============================================================================
 
 
 class PipelineReader(ABC):
-    """Interface for pipeline read operations (ISP compliance)."""
+    """Abstract interface for pipeline reading operations."""
 
     @abstractmethod
-    async def get_pipeline(self, pipeline_id: UUID) -> ServiceResult[Any]:
+    async def get_pipeline(self, pipeline_id: UUID) -> FlextResult[Any]:
         """Get pipeline by ID."""
 
     @abstractmethod
@@ -159,12 +180,12 @@ class PipelineReader(ABC):
         status: str | None = None,
         limit: int = 20,
         offset: int = 0,
-    ) -> ServiceResult[Any]:
-        """List pipelines with filtering."""
+    ) -> FlextResult[Any]:
+        """List pipelines with optional filtering."""
 
 
 class PipelineWriter(ABC):
-    """Interface for pipeline write operations (ISP compliance)."""
+    """Abstract interface for pipeline writing operations."""
 
     @abstractmethod
     async def create_pipeline(
@@ -174,8 +195,8 @@ class PipelineWriter(ABC):
         config: dict[str, Any] | None = None,
         owner_id: UUID | None = None,
         project_id: UUID | None = None,
-    ) -> ServiceResult[Any]:
-        """Create a new pipeline."""
+    ) -> FlextResult[Any]:
+        """Create new pipeline."""
 
     @abstractmethod
     async def update_pipeline(
@@ -185,47 +206,46 @@ class PipelineWriter(ABC):
         description: str | None = None,
         config: dict[str, Any] | None = None,
         status: str | None = None,
-    ) -> ServiceResult[Any]:
+    ) -> FlextResult[Any]:
         """Update existing pipeline."""
 
     @abstractmethod
-    async def delete_pipeline(self, pipeline_id: UUID) -> ServiceResult[Any]:
+    async def delete_pipeline(self, pipeline_id: UUID) -> FlextResult[Any]:
         """Delete pipeline."""
 
 
 class PipelineExecutor(ABC):
-    """Interface for pipeline execution operations (ISP compliance)."""
+    """Abstract interface for pipeline execution operations."""
 
     @abstractmethod
-    async def execute_pipeline(self, pipeline_id: UUID) -> ServiceResult[Any]:
+    async def execute_pipeline(self, pipeline_id: UUID) -> FlextResult[Any]:
         """Execute pipeline."""
 
 
 class PipelineValidator(ABC):
-    """Interface for pipeline validation operations (ISP compliance)."""
+    """Abstract interface for pipeline validation operations."""
 
     @abstractmethod
     async def validate_pipeline_config(
-        self,
-        config: dict[str, Any] | None,
-    ) -> ServiceResult[Any]:
+        self, config: dict[str, Any] | None
+    ) -> FlextResult[Any]:
         """Validate pipeline configuration."""
 
     @abstractmethod
     async def validate_pipeline_name(
-        self,
-        name: str,
-        owner_id: UUID | None,
-    ) -> ServiceResult[Any]:
-        """Validate pipeline name uniqueness."""
+        self, name: str, owner_id: UUID | None
+    ) -> FlextResult[Any]:
+        """Validate pipeline name."""
 
 
-# Convenience type aliases for specific service patterns
+# ==============================================================================
+# CONCRETE SERVICE IMPLEMENTATIONS
+# ==============================================================================
 
 
 class PipelineBaseService(SingleRepositoryService[PipelineRepository]):
-    """Specialized base class for pipeline-related services."""
+    """Base class for pipeline services."""
 
 
 class PluginBaseService(SingleRepositoryService[PluginRepository]):
-    """Specialized base class for plugin-related services."""
+    """Base class for plugin services."""

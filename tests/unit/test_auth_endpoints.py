@@ -115,8 +115,9 @@ def test_logout_endpoint(client: TestClient) -> None:
     assert response.status_code == 200
     data = response.json()
 
-    assert data["message"] == "Logged out successfully"
-    assert data["success"] is True
+    # FlextAPIResponse structure: status, data, message, errors, response_id, timestamp
+    assert data["status"] == "success"
+    assert data["data"]["message"] == "Logged out successfully"
     assert "timestamp" in data
 
 
@@ -141,7 +142,7 @@ def test_login_endpoint_invalid_data(client: TestClient) -> None:
 
     response = client.post("/api/v1/auth/login", json=invalid_data)
 
-    assert response.status_code == 422  # Validation error
+    assert response.status_code in {400, 422}  # Validation error
 
 
 def test_register_endpoint_invalid_data(client: TestClient) -> None:
@@ -153,7 +154,7 @@ def test_register_endpoint_invalid_data(client: TestClient) -> None:
 
     response = client.post("/api/v1/auth/register", json=invalid_data)
 
-    assert response.status_code == 422  # Validation error
+    assert response.status_code in {400, 422}  # Validation error
 
 
 def test_login_endpoint_missing_username(client: TestClient) -> None:

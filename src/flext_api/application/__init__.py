@@ -11,8 +11,36 @@ Uses flext-core patterns for clean architecture implementation.
 
 from __future__ import annotations
 
-from flext_api.application.services.api_service import APIService
-from flext_api.application.services.auth_service import AuthService
+# ==============================================================================
+# COMMAND HANDLERS - Request processing and command handling
+# ==============================================================================
+from flext_api.application.handlers import (
+    FlextApiAuthenticateCommand,
+    FlextApiHandler,
+    FlextApiResponseHandler,
+    FlextAuthenticationHandler,
+    FlextCreatePipelineCommand,
+    FlextCreatePipelineHandler,
+    FlextCreatePluginCommand,
+    FlextDeletePipelineCommand,
+    FlextDeletePluginCommand,
+    FlextGetPipelineCommand,
+    FlextGetPluginCommand,
+    FlextGetSystemHealthCommand,
+    FlextGetSystemHealthHandler,
+    FlextGetSystemInfoCommand,
+    FlextGetSystemInfoHandler,
+    FlextListPipelinesCommand,
+    FlextListPluginsCommand,
+    FlextUpdatePipelineCommand,
+    FlextUpdatePluginCommand,
+)
+
+# ==============================================================================
+# APPLICATION SERVICES - Core business logic orchestration
+# ==============================================================================
+from flext_api.application.services.api_service import FlextAPIService
+from flext_api.application.services.auth_service import FlextAuthService
 from flext_api.application.services.base import (
     AuthenticationService,
     BaseAPIService,
@@ -26,19 +54,39 @@ from flext_api.application.services.pipeline_service import PipelineService
 from flext_api.application.services.plugin_service import PluginService
 from flext_api.application.services.system_service import SystemService
 
+# ==============================================================================
+# PUBLIC APPLICATION API - Organized by semantic category
+# ==============================================================================
 __all__ = [
-    # Concrete services
-    "APIService",
-    "AuthService",
-    "AuthenticationService",
-    # Base classes
-    "BaseAPIService",
-    "DualRepositoryService",
-    "MonitoringService",
-    "PipelineBaseService",
-    "PipelineService",
-    "PluginBaseService",
-    "PluginService",
-    "SingleRepositoryService",
-    "SystemService",
+    "AuthenticationService"
+    "BaseAPIService"
+    "DualRepositoryService"
+    "FlextAPIService"
+    "FlextApiAuthenticateCommand"
+    "FlextApiHandler"
+    "FlextApiResponseHandler"
+    "FlextAuthService"
+    "FlextAuthenticationHandler"
+    "FlextCreatePipelineCommand"
+    "FlextCreatePipelineHandler"
+    "FlextCreatePluginCommand"
+    "FlextDeletePipelineCommand"
+    "FlextDeletePluginCommand"
+    "FlextGetPipelineCommand"
+    "FlextGetPluginCommand"
+    "FlextGetSystemHealthCommand"
+    "FlextGetSystemHealthHandler"
+    "FlextGetSystemInfoCommand"
+    "FlextGetSystemInfoHandler"
+    "FlextListPipelinesCommand"
+    "FlextListPluginsCommand"
+    "FlextUpdatePipelineCommand"
+    "FlextUpdatePluginCommand"
+    "MonitoringService"
+    "PipelineBaseService"
+    "PipelineService"
+    "PluginBaseService"
+    "PluginService"
+    "SingleRepositoryService"
+    "SystemService"
 ]

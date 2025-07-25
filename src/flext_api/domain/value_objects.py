@@ -1,16 +1,19 @@
 """Value objects for FLEXT-API.
 
 REFACTORED:
-Uses flext-core DomainValueObject - NO duplication.
+Uses flext-core FlextValueObject - NO duplication.
 """
 
 from __future__ import annotations
 
-from flext_core import DomainValueObject, Field
-from pydantic import field_validator
+# Import ONLY what actually exists in flext-core
+from flext_core import FlextValidationError, FlextValueObject
+
+# Field comes from pydantic, NOT flext-core
+from pydantic import Field, field_validator
 
 
-class ApiEndpoint(DomainValueObject):
+class ApiEndpoint(FlextValueObject):
     """API endpoint value object with validation."""
 
     path: str = Field(
@@ -30,7 +33,7 @@ class ApiEndpoint(DomainValueObject):
         """Validate and normalize path format.
 
         Args:
-            v: Path value to validate.
+            v: Path value to validate.,
 
         Returns:
             Normalized path with leading slash.
@@ -56,7 +59,7 @@ class ApiEndpoint(DomainValueObject):
         """Ensure HTTP method is uppercase.
 
         Args:
-            v: HTTP method to validate.
+            v: HTTP method to validate.,
 
         Returns:
             Uppercase HTTP method.
@@ -84,8 +87,18 @@ class ApiEndpoint(DomainValueObject):
         """
         return self.method in {"GET", "HEAD", "PUT", "DELETE", "OPTIONS"}
 
+    def validate_domain_rules(self) -> None:
+        """Validate ApiEndpoint domain rules."""
+        if not self.path or not self.path.strip():
+            msg = "Endpoint path cannot be empty"
+            raise FlextValidationError(msg)
 
-class RateLimit(DomainValueObject):
+        if not self.path.startswith("/"):
+            msg = "Endpoint path must start with '/'"
+            raise FlextValidationError(msg)
+
+
+class RateLimit(FlextValueObject):
     """Rate limit configuration value object."""
 
     requests_per_minute: int = Field(
@@ -131,8 +144,22 @@ class RateLimit(DomainValueObject):
         """
         return 60
 
+    def validate_domain_rules(self) -> None:
+        """Validate RateLimit domain rules."""
+        if self.requests_per_minute <= 0:
+            msg = "Requests per minute must be positive"
+            raise FlextValidationError(msg)
 
-class ApiVersion(DomainValueObject):
+        if self.burst_size <= 0:
+            msg = "Burst size must be positive"
+            raise FlextValidationError(msg)
+
+        if self.burst_size > self.requests_per_minute:
+            msg = "Burst size cannot exceed requests per minute"
+            raise FlextValidationError(msg)
+
+
+class ApiVersion(FlextValueObject):
     """API version value object with validation."""
 
     major: int = Field(default=1, ge=0, description="Major version")
@@ -165,25 +192,25 @@ class ApiVersion(DomainValueObject):
         """Validate version number components.
 
         Args:
-            v: Version number to validate.
+            v: Version number to validate.,
 
         Returns:
             Validated version number.
 
         Raises:
-            ValueError: If version number is negative.
+            ValueError: If version number is negative.,
 
         """
         if v < 0:
             msg = "Version number cannot be negative"
-            raise ValueError(msg)
+            raise FlextValidationError(msg)
         return v
 
     def is_compatible_with(self, other: ApiVersion) -> bool:
         """Check if this version is compatible with another.
 
         Args:
-            other: Version to check compatibility with.
+            other: Version to check compatibility with.,
 
         Returns:
             True if major versions match.
@@ -195,7 +222,7 @@ class ApiVersion(DomainValueObject):
         """Check if this version is newer than another.
 
         Args:
-            other: Version to compare with.
+            other: Version to compare with.,
 
         Returns:
             True if this version is newer.
@@ -211,8 +238,14 @@ class ApiVersion(DomainValueObject):
             )
         )
 
+    def validate_domain_rules(self) -> None:
+        """Validate ApiVersion domain rules."""
+        if self.major < 0 or self.minor < 0 or self.patch < 0:
+            msg = "Version components cannot be negative"
+            raise FlextValidationError(msg)
 
-class CorsOrigin(DomainValueObject):
+
+class CorsOrigin(FlextValueObject):
     """CORS origin value object with validation."""
 
     url: str = Field(..., description="CORS origin URL")
@@ -223,13 +256,13 @@ class CorsOrigin(DomainValueObject):
         """Validate CORS origin format.
 
         Args:
-            v: Origin value to validate.
+            v: Origin value to validate.,
 
         Returns:
             Validated origin.
 
         Raises:
-            ValueError: If origin format is invalid.
+            ValueError: If origin format is invalid.,
 
         """
         if v == "*":
@@ -238,13 +271,18 @@ class CorsOrigin(DomainValueObject):
         # Basic URL validation
         if not (v.startswith(("http://", "https://"))):
             msg = "Origin must start with http:// or https://"
-            raise ValueError(msg)
+            raise FlextValidationError(msg)
 
         # Remove trailing slash
         return v.rstrip("/")
 
+    def validate_domain_rules(self) -> None:
+        """Validate CorsOrigin domain rules."""
+        # Basic validation - can be enhanced per specific needs
+        return
 
-class ApiKey(DomainValueObject):
+
+class ApiKey(FlextValueObject):
     """API key value object with validation."""
 
     key: str = Field(..., min_length=16, description="API key value")
@@ -255,24 +293,24 @@ class ApiKey(DomainValueObject):
         """Validate API key format and security.
 
         Args:
-            v: API key to validate.
+            v: API key to validate.,
 
         Returns:
             Validated API key.
 
         Raises:
-            ValueError: If key format is invalid or insecure.
+            ValueError: If key format is invalid or insecure.,
 
         """
         # Minimum length validation
         if len(v) < 16:
             msg = "API key must be at least 16 characters long"
-            raise ValueError(msg)
+            raise FlextValidationError(msg)
 
         # Must be alphanumeric with optional hyphens
         if not v.replace("-", "").isalnum():
             msg = "API key must contain only alphanumeric characters and hyphens"
-            raise ValueError(msg)
+            raise FlextValidationError(msg)
 
         return v
 
@@ -288,8 +326,13 @@ class ApiKey(DomainValueObject):
             return "***"
         return f"{self.key[:4]}...{self.key[-4:]}"
 
+    def validate_domain_rules(self) -> None:
+        """Validate ApiKey domain rules."""
+        # Basic validation - can be enhanced per specific needs
+        return
 
-class RequestTimeout(DomainValueObject):
+
+class RequestTimeout(FlextValueObject):
     """Request timeout configuration value object."""
 
     value: int = Field(
@@ -305,22 +348,27 @@ class RequestTimeout(DomainValueObject):
         """Validate timeout is within acceptable range.
 
         Args:
-            v: Timeout value to validate.
+            v: Timeout value to validate.,
 
         Returns:
             Validated timeout value.
 
         Raises:
-            ValueError: If timeout is out of acceptable range.
+            ValueError: If timeout is out of acceptable range.,
 
         """
         if not 1 <= v <= 300:
             msg = "Timeout must be between 1 and 300 seconds"
-            raise ValueError(msg)
+            raise FlextValidationError(msg)
         return v
 
+    def validate_domain_rules(self) -> None:
+        """Validate RequestTimeout domain rules."""
+        # Basic validation - can be enhanced per specific needs
+        return
 
-class PipelineId(DomainValueObject):
+
+class PipelineId(FlextValueObject):
     """Pipeline identifier value object."""
 
     value: str = Field(
@@ -337,7 +385,7 @@ class PipelineId(DomainValueObject):
         """Validate pipeline ID format.
 
         Args:
-            v: Pipeline ID to validate.
+            v: Pipeline ID to validate.,
 
         Returns:
             Validated pipeline ID.
@@ -345,8 +393,13 @@ class PipelineId(DomainValueObject):
         """
         return v.strip()
 
+    def validate_domain_rules(self) -> None:
+        """Validate PipelineId domain rules."""
+        # Basic validation - can be enhanced per specific needs
+        return
 
-class PluginId(DomainValueObject):
+
+class PluginId(FlextValueObject):
     """Plugin identifier value object."""
 
     value: str = Field(
@@ -363,7 +416,7 @@ class PluginId(DomainValueObject):
         """Validate plugin ID format.
 
         Args:
-            v: Plugin ID to validate.
+            v: Plugin ID to validate.,
 
         Returns:
             Validated plugin ID.
@@ -371,8 +424,13 @@ class PluginId(DomainValueObject):
         """
         return v.strip()
 
+    def validate_domain_rules(self) -> None:
+        """Validate PluginId domain rules."""
+        # Basic validation - can be enhanced per specific needs
+        return
 
-class RequestId(DomainValueObject):
+
+class RequestId(FlextValueObject):
     """Request identifier value object."""
 
     value: str = Field(
@@ -389,10 +447,15 @@ class RequestId(DomainValueObject):
         """Validate request ID format.
 
         Args:
-            v: Request ID to validate.
+            v: Request ID to validate.,
 
         Returns:
             Validated request ID.
 
         """
         return v.strip()
+
+    def validate_domain_rules(self) -> None:
+        """Validate RequestId domain rules."""
+        # Basic validation - can be enhanced per specific needs
+        return

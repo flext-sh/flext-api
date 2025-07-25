@@ -1,410 +1,321 @@
-"""Pipeline repository implementations for FLEXT API.
-
-ZERO TOLERANCE: Real implementations using flext-core patterns.
-NO MOCKS, NO FAKES - Real repository with ServiceResult patterns.
-"""
+"""Pipeline repository using flext-core patterns - NO LEGACY CODE."""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
+from uuid import uuid4
 
-# Import runtime dependencies
-from flext_core.domain.shared_types import ServiceResult
-from flext_observability.logging import get_logger
+from flext_core import FlextResult, get_logger
+
+if TYPE_CHECKING:
+    import builtins
+
+    from flext_api.domain.entities import FlextAPIPipeline, PipelineExecution
 
 from flext_api.domain.ports import PipelineRepository
 
-if TYPE_CHECKING:
-    from uuid import UUID
-
-    from flext_core import PipelineExecution
-
-    from flext_api.domain.entities import APIPipeline
-
+# Create logger using flext-core get_logger function
 logger = get_logger(__name__)
 
 
-class InMemoryPipelineRepository(PipelineRepository):
-    """In-memory pipeline repository for development and testing.
-
-    ZERO TOLERANCE: Real implementation using flext-core ServiceResult patterns.
-    NO MOCKS - thread-safe in-memory storage with proper error handling.
-    """
+class FlextInMemoryPipelineRepository(PipelineRepository):
+    """In-memory pipeline repository using flext-core patterns - NO FALLBACKS."""
 
     def __init__(self) -> None:
         """Initialize repository with thread-safe storage."""
-        self._pipelines: dict[UUID, APIPipeline] = {}
+        self._pipelines: dict[str, FlextAPIPipeline] = {}
         self._executions: dict[str, PipelineExecution] = {}
-        logger.info("InMemoryPipelineRepository initialized")
+        logger.info("FlextInMemoryPipelineRepository initialized")
 
-    async def create(self, pipeline: APIPipeline) -> ServiceResult[Any]:
-        """Create a new pipeline.
-
-        Args:
-            pipeline: APIPipeline entity to create.
-
-        Returns:
-            ServiceResult containing created pipeline or error.
-
-        """
+    async def create(self, pipeline: FlextAPIPipeline) -> FlextResult[FlextAPIPipeline]:
+        """Create new pipeline - STRICT VALIDATION."""
         try:
+            if not pipeline.id:
+                return FlextResult.fail("Pipeline ID is required")
+
             if pipeline.id in self._pipelines:
-                return ServiceResult.fail(f"Pipeline {pipeline.id} already exists",
-                )
+                return FlextResult.fail(f"Pipeline {pipeline.id} already exists")
 
-            # Store the pipeline
+            # Validate required fields
+            if not pipeline.name:
+                return FlextResult.fail("Pipeline name is required")
+
+            if not pipeline.config:
+                return FlextResult.fail("Pipeline configuration is required")
+
             self._pipelines[pipeline.id] = pipeline
-
-            logger.info("Created pipeline: %s", pipeline.id)
-            return ServiceResult.ok(pipeline)
+            logger.info(f"Created pipeline: {pipeline.id}")
+            return FlextResult.ok(pipeline)
 
         except Exception as e:
             logger.exception("Failed to create pipeline")
-            return ServiceResult.fail(f"Failed to create pipeline: {e}")
+            return FlextResult.fail(f"Pipeline creation failed: {e}")
 
-    async def get(self, pipeline_id: UUID) -> ServiceResult[Any]:
-        """Get pipeline by ID.
-
-        Args:
-            pipeline_id: Unique pipeline identifier.
-
-        Returns:
-            ServiceResult containing pipeline or error.
-
-        """
+    async def get(self, pipeline_id: str) -> FlextResult[FlextAPIPipeline | None]:
+        """Get pipeline by ID - STRICT LOOKUP."""
         try:
-            if pipeline_id not in self._pipelines:
-                return ServiceResult.fail(f"Pipeline {pipeline_id} not found",
-                )
+            if not pipeline_id:
+                return FlextResult.fail("Pipeline ID is required")
 
-            pipeline = self._pipelines[pipeline_id]
-            logger.debug("Retrieved pipeline: %s", pipeline_id)
-            return ServiceResult.ok(pipeline)
+            pipeline = self._pipelines.get(pipeline_id)
+            if pipeline:
+                logger.debug(f"Retrieved pipeline: {pipeline_id}")
+                return FlextResult.ok(pipeline)
+            logger.debug(f"Pipeline not found: {pipeline_id}")
+            return FlextResult.ok(None)
 
         except Exception as e:
-            logger.exception("Failed to get pipeline")
-            return ServiceResult.fail(f"Failed to get pipeline: {e}")
+            logger.exception(f"Failed to get pipeline: {pipeline_id}")
+            return FlextResult.fail(f"Pipeline retrieval failed: {e}")
 
-    async def update(self, pipeline: APIPipeline) -> ServiceResult[Any]:
-        """Update existing pipeline.
-
-        Args:
-            pipeline: APIPipeline entity with updated data.
-
-        Returns:
-            ServiceResult containing updated pipeline or error.
-
-        """
+    async def update(self, pipeline: FlextAPIPipeline) -> FlextResult[FlextAPIPipeline]:
+        """Update existing pipeline - STRICT VALIDATION."""
         try:
+            if not pipeline.id:
+                return FlextResult.fail("Pipeline ID is required")
+
             if pipeline.id not in self._pipelines:
-                return ServiceResult.fail(f"Pipeline {pipeline.id} not found",
-                )
+                return FlextResult.fail(f"Pipeline {pipeline.id} not found")
+
+            # Validate required fields
+            if not pipeline.name:
+                return FlextResult.fail("Pipeline name is required")
+
+            if not pipeline.config:
+                return FlextResult.fail("Pipeline configuration is required")
 
             # Update timestamp
             pipeline.updated_at = datetime.now(UTC)
-
-            # Store updated pipeline
             self._pipelines[pipeline.id] = pipeline
 
-            logger.info("Updated pipeline: %s", pipeline.id)
-            return ServiceResult.ok(pipeline)
+            logger.info(f"Updated pipeline: {pipeline.id}")
+            return FlextResult.ok(pipeline)
 
         except Exception as e:
-            logger.exception("Failed to update pipeline")
-            return ServiceResult.fail(f"Failed to update pipeline: {e}")
+            logger.exception(f"Failed to update pipeline: {pipeline.id}")
+            return FlextResult.fail(f"Pipeline update failed: {e}")
 
-    async def delete(self, pipeline_id: UUID) -> ServiceResult[Any]:
-        """Delete pipeline by ID.
-
-        Args:
-            pipeline_id: Unique pipeline identifier.
-
-        Returns:
-            ServiceResult indicating success or error.
-
-        """
+    async def delete(self, pipeline_id: str) -> FlextResult[bool]:
+        """Delete pipeline - STRICT DELETION."""
         try:
+            if not pipeline_id:
+                return FlextResult.fail("Pipeline ID is required")
+
             if pipeline_id not in self._pipelines:
-                return ServiceResult.fail(f"Pipeline {pipeline_id} not found",
-                )
+                return FlextResult.fail(f"Pipeline {pipeline_id} not found")
 
-            # Remove pipeline
-            del self._pipelines[pipeline_id]
-
-            # Clean up related executions
-            executions_to_remove = [
+            # Delete associated executions first
+            executions_to_delete = [
                 exec_id
                 for exec_id, execution in self._executions.items()
                 if execution.pipeline_id == pipeline_id
             ]
-            for exec_id in executions_to_remove:
+
+            for exec_id in executions_to_delete:
                 del self._executions[exec_id]
 
-            logger.info("Deleted pipeline: %s", pipeline_id)
-            return ServiceResult.ok(True)
+            del self._pipelines[pipeline_id]
+            logger.info(
+                f"Deleted pipeline: {pipeline_id} and {len(executions_to_delete)} executions"
+            )
+            return FlextResult.ok(True)
 
         except Exception as e:
-            logger.exception("Failed to delete pipeline")
-            return ServiceResult.fail(f"Failed to delete pipeline: {e}")
+            logger.exception(f"Failed to delete pipeline: {pipeline_id}")
+            return FlextResult.fail(f"Pipeline deletion failed: {e}")
 
     async def list(
         self,
-        limit: int = 20,
+        limit: int = 100,
         offset: int = 0,
-        owner_id: UUID | None = None,
-        project_id: UUID | None = None,
+        owner_id: str | None = None,
+        project_id: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[Any]:
-        """List pipelines with optional filters and pagination.
-
-        Args:
-            owner_id: Filter by pipeline owner ID (not used - for interface compatibility).
-            project_id: Filter by project ID (not used - for interface compatibility).
-            status: Filter by pipeline status.
-            limit: Maximum number of pipelines to return.
-            offset: Number of pipelines to skip.
-
-        Returns:
-            ServiceResult containing list of pipelines or error.
-
-        """
+    ) -> FlextResult[list[FlextAPIPipeline]]:
+        """List pipelines with filters and pagination - EFFICIENT RETRIEVAL."""
         try:
+            if limit <= 0:
+                return FlextResult.fail("Limit must be positive")
+
+            if offset < 0:
+                return FlextResult.fail("Offset must be non-negative")
+
             pipelines = list(self._pipelines.values())
 
             # Apply filters
             if status:
-                # pipeline_status is already a string (enum value), so compare directly
                 pipelines = [p for p in pipelines if p.pipeline_status == status]
 
             if owner_id:
-                pipelines = [p for p in pipelines if p.owner_id == owner_id]
+                pipelines = [
+                    p for p in pipelines if getattr(p, "owner_id", None) == owner_id
+                ]
 
             if project_id:
-                pipelines = [p for p in pipelines if p.project_id == project_id]
+                pipelines = [
+                    p for p in pipelines if getattr(p, "project_id", None) == project_id
+                ]
 
             # Sort by creation date (newest first)
             pipelines.sort(key=lambda p: p.created_at, reverse=True)
 
             # Apply pagination
-            total_count = len(pipelines)
             paginated_pipelines = pipelines[offset : offset + limit]
 
             logger.debug(
-                "Listed %d pipelines (total: %d, offset: %d, limit: %d)",
-                len(paginated_pipelines),
-                total_count,
-                offset,
-                limit,
+                f"Listed {len(paginated_pipelines)} pipelines (total: {len(pipelines)})"
             )
-
-            return ServiceResult.ok(paginated_pipelines)
+            return FlextResult.ok(paginated_pipelines)
 
         except Exception as e:
             logger.exception("Failed to list pipelines")
-            return ServiceResult.fail(f"Failed to list pipelines: {e}")
+            return FlextResult.fail(f"Pipeline listing failed: {e}")
 
     async def count(
         self,
-        owner_id: UUID | None = None,
-        project_id: UUID | None = None,
+        owner_id: str | None = None,
+        project_id: str | None = None,
         status: str | None = None,
-    ) -> ServiceResult[Any]:
-        """Count pipelines matching criteria.
-
-        Args:
-            owner_id: Filter by pipeline owner ID (not used - for interface compatibility).
-            project_id: Filter by project ID (not used - for interface compatibility).
-            status: Filter by pipeline status.
-
-        Returns:
-            ServiceResult containing count of matching pipelines or error.
-
-        """
+    ) -> FlextResult[int]:
+        """Count pipelines matching criteria - EFFICIENT COUNT."""
         try:
-            # Use list with large limit to get all matching
+            # Get filtered list to count
             result = await self.list(
+                limit=1000000,  # Large limit to get all
+                offset=0,
                 owner_id=owner_id,
                 project_id=project_id,
                 status=status,
-                limit=1000000,  # Large limit to get all
-                offset=0,
             )
 
             if not result.success:
-                return ServiceResult.fail(result.error or "Failed to count pipelines",
-                )
+                return FlextResult.fail(result.error or "Count failed")
 
             count = len(result.data or [])
-            logger.debug("Counted %d pipelines", count)
-            return ServiceResult.ok(count)
+            logger.debug(f"Pipeline count: {count}")
+            return FlextResult.ok(count)
 
         except Exception as e:
             logger.exception("Failed to count pipelines")
-            return ServiceResult.fail(f"Failed to count pipelines: {e}")
+            return FlextResult.fail(f"Pipeline count failed: {e}")
 
-    async def save(self, pipeline: APIPipeline) -> ServiceResult[Any]:
-        """Save pipeline (create or update based on existence).
-
-        Args:
-            pipeline: APIPipeline entity to save.
-
-        Returns:
-            ServiceResult containing saved pipeline or error.
-
-        """
+    async def save(self, pipeline: FlextAPIPipeline) -> FlextResult[FlextAPIPipeline]:
+        """Save pipeline (create or update) - SMART PERSISTENCE."""
         try:
-            # Check if pipeline exists
             if pipeline.id in self._pipelines:
-                # Update existing pipeline
                 return await self.update(pipeline)
-            # Create new pipeline
             return await self.create(pipeline)
 
         except Exception as e:
             logger.exception("Failed to save pipeline")
-            return ServiceResult.fail(f"Failed to save pipeline: {e}")
+            return FlextResult.fail(f"Pipeline save failed: {e}")
 
+    # Execution methods
     async def create_execution(
-        self,
-        execution: PipelineExecution,
-    ) -> ServiceResult[Any]:
-        """Create a new pipeline execution.
-
-        Args:
-            execution: Pipeline execution to create.
-
-        Returns:
-            ServiceResult containing created execution or error.
-
-        """
+        self, execution: PipelineExecution
+    ) -> FlextResult[PipelineExecution]:
+        """Create pipeline execution - STRICT VALIDATION."""
         try:
-            if execution.id in self._executions:
-                return ServiceResult.fail(f"Execution {execution.id} already exists",
-                )
+            if not execution.id:
+                execution.id = str(uuid4())
+
+            if not execution.pipeline_id:
+                return FlextResult.fail("Pipeline ID is required for execution")
 
             # Verify pipeline exists
             if execution.pipeline_id not in self._pipelines:
-                return ServiceResult.fail(f"Pipeline {execution.pipeline_id} not found",
-                )
+                return FlextResult.fail(f"Pipeline {execution.pipeline_id} not found")
 
-            # Store execution
-            self._executions[str(execution.id)] = execution
+            if execution.id in self._executions:
+                return FlextResult.fail(f"Execution {execution.id} already exists")
 
+            self._executions[execution.id] = execution
             logger.info(
-                "Created execution: %s for pipeline: %s",
-                execution.id,
-                execution.pipeline_id,
+                f"Created execution: {execution.id} for pipeline: {execution.pipeline_id}"
             )
-            return ServiceResult.ok(execution)
+            return FlextResult.ok(execution)
 
         except Exception as e:
             logger.exception("Failed to create execution")
-            return ServiceResult.fail(f"Failed to create execution: {e}",
-            )
+            return FlextResult.fail(f"Execution creation failed: {e}")
 
     async def get_execution(
-        self,
-        execution_id: str,
-    ) -> ServiceResult[Any]:
-        """Get execution by ID.
-
-        Args:
-            execution_id: Unique execution identifier.
-
-        Returns:
-            ServiceResult containing execution or error.
-
-        """
+        self, execution_id: str
+    ) -> FlextResult[PipelineExecution | None]:
+        """Get execution by ID - STRICT LOOKUP."""
         try:
-            if execution_id not in self._executions:
-                return ServiceResult.fail(f"Execution {execution_id} not found",
-                )
+            if not execution_id:
+                return FlextResult.fail("Execution ID is required")
 
-            execution = self._executions[execution_id]
-            logger.debug("Retrieved execution: %s", execution_id)
-            return ServiceResult.ok(execution)
+            execution = self._executions.get(execution_id)
+            if execution:
+                logger.debug(f"Retrieved execution: {execution_id}")
+                return FlextResult.ok(execution)
+            logger.debug(f"Execution not found: {execution_id}")
+            return FlextResult.ok(None)
 
         except Exception as e:
-            logger.exception("Failed to get execution")
-            return ServiceResult.fail(f"Failed to get execution: {e}")
+            logger.exception(f"Failed to get execution: {execution_id}")
+            return FlextResult.fail(f"Execution retrieval failed: {e}")
 
     async def update_execution(
-        self,
-        execution: PipelineExecution,
-    ) -> ServiceResult[Any]:
-        """Update existing execution.
-
-        Args:
-            execution: Execution with updated data.
-
-        Returns:
-            ServiceResult containing updated execution or error.
-
-        """
+        self, execution: PipelineExecution
+    ) -> FlextResult[PipelineExecution]:
+        """Update execution status - STRICT VALIDATION."""
         try:
+            if not execution.id:
+                return FlextResult.fail("Execution ID is required")
+
             if execution.id not in self._executions:
-                return ServiceResult.fail(f"Execution {execution.id} not found",
-                )
+                return FlextResult.fail(f"Execution {execution.id} not found")
 
-            # Store updated execution
-            self._executions[str(execution.id)] = execution
-
-            logger.info("Updated execution: %s", execution.id)
-            return ServiceResult.ok(execution)
+            self._executions[execution.id] = execution
+            logger.info(f"Updated execution: {execution.id} status: {execution.status}")
+            return FlextResult.ok(execution)
 
         except Exception as e:
-            logger.exception("Failed to update execution")
-            return ServiceResult.fail(f"Failed to update execution: {e}",
-            )
+            logger.exception(f"Failed to update execution: {execution.id}")
+            return FlextResult.fail(f"Execution update failed: {e}")
 
     async def list_executions(
         self,
-        pipeline_id: UUID | None = None,
+        pipeline_id: str | None = None,
         status: str | None = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> ServiceResult[Any]:
-        """List executions with optional filters and pagination.
-
-        Args:
-            pipeline_id: Filter by pipeline ID.
-            status: Filter by execution status.
-            limit: Maximum number of executions to return.
-            offset: Number of executions to skip.
-
-        Returns:
-            ServiceResult containing list of executions or error.
-
-        """
+    ) -> FlextResult[builtins.list[PipelineExecution]]:
+        """List executions with filters and pagination - EFFICIENT RETRIEVAL."""
         try:
+            if limit <= 0:
+                return FlextResult.fail("Limit must be positive")
+
+            if offset < 0:
+                return FlextResult.fail("Offset must be non-negative")
+
             executions = list(self._executions.values())
 
             # Apply filters
             if pipeline_id:
                 executions = [e for e in executions if e.pipeline_id == pipeline_id]
-            if status:
-                executions = [
-                    e for e in executions if e.execution_status.value == status
-                ]
 
-            # Sort by start time (newest first)
-            executions.sort(key=lambda e: e.started_at or e.created_at, reverse=True)
+            if status:
+                executions = [e for e in executions if e.status == status]
+
+            # Sort by creation time (newest first)
+            executions.sort(key=lambda e: e.created_at, reverse=True)
 
             # Apply pagination
-            total_count = len(executions)
             paginated_executions = executions[offset : offset + limit]
 
             logger.debug(
-                "Listed %d executions (total: %d, offset: %d, limit: %d)",
-                len(paginated_executions),
-                total_count,
-                offset,
-                limit,
+                f"Listed {len(paginated_executions)} executions (total: {len(executions)})"
             )
-
-            return ServiceResult.ok(paginated_executions)
+            return FlextResult.ok(paginated_executions)
 
         except Exception as e:
             logger.exception("Failed to list executions")
-            return ServiceResult.fail(f"Failed to list executions: {e}")
+            return FlextResult.fail(f"Execution listing failed: {e}")
+
+
+# All code should use FlextInMemoryPipelineRepository directly
