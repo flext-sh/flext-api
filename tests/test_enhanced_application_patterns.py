@@ -348,10 +348,22 @@ class TestEnhancedClient:
         response = await client.app_request("/headers")
 
         assert response["success"] is True
-        assert "X-User-ID" in response["data"]["headers"]
-        assert "X-Correlation-ID" in response["data"]["headers"]
-        assert response["data"]["headers"]["X-User-ID"] == "12345"
-        assert response["data"]["headers"]["X-Correlation-ID"] == "abc-def-123"
+
+        # HTTP headers are case-insensitive, check for both possible cases
+        headers = response["data"]["headers"]
+        user_id_header = None
+        correlation_id_header = None
+
+        for header_name, header_value in headers.items():
+            if header_name.lower() == "x-user-id":
+                user_id_header = header_value
+            elif header_name.lower() == "x-correlation-id":
+                correlation_id_header = header_value
+
+        assert user_id_header is not None, "X-User-ID header not found in response"
+        assert correlation_id_header is not None, "X-Correlation-ID header not found in response"
+        assert user_id_header == "12345"
+        assert correlation_id_header == "abc-def-123"
 
     @pytest.mark.asyncio
     async def test_enhanced_client_with_transformation(self) -> None:

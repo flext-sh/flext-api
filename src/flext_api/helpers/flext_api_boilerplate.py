@@ -201,7 +201,7 @@ def flext_api_with_retry(retries: int = 3, delay: float = 1.0) -> Callable[[Call
     return decorator
 
 
-def flext_api_with_logging(log_args: bool = True, log_result: bool = True):
+def flext_api_with_logging(log_args: bool = True, log_result: bool = True) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator to add logging - eliminates logging boilerplate."""
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
@@ -227,7 +227,7 @@ def flext_api_with_logging(log_args: bool = True, log_result: bool = True):
     return decorator
 
 
-def flext_api_with_cache(ttl: int = 300):
+def flext_api_with_cache(ttl: int = 300) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator to add caching - eliminates cache boilerplate."""
     cache: dict[str, tuple[Any, datetime]] = {}
 
@@ -256,7 +256,7 @@ def flext_api_with_cache(ttl: int = 300):
     return decorator
 
 
-def flext_api_with_validation(validator: FlextApiValidator):
+def flext_api_with_validation(validator: FlextApiValidator) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator to add validation - eliminates validation boilerplate."""
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
@@ -271,7 +271,7 @@ def flext_api_with_validation(validator: FlextApiValidator):
     return decorator
 
 
-def flext_api_with_timeout(seconds: int = 30):
+def flext_api_with_timeout(seconds: int = 30) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator to add timeout - eliminates timeout boilerplate."""
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
@@ -728,17 +728,17 @@ def flext_api_create_microservice_client(base_url: str, service_name: str, auth_
 
 def flext_api_create_service_calls(services: dict[str, str], endpoints: list[str]) -> list[FlextApiServiceCall]:
     """Create service call list - eliminates manual list creation."""
-    calls: list[FlextApiServiceCall] = []
-    for service in services:
-        for endpoint in endpoints:
-            calls.append(FlextApiServiceCall(
-                service=service,
-                endpoint=endpoint,
-                method="GET",
-                data={},
-                key=f"{service}_{endpoint.replace('/', '_')}"
-            ))
-    return calls
+    return [
+        FlextApiServiceCall(
+            service=service,
+            endpoint=endpoint,
+            method="GET",
+            data={},
+            key=f"{service}_{endpoint.replace('/', '_')}"
+        )
+        for service in services
+        for endpoint in endpoints
+    ]
 
 
 # ==============================================================================
@@ -815,14 +815,14 @@ class FlextApiDataProcessingMixin:
 
     def data_paginate_request(self, endpoint: str, page_size: int = 50, max_pages: int = 10) -> list[dict[str, Any]]:
         """Create paginated request configurations."""
-        requests = []
-        for page in range(1, max_pages + 1):
-            requests.append({
+        return [
+            {
                 "endpoint": f"{endpoint}?page={page}&size={page_size}",
                 "method": "GET",
                 "key": f"page_{page}"
-            })
-        return requests
+            }
+            for page in range(1, max_pages + 1)
+        ]
 
 
 # ==============================================================================
