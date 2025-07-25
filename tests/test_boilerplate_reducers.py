@@ -109,7 +109,7 @@ class TestDecorators:
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise Exception("Temporary failure")
+                raise ValueError("Temporary failure")
             return "success"
 
         result = await failing_function()
@@ -169,7 +169,7 @@ class TestDecorators:
         assert result == 10
 
         # Invalid input
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="must be positive"):
             await process_positive_number(-5)
 
 
