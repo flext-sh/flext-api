@@ -152,7 +152,6 @@ from flext_api.helpers.flext_api_boilerplate import (
     FlextApiApplicationMixin,
     FlextApiAuthMixin,
     FlextApiCacheMixin,
-    FlextApiClientBuilder,
     FlextApiConfig,
     FlextApiData,
     FlextApiDataProcessingMixin,
@@ -195,7 +194,6 @@ from flext_api.helpers.flext_api_boilerplate import (
 # ==============================================================================
 from flext_api.helpers.flext_api_builder import (
     FlextApiBuilder,
-    FlextApiConfig,
     flext_api_create_app,
 )
 
@@ -332,9 +330,7 @@ FlextApiSystemService = SystemService
 FlextApiPipeline = FlextAPIPipeline
 FlextApiDomainPlugin = Plugin  # Renamed to avoid conflict with client Plugin
 
-# Request/Response classes
-FlextApiRequest = FlextAPIRequest
-FlextApiResponse = FlextAPIResponse
+# Request/Response aliases (both already imported above)
 # Infrastructure classes
 FlextApiAuthorizationStrategy = FlextAuthorizationStrategy
 FlextApiJWTAuthService = FlextJWTAuthService
