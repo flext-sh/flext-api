@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
-"""Final coverage tests for FlextApi."""
+"""Final coverage tests for flext-api."""
 
+from json import JSONDecodeError
 from unittest.mock import patch
 
 import aiohttp
@@ -47,10 +47,10 @@ class TestFinalCoverage:
         builder = FlextApiResponseBuilder()
 
         # Test empty field validation
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Field cannot be empty"):
             builder.equals("", "value")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Field cannot be empty"):
             builder.sort_asc("")
 
     def test_builder_metadata_loop(self) -> None:
@@ -159,13 +159,13 @@ class TestFinalCoverage:
             raise AssertionError(f"Expected json data, got {response_data}")
 
         # Simulate JSON parsing failure
-        def _simulate_json_error() -> None:
-            class JSONDecodeError(Exception):
-                pass
+        def _raise_json_error() -> None:
+            msg = "Invalid JSON"
+            raise JSONDecodeError(msg)
 
+        def _simulate_json_error() -> None:
             try:
-                msg = "Invalid JSON"
-                raise JSONDecodeError(msg)
+                _raise_json_error()
             except JSONDecodeError:
                 response_data = "text response"  # Fallback to text
 

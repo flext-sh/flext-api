@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Tests for builder functionality."""
+"""Test builder core functionality."""
 
 import pytest
 
@@ -174,20 +173,20 @@ class TestFlextApiQueryBuilder:
         """Test pagination validation."""
         builder = FlextApiQueryBuilder()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Page must be greater than 0"):
             builder.page(0)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Page size must be greater than 0"):
             builder.page_size(0)
 
     def test_empty_field_validation(self) -> None:
         """Test empty field validation."""
         builder = FlextApiQueryBuilder()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Field cannot be empty"):
             builder.equals("", "value")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Field cannot be empty"):
             builder.sort_asc("")
 
     def test_chained_operations(self) -> None:
@@ -260,7 +259,7 @@ class TestFlextApiResponseBuilder:
         """Test pagination validation."""
         builder = FlextApiResponseBuilder()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Page must be greater than 0"):
             builder.pagination(page=0, page_size=10, total=100)
 
 

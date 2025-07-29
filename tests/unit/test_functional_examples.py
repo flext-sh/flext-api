@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Functional tests and examples for flext-api."""
+"""Functional examples tests for flext-api."""
 
 import pytest
 
@@ -206,19 +205,27 @@ class TestFunctionalExamples:
 
     def test_plugin_integration_examples(self) -> None:
         """Test plugin integration examples."""
-        from flext_api.client import FlextApiPlugin
+        from flext_api.client import (
+            FlextApiClientRequest,
+            FlextApiClientResponse,
+            FlextApiPlugin,
+        )
 
         # Create a custom plugin
         class CustomPlugin(FlextApiPlugin):
             def __init__(self) -> None:
                 super().__init__(name="custom-plugin")
 
-            async def before_request(self, request):
+            async def before_request(
+                self, request: FlextApiClientRequest
+            ) -> FlextApiClientRequest:
                 # Add custom header
                 request.headers["X-Custom-Header"] = "custom-value"
                 return request
 
-            async def after_request(self, response):
+            async def after_request(
+                self, response: FlextApiClientResponse
+            ) -> FlextApiClientResponse:
                 # Log response
                 return response
 

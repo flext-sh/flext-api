@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Tests for __init__.py coverage."""
+"""Tests for init coverage in flext-api."""
 
 import flext_api
 from flext_api import FlextResult, get_logger

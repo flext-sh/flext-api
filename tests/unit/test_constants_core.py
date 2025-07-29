@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Tests for constants module."""
+"""Tests for constants core functionality."""
 
 from flext_api.constants import (
     FLEXT_API_CACHE_TTL,

@@ -15,14 +15,9 @@ class TestFlextApiCoverage:
         """Test create_client with exception handling."""
         api = FlextApi()
 
-        # Mock an exception scenario
-        with pytest.raises(Exception):
-            result = api.flext_api_create_client({"base_url": "https://test.com"})
-
-            # Should return a failed result
-            if result.is_success:
-                raise AssertionError(f"Expected False, got {result.is_success}")
-            assert "Failed to create client: Test error" in result.error
+        # Mock an exception scenario - test client creation with invalid config
+        with pytest.raises(Exception, match="Failed to create client"):
+            api.flext_api_create_client({"base_url": "invalid://test"})
 
     def test_create_client_impl_with_complex_config(self) -> None:
         """Test _create_client_impl with various config types."""
@@ -135,15 +130,15 @@ class TestFlextApiCoverage:
         api = FlextApi()
 
         # Test with empty config
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="base_url is required"):
             api.flext_api_create_client({})
 
         # Test with missing base_url
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="base_url is required"):
             api.flext_api_create_client({"timeout": 30})
 
         # Test with invalid base_url
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Invalid URL format"):
             api.flext_api_create_client({"base_url": "invalid-url"})
 
     def test_api_error_handling(self) -> None:
@@ -153,13 +148,9 @@ class TestFlextApiCoverage:
         # Test with network error simulation
         config = {"base_url": "https://invalid-domain-that-does-not-exist.com"}
 
-        try:
-            client = api.flext_api_create_client(config)
-            # If we get here, the error handling worked
-            assert client is not None
-        except Exception:
-            # Expected behavior for invalid domain
-            pass
+        # Test that client creation with invalid domain fails gracefully
+        with pytest.raises((ValueError, ConnectionError, Exception)):
+            api.flext_api_create_client(config)
 
     def test_api_performance_optimization(self) -> None:
         """Test API performance optimization features."""
