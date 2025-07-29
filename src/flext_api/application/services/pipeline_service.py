@@ -87,7 +87,7 @@ class PipelineService(
             name_validation = await self.validate_pipeline_name(pipeline.name, owner_id)
             if not name_validation.success:
                 return FlextResult.fail(
-                    name_validation.error or "Pipeline name validation failed"
+                    name_validation.error or "Pipeline name validation failed",
                 )
 
             # Validate pipeline configuration (ISP compliance)
@@ -95,7 +95,7 @@ class PipelineService(
             if not config_validation.success:
                 return FlextResult.fail(
                     config_validation.error
-                    or "Pipeline configuration validation failed"
+                    or "Pipeline configuration validation failed",
                 )
 
             # Save to repository
@@ -108,7 +108,7 @@ class PipelineService(
                 return FlextResult.fail("Pipeline creation returned None")
 
             logger.info(
-                f"Pipeline created successfully - pipeline_id: {saved_pipeline.id}, name: {saved_pipeline.name}"
+                f"Pipeline created successfully - pipeline_id: {saved_pipeline.id}, name: {saved_pipeline.name}",
             )
             return FlextResult.ok(saved_pipeline)
 
@@ -228,7 +228,7 @@ class PipelineService(
                 return FlextResult.fail("Pipeline update returned None")
 
             logger.info(
-                f"Pipeline updated successfully - pipeline_id: {pipeline_id}, name: {updated_pipeline.name}"
+                f"Pipeline updated successfully - pipeline_id: {pipeline_id}, name: {updated_pipeline.name}",
             )
             return FlextResult.ok(updated_pipeline)
 
@@ -256,7 +256,7 @@ class PipelineService(
             await self.pipeline_repo.delete(str(pipeline_id))
 
             logger.info(
-                "Pipeline deleted successfully", extra={"pipeline_id": str(pipeline_id)}
+                "Pipeline deleted successfully", extra={"pipeline_id": str(pipeline_id)},
             )
             return FlextResult.ok(True)
 
@@ -297,7 +297,7 @@ class PipelineService(
                 return FlextResult.fail("Pipeline update returned None")
 
             logger.info(
-                f"Pipeline execution started - pipeline_id: {pipeline_id}, name: {updated_pipeline.name}"
+                f"Pipeline execution started - pipeline_id: {pipeline_id}, name: {updated_pipeline.name}",
             )
             return FlextResult.ok(updated_pipeline)
 
@@ -324,7 +324,7 @@ class PipelineService(
     # ==============================================================================
 
     async def validate_pipeline_config(
-        self, config: dict[str, Any] | None
+        self, config: dict[str, Any] | None,
     ) -> FlextResult[Any]:
         """Validate pipeline configuration (ISP compliance).
 
@@ -345,7 +345,7 @@ class PipelineService(
             missing_keys = [key for key in required_keys if key not in config]
             if missing_keys:
                 return FlextResult.fail(
-                    f"Missing required configuration keys: {missing_keys}"
+                    f"Missing required configuration keys: {missing_keys}",
                 )
 
             # Validate extractor configuration
@@ -366,7 +366,7 @@ class PipelineService(
             return FlextResult.fail(f"Configuration validation failed: {e}")
 
     async def validate_pipeline_name(
-        self, name: str, owner_id: UUID | None
+        self, name: str, owner_id: UUID | None,
     ) -> FlextResult[Any]:
         """Validate pipeline name uniqueness (ISP compliance).
 
@@ -391,11 +391,11 @@ class PipelineService(
 
             # Check for invalid characters
             invalid_chars = set(name) - set(
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_",
             )
             if invalid_chars:
                 return FlextResult.fail(
-                    f"Pipeline name contains invalid characters: {invalid_chars}"
+                    f"Pipeline name contains invalid characters: {invalid_chars}",
                 )
 
             # Check for uniqueness

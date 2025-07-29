@@ -14,7 +14,6 @@ from typing import Any
 
 from flext_core import (
     FlextEntity,
-    FlextEntity as FlextEntityId,
     FlextResult,
     FlextValidationError,
     FlextValueObject,
@@ -343,7 +342,7 @@ class FlextAPIRequest(FlextEntity):
     client_ip: str | None = Field(default=None, description="Client IP address")
     user_agent: str | None = Field(default=None, description="Client user agent")
     client_id: str | None = Field(
-        default=None, description="Client identifier if authenticated"
+        default=None, description="Client identifier if authenticated",
     )
 
     # Authentication
@@ -356,7 +355,7 @@ class FlextAPIRequest(FlextEntity):
         description="When the request was received",
     )
     processing_started_at: datetime | None = Field(
-        default=None, description="When processing started"
+        default=None, description="When processing started",
     )
 
     def start_processing(self) -> FlextAPIRequest:
@@ -606,5 +605,5 @@ __all__ = [
     "PipelineExecution",
     "PipelineStatus",
     "Plugin",
-    "PluginMetadata"
+    "PluginMetadata",
 ]

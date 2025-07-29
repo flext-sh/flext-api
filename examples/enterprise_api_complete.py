@@ -10,14 +10,14 @@ This replaces 500+ lines of traditional FastAPI boilerplate with 50 lines.
 
 from __future__ import annotations
 
+import operator
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
 # All FlextApi imports from root namespace
 from flext_api import (
-    FlextApiBuilder,
     FlextApiQueryBuilder,
     FlextApiValidator,
     flext_api_authenticated,
@@ -42,6 +42,7 @@ if TYPE_CHECKING:
 # ==============================================================================
 # MODELS
 # ==============================================================================
+
 
 class UserCreateRequest(BaseModel):
     name: str
@@ -71,6 +72,7 @@ class UserResponse(BaseModel):
 # ENTERPRISE API WITH FLEXTAPI - 50 LINES TOTAL
 # ==============================================================================
 
+
 def create_enterprise_api():
     """Create complete enterprise API with FlextApi - replaces 500+ lines."""
     # 1 line replaces 100+ lines of middleware setup
@@ -86,15 +88,33 @@ def create_enterprise_api():
 
     # Simulated user database
     users_db = [
-        {"id": 1, "name": "John Doe", "email": "john@company.com",
-         "department": "Engineering", "role": "REDACTED_LDAP_BIND_PASSWORD",
-         "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"},
-        {"id": 2, "name": "Jane Smith", "email": "jane@company.com",
-         "department": "Marketing", "role": "manager",
-         "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"},
-        {"id": 3, "name": "Bob Wilson", "email": "bob@company.com",
-         "department": "Sales", "role": "employee",
-         "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z"},
+        {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john@company.com",
+            "department": "Engineering",
+            "role": "REDACTED_LDAP_BIND_PASSWORD",
+            "created_at": "2025-01-01T00:00:00Z",
+            "updated_at": "2025-01-01T00:00:00Z",
+        },
+        {
+            "id": 2,
+            "name": "Jane Smith",
+            "email": "jane@company.com",
+            "department": "Marketing",
+            "role": "manager",
+            "created_at": "2025-01-01T00:00:00Z",
+            "updated_at": "2025-01-01T00:00:00Z",
+        },
+        {
+            "id": 3,
+            "name": "Bob Wilson",
+            "email": "bob@company.com",
+            "department": "Sales",
+            "role": "employee",
+            "created_at": "2025-01-01T00:00:00Z",
+            "updated_at": "2025-01-01T00:00:00Z",
+        },
     ]
 
     # CREATE USER - Replaces 80+ lines
@@ -108,11 +128,13 @@ def create_enterprise_api():
         user_data = request.validated_data
 
         # FlextApi validation chain
-        validator = (FlextApiValidator()
-                    .validate_required("name", user_data.name)
-                    .validate_email("email", user_data.email)
-                    .validate_required("department", user_data.department)
-                    .validate_choices("role", user_data.role, ["REDACTED_LDAP_BIND_PASSWORD", "manager", "employee"]))
+        validator = (
+            FlextApiValidator()
+            .validate_required("name", user_data.name)
+            .validate_email("email", user_data.email)
+            .validate_required("department", user_data.department)
+            .validate_choices("role", user_data.role, ["REDACTED_LDAP_BIND_PASSWORD", "manager", "employee"])
+        )
 
         result = validator.get_result()
         if not result.success:
@@ -130,7 +152,9 @@ def create_enterprise_api():
         }
         users_db.append(new_user)
 
-        return flext_api_success_response(data=new_user, message="User created successfully")
+        return flext_api_success_response(
+            data=new_user, message="User created successfully",
+        )
 
     # LIST USERS - Replaces 120+ lines
     @app.get("/users")
@@ -147,15 +171,21 @@ def create_enterprise_api():
         filtered_users = users_db
         for filter_item in query.get("filters", []):
             if filter_item["field"] == "department" and filter_item["operator"] == "eq":
-                filtered_users = [u for u in filtered_users if u["department"] == filter_item["value"]]
+                filtered_users = [
+                    u for u in filtered_users if u["department"] == filter_item["value"]
+                ]
             elif filter_item["field"] == "role" and filter_item["operator"] == "eq":
-                filtered_users = [u for u in filtered_users if u["role"] == filter_item["value"]]
+                filtered_users = [
+                    u for u in filtered_users if u["role"] == filter_item["value"]
+                ]
 
         # Apply sorting
         for sort_item in query.get("sorts", []):
-            if sort_item["field"] in ["name", "email", "department", "created_at"]:
+            if sort_item["field"] in {"name", "email", "department", "created_at"}:
                 reverse = sort_item["direction"] == "desc"
-                filtered_users.sort(key=lambda x: x[sort_item["field"]], reverse=reverse)
+                filtered_users.sort(
+                    key=operator.itemgetter(sort_item["field"]), reverse=reverse,
+                )
 
         # Pagination
         pagination = query.get("pagination", {"page": 1, "page_size": 10})
@@ -170,7 +200,7 @@ def create_enterprise_api():
             total=len(filtered_users),
             page=page,
             page_size=page_size,
-            message="Users retrieved successfully"
+            message="Users retrieved successfully",
         )
 
     # GET USER - Replaces 40+ lines
@@ -181,9 +211,13 @@ def create_enterprise_api():
     async def get_user(user_id: int, request: Request):
         user = next((u for u in users_db if u["id"] == user_id), None)
         if not user:
-            return flext_api_error_response("User not found", f"User with ID {user_id} does not exist")
+            return flext_api_error_response(
+                "User not found", f"User with ID {user_id} does not exist",
+            )
 
-        return flext_api_success_response(data=user, message="User retrieved successfully")
+        return flext_api_success_response(
+            data=user, message="User retrieved successfully",
+        )
 
     # UPDATE USER - Replaces 100+ lines
     @app.put("/users/{user_id}")
@@ -196,7 +230,9 @@ def create_enterprise_api():
 
         user = next((u for u in users_db if u["id"] == user_id), None)
         if not user:
-            return flext_api_error_response("User not found", f"User with ID {user_id} does not exist")
+            return flext_api_error_response(
+                "User not found", f"User with ID {user_id} does not exist",
+            )
 
         # Validate only provided fields
         validator = FlextApiValidator()
@@ -205,7 +241,9 @@ def create_enterprise_api():
         if user_data.email is not None:
             validator.validate_email("email", user_data.email)
         if user_data.role is not None:
-            validator.validate_choices("role", user_data.role, ["REDACTED_LDAP_BIND_PASSWORD", "manager", "employee"])
+            validator.validate_choices(
+                "role", user_data.role, ["REDACTED_LDAP_BIND_PASSWORD", "manager", "employee"],
+            )
 
         result = validator.get_result()
         if not result.success:
@@ -223,7 +261,9 @@ def create_enterprise_api():
 
         user["updated_at"] = datetime.now().isoformat() + "Z"
 
-        return flext_api_success_response(data=user, message="User updated successfully")
+        return flext_api_success_response(
+            data=user, message="User updated successfully",
+        )
 
     # DELETE USER - Replaces 30+ lines
     @app.delete("/users/{user_id}")
@@ -233,7 +273,9 @@ def create_enterprise_api():
     async def delete_user(user_id: int, request: Request):
         user = next((u for u in users_db if u["id"] == user_id), None)
         if not user:
-            return flext_api_error_response("User not found", f"User with ID {user_id} does not exist")
+            return flext_api_error_response(
+                "User not found", f"User with ID {user_id} does not exist",
+            )
 
         users_db.remove(user)
         return flext_api_success_response(message="User deleted successfully")
@@ -245,14 +287,16 @@ def create_enterprise_api():
     @flext_api_cache_response(ttl=120)
     async def search_users(request: Request):
         # FlextApi advanced query building
-        (FlextApiQueryBuilder()
-                       .equals("role", "REDACTED_LDAP_BIND_PASSWORD")
-                       .like("name", "%john%")
-                       .greater_than("created_at", "2025-01-01")
-                       .in_values("department", ["Engineering", "Marketing"])
-                       .sort("name")
-                       .paginate(1, 20)
-                       .build())
+        (
+            FlextApiQueryBuilder()
+            .equals("role", "REDACTED_LDAP_BIND_PASSWORD")
+            .like("name", "%john%")
+            .greater_than("created_at", "2025-01-01")
+            .in_values("department", ["Engineering", "Marketing"])
+            .sort("name")
+            .paginate(1, 20)
+            .build()
+        )
 
         # Simulate complex database query
         results = [u for u in users_db if u["role"] == "REDACTED_LDAP_BIND_PASSWORD"]
@@ -262,7 +306,7 @@ def create_enterprise_api():
             total=len(results),
             page=1,
             page_size=20,
-            message="Search completed successfully"
+            message="Search completed successfully",
         )
 
     return app
@@ -271,6 +315,7 @@ def create_enterprise_api():
 # ==============================================================================
 # COMPARISON METRICS
 # ==============================================================================
+
 
 def print_code_reduction_metrics() -> None:
     """Print real metrics showing code reduction."""
@@ -287,12 +332,10 @@ def print_code_reduction_metrics() -> None:
         ("Logging", "20+ lines", "1 decorator", "95%"),
     ]
 
-
     total_traditional = 0
     total_flextapi = 0
 
     for _feature, traditional, flextapi, _reduction in metrics:
-
         # Extract numbers for totals
         trad_num = int(traditional.split("+")[0]) if "+" in traditional else 1
         flex_num = int(flextapi.split()[0]) if flextapi.split()[0].isdigit() else 1
@@ -301,21 +344,18 @@ def print_code_reduction_metrics() -> None:
         total_flextapi += flex_num
 
 
-
-
 # ==============================================================================
 # DEMO RUNNER
 # ==============================================================================
+
 
 def run_enterprise_demo() -> None:
     """Run complete enterprise API demo."""
     from fastapi.testclient import TestClient
 
-
     # Create API with FlextApi
     app = create_enterprise_api()
     client = TestClient(app)
-
 
     # Test health endpoints
     client.get("/health")
@@ -325,7 +365,6 @@ def run_enterprise_demo() -> None:
 
     # Test metrics
     client.get("/metrics")
-
 
     print_code_reduction_metrics()
 

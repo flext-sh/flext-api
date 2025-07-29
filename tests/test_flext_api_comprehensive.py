@@ -28,8 +28,6 @@ from flext_api import (
     FlextApiResponseBuilder,
     FlextApiSortDirection,
     FlextApiValidator,
-    flext_api_authenticated,
-    flext_api_authorize_roles,
     flext_api_build_simple_query,
     flext_api_cache_response,
     flext_api_create_app,
@@ -61,11 +59,7 @@ class TestFlextApiBuilder:
 
     def test_basic_app_creation(self) -> None:
         """Test basic FastAPI app creation with FlextApiBuilder."""
-        app = (FlextApiBuilder()
-               .with_cors()
-               .with_security()
-               .with_health_checks()
-               .build())
+        app = FlextApiBuilder().with_cors().with_security().with_health_checks().build()
 
         assert isinstance(app, FastAPI)
         assert app.title == "FLEXT API"
@@ -83,7 +77,7 @@ class TestFlextApiBuilder:
             version="2.0.0",
             enable_cors=True,
             enable_rate_limiting=True,
-            enable_auto_features=True
+            enable_auto_features=True,
         )
 
         assert isinstance(app, FastAPI)
@@ -103,17 +97,19 @@ class TestFlextApiBuilder:
             description="Custom enterprise API",
             version="3.0.0",
             cors_origins=["https://example.com"],
-            rate_limit_per_minute=200
+            rate_limit_per_minute=200,
         )
 
-        app = (FlextApiBuilder(config)
-               .with_cors()
-               .with_rate_limiting()
-               .with_security()
-               .with_logging()
-               .with_auto_features()
-               .with_info_endpoint()
-               .build())
+        app = (
+            FlextApiBuilder(config)
+            .with_cors()
+            .with_rate_limiting()
+            .with_security()
+            .with_logging()
+            .with_auto_features()
+            .with_info_endpoint()
+            .build()
+        )
 
         assert app.title == "Custom API"
         assert app.description == "Custom enterprise API"
@@ -125,12 +121,14 @@ class TestFlextApiQueryBuilder:
 
     def test_basic_query_building(self) -> None:
         """Test basic query building with fluent interface."""
-        query = (FlextApiQueryBuilder()
-                 .equals("status", "active")
-                 .greater_than("created_at", "2024-01-01")
-                 .sort("name", FlextApiSortDirection.ASC)
-                 .paginate(1, 50)
-                 .build())
+        query = (
+            FlextApiQueryBuilder()
+            .equals("status", "active")
+            .greater_than("created_at", "2024-01-01")
+            .sort("name", FlextApiSortDirection.ASC)
+            .paginate(1, 50)
+            .build()
+        )
 
         assert len(query["filters"]) == 2
         assert query["filters"][0]["field"] == "status"
@@ -150,12 +148,14 @@ class TestFlextApiQueryBuilder:
 
     def test_complex_filtering(self) -> None:
         """Test complex filtering capabilities."""
-        query = (FlextApiQueryBuilder()
-                 .in_values("category", ["electronics", "books"])
-                 .between("price", 10.0, 100.0)
-                 .like("name", "%test%")
-                 .is_not_null("description")
-                 .build())
+        query = (
+            FlextApiQueryBuilder()
+            .in_values("category", ["electronics", "books"])
+            .between("price", 10.0, 100.0)
+            .like("name", "%test%")
+            .is_not_null("description")
+            .build()
+        )
 
         filters = {f["field"]: f for f in query["filters"]}
 
@@ -177,7 +177,7 @@ class TestFlextApiQueryBuilder:
             filters={"status": "active", "type": "premium"},
             sorts={"created_at": "desc", "name": "asc"},
             page=2,
-            page_size=25
+            page_size=25,
         )
 
         assert len(query["filters"]) == 2
@@ -192,7 +192,7 @@ class TestFlextApiQueryBuilder:
             "filter[price][gte]": "10",
             "sort": "name:asc",
             "page": "1",
-            "page_size": "20"
+            "page_size": "20",
         }
 
         builder = flext_api_parse_query_params(params)
@@ -204,7 +204,11 @@ class TestFlextApiQueryBuilder:
 
     def test_filter_and_sort_creation(self) -> None:
         """Test individual filter and sort creation."""
-        filter_obj = flext_api_create_filter("name", FlextApiQueryOperator.EQUALS, "test")
+        filter_obj = flext_api_create_filter(
+            "name",
+            FlextApiQueryOperator.EQUALS,
+            "test",
+        )
         assert filter_obj.field == "name"
         assert filter_obj.operator == FlextApiQueryOperator.EQUALS
         assert filter_obj.value == "test"
@@ -219,11 +223,13 @@ class TestFlextApiResponseBuilder:
 
     def test_success_response(self) -> None:
         """Test building success responses."""
-        response = (FlextApiResponseBuilder()
-                   .success("Operation completed")
-                   .with_data({"id": 123, "name": "test"})
-                   .with_performance(execution_time_ms=150.5, cached=False)
-                   .build())
+        response = (
+            FlextApiResponseBuilder()
+            .success("Operation completed")
+            .with_data({"id": 123, "name": "test"})
+            .with_performance(execution_time_ms=150.5, cached=False)
+            .build()
+        )
 
         assert response["success"] is True
         assert response["message"] == "Operation completed"
@@ -233,10 +239,12 @@ class TestFlextApiResponseBuilder:
 
     def test_error_response(self) -> None:
         """Test building error responses."""
-        response = (FlextApiResponseBuilder()
-                   .error("Validation failed", "Field 'email' is required")
-                   .with_metadata("error_code", "VALIDATION_ERROR")
-                   .build())
+        response = (
+            FlextApiResponseBuilder()
+            .error("Validation failed", "Field 'email' is required")
+            .with_metadata("error_code", "VALIDATION_ERROR")
+            .build()
+        )
 
         assert response["success"] is False
         assert response["message"] == "Validation failed"
@@ -246,11 +254,13 @@ class TestFlextApiResponseBuilder:
     def test_paginated_response(self) -> None:
         """Test building paginated responses."""
         data = [{"id": 1}, {"id": 2}, {"id": 3}]
-        response = (FlextApiResponseBuilder()
-                   .success("Data retrieved")
-                   .with_data(data)
-                   .with_pagination(total=100, page=1, page_size=3)
-                   .build())
+        response = (
+            FlextApiResponseBuilder()
+            .success("Data retrieved")
+            .with_data(data)
+            .with_pagination(total=100, page=1, page_size=3)
+            .build()
+        )
 
         assert response["success"] is True
         assert response["data"] == data
@@ -264,7 +274,7 @@ class TestFlextApiResponseBuilder:
         success = flext_api_success_response(
             data={"result": "ok"},
             message="Custom success",
-            custom_field="custom_value"
+            custom_field="custom_value",
         )
         assert success["success"] is True
         assert success["data"]["result"] == "ok"
@@ -274,7 +284,7 @@ class TestFlextApiResponseBuilder:
         error = flext_api_error_response(
             message="Something went wrong",
             error_details="Detailed error info",
-            error_code="ERR_001"
+            error_code="ERR_001",
         )
         assert error["success"] is False
         assert error["message"] == "Something went wrong"
@@ -287,7 +297,7 @@ class TestFlextApiResponseBuilder:
             total=50,
             page=2,
             page_size=3,
-            message="Custom paginated"
+            message="Custom paginated",
         )
         assert paginated["success"] is True
         assert paginated["data"] == [1, 2, 3]
@@ -300,23 +310,25 @@ class TestFlextApiValidator:
     def test_chainable_validation(self) -> None:
         """Test chainable validation with FlextApiValidator."""
         validator = FlextApiValidator()
-        result = (validator
-                  .validate_required("email", "test@example.com")
-                  .validate_email("email", "test@example.com")
-                  .validate_required("password", "SecurePass123")
-                  .validate_password("password", "SecurePass123")
-                  .get_result())
+        result = (
+            validator.validate_required("email", "test@example.com")
+            .validate_email("email", "test@example.com")
+            .validate_required("password", "SecurePass123")
+            .validate_password("password", "SecurePass123")
+            .get_result()
+        )
 
         assert result.success is True
 
     def test_validation_failures(self) -> None:
         """Test validation failure handling."""
         validator = FlextApiValidator()
-        result = (validator
-                  .validate_required("email", "")
-                  .validate_email("email", "invalid-email")
-                  .validate_password("password", "weak")
-                  .get_result())
+        result = (
+            validator.validate_required("email", "")
+            .validate_email("email", "invalid-email")
+            .validate_password("password", "weak")
+            .get_result()
+        )
 
         assert result.success is False
         assert len(result.data["errors"]) >= 3
@@ -370,7 +382,8 @@ class TestFlextApiDecorators:
         @app.get("/test-error")
         @flext_api_handle_errors()
         async def test_endpoint() -> Never:
-            raise ValueError("Test error")
+            msg = "Test error"
+            raise ValueError(msg)
 
         client = TestClient(app)
         response = client.get("/test-error")
@@ -386,23 +399,26 @@ class TestFlextApiDecorators:
 
         @app.post("/test-validation")
         @flext_api_validate_request(TestModel)
-        async def test_endpoint(request: Request):  # noqa: ANN202
+        async def test_endpoint(request: Request):
             return {"data": request.validated_data.dict()}
 
         client = TestClient(app)
 
         # Valid request
-        response = client.post("/test-validation", json={
-            "name": "Test User",
-            "email": "test@example.com"
-        })
+        response = client.post(
+            "/test-validation",
+            json={"name": "Test User", "email": "test@example.com"},
+        )
         assert response.status_code == 200
 
         # Invalid request
-        response = client.post("/test-validation", json={
-            "name": "Test User"
-            # Missing email
-        })
+        response = client.post(
+            "/test-validation",
+            json={
+                "name": "Test User",
+                # Missing email
+            },
+        )
         assert response.status_code == 422
 
     def test_json_requirement_decorator(self) -> None:
@@ -411,21 +427,25 @@ class TestFlextApiDecorators:
 
         @app.post("/test-json")
         @flext_api_require_json()
-        async def test_endpoint(request: Request):  # noqa: ANN202
+        async def test_endpoint(request: Request):
             return {"message": "JSON received"}
 
         client = TestClient(app)
 
         # Valid JSON request
-        response = client.post("/test-json",
-                              json={"test": "data"},
-                              headers={"Content-Type": "application/json"})
+        response = client.post(
+            "/test-json",
+            json={"test": "data"},
+            headers={"Content-Type": "application/json"},
+        )
         assert response.status_code == 200
 
         # Invalid content type
-        response = client.post("/test-json",
-                              data="test=data",
-                              headers={"Content-Type": "application/x-www-form-urlencoded"})
+        response = client.post(
+            "/test-json",
+            data="test=data",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
         assert response.status_code == 415
 
     def test_rate_limiting_decorator(self) -> None:
@@ -434,7 +454,7 @@ class TestFlextApiDecorators:
 
         @app.get("/test-rate-limit")
         @flext_api_rate_limit(calls=2, period=60)
-        async def test_endpoint(request: Request):  # noqa: ANN202
+        async def test_endpoint(request: Request):
             return {"message": "Success"}
 
         client = TestClient(app)
@@ -457,7 +477,7 @@ class TestFlextApiDecorators:
 
         @app.get("/test-cache")
         @flext_api_cache_response(ttl=10)
-        async def test_endpoint():  # noqa: ANN202
+        async def test_endpoint():
             nonlocal call_count
             call_count += 1
             return {"count": call_count}
@@ -518,7 +538,7 @@ class TestIntegrationScenarios:
             title="Integration Test API",
             enable_cors=True,
             enable_rate_limiting=True,
-            enable_auto_features=True
+            enable_auto_features=True,
         )
 
         class UserRequest(BaseModel):
@@ -530,20 +550,22 @@ class TestIntegrationScenarios:
         @flext_api_handle_errors()
         @flext_api_log_execution(log_duration=True)
         @flext_api_validate_request(UserRequest)
-        async def create_user(request: Request):  # noqa: ANN202
+        async def create_user(request: Request):
             user_data = request.validated_data
 
             # Validate with FlextApiValidator
-            validator = (FlextApiValidator()
-                        .validate_required("name", user_data.name)
-                        .validate_email("email", user_data.email)
-                        .validate_required("phone", user_data.phone))
+            validator = (
+                FlextApiValidator()
+                .validate_required("name", user_data.name)
+                .validate_email("email", user_data.email)
+                .validate_required("phone", user_data.phone)
+            )
 
             validation_result = validator.get_result()
             if not validation_result.success:
                 return flext_api_error_response(
                     "Validation failed",
-                    validation_result.data["errors"]
+                    validation_result.data["errors"],
                 )
 
             # Simulate user creation
@@ -551,18 +573,18 @@ class TestIntegrationScenarios:
                 "id": 123,
                 "name": flext_api_sanitize_string(user_data.name),
                 "email": flext_api_sanitize_email(user_data.email),
-                "phone": flext_api_normalize_phone(user_data.phone)
+                "phone": flext_api_normalize_phone(user_data.phone),
             }
 
             return flext_api_success_response(
                 data=user,
-                message="User created successfully"
+                message="User created successfully",
             )
 
         @app.get("/users")
         @flext_api_handle_errors()
         @flext_api_cache_response(ttl=60)
-        async def list_users(request: Request):  # noqa: ANN202
+        async def list_users(request: Request):
             # Parse query parameters into powerful query
             query_params = dict(request.query_params)
             builder = flext_api_parse_query_params(query_params)
@@ -578,7 +600,7 @@ class TestIntegrationScenarios:
                 data=users,
                 total=50,
                 page=query.get("pagination", {}).get("page", 1),
-                page_size=query.get("pagination", {}).get("page_size", 10)
+                page_size=query.get("pagination", {}).get("page_size", 10),
             )
 
         # Test the complete scenario
@@ -589,11 +611,14 @@ class TestIntegrationScenarios:
         assert health_response.status_code == 200
 
         # Test user creation
-        user_response = client.post("/users", json={
-            "name": "Test User",
-            "email": "test@example.com",
-            "phone": "+1-555-123-4567"
-        })
+        user_response = client.post(
+            "/users",
+            json={
+                "name": "Test User",
+                "email": "test@example.com",
+                "phone": "+1-555-123-4567",
+            },
+        )
         assert user_response.status_code == 200
         assert user_response.json()["success"] is True
         assert user_response.json()["data"]["phone"] == "+15551234567"
@@ -618,7 +643,11 @@ class TestIntegrationScenarios:
         # - Logging setup
 
         # FlextApi achieves the same with 1 line:
-        app = flext_api_create_app(enable_cors=True, enable_rate_limiting=True, enable_auto_features=True)
+        app = flext_api_create_app(
+            enable_cors=True,
+            enable_rate_limiting=True,
+            enable_auto_features=True,
+        )
 
         # Verify all features are working
         client = TestClient(app)

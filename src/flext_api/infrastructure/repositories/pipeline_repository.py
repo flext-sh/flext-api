@@ -117,7 +117,7 @@ class FlextInMemoryPipelineRepository(PipelineRepository):
 
             del self._pipelines[pipeline_id]
             logger.info(
-                f"Deleted pipeline: {pipeline_id} and {len(executions_to_delete)} executions"
+                f"Deleted pipeline: {pipeline_id} and {len(executions_to_delete)} executions",
             )
             return FlextResult.ok(True)
 
@@ -164,7 +164,7 @@ class FlextInMemoryPipelineRepository(PipelineRepository):
             paginated_pipelines = pipelines[offset : offset + limit]
 
             logger.debug(
-                f"Listed {len(paginated_pipelines)} pipelines (total: {len(pipelines)})"
+                f"Listed {len(paginated_pipelines)} pipelines (total: {len(pipelines)})",
             )
             return FlextResult.ok(paginated_pipelines)
 
@@ -213,7 +213,7 @@ class FlextInMemoryPipelineRepository(PipelineRepository):
 
     # Execution methods
     async def create_execution(
-        self, execution: PipelineExecution
+        self, execution: PipelineExecution,
     ) -> FlextResult[PipelineExecution]:
         """Create pipeline execution - STRICT VALIDATION."""
         try:
@@ -232,7 +232,7 @@ class FlextInMemoryPipelineRepository(PipelineRepository):
 
             self._executions[execution.id] = execution
             logger.info(
-                f"Created execution: {execution.id} for pipeline: {execution.pipeline_id}"
+                f"Created execution: {execution.id} for pipeline: {execution.pipeline_id}",
             )
             return FlextResult.ok(execution)
 
@@ -241,7 +241,7 @@ class FlextInMemoryPipelineRepository(PipelineRepository):
             return FlextResult.fail(f"Execution creation failed: {e}")
 
     async def get_execution(
-        self, execution_id: str
+        self, execution_id: str,
     ) -> FlextResult[PipelineExecution | None]:
         """Get execution by ID - STRICT LOOKUP."""
         try:
@@ -260,7 +260,7 @@ class FlextInMemoryPipelineRepository(PipelineRepository):
             return FlextResult.fail(f"Execution retrieval failed: {e}")
 
     async def update_execution(
-        self, execution: PipelineExecution
+        self, execution: PipelineExecution,
     ) -> FlextResult[PipelineExecution]:
         """Update execution status - STRICT VALIDATION."""
         try:
@@ -309,7 +309,7 @@ class FlextInMemoryPipelineRepository(PipelineRepository):
             paginated_executions = executions[offset : offset + limit]
 
             logger.debug(
-                f"Listed {len(paginated_executions)} executions (total: {len(executions)})"
+                f"Listed {len(paginated_executions)} executions (total: {len(executions)})",
             )
             return FlextResult.ok(paginated_executions)
 

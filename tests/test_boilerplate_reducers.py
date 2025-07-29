@@ -5,7 +5,6 @@ Tests helpers, mixins, typedefs, and decorators that eliminate repetitive code.
 """
 
 import asyncio
-import tempfile
 from datetime import datetime
 
 import pytest
@@ -13,15 +12,11 @@ import pytest
 from flext_api.helpers.flext_api_boilerplate import (
     FlextApiAuthMixin,
     FlextApiCacheMixin,
-    FlextApiConfig,
     FlextApiMetricsMixin,
-    FlextApiRequest,
-    FlextApiResponse,
-    FlextApiSimpleClient,
     FlextApiValidationMixin,
     flext_api_config_dict,
+    flext_api_create_application_client,
     flext_api_create_service_calls,
-    flext_api_create_simple_client,
     flext_api_error_dict,
     flext_api_filter_dict,
     flext_api_flatten_dict,
@@ -43,6 +38,7 @@ from flext_api.helpers.flext_api_boilerplate import (
 # TYPEDDICT TESTS - VALIDATE STRUCTURE STANDARDIZATION
 # ==============================================================================
 
+
 class TestTypedDictStructures:
     """Test TypedDict structures for API standardization."""
 
@@ -60,7 +56,10 @@ class TestTypedDictStructures:
 
         # Validate TypedDict structure
         assert isinstance(response, dict)
-        assert all(key in response for key in ["success", "data", "status", "message", "timestamp"])
+        assert all(
+            key in response
+            for key in ["success", "data", "status", "message", "timestamp"]
+        )
 
     def test_error_response_dict(self) -> None:
         """Test error response creation eliminates error handling boilerplate."""
@@ -73,7 +72,12 @@ class TestTypedDictStructures:
 
     def test_request_dict_creation(self) -> None:
         """Test request dict creation eliminates manual construction."""
-        request = flext_api_request_dict("/users", "POST", {"name": "John"}, {"Authorization": "Bearer token"})
+        request = flext_api_request_dict(
+            "/users",
+            "POST",
+            {"name": "John"},
+            {"Authorization": "Bearer token"},
+        )
 
         assert request["endpoint"] == "/users"
         assert request["method"] == "POST"
@@ -96,6 +100,7 @@ class TestTypedDictStructures:
 # DECORATOR TESTS - VALIDATE PATTERN ELIMINATION
 # ==============================================================================
 
+
 class TestDecorators:
     """Test decorators that eliminate common patterns."""
 
@@ -109,7 +114,8 @@ class TestDecorators:
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise ValueError("Temporary failure")
+                msg = "Temporary failure"
+                raise ValueError(msg)
             return "success"
 
         result = await failing_function()
@@ -146,6 +152,7 @@ class TestDecorators:
     @pytest.mark.asyncio
     async def test_timeout_decorator(self) -> None:
         """Test timeout decorator eliminates timeout boilerplate."""
+
         @flext_api_with_timeout(seconds=0.1)
         async def slow_function() -> str:
             await asyncio.sleep(0.2)  # Longer than timeout
@@ -157,6 +164,7 @@ class TestDecorators:
     @pytest.mark.asyncio
     async def test_validation_decorator(self) -> None:
         """Test validation decorator eliminates validation boilerplate."""
+
         def is_positive(value: int) -> bool:
             return value > 0
 
@@ -177,11 +185,13 @@ class TestDecorators:
 # MIXIN TESTS - VALIDATE REUSABLE FUNCTIONALITY
 # ==============================================================================
 
+
 class TestMixins:
     """Test mixins that provide reusable functionality."""
 
     def test_cache_mixin(self) -> None:
         """Test cache mixin eliminates cache implementation."""
+
         class TestClass(FlextApiCacheMixin):
             pass
 
@@ -205,6 +215,7 @@ class TestMixins:
 
     def test_metrics_mixin(self) -> None:
         """Test metrics mixin eliminates metrics implementation."""
+
         class TestClass(FlextApiMetricsMixin):
             pass
 
@@ -224,6 +235,7 @@ class TestMixins:
 
     def test_auth_mixin(self) -> None:
         """Test auth mixin eliminates authentication boilerplate."""
+
         class TestClass(FlextApiAuthMixin):
             pass
 
@@ -246,6 +258,7 @@ class TestMixins:
 
     def test_validation_mixin(self) -> None:
         """Test validation mixin eliminates validation boilerplate."""
+
         class TestClass(FlextApiValidationMixin):
             pass
 
@@ -273,6 +286,7 @@ class TestMixins:
 # DICT HELPER TESTS - VALIDATE DATA TRANSFORMATION
 # ==============================================================================
 
+
 class TestDictHelpers:
     """Test dict helpers that eliminate data transformation boilerplate."""
 
@@ -292,7 +306,12 @@ class TestDictHelpers:
 
     def test_filter_dict(self) -> None:
         """Test dict filtering eliminates manual filtering."""
-        data = {"name": "John", "age": 30, "email": "john@example.com", "password": "secret"}
+        data = {
+            "name": "John",
+            "age": 30,
+            "email": "john@example.com",
+            "password": "secret",
+        }
         filtered = flext_api_filter_dict(data, ["name", "age", "email"])
 
         assert "name" in filtered
@@ -302,8 +321,16 @@ class TestDictHelpers:
 
     def test_rename_keys(self) -> None:
         """Test key renaming eliminates manual renaming."""
-        data = {"first_name": "John", "last_name": "Doe", "email_address": "john@example.com"}
-        mapping = {"first_name": "firstName", "last_name": "lastName", "email_address": "email"}
+        data = {
+            "first_name": "John",
+            "last_name": "Doe",
+            "email_address": "john@example.com",
+        }
+        mapping = {
+            "first_name": "firstName",
+            "last_name": "lastName",
+            "email_address": "email",
+        }
 
         renamed = flext_api_rename_keys(data, mapping)
 
@@ -315,15 +342,10 @@ class TestDictHelpers:
         """Test dict flattening eliminates manual flattening."""
         nested = {
             "user": {
-                "profile": {
-                    "name": "John",
-                    "age": 30
-                },
-                "settings": {
-                    "theme": "dark"
-                }
+                "profile": {"name": "John", "age": 30},
+                "settings": {"theme": "dark"},
             },
-            "app": "MyApp"
+            "app": "MyApp",
         }
 
         flattened = flext_api_flatten_dict(nested)
@@ -355,7 +377,7 @@ class TestDictHelpers:
             {"category": "fruit", "name": "apple"},
             {"category": "fruit", "name": "banana"},
             {"category": "vegetable", "name": "carrot"},
-            {"category": "fruit", "name": "orange"}
+            {"category": "fruit", "name": "orange"},
         ]
 
         grouped = flext_api_group_by_key(data, "category")
@@ -369,13 +391,22 @@ class TestDictHelpers:
 # COMPOSITE HELPER TESTS - VALIDATE COMPLEX PATTERN ELIMINATION
 # ==============================================================================
 
+
 class TestCompositeHelpers:
     """Test composite helpers that eliminate complex patterns."""
 
     @pytest.mark.asyncio
     async def test_simple_client(self) -> None:
         """Test simple client eliminates entire client implementation."""
-        client = flext_api_create_simple_client("https://httpbin.org", "test-token")
+        # Use enhanced client which has mixin capabilities
+        from flext_api.helpers.flext_api_boilerplate import flext_api_create_full_client
+
+        client = flext_api_create_full_client(
+            "https://httpbin.org",
+            auth_token="test-token",
+            enable_cache=True,
+            enable_metrics=True,
+        )
 
         # Test that all mixins are available
         assert hasattr(client, "cache_get")
@@ -387,7 +418,7 @@ class TestCompositeHelpers:
         assert headers["Authorization"] == "Bearer test-token"
 
         # Test actual API call
-        response = await client.call("/json")
+        response = await client.get("/json")
 
         assert "success" in response
         assert "data" in response
@@ -403,13 +434,13 @@ class TestCompositeHelpers:
         """Test service calls creation eliminates manual list construction."""
         services = {
             "user-service": "https://user-api.com",
-            "order-service": "https://order-api.com"
+            "order-service": "https://order-api.com",
         }
         endpoints = ["/health", "/metrics"]
 
         calls = flext_api_create_service_calls(services, endpoints)
 
-        assert len(calls) == 4  # 2 services × 2 endpoints
+        assert len(calls) == 4  # 2 services x 2 endpoints
 
         # Validate structure
         for call in calls:
@@ -425,18 +456,19 @@ class TestCompositeHelpers:
 # INTEGRATION TESTS - VALIDATE REAL-WORLD SCENARIOS
 # ==============================================================================
 
+
 class TestBoilerplateIntegration:
     """Test integration between different boilerplate reducers."""
 
     @pytest.mark.asyncio
     async def test_decorated_client_methods(self) -> None:
         """Test using decorators with client methods."""
-        client = flext_api_create_simple_client("https://httpbin.org")
+        client = flext_api_create_application_client("https://httpbin.org")
 
         @flext_api_with_retry(retries=2)
         @flext_api_with_cache(ttl=60)
         async def get_user_data(user_id: str) -> dict[str, any]:
-            response = await client.call("/json")  # Using httpbin.org/json as test
+            response = await client.get("/json")  # Using httpbin.org/json as test
             return response["data"] if response["success"] else {}
 
         # First call
@@ -449,7 +481,13 @@ class TestBoilerplateIntegration:
 
     def test_mixin_combination(self) -> None:
         """Test combining multiple mixins."""
-        class AdvancedClient(FlextApiCacheMixin, FlextApiMetricsMixin, FlextApiAuthMixin, FlextApiValidationMixin):
+
+        class AdvancedClient(
+            FlextApiCacheMixin,
+            FlextApiMetricsMixin,
+            FlextApiAuthMixin,
+            FlextApiValidationMixin,
+        ):
             def __init__(self) -> None:
                 super().__init__()
                 FlextApiCacheMixin.__init__(self)
@@ -475,6 +513,7 @@ class TestBoilerplateIntegration:
 # ==============================================================================
 # CODE REDUCTION VALIDATION
 # ==============================================================================
+
 
 class TestCodeReductionValidation:
     """Validate actual code reduction achieved."""

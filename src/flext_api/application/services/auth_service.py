@@ -50,7 +50,7 @@ class FlextAuthService(AuthenticationService):
         super().__init__(auth_service, session_service)
 
     async def login(
-        self, email: str, password: str, device_info: dict[str, Any] | None = None
+        self, email: str, password: str, device_info: dict[str, Any] | None = None,
     ) -> FlextResult[Any]:
         """Authenticate user and create session.
 
@@ -159,7 +159,7 @@ class FlextAuthService(AuthenticationService):
 
             # Fallback implementation
             logger.warning(
-                "Token refresh not implemented - requires flext-auth integration"
+                "Token refresh not implemented - requires flext-auth integration",
             )
             return FlextResult.fail("Token refresh not implemented yet")
 
@@ -171,7 +171,7 @@ class FlextAuthService(AuthenticationService):
             raise FlextError(msg) from e
 
     async def register(
-        self, username: str, email: str, password: str, role: str | None = None
+        self, username: str, email: str, password: str, role: str | None = None,
     ) -> FlextResult[Any]:
         """Register new user.
 
@@ -193,7 +193,7 @@ class FlextAuthService(AuthenticationService):
             auth_service = self._get_auth_service()
             if auth_service and hasattr(auth_service, "register_user"):
                 result = await auth_service.register_user(
-                    username, email, password, role
+                    username, email, password, role,
                 )
                 # Ensure result is properly typed as FlextResult[Any]
                 if hasattr(result, "is_success") and result.is_success:
@@ -204,7 +204,7 @@ class FlextAuthService(AuthenticationService):
 
             # Fallback implementation
             logger.warning(
-                "User registration not implemented - requires flext-auth integration"
+                "User registration not implemented - requires flext-auth integration",
             )
             return FlextResult.fail("User registration not implemented yet")
 
@@ -242,7 +242,7 @@ class FlextAuthService(AuthenticationService):
 
             # Fallback implementation
             logger.warning(
-                "Token validation not implemented - requires flext-auth integration"
+                "Token validation not implemented - requires flext-auth integration",
             )
             return FlextResult.fail("Token validation not implemented yet")
 

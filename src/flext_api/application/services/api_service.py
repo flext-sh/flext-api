@@ -123,7 +123,7 @@ class FlextAPIService(DualRepositoryService):
 
             # Set processing duration if start time provided and method exists
             if processing_start_time and hasattr(
-                api_response, "set_processing_duration"
+                api_response, "set_processing_duration",
             ):
                 api_response.set_processing_duration(processing_start_time)
 
@@ -137,12 +137,12 @@ class FlextAPIService(DualRepositoryService):
 
         except Exception as e:
             logger.exception(
-                f"Failed to track API response - request_id: {request_id}"
+                f"Failed to track API response - request_id: {request_id}",
             )
             return FlextResult.fail(f"Failed to track API response: {e}")
 
     async def get_request_metrics(
-        self, start_time: datetime | None = None, end_time: datetime | None = None
+        self, start_time: datetime | None = None, end_time: datetime | None = None,
     ) -> FlextResult[Any]:
         """Get API request metrics.
 
@@ -172,12 +172,12 @@ class FlextAPIService(DualRepositoryService):
                 total_requests = len(all_requests)
                 requests_by_method = self._count_by_attribute(all_requests, "method")
                 requests_by_endpoint = self._count_by_attribute(
-                    all_requests, "endpoint"
+                    all_requests, "endpoint",
                 )
 
                 # Get response data for additional metrics
                 all_responses_result = await self._get_responses_for_requests(
-                    [req.request_id for req in all_requests if hasattr(req, "request_id")] if all_requests else []
+                    [req.request_id for req in all_requests if hasattr(req, "request_id")] if all_requests else [],
                 )
                 all_responses = all_responses_result.data if all_responses_result.success and all_responses_result.data else []
 
@@ -185,7 +185,7 @@ class FlextAPIService(DualRepositoryService):
                 if not isinstance(all_responses, list):
                     all_responses = []
                 requests_by_status = self._count_by_attribute(
-                    all_responses, "status_code"
+                    all_responses, "status_code",
                 )
 
                 # Calculate response time and error rate
@@ -225,7 +225,7 @@ class FlextAPIService(DualRepositoryService):
             except Exception as query_error:
                 # Fallback to empty metrics if repository query fails
                 logger.warning(
-                    f"Failed to query repository for metrics: {query_error}"
+                    f"Failed to query repository for metrics: {query_error}",
                 )
                 metrics = {
                     "total_requests": 0,
@@ -249,7 +249,7 @@ class FlextAPIService(DualRepositoryService):
             return FlextResult.fail(f"Failed to calculate metrics: {e}")
 
     async def _get_requests_in_period(
-        self, start_time: datetime | None, end_time: datetime | None
+        self, start_time: datetime | None, end_time: datetime | None,
     ) -> FlextResult[Any]:
         """Get all requests in the specified time period.
 
@@ -268,7 +268,7 @@ class FlextAPIService(DualRepositoryService):
             # If repository has time-based query methods, use them
             if hasattr(self.request_repo, "find_by_time_range"):
                 result = await self.request_repo.find_by_time_range(
-                    start_time, end_time
+                    start_time, end_time,
                 )
                 return FlextResult.ok(result if isinstance(result, list) else [])
             if hasattr(self.request_repo, "find_all"):
@@ -294,7 +294,7 @@ class FlextAPIService(DualRepositoryService):
             return FlextResult.ok([])
 
     async def _get_responses_for_requests(
-        self, request_ids: list[str]
+        self, request_ids: list[str],
     ) -> FlextResult[Any]:
         """Get responses for the given request IDs.
 
@@ -415,7 +415,7 @@ class FlextAPIService(DualRepositoryService):
                 try:
                     # Perform actual repository health check
                     repo_healthy = await self._check_repository_health(
-                        self.request_repo
+                        self.request_repo,
                     )
                     health_data["repositories"]["request_repo_status"] = (
                         "healthy" if repo_healthy else "unhealthy"
@@ -426,14 +426,14 @@ class FlextAPIService(DualRepositoryService):
                     health_data["repositories"]["request_repo_status"] = "unhealthy"
                     health_data["status"] = "degraded"
                     logger.warning(
-                        f"Request repository health check failed: {e}"
+                        f"Request repository health check failed: {e}",
                     )
 
             if self.response_repo:
                 try:
                     # Perform actual repository health check
                     repo_healthy = await self._check_repository_health(
-                        self.response_repo
+                        self.response_repo,
                     )
                     health_data["repositories"]["response_repo_status"] = (
                         "healthy" if repo_healthy else "unhealthy"
@@ -444,7 +444,7 @@ class FlextAPIService(DualRepositoryService):
                     health_data["repositories"]["response_repo_status"] = "unhealthy"
                     health_data["status"] = "degraded"
                     logger.warning(
-                        f"Response repository health check failed: {e}"
+                        f"Response repository health check failed: {e}",
                     )
 
             logger.info("API service health check completed successfully")

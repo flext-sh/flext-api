@@ -5,7 +5,7 @@ Tests enterprise orchestration, smart caching, client pooling, and data pipeline
 that achieve 95%+ code reduction for complex enterprise scenarios.
 """
 
-import asyncio
+from typing import Any
 
 import pytest
 
@@ -24,6 +24,7 @@ from flext_api import (
 # ENTERPRISE ORCHESTRATOR TESTS
 # ==============================================================================
 
+
 class TestFlextApiEnterpriseOrchestrator:
     """Test enterprise service orchestration patterns."""
 
@@ -35,13 +36,13 @@ class TestFlextApiEnterpriseOrchestrator:
             FlextApiServiceDefinition(
                 name="test-service",
                 base_url="https://httpbin.org",
-                health_endpoint="/status/200"
+                health_endpoint="/status/200",
             ),
             FlextApiServiceDefinition(
                 name="json-service",
                 base_url="https://httpbin.org",
-                health_endpoint="/json"
-            )
+                health_endpoint="/json",
+            ),
         ]
 
         async with FlextApiEnterpriseOrchestrator(services) as orchestrator:
@@ -59,18 +60,12 @@ class TestFlextApiEnterpriseOrchestrator:
         """Test enterprise data pipeline with ETL flows."""
         # Define services
         services = [
-            FlextApiServiceDefinition(
-                name="source",
-                base_url="https://httpbin.org"
-            ),
-            FlextApiServiceDefinition(
-                name="target",
-                base_url="https://httpbin.org"
-            )
+            FlextApiServiceDefinition(name="source", base_url="https://httpbin.org"),
+            FlextApiServiceDefinition(name="target", base_url="https://httpbin.org"),
         ]
 
         # Define data transformation
-        def transform_data(data):
+        def transform_data(data: Any) -> dict[str, Any]:
             """Simple transformation function."""
             if isinstance(data, dict):
                 return {"transformed": True, "original": data}
@@ -83,8 +78,8 @@ class TestFlextApiEnterpriseOrchestrator:
                 source_endpoint="/json",
                 target_service="target",
                 target_endpoint="/post",
-                transform_function=transform_data
-            )
+                transform_function=transform_data,
+            ),
         ]
 
         async with FlextApiEnterpriseOrchestrator(services) as orchestrator:
@@ -104,13 +99,13 @@ class TestFlextApiEnterpriseOrchestrator:
             {
                 "name": "service1",
                 "base_url": "https://api.example.com",
-                "auth_token": "token123"
+                "auth_token": "token123",
             },
             {
                 "name": "service2",
                 "base_url": "https://api2.example.com",
-                "health_endpoint": "/health"
-            }
+                "health_endpoint": "/health",
+            },
         ]
 
         orchestrator = flext_api_create_enterprise_orchestrator(services_data)
@@ -125,6 +120,7 @@ class TestFlextApiEnterpriseOrchestrator:
 # SMART CACHE TESTS
 # ==============================================================================
 
+
 class TestFlextApiSmartCache:
     """Test intelligent caching patterns."""
 
@@ -135,7 +131,8 @@ class TestFlextApiSmartCache:
 
         # Mock fetch function
         call_count = 0
-        async def fetch_data():
+
+        async def fetch_data() -> str:
             nonlocal call_count
             call_count += 1
             return {"data": f"call_{call_count}", "timestamp": call_count}
@@ -188,6 +185,7 @@ class TestFlextApiSmartCache:
 # CLIENT POOL TESTS
 # ==============================================================================
 
+
 class TestFlextApiClientPool:
     """Test auto-scaling client pool patterns."""
 
@@ -197,7 +195,7 @@ class TestFlextApiClientPool:
         async with FlextApiClientPool(
             base_url="https://httpbin.org",
             min_clients=2,
-            max_clients=4
+            max_clients=4,
         ) as pool:
             # Test single request
             result = await pool.execute_request("GET", "/json")
@@ -219,7 +217,7 @@ class TestFlextApiClientPool:
         async with FlextApiClientPool(
             base_url="https://httpbin.org",
             min_clients=1,
-            max_clients=3
+            max_clients=3,
         ) as pool:
             results = await pool.execute_batch(requests)
 
@@ -234,7 +232,7 @@ class TestFlextApiClientPool:
         async with FlextApiClientPool(
             base_url="https://httpbin.org",
             min_clients=1,
-            max_clients=2
+            max_clients=2,
         ) as pool:
             # Make some requests
             await pool.execute_request("GET", "/json")
@@ -252,7 +250,7 @@ class TestFlextApiClientPool:
             base_url="https://api.example.com",
             min_clients=3,
             max_clients=10,
-            auth_token="test-token"
+            auth_token="test-token",
         )
 
         assert isinstance(pool, FlextApiClientPool)
@@ -265,6 +263,7 @@ class TestFlextApiClientPool:
 # ==============================================================================
 # INTEGRATION TESTS
 # ==============================================================================
+
 
 class TestEnterprisePatternIntegration:
     """Test integration between different enterprise patterns."""
@@ -279,13 +278,13 @@ class TestEnterprisePatternIntegration:
         services = [
             FlextApiServiceDefinition(
                 name="cached-service",
-                base_url="https://httpbin.org"
-            )
+                base_url="https://httpbin.org",
+            ),
         ]
 
         async with FlextApiEnterpriseOrchestrator(services) as orchestrator:
             # Create cached health check function
-            async def cached_health_check():
+            async def cached_health_check() -> dict[str, Any]:
                 return await orchestrator.health_check_all_services()
 
             # First call
@@ -310,7 +309,7 @@ class TestEnterprisePatternIntegration:
         async with FlextApiClientPool(
             base_url="https://httpbin.org",
             min_clients=2,
-            max_clients=5
+            max_clients=5,
         ) as pool:
             # Execute batch that would typically require orchestrator
             results = await pool.execute_batch(requests)
@@ -327,6 +326,7 @@ class TestEnterprisePatternIntegration:
 # ==============================================================================
 # PERFORMANCE AND CODE REDUCTION TESTS
 # ==============================================================================
+
 
 class TestCodeReductionDemonstration:
     """Demonstrate actual code reduction achieved by enterprise patterns."""
@@ -353,8 +353,8 @@ class TestCodeReductionDemonstration:
                 source_service="svc1",
                 source_endpoint="/json",
                 target_service="svc2",
-                target_endpoint="/post"
-            )
+                target_endpoint="/post",
+            ),
         ]
 
         async with FlextApiEnterpriseOrchestrator(services) as orchestrator:
@@ -383,7 +383,7 @@ class TestCodeReductionDemonstration:
         async with FlextApiClientPool(
             base_url="https://httpbin.org",
             min_clients=2,
-            max_clients=10
+            max_clients=10,
         ) as pool:
             # High-throughput batch processing - 1 line vs 195+ traditional
             requests = [{"method": "GET", "endpoint": "/json"} for _ in range(20)]

@@ -8,10 +8,9 @@ zero duplications and proper ABI design.
 import asyncio
 import json
 import time
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
-from flext_core import FlextResult
 
 from flext_api import (
     FlextApiCachingPlugin,
@@ -37,8 +36,9 @@ from flext_api import (
 # FIXTURES
 # ==============================================================================
 
+
 @pytest.fixture
-def mock_session():
+def mock_session() -> AsyncMock:
     """Mock aiohttp session for testing."""
     session = AsyncMock()
     response = AsyncMock()
@@ -55,7 +55,7 @@ def mock_session():
 
 
 @pytest.fixture
-def basic_config():
+def basic_config() -> FlextApiClientConfig:
     """Basic client configuration for testing."""
     return FlextApiClientConfig(
         base_url="https://api.test.com",
@@ -68,7 +68,10 @@ def basic_config():
 
 
 @pytest.fixture
-async def test_client(basic_config, mock_session):
+async def test_client(
+    basic_config: FlextApiClientConfig,
+    mock_session: AsyncMock,
+) -> FlextApiClient:
     """Pre-configured test client."""
     client = FlextApiClient(basic_config)
     client._session = mock_session
@@ -80,10 +83,14 @@ async def test_client(basic_config, mock_session):
 # CORE CLIENT TESTS
 # ==============================================================================
 
+
 class TestFlextApiClient:
     """Test core FlextApiClient functionality."""
 
-    async def test_client_initialization(self, basic_config) -> None:
+    async def test_client_initialization(
+        self,
+        basic_config: FlextApiClientConfig,
+    ) -> None:
         """Test client initializes with correct configuration."""
         client = FlextApiClient(basic_config)
 
@@ -95,18 +102,24 @@ class TestFlextApiClient:
 
         await client.close()
 
-    async def test_client_as_context_manager(self, basic_config) -> None:
+    async def test_client_as_context_manager(
+        self,
+        basic_config: FlextApiClientConfig,
+    ) -> None:
         """Test client works as async context manager."""
         async with FlextApiClient(basic_config) as client:
             assert client is not None
             assert isinstance(client, FlextApiClient)
 
-    async def test_session_creation(self, test_client) -> None:
+    async def test_session_creation(self, test_client: FlextApiClient) -> None:
         """Test HTTP session is created properly."""
         await test_client._ensure_session()
         assert test_client._session is not None
 
-    async def test_public_methods_for_protocols(self, test_client) -> None:
+    async def test_public_methods_for_protocols(
+        self,
+        test_client: FlextApiClient,
+    ) -> None:
         """Test public methods work correctly for protocol clients."""
         await test_client.ensure_session()
 
@@ -117,7 +130,11 @@ class TestFlextApiClient:
         assert full_url == "https://api.test.com/api/v1/test"
 
     @patch("aiohttp.ClientSession")
-    async def test_successful_request(self, mock_session_class, test_client) -> None:
+    async def test_successful_request(
+        self,
+        mock_session_class: object,
+        test_client: FlextApiClient,
+    ) -> None:
         """Test successful HTTP request execution."""
         # Mock session and response
         mock_response = AsyncMock()
@@ -126,12 +143,14 @@ class TestFlextApiClient:
         mock_response.text.return_value = '{"result": "success"}'
         mock_response.json.return_value = {"result": "success"}
 
-        test_client._session.request.return_value.__aenter__.return_value = mock_response
+        test_client._session.request.return_value.__aenter__.return_value = (
+            mock_response
+        )
 
         request = FlextApiClientRequest(
             method=FlextApiClientMethod.GET,
             url="/api/test",
-            timeout=5.0
+            timeout=5.0,
         )
 
         result = await test_client.request(request)
@@ -141,7 +160,7 @@ class TestFlextApiClient:
         assert result.data.json_data == {"result": "success"}
         assert result.data.execution_time_ms > 0
 
-    async def test_client_metrics(self, test_client) -> None:
+    async def test_client_metrics(self, test_client: FlextApiClient) -> None:
         """Test client metrics collection."""
         metrics = test_client.get_metrics()
 
@@ -152,7 +171,7 @@ class TestFlextApiClient:
         assert hasattr(metrics, "uptime_seconds")
         assert metrics.uptime_seconds >= 0
 
-    async def test_client_health_status(self, test_client) -> None:
+    async def test_client_health_status(self, test_client: FlextApiClient) -> None:
         """Test client health monitoring."""
         health = test_client.get_health()
 
@@ -170,6 +189,7 @@ class TestFlextApiClient:
 # BUILDER PATTERN TESTS
 # ==============================================================================
 
+
 class TestFlextApiClientBuilder:
     """Test FlextApiClientBuilder pattern."""
 
@@ -177,19 +197,20 @@ class TestFlextApiClientBuilder:
         """Test builder configures client correctly."""
         builder = FlextApiClientBuilder()
 
-        client = (builder
-                  .with_base_url("https://test.api.com")
-                  .with_timeout(30.0)
-                  .with_auth_token("token123")
-                  .with_api_key("key456")
-                  .with_http2(True)
-                  .with_caching(True, 600)
-                  .with_circuit_breaker(True, 5)
-                  .with_retries(3, 2.0)
-                  .with_headers({"x-custom": "value"})
-                  .with_validation(True, True)
-                  .with_observability(True, True)
-                  .build())
+        client = (
+            builder.with_base_url("https://test.api.com")
+            .with_timeout(30.0)
+            .with_auth_token("token123")
+            .with_api_key("key456")
+            .with_http2(True)
+            .with_caching(True, 600)
+            .with_circuit_breaker(True, 5)
+            .with_retries(3, 2.0)
+            .with_headers({"x-custom": "value"})
+            .with_validation(True, True)
+            .with_observability(True, True)
+            .build()
+        )
 
         assert client.config.base_url == "https://test.api.com"
         assert client.config.timeout == 30.0
@@ -213,11 +234,13 @@ class TestFlextApiClientBuilder:
         plugin1 = FlextApiLoggingPlugin()
         plugin2 = FlextApiRetryPlugin()
 
-        client = (FlextApiClientBuilder()
-                  .with_base_url("https://test.com")
-                  .with_plugin(plugin1)
-                  .with_plugin(plugin2)
-                  .build())
+        client = (
+            FlextApiClientBuilder()
+            .with_base_url("https://test.com")
+            .with_plugin(plugin1)
+            .with_plugin(plugin2)
+            .build()
+        )
 
         assert len(client._plugins) == 2
         assert plugin1 in client._plugins
@@ -227,6 +250,7 @@ class TestFlextApiClientBuilder:
 # ==============================================================================
 # CONVENIENCE FUNCTIONS TESTS
 # ==============================================================================
+
 
 class TestConvenienceFunctions:
     """Test convenience factory functions."""
@@ -260,18 +284,16 @@ class TestConvenienceFunctions:
 # PLUGIN SYSTEM TESTS
 # ==============================================================================
 
+
 class TestPluginSystem:
     """Test plugin system functionality."""
 
-    async def test_logging_plugin(self, test_client) -> None:
+    async def test_logging_plugin(self, test_client: FlextApiClient) -> None:
         """Test logging plugin functionality."""
         plugin = FlextApiLoggingPlugin()
         test_client.add_plugin(plugin)
 
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.GET,
-            url="/test"
-        )
+        request = FlextApiClientRequest(method=FlextApiClientMethod.GET, url="/test")
 
         # Test plugin data storage
         await plugin.before_request(request)
@@ -289,7 +311,7 @@ class TestPluginSystem:
         request = FlextApiClientRequest(
             method=FlextApiClientMethod.GET,
             url="/test",
-            retry_count=1
+            retry_count=1,
         )
 
         await plugin.before_request(request)
@@ -300,10 +322,7 @@ class TestPluginSystem:
         """Test caching plugin functionality."""
         plugin = FlextApiCachingPlugin()
 
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.GET,
-            url="/test"
-        )
+        request = FlextApiClientRequest(method=FlextApiClientMethod.GET, url="/test")
 
         # Test cache miss
         await plugin.before_request(request)
@@ -314,17 +333,11 @@ class TestPluginSystem:
         """Test metrics plugin functionality."""
         plugin = FlextApiMetricsPlugin()
 
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.GET,
-            url="/test"
-        )
+        request = FlextApiClientRequest(method=FlextApiClientMethod.GET, url="/test")
 
         await plugin.before_request(request)
 
-        response = FlextApiClientResponse(
-            status_code=200,
-            execution_time_ms=100.0
-        )
+        response = FlextApiClientResponse(status_code=200, execution_time_ms=100.0)
 
         await plugin.after_request(request, response)
 
@@ -337,10 +350,7 @@ class TestPluginSystem:
         """Test circuit breaker plugin functionality."""
         plugin = FlextApiCircuitBreakerPlugin()
 
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.GET,
-            url="/test"
-        )
+        request = FlextApiClientRequest(method=FlextApiClientMethod.GET, url="/test")
 
         # Test normal state
         await plugin.before_request(request)
@@ -358,10 +368,14 @@ class TestPluginSystem:
 # PROTOCOL CLIENT TESTS
 # ==============================================================================
 
+
 class TestProtocolClients:
     """Test protocol-specific client functionality."""
 
-    async def test_graphql_client_initialization(self, test_client) -> None:
+    async def test_graphql_client_initialization(
+        self,
+        test_client: FlextApiClient,
+    ) -> None:
         """Test GraphQL client initialization."""
         graphql_client = FlextApiGraphQLClient(test_client)
 
@@ -371,7 +385,10 @@ class TestProtocolClients:
 
         await graphql_client.disconnect()
 
-    async def test_websocket_client_initialization(self, test_client) -> None:
+    async def test_websocket_client_initialization(
+        self,
+        test_client: FlextApiClient,
+    ) -> None:
         """Test WebSocket client initialization."""
         ws_client = FlextApiWebSocketClient(test_client)
 
@@ -381,7 +398,10 @@ class TestProtocolClients:
 
         await ws_client.disconnect()
 
-    async def test_streaming_client_initialization(self, test_client) -> None:
+    async def test_streaming_client_initialization(
+        self,
+        test_client: FlextApiClient,
+    ) -> None:
         """Test Streaming client initialization."""
         streaming_client = FlextApiStreamingClient(test_client)
 
@@ -395,6 +415,7 @@ class TestProtocolClients:
 # ==============================================================================
 # VALIDATION TESTS
 # ==============================================================================
+
 
 class TestValidationSystem:
     """Test request/response validation system."""
@@ -420,7 +441,7 @@ class TestValidationSystem:
         valid_request = FlextApiClientRequest(
             method=FlextApiClientMethod.GET,
             url="https://api.example.com/users",
-            timeout=30.0
+            timeout=30.0,
         )
 
         result = manager.validate_request(valid_request)
@@ -430,7 +451,7 @@ class TestValidationSystem:
         invalid_request = FlextApiClientRequest(
             method=FlextApiClientMethod.GET,
             url="",  # Invalid empty URL
-            timeout=-1.0  # Invalid negative timeout
+            timeout=-1.0,  # Invalid negative timeout
         )
 
         result = manager.validate_request(invalid_request)
@@ -443,7 +464,7 @@ class TestValidationSystem:
 
         valid_response = FlextApiClientResponse(
             status_code=200,
-            execution_time_ms=150.0
+            execution_time_ms=150.0,
         )
 
         result = manager.validate_response(valid_response)
@@ -452,7 +473,7 @@ class TestValidationSystem:
         # Test invalid response
         invalid_response = FlextApiClientResponse(
             status_code=999,  # Invalid status code
-            execution_time_ms=-10.0  # Invalid negative time
+            execution_time_ms=-10.0,  # Invalid negative time
         )
 
         result = manager.validate_response(invalid_response)
@@ -464,22 +485,25 @@ class TestValidationSystem:
 # INTEGRATION TESTS
 # ==============================================================================
 
+
 class TestIntegration:
     """Test complete integration scenarios."""
 
     async def test_full_enterprise_stack(self) -> None:
         """Test complete enterprise stack with all features."""
-        client = (FlextApiClientBuilder()
-                  .with_base_url("https://api.test.com")
-                  .with_auth_token("test-token")
-                  .with_caching(True, 300)
-                  .with_circuit_breaker(True, 3)
-                  .with_retries(3, 1.0)
-                  .with_validation(True, True)
-                  .with_observability(True, True)
-                  .with_plugin(FlextApiLoggingPlugin())
-                  .with_plugin(FlextApiMetricsPlugin())
-                  .build())
+        client = (
+            FlextApiClientBuilder()
+            .with_base_url("https://api.test.com")
+            .with_auth_token("test-token")
+            .with_caching(True, 300)
+            .with_circuit_breaker(True, 3)
+            .with_retries(3, 1.0)
+            .with_validation(True, True)
+            .with_observability(True, True)
+            .with_plugin(FlextApiLoggingPlugin())
+            .with_plugin(FlextApiMetricsPlugin())
+            .build()
+        )
 
         # Verify all features are configured
         assert client.config.auth_token == "test-token"
@@ -494,7 +518,7 @@ class TestIntegration:
         health = client.get_health()
         metrics = client.get_metrics()
 
-        assert health["status"] in ["healthy", "degraded", "unhealthy"]
+        assert health["status"] in {"healthy", "degraded", "unhealthy"}
         assert metrics.total_requests >= 0
 
         await client.close()
@@ -524,22 +548,12 @@ class TestIntegration:
         """Test that all functionality is accessible from root namespace."""
         # This test validates that imports work from root
         from flext_api import (
-            FlextApiCachingPlugin,
-            FlextApiCircuitBreakerPlugin,
             FlextApiClient,
             FlextApiClientBuilder,
             FlextApiClientConfig,
             FlextApiClientMethod,
             FlextApiClientRequest,
             FlextApiClientResponse,
-            FlextApiGraphQLClient,
-            FlextApiLoggingPlugin,
-            FlextApiMetricsPlugin,
-            FlextApiRetryPlugin,
-            FlextApiStreamingClient,
-            FlextApiValidationManager,
-            FlextApiWebSocketClient,
-            flext_api_client_context,
             flext_api_create_client,
         )
 
@@ -560,6 +574,7 @@ class TestIntegration:
 # ==============================================================================
 # PERFORMANCE TESTS
 # ==============================================================================
+
 
 class TestPerformance:
     """Test performance characteristics."""
@@ -586,8 +601,9 @@ class TestPerformance:
             assert execution_time < 10.0
 
             # Most requests should succeed (allowing for network issues)
-            successful = sum(1 for r in results
-                           if not isinstance(r, Exception) and r.success)
+            successful = sum(
+                1 for r in results if not isinstance(r, Exception) and r.success
+            )
             assert successful >= len(tasks) * 0.6  # At least 60% success rate
 
     async def test_plugin_overhead(self) -> None:
@@ -596,13 +612,15 @@ class TestPerformance:
         client_no_plugins = flext_api_create_client("https://httpbin.org")
 
         # Client with multiple plugins
-        client_with_plugins = (FlextApiClientBuilder()
-                               .with_base_url("https://httpbin.org")
-                               .with_plugin(FlextApiLoggingPlugin())
-                               .with_plugin(FlextApiRetryPlugin())
-                               .with_plugin(FlextApiCachingPlugin())
-                               .with_plugin(FlextApiMetricsPlugin())
-                               .build())
+        client_with_plugins = (
+            FlextApiClientBuilder()
+            .with_base_url("https://httpbin.org")
+            .with_plugin(FlextApiLoggingPlugin())
+            .with_plugin(FlextApiRetryPlugin())
+            .with_plugin(FlextApiCachingPlugin())
+            .with_plugin(FlextApiMetricsPlugin())
+            .build()
+        )
 
         async with client_no_plugins, client_with_plugins:
             # Test single request timing
@@ -624,6 +642,7 @@ class TestPerformance:
 # EDGE CASE TESTS
 # ==============================================================================
 
+
 class TestEdgeCases:
     """Test edge cases and error conditions."""
 
@@ -642,7 +661,7 @@ class TestEdgeCases:
 
         await client.close()
 
-    async def test_network_errors(self, test_client) -> None:
+    async def test_network_errors(self, test_client: FlextApiClient) -> None:
         """Test handling of network errors."""
         # Mock network error
         test_client._session.request.side_effect = TimeoutError("Network timeout")
@@ -650,7 +669,7 @@ class TestEdgeCases:
         request = FlextApiClientRequest(
             method=FlextApiClientMethod.GET,
             url="/test",
-            retry_count=1
+            retry_count=1,
         )
 
         result = await test_client.request(request)
@@ -659,7 +678,7 @@ class TestEdgeCases:
         assert result.success is False
         assert "timeout" in result.message.lower() or "failed" in result.message.lower()
 
-    async def test_large_response_handling(self, test_client) -> None:
+    async def test_large_response_handling(self, test_client: FlextApiClient) -> None:
         """Test handling of large responses."""
         # Mock large response
         large_data = {"data": "x" * 10000}  # 10KB of data
@@ -669,11 +688,13 @@ class TestEdgeCases:
         mock_response.text.return_value = json.dumps(large_data)
         mock_response.json.return_value = large_data
 
-        test_client._session.request.return_value.__aenter__.return_value = mock_response
+        test_client._session.request.return_value.__aenter__.return_value = (
+            mock_response
+        )
 
         request = FlextApiClientRequest(
             method=FlextApiClientMethod.GET,
-            url="/large-data"
+            url="/large-data",
         )
 
         result = await test_client.request(request)

@@ -72,12 +72,10 @@ async def get_flext_db_session() -> AsyncGenerator[AsyncSession]:
 # ==============================================================================
 
 
-async def get_flext_grpc_channel() -> object:
-    """Get gRPC channel via DI - NO DIRECT IMPORTS."""
-    try:
-        # TODO: FlextApiGrpcPort not implemented yet
-        # Use DI container to get gRPC service
-        # This avoids direct imports from flext-grpc
+async def get_flext_grpc_channel() -> None:
+    """gRPC channel not implemented - use direct gRPC clients."""
+    # This dependency is not implemented and should not be used
+    # Use direct gRPC clients from flext-grpc instead
         # from flext_api.infrastructure.ports import FlextApiGrpcPort
 
         # Get gRPC service from DI container
@@ -301,7 +299,7 @@ def get_flext_system_service() -> SystemService:
                                 p
                                 for p in psutil.process_iter()
                                 if p.status() == "running"
-                            ]
+                            ],
                         ),
                     },
                 }

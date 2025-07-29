@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 if TYPE_CHECKING:
@@ -93,7 +92,8 @@ def mock_external_services() -> Generator[None]:
             return_value=mock_plugin_platform,
         ),
         patch(
-            "flext_api.dependencies.FlextAuthPlatform", return_value=mock_auth_platform
+            "flext_api.dependencies.FlextAuthPlatform",
+            return_value=mock_auth_platform,
         ),
         patch(
             "flext_api.dependencies.FlextPluginPlatform",
@@ -124,7 +124,7 @@ TEST_CONFIG = {
 }
 
 
-def override_get_api_settings() -> Any:
+def override_get_api_settings() -> object:
     """Override API settings for testing."""
     from flext_api.infrastructure.config import APIConfig
 

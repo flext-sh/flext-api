@@ -72,7 +72,8 @@ class TestPipelineService:
         assert result.data["status"] == "created"
 
     async def test_create_pipeline_empty_name(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test pipeline creation with empty name."""
         request = PipelineCreateRequest(
@@ -88,7 +89,8 @@ class TestPipelineService:
         assert "Pipeline creation failed" in result.error
 
     async def test_create_pipeline_empty_extractor(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test pipeline creation with empty extractor."""
         request = PipelineCreateRequest(
@@ -104,7 +106,8 @@ class TestPipelineService:
         assert "Pipeline creation failed" in result.error
 
     async def test_create_pipeline_empty_loader(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test pipeline creation with empty loader."""
         request = PipelineCreateRequest(
@@ -120,7 +123,8 @@ class TestPipelineService:
         assert "Pipeline creation failed" in result.error
 
     async def test_list_pipelines_success(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test successful pipeline listing."""
         result = await pipeline_service.list_pipelines()
@@ -130,7 +134,8 @@ class TestPipelineService:
         assert isinstance(result.data, list)
 
     async def test_list_pipelines_with_status_filter(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test pipeline listing with status filter."""
         result = await pipeline_service.list_pipelines(status=PipelineStatus.ACTIVE)
@@ -140,7 +145,8 @@ class TestPipelineService:
         assert isinstance(result.data, list)
 
     async def test_list_pipelines_pagination(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test pipeline listing with pagination."""
         result = await pipeline_service.list_pipelines(page=1, page_size=10)
@@ -168,7 +174,8 @@ class TestPipelineService:
         assert result.data["id"] == pipeline_id
 
     async def test_get_pipeline_by_id_not_found(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test pipeline retrieval for non-existent ID."""
         fake_id = str(uuid4())
@@ -178,7 +185,8 @@ class TestPipelineService:
         assert "Pipeline not found" in result.error
 
     async def test_get_pipeline_by_id_empty_id(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test pipeline retrieval with empty ID."""
         result = await pipeline_service.get_pipeline_by_id("")
@@ -200,7 +208,8 @@ class TestPipelineService:
 
         # Then update it
         result = await pipeline_service.update_pipeline(
-            pipeline_id, valid_update_request
+            pipeline_id,
+            valid_update_request,
         )
 
         assert result.is_success
@@ -238,7 +247,8 @@ class TestPipelineService:
         assert "message" in result.data
 
     async def test_delete_pipeline_not_found(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test deleting non-existent pipeline."""
         fake_id = str(uuid4())
@@ -266,7 +276,8 @@ class TestPipelineService:
         assert "execution_id" in result.data
 
     async def test_execute_pipeline_not_found(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test executing non-existent pipeline."""
         fake_id = str(uuid4())
@@ -317,7 +328,8 @@ class TestPipelineService:
         assert "status" in result.data
 
     async def test_get_execution_status_not_found(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test getting status for non-existent execution."""
         fake_id = str(uuid4())
@@ -349,7 +361,8 @@ class TestPipelineService:
         assert "message" in result.data
 
     async def test_cancel_execution_not_found(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test cancelling non-existent execution."""
         fake_id = str(uuid4())
@@ -395,7 +408,8 @@ class TestPipelineService:
         assert "validation_result" in result.data
 
     async def test_validate_pipeline_not_found(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test validating non-existent pipeline."""
         fake_id = str(uuid4())
@@ -423,7 +437,8 @@ class TestPipelineService:
         assert result.data["name"] == "cloned-pipeline"
 
     async def test_clone_pipeline_not_found(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test cloning non-existent pipeline."""
         fake_id = str(uuid4())
@@ -433,7 +448,8 @@ class TestPipelineService:
         assert "Pipeline cloning failed" in result.error
 
     async def test_error_handling_exception(
-        self, pipeline_service: PipelineService
+        self,
+        pipeline_service: PipelineService,
     ) -> None:
         """Test error handling when exceptions occur."""
         with patch.object(pipeline_service, "_get_storage") as mock_storage:

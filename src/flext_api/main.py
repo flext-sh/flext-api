@@ -9,18 +9,24 @@ The actual application logic is in app.py following clean architecture patterns.
 
 from __future__ import annotations
 
-# Import the configured FastAPI app from app.py
-from flext_api.app import app
-from flext_api.storage import FlextAPIStorage
+# Import the app creation function from app.py
+from flext_api.app import flext_api_create_app
 
-# Create storage instance
-storage = FlextAPIStorage()
+# Create the FastAPI app instance
+app = flext_api_create_app()
+
+# Create storage instance for compatibility
+# (Remove this if storage module doesn't exist)
+try:
+    from flext_api.storage import FlextAPIStorage
+    storage = FlextAPIStorage()
+except ImportError:
+    storage = None
 
 # Export the app and storage for uvicorn and tests
 __all__ = ["app", "storage"]
 
 # Main execution entry point
 if __name__ == "__main__":
-    from flext_api.app import main
-
-    main()
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

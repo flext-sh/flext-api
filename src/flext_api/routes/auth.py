@@ -107,7 +107,7 @@ async def login_flext_user(
 
         # Authenticate user - NO FALLBACKS
         result = await auth_service.authenticate_user(
-            request.username, request.password
+            request.username, request.password,
         )
 
         if not result.success:
@@ -286,7 +286,7 @@ async def validate_flext_token(
         if result.success:
             user_data = result.data
             logger.debug(
-                f"Token validated for user: {user_data.get('username') if user_data else 'unknown'}"
+                f"Token validated for user: {user_data.get('username') if user_data else 'unknown'}",
             )
             response = {
                 "valid": True,

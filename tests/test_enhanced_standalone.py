@@ -17,7 +17,6 @@ import pytest
 from flext_api.helpers.flext_api_boilerplate import (
     FlextApiApplicationClient,
     FlextApiApplicationMixin,
-    FlextApiClientBuilder,
     FlextApiDataProcessingMixin,
     FlextApiEnhancedClient,
     flext_api_create_application_client,
@@ -50,12 +49,13 @@ class TestEnhancedApplicationPatterns:
         """Test client builder pattern."""
         builder = flext_api_create_client_builder()
 
-        client = (builder
-                  .with_base_url("https://httpbin.org")
-                  .with_auth_token("test-token")
-                  .with_caching(ttl=60)
-                  .with_metrics()
-                  .build())
+        client = (
+            builder.with_base_url("https://httpbin.org")
+            .with_auth_token("test-token")
+            .with_caching(ttl=60)
+            .with_metrics()
+            .build()
+        )
 
         assert client.base_url == "https://httpbin.org"
         assert hasattr(client, "auth_get_headers")
@@ -65,10 +65,12 @@ class TestEnhancedApplicationPatterns:
     @pytest.mark.asyncio
     async def test_builder_with_authentication(self) -> None:
         """Test builder with authentication headers."""
-        client = (flext_api_create_client_builder()
-                  .with_base_url("https://httpbin.org")
-                  .with_auth_token("test-token")
-                  .build())
+        client = (
+            flext_api_create_client_builder()
+            .with_base_url("https://httpbin.org")
+            .with_auth_token("test-token")
+            .build()
+        )
 
         response = await client.get("/headers")
 
@@ -84,7 +86,7 @@ class TestEnhancedApplicationPatterns:
             auth_token="test-token",
             enable_cache=True,
             enable_metrics=True,
-            enable_validation=False
+            enable_validation=False,
         )
 
         # Verify all features are available
@@ -102,7 +104,7 @@ class TestEnhancedApplicationPatterns:
         client = flext_api_create_microservice_client(
             "https://httpbin.org",
             "test-service",
-            "service-token"
+            "service-token",
         )
 
         response = await client.get("/json")
@@ -114,6 +116,7 @@ class TestEnhancedApplicationPatterns:
 
     def test_application_mixin_functionality(self) -> None:
         """Test application mixin context and headers."""
+
         class TestClient(FlextApiApplicationMixin):
             pass
 
@@ -135,6 +138,7 @@ class TestEnhancedApplicationPatterns:
 
     def test_data_processing_mixin(self) -> None:
         """Test data processing utilities."""
+
         class TestClient(FlextApiDataProcessingMixin):
             pass
 
@@ -144,8 +148,8 @@ class TestEnhancedApplicationPatterns:
         data = {
             "user": {
                 "profile": {"name": "John", "email": "john@example.com"},
-                "settings": {"theme": "dark"}
-            }
+                "settings": {"theme": "dark"},
+            },
         }
 
         assert client.data_extract_field(data, "user.profile.name") == "John"
@@ -156,7 +160,7 @@ class TestEnhancedApplicationPatterns:
         response = flext_api_success_dict({"count": "123", "value": "456"})
         transformed = client.data_transform_response(
             response,
-            lambda data: {k: int(v) for k, v in data.items()}
+            lambda data: {k: int(v) for k, v in data.items()},
         )
 
         assert transformed["success"] is True
@@ -170,7 +174,7 @@ class TestEnhancedApplicationPatterns:
             "https://httpbin.org",
             user_id="12345",
             correlation_id="abc-def-123",
-            service_name="test-service"
+            service_name="test-service",
         )
 
         assert isinstance(client, FlextApiEnhancedClient)
@@ -194,7 +198,9 @@ class TestEnhancedApplicationPatterns:
                 correlation_id_header = header_value
 
         assert user_id_header is not None, "X-User-ID header not found in response"
-        assert correlation_id_header is not None, "X-Correlation-ID header not found in response"
+        assert correlation_id_header is not None, (
+            "X-Correlation-ID header not found in response"
+        )
         assert user_id_header == "12345"
 
     @pytest.mark.asyncio
@@ -203,7 +209,7 @@ class TestEnhancedApplicationPatterns:
         client = flext_api_create_full_client(
             "https://httpbin.org",
             enable_cache=True,
-            enable_metrics=True
+            enable_metrics=True,
         )
 
         # Execute concurrent requests
@@ -232,7 +238,7 @@ class TestEnhancedApplicationPatterns:
         client = flext_api_create_enhanced_client(
             "https://httpbin.org",
             user_id="12345",
-            correlation_id="abc-def-123"
+            correlation_id="abc-def-123",
         )
 
         # Verify comprehensive functionality in those 3 lines
@@ -252,7 +258,7 @@ class TestEnhancedApplicationPatterns:
             "https://httpbin.org",
             user_id="user-123",
             correlation_id="req-456",
-            service_name="user-service"
+            service_name="user-service",
         )
 
         # 1. Fetch user data with automatic context headers
@@ -260,7 +266,11 @@ class TestEnhancedApplicationPatterns:
         assert user_response["success"] is True
 
         # 2. Extract specific data field
-        title = client.data_extract_field(user_response["data"], "slideshow.title", "Default Title")
+        title = client.data_extract_field(
+            user_response["data"],
+            "slideshow.title",
+            "Default Title",
+        )
         assert isinstance(title, str)
 
         # 3. Transform response for next service call
@@ -269,8 +279,8 @@ class TestEnhancedApplicationPatterns:
             lambda data: {
                 "extracted_title": title,
                 "processed_at": datetime.now().isoformat(),
-                "user_context": client.app_get_context("user_id")
-            }
+                "user_context": client.app_get_context("user_id"),
+            },
         )
 
         assert transformed["success"] is True
@@ -281,16 +291,18 @@ class TestEnhancedApplicationPatterns:
     async def test_integration_patterns(self) -> None:
         """Test integration between different client patterns."""
         # Builder-based client
-        builder_client = (flext_api_create_client_builder()
-                          .with_base_url("https://httpbin.org")
-                          .with_auth_token("builder-token")
-                          .with_caching()
-                          .build())
+        builder_client = (
+            flext_api_create_client_builder()
+            .with_base_url("https://httpbin.org")
+            .with_auth_token("builder-token")
+            .with_caching()
+            .build()
+        )
 
         # Enhanced client
         enhanced_client = flext_api_create_enhanced_client(
             "https://httpbin.org",
-            user_id="12345"
+            user_id="12345",
         )
 
         # Both patterns should work seamlessly

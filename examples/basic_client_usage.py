@@ -7,10 +7,8 @@ compared to traditional approaches.
 
 import asyncio
 import contextlib
-from typing import Any
 
 from flext_api import (
-    FlextApiClient,
     FlextApiClientBuilder,
     flext_api_client_context,
     flext_api_create_client,
@@ -20,12 +18,11 @@ from flext_api import (
 # EXAMPLE 1: TRADITIONAL APPROACH VS FLEXT-API (90% CODE REDUCTION)
 # ==============================================================================
 
+
 async def traditional_approach_example():
     """Traditional HTTP client code - verbose and error-prone."""
     import asyncio
-    import json
     import time
-    from typing import Optional
 
     import aiohttp
 
@@ -46,23 +43,28 @@ async def traditional_approach_example():
             try:
                 start_time = time.time()
                 async with session.get(f"{base_url}/users/123") as response:
-                    if response.status == 200:
+                    if response.status == HTTPStatus.OK:
                         data = await response.json()
                         (time.time() - start_time) * 1000
                         return data
-                    if response.status in [408, 429, 500, 502, 503, 504] and attempt < retries - 1:
-                        delay = 2 ** attempt  # Exponential backoff
+                    if (
+                        response.status in {408, 429, 500, 502, 503, 504}
+                        and attempt < retries - 1
+                    ):
+                        delay = 2**attempt  # Exponential backoff
                         await asyncio.sleep(delay)
                         continue
                     error_text = await response.text()
-                    raise Exception(f"HTTP {response.status}: {error_text}")
+                    msg = f"HTTP {response.status}: {error_text}"
+                    raise Exception(msg)
 
             except (TimeoutError, aiohttp.ClientError) as e:
                 if attempt < retries - 1:
-                    delay = 2 ** attempt
+                    delay = 2**attempt
                     await asyncio.sleep(delay)
                     continue
-                raise Exception(f"Request failed after {retries} attempts: {e}")
+                msg = f"Request failed after {retries} attempts: {e}"
+                raise Exception(msg)
 
     finally:
         if session:
@@ -83,18 +85,21 @@ async def flext_api_approach_example():
 # EXAMPLE 2: ENTERPRISE FEATURES WITH ZERO BOILERPLATE
 # ==============================================================================
 
+
 async def enterprise_features_example() -> None:
     """Demonstrate enterprise features with minimal code."""
     # Single builder call enables ALL enterprise features
-    client = (FlextApiClientBuilder()
-              .with_base_url("https://api.example.com")
-              .with_auth_token("bearer-token-123")
-              .with_caching(enabled=True, ttl=600)
-              .with_circuit_breaker(enabled=True, failure_threshold=3)
-              .with_retries(max_retries=5, delay=1.0)
-              .with_http2(enabled=True)
-              .with_observability(metrics=True, tracing=True)
-              .build())
+    client = (
+        FlextApiClientBuilder()
+        .with_base_url("https://api.example.com")
+        .with_auth_token("bearer-token-123")
+        .with_caching(enabled=True, ttl=600)
+        .with_circuit_breaker(enabled=True, failure_threshold=3)
+        .with_retries(max_retries=5, delay=1.0)
+        .with_http2(enabled=True)
+        .with_observability(metrics=True, tracing=True)
+        .build()
+    )
 
     async with client:
         # All requests automatically get:
@@ -117,10 +122,8 @@ async def enterprise_features_example() -> None:
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        for _i, result in enumerate(results):
+        for result in results:
             if isinstance(result, Exception) or result.success:
-                pass
-            else:
                 pass
 
         # Get comprehensive health and metrics
@@ -128,10 +131,10 @@ async def enterprise_features_example() -> None:
         client.get_metrics()
 
 
-
 # ==============================================================================
 # EXAMPLE 3: PROTOCOL-SPECIFIC CLIENTS
 # ==============================================================================
+
 
 async def protocol_clients_example() -> None:
     """Demonstrate GraphQL, WebSocket, and Streaming clients."""
@@ -145,7 +148,8 @@ async def protocol_clients_example() -> None:
         await graphql.connect()  # Auto-introspection
 
         # Execute GraphQL query
-        query_result = await graphql.query("""
+        query_result = await graphql.query(
+            """
             query GetUser($id: ID!) {
                 user(id: $id) {
                     name
@@ -156,7 +160,9 @@ async def protocol_clients_example() -> None:
                     }
                 }
             }
-        """, variables={"id": "123"})
+        """,
+            variables={"id": "123"},
+        )
 
         if query_result.success:
             pass
@@ -174,11 +180,9 @@ async def protocol_clients_example() -> None:
         websocket.add_message_handler("notification", handle_notification)
 
         # Send message
-        await websocket.send_message({
-            "type": "subscribe",
-            "channel": "user_updates",
-            "user_id": "123"
-        })
+        await websocket.send_message(
+            {"type": "subscribe", "channel": "user_updates", "user_id": "123"},
+        )
 
         # Streaming client for large data
         from flext_api import FlextApiStreamingClient
@@ -190,8 +194,7 @@ async def protocol_clients_example() -> None:
 
         # Stream large file download
         download_result = await streaming.stream_download(
-            "/large-dataset.json",
-            callback=process_chunk
+            "/large-dataset.json", callback=process_chunk,
         )
 
         if download_result.success:
@@ -201,6 +204,7 @@ async def protocol_clients_example() -> None:
 # ==============================================================================
 # EXAMPLE 4: PLUGIN SYSTEM FOR CUSTOM FUNCTIONALITY
 # ==============================================================================
+
 
 async def plugin_system_example() -> None:
     """Demonstrate extensible plugin system."""
@@ -228,14 +232,16 @@ async def plugin_system_example() -> None:
             pass
 
     # Build client with multiple plugins
-    client = (FlextApiClientBuilder()
-              .with_base_url("https://api.example.com")
-              .with_plugin(FlextApiLoggingPlugin())  # Comprehensive logging
-              .with_plugin(FlextApiRetryPlugin())    # Intelligent retries
-              .with_plugin(FlextApiCachingPlugin())  # Response caching
-              .with_plugin(FlextApiMetricsPlugin())  # Performance metrics
-              .with_plugin(CustomValidationPlugin()) # Custom logic
-              .build())
+    client = (
+        FlextApiClientBuilder()
+        .with_base_url("https://api.example.com")
+        .with_plugin(FlextApiLoggingPlugin())  # Comprehensive logging
+        .with_plugin(FlextApiRetryPlugin())  # Intelligent retries
+        .with_plugin(FlextApiCachingPlugin())  # Response caching
+        .with_plugin(FlextApiMetricsPlugin())  # Performance metrics
+        .with_plugin(CustomValidationPlugin())  # Custom logic
+        .build()
+    )
 
     async with client:
         # All plugins automatically execute in order
@@ -250,23 +256,20 @@ async def plugin_system_example() -> None:
 # MAIN DEMO
 # ==============================================================================
 
+
 async def main() -> None:
     """Run all examples to demonstrate code reduction."""
     with contextlib.suppress(Exception):
         await flext_api_approach_example()
 
-
     with contextlib.suppress(Exception):
         await enterprise_features_example()
-
 
     with contextlib.suppress(Exception):
         await protocol_clients_example()
 
-
     with contextlib.suppress(Exception):
         await plugin_system_example()
-
 
 
 if __name__ == "__main__":

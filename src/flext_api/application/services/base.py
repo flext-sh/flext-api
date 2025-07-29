@@ -227,13 +227,13 @@ class PipelineValidator(ABC):
 
     @abstractmethod
     async def validate_pipeline_config(
-        self, config: dict[str, Any] | None
+        self, config: dict[str, Any] | None,
     ) -> FlextResult[Any]:
         """Validate pipeline configuration."""
 
     @abstractmethod
     async def validate_pipeline_name(
-        self, name: str, owner_id: UUID | None
+        self, name: str, owner_id: UUID | None,
     ) -> FlextResult[Any]:
         """Validate pipeline name."""
 

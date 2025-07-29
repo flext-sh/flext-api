@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import UTC
 from typing import TYPE_CHECKING, Any
 
-from flext_core import FlextResult, get_logger, get_version
+from flext_core import FlextResult, get_logger, get_version_info
 
 from flext_api.application.services.base import MonitoringService
 
@@ -243,7 +243,7 @@ class SystemService(MonitoringService):
                 config = APIConfig()
 
                 response = {
-                    "version": get_version(),
+                    "version": str(get_version_info()),
                     "environment": (
                         "production" if config.is_production() else "development",
                     ),
@@ -266,7 +266,7 @@ class SystemService(MonitoringService):
             except Exception:
                 # If configuration service fails, return minimal safe configuration
                 response = {
-                    "version": get_version(),
+                    "version": str(get_version_info()),
                     "environment": "unknown",
                     "features": {},
                     "limits": {},
