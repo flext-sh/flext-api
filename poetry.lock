@@ -1297,8 +1297,8 @@ files = []
 develop = false
 
 [package.dependencies]
-flext-core = {path = "/home/marlonsc/flext/flext-core"}
-flext-observability = {path = "/home/marlonsc/flext/flext-observability"}
+flext-core = {path = "../flext-core"}
+flext-observability = {path = "../flext-observability"}
 grpcio = ">=1.50.0"
 grpcio-tools = "1.71.2"
 prometheus-client = ">=0.22.1"
@@ -1308,10 +1308,10 @@ pydantic-settings = ">=2.10.1"
 sqlalchemy = ">=2.0.41"
 
 [package.extras]
-dev = ["autoflake (>=2.3.1)", "black (>=25.1.0)", "codespell (>=2.3.0)", "isort (>=6.0.1)", "mypy (>=1.13.0)", "pre-commit (>=4.0.1)", "pylint (>=3.3.0)", "pyupgrade (>=3.19.0)", "radon (>=6.0.1)", "ruff (>=0.12.3)", "vulture (>=2.13)"]
+dev = ["autoflake (>=2.3.1)", "black (>=25.1.0)", "codespell (>=2.3.0)", "deptry (>=0.23.0)", "isort (>=6.0.1)", "mypy (>=1.13.0)", "pre-commit (>=4.0.1)", "pylint (>=3.3.0)", "pyupgrade (>=3.19.0)", "radon (>=6.0.1)", "ruff (>=0.12.3)", "vulture (>=2.13)"]
 security = ["bandit (>=1.8.0)", "pip-audit (>=2.7.3)"]
-test = ["factory-boy (>=3.3.1)", "faker (>=37.4.0)", "hypothesis (>=6.125.0)", "pytest (>=8.4.0)", "pytest-asyncio (>=1.0.0)", "pytest-benchmark (>=5.1.0)", "pytest-clarity (>=1.0.1)", "pytest-cov (>=6.2.0)", "pytest-deadfixtures (>=2.2.1)", "pytest-env (>=1.1.5)", "pytest-httpx (>=0.35.0)", "pytest-mock (>=3.14.0)", "pytest-randomly (>=3.16.0)", "pytest-sugar (>=1.0.0)", "pytest-timeout (>=2.4.0)", "pytest-xdist (>=3.8.0)"]
-typings = ["types-psutil (>=7.0.0)", "types-python-dateutil (>=2.9.0)", "types-pyyaml (>=6.0.12)", "types-redis (>=4.6.0)", "types-requests (>=2.32.4)", "types-setuptools (>=80.9.0)", "types-toml (>=0.10.8.20240310)"]
+test = ["factory-boy (>=3.3.1)", "faker (>=37.4.0)", "hypothesis (>=6.125.0)", "pytest (>=8.4.0)", "pytest-benchmark (>=5.1.0)", "pytest-clarity (>=1.0.1)", "pytest-cov (>=6.2.0)", "pytest-deadfixtures (>=2.2.1)", "pytest-env (>=1.1.5)", "pytest-httpx (>=0.35.0)", "pytest-mock (>=3.14.0)", "pytest-randomly (>=3.16.0)", "pytest-sugar (>=1.0.0)", "pytest-timeout (>=2.4.0)", "pytest-xdist (>=3.8.0)"]
+typings = ["django-stubs (>=5.2.2)", "types-ldap3 (>=2.9.13.20250622)", "types-protobuf (>=6.30.2.20250703)", "types-psutil (>=7.0.0)", "types-psycopg2 (>=2.9.21.20250718)", "types-python-dateutil (>=2.9.0)", "types-pyyaml (>=6.0.12)", "types-redis (>=4.6.0)", "types-requests (>=2.32.4)", "types-setuptools (>=80.9.0)", "types-toml (>=0.10.8.20240310)"]
 
 [package.source]
 type = "directory"
@@ -1329,7 +1329,7 @@ develop = false
 
 [package.dependencies]
 aiofiles = ">=24.1.0,<25.0.0"
-flext-core = {path = "/home/marlonsc/flext/flext-core"}
+flext-core = {path = "../flext-core"}
 opentelemetry-api = ">=1.35.0,<2.0.0"
 opentelemetry-sdk = ">=1.35.0,<2.0.0"
 prometheus-client = ">=0.22.1,<0.23.0"
@@ -1339,6 +1339,12 @@ pydantic-settings = ">=2.10.1,<3.0.0"
 rich = ">=14.0.0,<15.0.0"
 structlog = ">=25.4.0,<26.0.0"
 typer = ">=0.15.0,<1.0.0"
+
+[package.extras]
+dev = ["autoflake (>=2.3.1)", "black (>=25.1.0)", "codespell (>=2.3.0)", "deptry (>=0.23.0)", "isort (>=6.0.1)", "mypy (>=1.13.0)", "pre-commit (>=4.0.1)", "pylint (>=3.3.0)", "pyupgrade (>=3.19.0)", "radon (>=6.0.1)", "ruff (>=0.12.3)", "vulture (>=2.13)"]
+security = ["bandit (>=1.8.0)", "pip-audit (>=2.7.3)"]
+test = ["factory-boy (>=3.3.1)", "faker (>=37.4.0)", "hypothesis (>=6.125.0)", "pytest (>=8.4.0)", "pytest-benchmark (>=5.1.0)", "pytest-clarity (>=1.0.1)", "pytest-cov (>=6.2.0)", "pytest-deadfixtures (>=2.2.1)", "pytest-env (>=1.1.5)", "pytest-httpx (>=0.35.0)", "pytest-mock (>=3.14.0)", "pytest-randomly (>=3.16.0)", "pytest-sugar (>=1.0.0)", "pytest-timeout (>=2.4.0)", "pytest-xdist (>=3.8.0)"]
+typings = ["django-stubs (>=5.2.2)", "types-ldap3 (>=2.9.13.20250622)", "types-protobuf (>=6.30.2.20250703)", "types-psutil (>=7.0.0)", "types-psycopg2 (>=2.9.21.20250718)", "types-python-dateutil (>=2.9.0)", "types-pyyaml (>=6.0.12)", "types-redis (>=4.6.0)", "types-requests (>=2.32.4)", "types-setuptools (>=80.9.0)", "types-toml (>=0.10.8.20240310)"]
 
 [package.source]
 type = "directory"
@@ -1356,13 +1362,19 @@ develop = false
 
 [package.dependencies]
 aiofiles = ">=24.1.0,<25.0.0"
-flext-core = {path = "/home/marlonsc/flext/flext-core"}
-flext-observability = {path = "/home/marlonsc/flext/flext-observability"}
+flext-core = {path = "../flext-core"}
+flext-observability = {path = "../flext-observability"}
 jsonschema = ">=4.25.0,<5.0.0"
 psutil = ">=7.0.0,<8.0.0"
 pydantic = ">=2.11.7,<3.0.0"
 pydantic-settings = ">=2.10.1,<3.0.0"
 watchdog = ">=6.0.0,<7.0.0"
+
+[package.extras]
+dev = ["autoflake (>=2.3.1)", "black (>=25.1.0)", "codespell (>=2.3.0)", "deptry (>=0.23.0)", "isort (>=6.0.1)", "mypy (>=1.13.0)", "pre-commit (>=4.0.1)", "pylint (>=3.3.0)", "pyupgrade (>=3.19.0)", "radon (>=6.0.1)", "ruff (>=0.12.3)", "vulture (>=2.13)"]
+security = ["bandit (>=1.8.0)", "pip-audit (>=2.7.3)"]
+test = ["factory-boy (>=3.3.1)", "faker (>=37.4.0)", "hypothesis (>=6.125.0)", "pytest (>=8.4.0)", "pytest-benchmark (>=5.1.0)", "pytest-clarity (>=1.0.1)", "pytest-cov (>=6.2.0)", "pytest-deadfixtures (>=2.2.1)", "pytest-env (>=1.1.5)", "pytest-httpx (>=0.35.0)", "pytest-mock (>=3.14.0)", "pytest-randomly (>=3.16.0)", "pytest-sugar (>=1.0.0)", "pytest-timeout (>=2.4.0)", "pytest-xdist (>=3.8.0)"]
+typings = ["django-stubs (>=5.2.2)", "types-ldap3 (>=2.9.13.20250622)", "types-protobuf (>=6.30.2.20250703)", "types-psutil (>=7.0.0)", "types-psycopg2 (>=2.9.21.20250718)", "types-python-dateutil (>=2.9.0)", "types-pyyaml (>=6.0.12)", "types-redis (>=4.6.0)", "types-requests (>=2.32.4)", "types-setuptools (>=80.9.0)", "types-toml (>=0.10.8.20240310)"]
 
 [package.source]
 type = "directory"

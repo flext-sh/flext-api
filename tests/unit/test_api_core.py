@@ -1,0 +1,143 @@
+"""Tests for core API functionality."""
+
+from __future__ import annotations
+
+import pytest
+
+from flext_api import FlextApi, FlextResult, create_flext_api
+
+
+class TestFlextApi:
+    """Test cases for FlextApi class."""
+
+    def test_create_api_instance(self) -> None:
+        """Test creating FlextApi instance."""
+        api = FlextApi()
+        assert api is not None
+
+    def test_factory_function(self) -> None:
+        """Test factory function creates api instance."""
+        api = create_flext_api()
+        assert api is not None
+        assert isinstance(api, FlextApi)
+
+    def test_health_check(self) -> None:
+        """Test API health check functionality."""
+        api = FlextApi()
+        result = api.health_check()
+
+        assert isinstance(result, FlextResult)
+        if not (result.is_success):
+            msg = f"Expected True, got {result.is_success}"
+            raise AssertionError(msg)
+        assert result.data is not None
+
+        health_data = result.data
+        assert isinstance(health_data, dict)
+        if health_data["service"] != "FlextApi":
+            msg = f"Expected {"FlextApi"}, got {health_data["service"]}"
+            raise AssertionError(msg)
+        assert health_data["status"] == "healthy"
+        if "client_configured" not in health_data:
+            msg = f"Expected {"client_configured"} in {health_data}"
+            raise AssertionError(msg)
+
+    def test_get_builder(self) -> None:
+        """Test getting builder instance."""
+        api = FlextApi()
+        builder = api.get_builder()
+        assert builder is not None
+
+    def test_get_client_initially_none(self) -> None:
+        """Test that client is None initially."""
+        api = FlextApi()
+        client = api.get_client()
+        assert client is None
+
+    def test_create_client(self) -> None:
+        """Test creating HTTP client."""
+        api = FlextApi()
+        config = {"base_url": "https://api.example.com", "timeout": 30}
+
+        result = api.flext_api_create_client(config)
+        assert isinstance(result, FlextResult)
+        if not (result.is_success):
+            msg = f"Expected True, got {result.is_success}"
+            raise AssertionError(msg)
+        assert result.data is not None
+
+        # Client should now be available
+        client = api.get_client()
+        assert client is not None
+
+    def test_create_client_with_none_config(self) -> None:
+        """Test creating client with None config uses defaults."""
+        api = FlextApi()
+        result = api.flext_api_create_client(None)
+
+        assert isinstance(result, FlextResult)
+        if not (result.is_success):
+            msg = f"Expected True, got {result.is_success}"
+            raise AssertionError(msg)
+        assert result.data is not None
+
+    def test_create_client_with_empty_config(self) -> None:
+        """Test creating client with empty config."""
+        api = FlextApi()
+        result = api.flext_api_create_client({})
+
+        assert isinstance(result, FlextResult)
+        if not (result.is_success):
+            msg = f"Expected True, got {result.is_success}"
+            raise AssertionError(msg)
+
+    @pytest.mark.asyncio
+    async def test_start_service(self) -> None:
+        """Test starting the API service."""
+        api = FlextApi()
+        result = await api.start()
+
+        assert isinstance(result, FlextResult)
+        if not (result.is_success):
+            msg = f"Expected True, got {result.is_success}"
+            raise AssertionError(msg)
+
+    @pytest.mark.asyncio
+    async def test_stop_service(self) -> None:
+        """Test stopping the API service."""
+        api = FlextApi()
+        result = await api.stop()
+
+        assert isinstance(result, FlextResult)
+        if not (result.is_success):
+            msg = f"Expected True, got {result.is_success}"
+            raise AssertionError(msg)
+
+    @pytest.mark.asyncio
+    async def test_service_lifecycle(self) -> None:
+        """Test complete service lifecycle."""
+        api = FlextApi()
+
+        # Start service
+        start_result = await api.start()
+        if not (start_result.is_success):
+            msg = f"Expected True, got {start_result.is_success}"
+            raise AssertionError(msg)
+
+        # Create client
+        client_result = api.flext_api_create_client({"base_url": "https://api.example.com"})
+        if not (client_result.is_success):
+            msg = f"Expected True, got {client_result.is_success}"
+            raise AssertionError(msg)
+
+        # Check health
+        health_result = api.health_check()
+        if not (health_result.is_success):
+            msg = f"Expected True, got {health_result.is_success}"
+            raise AssertionError(msg)
+
+        # Stop service
+        stop_result = await api.stop()
+        if not (stop_result.is_success):
+            msg = f"Expected True, got {stop_result.is_success}"
+            raise AssertionError(msg)

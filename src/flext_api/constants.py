@@ -6,7 +6,7 @@ robust constants system without re-exporting base constants.
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar, Final
 
 # ==============================================================================
 # API-SPECIFIC CONSTANTS - NO FLEXT-CORE DUPLICATIONS
@@ -35,17 +35,21 @@ class FlextApiConstants:
     """API-specific constants that don't exist in flext-core."""
 
     # HTTP status groups
-    SUCCESS_CODES = [200, 201, 202, 204]
-    CLIENT_ERROR_CODES = [400, 401, 403, 404, 422]
-    SERVER_ERROR_CODES = [500, 502, 503, 504]
+    SUCCESS_CODES: ClassVar[list[int]] = [200, 201, 202, 204]
+    CLIENT_ERROR_CODES: ClassVar[list[int]] = [400, 401, 403, 404, 422]
+    SERVER_ERROR_CODES: ClassVar[list[int]] = [500, 502, 503, 504]
 
     # Rate limiting
     RATE_LIMIT_REQUESTS = 1000
     RATE_LIMIT_WINDOW = 3600  # 1 hour
 
     # API response formats
-    SUCCESS_RESPONSE = {"status": "success", "data": None, "error": None}
-    ERROR_RESPONSE = {"status": "error", "data": None, "error": None}
+    SUCCESS_RESPONSE: ClassVar[dict[str, object]] = {
+        "status": "success", "data": None, "error": None,
+    }
+    ERROR_RESPONSE: ClassVar[dict[str, object]] = {
+        "status": "error", "data": None, "error": None,
+    }
 
     # Validation patterns
     UUID_PATTERN = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
@@ -57,7 +61,7 @@ class FlextApiFieldType:
     """API-specific field types that don't exist in flext-core."""
 
     API_KEY = "api_key"
-    BEARER_TOKEN = "bearer_token"
+    BEARER_TOKEN = "bearer_token"  # noqa: S105
     PIPELINE_CONFIG = "pipeline_config"
     PLUGIN_CONFIG = "plugin_config"
     USER_ROLE = "user_role"

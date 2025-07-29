@@ -16,6 +16,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
+from flext_api.main import app, storage
+
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
@@ -141,8 +143,6 @@ async def api_client() -> AsyncGenerator[TestClient]:
         mock_session.return_value = AsyncMock()
         mock_db_engine.return_value = AsyncMock()
 
-        from flext_api.main import app
-
         with TestClient(app) as client:
             yield client
 
@@ -150,7 +150,6 @@ async def api_client() -> AsyncGenerator[TestClient]:
 @pytest.fixture(autouse=True)
 def reset_storage() -> None:
     """Reset storage state between tests to ensure isolation."""
-    from flext_api.main import storage
     # Skip storage reset - models consolidated to flext-core patterns
     if storage:
         # Basic reset without using old models
@@ -159,7 +158,7 @@ def reset_storage() -> None:
 
 @pytest.fixture
 def auth_headers() -> dict[str, str]:
-    """Authentication headers for API requests."""
+    """Provide authentication headers for API requests."""
     return {
         "Authorization": "Bearer test-token",
         "Content-Type": "application/json",
