@@ -227,7 +227,10 @@ def example_integration() -> None:
     if len(api_response["data"]) != expected_data_count:
         msg = f"Expected {expected_data_count}, got {len(api_response["data"])}"
         raise AssertionError(msg)
-    assert api_response["pagination"]["total_pages"] == expected_total_pages
+    if api_response["pagination"]["total_pages"] != expected_total_pages:
+        actual_pages = api_response["pagination"]["total_pages"]
+        msg = f"Expected {expected_total_pages}, got {actual_pages}"
+        raise AssertionError(msg)
 
     print("3. ✅ All components work together correctly!")
     print()

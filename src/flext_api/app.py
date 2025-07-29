@@ -27,3 +27,7 @@ def flext_api_create_app() -> FastAPI:
         return result.data if result.data is not None else {}
 
     return app
+
+
+# Create default app instance for testing and development
+app = flext_api_create_app()

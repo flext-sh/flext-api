@@ -15,9 +15,10 @@ class TestFlextApiCoverage:
         """Test create_client with exception handling."""
         api = FlextApi()
 
-        # Mock an exception scenario - test client creation with invalid config
-        with pytest.raises(Exception, match="Failed to create client"):
-            api.flext_api_create_client({"base_url": "invalid://test"})
+        # Test client creation with invalid config should return FlextResult failure
+        result = api.flext_api_create_client({"base_url": "invalid://test"})
+        assert not result.is_success
+        assert "Failed to create client" in result.error
 
     def test_create_client_impl_with_complex_config(self) -> None:
         """Test _create_client_impl with various config types."""
@@ -48,7 +49,7 @@ class TestFlextApiCoverage:
         """Test _create_client_impl with edge case configurations."""
         api = FlextApi()
 
-        # Test with None values
+        # Test with None base_url should raise ValueError due to validation
         config = {
             "base_url": None,
             "timeout": None,
@@ -56,22 +57,15 @@ class TestFlextApiCoverage:
             "max_retries": None,
         }
 
-        client = api._create_client_impl(config)
-
-        # Should handle None values gracefully
-        assert client is not None
-        if client.config.base_url != "None":  # Converted to string
-            raise AssertionError(f"Expected None, got {client.config.base_url}")
-        assert client.config.timeout == 30.0  # Default
-        if client.config.headers != {}:  # Default empty dict
-            raise AssertionError(f"Expected empty dict, got {client.config.headers}")
-        assert client.config.max_retries == EXPECTED_DATA_COUNT  # Default
+        with pytest.raises(ValueError, match="Invalid URL format"):
+            api._create_client_impl(config)
 
     def test_create_client_impl_with_valid_headers(self) -> None:
         """Test _create_client_impl with valid headers dict."""
         api = FlextApi()
 
         config = {
+            "base_url": "https://test.com",
             "headers": {
                 "Authorization": "Bearer token",
                 "Content-Type": "application/json",
@@ -97,6 +91,7 @@ class TestFlextApiCoverage:
 
         # Test with int and float values
         config = {
+            "base_url": "https://test.com",
             "timeout": 45,  # int
             "max_retries": 5.0,  # float
         }
@@ -130,16 +125,19 @@ class TestFlextApiCoverage:
         api = FlextApi()
 
         # Test with empty config
-        with pytest.raises(ValueError, match="base_url is required"):
-            api.flext_api_create_client({})
+        result = api.flext_api_create_client({})
+        assert not result.is_success
+        assert "base_url is required" in result.error
 
         # Test with missing base_url
-        with pytest.raises(ValueError, match="base_url is required"):
-            api.flext_api_create_client({"timeout": 30})
+        result = api.flext_api_create_client({"timeout": 30})
+        assert not result.is_success
+        assert "base_url is required" in result.error
 
         # Test with invalid base_url
-        with pytest.raises(ValueError, match="Invalid URL format"):
-            api.flext_api_create_client({"base_url": "invalid-url"})
+        result = api.flext_api_create_client({"base_url": "invalid-url"})
+        assert not result.is_success
+        assert "Invalid URL format" in result.error
 
     def test_api_error_handling(self) -> None:
         """Test API error handling scenarios."""
@@ -148,9 +146,14 @@ class TestFlextApiCoverage:
         # Test with network error simulation
         config = {"base_url": "https://invalid-domain-that-does-not-exist.com"}
 
-        # Test that client creation with invalid domain fails gracefully
-        with pytest.raises((ValueError, ConnectionError, Exception)):
-            api.flext_api_create_client(config)
+        # Test that client creation with invalid domain returns FlextResult
+        result = api.flext_api_create_client(config)
+        assert result.is_success  # Client creation should succeed
+
+        # Test invalid config - missing base_url should fail
+        invalid_config = {"timeout": "invalid_timeout"}
+        result = api.flext_api_create_client(invalid_config)
+        assert not result.is_success  # Should fail due to missing base_url
 
     def test_api_performance_optimization(self) -> None:
         """Test API performance optimization features."""
@@ -163,7 +166,9 @@ class TestFlextApiCoverage:
             "timeout": 10.0,
         }
 
-        client = api.flext_api_create_client(config)
+        result = api.flext_api_create_client(config)
+        assert result.is_success
+        client = result.data
         assert client is not None
 
         # Verify performance settings
@@ -183,7 +188,9 @@ class TestFlextApiCoverage:
             },
         }
 
-        client = api.flext_api_create_client(config)
+        result = api.flext_api_create_client(config)
+        assert result.is_success
+        client = result.data
         assert client is not None
 
         # Verify security headers are set

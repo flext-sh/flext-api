@@ -52,6 +52,14 @@ class TestFlextApiClientConfig:
             raise AssertionError(f"Expected {headers}, got {config.headers}")
         assert config.max_retries == 5
 
+    def test_config_invalid_url(self) -> None:
+        """Test config with invalid URL format."""
+        with pytest.raises(ValueError, match="Invalid URL format"):
+            FlextApiClientConfig(base_url="invalid-url")
+
+        with pytest.raises(ValueError, match="Invalid URL format"):
+            FlextApiClientConfig(base_url="ftp://example.com")
+
 
 class TestFlextApiClientRequest:
     """Test FlextApiClientRequest dataclass."""
@@ -112,6 +120,7 @@ class TestFlextApiClientResponse:
 
         assert response.status_code == 200
         assert response.data == data
+        assert response.headers is not None
         assert response.headers["Content-Type"] == "application/json"
 
     def test_response_json_method(self) -> None:
@@ -228,15 +237,18 @@ class TestFlextApiClient:
         await client.start()
         await client.close()
 
-        assert client.status == FlextApiClientStatus.STOPPED
+        assert client.status == FlextApiClientStatus.CLOSED
 
     @pytest.mark.asyncio
     async def test_context_manager(self) -> None:
         """Test client as context manager."""
-        async with FlextApiClient() as client:
+        client = FlextApiClient()
+        async with client:
             assert client.status == FlextApiClientStatus.RUNNING
 
-        assert client.status == FlextApiClientStatus.STOPPED
+        # After context manager exit, status should be STOPPED
+        # Check that status changed from RUNNING to STOPPED
+        assert str(client.status) == "stopped"
 
     def test_create_client(self) -> None:
         """Test create_client factory function."""

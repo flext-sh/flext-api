@@ -28,7 +28,7 @@ class TestFlextApiApp:
         app = flext_api_create_app()
 
         # Check that routes are available
-        route_paths = [route.path for route in app.routes]
+        route_paths = [getattr(route, "path", str(route)) for route in app.routes]
         if "/health" not in route_paths:
             msg = f"Expected {"/health"} in {route_paths}"
             raise AssertionError(msg)

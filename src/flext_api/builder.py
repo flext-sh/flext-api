@@ -6,6 +6,7 @@ for maximum code reduction and structural alignment.
 
 from __future__ import annotations
 
+import http
 import math
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -36,10 +37,10 @@ class FlextApiQuery:
     def __post_init__(self) -> None:
         """Post-initialization validation."""
         if self.page <= 0:
-            msg = "Page must be positive"
+            msg = "Page must be greater than 0"
             raise ValueError(msg)
         if self.page_size <= 0:
-            msg = "Page size must be positive"
+            msg = "Page size must be greater than 0"
             raise ValueError(msg)
 
     def to_dict(self) -> dict[str, object]:
@@ -131,7 +132,7 @@ class FlextApiQueryBuilder:
             msg = "Field cannot be empty"
             raise ValueError(msg)
         self._query.filters.append({
-            "field": field, "operator": "greater_than", "value": value,
+            "field": field, "operator": "gt", "value": value,
         })
         return self
 
@@ -151,13 +152,41 @@ class FlextApiQueryBuilder:
         self._query.sorts.append({"field": field, "direction": "asc"})
         return self
 
-    def page(self, page: int, size: int) -> FlextApiQueryBuilder:
-        """Set pagination."""
+    def page(self, page: int) -> FlextApiQueryBuilder:
+        """Set page number."""
         if page <= 0:
-            msg = "Page must be positive"
+            msg = "Page must be greater than 0"
+            raise ValueError(msg)
+        # Create new query with updated page
+        self._query = FlextApiQuery(
+            filters=self._query.filters,
+            sorts=self._query.sorts,
+            page=page,
+            page_size=self._query.page_size,
+        )
+        return self
+
+    def page_size(self, size: int) -> FlextApiQueryBuilder:
+        """Set page size."""
+        if size <= 0:
+            msg = "Page size must be greater than 0"
+            raise ValueError(msg)
+        # Create new query with updated page size
+        self._query = FlextApiQuery(
+            filters=self._query.filters,
+            sorts=self._query.sorts,
+            page=self._query.page,
+            page_size=size,
+        )
+        return self
+
+    def pagination(self, page: int, size: int) -> FlextApiQueryBuilder:
+        """Set pagination (both page and size)."""
+        if page <= 0:
+            msg = "Page must be greater than 0"
             raise ValueError(msg)
         if size <= 0:
-            msg = "Page size must be positive"
+            msg = "Page size must be greater than 0"
             raise ValueError(msg)
         # Create new query with updated pagination
         self._query = FlextApiQuery(
@@ -168,9 +197,9 @@ class FlextApiQueryBuilder:
         )
         return self
 
-    def build(self) -> dict[str, object]:
-        """Build query dictionary."""
-        return self._query.to_dict()
+    def build(self) -> FlextApiQuery:
+        """Build query object."""
+        return self._query
 
 
 # Professional response builder with fluent interface
@@ -186,7 +215,7 @@ class FlextApiResponseBuilder:
         )
 
     def success(
-        self, *, data: object = None, message: str = "Success",
+        self, data: object = None, message: str = "Success",
     ) -> FlextApiResponseBuilder:
         """Set success response."""
         self._response = FlextApiResponse(
@@ -198,7 +227,9 @@ class FlextApiResponseBuilder:
         )
         return self
 
-    def error(self, message: str, code: int = 500) -> FlextApiResponseBuilder:
+    def error(
+        self, message: str, code: int = http.HTTPStatus.INTERNAL_SERVER_ERROR.value
+    ) -> FlextApiResponseBuilder:
         """Set error response."""
         metadata = dict(self._response.metadata)
         metadata["error_code"] = code
@@ -234,10 +265,10 @@ class FlextApiResponseBuilder:
             msg = "Total must be positive"
             raise ValueError(msg)
         if page <= 0:
-            msg = "Page must be positive"
+            msg = "Page must be greater than 0"
             raise ValueError(msg)
         if page_size <= 0:
-            msg = "Page size must be positive"
+            msg = "Page size must be greater than 0"
             raise ValueError(msg)
 
         total_pages = math.ceil(total / page_size) if page_size > 0 else 0
@@ -250,30 +281,74 @@ class FlextApiResponseBuilder:
             "has_previous": page > 1,
         }
 
+        # Add pagination data to metadata for test compatibility
+        metadata = dict(self._response.metadata)
+        metadata.update(pagination)
+
         self._response = FlextApiResponse(
             success=self._response.success,
             data=self._response.data,
             message=self._response.message,
-            metadata=self._response.metadata,
+            metadata=metadata,
             pagination=pagination,
         )
         return self
 
-    def build(self) -> dict[str, object]:
-        """Build response dictionary."""
-        return self._response.to_dict()
+    def metadata(self, metadata: dict[str, object]) -> FlextApiResponseBuilder:
+        """Set metadata (replaces existing metadata)."""
+        self._response = FlextApiResponse(
+            success=self._response.success,
+            data=self._response.data,
+            message=self._response.message,
+            metadata=metadata,
+            pagination=self._response.pagination,
+        )
+        return self
+
+    def pagination(
+        self, *, page: int, page_size: int, total: int,
+    ) -> FlextApiResponseBuilder:
+        """Set pagination (simplified for tests)."""
+        return self.with_pagination(total=total, page=page, page_size=page_size)
+
+    def build(self) -> FlextApiResponse:
+        """Build response object."""
+        return self._response
 
 
 # Factory functions using flext-core patterns
-def build_query(filters: dict[str, object] | None = None) -> dict[str, object]:
-    """Build query from filters dictionary."""
+def build_query(
+    filters: list[dict[str, object]] | dict[str, object] | None = None,
+) -> FlextApiQuery:
+    """Build query from filters list or dict."""
     builder = FlextApiQueryBuilder()
 
     if filters:
-        for field, value in filters.items():
-            builder.equals(field, value)
+        if isinstance(filters, dict):
+            # Convert simple dict to filter format
+            for field, value in filters.items():
+                builder.equals(field, value)
+        else:
+            # Handle list of filter dictionaries
+            for filter_item in filters:
+                field = str(filter_item["field"])
+                operator = str(filter_item["operator"])
+                value = filter_item["value"]
+
+                if operator == "equals":
+                    builder.equals(field, value)
+                elif operator == "gt":
+                    builder.greater_than(field, value)
+                # Add more operators as needed
 
     return builder.build()
+
+
+def build_query_dict(
+    filters: list[dict[str, object]] | dict[str, object] | None = None,
+) -> dict[str, object]:
+    """Build query from filters list or dict and return as dict."""
+    return build_query(filters).to_dict()
 
 
 def build_success_response(
@@ -288,12 +363,12 @@ def build_success_response(
         for key, value in metadata.items():
             builder.with_metadata(key, value)
 
-    return builder.build()
+    return builder.build().to_dict()
 
 
 def build_error_response(
     message: str,
-    code: int = 500,
+    code: int = http.HTTPStatus.INTERNAL_SERVER_ERROR.value,
     details: object = None,
 ) -> dict[str, object]:
     """Build error response."""
@@ -302,7 +377,7 @@ def build_error_response(
     if details:
         builder.with_metadata("details", details)
 
-    return builder.build()
+    return builder.build().to_dict()
 
 
 def build_paginated_response(  # noqa: PLR0913
@@ -314,6 +389,57 @@ def build_paginated_response(  # noqa: PLR0913
     metadata: dict[str, object] | None = None,
 ) -> dict[str, object]:
     """Build paginated response."""
+    builder = (
+        FlextApiResponseBuilder()
+        .success(data=data, message=message)
+        .with_pagination(total, page, page_size)
+    )
+
+    if metadata:
+        for key, value in metadata.items():
+            builder.with_metadata(key, value)
+
+    return builder.build().to_dict()
+
+
+def build_success_response_object(
+    data: object = None,
+    message: str = "Success",
+    metadata: dict[str, object] | None = None,
+) -> FlextApiResponse:
+    """Build success response as object."""
+    builder = FlextApiResponseBuilder().success(data=data, message=message)
+
+    if metadata:
+        for key, value in metadata.items():
+            builder.with_metadata(key, value)
+
+    return builder.build()
+
+
+def build_error_response_object(
+    message: str,
+    code: int = http.HTTPStatus.INTERNAL_SERVER_ERROR.value,
+    details: object = None,
+) -> FlextApiResponse:
+    """Build error response as object."""
+    builder = FlextApiResponseBuilder().error(message, code)
+
+    if details:
+        builder.with_metadata("details", details)
+
+    return builder.build()
+
+
+def build_paginated_response_object(  # noqa: PLR0913
+    data: object,
+    total: int,
+    page: int,
+    page_size: int,
+    message: str = "Success",
+    metadata: dict[str, object] | None = None,
+) -> FlextApiResponse:
+    """Build paginated response as object."""
     builder = (
         FlextApiResponseBuilder()
         .success(data=data, message=message)

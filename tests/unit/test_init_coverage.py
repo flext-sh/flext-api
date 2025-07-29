@@ -82,6 +82,32 @@ class TestInitCoverage:
             if export not in flext_api.__all__:
                 raise AssertionError(f"Missing from __all__: {export}")
 
+    def test_version_fallback(self) -> None:
+        """Test version fallback when package metadata not found."""
+        import importlib.metadata
+        from unittest.mock import patch
+
+        # Save original version
+        import flext_api
+        original_version = flext_api.__version__
+
+        # Mock PackageNotFoundError to test fallback
+        with patch.object(
+            importlib.metadata,
+            "version",
+            side_effect=importlib.metadata.PackageNotFoundError
+        ):
+            # Re-import the module to trigger exception handling
+            import importlib
+            importlib.reload(flext_api)
+
+            # Should fall back to default version
+            assert flext_api.__version__ == "1.0.0"
+
+        # Restore original state
+        importlib.reload(flext_api)
+        assert flext_api.__version__ == original_version
+
     def test_version_attributes_exist(self) -> None:
         """Test that version attributes exist and are correct type."""
         # Test __version__ exists and is string

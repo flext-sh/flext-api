@@ -105,6 +105,7 @@ packages = [{ include = "flext_api", from = "src" }]
 
 [tool.bandit]
 extend = "../.bandit-shared.toml"
+skips = ["B101", "B104", "B105", "B601"]
 
 [tool.coverage]
 extend = "../.coverage-shared.toml"

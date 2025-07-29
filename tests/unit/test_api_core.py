@@ -71,15 +71,14 @@ class TestFlextApi:
         assert client is not None
 
     def test_create_client_with_none_config(self) -> None:
-        """Test creating client with None config uses defaults."""
+        """Test creating client with None config fails validation."""
         api = FlextApi()
         result = api.flext_api_create_client(None)
 
         assert isinstance(result, FlextResult)
-        if not (result.is_success):
-            msg = f"Expected True, got {result.is_success}"
-            raise AssertionError(msg)
-        assert result.data is not None
+        assert not result.is_success
+        assert result.error is not None
+        assert "base_url is required" in result.error
 
     def test_create_client_with_empty_config(self) -> None:
         """Test creating client with empty config."""
@@ -87,9 +86,9 @@ class TestFlextApi:
         result = api.flext_api_create_client({})
 
         assert isinstance(result, FlextResult)
-        if not (result.is_success):
-            msg = f"Expected True, got {result.is_success}"
-            raise AssertionError(msg)
+        assert not result.is_success
+        assert result.error is not None
+        assert "base_url is required" in result.error
 
     @pytest.mark.asyncio
     async def test_start_service(self) -> None:

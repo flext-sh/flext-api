@@ -11,17 +11,13 @@ from __future__ import annotations
 
 # Import the app creation function from app.py
 from flext_api.app import flext_api_create_app
+from flext_api.storage import FlextAPIStorage
 
 # Create the FastAPI app instance
 app = flext_api_create_app()
 
-# Create storage instance for compatibility
-# (Remove this if storage module doesn't exist)
-try:
-    from flext_api.storage import FlextAPIStorage
-    storage: FlextAPIStorage | None = FlextAPIStorage()
-except ImportError:
-    storage = None
+# Create storage instance
+storage = FlextAPIStorage()
 
 # Export the app and storage for uvicorn and tests
 __all__ = ["app", "storage"]

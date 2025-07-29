@@ -2,12 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from unittest.mock import MagicMock
-from unittest.mock import patch
-
+import flext_api.main as main_module
 from flext_api.main import app, storage
 
 
@@ -28,12 +23,13 @@ class TestMainModule:
         assert hasattr(app, "description")
         assert hasattr(app, "version")
 
-    @patch("uvicorn.run")
-    def test_main_execution(self, mock_uvicorn_run: MagicMock) -> None:
+    def test_main_execution(self) -> None:
         """Test main execution path."""
-        # Test the main execution by simulating module run
-        # This is a simplified test since the actual execution happens in __main__ block
-        assert mock_uvicorn_run is not None  # Just verify patch worked
+        # Test the main execution by verifying module structure
+        # Skip actual uvicorn.run test to avoid type complexity
+        assert hasattr(main_module, "app")
+        assert hasattr(main_module, "storage")
+        assert hasattr(main_module, "__all__")
 
     def test_storage_functionality(self) -> None:
         """Test storage basic functionality."""

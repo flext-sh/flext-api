@@ -136,7 +136,7 @@ type-check: ## Run type checking
 .PHONY: security
 security: ## Run security scanning
 	@echo "🔒 Running security scanning..."
-	@$(POETRY) run bandit -r $(SRC_DIR)
+	@$(POETRY) run bandit -r $(SRC_DIR) -c pyproject.toml
 	@$(POETRY) run pip-audit
 
 .PHONY: pep8-check

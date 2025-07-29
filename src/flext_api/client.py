@@ -14,9 +14,12 @@ from typing import TYPE_CHECKING, Self
 if TYPE_CHECKING:
     import types
 
+
+import http
 from urllib.parse import urljoin
 
 import aiohttp
+import aiohttp.hdrs
 import structlog
 from flext_core import FlextResult
 
@@ -35,15 +38,15 @@ class FlextApiClientProtocol(StrEnum):
 
 
 class FlextApiClientMethod(StrEnum):
-    """HTTP methods."""
+    """HTTP methods using aiohttp constants to avoid duplication."""
 
-    GET = "GET"
-    POST = "POST"
-    PUT = "PUT"
-    DELETE = "DELETE"
-    PATCH = "PATCH"
-    HEAD = "HEAD"
-    OPTIONS = "OPTIONS"
+    GET = aiohttp.hdrs.METH_GET
+    POST = aiohttp.hdrs.METH_POST
+    PUT = aiohttp.hdrs.METH_PUT
+    DELETE = aiohttp.hdrs.METH_DELETE
+    PATCH = aiohttp.hdrs.METH_PATCH
+    HEAD = aiohttp.hdrs.METH_HEAD
+    OPTIONS = aiohttp.hdrs.METH_OPTIONS
 
 
 class FlextApiClientStatus(StrEnum):
@@ -51,6 +54,8 @@ class FlextApiClientStatus(StrEnum):
 
     IDLE = "idle"
     ACTIVE = "active"
+    RUNNING = "running"
+    STOPPED = "stopped"
     CLOSED = "closed"
     ERROR = "error"
 
@@ -66,6 +71,9 @@ class FlextApiClientConfig:
 
     def __post_init__(self) -> None:
         """Post-initialization validation."""
+        if self.base_url and not self.base_url.startswith(("http://", "https://")):
+            msg = "Invalid URL format"
+            raise ValueError(msg)
         if self.headers is None:
             object.__setattr__(self, "headers", {})
 
@@ -74,7 +82,7 @@ class FlextApiClientConfig:
 class FlextApiClientRequest:
     """HTTP request using dataclass for immutability."""
 
-    method: FlextApiClientMethod
+    method: FlextApiClientMethod | str
     url: str
     headers: dict[str, str] | None = None
     params: dict[str, object] | None = None
@@ -143,7 +151,7 @@ class FlextApiPlugin:
 
     async def after_request(
         self,
-        request: FlextApiClientRequest,  # noqa: ARG002
+        request: FlextApiClientRequest,
         response: FlextApiClientResponse,
     ) -> FlextApiClientResponse:
         """Process response after receiving."""
@@ -151,7 +159,7 @@ class FlextApiPlugin:
 
     async def on_error(
         self,
-        request: FlextApiClientRequest,  # noqa: ARG002
+        request: FlextApiClientRequest,
         error: Exception,
     ) -> Exception:
         """Handle request error."""
@@ -243,11 +251,48 @@ class FlextApiClient:
         try:
             response = await self._make_request_impl(request)
             return FlextResult.ok(response)
-        except (RuntimeError, ValueError, TypeError) as e:
+        except Exception as e:
             logger.exception("Failed to make HTTP request",
                            method=request.method, url=request.url)
             error_msg = f"Failed to make {request.method} request to {request.url}: {e}"
             return FlextResult.fail(error_msg)
+
+    def _prepare_request_params(
+        self, request: FlextApiClientRequest,
+    ) -> tuple[
+        dict[str, str] | None,
+        dict[str, str] | None,
+        object | None,
+        str | bytes | None,
+        aiohttp.ClientTimeout | None,
+    ]:
+        """Prepare request parameters with proper aiohttp types."""
+        # Parameters - convert object values to strings for aiohttp compatibility
+        params: dict[str, str] | None = None
+        if request.params:
+            params = {k: str(v) for k, v in request.params.items()}
+
+        # Headers - merge config and request headers
+        headers: dict[str, str] | None = None
+        if self.config.headers or request.headers:
+            headers = dict(self.config.headers or {})
+            if request.headers:
+                headers.update(request.headers)
+
+        # JSON data
+        json_data = request.json_data if request.json_data is not None else None
+
+        # Raw data
+        data = request.data if request.data is not None else None
+
+        # Timeout
+        timeout = (
+            aiohttp.ClientTimeout(total=request.timeout)
+            if request.timeout
+            else None
+        )
+
+        return params, headers, json_data, data, timeout
 
     async def _make_request_impl(
         self,
@@ -268,27 +313,33 @@ class FlextApiClient:
             else request.url
         )
 
-        request_kwargs: dict[str, object] = {
-            "params": request.params or {},
-            "headers": dict(self.config.headers or {}) | (request.headers or {}),
-        }
+        # Prepare request parameters with proper typing
+        params, headers, json_data, data, timeout = self._prepare_request_params(
+            request,
+        )
 
-        if request.json_data is not None:
-            request_kwargs["json"] = request.json_data
-        elif request.data is not None:
-            request_kwargs["data"] = request.data
+        # Ensure method is converted to enum value
+        method_value = (
+            request.method.value
+            if hasattr(request.method, "value")
+            else str(request.method).upper()
+        )
 
-        if request.timeout:
-            request_kwargs["timeout"] = aiohttp.ClientTimeout(total=request.timeout)
-
+        # Make request with properly typed parameters
         async with session.request(
-            request.method.value, url, **request_kwargs,  # type: ignore[arg-type]
+            method=method_value,
+            url=url,
+            params=params,
+            headers=headers,
+            json=json_data,
+            data=data,
+            timeout=timeout,
         ) as http_response:
             elapsed_time = time.time() - start_time
 
             try:
                 response_data = await http_response.json()
-            except (RuntimeError, ValueError, TypeError):
+            except (RuntimeError, ValueError, TypeError, aiohttp.ContentTypeError):
                 response_data = await http_response.text()
 
             response = FlextApiClientResponse(
@@ -375,19 +426,69 @@ class FlextApiClient:
         )
         return await self._make_request(request)
 
+    async def patch(
+        self,
+        path: str,
+        json_data: dict[str, object] | None = None,
+        data: str | bytes | None = None,
+        headers: dict[str, str] | None = None,
+        request_timeout: float | None = None,
+    ) -> FlextResult[FlextApiClientResponse]:
+        """Make PATCH request."""
+        request = FlextApiClientRequest(
+            method=FlextApiClientMethod.PATCH,
+            url=path,
+            json_data=json_data,
+            data=data,
+            headers=headers,
+            timeout=request_timeout,
+        )
+        return await self._make_request(request)
+
+    async def head(
+        self,
+        path: str,
+        headers: dict[str, str] | None = None,
+        request_timeout: float | None = None,
+    ) -> FlextResult[FlextApiClientResponse]:
+        """Make HEAD request."""
+        request = FlextApiClientRequest(
+            method=FlextApiClientMethod.HEAD,
+            url=path,
+            headers=headers,
+            timeout=request_timeout,
+        )
+        return await self._make_request(request)
+
+    async def options(
+        self,
+        path: str,
+        headers: dict[str, str] | None = None,
+        request_timeout: float | None = None,
+    ) -> FlextResult[FlextApiClientResponse]:
+        """Make OPTIONS request."""
+        request = FlextApiClientRequest(
+            method=FlextApiClientMethod.OPTIONS,
+            url=path,
+            headers=headers,
+            timeout=request_timeout,
+        )
+        return await self._make_request(request)
+
     async def start(self) -> FlextResult[None]:
         """Start the client service."""
-        self.status = FlextApiClientStatus.ACTIVE
+        self.status = FlextApiClientStatus.RUNNING
         logger.info("FlextApiClient service started")
         return FlextResult.ok(None)
 
     async def stop(self) -> FlextResult[None]:
         """Stop the client service."""
         await self.close()
+        self.status = FlextApiClientStatus.STOPPED
         logger.info("FlextApiClient service stopped")
         return FlextResult.ok(None)
 
-    def health_check(self) -> FlextResult[dict[str, object]]:
+    def health_check(self) -> dict[str, object]:
         """Health check."""
         session_active = (
             self._session is not None
@@ -399,8 +500,19 @@ class FlextApiClient:
             "base_url": self.config.base_url,
             "session_active": session_active,
             "plugins_count": len(self.plugins),
+            "timestamp": time.time(),
         }
-        return FlextResult.ok(health_data)
+        return health_data
+
+    def start_service(self) -> None:
+        """Start client service."""
+        self.status = FlextApiClientStatus.RUNNING
+        logger.info("FlextApiClient service started")
+
+    def stop_service(self) -> None:
+        """Stop client service."""
+        self.status = FlextApiClientStatus.STOPPED
+        logger.info("FlextApiClient service stopped")
 
     async def close(self) -> None:
         """Close client session."""
@@ -410,6 +522,7 @@ class FlextApiClient:
 
     async def __aenter__(self) -> Self:
         """Async context manager entry."""
+        await self.start()
         return self
 
     async def __aexit__(
@@ -419,7 +532,7 @@ class FlextApiClient:
         exc_tb: types.TracebackType | None,
     ) -> None:
         """Async context manager exit."""
-        await self.close()
+        await self.stop()
 
 
 # ==============================================================================
@@ -432,6 +545,12 @@ def create_client(config: dict[str, object] | None = None) -> FlextApiClient:
     raw_config = config or {}
 
     base_url = str(raw_config.get("base_url", ""))
+
+    # Validate base_url if provided
+    if base_url and not base_url.startswith(("http://", "https://")):
+        msg = "Invalid URL format"
+        raise ValueError(msg)
+
     timeout_val = raw_config.get("timeout", 30.0)
     timeout = float(timeout_val) if isinstance(timeout_val, (int, float)) else 30.0
     headers = None
@@ -451,33 +570,17 @@ def create_client(config: dict[str, object] | None = None) -> FlextApiClient:
     return FlextApiClient(client_config)
 
 
-def create_client_with_plugins(  # noqa: PLR0913
-    base_url: str | None = None,
-    *,
-    enable_cache: bool = False,
-    enable_retry: bool = False,
-    enable_circuit_breaker: bool = False,
-    timeout: float = 30.0,
-    headers: dict[str, str] | None = None,
-    max_retries: int = 3,
+def create_client_with_plugins(
+    config: dict[str, object] | FlextApiClientConfig | None = None,
+    plugins: list[FlextApiPlugin] | None = None,
 ) -> FlextApiClient:
-    """Create HTTP client with common plugins."""
-    config = FlextApiClientConfig(
-        base_url=base_url or "",
-        timeout=timeout,
-        headers=headers,
-        max_retries=max_retries,
-    )
+    """Create HTTP client with plugins."""
+    if isinstance(config, FlextApiClientConfig):
+        client_config = config
+    elif config is not None:
+        client = create_client(config)
+        client_config = client.config
+    else:
+        client_config = FlextApiClientConfig()
 
-    plugins: list[FlextApiPlugin] = []
-
-    if enable_cache:
-        plugins.append(FlextApiCachingPlugin())
-
-    if enable_retry:
-        plugins.append(FlextApiRetryPlugin())
-
-    if enable_circuit_breaker:
-        plugins.append(FlextApiCircuitBreakerPlugin())
-
-    return FlextApiClient(config, plugins)
+    return FlextApiClient(client_config, plugins or [])

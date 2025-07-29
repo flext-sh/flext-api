@@ -9,6 +9,7 @@ from __future__ import annotations
 import structlog
 from flext_core import FlextResult
 
+from flext_api import __version__
 from flext_api.builder import FlextApiBuilder
 from flext_api.client import FlextApiClient, FlextApiClientConfig
 
@@ -49,6 +50,16 @@ class FlextApi:
         }
         return FlextResult.ok(health_data)
 
+    def get_service_info(self) -> dict[str, object]:
+        """Get service information."""
+        return {
+            "name": "FlextApi",
+            "service": "FlextApi",
+            "version": __version__,
+            "client_configured": self._client is not None,
+            "client_type": type(self._client).__name__ if self._client else None,
+        }
+
     def flext_api_create_client(
         self,
         config: dict[str, object] | None = None,
@@ -64,6 +75,15 @@ class FlextApi:
         """Create client implementation with configuration."""
         # Convert config to appropriate types for dataclass
         base_url = str(config.get("base_url", ""))
+
+        # Validate base_url is required for client creation
+        if not base_url:
+            msg = "base_url is required"
+            raise ValueError(msg)
+        if not base_url.startswith(("http://", "https://")):
+            msg = "Invalid URL format"
+            raise ValueError(msg)
+
         timeout_val = config.get("timeout", 30.0)
         timeout = float(timeout_val) if isinstance(timeout_val, (int, float)) else 30.0
         headers = None
