@@ -33,10 +33,10 @@ def configure_api_dependencies() -> None:
     # Register settings with string key
     container.register("APIConfig", settings)
 
-    # Register repositories as singletons with string keys
-    container.register_singleton(
+    # Register repositories as factories with string keys
+    container.register_factory(
         "FlextInMemoryPipelineRepository",
-        factory=FlextInMemoryPipelineRepository,
+        FlextInMemoryPipelineRepository,
     )
 
     # Register auth service with DI - NO DIRECT IMPORTS
@@ -64,9 +64,9 @@ def configure_api_dependencies() -> None:
             msg = f"Failed to create auth service: {e}"
             raise FlextError(msg) from e
 
-    container.register_singleton(
+    container.register_factory(
         "FlextAuthService",
-        factory=create_flext_auth_service,
+        create_flext_auth_service,
     )
 
     # Register gRPC service with DI - NO DIRECT IMPORTS
@@ -84,9 +84,9 @@ def configure_api_dependencies() -> None:
             msg = f"Failed to create gRPC service: {e}"
             raise FlextError(msg) from e
 
-    container.register_singleton(
+    container.register_factory(
         "FlextGrpcService",
-        factory=create_flext_grpc_service,
+        create_flext_grpc_service,
     )
 
     # Register plugin service with DI - NO DIRECT IMPORTS
@@ -104,9 +104,9 @@ def configure_api_dependencies() -> None:
             msg = f"Failed to create plugin service: {e}"
             raise FlextError(msg) from e
 
-    container.register_singleton(
+    container.register_factory(
         "FlextPluginService",
-        factory=create_flext_plugin_service,
+        create_flext_plugin_service,
     )
 
     # Application services are auto-registered via @injectable decorator

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -89,7 +88,7 @@ def test_list_plugins_endpoint(client: TestClient) -> None:
     mock_registry_instance = MagicMock()
 
     # Setup the async method properly
-    async def mock_list_plugins(*args: Any, **kwargs: object) -> MagicMock:
+    async def mock_list_plugins(*args: object, **kwargs: object) -> MagicMock:
         return MagicMock(plugins=[], total_count=0, page=1, page_size=20, total_pages=0)
 
     mock_registry_instance.list_plugins = mock_list_plugins

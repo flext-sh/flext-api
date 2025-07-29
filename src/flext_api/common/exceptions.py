@@ -41,7 +41,7 @@ def handle_api_exceptions(
                 raise  # Re-raise HTTP exceptions as-is
             except Exception as e:
                 raise HTTPException(
-                    status_code=500, detail=f"Failed to {operation_name}: {e}"
+                    status_code=500, detail=f"Failed to {operation_name}: {e}",
                 ) from e
 
         # Preserve complete signature and annotations for FastAPI

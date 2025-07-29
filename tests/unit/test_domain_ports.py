@@ -206,7 +206,10 @@ class TestPortImplementation:
                 return None
 
             async def authorize(
-                self, user_id: UUID, resource: str, action: str
+                self,
+                user_id: UUID,
+                resource: str,
+                action: str,
             ) -> bool:
                 return str(user_id) == "123"
 
@@ -228,7 +231,8 @@ class TestPortImplementation:
                 self._storage: dict[UUID, FlextAPIPipeline] = {}
 
             async def create(
-                self, pipeline: FlextAPIPipeline
+                self,
+                pipeline: FlextAPIPipeline,
             ) -> FlextResult[FlextAPIPipeline]:
                 self._storage[pipeline.id] = pipeline
                 return FlextResult.ok(pipeline)
@@ -297,7 +301,9 @@ class TestPortImplementation:
                 return FlextResult.fail(f"Plugin {plugin.id} not found")
 
             async def count(
-                self, plugin_type: str | None = None, status: str | None = None
+                self,
+                plugin_type: str | None = None,
+                status: str | None = None,
             ) -> FlextResult[Any]:
                 return FlextResult.ok(len(self._storage))
 
@@ -416,10 +422,13 @@ class TestPortMocking:
                 )
 
             async def authorize(
-                self, user_id: UUID, resource: str, action: str
+                self,
+                user_id: UUID,
+                resource: str,
+                action: str,
             ) -> bool:
                 return str(
-                    user_id
+                    user_id,
                 ) == "12345678-1234-5678-1234-567812345678" and action in {
                     "read",
                     "list",
@@ -514,7 +523,9 @@ class TestPortMocking:
                 self._executions: dict[str, dict[str, object]] = {}
 
             async def execute_pipeline(
-                self, pipeline_id: UUID, config: dict[str, str] | None = None
+                self,
+                pipeline_id: UUID,
+                config: dict[str, str] | None = None,
             ) -> FlextResult[Any]:
                 execution_id = f"exec_{pipeline_id}_{len(self._executions)}"
                 self._executions[execution_id] = {
@@ -657,7 +668,10 @@ class TestPortContractValidation:
                 return None
 
             async def authorize(
-                self, user_id: UUID, resource: str, action: str
+                self,
+                user_id: UUID,
+                resource: str,
+                action: str,
             ) -> bool:
                 return False
 

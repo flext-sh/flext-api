@@ -32,7 +32,9 @@ class TestFlextAuthService:
 
     @pytest.fixture
     def auth_service(
-        self, mock_auth_service: MagicMock, mock_session_service: MagicMock
+        self,
+        mock_auth_service: MagicMock,
+        mock_session_service: MagicMock,
     ) -> FlextAuthService:
         """Create auth service with mocked dependencies."""
         return FlextAuthService(mock_auth_service, mock_session_service)
@@ -46,7 +48,9 @@ class TestFlextAuthService:
     def valid_register_request(self) -> RegisterRequest:
         """Create valid register request."""
         return RegisterRequest(
-            username="newuser", email="newuser@example.com", password="newpass123"
+            username="newuser",
+            email="newuser@example.com",
+            password="newpass123",
         )
 
     async def test_login_success(
@@ -63,7 +67,7 @@ class TestFlextAuthService:
                 "user_id": "123",
                 "username": "testuser",
                 "roles": ["user"],
-            }
+            },
         )
 
         # Mock successful session creation
@@ -71,7 +75,7 @@ class TestFlextAuthService:
             {
                 "session_id": "session123",
                 "token": "token123",
-            }
+            },
         )
 
         result = await auth_service.login(valid_login_request)
@@ -89,7 +93,7 @@ class TestFlextAuthService:
         """Test login with authentication failure."""
         # Mock authentication failure
         mock_auth_service.authenticate.return_value = FlextResult.fail(
-            "Invalid credentials"
+            "Invalid credentials",
         )
 
         result = await auth_service.login(valid_login_request)
@@ -97,12 +101,14 @@ class TestFlextAuthService:
         assert isinstance(result, FlextResult)
 
     async def test_logout_success(
-        self, auth_service: FlextAuthService, mock_session_service: MagicMock
+        self,
+        auth_service: FlextAuthService,
+        mock_session_service: MagicMock,
     ) -> None:
         """Test successful logout."""
         # Mock successful session revocation
         mock_session_service.revoke_session.return_value = FlextResult.ok(
-            {"message": "Logged out"}
+            {"message": "Logged out"},
         )
 
         result = await auth_service.logout("session123")
@@ -110,12 +116,14 @@ class TestFlextAuthService:
         assert isinstance(result, FlextResult)
 
     async def test_logout_invalid_session(
-        self, auth_service: FlextAuthService, mock_session_service: MagicMock
+        self,
+        auth_service: FlextAuthService,
+        mock_session_service: MagicMock,
     ) -> None:
         """Test logout with invalid session."""
         # Mock session revocation failure
         mock_session_service.revoke_session.return_value = FlextResult.fail(
-            "Invalid session"
+            "Invalid session",
         )
 
         result = await auth_service.logout("invalid_session")
@@ -123,7 +131,9 @@ class TestFlextAuthService:
         assert isinstance(result, FlextResult)
 
     async def test_refresh_token_success(
-        self, auth_service: FlextAuthService, mock_session_service: MagicMock
+        self,
+        auth_service: FlextAuthService,
+        mock_session_service: MagicMock,
     ) -> None:
         """Test successful token refresh."""
         # Mock successful token refresh
@@ -132,7 +142,7 @@ class TestFlextAuthService:
             {
                 "token": "new_token123",
                 "expires_at": "2025-12-31T23:59:59Z",
-            }
+            },
         )
 
         result = await auth_service.refresh_token("refresh_token123")
@@ -140,13 +150,15 @@ class TestFlextAuthService:
         assert isinstance(result, FlextResult)
 
     async def test_refresh_token_invalid(
-        self, auth_service: FlextAuthService, mock_session_service: MagicMock
+        self,
+        auth_service: FlextAuthService,
+        mock_session_service: MagicMock,
     ) -> None:
         """Test token refresh with invalid token."""
         # Mock token refresh failure
         mock_session_service.refresh_token = AsyncMock()
         mock_session_service.refresh_token.return_value = FlextResult.fail(
-            "Invalid refresh token"
+            "Invalid refresh token",
         )
 
         result = await auth_service.refresh_token("invalid_token")
@@ -166,7 +178,7 @@ class TestFlextAuthService:
                 "user_id": "456",
                 "username": "newuser",
                 "email": "newuser@example.com",
-            }
+            },
         )
 
         result = await auth_service.register(
@@ -186,7 +198,7 @@ class TestFlextAuthService:
         """Test registration with existing user."""
         # Mock user creation failure
         mock_auth_service.create_user.return_value = FlextResult.fail(
-            "User already exists"
+            "User already exists",
         )
 
         result = await auth_service.register(
@@ -198,7 +210,9 @@ class TestFlextAuthService:
         assert isinstance(result, FlextResult)
 
     async def test_validate_token_success(
-        self, auth_service: FlextAuthService, mock_session_service: MagicMock
+        self,
+        auth_service: FlextAuthService,
+        mock_session_service: MagicMock,
     ) -> None:
         """Test successful token validation."""
         # Mock successful token validation
@@ -208,7 +222,7 @@ class TestFlextAuthService:
                 "user_id": "123",
                 "username": "testuser",
                 "valid": True,
-            }
+            },
         )
 
         result = await auth_service.validate_token("valid_token123")
@@ -216,13 +230,15 @@ class TestFlextAuthService:
         assert isinstance(result, FlextResult)
 
     async def test_validate_token_invalid(
-        self, auth_service: FlextAuthService, mock_session_service: MagicMock
+        self,
+        auth_service: FlextAuthService,
+        mock_session_service: MagicMock,
     ) -> None:
         """Test token validation with invalid token."""
         # Mock token validation failure
         mock_session_service.validate_token = AsyncMock()
         mock_session_service.validate_token.return_value = FlextResult.fail(
-            "Invalid token"
+            "Invalid token",
         )
 
         result = await auth_service.validate_token("invalid_token")

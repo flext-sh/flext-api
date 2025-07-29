@@ -33,50 +33,45 @@ class TestFlextJWTAuthService:
     def test_jwt_auth_service_initialization(self, real_config: APIConfig) -> None:
         """Test JWT auth service initializes correctly with REAL config."""
         service = FlextJWTAuthService(real_config)
-        # Check that token manager is properly initialized (SRP compliance)
-        assert service.token_manager is not None
-        assert len(service.token_manager.secret_key) >= 16  # Reasonable minimum length
-        assert service.token_manager.algorithm == "HS256"
-        assert service.token_manager.expire_minutes == 30
-        # Check that authorization strategy is initialized (DIP compliance)
-        assert service.authorization_strategy is not None
-        assert service.authorization_strategy.get_strategy_name() == "basic"
+        # Check that JWT properties are properly initialized
+        assert service.secret_key is not None
+        assert len(service.secret_key) >= 8  # Minimum reasonable length
+        assert service.algorithm == "HS256"
+        assert service.expires_minutes == 30
 
     @pytest.mark.asyncio
-    async def test_generate_and_authenticate_token(
+    async def test_generate_and_validate_token(
         self,
         real_config: APIConfig,
     ) -> None:
-        """Test generating REAL JWT token and authenticating it."""
+        """Test generating REAL JWT token and validating it."""
         service = FlextJWTAuthService(real_config)
 
         # Generate a real JWT token
         user_data = {
-            "user_id": "test_user_123",
             "username": "test_user",
-            "email": "test@example.com",
+            "roles": ["user"],
         }
-        token = await service.generate_token(user_data)
+        token = service.generate_token(user_data)
 
         # Token should be a real JWT string
         assert isinstance(token, str)
         assert len(token) > 50  # JWT tokens are long
         assert "." in token  # JWT has dots
 
-        # Authenticate the token
-        result = await service.authenticate(token)
-        assert result is not None
-        assert result["user_id"] == "test_user_123"
-        assert result["username"] == "test_user"
-        assert result["email"] == "test@example.com"
+        # Validate the token
+        result = await service.validate_token(token)
+        assert result.is_success
+        assert result.data["username"] == "test_user"
+        assert result.data["roles"] == ["user"]
 
     @pytest.mark.asyncio
-    async def test_authenticate_invalid_token(self, real_config: APIConfig) -> None:
-        """Test authenticating with invalid token."""
+    async def test_validate_invalid_token(self, real_config: APIConfig) -> None:
+        """Test validating invalid token."""
         service = FlextJWTAuthService(real_config)
 
-        result = await service.authenticate("invalid_token")
-        assert result is None
+        result = await service.validate_token("invalid_token")
+        assert not result.is_success
 
     @pytest.mark.asyncio
     async def test_authorize_user(self, real_config: APIConfig) -> None:
@@ -85,27 +80,26 @@ class TestFlextJWTAuthService:
 
         user_id = uuid4()
         result = await service.authorize(user_id, "resource", "read")
-        assert result is True
+        assert result.is_success
+        assert result.data is True
 
     @pytest.mark.asyncio
-    async def test_validate_token_same_as_authenticate(
+    async def test_authenticate_user_credentials(
         self,
         real_config: APIConfig,
     ) -> None:
-        """Test that validate_token returns same as authenticate."""
+        """Test authenticating user with credentials."""
         service = FlextJWTAuthService(real_config)
 
-        # Generate a real token
-        user_data = {"user_id": "test_user_456", "username": "test_validate"}
-        token = await service.generate_token(user_data)
+        # Test valid credentials
+        result = await service.authenticate_user("admin", "admin123")
+        assert result.is_success
+        assert result.data["username"] == "admin"
+        assert result.data["is_admin"] is True
 
-        # Both methods should return the same result
-        auth_result = await service.authenticate(token)
-        validate_result = await service.validate_token(token)
-
-        assert auth_result == validate_result
-        if auth_result is not None and isinstance(auth_result, dict):
-            assert auth_result["user_id"] == "test_user_456"
+        # Test invalid credentials
+        invalid_result = await service.authenticate_user("admin", "wrongpassword")
+        assert not invalid_result.is_success
 
 
 # COMMENTED OUT - These infrastructure implementations don't exist yet

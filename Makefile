@@ -131,7 +131,7 @@ format-check: ## Check code formatting
 .PHONY: type-check
 type-check: ## Run type checking
 	@echo "🔍 Running type checking..."
-	@$(POETRY) run mypy $(SRC_DIR) --strict
+	@PYTHONPATH=src $(POETRY) run mypy $(SRC_DIR) --strict
 
 .PHONY: security
 security: ## Run security scanning
@@ -158,42 +158,42 @@ fix: ## Auto-fix code issues
 .PHONY: test
 test: ## Run all tests with coverage
 	@echo "🧪 Running tests with coverage..."
-	@$(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=term-missing --cov-fail-under=$(MIN_COVERAGE)
+	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=term-missing --cov-fail-under=$(MIN_COVERAGE)
 
 .PHONY: test-unit
 test-unit: ## Run unit tests only
 	@echo "🧪 Running unit tests..."
-	@$(POETRY) run pytest $(TESTS_DIR) -m "not integration" -v
+	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) -m "not integration" -v
 
 .PHONY: test-integration
 test-integration: ## Run integration tests only
 	@echo "🧪 Running integration tests..."
-	@$(POETRY) run pytest $(TESTS_DIR) -m integration -v
+	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) -m integration -v
 
 .PHONY: test-api
 test-api: ## Run API endpoint tests
 	@echo "🧪 Running API endpoint tests..."
-	@$(POETRY) run pytest $(TESTS_DIR) -m api -v
+	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) -m api -v
 
 .PHONY: test-fast
 test-fast: ## Run tests without coverage
 	@echo "🧪 Running fast tests..."
-	@$(POETRY) run pytest $(TESTS_DIR) -v
+	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) -v
 
 .PHONY: test-watch
 test-watch: ## Run tests in watch mode
 	@echo "🧪 Running tests in watch mode..."
-	@$(POETRY) run pytest-watch $(TESTS_DIR)
+	@PYTHONPATH=src $(POETRY) run pytest-watch $(TESTS_DIR)
 
 .PHONY: coverage
 coverage: ## Generate coverage report
 	@echo "📊 Generating coverage report..."
-	@$(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=html --cov-report=xml
+	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=html --cov-report=xml
 
 .PHONY: coverage-html
 coverage-html: ## Generate HTML coverage report
 	@echo "📊 Generating HTML coverage report..."
-	@$(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=html
+	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=html
 	@echo "📊 Coverage report: htmlcov/index.html"
 
 # =============================================================================

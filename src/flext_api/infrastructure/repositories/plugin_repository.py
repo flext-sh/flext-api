@@ -107,7 +107,7 @@ class FlextInMemoryPluginRepository(PluginRepository):
             paginated = all_plugins[offset : offset + limit]
 
             logger.debug(
-                f"Listed {len(paginated)} plugins (limit={limit}, offset={offset})"
+                f"Listed {len(paginated)} plugins (limit={limit}, offset={offset})",
             )
             return FlextResult.ok(paginated)
 

@@ -23,7 +23,7 @@ class TestFlextInMemoryPipelineRepository:
     """Test FlextInMemoryPipelineRepository implementation."""
 
     @pytest.fixture
-    def repository(self) -> Any:
+    def repository(self) -> object:
         """Create REAL repository instance for testing."""
         # Use the REAL implementation - bypass decorator for testing
         from flext_api.infrastructure.repositories.pipeline_repository import (
@@ -41,7 +41,7 @@ class TestFlextInMemoryPipelineRepository:
         return actual_class()
 
     @pytest.fixture
-    def sample_pipeline(self) -> Any:
+    def sample_pipeline(self) -> object:
         """Create sample pipeline for testing."""
         return Pipeline(
             name="test-pipeline",
@@ -57,7 +57,11 @@ class TestFlextInMemoryPipelineRepository:
         assert repository._pipelines == {}
 
     @pytest.mark.asyncio
-    async def test_save_pipeline(self, repository: Any, sample_pipeline: Any) -> None:
+    async def test_save_pipeline(
+        self,
+        repository: object,
+        sample_pipeline: Any,
+    ) -> None:
         """Test saving pipeline to repository."""
         result = await repository.save(sample_pipeline)
 
@@ -69,8 +73,8 @@ class TestFlextInMemoryPipelineRepository:
     @pytest.mark.asyncio
     async def test_get_pipeline_by_id(
         self,
-        repository: Any,
-        sample_pipeline: Any,
+        repository: object,
+        sample_pipeline: object,
     ) -> None:
         """Test getting pipeline by ID."""
         # Save pipeline first
@@ -171,7 +175,7 @@ class TestFlextInMemoryPipelineRepository:
     @pytest.mark.asyncio
     async def test_list_pipelines_with_invalid_status_filter(
         self,
-        repository: Any,
+        repository: object,
     ) -> None:
         """Test listing pipelines with invalid status filter."""
         pipeline1 = Pipeline(name="pipeline-1", pipeline_status=PipelineStatus.ACTIVE)
@@ -210,7 +214,11 @@ class TestFlextInMemoryPipelineRepository:
         assert len(pipelines) == 1
 
     @pytest.mark.asyncio
-    async def test_delete_pipeline(self, repository: Any, sample_pipeline: Any) -> None:
+    async def test_delete_pipeline(
+        self,
+        repository: object,
+        sample_pipeline: Any,
+    ) -> None:
         """Test deleting pipeline from repository."""
         # Save pipeline first
         await repository.save(sample_pipeline)
@@ -249,7 +257,7 @@ class TestFlextFlextInMemoryPluginRepository:
     """Test FlextFlextInMemoryPluginRepository implementation."""
 
     @pytest.fixture
-    def repository(self) -> Any:
+    def repository(self) -> object:
         """Create repository instance for testing."""
         # Import the actual implementation from infrastructure
         from flext_api.infrastructure.repositories.plugin_repository import (
@@ -259,7 +267,7 @@ class TestFlextFlextInMemoryPluginRepository:
         return FlextFlextInMemoryPluginRepository()
 
     @pytest.fixture
-    def sample_plugin(self) -> Any:
+    def sample_plugin(self) -> object:
         """Create sample plugin for testing."""
         return Plugin(
             name="test-plugin",
@@ -275,7 +283,7 @@ class TestFlextFlextInMemoryPluginRepository:
         assert repository._storage == {}
 
     @pytest.mark.asyncio
-    async def test_save_plugin(self, repository: Any, sample_plugin: Any) -> None:
+    async def test_save_plugin(self, repository: object, sample_plugin: Any) -> None:
         """Test saving plugin to repository."""
         result = await repository.save(sample_plugin)
 
@@ -285,7 +293,11 @@ class TestFlextFlextInMemoryPluginRepository:
         assert repository._storage[sample_plugin.id] == sample_plugin
 
     @pytest.mark.asyncio
-    async def test_get_plugin_by_id(self, repository: Any, sample_plugin: Any) -> None:
+    async def test_get_plugin_by_id(
+        self,
+        repository: object,
+        sample_plugin: Any,
+    ) -> None:
         """Test getting plugin by ID."""
         # Save plugin first
         await repository.save(sample_plugin)
@@ -303,8 +315,8 @@ class TestFlextFlextInMemoryPluginRepository:
     @pytest.mark.asyncio
     async def test_get_plugin_by_name(
         self,
-        repository: Any,
-        sample_plugin: Any,
+        repository: object,
+        sample_plugin: object,
     ) -> None:
         """Test getting plugin by name."""
         # Save plugin first
@@ -440,7 +452,7 @@ class TestFlextFlextInMemoryPluginRepository:
         assert tap_enabled_plugins[0].name == "plugin-1"
 
     @pytest.mark.asyncio
-    async def test_delete_plugin(self, repository: Any, sample_plugin: Any) -> None:
+    async def test_delete_plugin(self, repository: object, sample_plugin: Any) -> None:
         """Test deleting plugin from repository."""
         # Save plugin first
         await repository.save(sample_plugin)

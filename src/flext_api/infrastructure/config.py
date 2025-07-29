@@ -249,7 +249,7 @@ class APIConfig(BaseSettings):
             "log_level": self.log_level.lower(),  # log_level is string
             "access_log": True,  # Default value
             "keepalive_timeout": int(
-                self.timeout_seconds
+                self.timeout_seconds,
             ),  # Using PerformanceConfigMixin field
         }
 
@@ -267,7 +267,7 @@ class APIConfig(BaseSettings):
 
         if self.default_page_size < 1 or self.default_page_size > self.max_page_size:
             errors.append(
-                f"Default page size must be between 1 and {self.max_page_size}"
+                f"Default page size must be between 1 and {self.max_page_size}",
             )
 
         if self.max_file_size < 1:  # 1MB minimum (int type)

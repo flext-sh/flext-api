@@ -19,13 +19,13 @@ from flext_api.models.pipeline import (
     PipelineUpdateRequest,
 )
 from flext_api.models.plugin import (
+    APIPluginUpdateRequest,
     PluginInstallRequest,
     PluginListResponse,
     PluginResponse,
     PluginSource,
     PluginStatus,
     PluginType,
-    PluginUpdateRequest,
 )
 from flext_api.models.system import (
     MaintenanceMode,
@@ -155,7 +155,7 @@ class TestPluginModels:
 
     def test_plugin_update_request(self) -> None:
         """Test plugin update request."""
-        request = PluginUpdateRequest(
+        request = APIPluginUpdateRequest(
             version="2.0.0",
             force_update=True,
         )

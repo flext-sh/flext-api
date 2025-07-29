@@ -88,5 +88,5 @@ __all__ = [
     "PluginBaseService"
     "PluginService"
     "SingleRepositoryService"
-    "SystemService"
+    "SystemService",
 ]

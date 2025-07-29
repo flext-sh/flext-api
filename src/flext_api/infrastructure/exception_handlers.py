@@ -6,8 +6,6 @@ exception handlers that can be added without modifying existing code.
 
 from __future__ import annotations
 
-from flext_core import FlextError, FlextResult
-
 from flext_api import get_logger
 
 # Create logger using flext-core get_logger function

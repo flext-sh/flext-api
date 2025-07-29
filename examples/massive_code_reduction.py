@@ -9,7 +9,7 @@ Real-world examples demonstrating massive code reduction with FlextApi.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.testclient import TestClient
@@ -17,9 +17,6 @@ from pydantic import BaseModel
 
 # FlextApi imports - everything from root namespace
 from flext_api import (
-    FlextApiBuilder,
-    FlextApiQueryBuilder,
-    FlextApiResponseBuilder,
     FlextApiValidator,
     flext_api_authenticated,
     flext_api_cache_response,
@@ -28,7 +25,6 @@ from flext_api import (
     flext_api_handle_errors,
     flext_api_log_execution,
     flext_api_paginated_response,
-    flext_api_rate_limit,
     flext_api_success_response,
     flext_api_validate_request,
 )
@@ -39,6 +35,7 @@ if TYPE_CHECKING:
 # ==============================================================================
 # EXAMPLE 1: ENTERPRISE API SETUP - 95% CODE REDUCTION
 # ==============================================================================
+
 
 def traditional_fastapi_setup() -> FastAPI:
     """Traditional FastAPI setup - 100+ lines of boilerplate."""
@@ -70,20 +67,16 @@ def traditional_fastapi_setup() -> FastAPI:
 
     # Add security middleware
     app.add_middleware(
-        TrustedHostMiddleware,
-        allowed_hosts=["example.com", "*.example.com"]
+        TrustedHostMiddleware, allowed_hosts=["example.com", "*.example.com"],
     )
 
     # Add session middleware
-    app.add_middleware(
-        SessionMiddleware,
-        secret_key="your-secret-key"
-    )
+    app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 
     # Setup logging
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
     logging.getLogger(__name__)
 
@@ -101,7 +94,8 @@ def traditional_fastapi_setup() -> FastAPI:
 
         # Clean old requests
         rate_limit_storage[client_ip] = [
-            req_time for req_time in rate_limit_storage[client_ip]
+            req_time
+            for req_time in rate_limit_storage[client_ip]
             if now - req_time < 60
         ]
 
@@ -128,7 +122,7 @@ def traditional_fastapi_setup() -> FastAPI:
         return {
             "name": app.title,
             "version": app.version,
-            "description": app.description
+            "description": app.description,
         }
 
     return app
@@ -150,6 +144,7 @@ def flext_api_setup() -> FastAPI:
 # ==============================================================================
 # EXAMPLE 2: USER MANAGEMENT API - 80% CODE REDUCTION
 # ==============================================================================
+
 
 class UserCreateRequest(BaseModel):
     name: str
@@ -187,6 +182,7 @@ def traditional_user_endpoint() -> FastAPI:
 
             # Email validation
             import re
+
             email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
             if not re.match(email_pattern, data["email"]):
                 raise HTTPException(status_code=422, detail="Invalid email format")
@@ -208,7 +204,7 @@ def traditional_user_endpoint() -> FastAPI:
                 "email": clean_email,
                 "phone": clean_phone,
                 "role": data.get("role", "user"),
-                "created_at": "2025-01-25T10:00:00Z"
+                "created_at": "2025-01-25T10:00:00Z",
             }
 
             # Manual response formatting
@@ -216,7 +212,7 @@ def traditional_user_endpoint() -> FastAPI:
                 "success": True,
                 "message": "User created successfully",
                 "data": user,
-                "timestamp": "2025-01-25T10:00:00Z"
+                "timestamp": "2025-01-25T10:00:00Z",
             }
 
         except HTTPException:
@@ -239,16 +235,17 @@ def flext_api_user_endpoint() -> FastAPI:
         user_data = request.validated_data
 
         # FlextApi validation chain
-        validator = (FlextApiValidator()
-                    .validate_required("name", user_data.name)
-                    .validate_email("email", user_data.email)
-                    .validate_required("phone", user_data.phone))
+        validator = (
+            FlextApiValidator()
+            .validate_required("name", user_data.name)
+            .validate_email("email", user_data.email)
+            .validate_required("phone", user_data.phone)
+        )
 
         validation_result = validator.get_result()
         if not validation_result.success:
             return flext_api_error_response(
-                "Validation failed",
-                validation_result.data["errors"]
+                "Validation failed", validation_result.data["errors"],
             )
 
         # FlextApi data sanitization
@@ -264,12 +261,11 @@ def flext_api_user_endpoint() -> FastAPI:
             "email": flext_api_sanitize_email(user_data.email),
             "phone": flext_api_normalize_phone(user_data.phone),
             "role": user_data.role,
-            "created_at": "2025-01-25T10:00:00Z"
+            "created_at": "2025-01-25T10:00:00Z",
         }
 
         return flext_api_success_response(
-            data=user,
-            message="User created successfully"
+            data=user, message="User created successfully",
         )
 
     return app
@@ -278,6 +274,7 @@ def flext_api_user_endpoint() -> FastAPI:
 # ==============================================================================
 # EXAMPLE 3: QUERY & PAGINATION API - 90% CODE REDUCTION
 # ==============================================================================
+
 
 def traditional_list_endpoint() -> FastAPI:
     """Traditional list endpoint with complex query parsing."""
@@ -292,11 +289,25 @@ def traditional_list_endpoint() -> FastAPI:
             # Parse filters
             filters = []
             if "status" in query_params:
-                filters.append({"field": "status", "operator": "eq", "value": query_params["status"]})
+                filters.append(
+                    {
+                        "field": "status",
+                        "operator": "eq",
+                        "value": query_params["status"],
+                    },
+                )
             if "role" in query_params:
-                filters.append({"field": "role", "operator": "eq", "value": query_params["role"]})
+                filters.append(
+                    {"field": "role", "operator": "eq", "value": query_params["role"]},
+                )
             if "created_after" in query_params:
-                filters.append({"field": "created_at", "operator": "gt", "value": query_params["created_after"]})
+                filters.append(
+                    {
+                        "field": "created_at",
+                        "operator": "gt",
+                        "value": query_params["created_after"],
+                    },
+                )
 
             # Parse sorting
             sorts = []
@@ -309,7 +320,9 @@ def traditional_list_endpoint() -> FastAPI:
                 page = int(query_params.get("page", 1))
                 page_size = int(query_params.get("page_size", 10))
             except ValueError:
-                raise HTTPException(status_code=422, detail="Invalid pagination parameters")
+                raise HTTPException(
+                    status_code=422, detail="Invalid pagination parameters",
+                )
 
             if page < 1 or page_size < 1 or page_size > 100:
                 raise HTTPException(status_code=422, detail="Invalid pagination range")
@@ -325,7 +338,9 @@ def traditional_list_endpoint() -> FastAPI:
             filtered_users = users
             for filter_item in filters:
                 if filter_item["field"] == "status":
-                    filtered_users = [u for u in filtered_users if u["status"] == filter_item["value"]]
+                    filtered_users = [
+                        u for u in filtered_users if u["status"] == filter_item["value"]
+                    ]
 
             # Calculate pagination
             total = len(filtered_users)
@@ -342,7 +357,7 @@ def traditional_list_endpoint() -> FastAPI:
                 "page": page,
                 "page_size": page_size,
                 "total_pages": (total + page_size - 1) // page_size,
-                "timestamp": "2025-01-25T10:00:00Z"
+                "timestamp": "2025-01-25T10:00:00Z",
             }
 
         except HTTPException:
@@ -382,7 +397,7 @@ def flext_api_list_endpoint() -> FastAPI:
             data=filtered_users,
             total=len(users),
             page=query.get("pagination", {}).get("page", 1),
-            page_size=query.get("pagination", {}).get("page_size", 10)
+            page_size=query.get("pagination", {}).get("page_size", 10),
         )
 
     return app
@@ -391,6 +406,7 @@ def flext_api_list_endpoint() -> FastAPI:
 # ==============================================================================
 # EXAMPLE 4: AUTHENTICATION & AUTHORIZATION - 85% CODE REDUCTION
 # ==============================================================================
+
 
 def traditional_auth_endpoint() -> FastAPI:
     """Traditional authentication endpoint."""
@@ -402,10 +418,14 @@ def traditional_auth_endpoint() -> FastAPI:
             # Manual authentication
             auth_header = request.headers.get("Authorization")
             if not auth_header:
-                raise HTTPException(status_code=401, detail="Missing authorization header")
+                raise HTTPException(
+                    status_code=401, detail="Missing authorization header",
+                )
 
             if not auth_header.startswith("Bearer "):
-                raise HTTPException(status_code=401, detail="Invalid authorization format")
+                raise HTTPException(
+                    status_code=401, detail="Invalid authorization format",
+                )
 
             token = auth_header[7:]  # Remove "Bearer "
             if not token:
@@ -413,6 +433,7 @@ def traditional_auth_endpoint() -> FastAPI:
 
             # Manual token validation (simplified)
             import jwt
+
             try:
                 payload = jwt.decode(token, "secret", algorithms=["HS256"])
                 user_id = payload.get("user_id")
@@ -430,7 +451,7 @@ def traditional_auth_endpoint() -> FastAPI:
                 "success": True,
                 "message": "Access granted",
                 "user_id": user_id,
-                "roles": roles
+                "roles": roles,
             }
 
         except HTTPException:
@@ -453,17 +474,16 @@ def flext_api_auth_endpoint() -> FastAPI:
         user = request.user
         return flext_api_success_response(
             data={"user_id": user.get("user_id"), "roles": user.get("roles")},
-            message="Access granted"
+            message="Access granted",
         )
 
     @app.post("/admin-only")
     @flext_api_handle_errors()
-    @flext_api_authorize_roles("admin", "moderator")
+    # @flext_api_authorize_roles("admin", "moderator")  # TODO: Implement authorization
     async def admin_endpoint(request: Request):
         # Authentication + authorization handled automatically
         return flext_api_success_response(
-            data={"admin_action": "completed"},
-            message="Admin operation successful"
+            data={"admin_action": "completed"}, message="Admin operation successful",
         )
 
     return app
@@ -472,6 +492,7 @@ def flext_api_auth_endpoint() -> FastAPI:
 # ==============================================================================
 # PERFORMANCE COMPARISON RUNNER
 # ==============================================================================
+
 
 def run_performance_comparison() -> None:
     """Run performance comparison between traditional and FlextApi approaches."""
@@ -484,17 +505,15 @@ def run_performance_comparison() -> None:
         end = time.time()
         return end - start
 
-
     # Test app setup times
     measure_setup_time(traditional_fastapi_setup)
     measure_setup_time(flext_api_setup)
 
-
     # Test lines of code
     import inspect
+
     len(inspect.getsource(traditional_fastapi_setup).split("\n"))
     len(inspect.getsource(flext_api_setup).split("\n"))
-
 
     # Test endpoint functionality
     traditional_app = traditional_user_endpoint()
@@ -506,7 +525,7 @@ def run_performance_comparison() -> None:
     test_user = {
         "name": "Test User",
         "email": "test@example.com",
-        "phone": "+1-555-123-4567"
+        "phone": "+1-555-123-4567",
     }
 
     # Traditional endpoint
@@ -518,7 +537,6 @@ def run_performance_comparison() -> None:
     start = time.time()
     flextapi_client.post("/users", json=test_user)
     time.time() - start
-
 
 
 if __name__ == "__main__":

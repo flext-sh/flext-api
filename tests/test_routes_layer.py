@@ -9,8 +9,7 @@ Tests all route endpoints with complete coverage:
 
 from __future__ import annotations
 
-import json
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -56,7 +55,7 @@ class TestAuthRoutes:
                 {
                     "access_token": "test_token",
                     "token_type": "bearer",
-                }
+                },
             )
             mock_auth.return_value = mock_service
 
@@ -124,10 +123,12 @@ class TestAuthRoutes:
         }
 
         with patch(
-            "flext_api.dependencies.get_flext_current_user", return_value=mock_user
+            "flext_api.dependencies.get_flext_current_user",
+            return_value=mock_user,
         ):
             response = client.get(
-                "/api/v1/auth/me", headers={"Authorization": "Bearer test_token"}
+                "/api/v1/auth/me",
+                headers={"Authorization": "Bearer test_token"},
             )
 
             assert response.status_code == status.HTTP_200_OK
@@ -148,11 +149,13 @@ class TestAuthRoutes:
         with patch(
             "flext_api.dependencies.get_flext_current_user",
             side_effect=HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
             ),
         ):
             response = client.get(
-                "/api/v1/auth/me", headers={"Authorization": "Bearer invalid_token"}
+                "/api/v1/auth/me",
+                headers={"Authorization": "Bearer invalid_token"},
             )
 
             assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -168,12 +171,13 @@ class TestAuthRoutes:
         ):
             mock_service = AsyncMock()
             mock_service.logout.return_value = FlextResult.ok(
-                {"message": "Logged out successfully"}
+                {"message": "Logged out successfully"},
             )
             mock_auth.return_value = mock_service
 
             response = client.post(
-                "/api/v1/auth/logout", headers={"Authorization": "Bearer test_token"}
+                "/api/v1/auth/logout",
+                headers={"Authorization": "Bearer test_token"},
             )
 
             assert response.status_code == status.HTTP_200_OK
@@ -188,7 +192,7 @@ class TestAuthRoutes:
                 {
                     "access_token": "new_token",
                     "token_type": "bearer",
-                }
+                },
             )
             mock_auth.return_value = mock_service
 
@@ -233,12 +237,13 @@ class TestPipelineRoutes:
         ):
             mock_service_instance = AsyncMock()
             mock_service_instance.list_pipelines.return_value = FlextResult.ok(
-                mock_pipelines
+                mock_pipelines,
             )
             mock_service.return_value = mock_service_instance
 
             response = client.get(
-                "/api/v1/pipelines", headers={"Authorization": "Bearer test_token"}
+                "/api/v1/pipelines",
+                headers={"Authorization": "Bearer test_token"},
             )
 
             assert response.status_code == status.HTTP_200_OK
@@ -279,7 +284,7 @@ class TestPipelineRoutes:
         ):
             mock_service_instance = AsyncMock()
             mock_service_instance.create_pipeline.return_value = FlextResult.ok(
-                mock_pipeline
+                mock_pipeline,
             )
             mock_service.return_value = mock_service_instance
 
@@ -331,7 +336,7 @@ class TestPipelineRoutes:
         ):
             mock_service_instance = AsyncMock()
             mock_service_instance.get_pipeline.return_value = FlextResult.ok(
-                mock_pipeline
+                mock_pipeline,
             )
             mock_service.return_value = mock_service_instance
 
@@ -357,7 +362,7 @@ class TestPipelineRoutes:
         ):
             mock_service_instance = AsyncMock()
             mock_service_instance.get_pipeline.return_value = FlextResult.fail(
-                "Pipeline not found"
+                "Pipeline not found",
             )
             mock_service.return_value = mock_service_instance
 
@@ -392,7 +397,7 @@ class TestPipelineRoutes:
         ):
             mock_service_instance = AsyncMock()
             mock_service_instance.update_pipeline.return_value = FlextResult.ok(
-                mock_pipeline
+                mock_pipeline,
             )
             mock_service.return_value = mock_service_instance
 
@@ -419,7 +424,7 @@ class TestPipelineRoutes:
         ):
             mock_service_instance = AsyncMock()
             mock_service_instance.delete_pipeline.return_value = FlextResult.ok(
-                {"message": "Pipeline deleted"}
+                {"message": "Pipeline deleted"},
             )
             mock_service.return_value = mock_service_instance
 
@@ -449,7 +454,7 @@ class TestPipelineRoutes:
         ):
             mock_service_instance = AsyncMock()
             mock_service_instance.execute_pipeline.return_value = FlextResult.ok(
-                mock_execution
+                mock_execution,
             )
             mock_service.return_value = mock_service_instance
 
@@ -588,7 +593,7 @@ class TestSystemRoutes:
                         "memory_usage": 60.0,
                         "disk_usage": 70.0,
                     },
-                }
+                },
             )
             mock_service.return_value = mock_service_instance
 
@@ -603,7 +608,7 @@ class TestSystemRoutes:
         with patch("flext_api.dependencies.get_flext_system_service") as mock_service:
             mock_service_instance = AsyncMock()
             mock_service_instance.get_health.return_value = FlextResult.fail(
-                "Health check failed"
+                "Health check failed",
             )
             mock_service.return_value = mock_service_instance
 
@@ -621,7 +626,7 @@ class TestSystemRoutes:
                     "memory_usage": 55.0,
                     "disk_usage": 65.0,
                     "uptime": 3600,
-                }
+                },
             )
             mock_service.return_value = mock_service_instance
 
@@ -646,12 +651,13 @@ class TestSystemRoutes:
                     "project_name": "FLEXT API",
                     "version": "0.7.0",
                     "debug": False,
-                }
+                },
             )
             mock_service.return_value = mock_service_instance
 
             response = client.get(
-                "/api/v1/system/config", headers={"Authorization": "Bearer test_token"}
+                "/api/v1/system/config",
+                headers={"Authorization": "Bearer test_token"},
             )
 
             assert response.status_code == status.HTTP_200_OK
@@ -675,7 +681,7 @@ class TestSystemRoutes:
         ):
             mock_service_instance = AsyncMock()
             mock_service_instance.update_config.return_value = FlextResult.ok(
-                {"message": "Config updated"}
+                {"message": "Config updated"},
             )
             mock_service.return_value = mock_service_instance
 
@@ -734,7 +740,7 @@ class TestErrorHandling:
         with patch("flext_api.dependencies.get_flext_system_service") as mock_service:
             mock_service_instance = AsyncMock()
             mock_service_instance.get_health.return_value = FlextResult.fail(
-                "Service down"
+                "Service down",
             )
             mock_service.return_value = mock_service_instance
 

@@ -77,7 +77,7 @@ class TraditionalAPIClient:
             headers["Authorization"] = f"Bearer {self.auth_token}"
         return headers
     
-    def _cache_get(self, key: str) -> Any:
+    def _cache_get(self, key: str) -> object:
         if key in self.cache:
             value, timestamp = self.cache[key]
             if (datetime.now() - timestamp).total_seconds() < self.cache_ttl:
@@ -163,7 +163,7 @@ from typing import Callable, Any
 def traditional_validation_and_retry(validator_func: Callable, retries: int = 3):
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        async def wrapper(*args: Any, **kwargs: Any) -> Any:
+        async def wrapper(*args: object, **kwargs: object) -> object:
             # Validation logic
             if args and not validator_func(args[0]):
                 raise ValueError(f"Validation failed for {func.__name__}")

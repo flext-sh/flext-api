@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from flext_core import DomainValueObject as FlextValueObject
+from flext_core import FlextValueObject
 from pydantic import ValidationError
 
 from flext_api.domain.value_objects import (

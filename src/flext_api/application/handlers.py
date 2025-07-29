@@ -181,7 +181,7 @@ class FlextGetSystemInfoHandler:
                 "name": "FLEXT API",
                 "status": "running",
                 "environment": getattr(self.config, "environment", "development"),
-            }
+            },
         )
 
 
@@ -204,7 +204,7 @@ class FlextGetSystemHealthHandler:
                     "database": "healthy",
                     "auth": "healthy",
                 },
-            }
+            },
         )
 
 
@@ -225,14 +225,14 @@ class FlextApiHandler:
         return FlextResult.ok(None)
 
     async def handle(
-        self, request: FlextAPIRequest
+        self, request: FlextAPIRequest,
     ) -> FlextAPIResponse[dict[str, Any]]:
         """Handle API request with proper implementation."""
         # Validate request first
         validation_result = self.validate_request(request)
         if not validation_result.is_success:
             return FlextAPIResponse.error(
-                message=validation_result.error or "Validation failed"
+                message=validation_result.error or "Validation failed",
             )
 
         # Process request - subclasses should override this

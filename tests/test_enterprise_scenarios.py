@@ -13,12 +13,10 @@ import time
 from typing import TYPE_CHECKING, Any
 
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
 from flext_api import (
-    FlextApiBuilder,
     FlextApiQueryBuilder,
     FlextApiSortDirection,
     FlextApiValidator,
@@ -69,7 +67,7 @@ class TestEnterpriseUserManagement:
             title="Enterprise User API",
             enable_cors=True,
             enable_rate_limiting=True,
-            enable_auto_features=True
+            enable_auto_features=True,
         )
 
         # Simulated user database
@@ -79,19 +77,28 @@ class TestEnterpriseUserManagement:
         @flext_api_handle_errors()
         @flext_api_rate_limit(calls=5, period=60)
         @flext_api_validate_request(UserRequest)
-        async def create_user(request: Request):  # noqa: ANN202
+        async def create_user(request: Request):
             user_data = request.validated_data
 
             # Enterprise validation chain
-            validator = (FlextApiValidator()
-                        .validate_required("name", user_data.name)
-                        .validate_email("email", user_data.email)
-                        .validate_required("department", user_data.department)
-                        .validate_choices("role", user_data.role, ["admin", "manager", "employee"]))
+            validator = (
+                FlextApiValidator()
+                .validate_required("name", user_data.name)
+                .validate_email("email", user_data.email)
+                .validate_required("department", user_data.department)
+                .validate_choices(
+                    "role",
+                    user_data.role,
+                    ["admin", "manager", "employee"],
+                )
+            )
 
             result = validator.get_result()
             if not result.success:
-                return flext_api_error_response("Validation failed", result.data["errors"])
+                return flext_api_error_response(
+                    "Validation failed",
+                    result.data["errors"],
+                )
 
             # Create user with enterprise data sanitization
             new_user = {
@@ -101,7 +108,7 @@ class TestEnterpriseUserManagement:
                 "department": flext_api_sanitize_string(user_data.department),
                 "role": user_data.role,
                 "status": "active",
-                "created_at": "2025-01-25T10:00:00Z"
+                "created_at": "2025-01-25T10:00:00Z",
             }
             users_db.append(new_user)
 
@@ -110,7 +117,7 @@ class TestEnterpriseUserManagement:
         @app.get("/users")
         @flext_api_handle_errors()
         @flext_api_cache_response(ttl=60)
-        async def list_users(request: Request):  # noqa: ANN202
+        async def list_users(request: Request):
             query_params = dict(request.query_params)
             builder = flext_api_parse_query_params(query_params)
             query = builder.build()
@@ -118,10 +125,19 @@ class TestEnterpriseUserManagement:
             # Apply enterprise filtering
             filtered_users = users_db
             for filter_item in query.get("filters", []):
-                if filter_item["field"] == "department" and filter_item["operator"] == "eq":
-                    filtered_users = [u for u in filtered_users if u["department"] == filter_item["value"]]
+                if (
+                    filter_item["field"] == "department"
+                    and filter_item["operator"] == "eq"
+                ):
+                    filtered_users = [
+                        u
+                        for u in filtered_users
+                        if u["department"] == filter_item["value"]
+                    ]
                 elif filter_item["field"] == "role" and filter_item["operator"] == "eq":
-                    filtered_users = [u for u in filtered_users if u["role"] == filter_item["value"]]
+                    filtered_users = [
+                        u for u in filtered_users if u["role"] == filter_item["value"]
+                    ]
 
             pagination = query.get("pagination", {"page": 1, "page_size": 10})
             page = pagination["page"]
@@ -134,23 +150,29 @@ class TestEnterpriseUserManagement:
                 data=paginated_users,
                 total=len(filtered_users),
                 page=page,
-                page_size=page_size
+                page_size=page_size,
             )
 
         @app.get("/users/{user_id}")
         @flext_api_handle_errors()
-        async def get_user(user_id: int, request: Request):  # noqa: ANN202
+        async def get_user(user_id: int, request: Request):
             user = next((u for u in users_db if u["id"] == user_id), None)
             if not user:
-                return flext_api_error_response("User not found", f"User {user_id} not found")
+                return flext_api_error_response(
+                    "User not found",
+                    f"User {user_id} not found",
+                )
             return flext_api_success_response(data=user)
 
         @app.delete("/users/{user_id}")
         @flext_api_handle_errors()
-        async def delete_user(user_id: int, request: Request):  # noqa: ANN202
+        async def delete_user(user_id: int, request: Request):
             user = next((u for u in users_db if u["id"] == user_id), None)
             if not user:
-                return flext_api_error_response("User not found", f"User {user_id} not found")
+                return flext_api_error_response(
+                    "User not found",
+                    f"User {user_id} not found",
+                )
 
             users_db.remove(user)
             return flext_api_success_response(message="User deleted")
@@ -167,7 +189,7 @@ class TestEnterpriseUserManagement:
             "name": "John Doe",
             "email": "john@company.com",
             "department": "Engineering",
-            "role": "manager"
+            "role": "manager",
         }
 
         create_response = client.post("/users", json=user_data)
@@ -218,26 +240,40 @@ class TestEnterpriseUserManagement:
         @app.post("/validate-complex")
         @flext_api_handle_errors()
         @flext_api_validate_request(UserRequest)
-        async def validate_complex(request: Request):  # noqa: ANN202
+        async def validate_complex(request: Request):
             user_data = request.validated_data
 
             # Multi-layer enterprise validation
-            validator = (FlextApiValidator()
-                        .validate_required("name", user_data.name)
-                        .validate_min_length("name", user_data.name, 2)
-                        .validate_max_length("name", user_data.name, 50)
-                        .validate_email("email", user_data.email)
-                        .validate_choices("department", user_data.department,
-                                        ["Engineering", "Marketing", "Sales", "HR"])
-                        .validate_choices("role", user_data.role,
-                                        ["admin", "manager", "employee"])
-                        .validate_custom("name", user_data.name,
-                                       lambda x: not any(char.isdigit() for char in x),
-                                       "Name cannot contain numbers"))
+            validator = (
+                FlextApiValidator()
+                .validate_required("name", user_data.name)
+                .validate_min_length("name", user_data.name, 2)
+                .validate_max_length("name", user_data.name, 50)
+                .validate_email("email", user_data.email)
+                .validate_choices(
+                    "department",
+                    user_data.department,
+                    ["Engineering", "Marketing", "Sales", "HR"],
+                )
+                .validate_choices(
+                    "role",
+                    user_data.role,
+                    ["admin", "manager", "employee"],
+                )
+                .validate_custom(
+                    "name",
+                    user_data.name,
+                    lambda x: not any(char.isdigit() for char in x),
+                    "Name cannot contain numbers",
+                )
+            )
 
             result = validator.get_result()
             if not result.success:
-                return flext_api_error_response("Validation failed", result.data["errors"])
+                return flext_api_error_response(
+                    "Validation failed",
+                    result.data["errors"],
+                )
 
             return flext_api_success_response(data={"validated": True})
 
@@ -248,7 +284,7 @@ class TestEnterpriseUserManagement:
             "name": "Alice Johnson",
             "email": "alice@company.com",
             "department": "Engineering",
-            "role": "manager"
+            "role": "manager",
         }
         response = client.post("/validate-complex", json=valid_user)
         assert response.status_code == 200
@@ -282,7 +318,7 @@ class TestEnterpriseUserManagement:
         @app.post("/rate-limited")
         @flext_api_handle_errors()
         @flext_api_rate_limit(calls=3, period=60)
-        async def rate_limited_endpoint(request: Request):  # noqa: ANN202
+        async def rate_limited_endpoint(request: Request):
             return flext_api_success_response(data={"message": "Success"})
 
         client = TestClient(app)
@@ -306,7 +342,7 @@ class TestEnterpriseUserManagement:
         @app.get("/cached-data")
         @flext_api_handle_errors()
         @flext_api_cache_response(ttl=2)
-        async def cached_endpoint(request: Request):  # noqa: ANN202
+        async def cached_endpoint(request: Request):
             nonlocal call_count
             call_count += 1
             return flext_api_success_response(data={"call_count": call_count})
@@ -338,19 +374,21 @@ class TestEnterpriseQueryBuilder:
     def test_complex_query_building(self) -> None:
         """Test complex enterprise query scenarios."""
         # Complex business query
-        query = (FlextApiQueryBuilder()
-                .equals("status", "active")
-                .in_values("department", ["Engineering", "Marketing"])
-                .greater_than("created_at", "2024-01-01")
-                .between("salary", 50000, 150000)
-                .like("name", "%manager%")
-                .is_not_null("email")
-                .sort("name")
-                .sort("created_at", FlextApiSortDirection.DESC)
-                .paginate(1, 20)
-                .include_total_count()
-                .with_metadata("query_type", "employee_search")
-                .build())
+        query = (
+            FlextApiQueryBuilder()
+            .equals("status", "active")
+            .in_values("department", ["Engineering", "Marketing"])
+            .greater_than("created_at", "2024-01-01")
+            .between("salary", 50000, 150000)
+            .like("name", "%manager%")
+            .is_not_null("email")
+            .sort("name")
+            .sort("created_at", FlextApiSortDirection.DESC)
+            .paginate(1, 20)
+            .include_total_count()
+            .with_metadata("query_type", "employee_search")
+            .build()
+        )
 
         # Verify query structure
         assert len(query["filters"]) == 6
@@ -379,7 +417,7 @@ class TestEnterpriseQueryBuilder:
             "sort": "name:asc,created_at:desc",
             "page": "2",
             "page_size": "25",
-            "include_total": "true"
+            "include_total": "true",
         }
 
         builder = flext_api_parse_query_params(params)
@@ -396,6 +434,7 @@ class TestEnterpriseQueryBuilder:
 
     def test_dynamic_query_building(self) -> None:
         """Test dynamic query building based on user input."""
+
         def build_user_search_query(criteria: dict[str, Any]) -> dict[str, Any]:
             builder = FlextApiQueryBuilder()
 
@@ -419,14 +458,16 @@ class TestEnterpriseQueryBuilder:
             sort_field = criteria.get("sort_by", "name")
             sort_direction = criteria.get("sort_direction", "asc")
             from flext_api import FlextApiSortDirection
-            direction = FlextApiSortDirection.DESC if sort_direction == "desc" else FlextApiSortDirection.ASC
+
+            direction = (
+                FlextApiSortDirection.DESC
+                if sort_direction == "desc"
+                else FlextApiSortDirection.ASC
+            )
             builder.sort(sort_field, direction)
 
             # Pagination
-            builder.paginate(
-                criteria.get("page", 1),
-                criteria.get("page_size", 10)
-            )
+            builder.paginate(criteria.get("page", 1), criteria.get("page_size", 10))
 
             return builder.build()
 
@@ -437,7 +478,7 @@ class TestEnterpriseQueryBuilder:
             "min_salary": 60000,
             "active_only": True,
             "sort_by": "created_at",
-            "sort_direction": "desc"
+            "sort_direction": "desc",
         }
 
         query1 = build_user_search_query(criteria1)
@@ -449,7 +490,7 @@ class TestEnterpriseQueryBuilder:
             "departments": ["Sales"],
             "max_salary": 80000,
             "page": 2,
-            "page_size": 20
+            "page_size": 20,
         }
 
         query2 = build_user_search_query(criteria2)
@@ -468,23 +509,27 @@ class TestEnterpriseErrorHandling:
         @app.post("/error-prone")
         @flext_api_handle_errors()
         @flext_api_log_execution(log_duration=True)
-        async def error_prone_endpoint(request: Request):  # noqa: ANN202
+        async def error_prone_endpoint(request: Request):
             data = await request.json()
 
             if data.get("trigger_error") == "validation":
                 validator = FlextApiValidator().validate_required("missing_field", None)
                 result = validator.get_result()
                 if not result.success:
-                    return flext_api_error_response("Validation error", result.data["errors"])
+                    return flext_api_error_response(
+                        "Validation error",
+                        result.data["errors"],
+                    )
 
             elif data.get("trigger_error") == "business":
                 return flext_api_error_response(
                     "Business rule violation",
-                    "Operation not allowed for inactive users"
+                    "Operation not allowed for inactive users",
                 )
 
             elif data.get("trigger_error") == "exception":
-                raise ValueError("Simulated exception")
+                msg = "Simulated exception"
+                raise ValueError(msg)
 
             return flext_api_success_response(data={"processed": True})
 
@@ -522,19 +567,19 @@ class TestEnterpriseAuthentication:
         @app.post("/protected")
         @flext_api_handle_errors()
         @flext_api_authenticated()
-        async def protected_endpoint(request: Request):  # noqa: ANN202
+        async def protected_endpoint(request: Request):
             user = request.user
             return flext_api_success_response(
-                data={"user_id": user.get("user_id"), "roles": user.get("roles")}
+                data={"user_id": user.get("user_id"), "roles": user.get("roles")},
             )
 
         @app.post("/admin-only")
         @flext_api_handle_errors()
         @flext_api_authorize_roles("admin", "manager")
-        async def admin_endpoint(request: Request):  # noqa: ANN202
+        async def admin_endpoint(request: Request):
             user = request.user
             return flext_api_success_response(
-                data={"admin_action": "completed", "user": user.get("user_id")}
+                data={"admin_action": "completed", "user": user.get("user_id")},
             )
 
         client = TestClient(app)
@@ -563,16 +608,18 @@ class TestEnterprisePerformance:
         @app.post("/bulk-create")
         @flext_api_handle_errors()
         @flext_api_log_execution(log_duration=True)
-        async def bulk_create(request: Request):  # noqa: ANN202
+        async def bulk_create(request: Request):
             data = await request.json()
             items = data.get("items", [])
 
             # Process bulk items with validation
             created_items = []
             for item in items:
-                validator = (FlextApiValidator()
-                            .validate_required("name", item.get("name"))
-                            .validate_email("email", item.get("email")))
+                validator = (
+                    FlextApiValidator()
+                    .validate_required("name", item.get("name"))
+                    .validate_email("email", item.get("email"))
+                )
 
                 result = validator.get_result()
                 if result.success:
@@ -580,14 +627,17 @@ class TestEnterprisePerformance:
                         "id": len(data_store) + len(created_items) + 1,
                         "name": flext_api_sanitize_string(item["name"]),
                         "email": flext_api_sanitize_email(item["email"]),
-                        "created_at": "2025-01-25T10:00:00Z"
+                        "created_at": "2025-01-25T10:00:00Z",
                     }
                     created_items.append(processed_item)
 
             data_store.extend(created_items)
 
             return flext_api_success_response(
-                data={"created_count": len(created_items), "total_count": len(data_store)}
+                data={
+                    "created_count": len(created_items),
+                    "total_count": len(data_store),
+                },
             )
 
         client = TestClient(app)
@@ -597,7 +647,7 @@ class TestEnterprisePerformance:
             "items": [
                 {"name": f"User {i}", "email": f"user{i}@company.com"}
                 for i in range(50)
-            ]
+            ],
         }
 
         response = client.post("/bulk-create", json=bulk_data)
@@ -616,7 +666,7 @@ class TestEnterprisePerformance:
         @app.get("/concurrent-test")
         @flext_api_handle_errors()
         @flext_api_cache_response(ttl=1)
-        async def concurrent_endpoint(request: Request):  # noqa: ANN202
+        async def concurrent_endpoint(request: Request):
             nonlocal request_count
             request_count += 1
             return flext_api_success_response(data={"request_number": request_count})

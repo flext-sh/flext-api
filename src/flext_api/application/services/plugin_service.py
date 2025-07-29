@@ -242,11 +242,11 @@ class PluginService(PluginBaseService):
             delete_result = await self.plugin_repo.delete(str(plugin_id))
             if not delete_result.success:
                 return FlextResult.fail(
-                    delete_result.error or "Failed to delete plugin"
+                    delete_result.error or "Failed to delete plugin",
                 )
 
             logger.info(
-                f"Plugin uninstalled successfully - plugin_id: {plugin_id}, name: {plugin.name}"
+                f"Plugin uninstalled successfully - plugin_id: {plugin_id}, name: {plugin.name}",
             )
             return FlextResult.ok(
                 {
@@ -254,7 +254,7 @@ class PluginService(PluginBaseService):
                     "name": plugin.name,
                     "plugin_version": plugin.plugin_version,
                     "uninstalled": True,
-                }
+                },
             )
 
         except Exception as e:

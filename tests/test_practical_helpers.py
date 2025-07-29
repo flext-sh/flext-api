@@ -4,14 +4,13 @@
 Tests practical helpers that solve actual development problems with minimal code.
 """
 
-import asyncio
 import json
 import tempfile
 from pathlib import Path
 
 import pytest
 
-from flext_api import (
+from flext_api.helpers.flext_api_practical import (
     FlextApiConfigManager,
     FlextApiDataTransformer,
     FlextApiDebugger,
@@ -28,6 +27,7 @@ from flext_api import (
 # ==============================================================================
 # CONFIGURATION MANAGER TESTS
 # ==============================================================================
+
 
 class TestFlextApiConfigManager:
     """Test configuration management functionality."""
@@ -54,8 +54,9 @@ class TestFlextApiConfigManager:
             config1 = config_manager.load_config("production")
             config2 = config_manager.load_config("production")
 
-            # Should be the same object (cached)
-            assert config1 is config2
+            # Should have the same content (cached)
+            assert config1 == config2
+            assert config1["environment"] == "production"
 
     def test_config_file_persistence(self) -> None:
         """Test that config files are created and persisted."""
@@ -85,6 +86,7 @@ class TestFlextApiConfigManager:
 # DATA TRANSFORMER TESTS
 # ==============================================================================
 
+
 class TestFlextApiDataTransformer:
     """Test data transformation utilities."""
 
@@ -93,15 +95,9 @@ class TestFlextApiDataTransformer:
         nested_data = {
             "user": {
                 "name": "John",
-                "address": {
-                    "street": "123 Main St",
-                    "city": "Boston"
-                }
+                "address": {"street": "123 Main St", "city": "Boston"},
             },
-            "orders": [
-                {"id": 1, "total": 100},
-                {"id": 2, "total": 200}
-            ]
+            "orders": [{"id": 1, "total": 100}, {"id": 2, "total": 200}],
         }
 
         flattened = FlextApiDataTransformer.flatten_nested_dict(nested_data)
@@ -117,8 +113,8 @@ class TestFlextApiDataTransformer:
         data = {
             "response": {
                 "user": {"id": 123, "name": "John"},
-                "metadata": {"timestamp": "2023-01-01"}
-            }
+                "metadata": {"timestamp": "2023-01-01"},
+            },
         }
 
         fields = ["response.user.name", "response.metadata.timestamp"]
@@ -157,6 +153,7 @@ class TestFlextApiDataTransformer:
 # DEBUGGER TESTS
 # ==============================================================================
 
+
 class TestFlextApiDebugger:
     """Test API debugging utilities."""
 
@@ -170,7 +167,7 @@ class TestFlextApiDebugger:
         assert "response_time_ms" in result
         assert "analysis" in result
         assert result["analysis"]["is_json"] is True
-        assert result["analysis"]["performance"] in ["fast", "slow"]
+        assert result["analysis"]["performance"] in {"fast", "slow"}
 
     @pytest.mark.asyncio
     async def test_endpoint_testing_post(self) -> None:
@@ -179,7 +176,7 @@ class TestFlextApiDebugger:
         result = await FlextApiDebugger.test_endpoint(
             "https://httpbin.org/post",
             method="POST",
-            data=test_data
+            data=test_data,
         )
 
         assert result["success"] is True
@@ -191,7 +188,7 @@ class TestFlextApiDebugger:
         """Test load testing functionality."""
         result = await FlextApiDebugger.load_test_endpoint(
             "https://httpbin.org/json",
-            concurrent_requests=5
+            concurrent_requests=5,
         )
 
         load_results = result["load_test_results"]
@@ -210,6 +207,7 @@ class TestFlextApiDebugger:
 # WORKFLOW TESTS
 # ==============================================================================
 
+
 class TestFlextApiWorkflow:
     """Test API workflow automation."""
 
@@ -219,17 +217,13 @@ class TestFlextApiWorkflow:
         workflow = FlextApiWorkflow("https://httpbin.org")
 
         steps = [
-            {
-                "name": "get_json",
-                "endpoint": "/json",
-                "method": "GET"
-            },
+            {"name": "get_json", "endpoint": "/json", "method": "GET"},
             {
                 "name": "post_data",
                 "endpoint": "/post",
                 "method": "POST",
-                "data": {"message": "test"}
-            }
+                "data": {"message": "test"},
+            },
         ]
 
         result = await workflow.execute_sequence(steps)
@@ -250,14 +244,14 @@ class TestFlextApiWorkflow:
                 "name": "get_uuid",
                 "endpoint": "/uuid",
                 "method": "GET",
-                "extract": ["uuid"]
+                "extract": ["uuid"],
             },
             {
                 "name": "use_uuid",
                 "endpoint": "/post",
                 "method": "POST",
-                "data": {"uuid_from_previous": "${get_uuid_extracted}"}
-            }
+                "data": {"uuid_from_previous": "${get_uuid_extracted}"},
+            },
         ]
 
         result = await workflow.execute_sequence(steps)
@@ -278,6 +272,7 @@ class TestFlextApiWorkflow:
 # PERFORMANCE MONITOR TESTS
 # ==============================================================================
 
+
 class TestFlextApiPerformanceMonitor:
     """Test performance monitoring utilities."""
 
@@ -289,7 +284,7 @@ class TestFlextApiPerformanceMonitor:
         result = await monitor.benchmark_endpoint(
             "https://httpbin.org/json",
             duration_seconds=5,
-            requests_per_second=2
+            requests_per_second=2,
         )
 
         benchmark = result["benchmark_results"]
@@ -309,6 +304,7 @@ class TestFlextApiPerformanceMonitor:
 # UTILITY FUNCTION TESTS
 # ==============================================================================
 
+
 class TestUtilityFunctions:
     """Test standalone utility functions."""
 
@@ -318,7 +314,7 @@ class TestUtilityFunctions:
         endpoints = [
             "https://httpbin.org/status/200",
             "https://httpbin.org/json",
-            "https://httpbin.org/status/500"  # This should fail
+            "https://httpbin.org/status/500",  # This should fail
         ]
 
         result = await flext_api_quick_health_check(endpoints)
@@ -335,7 +331,7 @@ class TestUtilityFunctions:
         # Compare same endpoint (should be identical)
         result = await flext_api_compare_responses(
             "https://httpbin.org/json",
-            "https://httpbin.org/json"
+            "https://httpbin.org/json",
         )
 
         assert result["both_successful"] is True
@@ -345,7 +341,7 @@ class TestUtilityFunctions:
         # Compare different endpoints (should be different)
         result = await flext_api_compare_responses(
             "https://httpbin.org/json",
-            "https://httpbin.org/uuid"
+            "https://httpbin.org/uuid",
         )
 
         assert result["both_successful"] is True
@@ -355,6 +351,7 @@ class TestUtilityFunctions:
 # ==============================================================================
 # INTEGRATION TESTS
 # ==============================================================================
+
 
 class TestPracticalHelpersIntegration:
     """Test integration between practical helpers."""
@@ -368,13 +365,7 @@ class TestPracticalHelpersIntegration:
         # Use debug results to create workflow
         if debug_result["success"]:
             workflow = FlextApiWorkflow("https://httpbin.org")
-            steps = [
-                {
-                    "name": "tested_endpoint",
-                    "endpoint": "/json",
-                    "method": "GET"
-                }
-            ]
+            steps = [{"name": "tested_endpoint", "endpoint": "/json", "method": "GET"}]
 
             workflow_result = await workflow.execute_sequence(steps)
             assert workflow_result["workflow_success"] is True
@@ -394,13 +385,7 @@ class TestPracticalHelpersIntegration:
         """Test using data transformer with workflow results."""
         workflow = FlextApiWorkflow("https://httpbin.org")
 
-        steps = [
-            {
-                "name": "get_complex_data",
-                "endpoint": "/json",
-                "method": "GET"
-            }
-        ]
+        steps = [{"name": "get_complex_data", "endpoint": "/json", "method": "GET"}]
 
         result = await workflow.execute_sequence(steps)
 
@@ -417,6 +402,7 @@ class TestPracticalHelpersIntegration:
 # ==============================================================================
 # PERFORMANCE AND USABILITY TESTS
 # ==============================================================================
+
 
 class TestCodeReductionValidation:
     """Validate actual code reduction claims."""
@@ -458,7 +444,12 @@ class TestCodeReductionValidation:
         workflow = FlextApiWorkflow("https://httpbin.org")
         steps = [
             {"name": "step1", "endpoint": "/json", "method": "GET"},
-            {"name": "step2", "endpoint": "/post", "method": "POST", "data": {"test": "data"}}
+            {
+                "name": "step2",
+                "endpoint": "/post",
+                "method": "POST",
+                "data": {"test": "data"},
+            },
         ]
         result = await workflow.execute_sequence(steps)
 

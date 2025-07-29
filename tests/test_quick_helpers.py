@@ -4,8 +4,6 @@
 Validates massive code reduction helpers work correctly.
 """
 
-import asyncio
-
 import pytest
 
 from flext_api import (
@@ -20,6 +18,7 @@ from flext_api import (
 # ==============================================================================
 # REAL FUNCTIONALITY TESTS
 # ==============================================================================
+
 
 class TestQuickHelpers:
     """Test quick helpers with real HTTP requests."""
@@ -51,7 +50,11 @@ class TestQuickHelpers:
         requests = [
             {"method": "GET", "url": "https://httpbin.org/json"},
             {"method": "GET", "url": "https://httpbin.org/uuid"},
-            {"method": "POST", "url": "https://httpbin.org/post", "json": {"test": "data"}},
+            {
+                "method": "POST",
+                "url": "https://httpbin.org/post",
+                "json": {"test": "data"},
+            },
         ]
 
         results = await flext_api_quick_bulk(requests)
@@ -69,7 +72,7 @@ class TestQuickHelpers:
         client = flext_api_enterprise_client(
             "https://api.example.com",
             auth_token="test-token",
-            enable_all_features=True
+            enable_all_features=True,
         )
 
         # Verify enterprise features are enabled
@@ -135,7 +138,7 @@ class TestQuickHelpers:
 
         result = await FlextApiResponseAggregator.aggregate_concurrent(
             requests,
-            base_url="https://httpbin.org"
+            base_url="https://httpbin.org",
         )
 
         assert result["success"] is True
@@ -149,6 +152,7 @@ class TestQuickHelpers:
 # ==============================================================================
 # PERFORMANCE TESTS
 # ==============================================================================
+
 
 class TestQuickHelpersPerformance:
     """Test performance characteristics of quick helpers."""
@@ -166,8 +170,7 @@ class TestQuickHelpersPerformance:
 
         # Bulk requests
         requests = [
-            {"method": "GET", "url": "https://httpbin.org/delay/1"}
-            for _ in range(3)
+            {"method": "GET", "url": "https://httpbin.org/delay/1"} for _ in range(3)
         ]
 
         start_time = time.time()
@@ -199,6 +202,7 @@ class TestQuickHelpersPerformance:
 # ERROR HANDLING TESTS
 # ==============================================================================
 
+
 class TestQuickHelpersErrorHandling:
     """Test error handling in quick helpers."""
 
@@ -206,7 +210,9 @@ class TestQuickHelpersErrorHandling:
     async def test_quick_get_error_handling(self) -> None:
         """Test quick GET handles errors gracefully."""
         # Test with invalid URL
-        result = await flext_api_quick_get("https://invalid-domain-that-does-not-exist.com")
+        result = await flext_api_quick_get(
+            "https://invalid-domain-that-does-not-exist.com",
+        )
 
         assert result["success"] is False
         assert result["status"] == 0
@@ -241,12 +247,13 @@ class TestQuickHelpersErrorHandling:
         failures = sum(1 for r in results if not r["success"])
 
         assert successes >= 1  # At least some should succeed
-        assert failures >= 1   # At least some should fail
+        assert failures >= 1  # At least some should fail
 
 
 # ==============================================================================
 # INTEGRATION TESTS
 # ==============================================================================
+
 
 class TestQuickHelpersIntegration:
     """Test integration between different quick helpers."""
@@ -263,7 +270,7 @@ class TestQuickHelpersIntegration:
         result = await FlextApiResponseAggregator.aggregate_concurrent(
             requests,
             base_url="https://httpbin.org",
-            auth_token="test-token"  # Won't affect httpbin but tests auth integration
+            auth_token="test-token",  # Won't affect httpbin but tests auth integration
         )
 
         assert result["success"] is True

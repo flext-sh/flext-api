@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -45,12 +44,12 @@ async def install_plugin(request: PluginInstallRequest) -> PluginInstallationRes
             config_applied=False,
             restart_required=False,
             warnings=[],
-            post_install_notes="Plugin installed successfully"
+            post_install_notes="Plugin installed successfully",
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Installation failed: {e!s}"
+            detail=f"Installation failed: {e!s}",
         ) from e
 
 
@@ -65,12 +64,12 @@ async def uninstall_plugin(plugin_name: str) -> dict[str, str]:
 
         return {
             "message": f"Plugin {plugin_name} uninstalled successfully",
-            "status": "uninstalled"
+            "status": "uninstalled",
         }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Uninstallation failed: {e!s}"
+            detail=f"Uninstallation failed: {e!s}",
         ) from e
 
 
@@ -85,5 +84,5 @@ async def get_plugin(plugin_name: str) -> PluginResponse:
         version="1.0.0",
         status=PluginStatus.INSTALLED,
         description=f"Plugin {plugin_name}",
-        installed_at=datetime.now(UTC)
+        installed_at=datetime.now(UTC),
     )

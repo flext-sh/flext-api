@@ -53,5 +53,5 @@ __all__ = [
     "FlextTokenManager"
     "PipelineRepository"
     "PluginRepository"
-    "configure_api_dependencies"
+    "configure_api_dependencies",
 ]

@@ -5,6 +5,7 @@ This file demonstrates advanced patterns for maximum code reduction and producti
 
 from __future__ import annotations
 
+import asyncio
 import time
 from typing import TYPE_CHECKING, Any
 
@@ -18,7 +19,6 @@ from flext_api import (
     authenticated,
     authorize_roles,
     cache_response,
-    create_flext_api,
     handle_errors,
     log_execution,
     rate_limit,
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 # =============================================================================
 # EXAMPLE 1: Custom API Builder for Complex Applications
 # =============================================================================
-def create_enterprise_api() -> Any:
+def create_enterprise_api() -> object:
     """Create enterprise API with custom configuration."""
     from flext_api.helpers.api_builder import FlextAPIConfig
 
@@ -48,18 +48,20 @@ def create_enterprise_api() -> Any:
     )
 
     # Build with custom middleware and handlers
-    return (FlextAPIBuilder(config)
-            .with_cors()
-            .with_rate_limiting()
-            .with_security()
-            .with_logging()
-            .with_trusted_hosts(["api.company.com", "*.company.com"])
-            .add_health_checks()
-            .add_info_endpoint()
-            .with_global_exception_handler()
-            .add_startup_task(initialize_database)
-            .add_shutdown_task(cleanup_resources)
-            .build())
+    return (
+        FlextAPIBuilder(config)
+        .with_cors()
+        .with_rate_limiting()
+        .with_security()
+        .with_logging()
+        .with_trusted_hosts(["api.company.com", "*.company.com"])
+        .add_health_checks()
+        .add_info_endpoint()
+        .with_global_exception_handler()
+        .add_startup_task(initialize_database)
+        .add_shutdown_task(cleanup_resources)
+        .build()
+    )
 
 
 async def initialize_database() -> None:
@@ -111,17 +113,19 @@ async def process_data(request: Request) -> dict[str, Any]:
         "processing_time_ms": 1500,
     }
 
-    return (FlextResponseBuilder()
-            .success("Data processing completed")
-            .with_data(result)
-            .with_performance(execution_time_ms=1500, cached=False)
-            .build())
+    return (
+        FlextResponseBuilder()
+        .success("Data processing completed")
+        .with_data(result)
+        .with_performance(execution_time_ms=1500, cached=False)
+        .build()
+    )
 
 
 async def simulate_data_processing(data_source: str) -> None:
     """Simulate expensive data processing operation."""
     # Simulate processing time
-    await asyncio.sleep(0.1)  # type: ignore
+    await asyncio.sleep(0.1)
 
 
 # =============================================================================
@@ -167,7 +171,9 @@ async def run_analytics_query(request: Request) -> dict[str, Any]:
             query_builder.equals(field, value)
 
     # Add metrics as selected fields
-    query_builder.select_fields(*analytics_request.metrics, *analytics_request.dimensions)
+    query_builder.select_fields(
+        *analytics_request.metrics, *analytics_request.dimensions,
+    )
 
     # Add limit
     query_builder.limit(analytics_request.limit)
@@ -181,12 +187,14 @@ async def run_analytics_query(request: Request) -> dict[str, Any]:
     # Simulate analytics processing
     results = await process_analytics_query(query)
 
-    return (FlextResponseBuilder()
-            .success("Analytics query completed")
-            .with_data(results)
-            .with_metadata("query", query)
-            .with_metadata("execution_plan", "optimized_scan")
-            .build())
+    return (
+        FlextResponseBuilder()
+        .success("Analytics query completed")
+        .with_data(results)
+        .with_metadata("query", query)
+        .with_metadata("execution_plan", "optimized_scan")
+        .build()
+    )
 
 
 async def process_analytics_query(query: dict[str, Any]) -> dict[str, Any]:
@@ -233,16 +241,27 @@ async def execute_batch_operations(request: Request) -> dict[str, Any]:
 
     # Validate batch size
     validator = FlextValidator()
-    validator.validate_range("operations_count", len(batch_request.operations), 1, batch_request.max_operations)
+    validator.validate_range(
+        "operations_count",
+        len(batch_request.operations),
+        1,
+        batch_request.max_operations,
+    )
 
     # Validate each operation
     for i, operation in enumerate(batch_request.operations):
-        validator.validate_choices(f"operation[{i}].operation", operation.operation, ["create", "update", "delete"])
+        validator.validate_choices(
+            f"operation[{i}].operation",
+            operation.operation,
+            ["create", "update", "delete"],
+        )
 
-        if operation.operation in ["update", "delete"]:
-            validator.validate_required(f"operation[{i}].entity_id", operation.entity_id)
+        if operation.operation in {"update", "delete"}:
+            validator.validate_required(
+                f"operation[{i}].entity_id", operation.entity_id,
+            )
 
-        if operation.operation in ["create", "update"]:
+        if operation.operation in {"create", "update"}:
             validator.validate_required(f"operation[{i}].data", operation.data)
 
     validation_result = validator.get_result()
@@ -264,21 +283,27 @@ async def execute_batch_operations(request: Request) -> dict[str, Any]:
 
     # Check if atomic operation failed
     if batch_request.atomic and failed_operations:
-        return (FlextResponseBuilder()
-                .error("Batch operation failed (atomic mode)", "Some operations failed")
-                .with_data({"failed_operations": failed_operations})
-                .build())
+        return (
+            FlextResponseBuilder()
+            .error("Batch operation failed (atomic mode)", "Some operations failed")
+            .with_data({"failed_operations": failed_operations})
+            .build()
+        )
 
     # Return results
     success_count = len([r for r in results if r["status"] == "success"])
 
-    return (FlextResponseBuilder()
-            .success(f"Batch operation completed: {success_count}/{len(results)} successful")
-            .with_data(results)
-            .with_metadata("total_operations", len(results))
-            .with_metadata("successful_operations", success_count)
-            .with_metadata("failed_operations", len(failed_operations))
-            .build())
+    return (
+        FlextResponseBuilder()
+        .success(
+            f"Batch operation completed: {success_count}/{len(results)} successful",
+        )
+        .with_data(results)
+        .with_metadata("total_operations", len(results))
+        .with_metadata("successful_operations", success_count)
+        .with_metadata("failed_operations", len(failed_operations))
+        .build()
+    )
 
 
 async def execute_single_operation(operation: BatchOperation) -> dict[str, Any]:
@@ -290,7 +315,8 @@ async def execute_single_operation(operation: BatchOperation) -> dict[str, Any]:
         return {"id": operation.entity_id, "updated": True}
     if operation.operation == "delete":
         return {"id": operation.entity_id, "deleted": True}
-    raise ValueError(f"Unknown operation: {operation.operation}")
+    msg = f"Unknown operation: {operation.operation}"
+    raise ValueError(msg)
 
 
 # =============================================================================
@@ -314,11 +340,15 @@ async def create_data_stream(request: Request) -> dict[str, Any]:
     stream_config = request.validated_data
 
     # Validate stream configuration
-    validator = (FlextValidator()
-                 .validate_min_length("stream_name", stream_config.stream_name, 3)
-                 .validate_max_length("stream_name", stream_config.stream_name, 50)
-                 .validate_range("buffer_size", stream_config.buffer_size, 100, 10000)
-                 .validate_range("flush_interval_ms", stream_config.flush_interval_ms, 1000, 60000))
+    validator = (
+        FlextValidator()
+        .validate_min_length("stream_name", stream_config.stream_name, 3)
+        .validate_max_length("stream_name", stream_config.stream_name, 50)
+        .validate_range("buffer_size", stream_config.buffer_size, 100, 10000)
+        .validate_range(
+            "flush_interval_ms", stream_config.flush_interval_ms, 1000, 60000,
+        )
+    )
 
     validation_result = validator.get_result()
     if not validation_result.success:
@@ -335,11 +365,13 @@ async def create_data_stream(request: Request) -> dict[str, Any]:
         "config": stream_config.dict(),
     }
 
-    return (FlextResponseBuilder()
-            .success("Data stream created successfully")
-            .with_data(stream_info)
-            .with_metadata("endpoint", f"/streams/{stream_id}/data")
-            .build())
+    return (
+        FlextResponseBuilder()
+        .success("Data stream created successfully")
+        .with_data(stream_info)
+        .with_metadata("endpoint", f"/streams/{stream_id}/data")
+        .build()
+    )
 
 
 # =============================================================================
@@ -357,14 +389,16 @@ async def get_system_metrics() -> dict[str, Any]:
 
     execution_time = (time.time() - start_time) * 1000
 
-    return (FlextResponseBuilder()
-            .success("System metrics retrieved")
-            .with_data(metrics)
-            .with_performance(execution_time_ms=execution_time, cached=False)
-            .with_metadata("collection_time", time.time())
-            .with_metadata("metrics_count", len(metrics))
-            .with_metadata("next_update", time.time() + 60)
-            .build())
+    return (
+        FlextResponseBuilder()
+        .success("System metrics retrieved")
+        .with_data(metrics)
+        .with_performance(execution_time_ms=execution_time, cached=False)
+        .with_metadata("collection_time", time.time())
+        .with_metadata("metrics_count", len(metrics))
+        .with_metadata("next_update", time.time() + 60)
+        .build()
+    )
 
 
 async def collect_system_metrics() -> dict[str, Any]:

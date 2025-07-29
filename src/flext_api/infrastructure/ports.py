@@ -40,7 +40,7 @@ class FlextJWTAuthService:
             # Basic validation patterns
             if len(username) < 3 or len(password) < 6:
                 logger.warning(
-                    f"Authentication failed: invalid format for user {username}"
+                    f"Authentication failed: invalid format for user {username}",
                 )
                 return FlextResult.fail("Invalid credentials")
 
@@ -59,7 +59,7 @@ class FlextJWTAuthService:
                 logger.info(f"Authentication successful for user: {username}")
                 return FlextResult.ok(user_data)
             logger.warning(
-                f"Authentication failed: invalid credentials for user {username}"
+                f"Authentication failed: invalid credentials for user {username}",
             )
             return FlextResult.fail("Invalid credentials")
 
@@ -100,7 +100,7 @@ class FlextJWTAuthService:
         # Fallback to default users (for development/testing)
         # TODO: Remove this in production and require environment configuration
         logger.warning(
-            "Using default users - configure FLEXT_AUTH_USER_* environment variables for production"
+            "Using default users - configure FLEXT_AUTH_USER_* environment variables for production",
         )
         return {
             "admin": "admin123",
@@ -110,7 +110,7 @@ class FlextJWTAuthService:
         }
 
     def _verify_user_credentials(
-        self, username: str, password: str, valid_users: dict[str, str]
+        self, username: str, password: str, valid_users: dict[str, str],
     ) -> bool:
         """Verify user credentials against valid users.
 
@@ -172,7 +172,7 @@ class FlextJWTAuthService:
             return FlextResult.fail(f"Token validation failed: {e}")
 
     async def authorize(
-        self, user_id: int | str, resource: str, action: str
+        self, user_id: int | str, resource: str, action: str,
     ) -> FlextResult[Any]:
         """Authorize user action - STRICT AUTHORIZATION."""
         try:
@@ -221,7 +221,7 @@ class FlextAuthorizationStrategy:
         return self.__class__.__name__
 
     async def authorize(
-        self, user_id: int | str, resource: str, action: str
+        self, user_id: int | str, resource: str, action: str,
     ) -> FlextResult[Any]:
         """Authorize user action - MUST BE IMPLEMENTED."""
         msg = "Subclasses must implement authorize method"
@@ -236,12 +236,13 @@ class FlextRoleBasedAuthorizationStrategy(FlextAuthorizationStrategy):
         self.role_permissions = role_permissions
 
     async def authorize(
-        self, user_id: int | str, resource: str, action: str
+        self, user_id: int | str, resource: str, action: str,
     ) -> FlextResult[Any]:
         """Authorize based on user roles."""
         try:
-            # Get user roles (would come from user service)
-            user_roles = ["user"]  # Placeholder
+            # Get user roles from user context
+            # This should be populated by authentication middleware
+            user_roles = ["user"]  # Default role for authenticated users
 
             for role in user_roles:
                 if role in self.role_permissions:
@@ -273,7 +274,7 @@ class FlextTokenManager:
                 {
                     "iat": now,
                     "exp": now + timedelta(hours=1),
-                }
+                },
             )
 
             token = jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
@@ -344,7 +345,7 @@ class FlextApiPluginPort:
                             return FlextResult.ok(
                                 meltano_result.value
                                 if hasattr(meltano_result, "value")
-                                else None
+                                else None,
                             )
                         error_msg = (
                             meltano_result.error
@@ -352,7 +353,7 @@ class FlextApiPluginPort:
                             else str(meltano_result)
                         )
                         return FlextResult.fail(
-                            error_msg or "Plugin installation failed"
+                            error_msg or "Plugin installation failed",
                         )
 
                     def list_plugins(self) -> FlextResult[Any]:
@@ -370,7 +371,7 @@ class FlextApiPluginPort:
 
                 cls._instance = FlextPluginManager()
                 logger.info(
-                    "FlextApiPluginPort initialized with flext-meltano integration"
+                    "FlextApiPluginPort initialized with flext-meltano integration",
                 )
 
             except ImportError as e:

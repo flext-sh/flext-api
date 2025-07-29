@@ -14,7 +14,6 @@ from flext_api import (
     FlextQueryBuilder,
     FlextResponseBuilder,
     FlextValidator,
-    QueryOperator,
     SortDirection,
     create_flext_api,
     handle_errors,
@@ -83,10 +82,11 @@ class UserResponse(BaseModel):
 # Traditional FastAPI: 30-50 lines per endpoint
 # FLEXT-API: 5-10 lines per endpoint
 
+
 @app.post("/users", response_model=dict[str, Any])
 @handle_errors()  # Automatic error handling
 @log_execution()  # Automatic logging
-@require_json()   # Require JSON content-type
+@require_json()  # Require JSON content-type
 @validate_request(UserCreateRequest)  # Automatic request validation
 async def create_user(request: Request) -> dict[str, Any]:
     """Create a new user with automatic validation and error handling."""
@@ -95,14 +95,19 @@ async def create_user(request: Request) -> dict[str, Any]:
 
     # Business logic validation
     validator = FlextValidator()
-    validation_result = (validator
-                        .validate_email("email", user_data.email)
-                        .validate_password("password", user_data.password)
-                        .validate_min_length("name", user_data.name, 2)
-                        .get_result())
+    validation_result = (
+        validator.validate_email("email", user_data.email)
+        .validate_password("password", user_data.password)
+        .validate_min_length("name", user_data.name, 2)
+        .get_result()
+    )
 
     if not validation_result.success:
-        return FlextResponseBuilder().error("Validation failed", validation_result.error).build()
+        return (
+            FlextResponseBuilder()
+            .error("Validation failed", validation_result.error)
+            .build()
+        )
 
     # Simulate user creation
     new_user = {
@@ -114,10 +119,12 @@ async def create_user(request: Request) -> dict[str, Any]:
     }
 
     # Return standardized response
-    return (FlextResponseBuilder()
-            .success("User created successfully")
-            .with_data(new_user)
-            .build())
+    return (
+        FlextResponseBuilder()
+        .success("User created successfully")
+        .with_data(new_user)
+        .build()
+    )
 
 
 @app.get("/users", response_model=dict[str, Any])
@@ -141,7 +148,9 @@ async def list_users(request: Request) -> dict[str, Any]:
 
     # Add sorting
     sort_by = query_params.get("sort", "name")
-    sort_direction = SortDirection.DESC if sort_by.startswith("-") else SortDirection.ASC
+    sort_direction = (
+        SortDirection.DESC if sort_by.startswith("-") else SortDirection.ASC
+    )
     sort_field = sort_by.lstrip("-")
     query_builder.sort(sort_field, sort_direction)
 
@@ -155,9 +164,27 @@ async def list_users(request: Request) -> dict[str, Any]:
 
     # Simulate database query
     users = [
-        {"id": "1", "name": "Alice", "email": "alice@example.com", "age": 25, "status": "active"},
-        {"id": "2", "name": "Bob", "email": "bob@example.com", "age": 30, "status": "active"},
-        {"id": "3", "name": "Charlie", "email": "charlie@example.com", "age": 22, "status": "inactive"},
+        {
+            "id": "1",
+            "name": "Alice",
+            "email": "alice@example.com",
+            "age": 25,
+            "status": "active",
+        },
+        {
+            "id": "2",
+            "name": "Bob",
+            "email": "bob@example.com",
+            "age": 30,
+            "status": "active",
+        },
+        {
+            "id": "3",
+            "name": "Charlie",
+            "email": "charlie@example.com",
+            "age": 22,
+            "status": "inactive",
+        },
     ]
 
     # Filter users based on query (simplified example)
@@ -169,7 +196,7 @@ async def list_users(request: Request) -> dict[str, Any]:
         total=len(filtered_users),
         page=page,
         page_size=page_size,
-        message="Users retrieved successfully"
+        message="Users retrieved successfully",
     )
 
 
@@ -204,16 +231,18 @@ async def search_users(request: Request) -> dict[str, Any]:
     data = await request.json()
 
     # Build complex query
-    query = (FlextQueryBuilder()
-             .equals("status", "active")
-             .greater_than("age", 18)
-             .in_values("department", ["engineering", "sales", "marketing"])
-             .like("name", f"%{data.get('search', '')}%")
-             .between("created_at", "2024-01-01", "2025-01-01")
-             .sort_desc("created_at")
-             .paginate(data.get("page", 1), data.get("page_size", 50))
-             .include_total_count()
-             .build())
+    query = (
+        FlextQueryBuilder()
+        .equals("status", "active")
+        .greater_than("age", 18)
+        .in_values("department", ["engineering", "sales", "marketing"])
+        .like("name", f"%{data.get('search', '')}%")
+        .between("created_at", "2024-01-01", "2025-01-01")
+        .sort_desc("created_at")
+        .paginate(data.get("page", 1), data.get("page_size", 50))
+        .include_total_count()
+        .build()
+    )
 
     # Simulate search results
     results = [
@@ -221,12 +250,14 @@ async def search_users(request: Request) -> dict[str, Any]:
         {"id": "2", "name": "Bob Smith", "department": "sales", "age": 30},
     ]
 
-    return (FlextResponseBuilder()
-            .success("Search completed")
-            .with_data(results)
-            .with_pagination(total=100, page=1, page_size=50)
-            .with_metadata("query", query)
-            .build())
+    return (
+        FlextResponseBuilder()
+        .success("Search completed")
+        .with_data(results)
+        .with_pagination(total=100, page=1, page_size=50)
+        .with_metadata("query", query)
+        .build()
+    )
 
 
 # =============================================================================
@@ -240,14 +271,18 @@ async def activate_user(user_id: str) -> dict[str, Any]:
     success = True
 
     if success:
-        return (FlextResponseBuilder()
-                .success("User activated successfully")
-                .with_data({"user_id": user_id, "status": "active"})
-                .with_metadata("activation_time", "2025-01-25T10:00:00Z")
-                .build())
-    return (FlextResponseBuilder()
-            .error("Failed to activate user", "User not found or already active")
-            .build())
+        return (
+            FlextResponseBuilder()
+            .success("User activated successfully")
+            .with_data({"user_id": user_id, "status": "active"})
+            .with_metadata("activation_time", "2025-01-25T10:00:00Z")
+            .build()
+        )
+    return (
+        FlextResponseBuilder()
+        .error("Failed to activate user", "User not found or already active")
+        .build()
+    )
 
 
 # =============================================================================

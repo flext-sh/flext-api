@@ -73,5 +73,5 @@ __all__ = [
     "PluginType"
     "RateLimit"
     "RequestId"
-    "RequestTimeout"
+    "RequestTimeout",
 ]

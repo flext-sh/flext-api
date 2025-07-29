@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Standalone test for FlextApi Quick Helpers.
 
-Tests the massive code reduction helpers without dependencies on conftest.py
+Tests the massive code reduction helpers.on conftest.py
 """
 
 import asyncio
@@ -11,6 +11,7 @@ from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
+
 
 async def test_quick_helpers() -> bool | None:
     """Test quick helpers functionality."""
@@ -50,7 +51,7 @@ async def test_quick_helpers() -> bool | None:
         # Test 4: Enterprise client creation
         client = flext_api_enterprise_client(
             "https://httpbin.org",
-            enable_all_features=True
+            enable_all_features=True,
         )
         assert client.config.base_url == "https://httpbin.org"
         assert client.config.cache_enabled is True
@@ -67,7 +68,8 @@ async def test_quick_helpers() -> bool | None:
             {"method": "GET", "url": "/uuid", "key": "uuid_data"},
         ]
         result = await FlextApiResponseAggregator.aggregate_concurrent(
-            requests, base_url="https://httpbin.org"
+            requests,
+            base_url="https://httpbin.org",
         )
         assert result["success"] is True
         assert result["metadata"]["total_requests"] == 2
@@ -78,24 +80,26 @@ async def test_quick_helpers() -> bool | None:
         traceback.print_exc()
         return False
 
+
 async def test_massive_code_reduction() -> bool | None:
     """Demonstrate massive code reduction examples."""
     try:
         from flext_api.helpers.flext_api_quick import (
             FlextApiMicroserviceIntegrator,
-            flext_api_enterprise_client,
             flext_api_quick_get,
         )
 
         # Example 1: Traditional approach vs FlextApi
-
 
         # Actually test it
         await flext_api_quick_get("https://httpbin.org/json")
 
         # Example 2: Microservice integration
 
-        services = {"service1": "https://httpbin.org", "service2": "https://httpbin.org"}
+        services = {
+            "service1": "https://httpbin.org",
+            "service2": "https://httpbin.org",
+        }
         async with FlextApiMicroserviceIntegrator(services) as integrator:
             # Multiple service calls with 1 line
             calls = [
@@ -105,11 +109,11 @@ async def test_massive_code_reduction() -> bool | None:
             results = await integrator.call_multiple_services(calls)
             sum(1 for r in results if not isinstance(r, Exception) and r.get("success"))
 
-
         return True
 
     except Exception:
         return False
+
 
 async def main() -> bool:
     """Run all tests and demonstrations."""
@@ -124,6 +128,7 @@ async def main() -> bool:
             return True
 
     return False
+
 
 if __name__ == "__main__":
     success = asyncio.run(main())
