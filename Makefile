@@ -152,49 +152,119 @@ fix: ## Auto-fix code issues
 	@make format
 
 # =============================================================================
-# TESTING
+# TESTING - Optimized with pytest plugins
 # =============================================================================
 
 .PHONY: test
-test: ## Run all tests with coverage
-	@echo "🧪 Running tests with coverage..."
-	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=term-missing --cov-fail-under=$(MIN_COVERAGE)
+test: ## Run all tests with optimized coverage
+	@echo "🧪 Running optimized test suite..."
+	@PYTHONPATH=src $(POETRY) run pytest
 
 .PHONY: test-unit
-test-unit: ## Run unit tests only
-	@echo "🧪 Running unit tests..."
-	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) -m "not integration" -v
+test-unit: ## Run unit tests only (fast with parallel execution)
+	@echo "⚡ Running unit tests in parallel..."
+	@PYTHONPATH=src $(POETRY) run pytest -m unit -n auto --dist=loadfile --tb=short
+
+.PHONY: test-unit-fast
+test-unit-fast: ## Run unit tests without coverage (fastest)
+	@echo "🚀 Running unit tests (no coverage)..."
+	@PYTHONPATH=src $(POETRY) run pytest -m unit --no-cov -q
 
 .PHONY: test-integration
-test-integration: ## Run integration tests only
-	@echo "🧪 Running integration tests..."
-	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) -m integration -v
+test-integration: ## Run integration tests with timeout protection
+	@echo "🔗 Running integration tests..."
+	@PYTHONPATH=src $(POETRY) run pytest -m integration --timeout=600 -v
+
+.PHONY: test-e2e
+test-e2e: ## Run end-to-end tests
+	@echo "🎯 Running E2E tests..."
+	@PYTHONPATH=src $(POETRY) run pytest -m e2e --timeout=600 -v
 
 .PHONY: test-api
 test-api: ## Run API endpoint tests
-	@echo "🧪 Running API endpoint tests..."
-	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) -m api -v
+	@echo "🌐 Running API endpoint tests..."
+	@PYTHONPATH=src $(POETRY) run pytest -m api -v
 
-.PHONY: test-fast
-test-fast: ## Run tests without coverage
-	@echo "🧪 Running fast tests..."
-	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) -v
+.PHONY: test-client
+test-client: ## Run HTTP client tests
+	@echo "📡 Running HTTP client tests..."
+	@PYTHONPATH=src $(POETRY) run pytest -m client -v
 
-.PHONY: test-watch
-test-watch: ## Run tests in watch mode
-	@echo "🧪 Running tests in watch mode..."
-	@PYTHONPATH=src $(POETRY) run pytest-watch $(TESTS_DIR)
+.PHONY: test-builder
+test-builder: ## Run builder pattern tests
+	@echo "🏗️ Running builder pattern tests..."
+	@PYTHONPATH=src $(POETRY) run pytest -m builder -v
+
+.PHONY: test-core
+test-core: ## Run core functionality tests
+	@echo "🔧 Running core functionality tests..."
+	@PYTHONPATH=src $(POETRY) run pytest -m core -v
+
+.PHONY: test-smoke
+test-smoke: ## Run smoke tests for CI
+	@echo "💨 Running smoke tests..."
+	@PYTHONPATH=src $(POETRY) run pytest -m smoke -x --tb=no -q
+
+.PHONY: test-parallel
+test-parallel: ## Run all tests in parallel (maximum speed)
+	@echo "⚡ Running tests in parallel..."
+	@PYTHONPATH=src $(POETRY) run pytest -n auto --dist=loadfile
+
+.PHONY: test-random
+test-random: ## Run tests in random order to detect dependencies
+	@echo "🎲 Running tests in random order..."
+	@PYTHONPATH=src $(POETRY) run pytest --randomly-seed=12345
+
+.PHONY: test-failed
+test-failed: ## Re-run only failed tests from last execution
+	@echo "🔄 Re-running failed tests..."
+	@PYTHONPATH=src $(POETRY) run pytest --lf -v
+
+.PHONY: test-debug
+test-debug: ## Run tests with enhanced debugging
+	@echo "🐛 Running tests with debug info..."
+	@PYTHONPATH=src $(POETRY) run pytest -v --tb=long --log-cli --log-cli-level=DEBUG
+
+.PHONY: test-benchmark
+test-benchmark: ## Run performance benchmarks
+	@echo "📊 Running performance benchmarks..."
+	@PYTHONPATH=src $(POETRY) run pytest -m benchmark --benchmark-only --benchmark-sort=mean
+
+.PHONY: test-dead-fixtures
+test-dead-fixtures: ## Find unused test fixtures
+	@echo "🕵️ Finding dead fixtures..."
+	@PYTHONPATH=src $(POETRY) run pytest --dead-fixtures
+
+.PHONY: test-collect
+test-collect: ## Show test collection without running
+	@echo "📋 Collecting tests..."
+	@PYTHONPATH=src $(POETRY) run pytest --collect-only -q
 
 .PHONY: coverage
-coverage: ## Generate coverage report
+coverage: ## Generate comprehensive coverage report
 	@echo "📊 Generating coverage report..."
-	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=html --cov-report=xml
+	@PYTHONPATH=src $(POETRY) run pytest --cov-report=html --cov-report=xml --cov-report=term-missing
 
 .PHONY: coverage-html
 coverage-html: ## Generate HTML coverage report
 	@echo "📊 Generating HTML coverage report..."
-	@PYTHONPATH=src $(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=html
+	@PYTHONPATH=src $(POETRY) run pytest --cov-report=html --no-cov-on-fail
 	@echo "📊 Coverage report: htmlcov/index.html"
+
+.PHONY: coverage-xml
+coverage-xml: ## Generate XML coverage report for CI
+	@echo "📊 Generating XML coverage report..."
+	@PYTHONPATH=src $(POETRY) run pytest --cov-report=xml
+
+.PHONY: test-profile
+test-profile: ## Profile test execution for optimization
+	@echo "⏱️ Profiling test execution..."
+	@PYTHONPATH=src $(POETRY) run pytest --durations=10 -v
+
+.PHONY: test-security
+test-security: ## Run security-related tests
+	@echo "🔒 Running security tests..."
+	@PYTHONPATH=src $(POETRY) run pytest -m security -v
 
 # =============================================================================
 # FASTAPI DEVELOPMENT SERVER

@@ -163,20 +163,22 @@ class TestFlextApiPlugin:
     async def test_plugin_after_request(self) -> None:
         """Test plugin after_request hook."""
         plugin = FlextApiPlugin()
+        request = FlextApiClientRequest(method="GET", url="/test")
         response = FlextApiClientResponse(status_code=200)
 
         # Should not modify response by default
-        modified_response = await plugin.after_request(response)
+        modified_response = await plugin.after_request(request, response)
         assert modified_response == response
 
     @pytest.mark.asyncio
     async def test_plugin_on_error(self) -> None:
         """Test plugin on_error hook."""
         plugin = FlextApiPlugin()
+        request = FlextApiClientRequest(method="GET", url="/test")
         error = Exception("Test error")
 
         # Should not modify error by default
-        modified_error = await plugin.on_error(error)
+        modified_error = await plugin.on_error(request, error)
         assert modified_error == error
 
 

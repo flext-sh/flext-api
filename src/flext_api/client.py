@@ -15,7 +15,6 @@ if TYPE_CHECKING:
     import types
 
 
-import http
 from urllib.parse import urljoin
 
 import aiohttp
@@ -151,7 +150,7 @@ class FlextApiPlugin:
 
     async def after_request(
         self,
-        request: FlextApiClientRequest,
+        _request: FlextApiClientRequest,
         response: FlextApiClientResponse,
     ) -> FlextApiClientResponse:
         """Process response after receiving."""
@@ -159,7 +158,7 @@ class FlextApiPlugin:
 
     async def on_error(
         self,
-        request: FlextApiClientRequest,
+        _request: FlextApiClientRequest,
         error: Exception,
     ) -> Exception:
         """Handle request error."""

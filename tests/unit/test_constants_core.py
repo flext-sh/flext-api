@@ -1,5 +1,7 @@
 """Tests for constants core functionality."""
 
+import http
+
 from flext_core import FlextFieldType
 
 from flext_api.constants import (
@@ -49,37 +51,49 @@ class TestFlextApiConstants:
     """Test FlextApiConstants class."""
 
     def test_success_codes(self) -> None:
-        """Test success codes."""
-        if 200 not in FlextApiConstants.SUCCESS_CODES:
-            raise AssertionError(f"Expected 200 in {FlextApiConstants.SUCCESS_CODES}")
-        assert 201 in FlextApiConstants.SUCCESS_CODES
-        if 404 in FlextApiConstants.SUCCESS_CODES:
+        """Test success codes using http.HTTPStatus constants."""
+        ok_code = http.HTTPStatus.OK.value
+        created_code = http.HTTPStatus.CREATED.value
+        not_found_code = http.HTTPStatus.NOT_FOUND.value
+
+        if ok_code not in FlextApiConstants.SUCCESS_CODES:
+            raise AssertionError(f"Expected {ok_code} in {FlextApiConstants.SUCCESS_CODES}")
+        assert created_code in FlextApiConstants.SUCCESS_CODES
+        if not_found_code in FlextApiConstants.SUCCESS_CODES:
             raise AssertionError(
-                f"Expected 404 not in {FlextApiConstants.SUCCESS_CODES}"
+                f"Expected {not_found_code} not in {FlextApiConstants.SUCCESS_CODES}"
             )
 
     def test_client_error_codes(self) -> None:
-        """Test client error codes."""
-        if 400 not in FlextApiConstants.CLIENT_ERROR_CODES:
+        """Test client error codes using http.HTTPStatus constants."""
+        bad_request_code = http.HTTPStatus.BAD_REQUEST.value
+        not_found_code = http.HTTPStatus.NOT_FOUND.value
+        ok_code = http.HTTPStatus.OK.value
+
+        if bad_request_code not in FlextApiConstants.CLIENT_ERROR_CODES:
             raise AssertionError(
-                f"Expected 400 in {FlextApiConstants.CLIENT_ERROR_CODES}"
+                f"Expected {bad_request_code} in {FlextApiConstants.CLIENT_ERROR_CODES}"
             )
-        assert 404 in FlextApiConstants.CLIENT_ERROR_CODES
-        if 200 in FlextApiConstants.CLIENT_ERROR_CODES:
+        assert not_found_code in FlextApiConstants.CLIENT_ERROR_CODES
+        if ok_code in FlextApiConstants.CLIENT_ERROR_CODES:
             raise AssertionError(
-                f"Expected 200 not in {FlextApiConstants.CLIENT_ERROR_CODES}"
+                f"Expected {ok_code} not in {FlextApiConstants.CLIENT_ERROR_CODES}"
             )
 
     def test_server_error_codes(self) -> None:
-        """Test server error codes."""
-        if 500 not in FlextApiConstants.SERVER_ERROR_CODES:
+        """Test server error codes using http.HTTPStatus constants."""
+        internal_error_code = http.HTTPStatus.INTERNAL_SERVER_ERROR.value
+        bad_gateway_code = http.HTTPStatus.BAD_GATEWAY.value
+        ok_code = http.HTTPStatus.OK.value
+
+        if internal_error_code not in FlextApiConstants.SERVER_ERROR_CODES:
             raise AssertionError(
-                f"Expected 500 in {FlextApiConstants.SERVER_ERROR_CODES}"
+                f"Expected {internal_error_code} in {FlextApiConstants.SERVER_ERROR_CODES}"
             )
-        assert 502 in FlextApiConstants.SERVER_ERROR_CODES
-        if 200 in FlextApiConstants.SERVER_ERROR_CODES:
+        assert bad_gateway_code in FlextApiConstants.SERVER_ERROR_CODES
+        if ok_code in FlextApiConstants.SERVER_ERROR_CODES:
             raise AssertionError(
-                f"Expected 200 not in {FlextApiConstants.SERVER_ERROR_CODES}"
+                f"Expected {ok_code} not in {FlextApiConstants.SERVER_ERROR_CODES}"
             )
 
     def test_rate_limit_constants(self) -> None:
