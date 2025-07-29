@@ -6,20 +6,26 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import asyncio
 import os
-
-# Test environment setup - local implementation
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from faker import Faker
 from fastapi.testclient import TestClient
 
 from flext_api.main import app, storage
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
+    from collections.abc import AsyncGenerator, Iterator
+
+
+# Configure faker for consistent test data
+fake = Faker()
+Faker.seed(12345)  # Deterministic fake data
+
 
 # Setup test environment
 os.environ["FLEXT_API_TESTING"] = "true"
@@ -231,3 +237,34 @@ def pytest_collection_modifyitems(
         # Add plugin marker to plugin tests
         if "plugin" in item.name.lower():
             item.add_marker(pytest.mark.plugin)
+
+
+# ============================================================================
+# EVENT LOOP FIXTURES - Enhanced asyncio support
+# ============================================================================
+
+@pytest.fixture(scope="session")
+def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
+    """Create an instance of the default event loop for the test session."""
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+
+    yield loop
+    loop.close()
+
+
+# ============================================================================
+# PERFORMANCE OPTIMIZATION FIXTURES
+# ============================================================================
+
+@pytest.fixture(autouse=True)
+def optimize_test_performance() -> None:
+    """Optimize test performance by disabling unnecessary features in test mode."""
+    # Disable external network calls
+    os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = "true"
+    # Reduce logging verbosity for performance
+    os.environ["FLEXT_TEST_LOG_MINIMAL"] = "true"
+    # Enable fast test mode
+    os.environ["FLEXT_FAST_TEST_MODE"] = "true"

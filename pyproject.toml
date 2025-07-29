@@ -227,8 +227,92 @@ init_typed = true
 warn_required_dynamic_aliases = true
 warn_untyped_fields = true
 
+# Configuração pytest.ini otimizada - incorpora configuração compartilhada
 [tool.pytest.ini_options]
-extend = "../.pytest-ini-options-shared.toml"
+# Configuração base (from shared config)
+minversion = "8.0"
+
+# Configurações específicas do flext-api para otimização
+addopts = [
+    # Cobertura otimizada
+    "--cov=src/flext_api",
+    "--cov-context=test",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml:reports/coverage.xml",
+    "--cov-branch",
+    "--cov-fail-under=90",
+    
+    # Otimizações de performance
+    "--benchmark-skip",  # Skip benchmarks em runs normais
+    "-n=auto",  # Paralelização automática com pytest-xdist
+    "--dist=loadfile",  # Distribuição por arquivo
+    
+    # Melhor output e debugging
+    "--tb=short",
+    "--strict-markers",
+    "--strict-config",
+    "-ra",  # Mostrar resumo de testes
+    "--color=yes",
+    
+    # Timeout para evitar testes infinitos
+    "--timeout=300",
+    "--timeout-method=thread",
+    
+    # Random order para detectar dependências entre testes (seed will be auto-generated)
+    "--randomly-dont-reorganize",
+]
+
+# Environment variables para pytest-env
+env = [
+    "ENVIRONMENT=test",
+    "LOG_LEVEL=DEBUG", 
+    "TESTING=true",
+    "FLEXT_API_TEST_MODE=true",
+    "DATABASE_URL=sqlite:///:memory:",
+]
+
+# Marcadores específicos do projeto
+markers = [
+    "unit: Fast unit tests with mocks",
+    "integration: Integration tests (may require external services)", 
+    "e2e: End-to-end tests with real services",
+    "slow: Slow running tests (>1s)",
+    "benchmark: Performance benchmark tests",
+    "api: FastAPI endpoint tests",
+    "client: HTTP client tests",
+    "builder: Builder pattern tests",
+    "core: Core functionality tests",
+    "architecture: Architectural pattern tests",
+    "smoke: Quick smoke tests for CI",
+    "regression: Regression tests for bug fixes",
+    "security: Security-related tests",
+    "mock: Tests using mocks heavily",
+    "real: Tests using real external services",
+]
+
+# Filtros de warnings otimizados
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning", 
+    "ignore::UserWarning",
+    "ignore::pytest.PytestUnraisableExceptionWarning",
+    "ignore::ResourceWarning",
+    # Específicos para aiohttp
+    "ignore:.*unclosed.*:ResourceWarning",
+    "ignore:.*coroutine.*was never awaited:RuntimeWarning",
+]
+
+# Diretórios de teste otimizados
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Asyncio configuration
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 extend = "../.ruff-shared.toml"

@@ -2,7 +2,6 @@
 
 import asyncio
 import time
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -18,6 +17,7 @@ from flext_api.client import (
     FlextApiClientConfig,
     FlextApiClientMethod,
     FlextApiClientRequest,
+    FlextApiClientResponse,
     FlextApiRetryPlugin,
 )
 
