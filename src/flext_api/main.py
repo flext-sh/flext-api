@@ -19,7 +19,7 @@ app = flext_api_create_app()
 # (Remove this if storage module doesn't exist)
 try:
     from flext_api.storage import FlextAPIStorage
-    storage = FlextAPIStorage()
+    storage: FlextAPIStorage | None = FlextAPIStorage()
 except ImportError:
     storage = None
 
@@ -29,4 +29,4 @@ __all__ = ["app", "storage"]
 # Main execution entry point
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)  # noqa: S104

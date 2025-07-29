@@ -8,11 +8,10 @@ Biblioteca limpa usando flext-core, sem aliases ou código legacy.
 
 from __future__ import annotations
 
-from typing import Any
+import importlib.metadata
 
 # === VERSÃO ===
 try:
-    import importlib.metadata
     __version__ = importlib.metadata.version("flext-api")
 except importlib.metadata.PackageNotFoundError:
     __version__ = "1.0.0"
@@ -24,13 +23,18 @@ from flext_core import FlextResult, get_logger
 
 # === FUNCIONALIDADES PRINCIPAIS ===
 from flext_api.api import FlextApi, create_flext_api
+from flext_api.app import flext_api_create_app
 from flext_api.builder import (
     FlextApiBuilder,
     FlextApiOperation,
-    build_query,
-    build_success_response,
+    FlextApiQuery,
+    FlextApiQueryBuilder,
+    FlextApiResponse,
+    FlextApiResponseBuilder,
     build_error_response,
     build_paginated_response,
+    build_query,
+    build_success_response,
 )
 from flext_api.client import (
     FlextApiCachingPlugin,
@@ -50,42 +54,34 @@ from flext_api.client import (
 
 # === EXPORTS ===
 __all__ = [
-    # Core classes
     "FlextApi",
     "FlextApiBuilder",
-    "FlextApiOperation", 
-    "FlextApiClient", 
-    "FlextApiClientConfig",
-    
-    # Plugins
-    "FlextApiPlugin",
     "FlextApiCachingPlugin",
-    "FlextApiRetryPlugin", 
     "FlextApiCircuitBreakerPlugin",
-    
-    # Models
+    "FlextApiClient",
+    "FlextApiClientConfig",
+    "FlextApiClientMethod",
+    "FlextApiClientProtocol",
     "FlextApiClientRequest",
     "FlextApiClientResponse",
-    "FlextApiClientMethod",
     "FlextApiClientStatus",
-    "FlextApiClientProtocol",
-    
-    # Factory functions
-    "create_flext_api",
-    "create_client",
-    "create_client_with_plugins",
-    
-    # Builder helpers  
-    "build_query",
-    "build_success_response",
-    "build_error_response",
-    "build_paginated_response",
-    
-    # Flext-core essentials
+    "FlextApiOperation",
+    "FlextApiPlugin",
+    "FlextApiQuery",
+    "FlextApiQueryBuilder",
+    "FlextApiResponse",
+    "FlextApiResponseBuilder",
+    "FlextApiRetryPlugin",
     "FlextResult",
-    "get_logger",
-    
-    # Metadata
     "__version__",
     "__version_info__",
+    "build_error_response",
+    "build_paginated_response",
+    "build_query",
+    "build_success_response",
+    "create_client",
+    "create_client_with_plugins",
+    "create_flext_api",
+    "flext_api_create_app",
+    "get_logger",
 ]
