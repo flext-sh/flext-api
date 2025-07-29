@@ -8,10 +8,10 @@ from flext_api.builder import (
     FlextApiQueryBuilder,
     FlextApiResponse,
     FlextApiResponseBuilder,
-    build_error_response,
-    build_paginated_response,
+    build_error_response_object,
+    build_paginated_response_object,
     build_query,
-    build_success_response,
+    build_success_response_object,
 )
 
 # Constants
@@ -32,7 +32,7 @@ class TestFlextApiQuery:
 
     def test_query_with_custom_values(self) -> None:
         """Test query with custom values."""
-        filters = [{"field": "name", "operator": "equals", "value": "test"}]
+        filters: list[dict[str, object]] = [{"field": "name", "operator": "equals", "value": "test"}]
         sorts = [{"field": "created_at", "direction": "desc"}]
 
         query = FlextApiQuery(
@@ -51,12 +51,12 @@ class TestFlextApiQuery:
 
     def test_query_validation_negative_page(self) -> None:
         """Test query validation for negative page."""
-        with pytest.raises(ValueError, match="Page must be positive"):
+        with pytest.raises(ValueError, match="Page must be greater than 0"):
             FlextApiQuery(page=0)
 
     def test_query_validation_negative_page_size(self) -> None:
         """Test query validation for negative page size."""
-        with pytest.raises(ValueError, match="Page size must be positive"):
+        with pytest.raises(ValueError, match="Page size must be greater than 0"):
             FlextApiQuery(page_size=0)
 
     def test_query_to_dict(self) -> None:
@@ -179,6 +179,18 @@ class TestFlextApiQueryBuilder:
         with pytest.raises(ValueError, match="Page size must be greater than 0"):
             builder.page_size(0)
 
+        # Test combined pagination method
+        with pytest.raises(ValueError, match="Page must be greater than 0"):
+            builder.pagination(page=0, size=10)
+
+        with pytest.raises(ValueError, match="Page size must be greater than 0"):
+            builder.pagination(page=1, size=0)
+
+        # Test successful pagination
+        query = builder.pagination(page=2, size=25).build()
+        assert query.page == 2
+        assert query.page_size == 25
+
     def test_empty_field_validation(self) -> None:
         """Test empty field validation."""
         builder = FlextApiQueryBuilder()
@@ -188,6 +200,15 @@ class TestFlextApiQueryBuilder:
 
         with pytest.raises(ValueError, match="Field cannot be empty"):
             builder.sort_asc("")
+
+        with pytest.raises(ValueError, match="Field cannot be empty"):
+            builder.greater_than("", 5)
+
+        with pytest.raises(ValueError, match="Field cannot be empty"):
+            builder.sort_desc("")
+
+        with pytest.raises(ValueError, match="Field cannot be empty"):
+            builder.greater_than("   ", 5)  # whitespace only
 
     def test_chained_operations(self) -> None:
         """Test chained operations."""
@@ -234,7 +255,7 @@ class TestFlextApiResponseBuilder:
 
     def test_with_metadata(self) -> None:
         """Test response with metadata."""
-        metadata = {"total": 100, "page": 1}
+        metadata: dict[str, object] = {"total": 100, "page": 1}
         response = FlextApiResponseBuilder().metadata(metadata).build()
 
         assert response.metadata == metadata
@@ -255,12 +276,23 @@ class TestFlextApiResponseBuilder:
         assert response.metadata["page_size"] == 10
         assert response.metadata["total"] == 100
 
+        # Test to_dict() with pagination
+        response_dict = response.to_dict()
+        assert "pagination" in response_dict
+        assert response_dict["pagination"] == response.pagination
+
     def test_pagination_validation(self) -> None:
         """Test pagination validation."""
         builder = FlextApiResponseBuilder()
 
         with pytest.raises(ValueError, match="Page must be greater than 0"):
             builder.pagination(page=0, page_size=10, total=100)
+
+        with pytest.raises(ValueError, match="Total must be positive"):
+            builder.pagination(page=1, page_size=10, total=-1)
+
+        with pytest.raises(ValueError, match="Page size must be greater than 0"):
+            builder.pagination(page=1, page_size=0, total=100)
 
 
 class TestFactoryFunctions:
@@ -286,7 +318,7 @@ class TestFactoryFunctions:
     def test_build_success_response(self) -> None:
         """Test build_success_response function."""
         data = {"key": "value"}
-        response = build_success_response(data, "Success")
+        response = build_success_response_object(data, "Success")
 
         assert isinstance(response, FlextApiResponse)
         assert response.success is True
@@ -295,7 +327,7 @@ class TestFactoryFunctions:
 
     def test_build_error_response(self) -> None:
         """Test build_error_response function."""
-        response = build_error_response("Error occurred")
+        response = build_error_response_object("Error occurred")
 
         assert isinstance(response, FlextApiResponse)
         assert response.success is False
@@ -304,7 +336,7 @@ class TestFactoryFunctions:
     def test_build_paginated_response(self) -> None:
         """Test build_paginated_response function."""
         data = [{"id": 1}, {"id": 2}]
-        response = build_paginated_response(data, page=2, page_size=10, total=100)
+        response = build_paginated_response_object(data, page=2, page_size=10, total=100)
 
         assert isinstance(response, FlextApiResponse)
         assert response.success is True

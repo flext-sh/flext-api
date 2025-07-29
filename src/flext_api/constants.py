@@ -6,6 +6,7 @@ robust constants system without re-exporting base constants.
 
 from __future__ import annotations
 
+import http
 from typing import ClassVar, Final
 
 # ==============================================================================
@@ -34,10 +35,26 @@ FLEXT_PLUGIN_MAX_MEMORY: Final[int] = 512  # MB
 class FlextApiConstants:
     """API-specific constants that don't exist in flext-core."""
 
-    # HTTP status groups
-    SUCCESS_CODES: ClassVar[list[int]] = [200, 201, 202, 204]
-    CLIENT_ERROR_CODES: ClassVar[list[int]] = [400, 401, 403, 404, 422]
-    SERVER_ERROR_CODES: ClassVar[list[int]] = [500, 502, 503, 504]
+    # HTTP status groups using standard library constants
+    SUCCESS_CODES: ClassVar[list[int]] = [
+        http.HTTPStatus.OK.value,
+        http.HTTPStatus.CREATED.value,
+        http.HTTPStatus.ACCEPTED.value,
+        http.HTTPStatus.NO_CONTENT.value,
+    ]
+    CLIENT_ERROR_CODES: ClassVar[list[int]] = [
+        http.HTTPStatus.BAD_REQUEST.value,
+        http.HTTPStatus.UNAUTHORIZED.value,
+        http.HTTPStatus.FORBIDDEN.value,
+        http.HTTPStatus.NOT_FOUND.value,
+        http.HTTPStatus.UNPROCESSABLE_ENTITY.value,
+    ]
+    SERVER_ERROR_CODES: ClassVar[list[int]] = [
+        http.HTTPStatus.INTERNAL_SERVER_ERROR.value,
+        http.HTTPStatus.BAD_GATEWAY.value,
+        http.HTTPStatus.SERVICE_UNAVAILABLE.value,
+        http.HTTPStatus.GATEWAY_TIMEOUT.value,
+    ]
 
     # Rate limiting
     RATE_LIMIT_REQUESTS = 1000

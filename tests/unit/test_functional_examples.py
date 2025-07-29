@@ -7,6 +7,7 @@ from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
     build_query,
+    build_query_dict,
     build_success_response,
     create_flext_api,
 )
@@ -27,10 +28,13 @@ class TestFunctionalExamples:
 
         # Build a query (returns structured query object)
         query = build_query({"status": "active", "limit": 10})
-        if "filters" not in query:
-            raise AssertionError(f"Expected filters in {query}")
-        if len(query["filters"]) != EXPECTED_BULK_SIZE:
-            raise AssertionError(f"Expected 2, got {len(query['filters'])}")
+        query_dict = query.to_dict()
+        if "filters" not in query_dict:
+            raise AssertionError(f"Expected filters in {query_dict}")
+        filters = query_dict["filters"]
+        assert isinstance(filters, list), f"Expected list, got {type(filters)}"
+        if len(filters) != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected 2, got {len(filters)}")
 
         # Create client configuration
         client_config = {"base_url": "https://api.example.com", "timeout": 30}
@@ -68,15 +72,18 @@ class TestFunctionalExamples:
     def test_query_building_examples(self) -> None:
         """Test various query building examples."""
         # Simple query
-        query1 = build_query({"name": "test"})
+        query1 = build_query_dict({"name": "test"})
         if "filters" not in query1:
             raise AssertionError(f"Expected filters in {query1}")
-        if len(query1["filters"]) != 1:
-            raise AssertionError(f"Expected 1, got {len(query1['filters'])}")
-        assert query1["filters"][0]["field"] == "name"
+        filters1 = query1["filters"]
+        assert isinstance(filters1, list), f"Expected list, got {type(filters1)}"
+        if len(filters1) != 1:
+            raise AssertionError(f"Expected 1, got {len(filters1)}")
+        assert isinstance(filters1[0], dict), f"Expected dict, got {type(filters1[0])}"
+        assert filters1[0]["field"] == "name"
 
         # Complex query with multiple filters
-        query2 = build_query(
+        query2 = build_query_dict(
             {
                 "status": "active",
                 "created_after": "2023-01-01",
@@ -86,15 +93,19 @@ class TestFunctionalExamples:
         )
         if "filters" not in query2:
             raise AssertionError(f"Expected filters in {query2}")
-        if len(query2["filters"]) != 4:
-            raise AssertionError(f"Expected 4, got {len(query2['filters'])}")
+        filters2 = query2["filters"]
+        assert isinstance(filters2, list), f"Expected list, got {type(filters2)}"
+        if len(filters2) != 4:
+            raise AssertionError(f"Expected 4, got {len(filters2)}")
 
         # Empty query
-        query3 = build_query({})
+        query3 = build_query_dict({})
         if "filters" not in query3:
             raise AssertionError(f"Expected filters in {query3}")
-        if len(query3["filters"]) != 0:
-            raise AssertionError(f"Expected 0, got {len(query3['filters'])}")
+        filters3 = query3["filters"]
+        assert isinstance(filters3, list), f"Expected list, got {type(filters3)}"
+        if len(filters3) != 0:
+            raise AssertionError(f"Expected 0, got {len(filters3)}")
 
     def test_response_building_examples(self) -> None:
         """Test various response building examples."""
@@ -102,31 +113,31 @@ class TestFunctionalExamples:
         data = {"id": 1, "name": "test", "status": "active"}
         response1 = build_success_response(data, "Resource created successfully")
 
-        assert response1.success is True
-        assert response1.data == data
-        assert response1.message == "Resource created successfully"
+        assert response1["success"] is True
+        assert response1["data"] == data
+        assert response1["message"] == "Resource created successfully"
 
         # Success response without data
         response2 = build_success_response(None, "Operation completed")
 
-        assert response2.success is True
-        assert response2.data is None
-        assert response2.message == "Operation completed"
+        assert response2["success"] is True
+        assert response2["data"] is None
+        assert response2["message"] == "Operation completed"
 
         # Success response with metadata
-        metadata = {"total": 100, "page": 1, "page_size": 10}
+        metadata: dict[str, object] = {"total": 100, "page": 1, "page_size": 10}
         response3 = build_success_response(data, "Data retrieved", metadata)
 
-        assert response3.success is True
-        assert response3.data == data
-        assert response3.metadata == metadata
+        assert response3["success"] is True
+        assert response3["data"] == data
+        assert response3["metadata"] == metadata
 
     @pytest.mark.asyncio
     async def test_async_client_usage(self) -> None:
         """Test async client usage patterns."""
         # Create client with configuration
         config = FlextApiClientConfig(
-            base_url="https://httpbin.org",
+            base_url="https://api.example.com",
             timeout=30.0,
             headers={"User-Agent": "FlextApi/1.0"},
         )
@@ -137,18 +148,38 @@ class TestFunctionalExamples:
         assert client.status == "running"
 
         try:
-            # Make a GET request
-            response = await client.get("/json")
-            assert response.is_success
-            assert response.status_code == 200
-            assert "json" in response.data
+            # Mock HTTP responses to avoid external dependencies
+            from unittest.mock import AsyncMock, patch
 
-            # Make a POST request
-            post_data = {"name": "test", "value": 123}
-            response = await client.post("/post", json=post_data)
-            assert response.is_success
-            assert response.status_code == 200
-            assert response.data["json"] == post_data
+            mock_response = AsyncMock()
+            mock_response.status = 200
+            mock_response.headers = {"Content-Type": "application/json"}
+            mock_response.json.return_value = {"slideshow": {"title": "Sample"}}
+            mock_response.text.return_value = '{"slideshow": {"title": "Sample"}}'
+
+            with patch("aiohttp.ClientSession.request") as mock_request:
+                mock_request.return_value.__aenter__.return_value = mock_response
+
+                # Make a GET request
+                result = await client.get("/json")
+                assert result.is_success
+                response = result.data
+                assert response is not None
+                assert response.status_code == 200
+                assert isinstance(response.data, dict)
+                assert "slideshow" in response.data
+
+                # Make a POST request
+                post_data = {"name": "test", "value": 123}
+                mock_response.json.return_value = {"json": post_data}
+
+                result = await client.post("/post", json_data=post_data)
+                assert result.is_success
+                response = result.data
+                assert response is not None
+                assert response.status_code == 200
+                assert isinstance(response.data, dict)
+                assert response.data["json"] == post_data
 
         finally:
             # Stop the client
@@ -163,11 +194,13 @@ class TestFunctionalExamples:
         # Test with empty configuration
         result = api.flext_api_create_client({})
         assert not result.is_success
+        assert result.error is not None
         assert "base_url" in result.error.lower()
 
         # Test with invalid URL
         result = api.flext_api_create_client({"base_url": "invalid-url"})
         assert not result.is_success
+        assert result.error is not None
         assert "invalid" in result.error.lower()
 
     def test_builder_pattern_examples(self) -> None:
@@ -199,8 +232,10 @@ class TestFunctionalExamples:
         )
 
         assert response.success is True
+        assert isinstance(response.data, dict)
         assert response.data["id"] == 1
         assert response.message == "Resource created"
+        assert isinstance(response.metadata, dict)
         assert response.metadata["request_id"] == "12345"
 
     def test_plugin_integration_examples(self) -> None:
@@ -220,13 +255,25 @@ class TestFunctionalExamples:
                 self, request: FlextApiClientRequest
             ) -> FlextApiClientRequest:
                 # Add custom header
+                if request.headers is None:
+                    object.__setattr__(request, "headers", {})
+                assert request.headers is not None
                 request.headers["X-Custom-Header"] = "custom-value"
                 return request
 
             async def after_request(
-                self, response: FlextApiClientResponse
+                self,
+                request_or_response: FlextApiClientRequest | FlextApiClientResponse,
+                response: FlextApiClientResponse | None = None,
             ) -> FlextApiClientResponse:
-                # Log response
+                # Handle both signatures
+                if response is None:
+                    # New signature: after_request(response)
+                    if isinstance(request_or_response, FlextApiClientResponse):
+                        return request_or_response
+                    # Fallback: create a basic response if request was passed
+                    return FlextApiClientResponse(status_code=200, data=None)
+                # Old signature: after_request(request, response)
                 return response
 
         # Use plugin with client
@@ -266,6 +313,7 @@ class TestFunctionalExamples:
         client = FlextApiClient(config)
 
         # Verify security headers are set
+        assert client.config.headers is not None
         assert "Authorization" in client.config.headers
         assert "X-API-Key" in client.config.headers
         assert "Content-Security-Policy" in client.config.headers

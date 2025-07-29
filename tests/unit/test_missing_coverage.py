@@ -8,8 +8,8 @@ import pytest
 
 from flext_api import FlextApi
 from flext_api.builder import (
-    build_error_response,
-    build_paginated_response,
+    build_error_response_object,
+    build_paginated_response_object,
 )
 from flext_api.client import (
     FlextApiCachingPlugin,
@@ -109,7 +109,7 @@ class TestMissingCoverageBuilder:
     def test_build_functions_error_paths(self) -> None:
         """Test build functions error handling."""
         # Test error response building
-        error_resp = build_error_response("Test error", 400, {"detail": "test"})
+        error_resp = build_error_response_object("Test error", 400, {"detail": "test"})
         if error_resp.success:
             raise AssertionError(f"Expected False, got {error_resp.success}")
         assert error_resp.message == "Test error"
@@ -119,7 +119,7 @@ class TestMissingCoverageBuilder:
             )
 
         # Test paginated response building
-        paginated_resp = build_paginated_response(
+        paginated_resp = build_paginated_response_object(
             data=[1, 2, 3],
             page=1,
             page_size=10,
@@ -184,12 +184,12 @@ class TestMissingCoverageClient:
             if result != request:
                 raise AssertionError(f"Expected {request}, got {result}")
 
-            # Test after_request and on_error
-            mock_response = MagicMock()
-            await plugin.after_request(mock_response)
+            # Test after_request and on_error with correct signatures
+            mock_response = FlextApiClientResponse(status_code=200)
+            await plugin.after_request(request, mock_response)
 
             mock_error = Exception("Test error")
-            await plugin.on_error(mock_error)
+            await plugin.on_error(request, mock_error)
 
         asyncio.run(test_retry())
 
@@ -209,12 +209,12 @@ class TestMissingCoverageClient:
             if result != request:
                 raise AssertionError(f"Expected {request}, got {result}")
 
-            # Test after_request and on_error
-            mock_response = MagicMock()
-            await plugin.after_request(mock_response)
+            # Test after_request and on_error with correct signatures
+            mock_response = FlextApiClientResponse(status_code=200)
+            await plugin.after_request(request, mock_response)
 
             mock_error = Exception("Test error")
-            await plugin.on_error(mock_error)
+            await plugin.on_error(request, mock_error)
 
         asyncio.run(test_circuit_breaker())
 
@@ -303,9 +303,10 @@ class TestCompleteCoverageIntegration:
             response = await client.get("/json")
             assert response.is_success
 
-            # Test error request
+            # Test error request (404 status)
             response = await client.get("/status/404")
-            assert not response.is_success
+            assert response.is_success  # HTTP request succeeded
+            assert response.data.status_code == 404  # But returned 404 status
 
         finally:
             await client.stop()

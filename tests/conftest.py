@@ -10,7 +10,7 @@ import os
 
 # Test environment setup - local implementation
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -40,7 +40,7 @@ def set_test_environment() -> None:
 
 
 @pytest.fixture
-def sample_api_config() -> dict[str, Any]:
+def sample_api_config() -> dict[str, object]:
     """Sample API configuration for testing."""
     return {
         "environment": "test",
@@ -52,7 +52,7 @@ def sample_api_config() -> dict[str, Any]:
 
 
 @pytest.fixture
-def sample_pipeline_data() -> dict[str, Any]:
+def sample_pipeline_data() -> dict[str, object]:
     """Sample pipeline data for testing."""
     return {
         "name": "test-pipeline",
@@ -67,7 +67,7 @@ def sample_pipeline_data() -> dict[str, Any]:
 
 
 @pytest.fixture
-def sample_plugin_data() -> dict[str, Any]:
+def sample_plugin_data() -> dict[str, object]:
     """Sample plugin data for testing."""
     return {
         "name": "tap-postgres",
@@ -82,7 +82,7 @@ def sample_plugin_data() -> dict[str, Any]:
 
 
 @pytest.fixture
-def sample_user_data() -> dict[str, Any]:
+def sample_user_data() -> dict[str, object]:
     """Sample user data for testing."""
     return {
         "username": "testuser",
@@ -153,7 +153,8 @@ def reset_storage() -> None:
     # Skip storage reset - models consolidated to flext-core patterns
     if storage:
         # Basic reset without using old models
-        storage.maintenance_message = None
+        # Clear any maintenance message if stored as a key
+        storage.delete("maintenance_message")
 
 
 @pytest.fixture

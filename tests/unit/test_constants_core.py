@@ -1,5 +1,7 @@
 """Tests for constants core functionality."""
 
+from flext_core import FlextFieldType
+
 from flext_api.constants import (
     FLEXT_API_CACHE_TTL,
     FLEXT_API_MAX_RETRIES,
@@ -107,32 +109,32 @@ class TestFlextApiFieldType:
     """Test FlextApiFieldType class."""
 
     def test_field_types(self) -> None:
-        """Test field type constants."""
-        assert FlextApiFieldType.STRING == "string"
-        assert FlextApiFieldType.INTEGER == "integer"
-        assert FlextApiFieldType.FLOAT == "float"
-        assert FlextApiFieldType.BOOLEAN == "boolean"
-        assert FlextApiFieldType.DATE == "date"
-        assert FlextApiFieldType.DATETIME == "datetime"
-        assert FlextApiFieldType.OBJECT == "object"
-        assert FlextApiFieldType.ARRAY == "array"
+        """Test API-specific field type constants."""
+        assert FlextApiFieldType.API_KEY == "api_key"
+        assert FlextApiFieldType.BEARER_TOKEN == "bearer_token"
+        assert FlextApiFieldType.PIPELINE_CONFIG == "pipeline_config"
+        assert FlextApiFieldType.PLUGIN_CONFIG == "plugin_config"
+        assert FlextApiFieldType.USER_ROLE == "user_role"
+        assert FlextApiFieldType.ENDPOINT_PATH == "endpoint_path"
+        assert FlextApiFieldType.HTTP_METHOD == "http_method"
+        assert FlextApiFieldType.RESPONSE_FORMAT == "response_format"
 
     def test_field_type_validation(self) -> None:
-        """Test field type validation."""
+        """Test field type validation using flext-core types."""
         valid_types = [
-            FlextApiFieldType.STRING,
-            FlextApiFieldType.INTEGER,
-            FlextApiFieldType.FLOAT,
-            FlextApiFieldType.BOOLEAN,
-            FlextApiFieldType.DATE,
-            FlextApiFieldType.DATETIME,
-            FlextApiFieldType.OBJECT,
-            FlextApiFieldType.ARRAY,
+            FlextFieldType.STRING,
+            FlextFieldType.INTEGER,
+            FlextFieldType.FLOAT,
+            FlextFieldType.BOOLEAN,
+            FlextFieldType.DATE,
+            FlextFieldType.DATETIME,
+            FlextFieldType.UUID,
+            FlextFieldType.EMAIL,
         ]
 
         for field_type in valid_types:
-            assert isinstance(field_type, str)
-            assert len(field_type) > 0
+            assert isinstance(field_type.value, str)
+            assert len(field_type.value) > 0
 
 
 class TestFlextApiStatus:
@@ -148,25 +150,25 @@ class TestFlextApiStatus:
 
     def test_service_status(self) -> None:
         """Test service status constants."""
-        assert FlextApiStatus.IDLE == "idle"
-        assert FlextApiStatus.RUNNING == "running"
-        assert FlextApiStatus.STOPPED == "stopped"
-        assert FlextApiStatus.ERROR == "error"
+        assert FlextApiStatus.HEALTHY == "healthy"
+        assert FlextApiStatus.DEGRADED == "degraded"
+        assert FlextApiStatus.UNHEALTHY == "unhealthy"
+        assert FlextApiStatus.MAINTENANCE == "maintenance"
 
     def test_pipeline_status(self) -> None:
         """Test pipeline status constants."""
-        assert FlextApiStatus.CREATED == "created"
-        assert FlextApiStatus.STARTED == "started"
-        assert FlextApiStatus.PAUSED == "paused"
-        assert FlextApiStatus.RESUMED == "resumed"
-        assert FlextApiStatus.FINISHED == "finished"
+        assert FlextApiStatus.PIPELINE_IDLE == "idle"
+        assert FlextApiStatus.PIPELINE_RUNNING == "running"
+        assert FlextApiStatus.PIPELINE_SUCCESS == "success"
+        assert FlextApiStatus.PIPELINE_ERROR == "error"
+        assert FlextApiStatus.PIPELINE_TIMEOUT == "timeout"
 
     def test_plugin_status(self) -> None:
         """Test plugin status constants."""
-        assert FlextApiStatus.ENABLED == "enabled"
-        assert FlextApiStatus.DISABLED == "disabled"
-        assert FlextApiStatus.LOADING == "loading"
-        assert FlextApiStatus.ERROR == "error"
+        assert FlextApiStatus.PLUGIN_LOADED == "loaded"
+        assert FlextApiStatus.PLUGIN_ACTIVE == "active"
+        assert FlextApiStatus.PLUGIN_INACTIVE == "inactive"
+        assert FlextApiStatus.PLUGIN_ERROR == "error"
 
 
 class TestFlextApiEndpoints:
@@ -174,28 +176,28 @@ class TestFlextApiEndpoints:
 
     def test_base_paths(self) -> None:
         """Test base path constants."""
-        assert FlextApiEndpoints.API_BASE == "/api"
-        assert FlextApiEndpoints.V1_BASE == "/api/v1"
+        assert FlextApiEndpoints.API_V1 == "/api/v1"
         assert FlextApiEndpoints.HEALTH == "/health"
-        assert FlextApiEndpoints.STATUS == "/status"
+        assert FlextApiEndpoints.METRICS == "/metrics"
+        assert FlextApiEndpoints.DOCS == "/docs"
 
     def test_auth_endpoints(self) -> None:
         """Test authentication endpoints."""
-        assert FlextApiEndpoints.LOGIN == "/auth/login"
-        assert FlextApiEndpoints.LOGOUT == "/auth/logout"
-        assert FlextApiEndpoints.REFRESH == "/auth/refresh"
-        assert FlextApiEndpoints.VERIFY == "/auth/verify"
+        assert FlextApiEndpoints.AUTH_LOGIN == "/api/v1/auth/login"
+        assert FlextApiEndpoints.AUTH_LOGOUT == "/api/v1/auth/logout"
+        assert FlextApiEndpoints.AUTH_REFRESH == "/api/v1/auth/refresh"
+        assert FlextApiEndpoints.AUTH_VERIFY == "/api/v1/auth/verify"
 
     def test_pipeline_endpoints(self) -> None:
         """Test pipeline endpoints."""
-        assert FlextApiEndpoints.PIPELINES == "/pipelines"
-        assert FlextApiEndpoints.PIPELINE_DETAIL == "/pipelines/{id}"
-        assert FlextApiEndpoints.PIPELINE_START == "/pipelines/{id}/start"
-        assert FlextApiEndpoints.PIPELINE_STOP == "/pipelines/{id}/stop"
+        assert FlextApiEndpoints.PIPELINES == "/api/v1/pipelines"
+        assert FlextApiEndpoints.PIPELINE_RUN == "/api/v1/pipelines/{pipeline_id}/run"
+        assert FlextApiEndpoints.PIPELINE_STATUS == "/api/v1/pipelines/{pipeline_id}/status"
+        assert FlextApiEndpoints.PIPELINE_LOGS == "/api/v1/pipelines/{pipeline_id}/logs"
 
     def test_plugin_endpoints(self) -> None:
         """Test plugin endpoints."""
-        assert FlextApiEndpoints.PLUGINS == "/plugins"
-        assert FlextApiEndpoints.PLUGIN_DETAIL == "/plugins/{id}"
-        assert FlextApiEndpoints.PLUGIN_ENABLE == "/plugins/{id}/enable"
-        assert FlextApiEndpoints.PLUGIN_DISABLE == "/plugins/{id}/disable"
+        assert FlextApiEndpoints.PLUGINS == "/api/v1/plugins"
+        assert FlextApiEndpoints.PLUGIN_INSTALL == "/api/v1/plugins/install"
+        assert FlextApiEndpoints.PLUGIN_UNINSTALL == "/api/v1/plugins/{plugin_id}/uninstall"
+        assert FlextApiEndpoints.PLUGIN_CONFIG == "/api/v1/plugins/{plugin_id}/config"

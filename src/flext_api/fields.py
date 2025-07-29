@@ -12,6 +12,8 @@ from typing import TYPE_CHECKING, ClassVar
 if TYPE_CHECKING:
     from flext_api.types import TData
 
+import aiohttp.hdrs
+
 # Re-export from flext-core for compatibility
 from flext_core import FlextFieldCore, FlextFields
 
@@ -156,7 +158,13 @@ class FlextAPIFieldCore:
             "required": True,
             "data_type": "string",
             "allowed_values": [
-                "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS",
+                aiohttp.hdrs.METH_GET,
+                aiohttp.hdrs.METH_POST,
+                aiohttp.hdrs.METH_PUT,
+                aiohttp.hdrs.METH_PATCH,
+                aiohttp.hdrs.METH_DELETE,
+                aiohttp.hdrs.METH_HEAD,
+                aiohttp.hdrs.METH_OPTIONS,
             ],
             **kwargs,
         }

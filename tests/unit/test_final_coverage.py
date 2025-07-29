@@ -7,7 +7,7 @@ import aiohttp
 import pytest
 
 from flext_api import FlextApi
-from flext_api.builder import FlextApiResponseBuilder
+from flext_api.builder import FlextApiQueryBuilder, FlextApiResponseBuilder
 from flext_api.client import (
     FlextApiClient,
     FlextApiClientConfig,
@@ -40,18 +40,19 @@ class TestFinalCoverage:
 
         # Test that the API can be instantiated without errors
         result = api.health_check()
-        assert isinstance(result, dict)
+        assert result.is_success
+        assert isinstance(result.data, dict)
 
     def test_builder_empty_field_validations(self) -> None:
         """Test builder empty field validations."""
-        builder = FlextApiResponseBuilder()
+        query_builder = FlextApiQueryBuilder()
 
         # Test empty field validation
         with pytest.raises(ValueError, match="Field cannot be empty"):
-            builder.equals("", "value")
+            query_builder.equals("", "value")
 
         with pytest.raises(ValueError, match="Field cannot be empty"):
-            builder.sort_asc("")
+            query_builder.sort_asc("")
 
     def test_builder_metadata_loop(self) -> None:
         """Test builder metadata loop."""
@@ -161,7 +162,7 @@ class TestFinalCoverage:
         # Simulate JSON parsing failure
         def _raise_json_error() -> None:
             msg = "Invalid JSON"
-            raise JSONDecodeError(msg)
+            raise JSONDecodeError(msg, doc="", pos=0)
 
         def _simulate_json_error() -> None:
             try:
@@ -184,11 +185,11 @@ class TestFinalCoverage:
         assert response.is_success
 
         # Test POST method
-        response = await client.post("/post", json={"test": "data"})
+        response = await client.post("/post", json_data={"test": "data"})
         assert response.is_success
 
         # Test PUT method
-        response = await client.put("/put", json={"test": "data"})
+        response = await client.put("/put", json_data={"test": "data"})
         assert response.is_success
 
         # Test DELETE method
@@ -202,7 +203,7 @@ class TestFinalCoverage:
         client = FlextApiClient(config)
 
         # Test PATCH method
-        response = await client.patch("/patch", json={"test": "data"})
+        response = await client.patch("/patch", json_data={"test": "data"})
         assert response.is_success
 
         # Test HEAD method
