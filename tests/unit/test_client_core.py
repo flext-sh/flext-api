@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Tests for client functionality."""
+"""Tests for client core functionality."""
 
 import pytest
 

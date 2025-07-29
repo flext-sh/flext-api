@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for missing coverage in flext-api."""
 
 import asyncio
@@ -91,10 +90,10 @@ class TestMissingCoverageBuilder:
         builder = FlextApiQueryBuilder()
 
         # Test empty field validation
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Field cannot be empty"):
             builder.equals("", "value")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Field cannot be empty"):
             builder.sort_asc("")
 
     def test_response_builder_error_paths(self) -> None:
@@ -104,7 +103,7 @@ class TestMissingCoverageBuilder:
         builder = FlextApiResponseBuilder()
 
         # Test pagination validation
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Page must be greater than 0"):
             builder.pagination(page=0, page_size=10, total=100)
 
     def test_build_functions_error_paths(self) -> None:
@@ -318,16 +317,16 @@ class TestCompleteCoverageIntegration:
         # Test query builder edge cases
         builder = FlextApiQueryBuilder()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Page must be greater than 0"):
             builder.page(0)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Page size must be greater than 0"):
             builder.page_size(0)
 
         # Test response builder edge cases
         response_builder = FlextApiResponseBuilder()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Page must be greater than 0"):
             response_builder.pagination(page=0, page_size=10, total=100)
 
     def test_error_conditions_comprehensive(self) -> None:
