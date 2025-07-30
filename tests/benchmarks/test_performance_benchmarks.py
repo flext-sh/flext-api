@@ -3,7 +3,6 @@
 Benchmarks the key operations for performance regression testing.
 """
 
-
 from collections.abc import Callable
 from typing import Any
 
@@ -29,13 +28,16 @@ class TestAPIPerformanceBenchmarks:
 
     def test_query_building_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
         """Benchmark query building operations."""
+
         def build_complex_query() -> FlextApiQuery:
-            return build_query({
-                "status": "active",
-                "category": "premium",
-                "created_at": "2024-01-01",
-                "limit": 50,
-            })
+            return build_query(
+                {
+                    "status": "active",
+                    "category": "premium",
+                    "created_at": "2024-01-01",
+                    "limit": 50,
+                }
+            )
 
         result = benchmark(build_complex_query)
         assert result is not None
@@ -43,6 +45,7 @@ class TestAPIPerformanceBenchmarks:
 
     def test_response_building_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
         """Benchmark response building operations."""
+
         def build_complex_response() -> dict[str, Any]:
             return build_success_response(
                 data={"items": list(range(100)), "total": 100},
@@ -60,6 +63,7 @@ class TestAPIPerformanceBenchmarks:
 
     def test_builder_pattern_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
         """Benchmark builder pattern operations."""
+
         def complex_builder_operations() -> tuple[FlextApiQuery, FlextApiResponse]:
             builder = FlextApiBuilder()
 
@@ -89,16 +93,19 @@ class TestAPIPerformanceBenchmarks:
 
     def test_client_creation_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
         """Benchmark HTTP client creation."""
+
         def create_configured_client() -> FlextApiClient:
-            return create_client({
-                "base_url": "https://api.example.com",
-                "timeout": 30.0,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "User-Agent": "FlextAPI/1.0.0",
-                },
-                "max_retries": 3,
-            })
+            return create_client(
+                {
+                    "base_url": "https://api.example.com",
+                    "timeout": 30.0,
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "User-Agent": "FlextAPI/1.0.0",
+                    },
+                    "max_retries": 3,
+                }
+            )
 
         result = benchmark(create_configured_client)
         assert result is not None
@@ -106,14 +113,17 @@ class TestAPIPerformanceBenchmarks:
 
     def test_multiple_queries_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
         """Benchmark multiple query operations."""
+
         def build_multiple_queries() -> list[FlextApiQuery]:
             queries = []
             for i in range(100):
-                query = build_query({
-                    "id": i,
-                    "status": "active" if i % 2 == 0 else "inactive",
-                    "priority": "high" if i % 3 == 0 else "normal",
-                })
+                query = build_query(
+                    {
+                        "id": i,
+                        "status": "active" if i % 2 == 0 else "inactive",
+                        "priority": "high" if i % 3 == 0 else "normal",
+                    }
+                )
                 queries.append(query)
             return queries
 
@@ -123,11 +133,13 @@ class TestAPIPerformanceBenchmarks:
 
     def test_large_response_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
         """Benchmark large response building."""
+
         def build_large_response() -> dict[str, Any]:
             # Simulate large dataset response
             large_data = {
-                "items": [{"id": i, "name": f"Item {i}", "value": i * 2}
-                         for i in range(1000)],
+                "items": [
+                    {"id": i, "name": f"Item {i}", "value": i * 2} for i in range(1000)
+                ],
                 "metadata": {f"key_{i}": f"value_{i}" for i in range(50)},
                 "total": 1000,
             }
@@ -142,15 +154,18 @@ class TestAPIPerformanceBenchmarks:
         assert result["success"] is True
         assert len(result["data"]["items"]) == 1000
 
-    def test_paginated_response_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
+    def test_paginated_response_benchmark(
+        self, benchmark: Callable[[Any], Any]
+    ) -> None:
         """Benchmark paginated response operations."""
+
         def build_paginated_responses() -> list[FlextApiResponse]:
             responses = []
             for page in range(1, 11):  # 10 pages
                 builder = FlextApiBuilder()
                 response = (
                     builder.for_response()
-                    .success(data={"items": list(range((page-1)*20, page*20))})
+                    .success(data={"items": list(range((page - 1) * 20, page * 20))})
                     .with_pagination(total=200, page=page, page_size=20)
                     .with_metadata("page_info", f"Page {page} of 10")
                     .build()

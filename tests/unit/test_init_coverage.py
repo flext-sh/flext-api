@@ -89,16 +89,18 @@ class TestInitCoverage:
 
         # Save original version
         import flext_api
+
         original_version = flext_api.__version__
 
         # Mock PackageNotFoundError to test fallback
         with patch.object(
             importlib.metadata,
             "version",
-            side_effect=importlib.metadata.PackageNotFoundError
+            side_effect=importlib.metadata.PackageNotFoundError,
         ):
             # Re-import the module to trigger exception handling
             import importlib
+
             importlib.reload(flext_api)
 
             # Should fall back to default version

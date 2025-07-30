@@ -62,10 +62,14 @@ class FlextApiConstants:
 
     # API response formats
     SUCCESS_RESPONSE: ClassVar[dict[str, object]] = {
-        "status": "success", "data": None, "error": None,
+        "status": "success",
+        "data": None,
+        "error": None,
     }
     ERROR_RESPONSE: ClassVar[dict[str, object]] = {
-        "status": "error", "data": None, "error": None,
+        "status": "error",
+        "data": None,
+        "error": None,
     }
 
     # Validation patterns

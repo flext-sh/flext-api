@@ -16,6 +16,7 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
+from flext_api.client import FlextApiClient
 from flext_api.main import app, storage
 
 if TYPE_CHECKING:
@@ -172,6 +173,19 @@ def auth_headers() -> dict[str, str]:
     }
 
 
+@pytest.fixture(autouse=True)
+async def cleanup_client_sessions() -> AsyncGenerator[None]:
+    """DRY fixture to cleanup all FlextApiClient sessions after each test."""
+    # Pre-test: ensure clean state
+    await FlextApiClient.cleanup_all_sessions()
+
+    try:
+        yield
+    finally:
+        # Post-test: cleanup any remaining sessions
+        await FlextApiClient.cleanup_all_sessions()
+
+
 # Pytest configuration
 def pytest_configure(config: pytest.Config) -> None:
     """Configure pytest with custom markers."""
@@ -243,6 +257,7 @@ def pytest_collection_modifyitems(
 # EVENT LOOP FIXTURES - Enhanced asyncio support
 # ============================================================================
 
+
 @pytest.fixture(scope="session")
 def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
     """Create an instance of the default event loop for the test session."""
@@ -258,6 +273,7 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
 # ============================================================================
 # PERFORMANCE OPTIMIZATION FIXTURES
 # ============================================================================
+
 
 @pytest.fixture(autouse=True)
 def optimize_test_performance() -> None:

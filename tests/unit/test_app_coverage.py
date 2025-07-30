@@ -51,7 +51,6 @@ class TestAppCoverageComplete:
         response = client.get("/health")
 
         if response.status_code != HTTP_OK:
-
             msg = f"Expected {200}, got {response.status_code}"
             raise AssertionError(msg)
         data = response.json()
@@ -64,13 +63,13 @@ class TestAppCoverageComplete:
 
         # Verify app configuration
         if app.title != "FLEXT API":
-            msg = f"Expected {"FLEXT API"}, got {app.title}"
+            msg = f"Expected {'FLEXT API'}, got {app.title}"
             raise AssertionError(msg)
         assert app.description == (
             "Enterprise-grade distributed data integration platform"
         )
         if app.version != "1.0.0":
-            msg = f"Expected {"1.0.0"}, got {app.version}"
+            msg = f"Expected {'1.0.0'}, got {app.version}"
             raise AssertionError(msg)
 
     def test_app_has_health_endpoint(self) -> None:
@@ -80,7 +79,7 @@ class TestAppCoverageComplete:
         # Check that health endpoint exists in routes
         routes = [route.path for route in app.routes]
         if "/health" not in routes:
-            msg = f"Expected {"/health"} in {routes}"
+            msg = f"Expected {'/health'} in {routes}"
             raise AssertionError(msg)
 
     def test_health_endpoint_async_function(self) -> None:
@@ -124,5 +123,5 @@ class TestAppCoverageComplete:
         # Should create separate instances
         assert app1 is not app2
         if app1.title == app2.title != "FLEXT API":
-            msg = f"Expected {"FLEXT API"}, got {app1.title == app2.title}"
+            msg = f"Expected {'FLEXT API'}, got {app1.title == app2.title}"
             raise AssertionError(msg)

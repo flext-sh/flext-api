@@ -20,9 +20,7 @@ class TestFinalMissingCoverage:
         """Test build_success_response_object with metadata - covers builder.py lines 411-412."""
         metadata = {"request_id": "test123", "user": "REDACTED_LDAP_BIND_PASSWORD"}
         response = build_success_response_object(
-            data={"result": "success"},
-            message="Operation completed",
-            metadata=metadata
+            data={"result": "success"}, message="Operation completed", metadata=metadata
         )
 
         assert response.success is True
@@ -38,9 +36,13 @@ class TestFinalMissingCoverage:
         # Request without params to test the None assignment on line 287
         request = FlextApiClientRequest(method="GET", url="/test", params=None)
 
-        params, headers, json_data, data, timeout = client._prepare_request_params(request)
+        params, _headers, _json_data, _data, _timeout = client._prepare_request_params(
+            request
+        )
 
-        assert params is None  # This covers line 287: params = None when no request.params
+        assert (
+            params is None
+        )  # This covers line 287: params = None when no request.params
 
     def test_create_client_invalid_timeout_type(self) -> None:
         """Test create_client with invalid timeout type - covers client.py lines 570."""
@@ -77,10 +79,7 @@ class TestFinalMissingCoverage:
     def test_create_client_with_plugins_config_handling(self) -> None:
         """Test create_client_with_plugins config handling - covers client.py lines 595-598."""
         # Test with dict config that goes through create_client
-        config_dict = {
-            "base_url": "https://api.example.com",
-            "timeout": 45.0
-        }
+        config_dict = {"base_url": "https://api.example.com", "timeout": 45.0}
 
         client = create_client_with_plugins(config_dict, [])
 
@@ -116,9 +115,11 @@ class TestFinalMissingCoverage:
         """Test complete TYPE_CHECKING coverage in client.py - line 15."""
         # Force import of types during runtime to cover TYPE_CHECKING block
         import typing
+
         if hasattr(typing, "TYPE_CHECKING"):
             # This covers the TYPE_CHECKING import path
             from flext_api.client import FlextApiClient
+
             assert FlextApiClient is not None
 
     def test_main_module_direct_execution(self) -> None:

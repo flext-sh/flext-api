@@ -68,7 +68,7 @@ class TestMainCoverageComplete:
 
         # Verify __all__ contains expected exports
         if "app" not in main_module.__all__:
-            msg = f"Expected {"app"} in {main_module.__all__}"
+            msg = f"Expected {'app'} in {main_module.__all__}"
             raise AssertionError(msg)
         assert "storage" in main_module.__all__
 

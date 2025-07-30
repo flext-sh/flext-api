@@ -32,7 +32,9 @@ class TestFlextApiQuery:
 
     def test_query_with_custom_values(self) -> None:
         """Test query with custom values."""
-        filters: list[dict[str, object]] = [{"field": "name", "operator": "equals", "value": "test"}]
+        filters: list[dict[str, object]] = [
+            {"field": "name", "operator": "equals", "value": "test"}
+        ]
         sorts = [{"field": "created_at", "direction": "desc"}]
 
         query = FlextApiQuery(
@@ -336,7 +338,9 @@ class TestFactoryFunctions:
     def test_build_paginated_response(self) -> None:
         """Test build_paginated_response function."""
         data = [{"id": 1}, {"id": 2}]
-        response = build_paginated_response_object(data, page=2, page_size=10, total=100)
+        response = build_paginated_response_object(
+            data, page=2, page_size=10, total=100
+        )
 
         assert isinstance(response, FlextApiResponse)
         assert response.success is True

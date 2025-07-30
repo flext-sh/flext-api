@@ -121,9 +121,13 @@ class FlextApiQueryBuilder:
         if not field or not field.strip():
             msg = "Field cannot be empty"
             raise ValueError(msg)
-        self._query.filters.append({
-            "field": field, "operator": "equals", "value": value,
-        })
+        self._query.filters.append(
+            {
+                "field": field,
+                "operator": "equals",
+                "value": value,
+            },
+        )
         return self
 
     def greater_than(self, field: str, value: object) -> FlextApiQueryBuilder:
@@ -131,9 +135,13 @@ class FlextApiQueryBuilder:
         if not field or not field.strip():
             msg = "Field cannot be empty"
             raise ValueError(msg)
-        self._query.filters.append({
-            "field": field, "operator": "gt", "value": value,
-        })
+        self._query.filters.append(
+            {
+                "field": field,
+                "operator": "gt",
+                "value": value,
+            },
+        )
         return self
 
     def sort_desc(self, field: str) -> FlextApiQueryBuilder:
@@ -215,7 +223,9 @@ class FlextApiResponseBuilder:
         )
 
     def success(
-        self, data: object = None, message: str = "Success",
+        self,
+        data: object = None,
+        message: str = "Success",
     ) -> FlextApiResponseBuilder:
         """Set success response."""
         self._response = FlextApiResponse(
@@ -228,7 +238,7 @@ class FlextApiResponseBuilder:
         return self
 
     def error(
-        self, message: str, code: int = http.HTTPStatus.INTERNAL_SERVER_ERROR.value
+        self, message: str, code: int = http.HTTPStatus.INTERNAL_SERVER_ERROR.value,
     ) -> FlextApiResponseBuilder:
         """Set error response."""
         metadata = dict(self._response.metadata)
@@ -306,7 +316,11 @@ class FlextApiResponseBuilder:
         return self
 
     def pagination(
-        self, *, page: int, page_size: int, total: int,
+        self,
+        *,
+        page: int,
+        page_size: int,
+        total: int,
     ) -> FlextApiResponseBuilder:
         """Set pagination (simplified for tests)."""
         return self.with_pagination(total=total, page=page, page_size=page_size)
