@@ -37,7 +37,7 @@ class FlextApi:
     async def stop(self) -> FlextResult[None]:
         """Stop the service."""
         if self._client:
-            await self._client.stop()
+            await self._client.stop()  # Async method
         logger.info("FlextApi service stopped")
         return FlextResult.ok(None)
 

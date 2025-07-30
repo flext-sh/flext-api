@@ -57,7 +57,9 @@ class TestFlextApiConstants:
         not_found_code = http.HTTPStatus.NOT_FOUND.value
 
         if ok_code not in FlextApiConstants.SUCCESS_CODES:
-            raise AssertionError(f"Expected {ok_code} in {FlextApiConstants.SUCCESS_CODES}")
+            raise AssertionError(
+                f"Expected {ok_code} in {FlextApiConstants.SUCCESS_CODES}"
+            )
         assert created_code in FlextApiConstants.SUCCESS_CODES
         if not_found_code in FlextApiConstants.SUCCESS_CODES:
             raise AssertionError(
@@ -206,12 +208,18 @@ class TestFlextApiEndpoints:
         """Test pipeline endpoints."""
         assert FlextApiEndpoints.PIPELINES == "/api/v1/pipelines"
         assert FlextApiEndpoints.PIPELINE_RUN == "/api/v1/pipelines/{pipeline_id}/run"
-        assert FlextApiEndpoints.PIPELINE_STATUS == "/api/v1/pipelines/{pipeline_id}/status"
+        assert (
+            FlextApiEndpoints.PIPELINE_STATUS
+            == "/api/v1/pipelines/{pipeline_id}/status"
+        )
         assert FlextApiEndpoints.PIPELINE_LOGS == "/api/v1/pipelines/{pipeline_id}/logs"
 
     def test_plugin_endpoints(self) -> None:
         """Test plugin endpoints."""
         assert FlextApiEndpoints.PLUGINS == "/api/v1/plugins"
         assert FlextApiEndpoints.PLUGIN_INSTALL == "/api/v1/plugins/install"
-        assert FlextApiEndpoints.PLUGIN_UNINSTALL == "/api/v1/plugins/{plugin_id}/uninstall"
+        assert (
+            FlextApiEndpoints.PLUGIN_UNINSTALL
+            == "/api/v1/plugins/{plugin_id}/uninstall"
+        )
         assert FlextApiEndpoints.PLUGIN_CONFIG == "/api/v1/plugins/{plugin_id}/config"

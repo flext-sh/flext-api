@@ -1,6 +1,5 @@
 """Tests to cover missing lines in client.py."""
 
-
 import pytest
 
 from flext_api.client import (
@@ -28,6 +27,7 @@ class TestMissingClientCoverage:
     @pytest.mark.asyncio
     async def test_plugin_after_request_proper_signature(self) -> None:
         """Test plugin after_request with proper signature."""
+
         class TestPlugin(FlextApiPlugin):
             async def after_request(
                 self,
@@ -50,6 +50,7 @@ class TestMissingClientCoverage:
     @pytest.mark.asyncio
     async def test_plugin_on_error_proper_signature(self) -> None:
         """Test plugin on_error with proper signature."""
+
         class TestPlugin(FlextApiPlugin):
             async def on_error(
                 self,
@@ -76,10 +77,14 @@ class TestMissingClientCoverage:
         # Request with no params, headers, or data
         request = FlextApiClientRequest(method="GET", url="/test")
 
-        params, headers, json_data, data, timeout = client._prepare_request_params(request)
+        params, headers, json_data, data, timeout = client._prepare_request_params(
+            request
+        )
 
         assert params is None  # Line 287: params = None when no request.params
-        assert headers is None  # Line 294: headers = None when no config/request headers
+        assert (
+            headers is None
+        )  # Line 294: headers = None when no config/request headers
         assert json_data is None
         assert data is None
         assert timeout is None
@@ -92,12 +97,12 @@ class TestMissingClientCoverage:
 
         # Request with headers but config has none
         request = FlextApiClientRequest(
-            method="GET",
-            url="/test",
-            headers={"User-Agent": "test"}
+            method="GET", url="/test", headers={"User-Agent": "test"}
         )
 
-        _params, headers, _json_data, _data, _timeout = client._prepare_request_params(request)
+        _params, headers, _json_data, _data, _timeout = client._prepare_request_params(
+            request
+        )
 
         assert headers == {"User-Agent": "test"}
 
@@ -107,7 +112,7 @@ class TestMissingClientCoverage:
         config = {
             "base_url": "https://api.example.com",
             "timeout": "invalid",  # String instead of number
-            "max_retries": "also_invalid"  # String instead of number
+            "max_retries": "also_invalid",  # String instead of number
         }
 
         client = create_client(config)
@@ -130,10 +135,7 @@ class TestMissingClientCoverage:
 
     def test_create_client_with_plugins_dict_config(self) -> None:
         """Test create_client_with_plugins with dict config - lines 565-566."""
-        config_dict = {
-            "base_url": "https://api.example.com",
-            "timeout": 60.0
-        }
+        config_dict = {"base_url": "https://api.example.com", "timeout": 60.0}
 
         client = create_client_with_plugins(config_dict, [])
         assert client.config.base_url == "https://api.example.com"
@@ -150,7 +152,7 @@ class TestMissingClientCoverage:
         # Test with non-dict headers (should be skipped)
         config = {
             "base_url": "https://api.example.com",
-            "headers": "invalid_headers"  # Not a dict
+            "headers": "invalid_headers",  # Not a dict
         }
 
         client = create_client(config)
@@ -159,7 +161,10 @@ class TestMissingClientCoverage:
         # Test with valid headers
         config = {
             "base_url": "https://api.example.com",
-            "headers": {"Authorization": "Bearer token", "Content-Type": "application/json"}
+            "headers": {
+                "Authorization": "Bearer token",
+                "Content-Type": "application/json",
+            },
         }
 
         client = create_client(config)

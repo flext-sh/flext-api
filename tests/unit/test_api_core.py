@@ -35,11 +35,11 @@ class TestFlextApi:
         health_data = result.data
         assert isinstance(health_data, dict)
         if health_data["service"] != "FlextApi":
-            msg = f"Expected {"FlextApi"}, got {health_data["service"]}"
+            msg = f"Expected {'FlextApi'}, got {health_data['service']}"
             raise AssertionError(msg)
         assert health_data["status"] == "healthy"
         if "client_configured" not in health_data:
-            msg = f"Expected {"client_configured"} in {health_data}"
+            msg = f"Expected {'client_configured'} in {health_data}"
             raise AssertionError(msg)
 
     def test_get_builder(self) -> None:
@@ -124,7 +124,9 @@ class TestFlextApi:
             raise AssertionError(msg)
 
         # Create client
-        client_result = api.flext_api_create_client({"base_url": "https://api.example.com"})
+        client_result = api.flext_api_create_client(
+            {"base_url": "https://api.example.com"}
+        )
         if not (client_result.is_success):
             msg = f"Expected True, got {client_result.is_success}"
             raise AssertionError(msg)

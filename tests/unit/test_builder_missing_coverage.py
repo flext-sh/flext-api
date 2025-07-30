@@ -15,7 +15,7 @@ class TestMissingBuilderCoverage:
         """Test build_query with gt operator - covers lines 337-338."""
         filters = [
             {"field": "status", "operator": "equals", "value": "active"},
-            {"field": "age", "operator": "gt", "value": 18}
+            {"field": "age", "operator": "gt", "value": 18},
         ]
 
         query = build_query(filters)
@@ -46,7 +46,7 @@ class TestMissingBuilderCoverage:
             page=1,
             page_size=10,
             message="Data retrieved",
-            metadata=metadata
+            metadata=metadata,
         )
 
         assert result["success"] is True

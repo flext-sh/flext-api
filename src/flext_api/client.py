@@ -6,28 +6,41 @@ for maximum code reduction and structural alignment.
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import time
+import uuid
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import TYPE_CHECKING, Self
-
-if TYPE_CHECKING:
-    import types
-
-
+from typing import TYPE_CHECKING, ClassVar, Self, TypeVar, cast
 from urllib.parse import urljoin
 
 import aiohttp
 import aiohttp.hdrs
 import structlog
-from flext_core import FlextResult
+from flext_core import FlextContainer, FlextResult, FlextService, get_logger
+from flext_observability import (
+    FlextAlertService,
+    FlextHealthService,
+    FlextLoggingService,
+    FlextMetricsService,
+    FlextTracingService,
+)
+from flext_observability.entities import FlextHealthCheck, FlextMetric
+
+if TYPE_CHECKING:
+    import types
 
 logger = structlog.get_logger(__name__)
+
+# Type variable for generic FlextResult handling
+T = TypeVar("T")
 
 
 # ==============================================================================
 # CORE ENUMS AND VALUE OBJECTS
 # ==============================================================================
+
 
 class FlextApiClientProtocol(StrEnum):
     """Supported client protocols."""
@@ -132,6 +145,7 @@ class FlextApiClientResponse:
 # PLUGIN SYSTEM USING FLEXT-CORE
 # ==============================================================================
 
+
 class FlextApiPlugin:
     """Base API plugin interface."""
 
@@ -218,8 +232,12 @@ class FlextApiCircuitBreakerPlugin(FlextApiPlugin):
 # HTTP CLIENT SERVICE USING FLEXT-CORE
 # ==============================================================================
 
+
 class FlextApiClient:
-    """HTTP client service using flext-core patterns."""
+    """HTTP client service using flext-core patterns with FlextService interface."""
+
+    # DRY Class-level session tracking for proper cleanup
+    _active_sessions: ClassVar[set[aiohttp.ClientSession]] = set()
 
     def __init__(
         self,
@@ -232,15 +250,63 @@ class FlextApiClient:
         self.status = FlextApiClientStatus.IDLE
         self._session: aiohttp.ClientSession | None = None
 
+        # Enterprise Observability Integration - DRY pattern using container
+        self._container = FlextContainer()
+        self._metrics_service = FlextMetricsService(self._container)
+        self._tracing_service = FlextTracingService(self._container)
+        self._health_service = FlextHealthService(self._container)
+        self._alert_service = FlextAlertService(self._container)
+        self._logging_service = FlextLoggingService(self._container)
+
+        # Replace default logger with flext-core logger
+        self.logger = get_logger(self.__class__.__name__)
+
+        # Performance tracking attributes
+        self._request_count = 0
+        self._error_count = 0
+        self._total_response_time = 0.0
+        self._start_time = time.time()
+
+    def _handle_observability_result(
+        self, result: FlextResult[T], operation: str,
+    ) -> None:
+        """DRY helper to handle observability operation results consistently."""
+        if not result.is_success:
+            self.logger.warning(f"Observability {operation} failed: {result.error}")
+
     async def _ensure_session(self) -> aiohttp.ClientSession:
-        """Ensure session is created."""
+        """Ensure session is created with DRY tracking."""
         if self._session is None or self._session.closed:
             timeout = aiohttp.ClientTimeout(total=self.config.timeout)
             self._session = aiohttp.ClientSession(
                 timeout=timeout,
                 headers=self.config.headers,
             )
+            # DRY session tracking - register for cleanup
+            FlextApiClient._active_sessions.add(self._session)
         return self._session
+
+    async def _cleanup_session(self) -> None:
+        """DRY helper method to cleanup session safely with tracking."""
+        if self._session and not self._session.closed:
+            try:
+                await self._session.close()
+                # DRY session tracking - unregister from active sessions
+                FlextApiClient._active_sessions.discard(self._session)
+            except Exception as e:
+                self.logger.debug(f"Session cleanup warning: {e}")
+            finally:
+                self._session = None
+
+    @classmethod
+    async def cleanup_all_sessions(cls) -> None:
+        """DRY class method to cleanup all active sessions."""
+        sessions_to_close = list(cls._active_sessions)
+        for session in sessions_to_close:
+            if not session.closed:
+                with contextlib.suppress(Exception):
+                    await session.close()
+        cls._active_sessions.clear()
 
     async def _make_request(
         self,
@@ -251,13 +317,15 @@ class FlextApiClient:
             response = await self._make_request_impl(request)
             return FlextResult.ok(response)
         except Exception as e:
-            logger.exception("Failed to make HTTP request",
-                           method=request.method, url=request.url)
+            logger.exception(
+                "Failed to make HTTP request", method=request.method, url=request.url,
+            )
             error_msg = f"Failed to make {request.method} request to {request.url}: {e}"
             return FlextResult.fail(error_msg)
 
     def _prepare_request_params(
-        self, request: FlextApiClientRequest,
+        self,
+        request: FlextApiClientRequest,
     ) -> tuple[
         dict[str, str] | None,
         dict[str, str] | None,
@@ -286,9 +354,7 @@ class FlextApiClient:
 
         # Timeout
         timeout = (
-            aiohttp.ClientTimeout(total=request.timeout)
-            if request.timeout
-            else None
+            aiohttp.ClientTimeout(total=request.timeout) if request.timeout else None
         )
 
         return params, headers, json_data, data, timeout
@@ -474,49 +540,146 @@ class FlextApiClient:
         )
         return await self._make_request(request)
 
+    def _sync_start(self) -> FlextResult[None]:
+        """Internal sync start implementation - DRY pattern."""
+        try:
+            self.status = FlextApiClientStatus.RUNNING
+
+            # Record service start metric using DRY helper
+            start_metric_result = self._metrics_service.record_metric(
+                FlextMetric(id=str(uuid.uuid4()), name="service_started", value=1.0),
+            )
+            self._handle_observability_result(
+                start_metric_result, "service start metric",
+            )
+
+            self.logger.info("FlextApiClient service started successfully")
+            return FlextResult.ok(None)
+        except Exception as e:
+            self.logger.exception("Failed to start FlextApiClient service")
+            return FlextResult.fail(f"Service start failed: {e}")
+
+    def _sync_stop(self) -> FlextResult[None]:
+        """Internal sync stop implementation - DRY pattern."""
+        try:
+            self.status = FlextApiClientStatus.STOPPED
+
+            # Record service stop metric using DRY helper
+            stop_metric_result = self._metrics_service.record_metric(
+                FlextMetric(id=str(uuid.uuid4()), name="service_stopped", value=1.0),
+            )
+            self._handle_observability_result(stop_metric_result, "service stop metric")
+
+            self.logger.info("FlextApiClient service stopped successfully")
+            return FlextResult.ok(None)
+        except Exception as e:
+            self.logger.exception("Failed to stop FlextApiClient service")
+            return FlextResult.fail(f"Service stop failed: {e}")
+
+    # Main interface (async for API compatibility, FlextService will adapt)
     async def start(self) -> FlextResult[None]:
         """Start the client service."""
-        self.status = FlextApiClientStatus.RUNNING
-        logger.info("FlextApiClient service started")
-        return FlextResult.ok(None)
+        return self._sync_start()
 
     async def stop(self) -> FlextResult[None]:
         """Stop the client service."""
-        await self.close()
-        self.status = FlextApiClientStatus.STOPPED
-        logger.info("FlextApiClient service stopped")
-        return FlextResult.ok(None)
+        # Handle async session cleanup if needed
+        result = self._sync_stop()
+        if result.is_success:
+            # Use DRY cleanup helper but keep status as STOPPED (not CLOSED)
+            await self._cleanup_session()
+            # Status remains STOPPED (set by _sync_stop)
+        return result
 
+    def __del__(self) -> None:
+        """Cleanup unclosed session to prevent resource warnings."""
+        if (
+            hasattr(self, "_session")
+            and self._session is not None
+            and not self._session.closed
+        ):
+            # Warn about unclosed session in debug mode only
+            if hasattr(self, "logger"):
+                msg = "Session not explicitly closed, cleanup in destructor"
+                self.logger.debug(msg)
+            # Schedule session cleanup for next event loop iteration
+            try:
+                # Try to get the current event loop
+                loop = asyncio.get_running_loop()
+                # Schedule cleanup safely
+                task = loop.create_task(self._cleanup_session())
+                # Don't wait for completion to avoid blocking destructor
+                task.add_done_callback(lambda _: None)
+            except RuntimeError:
+                # No event loop running, sessions will be cleaned by GC
+                pass
+
+    def _sync_health_check(self) -> FlextResult[dict[str, object]]:
+        """Internal sync health check implementation - DRY pattern."""
+        try:
+            session_active = self._session is not None and not (
+                self._session.closed if self._session else True
+            )
+
+            # Gather comprehensive health information
+            health_data: dict[str, object] = {
+                "service": "FlextApiClient",
+                "status": self.status.value,
+                "base_url": self.config.base_url,
+                "session_active": session_active,
+                "plugins_count": len(self.plugins),
+                "timestamp": time.time(),
+                "performance": {
+                    "request_count": self._request_count,
+                    "error_count": self._error_count,
+                    "total_response_time": self._total_response_time,
+                    "uptime_seconds": time.time() - self._start_time,
+                },
+            }
+
+            # Record health check metric using DRY helper
+            performance_metrics = cast("dict[str, object]", health_data["performance"])
+            status = (
+                "healthy" if self.status == FlextApiClientStatus.RUNNING else "degraded"
+            )
+            health_check_result = self._health_service.check_health(
+                FlextHealthCheck(
+                    id=str(uuid.uuid4()),
+                    component="FlextApiClient",
+                    status=status,
+                    message=f"Service status: {self.status.value}",
+                    metrics=performance_metrics,
+                ),
+            )
+            self._handle_observability_result(health_check_result, "health check")
+
+            return FlextResult.ok(health_data)
+        except Exception as e:
+            self.logger.exception("Health check failed")
+            return FlextResult.fail(f"Health check failed: {e}")
+
+    # Legacy interface (returns dict directly for backward compatibility)
     def health_check(self) -> dict[str, object]:
-        """Health check."""
-        session_active = (
-            self._session is not None
-            and not (self._session.closed if self._session else True)
-        )
-        health_data: dict[str, object] = {
+        """Health check (legacy interface - returns dict directly)."""
+        result = self._sync_health_check()
+        if result.is_success and result.data is not None:
+            return result.data
+        # On error, return error health data
+        return {
             "service": "FlextApiClient",
-            "status": self.status.value,
-            "base_url": self.config.base_url,
-            "session_active": session_active,
-            "plugins_count": len(self.plugins),
+            "status": "unhealthy",
+            "error": result.error,
             "timestamp": time.time(),
         }
-        return health_data
 
-    def start_service(self) -> None:
-        """Start client service."""
-        self.status = FlextApiClientStatus.RUNNING
-        logger.info("FlextApiClient service started")
-
-    def stop_service(self) -> None:
-        """Stop client service."""
-        self.status = FlextApiClientStatus.STOPPED
-        logger.info("FlextApiClient service stopped")
+    # FlextService interface (returns FlextResult)
+    def service_health_check(self) -> FlextResult[dict[str, object]]:
+        """Health check (FlextService interface - returns FlextResult)."""
+        return self._sync_health_check()
 
     async def close(self) -> None:
         """Close client session."""
-        if self._session and not self._session.closed:
-            await self._session.close()
+        await self._cleanup_session()  # Use DRY cleanup helper
         self.status = FlextApiClientStatus.CLOSED
 
     async def __aenter__(self) -> Self:
@@ -531,12 +694,37 @@ class FlextApiClient:
         exc_tb: types.TracebackType | None,
     ) -> None:
         """Async context manager exit."""
-        await self.stop()
+        await self.stop()  # Use stop to maintain STOPPED status
+
+
+class FlextApiClientServiceAdapter(FlextService):
+    """DRY Service Adapter - Implements FlextService interface for FlextApiClient.
+
+    This adapter pattern avoids code duplication by wrapping the async FlextApiClient
+    with a sync FlextService interface, maintaining backward compatibility.
+    """
+
+    def __init__(self, client: FlextApiClient) -> None:
+        """Initialize service adapter."""
+        self._client = client
+
+    def start(self) -> FlextResult[None]:
+        """Start service (FlextService sync interface)."""
+        return self._client._sync_start()
+
+    def stop(self) -> FlextResult[None]:
+        """Stop service (FlextService sync interface)."""
+        return self._client._sync_stop()
+
+    def health_check(self) -> FlextResult[dict[str, object]]:
+        """Health check (FlextService sync interface)."""
+        return self._client.service_health_check()
 
 
 # ==============================================================================
 # FACTORY FUNCTIONS
 # ==============================================================================
+
 
 def create_client(config: dict[str, object] | None = None) -> FlextApiClient:
     """Create HTTP client with configuration."""
