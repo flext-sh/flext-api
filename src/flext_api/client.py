@@ -268,7 +268,9 @@ class FlextApiClient:
         self._start_time = time.time()
 
     def _handle_observability_result(
-        self, result: FlextResult[T], operation: str,
+        self,
+        result: FlextResult[T],
+        operation: str,
     ) -> None:
         """DRY helper to handle observability operation results consistently."""
         if not result.is_success:
@@ -318,7 +320,9 @@ class FlextApiClient:
             return FlextResult.ok(response)
         except Exception as e:
             logger.exception(
-                "Failed to make HTTP request", method=request.method, url=request.url,
+                "Failed to make HTTP request",
+                method=request.method,
+                url=request.url,
             )
             error_msg = f"Failed to make {request.method} request to {request.url}: {e}"
             return FlextResult.fail(error_msg)
@@ -550,7 +554,8 @@ class FlextApiClient:
                 FlextMetric(id=str(uuid.uuid4()), name="service_started", value=1.0),
             )
             self._handle_observability_result(
-                start_metric_result, "service start metric",
+                start_metric_result,
+                "service start metric",
             )
 
             self.logger.info("FlextApiClient service started successfully")

@@ -7,40 +7,45 @@
 
 Enterprise HTTP API library built with FastAPI and advanced client patterns. Provides unified functionality for building robust HTTP clients and APIs using composition patterns from flext-core foundation library.
 
-## 🚀 Características Principais
+## ð CaracterÃ­sticas Principais
 
 ### HTTP Client com Plugins
-- **Cliente HTTP extensível** com sistema de plugins
-- **Caching inteligente** com TTL configurável
-- **Retry automático** com backoff exponencial
-- **Circuit breaker** para tolerância a falhas
-- **Configuração flexível** via dependency injection
+
+- **Cliente HTTP extensÃ­vel** com sistema de plugins
+- **Caching inteligente** com TTL configurÃ¡vel
+- **Retry automÃ¡tico** com backoff exponencial
+- **Circuit breaker** para tolerÃ¢ncia a falhas
+- **ConfiguraÃ§Ã£o flexÃ­vel** via dependency injection
 
 ### Builder Patterns
-- **Query Builder** para construção fluente de filtros e ordenação
+
+- **Query Builder** para construÃ§Ã£o fluente de filtros e ordenaÃ§Ã£o
 - **Response Builder** para respostas padronizadas com metadata
-- **API Builder** para criação de aplicações FastAPI configuráveis
+- **API Builder** para criaÃ§Ã£o de aplicaÃ§Ãµes FastAPI configurÃ¡veis
 
 ### Arquitetura Moderna
-- **Composition over inheritance** - design baseado em composição
-- **FlextResult pattern** - tratamento consistente de erros
-- **Dependency injection** - gerenciamento centralizado de dependências
-- **Type safety** - tipagem estrita com MyPy
-- **Async/await** - suporte completo para programação assíncrona
 
-## 📦 Instalação
+- **Composition over inheritance** - design baseado em composiÃ§Ã£o
+- **FlextResult pattern** - tratamento consistente de erros
+- **Dependency injection** - gerenciamento centralizado de dependÃªncias
+- **Type safety** - tipagem estrita com MyPy
+- **Async/await** - suporte completo para programaÃ§Ã£o assÃ­ncrona
+
+## ð"¦ InstalaÃ§Ã£o
 
 ### Requisitos
+
 - Python 3.13+
 - Poetry (recomendado) ou pip
 
 ### Via Poetry (Recomendado)
+
 ```bash
-# Clonar o repositório
+# Clonar o repositÃ³rio
 git clone https://github.com/flext-sh/flext-api
 cd flext-api
 
-# Instalar dependências
+# Instalar dependÃªncias
 poetry install
 
 # Ativar ambiente virtual
@@ -48,21 +53,24 @@ poetry shell
 ```
 
 ### Via pip
+
 ```bash
 pip install flext-api
 ```
 
-### Dependências Principais
-- **flext-core**: Padrões base, logging, FlextResult, DI container
+### DependÃªncias Principais
+
+- **flext-core**: PadrÃµes base, logging, FlextResult, DI container
 - **FastAPI 0.116+**: Framework web com suporte async
-- **Pydantic 2.10+**: Validação e serialização de dados
-- **aiohttp 3.12+**: Cliente HTTP assíncrono
+- **Pydantic 2.10+**: ValidaÃ§Ã£o e serializaÃ§Ã£o de dados
+- **aiohttp 3.12+**: Cliente HTTP assÃ­ncrono
 - **httpx 0.28+**: Cliente HTTP moderno
 - **structlog 25.4+**: Logging estruturado
 
-## 🔧 Uso Rápido
+## ð"§ Uso RÃ¡pido
 
-### Cliente HTTP Básico
+### Cliente HTTP BÃ¡sico
+
 ```python
 from flext_api import FlextApi, create_client_with_plugins
 
@@ -73,26 +81,27 @@ api = FlextApi()
 client = create_client_with_plugins(
     base_url="https://api.example.com",
     enable_cache=True,
-    enable_retry=True, 
+    enable_retry=True,
     enable_circuit_breaker=True,
     timeout=30.0
 )
 
-# Fazer requisições
+# Fazer requisiÃ§Ãµes
 async def example():
     # GET request
     result = await client.get("/users")
     if result.is_success:
         users = result.data.json()
-    
+
     # POST request
     result = await client.post("/users", json={"name": "John"})
-    
-    # Fechar conexões
+
+    # Fechar conexÃµes
     await client.close()
 ```
 
 ### Query Builder
+
 ```python
 from flext_api import FlextApiQueryBuilder
 
@@ -107,10 +116,11 @@ query = (qb
     .build()
 )
 
-# Resultado: query estruturada para filtros, ordenação e paginação
+# Resultado: query estruturada para filtros, ordenaÃ§Ã£o e paginaÃ§Ã£o
 ```
 
 ### Response Builder
+
 ```python
 from flext_api import FlextApiResponseBuilder
 
@@ -130,10 +140,11 @@ error = rb.error("User not found", 404).build()
 ```
 
 ### FastAPI Builder
+
 ```python
 from flext_api import FlextApiBuilder, flext_api_create_app
 
-# App básica
+# App bÃ¡sica
 app = flext_api_create_app()
 
 # App customizada
@@ -149,9 +160,10 @@ app = (builder
 )
 ```
 
-## 📚 Exemplos Detalhados
+## ð" Exemplos Detalhados
 
 ### 1. Cliente com Plugins Personalizados
+
 ```python
 from flext_api import (
     FlextApiClient,
@@ -161,7 +173,7 @@ from flext_api import (
     FlextApiCircuitBreakerPlugin
 )
 
-# Configuração avançada
+# ConfiguraÃ§Ã£o avanÃ§ada
 config = FlextApiClientConfig(
     base_url="https://api.example.com",
     timeout=30.0,
@@ -180,6 +192,7 @@ client = FlextApiClient(config, plugins)
 ```
 
 ### 2. Plugin Customizado
+
 ```python
 from flext_api import FlextApiPlugin
 
@@ -187,19 +200,20 @@ class AuthPlugin(FlextApiPlugin):
     def __init__(self, api_key: str):
         super().__init__("AuthPlugin")
         self.api_key = api_key
-    
+
     async def before_request(self, request):
         request.headers["Authorization"] = f"Bearer {self.api_key}"
         return request
-    
+
     async def after_request(self, request, response):
         if response.status_code == 401:
-            # Renovar token se necessário
+            # Renovar token se necessÃ¡rio
             pass
         return response
 ```
 
-### 3. Integração Completa
+### 3. IntegraÃ§Ã£o Completa
+
 ```python
 import asyncio
 from flext_api import FlextApi, FlextApiQueryBuilder, FlextApiResponseBuilder
@@ -207,22 +221,22 @@ from flext_api import FlextApi, FlextApiQueryBuilder, FlextApiResponseBuilder
 async def complete_example():
     # 1. Criar API instance
     api = FlextApi()
-    
+
     # 2. Construir query
     qb = FlextApiQueryBuilder()
     query = qb.equals("department", "sales").sort_desc("performance").build()
-    
+
     # 3. Criar cliente HTTP
     client_result = api.flext_api_create_client({
         "base_url": "https://api.company.com"
     })
-    
+
     if client_result.success:
         client = client_result.data
-        
-        # 4. Fazer requisição
+
+        # 4. Fazer requisiÃ§Ã£o
         result = await client.get("/employees", params=query)
-        
+
         if result.is_success:
             # 5. Construir resposta padronizada
             rb = FlextApiResponseBuilder()
@@ -237,44 +251,46 @@ async def complete_example():
 asyncio.run(complete_example())
 ```
 
-## 🛠️ Desenvolvimento
+## ð ï¸ Desenvolvimento
 
 ### Comandos Essenciais
+
 ```bash
 # Setup completo do projeto
 make setup
 
-# Verificação rápida (lint + type)
+# VerificaÃ§Ã£o rÃ¡pida (lint + type)
 make check
 
-# Validação completa (lint + type + security + test)
+# ValidaÃ§Ã£o completa (lint + type + security + test)
 make validate
 
 # Executar testes
 make test
 
-# Executar apenas testes unitários
+# Executar apenas testes unitÃ¡rios
 make test-unit
 
 # Servidor de desenvolvimento
 make dev  # http://localhost:8000
 
-# Documentação interativa
-make dev  # Então acesse http://localhost:8000/docs
+# DocumentaÃ§Ã£o interativa
+make dev  # EntÃ£o acesse http://localhost:8000/docs
 ```
 
 ### Comandos de Qualidade
+
 ```bash
 # Linting
 make lint
 
-# Formatação
+# FormataÃ§Ã£o
 make format
 
 # Type checking
 make type-check
 
-# Auditoria de segurança
+# Auditoria de seguranÃ§a
 make security
 
 # Coverage HTML
@@ -282,44 +298,46 @@ make coverage-html
 ```
 
 ### Estrutura do Projeto
+
 ```
 src/flext_api/
-├── api.py               # Classe FlextApi principal
-├── builder.py           # Query/Response builders  
-├── client.py            # Cliente HTTP com plugins
-├── constants.py         # Constantes e enums
-├── fields.py            # Definições de campos
-├── main.py              # Entry point FastAPI
-├── application/         # Serviços de aplicação (legacy)
-├── domain/              # Entidades de domínio (legacy)  
-├── infrastructure/      # DI container e configuração
-└── routes/              # Handlers de rota FastAPI
+â"â"â" api.py               # Classe FlextApi principal
+â"â"â" builder.py           # Query/Response builders
+â"â"â" client.py            # Cliente HTTP com plugins
+â"â"â" constants.py         # Constantes e enums
+â"â"â" fields.py            # DefiniÃ§Ãµes de campos
+â"â"â" main.py              # Entry point FastAPI
+â"â"â" application/         # ServiÃ§os de aplicaÃ§Ã£o (legacy)
+â"â"â" domain/              # Entidades de domÃ­nio (legacy)
+â"â"â" infrastructure/      # DI container e configuraÃ§Ã£o
+â""â"â" routes/              # Handlers de rota FastAPI
 
 examples/                # Exemplos de uso
-├── 01_basic_usage.py    # Uso básico de todos os componentes
-├── 02_advanced_features.py  # Recursos avançados e plugins
-└── ...                  # Mais exemplos
+â"â"â" 01_basic_usage.py    # Uso bÃ¡sico de todos os componentes
+â"â"â" 02_advanced_features.py  # Recursos avanÃ§ados e plugins
+â""â"â" ...                  # Mais exemplos
 
 tests/                   # Testes abrangentes
-├── unit/                # Testes unitários
-├── integration/         # Testes de integração
-└── e2e/                 # Testes end-to-end
+â"â"â" unit/                # Testes unitÃ¡rios
+â"â"â" integration/         # Testes de integraÃ§Ã£o
+â""â"â" e2e/                 # Testes end-to-end
 ```
 
-## 🧪 Testes
+## ð§ª Testes
 
 ### Executar Testes
+
 ```bash
 # Todos os testes com coverage
 pytest
 
-# Apenas testes unitários
+# Apenas testes unitÃ¡rios
 pytest -m unit
 
-# Apenas testes de integração  
+# Apenas testes de integraÃ§Ã£o
 pytest -m integration
 
-# Testes específicos
+# Testes especÃ­ficos
 pytest tests/unit/test_client_enterprise.py -v
 
 # Com coverage detalhado
@@ -327,56 +345,64 @@ pytest --cov=flext_api --cov-report=html
 ```
 
 ### Marcadores de Teste
-- `unit` - Testes unitários isolados
-- `integration` - Testes de integração
+
+- `unit` - Testes unitÃ¡rios isolados
+- `integration` - Testes de integraÃ§Ã£o
 - `e2e` - Testes end-to-end
 - `slow` - Testes que demoram mais
 - `api` - Testes de endpoints
 - `client` - Testes do cliente HTTP
 
-## 📋 Padrões de Qualidade
+## ð" PadrÃµes de Qualidade
 
 ### Zero Tolerance Quality Gates
-- ✅ **90% minimum test coverage** 
-- ✅ **Zero lint errors** (ruff with ALL rules)
-- ✅ **Zero type errors** (strict MyPy)
-- ✅ **Security scanning** (bandit + pip-audit)
-- ✅ **Pre-commit hooks** automáticos
+
+- â **90% minimum test coverage**
+- â **Zero lint errors** (ruff with ALL rules)
+- â **Zero type errors** (strict MyPy)
+- â **Security scanning** (bandit + pip-audit)
+- â **Pre-commit hooks** automÃ¡ticos
 
 ### Anti-Patterns (Nunca Fazer)
-- ❌ Suprimir erros de lint/type sem corrigir a causa
-- ❌ Usar inheritance quando composition é mais apropriada
-- ❌ Pular o pattern FlextResult para tratamento de erros
-- ❌ Hardcoding ao invés de dependency injection
-- ❌ Instanciação direta ao invés de factory patterns
 
-## 🔗 Integração com Ecosystem FLEXT
+- â Suprimir erros de lint/type sem corrigir a causa
+- â Usar inheritance quando composition Ã© mais apropriada
+- â Pular o pattern FlextResult para tratamento de erros
+- â Hardcoding ao invÃ©s de dependency injection
+- â InstanciaÃ§Ã£o direta ao invÃ©s de factory patterns
+
+## ð" IntegraÃ§Ã£o com Ecosystem FLEXT
 
 Este projeto faz parte do ecosystem FLEXT maior:
 
 ### Core Libraries
-- **flext-core**: Padrões base, logging, DI container
-- **flext-observability**: Monitoring e métricas
-- **flext-auth**: Autenticação e autorização
 
-### Services  
+- **flext-core**: PadrÃµes base, logging, DI container
+- **flext-observability**: Monitoring e mÃ©tricas
+- **flext-auth**: AutenticaÃ§Ã£o e autorizaÃ§Ã£o
+
+### Services
+
 - **FlexCore (Go)**: Container runtime com plugins (port 8080)
-- **FLEXT Service (Go/Python)**: Serviço de processamento (port 8081)
+- **FLEXT Service (Go/Python)**: ServiÃ§o de processamento (port 8081)
 
 ### Data Integration
-- **flext-meltano**: Orquestração de pipelines Singer
-- **flext-tap-***: Extractors de dados (5 projetos)
-- **flext-target-***: Loaders de dados (5 projetos)
 
-## 📖 Documentação
+- **flext-meltano**: OrquestraÃ§Ã£o de pipelines Singer
+- **flext-tap-\***: Extractors de dados (5 projetos)
+- **flext-target-\***: Loaders de dados (5 projetos)
 
-### Links Úteis
-- **API Docs**: `make dev` → http://localhost:8000/docs
-- **ReDoc**: `make dev` → http://localhost:8000/redoc  
+## ð" DocumentaÃ§Ã£o
+
+### Links Ãteis
+
+- **API Docs**: `make dev` â' <http://localhost:8000/docs>
+- **ReDoc**: `make dev` â' <http://localhost:8000/redoc>
 - **Exemplos**: Veja pasta `examples/`
 - **CLAUDE.md**: Guidance para development
 
-### Gerar Documentação
+### Gerar DocumentaÃ§Ã£o
+
 ```bash
 # OpenAPI schema
 make api-docs  # Gera openapi.json
@@ -385,9 +411,9 @@ make api-docs  # Gera openapi.json
 make docs-serve  # Se mkdocs estiver configurado
 ```
 
-## 🤝 Contribuindo
+## ð¤ Contribuindo
 
-1. **Fork** o repositório
+1. **Fork** o repositÃ³rio
 2. **Clone** sua fork: `git clone https://github.com/seu-usuario/flext-api`
 3. **Setup**: `make setup`
 4. **Branch**: `git checkout -b feature/nova-funcionalidade`
@@ -398,37 +424,40 @@ make docs-serve  # Se mkdocs estiver configurado
 9. **Pull Request** para a branch `main`
 
 ### Checklist para PR
+
 - [ ] Testes passando (`make validate`)
 - [ ] Coverage >= 90%
-- [ ] Documentação atualizada se necessário
+- [ ] DocumentaÃ§Ã£o atualizada se necessÃ¡rio
 - [ ] Seguindo patterns do flext-core
 - [ ] Usando composition over inheritance
 - [ ] FlextResult para tratamento de erros
 
-## 📄 Licença
+## ð" LicenÃ§a
 
-Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto estÃ¡ licenciado sob a MIT License - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-## 👥 Suporte
+## ð¥ Suporte
 
-- **Issues**: https://github.com/flext-sh/flext-api/issues
-- **Discussions**: https://github.com/flext-sh/flext/discussions
-- **Email**: team@flext.sh
+- **Issues**: <https://github.com/flext-sh/flext-api/issues>
+- **Discussions**: <https://github.com/flext-sh/flext/discussions>
+- **Email**: <team@flext.sh>
 
-## 🗺️ Roadmap
+## ðºï¸ Roadmap
 
-### v0.9.0 (Próxima)
-- [ ] Melhorar documentação API
+### v0.9.0 (PrÃ³xima)
+
+- [ ] Melhorar documentaÃ§Ã£o API
 - [ ] Adicionar mais plugins built-in
 - [ ] Otimizar performance do cliente HTTP
-- [ ] Integração com OpenAPI 3.1
+- [ ] IntegraÃ§Ã£o com OpenAPI 3.1
 
-### v1.0.0 (Estável)
-- [ ] API estável e backwards compatible
-- [ ] Documentação completa
+### v1.0.0 (EstÃ¡vel)
+
+- [ ] API estÃ¡vel e backwards compatible
+- [ ] DocumentaÃ§Ã£o completa
 - [ ] Benchmarks de performance
-- [ ] Guias de migração
+- [ ] Guias de migraÃ§Ã£o
 
 ---
 
-**FLEXT API** - Construindo APIs modernas com padrões enterprise 🚀
+**FLEXT API** - Construindo APIs modernas com padrÃµes enterprise ð

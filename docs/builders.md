@@ -5,6 +5,7 @@ Os builders da FLEXT API fornecem interfaces fluentes para construção de queri
 ## Overview
 
 A FLEXT API oferece três builders principais:
+
 - **FlextApiQueryBuilder** - Construção de queries com filtros e ordenação
 - **FlextApiResponseBuilder** - Respostas padronizadas com metadata
 - **FlextApiBuilder** - Configuração de aplicações FastAPI
@@ -12,6 +13,7 @@ A FLEXT API oferece três builders principais:
 ## Query Builder
 
 ### Uso Básico
+
 ```python
 from flext_api import FlextApiQueryBuilder
 
@@ -44,6 +46,7 @@ print(query)
 ### Operadores de Filtro
 
 #### Comparação
+
 ```python
 qb = FlextApiQueryBuilder()
 
@@ -63,6 +66,7 @@ qb.not_between("score", 0, 10)
 ```
 
 #### Texto
+
 ```python
 # Pattern matching
 qb.like("name", "John%")          # Começa com "John"
@@ -76,6 +80,7 @@ qb.endswith("email", "@company.com")
 ```
 
 #### Listas e Nulos
+
 ```python
 # Verificação de listas
 qb.in_list("department", ["sales", "marketing", "engineering"])
@@ -91,6 +96,7 @@ qb.is_not_empty("tags")
 ```
 
 #### Datas
+
 ```python
 from datetime import datetime, date
 
@@ -109,6 +115,7 @@ qb.date_day("created_at", 15)
 ```
 
 ### Ordenação
+
 ```python
 qb = FlextApiQueryBuilder()
 
@@ -129,6 +136,7 @@ qb.sort_by("priority", "desc", nulls_first=True)
 ```
 
 ### Paginação
+
 ```python
 qb = FlextApiQueryBuilder()
 
@@ -150,23 +158,24 @@ query = (qb
 ```
 
 ### Queries Complexas
+
 ```python
 from flext_api import FlextApiQueryBuilder
 
 def build_employee_search(department=None, min_salary=None, active_only=True):
     qb = FlextApiQueryBuilder()
-    
+
     # Filtros condicionais
     if department:
         qb.equals("department", department)
-    
+
     if min_salary:
         qb.greater_than_or_equal("salary", min_salary)
-    
+
     if active_only:
         qb.equals("active", True)
         qb.is_null("terminated_at")
-    
+
     # Busca avançada
     return (qb
         .is_not_null("email")
@@ -187,6 +196,7 @@ query = build_employee_search(
 ```
 
 ### Reset e Reutilização
+
 ```python
 qb = FlextApiQueryBuilder()
 
@@ -211,6 +221,7 @@ query2 = (qb
 ## Response Builder
 
 ### Uso Básico
+
 ```python
 from flext_api import FlextApiResponseBuilder
 
@@ -234,6 +245,7 @@ print(success)
 ```
 
 ### Respostas de Sucesso
+
 ```python
 rb = FlextApiResponseBuilder()
 
@@ -258,6 +270,7 @@ response = (rb
 ```
 
 ### Respostas de Erro
+
 ```python
 rb = FlextApiResponseBuilder()
 
@@ -290,6 +303,7 @@ response = (rb
 ```
 
 ### Paginação
+
 ```python
 rb = FlextApiResponseBuilder()
 
@@ -320,6 +334,7 @@ print(response['pagination'])
 ```
 
 ### Metadata Avançada
+
 ```python
 rb = FlextApiResponseBuilder()
 
@@ -340,6 +355,7 @@ response = (rb
 ```
 
 ### Headers e Status
+
 ```python
 rb = FlextApiResponseBuilder()
 
@@ -363,6 +379,7 @@ headers = http_config.get('headers', {})
 ## Factory Functions
 
 ### Helper Functions
+
 ```python
 from flext_api import (
     build_query,
@@ -390,6 +407,7 @@ paginated = build_paginated_response(
 ## Integration Patterns
 
 ### Com FastAPI
+
 ```python
 from fastapi import APIRouter
 from flext_api import FlextApiQueryBuilder, FlextApiResponseBuilder
@@ -409,12 +427,12 @@ async def get_users(
         qb.equals("department", department)
     if active is not None:
         qb.equals("active", active)
-    
+
     query = qb.sort_desc("created_at").page(page, size).build()
-    
+
     # Buscar dados (sua lógica)
     users, total = await search_users(query)
-    
+
     # Construir resposta
     rb = FlextApiResponseBuilder()
     return (rb
@@ -426,41 +444,42 @@ async def get_users(
 ```
 
 ### Com SQLAlchemy
+
 ```python
 from sqlalchemy import and_, or_, desc, asc
 from flext_api import FlextApiQueryBuilder
 
 def apply_query_to_sqlalchemy(query_dict, base_query):
     """Converter query dict para SQLAlchemy query."""
-    
+
     # Aplicar filtros
     for filter_item in query_dict.get("filters", []):
         field = filter_item["field"]
         operator = filter_item["operator"]
         value = filter_item["value"]
-        
+
         if operator == "equals":
             base_query = base_query.filter(getattr(User, field) == value)
         elif operator == "greater_than":
             base_query = base_query.filter(getattr(User, field) > value)
         # ... outros operadores
-    
+
     # Aplicar ordenação
     for sort_item in query_dict.get("sorts", []):
         field = sort_item["field"]
         direction = sort_item["direction"]
-        
+
         if direction == "desc":
             base_query = base_query.order_by(desc(getattr(User, field)))
         else:
             base_query = base_query.order_by(asc(getattr(User, field)))
-    
+
     # Aplicar paginação
     if "limit" in query_dict:
         base_query = base_query.limit(query_dict["limit"])
     if "offset" in query_dict:
         base_query = base_query.offset(query_dict["offset"])
-    
+
     return base_query
 
 # Usar
@@ -474,6 +493,7 @@ users = sqlalchemy_query.all()
 ## Best Practices
 
 ### 1. Reutilizar Builders
+
 ```python
 # ✅ Bom - Reutilizar com reset
 qb = FlextApiQueryBuilder()
@@ -491,23 +511,25 @@ def build_query_bad():
 ```
 
 ### 2. Validar Inputs
+
 ```python
 def build_search_query(filters: dict):
     qb = FlextApiQueryBuilder()
-    
+
     # Validar filtros permitidos
     allowed_fields = ["name", "email", "department", "active"]
-    
+
     for field, value in filters.items():
         if field not in allowed_fields:
             raise ValueError(f"Field '{field}' not allowed for filtering")
-        
+
         qb.equals(field, value)
-    
+
     return qb.build()
 ```
 
 ### 3. Usar Type Hints
+
 ```python
 from typing import Optional, List, Dict, Any
 from flext_api import FlextApiQueryBuilder, FlextApiResponseBuilder
@@ -519,19 +541,20 @@ def build_user_query(
     size: int = 20
 ) -> Dict[str, Any]:
     qb = FlextApiQueryBuilder()
-    
+
     if active is not None:
         qb.equals("active", active)
-    
+
     if departments:
         qb.in_list("department", departments)
-    
+
     return qb.page(page, size).build()
 ```
 
 ## Exemplos Avançados
 
 Veja exemplos completos em:
+
 - [Basic Usage](../examples/01_basic_usage.py) - Query e Response builders
 - [Advanced Patterns](../examples/advanced_patterns.py) - Patterns complexos
 - [Real World Usage](../examples/real_world_usage.py) - Casos de uso reais

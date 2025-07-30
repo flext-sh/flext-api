@@ -84,9 +84,7 @@ def example_response_builder() -> None:
 
     rb = FlextApiResponseBuilder()
     paginated_response = (
-        rb.success(data=users)
-        .with_pagination(total=100, page=1, page_size=3)
-        .build()
+        rb.success(data=users).with_pagination(total=100, page=1, page_size=3).build()
     )
 
     print("Paginated Response:", paginated_response)
@@ -107,8 +105,7 @@ def example_fastapi_builder() -> None:
     # Use builder for query construction
     query_builder = builder.for_query()
     sample_query = (
-        query_builder
-        .equals("category", "technology")
+        query_builder.equals("category", "technology")
         .greater_than("price", 100)
         .sort_desc("rating")
         .page(1, 20)
@@ -119,8 +116,7 @@ def example_fastapi_builder() -> None:
     # Use builder for response construction
     response_builder = builder.for_response()
     sample_response = (
-        response_builder
-        .success(data={"products": [], "total": 0})
+        response_builder.success(data={"products": [], "total": 0})
         .with_metadata("search_terms", ["technology", "high-price"])
         .with_pagination(total=0, page=1, page_size=20)
         .build()
@@ -221,11 +217,10 @@ def example_integration() -> None:
     expected_total_pages = 8  # 156/20 = 7.8 -> 8
 
     if not (api_response["success"]):
-
-        msg = f"Expected True, got {api_response["success"]}"
+        msg = f"Expected True, got {api_response['success']}"
         raise AssertionError(msg)
     if len(api_response["data"]) != expected_data_count:
-        msg = f"Expected {expected_data_count}, got {len(api_response["data"])}"
+        msg = f"Expected {expected_data_count}, got {len(api_response['data'])}"
         raise AssertionError(msg)
     if api_response["pagination"]["total_pages"] != expected_total_pages:
         actual_pages = api_response["pagination"]["total_pages"]

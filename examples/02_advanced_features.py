@@ -86,8 +86,7 @@ def example_advanced_response_building() -> None:
 
     # Response paginada com metadados detalhados
     products = [
-        {"id": i, "name": f"Product {i}", "price": 99.99 + i}
-        for i in range(1, 21)
+        {"id": i, "name": f"Product {i}", "price": 99.99 + i} for i in range(1, 21)
     ]
 
     paginated_response = build_paginated_response(
@@ -186,8 +185,7 @@ async def example_full_api_service_integration() -> None:
         # Query builder avançada
         query_builder = builder.for_query()
         advanced_query = (
-            query_builder
-            .equals("department", "engineering")
+            query_builder.equals("department", "engineering")
             .equals("level", "senior")
             .greater_than("experience_years", 5)
             .greater_than("salary", 80000)
@@ -213,8 +211,9 @@ async def example_full_api_service_integration() -> None:
         ]
 
         advanced_response = (
-            response_builder
-            .success(data=mock_employees, message="Senior engineers retrieved")
+            response_builder.success(
+                data=mock_employees, message="Senior engineers retrieved"
+            )
             .with_metadata("query_complexity", "high")
             .with_metadata("optimization_applied", value=True)
             .with_metadata("cache_strategy", "write_through")

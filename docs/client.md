@@ -8,7 +8,7 @@ O `FlextApiClient` oferece:
 
 - **Sistema de plugins** para extensibilidade
 - **Connection pooling** automático
-- **Retry logic** configurável  
+- **Retry logic** configurável
 - **Circuit breaker** para tolerância a falhas
 - **Caching inteligente** com TTL
 - **Rate limiting** integrado
@@ -35,15 +35,15 @@ client = FlextApiClient(config)
 async def example():
     # GET
     result = await client.get("/users")
-    
+
     # POST
     result = await client.post("/users", json={"name": "John"})
-    
+
     # PUT, PATCH, DELETE também disponíveis
     result = await client.put("/users/1", json={"name": "Jane"})
     result = await client.patch("/users/1", json={"active": False})
     result = await client.delete("/users/1")
-    
+
     # Sempre fechar conexões
     await client.close()
 ```
@@ -79,7 +79,7 @@ cache_plugin = FlextApiCachingPlugin(
 )
 ```
 
-#### 2. Retry Plugin  
+#### 2. Retry Plugin
 
 ```python
 from flext_api import FlextApiRetryPlugin
@@ -114,7 +114,7 @@ class AuthPlugin(FlextApiPlugin):
         super().__init__("AuthPlugin")
         self.api_key = api_key
         self.token = None
-    
+
     async def before_request(self, request):
         """Adicionar autenticação."""
         if self.token:
@@ -122,19 +122,19 @@ class AuthPlugin(FlextApiPlugin):
         else:
             request.headers["X-API-Key"] = self.api_key
         return request
-    
+
     async def after_request(self, request, response):
         """Processar resposta."""
         if response.status_code == 401:
             # Token expirado, renovar
             await self._refresh_token()
         return response
-    
+
     async def on_error(self, request, error):
         """Lidar com erros."""
         print(f"Request failed: {error}")
         return error
-    
+
     async def _refresh_token(self):
         # Lógica para renovar token
         pass
@@ -189,12 +189,12 @@ result = await client.get("/users")
 
 if result.is_success:
     response = result.data
-    
+
     # Acessar dados
     status_code = response.status_code
     headers = response.headers
     data = response.json()  # ou .text(), .content
-    
+
     print(f"Status: {status_code}")
     print(f"Data: {data}")
 else:
@@ -242,15 +242,15 @@ if health_result.is_success:
 metrics_result = await client.get_metrics()
 if metrics_result.is_success:
     metrics = metrics_result.data
-    
+
     # Cache metrics
     cache_stats = metrics['plugins'].get('CachingPlugin', {})
     print(f"Cache hit rate: {cache_stats.get('hit_rate', 0)}")
-    
+
     # Retry metrics
     retry_stats = metrics['plugins'].get('RetryPlugin', {})
     print(f"Retries performed: {retry_stats.get('retry_count', 0)}")
-    
+
     # Circuit breaker status
     circuit_stats = metrics['plugins'].get('CircuitBreakerPlugin', {})
     print(f"Circuit state: {circuit_stats.get('state', 'closed')}")
@@ -273,7 +273,7 @@ async def example_with_context():
         if result.is_success:
             users = result.data.json()
             print(f"Found {len(users)} users")
-    
+
     # Cliente fechado automaticamente
 ```
 
@@ -344,7 +344,7 @@ fast_client = create_client_with_plugins(
 
 # Para processamento longo
 slow_client = create_client_with_plugins(
-    base_url="https://slow-api.com", 
+    base_url="https://slow-api.com",
     timeout=300.0  # 5 minutos
 )
 ```
@@ -375,7 +375,7 @@ internal_client = create_client_with_plugins(
 async def monitor_client_health():
     health = await client.get_health()
     metrics = await client.get_metrics()
-    
+
     if health.is_success:
         success_rate = health.data['success_rate']
         if success_rate < 0.95:  # Menos de 95%

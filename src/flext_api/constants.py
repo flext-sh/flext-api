@@ -57,6 +57,10 @@ class FlextApiConstants(FlextConstants):
     USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
     PIPELINE_NAME_PATTERN = r"^[a-zA-Z0-9_-]{1,100}$"
 
+    # Rate limiting constants
+    RATE_LIMIT_REQUESTS: ClassVar[int] = 1000
+    RATE_LIMIT_WINDOW: ClassVar[int] = 3600
+
 
 class FlextApiFieldType:
     """API-specific field types that don't exist in flext-core."""
@@ -130,10 +134,25 @@ class FlextApiEndpoints:
 
 
 # ==============================================================================
+# MODULE-LEVEL CONSTANTS
+# ==============================================================================
+
+# API Configuration Constants
+FLEXT_API_VERSION = "0.9.0"
+FLEXT_API_TIMEOUT = 30
+FLEXT_API_MAX_RETRIES = 3
+FLEXT_API_CACHE_TTL = 300
+
+# ==============================================================================
 # EXPORTS - API-SPECIFIC CONSTANTS
 # ==============================================================================
 
 __all__ = [
+    # Module-level constants
+    "FLEXT_API_CACHE_TTL",
+    "FLEXT_API_MAX_RETRIES",
+    "FLEXT_API_TIMEOUT",
+    "FLEXT_API_VERSION",
     # Classes
     "FlextApiConstants",
     "FlextApiEndpoints",
