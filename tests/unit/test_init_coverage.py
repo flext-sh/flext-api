@@ -18,8 +18,8 @@ class TestInitCoverage:
         """Test version import fallback when importlib.metadata fails."""
         # Test the logic that would happen in the except block
         try:
-            version = "1.0.0"  # This is what would happen in the except block
-            if version != "1.0.0":
+            version = "0.9.0"  # This is what would happen in the except block
+            if version != "0.9.0":
                 raise AssertionError(f"Expected 1.0.0, got {version}")
         except ValueError as e:
             # This exception is never expected but shows the pattern
@@ -104,7 +104,7 @@ class TestInitCoverage:
             importlib.reload(flext_api)
 
             # Should fall back to default version
-            assert flext_api.__version__ == "1.0.0"
+            assert flext_api.__version__ == "0.9.0"
 
         # Restore original state
         importlib.reload(flext_api)

@@ -16,7 +16,7 @@ def flext_api_create_app() -> FastAPI:
     app = FastAPI(
         title="FLEXT API",
         description="Enterprise-grade distributed data integration platform",
-        version="1.0.0",
+        version="0.9.0",
     )
 
     # Health check endpoint

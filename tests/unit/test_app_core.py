@@ -21,7 +21,7 @@ class TestFlextApiApp:
         if app.description != expected_description:
             msg = f"Expected {expected_description}, got {app.description}"
             raise AssertionError(msg)
-        assert app.version == "1.0.0"
+        assert app.version == "0.9.0"
 
     def test_app_routes(self) -> None:
         """Test that app has expected routes."""

@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-Uma biblioteca Python moderna para construção de APIs HTTP com padrões avançados de cliente, builders e plugins. Desenvolvida com FastAPI, fornece funcionalidades unificadas para criação de clientes HTTP robustos e construção de APIs usando composição de padrões do flext-core.
+Enterprise HTTP API library built with FastAPI and advanced client patterns. Provides unified functionality for building robust HTTP clients and APIs using composition patterns from flext-core foundation library.
 
 ## 🚀 Características Principais
 
@@ -139,7 +139,7 @@ app = flext_api_create_app()
 # App customizada
 builder = FlextApiBuilder()
 app = (builder
-    .with_info("My API", "Custom API", "1.0.0")
+    .with_info("My API", "Custom API", "0.9.0")
     .with_cors(origins=["https://myapp.com"])
     .with_rate_limiting(per_minute=100)
     .with_logging()

@@ -68,7 +68,7 @@ class TestAppCoverageComplete:
         assert app.description == (
             "Enterprise-grade distributed data integration platform"
         )
-        if app.version != "1.0.0":
+        if app.version != "0.9.0":
             msg = f"Expected {'1.0.0'}, got {app.version}"
             raise AssertionError(msg)
 
