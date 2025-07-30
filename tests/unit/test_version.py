@@ -25,7 +25,7 @@ class TestVersionModule:
         assert __version__ is not None
         assert isinstance(__version__, str)
         if __version__ != "0.9.0":
-            raise AssertionError(f"Expected {'0.8.0'}, got {__version__}")
+            raise AssertionError(f"Expected {'0.9.0'}, got {__version__}")
 
     def test_version_format(self) -> None:
         """Test that version follows semantic versioning format."""
@@ -176,4 +176,4 @@ class TestVersionModule:
         assert isinstance(version, str)
         assert len(version) > 0
         if version != "0.9.0":
-            raise AssertionError(f"Expected {'0.8.0'}, got {version}")
+            raise AssertionError(f"Expected {'0.9.0'}, got {version}")

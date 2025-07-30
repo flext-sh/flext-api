@@ -238,7 +238,9 @@ class FlextApiResponseBuilder:
         return self
 
     def error(
-        self, message: str, code: int = http.HTTPStatus.INTERNAL_SERVER_ERROR.value,
+        self,
+        message: str,
+        code: int = http.HTTPStatus.INTERNAL_SERVER_ERROR.value,
     ) -> FlextApiResponseBuilder:
         """Set error response."""
         metadata = dict(self._response.metadata)

@@ -5,22 +5,25 @@ Referência completa da API da FLEXT API.
 ## Core Classes
 
 ### FlextApi
+
 **Classe principal que unifica todas as funcionalidades.**
 
 ```python
 class FlextApi:
     def __init__(self) -> None
-    
+
     def flext_api_create_client(
-        self, 
+        self,
         config: dict | None = None
     ) -> FlextResult[FlextApiClient]
 ```
 
 **Métodos:**
+
 - `flext_api_create_client()` - Cria cliente HTTP configurado
 
 ### FlextResult
+
 **Pattern para tratamento consistente de erros (da flext-core).**
 
 ```python
@@ -29,16 +32,16 @@ class FlextResult[T]:
     data: T | None
     error: str | None
     error_type: str | None
-    
+
     @classmethod
     def ok(cls, data: T) -> FlextResult[T]
-    
-    @classmethod  
+
+    @classmethod
     def fail(cls, error: str, error_type: str = None) -> FlextResult[T]
-    
+
     @property
     def is_success(self) -> bool
-    
+
     @property
     def is_failure(self) -> bool
 ```
@@ -46,6 +49,7 @@ class FlextResult[T]:
 ## HTTP Client
 
 ### FlextApiClient
+
 **Cliente HTTP extensível com sistema de plugins.**
 
 ```python
@@ -55,7 +59,7 @@ class FlextApiClient:
         config: FlextApiClientConfig,
         plugins: list[FlextApiPlugin] = None
     )
-    
+
     async def get(
         self,
         path: str,
@@ -64,7 +68,7 @@ class FlextApiClient:
         timeout: float = None,
         **kwargs
     ) -> FlextResult[FlextApiClientResponse]
-    
+
     async def post(
         self,
         path: str,
@@ -74,17 +78,18 @@ class FlextApiClient:
         timeout: float = None,
         **kwargs
     ) -> FlextResult[FlextApiClientResponse]
-    
+
     async def put(...) -> FlextResult[FlextApiClientResponse]
     async def patch(...) -> FlextResult[FlextApiClientResponse]
     async def delete(...) -> FlextResult[FlextApiClientResponse]
-    
+
     async def get_health(self) -> FlextResult[dict]
     async def get_metrics(self) -> FlextResult[dict]
     async def close(self) -> None
 ```
 
 ### FlextApiClientConfig
+
 **Configuração do cliente HTTP.**
 
 ```python
@@ -100,6 +105,7 @@ class FlextApiClientConfig:
 ```
 
 ### FlextApiClientResponse
+
 **Wrapper para respostas HTTP.**
 
 ```python
@@ -107,12 +113,13 @@ class FlextApiClientResponse:
     status_code: int
     headers: dict[str, str]
     content: bytes
-    
+
     def json(self) -> dict
     def text(self) -> str
 ```
 
 ### FlextApiClientRequest
+
 **Representação de requisição HTTP.**
 
 ```python
@@ -127,6 +134,7 @@ class FlextApiClientRequest:
 ```
 
 ### FlextApiClientMethod
+
 **Enum para métodos HTTP.**
 
 ```python
@@ -143,33 +151,35 @@ class FlextApiClientMethod(Enum):
 ## Plugins
 
 ### FlextApiPlugin
+
 **Classe base para plugins do cliente HTTP.**
 
 ```python
 class FlextApiPlugin:
     def __init__(self, name: str)
-    
+
     async def before_request(
         self,
         request: FlextApiClientRequest
     ) -> FlextApiClientRequest
-    
+
     async def after_request(
         self,
         request: FlextApiClientRequest,
         response: FlextApiClientResponse
     ) -> FlextApiClientResponse
-    
+
     async def on_error(
         self,
         request: FlextApiClientRequest,
         error: Exception
     ) -> Exception
-    
+
     def get_metrics(self) -> dict
 ```
 
 ### FlextApiCachingPlugin
+
 **Plugin de cache com TTL.**
 
 ```python
@@ -182,7 +192,8 @@ class FlextApiCachingPlugin(FlextApiPlugin):
     )
 ```
 
-### FlextApiRetryPlugin  
+### FlextApiRetryPlugin
+
 **Plugin de retry com backoff exponencial.**
 
 ```python
@@ -197,6 +208,7 @@ class FlextApiRetryPlugin(FlextApiPlugin):
 ```
 
 ### FlextApiCircuitBreakerPlugin
+
 **Plugin circuit breaker para tolerância a falhas.**
 
 ```python
@@ -212,12 +224,13 @@ class FlextApiCircuitBreakerPlugin(FlextApiPlugin):
 ## Query Builder
 
 ### FlextApiQueryBuilder
+
 **Builder fluente para construção de queries.**
 
 ```python
 class FlextApiQueryBuilder:
     def __init__(self)
-    
+
     # Filtros de comparação
     def equals(self, field: str, value: Any) -> FlextApiQueryBuilder
     def not_equals(self, field: str, value: Any) -> FlextApiQueryBuilder
@@ -227,7 +240,7 @@ class FlextApiQueryBuilder:
     def less_than_or_equal(self, field: str, value: Any) -> FlextApiQueryBuilder
     def between(self, field: str, min_val: Any, max_val: Any) -> FlextApiQueryBuilder
     def not_between(self, field: str, min_val: Any, max_val: Any) -> FlextApiQueryBuilder
-    
+
     # Filtros de texto
     def like(self, field: str, pattern: str) -> FlextApiQueryBuilder
     def not_like(self, field: str, pattern: str) -> FlextApiQueryBuilder
@@ -235,7 +248,7 @@ class FlextApiQueryBuilder:
     def contains(self, field: str, value: str) -> FlextApiQueryBuilder
     def startswith(self, field: str, value: str) -> FlextApiQueryBuilder
     def endswith(self, field: str, value: str) -> FlextApiQueryBuilder
-    
+
     # Filtros de lista e nulos
     def in_list(self, field: str, values: list) -> FlextApiQueryBuilder
     def not_in_list(self, field: str, values: list) -> FlextApiQueryBuilder
@@ -243,7 +256,7 @@ class FlextApiQueryBuilder:
     def is_not_null(self, field: str) -> FlextApiQueryBuilder
     def is_empty(self, field: str) -> FlextApiQueryBuilder
     def is_not_empty(self, field: str) -> FlextApiQueryBuilder
-    
+
     # Filtros de data
     def date_equals(self, field: str, date_val: Any) -> FlextApiQueryBuilder
     def date_before(self, field: str, date_val: Any) -> FlextApiQueryBuilder
@@ -252,7 +265,7 @@ class FlextApiQueryBuilder:
     def date_year(self, field: str, year: int) -> FlextApiQueryBuilder
     def date_month(self, field: str, month: int) -> FlextApiQueryBuilder
     def date_day(self, field: str, day: int) -> FlextApiQueryBuilder
-    
+
     # Ordenação
     def sort_asc(self, field: str) -> FlextApiQueryBuilder
     def sort_desc(self, field: str) -> FlextApiQueryBuilder
@@ -262,18 +275,19 @@ class FlextApiQueryBuilder:
         direction: str,
         nulls_first: bool = False
     ) -> FlextApiQueryBuilder
-    
+
     # Paginação
     def page(self, page: int, size: int) -> FlextApiQueryBuilder
     def limit(self, limit: int) -> FlextApiQueryBuilder
     def offset(self, offset: int) -> FlextApiQueryBuilder
-    
+
     # Utilitários
     def reset(self) -> FlextApiQueryBuilder
     def build(self) -> dict[str, Any]
 ```
 
 ### FlextApiQueryOperator
+
 **Enum para operadores de query.**
 
 ```python
@@ -303,15 +317,16 @@ class FlextApiQueryOperator(Enum):
 ## Response Builder
 
 ### FlextApiResponseBuilder
+
 **Builder para respostas padronizadas.**
 
 ```python
 class FlextApiResponseBuilder:
     def __init__(self)
-    
+
     def success(self, data: Any = None) -> FlextApiResponseBuilder
     def error(self, message: str, code: int = None) -> FlextApiResponseBuilder
-    
+
     def with_metadata(self, key: str, value: Any) -> FlextApiResponseBuilder
     def with_pagination(
         self,
@@ -319,12 +334,12 @@ class FlextApiResponseBuilder:
         page: int,
         page_size: int
     ) -> FlextApiResponseBuilder
-    
+
     def with_error_details(self, details: Any) -> FlextApiResponseBuilder
     def with_status_code(self, code: int) -> FlextApiResponseBuilder
     def with_headers(self, headers: dict) -> FlextApiResponseBuilder
     def with_debug_info(self, info: dict) -> FlextApiResponseBuilder
-    
+
     def reset(self) -> FlextApiResponseBuilder
     def build(self) -> dict[str, Any]
 ```
@@ -332,52 +347,56 @@ class FlextApiResponseBuilder:
 ## FastAPI Builder
 
 ### FlextApiBuilder
+
 **Builder para aplicações FastAPI.**
 
 ```python
 class FlextApiBuilder:
     def __init__(self)
-    
+
     def with_info(
         self,
         title: str,
         description: str = None,
         version: str = None
     ) -> FlextApiBuilder
-    
+
     def with_cors(
         self,
         origins: list[str] = None,
         allow_methods: list[str] = None,
         allow_headers: list[str] = None
     ) -> FlextApiBuilder
-    
+
     def with_rate_limiting(
         self,
         per_minute: int = 60
     ) -> FlextApiBuilder
-    
+
     def with_logging(self) -> FlextApiBuilder
     def with_security(self) -> FlextApiBuilder
     def with_health_checks(self) -> FlextApiBuilder
     def with_metrics_endpoint(self) -> FlextApiBuilder
-    
+
     def build(self) -> FastAPI
 ```
 
 ## Factory Functions
 
 ### create_flext_api
+
 ```python
 def create_flext_api() -> FlextApi
 ```
 
 ### create_client
+
 ```python
 def create_client(config: dict) -> FlextApiClient
 ```
 
 ### create_client_with_plugins
+
 ```python
 def create_client_with_plugins(
     base_url: str = None,
@@ -390,11 +409,13 @@ def create_client_with_plugins(
 ```
 
 ### build_query
+
 ```python
 def build_query(filters: dict) -> dict
 ```
 
 ### build_success_response
+
 ```python
 def build_success_response(
     data: Any = None,
@@ -403,6 +424,7 @@ def build_success_response(
 ```
 
 ### build_error_response
+
 ```python
 def build_error_response(
     message: str,
@@ -412,6 +434,7 @@ def build_error_response(
 ```
 
 ### build_paginated_response
+
 ```python
 def build_paginated_response(
     data: Any,
@@ -423,6 +446,7 @@ def build_paginated_response(
 ```
 
 ### flext_api_create_app
+
 ```python
 def flext_api_create_app() -> FastAPI
 ```
@@ -430,6 +454,7 @@ def flext_api_create_app() -> FastAPI
 ## Constants e Enums
 
 ### FlextApiClientStatus
+
 ```python
 class FlextApiClientStatus(Enum):
     READY = "ready"
@@ -439,6 +464,7 @@ class FlextApiClientStatus(Enum):
 ```
 
 ### FlextApiClientProtocol
+
 ```python
 class FlextApiClientProtocol(Enum):
     HTTP = "http"
@@ -448,22 +474,25 @@ class FlextApiClientProtocol(Enum):
 ## Exception Types
 
 ### FlextApiConnectionError
+
 ```python
 class FlextApiConnectionError(Exception):
     pass
 ```
 
 ### FlextApiTimeoutError
+
 ```python
 class FlextApiTimeoutError(Exception):
     pass
 ```
 
 ### FlextApiHTTPError
+
 ```python
 class FlextApiHTTPError(Exception):
     def __init__(self, status_code: int, message: str)
-    
+
     status_code: int
     message: str
 ```
@@ -471,6 +500,7 @@ class FlextApiHTTPError(Exception):
 ## Type Definitions
 
 ### Common Types
+
 ```python
 from typing import Any, Dict, List, Optional, Union
 
@@ -484,6 +514,7 @@ ParamsDict = Dict[str, Any]
 ## Usage Examples
 
 ### Basic Usage
+
 ```python
 from flext_api import FlextApi, FlextApiQueryBuilder, FlextApiResponseBuilder
 
@@ -507,6 +538,7 @@ if client_result.success:
 ```
 
 ### Advanced Usage
+
 ```python
 from flext_api import (
     create_client_with_plugins,
