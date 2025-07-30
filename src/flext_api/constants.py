@@ -1,39 +1,24 @@
-"""FLEXT-API Constants - Domain-specific constants WITHOUT duplicating flext-core.
+"""FLEXT-API Constants - Extending flext-core platform constants.
 
-This module provides ONLY API-specific constants that extend flext-core's
-robust constants system without re-exporting base constants.
+This module provides API-specific constants that extend flext-core's
+platform constants system following inheritance patterns.
 """
 
 from __future__ import annotations
 
 import http
-from typing import ClassVar, Final
+from typing import ClassVar
+
+# Import flext-core constants for inheritance
+from flext_core.constants import FlextConstants
 
 # ==============================================================================
-# API-SPECIFIC CONSTANTS - NO FLEXT-CORE DUPLICATIONS
+# API-SPECIFIC CONSTANTS - Extending flext-core
 # ==============================================================================
 
-# API version and timeout settings
-FLEXT_API_VERSION: Final[str] = "1.0.0"
-FLEXT_API_TIMEOUT: Final[int] = 30
-FLEXT_API_MAX_RETRIES: Final[int] = 3
-FLEXT_API_CACHE_TTL: Final[int] = 300  # 5 minutes
 
-# Authentication constants
-FLEXT_AUTH_TOKEN_EXPIRY: Final[int] = 3600  # 1 hour
-FLEXT_AUTH_REFRESH_THRESHOLD: Final[int] = 300  # 5 minutes
-
-# Pipeline constants
-FLEXT_PIPELINE_MAX_STEPS: Final[int] = 100
-FLEXT_PIPELINE_TIMEOUT: Final[int] = 1800  # 30 minutes
-
-# Plugin constants
-FLEXT_PLUGIN_TIMEOUT: Final[int] = 60
-FLEXT_PLUGIN_MAX_MEMORY: Final[int] = 512  # MB
-
-
-class FlextApiConstants:
-    """API-specific constants that don't exist in flext-core."""
+class FlextApiConstants(FlextConstants):
+    """API-specific constants extending flext-core platform constants."""
 
     # HTTP status groups using standard library constants
     SUCCESS_CODES: ClassVar[list[int]] = [
@@ -56,10 +41,6 @@ class FlextApiConstants:
         http.HTTPStatus.GATEWAY_TIMEOUT.value,
     ]
 
-    # Rate limiting
-    RATE_LIMIT_REQUESTS = 1000
-    RATE_LIMIT_WINDOW = 3600  # 1 hour
-
     # API response formats
     SUCCESS_RESPONSE: ClassVar[dict[str, object]] = {
         "status": "success",
@@ -72,8 +53,7 @@ class FlextApiConstants:
         "error": None,
     }
 
-    # Validation patterns
-    UUID_PATTERN = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    # API-specific validation patterns (extend core patterns)
     USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
     PIPELINE_NAME_PATTERN = r"^[a-zA-Z0-9_-]{1,100}$"
 
@@ -150,21 +130,10 @@ class FlextApiEndpoints:
 
 
 # ==============================================================================
-# EXPORTS - ONLY API-SPECIFIC CONSTANTS
+# EXPORTS - API-SPECIFIC CONSTANTS
 # ==============================================================================
 
 __all__ = [
-    "FLEXT_API_CACHE_TTL",
-    "FLEXT_API_MAX_RETRIES",
-    "FLEXT_API_TIMEOUT",
-    # Constants
-    "FLEXT_API_VERSION",
-    "FLEXT_AUTH_REFRESH_THRESHOLD",
-    "FLEXT_AUTH_TOKEN_EXPIRY",
-    "FLEXT_PIPELINE_MAX_STEPS",
-    "FLEXT_PIPELINE_TIMEOUT",
-    "FLEXT_PLUGIN_MAX_MEMORY",
-    "FLEXT_PLUGIN_TIMEOUT",
     # Classes
     "FlextApiConstants",
     "FlextApiEndpoints",

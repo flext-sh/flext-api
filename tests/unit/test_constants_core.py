@@ -24,7 +24,7 @@ class TestConstants:
 
     def test_version_constant(self) -> None:
         """Test version constant."""
-        if FLEXT_API_VERSION != "1.0.0":
+        if FLEXT_API_VERSION != "0.9.0":
             raise AssertionError(f"Expected 1.0.0, got {FLEXT_API_VERSION}")
         assert isinstance(FLEXT_API_VERSION, str)
 

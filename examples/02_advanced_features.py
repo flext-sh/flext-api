@@ -237,7 +237,7 @@ async def example_full_api_service_integration() -> None:
             "headers": {
                 "Authorization": "Bearer prod_token_12345",
                 "X-Service": "flext-api-advanced",
-                "X-Version": "2.0.0",
+                "X-Version": "0.9.0",
             },
         }
 

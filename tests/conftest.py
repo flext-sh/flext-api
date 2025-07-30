@@ -79,7 +79,7 @@ def sample_plugin_data() -> dict[str, object]:
     return {
         "name": "tap-postgres",
         "type": "extractor",
-        "version": "1.0.0",
+        "version": "0.9.0",
         "config": {
             "host": "localhost",
             "port": 5432,
