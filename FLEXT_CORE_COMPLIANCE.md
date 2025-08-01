@@ -83,7 +83,7 @@
 - **Handlers**: Dedicated handlers for each operation
 - **Separation**: Clear separation of concerns
 
-### SOLID Principles ✅
+###  Principles ✅
 
 - **S**ingle Responsibility: Each class has one reason to change
 - **O**pen/Closed: Open for extension, closed for modification
