@@ -112,7 +112,9 @@ class TestFlextApiSettings:
             FlextApiSettings.validate_port(0)
 
         error_message = str(exc_info.value)
-        expected_message = f"Port must be between 1 and {FlextConstants.Platform.MAX_PORT_NUMBER}"
+        expected_message = (
+            f"Port must be between 1 and {FlextConstants.Platform.MAX_PORT_NUMBER}"
+        )
         assert error_message == expected_message
 
     def test_api_workers_validation(self) -> None:
@@ -268,7 +270,7 @@ class TestCreateApiSettingsFactory:
         """Test factory function with mix of valid and invalid settings."""
         result = create_api_settings(
             api_host="valid.host.com",  # Valid
-            api_port=-100,              # Invalid
+            api_port=-100,  # Invalid
         )
 
         assert result.is_failure
@@ -287,8 +289,8 @@ class TestCreateApiSettingsFactory:
     def test_create_api_settings_type_conversion(self) -> None:
         """Test factory function handles type conversion correctly."""
         result = create_api_settings(
-            api_port="8080",    # String that should convert to int
-            api_workers="4",    # String that should convert to int
+            api_port="8080",  # String that should convert to int
+            api_workers="4",  # String that should convert to int
             enable_caching="true",  # String that should convert to bool
         )
 
@@ -335,10 +337,12 @@ class TestFlextApiSettingsIntegration:
     def test_create_with_validation_method(self) -> None:
         """Test inherited create_with_validation method works correctly."""
         # Test success case
-        result = FlextApiSettings.create_with_validation({
-            "api_host": "test.com",
-            "api_port": 8080,
-        })
+        result = FlextApiSettings.create_with_validation(
+            {
+                "api_host": "test.com",
+                "api_port": 8080,
+            }
+        )
 
         assert result.is_success
         assert isinstance(result.data, FlextApiSettings)
@@ -347,9 +351,11 @@ class TestFlextApiSettingsIntegration:
 
     def test_create_with_validation_failure(self) -> None:
         """Test create_with_validation handles failures correctly."""
-        result = FlextApiSettings.create_with_validation({
-            "api_port": -1,  # Invalid port
-        })
+        result = FlextApiSettings.create_with_validation(
+            {
+                "api_port": -1,  # Invalid port
+            }
+        )
 
         assert result.is_failure
         assert "Failed to create settings" in result.error
