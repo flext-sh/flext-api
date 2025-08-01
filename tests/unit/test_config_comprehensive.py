@@ -108,7 +108,7 @@ class TestFlextApiSettings:
         assert result == 8080
 
         # Invalid port - should raise ValueError
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="Port must be between") as exc_info:
             FlextApiSettings.validate_port(0)
 
         error_message = str(exc_info.value)

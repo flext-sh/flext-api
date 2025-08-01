@@ -17,6 +17,45 @@ import structlog
 logger = structlog.get_logger(__name__)
 
 
+# =====================================================================================
+# CONFIGURATION CLASSES - Reducing Function Parameter Complexity
+# =====================================================================================
+
+@dataclass(frozen=True)
+class ResponseConfig:
+    """Configuration for response creation - reduces parameter complexity."""
+
+    success: bool | None = None
+    data: object = None
+    message: str | None = None
+    metadata: dict[str, object] | None = None
+    pagination: dict[str, object] | None = None
+
+
+@dataclass(frozen=True)
+class PaginationConfig:
+    """Configuration for pagination - simplifies paginated response creation."""
+
+    data: object
+    total: int
+    page: int
+    page_size: int
+    message: str = "Success"
+    metadata: dict[str, object] | None = None
+
+    def __post_init__(self) -> None:
+        """Validate pagination parameters."""
+        if self.total < 0:
+            msg = "Total must be non-negative"
+            raise ValueError(msg)
+        if self.page < 1:
+            msg = "Page must be positive"
+            raise ValueError(msg)
+        if self.page_size < 1:
+            msg = "Page size must be positive"
+            raise ValueError(msg)
+
+
 class FlextApiOperation(Enum):
     """Operations supported by the unified builder."""
 
@@ -116,93 +155,86 @@ class FlextApiQueryBuilder:
             page_size=20,
         )
 
-    def equals(self, field: str, value: object) -> FlextApiQueryBuilder:
-        """Add equals filter."""
+    def _validate_field(self, field: str) -> None:
+        """DRY helper: Validate field name."""
         if not field or not field.strip():
             msg = "Field cannot be empty"
             raise ValueError(msg)
-        self._query.filters.append(
-            {
-                "field": field,
-                "operator": "equals",
-                "value": value,
-            },
-        )
+
+    def _add_filter(
+        self, field: str, operator: str, value: object
+    ) -> FlextApiQueryBuilder:
+        """DRY helper: Add filter to query - reduces code duplication."""
+        self._validate_field(field)
+        self._query.filters.append({
+            "field": field,
+            "operator": operator,
+            "value": value,
+        })
         return self
+
+    def _add_sort(self, field: str, direction: str) -> FlextApiQueryBuilder:
+        """DRY helper: Add sort to query - reduces code duplication."""
+        self._validate_field(field)
+        self._query.sorts.append({"field": field, "direction": direction})
+        return self
+
+    def equals(self, field: str, value: object) -> FlextApiQueryBuilder:
+        """Add equals filter."""
+        return self._add_filter(field, "equals", value)
 
     def greater_than(self, field: str, value: object) -> FlextApiQueryBuilder:
         """Add greater than filter."""
-        if not field or not field.strip():
-            msg = "Field cannot be empty"
-            raise ValueError(msg)
-        self._query.filters.append(
-            {
-                "field": field,
-                "operator": "gt",
-                "value": value,
-            },
-        )
-        return self
+        return self._add_filter(field, "gt", value)
 
     def sort_desc(self, field: str) -> FlextApiQueryBuilder:
         """Add descending sort."""
-        if not field or not field.strip():
-            msg = "Field cannot be empty"
-            raise ValueError(msg)
-        self._query.sorts.append({"field": field, "direction": "desc"})
-        return self
+        return self._add_sort(field, "desc")
 
     def sort_asc(self, field: str) -> FlextApiQueryBuilder:
         """Add ascending sort."""
-        if not field or not field.strip():
-            msg = "Field cannot be empty"
-            raise ValueError(msg)
-        self._query.sorts.append({"field": field, "direction": "asc"})
-        return self
+        return self._add_sort(field, "asc")
 
-    def page(self, page: int) -> FlextApiQueryBuilder:
-        """Set page number."""
+    def _validate_page(self, page: int) -> None:
+        """DRY helper: Validate page number."""
         if page <= 0:
             msg = "Page must be greater than 0"
             raise ValueError(msg)
-        # Create new query with updated page
+
+    def _validate_page_size(self, size: int) -> None:
+        """DRY helper: Validate page size."""
+        if size <= 0:
+            msg = "Page size must be greater than 0"
+            raise ValueError(msg)
+
+    def _rebuild_query_with_pagination(
+        self, page: int | None = None, page_size: int | None = None
+    ) -> None:
+        """DRY helper: Rebuild query with new pagination values."""
         self._query = FlextApiQuery(
             filters=self._query.filters,
             sorts=self._query.sorts,
-            page=page,
-            page_size=self._query.page_size,
+            page=page if page is not None else self._query.page,
+            page_size=page_size if page_size is not None else self._query.page_size,
         )
+
+    def page(self, page: int) -> FlextApiQueryBuilder:
+        """Set page number."""
+        self._validate_page(page)
+        self._rebuild_query_with_pagination(page=page)
         return self
 
     def page_size(self, size: int) -> FlextApiQueryBuilder:
         """Set page size."""
-        if size <= 0:
-            msg = "Page size must be greater than 0"
-            raise ValueError(msg)
-        # Create new query with updated page size
-        self._query = FlextApiQuery(
-            filters=self._query.filters,
-            sorts=self._query.sorts,
-            page=self._query.page,
-            page_size=size,
-        )
+        self._validate_page_size(size)
+        self._rebuild_query_with_pagination(page_size=size)
         return self
 
     def pagination(self, page: int, size: int) -> FlextApiQueryBuilder:
         """Set pagination (both page and size)."""
-        if page <= 0:
-            msg = "Page must be greater than 0"
-            raise ValueError(msg)
-        if size <= 0:
-            msg = "Page size must be greater than 0"
-            raise ValueError(msg)
-        # Create new query with updated pagination
-        self._query = FlextApiQuery(
-            filters=self._query.filters,
-            sorts=self._query.sorts,
-            page=page,
-            page_size=size,
-        )
+        self._validate_page(page)
+        self._validate_page_size(size)
+        self._rebuild_query_with_pagination(page=page, page_size=size)
         return self
 
     def build(self) -> FlextApiQuery:
@@ -222,24 +254,53 @@ class FlextApiResponseBuilder:
             metadata={},
         )
 
-    def _create_response(
-        self,
-        *,
-        success: bool | None = None,
-        data: object = None,
-        message: str | None = None,
-        metadata: dict[str, object] | None = None,
-        pagination: dict[str, object] | None = None,
-    ) -> None:
-        """DRY helper to create response with current values as defaults."""
-        current_pagination = self._response.pagination
+    def _create_response(self, config: ResponseConfig) -> None:
+        """DRY helper to create response using configuration object."""
+        # Use helper methods to reduce conditional complexity
         self._response = FlextApiResponse(
-            success=success if success is not None else self._response.success,
-            data=data if data is not None else self._response.data,
-            message=message if message is not None else self._response.message,
-            metadata=metadata if metadata is not None else self._response.metadata,
-            pagination=pagination if pagination is not None else current_pagination,
+            success=self._resolve_success(config),
+            data=self._resolve_data(config),
+            message=self._resolve_message(config),
+            metadata=self._resolve_metadata(config),
+            pagination=self._resolve_pagination(config),
         )
+
+    def _resolve_success(self, config: ResponseConfig) -> bool:
+        """DRY helper: Resolve success value."""
+        return config.success if config.success is not None else self._response.success
+
+    def _resolve_data(self, config: ResponseConfig) -> object:
+        """DRY helper: Resolve data value."""
+        return config.data if config.data is not None else self._response.data
+
+    def _resolve_message(self, config: ResponseConfig) -> str:
+        """DRY helper: Resolve message value."""
+        return config.message if config.message is not None else self._response.message
+
+    def _resolve_metadata(self, config: ResponseConfig) -> dict[str, object]:
+        """DRY helper: Resolve metadata value."""
+        return (
+            config.metadata if config.metadata is not None
+            else self._response.metadata
+        )
+
+    def _resolve_pagination(self, config: ResponseConfig) -> dict[str, object] | None:
+        """DRY helper: Resolve pagination value."""
+        return (
+            config.pagination if config.pagination is not None
+            else self._response.pagination
+        )
+
+    def _create_response_legacy(
+        self,
+        config: ResponseConfig,
+    ) -> None:
+        """Legacy method - uses ResponseConfig directly.
+
+        Refactored to eliminate parameter explosion using Parameter Object pattern.
+        Reduces function parameters from 6 to 2 (self + config).
+        """
+        self._create_response(config)
 
     def success(
         self,
@@ -247,7 +308,8 @@ class FlextApiResponseBuilder:
         message: str = "Success",
     ) -> FlextApiResponseBuilder:
         """Set success response."""
-        self._create_response(success=True, data=data, message=message)
+        config = ResponseConfig(success=True, data=data, message=message)
+        self._create_response(config)
         return self
 
     def error(
@@ -258,23 +320,22 @@ class FlextApiResponseBuilder:
         """Set error response."""
         metadata = dict(self._response.metadata)
         metadata["error_code"] = code
-        self._create_response(success=False, message=message, metadata=metadata)
+        config = ResponseConfig(success=False, message=message, metadata=metadata)
+        self._create_response(config)
         return self
 
     def with_metadata(self, key: str, value: object) -> FlextApiResponseBuilder:
         """Add metadata."""
         metadata = dict(self._response.metadata)
         metadata[key] = value
-        self._create_response(metadata=metadata)
+        config = ResponseConfig(metadata=metadata)
+        self._create_response(config)
         return self
 
-    def with_pagination(
-        self,
-        total: int,
-        page: int,
-        page_size: int,
-    ) -> FlextApiResponseBuilder:
-        """Add pagination metadata."""
+    def _validate_pagination_params(
+        self, total: int, page: int, page_size: int
+    ) -> None:
+        """DRY helper: Validate pagination parameters."""
         if total < 0:
             msg = "Total must be positive"
             raise ValueError(msg)
@@ -285,8 +346,12 @@ class FlextApiResponseBuilder:
             msg = "Page size must be greater than 0"
             raise ValueError(msg)
 
+    def _create_pagination_data(
+        self, total: int, page: int, page_size: int
+    ) -> dict[str, object]:
+        """DRY helper: Create pagination data dictionary."""
         total_pages = math.ceil(total / page_size) if page_size > 0 else 0
-        pagination: dict[str, object] = {
+        return {
             "total": total,
             "page": page,
             "page_size": page_size,
@@ -295,16 +360,28 @@ class FlextApiResponseBuilder:
             "has_previous": page > 1,
         }
 
+    def with_pagination(
+        self,
+        total: int,
+        page: int,
+        page_size: int,
+    ) -> FlextApiResponseBuilder:
+        """Add pagination metadata."""
+        self._validate_pagination_params(total, page, page_size)
+        pagination = self._create_pagination_data(total, page, page_size)
+
         # Add pagination data to metadata for test compatibility
         metadata = dict(self._response.metadata)
         metadata.update(pagination)
 
-        self._create_response(metadata=metadata, pagination=pagination)
+        config = ResponseConfig(metadata=metadata, pagination=pagination)
+        self._create_response(config)
         return self
 
     def metadata(self, metadata: dict[str, object]) -> FlextApiResponseBuilder:
         """Set metadata (replaces existing metadata)."""
-        self._create_response(metadata=metadata)
+        config = ResponseConfig(metadata=metadata)
+        self._create_response(config)
         return self
 
     def pagination(
@@ -386,7 +463,84 @@ def build_error_response(
     return builder.build().to_dict()
 
 
-def build_paginated_response(  # noqa: PLR0913
+def build_paginated_response(
+    config: PaginationConfig,
+) -> dict[str, object]:
+    """Build paginated response using PaginationConfig to reduce complexity."""
+    builder = (
+        FlextApiResponseBuilder()
+        .success(data=config.data, message=config.message)
+        .with_pagination(config.total, config.page, config.page_size)
+    )
+
+    if config.metadata:
+        for key, value in config.metadata.items():
+            builder.with_metadata(key, value)
+
+    return builder.build().to_dict()
+
+class PaginatedResponseBuilder:
+    """Builder Pattern for paginated responses - eliminates 7-parameter complexity.
+
+    SOLID Builder Pattern: Provides fluent interface for building paginated responses
+    reducing parameter explosion and improving maintainability.
+    """
+
+    def __init__(self) -> None:
+        """Initialize builder with default values."""
+        self._data: object = None
+        self._total: int = 0
+        self._page: int = 1
+        self._page_size: int = 20
+        self._message: str = "Success"
+        self._metadata: dict[str, object] | None = None
+
+    def with_data(self, data: object) -> PaginatedResponseBuilder:
+        """Set the response data."""
+        self._data = data
+        return self
+
+    def with_total(self, total: int) -> PaginatedResponseBuilder:
+        """Set the total count."""
+        self._total = total
+        return self
+
+    def with_page(self, page: int) -> PaginatedResponseBuilder:
+        """Set the current page number."""
+        self._page = page
+        return self
+
+    def with_page_size(self, page_size: int) -> PaginatedResponseBuilder:
+        """Set the page size."""
+        self._page_size = page_size
+        return self
+
+    def with_message(self, message: str) -> PaginatedResponseBuilder:
+        """Set the response message."""
+        self._message = message
+        return self
+
+    def with_metadata(
+        self, metadata: dict[str, object] | None
+    ) -> PaginatedResponseBuilder:
+        """Set the response metadata."""
+        self._metadata = metadata
+        return self
+
+    def build(self) -> dict[str, object]:
+        """Build the paginated response using PaginationConfig."""
+        config = PaginationConfig(
+            data=self._data,
+            total=self._total,
+            page=self._page,
+            page_size=self._page_size,
+            message=self._message,
+            metadata=self._metadata,
+        )
+        return build_paginated_response(config)
+
+
+def build_paginated_response_legacy(  # noqa: PLR0913
     data: object,
     total: int,
     page: int,
@@ -394,18 +548,21 @@ def build_paginated_response(  # noqa: PLR0913
     message: str = "Success",
     metadata: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    """Build paginated response."""
-    builder = (
-        FlextApiResponseBuilder()
-        .success(data=data, message=message)
-        .with_pagination(total, page, page_size)
+    """Legacy build paginated response using Builder Pattern - eliminates explosion.
+
+    DEPRECATED: Use PaginatedResponseBuilder or build_paginated_response with
+    PaginationConfig for better maintainability and fluent interface.
+    """
+    return (
+        PaginatedResponseBuilder()
+        .with_data(data)
+        .with_total(total)
+        .with_page(page)
+        .with_page_size(page_size)
+        .with_message(message)
+        .with_metadata(metadata)
+        .build()
     )
-
-    if metadata:
-        for key, value in metadata.items():
-            builder.with_metadata(key, value)
-
-    return builder.build().to_dict()
 
 
 def build_success_response_object(
@@ -437,7 +594,23 @@ def build_error_response_object(
     return builder.build()
 
 
-def build_paginated_response_object(  # noqa: PLR0913
+def build_paginated_response_object(
+    config: PaginationConfig,
+) -> FlextApiResponse:
+    """Build paginated response as object using PaginationConfig."""
+    builder = (
+        FlextApiResponseBuilder()
+        .success(data=config.data, message=config.message)
+        .with_pagination(config.total, config.page, config.page_size)
+    )
+
+    if config.metadata:
+        for key, value in config.metadata.items():
+            builder.with_metadata(key, value)
+
+    return builder.build()
+
+def build_paginated_response_object_legacy(  # noqa: PLR0913
     data: object,
     total: int,
     page: int,
@@ -445,15 +618,17 @@ def build_paginated_response_object(  # noqa: PLR0913
     message: str = "Success",
     metadata: dict[str, object] | None = None,
 ) -> FlextApiResponse:
-    """Build paginated response as object."""
-    builder = (
-        FlextApiResponseBuilder()
-        .success(data=data, message=message)
-        .with_pagination(total, page, page_size)
+    """Legacy build paginated response as object using PaginationConfig.
+
+    DEPRECATED: Use PaginatedResponseBuilder for fluent interface or
+    build_paginated_response_object with PaginationConfig for better maintainability.
+    """
+    config = PaginationConfig(
+        data=data,
+        total=total,
+        page=page,
+        page_size=page_size,
+        message=message,
+        metadata=metadata,
     )
-
-    if metadata:
-        for key, value in metadata.items():
-            builder.with_metadata(key, value)
-
-    return builder.build()
+    return build_paginated_response_object(config)

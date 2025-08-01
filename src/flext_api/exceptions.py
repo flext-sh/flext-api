@@ -1,169 +1,46 @@
-"""API service exception hierarchy using flext-core patterns.
+"""API service exception hierarchy using flext-core DRY patterns.
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
 
-Domain-specific exceptions for API service operations inheriting from flext-core.
+Domain-specific exceptions using factory pattern to eliminate duplication.
+SOLID REFACTORING: Eliminates 50+ lines of duplicate exception code.
 """
 
 from __future__ import annotations
 
-from flext_core.exceptions import (
-    FlextAuthenticationError,
-    FlextConfigurationError,
-    FlextConnectionError,
-    FlextError,
-    FlextProcessingError,
-    FlextTimeoutError,
-    FlextValidationError,
-)
+from typing import TYPE_CHECKING
+
+from flext_core.exceptions import create_module_exception_classes
+
+if TYPE_CHECKING:
+    # For type checking, import the actual base types
+    from flext_core.exceptions import (
+        FlextAuthenticationError as FlextApiAuthenticationError,
+        FlextConfigurationError as FlextApiConfigurationError,
+        FlextConnectionError as FlextApiConnectionError,
+        FlextError as FlextApiError,
+        FlextProcessingError as FlextApiProcessingError,
+        FlextTimeoutError as FlextApiTimeoutError,
+        FlextValidationError as FlextApiValidationError,
+    )
+else:
+    # Create all standard exception classes using factory pattern - eliminates 50+ lines
+    api_exceptions = create_module_exception_classes("flext_api")
+
+    # Import generated classes for clean usage
+    FlextApiError = api_exceptions["FlextApiError"]
+    FlextApiValidationError = api_exceptions["FlextApiValidationError"]
+    FlextApiConfigurationError = api_exceptions["FlextApiConfigurationError"]
+    FlextApiConnectionError = api_exceptions["FlextApiConnectionError"]
+    FlextApiProcessingError = api_exceptions["FlextApiProcessingError"]
+    FlextApiAuthenticationError = api_exceptions["FlextApiAuthenticationError"]
+    FlextApiTimeoutError = api_exceptions["FlextApiTimeoutError"]
 
 
-class FlextApiError(FlextError):
-    """Base exception for API service operations."""
-
-    def __init__(
-        self,
-        message: str = "API service error",
-        endpoint: str | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize API service error with context."""
-        context = kwargs.copy()
-        if endpoint is not None:
-            context["endpoint"] = endpoint
-
-        super().__init__(message, error_code="API_SERVICE_ERROR", context=context)
-
-
-class FlextApiValidationError(FlextValidationError):
-    """API service validation errors."""
-
-    def __init__(
-        self,
-        message: str = "API validation failed",
-        field: str | None = None,
-        value: object = None,
-        endpoint: str | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize API validation error with context."""
-        validation_details: dict[str, object] = {}
-        if field is not None:
-            validation_details["field"] = field
-        if value is not None:
-            validation_details["value"] = str(value)[:100]  # Truncate long values
-
-        context = kwargs.copy()
-        if endpoint is not None:
-            context["endpoint"] = endpoint
-
-        super().__init__(
-            f"API validation: {message}",
-            validation_details=validation_details,
-            context=context,
-        )
-
-
-class FlextApiAuthenticationError(FlextAuthenticationError):
-    """API service authentication errors."""
-
-    def __init__(
-        self,
-        message: str = "API authentication failed",
-        auth_method: str | None = None,
-        endpoint: str | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize API authentication error with context."""
-        context = kwargs.copy()
-        if auth_method is not None:
-            context["auth_method"] = auth_method
-        if endpoint is not None:
-            context["endpoint"] = endpoint
-
-        super().__init__(f"API auth: {message}", **context)
-
-
-class FlextApiConfigurationError(FlextConfigurationError):
-    """API service configuration errors."""
-
-    def __init__(
-        self,
-        message: str = "API configuration error",
-        config_key: str | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize API configuration error with context."""
-        context = kwargs.copy()
-        if config_key is not None:
-            context["config_key"] = config_key
-
-        super().__init__(f"API config: {message}", **context)
-
-
-class FlextApiConnectionError(FlextConnectionError):
-    """API service connection errors."""
-
-    def __init__(
-        self,
-        message: str = "API connection failed",
-        host: str | None = None,
-        port: int | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize API connection error with context."""
-        context = kwargs.copy()
-        if host is not None:
-            context["host"] = host
-        if port is not None:
-            context["port"] = port
-
-        super().__init__(f"API connection: {message}", **context)
-
-
-class FlextApiProcessingError(FlextProcessingError):
-    """API service processing errors."""
-
-    def __init__(
-        self,
-        message: str = "API processing failed",
-        operation: str | None = None,
-        endpoint: str | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize API processing error with context."""
-        context = kwargs.copy()
-        if operation is not None:
-            context["operation"] = operation
-        if endpoint is not None:
-            context["endpoint"] = endpoint
-
-        super().__init__(f"API processing: {message}", **context)
-
-
-class FlextApiTimeoutError(FlextTimeoutError):
-    """API service timeout errors."""
-
-    def __init__(
-        self,
-        message: str = "API operation timed out",
-        endpoint: str | None = None,
-        timeout_seconds: float | None = None,
-        **kwargs: object,
-    ) -> None:
-        """Initialize API timeout error with context."""
-        context = kwargs.copy()
-        if endpoint is not None:
-            context["endpoint"] = endpoint
-        if timeout_seconds is not None:
-            context["timeout_seconds"] = timeout_seconds
-
-        super().__init__(f"API timeout: {message}", **context)
-
-
+# Domain-specific exceptions unique to API service
 class FlextApiRequestError(FlextApiError):
-    """API service request errors."""
+    """API service request errors with request-specific context."""
 
     def __init__(
         self,
@@ -177,14 +54,16 @@ class FlextApiRequestError(FlextApiError):
         context = kwargs.copy()
         if method is not None:
             context["method"] = method
+        if endpoint is not None:
+            context["endpoint"] = endpoint
         if status_code is not None:
             context["status_code"] = status_code
 
-        super().__init__(f"API request: {message}", endpoint=endpoint, **context)
+        super().__init__(f"API request: {message}", context=context)
 
 
 class FlextApiResponseError(FlextApiError):
-    """API service response errors."""
+    """API service response errors with response-specific context."""
 
     def __init__(
         self,
@@ -204,7 +83,7 @@ class FlextApiResponseError(FlextApiError):
 
 
 class FlextApiStorageError(FlextApiError):
-    """API service storage errors."""
+    """API service storage errors with storage-specific context."""
 
     def __init__(
         self,
@@ -224,7 +103,7 @@ class FlextApiStorageError(FlextApiError):
 
 
 class FlextApiBuilderError(FlextApiError):
-    """API service builder errors."""
+    """API service builder errors with builder-specific context."""
 
     def __init__(
         self,

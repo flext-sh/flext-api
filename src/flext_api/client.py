@@ -141,6 +141,27 @@ class FlextApiClientResponse:
         return str(self.data)
 
 
+@dataclass(frozen=True)
+class HttpRequestConfig:
+    """Configuration object for HTTP requests with body support.
+
+    DRY PRINCIPLE: Reduces parameter count from 6 to 2 in _execute_with_body method.
+    SOLID SRP: Single responsibility for HTTP request configuration.
+    """
+
+    method: FlextApiClientMethod
+    path: str
+    json_data: dict[str, object] | None = None
+    data: str | bytes | None = None
+    headers: dict[str, str] | None = None
+    request_timeout: float | None = None
+
+    def __post_init__(self) -> None:
+        """Post-initialization validation."""
+        if self.headers is None:
+            object.__setattr__(self, "headers", {})
+
+
 # ==============================================================================
 # PLUGIN SYSTEM USING FLEXT-CORE
 # ==============================================================================
@@ -425,6 +446,39 @@ class FlextApiClient:
 
             return response
 
+    def _create_request(
+        self,
+        method: FlextApiClientMethod,
+        path: str,
+        **kwargs: object,
+    ) -> FlextApiClientRequest:
+        """DRY helper to create HTTP request with consistent parameters."""
+        params = kwargs.get("params")
+        json_data = kwargs.get("json_data")
+        data = kwargs.get("data")
+        headers = kwargs.get("headers")
+        timeout = kwargs.get("request_timeout")
+
+        return FlextApiClientRequest(
+            method=method,
+            url=path,
+            params=cast("dict[str, object] | None", params),
+            json_data=cast("dict[str, object] | None", json_data),
+            data=cast("str | bytes | None", data),
+            headers=cast("dict[str, str] | None", headers),
+            timeout=cast("float | None", timeout),
+        )
+
+    async def _execute_http_method(
+        self,
+        method: FlextApiClientMethod,
+        path: str,
+        **kwargs: object,
+    ) -> FlextResult[FlextApiClientResponse]:
+        """DRY helper to execute HTTP methods - eliminates 18-line duplication."""
+        request = self._create_request(method, path, **kwargs)
+        return await self._make_request(request)
+
     async def get(
         self,
         path: str,
@@ -433,14 +487,88 @@ class FlextApiClient:
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
         """Make GET request."""
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.GET,
-            url=path,
+        return await self._execute_http_method(
+            FlextApiClientMethod.GET,
+            path,
             params=params,
             headers=headers,
-            timeout=request_timeout,
+            request_timeout=request_timeout,
         )
-        return await self._make_request(request)
+
+    async def _execute_with_body(
+        self,
+        config: HttpRequestConfig,
+    ) -> FlextResult[FlextApiClientResponse]:
+        """DRY helper: Execute HTTP method with body support (POST, PUT, PATCH).
+
+        SOLID SRP: Single responsibility for HTTP methods with body support.
+        DRY PRINCIPLE: Reduces parameter count from 6 to 2, improving maintainability.
+        """
+        return await self._execute_http_method(
+            config.method,
+            config.path,
+            json_data=config.json_data,
+            data=config.data,
+            headers=config.headers,
+            request_timeout=config.request_timeout,
+        )
+
+    async def _execute_without_body(
+        self,
+        method: FlextApiClientMethod,
+        path: str,
+        headers: dict[str, str] | None = None,
+        request_timeout: float | None = None,
+    ) -> FlextResult[FlextApiClientResponse]:
+        """DRY helper: Execute HTTP method without body support (DELETE, HEAD)."""
+        return await self._execute_http_method(
+            method,
+            path,
+            headers=headers,
+            request_timeout=request_timeout,
+        )
+
+    def _create_body_request_config(  # noqa: PLR0913
+        self,
+        method: FlextApiClientMethod,
+        path: str,
+        json_data: dict[str, object] | None = None,
+        data: str | bytes | None = None,
+        headers: dict[str, str] | None = None,
+        request_timeout: float | None = None,
+    ) -> HttpRequestConfig:
+        """DRY Helper: Create HTTP request config for methods with body support.
+
+        Eliminates code duplication across POST, PUT, PATCH methods.
+        SOLID SRP: Single responsibility for HTTP request configuration creation.
+        """
+        return HttpRequestConfig(
+            method=method,
+            path=path,
+            json_data=json_data,
+            data=data,
+            headers=headers,
+            request_timeout=request_timeout,
+        )
+
+    async def _execute_body_request(  # noqa: PLR0913
+        self,
+        method: FlextApiClientMethod,
+        path: str,
+        json_data: dict[str, object] | None = None,
+        data: str | bytes | None = None,
+        headers: dict[str, str] | None = None,
+        request_timeout: float | None = None,
+    ) -> FlextResult[FlextApiClientResponse]:
+        """DRY Helper: Execute HTTP request with body - eliminates duplication.
+
+        SOLID SRP: Single responsibility for HTTP methods with body.
+        DRY PRINCIPLE: Centralizes common request execution logic.
+        """
+        config = self._create_body_request_config(
+            method, path, json_data, data, headers, request_timeout
+        )
+        return await self._execute_with_body(config)
 
     async def post(
         self,
@@ -450,16 +578,10 @@ class FlextApiClient:
         headers: dict[str, str] | None = None,
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
-        """Make POST request."""
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.POST,
-            url=path,
-            json_data=json_data,
-            data=data,
-            headers=headers,
-            timeout=request_timeout,
+        """Make POST request using DRY helper."""
+        return await self._execute_body_request(
+            FlextApiClientMethod.POST, path, json_data, data, headers, request_timeout
         )
-        return await self._make_request(request)
 
     async def put(
         self,
@@ -469,31 +591,10 @@ class FlextApiClient:
         headers: dict[str, str] | None = None,
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
-        """Make PUT request."""
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.PUT,
-            url=path,
-            json_data=json_data,
-            data=data,
-            headers=headers,
-            timeout=request_timeout,
+        """Make PUT request using DRY helper."""
+        return await self._execute_body_request(
+            FlextApiClientMethod.PUT, path, json_data, data, headers, request_timeout
         )
-        return await self._make_request(request)
-
-    async def delete(
-        self,
-        path: str,
-        headers: dict[str, str] | None = None,
-        request_timeout: float | None = None,
-    ) -> FlextResult[FlextApiClientResponse]:
-        """Make DELETE request."""
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.DELETE,
-            url=path,
-            headers=headers,
-            timeout=request_timeout,
-        )
-        return await self._make_request(request)
 
     async def patch(
         self,
@@ -503,16 +604,21 @@ class FlextApiClient:
         headers: dict[str, str] | None = None,
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
-        """Make PATCH request."""
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.PATCH,
-            url=path,
-            json_data=json_data,
-            data=data,
-            headers=headers,
-            timeout=request_timeout,
+        """Make PATCH request using DRY helper."""
+        return await self._execute_body_request(
+            FlextApiClientMethod.PATCH, path, json_data, data, headers, request_timeout
         )
-        return await self._make_request(request)
+
+    async def delete(
+        self,
+        path: str,
+        headers: dict[str, str] | None = None,
+        request_timeout: float | None = None,
+    ) -> FlextResult[FlextApiClientResponse]:
+        """Make DELETE request."""
+        return await self._execute_without_body(
+            FlextApiClientMethod.DELETE, path, headers, request_timeout
+        )
 
     async def head(
         self,
@@ -521,13 +627,9 @@ class FlextApiClient:
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
         """Make HEAD request."""
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.HEAD,
-            url=path,
-            headers=headers,
-            timeout=request_timeout,
+        return await self._execute_without_body(
+            FlextApiClientMethod.HEAD, path, headers, request_timeout
         )
-        return await self._make_request(request)
 
     async def options(
         self,
@@ -536,50 +638,50 @@ class FlextApiClient:
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
         """Make OPTIONS request."""
-        request = FlextApiClientRequest(
-            method=FlextApiClientMethod.OPTIONS,
-            url=path,
+        return await self._execute_http_method(
+            FlextApiClientMethod.OPTIONS,
+            path,
             headers=headers,
-            timeout=request_timeout,
+            request_timeout=request_timeout,
         )
-        return await self._make_request(request)
+
+    def _sync_lifecycle_operation(
+        self,
+        status: FlextApiClientStatus,
+        metric_name: str,
+        operation_name: str
+    ) -> FlextResult[None]:
+        """DRY helper: Common pattern for service lifecycle operations (start/stop)."""
+        try:
+            self.status = status
+
+            # Record service lifecycle metric using DRY helper
+            metric_result = self._metrics_service.record_metric(
+                FlextMetric(id=str(uuid.uuid4()), name=metric_name, value=1.0),
+            )
+            self._handle_observability_result(
+                metric_result, f"service {operation_name} metric"
+            )
+
+            self.logger.info(
+                "FlextApiClient service %s successfully", f"{operation_name}ed"
+            )
+            return FlextResult.ok(None)
+        except Exception as e:
+            self.logger.exception("Failed to %s FlextApiClient service", operation_name)
+            return FlextResult.fail(f"Service {operation_name} failed: {e}")
 
     def _sync_start(self) -> FlextResult[None]:
         """Internal sync start implementation - DRY pattern."""
-        try:
-            self.status = FlextApiClientStatus.RUNNING
-
-            # Record service start metric using DRY helper
-            start_metric_result = self._metrics_service.record_metric(
-                FlextMetric(id=str(uuid.uuid4()), name="service_started", value=1.0),
-            )
-            self._handle_observability_result(
-                start_metric_result,
-                "service start metric",
-            )
-
-            self.logger.info("FlextApiClient service started successfully")
-            return FlextResult.ok(None)
-        except Exception as e:
-            self.logger.exception("Failed to start FlextApiClient service")
-            return FlextResult.fail(f"Service start failed: {e}")
+        return self._sync_lifecycle_operation(
+            FlextApiClientStatus.RUNNING, "service_started", "start"
+        )
 
     def _sync_stop(self) -> FlextResult[None]:
         """Internal sync stop implementation - DRY pattern."""
-        try:
-            self.status = FlextApiClientStatus.STOPPED
-
-            # Record service stop metric using DRY helper
-            stop_metric_result = self._metrics_service.record_metric(
-                FlextMetric(id=str(uuid.uuid4()), name="service_stopped", value=1.0),
-            )
-            self._handle_observability_result(stop_metric_result, "service stop metric")
-
-            self.logger.info("FlextApiClient service stopped successfully")
-            return FlextResult.ok(None)
-        except Exception as e:
-            self.logger.exception("Failed to stop FlextApiClient service")
-            return FlextResult.fail(f"Service stop failed: {e}")
+        return self._sync_lifecycle_operation(
+            FlextApiClientStatus.STOPPED, "service_stopped", "stop"
+        )
 
     # Main interface (async for API compatibility, FlextService will adapt)
     async def start(self) -> FlextResult[None]:
@@ -731,27 +833,43 @@ class FlextApiClientServiceAdapter(FlextService):
 # ==============================================================================
 
 
-def create_client(config: dict[str, object] | None = None) -> FlextApiClient:
-    """Create HTTP client with configuration."""
-    # Convert config to appropriate types for dataclass
-    raw_config = config or {}
+def _convert_config_value(
+    value: object, default: float, converter: type[float | int]
+) -> float | int:
+    """DRY helper to convert configuration values with defaults."""
+    if value is None:
+        return default
+    if isinstance(value, (int, float)) and converter in (int, float):
+        return converter(value)
+    return default
 
-    base_url = str(raw_config.get("base_url", ""))
-
-    # Validate base_url if provided
-    if base_url and not base_url.startswith(("http://", "https://")):
+def _validate_base_url(url: str) -> None:
+    """DRY helper to validate base URL format."""
+    if url and not url.startswith(("http://", "https://")):
         msg = "Invalid URL format"
         raise ValueError(msg)
 
-    timeout_val = raw_config.get("timeout", 30.0)
-    timeout = float(timeout_val) if isinstance(timeout_val, (int, float)) else 30.0
-    headers = None
-    if "headers" in raw_config and isinstance(raw_config["headers"], dict):
-        headers = {str(k): str(v) for k, v in raw_config["headers"].items()}
-    max_retries_val = raw_config.get("max_retries", 3)
-    max_retries = (
-        int(max_retries_val) if isinstance(max_retries_val, (int, float)) else 3
+def _convert_headers(headers_obj: object) -> dict[str, str] | None:
+    """DRY helper to convert headers object to proper format."""
+    if not isinstance(headers_obj, dict):
+        return None
+    return {str(k): str(v) for k, v in headers_obj.items()}
+
+def create_client(config: dict[str, object] | None = None) -> FlextApiClient:
+    """Create HTTP client with configuration using DRY patterns."""
+    raw_config = config or {}
+
+    # Extract and validate configuration values using DRY helpers
+    base_url = str(raw_config.get("base_url", ""))
+    _validate_base_url(base_url)
+
+    timeout = cast(
+        "float", _convert_config_value(raw_config.get("timeout"), 30.0, float)
     )
+    max_retries = cast(
+        "int", _convert_config_value(raw_config.get("max_retries"), 3, int)
+    )
+    headers = _convert_headers(raw_config.get("headers"))
 
     client_config = FlextApiClientConfig(
         base_url=base_url,
