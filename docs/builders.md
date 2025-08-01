@@ -539,7 +539,7 @@ def build_user_query(
     departments: Optional[List[str]] = None,
     page: int = 1,
     size: int = 20
-) -> Dict[str, Any]:
+) -> Dict[str, object]:
     qb = FlextApiQueryBuilder()
 
     if active is not None:

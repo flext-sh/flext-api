@@ -21,6 +21,7 @@ logger = structlog.get_logger(__name__)
 # CONFIGURATION CLASSES - Reducing Function Parameter Complexity
 # =====================================================================================
 
+
 @dataclass(frozen=True)
 class ResponseConfig:
     """Configuration for response creation - reduces parameter complexity."""
@@ -166,11 +167,13 @@ class FlextApiQueryBuilder:
     ) -> FlextApiQueryBuilder:
         """DRY helper: Add filter to query - reduces code duplication."""
         self._validate_field(field)
-        self._query.filters.append({
-            "field": field,
-            "operator": operator,
-            "value": value,
-        })
+        self._query.filters.append(
+            {
+                "field": field,
+                "operator": operator,
+                "value": value,
+            }
+        )
         return self
 
     def _add_sort(self, field: str, direction: str) -> FlextApiQueryBuilder:
@@ -280,14 +283,14 @@ class FlextApiResponseBuilder:
     def _resolve_metadata(self, config: ResponseConfig) -> dict[str, object]:
         """DRY helper: Resolve metadata value."""
         return (
-            config.metadata if config.metadata is not None
-            else self._response.metadata
+            config.metadata if config.metadata is not None else self._response.metadata
         )
 
     def _resolve_pagination(self, config: ResponseConfig) -> dict[str, object] | None:
         """DRY helper: Resolve pagination value."""
         return (
-            config.pagination if config.pagination is not None
+            config.pagination
+            if config.pagination is not None
             else self._response.pagination
         )
 
@@ -479,6 +482,7 @@ def build_paginated_response(
 
     return builder.build().to_dict()
 
+
 class PaginatedResponseBuilder:
     """Builder Pattern for paginated responses - eliminates 7-parameter complexity.
 
@@ -609,6 +613,7 @@ def build_paginated_response_object(
             builder.with_metadata(key, value)
 
     return builder.build()
+
 
 def build_paginated_response_object_legacy(  # noqa: PLR0913
     data: object,

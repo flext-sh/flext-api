@@ -46,7 +46,7 @@ class TestAPIPerformanceBenchmarks:
     def test_response_building_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
         """Benchmark response building operations."""
 
-        def build_complex_response() -> dict[str, Any]:
+        def build_complex_response() -> dict[str, object]:
             return build_success_response(
                 data={"items": list(range(100)), "total": 100},
                 message="Data retrieved successfully",
@@ -134,7 +134,7 @@ class TestAPIPerformanceBenchmarks:
     def test_large_response_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
         """Benchmark large response building."""
 
-        def build_large_response() -> dict[str, Any]:
+        def build_large_response() -> dict[str, object]:
             # Simulate large dataset response
             large_data = {
                 "items": [

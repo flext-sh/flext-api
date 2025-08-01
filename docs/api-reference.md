@@ -127,7 +127,7 @@ class FlextApiClientRequest:
     method: FlextApiClientMethod
     url: str
     headers: dict[str, str]
-    params: dict[str, Any]
+    params: dict[str, object]
     json: dict = None
     data: Any = None
     timeout: float = None
@@ -283,7 +283,7 @@ class FlextApiQueryBuilder:
 
     # Utilitários
     def reset(self) -> FlextApiQueryBuilder
-    def build(self) -> dict[str, Any]
+    def build(self) -> dict[str, object]
 ```
 
 ### FlextApiQueryOperator
@@ -341,7 +341,7 @@ class FlextApiResponseBuilder:
     def with_debug_info(self, info: dict) -> FlextApiResponseBuilder
 
     def reset(self) -> FlextApiResponseBuilder
-    def build(self) -> dict[str, Any]
+    def build(self) -> dict[str, object]
 ```
 
 ## FastAPI Builder
@@ -504,11 +504,11 @@ class FlextApiHTTPError(Exception):
 ```python
 from typing import Any, Dict, List, Optional, Union
 
-QueryDict = Dict[str, Any]
-ResponseDict = Dict[str, Any]
-MetadataDict = Dict[str, Any]
+QueryDict = Dict[str, object]
+ResponseDict = Dict[str, object]
+MetadataDict = Dict[str, object]
 HeadersDict = Dict[str, str]
-ParamsDict = Dict[str, Any]
+ParamsDict = Dict[str, object]
 ```
 
 ## Usage Examples

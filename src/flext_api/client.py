@@ -646,10 +646,7 @@ class FlextApiClient:
         )
 
     def _sync_lifecycle_operation(
-        self,
-        status: FlextApiClientStatus,
-        metric_name: str,
-        operation_name: str
+        self, status: FlextApiClientStatus, metric_name: str, operation_name: str
     ) -> FlextResult[None]:
         """DRY helper: Common pattern for service lifecycle operations (start/stop)."""
         try:
@@ -843,17 +840,20 @@ def _convert_config_value(
         return converter(value)
     return default
 
+
 def _validate_base_url(url: str) -> None:
     """DRY helper to validate base URL format."""
     if url and not url.startswith(("http://", "https://")):
         msg = "Invalid URL format"
         raise ValueError(msg)
 
+
 def _convert_headers(headers_obj: object) -> dict[str, str] | None:
     """DRY helper to convert headers object to proper format."""
     if not isinstance(headers_obj, dict):
         return None
     return {str(k): str(v) for k, v in headers_obj.items()}
+
 
 def create_client(config: dict[str, object] | None = None) -> FlextApiClient:
     """Create HTTP client with configuration using DRY patterns."""
