@@ -66,7 +66,7 @@ src/flext_api/application/services/api_service.py:174: error: Argument 1 to "_co
 "FlextAPIService" has incompatible type "FlextResult[Any]"; expected "list[Any]"  [arg-type]
                         all_requests, "endpoint"
                         ^~~~~~~~~~~~
-src/flext_api/application/services/api_service.py:179: error: "tuple[str, Any]" has no attribute "request_id" 
+src/flext_api/application/services/api_service.py:179: error: "tuple[str, object]" has no attribute "request_id" 
 [attr-defined]
                         [req.request_id for req in all_requests]
                          ^~~~~~~~~~~~~~
@@ -74,15 +74,15 @@ src/flext_api/application/services/api_service.py:182: error: Argument 1 to "_co
 "FlextAPIService" has incompatible type "FlextResult[Any]"; expected "list[Any]"  [arg-type]
                         all_responses, "status_code"
                         ^~~~~~~~~~~~~
-src/flext_api/application/services/api_service.py:187: error: "tuple[str, Any]" has no attribute
+src/flext_api/application/services/api_service.py:187: error: "tuple[str, object]" has no attribute
 "processing_duration_ms"  [attr-defined]
                         resp.processing_duration_ms
                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/flext_api/application/services/api_service.py:190: error: "tuple[str, Any]" has no attribute
+src/flext_api/application/services/api_service.py:190: error: "tuple[str, object]" has no attribute
 "processing_duration_ms"  [attr-defined]
                         and resp.processing_duration_ms
                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/flext_api/application/services/api_service.py:200: error: "tuple[str, Any]" has no attribute "status_code" 
+src/flext_api/application/services/api_service.py:200: error: "tuple[str, object]" has no attribute "status_code" 
 [attr-defined]
                         if hasattr(resp, "status_code") and resp.status_code >= 400
                                                             ^~~~~~~~~~~~~~~~
@@ -189,12 +189,12 @@ src/flext_api/dependencies.py:152: error: Unexpected keyword argument "username"
 [call-arg]
             logger.info("User authenticated", username=user_data.get("username"))
             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/flext_api/dependencies.py:153: error: Incompatible return value type (got "dict[str, Any]", expected
+src/flext_api/dependencies.py:153: error: Incompatible return value type (got "dict[str, object]", expected
 "FlextResult[Any]")  [return-value]
             return user_data
                    ^~~~~~~~~
 src/flext_api/dependencies.py: note: In function "require_flext_admin":
-src/flext_api/dependencies.py:177: error: Incompatible return value type (got "dict[str, Any]", expected
+src/flext_api/dependencies.py:177: error: Incompatible return value type (got "dict[str, object]", expected
 "FlextResult[Any]")  [return-value]
         return user
                ^~~~
@@ -277,15 +277,15 @@ src/flext_api/endpoints/plugins.py:86: error: Returning Any from function declar
                     return plugin_request.pip_url
                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 src/flext_api/endpoints/plugins.py: note: In function "install_plugin":
-src/flext_api/endpoints/plugins.py:217: error: Item "None" of "dict[str, Any] | None" has no attribute "get" 
+src/flext_api/endpoints/plugins.py:217: error: Item "None" of "dict[str, object] | None" has no attribute "get" 
 [union-attr]
                 plugin_name=plugin.get("plugin_name", plugin_data.name),
                             ^~~~~~~~~~
-src/flext_api/endpoints/plugins.py:227: error: Item "None" of "dict[str, Any] | None" has no attribute "get" 
+src/flext_api/endpoints/plugins.py:227: error: Item "None" of "dict[str, object] | None" has no attribute "get" 
 [union-attr]
                         "message": f"Plugin '{plugin.get('plugin_name', plugin_data.name)}' installed succ...
                                               ^~~~~~~~~~
-src/flext_api/endpoints/plugins.py:230: error: Item "None" of "dict[str, Any] | None" has no attribute "get" 
+src/flext_api/endpoints/plugins.py:230: error: Item "None" of "dict[str, object] | None" has no attribute "get" 
 [union-attr]
                 installed_version=plugin.get("variant", "original"),
                                   ^~~~~~~~~~

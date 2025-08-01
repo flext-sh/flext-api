@@ -92,7 +92,7 @@ class TraditionalAPIClient:
     def _cache_set(self, key: str, value: Any) -> None:
         self.cache[key] = (value, datetime.now())
 
-    async def _make_request_with_retry(self, method: str, url: str, **kwargs) -> Dict[str, Any]:
+    async def _make_request_with_retry(self, method: str, url: str, **kwargs) -> Dict[str, object]:
         retries = 3
         delay = 1.0
 
@@ -124,7 +124,7 @@ class TraditionalAPIClient:
 
             self.metrics["total_requests"] += 1
 
-    async def get(self, endpoint: str) -> Dict[str, Any]:
+    async def get(self, endpoint: str) -> Dict[str, object]:
         url = f"{self.base_url}{endpoint}"
         headers = self._get_auth_headers()
 
