@@ -222,19 +222,32 @@ class FlextApiResponseBuilder:
             metadata={},
         )
 
+    def _create_response(
+        self,
+        *,
+        success: bool | None = None,
+        data: object = None,
+        message: str | None = None,
+        metadata: dict[str, object] | None = None,
+        pagination: dict[str, object] | None = None,
+    ) -> None:
+        """DRY helper to create response with current values as defaults."""
+        current_pagination = self._response.pagination
+        self._response = FlextApiResponse(
+            success=success if success is not None else self._response.success,
+            data=data if data is not None else self._response.data,
+            message=message if message is not None else self._response.message,
+            metadata=metadata if metadata is not None else self._response.metadata,
+            pagination=pagination if pagination is not None else current_pagination,
+        )
+
     def success(
         self,
         data: object = None,
         message: str = "Success",
     ) -> FlextApiResponseBuilder:
         """Set success response."""
-        self._response = FlextApiResponse(
-            success=True,
-            data=data,
-            message=message,
-            metadata=self._response.metadata,
-            pagination=self._response.pagination,
-        )
+        self._create_response(success=True, data=data, message=message)
         return self
 
     def error(
@@ -245,25 +258,14 @@ class FlextApiResponseBuilder:
         """Set error response."""
         metadata = dict(self._response.metadata)
         metadata["error_code"] = code
-        self._response = FlextApiResponse(
-            success=False,
-            message=message,
-            metadata=metadata,
-            pagination=self._response.pagination,
-        )
+        self._create_response(success=False, message=message, metadata=metadata)
         return self
 
     def with_metadata(self, key: str, value: object) -> FlextApiResponseBuilder:
         """Add metadata."""
         metadata = dict(self._response.metadata)
         metadata[key] = value
-        self._response = FlextApiResponse(
-            success=self._response.success,
-            data=self._response.data,
-            message=self._response.message,
-            metadata=metadata,
-            pagination=self._response.pagination,
-        )
+        self._create_response(metadata=metadata)
         return self
 
     def with_pagination(
@@ -297,24 +299,12 @@ class FlextApiResponseBuilder:
         metadata = dict(self._response.metadata)
         metadata.update(pagination)
 
-        self._response = FlextApiResponse(
-            success=self._response.success,
-            data=self._response.data,
-            message=self._response.message,
-            metadata=metadata,
-            pagination=pagination,
-        )
+        self._create_response(metadata=metadata, pagination=pagination)
         return self
 
     def metadata(self, metadata: dict[str, object]) -> FlextApiResponseBuilder:
         """Set metadata (replaces existing metadata)."""
-        self._response = FlextApiResponse(
-            success=self._response.success,
-            data=self._response.data,
-            message=self._response.message,
-            metadata=metadata,
-            pagination=self._response.pagination,
-        )
+        self._create_response(metadata=metadata)
         return self
 
     def pagination(
