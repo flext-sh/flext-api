@@ -12,24 +12,18 @@ Main exports:
     - FlextApiBuilder: Query and response builders
     - build_*_response(): Response building functions
     - flext_api_create_app(): FastAPI application factory
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
 
 import importlib.metadata
 
-# === VERSÃO ===
-try:
-    __version__ = importlib.metadata.version("flext-api")
-except importlib.metadata.PackageNotFoundError:
-    __version__ = "0.9.0"
-
-__version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
-
-# === FLEXT-CORE ESSENTIALS ===
 from flext_core import FlextResult, get_logger
 
-# === FUNCIONALIDADES PRINCIPAIS ===
 from flext_api.api import FlextApi, create_flext_api
 from flext_api.app import flext_api_create_app
 from flext_api.builder import (
@@ -63,6 +57,15 @@ from flext_api.client import (
     create_client,
     create_client_with_plugins,
 )
+
+# === VERSÃO ===
+try:
+    __version__ = importlib.metadata.version("flext-api")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "0.9.0"
+
+__version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
+
 
 # === EXPORTS ===
 __all__ = [

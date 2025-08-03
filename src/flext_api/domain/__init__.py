@@ -96,7 +96,9 @@ See Also:
     value_objects.py: Immutable value objects with validation
     docs/TODO.md: Domain modeling enhancement plans
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
 """
+
+from __future__ import annotations

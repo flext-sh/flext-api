@@ -20,34 +20,38 @@ src/flext_api/
 ├── types.py                 # Type definitions
 ├── py.typed                 # Type checking marker
 ├── domain/                  # Domain layer
-│   ├── __init__.py         
+│   ├── __init__.py
 │   ├── entities.py         # Domain entities
 │   └── value_objects.py    # Value objects
 └── infrastructure/         # Infrastructure layer
-    ├── __init__.py         
+    ├── __init__.py
     └── config.py           # Infrastructure config
 ```
 
 ## Main Components
 
 ### Core Services
+
 - **api.py** - Main service class with HTTP client composition
-- **client.py** - HTTP client with plugin architecture  
+- **client.py** - HTTP client with plugin architecture
 - **app.py** - FastAPI application factory
 - **main.py** - Application entry point
 
 ### Data Components
+
 - **builder.py** - Query and response builders with fluent interfaces
 - **storage.py** - Simple in-memory storage implementation
 - **config.py** - Configuration settings management
 
 ### Supporting Modules
+
 - **types.py** - Type definitions and generic types
 - **constants.py** - Project constants and enumerations
 - **exceptions.py** - Custom exception classes
 - **fields.py** - Field validation and definitions
 
 ### Architecture Layers
+
 - **domain/** - Domain entities and value objects
 - **infrastructure/** - External concerns and configuration
 

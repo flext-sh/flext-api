@@ -1,7 +1,13 @@
 """Integration tests for HTTP client functionality.
 
 Tests real HTTP client behavior with external services and plugin integration.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations
 
 import pytest
 

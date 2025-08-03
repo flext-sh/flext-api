@@ -9,8 +9,9 @@ This directory contains infrastructure layer components that handle external con
 ## Components
 
 ### Configuration (config.py)
+
 - Advanced configuration management
-- Environment variable integration  
+- Environment variable integration
 - Settings validation and type safety
 
 ## Purpose

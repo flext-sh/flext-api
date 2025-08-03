@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 Este exemplo demonstra o uso básico da FLEXT API com funcionalidade REAL.
 Todos os métodos usados existem e funcionam.
+
 """
 
 from __future__ import annotations

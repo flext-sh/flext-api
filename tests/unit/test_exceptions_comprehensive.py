@@ -153,9 +153,7 @@ class TestFlextApiAuthenticationError:
         """Test authentication error with default message."""
         error = FlextApiAuthenticationError()
 
-        assert (
-            str(error) == "[AUTH_ERROR] flext_api: flext_api authentication failed"
-        )
+        assert str(error) == "[AUTH_ERROR] flext_api: flext_api authentication failed"
 
 
 class TestFlextApiConfigurationError:
@@ -174,9 +172,7 @@ class TestFlextApiConfigurationError:
             "Missing required setting", config_key="api_secret"
         )
 
-        assert (
-            str(error) == "[CONFIG_ERROR] flext_api config: Missing required setting"
-        )
+        assert str(error) == "[CONFIG_ERROR] flext_api config: Missing required setting"
         assert error.context["config_key"] == "api_secret"
 
     def test_creation_with_additional_context(self) -> None:
@@ -197,7 +193,10 @@ class TestFlextApiConfigurationError:
         """Test configuration error with default message."""
         error = FlextApiConfigurationError()
 
-        assert str(error) == "[CONFIG_ERROR] flext_api config: flext_api configuration error"
+        assert (
+            str(error)
+            == "[CONFIG_ERROR] flext_api config: flext_api configuration error"
+        )
 
 
 class TestFlextApiConnectionError:
@@ -207,7 +206,9 @@ class TestFlextApiConnectionError:
         """Test basic connection error creation."""
         error = FlextApiConnectionError("Connection refused")
 
-        assert str(error) == "[CONNECTION_ERROR] flext_api connection: Connection refused"
+        assert (
+            str(error) == "[CONNECTION_ERROR] flext_api connection: Connection refused"
+        )
         assert isinstance(error, FlextConnectionError)
 
     def test_creation_with_host_and_port(self) -> None:
@@ -217,7 +218,8 @@ class TestFlextApiConnectionError:
         )
 
         assert (
-            str(error) == "[CONNECTION_ERROR] flext_api connection: Cannot connect to server"
+            str(error)
+            == "[CONNECTION_ERROR] flext_api connection: Cannot connect to server"
         )
         assert error.context["host"] == "api.example.com"
         assert error.context["port"] == 443
@@ -231,7 +233,10 @@ class TestFlextApiConnectionError:
             ssl_error="Certificate verification failed",
         )
 
-        assert str(error) == "[CONNECTION_ERROR] flext_api connection: SSL handshake failed"
+        assert (
+            str(error)
+            == "[CONNECTION_ERROR] flext_api connection: SSL handshake failed"
+        )
         assert error.context["host"] == "secure.api.com"
         assert error.context["port"] == 443
         assert error.context["ssl_error"] == "Certificate verification failed"
@@ -240,7 +245,10 @@ class TestFlextApiConnectionError:
         """Test connection error with default message."""
         error = FlextApiConnectionError()
 
-        assert str(error) == "[CONNECTION_ERROR] flext_api connection: flext_api connection failed"
+        assert (
+            str(error)
+            == "[CONNECTION_ERROR] flext_api connection: flext_api connection failed"
+        )
 
 
 class TestFlextApiProcessingError:
@@ -250,7 +258,9 @@ class TestFlextApiProcessingError:
         """Test basic processing error creation."""
         error = FlextApiProcessingError("Processing failed")
 
-        assert str(error) == "[PROCESSING_ERROR] flext_api processing: Processing failed"
+        assert (
+            str(error) == "[PROCESSING_ERROR] flext_api processing: Processing failed"
+        )
         assert isinstance(error, FlextProcessingError)
 
     def test_creation_with_operation(self) -> None:
@@ -273,7 +283,10 @@ class TestFlextApiProcessingError:
             endpoint="/api/reports",
         )
 
-        assert str(error) == "[PROCESSING_ERROR] flext_api processing: Query execution failed"
+        assert (
+            str(error)
+            == "[PROCESSING_ERROR] flext_api processing: Query execution failed"
+        )
         assert error.context["operation"] == "database_query"
         assert error.context["endpoint"] == "/api/reports"
 
@@ -281,7 +294,10 @@ class TestFlextApiProcessingError:
         """Test processing error with default message."""
         error = FlextApiProcessingError()
 
-        assert str(error) == "[PROCESSING_ERROR] flext_api processing: flext_api processing failed"
+        assert (
+            str(error)
+            == "[PROCESSING_ERROR] flext_api processing: flext_api processing failed"
+        )
 
 
 class TestFlextApiTimeoutError:
@@ -447,9 +463,7 @@ class TestFlextApiStorageError:
             active_connections=10,
         )
 
-        assert (
-            str(error) == "[FLEXT_API_ERROR] API storage: Connection pool exhausted"
-        )
+        assert str(error) == "[FLEXT_API_ERROR] API storage: Connection pool exhausted"
         assert error.context["storage_type"] == "postgresql"
         assert error.context["operation"] == "connect"
         assert error.context["pool_size"] == 10
@@ -478,9 +492,7 @@ class TestFlextApiBuilderError:
             "Invalid query construction", builder_step="filter_validation"
         )
 
-        assert (
-            str(error) == "[FLEXT_API_ERROR] API builder: Invalid query construction"
-        )
+        assert str(error) == "[FLEXT_API_ERROR] API builder: Invalid query construction"
         assert error.context["builder_step"] == "filter_validation"
 
     def test_creation_with_additional_context(self) -> None:

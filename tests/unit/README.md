@@ -5,9 +5,10 @@
 ## Test Files
 
 ### Core Component Tests
+
 - **test_api_core.py** - FlextApi service functionality
 - **test_app_core.py** - FastAPI application factory
-- **test_builder_core.py** - Query/response builders  
+- **test_builder_core.py** - Query/response builders
 - **test_client_core.py** - HTTP client operations
 - **test_config_comprehensive.py** - Configuration management
 - **test_constants_core.py** - Project constants
@@ -18,13 +19,15 @@
 - **test_types_core.py** - Type definitions
 
 ### Coverage Tests
-- **test_*_coverage.py** - Coverage validation tests
+
+- **test\_\*\_coverage.py** - Coverage validation tests
 - **test_missing_coverage.py** - Uncovered code paths
 - **test_init_coverage.py** - Module initialization tests
 - **test_version.py** - Version information
 
 ### Disabled Tests
-- **test_*.py.disabled** - Tests requiring fixes
+
+- **test\_\*.py.disabled** - Tests requiring fixes
 
 ## Running Tests
 

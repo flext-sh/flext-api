@@ -40,6 +40,9 @@ Known Issues:
     - Does not inherit from FlextService base class
     - Limited plugin architecture integration
 
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations

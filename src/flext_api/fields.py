@@ -8,6 +8,10 @@ Main components:
     - FlextAPIFieldCore: Factory methods for creating field definitions
     - FlextAPIFields: Pre-defined common field configurations
     - Convenience functions: api_key_field, bearer_token_field, etc.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
@@ -18,8 +22,6 @@ if TYPE_CHECKING:
     from flext_api.types import TData
 
 import aiohttp.hdrs
-
-# Re-export from flext-core for compatibility
 from flext_core import FlextFieldCore, FlextFields
 
 __all__ = [

@@ -1,4 +1,11 @@
-"""Tests to cover missing lines in builder.py."""
+"""Tests to cover missing lines in builder.py.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
 
 from flext_api.builder import (
     build_error_response,

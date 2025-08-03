@@ -5,6 +5,7 @@ Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
 Este exemplo demonstra o uso básico da FLEXT API com funcionalidade real.
+
 """
 
 import asyncio
