@@ -1,4 +1,11 @@
-"""FLEXT API type definitions for enhanced type safety."""
+"""Type definitions for API components.
+
+Simple generic type variable definition used across the API library
+for type-safe data handling.
+
+Main export:
+    - TData: Generic type variable for flexible data types
+"""
 
 from __future__ import annotations
 

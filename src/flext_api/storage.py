@@ -1,4 +1,11 @@
-"""FLEXT API storage abstraction layer."""
+"""Simple in-memory storage implementation.
+
+Basic key-value storage class for development and testing purposes.
+Provides simple get, set, and delete operations using a dictionary backend.
+
+Main class:
+    - FlextAPIStorage: In-memory storage with basic CRUD operations
+"""
 
 from __future__ import annotations
 

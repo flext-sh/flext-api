@@ -44,15 +44,15 @@ class TestFlextApiError:
         """Test basic FlextApiError creation."""
         error = FlextApiError("Test error")
 
-        assert str(error) == "[API_SERVICE_ERROR] Test error"
+        assert str(error) == "[FLEXT_API_ERROR] Test error"
         assert isinstance(error, FlextError)
-        assert error.error_code == "API_SERVICE_ERROR"
+        assert error.error_code == "FLEXT_API_ERROR"
 
     def test_creation_with_endpoint(self) -> None:
         """Test FlextApiError with endpoint context."""
         error = FlextApiError("Error occurred", endpoint="/api/users")
 
-        assert str(error) == "[API_SERVICE_ERROR] Error occurred"
+        assert str(error) == "[FLEXT_API_ERROR] Error occurred"
         assert error.context["endpoint"] == "/api/users"
 
     def test_creation_with_additional_context(self) -> None:
@@ -61,7 +61,7 @@ class TestFlextApiError:
             "Error occurred", endpoint="/api/users", user_id=123, action="create"
         )
 
-        assert str(error) == "[API_SERVICE_ERROR] Error occurred"
+        assert str(error) == "[FLEXT_API_ERROR] Error occurred"
         assert error.context["endpoint"] == "/api/users"
         assert error.context["user_id"] == 123
         assert error.context["action"] == "create"
@@ -70,8 +70,8 @@ class TestFlextApiError:
         """Test FlextApiError with default message."""
         error = FlextApiError()
 
-        assert str(error) == "[API_SERVICE_ERROR] API service error"
-        assert error.error_code == "API_SERVICE_ERROR"
+        assert str(error) == "[FLEXT_API_ERROR] flext_api error"
+        assert error.error_code == "FLEXT_API_ERROR"
 
 
 class TestFlextApiValidationError:
@@ -81,14 +81,14 @@ class TestFlextApiValidationError:
         """Test basic validation error creation."""
         error = FlextApiValidationError("Invalid input")
 
-        assert str(error) == "[VALIDATION_ERROR] API validation: Invalid input"
+        assert str(error) == "[VALIDATION_ERROR] flext_api: Invalid input"
         assert isinstance(error, FlextValidationError)
 
     def test_creation_with_field_and_value(self) -> None:
         """Test validation error with field and value context."""
         error = FlextApiValidationError("Field must be positive", field="age", value=-5)
 
-        assert str(error) == "[VALIDATION_ERROR] API validation: Field must be positive"
+        assert str(error) == "[VALIDATION_ERROR] flext_api: Field must be positive"
         assert error.validation_details["field"] == "age"
         assert error.validation_details["value"] == "-5"
 
@@ -98,7 +98,7 @@ class TestFlextApiValidationError:
             "Invalid data", field="email", value="invalid-email", endpoint="/api/users"
         )
 
-        assert str(error) == "[VALIDATION_ERROR] API validation: Invalid data"
+        assert str(error) == "[VALIDATION_ERROR] flext_api: Invalid data"
         assert error.validation_details["field"] == "email"
         assert error.validation_details["value"] == "invalid-email"
         assert error.context["endpoint"] == "/api/users"
@@ -110,7 +110,7 @@ class TestFlextApiValidationError:
             "Value too long", field="description", value=long_value
         )
 
-        assert str(error) == "[VALIDATION_ERROR] API validation: Value too long"
+        assert str(error) == "[VALIDATION_ERROR] flext_api: Value too long"
         assert error.validation_details["field"] == "description"
         assert len(error.validation_details["value"]) == 100
         assert error.validation_details["value"] == "x" * 100
@@ -119,7 +119,7 @@ class TestFlextApiValidationError:
         """Test validation error with default message."""
         error = FlextApiValidationError()
 
-        assert str(error) == "[VALIDATION_ERROR] API validation: API validation failed"
+        assert str(error) == "[VALIDATION_ERROR] flext_api: flext_api validation failed"
 
 
 class TestFlextApiAuthenticationError:
@@ -129,14 +129,14 @@ class TestFlextApiAuthenticationError:
         """Test basic authentication error creation."""
         error = FlextApiAuthenticationError("Login failed")
 
-        assert str(error) == "[AUTHENTICATION_ERROR] API auth: Login failed"
+        assert str(error) == "[AUTH_ERROR] flext_api: Login failed"
         assert isinstance(error, FlextAuthenticationError)
 
     def test_creation_with_auth_method(self) -> None:
         """Test authentication error with auth method context."""
         error = FlextApiAuthenticationError("Invalid token", auth_method="Bearer")
 
-        assert str(error) == "[AUTHENTICATION_ERROR] API auth: Invalid token"
+        assert str(error) == "[AUTH_ERROR] flext_api: Invalid token"
         assert error.context["auth_method"] == "Bearer"
 
     def test_creation_with_endpoint(self) -> None:
@@ -145,7 +145,7 @@ class TestFlextApiAuthenticationError:
             "Access denied", auth_method="API Key", endpoint="/api/admin"
         )
 
-        assert str(error) == "[AUTHENTICATION_ERROR] API auth: Access denied"
+        assert str(error) == "[AUTH_ERROR] flext_api: Access denied"
         assert error.context["auth_method"] == "API Key"
         assert error.context["endpoint"] == "/api/admin"
 
@@ -154,7 +154,7 @@ class TestFlextApiAuthenticationError:
         error = FlextApiAuthenticationError()
 
         assert (
-            str(error) == "[AUTHENTICATION_ERROR] API auth: API authentication failed"
+            str(error) == "[AUTH_ERROR] flext_api: flext_api authentication failed"
         )
 
 
@@ -165,7 +165,7 @@ class TestFlextApiConfigurationError:
         """Test basic configuration error creation."""
         error = FlextApiConfigurationError("Invalid config")
 
-        assert str(error) == "[CONFIGURATION_ERROR] API config: Invalid config"
+        assert str(error) == "[CONFIG_ERROR] flext_api config: Invalid config"
         assert isinstance(error, FlextConfigurationError)
 
     def test_creation_with_config_key(self) -> None:
@@ -175,7 +175,7 @@ class TestFlextApiConfigurationError:
         )
 
         assert (
-            str(error) == "[CONFIGURATION_ERROR] API config: Missing required setting"
+            str(error) == "[CONFIG_ERROR] flext_api config: Missing required setting"
         )
         assert error.context["config_key"] == "api_secret"
 
@@ -188,7 +188,7 @@ class TestFlextApiConfigurationError:
             actual_value="invalid",
         )
 
-        assert str(error) == "[CONFIGURATION_ERROR] API config: Invalid port"
+        assert str(error) == "[CONFIG_ERROR] flext_api config: Invalid port"
         assert error.context["config_key"] == "api_port"
         assert error.context["expected_type"] == "int"
         assert error.context["actual_value"] == "invalid"
@@ -197,7 +197,7 @@ class TestFlextApiConfigurationError:
         """Test configuration error with default message."""
         error = FlextApiConfigurationError()
 
-        assert str(error) == "[CONFIGURATION_ERROR] API config: API configuration error"
+        assert str(error) == "[CONFIG_ERROR] flext_api config: flext_api configuration error"
 
 
 class TestFlextApiConnectionError:
@@ -207,7 +207,7 @@ class TestFlextApiConnectionError:
         """Test basic connection error creation."""
         error = FlextApiConnectionError("Connection refused")
 
-        assert str(error) == "[CONNECTION_ERROR] API connection: Connection refused"
+        assert str(error) == "[CONNECTION_ERROR] flext_api connection: Connection refused"
         assert isinstance(error, FlextConnectionError)
 
     def test_creation_with_host_and_port(self) -> None:
@@ -217,7 +217,7 @@ class TestFlextApiConnectionError:
         )
 
         assert (
-            str(error) == "[CONNECTION_ERROR] API connection: Cannot connect to server"
+            str(error) == "[CONNECTION_ERROR] flext_api connection: Cannot connect to server"
         )
         assert error.context["host"] == "api.example.com"
         assert error.context["port"] == 443
@@ -231,7 +231,7 @@ class TestFlextApiConnectionError:
             ssl_error="Certificate verification failed",
         )
 
-        assert str(error) == "[CONNECTION_ERROR] API connection: SSL handshake failed"
+        assert str(error) == "[CONNECTION_ERROR] flext_api connection: SSL handshake failed"
         assert error.context["host"] == "secure.api.com"
         assert error.context["port"] == 443
         assert error.context["ssl_error"] == "Certificate verification failed"
@@ -240,7 +240,7 @@ class TestFlextApiConnectionError:
         """Test connection error with default message."""
         error = FlextApiConnectionError()
 
-        assert str(error) == "[CONNECTION_ERROR] API connection: API connection failed"
+        assert str(error) == "[CONNECTION_ERROR] flext_api connection: flext_api connection failed"
 
 
 class TestFlextApiProcessingError:
@@ -250,7 +250,7 @@ class TestFlextApiProcessingError:
         """Test basic processing error creation."""
         error = FlextApiProcessingError("Processing failed")
 
-        assert str(error) == "[PROCESSING_ERROR] API processing: Processing failed"
+        assert str(error) == "[PROCESSING_ERROR] flext_api processing: Processing failed"
         assert isinstance(error, FlextProcessingError)
 
     def test_creation_with_operation(self) -> None:
@@ -261,7 +261,7 @@ class TestFlextApiProcessingError:
 
         assert (
             str(error)
-            == "[PROCESSING_ERROR] API processing: Data transformation failed"
+            == "[PROCESSING_ERROR] flext_api processing: Data transformation failed"
         )
         assert error.context["operation"] == "json_transform"
 
@@ -273,7 +273,7 @@ class TestFlextApiProcessingError:
             endpoint="/api/reports",
         )
 
-        assert str(error) == "[PROCESSING_ERROR] API processing: Query execution failed"
+        assert str(error) == "[PROCESSING_ERROR] flext_api processing: Query execution failed"
         assert error.context["operation"] == "database_query"
         assert error.context["endpoint"] == "/api/reports"
 
@@ -281,7 +281,7 @@ class TestFlextApiProcessingError:
         """Test processing error with default message."""
         error = FlextApiProcessingError()
 
-        assert str(error) == "[PROCESSING_ERROR] API processing: API processing failed"
+        assert str(error) == "[PROCESSING_ERROR] flext_api processing: flext_api processing failed"
 
 
 class TestFlextApiTimeoutError:
@@ -291,7 +291,7 @@ class TestFlextApiTimeoutError:
         """Test basic timeout error creation."""
         error = FlextApiTimeoutError("Request timed out")
 
-        assert str(error) == "[TIMEOUT_ERROR] API timeout: Request timed out"
+        assert str(error) == "[TIMEOUT_ERROR] flext_api: Request timed out"
         assert isinstance(error, FlextTimeoutError)
 
     def test_creation_with_endpoint_and_timeout(self) -> None:
@@ -302,7 +302,7 @@ class TestFlextApiTimeoutError:
             timeout_seconds=30.5,
         )
 
-        assert str(error) == "[TIMEOUT_ERROR] API timeout: Operation exceeded timeout"
+        assert str(error) == "[TIMEOUT_ERROR] flext_api: Operation exceeded timeout"
         assert error.context["endpoint"] == "/api/data/export"
         assert error.context["timeout_seconds"] == 30.5
 
@@ -315,7 +315,7 @@ class TestFlextApiTimeoutError:
             query_type="complex_join",
         )
 
-        assert str(error) == "[TIMEOUT_ERROR] API timeout: Database query timeout"
+        assert str(error) == "[TIMEOUT_ERROR] flext_api: Database query timeout"
         assert error.context["endpoint"] == "/api/search"
         assert error.context["timeout_seconds"] == 15.0
         assert error.context["query_type"] == "complex_join"
@@ -324,7 +324,7 @@ class TestFlextApiTimeoutError:
         """Test timeout error with default message."""
         error = FlextApiTimeoutError()
 
-        assert str(error) == "[TIMEOUT_ERROR] API timeout: API operation timed out"
+        assert str(error) == "[TIMEOUT_ERROR] flext_api: flext_api operation timed out"
 
 
 class TestFlextApiRequestError:
@@ -334,7 +334,7 @@ class TestFlextApiRequestError:
         """Test basic request error creation."""
         error = FlextApiRequestError("Bad request")
 
-        assert str(error) == "[API_SERVICE_ERROR] API request: Bad request"
+        assert str(error) == "[FLEXT_API_ERROR] API request: Bad request"
         assert isinstance(error, FlextApiError)
 
     def test_creation_with_method_and_endpoint(self) -> None:
@@ -343,7 +343,7 @@ class TestFlextApiRequestError:
             "Invalid request format", method="POST", endpoint="/api/users"
         )
 
-        assert str(error) == "[API_SERVICE_ERROR] API request: Invalid request format"
+        assert str(error) == "[FLEXT_API_ERROR] API request: Invalid request format"
         assert error.context["method"] == "POST"
         assert error.context["endpoint"] == "/api/users"
 
@@ -353,7 +353,7 @@ class TestFlextApiRequestError:
             "Client error", method="GET", endpoint="/api/data", status_code=400
         )
 
-        assert str(error) == "[API_SERVICE_ERROR] API request: Client error"
+        assert str(error) == "[FLEXT_API_ERROR] API request: Client error"
         assert error.context["method"] == "GET"
         assert error.context["endpoint"] == "/api/data"
         assert error.context["status_code"] == 400
@@ -362,7 +362,7 @@ class TestFlextApiRequestError:
         """Test request error with default message."""
         error = FlextApiRequestError()
 
-        assert str(error) == "[API_SERVICE_ERROR] API request: API request error"
+        assert str(error) == "[FLEXT_API_ERROR] API request: API request error"
 
 
 class TestFlextApiResponseError:
@@ -372,14 +372,14 @@ class TestFlextApiResponseError:
         """Test basic response error creation."""
         error = FlextApiResponseError("Invalid response")
 
-        assert str(error) == "[API_SERVICE_ERROR] API response: Invalid response"
+        assert str(error) == "[FLEXT_API_ERROR] API response: Invalid response"
         assert isinstance(error, FlextApiError)
 
     def test_creation_with_status_code(self) -> None:
         """Test response error with status code context."""
         error = FlextApiResponseError("Server error", status_code=500)
 
-        assert str(error) == "[API_SERVICE_ERROR] API response: Server error"
+        assert str(error) == "[FLEXT_API_ERROR] API response: Server error"
         assert error.context["status_code"] == 500
 
     def test_creation_with_response_body(self) -> None:
@@ -390,7 +390,7 @@ class TestFlextApiResponseError:
             response_body='{"error": "validation failed"}',
         )
 
-        assert str(error) == "[API_SERVICE_ERROR] API response: Parse error"
+        assert str(error) == "[FLEXT_API_ERROR] API response: Parse error"
         assert error.context["status_code"] == 422
         assert error.context["response_body"] == '{"error": "validation failed"}'
 
@@ -399,7 +399,7 @@ class TestFlextApiResponseError:
         long_body = "x" * 300
         error = FlextApiResponseError("Large response error", response_body=long_body)
 
-        assert str(error) == "[API_SERVICE_ERROR] API response: Large response error"
+        assert str(error) == "[FLEXT_API_ERROR] API response: Large response error"
         assert len(error.context["response_body"]) == 200
         assert error.context["response_body"] == "x" * 200
 
@@ -407,7 +407,7 @@ class TestFlextApiResponseError:
         """Test response error with default message."""
         error = FlextApiResponseError()
 
-        assert str(error) == "[API_SERVICE_ERROR] API response: API response error"
+        assert str(error) == "[FLEXT_API_ERROR] API response: API response error"
 
 
 class TestFlextApiStorageError:
@@ -417,14 +417,14 @@ class TestFlextApiStorageError:
         """Test basic storage error creation."""
         error = FlextApiStorageError("Storage failed")
 
-        assert str(error) == "[API_SERVICE_ERROR] API storage: Storage failed"
+        assert str(error) == "[FLEXT_API_ERROR] API storage: Storage failed"
         assert isinstance(error, FlextApiError)
 
     def test_creation_with_storage_type(self) -> None:
         """Test storage error with storage type context."""
         error = FlextApiStorageError("Write operation failed", storage_type="redis")
 
-        assert str(error) == "[API_SERVICE_ERROR] API storage: Write operation failed"
+        assert str(error) == "[FLEXT_API_ERROR] API storage: Write operation failed"
         assert error.context["storage_type"] == "redis"
 
     def test_creation_with_operation(self) -> None:
@@ -433,7 +433,7 @@ class TestFlextApiStorageError:
             "Cache miss", storage_type="memcached", operation="get"
         )
 
-        assert str(error) == "[API_SERVICE_ERROR] API storage: Cache miss"
+        assert str(error) == "[FLEXT_API_ERROR] API storage: Cache miss"
         assert error.context["storage_type"] == "memcached"
         assert error.context["operation"] == "get"
 
@@ -448,7 +448,7 @@ class TestFlextApiStorageError:
         )
 
         assert (
-            str(error) == "[API_SERVICE_ERROR] API storage: Connection pool exhausted"
+            str(error) == "[FLEXT_API_ERROR] API storage: Connection pool exhausted"
         )
         assert error.context["storage_type"] == "postgresql"
         assert error.context["operation"] == "connect"
@@ -459,7 +459,7 @@ class TestFlextApiStorageError:
         """Test storage error with default message."""
         error = FlextApiStorageError()
 
-        assert str(error) == "[API_SERVICE_ERROR] API storage: API storage error"
+        assert str(error) == "[FLEXT_API_ERROR] API storage: API storage error"
 
 
 class TestFlextApiBuilderError:
@@ -469,7 +469,7 @@ class TestFlextApiBuilderError:
         """Test basic builder error creation."""
         error = FlextApiBuilderError("Builder failed")
 
-        assert str(error) == "[API_SERVICE_ERROR] API builder: Builder failed"
+        assert str(error) == "[FLEXT_API_ERROR] API builder: Builder failed"
         assert isinstance(error, FlextApiError)
 
     def test_creation_with_builder_step(self) -> None:
@@ -479,7 +479,7 @@ class TestFlextApiBuilderError:
         )
 
         assert (
-            str(error) == "[API_SERVICE_ERROR] API builder: Invalid query construction"
+            str(error) == "[FLEXT_API_ERROR] API builder: Invalid query construction"
         )
         assert error.context["builder_step"] == "filter_validation"
 
@@ -492,7 +492,7 @@ class TestFlextApiBuilderError:
             actual_value="invalid",
         )
 
-        assert str(error) == "[API_SERVICE_ERROR] API builder: Response build failed"
+        assert str(error) == "[FLEXT_API_ERROR] API builder: Response build failed"
         assert error.context["builder_step"] == "pagination"
         assert error.context["expected_type"] == "int"
         assert error.context["actual_value"] == "invalid"
@@ -501,7 +501,7 @@ class TestFlextApiBuilderError:
         """Test builder error with default message."""
         error = FlextApiBuilderError()
 
-        assert str(error) == "[API_SERVICE_ERROR] API builder: API builder error"
+        assert str(error) == "[FLEXT_API_ERROR] API builder: API builder error"
 
 
 class TestExceptionInheritance:

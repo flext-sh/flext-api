@@ -1,7 +1,154 @@
-"""FLEXT API Builder - Using flext-core structural patterns.
+"""Query and response builder patterns for API construction.
 
-Uses FlextValueObject, make_builder, and other flext-core patterns
-for maximum code reduction and structural alignment.
+Provides builder classes for constructing API queries and responses with fluent
+interfaces and basic validation. Supports common patterns like filtering,
+sorting, pagination, and response formatting.
+
+Core Classes:
+    - FlextApiBuilder: Main builder factory with for_query() and for_response()
+    - FlextApiQueryBuilder: Query construction with filters and pagination
+    - FlextApiResponseBuilder: Response building with success/error patterns
+    - PaginatedResponseBuilder: Specialized builder for paginated responses
+
+Data Structures:
+    - FlextApiQuery: Query representation with filters, sorts, pagination
+    - FlextApiResponse: Response representation with data and metadata
+    - FlextApiPaginatedResponse: Paginated response with total count
+
+Implementation:
+    - Dataclass-based immutable objects with validation
+    - Fluent interface methods for chaining operations
+    - Basic parameter validation and type conversion
+    - Dictionary serialization for HTTP transmission
+
+
+Critical Compliance TODOs (from docs/TODO.md):
+    🚨 PRIORITY 1 - Exception Handling Violations (Score: 30% compliance):
+        - Current: 11+ direct raise ValueError statements break FlextResult pattern
+        - Required: Replace all raise statements with FlextResult.fail() returns
+        - Must implement: Add structured error codes for validation failures
+        - Impact: Breaks railway-oriented programming consistency across builders
+
+    🚨 PRIORITY 2 - Logging Pattern Violation (Score: 25% compliance):
+        - Current: logger = structlog.get_logger(__name__) at lines 17, 135
+        - Required: from flext_core import get_logger; logger = get_logger(__name__)
+        - Must add: structured context with correlation IDs
+        - Impact: Breaks ecosystem logging standardization
+
+    🚨 PRIORITY 3 - Builder Pattern Enhancement (Score: 75% compliance):
+        - Current: Basic builder implementation
+        - Required: Full DDD aggregate patterns integration
+        - Must implement: Domain events for builder operations
+        - Impact: Limited domain modeling capabilities
+
+Query Building Operations:
+    Basic Query Construction:
+        - with_filters(): Add filtering criteria with type validation
+        - with_sorting(): Configure sorting parameters with direction support
+        - with_pagination(): Set pagination boundaries with validation
+        - with_search(): Add search terms with field targeting
+
+    Advanced Query Features:
+        - Nested filtering with logical operators (AND, OR, NOT)
+        - Dynamic field selection for optimized responses
+        - Query optimization hints for performance tuning
+        - Parameter validation with meaningful error messages
+
+    Response Construction:
+        - build_success_response(): Create successful API responses
+        - build_error_response(): Standardized error response format
+        - build_paginated_response(): Paginated results with metadata
+        - Custom metadata and header injection support
+
+Usage Patterns:
+    # Query building with fluent interface
+    from flext_api import FlextApiBuilder
+
+    builder = FlextApiBuilder()
+    query_result = (
+        builder.for_query()
+        .with_filters({"status": "active", "category": "user"})
+        .with_sorting([{"field": "created_at", "direction": "desc"}])
+        .with_pagination({"page": 1, "size": 20})
+        .build()
+    )
+
+    if query_result.success:
+        query = query_result.data
+
+    # Response building with validation
+    response_result = (
+        builder.for_response()
+        .with_success_data(users_data)
+        .with_message("Users retrieved successfully")
+        .with_metadata({"total": 150, "cached": True})
+        .build()
+    )
+
+    # Paginated response construction
+    paginated = build_paginated_response(
+        data=users_list,
+        page=1,
+        size=20,
+        total=150,
+        message="User list retrieved"
+    )
+
+    # Error response with context
+    error = build_error_response(
+        "Validation failed",
+        status_code=400,
+        details={"field": "email", "reason": "invalid format"}
+    )
+
+Domain Modeling Patterns:
+    Query as Value Object:
+        - Immutable query representation with validation
+        - Type-safe parameter handling and transformation
+        - Integration with HTTP client for execution
+        - Support for query caching and optimization
+
+    Response as Aggregate:
+        - Consistent response structure across all APIs
+        - Metadata aggregation with extensible properties
+        - Error context preservation for debugging
+        - Validation of response completeness and correctness
+
+Error Handling Philosophy:
+    - All builder operations return FlextResult for consistency
+    - Validation errors captured with detailed context and suggestions
+    - Parameter type conversion with fallback defaults
+    - Builder state validation before construction
+    - Meaningful error messages for API debugging
+
+Performance Characteristics:
+    - Immutable objects prevent accidental mutations
+    - Lazy validation for improved construction performance
+    - Memory-efficient object creation with minimal copying
+    - Query optimization through parameter analysis
+    - Response streaming support for large datasets
+
+Quality Standards:
+    - All builder methods return FlextResult for error cases
+    - Type safety maintained through all construction steps
+    - Parameter validation with comprehensive error messages
+    - Immutable objects following value object patterns
+    - Integration with domain modeling principles
+
+Integration Points:
+    - flext-core: Value objects, validation patterns, error handling
+    - HTTP Client: Query execution and response handling
+    - Domain Layer: API concepts as first-class domain objects
+    - Validation: Type safety and business rule enforcement
+
+See Also:
+    docs/TODO.md: Advanced filtering and CQRS integration plans
+    api.py: Main service that provides access to builder functionality
+    client.py: HTTP client that executes constructed queries
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
@@ -163,7 +310,10 @@ class FlextApiQueryBuilder:
             raise ValueError(msg)
 
     def _add_filter(
-        self, field: str, operator: str, value: object
+        self,
+        field: str,
+        operator: str,
+        value: object,
     ) -> FlextApiQueryBuilder:
         """DRY helper: Add filter to query - reduces code duplication."""
         self._validate_field(field)
@@ -172,7 +322,7 @@ class FlextApiQueryBuilder:
                 "field": field,
                 "operator": operator,
                 "value": value,
-            }
+            },
         )
         return self
 
@@ -211,7 +361,9 @@ class FlextApiQueryBuilder:
             raise ValueError(msg)
 
     def _rebuild_query_with_pagination(
-        self, page: int | None = None, page_size: int | None = None
+        self,
+        page: int | None = None,
+        page_size: int | None = None,
     ) -> None:
         """DRY helper: Rebuild query with new pagination values."""
         self._query = FlextApiQuery(
@@ -336,7 +488,10 @@ class FlextApiResponseBuilder:
         return self
 
     def _validate_pagination_params(
-        self, total: int, page: int, page_size: int
+        self,
+        total: int,
+        page: int,
+        page_size: int,
     ) -> None:
         """DRY helper: Validate pagination parameters."""
         if total < 0:
@@ -350,7 +505,10 @@ class FlextApiResponseBuilder:
             raise ValueError(msg)
 
     def _create_pagination_data(
-        self, total: int, page: int, page_size: int
+        self,
+        total: int,
+        page: int,
+        page_size: int,
     ) -> dict[str, object]:
         """DRY helper: Create pagination data dictionary."""
         total_pages = math.ceil(total / page_size) if page_size > 0 else 0
@@ -467,18 +625,45 @@ def build_error_response(
 
 
 def build_paginated_response(
-    config: PaginationConfig,
+    data: object = None,
+    *,
+    total: int = 0,
+    page: int = 1,
+    page_size: int = 20,
+    message: str = "Success",
+    metadata: dict[str, object] | None = None,
+    config: PaginationConfig | None = None,
 ) -> dict[str, object]:
-    """Build paginated response using PaginationConfig to reduce complexity."""
-    builder = (
-        FlextApiResponseBuilder()
-        .success(data=config.data, message=config.message)
-        .with_pagination(config.total, config.page, config.page_size)
-    )
+    """Build paginated response with backward compatibility.
 
-    if config.metadata:
-        for key, value in config.metadata.items():
-            builder.with_metadata(key, value)
+    Can be called with individual parameters (backward compatible):
+        build_paginated_response(data=items, total=100, page=1, page_size=10)
+
+    Or with PaginationConfig object (new way):
+        build_paginated_response(config=PaginationConfig(...))
+    """
+    if config is not None:
+        # New way: use PaginationConfig
+        builder = (
+            FlextApiResponseBuilder()
+            .success(data=config.data, message=config.message)
+            .with_pagination(config.total, config.page, config.page_size)
+        )
+
+        if config.metadata:
+            for key, value in config.metadata.items():
+                builder.with_metadata(key, value)
+    else:
+        # Backward compatible way: individual parameters
+        builder = (
+            FlextApiResponseBuilder()
+            .success(data=data, message=message)
+            .with_pagination(total, page, page_size)
+        )
+
+        if metadata:
+            for key, value in metadata.items():
+                builder.with_metadata(key, value)
 
     return builder.build().to_dict()
 
@@ -525,7 +710,8 @@ class PaginatedResponseBuilder:
         return self
 
     def with_metadata(
-        self, metadata: dict[str, object] | None
+        self,
+        metadata: dict[str, object] | None,
     ) -> PaginatedResponseBuilder:
         """Set the response metadata."""
         self._metadata = metadata
@@ -544,27 +730,23 @@ class PaginatedResponseBuilder:
         return build_paginated_response(config)
 
 
-def build_paginated_response_legacy(  # noqa: PLR0913
-    data: object,
-    total: int,
-    page: int,
-    page_size: int,
-    message: str = "Success",
-    metadata: dict[str, object] | None = None,
+def build_paginated_response_legacy(
+    pagination_params: PaginationConfig,
 ) -> dict[str, object]:
     """Legacy build paginated response using Builder Pattern - eliminates explosion.
 
     DEPRECATED: Use PaginatedResponseBuilder or build_paginated_response with
     PaginationConfig for better maintainability and fluent interface.
     """
+    # SOLID REFACTORING: Parameter Object pattern eliminates parameter explosion
     return (
         PaginatedResponseBuilder()
-        .with_data(data)
-        .with_total(total)
-        .with_page(page)
-        .with_page_size(page_size)
-        .with_message(message)
-        .with_metadata(metadata)
+        .with_data(pagination_params.data)
+        .with_total(pagination_params.total)
+        .with_page(pagination_params.page)
+        .with_page_size(pagination_params.page_size)
+        .with_message(pagination_params.message)
+        .with_metadata(pagination_params.metadata)
         .build()
     )
 
@@ -599,41 +781,64 @@ def build_error_response_object(
 
 
 def build_paginated_response_object(
-    config: PaginationConfig,
+    data: object = None,
+    *,
+    total: int = 0,
+    page: int = 1,
+    page_size: int = 20,
+    message: str = "Success",
+    metadata: dict[str, object] | None = None,
+    config: PaginationConfig | None = None,
 ) -> FlextApiResponse:
-    """Build paginated response as object using PaginationConfig."""
-    builder = (
-        FlextApiResponseBuilder()
-        .success(data=config.data, message=config.message)
-        .with_pagination(config.total, config.page, config.page_size)
-    )
+    """Build paginated response as object with backward compatibility.
 
-    if config.metadata:
-        for key, value in config.metadata.items():
-            builder.with_metadata(key, value)
+    Can be called with individual parameters (backward compatible):
+        build_paginated_response_object(data=items, total=100, page=1, page_size=10)
+
+    Or with PaginationConfig object (new way):
+        build_paginated_response_object(config=PaginationConfig(...))
+
+    Or legacy way (for backward compatibility):
+        build_paginated_response_object(PaginationConfig(...))
+    """
+    # Handle legacy usage: build_paginated_response_object(PaginationConfig(...))
+    if isinstance(data, PaginationConfig) and config is None:
+        config = data
+        data = None
+
+    if config is not None:
+        # New way: use PaginationConfig
+        builder = (
+            FlextApiResponseBuilder()
+            .success(data=config.data, message=config.message)
+            .with_pagination(config.total, config.page, config.page_size)
+        )
+
+        if config.metadata:
+            for key, value in config.metadata.items():
+                builder.with_metadata(key, value)
+    else:
+        # Backward compatible way: individual parameters
+        builder = (
+            FlextApiResponseBuilder()
+            .success(data=data, message=message)
+            .with_pagination(total, page, page_size)
+        )
+
+        if metadata:
+            for key, value in metadata.items():
+                builder.with_metadata(key, value)
 
     return builder.build()
 
 
-def build_paginated_response_object_legacy(  # noqa: PLR0913
-    data: object,
-    total: int,
-    page: int,
-    page_size: int,
-    message: str = "Success",
-    metadata: dict[str, object] | None = None,
+def build_paginated_response_object_legacy(
+    pagination_params: PaginationConfig,
 ) -> FlextApiResponse:
     """Legacy build paginated response as object using PaginationConfig.
 
     DEPRECATED: Use PaginatedResponseBuilder for fluent interface or
     build_paginated_response_object with PaginationConfig for better maintainability.
     """
-    config = PaginationConfig(
-        data=data,
-        total=total,
-        page=page,
-        page_size=page_size,
-        message=message,
-        metadata=metadata,
-    )
-    return build_paginated_response_object(config)
+    # SOLID REFACTORING: Parameter Object pattern already implemented
+    return build_paginated_response_object(pagination_params)

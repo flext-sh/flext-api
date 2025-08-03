@@ -136,10 +136,10 @@ pep621_dev_dependency_groups = ["dev", "security", "test", "typings"]
 strict = true
 
 # Additional strict checks beyond default strict mode
+disallow_any_expr = false
 check_untyped_defs = true
 disallow_any_decorated = true
 disallow_any_explicit = true
-disallow_any_expr = false          # Too restrictive for real-world usage
 disallow_any_generics = true
 disallow_any_unimported = true
 disallow_incomplete_defs = true
@@ -221,7 +221,6 @@ exclude = [
 ]
 
 [tool.pydantic-mypy]
-# Pydantic plugin strict configuration
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
@@ -242,23 +241,23 @@ addopts = [
     "--cov-report=xml:reports/coverage.xml",
     "--cov-branch",
     "--cov-fail-under=90",
-    
+
     # Otimizações de performance
-    "--benchmark-skip",  # Skip benchmarks em runs normais
-    "-n=auto",  # Paralelização automática com pytest-xdist
+    "--benchmark-skip", # Skip benchmarks em runs normais
+    "-n=auto",          # Paralelização automática com pytest-xdist
     "--dist=loadfile",  # Distribuição por arquivo
-    
+
     # Melhor output e debugging
     "--tb=short",
     "--strict-markers",
     "--strict-config",
-    "-ra",  # Mostrar resumo de testes
+    "-ra",              # Mostrar resumo de testes
     "--color=yes",
-    
+
     # Timeout para evitar testes infinitos
     "--timeout=300",
     "--timeout-method=thread",
-    
+
     # Random order para detectar dependências entre testes (seed will be auto-generated)
     "--randomly-dont-reorganize",
 ]
@@ -266,16 +265,17 @@ addopts = [
 # Environment variables para pytest-env
 env = [
     "ENVIRONMENT=test",
-    "LOG_LEVEL=DEBUG", 
+    "LOG_LEVEL=DEBUG",
     "TESTING=true",
     "FLEXT_API_TEST_MODE=true",
     "DATABASE_URL=sqlite:///:memory:",
+    "FAKER_LOCALE=en_US",
 ]
 
 # Marcadores específicos do projeto
 markers = [
     "unit: Fast unit tests with mocks",
-    "integration: Integration tests (may require external services)", 
+    "integration: Integration tests (may require external services)",
     "e2e: End-to-end tests with real services",
     "slow: Slow running tests (>1s)",
     "benchmark: Performance benchmark tests",
@@ -295,13 +295,18 @@ markers = [
 filterwarnings = [
     "error",
     "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning", 
+    "ignore::PendingDeprecationWarning",
     "ignore::UserWarning",
     "ignore::pytest.PytestUnraisableExceptionWarning",
     "ignore::ResourceWarning",
     # Específicos para aiohttp
     "ignore:.*unclosed.*:ResourceWarning",
     "ignore:.*coroutine.*was never awaited:RuntimeWarning",
+    # Suppress faker locale warnings
+    "ignore:Looking for locale.*:UserWarning",
+    "ignore:Provider.*has been localized.*:UserWarning",
+    "ignore:Specified locale.*is not available.*:UserWarning",
+    "ignore:Provider.*does not feature localization.*:UserWarning",
 ]
 
 # Diretórios de teste otimizados

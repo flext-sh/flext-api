@@ -1,18 +1,18 @@
-"""FLEXT API configuration module.
+"""API configuration settings management.
 
-Provides configuration management for FLEXT API services using flext-core patterns.
-Implements Single Responsibility Principle with specific API-focused settings.
+Configuration class extending FlextBaseSettings for API server settings.
+Provides basic settings for host, port, timeouts, and caching with
+environment variable support through FLEXT_API_ prefix.
+
+Main classes:
+    - FlextApiSettings: API server and client configuration settings
+    - create_api_settings(): Factory function for creating settings with validation
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_core import FlextBaseSettings, FlextConstants, FlextResult
 from pydantic import Field, field_validator
-
-if TYPE_CHECKING:
-    from flext_core.flext_types import TAnyDict
 
 
 class FlextApiSettings(FlextBaseSettings):
@@ -56,13 +56,40 @@ class FlextApiSettings(FlextBaseSettings):
             raise ValueError(port_range_error)
         return v
 
+    @classmethod
+    def create_with_validation(
+        cls,
+        overrides: dict[str, object] | None = None,
+        **kwargs: object,
+    ) -> FlextResult[FlextBaseSettings]:
+        """Create settings instance with validation and return FlextResult.
+
+        Args:
+            overrides: Optional dictionary of configuration overrides
+            **kwargs: Additional keyword arguments for settings
+
+        Returns:
+            FlextResult containing validated FlextApiSettings instance
+
+        """
+        try:
+            # Merge overrides and kwargs
+            config_data = {}
+            if overrides:
+                config_data.update(overrides)
+            config_data.update(kwargs)
+
+            settings = cls.model_validate(config_data) if config_data else cls()
+            return FlextResult.ok(settings)
+        except Exception as e:
+            return FlextResult.fail(f"Failed to create settings: {e}")
+
 
 def create_api_settings(**overrides: object) -> FlextResult[FlextApiSettings]:
     """Factory function for creating API settings with overrides.
 
     Follows Factory Pattern and Open/Closed Principle.
     Uses FlextResult for consistent error handling.
-    Uses FlextBaseSettings.create_with_validation for proper validation.
 
     Args:
         **overrides: Configuration overrides to apply
@@ -71,14 +98,17 @@ def create_api_settings(**overrides: object) -> FlextResult[FlextApiSettings]:
         FlextResult containing validated FlextApiSettings instance
 
     """
-    # Convert overrides to dict format for create_with_validation
-    overrides_dict: TAnyDict = dict(overrides) if overrides else {}
+    try:
+        # Create settings - Pydantic settings automatically load from environment
+        settings = FlextApiSettings()
 
-    # Use the correct method from FlextBaseSettings
-    result = FlextApiSettings.create_with_validation(overrides_dict)
+        # Apply any overrides after creation if needed
+        if overrides:
+            # Merge current values with overrides and validate
+            current_values = settings.model_dump()
+            current_values.update(overrides)
+            settings = FlextApiSettings.model_validate(current_values)
 
-    # Type narrowing for MyPy - we know this returns FlextApiSettings
-    if result.is_success and isinstance(result.data, FlextApiSettings):
-        return FlextResult.ok(result.data)
-
-    return FlextResult.fail(result.error or "Failed to create API settings")
+        return FlextResult.ok(settings)
+    except Exception as e:
+        return FlextResult.fail(f"Failed to create settings: {e}")

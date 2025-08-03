@@ -1,10 +1,8 @@
-"""Main entry point for FLEXT API application.
+"""FastAPI application entry point.
 
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-
-This module provides the main FastAPI application instance for import compatibility.
-The actual application logic is in app.py following clean architecture patterns.
+Main entry point that creates the FastAPI application instance and storage.
+Imports the app from app.py and provides uvicorn server configuration for
+development. The app instance is used by ASGI servers and testing frameworks.
 """
 
 from __future__ import annotations
