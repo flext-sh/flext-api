@@ -5,6 +5,10 @@ Provides simple get, set, and delete operations using a dictionary backend.
 
 Main class:
     - FlextAPIStorage: In-memory storage with basic CRUD operations
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations

@@ -1,7 +1,13 @@
 """Performance benchmarks for FLEXT API components.
 
 Benchmarks the key operations for performance regression testing.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations
 
 from collections.abc import Callable
 from typing import Any

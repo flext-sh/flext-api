@@ -5,6 +5,7 @@
 ## Test Files
 
 ### HTTP Client Integration
+
 - **test_http_client_integration.py** - HTTP client with real services
   - External API connectivity
   - Network request/response validation
@@ -14,12 +15,14 @@
 ## Test Scope
 
 ### External Dependencies
+
 - HTTP services (httpbin.org for testing)
 - Database connections (when available)
 - Cache services (Redis)
 - Authentication services
 
 ### Test Scenarios
+
 - Successful HTTP requests with various methods
 - Network timeout handling
 - Service unavailability response

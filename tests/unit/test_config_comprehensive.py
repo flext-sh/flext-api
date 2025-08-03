@@ -7,8 +7,9 @@ Tests all configuration functionality with 100% coverage including:
 - Environment variable integration
 - Configuration serialization and validation
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations

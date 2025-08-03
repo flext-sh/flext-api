@@ -1,4 +1,9 @@
-"""Tests to achieve 100% coverage for app.py."""
+"""Tests to achieve 100% coverage for app.py.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 

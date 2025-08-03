@@ -9,11 +9,13 @@ This directory contains domain-driven design (DDD) components including entities
 ## Components
 
 ### Domain Entities (entities.py)
+
 - Rich domain objects with identity and behavior
 - Business logic encapsulation
 - State management and validation
 
-### Value Objects (value_objects.py)  
+### Value Objects (value_objects.py)
+
 - Immutable domain values
 - Validation and business rules
 - Type-safe domain primitives

@@ -7,6 +7,10 @@ environment variable support through FLEXT_API_ prefix.
 Main classes:
     - FlextApiSettings: API server and client configuration settings
     - create_api_settings(): Factory function for creating settings with validation
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations

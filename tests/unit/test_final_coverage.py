@@ -1,4 +1,11 @@
-"""Final coverage tests for flext-api."""
+"""Final coverage tests for flext-api.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
 
 from json import JSONDecodeError
 from unittest.mock import patch

@@ -13,53 +13,53 @@ Main exception classes:
     - FlextApiResponseError: Response-specific errors with status codes
     - FlextApiStorageError: Storage operation errors
     - FlextApiBuilderError: Query/response builder errors
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from flext_core.exceptions import (
+    FlextAuthenticationError as FlextApiAuthenticationError,
+    FlextConfigurationError as FlextApiConfigurationError,
+    FlextConnectionError as FlextApiConnectionError,
+    FlextError as FlextApiError,
+    FlextProcessingError as FlextApiProcessingError,
+    FlextTimeoutError as FlextApiTimeoutError,
+    FlextValidationError as FlextApiValidationError,
+)
 
-from flext_core.exceptions import create_module_exception_classes
-
-if TYPE_CHECKING:
-    # For type checking, import the actual base types
-    from flext_core.exceptions import (
-        FlextAuthenticationError as FlextApiAuthenticationError,
-        FlextConfigurationError as FlextApiConfigurationError,
-        FlextConnectionError as FlextApiConnectionError,
-        FlextError as FlextApiError,
-        FlextProcessingError as FlextApiProcessingError,
-        FlextTimeoutError as FlextApiTimeoutError,
-        FlextValidationError as FlextApiValidationError,
-    )
-else:
-    # Create all standard exception classes using factory pattern - eliminates 50+ lines
-    api_exceptions = create_module_exception_classes("flext_api")
-
-    # Import generated classes for clean usage
-    FlextApiError = api_exceptions["FlextApiError"]
-    _FactoryFlextApiValidationError = api_exceptions["FlextApiValidationError"]
-    FlextApiConfigurationError = api_exceptions["FlextApiConfigurationError"]
-    FlextApiConnectionError = api_exceptions["FlextApiConnectionError"]
-    FlextApiProcessingError = api_exceptions["FlextApiProcessingError"]
-    FlextApiAuthenticationError = api_exceptions["FlextApiAuthenticationError"]
-    FlextApiTimeoutError = api_exceptions["FlextApiTimeoutError"]
-
-    # COMPATIBILITY FIX: Add validation_details interface for test compatibility
-    class FlextApiValidationError(_FactoryFlextApiValidationError):
-        """Enhanced validation error with test-compatible validation_details interface."""
-
-        @property
-        def validation_details(self) -> dict[str, str]:
-            """Compatibility property mapping to factory-generated attributes."""
-            details = {}
-            if hasattr(self, "field") and self.field is not None:
-                details["field"] = str(self.field)
-            if hasattr(self, "value") and self.value is not None:
-                # Truncate long values as tests expect
-                value_str = str(self.value)
-                details["value"] = value_str[:100] if len(value_str) > 100 else value_str
-            return details
+# else:
+#     api_exceptions = create_module_exception_classes("flext_api")
+#
+#     # Import generated classes for clean usage
+#     FlextApiError = api_exceptions["FlextApiError"]
+#     _FactoryFlextApiValidationError = api_exceptions["FlextApiValidationError"]
+#     FlextApiConfigurationError = api_exceptions["FlextApiConfigurationError"]
+#     FlextApiConnectionError = api_exceptions["FlextApiConnectionError"]
+#     FlextApiProcessingError = api_exceptions["FlextApiProcessingError"]
+#     FlextApiAuthenticationError = api_exceptions["FlextApiAuthenticationError"]
+#     FlextApiTimeoutError = api_exceptions["FlextApiTimeoutError"]
+#
+#     # COMPATIBILITY FIX: Add validation_details interface for test compatibility
+#     class FlextApiValidationError(_FactoryFlextApiValidationError):
+#         """Enhanced validation error with test-compatible validation_details interface."""
+#
+#         @property
+#         def validation_details(self) -> dict[str, str]:
+#             """Compatibility property mapping to factory-generated attributes."""
+#             details = {}
+#             if hasattr(self, "field") and self.field is not None:
+#                 details["field"] = str(self.field)
+#             if hasattr(self, "value") and self.value is not None:
+#                 # Truncate long values as tests expect
+#                 value_str = str(self.value)
+#                 details["value"] = (
+#                     value_str[:100] if len(value_str) > 100 else value_str
+#                 )
+#             return details
 
 
 # Domain-specific exceptions using DRY patterns - eliminates 18-line duplication

@@ -123,7 +123,9 @@ See Also:
     docs/TODO.md: Advanced infrastructure patterns and service integration
     flext-core: Base infrastructure patterns and dependency injection
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
 """
+
+from __future__ import annotations

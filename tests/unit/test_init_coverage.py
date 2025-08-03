@@ -1,4 +1,11 @@
-"""Tests for init coverage in flext-api."""
+"""Tests for init coverage in flext-api.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
 
 import flext_api
 from flext_api import FlextResult, get_logger

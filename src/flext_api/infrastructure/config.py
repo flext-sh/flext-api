@@ -159,7 +159,9 @@ See Also:
     docs/TODO.md: Advanced configuration patterns and secret management
     flext-core/config.py: Base configuration patterns and validation
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
 """
+
+from __future__ import annotations

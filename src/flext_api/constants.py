@@ -9,6 +9,10 @@ Main constant classes:
     - FlextApiFieldType: API field type definitions
     - FlextApiStatus: Operation and service status constants
     - FlextApiEndpoints: RESTful API endpoint paths
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
@@ -16,7 +20,6 @@ from __future__ import annotations
 import http
 from typing import ClassVar
 
-# Import flext-core constants for inheritance
 from flext_core.constants import FlextConstants
 
 # ==============================================================================

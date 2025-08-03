@@ -1,7 +1,10 @@
 """FLEXT-API Usage Examples.
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
+Comprehensive examples showing how to use FLEXT-API for massive code reduction.
+
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
-Comprehensive examples showing how to use FLEXT-API for massive code reduction.
 """
+
+from __future__ import annotations

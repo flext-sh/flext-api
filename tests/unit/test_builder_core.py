@@ -1,4 +1,11 @@
-"""Test builder core functionality."""
+"""Test builder core functionality.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
 
 import pytest
 
@@ -341,12 +348,7 @@ class TestFactoryFunctions:
 
         data = [{"id": 1}, {"id": 2}]
         config = PaginationConfig(
-            data=data,
-            total=100,
-            page=2,
-            page_size=10,
-            message="Success",
-            metadata={}
+            data=data, total=100, page=2, page_size=10, message="Success", metadata={}
         )
         response = build_paginated_response_object(config)
 

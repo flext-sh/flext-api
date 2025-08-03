@@ -1,7 +1,13 @@
 """End-to-end tests for complete API workflows.
 
 Tests the full FlextApi workflow from initialization to HTTP client operations.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations
 
 import pytest
 

@@ -162,7 +162,9 @@ See Also:
     docs/TODO.md: Rich domain model implementation plans
     flext-core/entities.py: Base entity patterns and DDD implementation
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
 """
+
+from __future__ import annotations

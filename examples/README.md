@@ -5,21 +5,25 @@
 ## Example Files
 
 ### Basic Usage
+
 - **01_basic_usage.py** - Basic API usage patterns
 - **01_basic_usage_corrected.py** - Corrected version with fixes
 
-### Advanced Features  
+### Advanced Features
+
 - **02_advanced_features.py** - Advanced features demonstration
 
 ## Coverage
 
 ### Basic Usage Examples
+
 - FlextApi service creation and initialization
-- HTTP client configuration  
+- HTTP client configuration
 - Query building patterns
 - Error handling demonstration
 
 ### Advanced Examples
+
 - Plugin architecture usage
 - Advanced HTTP client features
 - Complex query building
@@ -31,7 +35,7 @@
 # Run basic usage example
 python examples/01_basic_usage_corrected.py
 
-# Run advanced features example  
+# Run advanced features example
 python examples/02_advanced_features.py
 
 # Run all examples
@@ -54,6 +58,7 @@ make validate-examples
 ## Example Patterns
 
 ### FlextResult Usage
+
 ```python
 # Always check success/failure
 result = api_operation()
@@ -66,6 +71,7 @@ data = result.data
 ```
 
 ### Structured Logging
+
 ```python
 from flext_core import get_logger
 

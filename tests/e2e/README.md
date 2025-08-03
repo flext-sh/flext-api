@@ -5,6 +5,7 @@
 ## Test Files
 
 ### API Workflow Tests
+
 - **test_api_workflow_e2e.py** - Complete API request/response workflows
   - Full API service lifecycle testing
   - HTTP client creation and usage
@@ -15,6 +16,7 @@
 ## Test Scope
 
 ### Workflow Coverage
+
 - Complete API request/response cycle
 - Service startup and health validation
 - Client creation with various configurations
@@ -22,6 +24,7 @@
 - Error propagation and handling
 
 ### Component Integration
+
 - FlextApi service with HTTP client
 - Builder integration with API service
 - Configuration management across components

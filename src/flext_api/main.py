@@ -3,11 +3,14 @@
 Main entry point that creates the FastAPI application instance and storage.
 Imports the app from app.py and provides uvicorn server configuration for
 development. The app instance is used by ASGI servers and testing frameworks.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
 
-# Import the app creation function from app.py
 from flext_api.app import flext_api_create_app
 from flext_api.storage import FlextAPIStorage
 
