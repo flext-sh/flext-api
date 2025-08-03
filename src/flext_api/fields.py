@@ -1,8 +1,13 @@
-"""FLEXT-API Fields - Simple field definitions for the API layer.
+"""API-specific field definitions and validation patterns.
 
-This module provides basic field definitions for FLEXT-API domain concepts.
-Since the complex FlextFieldCore implementation is not available, we provide
-simple dictionary-based field definitions for testing and documentation purposes.
+Field definitions extending flext-core patterns with API-specific field types
+including authentication fields, configuration fields, and HTTP request/response
+fields. Provides validation patterns and metadata for form processing.
+
+Main components:
+    - FlextAPIFieldCore: Factory methods for creating field definitions
+    - FlextAPIFields: Pre-defined common field configurations
+    - Convenience functions: api_key_field, bearer_token_field, etc.
 """
 
 from __future__ import annotations

@@ -337,10 +337,18 @@ class TestFactoryFunctions:
 
     def test_build_paginated_response(self) -> None:
         """Test build_paginated_response function."""
+        from flext_api.builder import PaginationConfig
+
         data = [{"id": 1}, {"id": 2}]
-        response = build_paginated_response_object(
-            data, page=2, page_size=10, total=100
+        config = PaginationConfig(
+            data=data,
+            total=100,
+            page=2,
+            page_size=10,
+            message="Success",
+            metadata={}
         )
+        response = build_paginated_response_object(config)
 
         assert isinstance(response, FlextApiResponse)
         assert response.success is True

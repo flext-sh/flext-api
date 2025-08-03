@@ -1,9 +1,17 @@
-"""FLEXT API - Enterprise FastAPI Gateway.
+"""FLEXT API - HTTP client and API building library.
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
+HTTP client library with plugin support and query/response builder patterns.
+Provides FlextApi service class, HTTP client with configurable plugins,
+and builder classes for constructing queries and responses.
 
-Biblioteca limpa usando flext-core, sem aliases ou código legacy.
+Main exports:
+    - FlextApi: Main service class for HTTP operations
+    - create_flext_api(): Factory function for FlextApi instances
+    - FlextApiClient: HTTP client with plugin support
+    - create_client(): Factory function for HTTP clients
+    - FlextApiBuilder: Query and response builders
+    - build_*_response(): Response building functions
+    - flext_api_create_app(): FastAPI application factory
 """
 
 from __future__ import annotations

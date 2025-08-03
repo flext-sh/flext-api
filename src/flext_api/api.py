@@ -1,7 +1,45 @@
-"""FLEXT API - Service using flext-core structural patterns.
+"""Main FlextApi service class for HTTP operations.
 
-Uses FlextService for proper service architecture and dependency injection.
-Follows FLEXT-core patterns for maximum code reduction and alignment.
+Core service class that composes HTTP client and builder functionality through
+composition patterns. Provides factory methods for HTTP client creation with
+configuration validation.
+
+Actual Implementation:
+    - HTTP client factory with dictionary-based configuration
+    - Query/response builder access through get_builder()
+    - Basic service lifecycle with async start()/stop() methods
+    - Health check returning service status dictionary
+    - Composition of FlextApiClient and FlextApiBuilder instances
+
+Current Architecture:
+    FlextApi (composition root)
+    ├── FlextApiClient (HTTP operations)
+    └── FlextApiBuilder (query/response building)
+
+Key Methods:
+    - flext_api_create_client(config): Create HTTP client with config dict
+    - get_builder(): Access builder instance for query construction
+    - get_client(): Access current client instance or None
+    - start()/stop(): Async service lifecycle methods
+    - health_check(): Return service health status
+
+Configuration Support:
+    - base_url: Required string, must start with http:// or https://
+    - timeout: Optional float, defaults to 30.0 seconds
+    - headers: Optional dict of string key-value pairs
+    - max_retries: Optional int, defaults to 3
+
+Error Handling:
+    - flext_api_create_client() returns FlextResult[FlextApiClient]
+    - ValueError exceptions for invalid base_url (lines 199, 202)
+    - Configuration type conversion with safe defaults
+
+Known Issues:
+    - Uses structlog directly instead of flext_core.get_logger()
+    - Raises exceptions instead of returning FlextResult consistently
+    - Does not inherit from FlextService base class
+    - Limited plugin architecture integration
+
 """
 
 from __future__ import annotations

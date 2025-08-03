@@ -1,7 +1,14 @@
-"""FLEXT-API Constants - Extending flext-core platform constants.
+"""API-specific constants and enumerations.
 
-This module provides API-specific constants that extend flext-core's
-platform constants system following inheritance patterns.
+Constants extending flext-core FlextConstants with HTTP status codes,
+API endpoints, field types, operation status values, and configuration
+defaults. Provides organized constant groups for consistent API behavior.
+
+Main constant classes:
+    - FlextApiConstants: HTTP status groups and response templates
+    - FlextApiFieldType: API field type definitions
+    - FlextApiStatus: Operation and service status constants
+    - FlextApiEndpoints: RESTful API endpoint paths
 """
 
 from __future__ import annotations
