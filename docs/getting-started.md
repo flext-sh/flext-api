@@ -117,7 +117,7 @@ def http_client_example() -> FlextResult[dict]:
 if __name__ == "__main__":
     result = http_client_example()
 
-    if result.is_success:
+    if result.success:
         print(f"✅ Success: {result.data}")
     else:
         print(f"❌ Error: {result.error}")
@@ -190,7 +190,7 @@ def query_builder_example() -> FlextResult[Dict[str, Any]]:
 if __name__ == "__main__":
     result = query_builder_example()
 
-    if result.is_success:
+    if result.success:
         data = result.data
         print(f"✅ Query: {data['query']}")
         print(f"📊 Cache key: {data['cache_key']}")
@@ -283,7 +283,7 @@ def client_with_plugins_example() -> FlextResult[dict]:
 if __name__ == "__main__":
     result = client_with_plugins_example()
 
-    if result.is_success:
+    if result.success:
         data = result.data
         print(f"✅ Client ready: {data['client_type']}")
         print(f"🔌 Plugins: {', '.join(data['plugins_enabled'])}")
@@ -439,7 +439,7 @@ class TestFlextApiGettingStarted:
         # ✅ Health check returns FlextResult
         health_result = api.health_check()
         assert isinstance(health_result, FlextResult)
-        assert health_result.is_success
+        assert health_result.success
 
         health_data = health_result.data
         assert isinstance(health_data, dict)
@@ -478,7 +478,7 @@ class TestFlextApiGettingStarted:
         query_result = builder.for_query().build(query_params)
 
         assert isinstance(query_result, FlextResult)
-        assert query_result.is_success
+        assert query_result.success
 
         query = query_result.data
         assert isinstance(query, dict)
@@ -494,16 +494,16 @@ class TestFlextApiGettingStarted:
         # ✅ Start service (note: current implementation is async, should be sync)
         start_result = await api.start()
         assert isinstance(start_result, FlextResult)
-        assert start_result.is_success
+        assert start_result.success
 
         # ✅ Health check
         health_result = api.health_check()
-        assert health_result.is_success
+        assert health_result.success
 
         # ✅ Stop service
         stop_result = await api.stop()
         assert isinstance(stop_result, FlextResult)
-        assert stop_result.is_success
+        assert stop_result.success
 
 # Execute tests
 if __name__ == "__main__":

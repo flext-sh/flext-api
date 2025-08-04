@@ -24,7 +24,7 @@ class TestFlextApiCoverage:
 
         # Test client creation with invalid config should return FlextResult failure
         result = api.flext_api_create_client({"base_url": "invalid://test"})
-        assert not result.is_success
+        assert not result.success
         assert "Failed to create client" in result.error
 
     def test_create_client_impl_with_complex_config(self) -> None:
@@ -133,17 +133,17 @@ class TestFlextApiCoverage:
 
         # Test with empty config
         result = api.flext_api_create_client({})
-        assert not result.is_success
+        assert not result.success
         assert "base_url is required" in result.error
 
         # Test with missing base_url
         result = api.flext_api_create_client({"timeout": 30})
-        assert not result.is_success
+        assert not result.success
         assert "base_url is required" in result.error
 
         # Test with invalid base_url
         result = api.flext_api_create_client({"base_url": "invalid-url"})
-        assert not result.is_success
+        assert not result.success
         assert "Invalid URL format" in result.error
 
     def test_api_error_handling(self) -> None:
@@ -155,12 +155,12 @@ class TestFlextApiCoverage:
 
         # Test that client creation with invalid domain returns FlextResult
         result = api.flext_api_create_client(config)
-        assert result.is_success  # Client creation should succeed
+        assert result.success  # Client creation should succeed
 
         # Test invalid config - missing base_url should fail
         invalid_config = {"timeout": "invalid_timeout"}
         result = api.flext_api_create_client(invalid_config)
-        assert not result.is_success  # Should fail due to missing base_url
+        assert not result.success  # Should fail due to missing base_url
 
     def test_api_performance_optimization(self) -> None:
         """Test API performance optimization features."""
@@ -174,7 +174,7 @@ class TestFlextApiCoverage:
         }
 
         result = api.flext_api_create_client(config)
-        assert result.is_success
+        assert result.success
         client = result.data
         assert client is not None
 
@@ -196,7 +196,7 @@ class TestFlextApiCoverage:
         }
 
         result = api.flext_api_create_client(config)
-        assert result.is_success
+        assert result.success
         client = result.data
         assert client is not None
 

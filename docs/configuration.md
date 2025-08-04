@@ -302,7 +302,7 @@ def configure_authentication():
         }
     })
 
-    if client_result.is_success:
+    if client_result.success:
         logger.info("Authenticated client created successfully")
         return client_result.data
     else:

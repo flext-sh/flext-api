@@ -502,7 +502,7 @@ class ApiResponse(FlextEntity):
 
         return FlextResult.ok(None)
 
-    def is_success(self) -> bool:
+    def success(self) -> bool:
         """HTTP success status check"""
         return 200 <= self.status_code <= 299
 
@@ -841,7 +841,7 @@ class HttpCache:
 
     def set(self, request: ApiRequest, response: ApiResponse, ttl: int) -> FlextResult[None]:
         """Cache response with TTL"""
-        if not response.is_success():
+        if not response.success():
             return FlextResult.ok(None)  # Don't cache errors
 
         cache_key = self._generate_cache_key(request)
@@ -867,7 +867,7 @@ class FlextApiCachingPlugin(FlextApiPlugin):
             return FlextResult.ok(request)  # Only cache GET requests
 
         cached_response_result = self.cache.get(request)
-        if cached_response_result.is_success and cached_response_result.data:
+        if cached_response_result.success and cached_response_result.data:
             # Mark request as satisfied by cache
             cached_request = request.copy_with(cached_response=cached_response_result.data)
             return FlextResult.ok(cached_request)
@@ -878,7 +878,7 @@ class FlextApiCachingPlugin(FlextApiPlugin):
         """Cache successful responses"""
         # Reconstruct request from response metadata
         request = self._reconstruct_request(response)
-        if request and response.is_success():
+        if request and response.success():
             await self.cache.set(request, response, self.ttl)
 
         return FlextResult.ok(response)
@@ -933,7 +933,7 @@ class TestHttpFlextResultPatterns:
 
         health_result = api_result.health_check()
         assert isinstance(health_result, FlextResult)
-        assert health_result.is_success
+        assert health_result.success
         assert health_result.data["service"] == "FlextApi"
 
     def test_client_creation_success(self):
@@ -946,7 +946,7 @@ class TestHttpFlextResultPatterns:
         })
 
         assert isinstance(client_result, FlextResult)
-        assert client_result.is_success
+        assert client_result.success
         assert isinstance(client_result.data, FlextApiClient)
 
     def test_client_creation_failure(self):
@@ -976,7 +976,7 @@ class TestHttpFlextResultPatterns:
                 .map(lambda response: response.json())
             )
 
-            assert result.is_success
+            assert result.success
             assert result.data == {"users": []}
 
     @pytest.mark.asyncio
@@ -1009,7 +1009,7 @@ class TestHttpDomainPatterns:
         )
 
         result = request.validate_domain_rules()
-        assert result.is_success
+        assert result.success
 
     def test_api_request_validation_failure(self):
         """Test API request validation failure"""
@@ -1065,7 +1065,7 @@ class TestHttpPluginPatterns:
 
         # Request should hit cache
         cached_result = await plugin.before_request(request)
-        assert cached_result.is_success
+        assert cached_result.success
         # Check if request was marked as cached
 
     @pytest.mark.asyncio
@@ -1080,7 +1080,7 @@ class TestHttpPluginPatterns:
 
         # Should allow retry
         retry_result = await plugin.on_error(Exception("Connection failed"), request)
-        assert retry_result.is_success
+        assert retry_result.success
 
 def create_test_request() -> ApiRequest:
     """Helper to create test HTTP request"""
@@ -1134,7 +1134,7 @@ def parse_http_response(
     parser: Callable[[str], T]
 ) -> FlextResult[T]:
     """Generic HTTP response parsing with type safety"""
-    if not response.is_success():
+    if not response.success():
         return FlextResult.fail(f"HTTP error: {response.status_code}")
 
     try:
@@ -1218,7 +1218,7 @@ def execute_http_request_with_plugins(
         >>> request = ApiRequest(method="GET", url=HttpUrl("https://api.example.com"))
         >>> plugins = [FlextApiCachingPlugin(), FlextApiRetryPlugin()]
         >>> result = execute_http_request_with_plugins(client, request, plugins)
-        >>> if result.is_success:
+        >>> if result.success:
         ...     print(f"Response: {result.data.status_code}")
         ... else:
         ...     print(f"Error: {result.error}")

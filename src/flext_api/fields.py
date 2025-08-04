@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 import aiohttp.hdrs
 from flext_core import FlextFieldCore, FlextFields
 
-__all__ = [
+__all__: list[str] = [
     "FlextAPIFieldCore",
     "FlextAPIFields",
     "FlextFieldCore",

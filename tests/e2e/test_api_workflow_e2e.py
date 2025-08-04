@@ -53,14 +53,14 @@ class TestApiWorkflowE2E:
                 "timeout": 10.0,
             }
         )
-        assert client_result.is_success
+        assert client_result.success
 
         client = client_result.data
 
         try:
             # 5. Perform HTTP operations
             get_result = await client.get("/get", params=query.to_dict())
-            assert get_result.is_success
+            assert get_result.success
 
             # 6. Verify response structure
             http_response = get_result.data
@@ -81,7 +81,7 @@ class TestApiWorkflowE2E:
                 "base_url": "invalid-url-format",
             }
         )
-        assert not invalid_result.is_success
+        assert not invalid_result.success
         assert "Invalid URL format" in invalid_result.error
 
         # Test with valid config but unreachable URL
@@ -91,14 +91,14 @@ class TestApiWorkflowE2E:
                 "timeout": 2.0,
             }
         )
-        assert client_result.is_success
+        assert client_result.success
 
         client = client_result.data
 
         try:
             # This should fail gracefully
             result = await client.get("/test")
-            assert not result.is_success
+            assert not result.success
             assert "Failed to make GET request" in result.error
 
         finally:
@@ -159,7 +159,7 @@ class TestApiWorkflowE2E:
                 "timeout": 5.0,
             }
         )
-        assert client_result.is_success
+        assert client_result.success
 
         client = client_result.data
 
@@ -174,7 +174,7 @@ class TestApiWorkflowE2E:
 
             # Test actual request with plugins
             result = await client.get("/delay/1")
-            if result.is_success:
+            if result.success:
                 assert result.data.status_code == 200
 
         finally:

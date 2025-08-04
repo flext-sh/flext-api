@@ -68,7 +68,7 @@ __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 
 
 # === EXPORTS ===
-__all__ = [
+__all__: list[str] = [
     "FlextApi",
     "FlextApiBuilder",
     "FlextApiCachingPlugin",

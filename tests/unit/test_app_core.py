@@ -20,11 +20,11 @@ class TestFlextApiApp:
         app = flext_api_create_app()
         assert isinstance(app, FastAPI)
         if app.title != "FLEXT API":
-            msg = f"Expected {'FLEXT API'}, got {app.title}"
+            msg: str = f"Expected {'FLEXT API'}, got {app.title}"
             raise AssertionError(msg)
         expected_description = "Enterprise-grade distributed data integration platform"
         if app.description != expected_description:
-            msg = f"Expected {expected_description}, got {app.description}"
+            msg: str = f"Expected {expected_description}, got {app.description}"
             raise AssertionError(msg)
         assert app.version == "0.9.0"
 
@@ -35,5 +35,5 @@ class TestFlextApiApp:
         # Check that routes are available
         route_paths = [getattr(route, "path", str(route)) for route in app.routes]
         if "/health" not in route_paths:
-            msg = f"Expected {'/health'} in {route_paths}"
+            msg: str = f"Expected {'/health'} in {route_paths}"
             raise AssertionError(msg)

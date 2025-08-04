@@ -140,7 +140,7 @@ class TestInitCoverage:
 
         # Test FlextResult basic functionality
         result = FlextResult.ok("test")
-        assert result.is_success
+        assert result.success
         if result.data != "test":
             raise AssertionError(f"Expected test, got {result.data}")
 

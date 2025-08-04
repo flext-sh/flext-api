@@ -145,7 +145,7 @@ async def example_advanced_client_configuration() -> None:
 
         # Health check detalhado
         health_result = client.health_check()
-        if health_result.is_success:
+        if health_result.success:
             health_data = health_result.data
             print("\nClient Health Status:")
             print(f"  Status: {health_data['status']}")
@@ -171,11 +171,11 @@ async def example_full_api_service_integration() -> None:
     try:
         # Inicializar serviço
         start_result = await api.start()
-        print(f"API Service Started: {start_result.is_success}")
+        print(f"API Service Started: {start_result.success}")
 
         # Health check do serviço
         health_result = api.health_check()
-        if health_result.is_success:
+        if health_result.success:
             health_data = health_result.data
             print(f"Service Health: {health_data['status']}")
             print(f"Client Configured: {health_data['client_configured']}")
@@ -242,7 +242,7 @@ async def example_full_api_service_integration() -> None:
         }
 
         client_result = api.flext_api_create_client(client_config)
-        if client_result.is_success:
+        if client_result.success:
             client = client_result.data
             print("\nHTTP Client Created via Service:")
             print(f"  Base URL: {client.config.base_url}")
@@ -258,7 +258,7 @@ async def example_full_api_service_integration() -> None:
     finally:
         # Parar serviço
         stop_result = await api.stop()
-        print(f"API Service Stopped: {stop_result.is_success}")
+        print(f"API Service Stopped: {stop_result.success}")
 
 
 def example_factory_functions_advanced() -> None:

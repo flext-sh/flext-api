@@ -229,7 +229,7 @@ class TestCreateApiSettingsFactory:
         result = create_api_settings()
 
         assert isinstance(result, FlextResult)
-        assert result.is_success
+        assert result.success
         assert isinstance(result.data, FlextApiSettings)
 
         settings = result.data
@@ -244,7 +244,7 @@ class TestCreateApiSettingsFactory:
             api_workers=6,
         )
 
-        assert result.is_success
+        assert result.success
         settings = result.data
         assert settings.api_host == "custom.host.com"
         assert settings.api_port == 9999
@@ -281,7 +281,7 @@ class TestCreateApiSettingsFactory:
         """Test factory function handles empty overrides correctly."""
         result = create_api_settings()
 
-        assert result.is_success
+        assert result.success
         settings = result.data
         # Should have all default values
         assert settings.api_host == "localhost"
@@ -295,7 +295,7 @@ class TestCreateApiSettingsFactory:
             enable_caching="true",  # String that should convert to bool
         )
 
-        assert result.is_success
+        assert result.success
         settings = result.data
         assert settings.api_port == 8080
         assert settings.api_workers == 4
@@ -306,20 +306,20 @@ class TestCreateApiSettingsFactory:
         result = create_api_settings()
 
         # Test FlextResult interface
-        assert hasattr(result, "is_success")
+        assert hasattr(result, "success")
         assert hasattr(result, "is_failure")
         assert hasattr(result, "data")
         assert hasattr(result, "error")
 
         # Test success case
-        assert result.is_success is True
+        assert result.success is True
         assert result.is_failure is False
         assert result.data is not None
         assert result.error is None
 
         # Test failure case
         failed_result = create_api_settings(api_port="invalid")
-        assert failed_result.is_success is False
+        assert failed_result.success is False
         assert failed_result.is_failure is True
         assert failed_result.data is None
         assert failed_result.error is not None
@@ -345,7 +345,7 @@ class TestFlextApiSettingsIntegration:
             }
         )
 
-        assert result.is_success
+        assert result.success
         assert isinstance(result.data, FlextApiSettings)
         assert result.data.api_host == "test.com"
         assert result.data.api_port == 8080

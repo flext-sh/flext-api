@@ -48,7 +48,7 @@ class TestFunctionalExamples:
         client_result = api.flext_api_create_client(client_config)
 
         # Should succeed
-        assert client_result.is_success
+        assert client_result.success
         assert client_result.data is not None
 
     def test_client_configuration_examples(self) -> None:
@@ -169,7 +169,7 @@ class TestFunctionalExamples:
 
                 # Make a GET request
                 result = await client.get("/json")
-                assert result.is_success
+                assert result.success
                 response = result.data
                 assert response is not None
                 assert response.status_code == 200
@@ -181,7 +181,7 @@ class TestFunctionalExamples:
                 mock_response.json.return_value = {"json": post_data}
 
                 result = await client.post("/post", json_data=post_data)
-                assert result.is_success
+                assert result.success
                 response = result.data
                 assert response is not None
                 assert response.status_code == 200
@@ -200,13 +200,13 @@ class TestFunctionalExamples:
 
         # Test with empty configuration
         result = api.flext_api_create_client({})
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "base_url" in result.error.lower()
 
         # Test with invalid URL
         result = api.flext_api_create_client({"base_url": "invalid-url"})
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "invalid" in result.error.lower()
 

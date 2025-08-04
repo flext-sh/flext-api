@@ -40,7 +40,7 @@ class FlextResult[T]:
     def fail(cls, error: str, error_type: str = None) -> FlextResult[T]
 
     @property
-    def is_success(self) -> bool
+    def success(self) -> bool
 
     @property
     def is_failure(self) -> bool

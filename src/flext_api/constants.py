@@ -157,7 +157,7 @@ FLEXT_API_CACHE_TTL = 300
 # EXPORTS - API-SPECIFIC CONSTANTS
 # ==============================================================================
 
-__all__ = [
+__all__: list[str] = [
     # Module-level constants
     "FLEXT_API_CACHE_TTL",
     "FLEXT_API_MAX_RETRIES",

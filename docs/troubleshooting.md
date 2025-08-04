@@ -248,7 +248,7 @@ asyncio_mode = "auto"
 @pytest.mark.asyncio
 async def test_async_operation():
     result = await some_async_operation()
-    assert result.is_success
+    assert result.success
 
 # Use proper async fixtures
 @pytest.fixture
@@ -407,7 +407,7 @@ client_result = api.flext_api_create_client({
     "retry_backoff_factor": 2.0
 })
 
-if not client_result.is_success:
+if not client_result.success:
     logger.error("Client creation failed", error=client_result.error)
     # Fallback to alternative endpoint
     fallback_result = api.flext_api_create_client({
@@ -438,7 +438,7 @@ client_result = api.flext_api_create_client({
     "timeout": 1  # Very short for testing
 })
 
-if client_result.is_success:
+if client_result.success:
     client = client_result.data
     start_time = time.time()
     response = client.get("/delay/5")  # 5 second delay
@@ -501,10 +501,10 @@ client_result = api.flext_api_create_client({
     "headers": {"Authorization": "Bearer your-token-here"}
 })
 
-if client_result.is_success:
+if client_result.success:
     client = client_result.data
     response = client.get("/user/profile")
-    print(f"Auth test: {response.is_success}")
+    print(f"Auth test: {response.success}")
     if response.is_failure:
         print(f"Error: {response.error}")
 ```
@@ -529,7 +529,7 @@ class AuthenticatedClient:
             "base_url": "https://auth.example.com"
         })
 
-        if not auth_client_result.is_success:
+        if not auth_client_result.success:
             return FlextResult.fail("Auth client creation failed")
 
         auth_client = auth_client_result.data
@@ -538,7 +538,7 @@ class AuthenticatedClient:
             "password": password
         })
 
-        if response.is_success:
+        if response.success:
             self.token = response.data.get("access_token")
             logger.info("Authentication successful")
             return FlextResult.ok(self.token)
@@ -559,7 +559,7 @@ class AuthenticatedClient:
 # Usage
 auth_client = AuthenticatedClient()
 auth_result = auth_client.authenticate("user", "pass")
-if auth_result.is_success:
+if auth_result.success:
     client_result = auth_client.create_authenticated_client("https://api.example.com")
 ```
 
@@ -608,7 +608,7 @@ def good_operation() -> FlextResult[dict]:
 
 # Usage
 result = good_operation()
-if result.is_success:
+if result.success:
     data = result.data
     # Process successful result
 else:
@@ -745,7 +745,7 @@ def debug_api_operation():
             "timeout": 10
         })
 
-        if not client_result.is_success:
+        if not client_result.success:
             logger.error("Client creation failed", error=client_result.error)
             return
 
@@ -756,7 +756,7 @@ def debug_api_operation():
         logger.debug("Making test HTTP request")
         response = client.get("/json")
 
-        if response.is_success:
+        if response.success:
             logger.debug("Request successful",
                         status="success",
                         data_type=type(response.data).__name__)
@@ -795,13 +795,13 @@ def profile_http_operations():
             "base_url": "https://httpbin.org"
         })
 
-        if client_result.is_success:
+        if client_result.success:
             client = client_result.data
 
             # Perform multiple operations
             for i in range(10):
                 response = client.get(f"/delay/0.1")
-                if response.is_success:
+                if response.success:
                     logger.debug(f"Request {i+1} completed")
 
     # Profile the operations
@@ -851,7 +851,7 @@ def analyze_memory_usage():
         client_result = api.flext_api_create_client({
             "base_url": f"https://api-{i}.example.com"
         })
-        if client_result.is_success:
+        if client_result.success:
             clients.append(client_result.data)
 
     # Final snapshot

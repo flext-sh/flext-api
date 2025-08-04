@@ -27,19 +27,19 @@ class TestFlextApi:
         result = api.health_check()
 
         assert isinstance(result, FlextResult)
-        if not (result.is_success):
-            msg = f"Expected True, got {result.is_success}"
+        if not (result.success):
+            msg: str = f"Expected True, got {result.success}"
             raise AssertionError(msg)
         assert result.data is not None
 
         health_data = result.data
         assert isinstance(health_data, dict)
         if health_data["service"] != "FlextApi":
-            msg = f"Expected {'FlextApi'}, got {health_data['service']}"
+            msg: str = f"Expected {'FlextApi'}, got {health_data['service']}"
             raise AssertionError(msg)
         assert health_data["status"] == "healthy"
         if "client_configured" not in health_data:
-            msg = f"Expected {'client_configured'} in {health_data}"
+            msg: str = f"Expected {'client_configured'} in {health_data}"
             raise AssertionError(msg)
 
     def test_get_builder(self) -> None:
@@ -61,8 +61,8 @@ class TestFlextApi:
 
         result = api.flext_api_create_client(config)
         assert isinstance(result, FlextResult)
-        if not (result.is_success):
-            msg = f"Expected True, got {result.is_success}"
+        if not (result.success):
+            msg: str = f"Expected True, got {result.success}"
             raise AssertionError(msg)
         assert result.data is not None
 
@@ -76,7 +76,7 @@ class TestFlextApi:
         result = api.flext_api_create_client(None)
 
         assert isinstance(result, FlextResult)
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "base_url is required" in result.error
 
@@ -86,7 +86,7 @@ class TestFlextApi:
         result = api.flext_api_create_client({})
 
         assert isinstance(result, FlextResult)
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "base_url is required" in result.error
 
@@ -97,8 +97,8 @@ class TestFlextApi:
         result = await api.start()
 
         assert isinstance(result, FlextResult)
-        if not (result.is_success):
-            msg = f"Expected True, got {result.is_success}"
+        if not (result.success):
+            msg: str = f"Expected True, got {result.success}"
             raise AssertionError(msg)
 
     @pytest.mark.asyncio
@@ -108,8 +108,8 @@ class TestFlextApi:
         result = await api.stop()
 
         assert isinstance(result, FlextResult)
-        if not (result.is_success):
-            msg = f"Expected True, got {result.is_success}"
+        if not (result.success):
+            msg: str = f"Expected True, got {result.success}"
             raise AssertionError(msg)
 
     @pytest.mark.asyncio
@@ -119,26 +119,26 @@ class TestFlextApi:
 
         # Start service
         start_result = await api.start()
-        if not (start_result.is_success):
-            msg = f"Expected True, got {start_result.is_success}"
+        if not (start_result.success):
+            msg: str = f"Expected True, got {start_result.success}"
             raise AssertionError(msg)
 
         # Create client
         client_result = api.flext_api_create_client(
             {"base_url": "https://api.example.com"}
         )
-        if not (client_result.is_success):
-            msg = f"Expected True, got {client_result.is_success}"
+        if not (client_result.success):
+            msg: str = f"Expected True, got {client_result.success}"
             raise AssertionError(msg)
 
         # Check health
         health_result = api.health_check()
-        if not (health_result.is_success):
-            msg = f"Expected True, got {health_result.is_success}"
+        if not (health_result.success):
+            msg: str = f"Expected True, got {health_result.success}"
             raise AssertionError(msg)
 
         # Stop service
         stop_result = await api.stop()
-        if not (stop_result.is_success):
-            msg = f"Expected True, got {stop_result.is_success}"
+        if not (stop_result.success):
+            msg: str = f"Expected True, got {stop_result.success}"
             raise AssertionError(msg)

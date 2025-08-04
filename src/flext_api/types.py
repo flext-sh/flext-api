@@ -19,4 +19,4 @@ from typing import TypeVar
 TData = TypeVar("TData")
 
 # Export for type checking
-__all__ = ["TData"]
+__all__: list[str] = ["TData"]

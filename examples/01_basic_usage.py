@@ -45,7 +45,7 @@ def example_query_builder() -> None:
         qb2.equals("department", "engineering")
         .greater_than("salary", 50000)
         .greater_than("age", 25)  # Changed from .between() which doesn't exist
-        .equals("email_verified", True)
+        .equals("email_verified", value=True)
         .sort_asc("last_name")
         .sort_desc("hire_date")
         .page(2)  # Página 2
@@ -222,14 +222,14 @@ def example_integration() -> None:
     expected_total_pages = 8  # 156/20 = 7.8 -> 8
 
     if not api_response.success:
-        msg = f"Expected True, got {api_response['success']}"
+        msg: str = f"Expected True, got {api_response['success']}"
         raise AssertionError(msg)
     if len(api_response.data) != expected_data_count:
-        msg = f"Expected {expected_data_count}, got {len(api_response['data'])}"
+        msg: str = f"Expected {expected_data_count}, got {len(api_response['data'])}"
         raise AssertionError(msg)
     if api_response.pagination["total_pages"] != expected_total_pages:
         actual_pages = api_response.pagination["total_pages"]
-        msg = f"Expected {expected_total_pages}, got {actual_pages}"
+        msg: str = f"Expected {expected_total_pages}, got {actual_pages}"
         raise AssertionError(msg)
 
     print("3. ✅ All components work together correctly!")

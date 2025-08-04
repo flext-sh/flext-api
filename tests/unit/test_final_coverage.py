@@ -47,7 +47,7 @@ class TestFinalCoverage:
 
         # Test that the API can be instantiated without errors
         result = api.health_check()
-        assert result.is_success
+        assert result.success
         assert isinstance(result.data, dict)
 
     def test_builder_empty_field_validations(self) -> None:
@@ -110,7 +110,7 @@ class TestFinalCoverage:
                 url="/test",
             )
             result = await client._make_request(request)
-            assert not result.is_success
+            assert not result.success
             if "Failed to make GET request" not in result.error:
                 raise AssertionError(f"Expected error message in {result.error}")
 
@@ -189,19 +189,19 @@ class TestFinalCoverage:
 
         # Test GET method
         response = await client.get("/json")
-        assert response.is_success
+        assert response.success
 
         # Test POST method
         response = await client.post("/post", json_data={"test": "data"})
-        assert response.is_success
+        assert response.success
 
         # Test PUT method
         response = await client.put("/put", json_data={"test": "data"})
-        assert response.is_success
+        assert response.success
 
         # Test DELETE method
         response = await client.delete("/delete")
-        assert response.is_success
+        assert response.success
 
     @pytest.mark.asyncio
     async def test_client_additional_methods(self) -> None:
@@ -211,15 +211,15 @@ class TestFinalCoverage:
 
         # Test PATCH method
         response = await client.patch("/patch", json_data={"test": "data"})
-        assert response.is_success
+        assert response.success
 
         # Test HEAD method
         response = await client.head("/headers")
-        assert response.is_success
+        assert response.success
 
         # Test OPTIONS method
         response = await client.options("/")
-        assert response.is_success
+        assert response.success
 
     def test_complete_coverage_validation(self) -> None:
         """Test complete coverage validation."""

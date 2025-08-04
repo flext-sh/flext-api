@@ -21,7 +21,7 @@ app = flext_api_create_app()
 storage = FlextAPIStorage()
 
 # Export the app and storage for uvicorn and tests
-__all__ = ["app", "storage"]
+__all__: list[str] = ["app", "storage"]
 
 # Main execution entry point
 if __name__ == "__main__":

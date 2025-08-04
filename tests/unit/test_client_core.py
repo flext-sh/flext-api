@@ -226,7 +226,7 @@ class TestFlextApiClient:
         client = FlextApiClient()
         result = await client.start()
 
-        assert result.is_success
+        assert result.success
         assert client.status == FlextApiClientStatus.RUNNING
 
     @pytest.mark.asyncio
@@ -236,7 +236,7 @@ class TestFlextApiClient:
         await client.start()
         result = await client.stop()
 
-        assert result.is_success
+        assert result.success
         assert client.status == FlextApiClientStatus.STOPPED
 
     @pytest.mark.asyncio

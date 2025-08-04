@@ -146,7 +146,7 @@ async def example_api_service() -> None:
 
     # Start service
     start_result = await api.start()
-    print("Service started:", start_result.is_success)
+    print("Service started:", start_result.success)
 
     # Health check
     health_result = api.health_check()
@@ -167,7 +167,7 @@ async def example_api_service() -> None:
         }
     )
 
-    if client_result.is_success:
+    if client_result.success:
         client = client_result.data
         print("Client created successfully:", client.config.base_url)
 
@@ -177,7 +177,7 @@ async def example_api_service() -> None:
 
     # Stop service
     stop_result = await api.stop()
-    print("Service stopped:", stop_result.is_success)
+    print("Service stopped:", stop_result.success)
 
 
 async def example_http_client() -> None:

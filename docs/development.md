@@ -386,7 +386,7 @@ class TestFlextApiCore:
         result = api.flext_api_create_client(config)
 
         # Assert
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         logger.info("Client creation test passed")
 
@@ -403,12 +403,12 @@ class TestFlextApiCore:
         client_result = api.flext_api_create_client({"base_url": "https://test.com"})
 
         # Act
-        assert client_result.is_success
+        assert client_result.success
         client = client_result.data
         response = client.get("/test")
 
         # Assert
-        assert response.is_success
+        assert response.success
         assert response.data["status"] == "ok"
 ```
 
@@ -434,14 +434,14 @@ class TestHttpClientIntegration:
             "timeout": 10
         })
 
-        assert client_result.is_success
+        assert client_result.success
         client = client_result.data
 
         # Act
         response = client.get("/json")
 
         # Assert
-        assert response.is_success
+        assert response.success
         data = response.data
         assert "slideshow" in data
         logger.info("Integration test completed successfully")
@@ -456,7 +456,7 @@ class TestHttpClientIntegration:
             "timeout": 1  # Very short timeout
         })
 
-        assert client_result.is_success
+        assert client_result.success
         client = client_result.data
 
         # Act

@@ -45,7 +45,7 @@ FLEXT API serves as the **HTTP foundation library** enabling unified communicati
 
 | Pattern             | Status | Description                                                |
 | ------------------- | ------ | ---------------------------------------------------------- |
-| **FlextResult<T>**  | 🟡 70% | Railway-oriented programming with type-safe error handling |
+| **FlextResult[T]**  | 🟡 70% | Railway-oriented programming with type-safe error handling |
 | **FlextService**    | 🔴 40% | Service lifecycle management with dependency injection     |
 | **FlextContainer**  | 🔴 40% | Global dependency injection container integration          |
 | **Domain Patterns** | 🔴 10% | DDD entities and domain service implementation             |
@@ -122,13 +122,13 @@ client_result = api.flext_api_create_client({
     "max_retries": 3
 })
 
-if client_result.is_success:
+if client_result.success:
     client = client_result.data
     logger.info("HTTP client created successfully")
 
     # Use client for HTTP operations
     response = client.get("/data")
-    if response.is_success:
+    if response.success:
         logger.info("Data retrieved", data=response.data)
 else:
     logger.error("Client creation failed", error=client_result.error)

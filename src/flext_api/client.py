@@ -509,8 +509,8 @@ class FlextApiClient:
         operation: str,
     ) -> None:
         """DRY helper to handle observability operation results consistently."""
-        if not result.is_success:
-            self.logger.warning(f"Observability {operation} failed: {result.error}")
+        if not result.success:
+            self.logger.warning("Observability %s failed: %s", operation, result.error)
 
     async def _ensure_session(self) -> aiohttp.ClientSession:
         """Ensure session is created with DRY tracking."""
@@ -532,7 +532,7 @@ class FlextApiClient:
                 # DRY session tracking - unregister from active sessions
                 FlextApiClient._active_sessions.discard(self._session)
             except Exception as e:
-                self.logger.debug(f"Session cleanup warning: {e}")
+                self.logger.debug("Session cleanup warning: %s", e)
             finally:
                 self._session = None
 
@@ -560,7 +560,9 @@ class FlextApiClient:
                 method=request.method,
                 url=request.url,
             )
-            error_msg = f"Failed to make {request.method} request to {request.url}: {e}"
+            error_msg: str = (
+                f"Failed to make {request.method} request to {request.url}: {e}"
+            )
             return FlextResult.fail(error_msg)
 
     def _prepare_request_params(
@@ -939,7 +941,7 @@ class FlextApiClient:
         """Stop the client service."""
         # Handle async session cleanup if needed
         result = self._sync_stop()
-        if result.is_success:
+        if result.success:
             # Use DRY cleanup helper but keep status as STOPPED (not CLOSED)
             await self._cleanup_session()
             # Status remains STOPPED (set by _sync_stop)
@@ -1016,7 +1018,7 @@ class FlextApiClient:
     def health_check(self) -> dict[str, object]:
         """Health check (legacy interface - returns dict directly)."""
         result = self._sync_health_check()
-        if result.is_success and result.data is not None:
+        if result.success and result.data is not None:
             return result.data
         # On error, return error health data
         return {

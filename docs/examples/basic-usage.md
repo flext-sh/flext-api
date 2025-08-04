@@ -68,13 +68,13 @@ def create_http_client_example():
         "timeout": 30
     })
 
-    if basic_client_result.is_success:
+    if basic_client_result.success:
         client = basic_client_result.data
         logger.info("Basic HTTP client created successfully")
 
         # Test the client
         response = client.get("/json")
-        if response.is_success:
+        if response.success:
             logger.info("Test request successful", data_keys=list(response.data.keys()))
             return response.data
         else:
@@ -117,13 +117,13 @@ def client_with_headers_example():
         }
     })
 
-    if client_result.is_success:
+    if client_result.success:
         client = client_result.data
         logger.info("Client with headers created")
 
         # Test with headers
         response = client.get("/headers")
-        if response.is_success:
+        if response.success:
             headers_received = response.data.get("headers", {})
             logger.info("Headers test successful",
                        user_agent=headers_received.get("User-Agent"),
@@ -163,7 +163,7 @@ def get_request_examples():
         "timeout": 15
     })
 
-    if not client_result.is_success:
+    if not client_result.success:
         logger.error("Client creation failed")
         return
 
@@ -172,20 +172,20 @@ def get_request_examples():
     # Simple GET request
     logger.info("Testing simple GET request")
     response = client.get("/json")
-    if response.is_success:
+    if response.success:
         logger.info("Simple GET successful", data_type=type(response.data).__name__)
 
     # GET with query parameters
     logger.info("Testing GET with query parameters")
     response = client.get("/get", params={"param1": "value1", "param2": "value2"})
-    if response.is_success:
+    if response.success:
         args = response.data.get("args", {})
         logger.info("GET with params successful", params=args)
 
     # GET with custom headers
     logger.info("Testing GET with custom headers")
     response = client.get("/get", headers={"X-Test-Header": "test-value"})
-    if response.is_success:
+    if response.success:
         headers = response.data.get("headers", {})
         logger.info("GET with headers successful",
                    test_header=headers.get("X-Test-Header"))
@@ -212,7 +212,7 @@ def post_request_examples():
         "timeout": 15
     })
 
-    if not client_result.is_success:
+    if not client_result.success:
         logger.error("Client creation failed")
         return
 
@@ -227,7 +227,7 @@ def post_request_examples():
     }
 
     response = client.post("/post", json=json_data)
-    if response.is_success:
+    if response.success:
         received_json = response.data.get("json", {})
         logger.info("POST JSON successful", name=received_json.get("name"))
 
@@ -239,7 +239,7 @@ def post_request_examples():
     }
 
     response = client.post("/post", data=form_data)
-    if response.is_success:
+    if response.success:
         received_form = response.data.get("form", {})
         logger.info("POST form successful", fields=list(received_form.keys()))
 
@@ -250,7 +250,7 @@ def post_request_examples():
     response = client.post("/post",
                           data=raw_data,
                           headers={"Content-Type": "text/plain"})
-    if response.is_success:
+    if response.success:
         received_data = response.data.get("data", "")
         logger.info("POST raw data successful", length=len(received_data))
 
@@ -278,11 +278,11 @@ def error_handling_examples():
         "timeout": 5
     })
 
-    if client_result.is_success:
+    if client_result.success:
         client = client_result.data
         response = client.get("/test")
 
-        if response.is_success:
+        if response.success:
             logger.info("Request unexpectedly succeeded")
         else:
             logger.info("Request failed as expected", error=response.error)
@@ -298,7 +298,7 @@ def error_handling_examples():
         "timeout": 1  # Very short timeout
     })
 
-    if client_result.is_success:
+    if client_result.success:
         client = client_result.data
         response = client.get("/delay/5")  # 5 second delay
 
@@ -314,7 +314,7 @@ def error_handling_examples():
         "timeout": 10
     })
 
-    if client_result.is_success:
+    if client_result.success:
         client = client_result.data
         response = client.get("/status/404")  # Force 404 error
 
@@ -488,13 +488,13 @@ def basic_configuration_example():
     }
 
     client_result = api.flext_api_create_client(dict_config)
-    if client_result.is_success:
+    if client_result.success:
         logger.info("Client created with dictionary config")
         client = client_result.data
 
         # Test the configured client
         response = client.get("/user-agent")
-        if response.is_success:
+        if response.success:
             user_agent = response.data.get("user-agent", "")
             print(f"✅ User-Agent: {user_agent}")
 
@@ -508,7 +508,7 @@ def basic_configuration_example():
     )
 
     client_result = api.flext_api_create_client(pydantic_config.dict())
-    if client_result.is_success:
+    if client_result.success:
         logger.info("Client created with Pydantic config")
         print("✅ Pydantic configuration successful")
 
@@ -549,13 +549,13 @@ def environment_configuration_example():
     api = create_flext_api()
     client_result = api.flext_api_create_client(config)
 
-    if client_result.is_success:
+    if client_result.success:
         client = client_result.data
         logger.info("Environment-configured client created")
 
         # Test environment configuration
         response = client.get("/user-agent")
-        if response.is_success:
+        if response.success:
             user_agent = response.data.get("user-agent", "")
             print(f"✅ Environment config working: {user_agent}")
     else:
@@ -605,7 +605,7 @@ class TestBasicFlextApi:
         result = api.flext_api_create_client(config)
 
         # Assert
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         logger.info("Client creation test passed")
 
@@ -633,14 +633,14 @@ class TestBasicFlextApi:
             "timeout": 15
         })
 
-        assert client_result.is_success
+        assert client_result.success
         client = client_result.data
 
         # Act
         response = client.get("/json")
 
         # Assert
-        assert response.is_success
+        assert response.success
         assert "slideshow" in response.data
         logger.info("HTTP request integration test passed")
 
@@ -695,7 +695,7 @@ class SimpleApiClient:
             }
         })
 
-        if client_result.is_success:
+        if client_result.success:
             self.client = client_result.data
             logger.info("HTTP client initialized successfully")
         else:
@@ -711,7 +711,7 @@ class SimpleApiClient:
 
         response = self.client.get(path, params=params)
 
-        if response.is_success:
+        if response.success:
             logger.info("GET request successful", path=path)
             return FlextResult.ok(response.data)
         else:
@@ -727,7 +727,7 @@ class SimpleApiClient:
 
         response = self.client.post(path, json=data)
 
-        if response.is_success:
+        if response.success:
             logger.info("POST request successful", path=path)
             return FlextResult.ok(response.data)
         else:
@@ -749,7 +749,7 @@ def main():
         # Example 1: Simple GET request
         print("\n=== Example 1: Simple GET ===")
         get_result = client.get("/json")
-        if get_result.is_success:
+        if get_result.success:
             print("✅ GET request successful")
             print(f"Data keys: {list(get_result.data.keys())}")
         else:
@@ -758,7 +758,7 @@ def main():
         # Example 2: GET with parameters
         print("\n=== Example 2: GET with parameters ===")
         params_result = client.get("/get", params={"param1": "value1", "test": "data"})
-        if params_result.is_success:
+        if params_result.success:
             args = params_result.data.get("args", {})
             print("✅ GET with params successful")
             print(f"Parameters received: {args}")
@@ -773,7 +773,7 @@ def main():
             "client": "SimpleApiClient"
         }
         post_result = client.post("/post", data=post_data)
-        if post_result.is_success:
+        if post_result.success:
             received_json = post_result.data.get("json", {})
             print("✅ POST request successful")
             print(f"Posted data: {received_json}")
