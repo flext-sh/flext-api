@@ -9,8 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from flext_api import (
     FlextApi,
@@ -22,6 +21,9 @@ from flext_api import (
     build_success_response,
     create_client,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class TestAPIPerformanceBenchmarks:
