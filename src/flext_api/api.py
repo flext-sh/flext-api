@@ -47,14 +47,21 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import importlib.metadata
+
 import structlog
 from flext_core import FlextResult
 
-from flext_api import __version__
 from flext_api.builder import FlextApiBuilder
 from flext_api.client import FlextApiClient, FlextApiClientConfig
 
 logger = structlog.get_logger(__name__)
+
+# Get version without circular import
+try:
+    _version = importlib.metadata.version("flext-api")
+except importlib.metadata.PackageNotFoundError:
+    _version = "0.9.0"
 
 
 class FlextApi:
@@ -96,7 +103,7 @@ class FlextApi:
         return {
             "name": "FlextApi",
             "service": "FlextApi",
-            "version": __version__,
+            "version": _version,
             "client_configured": self._client is not None,
             "client_type": type(self._client).__name__ if self._client else None,
         }

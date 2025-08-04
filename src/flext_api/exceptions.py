@@ -43,9 +43,9 @@ from flext_core.exceptions import (
 #     FlextApiAuthenticationError = api_exceptions["FlextApiAuthenticationError"]
 #     FlextApiTimeoutError = api_exceptions["FlextApiTimeoutError"]
 #
-#     # COMPATIBILITY FIX: Add validation_details interface for test compatibility
+#     # COMPATIBILITY FIX: Add validation_details interface for tests
 #     class FlextApiValidationError(_FactoryFlextApiValidationError):
-#         """Enhanced validation error with test-compatible validation_details interface."""
+#         """Enhanced validation error with test-compatible validation_details."""
 #
 #         @property
 #         def validation_details(self) -> dict[str, str]:

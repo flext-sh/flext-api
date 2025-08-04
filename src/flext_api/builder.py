@@ -625,6 +625,37 @@ def build_error_response(
 
 
 def build_paginated_response(
+    config: PaginationConfig,
+) -> dict[str, object]:
+    """Build paginated response using PaginationConfig.
+
+    Args:
+        config: PaginationConfig object with all pagination parameters
+
+    Returns:
+        dict[str, object]: Paginated response dictionary
+
+    Example:
+        config = PaginationConfig(
+            data=items, total=100, page=1, page_size=10, message="Success"
+        )
+        response = build_paginated_response(config)
+
+    """
+    builder = (
+        FlextApiResponseBuilder()
+        .success(data=config.data, message=config.message)
+        .with_pagination(config.total, config.page, config.page_size)
+    )
+
+    if config.metadata:
+        for key, value in config.metadata.items():
+            builder.with_metadata(key, value)
+
+    return builder.build().to_dict()
+
+
+def create_paginated_response(  # noqa: PLR0913
     data: object = None,
     *,
     total: int = 0,
@@ -632,40 +663,39 @@ def build_paginated_response(
     page_size: int = 20,
     message: str = "Success",
     metadata: dict[str, object] | None = None,
-    config: PaginationConfig | None = None,
 ) -> dict[str, object]:
-    """Build paginated response with backward compatibility.
+    """Create paginated response with individual parameters (backward compatible).
 
-    Can be called with individual parameters (backward compatible):
-        build_paginated_response(data=items, total=100, page=1, page_size=10)
+    Args:
+        data: Response data
+        total: Total number of items
+        page: Current page number
+        page_size: Items per page
+        message: Response message
+        metadata: Additional metadata
 
-    Or with PaginationConfig object (new way):
-        build_paginated_response(config=PaginationConfig(...))
+    Returns:
+        dict[str, object]: Paginated response dictionary
+
+    Example:
+        response = create_paginated_response(
+            data=items, total=100, page=1, page_size=10
+        )
+
+    Note:
+        Consider using build_paginated_response with PaginationConfig
+        for better maintainability and type safety.
+
     """
-    if config is not None:
-        # New way: use PaginationConfig
-        builder = (
-            FlextApiResponseBuilder()
-            .success(data=config.data, message=config.message)
-            .with_pagination(config.total, config.page, config.page_size)
-        )
-
-        if config.metadata:
-            for key, value in config.metadata.items():
-                builder.with_metadata(key, value)
-    else:
-        # Backward compatible way: individual parameters
-        builder = (
-            FlextApiResponseBuilder()
-            .success(data=data, message=message)
-            .with_pagination(total, page, page_size)
-        )
-
-        if metadata:
-            for key, value in metadata.items():
-                builder.with_metadata(key, value)
-
-    return builder.build().to_dict()
+    config = PaginationConfig(
+        data=data,
+        total=total,
+        page=page,
+        page_size=page_size,
+        message=message,
+        metadata=metadata,
+    )
+    return build_paginated_response(config)
 
 
 class PaginatedResponseBuilder:
@@ -781,6 +811,37 @@ def build_error_response_object(
 
 
 def build_paginated_response_object(
+    config: PaginationConfig,
+) -> FlextApiResponse:
+    """Build paginated response as object using PaginationConfig.
+
+    Args:
+        config: PaginationConfig object with all pagination parameters
+
+    Returns:
+        FlextApiResponse: Paginated response object
+
+    Example:
+        config = PaginationConfig(
+            data=items, total=100, page=1, page_size=10, message="Success"
+        )
+        response = build_paginated_response_object(config)
+
+    """
+    builder = (
+        FlextApiResponseBuilder()
+        .success(data=config.data, message=config.message)
+        .with_pagination(config.total, config.page, config.page_size)
+    )
+
+    if config.metadata:
+        for key, value in config.metadata.items():
+            builder.with_metadata(key, value)
+
+    return builder.build()
+
+
+def create_paginated_response_object(  # noqa: PLR0913
     data: object = None,
     *,
     total: int = 0,
@@ -788,48 +849,39 @@ def build_paginated_response_object(
     page_size: int = 20,
     message: str = "Success",
     metadata: dict[str, object] | None = None,
-    config: PaginationConfig | None = None,
 ) -> FlextApiResponse:
-    """Build paginated response as object with backward compatibility.
+    """Create paginated response object with individual parameters (backward compat).
 
-    Can be called with individual parameters (backward compatible):
-        build_paginated_response_object(data=items, total=100, page=1, page_size=10)
+    Args:
+        data: Response data
+        total: Total number of items
+        page: Current page number
+        page_size: Items per page
+        message: Response message
+        metadata: Additional metadata
 
-    Or with PaginationConfig object (new way):
-        build_paginated_response_object(config=PaginationConfig(...))
+    Returns:
+        FlextApiResponse: Paginated response object
 
-    Or legacy way (for backward compatibility):
-        build_paginated_response_object(PaginationConfig(...))
+    Example:
+        response = create_paginated_response_object(
+            data=items, total=100, page=1, page_size=10
+        )
+
+    Note:
+        Consider using build_paginated_response_object with PaginationConfig
+        for better maintainability and type safety.
+
     """
-    # Handle legacy usage: build_paginated_response_object(PaginationConfig(...))
-    if isinstance(data, PaginationConfig) and config is None:
-        config = data
-        data = None
-
-    if config is not None:
-        # New way: use PaginationConfig
-        builder = (
-            FlextApiResponseBuilder()
-            .success(data=config.data, message=config.message)
-            .with_pagination(config.total, config.page, config.page_size)
-        )
-
-        if config.metadata:
-            for key, value in config.metadata.items():
-                builder.with_metadata(key, value)
-    else:
-        # Backward compatible way: individual parameters
-        builder = (
-            FlextApiResponseBuilder()
-            .success(data=data, message=message)
-            .with_pagination(total, page, page_size)
-        )
-
-        if metadata:
-            for key, value in metadata.items():
-                builder.with_metadata(key, value)
-
-    return builder.build()
+    config = PaginationConfig(
+        data=data,
+        total=total,
+        page=page,
+        page_size=page_size,
+        message=message,
+        metadata=metadata,
+    )
+    return build_paginated_response_object(config)
 
 
 def build_paginated_response_object_legacy(

@@ -32,7 +32,8 @@ def example_query_builder() -> None:
         qb.equals("status", "active")
         .equals("name", "John")  # Changed from .like() which doesn't exist
         .sort_desc("created_at")
-        .page(1, 10)  # Changed from .limit() which doesn't exist
+        .page(1)  # Set page number
+        .page_size(10)  # Set page size
         .build()
     )
 
@@ -44,10 +45,11 @@ def example_query_builder() -> None:
         qb2.equals("department", "engineering")
         .greater_than("salary", 50000)
         .greater_than("age", 25)  # Changed from .between() which doesn't exist
-        .equals("email_verified", is_true=True)
+        .equals("email_verified", True)
         .sort_asc("last_name")
         .sort_desc("hire_date")
-        .page(2, 25)  # Página 2, 25 itens por página
+        .page(2)  # Página 2
+        .page_size(25)  # 25 itens por página
         .build()
     )
 
@@ -109,7 +111,8 @@ def example_fastapi_builder() -> None:
         query_builder.equals("category", "technology")
         .greater_than("price", 100)
         .sort_desc("rating")
-        .page(1, 20)
+        .page(1)
+        .page_size(20)
         .build()
     )
     print(f"Builder Query: {sample_query}")
@@ -154,7 +157,7 @@ async def example_http_client() -> None:
 
         # Health check (sync method)
         health_result = client.health_check()
-        print("Client Health:", health_result.data)
+        print("Client Health:", health_result)
 
         # Note: In a real application, you would make HTTP requests here
         # but for this example, we'll just demonstrate the client setup
@@ -181,14 +184,15 @@ def example_integration() -> None:
         qb.equals("department", "sales")
         .greater_than("performance_score", 8.0)
         .sort_desc("last_review_date")
-        .page(1, 20)
+        .page(1)
+        .page_size(20)
         .build()
     )
 
     print("1. Built query for high-performing sales users:")
-    print(f"   Filters: {len(user_query['filters'])}")
-    print(f"   Sorts: {len(user_query['sorts'])}")
-    print(f"   Pagination: page {user_query['page']}, size {user_query['page_size']}")
+    print(f"   Filters: {len(user_query.filters)}")
+    print(f"   Sorts: {len(user_query.sorts)}")
+    print(f"   Pagination: page {user_query.page}, size {user_query.page_size}")
 
     # 2. Simular dados de resposta
     mock_users = [
@@ -208,23 +212,23 @@ def example_integration() -> None:
     )
 
     print("2. Built standardized API response:")
-    print(f"   Success: {api_response['success']}")
-    print(f"   Data count: {len(api_response['data'])}")
-    print(f"   Total records: {api_response['pagination']['total']}")
-    print(f"   Metadata: {list(api_response['metadata'].keys())}")
+    print(f"   Success: {api_response.success}")
+    print(f"   Data count: {len(api_response.data)}")
+    print(f"   Total records: {api_response.pagination['total']}")
+    print(f"   Metadata: {list(api_response.metadata.keys())}")
 
     # 4. Verificar que funciona como esperado
     expected_data_count = 3
     expected_total_pages = 8  # 156/20 = 7.8 -> 8
 
-    if not (api_response["success"]):
+    if not api_response.success:
         msg = f"Expected True, got {api_response['success']}"
         raise AssertionError(msg)
-    if len(api_response["data"]) != expected_data_count:
+    if len(api_response.data) != expected_data_count:
         msg = f"Expected {expected_data_count}, got {len(api_response['data'])}"
         raise AssertionError(msg)
-    if api_response["pagination"]["total_pages"] != expected_total_pages:
-        actual_pages = api_response["pagination"]["total_pages"]
+    if api_response.pagination["total_pages"] != expected_total_pages:
+        actual_pages = api_response.pagination["total_pages"]
         msg = f"Expected {expected_total_pages}, got {actual_pages}"
         raise AssertionError(msg)
 
