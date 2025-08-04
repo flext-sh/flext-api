@@ -43,5 +43,5 @@ class TestMainModule:
             storage.set("test_key", "test_value")
             result = storage.get("test_key")
             if result != "test_value":
-                msg = f"Expected {'test_value'}, got {result}"
+                msg: str = f"Expected {'test_value'}, got {result}"
                 raise AssertionError(msg)

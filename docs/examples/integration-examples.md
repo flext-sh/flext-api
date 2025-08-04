@@ -63,7 +63,7 @@ class FlexCoreIntegrationExample:
             }
         })
 
-        if client_result.is_success:
+        if client_result.success:
             self.flexcore_client = client_result.data
             logger.info("FlexCore client initialized successfully")
         else:
@@ -76,7 +76,7 @@ class FlexCoreIntegrationExample:
 
         response = self.flexcore_client.get("/health")
 
-        if response.is_success:
+        if response.success:
             health_data = response.data
             logger.info("FlexCore health check successful",
                        status=health_data.get("status"),
@@ -92,7 +92,7 @@ class FlexCoreIntegrationExample:
 
         response = self.flexcore_client.get("/api/v1/plugins")
 
-        if response.is_success:
+        if response.success:
             plugins = response.data.get("plugins", [])
             logger.info("Retrieved plugins list", plugin_count=len(plugins))
             return FlextResult.ok(plugins)
@@ -116,7 +116,7 @@ class FlexCoreIntegrationExample:
             json=command
         )
 
-        if response.is_success:
+        if response.success:
             execution_id = response.data.get("execution_id")
             logger.info("Meltano pipeline execution started",
                        execution_id=execution_id,
@@ -134,7 +134,7 @@ class FlexCoreIntegrationExample:
 
         response = self.flexcore_client.get(f"/api/v1/executions/{execution_id}/status")
 
-        if response.is_success:
+        if response.success:
             status_data = response.data
             logger.info("Execution status retrieved",
                        execution_id=execution_id,
@@ -155,7 +155,7 @@ async def flexcore_integration_demo():
         # Step 1: Health check
         print("\n=== Step 1: FlexCore Health Check ===")
         health_result = integration.health_check()
-        if health_result.is_success:
+        if health_result.success:
             print(f"✅ FlexCore is healthy: {health_result.data}")
         else:
             print(f"❌ FlexCore health check failed: {health_result.error}")
@@ -164,7 +164,7 @@ async def flexcore_integration_demo():
         # Step 2: List available plugins
         print("\n=== Step 2: Available Plugins ===")
         plugins_result = integration.list_available_plugins()
-        if plugins_result.is_success:
+        if plugins_result.success:
             plugins = plugins_result.data
             print(f"✅ Found {len(plugins)} plugins:")
             for plugin in plugins[:3]:  # Show first 3 plugins
@@ -193,7 +193,7 @@ async def flexcore_integration_demo():
         }
 
         execution_result = integration.execute_meltano_pipeline(pipeline_config)
-        if execution_result.is_success:
+        if execution_result.success:
             execution_id = execution_result.data
             print(f"✅ Pipeline execution started: {execution_id}")
 
@@ -202,7 +202,7 @@ async def flexcore_integration_demo():
             for i in range(3):  # Monitor for 3 iterations
                 await asyncio.sleep(2)  # Wait 2 seconds
                 status_result = integration.monitor_execution(execution_id)
-                if status_result.is_success:
+                if status_result.success:
                     status = status_result.data
                     print(f"📊 Status: {status.get('status')} "
                           f"({status.get('progress', 0)}% complete)")
@@ -282,7 +282,7 @@ class AuthenticatedApiClient:
             }
         })
 
-        if client_result.is_success:
+        if client_result.success:
             self.auth_client = client_result.data
             logger.info("Authentication client initialized")
         else:
@@ -300,7 +300,7 @@ class AuthenticatedApiClient:
             "scope": "read write"
         })
 
-        if response.is_success:
+        if response.success:
             token_data = response.data
 
             # Calculate expiration time
@@ -335,7 +335,7 @@ class AuthenticatedApiClient:
             "grant_type": "refresh_token"
         })
 
-        if response.is_success:
+        if response.success:
             token_data = response.data
             expires_in = token_data.get("expires_in", 3600)
             expires_at = time.time() + expires_in
@@ -359,7 +359,7 @@ class AuthenticatedApiClient:
         if self.auth_token.is_expired() or self.auth_token.expires_in_seconds() < 60:
             logger.info("Token expired or expiring soon, refreshing")
             refresh_result = self.refresh_token()
-            if not refresh_result.is_success:
+            if not refresh_result.success:
                 return FlextResult.fail("Token refresh failed")
 
         return FlextResult.ok(self.auth_token.access_token)
@@ -368,7 +368,7 @@ class AuthenticatedApiClient:
         """Create HTTP client with authentication headers."""
         # Ensure we have a valid token
         token_result = self.ensure_valid_token()
-        if not token_result.is_success:
+        if not token_result.success:
             return FlextResult.fail(f"Authentication required: {token_result.error}")
 
         access_token = token_result.data
@@ -390,7 +390,7 @@ class AuthenticatedApiClient:
             "headers": headers
         })
 
-        if client_result.is_success:
+        if client_result.success:
             logger.info("Authenticated client created",
                        base_url=base_url,
                        token_expires_in=self.auth_token.expires_in_seconds())
@@ -412,7 +412,7 @@ class AuthenticatedApiClient:
         # Clear local token regardless of server response
         self.auth_token = None
 
-        if response.is_success:
+        if response.success:
             logger.info("Logout successful")
             return FlextResult.ok(data=True)
         else:
@@ -431,7 +431,7 @@ def authentication_integration_demo():
         # Step 1: Authenticate
         print("\n=== Step 1: User Authentication ===")
         auth_result = auth_client.authenticate("demo_user", "demo_password")
-        if auth_result.is_success:
+        if auth_result.success:
             token = auth_result.data
             print(f"✅ Authentication successful")
             print(f"   Token expires in: {token.expires_in_seconds()} seconds")
@@ -446,7 +446,7 @@ def authentication_integration_demo():
             {"X-Client-Type": "integration-demo"}
         )
 
-        if api_client_result.is_success:
+        if api_client_result.success:
             api_client = api_client_result.data
             print("✅ Authenticated API client created")
 
@@ -455,7 +455,7 @@ def authentication_integration_demo():
 
             # Call protected endpoint
             response = api_client.get("/api/v1/user/profile")
-            if response.is_success:
+            if response.success:
                 profile = response.data
                 print(f"✅ Profile retrieved: {profile.get('username')}")
             else:
@@ -463,7 +463,7 @@ def authentication_integration_demo():
 
             # Call another protected endpoint
             response = api_client.get("/api/v1/pipelines")
-            if response.is_success:
+            if response.success:
                 pipelines = response.data
                 print(f"✅ Pipelines retrieved: {len(pipelines.get('pipelines', []))} found")
             else:
@@ -480,7 +480,7 @@ def authentication_integration_demo():
             auth_client.auth_token.expires_at = time.time() + 30  # Expires in 30 seconds
 
             refresh_result = auth_client.ensure_valid_token()
-            if refresh_result.is_success:
+            if refresh_result.success:
                 print("✅ Token refresh successful")
             else:
                 print(f"❌ Token refresh failed: {refresh_result.error}")
@@ -490,7 +490,7 @@ def authentication_integration_demo():
         # Step 5: Logout
         print("\n=== Step 5: Logout ===")
         logout_result = auth_client.logout()
-        if logout_result.is_success:
+        if logout_result.success:
             print("✅ Logout successful")
         else:
             print(f"❌ Logout failed: {logout_result.error}")
@@ -578,7 +578,7 @@ class SingerPipelineOrchestrator:
             }
         })
 
-        if flext_client_result.is_success:
+        if flext_client_result.success:
             self.flext_client = flext_client_result.data
             logger.info("FLEXT Service client initialized")
         else:
@@ -594,7 +594,7 @@ class SingerPipelineOrchestrator:
             }
         })
 
-        if flexcore_client_result.is_success:
+        if flexcore_client_result.success:
             self.flexcore_client = flexcore_client_result.data
             logger.info("FlexCore client initialized")
         else:
@@ -607,7 +607,7 @@ class SingerPipelineOrchestrator:
 
         response = self.flext_client.get("/api/v1/singer/taps")
 
-        if response.is_success:
+        if response.success:
             taps = response.data.get("taps", [])
             logger.info("Retrieved taps list", tap_count=len(taps))
             return FlextResult.ok(taps)
@@ -620,7 +620,7 @@ class SingerPipelineOrchestrator:
 
         response = self.flext_client.get("/api/v1/singer/targets")
 
-        if response.is_success:
+        if response.success:
             targets = response.data.get("targets", [])
             logger.info("Retrieved targets list", target_count=len(targets))
             return FlextResult.ok(targets)
@@ -668,7 +668,7 @@ class SingerPipelineOrchestrator:
             json=pipeline_config
         )
 
-        if response.is_success:
+        if response.success:
             execution_id = response.data.get("execution_id")
 
             # Track execution
@@ -696,7 +696,7 @@ class SingerPipelineOrchestrator:
 
         response = self.flext_client.get(f"/api/v1/singer/executions/{execution_id}")
 
-        if response.is_success:
+        if response.success:
             status_data = response.data
             status_str = status_data.get("status", "unknown")
 
@@ -761,7 +761,7 @@ class SingerPipelineOrchestrator:
             json=transformation_config
         )
 
-        if response.is_success:
+        if response.success:
             execution_id = response.data.get("execution_id")
             logger.info("DBT transformation started", execution_id=execution_id)
             return FlextResult.ok(execution_id)
@@ -783,7 +783,7 @@ class SingerPipelineOrchestrator:
         while total_waited < max_wait_seconds:
             status_result = self.get_execution_status(execution_id)
 
-            if not status_result.is_success:
+            if not status_result.success:
                 return FlextResult.fail(f"Status check failed: {status_result.error}")
 
             execution = status_result.data
@@ -823,7 +823,7 @@ async def singer_pipeline_integration_demo():
         print("\n=== Step 1: Available Singer Components ===")
 
         taps_result = orchestrator.list_available_taps()
-        if taps_result.is_success:
+        if taps_result.success:
             taps = taps_result.data
             print(f"✅ Available taps: {len(taps)}")
             for tap in taps[:3]:  # Show first 3
@@ -833,7 +833,7 @@ async def singer_pipeline_integration_demo():
             return
 
         targets_result = orchestrator.list_available_targets()
-        if targets_result.is_success:
+        if targets_result.success:
             targets = targets_result.data
             print(f"✅ Available targets: {len(targets)}")
             for target in targets[:3]:  # Show first 3
@@ -899,7 +899,7 @@ async def singer_pipeline_integration_demo():
             catalog=catalog
         )
 
-        if execution_result.is_success:
+        if execution_result.success:
             execution_id = execution_result.data
             print(f"✅ Pipeline execution started: {execution_id}")
 
@@ -912,7 +912,7 @@ async def singer_pipeline_integration_demo():
                 poll_interval=5
             )
 
-            if completion_result.is_success:
+            if completion_result.success:
                 execution = completion_result.data
 
                 if execution.status == PipelineStatus.COMPLETED:
@@ -929,7 +929,7 @@ async def singer_pipeline_integration_demo():
                         vars={"refresh_date": "2024-01-01"}
                     )
 
-                    if dbt_result.is_success:
+                    if dbt_result.success:
                         dbt_execution_id = dbt_result.data
                         print(f"✅ DBT transformation started: {dbt_execution_id}")
 
@@ -940,7 +940,7 @@ async def singer_pipeline_integration_demo():
                             poll_interval=10
                         )
 
-                        if dbt_completion.is_success:
+                        if dbt_completion.success:
                             dbt_exec = dbt_completion.data
                             if dbt_exec.status == PipelineStatus.COMPLETED:
                                 print("✅ DBT transformations completed successfully!")
@@ -1050,7 +1050,7 @@ class ObservabilityIntegration:
             }
         })
 
-        if metrics_client_result.is_success:
+        if metrics_client_result.success:
             self.metrics_client = metrics_client_result.data
             logger.info("Metrics client initialized")
         else:
@@ -1067,7 +1067,7 @@ class ObservabilityIntegration:
             }
         })
 
-        if tracing_client_result.is_success:
+        if tracing_client_result.success:
             self.tracing_client = tracing_client_result.data
             logger.info("Tracing client initialized")
         else:
@@ -1081,7 +1081,7 @@ class ObservabilityIntegration:
             "headers": {"X-Client": "health-monitor"}
         })
 
-        if health_client_result.is_success:
+        if health_client_result.success:
             self.health_client = health_client_result.data
             logger.info("Health client initialized")
         else:
@@ -1196,7 +1196,7 @@ class ObservabilityIntegration:
             "metrics": metrics_data
         })
 
-        if response.is_success:
+        if response.success:
             sent_count = len(self.metrics)
             self.metrics.clear()  # Clear sent metrics
             logger.info("Metrics sent successfully", count=sent_count)
@@ -1240,7 +1240,7 @@ class ObservabilityIntegration:
             }]
         })
 
-        if response.is_success:
+        if response.success:
             sent_count = len(self.completed_spans)
             self.completed_spans.clear()  # Clear sent spans
             logger.info("Traces sent successfully", count=sent_count)
@@ -1271,11 +1271,11 @@ class ObservabilityIntegration:
                         "timeout": 5
                     })
 
-                    if client_result.is_success:
+                    if client_result.success:
                         client = client_result.data
                         response = client.get("/health")
 
-                        if response.is_success:
+                        if response.success:
                             health_data = response.data
                             health_results[service_name] = {
                                 "status": "healthy",
@@ -1355,7 +1355,7 @@ def observability_integration_demo():
         with obs.trace_operation("ecosystem_health_check"):
             health_result = obs.health_check_all_services()
 
-            if health_result.is_success:
+            if health_result.success:
                 health_data = health_result.data
                 score = health_data["overall_health_score"]
                 healthy = health_data["healthy_services"]
@@ -1409,14 +1409,14 @@ def observability_integration_demo():
 
         # Send metrics
         metrics_result = obs.send_metrics_batch()
-        if metrics_result.is_success:
+        if metrics_result.success:
             print(f"✅ Sent {metrics_result.data} metrics to monitoring system")
         else:
             print(f"❌ Metrics send failed: {metrics_result.error}")
 
         # Send traces
         traces_result = obs.send_traces_batch()
-        if traces_result.is_success:
+        if traces_result.success:
             print(f"✅ Sent {traces_result.data} trace spans to tracing system")
         else:
             print(f"❌ Traces send failed: {traces_result.error}")
@@ -1605,7 +1605,7 @@ class EnterpriseHttpClient:
                 }
             })
 
-            if client_result.is_success:
+            if client_result.success:
                 self.clients[service_name] = client_result.data
                 logger.info("HTTP client created", service=service_name)
                 return FlextResult.ok(client_result.data)
@@ -1628,7 +1628,7 @@ class EnterpriseHttpClient:
 
         # Check circuit breaker
         can_execute = circuit_breaker.can_execute()
-        if not can_execute.is_success:
+        if not can_execute.success:
             logger.warning("Request blocked by circuit breaker",
                           service=service_name,
                           reason=can_execute.error)
@@ -1636,7 +1636,7 @@ class EnterpriseHttpClient:
 
         # Get HTTP client
         client_result = self.get_or_create_client(service_name, base_url)
-        if not client_result.is_success:
+        if not client_result.success:
             circuit_breaker.record_failure()
             return FlextResult.fail(client_result.error)
 
@@ -1664,7 +1664,7 @@ class EnterpriseHttpClient:
                 else:
                     return FlextResult.fail(f"Unsupported HTTP method: {method}")
 
-                if response.is_success:
+                if response.success:
                     circuit_breaker.record_success()
                     logger.info("Request successful",
                                service=service_name,
@@ -1699,7 +1699,7 @@ class EnterpriseHttpClient:
 
         # All retries failed
         circuit_breaker.record_failure()
-        error_msg = f"Request failed after {max_retries + 1} attempts: {last_error}"
+        error_msg: str = f"Request failed after {max_retries + 1} attempts: {last_error}"
         logger.error("Request failed permanently",
                     service=service_name,
                     method=method,
@@ -1732,7 +1732,7 @@ async def enterprise_fault_tolerance_demo():
             path="/json"
         )
 
-        if result.is_success:
+        if result.success:
             print("✅ Normal request successful")
         else:
             print(f"❌ Normal request failed: {result.error}")
@@ -1761,7 +1761,7 @@ async def enterprise_fault_tolerance_demo():
                 backoff_factor=1.5
             )
 
-            if result.is_success:
+            if result.success:
                 print(f"✅ {description}: Request successful")
             else:
                 print(f"❌ {description}: {result.error}")
@@ -1830,7 +1830,7 @@ async def enterprise_fault_tolerance_demo():
             max_retries=1
         )
 
-        if result.is_success:
+        if result.success:
             print("✅ Service recovered, circuit breaker should close")
 
         # Final status
@@ -1998,7 +1998,7 @@ class FlextServiceRegistry:
         # Try each endpoint in priority order
         for endpoint in sorted_endpoints:
             health_result = self._check_endpoint_health(endpoint)
-            if health_result.is_success:
+            if health_result.success:
                 logger.info("Service discovered",
                            service=service_name,
                            endpoint=endpoint.name,
@@ -2016,13 +2016,13 @@ class FlextServiceRegistry:
                 "timeout": 5  # Quick health check timeout
             })
 
-            if not client_result.is_success:
+            if not client_result.success:
                 return FlextResult.fail(f"Client creation failed: {client_result.error}")
 
             client = client_result.data
             response = client.get(endpoint.health_path)
 
-            if response.is_success:
+            if response.success:
                 return FlextResult.ok(response.data)
             else:
                 return FlextResult.fail(f"Health check failed: {response.error}")
@@ -2033,7 +2033,7 @@ class FlextServiceRegistry:
     def create_service_client(self, service_name: str, **client_options) -> FlextResult[Any]:
         """Create HTTP client for discovered service."""
         discovery_result = self.discover_service(service_name)
-        if not discovery_result.is_success:
+        if not discovery_result.success:
             return FlextResult.fail(discovery_result.error)
 
         endpoint = discovery_result.data
@@ -2051,7 +2051,7 @@ class FlextServiceRegistry:
 
         client_result = self.api.flext_api_create_client(config)
 
-        if client_result.is_success:
+        if client_result.success:
             logger.info("Service client created",
                        service=service_name,
                        endpoint=endpoint.name)
@@ -2129,7 +2129,7 @@ def service_discovery_demo():
             print(f"\n--- Discovering {service_name} ---")
 
             discovery_result = registry.discover_service(service_name)
-            if discovery_result.is_success:
+            if discovery_result.success:
                 endpoint = discovery_result.data
                 print(f"✅ Discovered: {endpoint.name} at {endpoint.url}")
                 print(f"   Tags: {endpoint.tags}")
@@ -2145,14 +2145,14 @@ def service_discovery_demo():
             headers={"X-Demo": "service-discovery"}
         )
 
-        if client_result.is_success:
+        if client_result.success:
             print("✅ Service client created successfully")
 
             # Test the client
             client = client_result.data
             response = client.get("/json")
 
-            if response.is_success:
+            if response.success:
                 print("✅ Service client test successful")
                 print(f"   Response keys: {list(response.data.keys())}")
             else:
@@ -2172,7 +2172,7 @@ def service_discovery_demo():
         # Test load balancing by calling service multiple times
         for i in range(3):
             discovery_result = registry.discover_service("demo-api")
-            if discovery_result.is_success:
+            if discovery_result.success:
                 endpoint = discovery_result.data
                 print(f"Request {i+1}: Using {endpoint.name} ({endpoint.url})")
             else:

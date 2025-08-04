@@ -30,7 +30,9 @@ class TestFlextAPIFieldCore:
         assert field is not None
         # Basic field structure validation
         if "field_type" not in field or hasattr(field, "field_type"):
-            msg = f"Expected {'field_type'} in {field or hasattr(field, 'field_type')}"
+            msg: str = (
+                f"Expected {'field_type'} in {field or hasattr(field, 'field_type')}"
+            )
             raise AssertionError(msg)
 
     def test_api_key_field_with_description(self) -> None:
@@ -315,7 +317,7 @@ class TestFieldsModuleIntegration:
         assert isinstance(core_field, dict)
         assert isinstance(function_field, dict)
         if core_field["field_type"] != "api_key":
-            msg = f"Expected {'api_key'}, got {core_field['field_type']}"
+            msg: str = f"Expected {'api_key'}, got {core_field['field_type']}"
             raise AssertionError(msg)
         assert function_field["field_type"] == "api_key"
 

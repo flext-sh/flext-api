@@ -129,7 +129,7 @@ class ApiRequest(FlextEntity):
 
 ### **3. Railway-Oriented Programming**
 
-Consistent use of **FlextResult<T>** pattern for error handling without exceptions:
+Consistent use of **FlextResult[T]** pattern for error handling without exceptions:
 
 ```python
 from flext_core import FlextResult
@@ -732,7 +732,7 @@ class TestFlextResultPatterns:
 
         # ✅ Verify FlextResult structure
         assert isinstance(health_result, FlextResult)
-        assert health_result.is_success
+        assert health_result.success
         assert health_result.is_failure is False
         assert health_result.data is not None
         assert health_result.error is None
@@ -754,7 +754,7 @@ class TestFlextResultPatterns:
         # ✅ Verify FlextResult failure structure
         assert isinstance(client_result, FlextResult)
         assert client_result.is_failure
-        assert client_result.is_success is False
+        assert client_result.success is False
         assert client_result.data is None
         assert client_result.error is not None
 
@@ -772,7 +772,7 @@ class TestFlextResultPatterns:
             .flat_map(lambda data: FlextResult.ok({**data, "validated": True}))
         )
 
-        assert result.is_success
+        assert result.success
         assert result.data["test"] == "data"
         assert result.data["processed"] is True
         assert result.data["validated"] is True
@@ -785,14 +785,14 @@ class TestFlextResultPatterns:
         # ✅ Test service lifecycle
         start_result = await api.start()  # Note: should be sync in target
         assert isinstance(start_result, FlextResult)
-        assert start_result.is_success
+        assert start_result.success
 
         health_result = api.health_check()
-        assert health_result.is_success
+        assert health_result.success
 
         stop_result = await api.stop()  # Note: should be sync in target
         assert isinstance(stop_result, FlextResult)
-        assert stop_result.is_success
+        assert stop_result.success
 ```
 
 ---

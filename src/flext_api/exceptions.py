@@ -146,7 +146,7 @@ class FlextApiBuilderError(FlextApiError):
         super().__init__(f"API builder: {message}", **context)  # type: ignore[arg-type]
 
 
-__all__ = [
+__all__: list[str] = [
     "FlextApiAuthenticationError",
     "FlextApiBuilderError",
     "FlextApiConfigurationError",

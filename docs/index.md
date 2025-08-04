@@ -64,7 +64,7 @@ client_result = api.flext_api_create_client({
     "max_retries": 3
 })
 
-if client_result.is_success:
+if client_result.success:
     client = client_result.data
     logger.info("✅ Client created successfully")
 else:
@@ -209,7 +209,7 @@ app = flext_api_create_app()
 @app.get("/health")
 async def health_check(api = Depends(create_flext_api)):
     health_result = api.health_check()
-    return health_result.data if health_result.is_success else {"error": health_result.error}
+    return health_result.data if health_result.success else {"error": health_result.error}
 ```
 
 ---
@@ -340,7 +340,7 @@ make format          # Auto-format code
 
 #### **FLEXT-Core Compliance**
 
-- [ ] FlextResult<T> used for operations that can fail
+- [ ] FlextResult[T] used for operations that can fail
 - [ ] get_logger(**name**) from flext-core (not structlog)
 - [ ] Services inherit from FlextService correctly
 - [ ] Global container via get_flext_container()

@@ -187,7 +187,7 @@ result = await client.get(
 # Todas as operações retornam FlextResult
 result = await client.get("/users")
 
-if result.is_success:
+if result.success:
     response = result.data
 
     # Acessar dados
@@ -207,17 +207,17 @@ else:
 ```python
 # JSON response
 result = await client.get("/api/users")
-if result.is_success:
+if result.success:
     users = result.data.json()
 
 # Text response
 result = await client.get("/health", headers={"Accept": "text/plain"})
-if result.is_success:
+if result.success:
     status = result.data.text()
 
 # Binary response
 result = await client.get("/files/image.png")
-if result.is_success:
+if result.success:
     image_bytes = result.data.content
 ```
 
@@ -228,7 +228,7 @@ if result.is_success:
 ```python
 # Health check do cliente
 health_result = await client.get_health()
-if health_result.is_success:
+if health_result.success:
     health = health_result.data
     print(f"Requests made: {health['request_count']}")
     print(f"Success rate: {health['success_rate']}")
@@ -240,7 +240,7 @@ if health_result.is_success:
 ```python
 # Métricas detalhadas
 metrics_result = await client.get_metrics()
-if metrics_result.is_success:
+if metrics_result.success:
     metrics = metrics_result.data
 
     # Cache metrics
@@ -270,7 +270,7 @@ async def example_with_context():
     ) as client:
         # Fazer requisições
         result = await client.get("/users")
-        if result.is_success:
+        if result.success:
             users = result.data.json()
             print(f"Found {len(users)} users")
 
@@ -290,7 +290,7 @@ from flext_api.client import (
 
 try:
     result = await client.get("/users")
-    if not result.is_success:
+    if not result.success:
         if result.error_type == "timeout":
             print("Request timed out")
         elif result.error_type == "connection":
@@ -376,7 +376,7 @@ async def monitor_client_health():
     health = await client.get_health()
     metrics = await client.get_metrics()
 
-    if health.is_success:
+    if health.success:
         success_rate = health.data['success_rate']
         if success_rate < 0.95:  # Menos de 95%
             print("⚠️ Client health degraded!")

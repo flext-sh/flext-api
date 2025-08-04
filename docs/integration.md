@@ -46,18 +46,18 @@ class FlexCoreClient:
             }
         })
 
-        if not self.client_result.is_success:
+        if not self.client_result.success:
             logger.error("Failed to create FlexCore client", error=self.client_result.error)
 
     def health_check(self) -> FlextResult[dict]:
         """Check FlexCore service health."""
-        if not self.client_result.is_success:
+        if not self.client_result.success:
             return FlextResult.fail("Client not initialized")
 
         client = self.client_result.data
         response = client.get("/health")
 
-        if response.is_success:
+        if response.success:
             logger.info("FlexCore health check successful")
             return FlextResult.ok(response.data)
         else:
@@ -66,7 +66,7 @@ class FlexCoreClient:
 
     def execute_plugin(self, plugin_name: str, command: dict) -> FlextResult[dict]:
         """Execute plugin command via FlexCore."""
-        if not self.client_result.is_success:
+        if not self.client_result.success:
             return FlextResult.fail("Client not initialized")
 
         client = self.client_result.data
@@ -75,7 +75,7 @@ class FlexCoreClient:
             json=command
         )
 
-        if response.is_success:
+        if response.success:
             logger.info("Plugin executed successfully", plugin=plugin_name)
             return FlextResult.ok(response.data)
         else:
@@ -111,7 +111,7 @@ class FlextServiceClient:
 
     def execute_meltano_pipeline(self, pipeline_config: Dict[str, Any]) -> FlextResult[dict]:
         """Execute Meltano pipeline via FLEXT Service."""
-        if not self.client_result.is_success:
+        if not self.client_result.success:
             return FlextResult.fail("Client not initialized")
 
         client = self.client_result.data
@@ -120,7 +120,7 @@ class FlextServiceClient:
             json=pipeline_config
         )
 
-        if response.is_success:
+        if response.success:
             logger.info("Meltano pipeline executed", pipeline=pipeline_config.get('name'))
             return FlextResult.ok(response.data)
         else:
@@ -129,13 +129,13 @@ class FlextServiceClient:
 
     def get_pipeline_status(self, pipeline_id: str) -> FlextResult[dict]:
         """Get pipeline execution status."""
-        if not self.client_result.is_success:
+        if not self.client_result.success:
             return FlextResult.fail("Client not initialized")
 
         client = self.client_result.data
         response = client.get(f"/api/v1/pipelines/{pipeline_id}/status")
 
-        if response.is_success:
+        if response.success:
             return FlextResult.ok(response.data)
         else:
             return FlextResult.fail(f"Status check failed: {response.error}")
@@ -172,7 +172,7 @@ class AuthenticatedApiClient:
             "timeout": 10
         })
 
-        if not auth_client_result.is_success:
+        if not auth_client_result.success:
             return FlextResult.fail("Auth client creation failed")
 
         auth_client = auth_client_result.data
@@ -181,7 +181,7 @@ class AuthenticatedApiClient:
             "password": password
         })
 
-        if response.is_success:
+        if response.success:
             token = response.data.get("access_token")
             if token:
                 self.auth_token = token
@@ -207,7 +207,7 @@ class AuthenticatedApiClient:
             }
         })
 
-        if client_result.is_success:
+        if client_result.success:
             logger.info("Authenticated client created", base_url=base_url)
 
         return client_result
@@ -279,7 +279,7 @@ class ObservableApiClient:
             config, plugins
         )
 
-        if client_result.is_success:
+        if client_result.success:
             logger.info("Monitored client created", base_url=config.get("base_url"))
             metrics.increment("flext_api.client.created")
         else:
@@ -361,7 +361,7 @@ class OracleApiIntegration:
 
         # Test database connectivity first
         db_health = self.db_client.health_check()
-        if not db_health.is_success:
+        if not db_health.success:
             logger.warning("Database connectivity issue", error=db_health.error)
 
         # Create HTTP client with database context
@@ -383,7 +383,7 @@ class OracleApiIntegration:
 
             for record in api_data:
                 insert_result = self.db_client.insert_record("api_data", record)
-                if insert_result.is_success:
+                if insert_result.success:
                     records_processed += 1
                 else:
                     logger.warning("Record insert failed", record_id=record.get("id"))
@@ -420,12 +420,12 @@ class LdapApiIntegration:
 
         # Authenticate with LDAP
         auth_result = self.ldap_client.authenticate(username, password)
-        if not auth_result.is_success:
+        if not auth_result.success:
             return FlextResult.fail(f"LDAP authentication failed: {auth_result.error}")
 
         # Get user attributes
         user_result = self.ldap_client.get_user_attributes(username)
-        if not user_result.is_success:
+        if not user_result.success:
             return FlextResult.fail(f"User lookup failed: {user_result.error}")
 
         user_data = user_result.data
@@ -442,7 +442,7 @@ class LdapApiIntegration:
 
         # Get user information from LDAP
         user_result = self.ldap_client.get_user_attributes(username)
-        if not user_result.is_success:
+        if not user_result.success:
             return FlextResult.fail("User not found in LDAP")
 
         user_data = user_result.data
@@ -497,7 +497,7 @@ class MeltanoPipelineApi:
             }
         })
 
-        if not client_result.is_success:
+        if not client_result.success:
             return FlextResult.fail("Pipeline client creation failed")
 
         client = client_result.data
@@ -511,7 +511,7 @@ class MeltanoPipelineApi:
             "state": pipeline_config.get("state")
         })
 
-        if response.is_success:
+        if response.success:
             execution_id = response.data.get("execution_id")
             logger.info("Pipeline execution started", execution_id=execution_id)
             return FlextResult.ok(execution_id)
@@ -527,13 +527,13 @@ class MeltanoPipelineApi:
             "timeout": 10
         })
 
-        if not client_result.is_success:
+        if not client_result.success:
             return FlextResult.fail("Monitoring client creation failed")
 
         client = client_result.data
         response = client.get(f"/api/v1/pipelines/{execution_id}/status")
 
-        if response.is_success:
+        if response.success:
             status_data = response.data
             logger.info("Pipeline status retrieved",
                        execution_id=execution_id,
@@ -572,7 +572,7 @@ class DbtTransformationApi:
             }
         })
 
-        if not client_result.is_success:
+        if not client_result.success:
             return FlextResult.fail("DBT client creation failed")
 
         client = client_result.data
@@ -583,7 +583,7 @@ class DbtTransformationApi:
             "target": "dev"
         })
 
-        if response.is_success:
+        if response.success:
             result = response.data
             logger.info("DBT models executed",
                        models=models,
@@ -627,13 +627,13 @@ class WebInterfaceApi:
             }
         })
 
-        if not client_result.is_success:
+        if not client_result.success:
             return FlextResult.fail("Web client creation failed")
 
         client = client_result.data
         response = client.get("/api/v1/dashboard/data")
 
-        if response.is_success:
+        if response.success:
             dashboard_data = response.data
             logger.info("Dashboard data retrieved successfully")
             return FlextResult.ok(dashboard_data)
@@ -649,7 +649,7 @@ class WebInterfaceApi:
             "timeout": 10
         })
 
-        if not client_result.is_success:
+        if not client_result.success:
             return FlextResult.fail("Web client creation failed")
 
         client = client_result.data
@@ -658,7 +658,7 @@ class WebInterfaceApi:
             "timestamp": "2024-01-01T00:00:00Z"
         })
 
-        if response.is_success:
+        if response.success:
             logger.info("Pipeline status updated in UI", pipeline_id=pipeline_id, status=status)
             return FlextResult.ok(data=True)
         else:
@@ -698,7 +698,7 @@ class CliApiIntegration:
             }
         })
 
-        if not client_result.is_success:
+        if not client_result.success:
             return FlextResult.fail("CLI client creation failed")
 
         client = client_result.data
@@ -708,7 +708,7 @@ class CliApiIntegration:
             "working_directory": "/workspace"
         })
 
-        if response.is_success:
+        if response.success:
             result = response.data
             logger.info("CLI command executed", command=" ".join(command))
             return FlextResult.ok(result)
@@ -752,7 +752,7 @@ class FlextServiceDiscovery:
 
         # Health check service before creating client
         health_result = self.check_service_health(service_name)
-        if not health_result.is_success:
+        if not health_result.success:
             logger.warning("Service health check failed", service=service_name)
 
         client_result = self.api.flext_api_create_client({
@@ -778,13 +778,13 @@ class FlextServiceDiscovery:
             "timeout": 5  # Short timeout for health checks
         })
 
-        if not client_result.is_success:
+        if not client_result.success:
             return FlextResult.fail("Health check client creation failed")
 
         client = client_result.data
         response = client.get("/health")
 
-        if response.is_success:
+        if response.success:
             return FlextResult.ok(response.data)
         else:
             return FlextResult.fail(f"Health check failed: {response.error}")

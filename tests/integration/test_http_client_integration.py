@@ -36,7 +36,7 @@ class TestHttpClientIntegration:
         try:
             # Test GET request
             result = await client.get("/get", params={"test": "integration"})
-            assert result.is_success
+            assert result.success
             assert result.data is not None
 
             response = result.data
@@ -68,10 +68,10 @@ class TestHttpClientIntegration:
         try:
             # Test multiple requests to same endpoint (caching)
             result1 = await client.get("/delay/1")
-            assert result1.is_success
+            assert result1.success
 
             result2 = await client.get("/delay/1")
-            assert result2.is_success
+            assert result2.success
 
             # Both should succeed even if second is from cache
             assert result1.data.status_code == 200
@@ -93,7 +93,7 @@ class TestHttpClientIntegration:
             test_data = {"message": "integration test", "value": 42}
 
             result = await client.post("/post", json_data=test_data)
-            assert result.is_success
+            assert result.success
 
             response = result.data
             assert response.status_code == 200
@@ -117,7 +117,7 @@ class TestHttpClientIntegration:
 
         async with FlextApiClient(config) as client:
             result = await client.get("/status/200")
-            assert result.is_success
+            assert result.success
             assert result.data.status_code == 200
 
         # Client should be stopped automatically

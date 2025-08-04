@@ -53,7 +53,7 @@ class TestMissingCoverageApi:
 
         # Test with invalid configuration
         result = api.flext_api_create_client({})
-        assert not result.is_success
+        assert not result.success
         assert "base_url" in result.error.lower()
 
     def test_api_service_info_error(self) -> None:
@@ -238,7 +238,7 @@ class TestMissingCoverageClient:
         )
 
         result = await client._make_request(request)
-        assert not result.is_success
+        assert not result.success
 
     @pytest.mark.asyncio
     async def test_client_plugin_execution_errors(self) -> None:
@@ -308,11 +308,11 @@ class TestCompleteCoverageIntegration:
         try:
             # Test successful request
             response = await client.get("/json")
-            assert response.is_success
+            assert response.success
 
             # Test error request (404 status)
             response = await client.get("/status/404")
-            assert response.is_success  # HTTP request succeeded
+            assert response.success  # HTTP request succeeded
             assert response.data.status_code == 404  # But returned 404 status
 
         finally:
@@ -343,7 +343,7 @@ class TestCompleteCoverageIntegration:
 
         # Test various error conditions
         result = api.flext_api_create_client({})
-        assert not result.is_success
+        assert not result.success
 
         result = api.flext_api_create_client({"base_url": "invalid-url"})
-        assert not result.is_success
+        assert not result.success

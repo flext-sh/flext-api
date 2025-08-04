@@ -140,14 +140,14 @@ def advanced_plugin_example():
         plugins
     )
 
-    if client_result.is_success:
+    if client_result.success:
         client = client_result.data
         logger.info("Client with advanced plugins created")
 
         # Make requests to test plugins
         for i in range(5):
             response = client.get(f"/get?request={i}")
-            if response.is_success:
+            if response.success:
                 logger.info(f"Request {i+1} completed successfully")
             else:
                 logger.error(f"Request {i+1} failed", error=response.error)
@@ -220,9 +220,9 @@ class AdvancedCircuitBreakerPlugin(FlextApiPlugin):
     def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
         """Update circuit state based on response."""
         status_code = response.get("status_code", 0)
-        is_success = 200 <= status_code < 300
+        success = 200 <= status_code < 300
 
-        if is_success:
+        if success:
             self._handle_success()
         else:
             self._handle_failure()
@@ -296,7 +296,7 @@ def circuit_breaker_example():
         [circuit_breaker]
     )
 
-    if client_result.is_success:
+    if client_result.success:
         client = client_result.data
 
         # Test circuit breaker with failing requests
@@ -307,7 +307,7 @@ def circuit_breaker_example():
             response = client.get(f"/status/{status_code}")
 
             logger.info(f"Request {i+1}: Status {status_code}",
-                       success=response.is_success,
+                       success=response.success,
                        circuit_state=circuit_breaker.state.value)
 
             time.sleep(1)  # Allow time for recovery testing
@@ -347,7 +347,7 @@ class AsyncFlextApiWrapper:
         # Run client creation in thread pool to avoid blocking
         client_result = await loop.run_in_executor(None, self._create_client)
 
-        if client_result.is_success:
+        if client_result.success:
             self.client = client_result.data
             logger.info("Async client initialized")
             return FlextResult.ok(data=True)
@@ -388,7 +388,7 @@ async def concurrent_requests_example():
     client = AsyncFlextApiWrapper("https://httpbin.org")
     init_result = await client.initialize()
 
-    if not init_result.is_success:
+    if not init_result.success:
         logger.error("Failed to initialize async client")
         return
 
@@ -410,7 +410,7 @@ async def concurrent_requests_example():
     for i, result in enumerate(results):
         if isinstance(result, Exception):
             logger.error(f"Request {i+1} failed with exception", error=str(result))
-        elif result.is_success:
+        elif result.success:
             successful_requests += 1
             logger.info(f"Request {i+1} successful", url=urls[i])
         else:
@@ -476,7 +476,7 @@ class BatchProcessor:
             }
         })
 
-        if client_result.is_success:
+        if client_result.success:
             self.client = client_result.data
             logger.info("Batch processor initialized",
                        base_url=self.base_url,
@@ -571,7 +571,7 @@ class BatchProcessor:
                 if progress_callback:
                     progress_callback(index + 1, total)
 
-                if response.is_success:
+                if response.success:
                     return BatchResult(
                         request_id=request.id,
                         success=True,
@@ -602,7 +602,7 @@ async def batch_processing_example():
     processor = BatchProcessor("https://httpbin.org", max_concurrent=5)
     init_result = processor.initialize()
 
-    if not init_result.is_success:
+    if not init_result.success:
         logger.error("Failed to initialize batch processor")
         return
 
@@ -767,7 +767,7 @@ class ResilientHttpClient:
             [self.retry_plugin]
         )
 
-        if client_result.is_success:
+        if client_result.success:
             self.client = client_result.data
             logger.info("Resilient client initialized")
         else:
@@ -787,7 +787,7 @@ class ResilientHttpClient:
                 else:
                     return FlextResult.fail(f"Unsupported method: {method}")
 
-                if response.is_success:
+                if response.success:
                     logger.info("Resilient request successful",
                                method=method,
                                path=path,
@@ -829,7 +829,7 @@ def resilient_client_example():
         logger.info(f"Testing {method} {path}")
         response = client.resilient_request(method, path, **kwargs)
 
-        if response.is_success:
+        if response.success:
             logger.info(f"✅ {method} {path} successful")
         else:
             logger.error(f"❌ {method} {path} failed", error=response.error)
@@ -897,7 +897,7 @@ class ConnectionPoolManager:
 
             client_result = self.api.flext_api_create_client(client_config)
 
-            if client_result.is_success:
+            if client_result.success:
                 self.pools[pool_key] = {
                     "client": client_result.data,
                     "created_at": time.time(),
@@ -966,11 +966,11 @@ def connection_pooling_example():
     for i in range(10):
         client_result = pool_manager.get_client(base_url)
 
-        if client_result.is_success:
+        if client_result.success:
             client = client_result.data
             response = client.get(f"/get?request={i}")
 
-            if response.is_success:
+            if response.success:
                 logger.info(f"Request {i+1} successful via pooled connection")
             else:
                 logger.error(f"Request {i+1} failed", error=response.error)
@@ -1208,7 +1208,7 @@ def advanced_caching_example():
         [caching_plugin]
     )
 
-    if not client_result.is_success:
+    if not client_result.success:
         logger.error("Failed to create cached client")
         return
 
@@ -1221,7 +1221,7 @@ def advanced_caching_example():
         logger.info(f"Request {i+1}: {url}")
         response = client.get(url, params={"request": i})
 
-        if response.is_success:
+        if response.success:
             is_cached = response.data.get("_from_cache", False)
             cache_age = response.data.get("_cache_age", 0)
 
