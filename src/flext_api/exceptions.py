@@ -86,7 +86,7 @@ class FlextApiRequestError(FlextApiError):
             context["endpoint"] = endpoint
         if status_code is not None:
             context["status_code"] = status_code
-        super().__init__(f"API request: {message}", **context)  # type: ignore[arg-type]
+        super().__init__(f"API request: {message}", **context)
 
 
 class FlextApiResponseError(FlextApiError):
@@ -106,7 +106,7 @@ class FlextApiResponseError(FlextApiError):
             context["status_code"] = status_code
         if response_body is not None:
             context["response_body"] = str(response_body)[:200]  # Limit size
-        super().__init__(f"API response: {message}", **context)  # type: ignore[arg-type]
+        super().__init__(f"API response: {message}", **context)
 
 
 class FlextApiStorageError(FlextApiError):
@@ -126,7 +126,7 @@ class FlextApiStorageError(FlextApiError):
             context["storage_type"] = storage_type
         if operation is not None:
             context["operation"] = operation
-        super().__init__(f"API storage: {message}", **context)  # type: ignore[arg-type]
+        super().__init__(f"API storage: {message}", **context)
 
 
 class FlextApiBuilderError(FlextApiError):
@@ -143,7 +143,7 @@ class FlextApiBuilderError(FlextApiError):
         context: dict[str, object] = dict(kwargs)
         if builder_step is not None:
             context["builder_step"] = builder_step
-        super().__init__(f"API builder: {message}", **context)  # type: ignore[arg-type]
+        super().__init__(f"API builder: {message}", **context)
 
 
 __all__: list[str] = [
