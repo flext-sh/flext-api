@@ -30,7 +30,7 @@ Critical Compliance TODOs (from docs/TODO.md):
         - Impact: Breaks railway-oriented programming consistency across builders
 
     🚨 PRIORITY 2 - Logging Pattern Violation (Score: 25% compliance):
-        - Current: logger = structlog.get_logger(__name__) at lines 17, 135
+        - Fixed: logger = get_logger(__name__) using flext_core patterns (✅ FIXED)
         - Required: from flext_core import get_logger; logger = get_logger(__name__)
         - Must add: structured context with correlation IDs
         - Impact: Breaks ecosystem logging standardization
@@ -159,9 +159,9 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 
-import structlog
+from flext_core import get_logger
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 # =====================================================================================
@@ -279,7 +279,7 @@ class FlextApiBuilder:
 
     def __init__(self) -> None:
         """Initialize builder."""
-        self.logger = structlog.get_logger(__name__)
+        self.logger = get_logger(__name__)
 
     def for_query(self) -> FlextApiQueryBuilder:
         """Create query builder."""
@@ -656,53 +656,27 @@ def build_paginated_response(
 
 
 def create_paginated_response(
-    data: object = None,
-    *,
-    config: PaginationConfig | None = None,
-    # Backward compatibility parameters
-    total: int = 0,
-    page: int = 1,
-    page_size: int = 20,
-    message: str = "Success",
-    metadata: dict[str, object] | None = None,
+    config: PaginationConfig,
 ) -> dict[str, object]:
     """Create paginated response using Parameter Object pattern.
 
+    This function now requires a PaginationConfig object, eliminating the
+    parameter explosion and improving maintainability following SOLID principles.
+
     Args:
-        data: Response data
-        config: PaginationConfig object (preferred)
-        total: Total number of items (backward compatibility)
-        page: Current page number (backward compatibility)
-        page_size: Items per page (backward compatibility)
-        message: Response message (backward compatibility)
-        metadata: Additional metadata (backward compatibility)
+        config: PaginationConfig object with all pagination parameters
 
     Returns:
         dict[str, object]: Paginated response dictionary
 
     Example:
-        # Preferred: Use PaginationConfig
-        config = PaginationConfig(data=items, total=100, page=1, page_size=10)
-        response = create_paginated_response(config=config)
-
-        # Backward compatible
-        response = create_paginated_response(
-            data=items, total=100, page=1, page_size=10
+        # Create response with PaginationConfig
+        config = PaginationConfig(
+            data=items, total=100, page=1, page_size=10, message="Success"
         )
+        response = create_paginated_response(config)
 
     """
-    if config is not None:
-        # Use provided PaginationConfig (preferred)
-        return build_paginated_response(config)
-    # Backward compatibility: create config from individual parameters
-    config = PaginationConfig(
-        data=data,
-        total=total,
-        page=page,
-        page_size=page_size,
-        message=message,
-        metadata=metadata,
-    )
     return build_paginated_response(config)
 
 
@@ -850,53 +824,27 @@ def build_paginated_response_object(
 
 
 def create_paginated_response_object(
-    data: object = None,
-    *,
-    config: PaginationConfig | None = None,
-    # Backward compatibility parameters
-    total: int = 0,
-    page: int = 1,
-    page_size: int = 20,
-    message: str = "Success",
-    metadata: dict[str, object] | None = None,
+    config: PaginationConfig,
 ) -> FlextApiResponse:
     """Create paginated response object using Parameter Object pattern.
 
+    This function now requires a PaginationConfig object, eliminating the
+    parameter explosion and improving maintainability following SOLID principles.
+
     Args:
-        data: Response data
-        config: PaginationConfig object (preferred)
-        total: Total number of items (backward compatibility)
-        page: Current page number (backward compatibility)
-        page_size: Items per page (backward compatibility)
-        message: Response message (backward compatibility)
-        metadata: Additional metadata (backward compatibility)
+        config: PaginationConfig object with all pagination parameters
 
     Returns:
         FlextApiResponse: Paginated response object
 
     Example:
-        # Preferred: Use PaginationConfig
-        config = PaginationConfig(data=items, total=100, page=1, page_size=10)
-        response = create_paginated_response_object(config=config)
-
-        # Backward compatible
-        response = create_paginated_response_object(
-            data=items, total=100, page=1, page_size=10
+        # Create response with PaginationConfig
+        config = PaginationConfig(
+            data=items, total=100, page=1, page_size=10, message="Success"
         )
+        response = create_paginated_response_object(config)
 
     """
-    if config is not None:
-        # Use provided PaginationConfig (preferred)
-        return build_paginated_response_object(config)
-    # Backward compatibility: create config from individual parameters
-    config = PaginationConfig(
-        data=data,
-        total=total,
-        page=page,
-    page_size=page_size,
-    message=message,
-    metadata=metadata,
-    )
     return build_paginated_response_object(config)
 
 

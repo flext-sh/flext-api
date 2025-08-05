@@ -35,7 +35,7 @@ Error Handling:
     - Configuration type conversion with safe defaults
 
 Known Issues:
-    - Uses structlog directly instead of flext_core.get_logger()
+    - Uses flext_core.get_logger() for ecosystem consistency (✅ FIXED)
     - Raises exceptions instead of returning FlextResult consistently
     - Does not inherit from FlextService base class
     - Limited plugin architecture integration
@@ -47,20 +47,18 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import importlib.metadata
-
-import structlog
-from flext_core import FlextResult
+from flext_core import FlextResult, get_logger
 
 from flext_api.builder import FlextApiBuilder
 from flext_api.client import FlextApiClient, FlextApiClientConfig
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
-# Get version without circular import
+# Import version from main module to avoid duplication
 try:
-    _version = importlib.metadata.version("flext-api")
-except importlib.metadata.PackageNotFoundError:
+    from flext_api import __version__ as _version
+except ImportError:
+    # Fallback if there's a circular import issue (shouldn't happen)
     _version = "0.9.0"
 
 

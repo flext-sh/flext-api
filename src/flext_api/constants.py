@@ -29,7 +29,7 @@ from flext_core.constants import FlextSemanticConstants
 
 class FlextApiSemanticConstants(FlextSemanticConstants):
     """API-specific semantic constants extending FlextSemanticConstants.
-    
+
     Modern Python 3.13 constants following semantic grouping patterns.
     Extends the FLEXT ecosystem constants with HTTP API specific values
     while maintaining full backward compatibility.
@@ -37,7 +37,7 @@ class FlextApiSemanticConstants(FlextSemanticConstants):
 
     class Http:
         """HTTP protocol constants."""
-        
+
         # Status code groups
         SUCCESS_CODES: ClassVar[list[int]] = [
             http.HTTPStatus.OK.value,
@@ -61,7 +61,7 @@ class FlextApiSemanticConstants(FlextSemanticConstants):
 
     class Responses:
         """API response format constants."""
-        
+
         SUCCESS_RESPONSE: ClassVar[dict[str, object]] = {
             "status": "success",
             "data": None,
@@ -75,7 +75,7 @@ class FlextApiSemanticConstants(FlextSemanticConstants):
 
     class Fields:
         """API-specific field type constants."""
-        
+
         API_KEY = "api_key"
         BEARER_TOKEN = "bearer_token"  # noqa: S105
         PIPELINE_CONFIG = "pipeline_config"
@@ -87,27 +87,27 @@ class FlextApiSemanticConstants(FlextSemanticConstants):
 
     class Status:
         """API operation status constants."""
-        
+
         # Request status
         PENDING = "pending"
         PROCESSING = "processing"
         COMPLETED = "completed"
         FAILED = "failed"
         CANCELLED = "cancelled"
-        
+
         # Service status
         HEALTHY = "healthy"
         DEGRADED = "degraded"
         UNHEALTHY = "unhealthy"
         MAINTENANCE = "maintenance"
-        
+
         # Pipeline status
         PIPELINE_IDLE = "idle"
         PIPELINE_RUNNING = "running"
         PIPELINE_SUCCESS = "success"
         PIPELINE_ERROR = "error"
         PIPELINE_TIMEOUT = "timeout"
-        
+
         # Plugin status
         PLUGIN_LOADED = "loaded"
         PLUGIN_ACTIVE = "active"
@@ -116,25 +116,25 @@ class FlextApiSemanticConstants(FlextSemanticConstants):
 
     class Endpoints:
         """API endpoint path constants."""
-        
+
         # Base paths
         API_V1 = "/api/v1"
         HEALTH = "/health"
         METRICS = "/metrics"
         DOCS = "/docs"
-        
+
         # Authentication endpoints
         AUTH_LOGIN = "/api/v1/auth/login"
         AUTH_LOGOUT = "/api/v1/auth/logout"
         AUTH_REFRESH = "/api/v1/auth/refresh"
         AUTH_VERIFY = "/api/v1/auth/verify"
-        
+
         # Pipeline endpoints
         PIPELINES = "/api/v1/pipelines"
         PIPELINE_RUN = "/api/v1/pipelines/{pipeline_id}/run"
         PIPELINE_STATUS = "/api/v1/pipelines/{pipeline_id}/status"
         PIPELINE_LOGS = "/api/v1/pipelines/{pipeline_id}/logs"
-        
+
         # Plugin endpoints
         PLUGINS = "/api/v1/plugins"
         PLUGIN_INSTALL = "/api/v1/plugins/install"
@@ -143,19 +143,19 @@ class FlextApiSemanticConstants(FlextSemanticConstants):
 
     class RateLimit:
         """Rate limiting constants."""
-        
+
         REQUESTS = 1000
         WINDOW = 3600
 
     class Validation:
         """API-specific validation patterns."""
-        
+
         USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
         PIPELINE_NAME_PATTERN = r"^[a-zA-Z0-9_-]{1,100}$"
 
     class Config:
         """API configuration constants."""
-        
+
         VERSION = "0.9.0"
         TIMEOUT = 30
         MAX_RETRIES = 3
@@ -164,7 +164,7 @@ class FlextApiSemanticConstants(FlextSemanticConstants):
 
 class FlextApiConstants(FlextApiSemanticConstants):
     """API-specific constants with backward compatibility.
-    
+
     Legacy compatibility layer providing both modern semantic access
     and traditional flat constant access patterns for smooth migration.
     """
@@ -263,18 +263,16 @@ FLEXT_API_CACHE_TTL = 300
 # ==============================================================================
 
 __all__: list[str] = [
-    # Modern Semantic Constants (Primary API)
-    "FlextApiSemanticConstants",
-    
-    # Legacy Compatibility (Backward Compatibility) 
-    "FlextApiConstants",
-    "FlextApiEndpoints",
-    "FlextApiFieldType",
-    "FlextApiStatus",
-    
     # Module-level constants (Legacy)
     "FLEXT_API_CACHE_TTL",
     "FLEXT_API_MAX_RETRIES",
     "FLEXT_API_TIMEOUT",
     "FLEXT_API_VERSION",
+    # Legacy Compatibility (Backward Compatibility)
+    "FlextApiConstants",
+    "FlextApiEndpoints",
+    "FlextApiFieldType",
+    # Modern Semantic Constants (Primary API)
+    "FlextApiSemanticConstants",
+    "FlextApiStatus",
 ]

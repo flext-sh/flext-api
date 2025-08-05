@@ -24,48 +24,137 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from flext_core.exceptions import (
-    FlextAuthenticationError as FlextApiAuthenticationError,
-    FlextConfigurationError as FlextApiConfigurationError,
-    FlextConnectionError as FlextApiConnectionError,
-    FlextError as FlextApiError,
-    FlextProcessingError as FlextApiProcessingError,
-    FlextTimeoutError as FlextApiTimeoutError,
-    FlextValidationError as FlextApiValidationError,
+    FlextAuthenticationError,
+    FlextConfigurationError,
+    FlextConnectionError,
+    FlextError,
+    FlextProcessingError,
+    FlextTimeoutError,
+    FlextValidationError,
 )
 
-# else:
-#     api_exceptions = create_module_exception_classes("flext_api")
-#
-#     # Import generated classes for clean usage
-#     FlextApiError = api_exceptions["FlextApiError"]
-#     _FactoryFlextApiValidationError = api_exceptions["FlextApiValidationError"]
-#     FlextApiConfigurationError = api_exceptions["FlextApiConfigurationError"]
-#     FlextApiConnectionError = api_exceptions["FlextApiConnectionError"]
-#     FlextApiProcessingError = api_exceptions["FlextApiProcessingError"]
-#     FlextApiAuthenticationError = api_exceptions["FlextApiAuthenticationError"]
-#     FlextApiTimeoutError = api_exceptions["FlextApiTimeoutError"]
-#
-#     # COMPATIBILITY FIX: Add validation_details interface for tests
-#     class FlextApiValidationError(_FactoryFlextApiValidationError):
-#         """Enhanced validation error with test-compatible validation_details."""
-#
-#         @property
-#         def validation_details(self) -> dict[str, str]:
-#             """Compatibility property mapping to factory-generated attributes."""
-#             details = {}
-#             if hasattr(self, "field") and self.field is not None:
-#                 details["field"] = str(self.field)
-#             if hasattr(self, "value") and self.value is not None:
-#                 # Truncate long values as tests expect
-#                 value_str = str(self.value)
-#                 details["value"] = (
-#                     value_str[:100] if len(value_str) > 100 else value_str
-#                 )
-#             return details
+# FLEXT API Exception Hierarchy - Following flext-core patterns
+# SOLID REFACTORING: Proper inheritance with specific error codes
+
+
+class FlextApiError(FlextError):
+    """Base API error with proper error code."""
+
+    def __init__(
+        self,
+        message: str = "flext_api error",
+        **kwargs: object,
+    ) -> None:
+        """Initialize API error with specific error code."""
+        super().__init__(
+            message,
+            error_code="FLEXT_API_ERROR",
+            context=kwargs,
+        )
+
+
+class FlextApiValidationError(FlextValidationError):
+    """API validation error with API-specific context."""
+
+    def __init__(
+        self,
+        message: str = "API validation failed",
+        *,
+        field: str | None = None,
+        value: object = None,
+        rules: list[str] | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Initialize API validation error following flext-core pattern."""
+        # Build validation_details for flext-core FlextValidationError
+        validation_details: dict[str, object] = {}
+        if field is not None:
+            validation_details["field"] = field
+        if value is not None:
+            validation_details["value"] = value
+        if rules is not None:
+            validation_details["rules"] = rules
+
+        # Pass validation_details to parent FlextValidationError
+        super().__init__(
+            message=message,
+            validation_details=validation_details,
+            context=kwargs,
+        )
+
+        # Store validation_details as instance attribute for test compatibility
+        # Match the base class behavior - values are stored as strings in context
+        self.validation_details: dict[str, object] = {}
+        if field is not None:
+            self.validation_details["field"] = field
+        if value is not None:
+            self.validation_details["value"] = str(value)[:100]  # Match flext-core behavior
+        if rules is not None:
+            self.validation_details["rules"] = rules
+
+
+class FlextApiConfigurationError(FlextConfigurationError):
+    """API configuration error with API-specific context."""
+
+    def __init__(
+        self,
+        message: str = "API configuration error",
+        **kwargs: object,
+    ) -> None:
+        """Initialize API configuration error."""
+        super().__init__(message, **kwargs)
+
+
+class FlextApiConnectionError(FlextConnectionError):
+    """API connection error with API-specific context."""
+
+    def __init__(
+        self,
+        message: str = "API connection error",
+        **kwargs: object,
+    ) -> None:
+        """Initialize API connection error."""
+        super().__init__(message, **kwargs)
+
+
+class FlextApiProcessingError(FlextProcessingError):
+    """API processing error with API-specific context."""
+
+    def __init__(
+        self,
+        message: str = "API processing error",
+        **kwargs: object,
+    ) -> None:
+        """Initialize API processing error."""
+        super().__init__(message, **kwargs)
+
+
+class FlextApiAuthenticationError(FlextAuthenticationError):
+    """API authentication error with API-specific context."""
+
+    def __init__(
+        self,
+        message: str = "flext_api authentication failed",
+        **kwargs: object,
+    ) -> None:
+        """Initialize API authentication error."""
+        super().__init__(f"flext_api: {message}", **kwargs)
+
+
+class FlextApiTimeoutError(FlextTimeoutError):
+    """API timeout error with API-specific context."""
+
+    def __init__(
+        self,
+        message: str = "API timeout error",
+        **kwargs: object,
+    ) -> None:
+        """Initialize API timeout error."""
+        super().__init__(message, **kwargs)
 
 
 # Domain-specific exceptions using DRY patterns - eliminates 18-line duplication
-# SOLID REFACTORING: Simplified approach using inheritance with context building
+# SOLID REFACTORING: Simplified approach using Parameter Object pattern
 
 
 @dataclass
@@ -125,7 +214,7 @@ class FlextApiRequestError(FlextApiError):
             )
             context_dict = context.to_context_dict()
 
-        super().__init__(f"API request: {message}", context=context_dict)
+        super().__init__(f"API request: {message}", **context_dict)
 
 
 class FlextApiResponseError(FlextApiError):
@@ -145,7 +234,7 @@ class FlextApiResponseError(FlextApiError):
             context["status_code"] = status_code
         if response_body is not None:
             context["response_body"] = str(response_body)[:200]  # Limit size
-        super().__init__(f"API response: {message}", context=context)
+        super().__init__(f"API response: {message}", **context)
 
 
 class FlextApiStorageError(FlextApiError):
@@ -165,7 +254,7 @@ class FlextApiStorageError(FlextApiError):
             context["storage_type"] = storage_type
         if operation is not None:
             context["operation"] = operation
-        super().__init__(f"API storage: {message}", context=context)
+        super().__init__(f"API storage: {message}", **context)
 
 
 class FlextApiBuilderError(FlextApiError):
@@ -182,7 +271,7 @@ class FlextApiBuilderError(FlextApiError):
         context: dict[str, object] = dict(kwargs)
         if builder_step is not None:
             context["builder_step"] = builder_step
-        super().__init__(f"API builder: {message}", context=context)
+        super().__init__(f"API builder: {message}", **context)
 
 
 __all__: list[str] = [

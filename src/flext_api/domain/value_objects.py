@@ -167,3 +167,329 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+
+import re
+from enum import IntEnum, StrEnum
+from urllib.parse import ParseResult, urlparse
+
+from flext_core import FlextResult, FlextValue, get_logger
+from pydantic import Field
+
+logger = get_logger(__name__)
+
+# Constants for validation
+MIN_PORT = 1
+MAX_PORT = 65535
+MIN_TOKEN_LENGTH = 16
+JWT_PARTS_COUNT = 3
+MIN_CONTROL_CHAR = 32
+DEFAULT_TOKEN_TYPE = "Bearer"  # noqa: S105  # This is HTTP Bearer auth scheme, not a password
+HTTP_STATUS_RANGES = {
+    "INFORMATIONAL": (100, 200),
+    "SUCCESS": (200, 300),
+    "REDIRECTION": (300, 400),
+    "CLIENT_ERROR": (400, 500),
+    "SERVER_ERROR": (500, 600),
+}
+
+
+class HttpMethod(StrEnum):
+    """HTTP method enumeration following foundation patterns."""
+
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    PATCH = "PATCH"
+    DELETE = "DELETE"
+    HEAD = "HEAD"
+    OPTIONS = "OPTIONS"
+    TRACE = "TRACE"
+
+
+class HttpStatus(IntEnum):
+    """HTTP status code enumeration with semantic categories."""
+
+    # 1xx Informational
+    CONTINUE = 100
+    SWITCHING_PROTOCOLS = 101
+    PROCESSING = 102
+
+    # 2xx Success
+    OK = 200
+    CREATED = 201
+    ACCEPTED = 202
+    NO_CONTENT = 204
+    PARTIAL_CONTENT = 206
+
+    # 3xx Redirection
+    MOVED_PERMANENTLY = 301
+    FOUND = 302
+    NOT_MODIFIED = 304
+    TEMPORARY_REDIRECT = 307
+
+    # 4xx Client Error
+    BAD_REQUEST = 400
+    UNAUTHORIZED = 401
+    FORBIDDEN = 403
+    NOT_FOUND = 404
+    METHOD_NOT_ALLOWED = 405
+    CONFLICT = 409
+    GONE = 410
+    UNPROCESSABLE_ENTITY = 422
+    TOO_MANY_REQUESTS = 429
+
+    # 5xx Server Error
+    INTERNAL_SERVER_ERROR = 500
+    NOT_IMPLEMENTED = 501
+    BAD_GATEWAY = 502
+    SERVICE_UNAVAILABLE = 503
+    GATEWAY_TIMEOUT = 504
+
+    @property
+    def is_informational(self) -> bool:
+        """Check if status is informational (1xx)."""
+        return HTTP_STATUS_RANGES["INFORMATIONAL"][0] <= self.value < HTTP_STATUS_RANGES["INFORMATIONAL"][1]
+
+    @property
+    def is_success(self) -> bool:
+        """Check if status indicates success (2xx)."""
+        return HTTP_STATUS_RANGES["SUCCESS"][0] <= self.value < HTTP_STATUS_RANGES["SUCCESS"][1]
+
+    @property
+    def is_redirection(self) -> bool:
+        """Check if status indicates redirection (3xx)."""
+        return HTTP_STATUS_RANGES["REDIRECTION"][0] <= self.value < HTTP_STATUS_RANGES["REDIRECTION"][1]
+
+    @property
+    def is_client_error(self) -> bool:
+        """Check if status indicates client error (4xx)."""
+        return HTTP_STATUS_RANGES["CLIENT_ERROR"][0] <= self.value < HTTP_STATUS_RANGES["CLIENT_ERROR"][1]
+
+    @property
+    def is_server_error(self) -> bool:
+        """Check if status indicates server error (5xx)."""
+        return HTTP_STATUS_RANGES["SERVER_ERROR"][0] <= self.value < HTTP_STATUS_RANGES["SERVER_ERROR"][1]
+
+
+class URL(FlextValue):
+    """HTTP URL value object following FlextValue foundation pattern.
+
+    Immutable URL representation with validation, parsing, and domain behavior.
+    Implements foundation patterns for type safety and railway-oriented creation.
+    """
+
+    raw_url: str = Field(description="Raw URL string")
+    scheme: str = Field(description="URL scheme (http/https)")
+    host: str = Field(description="Host portion")
+    port: int | None = Field(None, description="Port number")
+    path: str = Field(default="/", description="URL path")
+    query: str | None = Field(None, description="Query string")
+    fragment: str | None = Field(None, description="URL fragment")
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate URL business rules following foundation pattern."""
+        logger.debug("Validating URL business rules", url=self.raw_url)
+
+        # Basic URL validation
+        if not self.raw_url or not self.raw_url.strip():
+            return FlextResult.fail("URL cannot be empty")
+
+        # Scheme validation
+        if self.scheme not in {"http", "https"}:
+            return FlextResult.fail(f"Invalid URL scheme: {self.scheme}")
+
+        # Host validation
+        if not self.host or not self.host.strip():
+            return FlextResult.fail("URL must have a valid host")
+
+        # Port validation
+        if self.port is not None and not (MIN_PORT <= self.port <= MAX_PORT):
+            return FlextResult.fail(f"Invalid port number: {self.port}")
+
+        logger.debug("URL validation successful", url=self.raw_url)
+        return FlextResult.ok(None)
+
+    @classmethod
+    def create(cls, url: str) -> FlextResult[URL]:
+        """Create URL with validation following foundation pattern."""
+        try:
+            parsed: ParseResult = urlparse(url)
+
+            instance = cls(
+                raw_url=url,
+                scheme=parsed.scheme or "https",
+                host=parsed.hostname or "",
+                port=parsed.port,
+                path=parsed.path or "/",
+                query=parsed.query or None,
+                fragment=parsed.fragment or None,
+            )
+
+            validation_result = instance.validate_business_rules()
+            if not validation_result.success:
+                return FlextResult.fail(f"URL validation failed: {validation_result.error}")
+
+            return FlextResult.ok(instance)
+        except Exception as e:
+            return FlextResult.fail(f"URL parsing failed: {e}")
+
+    def is_secure(self) -> bool:
+        """Check if URL uses HTTPS."""
+        return self.scheme == "https"
+
+    def base_url(self) -> str:
+        """Get base URL without path, query, or fragment."""
+        port_part = f":{self.port}" if self.port else ""
+        return f"{self.scheme}://{self.host}{port_part}"
+
+    def full_path(self) -> str:
+        """Get full path including query and fragment."""
+        result = self.path
+        if self.query:
+            result += f"?{self.query}"
+        if self.fragment:
+            result += f"#{self.fragment}"
+        return result
+
+
+class HttpHeader(FlextValue):
+    """HTTP header value object following FlextValue foundation pattern.
+
+    Immutable header representation with name/value validation and domain behavior.
+    Implements foundation patterns for type safety and business rule validation.
+    """
+
+    name: str = Field(description="Header name")
+    value: str = Field(description="Header value")
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate header business rules following foundation pattern."""
+        logger.debug("Validating HTTP header business rules", header=self.name)
+
+        # Header name validation
+        if not self.name or not self.name.strip():
+            return FlextResult.fail("Header name cannot be empty")
+
+        # RFC 7230 compliant header name validation
+        if not re.match(r"^[!#$%&\'*+\-.0-9A-Z^_`a-z|~]+$", self.name):
+            return FlextResult.fail(f"Invalid header name: {self.name}")
+
+        # Header value validation (basic) - this check is always true due to typing
+        # Keeping for runtime safety in case of dynamic data
+
+        # Check for control characters (basic validation)
+        if any(ord(char) < MIN_CONTROL_CHAR and char != "\t" for char in self.value):
+            return FlextResult.fail("Header value contains invalid control characters")
+
+        logger.debug("HTTP header validation successful", header=self.name)
+        return FlextResult.ok(None)
+
+    @classmethod
+    def create(cls, name: str, value: str) -> FlextResult[HttpHeader]:
+        """Create header with validation following foundation pattern."""
+        try:
+            instance = cls(name=name, value=value)
+
+            validation_result = instance.validate_business_rules()
+            if not validation_result.success:
+                return FlextResult.fail(f"Header validation failed: {validation_result.error}")
+
+            return FlextResult.ok(instance)
+        except Exception as e:
+            return FlextResult.fail(f"Header creation failed: {e}")
+
+    def is_authorization(self) -> bool:
+        """Check if this is an authorization header."""
+        return self.name.lower() == "authorization"
+
+    def is_content_type(self) -> bool:
+        """Check if this is a content-type header."""
+        return self.name.lower() == "content-type"
+
+    def to_dict(self) -> dict[str, object]:
+        """Convert header to dictionary representation."""
+        return {self.name: self.value}
+
+    def to_tuple(self) -> tuple[str, str]:
+        """Convert header to tuple representation."""
+        return (self.name, self.value)
+
+
+class BearerToken(FlextValue):
+    """Bearer token value object following FlextValue foundation pattern.
+
+    Immutable bearer token with JWT format validation and domain behavior.
+    Implements foundation patterns for authentication token management.
+    """
+
+    token: str = Field(description="Bearer token string")
+    token_type: str = Field(default=DEFAULT_TOKEN_TYPE, description="Token type")
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate bearer token business rules following foundation pattern."""
+        logger.debug("Validating bearer token business rules")
+
+        # Token presence validation
+        if not self.token or not self.token.strip():
+            return FlextResult.fail("Bearer token cannot be empty")
+
+        # Token length validation (minimum security requirement)
+        if len(self.token) < MIN_TOKEN_LENGTH:
+            return FlextResult.fail("Bearer token must be at least 16 characters")
+
+        # Basic JWT format validation (3 parts separated by dots)
+        if self.is_jwt_format():
+            parts = self.token.split(".")
+            if len(parts) != JWT_PARTS_COUNT:
+                return FlextResult.fail("Invalid JWT format: must have 3 parts")
+
+            # Check each part is not empty
+            if any(not part for part in parts):
+                return FlextResult.fail("Invalid JWT format: empty parts not allowed")
+
+        # Token type validation
+        if self.token_type not in {DEFAULT_TOKEN_TYPE, "JWT"}:
+            return FlextResult.fail(f"Invalid token type: {self.token_type}")
+
+        logger.debug("Bearer token validation successful")
+        return FlextResult.ok(None)
+
+    @classmethod
+    def create(cls, token: str, token_type: str = DEFAULT_TOKEN_TYPE) -> FlextResult[BearerToken]:
+        """Create bearer token with validation following foundation pattern."""
+        try:
+            instance = cls(token=token, token_type=token_type)
+
+            validation_result = instance.validate_business_rules()
+            if not validation_result.success:
+                return FlextResult.fail(f"Bearer token validation failed: {validation_result.error}")
+
+            return FlextResult.ok(instance)
+        except Exception as e:
+            return FlextResult.fail(f"Bearer token creation failed: {e}")
+
+    def is_jwt_format(self) -> bool:
+        """Check if token appears to be JWT format."""
+        return len(self.token.split(".")) == JWT_PARTS_COUNT
+
+    def to_authorization_header(self) -> HttpHeader:
+        """Convert to Authorization header."""
+        header_result = HttpHeader.create("Authorization", f"{self.token_type} {self.token}")
+        if header_result.success and header_result.data is not None:
+            return header_result.data
+        # Fallback for invalid cases (should not happen with valid tokens)
+        return HttpHeader(name="Authorization", value=f"{self.token_type} {self.token}")
+
+    def get_raw_token(self) -> str:
+        """Get raw token string without type prefix."""
+        return self.token
+
+
+# Export foundation pattern value objects
+__all__ = [
+    "URL",
+    "BearerToken",
+    "HttpHeader",
+    "HttpMethod",
+    "HttpStatus",
+]
