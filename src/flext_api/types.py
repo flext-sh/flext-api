@@ -14,11 +14,11 @@ Design Patterns:
 
 Usage:
     from flext_api.types import APITypes
-    
+
     # Project-specific types
     endpoint: APITypes.HTTP.Endpoint = "/api/v1/users"
     response: APITypes.HTTP.Response[User] = create_response(user)
-    
+
     # Core ecosystem types still available
     result: FlextTypes.Core.Result[User] = FlextResult.ok(user)
 
@@ -28,7 +28,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Generic, TypeAlias, TypeVar
+from typing import Generic, TypeVar
 
 # Import base types from flext-core
 from flext_core.types import FlextTypes, FlextTypesCompat
@@ -49,62 +49,61 @@ TData = TypeVar("TData")
 # API-SPECIFIC TYPE SYSTEM
 # =============================================================================
 
+
 class APITypes:
     """API-specific type system extending flext-core foundation."""
-    
+
     # Import core types for convenience
     Core = FlextTypes.Core
     Domain = FlextTypes.Domain
     Data = FlextTypes.Data
-    
+
     class HTTP:
         """HTTP and REST API specific types."""
-        
+
         # HTTP method and endpoint types
         type Method = str  # GET, POST, PUT, DELETE, etc.
         type Endpoint = str  # /api/v1/resource
         type StatusCode = int  # 200, 404, 500, etc.
         type ContentType = str  # application/json, text/html
-        
+
         # Request/Response types with generics
         class Request(Generic[T_Request]):
             """Generic HTTP request type."""
-            pass
-            
+
         class Response(Generic[T_Response]):
             """Generic HTTP response type."""
-            pass
-        
+
         # Header and query types
         type Headers = dict[str, str]
         type QueryParams = dict[str, str | list[str]]
         type PathParams = dict[str, str]
-        
+
         # Authentication types
         type AuthToken = str
         type APIKey = str
         type BearerToken = str
-        
+
     class Validation:
         """API validation and error types."""
-        
+
         # Error response types
         type ErrorCode = str
         type ErrorMessage = str
         type ErrorDetails = dict[str, object]
-        
+
         # Validation types
         type ValidationErrors = dict[str, list[str]]
         type FieldError = dict[str, str]
-        
+
     class Serialization:
         """Data serialization types."""
-        
+
         # JSON types
         type JSONData = dict[str, object]
         type JSONArray = list[object]
         type JSONString = str
-        
+
         # Schema types
         type SchemaVersion = str
         type SchemaDefinition = dict[str, object]
@@ -114,22 +113,23 @@ class APITypes:
 # COMPATIBILITY LAYER
 # =============================================================================
 
+
 class APITypesCompat:
     """Compatibility aliases for migration from old API type patterns."""
-    
+
     # Legacy HTTP aliases
     HTTPMethod = APITypes.HTTP.Method
     HTTPEndpoint = APITypes.HTTP.Endpoint
     HTTPStatusCode = APITypes.HTTP.StatusCode
     HTTPHeaders = APITypes.HTTP.Headers
-    
+
     # Legacy response aliases
     APIResponse = APITypes.HTTP.Response
     APIRequest = APITypes.HTTP.Request
-    
+
     # Legacy validation aliases
     ValidationError = APITypes.Validation.ValidationErrors
-    
+
     # Import ecosystem compatibility
     FlextCompat = FlextTypesCompat
 
@@ -138,11 +138,13 @@ class APITypesCompat:
 # MIGRATION HELPERS
 # =============================================================================
 
+
 def get_api_types() -> dict[str, object]:
     """Get all API-specific type definitions.
-    
+
     Returns:
         Dictionary of API type names mapped to their type definitions
+
     """
     return {
         "Method": APITypes.HTTP.Method,
@@ -163,10 +165,10 @@ def get_api_types() -> dict[str, object]:
 
 __all__ = [
     "APITypes",
-    "APITypesCompat", 
+    "APITypesCompat",
+    "TData",  # Legacy compatibility
+    "T_Payload",
     "T_Request",
     "T_Response",
-    "T_Payload",
-    "TData",  # Legacy compatibility
     "get_api_types",
 ]

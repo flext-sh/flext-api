@@ -128,7 +128,6 @@ from urllib.parse import urljoin
 
 import aiohttp
 import aiohttp.hdrs
-import structlog
 
 # FLEXT Core imports - single source of truth for types and patterns
 from flext_core import (
@@ -153,7 +152,7 @@ from flext_observability.entities import FlextHealthCheck, FlextMetric
 if TYPE_CHECKING:
     import types
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 # Use flext-core types - no duplication across FLEXT projects
 T = TypeVar("T")  # Keep local for generic handling
@@ -791,25 +790,27 @@ class FlextApiClient:
 
     def _create_body_request_params(
         self,
-        method: FlextApiClientMethod,
-        path: str,
-        json_data: dict[str, object] | None = None,
-        data: str | bytes | None = None,
-        headers: dict[str, str] | None = None,
-        request_timeout: float | None = None,
+        config: HttpRequestConfig,
     ) -> HttpRequestParams:
         """Factory method: Create HTTP request parameters for body requests.
 
         DRY principle: Eliminates 18-line duplication across POST/PUT/PATCH methods
-        by centralizing parameter object creation logic.
+        by centralizing parameter object creation logic using Parameter Object pattern.
+
+        Args:
+            config: HttpRequestConfig with all request parameters
+
+        Returns:
+            HttpRequestParams: Configured request parameters
+
         """
         return HttpRequestParams(
-            method=method,
-            path=path,
-            json_data=json_data,
-            data=data,
-            headers=headers,
-            request_timeout=request_timeout,
+            method=config.method,
+            path=config.path,
+            json_data=config.json_data,
+            data=config.data,
+            headers=config.headers,
+            request_timeout=config.request_timeout,
         )
 
     async def post(
@@ -821,9 +822,15 @@ class FlextApiClient:
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
         """Make POST request using DRY factory method."""
-        params = self._create_body_request_params(
-            FlextApiClientMethod.POST, path, json_data, data, headers, request_timeout,
+        config = HttpRequestConfig(
+            method=FlextApiClientMethod.POST,
+            path=path,
+            json_data=json_data,
+            data=data,
+            headers=headers,
+            request_timeout=request_timeout,
         )
+        params = self._create_body_request_params(config)
         return await self._execute_http_request_with_body(params)
 
     async def put(
@@ -835,9 +842,15 @@ class FlextApiClient:
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
         """Make PUT request using DRY factory method."""
-        params = self._create_body_request_params(
-            FlextApiClientMethod.PUT, path, json_data, data, headers, request_timeout,
+        config = HttpRequestConfig(
+            method=FlextApiClientMethod.PUT,
+            path=path,
+            json_data=json_data,
+            data=data,
+            headers=headers,
+            request_timeout=request_timeout,
         )
+        params = self._create_body_request_params(config)
         return await self._execute_http_request_with_body(params)
 
     async def patch(
@@ -849,9 +862,15 @@ class FlextApiClient:
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
         """Make PATCH request using DRY factory method."""
-        params = self._create_body_request_params(
-            FlextApiClientMethod.PATCH, path, json_data, data, headers, request_timeout,
+        config = HttpRequestConfig(
+            method=FlextApiClientMethod.PATCH,
+            path=path,
+            json_data=json_data,
+            data=data,
+            headers=headers,
+            request_timeout=request_timeout,
         )
+        params = self._create_body_request_params(config)
         return await self._execute_http_request_with_body(params)
 
     async def delete(

@@ -126,13 +126,16 @@ class TestMissingCoverageBuilder:
             )
 
         # Test paginated response building
-        paginated_resp = build_paginated_response_object(
+        from flext_api.builder import PaginationConfig
+
+        config = PaginationConfig(
             data=[1, 2, 3],
             page=1,
             page_size=10,
             total=3,
             metadata={"source": "test"},
         )
+        paginated_resp = build_paginated_response_object(config)
         if not paginated_resp.success:
             raise AssertionError(f"Expected True, got {paginated_resp.success}")
         if paginated_resp.data != [1, 2, 3]:

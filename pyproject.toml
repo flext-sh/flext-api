@@ -46,6 +46,7 @@ dependencies = [
     "flext-core @ file:///home/marlonsc/flext/flext-core",
     "aiohttp (>=3.12.14)",
     "httpx (>=0.28.1)",
+    "ecdsa (>=0.19.1,<0.20.0)",
 ]
 keywords = ["async", "enterprise", "fastapi", "flext", "http", "rest", "typed"]
 
