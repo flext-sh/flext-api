@@ -21,6 +21,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from flext_core.exceptions import (
     FlextAuthenticationError as FlextApiAuthenticationError,
     FlextConfigurationError as FlextApiConfigurationError,
@@ -66,6 +68,35 @@ from flext_core.exceptions import (
 # SOLID REFACTORING: Simplified approach using inheritance with context building
 
 
+@dataclass
+class ApiErrorContext:
+    """Parameter Object: API error context - eliminates 6-parameter constructor.
+
+    SOLID refactoring: Reduces parameter explosion by encapsulating all API error
+    context parameters in a single object with type safety.
+    """
+
+    method: str | None = None
+    endpoint: str | None = None
+    status_code: int | None = None
+    extra_context: dict[str, object] | None = None
+
+    def to_context_dict(self) -> dict[str, object]:
+        """Convert to context dictionary for exception handling."""
+        context: dict[str, object] = (
+            self.extra_context.copy() if self.extra_context else {}
+        )
+
+        if self.method is not None:
+            context["method"] = self.method
+        if self.endpoint is not None:
+            context["endpoint"] = self.endpoint
+        if self.status_code is not None:
+            context["status_code"] = self.status_code
+
+        return context
+
+
 class FlextApiRequestError(FlextApiError):
     """API request errors with automatic context building."""
 
@@ -73,20 +104,28 @@ class FlextApiRequestError(FlextApiError):
         self,
         message: str = "API request error",
         *,
+        context: ApiErrorContext | None = None,
+        # Backward compatibility parameters
         method: str | None = None,
         endpoint: str | None = None,
         status_code: int | None = None,
         **kwargs: object,
     ) -> None:
-        """Initialize with API request context."""
-        context: dict[str, object] = dict(kwargs)
-        if method is not None:
-            context["method"] = method
-        if endpoint is not None:
-            context["endpoint"] = endpoint
-        if status_code is not None:
-            context["status_code"] = status_code
-        super().__init__(f"API request: {message}", **context)
+        """Initialize with API request context using Parameter Object pattern."""
+        if context is not None:
+            # Use Parameter Object (preferred)
+            context_dict = context.to_context_dict()
+        else:
+            # Backward compatibility: create context from individual parameters
+            context = ApiErrorContext(
+                method=method,
+                endpoint=endpoint,
+                status_code=status_code,
+                extra_context=kwargs,
+            )
+            context_dict = context.to_context_dict()
+
+        super().__init__(f"API request: {message}", context=context_dict)
 
 
 class FlextApiResponseError(FlextApiError):
@@ -106,7 +145,7 @@ class FlextApiResponseError(FlextApiError):
             context["status_code"] = status_code
         if response_body is not None:
             context["response_body"] = str(response_body)[:200]  # Limit size
-        super().__init__(f"API response: {message}", **context)
+        super().__init__(f"API response: {message}", context=context)
 
 
 class FlextApiStorageError(FlextApiError):
@@ -126,7 +165,7 @@ class FlextApiStorageError(FlextApiError):
             context["storage_type"] = storage_type
         if operation is not None:
             context["operation"] = operation
-        super().__init__(f"API storage: {message}", **context)
+        super().__init__(f"API storage: {message}", context=context)
 
 
 class FlextApiBuilderError(FlextApiError):
@@ -143,7 +182,7 @@ class FlextApiBuilderError(FlextApiError):
         context: dict[str, object] = dict(kwargs)
         if builder_step is not None:
             context["builder_step"] = builder_step
-        super().__init__(f"API builder: {message}", **context)
+        super().__init__(f"API builder: {message}", context=context)
 
 
 __all__: list[str] = [

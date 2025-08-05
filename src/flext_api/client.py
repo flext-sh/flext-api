@@ -789,6 +789,29 @@ class FlextApiClient:
         """
         return await self._execute_body_request(params)
 
+    def _create_body_request_params(
+        self,
+        method: FlextApiClientMethod,
+        path: str,
+        json_data: dict[str, object] | None = None,
+        data: str | bytes | None = None,
+        headers: dict[str, str] | None = None,
+        request_timeout: float | None = None,
+    ) -> HttpRequestParams:
+        """Factory method: Create HTTP request parameters for body requests.
+
+        DRY principle: Eliminates 18-line duplication across POST/PUT/PATCH methods
+        by centralizing parameter object creation logic.
+        """
+        return HttpRequestParams(
+            method=method,
+            path=path,
+            json_data=json_data,
+            data=data,
+            headers=headers,
+            request_timeout=request_timeout,
+        )
+
     async def post(
         self,
         path: str,
@@ -797,14 +820,9 @@ class FlextApiClient:
         headers: dict[str, str] | None = None,
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
-        """Make POST request using DRY Template Method."""
-        params = HttpRequestParams(
-            method=FlextApiClientMethod.POST,
-            path=path,
-            json_data=json_data,
-            data=data,
-            headers=headers,
-            request_timeout=request_timeout,
+        """Make POST request using DRY factory method."""
+        params = self._create_body_request_params(
+            FlextApiClientMethod.POST, path, json_data, data, headers, request_timeout,
         )
         return await self._execute_http_request_with_body(params)
 
@@ -816,14 +834,9 @@ class FlextApiClient:
         headers: dict[str, str] | None = None,
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
-        """Make PUT request using DRY Template Method."""
-        params = HttpRequestParams(
-            method=FlextApiClientMethod.PUT,
-            path=path,
-            json_data=json_data,
-            data=data,
-            headers=headers,
-            request_timeout=request_timeout,
+        """Make PUT request using DRY factory method."""
+        params = self._create_body_request_params(
+            FlextApiClientMethod.PUT, path, json_data, data, headers, request_timeout,
         )
         return await self._execute_http_request_with_body(params)
 
@@ -835,14 +848,9 @@ class FlextApiClient:
         headers: dict[str, str] | None = None,
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
-        """Make PATCH request using DRY Template Method."""
-        params = HttpRequestParams(
-            method=FlextApiClientMethod.PATCH,
-            path=path,
-            json_data=json_data,
-            data=data,
-            headers=headers,
-            request_timeout=request_timeout,
+        """Make PATCH request using DRY factory method."""
+        params = self._create_body_request_params(
+            FlextApiClientMethod.PATCH, path, json_data, data, headers, request_timeout,
         )
         return await self._execute_http_request_with_body(params)
 

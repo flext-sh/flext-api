@@ -901,9 +901,8 @@ poetry run ruff check src/ --select E501
 
 # Configure line length in pyproject.toml
 [tool.ruff]
-line-length = 100
-select = ["ALL"]
-ignore = ["D100", "D101"]  # Ignore specific rules
+extend = "../.ruff-shared.toml"
+lint.isort.known-first-party = ["flext_api"]
 ```
 
 ### **Type Checking Failures**
