@@ -44,22 +44,46 @@ class FlextAPIFieldCore:
     """Simple field core for FLEXT-API domain."""
 
     @classmethod
+    def _create_auth_field(
+        cls,
+        field_type: str,
+        description: str,
+        min_length: int,
+        max_length: int,
+        pattern: str,
+        **kwargs: TData,
+    ) -> dict[str, object]:
+        """Factory method: Create authentication field with common properties.
+
+        DRY principle: Eliminates 17-line duplication between API key and bearer token
+        field creation by centralizing common authentication field properties.
+        """
+        return {
+            "field_type": field_type,
+            "description": description,
+            "sensitive": True,
+            "required": True,
+            "min_length": min_length,
+            "max_length": max_length,
+            "pattern": pattern,
+            **kwargs,
+        }
+
+    @classmethod
     def api_key_field(
         cls,
         description: str = "API key for authentication",
         **kwargs: TData,
     ) -> dict[str, object]:
-        """Create API key field definition."""
-        return {
-            "field_type": "api_key",
-            "description": description,
-            "sensitive": True,
-            "required": True,
-            "min_length": 32,
-            "max_length": 128,
-            "pattern": r"^[A-Za-z0-9_-]+$",
+        """Create API key field definition using DRY factory method."""
+        return cls._create_auth_field(
+            field_type="api_key",
+            description=description,
+            min_length=32,
+            max_length=128,
+            pattern=r"^[A-Za-z0-9_-]+$",
             **kwargs,
-        }
+        )
 
     @classmethod
     def bearer_token_field(
@@ -67,17 +91,15 @@ class FlextAPIFieldCore:
         description: str = "Bearer token for authentication",
         **kwargs: TData,
     ) -> dict[str, object]:
-        """Create bearer token field definition."""
-        return {
-            "field_type": "bearer_token",
-            "description": description,
-            "sensitive": True,
-            "required": True,
-            "min_length": 50,
-            "max_length": 2048,
-            "pattern": r"^[A-Za-z0-9._-]+$",
+        """Create bearer token field definition using DRY factory method."""
+        return cls._create_auth_field(
+            field_type="bearer_token",
+            description=description,
+            min_length=50,
+            max_length=2048,
+            pattern=r"^[A-Za-z0-9._-]+$",
             **kwargs,
-        }
+        )
 
     @classmethod
     def pipeline_config_field(
