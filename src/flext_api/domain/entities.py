@@ -73,8 +73,12 @@ class ApiRequest(FlextEntity):
     url: str = Field(description="Request URL")
     headers: dict[str, str] = Field(default_factory=dict, description="HTTP headers")
     body: dict[str, object] | None = Field(None, description="Request body")
-    query_params: dict[str, str] = Field(default_factory=dict, description="Query parameters")
-    state: RequestState = Field(default=RequestState.CREATED, description="Request processing state")
+    query_params: dict[str, str] = Field(
+        default_factory=dict, description="Query parameters",
+    )
+    state: RequestState = Field(
+        default=RequestState.CREATED, description="Request processing state",
+    )
 
     # Timestamp fields for entity lifecycle tracking
     created_at: datetime = Field(
@@ -118,10 +122,12 @@ class ApiRequest(FlextEntity):
         if self.state != RequestState.VALIDATED:
             return FlextResult.fail(f"Cannot start processing from state: {self.state}")
 
-        updated = self.model_copy(update={
-            "state": RequestState.PROCESSING,
-            "updated_at": datetime.now(UTC),
-        })
+        updated = self.model_copy(
+            update={
+                "state": RequestState.PROCESSING,
+                "updated_at": datetime.now(UTC),
+            },
+        )
 
         logger.info("Request processing started", request_id=self.id)
         return FlextResult.ok(updated)
@@ -131,10 +137,12 @@ class ApiRequest(FlextEntity):
         if self.state != RequestState.PROCESSING:
             return FlextResult.fail(f"Cannot complete from state: {self.state}")
 
-        updated = self.model_copy(update={
-            "state": RequestState.COMPLETED,
-            "updated_at": datetime.now(UTC),
-        })
+        updated = self.model_copy(
+            update={
+                "state": RequestState.COMPLETED,
+                "updated_at": datetime.now(UTC),
+            },
+        )
 
         logger.info("Request processing completed", request_id=self.id)
         return FlextResult.ok(updated)
@@ -148,9 +156,13 @@ class ApiResponse(FlextEntity):
     """
 
     status_code: int = Field(description="HTTP status code")
-    headers: dict[str, str] = Field(default_factory=dict, description="Response headers")
+    headers: dict[str, str] = Field(
+        default_factory=dict, description="Response headers",
+    )
     body: dict[str, object] | None = Field(None, description="Response body")
-    state: ResponseState = Field(default=ResponseState.PENDING, description="Response state")
+    state: ResponseState = Field(
+        default=ResponseState.PENDING, description="Response state",
+    )
     request_id: str | None = Field(None, description="Associated request ID")
 
     # Timestamp fields for entity lifecycle tracking
@@ -175,7 +187,9 @@ class ApiResponse(FlextEntity):
         if self.headers:
             for key, value in self.headers.items():
                 if not key:
-                    return FlextResult.fail("Response header keys must be non-empty strings")
+                    return FlextResult.fail(
+                        "Response header keys must be non-empty strings",
+                    )
                 # Type hints ensure str values, but validate empty values
                 if not value:
                     return FlextResult.fail("Response header values cannot be empty")
@@ -185,10 +199,12 @@ class ApiResponse(FlextEntity):
 
     def mark_success(self) -> FlextResult[ApiResponse]:
         """Mark response as successful."""
-        updated = self.model_copy(update={
-            "state": ResponseState.SUCCESS,
-            "updated_at": datetime.now(UTC),
-        })
+        updated = self.model_copy(
+            update={
+                "state": ResponseState.SUCCESS,
+                "updated_at": datetime.now(UTC),
+            },
+        )
 
         logger.info("Response marked as success", response_id=self.id)
         return FlextResult.ok(updated)
@@ -201,13 +217,17 @@ class ApiResponse(FlextEntity):
             "response_id": self.id,
         }
 
-        updated = self.model_copy(update={
-            "state": ResponseState.ERROR,
-            "body": error_body,
-            "updated_at": datetime.now(UTC),
-        })
+        updated = self.model_copy(
+            update={
+                "state": ResponseState.ERROR,
+                "body": error_body,
+                "updated_at": datetime.now(UTC),
+            },
+        )
 
-        logger.error("Response marked as error", response_id=self.id, error=error_message)
+        logger.error(
+            "Response marked as error", response_id=self.id, error=error_message,
+        )
         return FlextResult.ok(updated)
 
 
@@ -320,21 +340,25 @@ class ApiSession(FlextEntity):
 
         new_expiration = datetime.now(UTC) + timedelta(minutes=duration_minutes)
 
-        updated = self.model_copy(update={
-            "expires_at": new_expiration,
-            "last_activity": datetime.now(UTC),
-            "updated_at": datetime.now(UTC),
-        })
+        updated = self.model_copy(
+            update={
+                "expires_at": new_expiration,
+                "last_activity": datetime.now(UTC),
+                "updated_at": datetime.now(UTC),
+            },
+        )
 
         logger.info("Session extended", session_id=self.id, expires_at=new_expiration)
         return FlextResult.ok(updated)
 
     def deactivate(self) -> FlextResult[ApiSession]:
         """Deactivate session."""
-        updated = self.model_copy(update={
-            "is_active": False,
-            "updated_at": datetime.now(UTC),
-        })
+        updated = self.model_copy(
+            update={
+                "is_active": False,
+                "updated_at": datetime.now(UTC),
+            },
+        )
 
         logger.info("Session deactivated", session_id=self.id)
         return FlextResult.ok(updated)

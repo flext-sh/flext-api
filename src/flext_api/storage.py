@@ -13,13 +13,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core.types import FlextTypes
+
 
 class FlextAPIStorage:
     """Simple storage abstraction for FLEXT API."""
 
     def __init__(self) -> None:
         """Initialize storage instance."""
-        self._data: dict[str, object] = {}
+        self._data: FlextTypes.Core.JsonDict = {}
 
     def get(self, key: str) -> object | None:
         """Get value by key."""

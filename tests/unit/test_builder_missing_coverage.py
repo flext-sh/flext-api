@@ -111,7 +111,7 @@ class TestMissingBuilderCoverage:
             success=True,
             data={"test": "data"},
             message="Success",
-            metadata={"info": "test"}
+            metadata={"info": "test"},
         )
 
         # Test builder pattern - should return ResponseBuilder
@@ -131,7 +131,7 @@ class TestMissingBuilderCoverage:
             page=1,
             page_size=10,
             message="Retrieved items",
-            metadata={"total": 2}
+            metadata={"total": 2},
         )
 
         result = build_paginated_response(config)
@@ -226,7 +226,13 @@ class TestMissingBuilderCoverage:
         builder = PaginatedResponseBuilder()
         test_data = [{"id": 1}]
 
-        result = builder.with_data(test_data).with_total(50).with_page(2).with_page_size(10).build()
+        result = (
+            builder.with_data(test_data)
+            .with_total(50)
+            .with_page(2)
+            .with_page_size(10)
+            .build()
+        )
 
         assert result["success"] is True
         assert result["data"] == test_data
@@ -244,8 +250,7 @@ class TestMissingBuilderCoverage:
 
         # Test method chaining that hits advanced functionality
         result = (
-            builder
-            .equals("status", "active")
+            builder.equals("status", "active")
             .sort_desc("created_at")
             .page(1)
             .page_size(10)

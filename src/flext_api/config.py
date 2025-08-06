@@ -16,6 +16,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import FlextBaseSettings, FlextConstants, FlextResult
+from flext_core.types import FlextTypes
 from pydantic import Field, field_validator
 
 
@@ -63,7 +64,7 @@ class FlextApiSettings(FlextBaseSettings):
     @classmethod
     def create_with_validation(
         cls,
-        overrides: dict[str, object] | None = None,
+        overrides: FlextTypes.Core.JsonDict | None = None,
         **kwargs: object,
     ) -> FlextResult[FlextBaseSettings]:
         """Create settings instance with validation and return FlextResult.
@@ -85,7 +86,7 @@ class FlextApiSettings(FlextBaseSettings):
 
             settings = cls.model_validate(config_data) if config_data else cls()
             return FlextResult.ok(settings)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, OSError) as e:
             return FlextResult.fail(f"Failed to create settings: {e}")
 
 

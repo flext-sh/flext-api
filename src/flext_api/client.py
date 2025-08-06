@@ -530,7 +530,7 @@ class FlextApiClient:
                 await self._session.close()
                 # DRY session tracking - unregister from active sessions
                 FlextApiClient._active_sessions.discard(self._session)
-            except Exception as e:
+            except (RuntimeError, ValueError, TypeError, OSError, ConnectionError) as e:
                 self.logger.debug("Session cleanup warning: %s", e)
             finally:
                 self._session = None
@@ -553,7 +553,7 @@ class FlextApiClient:
         try:
             response = await self._make_request_impl(request)
             return FlextResult.ok(response)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, OSError, ConnectionError) as e:
             logger.exception(
                 "Failed to make HTTP request",
                 method=request.method,
@@ -939,7 +939,7 @@ class FlextApiClient:
                 f"{operation_name}ed",
             )
             return FlextResult.ok(None)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, OSError, ConnectionError) as e:
             self.logger.exception("Failed to %s FlextApiClient service", operation_name)
             return FlextResult.fail(f"Service {operation_name} failed: {e}")
 
@@ -1037,7 +1037,7 @@ class FlextApiClient:
             self._handle_observability_result(health_check_result, "health check")
 
             return FlextResult.ok(health_data)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, OSError, ConnectionError) as e:
             self.logger.exception("Health check failed")
             return FlextResult.fail(f"Health check failed: {e}")
 

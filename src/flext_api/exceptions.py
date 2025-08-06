@@ -88,7 +88,9 @@ class FlextApiValidationError(FlextValidationError):
         if field is not None:
             self.validation_details["field"] = field
         if value is not None:
-            self.validation_details["value"] = str(value)[:100]  # Match flext-core behavior
+            self.validation_details["value"] = str(value)[
+                :100
+            ]  # Match flext-core behavior
         if rules is not None:
             self.validation_details["rules"] = rules
 
