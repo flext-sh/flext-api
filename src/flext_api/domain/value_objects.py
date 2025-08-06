@@ -183,7 +183,7 @@ MAX_PORT = 65535
 MIN_TOKEN_LENGTH = 16
 JWT_PARTS_COUNT = 3
 MIN_CONTROL_CHAR = 32
-DEFAULT_TOKEN_TYPE = "Bearer"  # noqa: S105  # This is HTTP Bearer auth scheme, not a password
+DEFAULT_TOKEN_TYPE = "Bearer"  # noqa: S105
 HTTP_STATUS_RANGES = {
     "INFORMATIONAL": (100, 200),
     "SUCCESS": (200, 300),
