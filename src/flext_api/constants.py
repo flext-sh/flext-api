@@ -21,6 +21,7 @@ import http
 from typing import ClassVar
 
 from flext_core.constants import FlextSemanticConstants
+from flext_core.types import FlextTypes
 
 # ==============================================================================
 # API-SPECIFIC SEMANTIC CONSTANTS - Extending flext-core
@@ -62,12 +63,12 @@ class FlextApiSemanticConstants(FlextSemanticConstants):
     class Responses:
         """API response format constants."""
 
-        SUCCESS_RESPONSE: ClassVar[dict[str, object]] = {
+        SUCCESS_RESPONSE: ClassVar[FlextTypes.Core.JsonDict] = {
             "status": "success",
             "data": None,
             "error": None,
         }
-        ERROR_RESPONSE: ClassVar[dict[str, object]] = {
+        ERROR_RESPONSE: ClassVar[FlextTypes.Core.JsonDict] = {
             "status": "error",
             "data": None,
             "error": None,

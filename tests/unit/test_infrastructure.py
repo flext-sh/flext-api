@@ -44,11 +44,13 @@ class TestInfrastructureModule:
             "dependency injection",
             "configuration management",
             "external service",
-            "Usage Patterns"
+            "Usage Patterns",
         ]
 
         for content in required_content:
-            assert content in infrastructure_doc, f"Missing documentation for: {content}"
+            assert content in infrastructure_doc, (
+                f"Missing documentation for: {content}"
+            )
 
     def test_module_structure_follows_clean_architecture(self) -> None:
         """Test infrastructure module follows Clean Architecture patterns."""
@@ -60,7 +62,7 @@ class TestInfrastructureModule:
             "dependency injection",
             "external service",
             "configuration",
-            "service container"
+            "service container",
         ]
 
         for pattern in architecture_patterns:
@@ -74,11 +76,13 @@ class TestInfrastructureModule:
             "Service Container",
             "External",
             "Environment",
-            "Validation"
+            "Validation",
         ]
 
         for concept in integration_concepts:
-            assert concept in infrastructure_doc, f"Missing integration concept: {concept}"
+            assert concept in infrastructure_doc, (
+                f"Missing integration concept: {concept}"
+            )
 
     def test_module_provides_usage_examples(self) -> None:
         """Test module provides comprehensive usage examples."""
@@ -87,7 +91,7 @@ class TestInfrastructureModule:
             "from flext_api.infrastructure",
             "ServiceContainer",
             "config",
-            "container"
+            "container",
         ]
 
         for pattern in usage_patterns:
@@ -117,7 +121,7 @@ class TestInfrastructureConfig:
             "Environment Variables",
             "Validation",
             "Type Safety",
-            "Secret Management"
+            "Secret Management",
         ]
 
         for concept in config_concepts:
@@ -132,7 +136,7 @@ class TestInfrastructureConfig:
             "patterns",
             "validation",
             "Type Safety",
-            "Error Handling"
+            "Error Handling",
         ]
 
         for pattern in foundation_patterns:
@@ -152,7 +156,7 @@ class TestInfrastructureConfig:
             "Configuration Examples",
             "Error Handling Philosophy",
             "Performance Characteristics",
-            "Quality Standards"
+            "Quality Standards",
         ]
 
         for section in doc_sections:
@@ -168,7 +172,7 @@ class TestInfrastructureConfig:
             "Environment Variables",
             "Application Layer",
             "External Services",
-            "flext-core"
+            "flext-core",
         ]
 
         for point in integration_points:
@@ -203,15 +207,12 @@ class TestInfrastructureArchitectureCompliance:
         assert len(config_doc) > 2000  # Substantial content
 
         # Check for code examples
-        code_indicators = [
-            "from flext_api",
-            "config",
-            "# ",
-            "Usage"
-        ]
+        code_indicators = ["from flext_api", "config", "# ", "Usage"]
 
         # At least some code examples should be present
-        code_examples_found = sum(1 for indicator in code_indicators if indicator in config_doc)
+        code_examples_found = sum(
+            1 for indicator in code_indicators if indicator in config_doc
+        )
         assert code_examples_found >= 2, "Insufficient code examples in documentation"
 
     def test_infrastructure_layer_boundaries(self) -> None:
@@ -233,14 +234,12 @@ class TestInfrastructureArchitectureCompliance:
         # Check documentation mentions future expansion patterns
         doc_content = infrastructure_doc
 
-        future_patterns = [
-            "Development Status",
-            "Enhancement",
-            "Production Ready"
-        ]
+        future_patterns = ["Development Status", "Enhancement", "Production Ready"]
 
         # At least mention of development roadmap
-        future_mentions = sum(1 for pattern in future_patterns if pattern in doc_content)
+        future_mentions = sum(
+            1 for pattern in future_patterns if pattern in doc_content
+        )
         assert future_mentions >= 1, "Insufficient future expansion planning"
 
 
@@ -255,7 +254,7 @@ class TestInfrastructureIntegrationPatterns:
             "Service Container",
             "service registration",
             "Lifecycle",
-            "Type-safe"
+            "Type-safe",
         ]
 
         for concept in di_concepts:
@@ -270,7 +269,7 @@ class TestInfrastructureIntegrationPatterns:
             "validation",
             "Type",
             "secret",
-            "Multi-environment"
+            "Multi-environment",
         ]
 
         for pattern in config_patterns:
@@ -284,7 +283,7 @@ class TestInfrastructureIntegrationPatterns:
             "Adapter",
             "HTTP",
             "Database",
-            "Cache"
+            "Cache",
         ]
 
         for pattern in service_patterns:
@@ -293,15 +292,12 @@ class TestInfrastructureIntegrationPatterns:
     def test_cross_cutting_concerns_documented(self) -> None:
         """Test cross-cutting concerns are properly documented."""
         # Check for cross-cutting concern documentation
-        concerns = [
-            "Cross-Cutting",
-            "Logging",
-            "monitoring",
-            "observability"
-        ]
+        concerns = ["Cross-Cutting", "Logging", "monitoring", "observability"]
 
         for concern in concerns:
-            assert concern in infrastructure_doc, f"Missing cross-cutting concern: {concern}"
+            assert concern in infrastructure_doc, (
+                f"Missing cross-cutting concern: {concern}"
+            )
 
 
 class TestInfrastructureQualityStandards:
@@ -318,7 +314,7 @@ class TestInfrastructureQualityStandards:
             "patterns",
             "flext-core",
             "Copyright",
-            "MIT"
+            "MIT",
         ]
 
         for standard in flext_standards:
@@ -341,12 +337,7 @@ class TestInfrastructureQualityStandards:
         from flext_api.infrastructure.config import __doc__ as config_doc
 
         # Check for error handling documentation
-        error_patterns = [
-            "Error Handling",
-            "validation",
-            "error",
-            "Configuration"
-        ]
+        error_patterns = ["Error Handling", "validation", "error", "Configuration"]
 
         # Should have comprehensive error handling documentation
         error_mentions = sum(1 for pattern in error_patterns if pattern in config_doc)
@@ -362,10 +353,12 @@ class TestInfrastructureQualityStandards:
             "Fast configuration loading",
             "Memory-efficient",
             "Hot-reload",
-            "performance"
+            "performance",
         ]
 
-        performance_found = sum(1 for concept in performance_concepts if concept in config_doc)
+        performance_found = sum(
+            1 for concept in performance_concepts if concept in config_doc
+        )
         assert performance_found >= 2, "Missing performance documentation"
 
 
@@ -407,7 +400,9 @@ class TestInfrastructureModuleStructure:
     def test_infrastructure_readme_exists_and_structured(self) -> None:
         """Test infrastructure README exists and is well-structured."""
 
-        readme_path = "/home/marlonsc/flext/flext-api/src/flext_api/infrastructure/README.md"
+        readme_path = (
+            "/home/marlonsc/flext/flext-api/src/flext_api/infrastructure/README.md"
+        )
         assert pathlib.Path(readme_path).exists(), "Infrastructure README.md missing"
 
         with pathlib.Path(readme_path).open(encoding="utf-8") as f:
@@ -420,7 +415,7 @@ class TestInfrastructureModuleStructure:
             "## Components",
             "## Purpose",
             "## Usage",
-            "## Development"
+            "## Development",
         ]
 
         for section in readme_sections:

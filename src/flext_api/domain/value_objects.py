@@ -248,27 +248,47 @@ class HttpStatus(IntEnum):
     @property
     def is_informational(self) -> bool:
         """Check if status is informational (1xx)."""
-        return HTTP_STATUS_RANGES["INFORMATIONAL"][0] <= self.value < HTTP_STATUS_RANGES["INFORMATIONAL"][1]
+        return (
+            HTTP_STATUS_RANGES["INFORMATIONAL"][0]
+            <= self.value
+            < HTTP_STATUS_RANGES["INFORMATIONAL"][1]
+        )
 
     @property
     def is_success(self) -> bool:
         """Check if status indicates success (2xx)."""
-        return HTTP_STATUS_RANGES["SUCCESS"][0] <= self.value < HTTP_STATUS_RANGES["SUCCESS"][1]
+        return (
+            HTTP_STATUS_RANGES["SUCCESS"][0]
+            <= self.value
+            < HTTP_STATUS_RANGES["SUCCESS"][1]
+        )
 
     @property
     def is_redirection(self) -> bool:
         """Check if status indicates redirection (3xx)."""
-        return HTTP_STATUS_RANGES["REDIRECTION"][0] <= self.value < HTTP_STATUS_RANGES["REDIRECTION"][1]
+        return (
+            HTTP_STATUS_RANGES["REDIRECTION"][0]
+            <= self.value
+            < HTTP_STATUS_RANGES["REDIRECTION"][1]
+        )
 
     @property
     def is_client_error(self) -> bool:
         """Check if status indicates client error (4xx)."""
-        return HTTP_STATUS_RANGES["CLIENT_ERROR"][0] <= self.value < HTTP_STATUS_RANGES["CLIENT_ERROR"][1]
+        return (
+            HTTP_STATUS_RANGES["CLIENT_ERROR"][0]
+            <= self.value
+            < HTTP_STATUS_RANGES["CLIENT_ERROR"][1]
+        )
 
     @property
     def is_server_error(self) -> bool:
         """Check if status indicates server error (5xx)."""
-        return HTTP_STATUS_RANGES["SERVER_ERROR"][0] <= self.value < HTTP_STATUS_RANGES["SERVER_ERROR"][1]
+        return (
+            HTTP_STATUS_RANGES["SERVER_ERROR"][0]
+            <= self.value
+            < HTTP_STATUS_RANGES["SERVER_ERROR"][1]
+        )
 
 
 class URL(FlextValue):
@@ -327,10 +347,12 @@ class URL(FlextValue):
 
             validation_result = instance.validate_business_rules()
             if not validation_result.success:
-                return FlextResult.fail(f"URL validation failed: {validation_result.error}")
+                return FlextResult.fail(
+                    f"URL validation failed: {validation_result.error}",
+                )
 
             return FlextResult.ok(instance)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError) as e:
             return FlextResult.fail(f"URL parsing failed: {e}")
 
     def is_secure(self) -> bool:
@@ -392,10 +414,12 @@ class HttpHeader(FlextValue):
 
             validation_result = instance.validate_business_rules()
             if not validation_result.success:
-                return FlextResult.fail(f"Header validation failed: {validation_result.error}")
+                return FlextResult.fail(
+                    f"Header validation failed: {validation_result.error}",
+                )
 
             return FlextResult.ok(instance)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError) as e:
             return FlextResult.fail(f"Header creation failed: {e}")
 
     def is_authorization(self) -> bool:
@@ -455,17 +479,21 @@ class BearerToken(FlextValue):
         return FlextResult.ok(None)
 
     @classmethod
-    def create(cls, token: str, token_type: str = DEFAULT_TOKEN_TYPE) -> FlextResult[BearerToken]:
+    def create(
+        cls, token: str, token_type: str = DEFAULT_TOKEN_TYPE,
+    ) -> FlextResult[BearerToken]:
         """Create bearer token with validation following foundation pattern."""
         try:
             instance = cls(token=token, token_type=token_type)
 
             validation_result = instance.validate_business_rules()
             if not validation_result.success:
-                return FlextResult.fail(f"Bearer token validation failed: {validation_result.error}")
+                return FlextResult.fail(
+                    f"Bearer token validation failed: {validation_result.error}",
+                )
 
             return FlextResult.ok(instance)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError) as e:
             return FlextResult.fail(f"Bearer token creation failed: {e}")
 
     def is_jwt_format(self) -> bool:
@@ -474,7 +502,9 @@ class BearerToken(FlextValue):
 
     def to_authorization_header(self) -> HttpHeader:
         """Convert to Authorization header."""
-        header_result = HttpHeader.create("Authorization", f"{self.token_type} {self.token}")
+        header_result = HttpHeader.create(
+            "Authorization", f"{self.token_type} {self.token}",
+        )
         if header_result.success and header_result.data is not None:
             return header_result.data
         # Fallback for invalid cases (should not happen with valid tokens)
