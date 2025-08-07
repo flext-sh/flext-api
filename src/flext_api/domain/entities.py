@@ -29,9 +29,13 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from flext_core import FlextEntity, FlextResult, get_logger
 from pydantic import Field
+
+if TYPE_CHECKING:
+    from flext_core.semantic_types import FlextTypes
 
 from flext_api.domain.value_objects import HttpMethod
 
@@ -72,12 +76,14 @@ class ApiRequest(FlextEntity):
     method: HttpMethod = Field(description="HTTP method")
     url: str = Field(description="Request URL")
     headers: dict[str, str] = Field(default_factory=dict, description="HTTP headers")
-    body: dict[str, object] | None = Field(None, description="Request body")
+    body: FlextTypes.Core.JsonDict | None = Field(None, description="Request body")
     query_params: dict[str, str] = Field(
-        default_factory=dict, description="Query parameters",
+        default_factory=dict,
+        description="Query parameters",
     )
     state: RequestState = Field(
-        default=RequestState.CREATED, description="Request processing state",
+        default=RequestState.CREATED,
+        description="Request processing state",
     )
 
     # Timestamp fields for entity lifecycle tracking
@@ -157,11 +163,13 @@ class ApiResponse(FlextEntity):
 
     status_code: int = Field(description="HTTP status code")
     headers: dict[str, str] = Field(
-        default_factory=dict, description="Response headers",
+        default_factory=dict,
+        description="Response headers",
     )
-    body: dict[str, object] | None = Field(None, description="Response body")
+    body: FlextTypes.Core.JsonDict | None = Field(None, description="Response body")
     state: ResponseState = Field(
-        default=ResponseState.PENDING, description="Response state",
+        default=ResponseState.PENDING,
+        description="Response state",
     )
     request_id: str | None = Field(None, description="Associated request ID")
 
@@ -226,7 +234,9 @@ class ApiResponse(FlextEntity):
         )
 
         logger.error(
-            "Response marked as error", response_id=self.id, error=error_message,
+            "Response marked as error",
+            response_id=self.id,
+            error=error_message,
         )
         return FlextResult.ok(updated)
 

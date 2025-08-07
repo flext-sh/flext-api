@@ -15,9 +15,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from flext_core import FlextBaseSettings, FlextConstants, FlextResult
-from flext_core.types import FlextTypes
 from pydantic import Field, field_validator
+
+if TYPE_CHECKING:
+    from flext_core.semantic_types import FlextTypes
 
 
 class FlextApiSettings(FlextBaseSettings):

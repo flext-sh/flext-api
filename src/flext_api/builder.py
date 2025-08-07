@@ -21,7 +21,6 @@ Implementation:
     - Basic parameter validation and type conversion
     - Dictionary serialization for HTTP transmission
 
-
 Critical Compliance TODOs (from docs/TODO.md):
     🚨 PRIORITY 1 - Exception Handling Violations (Score: 30% compliance):
         - Current: 11+ direct raise ValueError statements break FlextResult pattern
@@ -40,6 +39,7 @@ Critical Compliance TODOs (from docs/TODO.md):
         - Required: Full DDD aggregate patterns integration
         - Must implement: Domain events for builder operations
         - Impact: Limited domain modeling capabilities
+from flext_core.semantic_types import FlextTypes
 
 Query Building Operations:
     Basic Query Construction:
@@ -158,11 +158,14 @@ import math
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from flext_core import get_logger
 
-logger = get_logger(__name__)
+if TYPE_CHECKING:
+    from flext_core.semantic_types import FlextTypes
 
+logger = get_logger(__name__)
 
 # =====================================================================================
 # CONFIGURATION CLASSES - Reducing Function Parameter Complexity
@@ -176,8 +179,8 @@ class ResponseConfig:
     success: bool | None = None
     data: object = None
     message: str | None = None
-    metadata: dict[str, object] | None = None
-    pagination: dict[str, object] | None = None
+    metadata: FlextTypes.Core.JsonDict | None = None
+    pagination: FlextTypes.Core.JsonDict | None = None
 
 
 @dataclass(frozen=True)
@@ -189,7 +192,7 @@ class PaginationConfig:
     page: int
     page_size: int
     message: str = "Success"
-    metadata: dict[str, object] | None = None
+    metadata: FlextTypes.Core.JsonDict | None = None
 
     def __post_init__(self) -> None:
         """Validate pagination parameters."""
@@ -216,7 +219,7 @@ class FlextApiOperation(Enum):
 class FlextApiQuery:
     """Query value object using dataclass for immutability."""
 
-    filters: list[dict[str, object]] = field(default_factory=list)
+    filters: list[FlextTypes.Core.JsonDict] = field(default_factory=list)
     sorts: list[dict[str, str]] = field(default_factory=list)
     page: int = 1
     page_size: int = 20
@@ -230,7 +233,7 @@ class FlextApiQuery:
             msg = "Page size must be greater than 0"
             raise ValueError(msg)
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> FlextTypes.Core.JsonDict:
         """Convert to dictionary format."""
         return {
             "filters": self.filters,
@@ -249,16 +252,16 @@ class FlextApiResponse:
     success: bool
     data: object = None
     message: str = ""
-    metadata: dict[str, object] = field(default_factory=dict)
+    metadata: FlextTypes.Core.JsonDict = field(default_factory=dict)
     timestamp: str = ""
-    pagination: dict[str, object] | None = None
+    pagination: FlextTypes.Core.JsonDict | None = None
 
     def __post_init__(self) -> None:
         """Post-initialization with timestamp."""
         if not self.timestamp:
             object.__setattr__(self, "timestamp", datetime.now(UTC).isoformat())
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> FlextTypes.Core.JsonDict:
         """Convert to dictionary format."""
         result = {
             "success": self.success,
@@ -432,13 +435,15 @@ class FlextApiResponseBuilder:
         """DRY helper: Resolve message value."""
         return config.message if config.message is not None else self._response.message
 
-    def _resolve_metadata(self, config: ResponseConfig) -> dict[str, object]:
+    def _resolve_metadata(self, config: ResponseConfig) -> FlextTypes.Core.JsonDict:
         """DRY helper: Resolve metadata value."""
         return (
             config.metadata if config.metadata is not None else self._response.metadata
         )
 
-    def _resolve_pagination(self, config: ResponseConfig) -> dict[str, object] | None:
+    def _resolve_pagination(
+        self, config: ResponseConfig,
+    ) -> FlextTypes.Core.JsonDict | None:
         """DRY helper: Resolve pagination value."""
         return (
             config.pagination
@@ -509,7 +514,7 @@ class FlextApiResponseBuilder:
         total: int,
         page: int,
         page_size: int,
-    ) -> dict[str, object]:
+    ) -> FlextTypes.Core.JsonDict:
         """DRY helper: Create pagination data dictionary."""
         total_pages = math.ceil(total / page_size) if page_size > 0 else 0
         return {
@@ -539,7 +544,7 @@ class FlextApiResponseBuilder:
         self._create_response(config)
         return self
 
-    def metadata(self, metadata: dict[str, object]) -> FlextApiResponseBuilder:
+    def metadata(self, metadata: FlextTypes.Core.JsonDict) -> FlextApiResponseBuilder:
         """Set metadata (replaces existing metadata)."""
         config = ResponseConfig(metadata=metadata)
         self._create_response(config)
@@ -562,7 +567,7 @@ class FlextApiResponseBuilder:
 
 # Factory functions using flext-core patterns
 def build_query(
-    filters: list[dict[str, object]] | dict[str, object] | None = None,
+    filters: list[FlextTypes.Core.JsonDict] | FlextTypes.Core.JsonDict | None = None,
 ) -> FlextApiQuery:
     """Build query from filters list or dict."""
     builder = FlextApiQueryBuilder()
@@ -589,8 +594,8 @@ def build_query(
 
 
 def build_query_dict(
-    filters: list[dict[str, object]] | dict[str, object] | None = None,
-) -> dict[str, object]:
+    filters: list[FlextTypes.Core.JsonDict] | FlextTypes.Core.JsonDict | None = None,
+) -> FlextTypes.Core.JsonDict:
     """Build query from filters list or dict and return as dict."""
     return build_query(filters).to_dict()
 
@@ -598,8 +603,8 @@ def build_query_dict(
 def build_success_response(
     data: object = None,
     message: str = "Success",
-    metadata: dict[str, object] | None = None,
-) -> dict[str, object]:
+    metadata: FlextTypes.Core.JsonDict | None = None,
+) -> FlextTypes.Core.JsonDict:
     """Build success response."""
     builder = FlextApiResponseBuilder().success(data=data, message=message)
 
@@ -614,7 +619,7 @@ def build_error_response(
     message: str,
     code: int = http.HTTPStatus.INTERNAL_SERVER_ERROR.value,
     details: object = None,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Build error response."""
     builder = FlextApiResponseBuilder().error(message, code)
 
@@ -626,14 +631,14 @@ def build_error_response(
 
 def build_paginated_response(
     config: PaginationConfig,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Build paginated response using PaginationConfig.
 
     Args:
         config: PaginationConfig object with all pagination parameters
 
     Returns:
-        dict[str, object]: Paginated response dictionary
+        FlextTypes.Core.JsonDict: Paginated response dictionary
 
     Example:
         config = PaginationConfig(
@@ -657,7 +662,7 @@ def build_paginated_response(
 
 def create_paginated_response(
     config: PaginationConfig,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Create paginated response using Parameter Object pattern.
 
     This function now requires a PaginationConfig object, eliminating the
@@ -667,7 +672,7 @@ def create_paginated_response(
         config: PaginationConfig object with all pagination parameters
 
     Returns:
-        dict[str, object]: Paginated response dictionary
+        FlextTypes.Core.JsonDict: Paginated response dictionary
 
     Example:
         # Create response with PaginationConfig
@@ -694,7 +699,7 @@ class PaginatedResponseBuilder:
         self._page: int = 1
         self._page_size: int = 20
         self._message: str = "Success"
-        self._metadata: dict[str, object] | None = None
+        self._metadata: FlextTypes.Core.JsonDict | None = None
 
     def with_data(self, data: object) -> PaginatedResponseBuilder:
         """Set the response data."""
@@ -723,13 +728,13 @@ class PaginatedResponseBuilder:
 
     def with_metadata(
         self,
-        metadata: dict[str, object] | None,
+        metadata: FlextTypes.Core.JsonDict | None,
     ) -> PaginatedResponseBuilder:
         """Set the response metadata."""
         self._metadata = metadata
         return self
 
-    def build(self) -> dict[str, object]:
+    def build(self) -> FlextTypes.Core.JsonDict:
         """Build the paginated response using PaginationConfig."""
         config = PaginationConfig(
             data=self._data,
@@ -744,7 +749,7 @@ class PaginatedResponseBuilder:
 
 def build_paginated_response_legacy(
     pagination_params: PaginationConfig,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Legacy build paginated response using Builder Pattern - eliminates explosion.
 
     DEPRECATED: Use PaginatedResponseBuilder or build_paginated_response with
@@ -766,7 +771,7 @@ def build_paginated_response_legacy(
 def build_success_response_object(
     data: object = None,
     message: str = "Success",
-    metadata: dict[str, object] | None = None,
+    metadata: FlextTypes.Core.JsonDict | None = None,
 ) -> FlextApiResponse:
     """Build success response as object."""
     builder = FlextApiResponseBuilder().success(data=data, message=message)
