@@ -170,10 +170,14 @@ from __future__ import annotations
 
 import re
 from enum import IntEnum, StrEnum
+from typing import TYPE_CHECKING
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextResult, FlextValue, get_logger
 from pydantic import Field
+
+if TYPE_CHECKING:
+    from flext_core.semantic_types import FlextTypes
 
 logger = get_logger(__name__)
 
@@ -430,7 +434,7 @@ class HttpHeader(FlextValue):
         """Check if this is a content-type header."""
         return self.name.lower() == "content-type"
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> FlextTypes.Core.JsonDict:
         """Convert header to dictionary representation."""
         return {self.name: self.value}
 
@@ -480,7 +484,9 @@ class BearerToken(FlextValue):
 
     @classmethod
     def create(
-        cls, token: str, token_type: str = DEFAULT_TOKEN_TYPE,
+        cls,
+        token: str,
+        token_type: str = DEFAULT_TOKEN_TYPE,
     ) -> FlextResult[BearerToken]:
         """Create bearer token with validation following foundation pattern."""
         try:
@@ -503,7 +509,8 @@ class BearerToken(FlextValue):
     def to_authorization_header(self) -> HttpHeader:
         """Convert to Authorization header."""
         header_result = HttpHeader.create(
-            "Authorization", f"{self.token_type} {self.token}",
+            "Authorization",
+            f"{self.token_type} {self.token}",
         )
         if header_result.success and header_result.data is not None:
             return header_result.data

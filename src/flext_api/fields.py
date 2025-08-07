@@ -39,6 +39,9 @@ __all__: list[str] = [
     "user_role_field",
 ]
 
+if TYPE_CHECKING:
+    from flext_core.semantic_types import FlextTypes
+
 
 class FlextAPIFieldCore:
     """Simple field core for FLEXT-API domain."""
@@ -52,7 +55,7 @@ class FlextAPIFieldCore:
         max_length: int,
         pattern: str,
         **kwargs: TData,
-    ) -> dict[str, object]:
+    ) -> FlextTypes.Core.JsonDict:
         """Factory method: Create authentication field with common properties.
 
         DRY principle: Eliminates 17-line duplication between API key and bearer token
@@ -74,7 +77,7 @@ class FlextAPIFieldCore:
         cls,
         description: str = "API key for authentication",
         **kwargs: TData,
-    ) -> dict[str, object]:
+    ) -> FlextTypes.Core.JsonDict:
         """Create API key field definition using DRY factory method."""
         return cls._create_auth_field(
             field_type="api_key",
@@ -90,7 +93,7 @@ class FlextAPIFieldCore:
         cls,
         description: str = "Bearer token for authentication",
         **kwargs: TData,
-    ) -> dict[str, object]:
+    ) -> FlextTypes.Core.JsonDict:
         """Create bearer token field definition using DRY factory method."""
         return cls._create_auth_field(
             field_type="bearer_token",
@@ -106,7 +109,7 @@ class FlextAPIFieldCore:
         cls,
         description: str = "Pipeline configuration data",
         **kwargs: TData,
-    ) -> dict[str, object]:
+    ) -> FlextTypes.Core.JsonDict:
         """Create pipeline configuration field definition."""
         return {
             "field_type": "pipeline_config",
@@ -126,7 +129,7 @@ class FlextAPIFieldCore:
         cls,
         description: str = "Plugin configuration data",
         **kwargs: TData,
-    ) -> dict[str, object]:
+    ) -> FlextTypes.Core.JsonDict:
         """Create plugin configuration field definition."""
         return {
             "field_type": "plugin_config",
@@ -145,7 +148,7 @@ class FlextAPIFieldCore:
         cls,
         description: str = "User role for authorization",
         **kwargs: TData,
-    ) -> dict[str, object]:
+    ) -> FlextTypes.Core.JsonDict:
         """Create user role field definition."""
         return {
             "field_type": "user_role",
@@ -161,7 +164,7 @@ class FlextAPIFieldCore:
         cls,
         description: str = "API endpoint path",
         **kwargs: TData,
-    ) -> dict[str, object]:
+    ) -> FlextTypes.Core.JsonDict:
         """Create endpoint path field definition."""
         return {
             "field_type": "endpoint_path",
@@ -179,7 +182,7 @@ class FlextAPIFieldCore:
         cls,
         description: str = "HTTP method",
         **kwargs: TData,
-    ) -> dict[str, object]:
+    ) -> FlextTypes.Core.JsonDict:
         """Create HTTP method field definition."""
         return {
             "field_type": "http_method",
@@ -203,7 +206,7 @@ class FlextAPIFieldCore:
         cls,
         description: str = "Response format type",
         **kwargs: TData,
-    ) -> dict[str, object]:
+    ) -> FlextTypes.Core.JsonDict:
         """Create response format field definition."""
         return {
             "field_type": "response_format",
@@ -236,7 +239,7 @@ class FlextAPIFields:
     RESPONSE_FORMAT = FlextAPIFieldCore.response_format_field()
 
     # User management fields
-    USERNAME: ClassVar[dict[str, object]] = {
+    USERNAME: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "username",
         "description": "User login name",
         "required": True,
@@ -246,7 +249,7 @@ class FlextAPIFields:
         "max_length": 50,
     }
 
-    EMAIL: ClassVar[dict[str, object]] = {
+    EMAIL: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "email",
         "description": "User email address",
         "required": True,
@@ -255,7 +258,7 @@ class FlextAPIFields:
         "max_length": 255,
     }
 
-    PASSWORD: ClassVar[dict[str, object]] = {
+    PASSWORD: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "password",
         "description": "User password",
         "required": True,
@@ -272,7 +275,7 @@ class FlextAPIFields:
     }
 
     # Pipeline fields
-    PIPELINE_NAME: ClassVar[dict[str, object]] = {
+    PIPELINE_NAME: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "pipeline_name",
         "description": "Pipeline identifier name",
         "required": True,
@@ -282,7 +285,7 @@ class FlextAPIFields:
         "max_length": 100,
     }
 
-    PIPELINE_DESCRIPTION: ClassVar[dict[str, object]] = {
+    PIPELINE_DESCRIPTION: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "pipeline_description",
         "description": "Pipeline description text",
         "required": False,
@@ -290,7 +293,7 @@ class FlextAPIFields:
         "max_length": 500,
     }
 
-    PIPELINE_TIMEOUT: ClassVar[dict[str, object]] = {
+    PIPELINE_TIMEOUT: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "pipeline_timeout",
         "description": "Pipeline execution timeout in seconds",
         "required": False,
@@ -301,7 +304,7 @@ class FlextAPIFields:
     }
 
     # Plugin fields
-    PLUGIN_ID: ClassVar[dict[str, object]] = {
+    PLUGIN_ID: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "plugin_id",
         "description": "Plugin unique identifier",
         "required": True,
@@ -311,7 +314,7 @@ class FlextAPIFields:
         "max_length": 100,
     }
 
-    PLUGIN_VERSION: ClassVar[dict[str, object]] = {
+    PLUGIN_VERSION: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "plugin_version",
         "description": "Plugin version string",
         "required": True,
@@ -320,7 +323,7 @@ class FlextAPIFields:
         "max_length": 50,
     }
 
-    PLUGIN_ENABLED: ClassVar[dict[str, object]] = {
+    PLUGIN_ENABLED: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "plugin_enabled",
         "description": "Plugin enabled status",
         "required": False,
@@ -329,7 +332,7 @@ class FlextAPIFields:
     }
 
     # System fields
-    SYSTEM_STATUS: ClassVar[dict[str, object]] = {
+    SYSTEM_STATUS: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "system_status",
         "description": "System health status",
         "required": True,
@@ -337,7 +340,7 @@ class FlextAPIFields:
         "allowed_values": ["healthy", "degraded", "unhealthy", "maintenance"],
     }
 
-    LOG_LEVEL: ClassVar[dict[str, object]] = {
+    LOG_LEVEL: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "log_level",
         "description": "Logging level",
         "required": False,
@@ -347,7 +350,7 @@ class FlextAPIFields:
     }
 
     # Request/Response fields
-    REQUEST_ID: ClassVar[dict[str, object]] = {
+    REQUEST_ID: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "request_id",
         "description": "Unique request identifier",
         "required": True,
@@ -355,7 +358,7 @@ class FlextAPIFields:
         "pattern": r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
     }
 
-    CORRELATION_ID: ClassVar[dict[str, object]] = {
+    CORRELATION_ID: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "correlation_id",
         "description": "Request correlation identifier",
         "required": False,
@@ -363,7 +366,7 @@ class FlextAPIFields:
         "pattern": r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
     }
 
-    TIMESTAMP: ClassVar[dict[str, object]] = {
+    TIMESTAMP: ClassVar[FlextTypes.Core.JsonDict] = {
         "field_type": "timestamp",
         "description": "ISO 8601 timestamp",
         "required": True,
@@ -376,7 +379,7 @@ class FlextAPIFields:
 def api_key_field(
     description: str = "API key for authentication",
     **kwargs: TData,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Create API key field definition."""
     return FlextAPIFieldCore.api_key_field(description=description, **kwargs)
 
@@ -384,7 +387,7 @@ def api_key_field(
 def bearer_token_field(
     description: str = "Bearer token for authentication",
     **kwargs: TData,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Create bearer token field definition."""
     return FlextAPIFieldCore.bearer_token_field(description=description, **kwargs)
 
@@ -392,7 +395,7 @@ def bearer_token_field(
 def pipeline_config_field(
     description: str = "Pipeline configuration data",
     **kwargs: TData,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Create pipeline configuration field definition."""
     return FlextAPIFieldCore.pipeline_config_field(description=description, **kwargs)
 
@@ -400,7 +403,7 @@ def pipeline_config_field(
 def plugin_config_field(
     description: str = "Plugin configuration data",
     **kwargs: TData,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Create plugin configuration field definition."""
     return FlextAPIFieldCore.plugin_config_field(description=description, **kwargs)
 
@@ -408,7 +411,7 @@ def plugin_config_field(
 def user_role_field(
     description: str = "User role for authorization",
     **kwargs: TData,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Create user role field definition."""
     return FlextAPIFieldCore.user_role_field(description=description, **kwargs)
 
@@ -416,7 +419,7 @@ def user_role_field(
 def endpoint_path_field(
     description: str = "API endpoint path",
     **kwargs: TData,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Create endpoint path field definition."""
     return FlextAPIFieldCore.endpoint_path_field(description=description, **kwargs)
 
@@ -424,7 +427,7 @@ def endpoint_path_field(
 def http_method_field(
     description: str = "HTTP method",
     **kwargs: TData,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Create HTTP method field definition."""
     return FlextAPIFieldCore.http_method_field(description=description, **kwargs)
 
@@ -432,6 +435,6 @@ def http_method_field(
 def response_format_field(
     description: str = "Response format type",
     **kwargs: TData,
-) -> dict[str, object]:
+) -> FlextTypes.Core.JsonDict:
     """Create response format field definition."""
     return FlextAPIFieldCore.response_format_field(description=description, **kwargs)

@@ -161,7 +161,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import FastAPI
+
+if TYPE_CHECKING:
+    from flext_core.semantic_types import FlextTypes
 
 from flext_api.api import create_flext_api
 
@@ -180,7 +185,7 @@ def flext_api_create_app() -> FastAPI:
 
     # Health check endpoint
     @app.get("/health")
-    async def health_check() -> dict[str, object]:
+    async def health_check() -> FlextTypes.Core.JsonDict:
         """Health check endpoint."""
         result = flext_api.health_check()
         return result.data if result.data is not None else {}

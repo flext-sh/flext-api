@@ -33,7 +33,6 @@ Implementation Details:
     - FlextResult return pattern for error handling
     - Dataclass-based immutable configuration and data structures
 
-
         - Plugin registration with type safety
         - Pre-request and post-response hooks
         - Plugin chaining with dependency management
@@ -140,6 +139,7 @@ from flext_core import (
     TValue,
     get_logger,
 )
+from flext_core.interfaces import FlextPlugin, FlextPluginContext
 from flext_observability import (
     FlextAlertService,
     FlextHealthService,
@@ -152,6 +152,8 @@ from flext_observability.entities import FlextHealthCheck, FlextMetric
 if TYPE_CHECKING:
     import types
 
+    from flext_core.semantic_types import FlextTypes
+
 logger = get_logger(__name__)
 
 # Use flext-core types - no duplication across FLEXT projects
@@ -160,7 +162,6 @@ FlextApiValue = TValue  # API values use core value type
 FlextApiEntityId = TEntityId  # API entities use core entity ID
 FlextApiServiceName = TServiceName  # API services use core service name
 FlextApiConfig = TAnyDict  # API config uses core dict type
-
 
 # ==============================================================================
 # CORE ENUMS AND VALUE OBJECTS
@@ -222,8 +223,8 @@ class FlextApiClientRequest:
     method: FlextApiClientMethod | str
     url: str
     headers: dict[str, str] | None = None
-    params: dict[str, object] | None = None
-    json_data: dict[str, object] | None = None
+    params: FlextTypes.Core.JsonDict | None = None
+    json_data: FlextTypes.Core.JsonDict | None = None
     data: str | bytes | None = None
     timeout: float | None = None
 
@@ -276,7 +277,7 @@ class HttpRequestConfig:
 
     method: FlextApiClientMethod
     path: str
-    json_data: dict[str, object] | None = None
+    json_data: FlextTypes.Core.JsonDict | None = None
     data: str | bytes | None = None
     headers: dict[str, str] | None = None
     request_timeout: float | None = None
@@ -297,7 +298,7 @@ class HttpRequestParams:
 
     method: FlextApiClientMethod
     path: str
-    json_data: dict[str, object] | None = None
+    json_data: FlextTypes.Core.JsonDict | None = None
     data: str | bytes | None = None
     headers: dict[str, str] | None = None
     request_timeout: float | None = None
@@ -319,7 +320,7 @@ class HttpRequestParamsBuilder:
         """Initialize builder with default values."""
         self._method: FlextApiClientMethod | None = None
         self._path: str | None = None
-        self._json_data: dict[str, object] | None = None
+        self._json_data: FlextTypes.Core.JsonDict | None = None
         self._data: str | bytes | None = None
         self._headers: dict[str, str] | None = None
         self._request_timeout: float | None = None
@@ -336,7 +337,7 @@ class HttpRequestParamsBuilder:
 
     def with_json_data(
         self,
-        json_data: dict[str, object] | None,
+        json_data: FlextTypes.Core.JsonDict | None,
     ) -> HttpRequestParamsBuilder:
         """Builder: Set JSON data."""
         self._json_data = json_data
@@ -377,18 +378,52 @@ class HttpRequestParamsBuilder:
 
 
 # ==============================================================================
-# PLUGIN SYSTEM USING FLEXT-CORE
+# PLUGIN SYSTEM USING FLEXT-CORE ABSTRACTIONS
 # ==============================================================================
 
 
-class FlextApiPlugin:
-    """Base API plugin interface."""
+class FlextApiPlugin(FlextPlugin):
+    """API plugin base implementation using flext-core abstractions.
+
+    COMPLIANCE: Concrete implementation of FlextPlugin from flext-core.
+    NO MIXING: Provides API-specific functionality without duplicating core abstractions.
+    """
 
     def __init__(self, name: str | None = None) -> None:
         """Initialize plugin."""
-        self.name = name or self.__class__.__name__
+        self.plugin_name = name or self.__class__.__name__
         self.enabled = True
-        self.metrics: dict[str, object] = {}
+        self.metrics: FlextTypes.Core.JsonDict = {}
+
+    @property
+    def name(self) -> str:
+        """Plugin name from abstract interface."""
+        return self.plugin_name
+
+    @property
+    def version(self) -> str:
+        """Plugin version from abstract interface."""
+        return "1.0.0"
+
+    def initialize(self, context: FlextPluginContext) -> FlextResult[None]:
+        """Initialize plugin with context from abstract interface."""
+        try:
+            # Use context for actual initialization if needed by concrete plugins
+            _ = context  # Acknowledge parameter for abstract interface compliance
+            self.enabled = True
+            return FlextResult.ok(None)
+        except Exception as e:
+            return FlextResult.fail(f"Plugin initialization failed: {e}")
+
+    def shutdown(self) -> FlextResult[None]:
+        """Shutdown plugin and release resources from abstract interface."""
+        try:
+            self.enabled = False
+            # Clear metrics to release memory
+            self.metrics.clear()
+            return FlextResult.ok(None)
+        except Exception as e:
+            return FlextResult.fail(f"Plugin shutdown failed: {e}")
 
     async def before_request(
         self,
@@ -678,8 +713,8 @@ class FlextApiClient:
         return FlextApiClientRequest(
             method=method,
             url=path,
-            params=cast("dict[str, object] | None", params),
-            json_data=cast("dict[str, object] | None", json_data),
+            params=cast("FlextTypes.Core.JsonDict | None", params),
+            json_data=cast("FlextTypes.Core.JsonDict | None", json_data),
             data=cast("str | bytes | None", data),
             headers=cast("dict[str, str] | None", headers),
             timeout=cast("float | None", timeout),
@@ -698,7 +733,7 @@ class FlextApiClient:
     async def get(
         self,
         path: str,
-        params: dict[str, object] | None = None,
+        params: FlextTypes.Core.JsonDict | None = None,
         headers: dict[str, str] | None = None,
         request_timeout: float | None = None,
     ) -> FlextResult[FlextApiClientResponse]:
@@ -816,7 +851,7 @@ class FlextApiClient:
     async def post(
         self,
         path: str,
-        json_data: dict[str, object] | None = None,
+        json_data: FlextTypes.Core.JsonDict | None = None,
         data: str | bytes | None = None,
         headers: dict[str, str] | None = None,
         request_timeout: float | None = None,
@@ -836,7 +871,7 @@ class FlextApiClient:
     async def put(
         self,
         path: str,
-        json_data: dict[str, object] | None = None,
+        json_data: FlextTypes.Core.JsonDict | None = None,
         data: str | bytes | None = None,
         headers: dict[str, str] | None = None,
         request_timeout: float | None = None,
@@ -856,7 +891,7 @@ class FlextApiClient:
     async def patch(
         self,
         path: str,
-        json_data: dict[str, object] | None = None,
+        json_data: FlextTypes.Core.JsonDict | None = None,
         data: str | bytes | None = None,
         headers: dict[str, str] | None = None,
         request_timeout: float | None = None,
@@ -993,11 +1028,12 @@ class FlextApiClient:
                 task = loop.create_task(self._cleanup_session())
                 # Don't wait for completion to avoid blocking destructor
                 task.add_done_callback(lambda _: None)
-            except RuntimeError:
+            except RuntimeError as e:
                 # No event loop running, sessions will be cleaned by GC
-                pass
+                logger = get_logger(__name__)
+                logger.warning(f"Session cleanup skipped, no event loop running: {e}")
 
-    def _sync_health_check(self) -> FlextResult[dict[str, object]]:
+    def _sync_health_check(self) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Internal sync health check implementation - DRY pattern."""
         try:
             session_active = self._session is not None and not (
@@ -1005,7 +1041,7 @@ class FlextApiClient:
             )
 
             # Gather comprehensive health information
-            health_data: dict[str, object] = {
+            health_data: FlextTypes.Core.JsonDict = {
                 "service": "FlextApiClient",
                 "status": self.status.value,
                 "base_url": self.config.base_url,
@@ -1021,7 +1057,9 @@ class FlextApiClient:
             }
 
             # Record health check metric using DRY helper
-            performance_metrics = cast("dict[str, object]", health_data["performance"])
+            performance_metrics = cast(
+                "FlextTypes.Core.JsonDict", health_data["performance"],
+            )
             status = (
                 "healthy" if self.status == FlextApiClientStatus.RUNNING else "degraded"
             )
@@ -1042,7 +1080,7 @@ class FlextApiClient:
             return FlextResult.fail(f"Health check failed: {e}")
 
     # Legacy interface (returns dict directly for backward compatibility)
-    def health_check(self) -> dict[str, object]:
+    def health_check(self) -> FlextTypes.Core.JsonDict:
         """Health check (legacy interface - returns dict directly)."""
         result = self._sync_health_check()
         if result.success and result.data is not None:
@@ -1056,7 +1094,7 @@ class FlextApiClient:
         }
 
     # FlextService interface (returns FlextResult)
-    def service_health_check(self) -> FlextResult[dict[str, object]]:
+    def service_health_check(self) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Health check (FlextService interface - returns FlextResult)."""
         return self._sync_health_check()
 
@@ -1099,7 +1137,7 @@ class FlextApiClientServiceAdapter(FlextService):
         """Stop service (FlextService sync interface)."""
         return self._client._sync_stop()
 
-    def health_check(self) -> FlextResult[dict[str, object]]:
+    def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Health check (FlextService sync interface)."""
         return self._client.service_health_check()
 
@@ -1136,7 +1174,7 @@ def _convert_headers(headers_obj: object) -> dict[str, str] | None:
     return {str(k): str(v) for k, v in headers_obj.items()}
 
 
-def create_client(config: dict[str, object] | None = None) -> FlextApiClient:
+def create_client(config: FlextTypes.Core.JsonDict | None = None) -> FlextApiClient:
     """Create HTTP client with configuration using DRY patterns."""
     raw_config = config or {}
 
@@ -1164,7 +1202,7 @@ def create_client(config: dict[str, object] | None = None) -> FlextApiClient:
 
 
 def create_client_with_plugins(
-    config: dict[str, object] | FlextApiClientConfig | None = None,
+    config: FlextTypes.Core.JsonDict | FlextApiClientConfig | None = None,
     plugins: list[FlextApiPlugin] | None = None,
 ) -> FlextApiClient:
     """Create HTTP client with plugins."""

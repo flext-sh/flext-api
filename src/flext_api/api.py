@@ -47,7 +47,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from flext_core import FlextResult, get_logger
+
+if TYPE_CHECKING:
+    from flext_core.semantic_types import FlextTypes
 
 from flext_api.builder import FlextApiBuilder
 from flext_api.client import FlextApiClient, FlextApiClientConfig
@@ -87,7 +92,7 @@ class FlextApi:
         logger.info("FlextApi service stopped")
         return FlextResult.ok(None)
 
-    def health_check(self) -> FlextResult[dict[str, object]]:
+    def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Health check."""
         health_data = {
             "service": "FlextApi",
@@ -96,7 +101,7 @@ class FlextApi:
         }
         return FlextResult.ok(health_data)
 
-    def get_service_info(self) -> dict[str, object]:
+    def get_service_info(self) -> FlextTypes.Core.JsonDict:
         """Get service information."""
         return {
             "name": "FlextApi",
@@ -108,7 +113,7 @@ class FlextApi:
 
     def flext_api_create_client(
         self,
-        config: dict[str, object] | None = None,
+        config: FlextTypes.Core.JsonDict | None = None,
     ) -> FlextResult[FlextApiClient]:
         """Create HTTP client with configuration using FlextResult pattern."""
         try:
@@ -117,7 +122,7 @@ class FlextApi:
             logger.exception("Failed to create client")
             return FlextResult.fail(f"Failed to create client: {e}")
 
-    def _create_client_impl(self, config: dict[str, object]) -> FlextApiClient:
+    def _create_client_impl(self, config: FlextTypes.Core.JsonDict) -> FlextApiClient:
         """Create client implementation with configuration."""
         # Convert config to appropriate types for dataclass
         base_url = str(config.get("base_url", ""))

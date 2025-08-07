@@ -18,10 +18,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import http
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from flext_core.constants import FlextSemanticConstants
-from flext_core.types import FlextTypes
+
+if TYPE_CHECKING:
+    from flext_core.semantic_types import FlextTypes
 
 # ==============================================================================
 # API-SPECIFIC SEMANTIC CONSTANTS - Extending flext-core

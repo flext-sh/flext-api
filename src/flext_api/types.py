@@ -30,8 +30,10 @@ from __future__ import annotations
 
 from typing import Generic, TypeVar
 
+from flext_core.semantic_types import FlextTypes
+
 # Import base types from flext-core
-from flext_core.types import FlextTypes, FlextTypesCompat
+from flext_core.types import FlextTypesCompat
 
 # =============================================================================
 # PROJECT TYPE VARIABLES
@@ -44,7 +46,6 @@ T_Payload = TypeVar("T_Payload")
 # Legacy compatibility
 TData = TypeVar("TData")
 
-
 # =============================================================================
 # API-SPECIFIC TYPE SYSTEM
 # =============================================================================
@@ -55,8 +56,6 @@ class APITypes:
 
     # Import core types for convenience
     Core = FlextTypes.Core
-    Domain = FlextTypes.Domain
-    Data = FlextTypes.Data
 
     class HTTP:
         """HTTP and REST API specific types."""
@@ -90,7 +89,7 @@ class APITypes:
         # Error response types
         type ErrorCode = str
         type ErrorMessage = str
-        type ErrorDetails = dict[str, object]
+        type ErrorDetails = FlextTypes.Core.JsonDict
 
         # Validation types
         type ValidationErrors = dict[str, list[str]]
@@ -100,13 +99,13 @@ class APITypes:
         """Data serialization types."""
 
         # JSON types
-        type JSONData = dict[str, object]
+        type JSONData = FlextTypes.Core.JsonDict
         type JSONArray = list[object]
         type JSONString = str
 
         # Schema types
         type SchemaVersion = str
-        type SchemaDefinition = dict[str, object]
+        type SchemaDefinition = FlextTypes.Core.JsonDict
 
 
 # =============================================================================
@@ -139,7 +138,7 @@ class APITypesCompat:
 # =============================================================================
 
 
-def get_api_types() -> dict[str, object]:
+def get_api_types() -> FlextTypes.Core.JsonDict:
     """Get all API-specific type definitions.
 
     Returns:
