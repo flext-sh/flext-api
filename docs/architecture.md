@@ -518,11 +518,11 @@ class FlextApiError:
 ### **Settings Hierarchy**
 
 ```python
-from flext_core import FlextBaseSettings, FlextResult, get_flext_container
+from flext_core import FlextSettings, FlextResult, get_flext_container
 from pydantic import Field, field_validator
 from typing import Dict, Any
 
-class FlextApiSettings(FlextBaseSettings):
+class FlextApiSettings(FlextSettings):
     """✅ Configuration seguindo padrões flext-core."""
 
     # Server Configuration
