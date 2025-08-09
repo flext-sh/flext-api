@@ -20,7 +20,7 @@ from __future__ import annotations
 import http
 from typing import TYPE_CHECKING, ClassVar
 
-from flext_core.constants import FlextSemanticConstants
+from flext_core.constants import FlextConstants
 
 if TYPE_CHECKING:
     from flext_core.semantic_types import FlextTypes
@@ -30,8 +30,8 @@ if TYPE_CHECKING:
 # ==============================================================================
 
 
-class FlextApiSemanticConstants(FlextSemanticConstants):
-    """API-specific semantic constants extending FlextSemanticConstants.
+class FlextApiSemanticConstants(FlextConstants):
+    """API-specific semantic constants extending FlextConstants.
 
     Modern Python 3.13 constants following semantic grouping patterns.
     Extends the FLEXT ecosystem constants with HTTP API specific values
@@ -80,7 +80,7 @@ class FlextApiSemanticConstants(FlextSemanticConstants):
         """API-specific field type constants."""
 
         API_KEY = "api_key"
-        BEARER_TOKEN = "bearer_token"  # noqa: S105
+        BEARER_TOKEN = "bearer_token"
         PIPELINE_CONFIG = "pipeline_config"
         PLUGIN_CONFIG = "plugin_config"
         USER_ROLE = "user_role"

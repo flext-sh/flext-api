@@ -32,9 +32,6 @@ from typing import Generic, TypeVar
 
 from flext_core.semantic_types import FlextTypes
 
-# Import base types from flext-core
-from flext_core.types import FlextTypesCompat
-
 # =============================================================================
 # PROJECT TYPE VARIABLES
 # =============================================================================
@@ -128,9 +125,6 @@ class APITypesCompat:
 
     # Legacy validation aliases
     ValidationError = APITypes.Validation.ValidationErrors
-
-    # Import ecosystem compatibility
-    FlextCompat = FlextTypesCompat
 
 
 # =============================================================================

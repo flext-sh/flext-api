@@ -329,11 +329,11 @@ class TestFlextApiSettingsIntegration:
     """Integration tests for FlextApiSettings with flext-core patterns."""
 
     def test_flext_base_settings_inheritance(self) -> None:
-        """Test FlextApiSettings properly inherits from FlextBaseSettings."""
-        from flext_core import FlextBaseSettings
+        """Test FlextApiSettings properly inherits from FlextSettings."""
+        from flext_core import FlextSettings
 
         settings = FlextApiSettings()
-        assert isinstance(settings, FlextBaseSettings)
+        assert isinstance(settings, FlextSettings)
 
     def test_create_with_validation_method(self) -> None:
         """Test inherited create_with_validation method works correctly."""

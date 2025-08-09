@@ -73,7 +73,7 @@ class ApiErrorContext:
         return context
 
 
-class FlextApiRequestError(FlextApiError):  # type: ignore[valid-type,misc]
+class FlextApiRequestError(FlextApiError):
     """API request errors using DRY foundation."""
 
     def __init__(
@@ -104,7 +104,7 @@ class FlextApiRequestError(FlextApiError):  # type: ignore[valid-type,misc]
         super().__init__(f"API request: {message}", **context_dict)
 
 
-class FlextApiResponseError(FlextApiError):  # type: ignore[valid-type,misc]
+class FlextApiResponseError(FlextApiError):
     """API response errors using DRY foundation."""
 
     def __init__(
@@ -124,7 +124,7 @@ class FlextApiResponseError(FlextApiError):  # type: ignore[valid-type,misc]
         super().__init__(f"API response: {message}", **context)
 
 
-class FlextApiStorageError(FlextApiError):  # type: ignore[valid-type,misc]
+class FlextApiStorageError(FlextApiError):
     """API storage errors using DRY foundation."""
 
     def __init__(
@@ -144,7 +144,7 @@ class FlextApiStorageError(FlextApiError):  # type: ignore[valid-type,misc]
         super().__init__(f"API storage: {message}", **context)
 
 
-class FlextApiBuilderError(FlextApiError):  # type: ignore[valid-type,misc]
+class FlextApiBuilderError(FlextApiError):
     """API builder errors using DRY foundation."""
 
     def __init__(

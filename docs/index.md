@@ -122,7 +122,7 @@ Query/Response builders, fluent construction, and validation.
 graph LR
     subgraph "✅ Implemented"
         A[FlextResult 70%]
-        B[FlextBaseSettings 90%]
+        B[FlextSettings 90%]
     end
 
     subgraph "🟡 Partial"

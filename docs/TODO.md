@@ -320,9 +320,9 @@ Configuration management not fully aligned with flext-core patterns, missing com
 
 ```python
 # ✅ Complete configuration with flext-core compliance
-from flext_core import FlextBaseSettings, FlextResult, get_flext_container
+from flext_core import FlextSettings, FlextResult, get_flext_container
 
-class FlextApiSettings(FlextBaseSettings):
+class FlextApiSettings(FlextSettings):
     """Comprehensive API settings following flext-core patterns."""
 
     # Server Configuration

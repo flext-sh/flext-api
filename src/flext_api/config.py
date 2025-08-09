@@ -1,6 +1,6 @@
 """API configuration settings management.
 
-Configuration class extending FlextBaseSettings for API server settings.
+Configuration class extending FlextSettings for API server settings.
 Provides basic settings for host, port, timeouts, and caching with
 environment variable support through FLEXT_API_ prefix.
 
@@ -17,18 +17,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core import FlextBaseSettings, FlextConstants, FlextResult
+from flext_core import FlextConstants, FlextResult, FlextSettings
 from pydantic import Field, field_validator
 
 if TYPE_CHECKING:
     from flext_core.semantic_types import FlextTypes
 
 
-class FlextApiSettings(FlextBaseSettings):
+class FlextApiSettings(FlextSettings):
     """API-specific configuration settings extending flext-core patterns.
 
     Follows Single Responsibility Principle by handling only API configuration.
-    Uses Dependency Inversion Principle by depending on FlextBaseSettings abstraction.
+    Uses Dependency Inversion Principle by depending on FlextSettings abstraction.
     """
 
     # API Server Configuration
@@ -70,7 +70,7 @@ class FlextApiSettings(FlextBaseSettings):
         cls,
         overrides: FlextTypes.Core.JsonDict | None = None,
         **kwargs: object,
-    ) -> FlextResult[FlextBaseSettings]:
+    ) -> FlextResult[FlextSettings]:
         """Create settings instance with validation and return FlextResult.
 
         Args:
