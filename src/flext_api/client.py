@@ -130,13 +130,13 @@ import aiohttp.hdrs
 
 # FLEXT Core imports - single source of truth for types and patterns
 from flext_core import (
-    FlextContainer,
     FlextResult,
     FlextService,
     TAnyDict,
     TEntityId,
     TServiceName,
     TValue,
+    get_flext_container,
     get_logger,
 )
 from flext_core.interfaces import FlextPlugin, FlextPluginContext
@@ -521,7 +521,7 @@ class FlextApiClient:
         self._session: aiohttp.ClientSession | None = None
 
         # Enterprise Observability Integration - DRY pattern using container
-        self._container = FlextContainer()
+        self._container = get_flext_container()
         self._metrics_service = FlextMetricsService(self._container)
         self._tracing_service = FlextTracingService(self._container)
         self._health_service = FlextHealthService(self._container)
