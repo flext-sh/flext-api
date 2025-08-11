@@ -175,13 +175,13 @@ self._container = FlextContainer()
 
 ```python
 # ✅ CORRECT - Global container usage
-from flext_core import get_flext_container, ServiceKey
+from flext_core import get_flext_container, FlextServiceKey
 
 class FlextApiClient:
     def __init__(self):
         self.container = get_flext_container()
 
-    def get_service[T](self, key: ServiceKey[T]) -> FlextResult[T]:
+    def get_service[T](self, key: FlextServiceKey[T]) -> FlextResult[T]:
         return self.container.get_typed(key)
 ```
 
@@ -189,7 +189,7 @@ class FlextApiClient:
 
 - [ ] Remove all local `FlextContainer()` instantiations
 - [ ] Use `get_flext_container()` for global container access
-- [ ] Implement ServiceKey patterns for type-safe service resolution
+- [ ] Implement FlextServiceKey patterns for type-safe service resolution
 - [ ] Register services in global container
 - [ ] Update service resolution to use typed patterns
 
@@ -423,7 +423,7 @@ class FlextApiSettings(FlextSettings):
 **Day 6-7**: Dependency Injection Migration
 
 - Replace local containers with global container
-- Implement ServiceKey patterns
+- Implement FlextServiceKey patterns
 
 **Deliverable**: 60%+ compliance score
 

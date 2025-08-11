@@ -1,50 +1,129 @@
-"""API-specific field definitions and validation patterns.
+"""FLEXT API Types - Consolidated types and fields following PEP8 standards.
 
-Field definitions extending flext-core patterns with API-specific field types
-including authentication fields, configuration fields, and HTTP request/response
-fields. Provides validation patterns and metadata for form processing.
+Consolidated type module combining api_types.py + fields.py into a single PEP8-compliant
+module. Provides project-specific type extensions with field definitions and validation
+patterns for API-specific operations.
 
-Main components:
-    - FlextAPIFieldCore: Factory methods for creating field definitions
-    - FlextAPIFields: Pre-defined common field configurations
-    - Convenience functions: api_key_field, bearer_token_field, etc.
+Architecture:
+    Foundation Layer (flext-core) → Project Layer (flext-api) → Application Layer
+
+Core Features:
+    - Project-specific type system extending flext-core
+    - Field definitions with validation patterns
+    - Type-safe HTTP operations
+    - Authentication field patterns
+
+Design Patterns:
+    - Type Extensions: API-specific types building on flext-core foundation
+    - Field Factories: Reusable field creation patterns
+    - Validation Integration: Type-safe validation with detailed feedback
+    - Backward Compatibility: Legacy type aliases for migration
+
+Usage:
+    from flext_api.api_types import APITypes, FlextAPIFields
+
+    # Type-safe HTTP operations
+    endpoint: APITypes.HTTP.Endpoint = "/api/v1/users"
+    method: APITypes.HTTP.Method = "GET"
+
+    # Field definitions
+    api_key = FlextAPIFields.API_KEY
+    user_role = FlextAPIFields.USER_ROLE
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 if TYPE_CHECKING:
-    from flext_api.types import TData
+    from flext_core import FlextTypes
 
 import aiohttp.hdrs
-from flext_core import FlextFieldCore, FlextFields
+from flext_core import FlextFieldCore, FlextFields, FlextTypes
 
-__all__: list[str] = [
-    "FlextAPIFieldCore",
-    "FlextAPIFields",
-    "FlextFieldCore",
-    "FlextFields",
-    "api_key_field",
-    "bearer_token_field",
-    "endpoint_path_field",
-    "http_method_field",
-    "pipeline_config_field",
-    "plugin_config_field",
-    "response_format_field",
-    "user_role_field",
-]
+# =============================================================================
+# PROJECT TYPE VARIABLES
+# =============================================================================
 
-if TYPE_CHECKING:
-    from flext_core.semantic_types import FlextTypes
+T_Response = TypeVar("T_Response")
+T_Request = TypeVar("T_Request")
+T_Payload = TypeVar("T_Payload")
+
+# Legacy compatibility
+TData = TypeVar("TData")
+
+# =============================================================================
+# API-SPECIFIC TYPE SYSTEM
+# =============================================================================
+
+
+class APITypes:
+    """API-specific type system extending flext-core foundation."""
+
+    # Import core types for convenience
+    Core = FlextTypes.Core
+
+    class HTTP:
+        """HTTP and REST API specific types."""
+
+        # HTTP method and endpoint types
+        type Method = str  # GET, POST, PUT, DELETE, etc.
+        type Endpoint = str  # /api/v1/resource
+        type StatusCode = int  # 200, 404, 500, etc.
+        type ContentType = str  # application/json, text/html
+
+        # Request/Response types with generics
+        class Request(Generic[T_Request]):
+            """Generic HTTP request type."""
+
+        class Response(Generic[T_Response]):
+            """Generic HTTP response type."""
+
+        # Header and query types
+        type Headers = dict[str, str]
+        type QueryParams = dict[str, str | list[str]]
+        type PathParams = dict[str, str]
+
+        # Authentication types
+        type AuthToken = str
+        type APIKey = str
+        type BearerToken = str
+
+    class Validation:
+        """API validation and error types."""
+
+        # Error response types
+        type ErrorCode = str
+        type ErrorMessage = str
+        type ErrorDetails = FlextTypes.Core.JsonDict
+
+        # Validation types
+        type ValidationErrors = dict[str, list[str]]
+        type FieldError = dict[str, str]
+
+    class Serialization:
+        """Data serialization types."""
+
+        # JSON types
+        type JSONData = FlextTypes.Core.JsonDict
+        type JSONArray = list[object]
+        type JSONString = str
+
+        # Schema types
+        type SchemaVersion = str
+        type SchemaDefinition = FlextTypes.Core.JsonDict
+
+
+# =============================================================================
+# FIELD DEFINITIONS
+# =============================================================================
 
 
 class FlextAPIFieldCore:
-    """Simple field core for FLEXT-API domain."""
+    """Field factory for API-specific field definitions with validation patterns."""
 
     @classmethod
     def _create_auth_field(
@@ -58,7 +137,7 @@ class FlextAPIFieldCore:
     ) -> FlextTypes.Core.JsonDict:
         """Factory method: Create authentication field with common properties.
 
-        DRY principle: Eliminates 17-line duplication between API key and bearer token
+        DRY principle: Eliminates duplication between API key and bearer token
         field creation by centralizing common authentication field properties.
         """
         return {
@@ -220,7 +299,7 @@ class FlextAPIFieldCore:
 
 
 class FlextAPIFields:
-    """Simple fields collection for FLEXT-API domain."""
+    """Pre-defined field configurations for common API patterns."""
 
     # Authentication fields
     API_KEY = FlextAPIFieldCore.api_key_field()
@@ -375,7 +454,10 @@ class FlextAPIFields:
     }
 
 
-# Convenience field builders
+# =============================================================================
+# CONVENIENCE FIELD FUNCTIONS
+# =============================================================================
+
 def api_key_field(
     description: str = "API key for authentication",
     **kwargs: TData,
@@ -438,3 +520,81 @@ def response_format_field(
 ) -> FlextTypes.Core.JsonDict:
     """Create response format field definition."""
     return FlextAPIFieldCore.response_format_field(description=description, **kwargs)
+
+
+# =============================================================================
+# COMPATIBILITY LAYER
+# =============================================================================
+
+
+class APITypesCompat:
+    """Compatibility aliases for migration from old API type patterns."""
+
+    # Legacy HTTP aliases
+    HTTPMethod = APITypes.HTTP.Method
+    HTTPEndpoint = APITypes.HTTP.Endpoint
+    HTTPStatusCode = APITypes.HTTP.StatusCode
+    HTTPHeaders = APITypes.HTTP.Headers
+
+    # Legacy response aliases
+    APIResponse = APITypes.HTTP.Response
+    APIRequest = APITypes.HTTP.Request
+
+    # Legacy validation aliases
+    ValidationError = APITypes.Validation.ValidationErrors
+
+
+# =============================================================================
+# MIGRATION HELPERS
+# =============================================================================
+
+
+def get_api_types() -> FlextTypes.Core.JsonDict:
+    """Get all API-specific type definitions.
+
+    Returns:
+        Dictionary of API type names mapped to their type definitions
+
+    """
+    return {
+        "Method": APITypes.HTTP.Method,
+        "Endpoint": APITypes.HTTP.Endpoint,
+        "StatusCode": APITypes.HTTP.StatusCode,
+        "Request": APITypes.HTTP.Request,
+        "Response": APITypes.HTTP.Response,
+        "Headers": APITypes.HTTP.Headers,
+        "QueryParams": APITypes.HTTP.QueryParams,
+        "ValidationErrors": APITypes.Validation.ValidationErrors,
+        "JSONData": APITypes.Serialization.JSONData,
+    }
+
+
+# =============================================================================
+# EXPORTS
+# =============================================================================
+
+__all__ = [
+    # Type System
+    "APITypes",
+    "APITypesCompat",
+    "get_api_types",
+    # Type Variables
+    "TData",  # Legacy compatibility
+    "T_Payload",
+    "T_Request",
+    "T_Response",
+    # Field System
+    "FlextAPIFieldCore",
+    "FlextAPIFields",
+    "FlextFieldCore",  # Re-export from flext_core
+    "FlextFields",     # Re-export from flext_core
+    # Field Functions
+    "api_key_field",
+    "bearer_token_field",
+    "endpoint_path_field",
+    "http_method_field",
+    "pipeline_config_field",
+    "plugin_config_field",
+    "response_format_field",
+    "user_role_field",
+]

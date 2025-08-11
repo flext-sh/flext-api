@@ -14,15 +14,17 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from flext_api.domain.entities import (
+# Import from models.py directly (no domain subdirectory)
+from flext_api.models import (
     ApiEndpoint,
     ApiRequest,
     ApiResponse,
     ApiSession,
+    HttpMethod,
+    HttpStatus,
     RequestState,
     ResponseState,
 )
-from flext_api.domain.value_objects import HttpMethod, HttpStatus
 
 
 class TestApiRequest:
