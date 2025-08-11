@@ -401,12 +401,12 @@ class FlextApiQueryBuilder:
 ### **Container Configuration**
 
 ```python
-from flext_core import get_flext_container, ServiceKey, FlextResult
+from flext_core import get_flext_container, FlextServiceKey, FlextResult
 
 # ✅ Service keys type-safe
-API_BUILDER_KEY = ServiceKey[FlextApiQueryBuilder]("api_query_builder")
-RESPONSE_BUILDER_KEY = ServiceKey[FlextApiResponseBuilder]("api_response_builder")
-HTTP_CLIENT_KEY = ServiceKey[FlextApiClient]("api_http_client")
+API_BUILDER_KEY = FlextServiceKey[FlextApiQueryBuilder]("api_query_builder")
+RESPONSE_BUILDER_KEY = FlextServiceKey[FlextApiResponseBuilder]("api_response_builder")
+HTTP_CLIENT_KEY = FlextServiceKey[FlextApiClient]("api_http_client")
 
 def configure_flext_api_services() -> FlextResult[None]:
     """✅ Configure services no container global."""
@@ -831,7 +831,7 @@ class TestFlextResultPatterns:
 2. **Dependency Injection Migration**
    - Migrar para global `get_flext_container()`
    - Implementar service registration patterns
-   - Usar ServiceKey para type safety
+   - Usar FlextServiceKey para type safety
 
 #### **Fase 3: Quality & Observability (Semana 3)**
 

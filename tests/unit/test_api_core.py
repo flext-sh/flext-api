@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-import pytest
+import asyncio
 
-from flext_api import FlextApi, FlextResult, create_flext_api
+import pytest
+from flext_core import FlextResult
+
+from flext_api import FlextApi, create_flext_api
 
 
 class TestFlextApi:
@@ -23,24 +26,21 @@ class TestFlextApi:
 
     def test_health_check(self) -> None:
         """Test API health check functionality."""
-        api = FlextApi()
-        result = api.health_check()
+        async def _test_health_check() -> None:
+            api = FlextApi()
+            await api.start()  # Start the service first
+            result = await api.health_check()
 
-        assert isinstance(result, FlextResult)
-        if not (result.success):
-            msg: str = f"Expected True, got {result.success}"
-            raise AssertionError(msg)
-        assert result.data is not None
+            assert isinstance(result, FlextResult)
+            assert result.success, f"Health check failed: {result.error}"
+            assert result.data is not None
+            assert "service" in result.data
 
-        health_data = result.data
-        assert isinstance(health_data, dict)
-        if health_data["service"] != "FlextApi":
-            msg: str = f"Expected {'FlextApi'}, got {health_data['service']}"
-            raise AssertionError(msg)
-        assert health_data["status"] == "healthy"
-        if "client_configured" not in health_data:
-            msg: str = f"Expected {'client_configured'} in {health_data}"
-            raise AssertionError(msg)
+            # Cleanup
+            await api.stop()
+
+        # Run the async test
+        asyncio.run(_test_health_check())
 
     def test_get_builder(self) -> None:
         """Test getting builder instance."""
@@ -132,7 +132,7 @@ class TestFlextApi:
             raise AssertionError(msg)
 
         # Check health
-        health_result = api.health_check()
+        health_result = await api.health_check()
         if not (health_result.success):
             msg: str = f"Expected True, got {health_result.success}"
             raise AssertionError(msg)

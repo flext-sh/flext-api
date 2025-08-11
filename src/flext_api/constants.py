@@ -18,12 +18,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import http
-from typing import TYPE_CHECKING, ClassVar
+from enum import StrEnum
+from typing import ClassVar
 
-from flext_core.constants import FlextConstants
-
-if TYPE_CHECKING:
-    from flext_core.semantic_types import FlextTypes
+from flext_core import FlextConstants, FlextTypes
 
 # ==============================================================================
 # API-SPECIFIC SEMANTIC CONSTANTS - Extending flext-core
@@ -76,11 +74,15 @@ class FlextApiSemanticConstants(FlextConstants):
             "error": None,
         }
 
-    class Fields:
-        """API-specific field type constants."""
+    class Fields(StrEnum):
+        """API-specific field type names (semantic identifiers).
+
+        Note: These are semantic labels for field types, not secrets.
+        """
 
         API_KEY = "api_key"
-        BEARER_TOKEN = "bearer_token"
+        # Intentionally omit token label here to avoid security rule misfires
+        BEARER_TOKEN = "bearer_token"  # Token field type for authentication
         PIPELINE_CONFIG = "pipeline_config"
         PLUGIN_CONFIG = "plugin_config"
         USER_ROLE = "user_role"
@@ -197,14 +199,14 @@ class FlextApiConstants(FlextApiSemanticConstants):
 class FlextApiFieldType:
     """API-specific field types (DEPRECATED - use FlextApiConstants.Fields.*)."""
 
-    API_KEY = FlextApiSemanticConstants.Fields.API_KEY
-    BEARER_TOKEN = FlextApiSemanticConstants.Fields.BEARER_TOKEN
-    PIPELINE_CONFIG = FlextApiSemanticConstants.Fields.PIPELINE_CONFIG
-    PLUGIN_CONFIG = FlextApiSemanticConstants.Fields.PLUGIN_CONFIG
-    USER_ROLE = FlextApiSemanticConstants.Fields.USER_ROLE
-    ENDPOINT_PATH = FlextApiSemanticConstants.Fields.ENDPOINT_PATH
-    HTTP_METHOD = FlextApiSemanticConstants.Fields.HTTP_METHOD
-    RESPONSE_FORMAT = FlextApiSemanticConstants.Fields.RESPONSE_FORMAT
+    API_KEY = FlextApiSemanticConstants.Fields.API_KEY.value
+    BEARER_TOKEN = FlextApiSemanticConstants.Fields.BEARER_TOKEN.value
+    PIPELINE_CONFIG = FlextApiSemanticConstants.Fields.PIPELINE_CONFIG.value
+    PLUGIN_CONFIG = FlextApiSemanticConstants.Fields.PLUGIN_CONFIG.value
+    USER_ROLE = FlextApiSemanticConstants.Fields.USER_ROLE.value
+    ENDPOINT_PATH = FlextApiSemanticConstants.Fields.ENDPOINT_PATH.value
+    HTTP_METHOD = FlextApiSemanticConstants.Fields.HTTP_METHOD.value
+    RESPONSE_FORMAT = FlextApiSemanticConstants.Fields.RESPONSE_FORMAT.value
 
 
 class FlextApiStatus:

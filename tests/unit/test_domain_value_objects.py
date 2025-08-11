@@ -12,10 +12,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.domain.value_objects import (
-    URL,
-    BearerToken,
-    HttpHeader,
+# Import from api_models.py directly (files were renamed with api_ prefix)
+from flext_api.api_models import (
+    URL,  # Proper URL value object with create method
+    BearerToken,  # Proper domain value object
+    HttpHeader,  # Proper domain value object
     HttpMethod,
     HttpStatus,
 )

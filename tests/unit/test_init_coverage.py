@@ -7,8 +7,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import FlextResult, get_logger
+
 import flext_api
-from flext_api import FlextResult, get_logger
 
 
 class TestInitCoverage:

@@ -16,8 +16,8 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
-from flext_api.client import FlextApiClient
-from flext_api.main import app, storage
+from flext_api.api_app import app
+from flext_api.api_client import FlextApiClient
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Iterator
@@ -158,10 +158,8 @@ async def api_client() -> AsyncGenerator[TestClient]:
 def reset_storage() -> None:
     """Reset storage state between tests to ensure isolation."""
     # Skip storage reset - models consolidated to flext-core patterns
-    if storage:
-        # Basic reset without using old models
-        # Clear any maintenance message if stored as a key
-        storage.delete("maintenance_message")
+    # Storage is now managed within the app instance via app.state.storage
+    # No need to reset external storage reference
 
 
 @pytest.fixture
@@ -173,9 +171,9 @@ def auth_headers() -> dict[str, str]:
     }
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 async def cleanup_client_sessions() -> AsyncGenerator[None]:
-    """DRY fixture to cleanup all FlextApiClient sessions after each test."""
+    """DRY fixture to cleanup all FlextApiClient sessions after async tests."""
     # Pre-test: ensure clean state
     await FlextApiClient.cleanup_all_sessions()
 
@@ -184,6 +182,12 @@ async def cleanup_client_sessions() -> AsyncGenerator[None]:
     finally:
         # Post-test: cleanup any remaining sessions
         await FlextApiClient.cleanup_all_sessions()
+
+
+@pytest.fixture(autouse=True)
+def sync_cleanup_client_sessions() -> None:
+    """Sync fixture to ensure client cleanup for sync tests."""
+    # For sync tests, we just skip the cleanup since they shouldn't use async client
 
 
 # Pytest configuration

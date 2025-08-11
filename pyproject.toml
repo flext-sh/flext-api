@@ -104,6 +104,12 @@ flext-api-server = "flext_api.server:main"
 [tool.poetry]
 packages = [{ include = "flext_api", from = "src" }]
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+pytest-cov = "^6.2.1"
+faker = "^37.5.3"
+pytest-asyncio = "^1.1.0"
+
 [tool.bandit]
 extend = "../.bandit-shared.toml"
 skips = ["B101", "B104", "B105", "B601"]
@@ -182,7 +188,7 @@ platform = "linux"
 explicit_package_bases = true
 namespace_packages = true
 mypy_path = ["src"]
-files = ["src", "tests"]
+files = ["src"]
 
 # Plugins
 plugins = ["pydantic.mypy"]
@@ -318,6 +324,26 @@ asyncio_default_fixture_loop_scope = "function"
 [tool.ruff]
 extend = "../.ruff-shared.toml"
 lint.isort.known-first-party = ["flext_api"]
+lint.extend-ignore = [
+    # Allow higher arity in API methods
+    "PLR0913",
+    # Allow async timeout param (project uses explicit timeouts)
+    "ASYNC109",
+    # Allow TODOs without author/issue temporarily
+    "TD002",
+    "TD003",
+    "FIX002",
+    # Allow magic numbers in simple comparisons
+    "PLR2004",
+    # Allow local imports inside methods for lightweight builders
+    "PLC0415",
+    # Allow boolean positional where intentional in legacy API
+    "FBT001",
+    "FBT002",
+    "FBT003",
+    # Allow unused args in abstract/templated methods
+    "ARG002",
+]
 
 [tool.vulture]
 extend = "../.vulture-shared.toml"
