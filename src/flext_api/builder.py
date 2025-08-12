@@ -8,7 +8,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# Import builder classes and functions from api_client
 from flext_api.api_client import (
     FlextApiBuilder,
     FlextApiQuery,

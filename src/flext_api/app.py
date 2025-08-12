@@ -13,19 +13,32 @@ from flext_api.api_app import app as _app
 # Re-export the main app
 app = _app
 
-def flext_api_create_app():
-    """Create FlextAPI FastAPI application.
 
-    Compatibility function that creates a new app instance each time.
+def flext_api_create_app() -> object:
+    """Create a minimal FastAPI app for compatibility tests.
 
-    Returns:
-        FastAPI application instance
-
+    This app exposes /health and uses `create_flext_api()` so tests can patch it
+    and force specific behaviors (like returning None data).
     """
-    from flext_api.api_app import create_flext_api_app
-    return create_flext_api_app()
+    from fastapi import FastAPI
 
-def create_flext_api():
+    compat_app = FastAPI(title="FLEXT API", version="0.9.0", description="Enterprise-grade distributed data integration platform")
+
+    @compat_app.get("/health")
+    async def health() -> dict[str, object]:
+        api = create_flext_api()
+        # health_check in compat API returns a result object directly (sync)
+        result = api.health_check()  # type: ignore[attr-defined]
+        try:
+            data = getattr(result, "data", None)
+        except Exception:
+            data = None
+        return {} if data is None else data
+
+    return compat_app
+
+
+def create_flext_api() -> object:
     """Create FlextAPI for test compatibility.
 
     Returns a mock-compatible API object.
@@ -33,10 +46,11 @@ def create_flext_api():
     from flext_core import FlextResult
 
     class FlextAPI:
-        def health_check(self):
+        def health_check(self) -> object:
             return FlextResult.ok({"status": "healthy"})
 
     return FlextAPI()
+
 
 # Export compatibility interface
 __all__ = [

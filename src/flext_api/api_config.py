@@ -37,7 +37,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core import FlextConstants, FlextResult, FlextSettings
+from flext_core import FlextConstants, FlextResult
+from flext_core.config import FlextSettings
 from pydantic import Field, field_validator
 
 if TYPE_CHECKING:
@@ -70,21 +71,35 @@ class FlextApiSettings(FlextSettings):
     cache_ttl: int = Field(default=300, description="Cache TTL in seconds", ge=0)
 
     # Database Configuration
-    database_url: str | None = Field(default=None, description="Database connection URL")
-    database_pool_size: int = Field(default=10, description="Database connection pool size", ge=1)
-    database_timeout: int = Field(default=30, description="Database timeout in seconds", ge=1)
+    database_url: str | None = Field(
+        default=None, description="Database connection URL",
+    )
+    database_pool_size: int = Field(
+        default=10, description="Database connection pool size", ge=1,
+    )
+    database_timeout: int = Field(
+        default=30, description="Database timeout in seconds", ge=1,
+    )
 
     # External Service Configuration
-    external_api_timeout: int = Field(default=60, description="External API timeout", ge=1)
-    external_api_retries: int = Field(default=3, description="External API max retries", ge=0)
+    external_api_timeout: int = Field(
+        default=60, description="External API timeout", ge=1,
+    )
+    external_api_retries: int = Field(
+        default=3, description="External API max retries", ge=0,
+    )
 
     # Security Configuration
     secret_key: str | None = Field(default=None, description="Application secret key")
     jwt_expiry: int = Field(default=3600, description="JWT expiry in seconds", ge=60)
-    cors_origins: list[str] = Field(default_factory=list, description="CORS allowed origins")
+    cors_origins: list[str] = Field(
+        default_factory=list, description="CORS allowed origins",
+    )
 
     # Environment Configuration
-    environment: str = Field(default="development", description="Application environment")
+    environment: str = Field(
+        default="development", description="Application environment",
+    )
     debug: bool = Field(default=False, description="Enable debug mode")
     log_level: str = Field(default="INFO", description="Logging level")
 
@@ -110,7 +125,8 @@ class FlextApiSettings(FlextSettings):
         """Validate environment value."""
         allowed_environments = {"development", "staging", "production", "test"}
         if v not in allowed_environments:
-            raise ValueError(f"Environment must be one of: {allowed_environments}")
+            msg = f"Environment must be one of: {allowed_environments}"
+            raise ValueError(msg)
         return v
 
     @field_validator("log_level")
@@ -119,7 +135,8 @@ class FlextApiSettings(FlextSettings):
         """Validate log level."""
         allowed_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
         if v.upper() not in allowed_levels:
-            raise ValueError(f"Log level must be one of: {allowed_levels}")
+            msg = f"Log level must be one of: {allowed_levels}"
+            raise ValueError(msg)
         return v.upper()
 
     @classmethod
@@ -181,7 +198,9 @@ def create_api_settings(**overrides: object) -> FlextResult[FlextApiSettings]:
 
 
 # Legacy compatibility - maintain backward compatibility
-def load_configuration(environment: str = "development") -> FlextResult[FlextApiSettings]:
+def load_configuration(
+    environment: str = "development",
+) -> FlextResult[FlextApiSettings]:
     """Load configuration for specified environment.
 
     Args:
@@ -209,9 +228,13 @@ def validate_configuration(settings: FlextApiSettings) -> FlextResult[None]:
         # Validate required fields for production
         if settings.environment == "production":
             if not settings.secret_key:
-                return FlextResult.fail("Secret key is required for production environment")
+                return FlextResult.fail(
+                    "Secret key is required for production environment",
+                )
             if not settings.database_url:
-                return FlextResult.fail("Database URL is required for production environment")
+                return FlextResult.fail(
+                    "Database URL is required for production environment",
+                )
 
         # Validate CORS origins format
         for origin in settings.cors_origins:

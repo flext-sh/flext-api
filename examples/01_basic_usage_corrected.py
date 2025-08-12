@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""FLEXT API - Basic Usage Examples (CORRECTED).
+"""FLEXT API - Basic usage examples (corrected).
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
-Este exemplo demonstra o uso básico da FLEXT API com funcionalidade REAL.
-Todos os métodos usados existem e funcionam.
+This example demonstrates basic FLEXT API usage with real functionality.
+All methods used exist and work as expected.
 
 """
 
@@ -23,12 +23,12 @@ from flext_api import (
     build_query,
     build_success_response,
     create_flext_api,
-    flext_api_create_app,
+    create_flext_api_app,
 )
 
 
 def example_query_builder() -> None:
-    """Exemplo: Como usar o FlextApiQueryBuilder com métodos REAIS."""
+    """Demonstrate how to use ``FlextApiQueryBuilder`` with real methods."""
     print("=== FlextApiQueryBuilder Example ===")
 
     # Criar query builder
@@ -49,10 +49,11 @@ def example_query_builder() -> None:
     complex_query = (
         qb2.equals("department", "engineering")
         .greater_than("salary", 50000)
-        .equals("active", is_true=True)
+        .equals("active", True)
         .sort_asc("last_name")
         .sort_desc("hire_date")
-        .page(2, 25)  # Página 2, 25 itens por página
+        .page(2)
+        .page_size(25)  # Página 2, 25 itens por página
         .build()
     )
 
@@ -64,7 +65,8 @@ def example_query_builder() -> None:
         qb3.equals("status", "published")
         .greater_than("views", 1000)
         .sort_desc("popularity")
-        .page(1, 50)  # Primeira página, 50 itens
+        .page(1)  # Primeira página
+        .page_size(50)  # 50 itens
         .build()
     )
 
@@ -72,7 +74,7 @@ def example_query_builder() -> None:
 
 
 def example_response_builder() -> None:
-    """Exemplo: Como usar o FlextApiResponseBuilder."""
+    """Demonstrate how to use ``FlextApiResponseBuilder``."""
     print("\n=== FlextApiResponseBuilder Example ===")
 
     # Response builder
@@ -81,8 +83,7 @@ def example_response_builder() -> None:
     # Success response
     success_resp = (
         rb.success(data={"id": 1, "name": "John"}, message="User created")
-        .with_metadata("timestamp", "2025-01-01T00:00:00Z")
-        .with_metadata("request_id", "req-123")
+        .metadata({"timestamp": "2025-01-01T00:00:00Z", "request_id": "req-123"})
         .build()
     )
 
@@ -90,11 +91,7 @@ def example_response_builder() -> None:
 
     # Error response
     rb2 = FlextApiResponseBuilder()  # Nova instância para error response
-    error_resp = (
-        rb2.error("Validation failed", 400)
-        .with_metadata("field_errors", {"email": "Invalid format"})
-        .build()
-    )
+    error_resp = rb2.error("Validation failed").metadata({"field_errors": {"email": "Invalid format"}}).build()
 
     print("Error Response:", error_resp)
 
@@ -102,8 +99,8 @@ def example_response_builder() -> None:
     rb3 = FlextApiResponseBuilder()  # Nova instância para paginated response
     paginated_resp = (
         rb3.success(data=[{"id": 1}, {"id": 2}])
-        .with_pagination(total=100, page=1, page_size=10)
-        .with_metadata("query_time", "0.045s")
+        .pagination(page=1, page_size=10, total=100)
+        .metadata({"query_time": "0.045s"})
         .build()
     )
 
@@ -111,12 +108,16 @@ def example_response_builder() -> None:
 
 
 def example_factory_functions() -> None:
-    """Exemplo: Como usar as funções factory."""
+    """Demonstrate how to use factory functions."""
     print("\n=== Factory Functions Example ===")
 
-    # Build query usando função factory
+    # Build query using factory function
     query_dict = {"status": "active", "type": "premium"}
-    query_result = build_query(query_dict)
+    # build_query expects list[dict[str, object]]; convert dict to list with object values
+    query_filters: list[dict[str, object]] = [
+        {"field": str(k), "value": v, "operator": "eq"} for k, v in query_dict.items()
+    ]
+    query_result = build_query(query_filters)
     print("Factory Query:", query_result)
 
     # Build success response
@@ -130,15 +131,15 @@ def example_factory_functions() -> None:
 
     # Build error response
     error_resp = build_error_response(
-        message="Database connection failed",
-        code=503,
-        details={"retry_after": 30},
+        error="Database connection failed",
+        status_code=503,
+        metadata={"details": {"retry_after": 30}},
     )
     print("Factory Error Response:", error_resp)
 
 
 async def example_api_service() -> None:
-    """Exemplo: Como usar o FlextApi service."""
+    """Demonstrate how to use the ``FlextApi`` service."""
     print("\n=== FlextApi Service Example ===")
 
     # Criar API service
@@ -150,12 +151,12 @@ async def example_api_service() -> None:
 
     # Health check
     health_result = api.health_check()
-    print("Health check:", health_result.data)
+    print("Health check:", health_result)
 
     # Get builder
     builder = api.get_builder()
     query_builder = builder.for_query()
-    query = query_builder.equals("active", is_true=True).build()
+    query = query_builder.equals("active", True).build()
     print("Service Query:", query)
 
     # Create HTTP client
@@ -167,7 +168,7 @@ async def example_api_service() -> None:
         }
     )
 
-    if client_result.success:
+    if client_result.success and client_result.data is not None:
         client = client_result.data
         print("Client created successfully:", client.config.base_url)
 
@@ -181,7 +182,7 @@ async def example_api_service() -> None:
 
 
 async def example_http_client() -> None:
-    """Exemplo: Como usar o FlextApiClient."""
+    """Demonstrate how to use ``FlextApiClient``."""
     print("\n=== FlextApiClient Example ===")
 
     # Configure client
@@ -206,8 +207,8 @@ async def example_http_client() -> None:
     print(f"  Headers: {client.config.headers}")
 
     # Health check
-    health_result = client.health_check()
-    print("Client Health:", health_result.data)
+    health_data = client.health_check()
+    print("Client Health:", health_data)
 
     # Stop client
     await client.stop()
@@ -215,11 +216,11 @@ async def example_http_client() -> None:
 
 
 def example_fastapi_app() -> None:
-    """Exemplo: Como criar a aplicação FastAPI."""
+    """Demonstrate how to create the FastAPI application."""
     print("\n=== FastAPI Application Example ===")
 
     # Create FastAPI app
-    app = flext_api_create_app()
+    app = create_flext_api_app()
 
     print("FastAPI app created:")
     print(f"  Title: {app.title}")
@@ -234,7 +235,7 @@ def example_fastapi_app() -> None:
 
 
 def example_main_builder() -> None:
-    """Exemplo: Como usar o FlextApiBuilder principal."""
+    """Demonstrate how to use the main ``FlextApiBuilder``."""
     print("\n=== FlextApiBuilder Example ===")
 
     # Create main builder
@@ -246,7 +247,8 @@ def example_main_builder() -> None:
         query_builder.equals("category", "technology")
         .greater_than("price", 100)
         .sort_desc("rating")
-        .page(1, 20)
+        .page(1)
+        .page_size(20)
         .build()
     )
     print("Main Builder Query:", query)
@@ -255,15 +257,15 @@ def example_main_builder() -> None:
     response_builder = builder.for_response()
     response = (
         response_builder.success(data={"products": [], "total": 0})
-        .with_metadata("search_terms", ["technology", "high-price"])
-        .with_pagination(total=0, page=1, page_size=20)
+        .metadata({"search_terms": ["technology", "high-price"]})
+        .pagination(page=1, page_size=20, total=0)
         .build()
     )
     print("Main Builder Response:", response)
 
 
 async def main() -> None:
-    """Execute all examples."""
+    """Run all examples."""
     print("FLEXT API - Complete Working Examples")
     print("=" * 50)
 

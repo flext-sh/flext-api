@@ -399,7 +399,6 @@ class TestInfrastructureModuleStructure:
 
     def test_infrastructure_readme_exists_and_structured(self) -> None:
         """Test infrastructure README exists and is well-structured."""
-
         readme_path = (
             "/home/marlonsc/flext/flext-api/src/flext_api/infrastructure/README.md"
         )

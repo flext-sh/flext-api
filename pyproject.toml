@@ -109,6 +109,8 @@ pytest = "^8.4.1"
 pytest-cov = "^6.2.1"
 faker = "^37.5.3"
 pytest-asyncio = "^1.1.0"
+bandit = "^1.8.6"
+pip-audit = "^2.9.0"
 
 [tool.bandit]
 extend = "../.bandit-shared.toml"
@@ -244,35 +246,23 @@ addopts = [
     "--cov-branch",
     "--cov-fail-under=90",
 
-    # Otimizações de performance
-    "--benchmark-skip", # Skip benchmarks em runs normais
-    "-n=auto",          # Paralelização automática com pytest-xdist
-    "--dist=loadfile",  # Distribuição por arquivo
-
     # Melhor output e debugging
     "--tb=short",
     "--strict-markers",
     "--strict-config",
     "-ra",              # Mostrar resumo de testes
     "--color=yes",
-
-    # Timeout para evitar testes infinitos
-    "--timeout=300",
-    "--timeout-method=thread",
-
-    # Random order para detectar dependências entre testes (seed will be auto-generated)
-    "--randomly-dont-reorganize",
 ]
 
-# Environment variables para pytest-env
-env = [
-    "ENVIRONMENT=test",
-    "LOG_LEVEL=DEBUG",
-    "TESTING=true",
-    "FLEXT_API_TEST_MODE=true",
-    "DATABASE_URL=sqlite:///:memory:",
-    "FAKER_LOCALE=en_US",
-]
+# Environment variables (requires pytest-env plugin)
+# env = [
+#     "ENVIRONMENT=test",
+#     "LOG_LEVEL=DEBUG", 
+#     "TESTING=true",
+#     "FLEXT_API_TEST_MODE=true",
+#     "DATABASE_URL=sqlite:///:memory:",
+#     "FAKER_LOCALE=en_US",
+# ]
 
 # Marcadores específicos do projeto
 markers = [

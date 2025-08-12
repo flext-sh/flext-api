@@ -13,12 +13,8 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from flext_core.typings import FlextTypes
-
 from flext_core import get_logger
 
-# Import modern implementations
 from flext_api.builder import (
     FlextApiBuilder,
     FlextApiQuery,
@@ -37,6 +33,9 @@ from flext_api.exceptions import (
     FlextApiTimeoutError,
     FlextApiValidationError,
 )
+
+if TYPE_CHECKING:
+    from flext_core import FlextTypes
 
 logger = get_logger(__name__)
 
@@ -217,8 +216,9 @@ def validate_request(request: dict[str, object]) -> bool:
     if "method" not in request or "url" not in request:
         return False
 
-    method = request.get("method", "").upper()
-    if method not in ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]:
+    method_val = request.get("method", "")
+    method = str(method_val).upper() if method_val else "GET"
+    if method not in {"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"}:
         return False
 
     url = request.get("url", "")
@@ -298,7 +298,9 @@ class LegacyApiClient:
         msg = "Use async client methods instead"
         raise NotImplementedError(msg)
 
-    def post(self, endpoint: str, data: object = None, **kwargs: object) -> dict[str, object]:
+    def post(
+        self, endpoint: str, data: object = None, **kwargs: object,
+    ) -> dict[str, object]:
         """Make POST request (sync wrapper)."""
         warnings.warn(
             "Synchronous methods are deprecated. Use async methods instead.",
@@ -401,11 +403,10 @@ def migrate_to_modern_api(old_code: str) -> str:
         "parse_error_response(": "ApiResponse.error_message",
     }
 
-    result = []
-    result.append("# Old pattern (DEPRECATED):")
-    result.append(old_code)
-    result.append("")
-    result.append("# Modern pattern (RECOMMENDED):")
+    result: list[str] = []
+    result.extend(
+        ("# Old pattern (DEPRECATED):", old_code, "", "# Modern pattern (RECOMMENDED):"),
+    )
 
     modern_code = old_code
     for old, new in migrations.items():

@@ -65,7 +65,7 @@ class FlextApiError(FlextError):
         *,
         status_code: int = 500,
         error_code: str = "FLEXT_API_ERROR",
-        **context: object
+        **context: object,
     ) -> None:
         """Initialize with message, status code, and context."""
         self.status_code = status_code
@@ -108,20 +108,26 @@ class FlextApiValidationError(FlextValidationError):
         self.status_code = status_code
 
         # Prepare validation details
-        validation_details = {}
+        validation_details: dict[str, object] = {}
         if field is not None:
             validation_details["field"] = field
         if value is not None:
             # Truncate long values for security and readability
             str_value = str(value)
-            validation_details["value"] = str_value[:100] if len(str_value) > 100 else str_value
+            validation_details["value"] = (
+                str_value[:100] if len(str_value) > 100 else str_value
+            )
 
         # Add endpoint to general context
         if endpoint is not None:
             context["endpoint"] = endpoint
             context["status_code"] = status_code
 
-        super().__init__(message, validation_details=validation_details, context=context)
+        super().__init__(
+            message,
+            validation_details=validation_details,
+            context=context,
+        )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP validation error response."""
@@ -163,8 +169,15 @@ class FlextApiAuthenticationError(FlextAuthenticationError):
         context["status_code"] = status_code
 
         # Format message to include flext_api prefix for test compatibility
-        formatted_message = f"flext_api: {message}" if not message.startswith("flext_api:") else message
-        super().__init__(formatted_message, service="flext_api", **context)
+        formatted_message = (
+            f"flext_api: {message}" if not message.startswith("flext_api:") else message
+        )
+        super().__init__(
+            formatted_message,
+            service="flext_api",
+            user_id=None,
+            **context,
+        )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP authentication error response."""
@@ -204,7 +217,7 @@ class FlextApiAuthorizationError(FlextApiError):
             f"Authorization: {message}",
             status_code=403,
             error_code="FLEXT_API_ERROR",
-            **context
+            **context,
         )
 
 
@@ -230,7 +243,12 @@ class FlextApiConfigurationError(FlextConfigurationError):
             context["actual_value"] = str(actual_value)
         context["status_code"] = status_code
 
-        super().__init__(message, config_key=config_key, **context)
+        super().__init__(
+            message,
+            config_key=config_key,
+            config_file=None,
+            **context,
+        )
 
         # Ensure config_key is in context for test compatibility
         if config_key is not None and "config_key" not in self.context:
@@ -277,7 +295,12 @@ class FlextApiConnectionError(FlextConnectionError):
             context["connection_timeout"] = connection_timeout
         context["status_code"] = status_code
 
-        super().__init__(message, **context)
+        super().__init__(
+            message,
+            service="flext_api_connection",
+            endpoint=None,
+            **context,
+        )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP connection error response."""
@@ -317,7 +340,12 @@ class FlextApiProcessingError(FlextProcessingError):
             context["processing_stage"] = processing_stage
         context["status_code"] = status_code
 
-        super().__init__(message, **context)
+        super().__init__(
+            message,
+            business_rule="flext_api_processing",
+            operation=operation,
+            **context,
+        )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP processing error response."""
@@ -360,7 +388,12 @@ class FlextApiTimeoutError(FlextTimeoutError):
             context["operation"] = operation
         context["status_code"] = status_code
 
-        super().__init__(message, **context)
+        super().__init__(
+            message,
+            service="flext_api_service",
+            timeout_seconds=int(timeout_seconds) if timeout_seconds is not None else None,
+            **context,
+        )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP timeout error response."""
@@ -406,7 +439,7 @@ class FlextApiRequestError(FlextApiError):
             f"API request: {message}",
             status_code=status_code,
             error_code="FLEXT_API_ERROR",
-            **context
+            **context,
         )
 
 
@@ -433,7 +466,7 @@ class FlextApiResponseError(FlextApiError):
             f"API response: {message}",
             status_code=status_code,
             error_code="FLEXT_API_ERROR",
-            **context
+            **context,
         )
 
 
@@ -465,7 +498,7 @@ class FlextApiStorageError(FlextApiError):
             f"API storage: {message}",
             status_code=status_code,
             error_code="FLEXT_API_ERROR",
-            **context
+            **context,
         )
 
 
@@ -497,7 +530,7 @@ class FlextApiBuilderError(FlextApiError):
             f"API builder: {message}",
             status_code=status_code,
             error_code="FLEXT_API_ERROR",
-            **context
+            **context,
         )
 
 
@@ -528,7 +561,7 @@ class FlextApiRateLimitError(FlextApiError):
             f"Rate limit: {message}",
             status_code=429,
             error_code="FLEXT_API_ERROR",
-            **context
+            **context,
         )
 
 
@@ -556,7 +589,7 @@ class FlextApiNotFoundError(FlextApiError):
             f"Not found: {message}",
             status_code=404,
             error_code="FLEXT_API_ERROR",
-            **context
+            **context,
         )
 
 
@@ -574,40 +607,82 @@ def create_error_response(
 
     if include_traceback:
         import traceback
-        response["error"]["traceback"] = traceback.format_exc()
+
+        error_dict = response["error"]
+        if isinstance(error_dict, dict):
+            error_dict["traceback"] = traceback.format_exc()
 
     return response
+
+
+def _get_specific_exception(
+    status_code: int, message: str,
+) -> (
+    FlextApiError
+    | FlextApiAuthenticationError
+    | FlextApiProcessingError
+    | FlextApiConnectionError
+    | FlextApiTimeoutError
+    | None
+):
+    """Get specific exception for known status codes."""
+    specific_exceptions: dict[
+        int,
+        FlextApiError
+        | FlextApiAuthenticationError
+        | FlextApiProcessingError
+        | FlextApiConnectionError
+        | FlextApiTimeoutError,
+    ] = {
+        400: FlextApiRequestError(message or "Bad request", status_code=status_code),
+        401: FlextApiAuthenticationError(message or "Unauthorized", status_code=status_code),
+        403: FlextApiAuthorizationError(message or "Forbidden"),
+        404: FlextApiNotFoundError(message or "Not found"),
+        429: FlextApiRateLimitError(message or "Too many requests"),
+        500: FlextApiProcessingError(message or "Internal server error", status_code=status_code),
+        502: FlextApiResponseError(message or "Bad gateway", status_code=status_code),
+        503: FlextApiConnectionError(message or "Service unavailable", status_code=status_code),
+        504: FlextApiTimeoutError(message or "Gateway timeout", status_code=status_code),
+    }
+    return specific_exceptions.get(status_code)
 
 
 def map_http_status_to_exception(
     status_code: int,
     message: str = "",
     **context: object,
-) -> FlextApiError:
+) -> (
+    FlextApiError
+    | FlextApiAuthenticationError
+    | FlextApiProcessingError
+    | FlextApiConnectionError
+    | FlextApiTimeoutError
+):
     """Map HTTP status code to appropriate exception type."""
-    if status_code == 400:
-        return FlextApiRequestError(message or "Bad request", status_code=400, **context)
-    if status_code == 401:
-        return FlextApiAuthenticationError(message or "Unauthorized", status_code=401, **context)
-    if status_code == 403:
-        return FlextApiAuthorizationError(message or "Forbidden", **context)
-    if status_code == 404:
-        return FlextApiNotFoundError(message or "Not found", **context)
-    if status_code == 429:
-        return FlextApiRateLimitError(message or "Too many requests", **context)
+    # Try specific exception first
+    specific_exception = _get_specific_exception(status_code, message)
+    if specific_exception is not None:
+        return specific_exception
+
+    # Range-based fallbacks
     if 400 <= status_code < 500:
-        return FlextApiRequestError(message or "Client error", status_code=status_code, **context)
-    if status_code == 500:
-        return FlextApiProcessingError(message or "Internal server error", status_code=500, **context)
-    if status_code == 502:
-        return FlextApiResponseError(message or "Bad gateway", status_code=502, **context)
-    if status_code == 503:
-        return FlextApiConnectionError(message or "Service unavailable", status_code=503, **context)
-    if status_code == 504:
-        return FlextApiTimeoutError(message or "Gateway timeout", status_code=504, **context)
+        return FlextApiRequestError(message or "Client error", status_code=status_code)
+
     if 500 <= status_code < 600:
-        return FlextApiError(message or "Server error", status_code=status_code, **context)
-    return FlextApiError(message or "Unknown error", status_code=status_code, **context)
+        return FlextApiError(
+            message or "Server error",
+            status_code=status_code,
+            error_code="FLEXT_API_ERROR",
+            **context,
+        )
+
+    # Default fallback
+    return FlextApiError(
+        message or "Unknown error",
+        status_code=status_code,
+        error_code="FLEXT_API_ERROR",
+        **context,
+    )
 
 
 # ==============================================================================
@@ -615,23 +690,23 @@ def map_http_status_to_exception(
 # ==============================================================================
 
 __all__ = [
-    # Base Error
-    "FlextApiError",
-    # Core API Errors
-    "FlextApiValidationError",
     "FlextApiAuthenticationError",
     "FlextApiAuthorizationError",
+    "FlextApiBuilderError",
     "FlextApiConfigurationError",
     "FlextApiConnectionError",
+    # Base Error
+    "FlextApiError",
+    "FlextApiNotFoundError",
     "FlextApiProcessingError",
-    "FlextApiTimeoutError",
+    "FlextApiRateLimitError",
     # Specific API Errors
     "FlextApiRequestError",
     "FlextApiResponseError",
     "FlextApiStorageError",
-    "FlextApiBuilderError",
-    "FlextApiRateLimitError",
-    "FlextApiNotFoundError",
+    "FlextApiTimeoutError",
+    # Core API Errors
+    "FlextApiValidationError",
     # Utility Functions
     "create_error_response",
     "map_http_status_to_exception",

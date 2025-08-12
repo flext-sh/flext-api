@@ -122,7 +122,6 @@ class TestMissingBuilderCoverage:
 
     def test_create_paginated_response_function(self) -> None:
         """Test create_paginated_response function - covers line 680."""
-
         from flext_api.builder import PaginationConfig
 
         config = PaginationConfig(

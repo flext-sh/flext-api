@@ -186,7 +186,9 @@ class FlextApiPluginProtocol(Protocol):
 class FlextApiConnectionPoolProtocol(Protocol):
     """Protocol for HTTP connection pool management."""
 
-    async def get_connection(self, host: str, port: int, ssl: bool = False) -> FlextResult[object]:
+    async def get_connection(
+        self, host: str, port: int, ssl: bool = False,
+    ) -> FlextResult[object]:
         """Get connection from pool."""
         ...
 
@@ -232,7 +234,9 @@ class FlextApiQueryBuilderProtocol(Protocol):
         ...
 
     def add_sort(
-        self, field: str, ascending: bool = True
+        self,
+        field: str,
+        ascending: bool = True,
     ) -> FlextApiQueryBuilderProtocol:
         """Add sorting to the query.
 
@@ -259,7 +263,9 @@ class FlextApiQueryBuilderProtocol(Protocol):
         """
         ...
 
-    def add_search(self, term: str, fields: list[str] | None = None) -> FlextApiQueryBuilderProtocol:
+    def add_search(
+        self, term: str, fields: list[str] | None = None,
+    ) -> FlextApiQueryBuilderProtocol:
         """Add search functionality.
 
         Args:
@@ -316,7 +322,7 @@ class FlextApiResponseBuilderProtocol(Protocol):
 
     def set_data(
         self,
-        data: FlextTypes.Core.JsonDict | list | str | float | bool | None,
+        data: FlextTypes.Core.JsonDict | list[object] | str | float | bool | None,
     ) -> FlextApiResponseBuilderProtocol:
         """Set response data.
 
@@ -462,7 +468,8 @@ class FlextApiAuthProtocol(Protocol):
     """
 
     async def authenticate(
-        self, credentials: FlextTypes.Core.JsonDict
+        self,
+        credentials: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Authenticate with credentials.
 
@@ -592,7 +599,9 @@ class FlextApiRepositoryProtocol(Protocol):
     Provides CRUD operations with filtering and pagination.
     """
 
-    async def find_by_id(self, entity_id: str) -> FlextResult[FlextTypes.Core.JsonDict | None]:
+    async def find_by_id(
+        self, entity_id: str,
+    ) -> FlextResult[FlextTypes.Core.JsonDict | None]:
         """Find entity by ID.
 
         Args:
@@ -643,7 +652,8 @@ class FlextApiRepositoryProtocol(Protocol):
         ...
 
     async def save(
-        self, entity: FlextTypes.Core.JsonDict
+        self,
+        entity: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Save an entity.
 
@@ -738,7 +748,8 @@ class FlextApiMiddlewareProtocol(Protocol):
     """
 
     async def process_request(
-        self, request: FlextTypes.Core.JsonDict
+        self,
+        request: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Process incoming request.
 
@@ -752,7 +763,8 @@ class FlextApiMiddlewareProtocol(Protocol):
         ...
 
     async def process_response(
-        self, response: FlextTypes.Core.JsonDict
+        self,
+        response: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Process outgoing response.
 
@@ -823,7 +835,8 @@ class FlextApiHandlerProtocol(Protocol):
     """
 
     async def handle(
-        self, request: FlextTypes.Core.JsonDict
+        self,
+        request: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Handle a request.
 
@@ -854,7 +867,8 @@ class FlextApiValidatorProtocol(Protocol):
     """Protocol for request/response validation."""
 
     async def validate_request(
-        self, request: FlextTypes.Core.JsonDict
+        self,
+        request: FlextTypes.Core.JsonDict,
     ) -> FlextResult[None]:
         """Validate request data.
 
@@ -868,7 +882,8 @@ class FlextApiValidatorProtocol(Protocol):
         ...
 
     async def validate_response(
-        self, response: FlextTypes.Core.JsonDict
+        self,
+        response: FlextTypes.Core.JsonDict,
     ) -> FlextResult[None]:
         """Validate response data.
 
@@ -946,11 +961,15 @@ class FlextApiMetricsProtocol(Protocol):
         """Increment a counter metric."""
         ...
 
-    def record_gauge(self, name: str, value: float, tags: dict[str, str] | None = None) -> None:
+    def record_gauge(
+        self, name: str, value: float, tags: dict[str, str] | None = None,
+    ) -> None:
         """Record a gauge metric."""
         ...
 
-    def record_histogram(self, name: str, value: float, tags: dict[str, str] | None = None) -> None:
+    def record_histogram(
+        self, name: str, value: float, tags: dict[str, str] | None = None,
+    ) -> None:
         """Record a histogram metric."""
         ...
 
@@ -981,30 +1000,30 @@ class FlextApiHealthCheckProtocol(Protocol):
 # ==============================================================================
 
 __all__ = [
+    "FlextApiAuthProtocol",
+    "FlextApiAuthorizationProtocol",
+    "FlextApiCacheProtocol",
     # HTTP Client Protocols
     "FlextApiClientProtocol",
-    "FlextApiPluginProtocol",
     "FlextApiConnectionPoolProtocol",
+    # Handler Protocols
+    "FlextApiHandlerProtocol",
+    "FlextApiHealthCheckProtocol",
+    # Monitoring Protocols
+    "FlextApiMetricsProtocol",
+    # Middleware Protocols
+    "FlextApiMiddlewareProtocol",
+    "FlextApiPluginProtocol",
     # Builder Protocols
     "FlextApiQueryBuilderProtocol",
+    "FlextApiRateLimitProtocol",
+    # Repository Protocols
+    "FlextApiRepositoryProtocol",
     "FlextApiResponseBuilderProtocol",
     # Service Protocols
     "FlextApiServiceProtocol",
-    "FlextApiAuthProtocol",
-    "FlextApiAuthorizationProtocol",
-    # Repository Protocols
-    "FlextApiRepositoryProtocol",
-    "FlextApiCacheProtocol",
-    # Middleware Protocols
-    "FlextApiMiddlewareProtocol",
-    "FlextApiRateLimitProtocol",
-    # Handler Protocols
-    "FlextApiHandlerProtocol",
-    "FlextApiValidatorProtocol",
     # Streaming Protocols
     "FlextApiStreamProtocol",
+    "FlextApiValidatorProtocol",
     "FlextApiWebSocketProtocol",
-    # Monitoring Protocols
-    "FlextApiMetricsProtocol",
-    "FlextApiHealthCheckProtocol",
 ]
