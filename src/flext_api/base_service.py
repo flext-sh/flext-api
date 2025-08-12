@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, cast
 
 from flext_core import FlextDomainService, FlextResult, FlextTypes, get_logger
 from pydantic import Field
@@ -19,10 +19,10 @@ from pydantic import Field
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
 
-    from flext_api.models import (
+    from flext_api.api_models import (
         ClientConfig,
     )
-    from flext_api.protocols import (
+    from flext_api.api_protocols import (
         FlextApiMiddlewareProtocol,
         FlextApiPluginProtocol,
         FlextApiQueryBuilderProtocol,
@@ -65,7 +65,7 @@ class FlextApiBaseService(
             config_result = self.validate_config()
             if not config_result.success:
                 return FlextResult.fail(
-                    f"Configuration validation failed: {config_result.error}"
+                    f"Configuration validation failed: {config_result.error}",
                 )
 
             # Perform service-specific startup
@@ -161,7 +161,8 @@ class FlextApiBaseClientService(
 
     client_config: ClientConfig = Field(description="Client configuration")
     plugins: list[FlextApiPluginProtocol] = Field(
-        default_factory=list, description="Client plugins"
+        default_factory=list,
+        description="Client plugins",
     )
 
     async def request(
@@ -182,11 +183,11 @@ class FlextApiBaseClientService(
 
             # Apply before_request plugins
             for plugin in self.plugins:
-                plugin_result: FlextResult[None] = plugin.before_request(
+                plugin_result: FlextResult[None] = await plugin.before_request(
                     method=method,
                     url=url,
                     headers=request_headers,
-                    data=data or {},
+                    data=data if isinstance(data, dict) else {},
                     json=json or {},
                     params=dict(params) if params else {},
                 )
@@ -210,13 +211,15 @@ class FlextApiBaseClientService(
             # Apply after_response plugins
             response_data: FlextTypes.Core.JsonDict = response_result.data or {}
             for plugin in self.plugins:
-                plugin_result: FlextResult[FlextTypes.Core.JsonDict] = plugin.after_response(
+                after_plugin_result: FlextResult[
+                    FlextTypes.Core.JsonDict
+                ] = await plugin.after_response(
                     response=response_data,
                     method=method,
                     url=url,
                 )
-                if plugin_result.success and plugin_result.data is not None:
-                    response_data = plugin_result.data
+                if after_plugin_result.success and after_plugin_result.data is not None:
+                    response_data = after_plugin_result.data
 
             return FlextResult.ok(response_data)
         except Exception as e:
@@ -258,7 +261,8 @@ class FlextApiBaseAuthService(
     """
 
     auth_config: FlextTypes.Core.JsonDict = Field(
-        default_factory=dict, description="Authentication configuration"
+        default_factory=dict,
+        description="Authentication configuration",
     )
 
     async def authenticate(
@@ -270,7 +274,9 @@ class FlextApiBaseAuthService(
             # Validate credentials format
             validation_result = self._validate_credentials(credentials)
             if not validation_result.success:
-                return validation_result
+                return FlextResult.fail(
+                    validation_result.error or "Credential validation failed",
+                )
 
             # Perform authentication (implemented by subclass)
             auth_result = await self._do_authenticate(credentials)
@@ -278,7 +284,8 @@ class FlextApiBaseAuthService(
                 return auth_result
 
             # Create session
-            session_result = await self._create_session(auth_result.data)
+            auth_data = auth_result.data or {}
+            session_result = await self._create_session(auth_data)
             if not session_result.success:
                 return session_result
 
@@ -398,7 +405,8 @@ class FlextApiBaseRepositoryService(
             return FlextResult.fail(f"Failed to find entities: {e}")
 
     async def save(
-        self, entity: FlextTypes.Core.JsonDict
+        self,
+        entity: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Save an entity."""
         try:
@@ -408,7 +416,9 @@ class FlextApiBaseRepositoryService(
             # Validate entity
             validation_result = self._validate_entity(entity)
             if not validation_result.success:
-                return validation_result
+                return FlextResult.fail(
+                    validation_result.error or "Entity validation failed",
+                )
 
             # Perform save (implemented by subclass)
             return await self._do_save(entity)
@@ -439,7 +449,8 @@ class FlextApiBaseRepositoryService(
 
     @abstractmethod
     async def _do_find_by_id(
-        self, entity_id: str
+        self,
+        entity_id: str,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Perform actual entity lookup. Implemented by subclasses."""
 
@@ -454,7 +465,8 @@ class FlextApiBaseRepositoryService(
 
     @abstractmethod
     async def _do_save(
-        self, entity: FlextTypes.Core.JsonDict
+        self,
+        entity: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Perform actual save. Implemented by subclasses."""
 
@@ -480,7 +492,8 @@ class FlextApiBaseHandlerService(
     """
 
     middlewares: list[FlextApiMiddlewareProtocol] = Field(
-        default_factory=list, description="Handler middlewares"
+        default_factory=list,
+        description="Handler middlewares",
     )
 
     async def handle(
@@ -495,7 +508,7 @@ class FlextApiBaseHandlerService(
                 middleware_result = await middleware.process_request(processed_request)
                 if not middleware_result.success:
                     return middleware_result
-                processed_request = middleware_result.data
+                processed_request = middleware_result.data or {}
 
             # Handle request (implemented by subclass)
             response_result = await self._do_handle(processed_request)
@@ -503,10 +516,10 @@ class FlextApiBaseHandlerService(
                 return response_result
 
             # Process response through middlewares (reverse order)
-            processed_response = response_result.data
+            processed_response = response_result.data or {}
             for middleware in reversed(self.middlewares):
                 middleware_result = await middleware.process_response(
-                    processed_response
+                    processed_response,
                 )
                 if middleware_result.success and middleware_result.data:
                     processed_response = middleware_result.data
@@ -541,15 +554,15 @@ class FlextApiBaseBuilderService(
 
     def for_query(self) -> FlextApiQueryBuilderProtocol:
         """Get query builder instance."""
-        from flext_api.builder import FlextApiQueryBuilder
+        from flext_api.api_client import FlextApiQueryBuilder
 
-        return FlextApiQueryBuilder()
+        return cast("FlextApiQueryBuilderProtocol", FlextApiQueryBuilder())
 
     def for_response(self) -> FlextApiResponseBuilderProtocol:
         """Get response builder instance."""
-        from flext_api.builder import FlextApiResponseBuilder
+        from flext_api.api_client import FlextApiResponseBuilder
 
-        return FlextApiResponseBuilder()
+        return cast("FlextApiResponseBuilderProtocol", FlextApiResponseBuilder())
 
 
 # ==============================================================================
@@ -588,16 +601,16 @@ class FlextApiBaseStreamingService(
             raise
 
     def _validate_source(
-        self, source: FlextTypes.Core.JsonDict | str | bytes
+        self,
+        source: FlextTypes.Core.JsonDict | str | bytes,
     ) -> FlextResult[None]:
         """Validate stream source. Override in subclasses."""
-        if source is None:
-            return FlextResult.fail("Source cannot be None")
         return FlextResult.ok(None)
 
     @abstractmethod
     async def _do_stream(
-        self, source: FlextTypes.Core.JsonDict | str | bytes
+        self,
+        source: FlextTypes.Core.JsonDict | str | bytes,
     ) -> AsyncIterator[bytes]:
         """Perform actual streaming. Implemented by subclasses."""
         yield b""  # pragma: no cover

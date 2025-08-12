@@ -36,13 +36,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
-
-if TYPE_CHECKING:
-    from flext_core import FlextTypes
+from typing import ClassVar, Generic, TypeVar
 
 import aiohttp.hdrs
-from flext_core import FlextFieldCore, FlextFields, FlextTypes
+from flext_core import FlextTypes
+from flext_core.fields import FlextFieldCore, FlextFields
 
 # =============================================================================
 # PROJECT TYPE VARIABLES
@@ -458,7 +456,8 @@ class FlextAPIFields:
 # CONVENIENCE FIELD FUNCTIONS
 # =============================================================================
 
-def api_key_field(
+
+def api_key_field[TData](
     description: str = "API key for authentication",
     **kwargs: TData,
 ) -> FlextTypes.Core.JsonDict:
@@ -466,7 +465,7 @@ def api_key_field(
     return FlextAPIFieldCore.api_key_field(description=description, **kwargs)
 
 
-def bearer_token_field(
+def bearer_token_field[TData](
     description: str = "Bearer token for authentication",
     **kwargs: TData,
 ) -> FlextTypes.Core.JsonDict:
@@ -474,7 +473,7 @@ def bearer_token_field(
     return FlextAPIFieldCore.bearer_token_field(description=description, **kwargs)
 
 
-def pipeline_config_field(
+def pipeline_config_field[TData](
     description: str = "Pipeline configuration data",
     **kwargs: TData,
 ) -> FlextTypes.Core.JsonDict:
@@ -482,7 +481,7 @@ def pipeline_config_field(
     return FlextAPIFieldCore.pipeline_config_field(description=description, **kwargs)
 
 
-def plugin_config_field(
+def plugin_config_field[TData](
     description: str = "Plugin configuration data",
     **kwargs: TData,
 ) -> FlextTypes.Core.JsonDict:
@@ -490,7 +489,7 @@ def plugin_config_field(
     return FlextAPIFieldCore.plugin_config_field(description=description, **kwargs)
 
 
-def user_role_field(
+def user_role_field[TData](
     description: str = "User role for authorization",
     **kwargs: TData,
 ) -> FlextTypes.Core.JsonDict:
@@ -498,7 +497,7 @@ def user_role_field(
     return FlextAPIFieldCore.user_role_field(description=description, **kwargs)
 
 
-def endpoint_path_field(
+def endpoint_path_field[TData](
     description: str = "API endpoint path",
     **kwargs: TData,
 ) -> FlextTypes.Core.JsonDict:
@@ -506,7 +505,7 @@ def endpoint_path_field(
     return FlextAPIFieldCore.endpoint_path_field(description=description, **kwargs)
 
 
-def http_method_field(
+def http_method_field[TData](
     description: str = "HTTP method",
     **kwargs: TData,
 ) -> FlextTypes.Core.JsonDict:
@@ -514,7 +513,7 @@ def http_method_field(
     return FlextAPIFieldCore.http_method_field(description=description, **kwargs)
 
 
-def response_format_field(
+def response_format_field[TData](
     description: str = "Response format type",
     **kwargs: TData,
 ) -> FlextTypes.Core.JsonDict:
@@ -577,21 +576,21 @@ __all__ = [
     # Type System
     "APITypes",
     "APITypesCompat",
-    "get_api_types",
+    # Field System
+    "FlextAPIFieldCore",
+    "FlextAPIFields",
+    "FlextFieldCore",  # Re-export from flext_core
+    "FlextFields",  # Re-export from flext_core
     # Type Variables
     "TData",  # Legacy compatibility
     "T_Payload",
     "T_Request",
     "T_Response",
-    # Field System
-    "FlextAPIFieldCore",
-    "FlextAPIFields",
-    "FlextFieldCore",  # Re-export from flext_core
-    "FlextFields",     # Re-export from flext_core
     # Field Functions
     "api_key_field",
     "bearer_token_field",
     "endpoint_path_field",
+    "get_api_types",
     "http_method_field",
     "pipeline_config_field",
     "plugin_config_field",

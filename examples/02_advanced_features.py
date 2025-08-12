@@ -17,17 +17,15 @@ from flext_api import (
     FlextApiQueryBuilder,
     FlextApiResponseBuilder,
     build_error_response,
-    build_paginated_response,
     build_query,
     build_success_response,
-    create_client_with_plugins,
     create_flext_api,
-    flext_api_create_app,
+    create_flext_api_app,
 )
 
 
 def example_advanced_query_building() -> None:
-    """Exemplo: Construção avançada de queries usando todos os recursos."""
+    """Example: Advanced query construction using all features."""
     print("=== Advanced Query Building Example ===")
 
     # Query complexa com múltiplos filtros e ordenação
@@ -37,19 +35,21 @@ def example_advanced_query_building() -> None:
         .equals("type", "premium")
         .greater_than("created_at", "2024-01-01")
         .greater_than("score", 8.5)
-        .equals("verified", is_true=True)
+        .equals("verified", True)
         .sort_desc("created_at")
         .sort_asc("name")
         .sort_desc("score")
-        .page(3, 50)  # Página 3, 50 itens por página
+        .page(3)
+        .page_size(50)  # Página 3, 50 itens por página
         .build()
     )
 
     print("Complex Query with Multiple Filters:")
-    print(f"  Filters: {len(complex_query['filters'])}")
-    print(f"  Sorts: {len(complex_query['sorts'])}")
-    print(f"  Page: {complex_query['page']}, Size: {complex_query['page_size']}")
-    print(f"  Offset: {complex_query['offset']}, Limit: {complex_query['limit']}")
+    print(f"  Filters: {len(complex_query.filters)}")
+    print(f"  Sorts: {len(complex_query.sorts)}")
+    print(f"  Page: {complex_query.page}, Size: {complex_query.page_size}")
+    as_dict = complex_query.to_dict()
+    print(f"  Offset: {as_dict['offset']}, Limit: {as_dict['limit']}")
 
     # Construir query usando factory function com filtros
     search_filters = {
@@ -58,78 +58,89 @@ def example_advanced_query_building() -> None:
         "in_stock": True,
         "rating": 5,
     }
-    factory_query = build_query(search_filters)
-    print(f"\nFactory Query: {len(factory_query['filters'])} filters applied")
+    factory_filters = [{"field": k, "value": v, "operator": "eq"} for k, v in search_filters.items()]
+    factory_query = build_query(factory_filters)
+    print(f"\nFactory Query: {len(factory_query.filters)} filters applied")
     print(f"Query structure: {factory_query}")
 
 
 def example_advanced_response_building() -> None:
-    """Exemplo: Construção avançada de responses com metadados e paginação."""
+    """Example: Advanced response construction with metadata and pagination."""
     print("\n=== Advanced Response Building Example ===")
 
     # Response com metadados complexos
     rb = FlextApiResponseBuilder()
     complex_response = (
         rb.success(data={"results": [], "summary": {"total": 0, "categories": 3}})
-        .with_metadata("query_id", "qry_12345")
-        .with_metadata("execution_time_ms", 234)
-        .with_metadata("cache_hit", value=True)
-        .with_metadata("database_queries", 2)
-        .with_metadata("facets", {"categories": ["electronics", "books", "clothing"]})
-        .with_metadata("suggestions", ["apple", "samsung", "google"])
+        .metadata({
+            "query_id": "qry_12345",
+            "execution_time_ms": 234,
+            "cache_hit": True,
+            "database_queries": 2,
+            "facets": {"categories": ["electronics", "books", "clothing"]},
+            "suggestions": ["apple", "samsung", "google"],
+        })
         .build()
     )
 
     print("Complex Response with Rich Metadata:")
-    print(f"  Success: {complex_response['success']}")
-    print(f"  Metadata keys: {list(complex_response['metadata'].keys())}")
-    print(f"  Has suggestions: {'suggestions' in complex_response['metadata']}")
+    print(f"  Success: {complex_response.success}")
+    print(f"  Metadata keys: {list(complex_response.metadata.keys())}")
+    print(f"  Has suggestions: {'suggestions' in complex_response.metadata}")
 
     # Response paginada com metadados detalhados
     products = [
         {"id": i, "name": f"Product {i}", "price": 99.99 + i} for i in range(1, 21)
     ]
 
-    paginated_response = build_paginated_response(
-        data=products,
-        total=1500,
-        page=2,
-        page_size=20,
-        message="Products retrieved successfully",
-        metadata={
-            "search_terms": ["smartphone", "android"],
-            "filters_applied": 4,
-            "sort_by": "popularity",
-            "execution_time": "0.089s",
-            "cache_status": "partial_hit",
-        },
+    from flext_api.api_client import (
+        PaginationConfig,
+        build_paginated_response as build_paginated,
+    )
+    paginated_response = build_paginated(
+        PaginationConfig(
+            data=products,
+            total=1500,
+            page=2,
+            page_size=20,
+            message="Products retrieved successfully",
+            metadata={
+                "search_terms": ["smartphone", "android"],
+                "filters_applied": 4,
+                "sort_by": "popularity",
+                "execution_time": "0.089s",
+                "cache_status": "partial_hit",
+            },
+        )
     )
 
     print("\nPaginated Response:")
-    print(f"  Data items: {len(paginated_response['data'])}")
-    print(f"  Total pages: {paginated_response['pagination']['total_pages']}")
-    print(f"  Has next: {paginated_response['pagination']['has_next']}")
-    print(f"  Has previous: {paginated_response['pagination']['has_previous']}")
-    print(f"  Metadata: {list(paginated_response['metadata'].keys())}")
+    data_list = paginated_response.data if isinstance(paginated_response.data, list) else []
+    print(f"  Data items: {len(data_list)}")
+    pagination = paginated_response.pagination or {}
+    print(f"  Total pages: {pagination.get('total_pages')}")
+    print(f"  Has next: {pagination.get('has_next')}")
+    print(f"  Has previous: {pagination.get('has_previous')}")
+    print(f"  Metadata: {list(paginated_response.metadata.keys())}")
 
 
 async def example_advanced_client_configuration() -> None:
-    """Exemplo: Configuração avançada do cliente HTTP com plugins."""
+    """Example: Advanced HTTP client configuration with plugins."""
     print("\n=== Advanced Client Configuration Example ===")
 
-    # Cliente com múltiplos plugins usando função factory
-    client = create_client_with_plugins(
-        base_url="https://api.github.com",
-        enable_cache=True,
-        enable_retry=True,
-        enable_circuit_breaker=True,
-        timeout=45.0,
-        headers={
-            "User-Agent": "FlextAPI-Advanced/2.0.0",
-            "Accept": "application/vnd.github.v3+json",
-            "X-Request-ID": "req_advanced_example_001",
-        },
-        max_retries=5,
+    # Client with multiple plugins using factory function
+    from flext_api import create_client
+    client = create_client(
+        {
+            "base_url": "https://api.github.com",
+            "timeout": 45.0,
+            "headers": {
+                "User-Agent": "FlextAPI-Advanced/2.0.0",
+                "Accept": "application/vnd.github.v3+json",
+                "X-Request-ID": "req_advanced_example_001",
+            },
+            "max_retries": 5,
+        }
     )
 
     try:
@@ -144,14 +155,9 @@ async def example_advanced_client_configuration() -> None:
         print(f"  Plugins: {len(client.plugins)} plugins configured")
 
         # Health check detalhado
-        health_result = client.health_check()
-        if health_result.success:
-            health_data = health_result.data
-            print("\nClient Health Status:")
-            print(f"  Status: {health_data['status']}")
-            print(f"  Base URL: {health_data['base_url']}")
-            print(f"  Session Active: {health_data['session_active']}")
-            print(f"  Plugins Count: {health_data['plugins_count']}")
+        health_data = client.health_check()
+        print("\nClient Health Status:")
+        print(f"  Status: {health_data['status']}")
 
         print("  Advanced client ready for production use")
 
@@ -162,7 +168,7 @@ async def example_advanced_client_configuration() -> None:
 
 
 async def example_full_api_service_integration() -> None:
-    """Exemplo: Integração completa do serviço API com todos os componentes."""
+    """Example: Complete API service integration with all components."""
     print("\n=== Full API Service Integration Example ===")
 
     # Criar serviço completo
@@ -174,11 +180,11 @@ async def example_full_api_service_integration() -> None:
         print(f"API Service Started: {start_result.success}")
 
         # Health check do serviço
-        health_result = api.health_check()
-        if health_result.success:
+        health_result = await api.health_check()
+        if health_result.success and health_result.data is not None:
             health_data = health_result.data
             print(f"Service Health: {health_data['status']}")
-            print(f"Client Configured: {health_data['client_configured']}")
+            print(f"Client Configured: {health_data.get('client_configured', False)}")
 
         # Obter builder e criar query complexa
         builder = api.get_builder()
@@ -190,18 +196,19 @@ async def example_full_api_service_integration() -> None:
             .equals("level", "senior")
             .greater_than("experience_years", 5)
             .greater_than("salary", 80000)
-            .equals("remote_eligible", is_true=True)
+            .equals("remote_eligible", True)
             .sort_desc("salary")
             .sort_asc("hire_date")
             .sort_desc("performance_rating")
-            .page(1, 25)
+            .page(1)
+            .page_size(25)
             .build()
         )
 
         print("\nAdvanced Query Built:")
-        print(f"  Filters: {len(advanced_query['filters'])}")
-        print(f"  Sorts: {len(advanced_query['sorts'])}")
-        page_info = f"page {advanced_query['page']}, size {advanced_query['page_size']}"
+        print(f"  Filters: {len(advanced_query.filters)}")
+        print(f"  Sorts: {len(advanced_query.sorts)}")
+        page_info = f"page {advanced_query.page}, size {advanced_query.page_size}"
         print(f"  Pagination: {page_info}")
 
         # Response builder avançada
@@ -215,20 +222,24 @@ async def example_full_api_service_integration() -> None:
             response_builder.success(
                 data=mock_employees, message="Senior engineers retrieved"
             )
-            .with_metadata("query_complexity", "high")
-            .with_metadata("optimization_applied", value=True)
-            .with_metadata("cache_strategy", "write_through")
-            .with_metadata("data_source", "primary_db")
-            .with_metadata("query_plan", "index_scan_optimal")
-            .with_pagination(total=147, page=1, page_size=25)
+            .metadata({
+                "query_complexity": "high",
+                "optimization_applied": True,
+                "cache_strategy": "write_through",
+                "data_source": "primary_db",
+                "query_plan": "index_scan_optimal",
+            })
+            .pagination(page=1, page_size=25, total=147)
             .build()
         )
 
         print("\nAdvanced Response Built:")
-        print(f"  Success: {advanced_response['success']}")
-        print(f"  Data Count: {len(advanced_response['data'])}")
-        print(f"  Total Records: {advanced_response['pagination']['total']}")
-        print(f"  Metadata Keys: {list(advanced_response['metadata'].keys())}")
+        print(f"  Success: {advanced_response.success}")
+        data_count = len(advanced_response.data) if isinstance(advanced_response.data, list) else 0
+        print(f"  Data Count: {data_count}")
+        pag = advanced_response.pagination or {}
+        print(f"  Total Records: {pag.get('total')}")
+        print(f"  Metadata Keys: {list(advanced_response.metadata.keys())}")
 
         # Criar cliente HTTP via serviço
         client_config = {
@@ -242,7 +253,7 @@ async def example_full_api_service_integration() -> None:
         }
 
         client_result = api.flext_api_create_client(client_config)
-        if client_result.success:
+        if client_result.success and client_result.data is not None:
             client = client_result.data
             print("\nHTTP Client Created via Service:")
             print(f"  Base URL: {client.config.base_url}")
@@ -262,7 +273,7 @@ async def example_full_api_service_integration() -> None:
 
 
 def example_factory_functions_advanced() -> None:
-    """Exemplo: Uso avançado das factory functions."""
+    """Example: Advanced usage of factory functions."""
     print("\n=== Advanced Factory Functions Example ===")
 
     # Success response com metadados complexos
@@ -290,9 +301,14 @@ def example_factory_functions_advanced() -> None:
     )
 
     print("Advanced Success Response:")
-    print(f"  Users count: {len(advanced_success['data']['users'])}")
-    print(f"  Metadata entries: {len(advanced_success['metadata'])}")
-    has_security = "security_context" in advanced_success["metadata"]
+    users_count = 0
+    if isinstance(advanced_success.data, dict):
+        users = advanced_success.data.get("users")
+        if isinstance(users, list):
+            users_count = len(users)
+    print(f"  Users count: {users_count}")
+    print(f"  Metadata entries: {len(advanced_success.metadata)}")
+    has_security = "security_context" in advanced_success.metadata
     print(f"  Has security context: {has_security}")
 
     # Error response com detalhes complexos
@@ -313,24 +329,25 @@ def example_factory_functions_advanced() -> None:
     }
 
     advanced_error = build_error_response(
-        message="Multiple validation errors occurred",
-        code=422,
-        details=error_details,
+        error="Multiple validation errors occurred",
+        status_code=422,
+        metadata={"error_code": "VALIDATION_FAILED_MULTIPLE", "details": error_details},
     )
 
     print("\nAdvanced Error Response:")
-    print(f"  Error code: {advanced_error['metadata']['error_code']}")
-    print(f"  Has validation details: {'details' in advanced_error['metadata']}")
-    support_ref = advanced_error["metadata"]["details"]["support_reference"]
+    print(f"  Error code: {advanced_error.metadata.get('error_code')}")
+    print(f"  Has validation details: {'details' in advanced_error.metadata}")
+    details = advanced_error.metadata.get("details", {})
+    support_ref = details.get("support_reference") if isinstance(details, dict) else None
     print(f"  Support reference: {support_ref}")
 
 
 def example_comprehensive_fastapi_app() -> None:
-    """Exemplo: Aplicação FastAPI completa com todos os recursos."""
+    """Example: Complete FastAPI application with all features."""
     print("\n=== Comprehensive FastAPI Application Example ===")
 
     # Criar aplicação FastAPI completa
-    app = flext_api_create_app()
+    app = create_flext_api_app()
 
     print("Comprehensive FastAPI Application:")
     print(f"  Title: {app.title}")

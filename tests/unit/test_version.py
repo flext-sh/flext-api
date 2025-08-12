@@ -34,7 +34,6 @@ class TestVersionModule:
 
     def test_version_format(self) -> None:
         """Test that version follows semantic versioning format."""
-
         assert isinstance(__version__, str)
         assert len(__version__.strip()) > 0
 
@@ -51,7 +50,6 @@ class TestVersionModule:
 
     def test_version_constants(self) -> None:
         """Test version module constants."""
-
         # Should be a proper version string
         assert isinstance(__version__, str)
         assert len(__version__) > 0
@@ -65,7 +63,6 @@ class TestVersionModule:
 
     def test_version_comparison(self) -> None:
         """Test that version can be compared."""
-
         # Should be comparable to string
         if __version__ < "0.0.0":
             raise AssertionError(f"Expected {__version__} >= {'0.0.0'}")
@@ -124,7 +121,6 @@ class TestVersionModule:
 
     def test_version_immutability(self) -> None:
         """Test that version cannot be easily modified."""
-
         original_version = __version__
 
         # Attempting to modify should not affect the original
@@ -150,7 +146,6 @@ class TestVersionModule:
 
     def test_version_attributes_types(self) -> None:
         """Test that version attributes have correct types."""
-
         # __version__ must be string
         assert isinstance(__version__, str)
 
@@ -173,7 +168,6 @@ class TestVersionModule:
 
     def test_version_export_consistency(self) -> None:
         """Test that version is properly exported from main package."""
-
         # Should be able to access version from main package
         assert hasattr(flext_api, "__version__")
         version = flext_api.__version__

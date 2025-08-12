@@ -43,7 +43,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 from uuid import uuid4
 
 from flext_core import FlextResult, get_logger
@@ -86,10 +86,10 @@ class StorageConfig:
 
 
 @dataclass
-class CacheEntry:
+class CacheEntry(Generic[T]):  # noqa: UP046
     """Cache entry with expiration."""
 
-    value: Any
+    value: T
     timestamp: float
     ttl_seconds: int
 
@@ -99,11 +99,13 @@ class CacheEntry:
 
 
 @dataclass
-class TransactionContext:
+class TransactionContext(Generic[V]):  # noqa: UP046
     """Transaction context for atomic operations."""
 
     transaction_id: str = field(default_factory=lambda: str(uuid4()))
-    operations: list[tuple[str, str, Any]] = field(default_factory=list)  # (operation, key, value)
+    operations: list[tuple[str, str, V]] = field(
+        default_factory=list,
+    )  # (operation, key, value)
     started_at: float = field(default_factory=time.time)
     is_active: bool = True
 
@@ -113,7 +115,7 @@ class TransactionContext:
 # ==============================================================================
 
 
-class StorageBackendInterface(ABC, Generic[K, V]):
+class StorageBackendInterface(ABC, Generic[K, V]):  # noqa: UP046
     """Abstract interface for storage backends."""
 
     @abstractmethod
@@ -121,7 +123,9 @@ class StorageBackendInterface(ABC, Generic[K, V]):
         """Get value by key."""
 
     @abstractmethod
-    async def set(self, key: K, value: V, ttl_seconds: int | None = None) -> FlextResult[None]:
+    async def set(
+        self, key: K, value: V, ttl_seconds: int | None = None,
+    ) -> FlextResult[None]:
         """Set value by key with optional TTL."""
 
     @abstractmethod
@@ -149,11 +153,11 @@ class CacheInterface(ABC):
     """Interface for caching layer."""
 
     @abstractmethod
-    def get_cached(self, key: str) -> Any | None:
+    def get_cached(self, key: str) -> object | None:
         """Get cached value."""
 
     @abstractmethod
-    def set_cached(self, key: str, value: Any, ttl_seconds: int) -> None:
+    def set_cached(self, key: str, value: object, ttl_seconds: int) -> None:
         """Set cached value with TTL."""
 
     @abstractmethod
@@ -170,16 +174,16 @@ class CacheInterface(ABC):
 # ==============================================================================
 
 
-class MemoryStorageBackend(StorageBackendInterface[str, Any]):
+class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: UP046
     """In-memory storage backend with TTL support."""
 
-    def __init__(self, config: StorageConfig):
+    def __init__(self, config: StorageConfig) -> None:
         """Initialize memory storage backend."""
         self._config = config
-        self._data: dict[str, Any] = {}
+        self._data: dict[str, V] = {}
         self._expiry: dict[str, float] = {}
 
-    async def get(self, key: str) -> FlextResult[Any | None]:
+    async def get(self, key: str) -> FlextResult[V | None]:
         """Get value by key."""
         try:
             # Check expiration
@@ -188,12 +192,16 @@ class MemoryStorageBackend(StorageBackendInterface[str, Any]):
                 return FlextResult.ok(None)
 
             value = self._data.get(key)
-            logger.debug("Retrieved value from memory storage", key=key, found=value is not None)
+            logger.debug(
+                "Retrieved value from memory storage", key=key, found=value is not None,
+            )
             return FlextResult.ok(value)
         except Exception as e:
             return FlextResult.fail(f"Failed to get key '{key}': {e}")
 
-    async def set(self, key: str, value: Any, ttl_seconds: int | None = None) -> FlextResult[None]:
+    async def set(
+        self, key: str, value: V, ttl_seconds: int | None = None,
+    ) -> FlextResult[None]:
         """Set value by key with optional TTL."""
         try:
             self._data[key] = value
@@ -203,7 +211,11 @@ class MemoryStorageBackend(StorageBackendInterface[str, Any]):
             elif key in self._expiry:
                 del self._expiry[key]
 
-            logger.debug("Stored value in memory storage", key=key, has_ttl=ttl_seconds is not None)
+            logger.debug(
+                "Stored value in memory storage",
+                key=key,
+                has_ttl=ttl_seconds is not None,
+            )
             return FlextResult.ok(None)
         except Exception as e:
             return FlextResult.fail(f"Failed to set key '{key}': {e}")
@@ -238,7 +250,9 @@ class MemoryStorageBackend(StorageBackendInterface[str, Any]):
         try:
             # Clean up expired keys first
             current_time = time.time()
-            expired_keys = [k for k, exp_time in self._expiry.items() if current_time > exp_time]
+            expired_keys = [
+                k for k, exp_time in self._expiry.items() if current_time > exp_time
+            ]
             for key in expired_keys:
                 await self.delete(key)
 
@@ -249,6 +263,7 @@ class MemoryStorageBackend(StorageBackendInterface[str, Any]):
 
             # Simple pattern matching (supports * wildcard)
             import fnmatch
+
             filtered_keys = [key for key in all_keys if fnmatch.fnmatch(key, pattern)]
             return FlextResult.ok(filtered_keys)
         except Exception as e:
@@ -269,14 +284,14 @@ class MemoryStorageBackend(StorageBackendInterface[str, Any]):
         return FlextResult.ok(None)
 
 
-class FileStorageBackend(StorageBackendInterface[str, Any]):
+class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: UP046
     """File-based storage backend with JSON serialization."""
 
-    def __init__(self, config: StorageConfig):
+    def __init__(self, config: StorageConfig) -> None:
         """Initialize file storage backend."""
         self._config = config
         self._file_path = Path(config.file_path or "flext_api_storage.json")
-        self._data: dict[str, Any] = {}
+        self._data: dict[str, V] = {}
         self._lock = asyncio.Lock()
 
         # Load existing data
@@ -286,7 +301,7 @@ class FileStorageBackend(StorageBackendInterface[str, Any]):
         """Load data from file."""
         try:
             if self._file_path.exists():
-                with open(self._file_path, encoding="utf-8") as f:
+                with self._file_path.open(encoding="utf-8") as f:
                     self._data = json.load(f)
                 logger.debug("Loaded data from file", file_path=str(self._file_path))
         except Exception as e:
@@ -299,7 +314,7 @@ class FileStorageBackend(StorageBackendInterface[str, Any]):
             # Ensure parent directory exists
             self._file_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(self._file_path, "w", encoding="utf-8") as f:
+            with self._file_path.open("w", encoding="utf-8") as f:
                 json.dump(self._data, f, indent=2, ensure_ascii=False)
 
             logger.debug("Saved data to file", file_path=str(self._file_path))
@@ -307,7 +322,7 @@ class FileStorageBackend(StorageBackendInterface[str, Any]):
         except Exception as e:
             return FlextResult.fail(f"Failed to save data to file: {e}")
 
-    async def get(self, key: str) -> FlextResult[Any | None]:
+    async def get(self, key: str) -> FlextResult[V | None]:
         """Get value by key."""
         async with self._lock:
             try:
@@ -316,13 +331,15 @@ class FileStorageBackend(StorageBackendInterface[str, Any]):
             except Exception as e:
                 return FlextResult.fail(f"Failed to get key '{key}': {e}")
 
-    async def set(self, key: str, value: Any, ttl_seconds: int | None = None) -> FlextResult[None]:
+    async def set(
+        self, key: str, value: V, ttl_seconds: int | None = None,
+    ) -> FlextResult[None]:
         """Set value by key (TTL not supported in file backend)."""
         async with self._lock:
             try:
                 self._data[key] = value
                 save_result = await self._save_data()
-                if not save_result.success:
+                if save_result.is_failure:
                     return save_result
 
                 logger.debug("Stored value in file storage", key=key)
@@ -339,8 +356,10 @@ class FileStorageBackend(StorageBackendInterface[str, Any]):
 
                 if existed:
                     save_result = await self._save_data()
-                    if not save_result.success:
-                        return FlextResult.fail(f"Failed to save after delete: {save_result.error}")
+                if save_result.is_failure:
+                        return FlextResult.fail(
+                            f"Failed to save after delete: {save_result.error}",
+                        )
 
                 return FlextResult.ok(existed)
             except Exception as e:
@@ -353,7 +372,9 @@ class FileStorageBackend(StorageBackendInterface[str, Any]):
                 exists = key in self._data
                 return FlextResult.ok(exists)
             except Exception as e:
-                return FlextResult.fail(f"Failed to check existence of key '{key}': {e}")
+                return FlextResult.fail(
+                    f"Failed to check existence of key '{key}': {e}",
+                )
 
     async def keys(self, pattern: str | None = None) -> FlextResult[list[str]]:
         """Get all keys, optionally filtered by pattern."""
@@ -365,7 +386,10 @@ class FileStorageBackend(StorageBackendInterface[str, Any]):
                     return FlextResult.ok(all_keys)
 
                 import fnmatch
-                filtered_keys = [key for key in all_keys if fnmatch.fnmatch(key, pattern)]
+
+                filtered_keys = [
+                    key for key in all_keys if fnmatch.fnmatch(key, pattern)
+                ]
                 return FlextResult.ok(filtered_keys)
             except Exception as e:
                 return FlextResult.fail(f"Failed to get keys: {e}")
@@ -397,11 +421,11 @@ class FileStorageBackend(StorageBackendInterface[str, Any]):
 class MemoryCache(CacheInterface):
     """In-memory cache with TTL support."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize memory cache."""
-        self._cache: dict[str, CacheEntry] = {}
+        self._cache: dict[str, CacheEntry[object]] = {}
 
-    def get_cached(self, key: str) -> Any | None:
+    def get_cached(self, key: str) -> object | None:
         """Get cached value."""
         entry = self._cache.get(key)
         if entry is None:
@@ -413,12 +437,12 @@ class MemoryCache(CacheInterface):
 
         return entry.value
 
-    def set_cached(self, key: str, value: Any, ttl_seconds: int) -> None:
+    def set_cached(self, key: str, value: object, ttl_seconds: int) -> None:
         """Set cached value with TTL."""
         entry = CacheEntry(
             value=value,
             timestamp=time.time(),
-            ttl_seconds=ttl_seconds
+            ttl_seconds=ttl_seconds,
         )
         self._cache[key] = entry
 
@@ -439,22 +463,27 @@ class MemoryCache(CacheInterface):
 class FlextApiStorage:
     """Main storage class with backend abstraction, caching, and transactions."""
 
-    def __init__(self, config: StorageConfig):
+    def __init__(self, config: StorageConfig) -> None:
         """Initialize storage with configuration."""
         self._config = config
         self._backend = self._create_backend(config)
-        self._cache: CacheInterface | None = MemoryCache() if config.enable_caching else None
-        self._transactions: dict[str, TransactionContext] = {}
+        self._cache: CacheInterface | None = (
+            MemoryCache() if config.enable_caching else None
+        )
+        self._transactions: dict[str, TransactionContext[object]] = {}
 
-    def _create_backend(self, config: StorageConfig) -> StorageBackendInterface[str, Any]:
+    def _create_backend(
+        self, config: StorageConfig,
+    ) -> StorageBackendInterface[str, object]:
         """Create storage backend based on configuration."""
         if config.backend == StorageBackend.MEMORY:
             return MemoryStorageBackend(config)
         if config.backend == StorageBackend.FILE:
             return FileStorageBackend(config)
-        raise ValueError(f"Unsupported storage backend: {config.backend}")
+        msg = f"Unsupported storage backend: {config.backend}"
+        raise ValueError(msg)
 
-    async def get(self, key: str, use_cache: bool = True) -> FlextResult[Any | None]:
+    async def get(self, key: str, use_cache: bool = True) -> FlextResult[object | None]:
         """Get value by key with optional cache lookup."""
         # Add namespace prefix
         namespaced_key = f"{self._config.namespace}:{key}"
@@ -468,19 +497,21 @@ class FlextApiStorage:
 
         # Get from backend
         result = await self._backend.get(namespaced_key)
-        if not result.success:
+        if result.is_failure:
             return result
 
         # Cache the result if caching is enabled
         if result.data is not None and self._cache is not None:
-            self._cache.set_cached(namespaced_key, result.data, self._config.cache_ttl_seconds)
+            self._cache.set_cached(
+                namespaced_key, result.data, self._config.cache_ttl_seconds,
+            )
 
         return result
 
     async def set(
         self,
         key: str,
-        value: Any,
+        value: object,
         ttl_seconds: int | None = None,
         transaction_id: str | None = None,
     ) -> FlextResult[None]:
@@ -501,7 +532,7 @@ class FlextApiStorage:
 
         # Direct set operation
         result = await self._backend.set(namespaced_key, value, ttl_seconds)
-        if not result.success:
+        if result.is_failure:
             return result
 
         # Update cache
@@ -511,7 +542,9 @@ class FlextApiStorage:
 
         return result
 
-    async def delete(self, key: str, transaction_id: str | None = None) -> FlextResult[bool]:
+    async def delete(
+        self, key: str, transaction_id: str | None = None,
+    ) -> FlextResult[bool]:
         """Delete key with optional transaction support."""
         namespaced_key = f"{self._config.namespace}:{key}"
 
@@ -564,13 +597,17 @@ class FlextApiStorage:
         """Clear all data in namespace."""
         # Get all keys in namespace and delete them
         keys_result = await self.keys()
-        if not keys_result.success:
-            return FlextResult.fail(f"Failed to get keys for clearing: {keys_result.error}")
+        if keys_result.is_failure:
+            return FlextResult.fail(
+                f"Failed to get keys for clearing: {keys_result.error}",
+            )
 
         for key in keys_result.data or []:
             delete_result = await self.delete(key)
-            if not delete_result.success:
-                return FlextResult.fail(f"Failed to delete key '{key}': {delete_result.error}")
+            if delete_result.is_failure:
+                return FlextResult.fail(
+                    f"Failed to delete key '{key}': {delete_result.error}",
+                )
 
         # Clear cache
         if self._cache is not None:
@@ -581,44 +618,58 @@ class FlextApiStorage:
     # Transaction support methods
     def begin_transaction(self) -> str:
         """Begin a new transaction and return transaction ID."""
-        transaction = TransactionContext()
+        transaction = TransactionContext[object]()
         self._transactions[transaction.transaction_id] = transaction
         logger.debug("Started transaction", transaction_id=transaction.transaction_id)
         return transaction.transaction_id
 
     async def commit_transaction(self, transaction_id: str) -> FlextResult[None]:
-        """Commit transaction operations."""
-        if transaction_id not in self._transactions:
-            return FlextResult.fail(f"Transaction {transaction_id} not found")
+        """Commit all operations of a transaction with low complexity."""
 
-        transaction = self._transactions[transaction_id]
-        if not transaction.is_active:
-            return FlextResult.fail(f"Transaction {transaction_id} is not active")
+        def _get_active_tx() -> FlextResult[TransactionContext[object]]:
+            tx = self._transactions.get(transaction_id)
+            if tx is None:
+                return FlextResult.fail(f"Transaction {transaction_id} not found")
+            if not tx.is_active:
+                return FlextResult.fail(f"Transaction {transaction_id} is not active")
+            return FlextResult.ok(tx)
 
-        try:
-            # Execute all operations
-            for operation, key, value in transaction.operations:
-                if operation == "set":
-                    result = await self._backend.set(key, value)
-                elif operation == "delete":
-                    result = await self._backend.delete(key)
-                else:
-                    return FlextResult.fail(f"Unknown transaction operation: {operation}")
+        async def _apply_set(key: str, value: object) -> FlextResult[None]:
+            res = await self._backend.set(key, value)
+            return res if res.is_failure else FlextResult.ok(None)
 
-                if not result.success:
-                    return FlextResult.fail(f"Transaction operation failed: {result.error}")
-
-            # Mark transaction as completed
-            transaction.is_active = False
-            del self._transactions[transaction_id]
-
-            logger.debug("Committed transaction",
-                        transaction_id=transaction_id,
-                        operations_count=len(transaction.operations))
+        async def _apply_delete(key: str) -> FlextResult[None]:
+            res = await self._backend.delete(key)
+            if res.is_failure:
+                return res  # type: ignore[return-value]
             return FlextResult.ok(None)
 
-        except Exception as e:
-            return FlextResult.fail(f"Transaction commit failed: {e}")
+        tx_result = _get_active_tx()
+        if tx_result.is_failure:
+            return FlextResult.fail(tx_result.error or "Invalid transaction")
+
+        tx = tx_result.data
+        if tx is None:
+            return FlextResult.fail("Invalid transaction context")
+
+        for op, key, value in tx.operations:
+            if op == "set":
+                applied = await _apply_set(key, value)
+            elif op == "delete":
+                applied = await _apply_delete(key)
+            else:
+                return FlextResult.fail(f"Unknown transaction operation: {op}")
+            if applied.is_failure:
+                return FlextResult.fail(applied.error or "Transaction operation failed")
+
+        tx.is_active = False
+        del self._transactions[transaction_id]
+        logger.debug(
+            "Committed transaction",
+            transaction_id=transaction_id,
+            operations_count=len(tx.operations),
+        )
+        return FlextResult.ok(None)
 
     def rollback_transaction(self, transaction_id: str) -> FlextResult[None]:
         """Rollback transaction (discard operations)."""
@@ -629,9 +680,11 @@ class FlextApiStorage:
         transaction.is_active = False
         del self._transactions[transaction_id]
 
-        logger.debug("Rolled back transaction",
-                    transaction_id=transaction_id,
-                    operations_count=len(transaction.operations))
+        logger.debug(
+            "Rolled back transaction",
+            transaction_id=transaction_id,
+            operations_count=len(transaction.operations),
+        )
         return FlextResult.ok(None)
 
     async def close(self) -> FlextResult[None]:
@@ -651,12 +704,55 @@ class FlextApiStorage:
 
 def create_storage(
     backend: str = "memory",
-    **config_kwargs: Any,
+    **config_kwargs: object,
 ) -> FlextApiStorage:
     """Create storage instance with specified backend."""
+    # Filter kwargs to only include valid StorageConfig fields
+    valid_fields = {
+        "connection_string",
+        "max_connections",
+        "timeout_seconds",
+        "enable_caching",
+        "cache_ttl_seconds",
+        "enable_transactions",
+        "serialization_format",
+        "file_path",
+        "namespace",
+    }
+    filtered_kwargs = {k: v for k, v in config_kwargs.items() if k in valid_fields}
+
+    # Build config explicitly to satisfy strict typing
+    connection_string = (
+        str(filtered_kwargs["connection_string"]) if "connection_string" in filtered_kwargs and isinstance(filtered_kwargs["connection_string"], str) else None
+    )
+    max_connections = (
+        int(filtered_kwargs["max_connections"]) if "max_connections" in filtered_kwargs and isinstance(filtered_kwargs["max_connections"], (int, float, str)) else 10
+    )
+    timeout_seconds = (
+        float(filtered_kwargs["timeout_seconds"]) if "timeout_seconds" in filtered_kwargs and isinstance(filtered_kwargs["timeout_seconds"], (int, float, str)) else 30.0
+    )
+    enable_caching = bool(filtered_kwargs.get("enable_caching", True))
+    cache_ttl_seconds = (
+        int(filtered_kwargs["cache_ttl_seconds"]) if "cache_ttl_seconds" in filtered_kwargs and isinstance(filtered_kwargs["cache_ttl_seconds"], (int, float, str)) else 300
+    )
+    enable_transactions = bool(filtered_kwargs.get("enable_transactions"))
+    serialization_format = str(filtered_kwargs.get("serialization_format", "json"))
+    file_path = (
+        str(filtered_kwargs["file_path"]) if "file_path" in filtered_kwargs and isinstance(filtered_kwargs["file_path"], str) else None
+    )
+    namespace = str(filtered_kwargs.get("namespace", "default"))
+
     config = StorageConfig(
         backend=StorageBackend(backend),
-        **config_kwargs
+        connection_string=connection_string,
+        max_connections=max_connections,
+        timeout_seconds=timeout_seconds,
+        enable_caching=enable_caching,
+        cache_ttl_seconds=cache_ttl_seconds,
+        enable_transactions=enable_transactions,
+        serialization_format=serialization_format,
+        file_path=file_path,
+        namespace=namespace,
     )
     return FlextApiStorage(config)
 
@@ -696,24 +792,24 @@ def create_file_storage(
 # ==============================================================================
 
 __all__ = [
+    # Data Classes
+    "CacheEntry",
+    "CacheInterface",
+    "FileStorageBackend",
     # Main Classes
     "FlextApiStorage",
-    # Configuration
-    "StorageConfig",
+    # Cache Implementation
+    "MemoryCache",
+    # Backends
+    "MemoryStorageBackend",
     "StorageBackend",
     # Interfaces
     "StorageBackendInterface",
-    "CacheInterface",
-    # Backends
-    "MemoryStorageBackend",
-    "FileStorageBackend",
-    # Cache Implementation
-    "MemoryCache",
-    # Data Classes
-    "CacheEntry",
+    # Configuration
+    "StorageConfig",
     "TransactionContext",
+    "create_file_storage",
+    "create_memory_storage",
     # Factory Functions
     "create_storage",
-    "create_memory_storage",
-    "create_file_storage",
 ]

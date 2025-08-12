@@ -10,17 +10,24 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import asyncio
+import importlib.metadata
+from collections.abc import Coroutine
 from typing import TYPE_CHECKING
 
 from flext_core import FlextResult, FlextTypes, get_logger
 from pydantic import Field
 
 if TYPE_CHECKING:
+    from collections.abc import Coroutine
+
     from flext_api.api_protocols import (
         FlextApiClientProtocol,
         FlextApiQueryBuilderProtocol,
         FlextApiResponseBuilderProtocol,
     )
+
+from typing import cast
 
 from flext_api.api_client import FlextApiBuilder, FlextApiClient, FlextApiClientConfig
 from flext_api.api_models import ClientConfig
@@ -28,11 +35,7 @@ from flext_api.base_service import FlextApiBaseService
 
 logger = get_logger(__name__)
 
-# Import version from package
-try:
-    from flext_api import __version__ as _version
-except ImportError:
-    _version = "0.9.0"
+__version__ = importlib.metadata.version("flext-api")
 
 
 class FlextApi(FlextApiBaseService):
@@ -43,16 +46,17 @@ class FlextApi(FlextApiBaseService):
     """
 
     service_name: str = Field(default="FlextApi", description="Service name")
-    service_version: str = Field(default=_version, description="Service version")
+    service_version: str = Field(default=__version__, description="Service version")
 
     # Composition of services
     _builder: FlextApiBuilder | None = None
     _client: FlextApiClientProtocol | None = None
     _client_config: ClientConfig | None = None
 
-    def __init__(self, **data: object) -> None:
+    def __init__(self, **_data: object) -> None:
         """Initialize FlextApi service with builder."""
-        super().__init__(**data)
+        # Initialize base class with default field values, ignoring extra data
+        super().__init__(service_name="FlextApi", service_version=__version__)
         self._builder = FlextApiBuilder()
         logger.info("FlextApi service initialized", version=self.service_version)
 
@@ -89,6 +93,27 @@ class FlextApi(FlextApiBaseService):
 
         return FlextResult.ok(details)
 
+    # ------------------------------------------------------------------
+    # Synchronous health_check wrapper for test compatibility
+    # ------------------------------------------------------------------
+    def health_check(self) -> FlextResult[dict[str, object]] | Coroutine[None, None, FlextResult[dict[str, object]]]:  # type: ignore[override]
+        """Dual-mode health check supporting sync and async callers.
+
+        - If no event loop is running, execute and return a FlextResult synchronously.
+        - If an event loop is running, return an awaitable coroutine.
+        """
+        try:
+            asyncio.get_running_loop()
+            # Event loop is running: return coroutine for awaiting
+            return self.health_check_async()
+        except RuntimeError:
+            # No running loop: execute synchronously
+            return asyncio.run(self.health_check_async())
+
+    async def health_check_async(self) -> FlextResult[FlextTypes.Core.JsonDict]:
+        """Asynchronous health check delegating to base implementation."""
+        return await super().health_check()
+
     def create_client(
         self,
         config: FlextTypes.Core.JsonDict | None = None,
@@ -109,17 +134,38 @@ class FlextApi(FlextApiBaseService):
         try:
             # Create ClientConfig value object
             config_dict = config or {}
+
+            # Type-safe extraction of config values
+            timeout_val = config_dict.get("timeout", 30.0)
+            timeout = (
+                float(timeout_val)
+                if isinstance(timeout_val, (int, float, str))
+                else 30.0
+            )
+
+            headers_val = config_dict.get("headers", {})
+            headers = dict(headers_val) if isinstance(headers_val, dict) else {}
+
+            max_retries_val = config_dict.get("max_retries", 3)
+            max_retries = (
+                int(max_retries_val)
+                if isinstance(max_retries_val, (int, float, str))
+                else 3
+            )
+
             client_config = ClientConfig(
                 base_url=str(config_dict.get("base_url", "")),
-                timeout=float(config_dict.get("timeout", 30.0)),
-                headers=dict(config_dict.get("headers", {})),
-                max_retries=int(config_dict.get("max_retries", 3)),
+                timeout=timeout,
+                headers=headers,
+                max_retries=max_retries,
             )
 
             # Validate configuration
             validation_result = client_config.validate_business_rules()
             if not validation_result.success:
-                return FlextResult.fail(validation_result.error or "Invalid client configuration")
+                return FlextResult.fail(
+                    validation_result.error or "Invalid client configuration",
+                )
 
             # Convert to legacy config format for backward compatibility
             legacy_config = FlextApiClientConfig(
@@ -130,11 +176,12 @@ class FlextApi(FlextApiBaseService):
             )
 
             # Create client
-            self._client = FlextApiClient(legacy_config)
+            api_client = FlextApiClient(legacy_config)
+            self._client = api_client  # type: ignore[assignment]
             self._client_config = client_config
 
             logger.info("HTTP client created", base_url=client_config.base_url)
-            return FlextResult.ok(self._client)
+            return FlextResult.ok(api_client)  # type: ignore[arg-type]
 
         except Exception as e:
             logger.exception("Failed to create client")
@@ -158,7 +205,8 @@ class FlextApi(FlextApiBaseService):
             Query builder instance
 
         """
-        return self.get_builder().for_query()
+        # FlextApiQueryBuilder implements FlextApiQueryBuilderProtocol
+        return cast("FlextApiQueryBuilderProtocol", self.get_builder().for_query())
 
     def get_response_builder(self) -> FlextApiResponseBuilderProtocol:
         """Get response builder for constructing API responses.
@@ -167,7 +215,10 @@ class FlextApi(FlextApiBaseService):
             Response builder instance
 
         """
-        return self.get_builder().for_response()
+        # FlextApiResponseBuilder implements FlextApiResponseBuilderProtocol
+        return cast(
+            "FlextApiResponseBuilderProtocol", self.get_builder().for_response(),
+        )
 
     def get_client(self) -> FlextApiClientProtocol | None:
         """Get current client instance.
@@ -194,7 +245,9 @@ class FlextApi(FlextApiBaseService):
             "builder_available": self._builder is not None,
         }
 
-    def _create_client_impl(self, config: FlextTypes.Core.JsonDict | None = None) -> FlextApiClient:
+    def _create_client_impl(
+        self, config: FlextTypes.Core.JsonDict | None = None,
+    ) -> FlextApiClient:
         """Internal client creation method for testing and edge cases.
 
         Args:
@@ -212,16 +265,27 @@ class FlextApi(FlextApiBaseService):
         # Handle invalid types gracefully with defaults
         base_url = str(config_dict.get("base_url", ""))
         if not base_url:
-            raise ValueError("Invalid URL format")
+            msg = "Invalid URL format"
+            raise ValueError(msg)
 
-        try:
-            timeout = float(config_dict.get("timeout", 30.0))
-        except (ValueError, TypeError):
+        # Type-safe extraction of timeout
+        timeout_val = config_dict.get("timeout", 30.0)
+        if isinstance(timeout_val, (int, float, str)):
+            try:
+                timeout = float(timeout_val)
+            except (ValueError, TypeError):
+                timeout = 30.0
+        else:
             timeout = 30.0
 
-        try:
-            max_retries = int(float(config_dict.get("max_retries", 3)))
-        except (ValueError, TypeError):
+        # Type-safe extraction of max_retries
+        max_retries_val = config_dict.get("max_retries", 3)
+        if isinstance(max_retries_val, (int, float, str)):
+            try:
+                max_retries = int(float(max_retries_val))
+            except (ValueError, TypeError):
+                max_retries = 3
+        else:
             max_retries = 3
 
         headers = config_dict.get("headers", {})
@@ -269,9 +333,11 @@ class FlextApi(FlextApiBaseService):
         """
         logger.warning("Using deprecated method flext_api_create_client")
         result = self.create_client(config)
-        if result.success and isinstance(result.data, FlextApiClient):
-            return FlextResult.ok(result.data)
-        # Wrap error message to match test expectations
+        if result.success and result.data is not None:
+            # Convert protocol to concrete type for legacy compatibility
+            return FlextResult.ok(cast("FlextApiClient", result.data))
+
+        # Handle failure case
         error_msg = result.error or "Unknown error"
         return FlextResult.fail(f"Failed to create client: {error_msg}")
 

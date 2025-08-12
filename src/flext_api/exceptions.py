@@ -8,42 +8,31 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# Import specific exceptions from api_exceptions for compatibility
 from flext_api.api_exceptions import (
     FlextApiAuthenticationError,
-    FlextApiAuthorizationError,
     FlextApiBuilderError,
     FlextApiConfigurationError,
     FlextApiConnectionError,
     FlextApiError,
-    FlextApiNotFoundError,
     FlextApiProcessingError,
-    FlextApiRateLimitError,
     FlextApiRequestError,
     FlextApiResponseError,
     FlextApiStorageError,
     FlextApiTimeoutError,
     FlextApiValidationError,
-    create_error_response,
-    map_http_status_to_exception,
 )
 
-# Re-export all for compatibility
+# Re-export only the exceptions expected by tests
 __all__ = [
     "FlextApiAuthenticationError",
-    "FlextApiAuthorizationError",
     "FlextApiBuilderError",
     "FlextApiConfigurationError",
     "FlextApiConnectionError",
     "FlextApiError",
-    "FlextApiNotFoundError",
     "FlextApiProcessingError",
-    "FlextApiRateLimitError",
     "FlextApiRequestError",
     "FlextApiResponseError",
     "FlextApiStorageError",
     "FlextApiTimeoutError",
     "FlextApiValidationError",
-    "create_error_response",
-    "map_http_status_to_exception",
 ]
