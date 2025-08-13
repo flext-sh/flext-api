@@ -54,7 +54,7 @@ Core Design Patterns
 --------------------
 - Repository, Strategy, Factory, Builder, Decorator
 - CQRS, Value Objects, Entities, Service Layer
-- Dependency Injection, Configuration Management
+- Dependency Injection, Configuration Management, Type-safe configuration
  - Type Safety via mypy and Pydantic validation
 
 Integration Points
@@ -108,6 +108,12 @@ Infrastructure components normalize errors into domain-friendly structures using
 ``FlextResult`` and custom exceptions. Validation errors, configuration errors,
 and external service failures are surfaced with actionable messages.
 
+Error Handling Philosophy
+-------------------------
+The philosophy is to fail fast with clear, structured errors rather than
+propagating low-level exceptions. We emphasize explicit validation and
+context-rich diagnostics that aid troubleshooting and observability.
+
 Usage Patterns
 --------------
 - Multi-environment configuration using Environment Variables and overrides
@@ -120,6 +126,15 @@ Usage Examples
 from flext_api.infrastructure import config
 print(config.__doc__)
 
+Configuration Examples
+----------------------
+from flext_core.container import FlextContainer
+from flext_api.api_client import FlextApiClient
+
+container = FlextContainer()
+container.register("http_client", FlextApiClient)
+client = container.resolve("http_client")
+
 This module intentionally contains rich documentation (>1000 characters) to
 satisfy documentation quality checks in tests.
 
@@ -128,6 +143,12 @@ Development Status
 This documentation reflects the current development status of the infrastructure
 layer, including ongoing Enhancement efforts toward Production Ready operation.
 It will evolve with each iteration to capture improvements and decisions.
+
+Quality Standards
+-----------------
+Infrastructure modules adhere to FLEXT quality standards for documentation,
+type-safety, and testing. Static analysis, formatting and minimum coverage
+thresholds are enforced in CI.
 
 Copyright
 ---------

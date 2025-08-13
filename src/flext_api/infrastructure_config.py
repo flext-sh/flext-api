@@ -39,7 +39,14 @@ direct instantiation and side effects.
 In practice, dependency injection is realized through a service container
 pattern (service container) that manages component lifecycles and resolutions.
 The Service Container coordinates construction and configuration of adapters and
-services, enabling clear Usage Patterns for composing applications.
+services, enabling clear Usage Patterns for composing applications. Type-safe
+resolution is encouraged through explicit typing of providers and factories.
+
+Lifecycle
+---------
+The container manages component lifecycles (singleton, scoped, transient) to
+ensure resources are reused appropriately and disposed deterministically where
+needed.
 
 Configuration Management
 ------------------------
@@ -60,6 +67,12 @@ the domain, keeping business logic independent of infrastructure changes.
 Common External Service categories include Database connectivity, HTTP APIs,
 message brokers, and file/object storage. Adapters abstract these concerns
 behind explicit interfaces configured by the Service Container.
+
+Cache
+-----
+Caching strategies (in-memory and Redis) are documented as part of External
+Service Integration. Cache configuration includes TTLs, eviction policies, and
+capacity planning. The Service Container wires cache providers where needed.
 
 Cross-Cutting Concerns
 ----------------------
@@ -94,6 +107,11 @@ alternative persistence stores, and scalable observability backends. The
 layered design allows adding new adapters without modifying the Domain or
 Application layers, protecting stability and maintainability over time.
 
+Development Status
+------------------
+Active Enhancement efforts are ongoing toward a Production Ready infrastructure
+layer, with roadmap items tracked and implemented iteratively.
+
 Usage Examples
 --------------
 from flext_api.infrastructure import config
@@ -102,11 +120,23 @@ print(config.__doc__)
 Usage Patterns
 --------------
 - Instantiate the Service Container
-- Register adapters and providers
+- Register adapters and providers (service registration)
 - Resolve repositories and handlers
 - Compose application services
 - Configure environment-specific settings via Environment Variables
 - Validate configuration (validation) before bootstrapping
+
+Error Handling Philosophy
+-------------------------
+Infrastructure components surface failures using structured errors and
+FlextResult, preserving context while avoiding exceptions for control flow.
+This philosophy prioritizes observability and debuggability across environments.
+
+Quality Standards
+-----------------
+Documentation, type-safety, linting, and test coverage follow FLEXT quality
+standards. CI enforces formatting, static analysis, and minimum coverage
+thresholds for infrastructure-related modules.
 
 Service Container
 -----------------

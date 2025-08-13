@@ -37,7 +37,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from flext_api.typings import FlextTypes
 
 from flext_core.exceptions import (
     FlextAuthenticationError,
@@ -50,7 +49,9 @@ from flext_core.exceptions import (
 )
 
 if TYPE_CHECKING:
+    from flext_api.typings import FlextTypes
 
+# keep runtime import context minimal for static typing only
 # ==============================================================================
 # BASE API ERROR
 # ==============================================================================
@@ -343,11 +344,14 @@ class FlextApiProcessingError(FlextProcessingError):
             context["processing_stage"] = processing_stage
         context["status_code"] = status_code
 
+        # Avoid passing duplicate 'operation' when also included in **context
+        init_kwargs = dict(context)
+        init_kwargs.pop("operation", None)
         super().__init__(
             message,
             business_rule="flext_api_processing",
             operation=operation,
-            **context,
+            **init_kwargs,
         )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
@@ -391,13 +395,16 @@ class FlextApiTimeoutError(FlextTimeoutError):
             context["operation"] = operation
         context["status_code"] = status_code
 
+        # Avoid passing duplicate 'timeout_seconds' when also included in **context
+        init_kwargs = dict(context)
+        init_kwargs.pop("timeout_seconds", None)
         super().__init__(
             message,
             service="flext_api_service",
             timeout_seconds=int(timeout_seconds)
             if timeout_seconds is not None
             else None,
-            **context,
+            **init_kwargs,
         )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:

@@ -35,11 +35,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
+    from flext_api.typings import FlextTypes
+
+if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
 
     from flext_core import FlextResult
-
-    from flext_api.typings import FlextTypes
 
 # ==============================================================================
 # HTTP CLIENT PROTOCOLS
