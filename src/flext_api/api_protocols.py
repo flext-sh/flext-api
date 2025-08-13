@@ -33,9 +33,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from flext_api.typings import FlextTypes
 
 if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
+    pass
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
