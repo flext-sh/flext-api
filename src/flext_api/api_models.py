@@ -39,10 +39,10 @@ from urllib.parse import ParseResult, urlparse
 from flext_core import (
     FlextEntity,
     FlextResult,
-    FlextTypes,
     FlextValue,
     get_logger,
 )
+from flext_api.typings import FlextTypes
 from pydantic import Field
 
 logger = get_logger(__name__)
