@@ -45,8 +45,11 @@ from flext_core import (
 )
 from pydantic import Field
 
+# Import FlextTypes at runtime to satisfy Pydantic forward refs
+from flext_api.typings import FlextTypes
+
 if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
+    pass
 
 # keep runtime import context clean for pydantic rebuilds
 logger = get_logger(__name__)
