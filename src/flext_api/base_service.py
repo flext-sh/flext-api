@@ -13,7 +13,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, TypeVar, cast
 
-from flext_core import FlextDomainService, FlextResult, FlextTypes, get_logger
+from flext_core import FlextDomainService, FlextResult, get_logger
+from flext_api.typings import FlextTypes
 from pydantic import Field
 
 if TYPE_CHECKING:
