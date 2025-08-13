@@ -10,14 +10,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import importlib.metadata
 from typing import TYPE_CHECKING
 
 from flext_core import FlextResult, get_logger
+from flext_api.typings import FlextTypes
 from pydantic import Field
 
 if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
+    pass
 
 if TYPE_CHECKING:
     from flext_api.api_protocols import (
@@ -34,7 +34,7 @@ from flext_api.base_service import FlextApiBaseService
 
 logger = get_logger(__name__)
 
-__version__ = importlib.metadata.version("flext-api")
+__version__ = "0.9.0"
 
 
 class FlextApi(FlextApiBaseService):
@@ -95,8 +95,9 @@ class FlextApi(FlextApiBaseService):
     def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict] | object:  # type: ignore[override]
         """Health check supporting both sync and async usage.
 
-        If there is no running loop, run synchronously and return FlextResult.
-        If a loop is running, return the coroutine to be awaited by caller.
+        If there is no running loop, execute in a private loop without
+        mutating the global event loop. If a loop is running, return the
+        coroutine for the caller to await.
         """
         import asyncio as _asyncio
 
@@ -105,42 +106,28 @@ class FlextApi(FlextApiBaseService):
         try:
             _asyncio.get_running_loop()
         except RuntimeError:
+            # No running loop: use a private event loop without set_event_loop
             loop = _asyncio.new_event_loop()
             try:
-                _asyncio.set_event_loop(loop)
                 return loop.run_until_complete(_Base.health_check(self))
             finally:
                 loop.close()
 
+        # Running loop present: return coroutine for awaiting in async context
         return _Base.health_check(self)
 
     # Compatibility: allow calling health_check in sync contexts within tests
     def sync_health_check(self) -> FlextResult[dict[str, object]]:
         """Run health check synchronously for compatibility tests.
 
-        Ensures an event loop is available and not already running.
+        Always uses a private event loop to avoid interfering with pytest's loop.
         """
         import asyncio as _asyncio
 
-        try:
-            # If a loop is running, avoid run_until_complete on it
-            _asyncio.get_running_loop()
-        except RuntimeError:
-            # No running loop: safe to create and run
-            loop = _asyncio.new_event_loop()
-            try:
-                _asyncio.set_event_loop(loop)
-                from flext_api.base_service import FlextApiBaseService as _Base
-                return loop.run_until_complete(_Base.health_check(self))
-            finally:
-                loop.close()
+        from flext_api.base_service import FlextApiBaseService as _Base
 
-        # Running loop present; run in a new loop in a thread-safe way
-        # to provide a sync result to callers
         loop = _asyncio.new_event_loop()
         try:
-            _asyncio.set_event_loop(loop)
-            from flext_api.base_service import FlextApiBaseService as _Base
             return loop.run_until_complete(_Base.health_check(self))
         finally:
             loop.close()

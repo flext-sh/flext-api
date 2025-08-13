@@ -365,12 +365,13 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                 existed = key in self._data
                 self._data.pop(key, None)
 
+                save_result: FlextResult[None] | None = None
                 if existed:
                     save_result = await self._save_data()
-                if save_result.is_failure:
-                    return FlextResult.fail(
-                        f"Failed to save after delete: {save_result.error}",
-                    )
+                    if save_result.is_failure:
+                        return FlextResult.fail(
+                            f"Failed to save after delete: {save_result.error}",
+                        )
 
                 return FlextResult.ok(data=existed)
             except Exception as e:

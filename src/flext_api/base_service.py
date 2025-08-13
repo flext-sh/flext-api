@@ -24,7 +24,16 @@ if TYPE_CHECKING:
         FlextApiQueryBuilderProtocol,
         FlextApiResponseBuilderProtocol,
     )
-from flext_api.typings import FlextTypes
+    from flext_api.typings import FlextTypes
+
+# Make FlextTypes available at runtime for Pydantic forward-ref resolution
+try:  # pragma: no cover
+    from flext_api.typings import FlextTypes as _FlextTypes
+    FlextTypes = _FlextTypes  # type: ignore[assignment]
+except Exception:  # pragma: no cover
+    class FlextTypes:  # type: ignore[no-redef]
+        class Core:  # noqa: N801 - keep compatibility with annotations
+            JsonDict = dict[str, object]
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
@@ -52,6 +61,12 @@ except Exception:  # pragma: no cover
 
     class _FAPResponseBuilder:  # type: ignore[too-many-ancestors]
         pass
+
+# Bind runtime aliases for Pydantic forward-ref resolution
+FlextApiMiddlewareProtocol = _FAPMiddleware  # type: ignore[assignment]
+FlextApiPluginProtocol = _FAPPlugin  # type: ignore[assignment]
+FlextApiQueryBuilderProtocol = _FAPQueryBuilder  # type: ignore[assignment]
+FlextApiResponseBuilderProtocol = _FAPResponseBuilder  # type: ignore[assignment]
 
 # Type variables for generic services
 T = TypeVar("T")
@@ -140,8 +155,10 @@ class FlextApiBaseService(
 
             # Get service-specific health details
             details_result = await self._get_health_details()
-            if details_result.success and details_result.data:
+            if details_result.success and details_result.data is not None:
                 health_info.update(details_result.data)
+            elif details_result.is_failure:
+                return FlextResult.fail(details_result.error or "Health details failed")
 
             return FlextResult.ok(health_info)
         except Exception as e:
