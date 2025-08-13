@@ -44,6 +44,12 @@ class FlextApiConstants(FlextConstants):
         USER_AGENT = "User-Agent"
         ACCEPT = "Accept"
 
+    class ContentTypes:
+        """Standard HTTP content types."""
+
+        JSON = "application/json"
+        HTML = "text/html"
+
     class Config:
         """API configuration defaults."""
 
