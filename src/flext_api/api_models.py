@@ -743,7 +743,8 @@ class ApiResponse(FlextEntity):
                     return FlextResult.fail(
                         "Response header keys must be non-empty strings",
                     )
-                if not value:
+                # Allow falsy values like '0' or 'false'; only reject None or empty strings
+                if value is None or (isinstance(value, str) and not value.strip()):
                     return FlextResult.fail("Response header values cannot be empty")
 
         return FlextResult.ok(None)

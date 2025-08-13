@@ -53,13 +53,18 @@ async def test_stop_warning_path(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.asyncio
 async def test_health_check_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     """Health check returns failure when details provider fails."""
+
     class BrokenHealth(FlextApiBaseService):
         service_name: str = "broken-health"
 
-        async def _do_start(self) -> FlextResult[None]:  # pragma: no cover - not used here
+        async def _do_start(
+            self,
+        ) -> FlextResult[None]:  # pragma: no cover - not used here
             return FlextResult.ok(None)
 
-        async def _do_stop(self) -> FlextResult[None]:  # pragma: no cover - not used here
+        async def _do_stop(
+            self,
+        ) -> FlextResult[None]:  # pragma: no cover - not used here
             return FlextResult.ok(None)
 
         async def _get_health_details(self):  # type: ignore[override]

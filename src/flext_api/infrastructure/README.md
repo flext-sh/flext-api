@@ -7,6 +7,7 @@ Clean Architecture and detailing Dependency Injection, Configuration Management,
 External Service Integration, and Cross-Cutting concerns.
 
 ## Infrastructure Layer
+
 ## Purpose
 
 Document the Infrastructure Layer conventions and how to wire dependencies via
@@ -67,7 +68,6 @@ client = container.resolve("http_client")
 - Add message broker integrations (Kafka, NATS)
 - Pluggable storage backends
 - Circuit breaker and bulkhead policies
-
 
 This section explains the role of the Infrastructure Layer in the overall
 architecture and how it interacts with other layers.

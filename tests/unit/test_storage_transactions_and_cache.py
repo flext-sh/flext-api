@@ -7,7 +7,13 @@ from flext_api.api_storage import FlextApiStorage, StorageBackend, StorageConfig
 
 @pytest.mark.asyncio
 async def test_transaction_commit_set_and_delete_and_cache() -> None:
-    storage = FlextApiStorage(StorageConfig(namespace="txn", backend=StorageBackend.MEMORY, enable_caching=True))
+    storage = FlextApiStorage(
+        StorageConfig(
+            namespace="txn",
+            backend=StorageBackend.MEMORY,
+            enable_caching=True,
+        ),
+    )
     tx = storage.begin_transaction()
     assert (await storage.set("a", 1, transaction_id=tx)).success
     assert (await storage.set("b", 2, transaction_id=tx)).success
@@ -20,12 +26,19 @@ async def test_transaction_commit_set_and_delete_and_cache() -> None:
 
     # Cache should serve subsequent fetch
     res_cached = await storage.get("b")
-    assert res_cached.success and res_cached.data == 2
+    assert res_cached.success
+    assert res_cached.data == 2
 
 
 @pytest.mark.asyncio
 async def test_transaction_rollback_and_clear_cache_and_close() -> None:
-    storage = FlextApiStorage(StorageConfig(namespace="rb", backend=StorageBackend.MEMORY, enable_caching=True))
+    storage = FlextApiStorage(
+        StorageConfig(
+            namespace="rb",
+            backend=StorageBackend.MEMORY,
+            enable_caching=True,
+        ),
+    )
     tx = storage.begin_transaction()
     await storage.set("x", 99, transaction_id=tx)
     assert storage.rollback_transaction(tx).success
@@ -41,8 +54,17 @@ async def test_transaction_rollback_and_clear_cache_and_close() -> None:
 
 
 @pytest.mark.asyncio
-async def test_cache_ttl_expiration_via_time_monkeypatch(monkeypatch: pytest.MonkeyPatch) -> None:
-    storage = FlextApiStorage(StorageConfig(namespace="ttl", backend=StorageBackend.MEMORY, enable_caching=True, cache_ttl_seconds=10))
+async def test_cache_ttl_expiration_via_time_monkeypatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    storage = FlextApiStorage(
+        StorageConfig(
+            namespace="ttl",
+            backend=StorageBackend.MEMORY,
+            enable_caching=True,
+            cache_ttl_seconds=10,
+        ),
+    )
     # Monkeypatch time to control expiry
     import time as _time
 

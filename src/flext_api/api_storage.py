@@ -510,7 +510,10 @@ class FlextApiStorage:
         raise ValueError(msg)
 
     async def get(
-        self, key: str, *, use_cache: bool = True
+        self,
+        key: str,
+        *,
+        use_cache: bool = True,
     ) -> FlextResult[object | None]:
         """Get value by key with optional cache lookup."""
         # Add namespace prefix

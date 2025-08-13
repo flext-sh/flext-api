@@ -30,7 +30,8 @@ class TestVersionModule:
         assert __version__ is not None
         assert isinstance(__version__, str)
         if __version__ != "0.9.0":
-            raise AssertionError(f"Expected {'0.9.0'}, got {__version__}")
+            msg = f"Expected {'0.9.0'}, got {__version__}"
+            raise AssertionError(msg)
 
     def test_version_format(self) -> None:
         """Test that version follows semantic versioning format."""
@@ -40,8 +41,9 @@ class TestVersionModule:
         # Should have at least X.Y.Z format
         parts = __version__.strip().split(".")
         if len(parts) < 3:
+            msg = f"Expected {len(parts)} >= 3, Version {__version__} should have at least 3 parts"
             raise AssertionError(
-                f"Expected {len(parts)} >= 3, Version {__version__} should have at least 3 parts",
+                msg,
             )
 
         # First three parts should be numeric
@@ -65,7 +67,8 @@ class TestVersionModule:
         """Test that version can be compared."""
         # Should be comparable to string
         if __version__ < "0.0.0":
-            raise AssertionError(f"Expected {__version__} >= {'0.0.0'}")
+            msg = f"Expected {__version__} >= {'0.0.0'}"
+            raise AssertionError(msg)
         assert __version__ != ""
 
         # Should be a valid version string for packaging
@@ -102,7 +105,8 @@ class TestVersionModule:
         # Should be a proper module
         assert hasattr(flext_api, "__name__")
         if flext_api.__name__ != "flext_api":
-            raise AssertionError(f"Expected {'flext_api'}, got {flext_api.__name__}")
+            msg = f"Expected {'flext_api'}, got {flext_api.__name__}"
+            raise AssertionError(msg)
 
     def test_version_consistency(self) -> None:
         """Test that version is consistent across imports."""
@@ -110,13 +114,15 @@ class TestVersionModule:
         # Version should be consistent on multiple imports
 
         if main_version != version2:  # Version should be consistent on reimport
-            raise AssertionError(f"Expected {version2}, got {main_version}")
+            msg = f"Expected {version2}, got {main_version}"
+            raise AssertionError(msg)
 
         # Check direct access
 
         if flext_api.__version__ != main_version:  # Direct access should match import
+            msg = f"Expected {main_version}, got {flext_api.__version__}"
             raise AssertionError(
-                f"Expected {main_version}, got {flext_api.__version__}",
+                msg,
             )
 
     def test_version_immutability(self) -> None:
@@ -131,8 +137,9 @@ class TestVersionModule:
         # Re-import should still have original version
 
         if reimported_version != original_version:
+            msg = f"Expected {original_version}, got {reimported_version}"
             raise AssertionError(
-                f"Expected {original_version}, got {reimported_version}",
+                msg,
             )
 
     def test_version_documentation(self) -> None:
@@ -175,4 +182,5 @@ class TestVersionModule:
         assert isinstance(version, str)
         assert len(version) > 0
         if version != "0.9.0":
-            raise AssertionError(f"Expected {'0.9.0'}, got {version}")
+            msg = f"Expected {'0.9.0'}, got {version}"
+            raise AssertionError(msg)

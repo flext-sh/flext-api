@@ -56,7 +56,11 @@ def test_health_storage_error_path_sets_degraded_status() -> None:
 
     # Replace storage with an object that raises on set/delete to go through error branch
     class BadStorage:
-        def set(self, *_: Any, **__: Any) -> None:  # non-async, but middleware accepts both
+        def set(
+            self,
+            *_: Any,
+            **__: Any,
+        ) -> None:  # non-async, but middleware accepts both
             message = "boom"
             raise RuntimeError(message)
 
@@ -123,7 +127,10 @@ def test_docs_and_openapi_visible_when_debug_true() -> None:
     """Docs and OpenAPI are accessible in debug mode."""
     app = _make_app(debug=True)
     with TestClient(app) as client:
-        assert client.get("/docs").status_code in {200, 404}  # swagger-ui may not ship, but path exists
+        assert client.get("/docs").status_code in {
+            200,
+            404,
+        }  # swagger-ui may not ship, but path exists
         assert client.get("/openapi.json").status_code == 200
 
 
@@ -140,4 +147,7 @@ def test_cors_headers_present_for_allowed_origin() -> None:
         )
         # If allowed, the middleware echoes the origin; otherwise header may be absent. Accept either but prefer present.
         if "access-control-allow-origin" in {k.lower() for k in r.headers}:
-            assert r.headers["access-control-allow-origin"] in {"*", "http://localhost:3000"}
+            assert r.headers["access-control-allow-origin"] in {
+                "*",
+                "http://localhost:3000",
+            }

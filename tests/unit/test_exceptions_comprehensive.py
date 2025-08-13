@@ -58,7 +58,10 @@ class TestFlextApiError:
     def test_creation_with_additional_context(self) -> None:
         """Test FlextApiError with additional context kwargs."""
         error = FlextApiError(
-            "Error occurred", endpoint="/api/users", user_id=123, action="create",
+            "Error occurred",
+            endpoint="/api/users",
+            user_id=123,
+            action="create",
         )
 
         assert str(error) == "[FLEXT_API_ERROR] Error occurred"
@@ -95,7 +98,10 @@ class TestFlextApiValidationError:
     def test_creation_with_endpoint(self) -> None:
         """Test validation error with endpoint context."""
         error = FlextApiValidationError(
-            "Invalid data", field="email", value="invalid-email", endpoint="/api/users",
+            "Invalid data",
+            field="email",
+            value="invalid-email",
+            endpoint="/api/users",
         )
 
         assert str(error) == "[FLEXT_3001] Invalid data"
@@ -107,7 +113,9 @@ class TestFlextApiValidationError:
         """Test validation error truncates long values."""
         long_value = "x" * 200
         error = FlextApiValidationError(
-            "Value too long", field="description", value=long_value,
+            "Value too long",
+            field="description",
+            value=long_value,
         )
 
         assert str(error) == "[FLEXT_3001] Value too long"
@@ -142,7 +150,9 @@ class TestFlextApiAuthenticationError:
     def test_creation_with_endpoint(self) -> None:
         """Test authentication error with endpoint context."""
         error = FlextApiAuthenticationError(
-            "Access denied", auth_method="API Key", endpoint="/api/REDACTED_LDAP_BIND_PASSWORD",
+            "Access denied",
+            auth_method="API Key",
+            endpoint="/api/REDACTED_LDAP_BIND_PASSWORD",
         )
 
         assert str(error) == "[AUTH_ERROR] flext_api: Access denied"
@@ -169,7 +179,8 @@ class TestFlextApiConfigurationError:
     def test_creation_with_config_key(self) -> None:
         """Test configuration error with config key context."""
         error = FlextApiConfigurationError(
-            "Missing required setting", config_key="api_secret",
+            "Missing required setting",
+            config_key="api_secret",
         )
 
         assert str(error) == "[CONFIG_ERROR] Missing required setting"
@@ -209,7 +220,9 @@ class TestFlextApiConnectionError:
     def test_creation_with_host_and_port(self) -> None:
         """Test connection error with host and port context."""
         error = FlextApiConnectionError(
-            "Cannot connect to server", host="api.example.com", port=443,
+            "Cannot connect to server",
+            host="api.example.com",
+            port=443,
         )
 
         assert str(error) == "[FLEXT_2001] Cannot connect to server"
@@ -250,7 +263,8 @@ class TestFlextApiProcessingError:
     def test_creation_with_operation(self) -> None:
         """Test processing error with operation context."""
         error = FlextApiProcessingError(
-            "Data transformation failed", operation="json_transform",
+            "Data transformation failed",
+            operation="json_transform",
         )
 
         assert str(error) == "[PROCESSING_ERROR] Data transformation failed"
@@ -331,7 +345,9 @@ class TestFlextApiRequestError:
     def test_creation_with_method_and_endpoint(self) -> None:
         """Test request error with method and endpoint context."""
         error = FlextApiRequestError(
-            "Invalid request format", method="POST", endpoint="/api/users",
+            "Invalid request format",
+            method="POST",
+            endpoint="/api/users",
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API request: Invalid request format"
@@ -341,7 +357,10 @@ class TestFlextApiRequestError:
     def test_creation_with_status_code(self) -> None:
         """Test request error with status code context."""
         error = FlextApiRequestError(
-            "Client error", method="GET", endpoint="/api/data", status_code=400,
+            "Client error",
+            method="GET",
+            endpoint="/api/data",
+            status_code=400,
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API request: Client error"
@@ -421,7 +440,9 @@ class TestFlextApiStorageError:
     def test_creation_with_operation(self) -> None:
         """Test storage error with operation context."""
         error = FlextApiStorageError(
-            "Cache miss", storage_type="memcached", operation="get",
+            "Cache miss",
+            storage_type="memcached",
+            operation="get",
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API storage: Cache miss"
@@ -464,7 +485,8 @@ class TestFlextApiBuilderError:
     def test_creation_with_builder_step(self) -> None:
         """Test builder error with builder step context."""
         error = FlextApiBuilderError(
-            "Invalid query construction", builder_step="filter_validation",
+            "Invalid query construction",
+            builder_step="filter_validation",
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API builder: Invalid query construction"

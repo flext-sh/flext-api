@@ -34,10 +34,12 @@ class TestFlextApiClientConfig:
         """Test creating client config."""
         config = FlextApiClientConfig()
         if config.base_url != "":
-            raise AssertionError(f"Expected empty string, got {config.base_url}")
+            msg = f"Expected empty string, got {config.base_url}"
+            raise AssertionError(msg)
         assert config.timeout == 30.0
         if config.headers != {}:
-            raise AssertionError(f"Expected empty dict, got {config.headers}")
+            msg = f"Expected empty dict, got {config.headers}"
+            raise AssertionError(msg)
         assert config.max_retries == EXPECTED_DATA_COUNT
 
     def test_config_with_values(self) -> None:
@@ -51,12 +53,14 @@ class TestFlextApiClientConfig:
         )
 
         if config.base_url != "https://api.example.com":
+            msg = f"Expected https://api.example.com, got {config.base_url}"
             raise AssertionError(
-                f"Expected https://api.example.com, got {config.base_url}",
+                msg,
             )
         assert config.timeout == 60.0
         if config.headers != headers:
-            raise AssertionError(f"Expected {headers}, got {config.headers}")
+            msg = f"Expected {headers}, got {config.headers}"
+            raise AssertionError(msg)
         assert config.max_retries == 5
 
     def test_config_invalid_url(self) -> None:
@@ -79,20 +83,23 @@ class TestFlextApiClientRequest:
         )
 
         if request.method != FlextApiClientMethod.GET:
+            msg = f"Expected {FlextApiClientMethod.GET}, got {request.method}"
             raise AssertionError(
-                f"Expected {FlextApiClientMethod.GET}, got {request.method}",
+                msg,
             )
         assert request.url == "/api/test"
         if request.headers != {}:
-            raise AssertionError(f"Expected empty dict, got {request.headers}")
+            msg = f"Expected empty dict, got {request.headers}"
+            raise AssertionError(msg)
         assert request.params == {}
 
     def test_request_with_string_method(self) -> None:
         """Test request with string method gets converted."""
         request = FlextApiClientRequest(method="POST", url="/api/test")
         if request.method != FlextApiClientMethod.POST:
+            msg = f"Expected {FlextApiClientMethod.POST}, got {request.method}"
             raise AssertionError(
-                f"Expected {FlextApiClientMethod.POST}, got {request.method}",
+                msg,
             )
 
     def test_request_validation_empty_url(self) -> None:
@@ -100,7 +107,8 @@ class TestFlextApiClientRequest:
         # Empty URL is allowed at dataclass level, validation happens later
         request = FlextApiClientRequest(method=FlextApiClientMethod.GET, url="")
         if request.url != "":
-            raise AssertionError(f"Expected empty string, got {request.url}")
+            msg = f"Expected empty string, got {request.url}"
+            raise AssertionError(msg)
 
 
 class TestFlextApiClientResponse:
@@ -110,11 +118,13 @@ class TestFlextApiClientResponse:
         """Test creating client response."""
         response = FlextApiClientResponse(status_code=200)
         if response.status_code != HTTP_OK:
-            raise AssertionError(f"Expected 200, got {response.status_code}")
+            msg = f"Expected 200, got {response.status_code}"
+            raise AssertionError(msg)
         assert response.headers == {}
         assert response.data is None
         if response.elapsed_time != 0.0:
-            raise AssertionError(f"Expected 0.0, got {response.elapsed_time}")
+            msg = f"Expected 0.0, got {response.elapsed_time}"
+            raise AssertionError(msg)
 
     def test_response_with_data(self) -> None:
         """Test response with data."""

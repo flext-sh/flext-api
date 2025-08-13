@@ -76,11 +76,13 @@ class TestFinalCoverage:
 
         # Verify all metadata was added
         if response.metadata["key1"] != "value1":
-            raise AssertionError(f"Expected value1, got {response.metadata['key1']}")
+            msg = f"Expected value1, got {response.metadata['key1']}"
+            raise AssertionError(msg)
         assert response.metadata["key2"] == "value2"
         if response.metadata["key3"] != {"nested": "value"}:
+            msg = f"Expected nested dict, got {response.metadata['key3']}"
             raise AssertionError(
-                f"Expected nested dict, got {response.metadata['key3']}",
+                msg,
             )
 
     def test_fields_import_line_13(self) -> None:
@@ -112,7 +114,8 @@ class TestFinalCoverage:
             result = await client._make_request(request)
             assert not result.success
             if "Failed to make GET request" not in result.error:
-                raise AssertionError(f"Expected error message in {result.error}")
+                msg = f"Expected error message in {result.error}"
+                raise AssertionError(msg)
 
     def test_client_request_data_paths_conceptual(self) -> None:
         """Test client request data path logic conceptually."""
@@ -129,7 +132,8 @@ class TestFinalCoverage:
             request_kwargs["data"] = data
 
         if request_kwargs["json"] != {"key": "value"}:
-            raise AssertionError(f"Expected json data, got {request_kwargs['json']}")
+            msg = f"Expected json data, got {request_kwargs['json']}"
+            raise AssertionError(msg)
 
         # Test data path (line 279)
         request_kwargs = {}
@@ -142,7 +146,8 @@ class TestFinalCoverage:
             request_kwargs["data"] = data
 
         if request_kwargs["data"] != "raw data":
-            raise AssertionError(f"Expected raw data, got {request_kwargs['data']}")
+            msg = f"Expected raw data, got {request_kwargs['data']}"
+            raise AssertionError(msg)
 
         # Test timeout path (line 282)
         request_kwargs = {}
@@ -164,7 +169,8 @@ class TestFinalCoverage:
             response_data = "text response"  # Simulates await http_response.text()
 
         if response_data != {"data": "json"}:
-            raise AssertionError(f"Expected json data, got {response_data}")
+            msg = f"Expected json data, got {response_data}"
+            raise AssertionError(msg)
 
         # Simulate JSON parsing failure
         def _raise_json_error() -> None:

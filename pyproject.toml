@@ -139,6 +139,7 @@ exclude = [
 ]
 known_first_party = ["flext_api"]
 pep621_dev_dependency_groups = ["dev", "security", "test", "typings"]
+
 [tool.mypy]
 # Strict mode - enables all recommended checks
 strict = true
@@ -224,6 +225,7 @@ exclude = [
     "node_modules/",
     "vendor/",
 ]
+
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
@@ -314,26 +316,6 @@ asyncio_mode = "auto"
 [tool.ruff]
 extend = "../.ruff-shared.toml"
 lint.isort.known-first-party = ["flext_api"]
-lint.extend-ignore = [
-    # Allow higher arity in API methods
-    "PLR0913",
-    # Allow async timeout param (project uses explicit timeouts)
-    "ASYNC109",
-    # Allow TODOs without author/issue temporarily
-    "TD002",
-    "TD003",
-    "FIX002",
-    # Allow magic numbers in simple comparisons
-    "PLR2004",
-    # Allow local imports inside methods for lightweight builders
-    "PLC0415",
-    # Allow boolean positional where intentional in legacy API
-    "FBT001",
-    "FBT002",
-    "FBT003",
-    # Allow unused args in abstract/templated methods
-    "ARG002",
-]
 
 [tool.vulture]
 extend = "../.vulture-shared.toml"

@@ -38,7 +38,9 @@ def test_create_api_settings_overrides_and_fail() -> None:
 def test_validate_configuration_rules(monkeypatch: pytest.MonkeyPatch) -> None:
     """Production requires secret and database; dev may omit."""
     # production requires secret_key and database_url
-    prod = FlextApiSettings.model_validate({"environment": "production", "api_port": 8081})
+    prod = FlextApiSettings.model_validate(
+        {"environment": "production", "api_port": 8081},
+    )
     res = validate_configuration(prod)
     assert not res.success
     assert "Secret key" in (res.error or "")
@@ -48,7 +50,7 @@ def test_validate_configuration_rules(monkeypatch: pytest.MonkeyPatch) -> None:
             "environment": "production",
             "secret_key": "s",
             "database_url": None,
-        }
+        },
     )
     res2 = validate_configuration(prod2)
     assert not res2.success

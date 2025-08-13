@@ -19,7 +19,8 @@ class TestTypes:
         assert TData is not None
         assert hasattr(TData, "__name__")
         if TData.__name__ != "TData":
-            raise AssertionError(f"Expected {'TData'}, got {TData.__name__}")
+            msg = f"Expected {'TData'}, got {TData.__name__}"
+            raise AssertionError(msg)
 
     def test_tdata_usage(self) -> None:
         """Test TData can be used in type annotations."""
@@ -30,12 +31,15 @@ class TestTypes:
         # Should work with any type
         result1 = example_function("string")
         if result1 != "string":
-            raise AssertionError(f"Expected {'string'}, got {result1}")
+            msg = f"Expected {'string'}, got {result1}"
+            raise AssertionError(msg)
 
         result2 = example_function(42)
         if result2 != 42:
-            raise AssertionError(f"Expected {42}, got {result2}")
+            msg = f"Expected {42}, got {result2}"
+            raise AssertionError(msg)
 
         result3 = example_function({"key": "value"})
         if result3 != {"key": "value"}:
-            raise AssertionError(f'Expected {{"key": "value"}}, got {result3}')
+            msg = f'Expected {{"key": "value"}}, got {result3}'
+            raise AssertionError(msg)

@@ -32,7 +32,8 @@ class TestFlextApiQuery:
         """Test basic query creation."""
         query = FlextApiQuery()
         if query.page != 1:
-            raise AssertionError(f"Expected 1, got {query.page}")
+            msg = f"Expected 1, got {query.page}"
+            raise AssertionError(msg)
         assert query.page_size == 20
         assert isinstance(query.filters, list)
         assert isinstance(query.sorts, list)
@@ -52,10 +53,12 @@ class TestFlextApiQuery:
         )
 
         if query.filters != filters:
-            raise AssertionError(f"Expected {filters}, got {query.filters}")
+            msg = f"Expected {filters}, got {query.filters}"
+            raise AssertionError(msg)
         assert query.sorts == sorts
         if query.page != EXPECTED_BULK_SIZE:
-            raise AssertionError(f"Expected 2, got {query.page}")
+            msg = f"Expected 2, got {query.page}"
+            raise AssertionError(msg)
         assert query.page_size == 50
 
     def test_query_validation_negative_page(self) -> None:
@@ -75,10 +78,12 @@ class TestFlextApiQuery:
 
         assert isinstance(result, dict)
         if result["page"] != EXPECTED_BULK_SIZE:
-            raise AssertionError(f"Expected 2, got {result['page']}")
+            msg = f"Expected 2, got {result['page']}"
+            raise AssertionError(msg)
         assert result["page_size"] == 10
         if result["limit"] != 10:
-            raise AssertionError(f"Expected 10, got {result['limit']}")
+            msg = f"Expected 10, got {result['limit']}"
+            raise AssertionError(msg)
         assert result["offset"] == 10  # (page - 1) * page_size
 
 
@@ -89,9 +94,11 @@ class TestFlextApiResponse:
         """Test basic response creation."""
         response = FlextApiResponse(success=True)
         if not response.success:
-            raise AssertionError(f"Expected True, got {response.success}")
+            msg = f"Expected True, got {response.success}"
+            raise AssertionError(msg)
         if response.message != "":
-            raise AssertionError(f"Expected empty string, got {response.message}")
+            msg = f"Expected empty string, got {response.message}"
+            raise AssertionError(msg)
         assert isinstance(response.metadata, dict)
         assert response.timestamp != ""
 
@@ -101,9 +108,11 @@ class TestFlextApiResponse:
         response = FlextApiResponse(success=True, data=data, message="Success")
 
         if not response.success:
-            raise AssertionError(f"Expected True, got {response.success}")
+            msg = f"Expected True, got {response.success}"
+            raise AssertionError(msg)
         if response.data != data:
-            raise AssertionError(f"Expected {data}, got {response.data}")
+            msg = f"Expected {data}, got {response.data}"
+            raise AssertionError(msg)
         assert response.message == "Success"
 
     def test_response_to_dict(self) -> None:
@@ -348,7 +357,12 @@ class TestFactoryFunctions:
 
         data = [{"id": 1}, {"id": 2}]
         config = PaginationConfig(
-            data=data, total=100, page=2, page_size=10, message="Success", metadata={},
+            data=data,
+            total=100,
+            page=2,
+            page_size=10,
+            message="Success",
+            metadata={},
         )
         response = build_paginated_response_object(config)
 
