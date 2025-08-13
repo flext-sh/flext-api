@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import importlib.metadata
 from typing import TYPE_CHECKING
+from flext_api.typings import FlextTypes
 
 from flext_core import FlextResult, get_logger
 from pydantic import Field
@@ -22,7 +23,6 @@ if TYPE_CHECKING:
         FlextApiQueryBuilderProtocol,
         FlextApiResponseBuilderProtocol,
     )
-    from flext_api.typings import FlextTypes
 
 from typing import cast
 
