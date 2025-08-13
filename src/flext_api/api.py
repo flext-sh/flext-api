@@ -14,11 +14,10 @@ import importlib.metadata
 from typing import TYPE_CHECKING
 
 from flext_core import FlextResult, get_logger
-from flext_api.typings import FlextTypes
 from pydantic import Field
 
 if TYPE_CHECKING:
-    pass
+    from flext_api.typings import FlextTypes
 
 if TYPE_CHECKING:
     from flext_api.api_protocols import (

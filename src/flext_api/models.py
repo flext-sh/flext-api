@@ -43,7 +43,7 @@ try:
     ApiRequest.model_rebuild()
     ApiResponse.model_rebuild()
     ApiSession.model_rebuild()
-except Exception as _e:  # noqa: F841
+except Exception as _e:
     # Safe to continue; tests will surface any unresolved types
     ...
 

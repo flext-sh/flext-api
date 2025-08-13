@@ -35,7 +35,7 @@ def example_advanced_query_building() -> None:
         .equals("type", "premium")
         .greater_than("created_at", "2024-01-01")
         .greater_than("score", 8.5)
-        .equals("verified", True)
+        .equals("verified", value=True)
         .sort_desc("created_at")
         .sort_asc("name")
         .sort_desc("score")
@@ -204,7 +204,7 @@ async def example_full_api_service_integration() -> None:
             .equals("level", "senior")
             .greater_than("experience_years", 5)
             .greater_than("salary", 80000)
-            .equals("remote_eligible", True)
+            .equals("remote_eligible", value=True)
             .sort_desc("salary")
             .sort_asc("hire_date")
             .sort_desc("performance_rating")
@@ -228,7 +228,8 @@ async def example_full_api_service_integration() -> None:
 
         advanced_response = (
             response_builder.success(
-                data=mock_employees, message="Senior engineers retrieved",
+                data=mock_employees,
+                message="Senior engineers retrieved",
             )
             .metadata(
                 {

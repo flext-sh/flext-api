@@ -33,10 +33,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
-from flext_api.typings import FlextTypes
 
 if TYPE_CHECKING:
-    pass
+    from flext_api.typings import FlextTypes
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
@@ -194,6 +193,7 @@ class FlextApiConnectionPoolProtocol(Protocol):
         self,
         host: str,
         port: int,
+        *,
         ssl: bool = False,
     ) -> FlextResult[object]:
         """Get connection from pool."""
@@ -243,6 +243,7 @@ class FlextApiQueryBuilderProtocol(Protocol):
     def add_sort(
         self,
         field: str,
+        *,
         ascending: bool = True,
     ) -> FlextApiQueryBuilderProtocol:
         """Add sorting to the query.
@@ -317,7 +318,7 @@ class FlextApiResponseBuilderProtocol(Protocol):
     Provides standardized response format across the API.
     """
 
-    def set_success(self, success: bool = True) -> FlextApiResponseBuilderProtocol:
+    def set_success(self, *, success: bool = True) -> FlextApiResponseBuilderProtocol:
         """Set response success status.
 
         Args:
@@ -626,16 +627,19 @@ class FlextApiRepositoryProtocol(Protocol):
     async def find_all(
         self,
         filters: FlextTypes.Core.JsonDict | None = None,
-        limit: int | None = None,
+        page: int | None = None,
+        size: int | None = None,
         offset: int | None = None,
         sort_by: str | None = None,
+        *,
         sort_desc: bool = False,
     ) -> FlextResult[list[FlextTypes.Core.JsonDict]]:
         """Find all entities matching criteria.
 
         Args:
             filters: Optional filter criteria
-            limit: Optional result limit
+            page: Optional page number
+            size: Optional page size
             offset: Optional result offset
             sort_by: Field to sort by
             sort_desc: Sort in descending order

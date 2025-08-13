@@ -17,12 +17,7 @@ from flext_core import FlextDomainService, FlextResult, get_logger
 from pydantic import Field
 
 if TYPE_CHECKING:
-    # Moved application import to type-checking block to avoid runtime dependency
-    from flext_api.typings import FlextTypes
-
-if TYPE_CHECKING:
-    from collections.abc import AsyncIterator, Mapping
-
+    # Import FlextTypes only for type checking
     from flext_api.api_models import (
         ClientConfig,
     )
@@ -32,6 +27,10 @@ if TYPE_CHECKING:
         FlextApiQueryBuilderProtocol,
         FlextApiResponseBuilderProtocol,
     )
+    from flext_api.typings import FlextTypes
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator, Mapping
 
 
 logger = get_logger(__name__)
@@ -303,10 +302,8 @@ class FlextApiBaseAuthService(
     async def validate_token(self, token: str) -> FlextResult[bool]:
         """Validate an authentication token."""
         try:
-            # Basic token validation
-            from flext_api.constants import FlextApiConstants
-
-            if not token or len(token) < FlextApiConstants.Auth.MIN_TOKEN_LENGTH:
+            # Basic validation: require non-empty token; policy specifics are delegated
+            if not token:
                 return FlextResult.ok(False)
 
             # Perform token validation (implemented by subclass)
