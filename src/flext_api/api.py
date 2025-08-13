@@ -92,27 +92,27 @@ class FlextApi(FlextApiBaseService):
 
         return FlextResult.ok(details)
 
-    def health_check(self) -> FlextResult[dict[str, object]] | object:
-        """Health check supporting sync and async contexts.
+    def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict] | object:  # type: ignore[override]
+        """Health check supporting both sync and async usage.
 
-        - If there's a running event loop, returns an awaitable coroutine
-          compatible with ``await api.health_check()``.
-        - If there is no running loop, runs synchronously and returns
-          ``FlextResult`` directly (for legacy tests).
+        If there is no running loop, run synchronously and return FlextResult.
+        If a loop is running, return the coroutine to be awaited by caller.
         """
         import asyncio as _asyncio
+
+        from flext_api.base_service import FlextApiBaseService as _Base
 
         try:
             _asyncio.get_running_loop()
         except RuntimeError:
-            # No running loop: execute synchronously calling base explicitly
-            return _asyncio.run(FlextApiBaseService.health_check(self))
+            loop = _asyncio.new_event_loop()
+            try:
+                _asyncio.set_event_loop(loop)
+                return loop.run_until_complete(_Base.health_check(self))
+            finally:
+                loop.close()
 
-        async def _coro(self_ref: FlextApi) -> FlextResult[dict[str, object]]:
-            # Call base class coroutine explicitly to avoid super() closure issues
-            return await FlextApiBaseService.health_check(self_ref)
-
-        return _coro(self)
+        return _Base.health_check(self)
 
     # Compatibility: allow calling health_check in sync contexts within tests
     def sync_health_check(self) -> FlextResult[dict[str, object]]:
@@ -135,9 +135,15 @@ class FlextApi(FlextApiBaseService):
             finally:
                 loop.close()
 
-        # Running loop present; execute directly by delegating to base
-        from flext_api.base_service import FlextApiBaseService as _Base
-        return _asyncio.run(_Base.health_check(self))
+        # Running loop present; run in a new loop in a thread-safe way
+        # to provide a sync result to callers
+        loop = _asyncio.new_event_loop()
+        try:
+            _asyncio.set_event_loop(loop)
+            from flext_api.base_service import FlextApiBaseService as _Base
+            return loop.run_until_complete(_Base.health_check(self))
+        finally:
+            loop.close()
 
     def health_check_sync(self) -> FlextResult[dict[str, object]]:
         """Synchronous wrapper for health_check for legacy tests."""
