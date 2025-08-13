@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 import pytest
 
@@ -10,12 +13,15 @@ from flext_api.api_storage import FileStorageBackend, StorageConfig
 
 
 @pytest.mark.asyncio
-async def test_file_backend_save_and_delete_error_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_file_backend_save_and_delete_error_paths(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     file_path = tmp_path / "store.json"
     backend = FileStorageBackend(StorageConfig(file_path=str(file_path)))
 
     # Monkeypatch _save_data to fail on set to hit error branch
-    async def fail_save():  # noqa: ANN001
+    async def fail_save():
         from flext_core import FlextResult
 
         return FlextResult.fail("disk full")
@@ -29,7 +35,7 @@ async def test_file_backend_save_and_delete_error_paths(tmp_path: Path, monkeypa
     assert (await backend.set("a", 1)).success
 
     # Monkeypatch _save_data to fail on delete
-    async def fail_save2():  # noqa: ANN001
+    async def fail_save2():
         from flext_core import FlextResult
 
         return FlextResult.fail("no space")

@@ -37,11 +37,13 @@ class TestFunctionalExamples:
         query = build_query({"status": "active", "limit": 10})
         query_dict = query.to_dict()
         if "filters" not in query_dict:
-            raise AssertionError(f"Expected filters in {query_dict}")
+            msg = f"Expected filters in {query_dict}"
+            raise AssertionError(msg)
         filters = query_dict["filters"]
         assert isinstance(filters, list), f"Expected list, got {type(filters)}"
         if len(filters) != EXPECTED_BULK_SIZE:
-            raise AssertionError(f"Expected 2, got {len(filters)}")
+            msg = f"Expected 2, got {len(filters)}"
+            raise AssertionError(msg)
 
         # Create client configuration
         client_config = {"base_url": "https://api.example.com", "timeout": 30}
@@ -57,8 +59,9 @@ class TestFunctionalExamples:
         config1 = FlextApiClientConfig(base_url="https://api.example.com")
         client1 = FlextApiClient(config1)
         if client1.config.base_url != "https://api.example.com":
+            msg = f"Expected https://api.example.com, got {client1.config.base_url}"
             raise AssertionError(
-                f"Expected https://api.example.com, got {client1.config.base_url}",
+                msg,
             )
         assert client1.config.timeout == 30.0  # Default value
 
@@ -71,21 +74,25 @@ class TestFunctionalExamples:
         )
         client2 = FlextApiClient(config2)
         if client2.config.timeout != 60.0:
-            raise AssertionError(f"Expected 60.0, got {client2.config.timeout}")
+            msg = f"Expected 60.0, got {client2.config.timeout}"
+            raise AssertionError(msg)
         assert client2.config.headers == {"Authorization": "Bearer token123"}
         if client2.config.max_retries != 5:
-            raise AssertionError(f"Expected 5, got {client2.config.max_retries}")
+            msg = f"Expected 5, got {client2.config.max_retries}"
+            raise AssertionError(msg)
 
     def test_query_building_examples(self) -> None:
         """Test various query building examples."""
         # Simple query
         query1 = build_query_dict({"name": "test"})
         if "filters" not in query1:
-            raise AssertionError(f"Expected filters in {query1}")
+            msg = f"Expected filters in {query1}"
+            raise AssertionError(msg)
         filters1 = query1["filters"]
         assert isinstance(filters1, list), f"Expected list, got {type(filters1)}"
         if len(filters1) != 1:
-            raise AssertionError(f"Expected 1, got {len(filters1)}")
+            msg = f"Expected 1, got {len(filters1)}"
+            raise AssertionError(msg)
         assert isinstance(filters1[0], dict), f"Expected dict, got {type(filters1[0])}"
         assert filters1[0]["field"] == "name"
 
@@ -99,20 +106,24 @@ class TestFunctionalExamples:
             },
         )
         if "filters" not in query2:
-            raise AssertionError(f"Expected filters in {query2}")
+            msg = f"Expected filters in {query2}"
+            raise AssertionError(msg)
         filters2 = query2["filters"]
         assert isinstance(filters2, list), f"Expected list, got {type(filters2)}"
         if len(filters2) != 4:
-            raise AssertionError(f"Expected 4, got {len(filters2)}")
+            msg = f"Expected 4, got {len(filters2)}"
+            raise AssertionError(msg)
 
         # Empty query
         query3 = build_query_dict({})
         if "filters" not in query3:
-            raise AssertionError(f"Expected filters in {query3}")
+            msg = f"Expected filters in {query3}"
+            raise AssertionError(msg)
         filters3 = query3["filters"]
         assert isinstance(filters3, list), f"Expected list, got {type(filters3)}"
         if len(filters3) != 0:
-            raise AssertionError(f"Expected 0, got {len(filters3)}")
+            msg = f"Expected 0, got {len(filters3)}"
+            raise AssertionError(msg)
 
     def test_response_building_examples(self) -> None:
         """Test various response building examples."""
@@ -259,7 +270,8 @@ class TestFunctionalExamples:
                 super().__init__(name="custom-plugin")
 
             async def before_request(
-                self, request: FlextApiClientRequest,
+                self,
+                request: FlextApiClientRequest,
             ) -> FlextApiClientRequest:
                 # Add custom header
                 if request.headers is None:

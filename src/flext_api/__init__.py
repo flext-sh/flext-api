@@ -47,7 +47,6 @@ from __future__ import annotations
 
 import importlib.metadata
 
-
 try:
     __version__ = importlib.metadata.version("flext-api")
 except Exception:
@@ -63,10 +62,44 @@ __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 # Core types from flext-core
 from flext_core import FlextResult, get_logger
 
+# HTTP Client and Builder System
+from flext_api.api_client import (
+    # Builder Classes
+    FlextApiBuilder,
+    FlextApiCachingPlugin,
+    # Client Classes
+    FlextApiClient,
+    FlextApiClientConfig,
+    FlextApiClientMethod,
+    # Client Enums
+    FlextApiClientProtocol,
+    FlextApiClientRequest,
+    FlextApiClientResponse,
+    FlextApiClientStatus,
+    FlextApiOperation,
+    # Plugin System
+    FlextApiPlugin,
+    # Data Structures
+    FlextApiQuery,
+    FlextApiQueryBuilder,
+    FlextApiResponse,
+    FlextApiResponseBuilder,
+    FlextApiRetryPlugin,
+    PaginatedResponseBuilder,
+    PaginationConfig,
+    # Configuration
+    ResponseConfig,
+    build_error_response,
+    build_paginated_response,
+    build_query,
+    build_success_response,
+    # Factory Functions
+    create_client,
+)
+
 # ==============================================================================
 # CONSOLIDATED MODULE IMPORTS (PEP8)
 # ==============================================================================
-
 # Configuration Management
 from flext_api.api_config import (
     FlextApiSettings,
@@ -75,100 +108,65 @@ from flext_api.api_config import (
     validate_configuration,
 )
 
-# Domain Models and Entities
-from flext_api.models import (
-    # Enumerations
-    HttpMethod,
-    HttpStatus,
-    ClientProtocol,
-    ClientStatus,
-    RequestState,
-    ResponseState,
-    TokenType,
-    OperationType,
-    # Value Objects
-    URL,
-    HttpHeader,
-    BearerToken,
-    ClientConfig,
-    QueryConfig,
-    PaginationInfo,
-    # Entities
-    ApiRequest,
-    ApiResponse,
-    ApiEndpoint,
-    ApiSession,
-    # DTOs
-    RequestDto,
-    ResponseDto,
-    ApiErrorContext,
-    QueryBuilder,
-    ResponseBuilder,
-    # Constants
-    DEFAULT_TIMEOUT,
-    DEFAULT_PAGE_SIZE,
-    DEFAULT_MAX_RETRIES,
-)
-
 # Type System and Field Patterns
 from flext_api.api_types import (
     # Type System
     APITypes,
     APITypesCompat,
-    get_api_types,
-    TData,
-    T_Payload,
-    T_Request,
-    T_Response,
     # Field System
     FlextAPIFieldCore,
     FlextAPIFields,
+    T_Payload,
+    T_Request,
+    T_Response,
+    TData,
     # Field Functions
     api_key_field,
     bearer_token_field,
     endpoint_path_field,
+    get_api_types,
     http_method_field,
     pipeline_config_field,
     plugin_config_field,
     response_format_field,
     user_role_field,
 )
-
-# HTTP Client and Builder System
-from flext_api.api_client import (
-    # Client Classes
-    FlextApiClient,
-    FlextApiClientConfig,
-    FlextApiClientRequest,
-    FlextApiClientResponse,
-    # Client Enums
-    FlextApiClientProtocol,
-    FlextApiClientMethod,
-    FlextApiClientStatus,
-    # Builder Classes
-    FlextApiBuilder,
-    FlextApiQueryBuilder,
-    FlextApiResponseBuilder,
-    PaginatedResponseBuilder,
-    # Data Structures
-    FlextApiQuery,
-    FlextApiResponse,
-    FlextApiOperation,
-    # Configuration
-    ResponseConfig,
-    PaginationConfig,
-    # Plugin System
-    FlextApiPlugin,
-    FlextApiCachingPlugin,
-    FlextApiRetryPlugin,
-    # Factory Functions
-    create_client,
-    build_query,
-    build_success_response,
-    build_error_response,
-    build_paginated_response,
-)
 from flext_api.client import create_client_with_plugins
+
+# Domain Models and Entities
+from flext_api.models import (
+    DEFAULT_MAX_RETRIES,
+    DEFAULT_PAGE_SIZE,
+    # Constants
+    DEFAULT_TIMEOUT,
+    # Value Objects
+    URL,
+    ApiEndpoint,
+    ApiErrorContext,
+    # Entities
+    ApiRequest,
+    ApiResponse,
+    ApiSession,
+    BearerToken,
+    ClientConfig,
+    ClientProtocol,
+    ClientStatus,
+    HttpHeader,
+    # Enumerations
+    HttpMethod,
+    HttpStatus,
+    OperationType,
+    PaginationInfo,
+    QueryBuilder,
+    QueryConfig,
+    # DTOs
+    RequestDto,
+    RequestState,
+    ResponseBuilder,
+    ResponseDto,
+    ResponseState,
+    TokenType,
+)
 
 
 # Backwards-compatibility helper used by tests expecting a dict
@@ -197,98 +195,98 @@ def build_query_dict(
 
 
 # Exception Hierarchy
+# ==============================================================================
+# LEGACY COMPATIBILITY IMPORTS
+# ==============================================================================
+# Core API components (canonical)
+from flext_api.api import FlextApi, create_flext_api
+
+# FastAPI Application
+from flext_api.api_app import (
+    app,  # Default app instance
+    create_flext_api_app,
+    create_flext_api_app_with_settings,
+    run_development_server,
+    run_production_server,
+)
 from flext_api.api_exceptions import (
-    # Base Error
-    FlextApiError,
-    # Core API Errors
-    FlextApiValidationError,
     FlextApiAuthenticationError,
     FlextApiAuthorizationError,
+    FlextApiBuilderError,
     FlextApiConfigurationError,
     FlextApiConnectionError,
+    # Base Error
+    FlextApiError,
+    FlextApiNotFoundError,
     FlextApiProcessingError,
-    FlextApiTimeoutError,
+    FlextApiRateLimitError,
     # Specific API Errors
     FlextApiRequestError,
     FlextApiResponseError,
     FlextApiStorageError,
-    FlextApiBuilderError,
-    FlextApiRateLimitError,
-    FlextApiNotFoundError,
+    FlextApiTimeoutError,
+    # Core API Errors
+    FlextApiValidationError,
     # Utility Functions
     create_error_response,
     map_http_status_to_exception,
 )
 
-# Storage and Persistence
-from flext_api.api_storage import (
-    # Main Classes
-    FlextApiStorage,
-    # Configuration
-    StorageConfig,
-    StorageBackend,
-    # Backends
-    MemoryStorageBackend,
-    FileStorageBackend,
-    # Cache Implementation
-    MemoryCache,
-    # Factory Functions
-    create_storage,
-    create_memory_storage,
-    create_file_storage,
-)
-
 # Protocol Definitions (Interfaces)
 from flext_api.api_protocols import (
+    FlextApiAuthorizationProtocol,
+    FlextApiAuthProtocol,
+    FlextApiCacheProtocol,
+    FlextApiConnectionPoolProtocol,
+    # Handler Protocols
+    FlextApiHandlerProtocol,
+    FlextApiHealthCheckProtocol,
+    # Monitoring Protocols
+    FlextApiMetricsProtocol,
+    # Middleware Protocols
+    FlextApiMiddlewareProtocol,
     # HTTP Client Protocols
     FlextApiPluginProtocol,
-    FlextApiConnectionPoolProtocol,
     # Builder Protocols
     FlextApiQueryBuilderProtocol,
+    FlextApiRateLimitProtocol,
+    # Repository Protocols
+    FlextApiRepositoryProtocol,
     FlextApiResponseBuilderProtocol,
     # Service Protocols
     FlextApiServiceProtocol,
-    FlextApiAuthProtocol,
-    FlextApiAuthorizationProtocol,
-    # Repository Protocols
-    FlextApiRepositoryProtocol,
-    FlextApiCacheProtocol,
-    # Middleware Protocols
-    FlextApiMiddlewareProtocol,
-    FlextApiRateLimitProtocol,
-    # Handler Protocols
-    FlextApiHandlerProtocol,
-    FlextApiValidatorProtocol,
     # Streaming Protocols
     FlextApiStreamProtocol,
+    FlextApiValidatorProtocol,
     FlextApiWebSocketProtocol,
-    # Monitoring Protocols
-    FlextApiMetricsProtocol,
-    FlextApiHealthCheckProtocol,
 )
 
-# FastAPI Application
-from flext_api.api_app import (
-    create_flext_api_app,
-    create_flext_api_app_with_settings,
-    run_development_server,
-    run_production_server,
-    app,  # Default app instance
+# Storage and Persistence
+from flext_api.api_storage import (
+    FileStorageBackend,
+    # Main Classes
+    FlextApiStorage,
+    # Cache Implementation
+    MemoryCache,
+    # Backends
+    MemoryStorageBackend,
+    StorageBackend,
+    # Configuration
+    StorageConfig,
+    create_file_storage,
+    create_memory_storage,
+    # Factory Functions
+    create_storage,
 )
-
-# ==============================================================================
-# LEGACY COMPATIBILITY IMPORTS
-# ==============================================================================
-
-# Core API components (canonical)
-from flext_api.api import FlextApi, create_flext_api
-
 
 """Legacy helper aliases and behavior adjustments for tests."""
+
+
 # Expose sync-compatible health_check for legacy tests without monkey-patching
 def sync_health_check(api: FlextApi) -> FlextResult[dict[str, object]]:
     """Run health check synchronously using FlextApi's compatibility helper."""
     return api.health_check_sync()
+
 
 # Note: Do not monkey-patch FlextApi.health_check. Async tests expect an awaitable.
 
@@ -302,7 +300,6 @@ from flext_api.base_service import (
     FlextApiBaseService,
     FlextApiBaseStreamingService,
 )
-
 from flext_api.constants import FlextApiConstants
 
 # Extract constants
@@ -367,150 +364,150 @@ def create_api_storage(backend: str = "memory", **kwargs: object) -> FlextApiSto
 # ==============================================================================
 
 __all__: list[str] = [
-    "__version__",
-    "__version_info__",
-    "FlextResult",
-    "get_logger",
-    "FlextApiSettings",
-    "create_api_settings",
-    "load_configuration",
-    "validate_configuration",
-    "HttpMethod",
-    "HttpStatus",
-    "ClientProtocol",
-    "ClientStatus",
-    "RequestState",
-    "ResponseState",
-    "TokenType",
-    "OperationType",
-    "URL",
-    "HttpHeader",
-    "BearerToken",
-    "ClientConfig",
-    "QueryConfig",
-    "PaginationInfo",
-    "ApiRequest",
-    "ApiResponse",
-    "ApiEndpoint",
-    "ApiSession",
-    "RequestDto",
-    "ResponseDto",
-    "ApiErrorContext",
-    "QueryBuilder",
-    "ResponseBuilder",
-    "DEFAULT_TIMEOUT",
-    "DEFAULT_PAGE_SIZE",
     "DEFAULT_MAX_RETRIES",
+    "DEFAULT_PAGE_SIZE",
+    "DEFAULT_TIMEOUT",
+    "FLEXT_API_CACHE_TTL",
+    "FLEXT_API_MAX_RETRIES",
+    "FLEXT_API_TIMEOUT",
+    "FLEXT_API_VERSION",
+    "URL",
     "APITypes",
     "APITypesCompat",
-    "get_api_types",
+    "ApiEndpoint",
+    "ApiErrorContext",
+    "ApiRequest",
+    "ApiResponse",
+    "ApiSession",
+    "BearerToken",
+    "ClientConfig",
+    "ClientProtocol",
+    "ClientStatus",
+    "FileStorageBackend",
+    "FlextAPIFieldCore",
+    "FlextAPIFields",
+    "FlextApiAuthProtocol",
+    "FlextApiAuthenticationError",
+    "FlextApiAuthorizationError",
+    "FlextApiAuthorizationProtocol",
+    "FlextApiBuilder",
+    "FlextApiBuilderError",
+    "FlextApiCacheProtocol",
+    "FlextApiCachingPlugin",
+    "FlextApiClient",
+    "FlextApiClientConfig",
+    "FlextApiClientMethod",
+    "FlextApiClientProtocol",
+    "FlextApiClientRequest",
+    "FlextApiClientResponse",
+    "FlextApiClientStatus",
+    "FlextApiConfigurationError",
+    "FlextApiConnectionError",
+    "FlextApiConnectionPoolProtocol",
+    "FlextApiError",
+    "FlextApiHandlerProtocol",
+    "FlextApiHealthCheckProtocol",
+    "FlextApiMetricsProtocol",
+    "FlextApiMiddlewareProtocol",
+    "FlextApiNotFoundError",
+    "FlextApiOperation",
+    "FlextApiPlugin",
+    "FlextApiPluginProtocol",
+    "FlextApiProcessingError",
+    "FlextApiQuery",
+    "FlextApiQueryBuilder",
+    "FlextApiQueryBuilderProtocol",
+    "FlextApiRateLimitError",
+    "FlextApiRateLimitProtocol",
+    "FlextApiRepositoryProtocol",
+    "FlextApiRequestError",
+    "FlextApiResponse",
+    "FlextApiResponseBuilder",
+    "FlextApiResponseBuilderProtocol",
+    "FlextApiResponseError",
+    "FlextApiRetryPlugin",
+    "FlextApiServiceProtocol",
+    "FlextApiSettings",
+    "FlextApiStorage",
+    "FlextApiStorageError",
+    "FlextApiStreamProtocol",
+    "FlextApiTimeoutError",
+    "FlextApiValidationError",
+    "FlextApiValidatorProtocol",
+    "FlextApiWebSocketProtocol",
+    "FlextResult",
+    "HttpHeader",
+    "HttpMethod",
+    "HttpStatus",
+    "MemoryCache",
+    "MemoryStorageBackend",
+    "OperationType",
+    "PaginatedResponseBuilder",
+    "PaginationConfig",
+    "PaginationInfo",
+    "QueryBuilder",
+    "QueryConfig",
+    "RequestDto",
+    "RequestState",
+    "ResponseBuilder",
+    "ResponseConfig",
+    "ResponseDto",
+    "ResponseState",
+    "StorageBackend",
+    "StorageConfig",
     "TData",
     "T_Payload",
     "T_Request",
     "T_Response",
-    "FlextAPIFieldCore",
-    "FlextAPIFields",
+    "TokenType",
+    "__version__",
+    "__version_info__",
+    "annotations",
     "api_key_field",
-    "bearer_token_field",
-    "endpoint_path_field",
-    "http_method_field",
-    "pipeline_config_field",
-    "plugin_config_field",
-    "response_format_field",
-    "user_role_field",
-    "FlextApiClient",
-    "FlextApiClientConfig",
-    "FlextApiClientRequest",
-    "FlextApiClientResponse",
-    "FlextApiClientProtocol",
-    "FlextApiClientMethod",
-    "FlextApiClientStatus",
-    "FlextApiBuilder",
-    "FlextApiQueryBuilder",
-    "FlextApiResponseBuilder",
-    "PaginatedResponseBuilder",
-    "FlextApiQuery",
-    "FlextApiResponse",
-    "FlextApiOperation",
-    "ResponseConfig",
-    "PaginationConfig",
-    "FlextApiPlugin",
-    "FlextApiCachingPlugin",
-    "FlextApiRetryPlugin",
-    "FlextApiError",
-    "FlextApiValidationError",
-    "FlextApiAuthenticationError",
-    "FlextApiAuthorizationError",
-    "FlextApiConfigurationError",
-    "FlextApiConnectionError",
-    "FlextApiProcessingError",
-    "FlextApiTimeoutError",
-    "FlextApiRequestError",
-    "FlextApiResponseError",
-    "FlextApiStorageError",
-    "FlextApiBuilderError",
-    "FlextApiRateLimitError",
-    "FlextApiNotFoundError",
-    "create_error_response",
-    "map_http_status_to_exception",
-    "FlextApiStorage",
-    "StorageConfig",
-    "StorageBackend",
-    "MemoryStorageBackend",
-    "FileStorageBackend",
-    "MemoryCache",
-    "FlextApiPluginProtocol",
-    "FlextApiConnectionPoolProtocol",
-    "FlextApiQueryBuilderProtocol",
-    "FlextApiResponseBuilderProtocol",
-    "FlextApiServiceProtocol",
-    "FlextApiAuthProtocol",
-    "FlextApiAuthorizationProtocol",
-    "FlextApiRepositoryProtocol",
-    "FlextApiCacheProtocol",
-    "FlextApiMiddlewareProtocol",
-    "FlextApiRateLimitProtocol",
-    "FlextApiHandlerProtocol",
-    "FlextApiValidatorProtocol",
-    "FlextApiStreamProtocol",
-    "FlextApiWebSocketProtocol",
-    "FlextApiMetricsProtocol",
-    "FlextApiHealthCheckProtocol",
-    "create_flext_api_app",
-    "create_flext_api_app_with_settings",
-    "run_development_server",
-    "run_production_server",
     "app",
-    "create_client",
-    "create_api_client",
-    "sync_health_check",
-    "create_api_builder",
-    "create_storage",
-    "create_api_storage",
-    "create_memory_storage",
-    "create_file_storage",
+    "bearer_token_field",
+    "build_error_response",
+    "build_paginated_response",
     "build_query",
     "build_query_dict",
     "build_success_response",
-    "build_error_response",
-    "build_paginated_response",
+    "create_api_builder",
+    "create_api_client",
+    "create_api_settings",
+    "create_api_storage",
+    "create_client",
     "create_client_with_plugins",
-    "FLEXT_API_VERSION",
-    "FLEXT_API_TIMEOUT",
-    "FLEXT_API_MAX_RETRIES",
-    "FLEXT_API_CACHE_TTL",
-    "annotations",
+    "create_error_response",
+    "create_file_storage",
+    "create_flext_api_app",
+    "create_flext_api_app_with_settings",
+    "create_memory_storage",
+    "create_storage",
+    "endpoint_path_field",
+    "get_api_types",
+    "get_logger",
+    "http_method_field",
+    "load_configuration",
+    "map_http_status_to_exception",
+    "pipeline_config_field",
+    "plugin_config_field",
+    "response_format_field",
+    "run_development_server",
+    "run_production_server",
+    "sync_health_check",
+    "user_role_field",
+    "validate_configuration",
 ]
 
 __all__ += [
     "FlextApi",
-    "create_flext_api",
-    "FlextApiBaseService",
-    "FlextApiBaseClientService",
     "FlextApiBaseAuthService",
-    "FlextApiBaseRepositoryService",
-    "FlextApiBaseHandlerService",
     "FlextApiBaseBuilderService",
+    "FlextApiBaseClientService",
+    "FlextApiBaseHandlerService",
+    "FlextApiBaseRepositoryService",
+    "FlextApiBaseService",
     "FlextApiBaseStreamingService",
     "FlextApiConstants",
+    "create_flext_api",
 ]

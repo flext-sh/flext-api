@@ -32,25 +32,29 @@ class TestConstants:
     def test_version_constant(self) -> None:
         """Test version constant."""
         if FLEXT_API_VERSION != "0.9.0":
-            raise AssertionError(f"Expected 1.0.0, got {FLEXT_API_VERSION}")
+            msg = f"Expected 1.0.0, got {FLEXT_API_VERSION}"
+            raise AssertionError(msg)
         assert isinstance(FLEXT_API_VERSION, str)
 
     def test_timeout_constant(self) -> None:
         """Test timeout constant."""
         if FLEXT_API_TIMEOUT != 30:
-            raise AssertionError(f"Expected 30, got {FLEXT_API_TIMEOUT}")
+            msg = f"Expected 30, got {FLEXT_API_TIMEOUT}"
+            raise AssertionError(msg)
         assert isinstance(FLEXT_API_TIMEOUT, int)
 
     def test_retries_constant(self) -> None:
         """Test max retries constant."""
         if FLEXT_API_MAX_RETRIES != EXPECTED_DATA_COUNT:
-            raise AssertionError(f"Expected 3, got {FLEXT_API_MAX_RETRIES}")
+            msg = f"Expected 3, got {FLEXT_API_MAX_RETRIES}"
+            raise AssertionError(msg)
         assert isinstance(FLEXT_API_MAX_RETRIES, int)
 
     def test_cache_ttl_constant(self) -> None:
         """Test cache TTL constant."""
         if FLEXT_API_CACHE_TTL != 300:
-            raise AssertionError(f"Expected 300, got {FLEXT_API_CACHE_TTL}")
+            msg = f"Expected 300, got {FLEXT_API_CACHE_TTL}"
+            raise AssertionError(msg)
         assert isinstance(FLEXT_API_CACHE_TTL, int)
 
 
@@ -64,13 +68,15 @@ class TestFlextApiConstants:
         not_found_code = http.HTTPStatus.NOT_FOUND.value
 
         if ok_code not in FlextApiConstants.SUCCESS_CODES:
+            msg = f"Expected {ok_code} in {FlextApiConstants.SUCCESS_CODES}"
             raise AssertionError(
-                f"Expected {ok_code} in {FlextApiConstants.SUCCESS_CODES}",
+                msg,
             )
         assert created_code in FlextApiConstants.SUCCESS_CODES
         if not_found_code in FlextApiConstants.SUCCESS_CODES:
+            msg = f"Expected {not_found_code} not in {FlextApiConstants.SUCCESS_CODES}"
             raise AssertionError(
-                f"Expected {not_found_code} not in {FlextApiConstants.SUCCESS_CODES}",
+                msg,
             )
 
     def test_client_error_codes(self) -> None:
@@ -80,13 +86,17 @@ class TestFlextApiConstants:
         ok_code = http.HTTPStatus.OK.value
 
         if bad_request_code not in FlextApiConstants.CLIENT_ERROR_CODES:
+            msg = (
+                f"Expected {bad_request_code} in {FlextApiConstants.CLIENT_ERROR_CODES}"
+            )
             raise AssertionError(
-                f"Expected {bad_request_code} in {FlextApiConstants.CLIENT_ERROR_CODES}",
+                msg,
             )
         assert not_found_code in FlextApiConstants.CLIENT_ERROR_CODES
         if ok_code in FlextApiConstants.CLIENT_ERROR_CODES:
+            msg = f"Expected {ok_code} not in {FlextApiConstants.CLIENT_ERROR_CODES}"
             raise AssertionError(
-                f"Expected {ok_code} not in {FlextApiConstants.CLIENT_ERROR_CODES}",
+                msg,
             )
 
     def test_server_error_codes(self) -> None:
@@ -96,20 +106,23 @@ class TestFlextApiConstants:
         ok_code = http.HTTPStatus.OK.value
 
         if internal_error_code not in FlextApiConstants.SERVER_ERROR_CODES:
+            msg = f"Expected {internal_error_code} in {FlextApiConstants.SERVER_ERROR_CODES}"
             raise AssertionError(
-                f"Expected {internal_error_code} in {FlextApiConstants.SERVER_ERROR_CODES}",
+                msg,
             )
         assert bad_gateway_code in FlextApiConstants.SERVER_ERROR_CODES
         if ok_code in FlextApiConstants.SERVER_ERROR_CODES:
+            msg = f"Expected {ok_code} not in {FlextApiConstants.SERVER_ERROR_CODES}"
             raise AssertionError(
-                f"Expected {ok_code} not in {FlextApiConstants.SERVER_ERROR_CODES}",
+                msg,
             )
 
     def test_rate_limit_constants(self) -> None:
         """Test rate limit constants."""
         if FlextApiConstants.RATE_LIMIT_REQUESTS != 1000:
+            msg = f"Expected 1000, got {FlextApiConstants.RATE_LIMIT_REQUESTS}"
             raise AssertionError(
-                f"Expected 1000, got {FlextApiConstants.RATE_LIMIT_REQUESTS}",
+                msg,
             )
         assert FlextApiConstants.RATE_LIMIT_WINDOW == 3600
 
@@ -117,13 +130,15 @@ class TestFlextApiConstants:
         """Test response templates."""
         success_response = FlextApiConstants.SUCCESS_RESPONSE
         if success_response["status"] != "success":
-            raise AssertionError(f"Expected success, got {success_response['status']}")
+            msg = f"Expected success, got {success_response['status']}"
+            raise AssertionError(msg)
         assert success_response["data"] is None
         assert success_response["error"] is None
 
         error_response = FlextApiConstants.ERROR_RESPONSE
         if error_response["status"] != "error":
-            raise AssertionError(f"Expected error, got {error_response['status']}")
+            msg = f"Expected error, got {error_response['status']}"
+            raise AssertionError(msg)
         assert error_response["data"] is None
         assert error_response["error"] is None
 

@@ -27,7 +27,9 @@ class TestFinalMissingCoverage:
         """Test build_success_response_object with metadata - covers builder.py lines 411-412."""
         metadata = {"request_id": "test123", "user": "admin"}
         response = build_success_response_object(
-            data={"result": "success"}, message="Operation completed", metadata=metadata,
+            data={"result": "success"},
+            message="Operation completed",
+            metadata=metadata,
         )
 
         assert response.success is True

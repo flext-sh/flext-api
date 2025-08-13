@@ -10,12 +10,14 @@ from flext_api.api_storage import FlextApiStorage, StorageBackend, StorageConfig
 @pytest.mark.asyncio
 async def test_keys_pattern_and_unknown_operation_commit() -> None:
     """Wildcard key pattern works and unknown tx op triggers failure on commit."""
-    storage = FlextApiStorage(StorageConfig(namespace="ns", backend=StorageBackend.MEMORY))
+    storage = FlextApiStorage(
+        StorageConfig(namespace="ns", backend=StorageBackend.MEMORY),
+    )
     await storage.set("a", 1)
     await storage.set("alpha", 2)
 
     # Pattern matching (wildcard)
-    keys = (await storage.keys("a*"))
+    keys = await storage.keys("a*")
     assert keys.success
     assert set(keys.data or []) >= {"a", "alpha"}
 

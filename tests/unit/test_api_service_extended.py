@@ -55,7 +55,9 @@ def test_create_client_impl_valid_and_invalid() -> None:
         svc._create_client_impl({"base_url": ""})
 
     # Valid -> returns instance
-    client = svc._create_client_impl({"base_url": "https://api.example.com", "timeout": 0.1})
+    client = svc._create_client_impl(
+        {"base_url": "https://api.example.com", "timeout": 0.1},
+    )
     assert client is not None
 
 

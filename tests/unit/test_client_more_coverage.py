@@ -14,10 +14,14 @@ from flext_api.api_client import (
 
 
 @pytest.mark.asyncio
-async def test_offline_stub_and_error_formatting(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_offline_stub_and_error_formatting(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Offline stub should error on invalid host; formatter should include method."""
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
-    client = FlextApiClient(FlextApiClientConfig(base_url="https://nonexistent.invalid"))
+    client = FlextApiClient(
+        FlextApiClientConfig(base_url="https://nonexistent.invalid"),
+    )
     await client.start()
 
     # Invalid host triggers DNS-like failure path in stub

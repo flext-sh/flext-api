@@ -620,7 +620,8 @@ class FlextApiClient:
 
     # Compatibility for tests that patch a legacy method name
     async def _make_request_impl(
-        self, request: FlextApiClientRequest,
+        self,
+        request: FlextApiClientRequest,
     ) -> FlextResult[FlextApiClientResponse]:
         """Legacy-compatible internal request executor used in some tests.
 
@@ -739,7 +740,12 @@ class FlextApiClient:
 
     def _is_external_calls_disabled(self) -> bool:
         import os as _os
-        return _os.getenv("FLEXT_DISABLE_EXTERNAL_CALLS", "1").lower() in {"1", "true", "yes"}
+
+        return _os.getenv("FLEXT_DISABLE_EXTERNAL_CALLS", "1").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
 
     def _build_stub_response(
         self,
@@ -749,7 +755,10 @@ class FlextApiClient:
         from urllib.parse import urlparse as _urlparse
 
         # Validate URL
-        if not (str(request.url).startswith("http://") or str(request.url).startswith("https://")):
+        if not (
+            str(request.url).startswith("http://")
+            or str(request.url).startswith("https://")
+        ):
             return FlextResult.fail("HTTP request execution failed: Invalid URL format")
 
         parsed = _urlparse(request.url)
@@ -757,7 +766,9 @@ class FlextApiClient:
         host = (parsed.netloc or "").lower()
         # Simulate DNS/connection error for invalid/non-existent hostnames
         if host.startswith("nonexistent-") or host.endswith(".invalid"):
-            return FlextResult.fail("HTTP request execution failed: DNS resolution failed")
+            return FlextResult.fail(
+                "HTTP request execution failed: DNS resolution failed",
+            )
 
         # Default 200 with JSON echo similar to httpbin
         status = 200
@@ -796,7 +807,11 @@ class FlextApiClient:
         """Read and parse response data based on Content-Type with safe fallbacks."""
         try:
             content_type_header = next(
-                (v for k, v in response.headers.items() if str(k).lower() == "content-type"),
+                (
+                    v
+                    for k, v in response.headers.items()
+                    if str(k).lower() == "content-type"
+                ),
                 "",
             )
         except Exception:
@@ -810,6 +825,7 @@ class FlextApiClient:
                 # Fallback: read text and attempt JSON parse
                 text_data = await response.text()
                 import json as _json
+
                 try:
                     return _json.loads(text_data)
                 except Exception:
@@ -822,6 +838,7 @@ class FlextApiClient:
         if text_trim.startswith(("{", "[")):
             import json as _json
             from contextlib import suppress as _suppress
+
             with _suppress(Exception):
                 return _json.loads(text_trim)
         return text
@@ -842,7 +859,13 @@ class FlextApiClient:
 
             # Build request
             request_result = self._build_request(
-                method, path, params, json_data, data, headers, timeout,
+                method,
+                path,
+                params,
+                json_data,
+                data,
+                headers,
+                timeout,
             )
             if not request_result.success or request_result.data is None:
                 return FlextResult.fail(
@@ -898,7 +921,8 @@ class FlextApiClient:
         # Process through plugins (before_request)
         context_data: dict[str, object] = {}
         plugin_result = await self._process_plugins_before_request(
-            request, context_data,
+            request,
+            context_data,
         )
         if not plugin_result.success:
             error_msg = plugin_result.error or "Plugin processing failed"
@@ -922,7 +946,10 @@ class FlextApiClient:
         response_obj = response_result.data
         if response_obj is None:
             return FlextResult.fail("No response data received")
-        if isinstance(response_obj, FlextApiClientResponse) and response_obj.data is None:
+        if (
+            isinstance(response_obj, FlextApiClientResponse)
+            and response_obj.data is None
+        ):
             return FlextResult.fail("No response data received")
 
         # Process response pipeline
@@ -957,7 +984,8 @@ class FlextApiClient:
         """Process response through plugins and finalization."""
         # Process through plugins (after_response)
         after_result = await self._process_plugins_after_response(
-            response, context_data,
+            response,
+            context_data,
         )
         if not after_result.success:
             return after_result
@@ -965,7 +993,8 @@ class FlextApiClient:
         # Ensure response.data is a dictionary when JSON is expected
         final_response = after_result.data
         if isinstance(final_response, FlextApiClientResponse) and isinstance(
-            final_response.data, str,
+            final_response.data,
+            str,
         ):
             import json as _json
             from contextlib import suppress as _suppress
@@ -982,7 +1011,8 @@ class FlextApiClient:
 
     # Legacy alias expected by some tests
     async def _make_request(
-        self, request: FlextApiClientRequest,
+        self,
+        request: FlextApiClientRequest,
     ) -> FlextResult[FlextApiClientResponse]:
         """Legacy alias that proxies to implementation and formats errors.
 

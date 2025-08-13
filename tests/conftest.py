@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, patch
 
 # Garanta um loop corrente no thread principal para pytest-asyncio (Py3.13)
@@ -25,7 +25,7 @@ from flext_api.api_app import app
 from flext_api.api_client import FlextApiClient
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Iterator
+    from collections.abc import AsyncGenerator, Callable, Iterator
 
 
 # Configure faker for consistent test data
@@ -314,3 +314,20 @@ def optimize_test_performance() -> None:
     os.environ["FLEXT_TEST_LOG_MINIMAL"] = "true"
     # Enable fast test mode
     os.environ["FLEXT_FAST_TEST_MODE"] = "true"
+
+
+# -----------------------------------------------------------------------------
+# Benchmark fixture fallback (when pytest-benchmark plugin is unavailable)
+# -----------------------------------------------------------------------------
+@pytest.fixture
+def benchmark() -> Callable[[Callable[..., Any]], Any]:
+    """Lightweight benchmark shim that simply calls the function under test.
+
+    This provides compatibility for tests that expect the `benchmark` fixture
+    without requiring the pytest-benchmark plugin for local runs.
+    """
+
+    def _bench(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+        return func(*args, **kwargs)
+
+    return _bench

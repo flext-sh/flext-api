@@ -31,7 +31,8 @@ class TestFlextAPIStorage:
 
         result = storage.get("key1")
         if result != "value1":
-            raise AssertionError(f"Expected {'value1'}, got {result}")
+            msg = f"Expected {'value1'}, got {result}"
+            raise AssertionError(msg)
 
     def test_delete_existing_key(self) -> None:
         """Test deleting existing key."""
@@ -40,7 +41,8 @@ class TestFlextAPIStorage:
 
         result = storage.delete("key1")
         if not (result):
-            raise AssertionError(f"Expected True, got {result}")
+            msg = f"Expected True, got {result}"
+            raise AssertionError(msg)
 
         # Key should be gone
         assert storage.get("key1") is None
@@ -50,7 +52,8 @@ class TestFlextAPIStorage:
         storage = FlextAPIStorage()
         result = storage.delete("nonexistent")
         if result:
-            raise AssertionError(f"Expected False, got {result}")
+            msg = f"Expected False, got {result}"
+            raise AssertionError(msg)
 
     def test_overwrite_key(self) -> None:
         """Test overwriting existing key."""
@@ -60,4 +63,5 @@ class TestFlextAPIStorage:
 
         result = storage.get("key1")
         if result != "value2":
-            raise AssertionError(f"Expected {'value2'}, got {result}")
+            msg = f"Expected {'value2'}, got {result}"
+            raise AssertionError(msg)

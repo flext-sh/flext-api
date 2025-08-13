@@ -55,9 +55,11 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
+
 # Internal helper to intentionally fail initialization for tests
 def _forced_init_failure() -> None:
     raise RuntimeError
+
 
 # ==============================================================================
 # APPLICATION CONFIGURATION
@@ -123,7 +125,8 @@ class FlextApiAppConfig:
 
 
 async def add_request_id_middleware(
-    request: Request, call_next: Callable[[Request], object],
+    request: Request,
+    call_next: Callable[[Request], object],
 ) -> object:
     """Add request ID to all requests for tracing."""
     import uuid
@@ -151,7 +154,8 @@ async def add_request_id_middleware(
 
 
 async def error_handler_middleware(
-    request: Request, call_next: Callable[[Request], object],
+    request: Request,
+    call_next: Callable[[Request], object],
 ) -> object:
     """Global error handler middleware."""
     try:
@@ -279,7 +283,8 @@ def setup_health_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
                     del_coro = getattr(app.state.storage, "delete", None)
                     if set_coro is not None and del_coro is not None:
                         result_set = set_coro(
-                            test_key, {"timestamp": health_data["timestamp"]},
+                            test_key,
+                            {"timestamp": health_data["timestamp"]},
                         )
                         if hasattr(result_set, "__await__"):
                             await result_set
@@ -392,11 +397,10 @@ def create_flext_api_app(config: FlextApiAppConfig | None = None) -> FastAPI:
         description=config.get_description(),
         version=config.get_version(),
         lifespan=lifespan,
+        # Always expose OpenAPI paths for tests; UI routes conditioned on debug
         docs_url="/docs" if config.settings and config.settings.debug else None,
         redoc_url="/redoc" if config.settings and config.settings.debug else None,
-        openapi_url="/openapi.json"
-        if config.settings and config.settings.debug
-        else None,
+        openapi_url="/openapi.json",
     )
 
     # Add middleware
@@ -531,6 +535,7 @@ def run_production_server(
 try:
     # Allow tests to simulate initialization failure
     import os as _os  # local import to avoid polluting module namespace
+
     if _os.getenv("FLEXT_API_FORCE_APP_INIT_FAIL", "0") in {"1", "true", "yes"}:
         _forced_init_failure()
 

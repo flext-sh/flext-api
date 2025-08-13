@@ -19,7 +19,7 @@ class OkService(FlextApiBaseService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _get_health_details(self) -> FlextResult[dict[str, object]]:  # noqa: D401
+    async def _get_health_details(self) -> FlextResult[dict[str, object]]:
         return FlextResult.ok({"extra": True})
 
 

@@ -44,12 +44,14 @@ class TestFlextApiCoverage:
         # Should handle invalid types gracefully and use defaults
         assert client is not None
         if client.config.base_url != "https://test.com":
+            msg = f"Expected https://test.com, got {client.config.base_url}"
             raise AssertionError(
-                f"Expected https://test.com, got {client.config.base_url}",
+                msg,
             )
         assert client.config.timeout == 30.0  # Default
         if client.config.headers != {}:  # Default empty dict
-            raise AssertionError(f"Expected empty dict, got {client.config.headers}")
+            msg = f"Expected empty dict, got {client.config.headers}"
+            raise AssertionError(msg)
         assert client.config.max_retries == EXPECTED_DATA_COUNT  # Default
 
     def test_create_client_impl_edge_cases(self) -> None:
@@ -88,8 +90,9 @@ class TestFlextApiCoverage:
             "Content-Type": "application/json",
         }
         if client.config.headers != expected_headers:
+            msg = f"Expected {expected_headers}, got {client.config.headers}"
             raise AssertionError(
-                f"Expected {expected_headers}, got {client.config.headers}",
+                msg,
             )
 
     def test_create_client_impl_with_numeric_values(self) -> None:
@@ -108,7 +111,8 @@ class TestFlextApiCoverage:
         # Should handle numeric conversions
         assert client is not None
         if client.config.timeout != 45.0:  # Converted to float
-            raise AssertionError(f"Expected 45.0, got {client.config.timeout}")
+            msg = f"Expected 45.0, got {client.config.timeout}"
+            raise AssertionError(msg)
         assert client.config.max_retries == 5  # Converted to int
 
     def test_api_service_state_management(self) -> None:

@@ -31,15 +31,21 @@ if TYPE_CHECKING:
 else:
     # Minimal runtime fallback for forward-referenced type annotations used by Pydantic
     class FlextTypes:  # type: ignore[no-redef]
-        class Core:  # noqa: N801 - keep compatibility with annotations in tests
+        class Core:
             JsonDict = dict[str, object]
 
     # Runtime stubs for plugins to satisfy typing usage in this module
     class _PluginStub:
-        async def before_request(self, **_: object) -> FlextResult[None]:  # pragma: no cover - stub
+        async def before_request(
+            self,
+            **_: object,
+        ) -> FlextResult[None]:  # pragma: no cover - stub
             return FlextResult.ok(None)
 
-        async def after_response(self, **_: object) -> FlextResult[dict[str, object]]:  # pragma: no cover - stub
+        async def after_response(
+            self,
+            **_: object,
+        ) -> FlextResult[dict[str, object]]:  # pragma: no cover - stub
             return FlextResult.ok({})
 
 

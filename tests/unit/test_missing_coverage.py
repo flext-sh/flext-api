@@ -118,11 +118,13 @@ class TestMissingCoverageBuilder:
         # Test error response building
         error_resp = build_error_response_object("Test error", 400, {"detail": "test"})
         if error_resp.success:
-            raise AssertionError(f"Expected False, got {error_resp.success}")
+            msg = f"Expected False, got {error_resp.success}"
+            raise AssertionError(msg)
         assert error_resp.message == "Test error"
         if error_resp.metadata["error_code"] != 400:
+            msg = f"Expected 400, got {error_resp.metadata['error_code']}"
             raise AssertionError(
-                f"Expected 400, got {error_resp.metadata['error_code']}",
+                msg,
             )
 
         # Test paginated response building
@@ -137,9 +139,11 @@ class TestMissingCoverageBuilder:
         )
         paginated_resp = build_paginated_response_object(config)
         if not paginated_resp.success:
-            raise AssertionError(f"Expected True, got {paginated_resp.success}")
+            msg = f"Expected True, got {paginated_resp.success}"
+            raise AssertionError(msg)
         if paginated_resp.data != [1, 2, 3]:
-            raise AssertionError(f"Expected [1, 2, 3], got {paginated_resp.data}")
+            msg = f"Expected [1, 2, 3], got {paginated_resp.data}"
+            raise AssertionError(msg)
         assert paginated_resp.metadata["page"] == 1
 
 
@@ -167,7 +171,8 @@ class TestMissingCoverageClient:
             # First call - cache miss
             result1 = await plugin.before_request(request)
             if result1 != request:
-                raise AssertionError(f"Expected {request}, got {result1}")
+                msg = f"Expected {request}, got {result1}"
+                raise AssertionError(msg)
 
             # Simulate cache entry
             cache_key = f"{request.url}:{hash(str(request.params))}"
@@ -192,7 +197,8 @@ class TestMissingCoverageClient:
         async def test_retry() -> None:
             result = await plugin.before_request(request)
             if result != request:
-                raise AssertionError(f"Expected {request}, got {result}")
+                msg = f"Expected {request}, got {result}"
+                raise AssertionError(msg)
 
             # Test after_request and on_error with correct signatures
             mock_response = FlextApiClientResponse(status_code=200)
@@ -217,7 +223,8 @@ class TestMissingCoverageClient:
             # Test before_request in different states
             result = await plugin.before_request(request)
             if result != request:
-                raise AssertionError(f"Expected {request}, got {result}")
+                msg = f"Expected {request}, got {result}"
+                raise AssertionError(msg)
 
             # Test after_request and on_error with correct signatures
             mock_response = FlextApiClientResponse(status_code=200)

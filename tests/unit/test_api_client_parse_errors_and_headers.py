@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Never
+
 import pytest
 from flext_core import FlextResult
 
@@ -19,13 +21,15 @@ async def test_read_response_data_parse_errors(monkeypatch: pytest.MonkeyPatch) 
     class FakeResponse:
         """Fake aiohttp-like response object for testing parse fallbacks."""
 
-        headers: dict[str, str] = {"Content-Type": "application/json"}
+        from typing import ClassVar
 
-        async def json(self):  # noqa: D401
+        headers: ClassVar[dict[str, str]] = {"Content-Type": "application/json"}
+
+        async def json(self) -> Never:
             msg = "bad json"
             raise ValueError(msg)
 
-        async def text(self):  # noqa: D401
+        async def text(self) -> str:
             return "{not json}"
 
     client = FlextApiClient(FlextApiClientConfig(base_url="https://x"))
@@ -35,9 +39,11 @@ async def test_read_response_data_parse_errors(monkeypatch: pytest.MonkeyPatch) 
 
 
 @pytest.mark.asyncio
-async def test_prepare_headers_merge_and_request_build(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_prepare_headers_merge_and_request_build(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     client = FlextApiClient(
-        FlextApiClientConfig(base_url="https://api.example.com", headers={"A": "1"})
+        FlextApiClientConfig(base_url="https://api.example.com", headers={"A": "1"}),
     )
     r = client._build_request("GET", "/p", None, None, None, {"B": "2"}, None)
     assert r.success
@@ -49,11 +55,13 @@ async def test_prepare_headers_merge_and_request_build(monkeypatch: pytest.Monke
 
 
 @pytest.mark.asyncio
-async def test_execute_request_pipeline_empty_response(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_execute_request_pipeline_empty_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     client = FlextApiClient(FlextApiClientConfig(base_url="https://api.example.com"))
     req = FlextApiClientRequest(method="GET", url="https://api.example.com/x")
 
-    async def bad_perform(_req):  # noqa: ANN001
+    async def bad_perform(_req):
         return FlextResult.ok(FlextApiClientResponse(status_code=200, data=None))
 
     await client.start()

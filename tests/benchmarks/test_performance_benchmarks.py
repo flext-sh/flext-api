@@ -24,6 +24,9 @@ from flext_api import (
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+else:
+    # Use fixture provided in tests/conftest.py
+    from collections.abc import Callable as _Callable  # noqa: F401
 
 
 class TestAPIPerformanceBenchmarks:
@@ -163,7 +166,8 @@ class TestAPIPerformanceBenchmarks:
         assert len(result["data"]["items"]) == 1000
 
     def test_paginated_response_benchmark(
-        self, benchmark: Callable[[Any], Any],
+        self,
+        benchmark: Callable[[Any], Any],
     ) -> None:
         """Benchmark paginated response operations."""
 

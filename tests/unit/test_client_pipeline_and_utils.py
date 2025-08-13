@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Never
+
 import pytest
 from flext_core import FlextResult
 
@@ -33,7 +35,7 @@ class BeforePluginPass:
                     json_data=request.json_data,
                     data=request.data,
                     timeout=request.timeout,
-                )
+                ),
             )
         return request
 
@@ -44,7 +46,7 @@ class BeforePluginFail:
     name = "before_fail"
     enabled = True
 
-    async def before_request(self, request, _context=None):  # noqa: ARG002
+    async def before_request(self, request, _context=None):
         return FlextResult.fail("bad before")
 
 
@@ -54,7 +56,7 @@ class AfterPluginFail:
     name = "after_fail"
     enabled = True
 
-    async def after_response(self, response, _context=None):  # noqa: ARG002
+    async def after_response(self, response, _context=None):
         return FlextResult.fail("bad after")
 
 
@@ -62,9 +64,13 @@ class AfterPluginFail:
 async def test_prepare_request_params_and_headers_merge() -> None:
     """Prepared params/headers should merge defaults and return None for missing fields."""
     client = FlextApiClient(
-        FlextApiClientConfig(base_url="https://example.com", headers={"A": "1"})
+        FlextApiClientConfig(base_url="https://example.com", headers={"A": "1"}),
     )
-    req = FlextApiClientRequest(method="GET", url="https://example.com/x", headers={"B": "2"})
+    req = FlextApiClientRequest(
+        method="GET",
+        url="https://example.com/x",
+        headers={"B": "2"},
+    )
     params, headers, json_data, data, timeout = client._prepare_request_params(req)
     assert params is None
     assert headers == {"A": "1", "B": "2"}
@@ -75,10 +81,15 @@ async def test_prepare_request_params_and_headers_merge() -> None:
 
 
 @pytest.mark.asyncio
-async def test_plugin_before_failure_short_circuits(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_plugin_before_failure_short_circuits(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """A failing before hook should short-circuit the request."""
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
-    client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"), plugins=[BeforePluginFail()])
+    client = FlextApiClient(
+        FlextApiClientConfig(base_url="https://httpbin.org"),
+        plugins=[BeforePluginFail()],
+    )
     await client.start()
     result = await client.get("/json")
     assert not result.success
@@ -87,7 +98,9 @@ async def test_plugin_before_failure_short_circuits(monkeypatch: pytest.MonkeyPa
 
 
 @pytest.mark.asyncio
-async def test_plugin_before_replace_request_and_after_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_plugin_before_replace_request_and_after_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """After hook failure should be returned even if before replaced the request."""
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     client = FlextApiClient(
@@ -102,28 +115,37 @@ async def test_plugin_before_replace_request_and_after_failure(monkeypatch: pyte
 
 
 @pytest.mark.asyncio
-async def test_format_request_error_and_legacy_make_request(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_format_request_error_and_legacy_make_request(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Format errors consistently and handle `_make_request` exception path."""
     client = FlextApiClient(FlextApiClientConfig(base_url="https://example.com"))
 
     # _format_request_error with session not available
-    formatted = client._format_request_error(FlextResult.fail("HTTP session not available"), "GET")
+    formatted = client._format_request_error(
+        FlextResult.fail("HTTP session not available"),
+        "GET",
+    )
     assert not formatted.success
     assert (formatted.error or "").startswith("HTTP session not available")
 
     # _make_request exception path
-    async def boom(_req):  # noqa: ANN001
+    async def boom(_req) -> Never:
         msg = "kaput"
         raise RuntimeError(msg)
 
     monkeypatch.setattr(client, "_make_request_impl", boom)
-    result = await client._make_request(FlextApiClientRequest(method="GET", url="https://example.com"))
+    result = await client._make_request(
+        FlextApiClientRequest(method="GET", url="https://example.com"),
+    )
     assert not result.success
     assert "Failed to make GET request" in (result.error or "")
 
 
 @pytest.mark.asyncio
-async def test_response_pipeline_parse_json_string(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_response_pipeline_parse_json_string(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Response pipeline should parse JSON-like strings into dictionaries."""
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))

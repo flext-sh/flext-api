@@ -40,7 +40,9 @@ async def test_file_backend_persistence_and_clear(tmp_path: Path) -> None:
 @pytest.mark.asyncio
 async def test_exists_and_keys_namespace() -> None:
     """Memory backend should support exists and namespaced keys."""
-    storage = FlextApiStorage(StorageConfig(namespace="ns2", backend=StorageBackend.MEMORY))
+    storage = FlextApiStorage(
+        StorageConfig(namespace="ns2", backend=StorageBackend.MEMORY),
+    )
     await storage.set("zz", 1)
     assert (await storage.exists("zz")).data is True
     keys = await storage.keys()

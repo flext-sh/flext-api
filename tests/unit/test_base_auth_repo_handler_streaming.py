@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:  # Keep runtime lean; satisfies TC003 in lint
+    from collections.abc import AsyncIterator
 
 import pytest
 from flext_core import FlextResult
@@ -19,12 +22,14 @@ class DummyAuth(FlextApiBaseAuthService):
     """Minimal auth service for path coverage."""
 
     service_name: str = "dummy-auth"
-    async def _do_start(self):  # noqa: D401
+
+    async def _do_start(self):
         return FlextResult.ok(None)
 
-    async def _do_stop(self):  # noqa: D401
+    async def _do_stop(self):
         return FlextResult.ok(None)
-    async def _do_authenticate(self, credentials):  # noqa: ANN001
+
+    async def _do_authenticate(self, credentials):
         return FlextResult.ok({"token": "t"})
 
     async def _do_validate_token(self, token: str) -> FlextResult[bool]:
@@ -41,7 +46,8 @@ async def test_auth_service_paths() -> None:
     assert not (await auth.authenticate({})).success
     # Valid credentials -> ok and session creation pass-through
     ok = await auth.authenticate({"u": 1})
-    assert ok.success and ok.data.get("token") == "t"
+    assert ok.success
+    assert ok.data.get("token") == "t"
     # Token validation
     assert (await auth.validate_token("valid")).data is True
     assert (await auth.validate_token("")).data is False
@@ -55,22 +61,22 @@ class DummyRepo(FlextApiBaseRepositoryService):
     service_name: str = "dummy-repo"
     entity_type: type = dict
 
-    async def _do_start(self):  # noqa: D401
+    async def _do_start(self):
         return FlextResult.ok(None)
 
-    async def _do_stop(self):  # noqa: D401
+    async def _do_stop(self):
         return FlextResult.ok(None)
 
-    async def _do_find_by_id(self, entity_id: str):  # noqa: ANN001
+    async def _do_find_by_id(self, entity_id: str):
         return FlextResult.ok({"id": entity_id})
 
-    async def _do_find_all(self, filters, limit, offset):  # noqa: ANN001
-        return FlextResult.ok([{},{},{}])
+    async def _do_find_all(self, filters, limit, offset):
+        return FlextResult.ok([{}, {}, {}])
 
-    async def _do_save(self, entity):  # noqa: ANN001
+    async def _do_save(self, entity):
         return FlextResult.ok(entity | {"saved": True})
 
-    async def _do_delete(self, entity_id: str):  # noqa: ANN001
+    async def _do_delete(self, entity_id: str):
         return FlextResult.ok(None)
 
 
@@ -84,8 +90,10 @@ async def test_repository_service_paths() -> None:
     assert not (await repo.save({})).success
     assert (await repo.save({"id": 1})).success
     # delete will first call find_by_id; ensure failure propagates
+
     async def fail_find(_):
         return FlextResult.fail("nf")
+
     repo._do_find_by_id = fail_find  # type: ignore[assignment]
     assert not (await repo.delete("1")).success
 
@@ -93,12 +101,12 @@ async def test_repository_service_paths() -> None:
 class DummyMw:
     """Simple middleware to mutate request/response dicts."""
 
-    async def process_request(self, req):  # noqa: ANN001
+    async def process_request(self, req):
         r = dict(req)
         r["mw"] = 1
         return FlextResult.ok(r)
 
-    async def process_response(self, resp):  # noqa: ANN001
+    async def process_response(self, resp):
         r = dict(resp)
         r["mw2"] = 1
         return FlextResult.ok(r)
@@ -110,13 +118,13 @@ class DummyHandler(FlextApiBaseHandlerService):
     service_name: str = "dummy-handler"
     middlewares: ClassVar[list[DummyMw]] = [DummyMw()]
 
-    async def _do_start(self):  # noqa: D401
+    async def _do_start(self):
         return FlextResult.ok(None)
 
-    async def _do_stop(self):  # noqa: D401
+    async def _do_stop(self):
         return FlextResult.ok(None)
 
-    async def _do_handle(self, request):  # noqa: ANN001
+    async def _do_handle(self, request):
         if request.get("crash"):
             return FlextResult.fail("boom")
         return FlextResult.ok(request | {"handled": True})
@@ -137,12 +145,14 @@ class DummyStream(FlextApiBaseStreamingService):
     """Streaming service yielding bytes and raising on fail."""
 
     service_name: str = "dummy-stream"
-    async def _do_start(self):  # noqa: D401
+
+    async def _do_start(self):
         return FlextResult.ok(None)
 
-    async def _do_stop(self):  # noqa: D401
+    async def _do_stop(self):
         return FlextResult.ok(None)
-    async def _do_stream(self, source) -> AsyncIterator[bytes]:  # noqa: ANN001
+
+    async def _do_stream(self, source) -> AsyncIterator[bytes]:
         if isinstance(source, dict) and source.get("fail"):
             msg = "stream fail"
             raise RuntimeError(msg)

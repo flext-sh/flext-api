@@ -21,7 +21,7 @@ class FakeCachePlugin(FlextApiPlugin):
         super().__init__("caching")
         self._cache: dict[str, FlextApiClientResponse] = {}
 
-    async def before_request(self, request, context=None):  # noqa: ANN001
+    async def before_request(self, request, context=None):
         if (
             isinstance(request, FlextApiClientRequest)
             and str(request.method) == "GET"
@@ -32,7 +32,7 @@ class FakeCachePlugin(FlextApiPlugin):
             context["cached_response"] = self._cache[request.url]
         return request
 
-    async def after_response(self, response, context=None):  # noqa: ANN001
+    async def after_response(self, response, context=None):
         if isinstance(response, FlextApiClientResponse) and response.status_code == 200:
             # store a shallow cache
             self._cache["last"] = response
@@ -40,11 +40,16 @@ class FakeCachePlugin(FlextApiPlugin):
 
 
 @pytest.mark.asyncio
-async def test_cached_short_circuit_and_non_2xx(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_cached_short_circuit_and_non_2xx(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Cached response should short-circuit; 500 path exercised when cache empty."""
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     plugin = FakeCachePlugin()
-    client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"), plugins=[plugin])
+    client = FlextApiClient(
+        FlextApiClientConfig(base_url="https://httpbin.org"),
+        plugins=[plugin],
+    )
 
     await client.start()
     # First call populates cache via plugin; second returns from cache path
@@ -52,14 +57,17 @@ async def test_cached_short_circuit_and_non_2xx(monkeypatch: pytest.MonkeyPatch)
     assert ok.success
 
     # Prepare a cached response and ensure pipeline returns it
-    plugin._cache["https://httpbin.org/json"] = FlextApiClientResponse(status_code=200, data={"cached": True})
+    plugin._cache["https://httpbin.org/json"] = FlextApiClientResponse(
+        status_code=200,
+        data={"cached": True},
+    )
     req = FlextApiClientRequest(method="GET", url="https://httpbin.org/json")
     res = await client._execute_request_pipeline(req, "GET")
     assert res.success
     assert res.data.data.get("cached") is True
 
     # Simulate non-2xx error response path
-    async def perform_bad(_req):  # noqa: ANN001
+    async def perform_bad(_req):
         return FlextResult.ok(FlextApiClientResponse(status_code=500, data={"e": 1}))
 
     monkeypatch.setattr(client, "_perform_http_request", perform_bad)

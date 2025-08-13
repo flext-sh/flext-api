@@ -28,7 +28,8 @@ class TestInitCoverage:
         try:
             version = "0.9.0"  # This is what would happen in the except block
             if version != "0.9.0":
-                raise AssertionError(f"Expected 1.0.0, got {version}")
+                msg = f"Expected 1.0.0, got {version}"
+                raise AssertionError(msg)
         except ValueError as e:
             # This exception is never expected but shows the pattern
             msg = "Unexpected error in version test"
@@ -44,7 +45,8 @@ class TestInitCoverage:
         version = "1.2.3"
         version_info = tuple(int(x) for x in version.split(".") if x.isdigit())
         if version_info != (1, 2, 3):
-            raise AssertionError(f"Expected (1, 2, 3), got {version_info}")
+            msg = f"Expected (1, 2, 3), got {version_info}"
+            raise AssertionError(msg)
 
         # Test with alpha/beta versions (only numeric parts)
         version_alpha = "1.2.3a1"
@@ -52,7 +54,8 @@ class TestInitCoverage:
             int(x) for x in version_alpha.split(".") if x.isdigit()
         )
         if version_info_alpha != (1, 2):  # Only 1 and 2 are digits, 3a1 is not
-            raise AssertionError(f"Expected (1, 2), got {version_info_alpha}")
+            msg = f"Expected (1, 2), got {version_info_alpha}"
+            raise AssertionError(msg)
 
     def test_all_imports_successful(self) -> None:
         """Test that all imports in __init__.py work correctly."""
@@ -88,7 +91,8 @@ class TestInitCoverage:
 
         for export in required_exports:
             if export not in flext_api.__all__:
-                raise AssertionError(f"Missing from __all__: {export}")
+                msg = f"Missing from __all__: {export}"
+                raise AssertionError(msg)
 
     def test_version_fallback(self) -> None:
         """Test version fallback when package metadata not found."""
@@ -143,7 +147,8 @@ class TestInitCoverage:
         result = FlextResult.ok("test")
         assert result.success
         if result.data != "test":
-            raise AssertionError(f"Expected test, got {result.data}")
+            msg = f"Expected test, got {result.data}"
+            raise AssertionError(msg)
 
         # Test get_logger basic functionality
         logger = get_logger(__name__)

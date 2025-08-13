@@ -27,13 +27,11 @@ def example_query_builder() -> None:
         Builds simple and complex queries, including pagination and sorting.
 
     """
-    print("=== FlextApiQueryBuilder Example ===")
-
     # Criar query builder
     qb = FlextApiQueryBuilder()
 
     # Construir query simples
-    simple_query = (
+    (
         qb.equals("status", "active")
         .equals("name", "John")  # Changed from .like() which doesn't exist
         .sort_desc("created_at")
@@ -42,11 +40,9 @@ def example_query_builder() -> None:
         .build()
     )
 
-    print("Simple Query:", simple_query)
-
     # Construir query complexa
     qb2 = FlextApiQueryBuilder()  # Create new instance instead of reset()
-    complex_query = (
+    (
         qb2.equals("department", "engineering")
         .greater_than("salary", 50000)
         .greater_than("age", 25)  # Changed from .between() which doesn't exist
@@ -58,9 +54,6 @@ def example_query_builder() -> None:
         .build()
     )
 
-    print("Complex Query:", complex_query)
-    print()
-
 
 def example_response_builder() -> None:
     """Demonstrate how to use ``FlextApiResponseBuilder``.
@@ -69,23 +62,17 @@ def example_response_builder() -> None:
         Shows success, error, and paginated responses with metadata.
 
     """
-    print("=== FlextApiResponseBuilder Example ===")
-
     # Response de sucesso
     rb = FlextApiResponseBuilder()
-    success_response = (
+    (
         rb.success(data={"id": 123, "name": "John Doe"})
         .metadata({"version": "1.0", "source": "database"})
         .build()
     )
 
-    print("Success Response:", success_response)
-
     # Response de erro
     rb = FlextApiResponseBuilder()
-    error_response = rb.error("User not found").build()
-
-    print("Error Response:", error_response)
+    rb.error("User not found").build()
 
     # Response paginada
     users = [
@@ -95,12 +82,7 @@ def example_response_builder() -> None:
     ]
 
     rb = FlextApiResponseBuilder()
-    paginated_response = (
-        rb.success(data=users).pagination(page=1, page_size=3, total=100).build()
-    )
-
-    print("Paginated Response:", paginated_response)
-    print()
+    (rb.success(data=users).pagination(page=1, page_size=3, total=100).build())
 
 
 def example_fastapi_builder() -> None:
@@ -111,18 +93,15 @@ def example_fastapi_builder() -> None:
         query/response construction.
 
     """
-    print("=== FlextApiBuilder Example ===")
-
     # App básica com features automáticas
-    basic_app = create_flext_api_app()
-    print(f"Basic App: {basic_app.title} with {len(basic_app.routes)} routes")
+    create_flext_api_app()
 
     # Demonstrar uso do builder para queries e responses
     builder = FlextApiBuilder()
 
     # Use builder for query construction
     query_builder = builder.for_query()
-    sample_query = (
+    (
         query_builder.equals("category", "technology")
         .greater_than("price", 100)
         .sort_desc("rating")
@@ -130,19 +109,15 @@ def example_fastapi_builder() -> None:
         .page_size(20)
         .build()
     )
-    print(f"Builder Query: {sample_query}")
 
     # Use builder for response construction
     response_builder = builder.for_response()
-    sample_response = (
+    (
         response_builder.success(data={"products": [], "total": 0})
         .metadata({"search_terms": ["technology", "high-price"]})
         .pagination(page=1, page_size=20, total=0)
         .build()
     )
-    print(f"Builder Response: {sample_response}")
-
-    print()
 
 
 async def example_http_client() -> None:
@@ -154,8 +129,6 @@ async def example_http_client() -> None:
         example.
 
     """
-    print("=== FlextApiClient Example ===")
-
     # Configure client
     config = FlextApiClientConfig(
         base_url="https://jsonplaceholder.typicode.com",
@@ -171,29 +144,18 @@ async def example_http_client() -> None:
         # Start client
         await client.start()
 
-        print("Client configured with:")
-        print(f"  Base URL: {client.config.base_url}")
-        print(f"  Timeout: {client.config.timeout}s")
-        print(f"  Max Retries: {client.config.max_retries}")
-        print(f"  Headers: {client.config.headers}")
-
         # Health check (sync method)
-        health_result = client.health_check()
-        print("Client Health:", health_result)
+        client.health_check()
 
         # Note: In a real application, you would make HTTP requests here
         # but for this example, we'll just demonstrate the client setup
-        print("Client ready for HTTP requests")
 
-    except (ConnectionError, TimeoutError) as e:
-        print(f"Error: {e}")
+    except (ConnectionError, TimeoutError):
+        pass
 
     finally:
         # Stop client
         await client.stop()
-        print("Client stopped successfully")
-
-    print()
 
 
 def example_integration() -> None:
@@ -204,11 +166,9 @@ def example_integration() -> None:
         API response, asserting expected fields.
 
     """
-    print("=== Integration Example ===")
-
     # 1. Construir query para buscar usuários
     qb = FlextApiQueryBuilder()
-    user_query = (
+    (
         qb.equals("department", "sales")
         .greater_than("performance_score", 8.0)
         .sort_desc("last_review_date")
@@ -216,11 +176,6 @@ def example_integration() -> None:
         .page_size(20)
         .build()
     )
-
-    print("1. Built query for high-performing sales users:")
-    print(f"   Filters: {len(user_query.filters)}")
-    print(f"   Sorts: {len(user_query.sorts)}")
-    print(f"   Pagination: page {user_query.page}, size {user_query.page_size}")
 
     # 2. Simular dados de resposta
     mock_users = [
@@ -238,17 +193,12 @@ def example_integration() -> None:
         .build()
     )
 
-    print("2. Built standardized API response:")
-    print(f"   Success: {api_response.success}")
-    data_len = len(api_response.data) if isinstance(api_response.data, list) else 0
-    print(f"   Data count: {data_len}")
-    total_records = (
+    len(api_response.data) if isinstance(api_response.data, list) else 0
+    (
         api_response.pagination.get("total")
         if isinstance(api_response.pagination, dict)
         else None
     )
-    print(f"   Total records: {total_records}")
-    print(f"   Metadata: {list(api_response.metadata.keys())}")
 
     # 4. Verificar que funciona como esperado
     expected_data_count = 3
@@ -270,16 +220,9 @@ def example_integration() -> None:
         err_msg = f"Expected {expected_total_pages}, got {actual_pages}"
         raise AssertionError(err_msg)
 
-    print("3. ✅ All components work together correctly!")
-    print()
-
 
 async def main() -> None:
     """Run all examples."""
-    print("FLEXT API - Basic Usage Examples")
-    print("=" * 50)
-    print()
-
     # Exemplos síncronos
     example_query_builder()
     example_response_builder()
@@ -288,14 +231,6 @@ async def main() -> None:
 
     # Exemplo assíncrono
     await example_http_client()
-
-    print("=" * 50)
-    print("✅ All examples completed successfully!")
-    print()
-    print("Next steps:")
-    print("- Check examples/02_advanced_features.py for advanced usage")
-    print("- Run tests with: pytest tests/")
-    print("- Start development server with: uvicorn flext_api.main:app --reload")
 
 
 if __name__ == "__main__":

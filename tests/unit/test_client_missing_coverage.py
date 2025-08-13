@@ -104,7 +104,9 @@ class TestMissingClientCoverage:
 
         # Request with headers but config has none
         request = FlextApiClientRequest(
-            method="GET", url="/test", headers={"User-Agent": "test"},
+            method="GET",
+            url="/test",
+            headers={"User-Agent": "test"},
         )
 
         _params, headers, _json_data, _data, _timeout = client._prepare_request_params(

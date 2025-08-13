@@ -72,7 +72,10 @@ class DummyAuth(FlextApiBaseAuthService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_authenticate(self, credentials: dict[str, object]) -> FlextResult[dict[str, object]]:
+    async def _do_authenticate(
+        self,
+        credentials: dict[str, object],
+    ) -> FlextResult[dict[str, object]]:
         return FlextResult.ok({"token": "abcdefghijklmnop"})
 
     async def _do_validate_token(self, token: str) -> FlextResult[bool]:
@@ -116,7 +119,10 @@ class DummyRepo(FlextApiBaseRepositoryService):
     async def _do_find_all(self, filters, limit, offset):  # type: ignore[no-untyped-def]
         return FlextResult.ok([{"id": 1}])
 
-    async def _do_save(self, entity: dict[str, object]) -> FlextResult[dict[str, object]]:
+    async def _do_save(
+        self,
+        entity: dict[str, object],
+    ) -> FlextResult[dict[str, object]]:
         return FlextResult.ok(entity)
 
     async def _do_delete(self, entity_id: str) -> FlextResult[None]:
@@ -147,7 +153,10 @@ class DummyHandler(FlextApiBaseHandlerService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_handle(self, request: dict[str, object]) -> FlextResult[dict[str, object]]:
+    async def _do_handle(
+        self,
+        request: dict[str, object],
+    ) -> FlextResult[dict[str, object]]:
         return FlextResult.ok({"echo": request})
 
 

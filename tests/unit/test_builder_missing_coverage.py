@@ -7,7 +7,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import pytest
+
 from flext_api.builder import (
+    FlextApiQueryBuilder,
+    FlextApiResponseBuilder,
+    PaginatedResponseBuilder,
+    PaginationConfig,
+    ResponseConfig,
     build_error_response,
     build_paginated_response,
     build_query,
@@ -45,8 +52,6 @@ class TestMissingBuilderCoverage:
 
     def test_build_paginated_response_with_metadata(self) -> None:
         """Test build_paginated_response with metadata - covers lines 396-398."""
-        from flext_api.builder import PaginationConfig
-
         data = [{"id": 1}, {"id": 2}]
         metadata = {"custom_field": "value", "another": 123}
         config = PaginationConfig(
@@ -77,35 +82,21 @@ class TestMissingBuilderCoverage:
 
     def test_pagination_validation_negative_total(self) -> None:
         """Test pagination validation with negative total - covers lines 197-198."""
-        import pytest
-
-        from flext_api.builder import PaginationConfig
-
         with pytest.raises(ValueError, match="Total must be non-negative"):
             PaginationConfig(data=[], total=-1, page=1, page_size=10)
 
     def test_pagination_validation_zero_page(self) -> None:
         """Test pagination validation with zero page - covers lines 200-201."""
-        import pytest
-
-        from flext_api.builder import PaginationConfig
-
         with pytest.raises(ValueError, match="Page must be positive"):
             PaginationConfig(data=[], total=100, page=0, page_size=10)
 
     def test_pagination_validation_zero_page_size(self) -> None:
         """Test pagination validation with zero page size - covers lines 203-204."""
-        import pytest
-
-        from flext_api.builder import PaginationConfig
-
         with pytest.raises(ValueError, match="Page size must be positive"):
             PaginationConfig(data=[], total=100, page=1, page_size=0)
 
     def test_response_builder_legacy_create_response(self) -> None:
         """Test legacy _create_response method - covers line 458."""
-        from flext_api.builder import FlextApiResponseBuilder, ResponseConfig
-
         builder = FlextApiResponseBuilder()
         config = ResponseConfig(
             success=True,
@@ -122,8 +113,6 @@ class TestMissingBuilderCoverage:
 
     def test_create_paginated_response_function(self) -> None:
         """Test create_paginated_response function - covers line 680."""
-        from flext_api.builder import PaginationConfig
-
         config = PaginationConfig(
             data=[{"id": 1}, {"id": 2}],
             total=2,
@@ -141,8 +130,6 @@ class TestMissingBuilderCoverage:
 
     def test_paginated_response_builder_init(self) -> None:
         """Test PaginatedResponseBuilder initialization - covers lines 692-697."""
-        from flext_api.builder import PaginatedResponseBuilder
-
         builder = PaginatedResponseBuilder()
 
         # Check default values
@@ -152,8 +139,6 @@ class TestMissingBuilderCoverage:
 
     def test_paginated_response_builder_data_method(self) -> None:
         """Test PaginatedResponseBuilder data method - covers lines 701-702."""
-        from flext_api.builder import PaginatedResponseBuilder
-
         builder = PaginatedResponseBuilder()
         test_data = [{"id": 1}, {"id": 2}]
 
@@ -164,8 +149,6 @@ class TestMissingBuilderCoverage:
 
     def test_paginated_response_builder_total_method(self) -> None:
         """Test PaginatedResponseBuilder total method - covers lines 706-707."""
-        from flext_api.builder import PaginatedResponseBuilder
-
         builder = PaginatedResponseBuilder()
 
         result = builder.with_total(100)
@@ -175,8 +158,6 @@ class TestMissingBuilderCoverage:
 
     def test_paginated_response_builder_page_method(self) -> None:
         """Test PaginatedResponseBuilder page method - covers lines 711-712."""
-        from flext_api.builder import PaginatedResponseBuilder
-
         builder = PaginatedResponseBuilder()
 
         result = builder.with_page(5)
@@ -186,8 +167,6 @@ class TestMissingBuilderCoverage:
 
     def test_paginated_response_builder_page_size_method(self) -> None:
         """Test PaginatedResponseBuilder page_size method - covers lines 716-717."""
-        from flext_api.builder import PaginatedResponseBuilder
-
         builder = PaginatedResponseBuilder()
 
         result = builder.with_page_size(25)
@@ -197,8 +176,6 @@ class TestMissingBuilderCoverage:
 
     def test_paginated_response_builder_message_method(self) -> None:
         """Test PaginatedResponseBuilder message method - covers lines 721-722."""
-        from flext_api.builder import PaginatedResponseBuilder
-
         builder = PaginatedResponseBuilder()
 
         result = builder.with_message("Custom message")
@@ -208,8 +185,6 @@ class TestMissingBuilderCoverage:
 
     def test_paginated_response_builder_metadata_method(self) -> None:
         """Test PaginatedResponseBuilder metadata method - covers lines 729-730."""
-        from flext_api.builder import PaginatedResponseBuilder
-
         builder = PaginatedResponseBuilder()
         metadata = {"custom": "data"}
 
@@ -220,8 +195,6 @@ class TestMissingBuilderCoverage:
 
     def test_paginated_response_builder_build(self) -> None:
         """Test PaginatedResponseBuilder build method - covers lines 734-742."""
-        from flext_api.builder import PaginatedResponseBuilder
-
         builder = PaginatedResponseBuilder()
         test_data = [{"id": 1}]
 
@@ -243,8 +216,6 @@ class TestMissingBuilderCoverage:
 
     def test_query_builder_advanced_methods(self) -> None:
         """Test QueryBuilder advanced methods - covers lines 754, 848, 860."""
-        from flext_api.builder import FlextApiQueryBuilder
-
         builder = FlextApiQueryBuilder()
 
         # Test method chaining that hits advanced functionality

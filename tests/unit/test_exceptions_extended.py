@@ -33,7 +33,11 @@ def test_validation_error_truncates_value_and_http_response() -> None:
 
 def test_authentication_error_message_prefix() -> None:
     """Authentication error message should include flext_api prefix."""
-    exc = FlextApiAuthenticationError("login failed", auth_method="basic", endpoint="/login")
+    exc = FlextApiAuthenticationError(
+        "login failed",
+        auth_method="basic",
+        endpoint="/login",
+    )
     # Message should contain the flext_api prefix (may include base tag prefix)
     assert "flext_api:" in str(exc)
     resp = exc.to_http_response()
@@ -42,7 +46,12 @@ def test_authentication_error_message_prefix() -> None:
 
 def test_timeout_error_context_and_http() -> None:
     """Timeout error should include context and 504 status."""
-    exc = FlextApiTimeoutError("timeout", endpoint="/q", timeout_seconds=1.5, query_type="list")
+    exc = FlextApiTimeoutError(
+        "timeout",
+        endpoint="/q",
+        timeout_seconds=1.5,
+        query_type="list",
+    )
     resp = exc.to_http_response()
     assert resp["error"]["status_code"] == 504
     assert exc.context.get("timeout_seconds") == 1.5
@@ -50,7 +59,10 @@ def test_timeout_error_context_and_http() -> None:
 
 def test_request_response_and_storage_errors() -> None:
     """Basic subclass instances should be recognized as FlextApiError."""
-    assert isinstance(FlextApiRequestError("bad", method="GET", endpoint="/x"), FlextApiError)
+    assert isinstance(
+        FlextApiRequestError("bad", method="GET", endpoint="/x"),
+        FlextApiError,
+    )
     assert isinstance(FlextApiResponseError("bad", status_code=502), FlextApiError)
     assert isinstance(FlextApiStorageError("bad", storage_type="memory"), FlextApiError)
 
@@ -60,15 +72,27 @@ from flext_api.api_exceptions import FlextApiStorageError  # noqa: E402
 
 def test_authorization_notfound_rate_limit_errors() -> None:
     """Other common errors should be instances of FlextApiError."""
-    assert isinstance(FlextApiAuthorizationError("forbidden", required_permission="x"), FlextApiError)
-    assert isinstance(FlextApiNotFoundError("missing", resource_type="user", resource_id="1"), FlextApiError)
-    assert isinstance(FlextApiRateLimitError("rate", limit=10, window_seconds=60), FlextApiError)
+    assert isinstance(
+        FlextApiAuthorizationError("forbidden", required_permission="x"),
+        FlextApiError,
+    )
+    assert isinstance(
+        FlextApiNotFoundError("missing", resource_type="user", resource_id="1"),
+        FlextApiError,
+    )
+    assert isinstance(
+        FlextApiRateLimitError("rate", limit=10, window_seconds=60),
+        FlextApiError,
+    )
 
 
 def test_configuration_error_context_and_http() -> None:
     """Configuration error should carry context and specific code."""
     exc = FlextApiConfigurationError(
-        "cfg bad", config_key="api_port", expected_type="int", actual_value="str",
+        "cfg bad",
+        config_key="api_port",
+        expected_type="int",
+        actual_value="str",
     )
     resp = exc.to_http_response()
     assert resp["error"]["code"] == "CONFIGURATION_ERROR"
@@ -77,7 +101,13 @@ def test_configuration_error_context_and_http() -> None:
 
 def test_connection_error_http_response() -> None:
     """Connection error should map to expected code."""
-    exc = FlextApiConnectionError("conn", host="h", port=1, ssl_error="e", connection_timeout=0.1)
+    exc = FlextApiConnectionError(
+        "conn",
+        host="h",
+        port=1,
+        ssl_error="e",
+        connection_timeout=0.1,
+    )
     resp = exc.to_http_response()
     assert resp["error"]["code"] == "CONNECTION_ERROR"
 
@@ -103,7 +133,10 @@ def test_create_error_response_with_traceback() -> None:
         (504, FlextApiTimeoutError),
     ],
 )
-def test_map_http_status_to_exception_specific(status: int, expected_type: type[FlextApiError]) -> None:
+def test_map_http_status_to_exception_specific(
+    status: int,
+    expected_type: type[FlextApiError],
+) -> None:
     """Specific HTTP codes should map to specific exception types."""
     exc = map_http_status_to_exception(status, message="m")
     assert isinstance(exc, expected_type)
@@ -111,5 +144,11 @@ def test_map_http_status_to_exception_specific(status: int, expected_type: type[
 
 def test_map_http_status_to_exception_ranges_and_default() -> None:
     """Unknown or non-standard codes should still map to base API error."""
-    assert isinstance(map_http_status_to_exception(418, message="teapot"), FlextApiError)
-    assert isinstance(map_http_status_to_exception(599, message="server"), FlextApiError)
+    assert isinstance(
+        map_http_status_to_exception(418, message="teapot"),
+        FlextApiError,
+    )
+    assert isinstance(
+        map_http_status_to_exception(599, message="server"),
+        FlextApiError,
+    )
