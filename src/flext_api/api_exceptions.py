@@ -48,8 +48,10 @@ from flext_core.exceptions import (
     FlextValidationError,
 )
 
+from flext_api.typings import FlextTypes
+
 if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
+    pass
 
 # keep runtime import context minimal for static typing only
 # ==============================================================================

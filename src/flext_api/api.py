@@ -14,10 +14,11 @@ import importlib.metadata
 from typing import TYPE_CHECKING
 
 from flext_core import FlextResult, get_logger
+from flext_api.typings import FlextTypes
 from pydantic import Field
 
 if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
+    pass
 
 if TYPE_CHECKING:
     from flext_api.api_protocols import (
@@ -105,10 +106,10 @@ class FlextApi(FlextApiBaseService):
         try:
             _asyncio.get_running_loop()
         except RuntimeError:
-            # No running loop: execute synchronously
-            return _asyncio.run(super().health_check())
+            # No running loop: execute synchronously calling base explicitly
+            return _asyncio.run(FlextApiBaseService.health_check(self))
 
-        async def _coro(self_ref: "FlextApi") -> FlextResult[dict[str, object]]:
+        async def _coro(self_ref: FlextApi) -> FlextResult[dict[str, object]]:
             # Call base class coroutine explicitly to avoid super() closure issues
             return await FlextApiBaseService.health_check(self_ref)
 
@@ -130,12 +131,14 @@ class FlextApi(FlextApiBaseService):
             loop = _asyncio.new_event_loop()
             try:
                 _asyncio.set_event_loop(loop)
-                return loop.run_until_complete(super().health_check())
+                from flext_api.base_service import FlextApiBaseService as _Base
+                return loop.run_until_complete(_Base.health_check(self))
             finally:
                 loop.close()
 
-        # Running loop present; execute directly using asyncio.run in a new loop
-        return _asyncio.run(super().health_check())
+        # Running loop present; execute directly by delegating to base
+        from flext_api.base_service import FlextApiBaseService as _Base
+        return _asyncio.run(_Base.health_check(self))
 
     def health_check_sync(self) -> FlextResult[dict[str, object]]:
         """Synchronous wrapper for health_check for legacy tests."""

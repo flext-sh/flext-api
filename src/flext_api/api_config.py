@@ -39,10 +39,11 @@ from typing import TYPE_CHECKING
 
 from flext_core import FlextConstants, FlextResult
 from flext_core.config import FlextSettings
+from flext_api.typings import FlextTypes
 from pydantic import Field, field_validator
 
 if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
+    pass
 
 
 class FlextApiSettings(FlextSettings):

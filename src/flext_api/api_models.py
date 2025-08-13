@@ -45,11 +45,8 @@ from flext_core import (
 )
 from pydantic import Field
 
-# Import FlextTypes at runtime to satisfy Pydantic forward refs
-from flext_api.typings import FlextTypes
-
 if TYPE_CHECKING:
-    pass
+    from flext_api.typings import FlextTypes
 
 # keep runtime import context clean for pydantic rebuilds
 logger = get_logger(__name__)
@@ -514,7 +511,7 @@ class ClientConfig(FlextValue):
 class QueryConfig(FlextValue):
     """Query configuration value object."""
 
-    filters: list[FlextTypes.Core.JsonDict] = Field(default_factory=list)
+    filters: list[dict[str, object]] = Field(default_factory=list)
     sorts: list[dict[str, str]] = Field(default_factory=list)
     page: int = Field(default=1)
     page_size: int = Field(default=DEFAULT_PAGE_SIZE)
@@ -599,7 +596,7 @@ class ApiRequest(FlextEntity):
     method: HttpMethod = Field(description="HTTP method")
     url: str = Field(description="Request URL")
     headers: dict[str, str] = Field(default_factory=dict, description="HTTP headers")
-    body: FlextTypes.Core.JsonDict | None = Field(None, description="Request body")
+    body: dict[str, object] | None = Field(None, description="Request body")
     query_params: dict[str, str] = Field(
         default_factory=dict,
         description="Query parameters",
@@ -715,7 +712,7 @@ class ApiResponse(FlextEntity):
         default_factory=dict,
         description="Response headers",
     )
-    body: FlextTypes.Core.JsonDict | None = Field(None, description="Response body")
+    body: dict[str, object] | None = Field(None, description="Response body")
     state: ResponseState = Field(
         default=ResponseState.PENDING,
         description="Response state",
@@ -1060,8 +1057,11 @@ class ResponseBuilder:
         return result
 
 
-# Ensure Pydantic resolves forward refs with FlextTypes available
+# Ensure Pydantic resolves forward refs with FlextTypes available by importing
+# the local typings facade before calling model_rebuild
 try:
+    from flext_api.typings import FlextTypes as _ApiFlextTypes  # noqa: F401
+
     URL.model_rebuild()
     HttpHeader.model_rebuild()
     BearerToken.model_rebuild()
@@ -1073,7 +1073,6 @@ try:
     ApiEndpoint.model_rebuild()
     ApiSession.model_rebuild()
 except Exception as e:
-    # Log and continue; some environments may not require explicit rebuild
     logger.warning(
         "Pydantic model_rebuild failed; continuing without explicit rebuild",
         error=str(e),
