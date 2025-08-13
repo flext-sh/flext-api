@@ -17,9 +17,6 @@ from flext_core import FlextDomainService, FlextResult, get_logger
 from pydantic import Field
 
 if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
-
-if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
 
     from flext_api.api_models import (
@@ -31,6 +28,7 @@ if TYPE_CHECKING:
         FlextApiQueryBuilderProtocol,
         FlextApiResponseBuilderProtocol,
     )
+    from flext_api.typings import FlextTypes
 
 logger = get_logger(__name__)
 

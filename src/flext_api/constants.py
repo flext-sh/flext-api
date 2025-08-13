@@ -7,6 +7,8 @@ exporting convenience values used across the codebase and tests.
 
 from __future__ import annotations
 
+from typing import ClassVar as _ClassVar
+
 from flext_core.constants import FlextConstants
 
 
@@ -120,23 +122,21 @@ class FlextApiConstants(FlextConstants):
     # Derived/public constants used by tests and public API
     # ----------------------------------------------------------------------------
     # Success (2xx), client error (4xx), and server error (5xx) ranges
-    from typing import ClassVar
-
-    SUCCESS_CODES: ClassVar[set[int]] = set(range(200, 300))
-    CLIENT_ERROR_CODES: ClassVar[set[int]] = set(range(400, 500))
-    SERVER_ERROR_CODES: ClassVar[set[int]] = set(range(500, 600))
+    SUCCESS_CODES: _ClassVar[set[int]] = set(range(200, 300))
+    CLIENT_ERROR_CODES: _ClassVar[set[int]] = set(range(400, 500))
+    SERVER_ERROR_CODES: _ClassVar[set[int]] = set(range(500, 600))
 
     # Rate limiting public constants expected by tests
     RATE_LIMIT_REQUESTS: int = 1000
     RATE_LIMIT_WINDOW: int = 3600  # seconds (1 hour)
 
     # Response templates
-    SUCCESS_RESPONSE: ClassVar[dict[str, object | None]] = {
+    SUCCESS_RESPONSE: _ClassVar[dict[str, object | None]] = {
         "status": "success",
         "data": None,
         "error": None,
     }
-    ERROR_RESPONSE: ClassVar[dict[str, object | None]] = {
+    ERROR_RESPONSE: _ClassVar[dict[str, object | None]] = {
         "status": "error",
         "data": None,
         "error": None,

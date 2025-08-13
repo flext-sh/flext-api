@@ -12,6 +12,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
+# Ensure there is a current event loop for pytest-asyncio on Python 3.13+
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+
 import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
@@ -30,6 +36,25 @@ Faker.seed(12345)  # Deterministic fake data
 
 # Setup test environment
 os.environ["FLEXT_API_TESTING"] = "true"
+
+
+def _ensure_event_loop() -> None:
+    """Ensure a current asyncio event loop exists in the main thread."""
+    try:
+        asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:  # type: ignore[override]
+    """Pytest hook to ensure a loop exists before any test runs."""
+    _ensure_event_loop()
+
+
+def pytest_runtest_setup(item: pytest.Item) -> None:  # type: ignore[override]
+    """Per-test setup: guarantee an event loop is present for async tests."""
+    _ensure_event_loop()
 
 
 # Project root fixture
@@ -264,14 +289,25 @@ def pytest_collection_modifyitems(
 
 @pytest.fixture(scope="session")
 def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
-    """Create an instance of the default event loop for the test session."""
+    """Create and set the default event loop for the test session."""
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    else:
+        asyncio.set_event_loop(loop)
 
-    yield loop
-    loop.close()
+    try:
+        yield loop
+    finally:
+        try:
+            loop.close()
+        finally:
+            # Best-effort cleanup: clear the current loop reference
+            from contextlib import suppress
+            with suppress(Exception):
+                asyncio.set_event_loop(None)  # type: ignore[arg-type]
 
 
 # ============================================================================

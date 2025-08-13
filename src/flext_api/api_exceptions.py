@@ -387,24 +387,26 @@ class FlextApiTimeoutError(FlextTimeoutError):
 
         if endpoint is not None:
             context["endpoint"] = endpoint
-        if timeout_seconds is not None:
-            context["timeout_seconds"] = timeout_seconds
+        # Note: do not add timeout_seconds to context directly; pass to super to avoid duplication
         if query_type is not None:
             context["query_type"] = query_type
         if operation is not None:
             context["operation"] = operation
         context["status_code"] = status_code
 
-        # Avoid passing duplicate 'timeout_seconds' when also included in **context
+        # Include timeout_seconds in context for test expectations
+        if timeout_seconds is not None:
+            context["timeout_seconds"] = float(timeout_seconds)
+        # Avoid passing duplicate 'timeout_seconds' when also included in **context to base class
         init_kwargs = dict(context)
-        init_kwargs.pop("timeout_seconds", None)
+        # Call base with explicit keywords to match signature
         super().__init__(
-            message,
+            message=message,
             service="flext_api_service",
-            timeout_seconds=int(timeout_seconds)
-            if timeout_seconds is not None
-            else None,
-            **init_kwargs,
+            timeout_seconds=(
+                float(timeout_seconds) if timeout_seconds is not None else None
+            ),
+            context=init_kwargs,
         )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:

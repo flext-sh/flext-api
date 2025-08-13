@@ -92,9 +92,53 @@ class FlextApi(FlextApiBaseService):
 
         return FlextResult.ok(details)
 
-    async def health_check(self) -> FlextResult[dict[str, object]]:
-        """Asynchronous health check delegating to base implementation."""
-        return await super().health_check()
+    def health_check(self) -> FlextResult[dict[str, object]] | object:
+        """Health check supporting sync and async contexts.
+
+        - If there's a running event loop, returns an awaitable coroutine
+          compatible with ``await api.health_check()``.
+        - If there is no running loop, runs synchronously and returns
+          ``FlextResult`` directly (for legacy tests).
+        """
+        import asyncio as _asyncio
+
+        try:
+            _asyncio.get_running_loop()
+        except RuntimeError:
+            # No running loop: execute synchronously
+            return _asyncio.run(super().health_check())
+
+        async def _coro() -> FlextResult[dict[str, object]]:
+            return await super().health_check()
+
+        return _coro()
+
+    # Compatibility: allow calling health_check in sync contexts within tests
+    def sync_health_check(self) -> FlextResult[dict[str, object]]:
+        """Run health check synchronously for compatibility tests."""
+        import asyncio as _asyncio
+
+        try:
+            loop = _asyncio.get_event_loop()
+        except RuntimeError:
+            loop = _asyncio.new_event_loop()
+            _asyncio.set_event_loop(loop)
+        return loop.run_until_complete(self.health_check())
+
+    def health_check_sync(self) -> FlextResult[dict[str, object]]:
+        """Synchronous wrapper for health_check for legacy tests."""
+        try:
+            import asyncio
+
+            return asyncio.run(self.health_check())
+        except RuntimeError:
+            # If an event loop is already running, create a new loop
+            loop = asyncio.new_event_loop()
+            try:
+                asyncio.set_event_loop(loop)
+                return loop.run_until_complete(self.health_check())
+            finally:
+                loop.close()
 
     def create_client(
         self,
