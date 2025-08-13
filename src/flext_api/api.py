@@ -18,7 +18,10 @@ from typing import TYPE_CHECKING
 from flext_core import FlextResult, get_logger
 from pydantic import Field
 
-from flext_api.typings import FlextTypes
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from flext_api.typings import FlextTypes
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine
@@ -98,7 +101,7 @@ class FlextApi(FlextApiBaseService):
     # ------------------------------------------------------------------
     # Synchronous health_check wrapper for test compatibility
     # ------------------------------------------------------------------
-    def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict] | Coroutine[object, object, FlextResult[FlextTypes.Core.JsonDict]]:
+    def health_check(self) -> FlextResult["FlextTypes".Core.JsonDict] | Coroutine[None, None, FlextResult["FlextTypes".Core.JsonDict]]:
         """Dual-mode health check supporting sync and async callers.
 
         - If no event loop is running, execute and return a FlextResult synchronously.
@@ -112,13 +115,13 @@ class FlextApi(FlextApiBaseService):
             # No running loop: execute synchronously
             return asyncio.run(self.health_check_async())
 
-    async def health_check_async(self) -> FlextResult[FlextTypes.Core.JsonDict]:
+    async def health_check_async(self) -> FlextResult["FlextTypes".Core.JsonDict]:
         """Asynchronous health check delegating to base implementation."""
         return await super().health_check()
 
     def create_client(
         self,
-        config: FlextTypes.Core.JsonDict | None = None,
+        config: "FlextTypes".Core.JsonDict | None = None,
     ) -> FlextResult[FlextApiClientProtocol]:
         """Create HTTP client with configuration using FlextResult pattern.
 
@@ -232,7 +235,7 @@ class FlextApi(FlextApiBaseService):
         """
         return self._client
 
-    def get_service_info(self) -> FlextTypes.Core.JsonDict:
+    def get_service_info(self) -> "FlextTypes".Core.JsonDict:
         """Get detailed service information.
 
         Returns:
@@ -250,7 +253,7 @@ class FlextApi(FlextApiBaseService):
 
     def _create_client_impl(
         self,
-        config: FlextTypes.Core.JsonDict | None = None,
+        config: "FlextTypes".Core.JsonDict | None = None,
     ) -> FlextApiClient:
         """Create internal client for testing and edge cases.
 
@@ -322,7 +325,7 @@ class FlextApi(FlextApiBaseService):
     # Legacy compatibility methods
     def flext_api_create_client(
         self,
-        config: FlextTypes.Core.JsonDict | None = None,
+        config: "FlextTypes".Core.JsonDict | None = None,
     ) -> FlextResult[FlextApiClient]:
         """Legacy method for creating HTTP client.
 
