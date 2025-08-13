@@ -39,8 +39,9 @@ from __future__ import annotations
 from typing import ClassVar, Generic, TypeVar
 
 import aiohttp.hdrs
-from flext_core import FlextTypes
 from flext_core.fields import FlextFieldCore, FlextFields
+
+from flext_api.typings import FlextTypes
 
 # =============================================================================
 # PROJECT TYPE VARIABLES

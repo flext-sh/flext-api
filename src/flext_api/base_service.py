@@ -14,7 +14,9 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, TypeVar, cast
 
 from flext_core import FlextDomainService, FlextResult, get_logger
-from flext_api.typings import FlextTypes
+
+if TYPE_CHECKING:
+    from flext_api.typings import FlextTypes
 from pydantic import Field
 
 if TYPE_CHECKING:
@@ -43,7 +45,7 @@ TResponse = TypeVar("TResponse")
 
 
 class FlextApiBaseService(
-    FlextDomainService[FlextTypes.Core.JsonDict],
+    FlextDomainService[dict[str, object]],
     ABC,
 ):
     """Abstract base service for all API services.
@@ -106,11 +108,11 @@ class FlextApiBaseService(
             logger.exception("Failed to stop service", service=self.service_name)
             return FlextResult.fail(f"Service shutdown failed: {e}")
 
-    async def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict]:
+    async def health_check(self) -> FlextResult[dict[str, object]]:
         """Check service health status."""
         try:
             # Basic health info
-            health_info: FlextTypes.Core.JsonDict = {
+            health_info: dict[str, object] = {
                 "service": self.service_name,
                 "version": self.service_version,
                 "status": "healthy" if self.is_running else "stopped",
@@ -127,7 +129,7 @@ class FlextApiBaseService(
             logger.exception("Health check failed", service=self.service_name)
             return FlextResult.fail(f"Health check failed: {e}")
 
-    def execute(self) -> FlextResult[FlextTypes.Core.JsonDict]:
+    def execute(self) -> FlextResult[dict[str, object]]:
         """Execute service operation (from FlextDomainService)."""
         return FlextResult.ok({"service": self.service_name, "status": "executed"})
 
@@ -139,7 +141,7 @@ class FlextApiBaseService(
     async def _do_stop(self) -> FlextResult[None]:
         """Perform service-specific shutdown logic."""
 
-    async def _get_health_details(self) -> FlextResult[FlextTypes.Core.JsonDict]:
+    async def _get_health_details(self) -> FlextResult[dict[str, object]]:
         """Get service-specific health details. Override in subclasses."""
         return FlextResult.ok({})
 
