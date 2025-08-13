@@ -15,8 +15,10 @@ import importlib.metadata
 from collections.abc import Coroutine
 from typing import TYPE_CHECKING
 
-from flext_core import FlextResult, FlextTypes, get_logger
+from flext_core import FlextResult, get_logger
 from pydantic import Field
+
+from flext_api.typings import FlextTypes
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine
@@ -96,7 +98,7 @@ class FlextApi(FlextApiBaseService):
     # ------------------------------------------------------------------
     # Synchronous health_check wrapper for test compatibility
     # ------------------------------------------------------------------
-    def health_check(self) -> FlextResult[dict[str, object]] | Coroutine[None, None, FlextResult[dict[str, object]]]:  # type: ignore[override]
+    def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict] | Coroutine[object, object, FlextResult[FlextTypes.Core.JsonDict]]:
         """Dual-mode health check supporting sync and async callers.
 
         - If no event loop is running, execute and return a FlextResult synchronously.
@@ -217,7 +219,8 @@ class FlextApi(FlextApiBaseService):
         """
         # FlextApiResponseBuilder implements FlextApiResponseBuilderProtocol
         return cast(
-            "FlextApiResponseBuilderProtocol", self.get_builder().for_response(),
+            "FlextApiResponseBuilderProtocol",
+            self.get_builder().for_response(),
         )
 
     def get_client(self) -> FlextApiClientProtocol | None:
@@ -246,7 +249,8 @@ class FlextApi(FlextApiBaseService):
         }
 
     def _create_client_impl(
-        self, config: FlextTypes.Core.JsonDict | None = None,
+        self,
+        config: FlextTypes.Core.JsonDict | None = None,
     ) -> FlextApiClient:
         """Create internal client for testing and edge cases.
 

@@ -91,7 +91,11 @@ def example_response_builder() -> None:
 
     # Error response
     rb2 = FlextApiResponseBuilder()  # Nova instância para error response
-    error_resp = rb2.error("Validation failed").metadata({"field_errors": {"email": "Invalid format"}}).build()
+    error_resp = (
+        rb2.error("Validation failed")
+        .metadata({"field_errors": {"email": "Invalid format"}})
+        .build()
+    )
 
     print("Error Response:", error_resp)
 
@@ -165,7 +169,7 @@ async def example_api_service() -> None:
             "base_url": "https://api.example.com",
             "timeout": 30.0,
             "headers": {"Authorization": "Bearer token123"},
-        }
+        },
     )
 
     if client_result.success and client_result.data is not None:

@@ -2,6 +2,7 @@
 
 Provides a minimal in-memory storage class compatible with tests.
 """
+
 from __future__ import annotations
 
 

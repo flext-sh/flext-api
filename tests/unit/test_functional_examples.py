@@ -58,7 +58,7 @@ class TestFunctionalExamples:
         client1 = FlextApiClient(config1)
         if client1.config.base_url != "https://api.example.com":
             raise AssertionError(
-                f"Expected https://api.example.com, got {client1.config.base_url}"
+                f"Expected https://api.example.com, got {client1.config.base_url}",
             )
         assert client1.config.timeout == 30.0  # Default value
 
@@ -96,7 +96,7 @@ class TestFunctionalExamples:
                 "created_after": "2023-01-01",
                 "limit": 50,
                 "sort": "name",
-            }
+            },
         )
         if "filters" not in query2:
             raise AssertionError(f"Expected filters in {query2}")
@@ -259,7 +259,7 @@ class TestFunctionalExamples:
                 super().__init__(name="custom-plugin")
 
             async def before_request(
-                self, request: FlextApiClientRequest
+                self, request: FlextApiClientRequest,
             ) -> FlextApiClientRequest:
                 # Add custom header
                 if request.headers is None:

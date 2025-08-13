@@ -41,7 +41,7 @@ class TestVersionModule:
         parts = __version__.strip().split(".")
         if len(parts) < 3:
             raise AssertionError(
-                f"Expected {len(parts)} >= 3, Version {__version__} should have at least 3 parts"
+                f"Expected {len(parts)} >= 3, Version {__version__} should have at least 3 parts",
             )
 
         # First three parts should be numeric
@@ -116,7 +116,7 @@ class TestVersionModule:
 
         if flext_api.__version__ != main_version:  # Direct access should match import
             raise AssertionError(
-                f"Expected {main_version}, got {flext_api.__version__}"
+                f"Expected {main_version}, got {flext_api.__version__}",
             )
 
     def test_version_immutability(self) -> None:
@@ -132,7 +132,7 @@ class TestVersionModule:
 
         if reimported_version != original_version:
             raise AssertionError(
-                f"Expected {original_version}, got {reimported_version}"
+                f"Expected {original_version}, got {reimported_version}",
             )
 
     def test_version_documentation(self) -> None:

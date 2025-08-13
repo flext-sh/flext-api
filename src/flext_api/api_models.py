@@ -34,6 +34,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import IntEnum, StrEnum
+from typing import TYPE_CHECKING
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import (
@@ -42,8 +43,10 @@ from flext_core import (
     FlextValue,
     get_logger,
 )
-from flext_api.typings import FlextTypes
 from pydantic import Field
+
+if TYPE_CHECKING:
+    from flext_api.typings import FlextTypes
 
 logger = get_logger(__name__)
 
@@ -411,6 +414,7 @@ class BearerToken(FlextValue):
 
         # JWT format validation - check for empty parts in any 3-part token
         from flext_api.constants import FlextApiConstants
+
         if self.token.count(".") == FlextApiConstants.Auth.JWT_SEPARATOR_COUNT:
             parts = self.token.split(".")
             if len(parts) == FlextApiConstants.Auth.JWT_PARTS_COUNT and not all(
@@ -422,7 +426,9 @@ class BearerToken(FlextValue):
 
     @classmethod
     def create(
-        cls, token: str, token_type: str | TokenType | None = None,
+        cls,
+        token: str,
+        token_type: str | TokenType | None = None,
     ) -> FlextResult[BearerToken]:
         """Create bearer token with validation."""
         # Normalize token type
@@ -480,7 +486,8 @@ class ClientConfig(FlextValue):
     timeout: float = Field(default=DEFAULT_TIMEOUT, description="Request timeout")
     headers: dict[str, str] = Field(default_factory=dict, description="Default headers")
     max_retries: int = Field(
-        default=DEFAULT_MAX_RETRIES, description="Maximum retry attempts",
+        default=DEFAULT_MAX_RETRIES,
+        description="Maximum retry attempts",
     )
 
     def validate_business_rules(self) -> FlextResult[None]:
@@ -546,7 +553,10 @@ class PaginationInfo(FlextValue):
 
     @classmethod
     def create(
-        cls, page: int, page_size: int, total: int,
+        cls,
+        page: int,
+        page_size: int,
+        total: int,
     ) -> FlextResult[PaginationInfo]:
         """Create pagination info with validation."""
         try:
@@ -587,10 +597,12 @@ class ApiRequest(FlextEntity):
     headers: dict[str, str] = Field(default_factory=dict, description="HTTP headers")
     body: FlextTypes.Core.JsonDict | None = Field(None, description="Request body")
     query_params: dict[str, str] = Field(
-        default_factory=dict, description="Query parameters",
+        default_factory=dict,
+        description="Query parameters",
     )
     state: RequestState = Field(
-        default=RequestState.CREATED, description="Request state",
+        default=RequestState.CREATED,
+        description="Request state",
     )
     timeout: float = Field(default=DEFAULT_TIMEOUT, description="Request timeout")
     retry_count: int = Field(default=0, description="Current retry count")
@@ -696,11 +708,13 @@ class ApiResponse(FlextEntity):
 
     status_code: int = Field(description="HTTP status code")
     headers: dict[str, str] = Field(
-        default_factory=dict, description="Response headers",
+        default_factory=dict,
+        description="Response headers",
     )
     body: FlextTypes.Core.JsonDict | None = Field(None, description="Response body")
     state: ResponseState = Field(
-        default=ResponseState.PENDING, description="Response state",
+        default=ResponseState.PENDING,
+        description="Response state",
     )
     request_id: str | None = Field(None, description="Associated request ID")
     elapsed_time: float = Field(default=0.0, description="Response time in seconds")
@@ -736,11 +750,17 @@ class ApiResponse(FlextEntity):
     def is_success(self) -> bool:
         """Check if response is successful."""
         from flext_api.constants import FlextApiConstants
-        return FlextApiConstants.HTTP.SUCCESS_MIN <= self.status_code < FlextApiConstants.HTTP.SUCCESS_MAX
+
+        return (
+            FlextApiConstants.HTTP.SUCCESS_MIN
+            <= self.status_code
+            < FlextApiConstants.HTTP.SUCCESS_MAX
+        )
 
     def is_error(self) -> bool:
         """Check if response is error."""
         from flext_api.constants import FlextApiConstants
+
         return self.status_code >= FlextApiConstants.HTTP.CLIENT_ERROR_MIN
 
     def mark_success(self) -> FlextResult[ApiResponse]:
@@ -771,7 +791,9 @@ class ApiResponse(FlextEntity):
             },
         )
         logger.error(
-            "Response marked as error", response_id=self.id, error=error_message,
+            "Response marked as error",
+            response_id=self.id,
+            error=error_message,
         )
         return FlextResult.ok(updated)
 
@@ -859,7 +881,8 @@ class ApiSession(FlextEntity):
     is_active: bool = Field(default=True, description="Session active state")
     refresh_token: str | None = Field(None, description="Refresh token")
     permissions: list[str] = Field(
-        default_factory=list, description="Session permissions",
+        default_factory=list,
+        description="Session permissions",
     )
 
     def validate_business_rules(self) -> FlextResult[None]:

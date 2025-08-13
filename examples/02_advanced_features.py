@@ -58,7 +58,9 @@ def example_advanced_query_building() -> None:
         "in_stock": True,
         "rating": 5,
     }
-    factory_filters = [{"field": k, "value": v, "operator": "eq"} for k, v in search_filters.items()]
+    factory_filters = [
+        {"field": k, "value": v, "operator": "eq"} for k, v in search_filters.items()
+    ]
     factory_query = build_query(factory_filters)
     print(f"\nFactory Query: {len(factory_query.filters)} filters applied")
     print(f"Query structure: {factory_query}")
@@ -72,14 +74,16 @@ def example_advanced_response_building() -> None:
     rb = FlextApiResponseBuilder()
     complex_response = (
         rb.success(data={"results": [], "summary": {"total": 0, "categories": 3}})
-        .metadata({
-            "query_id": "qry_12345",
-            "execution_time_ms": 234,
-            "cache_hit": True,
-            "database_queries": 2,
-            "facets": {"categories": ["electronics", "books", "clothing"]},
-            "suggestions": ["apple", "samsung", "google"],
-        })
+        .metadata(
+            {
+                "query_id": "qry_12345",
+                "execution_time_ms": 234,
+                "cache_hit": True,
+                "database_queries": 2,
+                "facets": {"categories": ["electronics", "books", "clothing"]},
+                "suggestions": ["apple", "samsung", "google"],
+            },
+        )
         .build()
     )
 
@@ -97,6 +101,7 @@ def example_advanced_response_building() -> None:
         PaginationConfig,
         build_paginated_response as build_paginated,
     )
+
     paginated_response = build_paginated(
         PaginationConfig(
             data=products,
@@ -111,11 +116,13 @@ def example_advanced_response_building() -> None:
                 "execution_time": "0.089s",
                 "cache_status": "partial_hit",
             },
-        )
+        ),
     )
 
     print("\nPaginated Response:")
-    data_list = paginated_response.data if isinstance(paginated_response.data, list) else []
+    data_list = (
+        paginated_response.data if isinstance(paginated_response.data, list) else []
+    )
     print(f"  Data items: {len(data_list)}")
     pagination = paginated_response.pagination or {}
     print(f"  Total pages: {pagination.get('total_pages')}")
@@ -130,6 +137,7 @@ async def example_advanced_client_configuration() -> None:
 
     # Client with multiple plugins using factory function
     from flext_api import create_client
+
     client = create_client(
         {
             "base_url": "https://api.github.com",
@@ -140,7 +148,7 @@ async def example_advanced_client_configuration() -> None:
                 "X-Request-ID": "req_advanced_example_001",
             },
             "max_retries": 5,
-        }
+        },
     )
 
     try:
@@ -220,22 +228,28 @@ async def example_full_api_service_integration() -> None:
 
         advanced_response = (
             response_builder.success(
-                data=mock_employees, message="Senior engineers retrieved"
+                data=mock_employees, message="Senior engineers retrieved",
             )
-            .metadata({
-                "query_complexity": "high",
-                "optimization_applied": True,
-                "cache_strategy": "write_through",
-                "data_source": "primary_db",
-                "query_plan": "index_scan_optimal",
-            })
+            .metadata(
+                {
+                    "query_complexity": "high",
+                    "optimization_applied": True,
+                    "cache_strategy": "write_through",
+                    "data_source": "primary_db",
+                    "query_plan": "index_scan_optimal",
+                },
+            )
             .pagination(page=1, page_size=25, total=147)
             .build()
         )
 
         print("\nAdvanced Response Built:")
         print(f"  Success: {advanced_response.success}")
-        data_count = len(advanced_response.data) if isinstance(advanced_response.data, list) else 0
+        data_count = (
+            len(advanced_response.data)
+            if isinstance(advanced_response.data, list)
+            else 0
+        )
         print(f"  Data Count: {data_count}")
         pag = advanced_response.pagination or {}
         print(f"  Total Records: {pag.get('total')}")
@@ -338,7 +352,9 @@ def example_factory_functions_advanced() -> None:
     print(f"  Error code: {advanced_error.metadata.get('error_code')}")
     print(f"  Has validation details: {'details' in advanced_error.metadata}")
     details = advanced_error.metadata.get("details", {})
-    support_ref = details.get("support_reference") if isinstance(details, dict) else None
+    support_ref = (
+        details.get("support_reference") if isinstance(details, dict) else None
+    )
     print(f"  Support reference: {support_ref}")
 
 

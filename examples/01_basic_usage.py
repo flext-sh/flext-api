@@ -242,7 +242,11 @@ def example_integration() -> None:
     print(f"   Success: {api_response.success}")
     data_len = len(api_response.data) if isinstance(api_response.data, list) else 0
     print(f"   Data count: {data_len}")
-    total_records = api_response.pagination.get("total") if isinstance(api_response.pagination, dict) else None
+    total_records = (
+        api_response.pagination.get("total")
+        if isinstance(api_response.pagination, dict)
+        else None
+    )
     print(f"   Total records: {total_records}")
     print(f"   Metadata: {list(api_response.metadata.keys())}")
 
@@ -253,8 +257,12 @@ def example_integration() -> None:
     if not api_response.success:
         msg: str = f"Expected True, got {api_response.success}"
         raise AssertionError(msg)
-    if (len(api_response.data) if isinstance(api_response.data, list) else 0) != expected_data_count:
-        actual_len = len(api_response.data) if isinstance(api_response.data, list) else 0
+    if (
+        len(api_response.data) if isinstance(api_response.data, list) else 0
+    ) != expected_data_count:
+        actual_len = (
+            len(api_response.data) if isinstance(api_response.data, list) else 0
+        )
         err_msg = f"Expected {expected_data_count}, got {actual_len}"
         raise AssertionError(err_msg)
     if (api_response.pagination or {}).get("total_pages") != expected_total_pages:

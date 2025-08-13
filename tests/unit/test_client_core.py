@@ -52,7 +52,7 @@ class TestFlextApiClientConfig:
 
         if config.base_url != "https://api.example.com":
             raise AssertionError(
-                f"Expected https://api.example.com, got {config.base_url}"
+                f"Expected https://api.example.com, got {config.base_url}",
             )
         assert config.timeout == 60.0
         if config.headers != headers:
@@ -80,7 +80,7 @@ class TestFlextApiClientRequest:
 
         if request.method != FlextApiClientMethod.GET:
             raise AssertionError(
-                f"Expected {FlextApiClientMethod.GET}, got {request.method}"
+                f"Expected {FlextApiClientMethod.GET}, got {request.method}",
             )
         assert request.url == "/api/test"
         if request.headers != {}:
@@ -92,7 +92,7 @@ class TestFlextApiClientRequest:
         request = FlextApiClientRequest(method="POST", url="/api/test")
         if request.method != FlextApiClientMethod.POST:
             raise AssertionError(
-                f"Expected {FlextApiClientMethod.POST}, got {request.method}"
+                f"Expected {FlextApiClientMethod.POST}, got {request.method}",
             )
 
     def test_request_validation_empty_url(self) -> None:

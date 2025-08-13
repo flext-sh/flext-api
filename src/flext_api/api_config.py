@@ -72,33 +72,44 @@ class FlextApiSettings(FlextSettings):
 
     # Database Configuration
     database_url: str | None = Field(
-        default=None, description="Database connection URL",
+        default=None,
+        description="Database connection URL",
     )
     database_pool_size: int = Field(
-        default=10, description="Database connection pool size", ge=1,
+        default=10,
+        description="Database connection pool size",
+        ge=1,
     )
     database_timeout: int = Field(
-        default=30, description="Database timeout in seconds", ge=1,
+        default=30,
+        description="Database timeout in seconds",
+        ge=1,
     )
 
     # External Service Configuration
     external_api_timeout: int = Field(
-        default=60, description="External API timeout", ge=1,
+        default=60,
+        description="External API timeout",
+        ge=1,
     )
     external_api_retries: int = Field(
-        default=3, description="External API max retries", ge=0,
+        default=3,
+        description="External API max retries",
+        ge=0,
     )
 
     # Security Configuration
     secret_key: str | None = Field(default=None, description="Application secret key")
     jwt_expiry: int = Field(default=3600, description="JWT expiry in seconds", ge=60)
     cors_origins: list[str] = Field(
-        default_factory=list, description="CORS allowed origins",
+        default_factory=list,
+        description="CORS allowed origins",
     )
 
     # Environment Configuration
     environment: str = Field(
-        default="development", description="Application environment",
+        default="development",
+        description="Application environment",
     )
     debug: bool = Field(default=False, description="Enable debug mode")
     log_level: str = Field(default="INFO", description="Logging level")

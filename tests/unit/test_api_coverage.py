@@ -45,7 +45,7 @@ class TestFlextApiCoverage:
         assert client is not None
         if client.config.base_url != "https://test.com":
             raise AssertionError(
-                f"Expected https://test.com, got {client.config.base_url}"
+                f"Expected https://test.com, got {client.config.base_url}",
             )
         assert client.config.timeout == 30.0  # Default
         if client.config.headers != {}:  # Default empty dict
@@ -89,7 +89,7 @@ class TestFlextApiCoverage:
         }
         if client.config.headers != expected_headers:
             raise AssertionError(
-                f"Expected {expected_headers}, got {client.config.headers}"
+                f"Expected {expected_headers}, got {client.config.headers}",
             )
 
     def test_create_client_impl_with_numeric_values(self) -> None:

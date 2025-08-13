@@ -22,7 +22,11 @@ def flext_api_create_app() -> object:
     """
     from fastapi import FastAPI
 
-    compat_app = FastAPI(title="FLEXT API", version="0.9.0", description="Enterprise-grade distributed data integration platform")
+    compat_app = FastAPI(
+        title="FLEXT API",
+        version="0.9.0",
+        description="Enterprise-grade distributed data integration platform",
+    )
 
     @compat_app.get("/health")
     async def health() -> dict[str, object]:

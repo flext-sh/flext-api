@@ -44,7 +44,7 @@ class TestAPIPerformanceBenchmarks:
                     "category": "premium",
                     "created_at": "2024-01-01",
                     "limit": 50,
-                }
+                },
             )
 
         result = benchmark(build_complex_query)
@@ -112,7 +112,7 @@ class TestAPIPerformanceBenchmarks:
                         "User-Agent": "FlextAPI/1.0.0",
                     },
                     "max_retries": 3,
-                }
+                },
             )
 
         result = benchmark(create_configured_client)
@@ -130,7 +130,7 @@ class TestAPIPerformanceBenchmarks:
                         "id": i,
                         "status": "active" if i % 2 == 0 else "inactive",
                         "priority": "high" if i % 3 == 0 else "normal",
-                    }
+                    },
                 )
                 queries.append(query)
             return queries
@@ -163,7 +163,7 @@ class TestAPIPerformanceBenchmarks:
         assert len(result["data"]["items"]) == 1000
 
     def test_paginated_response_benchmark(
-        self, benchmark: Callable[[Any], Any]
+        self, benchmark: Callable[[Any], Any],
     ) -> None:
         """Benchmark paginated response operations."""
 

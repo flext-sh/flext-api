@@ -300,6 +300,7 @@ class FlextApiBaseAuthService(
         try:
             # Basic token validation
             from flext_api.constants import FlextApiConstants
+
             if not token or len(token) < FlextApiConstants.Auth.MIN_TOKEN_LENGTH:
                 return FlextResult.ok(False)
 

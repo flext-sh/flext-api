@@ -26,6 +26,7 @@ class TestFlextApi:
 
     def test_health_check(self) -> None:
         """Test API health check functionality."""
+
         async def _test_health_check() -> None:
             api = FlextApi()
             await api.start()  # Start the service first
@@ -125,7 +126,7 @@ class TestFlextApi:
 
         # Create client
         client_result = api.flext_api_create_client(
-            {"base_url": "https://api.example.com"}
+            {"base_url": "https://api.example.com"},
         )
         if not (client_result.success):
             msg: str = f"Expected True, got {client_result.success}"

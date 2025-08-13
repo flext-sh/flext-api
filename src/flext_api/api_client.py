@@ -136,7 +136,9 @@ class FlextApiClientRequest:
         ):
             # Use object.__setattr__ for frozen dataclass
             object.__setattr__(
-                self, "method", FlextApiClientMethod(self.method.upper()),
+                self,
+                "method",
+                FlextApiClientMethod(self.method.upper()),
             )
         # Set default params if None
         if self.params is None:
@@ -169,11 +171,17 @@ class FlextApiClientResponse:
     def is_success(self) -> bool:
         """Check if response indicates success."""
         from flext_api.constants import FlextApiConstants
-        return FlextApiConstants.HTTP.SUCCESS_MIN <= self.status_code < FlextApiConstants.HTTP.SUCCESS_MAX
+
+        return (
+            FlextApiConstants.HTTP.SUCCESS_MIN
+            <= self.status_code
+            < FlextApiConstants.HTTP.SUCCESS_MAX
+        )
 
     def is_error(self) -> bool:
         """Check if response indicates error."""
         from flext_api.constants import FlextApiConstants
+
         return self.status_code >= FlextApiConstants.HTTP.CLIENT_ERROR_MIN
 
     def json(self) -> object:
@@ -346,7 +354,7 @@ class FlextApiResponse:
 class FlextApiPlugin:
     """Base plugin class for HTTP client middleware."""
 
-    def __init__(self, name: str | None = None, enabled: bool = True) -> None:
+    def __init__(self, name: str | None = None, *, enabled: bool = True) -> None:
         """Initialize plugin with name and enabled state."""
         self.name = name or self.__class__.__name__
         self.enabled = enabled
@@ -452,7 +460,8 @@ class FlextApiClient:
         return FlextResult.ok(None)
 
     def _prepare_request_params(
-        self, request: FlextApiClientRequest,
+        self,
+        request: FlextApiClientRequest,
     ) -> tuple[
         dict[str, object] | None,
         dict[str, str] | None,
@@ -504,7 +513,10 @@ class FlextApiClient:
         return self
 
     async def __aexit__(
-        self, exc_type: object, exc_val: object, exc_tb: object,
+        self,
+        exc_type: object,
+        exc_val: object,
+        exc_tb: object,
     ) -> None:
         """Async context manager exit."""
         await self.stop()
@@ -536,7 +548,11 @@ class FlextApiClient:
     ) -> FlextResult[FlextApiClientResponse]:
         """Perform GET request."""
         return await self._request(
-            "GET", path, params=params, headers=headers, timeout=timeout,
+            "GET",
+            path,
+            params=params,
+            headers=headers,
+            timeout=timeout,
         )
 
     async def post(
@@ -603,7 +619,9 @@ class FlextApiClient:
         )
 
     # Compatibility for tests that patch a legacy method name
-    async def _make_request_impl(self, request: FlextApiClientRequest) -> FlextResult[FlextApiClientResponse]:
+    async def _make_request_impl(
+        self, request: FlextApiClientRequest,
+    ) -> FlextResult[FlextApiClientResponse]:
         """Legacy-compatible internal request executor used in some tests.
 
         Builds and performs the HTTP request based on a prepared request object.
@@ -611,7 +629,9 @@ class FlextApiClient:
         return await self._perform_http_request(request)
 
     async def _process_plugins_before_request(
-        self, request: FlextApiClientRequest, context: dict[str, object],
+        self,
+        request: FlextApiClientRequest,
+        context: dict[str, object],
     ) -> FlextResult[FlextApiClientRequest]:
         """Process plugins before request execution."""
         current_request = request
@@ -624,9 +644,12 @@ class FlextApiClient:
             from flext_core import (
                 FlextResult as _FlextResultType,  # avoid circular at module load
             )
+
             if isinstance(result, _FlextResultType):
                 if not result.success:
-                    return FlextResult.fail(f"Plugin {plugin.name} failed: {result.error}")
+                    return FlextResult.fail(
+                        f"Plugin {plugin.name} failed: {result.error}",
+                    )
                 if result.data is not None:
                     current_request = result.data
             elif isinstance(result, FlextApiClientRequest):
@@ -635,7 +658,9 @@ class FlextApiClient:
         return FlextResult.ok(current_request)
 
     async def _process_plugins_after_response(
-        self, response: FlextApiClientResponse, context: dict[str, object],
+        self,
+        response: FlextApiClientResponse,
+        context: dict[str, object],
     ) -> FlextResult[FlextApiClientResponse]:
         """Process plugins after response received."""
         current_response = response
@@ -647,9 +672,12 @@ class FlextApiClient:
             from flext_core import (
                 FlextResult as _FlextResultType,  # avoid circular at module load
             )
+
             if isinstance(result, _FlextResultType):
                 if not result.success:
-                    return FlextResult.fail(f"Plugin {plugin.name} failed: {result.error}")
+                    return FlextResult.fail(
+                        f"Plugin {plugin.name} failed: {result.error}",
+                    )
                 if result.data is not None:
                     current_response = result.data
             elif isinstance(result, FlextApiClientResponse):
@@ -658,7 +686,8 @@ class FlextApiClient:
         return FlextResult.ok(current_response)
 
     async def _perform_http_request(
-        self, request: FlextApiClientRequest,
+        self,
+        request: FlextApiClientRequest,
     ) -> FlextResult[FlextApiClientResponse]:
         """Perform the actual HTTP request."""
         if self._session is None:
@@ -687,7 +716,11 @@ class FlextApiClient:
                 try:
                     # Works for plain dict or CIMultiDict
                     content_type_header = next(
-                        (v for k, v in response.headers.items() if str(k).lower() == "content-type"),
+                        (
+                            v
+                            for k, v in response.headers.items()
+                            if str(k).lower() == "content-type"
+                        ),
                         "",
                     )
                 except Exception:
@@ -700,6 +733,7 @@ class FlextApiClient:
                         # Fallback to text then parse via json.loads if possible
                         text_data = await response.text()
                         import json as _json
+
                         try:
                             response_data = _json.loads(text_data)
                         except Exception:
@@ -713,16 +747,19 @@ class FlextApiClient:
                     if text_trim.startswith(("{", "[")):
                         import json as _json
                         from contextlib import suppress as _suppress
+
                         with _suppress(Exception):
                             response_data = _json.loads(text_trim)
 
                 # Create response object
-                return FlextResult.ok(FlextApiClientResponse(
-                    status_code=response.status,
-                    headers=dict(response.headers),
-                    data=response_data,
-                    elapsed_time=elapsed_time,
-                ))
+                return FlextResult.ok(
+                    FlextApiClientResponse(
+                        status_code=response.status,
+                        headers=dict(response.headers),
+                        data=response_data,
+                        elapsed_time=elapsed_time,
+                    ),
+                )
         except Exception as e:
             return FlextResult.fail(f"HTTP request execution failed: {e}")
 
@@ -741,9 +778,13 @@ class FlextApiClient:
             await self._ensure_session()
 
             # Build request
-            request_result = self._build_request(method, path, params, json_data, data, headers, timeout)
+            request_result = self._build_request(
+                method, path, params, json_data, data, headers, timeout,
+            )
             if not request_result.success or request_result.data is None:
-                return FlextResult.fail(request_result.error or "Failed to build request")
+                return FlextResult.fail(
+                    request_result.error or "Failed to build request",
+                )
 
             request = request_result.data
 
@@ -780,12 +821,16 @@ class FlextApiClient:
             return FlextResult.fail(f"Failed to build request: {e}")
 
     async def _execute_request_pipeline(
-        self, request: FlextApiClientRequest, method: str,
+        self,
+        request: FlextApiClientRequest,
+        method: str,
     ) -> FlextResult[FlextApiClientResponse]:
         """Execute the full request pipeline with plugins and caching."""
         # Process through plugins (before_request)
         context_data: dict[str, object] = {}
-        plugin_result = await self._process_plugins_before_request(request, context_data)
+        plugin_result = await self._process_plugins_before_request(
+            request, context_data,
+        )
         if not plugin_result.success:
             error_msg = plugin_result.error or "Plugin processing failed"
             return FlextResult.fail(error_msg)
@@ -811,7 +856,9 @@ class FlextApiClient:
         return await self._process_response_pipeline(response_result.data, context_data)
 
     def _format_request_error(
-        self, response_result: FlextResult[FlextApiClientResponse], method: str,
+        self,
+        response_result: FlextResult[FlextApiClientResponse],
+        method: str,
     ) -> FlextResult[FlextApiClientResponse]:
         """Format request error messages."""
         # Match tests: prefer explicit session error when present
@@ -824,22 +871,26 @@ class FlextApiClient:
         return FlextResult.fail(error_out)
 
     async def _process_response_pipeline(
-        self, response: FlextApiClientResponse, context_data: dict[str, object],
+        self,
+        response: FlextApiClientResponse,
+        context_data: dict[str, object],
     ) -> FlextResult[FlextApiClientResponse]:
         """Process response through plugins and finalization."""
         # Process through plugins (after_response)
-        after_result = await self._process_plugins_after_response(response, context_data)
+        after_result = await self._process_plugins_after_response(
+            response, context_data,
+        )
         if not after_result.success:
             return after_result
 
         # Ensure response.data is a dictionary when JSON is expected
         final_response = after_result.data
-        if (
-            isinstance(final_response, FlextApiClientResponse)
-            and isinstance(final_response.data, str)
+        if isinstance(final_response, FlextApiClientResponse) and isinstance(
+            final_response.data, str,
         ):
             import json as _json
             from contextlib import suppress as _suppress
+
             with _suppress(Exception):
                 text_trim = final_response.data.strip()
                 if text_trim.startswith(("{", "[")):
@@ -851,7 +902,9 @@ class FlextApiClient:
         return FlextResult.ok(final_response)
 
     # Legacy alias expected by some tests
-    async def _make_request(self, request: FlextApiClientRequest) -> FlextResult[FlextApiClientResponse]:
+    async def _make_request(
+        self, request: FlextApiClientRequest,
+    ) -> FlextResult[FlextApiClientResponse]:
         """Legacy alias that proxies to implementation and formats errors.
 
         This method is patched in tests; keep the indirection to `_make_request_impl`.
@@ -1084,11 +1137,10 @@ class FlextApiResponseBuilder:
         """
         if pagination is None:
             if total is None or page is None or page_size is None:
-                err_msg = (
-                    "with_pagination requires a dict or total/page/page_size keyword arguments"
-                )
+                err_msg = "with_pagination requires a dict or total/page/page_size keyword arguments"
                 raise TypeError(err_msg)
             import math as _math
+
             total_pages = _math.ceil(total / page_size) if page_size > 0 else 0
             has_next = page < total_pages
             has_previous = page > 1
