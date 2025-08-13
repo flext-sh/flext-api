@@ -298,7 +298,7 @@ try:
 
     _API_SERVICE_AVAILABLE = True
 
-except ImportError as e:
+except Exception as e:
     _API_SERVICE_AVAILABLE = False
     # If these fail, we have a more serious problem
     import warnings
@@ -323,7 +323,7 @@ try:
 
     _CONSTANTS_AVAILABLE = True
 
-except ImportError:
+except Exception:
     # Provide fallback constants if not available
     _CONSTANTS_AVAILABLE = False
     FLEXT_API_VERSION = __version__
