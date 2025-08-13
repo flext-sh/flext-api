@@ -49,7 +49,7 @@ def example_query_builder() -> None:
     complex_query = (
         qb2.equals("department", "engineering")
         .greater_than("salary", 50000)
-        .equals("active", True)
+        .equals("active", value=True)
         .sort_asc("last_name")
         .sort_desc("hire_date")
         .page(2)
@@ -160,7 +160,7 @@ async def example_api_service() -> None:
     # Get builder
     builder = api.get_builder()
     query_builder = builder.for_query()
-    query = query_builder.equals("active", True).build()
+    query = query_builder.equals("active", value=True).build()
     print("Service Query:", query)
 
     # Create HTTP client

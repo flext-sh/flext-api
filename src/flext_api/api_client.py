@@ -691,59 +691,16 @@ class FlextApiClient:
     ) -> FlextResult[FlextApiClientResponse]:
         """Perform the actual HTTP request."""
         # Test-mode stub for environments without external network
-        import os as _os
-        if _os.getenv("FLEXT_DISABLE_EXTERNAL_CALLS", "1").lower() in {"1", "true", "yes"}:
-            # Minimal httpbin-like stub behavior used in tests
-            from urllib.parse import urlparse as _urlparse
-
-            # Handle relative paths and invalid absolute URLs
-            if not (str(request.url).startswith("http://") or str(request.url).startswith("https://")):
-                return FlextResult.fail("HTTP request execution failed: Invalid URL format")
-
-            parsed = _urlparse(request.url)
-            path = parsed.path
-            host = (parsed.netloc or "").lower()
-            # Simulate DNS/connection error for invalid/non-existent hostnames
-            if host.startswith("nonexistent-") or host.endswith(".invalid"):
-                return FlextResult.fail("HTTP request execution failed: DNS resolution failed")
-
-            # Default 200 with JSON echo similar to httpbin
-            status = 200
-            # httpbin /get returns {"args": {...}, ...}
-            args = request.params or {}
-            data: object = {"url": request.url, "args": args, "json": request.json_data}
-            # Map a few specific endpoints expected in tests
-            if path.startswith("/status/"):
-                try:
-                    status = int(path.rsplit("/", 1)[-1])
-                except Exception:
-                    status = 200
-                data = ""
-            elif path == "/json":
-                data = {"slideshow": {"title": "Sample", "slides": []}}
-            elif path == "/headers":
-                data = {"headers": request.headers}
-            elif path == "/post":
-                data = {"json": request.json_data}
-            elif path == "/delay/1":
-                data = {"delay": 1}
-
-            return FlextResult.ok(
-                FlextApiClientResponse(
-                    status_code=status,
-                    headers={},
-                    data=data,
-                    elapsed_time=0.0,
-                ),
-            )
+        if self._is_external_calls_disabled():
+            return self._build_stub_response(request)
 
         if self._session is None:
             return FlextResult.fail("HTTP session not available")
 
         # Convert params to proper type for aiohttp
-        params_for_request = None
-        if request.params:
-            params_for_request = {k: str(v) for k, v in request.params.items()}
+        params_for_request = (
+            {k: str(v) for k, v in request.params.items()} if request.params else None
+        )
 
         start_time = time.time()
 
@@ -759,46 +716,8 @@ class FlextApiClient:
             ) as response:
                 elapsed_time = time.time() - start_time
 
-                # Read response data (case-insensitive Content-Type)
-                try:
-                    # Works for plain dict or CIMultiDict
-                    content_type_header = next(
-                        (
-                            v
-                            for k, v in response.headers.items()
-                            if str(k).lower() == "content-type"
-                        ),
-                        "",
-                    )
-                except Exception:
-                    content_type_header = ""
-                content_type = str(content_type_header).lower()
-                if "application/json" in content_type:
-                    try:
-                        response_data = await response.json()
-                    except Exception:
-                        # Fallback to text then parse via json.loads if possible
-                        text_data = await response.text()
-                        import json as _json
-
-                        try:
-                            response_data = _json.loads(text_data)
-                        except Exception:
-                            response_data = text_data
-                else:
-                    response_data = await response.text()
-
-                # Final safeguard: if still a JSON-looking string, parse it
-                if isinstance(response_data, str):
-                    text_trim = response_data.strip()
-                    if text_trim.startswith(("{", "[")):
-                        import json as _json
-                        from contextlib import suppress as _suppress
-
-                        with _suppress(Exception):
-                            response_data = _json.loads(text_trim)
-
-                # Create response object
+                # Read data and build response
+                response_data = await self._read_response_data(response)
                 return FlextResult.ok(
                     FlextApiClientResponse(
                         status_code=response.status,
@@ -809,6 +728,91 @@ class FlextApiClient:
                 )
         except Exception as e:
             return FlextResult.fail(f"HTTP request execution failed: {e}")
+
+    def _is_external_calls_disabled(self) -> bool:
+        import os as _os
+        return _os.getenv("FLEXT_DISABLE_EXTERNAL_CALLS", "1").lower() in {"1", "true", "yes"}
+
+    def _build_stub_response(
+        self,
+        request: FlextApiClientRequest,
+    ) -> FlextResult[FlextApiClientResponse]:
+        """Build a deterministic stub response for offline/test environments."""
+        from urllib.parse import urlparse as _urlparse
+
+        # Validate URL
+        if not (str(request.url).startswith("http://") or str(request.url).startswith("https://")):
+            return FlextResult.fail("HTTP request execution failed: Invalid URL format")
+
+        parsed = _urlparse(request.url)
+        path = parsed.path
+        host = (parsed.netloc or "").lower()
+        # Simulate DNS/connection error for invalid/non-existent hostnames
+        if host.startswith("nonexistent-") or host.endswith(".invalid"):
+            return FlextResult.fail("HTTP request execution failed: DNS resolution failed")
+
+        # Default 200 with JSON echo similar to httpbin
+        status = 200
+        args = request.params or {}
+        data: object = {"url": request.url, "args": args, "json": request.json_data}
+        # Map specific endpoints used in tests
+        if path.startswith("/status/"):
+            try:
+                status = int(path.rsplit("/", 1)[-1])
+            except Exception:
+                status = 200
+            data = ""
+        elif path == "/json":
+            data = {"slideshow": {"title": "Sample", "slides": []}}
+        elif path == "/headers":
+            data = {"headers": request.headers}
+        elif path == "/post":
+            data = {"json": request.json_data}
+        elif path == "/delay/1":
+            data = {"delay": 1}
+
+        return FlextResult.ok(
+            FlextApiClientResponse(
+                status_code=status,
+                headers={},
+                data=data,
+                elapsed_time=0.0,
+            ),
+        )
+
+    async def _read_response_data(self, response: aiohttp.ClientResponse) -> object:
+        """Read and parse response data based on Content-Type with safe fallbacks."""
+        try:
+            content_type_header = next(
+                (v for k, v in response.headers.items() if str(k).lower() == "content-type"),
+                "",
+            )
+        except Exception:
+            content_type_header = ""
+        content_type = str(content_type_header).lower()
+
+        if "application/json" in content_type:
+            try:
+                return await response.json()
+            except Exception:
+                # Fallback: read text and attempt JSON parse
+                text_data = await response.text()
+                import json as _json
+                try:
+                    return _json.loads(text_data)
+                except Exception:
+                    return text_data
+
+        # Non-JSON content
+        text = await response.text()
+        # If it looks like JSON, attempt to parse
+        text_trim = text.strip()
+        if text_trim.startswith(("{", "[")):
+            import json as _json
+            from contextlib import suppress as _suppress
+            with _suppress(Exception):
+                return _json.loads(text_trim)
+        return text
 
     async def _request(
         self,

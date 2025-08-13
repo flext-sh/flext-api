@@ -48,10 +48,8 @@ from flext_core.exceptions import (
     FlextValidationError,
 )
 
-from flext_api.typings import FlextTypes
-
 if TYPE_CHECKING:
-    pass
+    from flext_api.typings import FlextTypes
 
 # keep runtime import context minimal for static typing only
 # ==============================================================================
@@ -406,7 +404,7 @@ class FlextApiTimeoutError(FlextTimeoutError):
             message=message,
             service="flext_api_service",
             timeout_seconds=(
-                float(timeout_seconds) if timeout_seconds is not None else None
+                int(timeout_seconds) if timeout_seconds is not None else None
             ),
             context=init_kwargs,
         )

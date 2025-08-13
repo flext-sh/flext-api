@@ -283,10 +283,13 @@ from flext_api.api_app import (
 # Core API components (canonical)
 from flext_api.api import FlextApi, create_flext_api
 
+
 # Legacy compatibility: some tests call health_check() synchronously
 # Expose sync-compatible health_check for legacy tests without monkey-patching
 def flext_api_health_check_sync(api: FlextApi) -> FlextResult[dict[str, object]]:
     return api.health_check_sync()
+
+
 from flext_api.base_service import (
     FlextApiBaseAuthService,
     FlextApiBaseBuilderService,
