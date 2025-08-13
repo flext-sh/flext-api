@@ -169,7 +169,7 @@ class FlextApiSettings(FlextSettings):
 
 
 def create_api_settings(**overrides: object) -> FlextResult[FlextApiSettings]:
-    """Factory function for creating API settings with overrides.
+    """Create API settings with overrides.
 
     Follows Factory Pattern and Open/Closed Principle.
     Uses FlextResult for consistent error handling.

@@ -332,7 +332,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                 return FlextResult.fail(f"Failed to get key '{key}': {e}")
 
     async def set(
-        self, key: str, value: V, ttl_seconds: int | None = None,
+        self, key: str, value: V, _ttl_seconds: int | None = None,
     ) -> FlextResult[None]:
         """Set value by key (TTL not supported in file backend)."""
         async with self._lock:

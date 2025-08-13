@@ -168,11 +168,13 @@ class FlextApiClientResponse:
 
     def is_success(self) -> bool:
         """Check if response indicates success."""
-        return 200 <= self.status_code < 300
+        from flext_api.constants import FlextApiConstants
+        return FlextApiConstants.HTTP.SUCCESS_MIN <= self.status_code < FlextApiConstants.HTTP.SUCCESS_MAX
 
     def is_error(self) -> bool:
         """Check if response indicates error."""
-        return self.status_code >= 400
+        from flext_api.constants import FlextApiConstants
+        return self.status_code >= FlextApiConstants.HTTP.CLIENT_ERROR_MIN
 
     def json(self) -> object:
         """Get response data as JSON-like object."""

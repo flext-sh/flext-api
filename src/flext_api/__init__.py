@@ -305,16 +305,14 @@ except ImportError as e:
 # Try to import constants
 try:
     from flext_api.constants import (
-        FLEXT_API_CACHE_TTL,
-        FLEXT_API_MAX_RETRIES,
-        FLEXT_API_TIMEOUT,
-        FLEXT_API_VERSION,
         FlextApiConstants,
-        FlextApiEndpoints,
-        FlextApiFieldType,
-        FlextApiSemanticConstants,
-        FlextApiStatus,
     )
+
+    # Extract constants from the FlextApiConstants class
+    FLEXT_API_TIMEOUT = FlextApiConstants.Config.DEFAULT_TIMEOUT
+    FLEXT_API_MAX_RETRIES = FlextApiConstants.Config.DEFAULT_MAX_RETRIES
+    FLEXT_API_CACHE_TTL = FlextApiConstants.Cache.DEFAULT_TTL
+    FLEXT_API_VERSION = "0.9.0"  # Will be updated from pyproject.toml version
 
     _CONSTANTS_AVAILABLE = True
 

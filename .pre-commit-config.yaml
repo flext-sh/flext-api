@@ -21,23 +21,14 @@ repos:
   # Poetry-managed tools via local repo (most reliable)
   - repo: local
     hooks:
-      # Black formatting (primary formatter)
-      - id: black
-        name: "⚫ Black Format"
-        entry: poetry run black
-        language: system
-        types: [python]
-        require_serial: true
-        args: [--check, --diff, --line-length=88, --target-version=py313]
-
-      # Ruff linting and formatting (comprehensive)
+      # Ruff linting and formatting (primary formatter)
       - id: ruff-format
-        name: "⚡ Ruff Format"
+        name: "⚡ Ruff Format (PEP8 Strict - 79 chars)"
         entry: poetry run ruff format
         language: system
         types: [python]
         require_serial: true
-        args: [--check, --diff, --line-length=88]
+        args: [--check, --diff]
 
       - id: ruff-lint
         name: "🔥 Ruff Lint (ALL categories)"
@@ -61,7 +52,7 @@ repos:
         language: system
         types: [python]
         require_serial: true
-        args: [--check-only, --diff, --profile=black, --line-length=88]
+        args: [--check-only, --diff, --profile=ruff, --line-length=88]
 
       # MyPy type checking (API-specific dependencies)
       - id: mypy
@@ -209,7 +200,6 @@ ci:
   autoupdate_schedule: weekly
   skip: [
     # Local Poetry hooks don't work in CI
-    black,
     ruff-format,
     ruff-lint,
     isort,

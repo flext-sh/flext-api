@@ -209,7 +209,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 
 def setup_health_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
-    """Setup health check and monitoring endpoints."""
+    """Set up health check and monitoring endpoints."""
 
     @app.get("/health", tags=["Health"])
     async def health_check() -> dict[str, object]:
@@ -301,7 +301,7 @@ def setup_health_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
 
 
 def setup_api_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
-    """Setup main API endpoints."""
+    """Set up main API endpoints."""
 
     @app.get("/", tags=["Root"])
     async def root() -> dict[str, object]:
@@ -533,7 +533,7 @@ except Exception as e:
 
 
 def main() -> None:
-    """Main CLI entry point."""
+    """Run CLI entry point."""
     import argparse
 
     parser = argparse.ArgumentParser(description="FLEXT API Server")
