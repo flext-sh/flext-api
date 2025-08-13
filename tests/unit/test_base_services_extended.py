@@ -6,7 +6,14 @@ import pytest
 from flext_core import FlextResult
 
 from flext_api.api_models import ClientConfig
-from flext_api.typings import FlextTypes  # Ensure forward refs can resolve
+
+# Ensure forward-ref'd protocols exist in eval namespace for model_rebuild
+from flext_api.api_protocols import (  # noqa: F401
+    FlextApiMiddlewareProtocol,
+    FlextApiPluginProtocol,
+    FlextApiQueryBuilderProtocol,
+    FlextApiResponseBuilderProtocol,
+)
 from flext_api.base_service import (
     FlextApiBaseAuthService,
     FlextApiBaseClientService,

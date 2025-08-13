@@ -12,12 +12,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
-# Ensure there is a current event loop for pytest-asyncio on Python 3.13+
+# Garanta um loop corrente no thread principal para pytest-asyncio (Py3.13)
 try:
     asyncio.get_event_loop()
 except RuntimeError:
     asyncio.set_event_loop(asyncio.new_event_loop())
-
 import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
@@ -39,21 +38,20 @@ os.environ["FLEXT_API_TESTING"] = "true"
 
 
 def _ensure_event_loop() -> None:
-    """Ensure a current asyncio event loop exists in the main thread."""
+    """Certifica que existe um loop corrente no thread principal."""
     try:
         asyncio.get_event_loop()
     except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        asyncio.set_event_loop(asyncio.new_event_loop())
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:  # type: ignore[override]
-    """Pytest hook to ensure a loop exists before any test runs."""
+    """Avoid pre-creating event loops at session start."""
     _ensure_event_loop()
 
 
 def pytest_runtest_setup(item: pytest.Item) -> None:  # type: ignore[override]
-    """Per-test setup: guarantee an event loop is present for async tests."""
+    """Avoid altering event loop before each test."""
     _ensure_event_loop()
 
 
@@ -289,25 +287,17 @@ def pytest_collection_modifyitems(
 
 @pytest.fixture(scope="session")
 def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
-    """Create and set the default event loop for the test session."""
+    """Loop de evento de sessão compatível com pytest-asyncio."""
     try:
-        loop = asyncio.get_running_loop()
+        loop = asyncio.get_event_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
     else:
         asyncio.set_event_loop(loop)
 
-    try:
-        yield loop
-    finally:
-        try:
-            loop.close()
-        finally:
-            # Best-effort cleanup: clear the current loop reference
-            from contextlib import suppress
-            with suppress(Exception):
-                asyncio.set_event_loop(None)  # type: ignore[arg-type]
+    # Não fechamos o loop explicitamente para evitar falhas de tarefas tardias
+    return loop
 
 
 # ============================================================================
