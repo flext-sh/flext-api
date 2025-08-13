@@ -35,7 +35,7 @@ from flext_api.exceptions import (
 )
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes
+    from flext_api.typings import FlextTypes
 
 logger = get_logger(__name__)
 

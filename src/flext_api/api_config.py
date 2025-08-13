@@ -42,7 +42,7 @@ from flext_core.config import FlextSettings
 from pydantic import Field, field_validator
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes
+    from flext_api.typings import FlextTypes
 
 
 class FlextApiSettings(FlextSettings):
