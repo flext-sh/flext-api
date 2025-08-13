@@ -1,3 +1,5 @@
+"""Additional client coverage tests for offline stub and parsing fallbacks."""
+
 from __future__ import annotations
 
 import json
@@ -13,6 +15,7 @@ from flext_api.api_client import (
 
 @pytest.mark.asyncio
 async def test_offline_stub_and_error_formatting(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Offline stub should error on invalid host; formatter should include method."""
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     client = FlextApiClient(FlextApiClientConfig(base_url="https://nonexistent.invalid"))
     await client.start()
@@ -32,6 +35,7 @@ async def test_offline_stub_and_error_formatting(monkeypatch: pytest.MonkeyPatch
 
 @pytest.mark.asyncio
 async def test_read_response_data_fallbacks(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify parsing success path with offline stub active."""
     # Use the stub response builder via offline flag
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))

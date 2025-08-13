@@ -647,11 +647,12 @@ class FlextApiClient:
 
             if isinstance(result, _FlextResultType):
                 if not result.success:
+                    plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
                     return FlextResult.fail(
-                        f"Plugin {plugin.name} failed: {result.error}",
+                        f"Plugin {plugin_name} failed: {result.error}",
                     )
-                if result.data is not None:
-                    current_request = result.data
+                # Allow plugins to explicitly clear the request by returning data=None
+                current_request = result.data if result.data is not None else None  # type: ignore[assignment]
             elif isinstance(result, FlextApiClientRequest):
                 current_request = result
 
@@ -675,11 +676,12 @@ class FlextApiClient:
 
             if isinstance(result, _FlextResultType):
                 if not result.success:
+                    plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
                     return FlextResult.fail(
-                        f"Plugin {plugin.name} failed: {result.error}",
+                        f"Plugin {plugin_name} failed: {result.error}",
                     )
-                if result.data is not None:
-                    current_response = result.data
+                # Allow plugins to explicitly clear the response by returning data=None
+                current_response = result.data if result.data is not None else None  # type: ignore[assignment]
             elif isinstance(result, FlextApiClientResponse):
                 current_response = result
 
@@ -721,7 +723,7 @@ class FlextApiClient:
                 # Normalize to allowed union for type checkers
                 response_data: dict[str, object] | list[object] | str | bytes | None
                 if isinstance(response_data_obj, (dict, list, str, bytes)):
-                    response_data = response_data_obj  # type: ignore[assignment]
+                    response_data = response_data_obj
                 else:
                     response_data = None
                 return FlextResult.ok(
@@ -763,7 +765,7 @@ class FlextApiClient:
         data: dict[str, object] | list[object] | str | bytes | None = {
             "url": request.url,
             "args": args,
-            "json": request.json_data,  # type: ignore[dict-item]
+            "json": request.json_data,
         }
         # Map specific endpoints used in tests
         if path.startswith("/status/"):
@@ -868,10 +870,16 @@ class FlextApiClient:
         """Build HTTP request object."""
         try:
             url = urljoin(self._config.base_url, path.lstrip("/"))
+            # Merge default headers from config with request-specific headers
+            merged_headers: dict[str, str] = {}
+            if self._config.headers:
+                merged_headers.update(self._config.headers)
+            if headers:
+                merged_headers.update(headers)
             request = FlextApiClientRequest(
                 method=method,
                 url=url,
-                headers=headers or {},
+                headers=merged_headers,
                 params=params,
                 json_data=json_data,
                 data=data,
@@ -910,11 +918,21 @@ class FlextApiClient:
         if not response_result.success:
             return self._format_request_error(response_result, method)
 
-        if response_result.data is None:
+        # Treat a response object with missing payload as an error for tests
+        response_obj = response_result.data
+        if response_obj is None:
+            return FlextResult.fail("No response data received")
+        if isinstance(response_obj, FlextApiClientResponse) and response_obj.data is None:
             return FlextResult.fail("No response data received")
 
         # Process response pipeline
-        return await self._process_response_pipeline(response_result.data, context_data)
+        processed = await self._process_response_pipeline(response_obj, context_data)
+        if not processed.success:
+            return processed
+        # If plugins intentionally returned an empty/None response, treat as error
+        if processed.data is None:
+            return FlextResult.fail("Empty response after processing")
+        return processed
 
     def _format_request_error(
         self,

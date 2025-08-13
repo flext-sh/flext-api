@@ -13,11 +13,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from flext_core import FlextResult, get_logger
-from flext_api.typings import FlextTypes
 from pydantic import Field
-
-if TYPE_CHECKING:
-    pass
 
 if TYPE_CHECKING:
     from flext_api.api_protocols import (
@@ -25,12 +21,13 @@ if TYPE_CHECKING:
         FlextApiQueryBuilderProtocol,
         FlextApiResponseBuilderProtocol,
     )
+    from flext_api.typings import FlextTypes
 
 from typing import cast
 
 from flext_api.api_client import FlextApiBuilder, FlextApiClient, FlextApiClientConfig
-from flext_api.api_models import ClientConfig
 from flext_api.base_service import FlextApiBaseService
+from flext_api.models import ClientConfig
 
 logger = get_logger(__name__)
 
@@ -126,11 +123,42 @@ class FlextApi(FlextApiBaseService):
 
         from flext_api.base_service import FlextApiBaseService as _Base
 
-        loop = _asyncio.new_event_loop()
+        # If a loop is already running (pytest-asyncio), run the coroutine in a
+        # separate thread with its own event loop to avoid nested-loop errors.
         try:
-            return loop.run_until_complete(_Base.health_check(self))
-        finally:
-            loop.close()
+            _asyncio.get_running_loop()
+            from threading import Thread
+
+            from flext_core import FlextResult as _Res
+
+            result_holder: list[_Res[dict[str, object]]] = []
+            error_holder: list[BaseException] = []
+
+            def _runner() -> None:
+                loop_inner = _asyncio.new_event_loop()
+                try:
+                    res = loop_inner.run_until_complete(_Base.health_check(self))
+                    result_holder.append(res)
+                except BaseException as exc:  # pragma: no cover - defensive
+                    error_holder.append(exc)
+                finally:
+                    loop_inner.close()
+
+            t = Thread(target=_runner, daemon=True)
+            t.start()
+            t.join()
+
+            if result_holder:
+                return result_holder[0]
+            if error_holder:
+                return _Res.fail(f"Failed to run health check: {error_holder[0]}")
+            return _Res.fail("Failed to run health check: unknown error")
+        except RuntimeError:
+            loop = _asyncio.new_event_loop()
+            try:
+                return loop.run_until_complete(_Base.health_check(self))
+            finally:
+                loop.close()
 
     def health_check_sync(self) -> FlextResult[dict[str, object]]:
         """Synchronous wrapper for health_check for legacy tests."""

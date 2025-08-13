@@ -31,10 +31,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import IntEnum, StrEnum
+from typing import TYPE_CHECKING
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import (

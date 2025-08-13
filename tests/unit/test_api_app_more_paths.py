@@ -1,27 +1,38 @@
+"""Additional API app route and fallback tests."""
+
 from __future__ import annotations
 
-import pytest
+from typing import TYPE_CHECKING
 
 from flext_api import api_app as api_app_module
 
+if TYPE_CHECKING:  # pragma: no cover - type-only import
+    import pytest
+
 
 def test_default_app_instance_exposes_routes() -> None:
+    """Default app should expose index and health routes."""
     app = api_app_module.app
     routes = {r.path for r in app.routes}
-    assert "/" in routes and "/health" in routes
+    assert "/" in routes
+    assert "/health" in routes
 
 
 def test_error_fallback_app_when_failure(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Force create_flext_api_app to raise to exercise fallback path
-    def boom(*_a, **_k):  # noqa: ANN001
-        raise RuntimeError("init error")
-
-    monkeypatch.setattr(api_app_module, "create_flext_api_app", boom)
-    # Re-import the module under a fresh name to execute top-level try/except
+    """When app init fails, fallback app should expose /error route."""
+    # Force failure using env knob and reload module
+    monkeypatch.setenv("FLEXT_API_FORCE_APP_INIT_FAIL", "1")
     import importlib
+    import importlib.util
+    import sys
 
-    mod = importlib.reload(api_app_module)
-    assert hasattr(mod, "app")
-    # fallback app should have /error route
-    routes = {r.path for r in mod.app.routes}
+    spec = importlib.util.find_spec("flext_api.api_app")
+    assert spec is not None
+    assert spec.loader is not None
+    new_module = importlib.util.module_from_spec(spec)
+    sys.modules["flext_api.api_app_reloaded"] = new_module
+    spec.loader.exec_module(new_module)  # type: ignore[arg-type]
+
+    assert hasattr(new_module, "app")
+    routes = {r.path for r in new_module.app.routes}
     assert "/error" in routes

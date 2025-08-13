@@ -1,0 +1,28 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from flext_api.api_storage import FileStorageBackend, StorageConfig
+
+
+@pytest.mark.asyncio
+async def test_file_backend_load_data_failure_and_close(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    file_path = tmp_path / "store.json"
+    # Write invalid json
+    file_path.write_text("{not json}", encoding="utf-8")
+    backend = FileStorageBackend(StorageConfig(file_path=str(file_path)))
+    # Should have reset data to {}
+    assert (await backend.keys()).success
+
+    # Patch open to fail save
+    async def fail_save():  # noqa: ANN001
+        from flext_core import FlextResult
+
+        return FlextResult.fail("io")
+
+    monkeypatch.setattr(backend, "_save_data", fail_save)
+    assert not (await backend.clear()).success
+    # close path uses _save_data
+    assert not (await backend.close()).success

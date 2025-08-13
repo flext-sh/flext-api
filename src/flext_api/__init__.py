@@ -76,7 +76,7 @@ from flext_api.api_config import (
 )
 
 # Domain Models and Entities
-from flext_api.api_models import (
+from flext_api.models import (
     # Enumerations
     HttpMethod,
     HttpStatus,
@@ -284,9 +284,10 @@ from flext_api.api_app import (
 from flext_api.api import FlextApi, create_flext_api
 
 
-# Legacy compatibility: some tests call health_check() synchronously
+"""Legacy helper aliases and behavior adjustments for tests."""
 # Expose sync-compatible health_check for legacy tests without monkey-patching
-def flext_api_health_check_sync(api: FlextApi) -> FlextResult[dict[str, object]]:
+def sync_health_check(api: FlextApi) -> FlextResult[dict[str, object]]:
+    """Run health check synchronously using FlextApi's compatibility helper."""
     return api.health_check_sync()
 
 # Note: Do not monkey-patch FlextApi.health_check. Async tests expect an awaitable.
