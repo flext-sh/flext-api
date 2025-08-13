@@ -79,15 +79,26 @@ class FlextApiAppConfig:
         if self.settings and self.settings.cors_origins:
             return self.settings.cors_origins
 
-        # Default CORS origins for development
-        return [
-            "http://localhost:3000",  # React development server
-            "http://localhost:8080",  # Vue development server
-            "http://localhost:4200",  # Angular development server
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:8080",
-            "http://127.0.0.1:4200",
-        ]
+        # Default CORS origins for development - derive from core Platform constants
+        try:
+            from flext_core.constants import FlextConstants
+            host = FlextConstants.Platform.DEFAULT_HOST
+            return [
+                f"http://{host}:{FlextConstants.Platform.FLEXT_WEB_PORT}",
+                f"http://{host}:{FlextConstants.Platform.FLEXCORE_PORT}",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:8080",
+                "http://127.0.0.1:4200",
+            ]
+        except Exception:
+            return [
+                "http://localhost:3000",
+                "http://localhost:8080",
+                "http://localhost:4200",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:8080",
+                "http://127.0.0.1:4200",
+            ]
 
     def get_title(self) -> str:
         """Get application title."""
