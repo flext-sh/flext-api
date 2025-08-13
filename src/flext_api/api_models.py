@@ -35,6 +35,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import IntEnum, StrEnum
 from typing import TYPE_CHECKING
+from flext_api.typings import FlextTypes
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import (
@@ -45,9 +46,9 @@ from flext_core import (
 )
 from pydantic import Field
 
+# keep runtime import context clean for pydantic rebuilds
 if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
-
+    pass
 logger = get_logger(__name__)
 
 # ==============================================================================

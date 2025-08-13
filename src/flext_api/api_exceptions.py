@@ -37,6 +37,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from flext_api.typings import FlextTypes
 
 from flext_core.exceptions import (
     FlextAuthenticationError,
@@ -49,7 +50,6 @@ from flext_core.exceptions import (
 )
 
 if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
 
 # ==============================================================================
 # BASE API ERROR
