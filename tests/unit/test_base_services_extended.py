@@ -6,6 +6,7 @@ import pytest
 from flext_core import FlextResult
 
 from flext_api.api_models import ClientConfig
+from flext_api.typings import FlextTypes  # Ensure forward refs can resolve
 from flext_api.base_service import (
     FlextApiBaseAuthService,
     FlextApiBaseClientService,
@@ -33,6 +34,10 @@ class DummyClientService(FlextApiBaseClientService):
 
     async def _execute_request(self, **_: object) -> FlextResult[dict[str, object]]:
         return FlextResult.ok({"ok": True})
+
+
+# Ensure Pydantic resolves forward refs for subclass models
+DummyClientService.model_rebuild()
 
 
 @pytest.mark.asyncio
@@ -69,6 +74,9 @@ class DummyAuth(FlextApiBaseAuthService):
 
     async def _do_refresh_token(self, token: str) -> FlextResult[str]:
         return FlextResult.ok(token + "1")
+
+
+DummyAuth.model_rebuild()
 
 
 @pytest.mark.asyncio
@@ -109,6 +117,9 @@ class DummyRepo(FlextApiBaseRepositoryService):
         return FlextResult.ok(None)
 
 
+DummyRepo.model_rebuild()
+
+
 @pytest.mark.asyncio
 async def test_base_repository_crud() -> None:
     """Repository CRUD operations return expected results."""
@@ -132,6 +143,9 @@ class DummyHandler(FlextApiBaseHandlerService):
 
     async def _do_handle(self, request: dict[str, object]) -> FlextResult[dict[str, object]]:
         return FlextResult.ok({"echo": request})
+
+
+DummyHandler.model_rebuild()
 
 
 @pytest.mark.asyncio

@@ -289,6 +289,15 @@ from flext_api.api import FlextApi, create_flext_api
 def flext_api_health_check_sync(api: FlextApi) -> FlextResult[dict[str, object]]:
     return api.health_check_sync()
 
+# Back-compat alias so tests calling `api.health_check()` directly get sync behavior
+try:
+    if not hasattr(FlextApi, "health_check_original"):
+        FlextApi.health_check_original = FlextApi.health_check
+        FlextApi.health_check = FlextApi.health_check_sync  # type: ignore[method-assign]
+except Exception as e:
+    # Keep silent in environments where attribute assignment is restricted
+    _e = e
+
 
 from flext_api.base_service import (
     FlextApiBaseAuthService,

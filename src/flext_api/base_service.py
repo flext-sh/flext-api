@@ -17,23 +17,41 @@ from flext_core import FlextDomainService, FlextResult, get_logger
 from pydantic import Field
 
 if TYPE_CHECKING:
-    # Import FlextTypes only for type checking
-    from flext_api.api_models import (
-        ClientConfig,
-    )
+    # Import application types only for type checking to avoid runtime coupling
+    from flext_api.api_models import ClientConfig
     from flext_api.api_protocols import (
         FlextApiMiddlewareProtocol,
-        FlextApiPluginProtocol,
         FlextApiQueryBuilderProtocol,
         FlextApiResponseBuilderProtocol,
     )
-    from flext_api.typings import FlextTypes
+from flext_api.typings import FlextTypes
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
 
 
 logger = get_logger(__name__)
+
+# Make protocols available at runtime for Pydantic forward-ref resolution
+try:  # pragma: no cover
+    from flext_api.api_protocols import (
+        FlextApiMiddlewareProtocol as _FAPMiddleware,
+        FlextApiPluginProtocol as _FAPPlugin,
+        FlextApiQueryBuilderProtocol as _FAPQueryBuilder,
+        FlextApiResponseBuilderProtocol as _FAPResponseBuilder,
+    )
+except Exception:  # pragma: no cover
+    class _FAPMiddleware:  # type: ignore[too-many-ancestors]
+        pass
+
+    class _FAPPlugin:  # type: ignore[too-many-ancestors]
+        pass
+
+    class _FAPQueryBuilder:  # type: ignore[too-many-ancestors]
+        pass
+
+    class _FAPResponseBuilder:  # type: ignore[too-many-ancestors]
+        pass
 
 # Type variables for generic services
 T = TypeVar("T")
@@ -164,7 +182,7 @@ class FlextApiBaseClientService(
     """
 
     client_config: ClientConfig = Field(description="Client configuration")
-    plugins: list[FlextApiPluginProtocol] = Field(
+    plugins: list[object] = Field(
         default_factory=list,
         description="Client plugins",
     )

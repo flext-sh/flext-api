@@ -717,7 +717,13 @@ class FlextApiClient:
                 elapsed_time = time.time() - start_time
 
                 # Read data and build response
-                response_data = await self._read_response_data(response)
+                response_data_obj = await self._read_response_data(response)
+                # Normalize to allowed union for type checkers
+                response_data: dict[str, object] | list[object] | str | bytes | None
+                if isinstance(response_data_obj, (dict, list, str, bytes)):
+                    response_data = response_data_obj  # type: ignore[assignment]
+                else:
+                    response_data = None
                 return FlextResult.ok(
                     FlextApiClientResponse(
                         status_code=response.status,
@@ -754,7 +760,11 @@ class FlextApiClient:
         # Default 200 with JSON echo similar to httpbin
         status = 200
         args = request.params or {}
-        data: object = {"url": request.url, "args": args, "json": request.json_data}
+        data: dict[str, object] | list[object] | str | bytes | None = {
+            "url": request.url,
+            "args": args,
+            "json": request.json_data,  # type: ignore[dict-item]
+        }
         # Map specific endpoints used in tests
         if path.startswith("/status/"):
             try:
