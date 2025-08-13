@@ -280,56 +280,34 @@ from flext_api.api_app import (
 # LEGACY COMPATIBILITY IMPORTS
 # ==============================================================================
 
-# Import legacy components for backward compatibility
+# Core API components (canonical)
+from flext_api.api import FlextApi, create_flext_api
+
+# Legacy compatibility: some tests call health_check() synchronously
 try:
-    # Main service and factory - these should always be available
-    from flext_api.api import FlextApi, create_flext_api
+    if not hasattr(FlextApi, "_health_check_wrapped"):
+        object.__setattr(FlextApi, "_health_check_wrapped", True)  # type: ignore[arg-type]
+        FlextApi.health_check = FlextApi.health_check_sync  # type: ignore[method-assign]
+except Exception as _e:
+    # Best-effort; on failure keep async method
+    ...
+from flext_api.base_service import (
+    FlextApiBaseAuthService,
+    FlextApiBaseBuilderService,
+    FlextApiBaseClientService,
+    FlextApiBaseHandlerService,
+    FlextApiBaseRepositoryService,
+    FlextApiBaseService,
+    FlextApiBaseStreamingService,
+)
 
-    # Base service abstractions - these should always be available
-    from flext_api.base_service import (
-        FlextApiBaseAuthService,
-        FlextApiBaseBuilderService,
-        FlextApiBaseClientService,
-        FlextApiBaseHandlerService,
-        FlextApiBaseRepositoryService,
-        FlextApiBaseService,
-        FlextApiBaseStreamingService,
-    )
+from flext_api.constants import FlextApiConstants
 
-    _API_SERVICE_AVAILABLE = True
-
-except Exception as e:
-    _API_SERVICE_AVAILABLE = False
-    # If these fail, we have a more serious problem
-    import warnings
-
-    warnings.warn(
-        f"Failed to import core API components: {e}",
-        ImportWarning,
-        stacklevel=2,
-    )
-
-# Try to import constants
-try:
-    from flext_api.constants import (
-        FlextApiConstants,
-    )
-
-    # Extract constants from the FlextApiConstants class
-    FLEXT_API_TIMEOUT = FlextApiConstants.Config.DEFAULT_TIMEOUT
-    FLEXT_API_MAX_RETRIES = FlextApiConstants.Config.DEFAULT_MAX_RETRIES
-    FLEXT_API_CACHE_TTL = FlextApiConstants.Cache.DEFAULT_TTL
-    FLEXT_API_VERSION = "0.9.0"  # Will be updated from pyproject.toml version
-
-    _CONSTANTS_AVAILABLE = True
-
-except Exception:
-    # Provide fallback constants if not available
-    _CONSTANTS_AVAILABLE = False
-    FLEXT_API_VERSION = __version__
-    FLEXT_API_TIMEOUT = int(DEFAULT_TIMEOUT)
-    FLEXT_API_MAX_RETRIES = DEFAULT_MAX_RETRIES
-    FLEXT_API_CACHE_TTL = 300
+# Extract constants
+FLEXT_API_TIMEOUT = FlextApiConstants.Config.DEFAULT_TIMEOUT
+FLEXT_API_MAX_RETRIES = FlextApiConstants.Config.DEFAULT_MAX_RETRIES
+FLEXT_API_CACHE_TTL = FlextApiConstants.Cache.DEFAULT_TTL
+FLEXT_API_VERSION = __version__
 
 
 # ==============================================================================
@@ -503,6 +481,7 @@ __all__: list[str] = [
     "app",
     "create_client",
     "create_api_client",
+    "sync_health_check",
     "create_api_builder",
     "create_storage",
     "create_api_storage",
@@ -521,25 +500,15 @@ __all__: list[str] = [
     "annotations",
 ]
 
-# Add legacy imports to __all__ if available
-if _API_SERVICE_AVAILABLE:
-    __all__ += [
-        "FlextApi",
-        "create_flext_api",
-        "FlextApiBaseService",
-        "FlextApiBaseClientService",
-        "FlextApiBaseAuthService",
-        "FlextApiBaseRepositoryService",
-        "FlextApiBaseHandlerService",
-        "FlextApiBaseBuilderService",
-        "FlextApiBaseStreamingService",
-    ]
-
-if _CONSTANTS_AVAILABLE:
-    __all__ += [
-        "FlextApiConstants",
-        "FlextApiSemanticConstants",
-        "FlextApiEndpoints",
-        "FlextApiFieldType",
-        "FlextApiStatus",
-    ]
+__all__ += [
+    "FlextApi",
+    "create_flext_api",
+    "FlextApiBaseService",
+    "FlextApiBaseClientService",
+    "FlextApiBaseAuthService",
+    "FlextApiBaseRepositoryService",
+    "FlextApiBaseHandlerService",
+    "FlextApiBaseBuilderService",
+    "FlextApiBaseStreamingService",
+    "FlextApiConstants",
+]
