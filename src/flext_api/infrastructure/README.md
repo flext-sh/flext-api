@@ -26,11 +26,47 @@ the Service Container and configuration system.
 - Resolve repositories and handlers
 - Compose application services and endpoints
 
+## Configuration Examples
+
+Example of configuring cache and HTTP client with dependency injection:
+
+```python
+from flext_core.container import FlextContainer
+from flext_api.api_client import FlextApiClient
+
+container = FlextContainer()
+
+# Service registration
+container.register("http_client", FlextApiClient)
+
+# Resolve and use
+client = container.resolve("http_client")
+```
+
 ## Development
 
 - Environment Variables configuration via settings (e.g., `FLEXT_API_TIMEOUT`)
 - Service registration in the container and dependency injection
 - Validation and error handling documented for maintainability
+
+## Dependency Injection Patterns
+
+- Service registration
+- Scoped lifetimes (request/session)
+- Resolving dependencies by interface
+
+## External Service Integration
+
+- Database (PostgreSQL)
+- Redis Cache
+- HTTP/GRPC clients
+- Cache
+
+## Future Expansion
+
+- Add message broker integrations (Kafka, NATS)
+- Pluggable storage backends
+- Circuit breaker and bulkhead policies
 
 
 This section explains the role of the Infrastructure Layer in the overall
