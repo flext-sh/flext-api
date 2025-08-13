@@ -133,7 +133,7 @@ class FlextAPIFieldCore:
         pattern: str,
         **kwargs: TData,
     ) -> FlextTypes.Core.JsonDict:
-        """Factory method: Create authentication field with common properties.
+        """Create authentication field with common properties.
 
         DRY principle: Eliminates duplication between API key and bearer token
         field creation by centralizing common authentication field properties.

@@ -299,7 +299,8 @@ class FlextApiBaseAuthService(
         """Validate an authentication token."""
         try:
             # Basic token validation
-            if not token or len(token) < 16:
+            from flext_api.constants import FlextApiConstants
+            if not token or len(token) < FlextApiConstants.Auth.MIN_TOKEN_LENGTH:
                 return FlextResult.ok(False)
 
             # Perform token validation (implemented by subclass)
@@ -443,7 +444,7 @@ class FlextApiBaseRepositoryService(
             logger.exception("Failed to delete entity", entity_id=entity_id)
             return FlextResult.fail(f"Failed to delete entity: {e}")
 
-    def _validate_entity(self, entity: FlextTypes.Core.JsonDict) -> FlextResult[None]:
+    def _validate_entity(self, _entity: FlextTypes.Core.JsonDict) -> FlextResult[None]:
         """Validate entity before save. Override in subclasses."""
         return FlextResult.ok(None)
 
@@ -602,7 +603,7 @@ class FlextApiBaseStreamingService(
 
     def _validate_source(
         self,
-        source: FlextTypes.Core.JsonDict | str | bytes,
+        _source: FlextTypes.Core.JsonDict | str | bytes,
     ) -> FlextResult[None]:
         """Validate stream source. Override in subclasses."""
         return FlextResult.ok(None)

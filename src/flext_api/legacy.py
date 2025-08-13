@@ -287,7 +287,7 @@ class LegacyApiClient:
         )
         self._client = FlextApiClient(config)
 
-    def get(self, endpoint: str, **kwargs: object) -> dict[str, object]:
+    def get(self, _endpoint: str, **_kwargs: object) -> dict[str, object]:
         """Make GET request (sync wrapper)."""
         warnings.warn(
             "Synchronous methods are deprecated. Use async methods instead.",
@@ -299,7 +299,7 @@ class LegacyApiClient:
         raise NotImplementedError(msg)
 
     def post(
-        self, endpoint: str, data: object = None, **kwargs: object,
+        self, _endpoint: str, _data: object = None, **_kwargs: object,
     ) -> dict[str, object]:
         """Make POST request (sync wrapper)."""
         warnings.warn(
@@ -328,8 +328,8 @@ class LegacyApiBuilder:
 
     def with_query(
         self,
-        filters: list[FlextTypes.Core.JsonDict] | None = None,
-        sorts: list[dict[str, str]] | None = None,
+        _filters: list[FlextTypes.Core.JsonDict] | None = None,
+        _sorts: list[dict[str, str]] | None = None,
     ) -> LegacyApiBuilder:
         """Build query (DEPRECATED)."""
         warnings.warn(
@@ -342,8 +342,8 @@ class LegacyApiBuilder:
 
     def with_response(
         self,
-        success: bool,
-        data: object = None,
+        _success: bool,
+        _data: object = None,
     ) -> LegacyApiBuilder:
         """Build response (DEPRECATED)."""
         warnings.warn(
@@ -382,7 +382,7 @@ ApiBuilderError = FlextApiBuilderError
 
 
 def migrate_to_modern_api(old_code: str) -> str:
-    """Helper to show migration path (documentation only).
+    """Show migration path (documentation only).
 
     Args:
         old_code: Example of old API usage

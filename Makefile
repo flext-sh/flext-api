@@ -1,132 +1,225 @@
-# FLEXT-API Makefile
+# =============================================================================
+# FLEXT-API - HTTP Foundation Library Makefile
+# =============================================================================
+# Python 3.13+ FastAPI Service - Clean Architecture + DDD + Zero Tolerance
+# =============================================================================
+
+# Project Configuration
 PROJECT_NAME := flext-api
 PYTHON_VERSION := 3.13
 POETRY := poetry
 SRC_DIR := src
+COV_DIR := flext_api
 TESTS_DIR := tests
 
-# Quality standards
+# Quality Standards
 MIN_COVERAGE := 90
 
 # FastAPI Configuration
 API_HOST := 0.0.0.0
 API_PORT := 8000
 
-# Help
-help: ## Show available commands
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+# Export Configuration
+export PROJECT_NAME PYTHON_VERSION MIN_COVERAGE API_HOST API_PORT
 
-# Installation
+# =============================================================================
+# HELP & INFORMATION
+# =============================================================================
+
+.PHONY: help
+help: ## Show available commands
+	@echo "FLEXT-API - HTTP Foundation Library"
+	@echo "==================================="
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: info
+info: ## Show project information
+	@echo "Project: $(PROJECT_NAME)"
+	@echo "Python: $(PYTHON_VERSION)+"
+	@echo "Poetry: $(POETRY)"
+	@echo "Coverage: $(MIN_COVERAGE)% minimum"
+	@echo "FastAPI: http://$(API_HOST):$(API_PORT)"
+	@echo "Architecture: Clean Architecture + FastAPI"
+
+# =============================================================================
+# SETUP & INSTALLATION
+# =============================================================================
+
+.PHONY: install
 install: ## Install dependencies
 	$(POETRY) install
 
+.PHONY: install-dev
 install-dev: ## Install dev dependencies
-	$(POETRY) install --with dev,test,docs
+	$(POETRY) install --extras "dev test typings security"
 
+.PHONY: setup
 setup: install-dev ## Complete project setup
 	$(POETRY) run pre-commit install
 
-# Quality gates
+# =============================================================================
+# QUALITY GATES (MANDATORY)
+# =============================================================================
+
+.PHONY: validate
 validate: lint type-check security test ## Run all quality gates
 
+.PHONY: check
 check: lint type-check ## Quick health check
 
+.PHONY: lint
 lint: ## Run linting
 	$(POETRY) run ruff check $(SRC_DIR) $(TESTS_DIR)
 
+.PHONY: format
 format: ## Format code
 	$(POETRY) run ruff format $(SRC_DIR) $(TESTS_DIR)
 
+.PHONY: type-check
 type-check: ## Run type checking
 	PYTHONPATH=src $(POETRY) run mypy $(SRC_DIR) --strict
 
+.PHONY: security
 security: ## Run security scanning
 	$(POETRY) run bandit -r $(SRC_DIR) -c pyproject.toml
 	$(POETRY) run pip-audit
 
+.PHONY: fix
 fix: ## Auto-fix issues
 	$(POETRY) run ruff check $(SRC_DIR) $(TESTS_DIR) --fix
 	$(POETRY) run ruff format $(SRC_DIR) $(TESTS_DIR)
 
-# Testing
-test: ## Run tests with coverage
-	PYTHONPATH=src $(POETRY) run pytest
+# =============================================================================
+# TESTING
+# =============================================================================
 
+.PHONY: test
+test: ## Run tests with coverage
+	PYTHONPATH=src $(POETRY) run pytest --cov=$(COV_DIR) --cov-report=term-missing --cov-fail-under=$(MIN_COVERAGE)
+
+.PHONY: test-unit
 test-unit: ## Run unit tests
 	PYTHONPATH=src $(POETRY) run pytest -m unit -n auto --dist=loadfile --tb=short
 
+.PHONY: test-integration
 test-integration: ## Run integration tests
 	PYTHONPATH=src $(POETRY) run pytest -m integration --timeout=600 -v
 
+.PHONY: test-api
 test-api: ## Run API endpoint tests
 	PYTHONPATH=src $(POETRY) run pytest -m api -v
 
+.PHONY: test-fast
 test-fast: ## Run tests without coverage
 	PYTHONPATH=src $(POETRY) run pytest --no-cov -q
 
+.PHONY: coverage-html
 coverage-html: ## Generate HTML coverage report
-	PYTHONPATH=src $(POETRY) run pytest --cov-report=html --no-cov-on-fail
+	PYTHONPATH=src $(POETRY) run pytest --cov=$(COV_DIR) --cov-report=html
 
-# FastAPI Development
+# =============================================================================
+# FASTAPI DEVELOPMENT
+# =============================================================================
+
+.PHONY: dev
 dev: ## Start development server
 	$(POETRY) run uvicorn flext_api.main:app --reload --host $(API_HOST) --port $(API_PORT)
 
+.PHONY: serve
 serve: dev ## Alias for dev
 
+.PHONY: api-docs
 api-docs: ## Generate OpenAPI documentation
 	$(POETRY) run python -c "import json; from flext_api.main import app; f = open('openapi.json', 'w'); json.dump(app.openapi(), f, indent=2); f.close(); print('OpenAPI schema exported to openapi.json')"
 
-# Build
+# =============================================================================
+# BUILD & DISTRIBUTION
+# =============================================================================
+
+.PHONY: build
 build: ## Build package
 	$(POETRY) build
 
+.PHONY: build-clean
 build-clean: clean build ## Clean and build
 
-# Documentation
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+
+.PHONY: docs
 docs: ## Build documentation
 	$(POETRY) run mkdocs build
 
+.PHONY: docs-serve
 docs-serve: ## Serve documentation
 	$(POETRY) run mkdocs serve
 
-# Dependencies
+# =============================================================================
+# DEPENDENCIES
+# =============================================================================
+
+.PHONY: deps-update
 deps-update: ## Update dependencies
 	$(POETRY) update
 
+.PHONY: deps-show
 deps-show: ## Show dependency tree
 	$(POETRY) show --tree
 
+.PHONY: deps-audit
 deps-audit: ## Audit dependencies
 	$(POETRY) run pip-audit
 
-# Development
+# =============================================================================
+# DEVELOPMENT
+# =============================================================================
+
+.PHONY: shell
 shell: ## Open Python shell
 	$(POETRY) run python
 
+.PHONY: pre-commit
 pre-commit: ## Run pre-commit hooks
 	$(POETRY) run pre-commit run --all-files
 
-# Maintenance
+# =============================================================================
+# MAINTENANCE
+# =============================================================================
+
+.PHONY: clean
 clean: ## Clean build artifacts
 	rm -rf build/ dist/ *.egg-info/ .pytest_cache/ htmlcov/ .coverage .mypy_cache/ .ruff_cache/ openapi.json
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
 
+.PHONY: clean-all
 clean-all: clean ## Deep clean including venv
 	rm -rf .venv/
 
+.PHONY: reset
 reset: clean-all setup ## Reset project
 
-# Diagnostics
+# =============================================================================
+# DIAGNOSTICS
+# =============================================================================
+
+.PHONY: diagnose
 diagnose: ## Project diagnostics
 	@echo "Python: $$(python --version)"
 	@echo "Poetry: $$($(POETRY) --version)"
 	@echo "FastAPI: $$($(POETRY) run python -c 'import fastapi; print(fastapi.__version__)')"
 	@$(POETRY) env info
 
+.PHONY: doctor
 doctor: diagnose check ## Health check
 
-# Aliases
+# =============================================================================
+# ALIASES (SINGLE LETTER SHORTCUTS)
+# =============================================================================
+
+.PHONY: t l f tc c i v d s
 t: test
 l: lint
 f: format
@@ -137,5 +230,8 @@ v: validate
 d: dev
 s: serve
 
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
 .DEFAULT_GOAL := help
-.PHONY: help install install-dev setup validate check lint format type-check security fix test test-unit test-integration test-api test-fast coverage-html dev serve api-docs build build-clean docs docs-serve deps-update deps-show deps-audit shell pre-commit clean clean-all reset diagnose doctor t l f tc c i v d s

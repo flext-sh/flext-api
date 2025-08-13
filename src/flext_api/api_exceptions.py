@@ -113,9 +113,11 @@ class FlextApiValidationError(FlextValidationError):
             validation_details["field"] = field
         if value is not None:
             # Truncate long values for security and readability
+            from flext_api.constants import FlextApiConstants
             str_value = str(value)
+            max_len = FlextApiConstants.Validation.MAX_ERROR_VALUE_LENGTH
             validation_details["value"] = (
-                str_value[:100] if len(str_value) > 100 else str_value
+                str_value[:max_len] if len(str_value) > max_len else str_value
             )
 
         # Add endpoint to general context
@@ -665,10 +667,11 @@ def map_http_status_to_exception(
         return specific_exception
 
     # Range-based fallbacks
-    if 400 <= status_code < 500:
+    from flext_api.constants import FlextApiConstants
+    if FlextApiConstants.HTTP.CLIENT_ERROR_MIN <= status_code < FlextApiConstants.HTTP.CLIENT_ERROR_MAX:
         return FlextApiRequestError(message or "Client error", status_code=status_code)
 
-    if 500 <= status_code < 600:
+    if FlextApiConstants.HTTP.SERVER_ERROR_MIN <= status_code < FlextApiConstants.HTTP.SERVER_ERROR_MAX:
         return FlextApiError(
             message or "Server error",
             status_code=status_code,

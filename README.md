@@ -1,10 +1,10 @@
 # flext-api - HTTP Foundation Library
 
-**Type**: Library | **Status**: Development | **Dependencies**: flext-core
+**Type**: Library | **Status**: Active Development | **Dependencies**: flext-core
 
 HTTP client and FastAPI integration library for the FLEXT ecosystem.
 
-> **⚠️ Development Status**: Basic HTTP functionality working, flext-core integration partial (35%)
+> ⚠️ Development Status: Basic HTTP functionality working; flext-core integration partial (~35%).
 
 ## Quick Start
 

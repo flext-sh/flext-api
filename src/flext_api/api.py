@@ -248,7 +248,7 @@ class FlextApi(FlextApiBaseService):
     def _create_client_impl(
         self, config: FlextTypes.Core.JsonDict | None = None,
     ) -> FlextApiClient:
-        """Internal client creation method for testing and edge cases.
+        """Create internal client for testing and edge cases.
 
         Args:
             config: Client configuration dictionary
@@ -343,7 +343,7 @@ class FlextApi(FlextApiBaseService):
 
 
 def create_flext_api(**config: object) -> FlextApi:
-    """Factory function to create FlextApi service instance.
+    """Create FlextApi service instance.
 
     Args:
         **config: Optional configuration parameters

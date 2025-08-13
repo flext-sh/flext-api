@@ -148,7 +148,7 @@ class FlextApiPluginProtocol(Protocol):
         headers: dict[str, str],
         **kwargs: FlextTypes.Core.JsonDict,
     ) -> FlextResult[None]:
-        """Hook called before request execution.
+        """Call before request execution.
 
         Args:
             method: HTTP method
@@ -168,7 +168,7 @@ class FlextApiPluginProtocol(Protocol):
         method: str,
         url: str,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
-        """Hook called after response received.
+        """Call after response received.
 
         Args:
             response: Response data
