@@ -177,7 +177,7 @@ class FlextApiFieldType:
     """API-specific field type identifiers (string constants)."""
 
     API_KEY = "api_key"
-    BEARER_TOKEN = "bearer_token"  # token type label, not secret material
+    BEARER_TOKEN = "bearer_token"  # noqa: S105 - token type label, not secret
     PIPELINE_CONFIG = "pipeline_config"
     PLUGIN_CONFIG = "plugin_config"
     USER_ROLE = "user_role"
@@ -227,16 +227,14 @@ FLEXT_API_CACHE_TTL: int = int(FlextApiConstants.Cache.DEFAULT_TTL)
 
 
 __all__ = [
-    # Classes
+    "FLEXT_API_CACHE_TTL",
+    "FLEXT_API_MAX_RETRIES",
+    "FLEXT_API_TIMEOUT",
+    "FLEXT_API_VERSION",
     "FlextApiConstants",
     "FlextApiEndpoints",
     "FlextApiFieldType",
     "FlextApiStatus",
-    # Values
-    "FLEXT_API_VERSION",
-    "FLEXT_API_TIMEOUT",
-    "FLEXT_API_MAX_RETRIES",
-    "FLEXT_API_CACHE_TTL",
 ]
 
 

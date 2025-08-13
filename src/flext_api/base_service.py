@@ -16,7 +16,8 @@ from typing import TYPE_CHECKING, TypeVar, cast
 from flext_core import FlextDomainService, FlextResult, get_logger
 from pydantic import Field
 
-from flext_api.typings import FlextTypes
+if TYPE_CHECKING:
+    from flext_api.typings import FlextTypes
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
