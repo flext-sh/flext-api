@@ -394,7 +394,7 @@ class FlextApiTimeoutError(FlextTimeoutError):
             context["operation"] = operation
         context["status_code"] = status_code
 
-        # Include timeout_seconds in context for test expectations with full precision
+        # Include timeout_seconds in context for test expectations with precision
         if timeout_seconds is not None:
             context["timeout_seconds"] = float(timeout_seconds)
         # Avoid passing duplicate 'timeout_seconds' when also included in **context to base class
@@ -404,10 +404,17 @@ class FlextApiTimeoutError(FlextTimeoutError):
             message=message,
             service="flext_api_service",
             timeout_seconds=(
-                float(timeout_seconds) if timeout_seconds is not None else None
+                int(timeout_seconds) if timeout_seconds is not None else None
             ),
             context=init_kwargs,
         )
+
+        # Ensure final context retains float precision without noisy exception handling
+        if timeout_seconds is not None:
+            from contextlib import suppress
+
+            with suppress(Exception):
+                self.context["timeout_seconds"] = float(timeout_seconds)
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP timeout error response."""

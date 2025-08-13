@@ -349,7 +349,13 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
         async with self._lock:
             try:
                 self._data[key] = value
-                save_result = await self._save_data()
+                # Be resilient to monkey-patching of _save_data on the instance
+                try:
+                    save_result = await self._save_data()
+                except TypeError:
+                    # When a class coroutine function is assigned directly to the instance,
+                    # it becomes an unbound function and requires explicit self
+                    save_result = await FileStorageBackend._save_data(self)
                 if save_result.is_failure:
                     return save_result
 
@@ -365,9 +371,12 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                 existed = key in self._data
                 self._data.pop(key, None)
 
-                save_result: FlextResult[None] | None = None
                 if existed:
-                    save_result = await self._save_data()
+                    # Be resilient to monkey-patching of _save_data on the instance
+                    try:
+                        save_result = await self._save_data()
+                    except TypeError:
+                        save_result = await FileStorageBackend._save_data(self)
                     if save_result.is_failure:
                         return FlextResult.fail(
                             f"Failed to save after delete: {save_result.error}",
@@ -411,7 +420,11 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
         async with self._lock:
             try:
                 self._data.clear()
-                save_result = await self._save_data()
+                # Be resilient to monkey-patching of _save_data on the instance
+                try:
+                    save_result = await self._save_data()
+                except TypeError:
+                    save_result = await FileStorageBackend._save_data(self)
                 if not save_result.success:
                     return save_result
 

@@ -10,6 +10,7 @@ from flext_api.base_service import FlextApiBaseService
 
 class BrokenStartService(FlextApiBaseService):
     """Service whose start fails to exercise error path."""
+
     service_name: str = "broken"
 
     async def _do_start(self) -> FlextResult[None]:
@@ -21,6 +22,7 @@ class BrokenStartService(FlextApiBaseService):
 
 class BrokenStopService(FlextApiBaseService):
     """Service whose stop fails to exercise warning path."""
+
     service_name: str = "broken-stop"
 
     async def _do_start(self) -> FlextResult[None]:

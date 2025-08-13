@@ -55,6 +55,10 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
+# Internal helper to intentionally fail initialization for tests
+def _forced_init_failure() -> None:
+    raise RuntimeError
+
 # ==============================================================================
 # APPLICATION CONFIGURATION
 # ==============================================================================
@@ -525,6 +529,11 @@ def run_production_server(
 
 # Create default app instance for ASGI servers and testing
 try:
+    # Allow tests to simulate initialization failure
+    import os as _os  # local import to avoid polluting module namespace
+    if _os.getenv("FLEXT_API_FORCE_APP_INIT_FAIL", "0") in {"1", "true", "yes"}:
+        _forced_init_failure()
+
     app = create_flext_api_app()
     storage = create_memory_storage()
 

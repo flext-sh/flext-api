@@ -18,55 +18,34 @@ from pydantic import Field
 
 if TYPE_CHECKING:
     # Import application types only for type checking to avoid runtime coupling
-    from flext_api.api_models import ClientConfig
+    from collections.abc import AsyncIterator, Mapping
+
     from flext_api.api_protocols import (
         FlextApiMiddlewareProtocol,
+        FlextApiPluginProtocol,
         FlextApiQueryBuilderProtocol,
         FlextApiResponseBuilderProtocol,
     )
+    from flext_api.models import ClientConfig
     from flext_api.typings import FlextTypes
-
-# Make FlextTypes available at runtime for Pydantic forward-ref resolution
-try:  # pragma: no cover
-    from flext_api.typings import FlextTypes as _FlextTypes
-    FlextTypes = _FlextTypes  # type: ignore[assignment]
-except Exception:  # pragma: no cover
+else:
+    # Minimal runtime fallback for forward-referenced type annotations used by Pydantic
     class FlextTypes:  # type: ignore[no-redef]
-        class Core:  # noqa: N801 - keep compatibility with annotations
+        class Core:  # noqa: N801 - keep compatibility with annotations in tests
             JsonDict = dict[str, object]
 
-if TYPE_CHECKING:
-    from collections.abc import AsyncIterator, Mapping
+    # Runtime stubs for plugins to satisfy typing usage in this module
+    class _PluginStub:
+        async def before_request(self, **_: object) -> FlextResult[None]:  # pragma: no cover - stub
+            return FlextResult.ok(None)
+
+        async def after_response(self, **_: object) -> FlextResult[dict[str, object]]:  # pragma: no cover - stub
+            return FlextResult.ok({})
 
 
 logger = get_logger(__name__)
 
-# Make protocols available at runtime for Pydantic forward-ref resolution
-try:  # pragma: no cover
-    from flext_api.api_protocols import (
-        FlextApiMiddlewareProtocol as _FAPMiddleware,
-        FlextApiPluginProtocol as _FAPPlugin,
-        FlextApiQueryBuilderProtocol as _FAPQueryBuilder,
-        FlextApiResponseBuilderProtocol as _FAPResponseBuilder,
-    )
-except Exception:  # pragma: no cover
-    class _FAPMiddleware:  # type: ignore[too-many-ancestors]
-        pass
-
-    class _FAPPlugin:  # type: ignore[too-many-ancestors]
-        pass
-
-    class _FAPQueryBuilder:  # type: ignore[too-many-ancestors]
-        pass
-
-    class _FAPResponseBuilder:  # type: ignore[too-many-ancestors]
-        pass
-
-# Bind runtime aliases for Pydantic forward-ref resolution
-FlextApiMiddlewareProtocol = _FAPMiddleware  # type: ignore[assignment]
-FlextApiPluginProtocol = _FAPPlugin  # type: ignore[assignment]
-FlextApiQueryBuilderProtocol = _FAPQueryBuilder  # type: ignore[assignment]
-FlextApiResponseBuilderProtocol = _FAPResponseBuilder  # type: ignore[assignment]
+# Note: Protocols are used only for typing; no runtime aliasing required.
 
 # Type variables for generic services
 T = TypeVar("T")
@@ -199,7 +178,7 @@ class FlextApiBaseClientService(
     """
 
     client_config: ClientConfig = Field(description="Client configuration")
-    plugins: list[object] = Field(
+    plugins: list[FlextApiPluginProtocol] = Field(
         default_factory=list,
         description="Client plugins",
     )
