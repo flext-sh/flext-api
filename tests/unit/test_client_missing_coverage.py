@@ -85,7 +85,7 @@ class TestMissingClientCoverage:
         request = FlextApiClientRequest(method="GET", url="/test")
 
         params, headers, json_data, data, timeout = client._prepare_request_params(
-            request
+            request,
         )
 
         assert params is None  # Line 287: params = None when no request.params
@@ -104,11 +104,11 @@ class TestMissingClientCoverage:
 
         # Request with headers but config has none
         request = FlextApiClientRequest(
-            method="GET", url="/test", headers={"User-Agent": "test"}
+            method="GET", url="/test", headers={"User-Agent": "test"},
         )
 
         _params, headers, _json_data, _data, _timeout = client._prepare_request_params(
-            request
+            request,
         )
 
         assert headers == {"User-Agent": "test"}

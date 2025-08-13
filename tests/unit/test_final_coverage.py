@@ -80,7 +80,7 @@ class TestFinalCoverage:
         assert response.metadata["key2"] == "value2"
         if response.metadata["key3"] != {"nested": "value"}:
             raise AssertionError(
-                f"Expected nested dict, got {response.metadata['key3']}"
+                f"Expected nested dict, got {response.metadata['key3']}",
             )
 
     def test_fields_import_line_13(self) -> None:

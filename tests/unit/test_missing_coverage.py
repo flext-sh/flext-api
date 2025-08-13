@@ -122,7 +122,7 @@ class TestMissingCoverageBuilder:
         assert error_resp.message == "Test error"
         if error_resp.metadata["error_code"] != 400:
             raise AssertionError(
-                f"Expected 400, got {error_resp.metadata['error_code']}"
+                f"Expected 400, got {error_resp.metadata['error_code']}",
             )
 
         # Test paginated response building

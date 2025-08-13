@@ -80,7 +80,7 @@ class TestApiRequest:
     def test_validation_invalid_url_scheme_fails(self) -> None:
         """Test validation fails for invalid URL scheme."""
         request = ApiRequest(
-            id="test-request-127", method=HttpMethod.GET, url="ftp://invalid.com"
+            id="test-request-127", method=HttpMethod.GET, url="ftp://invalid.com",
         )
 
         result = request.validate_business_rules()
@@ -90,7 +90,7 @@ class TestApiRequest:
     def test_validation_relative_path_succeeds(self) -> None:
         """Test validation succeeds for relative paths."""
         request = ApiRequest(
-            id="test-request-128", method=HttpMethod.GET, url="/api/users"
+            id="test-request-128", method=HttpMethod.GET, url="/api/users",
         )
 
         result = request.validate_business_rules()
@@ -273,7 +273,7 @@ class TestApiResponse:
     def test_mark_error(self) -> None:
         """Test marking response as error."""
         response = ApiResponse(
-            id="test-response-208", status_code=HttpStatus.INTERNAL_SERVER_ERROR.value
+            id="test-response-208", status_code=HttpStatus.INTERNAL_SERVER_ERROR.value,
         )
         error_message = "Internal server error occurred"
 
@@ -336,7 +336,7 @@ class TestApiEndpoint:
     def test_validation_empty_path_fails(self) -> None:
         """Test validation fails for empty path."""
         endpoint = ApiEndpoint(
-            id="test-endpoint-303", path="", methods=[HttpMethod.GET]
+            id="test-endpoint-303", path="", methods=[HttpMethod.GET],
         )
 
         result = endpoint.validate_business_rules()
@@ -346,7 +346,7 @@ class TestApiEndpoint:
     def test_validation_path_without_slash_fails(self) -> None:
         """Test validation fails for path not starting with slash."""
         endpoint = ApiEndpoint(
-            id="test-endpoint-304", path="api/users", methods=[HttpMethod.GET]
+            id="test-endpoint-304", path="api/users", methods=[HttpMethod.GET],
         )
 
         result = endpoint.validate_business_rules()
@@ -475,7 +475,7 @@ class TestApiSession:
     def test_validation_past_expiration_fails(self) -> None:
         """Test validation fails for past expiration time."""
         session = ApiSession(
-            id="test-session-404", expires_at=datetime.now(UTC) - timedelta(hours=1)
+            id="test-session-404", expires_at=datetime.now(UTC) - timedelta(hours=1),
         )
 
         result = session.validate_business_rules()
@@ -490,14 +490,14 @@ class TestApiSession:
     def test_is_expired_future_expiration(self) -> None:
         """Test session is not expired when expiration in future."""
         session = ApiSession(
-            id="test-session-406", expires_at=datetime.now(UTC) + timedelta(hours=1)
+            id="test-session-406", expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
         assert not session.is_expired()
 
     def test_is_expired_past_expiration(self) -> None:
         """Test session is expired when expiration in past."""
         session = ApiSession(
-            id="test-session-407", expires_at=datetime.now(UTC) - timedelta(seconds=1)
+            id="test-session-407", expires_at=datetime.now(UTC) - timedelta(seconds=1),
         )
         assert session.is_expired()
 

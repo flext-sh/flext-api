@@ -299,7 +299,10 @@ class LegacyApiClient:
         raise NotImplementedError(msg)
 
     def post(
-        self, _endpoint: str, _data: object = None, **_kwargs: object,
+        self,
+        _endpoint: str,
+        _data: object = None,
+        **_kwargs: object,
     ) -> dict[str, object]:
         """Make POST request (sync wrapper)."""
         warnings.warn(
@@ -405,7 +408,12 @@ def migrate_to_modern_api(old_code: str) -> str:
 
     result: list[str] = []
     result.extend(
-        ("# Old pattern (DEPRECATED):", old_code, "", "# Modern pattern (RECOMMENDED):"),
+        (
+            "# Old pattern (DEPRECATED):",
+            old_code,
+            "",
+            "# Modern pattern (RECOMMENDED):",
+        ),
     )
 
     modern_code = old_code

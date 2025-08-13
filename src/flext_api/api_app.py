@@ -44,6 +44,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from flext_core import get_logger
+from flext_core.constants import FlextConstants
 
 from flext_api.api_config import FlextApiSettings, create_api_settings
 from flext_api.api_exceptions import FlextApiError, create_error_response
@@ -81,7 +82,6 @@ class FlextApiAppConfig:
 
         # Default CORS origins for development - derive from core Platform constants
         try:
-            from flext_core.constants import FlextConstants
             host = FlextConstants.Platform.DEFAULT_HOST
             return [
                 f"http://{host}:{FlextConstants.Platform.FLEXT_WEB_PORT}",
@@ -118,7 +118,9 @@ class FlextApiAppConfig:
 # ==============================================================================
 
 
-async def add_request_id_middleware(request: Request, call_next: Callable[[Request], object]) -> object:
+async def add_request_id_middleware(
+    request: Request, call_next: Callable[[Request], object],
+) -> object:
     """Add request ID to all requests for tracing."""
     import uuid
 
@@ -129,7 +131,9 @@ async def add_request_id_middleware(request: Request, call_next: Callable[[Reque
 
     # Process request - call_next is a callable per FastAPI contract
     maybe_response = call_next(request)
-    response = await maybe_response if hasattr(maybe_response, "__await__") else maybe_response
+    response = (
+        await maybe_response if hasattr(maybe_response, "__await__") else maybe_response
+    )
 
     # Add request ID to response headers when available
     from contextlib import suppress as _suppress
@@ -142,12 +146,18 @@ async def add_request_id_middleware(request: Request, call_next: Callable[[Reque
     return response
 
 
-async def error_handler_middleware(request: Request, call_next: Callable[[Request], object]) -> object:
+async def error_handler_middleware(
+    request: Request, call_next: Callable[[Request], object],
+) -> object:
     """Global error handler middleware."""
     try:
         # call_next is callable from FastAPI middleware contract
         maybe_response = call_next(request)
-        return await maybe_response if hasattr(maybe_response, "__await__") else maybe_response
+        return (
+            await maybe_response
+            if hasattr(maybe_response, "__await__")
+            else maybe_response
+        )
     except FlextApiError as e:
         logger.exception(
             "API error occurred",
@@ -264,7 +274,9 @@ def setup_health_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
                     set_coro = getattr(app.state.storage, "set", None)
                     del_coro = getattr(app.state.storage, "delete", None)
                     if set_coro is not None and del_coro is not None:
-                        result_set = set_coro(test_key, {"timestamp": health_data["timestamp"]})
+                        result_set = set_coro(
+                            test_key, {"timestamp": health_data["timestamp"]},
+                        )
                         if hasattr(result_set, "__await__"):
                             await result_set
                         result_del = del_coro(test_key)
@@ -441,6 +453,7 @@ def create_flext_api_app_with_settings(**settings_overrides: object) -> FastAPI:
 def run_development_server(
     host: str = "127.0.0.1",  # Use localhost instead of binding to all interfaces
     port: int | None = None,
+    *,
     reload: bool = True,
     log_level: str = "info",
 ) -> None:
@@ -528,7 +541,8 @@ except Exception as e:
     logger.exception("Failed to create default app instance", error=str(e))
     # Create a minimal app for error cases
     app = FastAPI(
-        title="FLEXT API - Error", description="Failed to initialize properly",
+        title="FLEXT API - Error",
+        description="Failed to initialize properly",
     )
     # storage is already defined above, just assign None
     error_message = str(e)

@@ -49,7 +49,7 @@ from flext_core.exceptions import (
 )
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes
+    from flext_api.typings import FlextTypes
 
 # ==============================================================================
 # BASE API ERROR
@@ -114,6 +114,7 @@ class FlextApiValidationError(FlextValidationError):
         if value is not None:
             # Truncate long values for security and readability
             from flext_api.constants import FlextApiConstants
+
             str_value = str(value)
             max_len = FlextApiConstants.Validation.MAX_ERROR_VALUE_LENGTH
             validation_details["value"] = (
@@ -393,7 +394,9 @@ class FlextApiTimeoutError(FlextTimeoutError):
         super().__init__(
             message,
             service="flext_api_service",
-            timeout_seconds=int(timeout_seconds) if timeout_seconds is not None else None,
+            timeout_seconds=int(timeout_seconds)
+            if timeout_seconds is not None
+            else None,
             **context,
         )
 
@@ -602,6 +605,7 @@ class FlextApiNotFoundError(FlextApiError):
 
 def create_error_response(
     exception: FlextApiError,
+    *,
     include_traceback: bool = False,
 ) -> FlextTypes.Core.JsonDict:
     """Create standardized error response from exception."""
@@ -618,7 +622,8 @@ def create_error_response(
 
 
 def _get_specific_exception(
-    status_code: int, message: str,
+    status_code: int,
+    message: str,
 ) -> (
     FlextApiError
     | FlextApiAuthenticationError
@@ -637,14 +642,22 @@ def _get_specific_exception(
         | FlextApiTimeoutError,
     ] = {
         400: FlextApiRequestError(message or "Bad request", status_code=status_code),
-        401: FlextApiAuthenticationError(message or "Unauthorized", status_code=status_code),
+        401: FlextApiAuthenticationError(
+            message or "Unauthorized", status_code=status_code,
+        ),
         403: FlextApiAuthorizationError(message or "Forbidden"),
         404: FlextApiNotFoundError(message or "Not found"),
         429: FlextApiRateLimitError(message or "Too many requests"),
-        500: FlextApiProcessingError(message or "Internal server error", status_code=status_code),
+        500: FlextApiProcessingError(
+            message or "Internal server error", status_code=status_code,
+        ),
         502: FlextApiResponseError(message or "Bad gateway", status_code=status_code),
-        503: FlextApiConnectionError(message or "Service unavailable", status_code=status_code),
-        504: FlextApiTimeoutError(message or "Gateway timeout", status_code=status_code),
+        503: FlextApiConnectionError(
+            message or "Service unavailable", status_code=status_code,
+        ),
+        504: FlextApiTimeoutError(
+            message or "Gateway timeout", status_code=status_code,
+        ),
     }
     return specific_exceptions.get(status_code)
 
@@ -668,10 +681,19 @@ def map_http_status_to_exception(
 
     # Range-based fallbacks
     from flext_api.constants import FlextApiConstants
-    if FlextApiConstants.HTTP.CLIENT_ERROR_MIN <= status_code < FlextApiConstants.HTTP.CLIENT_ERROR_MAX:
+
+    if (
+        FlextApiConstants.HTTP.CLIENT_ERROR_MIN
+        <= status_code
+        < FlextApiConstants.HTTP.CLIENT_ERROR_MAX
+    ):
         return FlextApiRequestError(message or "Client error", status_code=status_code)
 
-    if FlextApiConstants.HTTP.SERVER_ERROR_MIN <= status_code < FlextApiConstants.HTTP.SERVER_ERROR_MAX:
+    if (
+        FlextApiConstants.HTTP.SERVER_ERROR_MIN
+        <= status_code
+        < FlextApiConstants.HTTP.SERVER_ERROR_MAX
+    ):
         return FlextApiError(
             message or "Server error",
             status_code=status_code,

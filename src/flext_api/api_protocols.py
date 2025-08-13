@@ -187,7 +187,10 @@ class FlextApiConnectionPoolProtocol(Protocol):
     """Protocol for HTTP connection pool management."""
 
     async def get_connection(
-        self, host: str, port: int, ssl: bool = False,
+        self,
+        host: str,
+        port: int,
+        ssl: bool = False,
     ) -> FlextResult[object]:
         """Get connection from pool."""
         ...
@@ -264,7 +267,9 @@ class FlextApiQueryBuilderProtocol(Protocol):
         ...
 
     def add_search(
-        self, term: str, fields: list[str] | None = None,
+        self,
+        term: str,
+        fields: list[str] | None = None,
     ) -> FlextApiQueryBuilderProtocol:
         """Add search functionality.
 
@@ -600,7 +605,8 @@ class FlextApiRepositoryProtocol(Protocol):
     """
 
     async def find_by_id(
-        self, entity_id: str,
+        self,
+        entity_id: str,
     ) -> FlextResult[FlextTypes.Core.JsonDict | None]:
         """Find entity by ID.
 
@@ -962,13 +968,19 @@ class FlextApiMetricsProtocol(Protocol):
         ...
 
     def record_gauge(
-        self, name: str, value: float, tags: dict[str, str] | None = None,
+        self,
+        name: str,
+        value: float,
+        tags: dict[str, str] | None = None,
     ) -> None:
         """Record a gauge metric."""
         ...
 
     def record_histogram(
-        self, name: str, value: float, tags: dict[str, str] | None = None,
+        self,
+        name: str,
+        value: float,
+        tags: dict[str, str] | None = None,
     ) -> None:
         """Record a histogram metric."""
         ...

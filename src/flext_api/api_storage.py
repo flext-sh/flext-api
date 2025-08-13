@@ -124,7 +124,10 @@ class StorageBackendInterface(ABC, Generic[K, V]):  # noqa: UP046
 
     @abstractmethod
     async def set(
-        self, key: K, value: V, ttl_seconds: int | None = None,
+        self,
+        key: K,
+        value: V,
+        ttl_seconds: int | None = None,
     ) -> FlextResult[None]:
         """Set value by key with optional TTL."""
 
@@ -193,14 +196,19 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
 
             value = self._data.get(key)
             logger.debug(
-                "Retrieved value from memory storage", key=key, found=value is not None,
+                "Retrieved value from memory storage",
+                key=key,
+                found=value is not None,
             )
             return FlextResult.ok(value)
         except Exception as e:
             return FlextResult.fail(f"Failed to get key '{key}': {e}")
 
     async def set(
-        self, key: str, value: V, ttl_seconds: int | None = None,
+        self,
+        key: str,
+        value: V,
+        ttl_seconds: int | None = None,
     ) -> FlextResult[None]:
         """Set value by key with optional TTL."""
         try:
@@ -332,7 +340,10 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                 return FlextResult.fail(f"Failed to get key '{key}': {e}")
 
     async def set(
-        self, key: str, value: V, _ttl_seconds: int | None = None,
+        self,
+        key: str,
+        value: V,
+        _ttl_seconds: int | None = None,
     ) -> FlextResult[None]:
         """Set value by key (TTL not supported in file backend)."""
         async with self._lock:
@@ -357,9 +368,9 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                 if existed:
                     save_result = await self._save_data()
                 if save_result.is_failure:
-                        return FlextResult.fail(
-                            f"Failed to save after delete: {save_result.error}",
-                        )
+                    return FlextResult.fail(
+                        f"Failed to save after delete: {save_result.error}",
+                    )
 
                 return FlextResult.ok(existed)
             except Exception as e:
@@ -473,7 +484,8 @@ class FlextApiStorage:
         self._transactions: dict[str, TransactionContext[object]] = {}
 
     def _create_backend(
-        self, config: StorageConfig,
+        self,
+        config: StorageConfig,
     ) -> StorageBackendInterface[str, object]:
         """Create storage backend based on configuration."""
         if config.backend == StorageBackend.MEMORY:
@@ -503,7 +515,9 @@ class FlextApiStorage:
         # Cache the result if caching is enabled
         if result.data is not None and self._cache is not None:
             self._cache.set_cached(
-                namespaced_key, result.data, self._config.cache_ttl_seconds,
+                namespaced_key,
+                result.data,
+                self._config.cache_ttl_seconds,
             )
 
         return result
@@ -543,7 +557,9 @@ class FlextApiStorage:
         return result
 
     async def delete(
-        self, key: str, transaction_id: str | None = None,
+        self,
+        key: str,
+        transaction_id: str | None = None,
     ) -> FlextResult[bool]:
         """Delete key with optional transaction support."""
         namespaced_key = f"{self._config.namespace}:{key}"
@@ -723,22 +739,37 @@ def create_storage(
 
     # Build config explicitly to satisfy strict typing
     connection_string = (
-        str(filtered_kwargs["connection_string"]) if "connection_string" in filtered_kwargs and isinstance(filtered_kwargs["connection_string"], str) else None
+        str(filtered_kwargs["connection_string"])
+        if "connection_string" in filtered_kwargs
+        and isinstance(filtered_kwargs["connection_string"], str)
+        else None
     )
     max_connections = (
-        int(filtered_kwargs["max_connections"]) if "max_connections" in filtered_kwargs and isinstance(filtered_kwargs["max_connections"], (int, float, str)) else 10
+        int(filtered_kwargs["max_connections"])
+        if "max_connections" in filtered_kwargs
+        and isinstance(filtered_kwargs["max_connections"], (int, float, str))
+        else 10
     )
     timeout_seconds = (
-        float(filtered_kwargs["timeout_seconds"]) if "timeout_seconds" in filtered_kwargs and isinstance(filtered_kwargs["timeout_seconds"], (int, float, str)) else 30.0
+        float(filtered_kwargs["timeout_seconds"])
+        if "timeout_seconds" in filtered_kwargs
+        and isinstance(filtered_kwargs["timeout_seconds"], (int, float, str))
+        else 30.0
     )
     enable_caching = bool(filtered_kwargs.get("enable_caching", True))
     cache_ttl_seconds = (
-        int(filtered_kwargs["cache_ttl_seconds"]) if "cache_ttl_seconds" in filtered_kwargs and isinstance(filtered_kwargs["cache_ttl_seconds"], (int, float, str)) else 300
+        int(filtered_kwargs["cache_ttl_seconds"])
+        if "cache_ttl_seconds" in filtered_kwargs
+        and isinstance(filtered_kwargs["cache_ttl_seconds"], (int, float, str))
+        else 300
     )
     enable_transactions = bool(filtered_kwargs.get("enable_transactions"))
     serialization_format = str(filtered_kwargs.get("serialization_format", "json"))
     file_path = (
-        str(filtered_kwargs["file_path"]) if "file_path" in filtered_kwargs and isinstance(filtered_kwargs["file_path"], str) else None
+        str(filtered_kwargs["file_path"])
+        if "file_path" in filtered_kwargs
+        and isinstance(filtered_kwargs["file_path"], str)
+        else None
     )
     namespace = str(filtered_kwargs.get("namespace", "default"))
 

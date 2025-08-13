@@ -342,7 +342,7 @@ class TestFlextApiSettingsIntegration:
             {
                 "api_host": "test.com",
                 "api_port": 8080,
-            }
+            },
         )
 
         assert result.success
@@ -355,7 +355,7 @@ class TestFlextApiSettingsIntegration:
         result = FlextApiSettings.create_with_validation(
             {
                 "api_port": -1,  # Invalid port
-            }
+            },
         )
 
         assert result.is_failure

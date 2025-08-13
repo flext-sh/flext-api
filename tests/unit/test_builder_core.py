@@ -40,7 +40,7 @@ class TestFlextApiQuery:
     def test_query_with_custom_values(self) -> None:
         """Test query with custom values."""
         filters: list[dict[str, object]] = [
-            {"field": "name", "operator": "equals", "value": "test"}
+            {"field": "name", "operator": "equals", "value": "test"},
         ]
         sorts = [{"field": "created_at", "direction": "desc"}]
 
@@ -310,7 +310,7 @@ class TestFactoryFunctions:
     def test_build_query(self) -> None:
         """Test build_query function."""
         query = build_query(
-            filters=[{"field": "name", "operator": "equals", "value": "test"}]
+            filters=[{"field": "name", "operator": "equals", "value": "test"}],
         )
 
         assert isinstance(query, FlextApiQuery)
@@ -348,7 +348,7 @@ class TestFactoryFunctions:
 
         data = [{"id": 1}, {"id": 2}]
         config = PaginationConfig(
-            data=data, total=100, page=2, page_size=10, message="Success", metadata={}
+            data=data, total=100, page=2, page_size=10, message="Success", metadata={},
         )
         response = build_paginated_response_object(config)
 

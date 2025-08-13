@@ -51,7 +51,7 @@ class TestApiWorkflowE2E:
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10.0,
-            }
+            },
         )
         assert client_result.success
 
@@ -79,7 +79,7 @@ class TestApiWorkflowE2E:
         invalid_result = api.flext_api_create_client(
             {
                 "base_url": "invalid-url-format",
-            }
+            },
         )
         assert not invalid_result.success
         assert "Invalid URL format" in invalid_result.error
@@ -89,7 +89,7 @@ class TestApiWorkflowE2E:
             {
                 "base_url": "https://nonexistent-domain-12345.com",
                 "timeout": 2.0,
-            }
+            },
         )
         assert client_result.success
 
@@ -157,7 +157,7 @@ class TestApiWorkflowE2E:
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 5.0,
-            }
+            },
         )
         assert client_result.success
 

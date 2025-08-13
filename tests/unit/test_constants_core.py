@@ -65,12 +65,12 @@ class TestFlextApiConstants:
 
         if ok_code not in FlextApiConstants.SUCCESS_CODES:
             raise AssertionError(
-                f"Expected {ok_code} in {FlextApiConstants.SUCCESS_CODES}"
+                f"Expected {ok_code} in {FlextApiConstants.SUCCESS_CODES}",
             )
         assert created_code in FlextApiConstants.SUCCESS_CODES
         if not_found_code in FlextApiConstants.SUCCESS_CODES:
             raise AssertionError(
-                f"Expected {not_found_code} not in {FlextApiConstants.SUCCESS_CODES}"
+                f"Expected {not_found_code} not in {FlextApiConstants.SUCCESS_CODES}",
             )
 
     def test_client_error_codes(self) -> None:
@@ -81,12 +81,12 @@ class TestFlextApiConstants:
 
         if bad_request_code not in FlextApiConstants.CLIENT_ERROR_CODES:
             raise AssertionError(
-                f"Expected {bad_request_code} in {FlextApiConstants.CLIENT_ERROR_CODES}"
+                f"Expected {bad_request_code} in {FlextApiConstants.CLIENT_ERROR_CODES}",
             )
         assert not_found_code in FlextApiConstants.CLIENT_ERROR_CODES
         if ok_code in FlextApiConstants.CLIENT_ERROR_CODES:
             raise AssertionError(
-                f"Expected {ok_code} not in {FlextApiConstants.CLIENT_ERROR_CODES}"
+                f"Expected {ok_code} not in {FlextApiConstants.CLIENT_ERROR_CODES}",
             )
 
     def test_server_error_codes(self) -> None:
@@ -97,19 +97,19 @@ class TestFlextApiConstants:
 
         if internal_error_code not in FlextApiConstants.SERVER_ERROR_CODES:
             raise AssertionError(
-                f"Expected {internal_error_code} in {FlextApiConstants.SERVER_ERROR_CODES}"
+                f"Expected {internal_error_code} in {FlextApiConstants.SERVER_ERROR_CODES}",
             )
         assert bad_gateway_code in FlextApiConstants.SERVER_ERROR_CODES
         if ok_code in FlextApiConstants.SERVER_ERROR_CODES:
             raise AssertionError(
-                f"Expected {ok_code} not in {FlextApiConstants.SERVER_ERROR_CODES}"
+                f"Expected {ok_code} not in {FlextApiConstants.SERVER_ERROR_CODES}",
             )
 
     def test_rate_limit_constants(self) -> None:
         """Test rate limit constants."""
         if FlextApiConstants.RATE_LIMIT_REQUESTS != 1000:
             raise AssertionError(
-                f"Expected 1000, got {FlextApiConstants.RATE_LIMIT_REQUESTS}"
+                f"Expected 1000, got {FlextApiConstants.RATE_LIMIT_REQUESTS}",
             )
         assert FlextApiConstants.RATE_LIMIT_WINDOW == 3600
 
