@@ -108,37 +108,38 @@ class FlextApi(FlextApiBaseService):
             # No running loop: execute synchronously
             return _asyncio.run(super().health_check())
 
-        async def _coro() -> FlextResult[dict[str, object]]:
-            return await super().health_check()
+        async def _coro(self_ref: "FlextApi") -> FlextResult[dict[str, object]]:
+            # Call base class coroutine explicitly to avoid super() closure issues
+            return await FlextApiBaseService.health_check(self_ref)
 
-        return _coro()
+        return _coro(self)
 
     # Compatibility: allow calling health_check in sync contexts within tests
     def sync_health_check(self) -> FlextResult[dict[str, object]]:
-        """Run health check synchronously for compatibility tests."""
+        """Run health check synchronously for compatibility tests.
+
+        Ensures an event loop is available and not already running.
+        """
         import asyncio as _asyncio
 
         try:
-            loop = _asyncio.get_event_loop()
+            # If a loop is running, avoid run_until_complete on it
+            _asyncio.get_running_loop()
         except RuntimeError:
+            # No running loop: safe to create and run
             loop = _asyncio.new_event_loop()
-            _asyncio.set_event_loop(loop)
-        return loop.run_until_complete(self.health_check())
+            try:
+                _asyncio.set_event_loop(loop)
+                return loop.run_until_complete(super().health_check())
+            finally:
+                loop.close()
+
+        # Running loop present; execute directly using asyncio.run in a new loop
+        return _asyncio.run(super().health_check())
 
     def health_check_sync(self) -> FlextResult[dict[str, object]]:
         """Synchronous wrapper for health_check for legacy tests."""
-        try:
-            import asyncio
-
-            return asyncio.run(self.health_check())
-        except RuntimeError:
-            # If an event loop is already running, create a new loop
-            loop = asyncio.new_event_loop()
-            try:
-                asyncio.set_event_loop(loop)
-                return loop.run_until_complete(self.health_check())
-            finally:
-                loop.close()
+        return self.sync_health_check()
 
     def create_client(
         self,
