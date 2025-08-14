@@ -7,6 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 
 from flext_api import (
@@ -17,6 +19,12 @@ from flext_api import (
     build_query_dict,
     build_success_response,
     create_flext_api,
+)
+from flext_api.builder import FlextApiQueryBuilder, FlextApiResponseBuilder
+from flext_api.client import (
+    FlextApiClientRequest,
+    FlextApiClientResponse,
+    FlextApiPlugin,
 )
 
 # Constants
@@ -167,7 +175,6 @@ class TestFunctionalExamples:
 
         try:
             # Mock HTTP responses to avoid external dependencies
-            from unittest.mock import AsyncMock, patch
 
             mock_response = AsyncMock()
             mock_response.status = 200
@@ -223,8 +230,6 @@ class TestFunctionalExamples:
 
     def test_builder_pattern_examples(self) -> None:
         """Test builder pattern usage."""
-        from flext_api.builder import FlextApiQueryBuilder, FlextApiResponseBuilder
-
         # Query builder example
         query = (
             FlextApiQueryBuilder()
@@ -258,11 +263,6 @@ class TestFunctionalExamples:
 
     def test_plugin_integration_examples(self) -> None:
         """Test plugin integration examples."""
-        from flext_api.client import (
-            FlextApiClientRequest,
-            FlextApiClientResponse,
-            FlextApiPlugin,
-        )
 
         # Create a custom plugin
         class CustomPlugin(FlextApiPlugin):

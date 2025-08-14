@@ -15,7 +15,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 # Import from models.py directly (no domain subdirectory)
-from flext_api.models import (
+from flext_api.api_models import (
     ApiEndpoint,
     ApiRequest,
     ApiResponse,

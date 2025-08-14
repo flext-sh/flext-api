@@ -18,7 +18,7 @@ import os
 from unittest.mock import patch
 
 import pytest
-from flext_core import FlextConstants, FlextResult
+from flext_core import FlextConstants, FlextResult, FlextSettings
 from pydantic import ValidationError
 
 from flext_api.config import FlextApiSettings, create_api_settings
@@ -330,8 +330,6 @@ class TestFlextApiSettingsIntegration:
 
     def test_flext_base_settings_inheritance(self) -> None:
         """Test FlextApiSettings properly inherits from FlextSettings."""
-        from flext_core import FlextSettings
-
         settings = FlextApiSettings()
         assert isinstance(settings, FlextSettings)
 

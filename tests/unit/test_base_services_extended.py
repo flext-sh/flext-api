@@ -18,7 +18,7 @@ from flext_api.base_service import (
     FlextApiBaseHandlerService,
     FlextApiBaseRepositoryService,
 )
-from flext_api.models import ClientConfig
+from flext_api.api_models import ClientConfig
 
 
 class DummyClientService(FlextApiBaseClientService):

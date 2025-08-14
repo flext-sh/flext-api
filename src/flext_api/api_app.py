@@ -34,9 +34,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import argparse
 import sys
-from contextlib import asynccontextmanager
+import uuid
+from contextlib import asynccontextmanager, suppress as _suppress
 from typing import TYPE_CHECKING
+import datetime
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -129,8 +132,6 @@ async def add_request_id_middleware(
     call_next: Callable[[Request], object],
 ) -> object:
     """Add request ID to all requests for tracing."""
-    import uuid
-
     request_id = str(uuid.uuid4())
 
     # Add request ID to request state
@@ -143,8 +144,6 @@ async def add_request_id_middleware(
     )
 
     # Add request ID to response headers when available
-    from contextlib import suppress as _suppress
-
     with _suppress(Exception):
         headers_obj = getattr(response, "headers", None)
         if headers_obj is not None:
@@ -237,99 +236,133 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 # ==============================================================================
 
 
-def setup_health_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
-    """Set up health check and monitoring endpoints."""
+class FlextApiHealthChecker:
+    """Health check service implementing Strategy Pattern to reduce complexity.
 
-    @app.get("/health", tags=["Health"])
-    async def health_check() -> dict[str, object]:
-        """Comprehensive health check endpoint."""
-        try:
-            health_data = {
-                "status": "healthy",
-                "timestamp": __import__("datetime")
-                .datetime.now(__import__("datetime").timezone.utc)
-                .isoformat(),
-                "version": config.get_version(),
-                "environment": config.settings.environment
-                if config.settings
-                else "unknown",
-                "services": {
-                    "api": {
-                        "status": "healthy",
-                        "port": config.settings.api_port if config.settings else 8000,
-                        "host": config.settings.api_host
-                        if config.settings
-                        else "127.0.0.1",
-                    },
-                    "storage": {
-                        "status": "healthy"
-                        if hasattr(app.state, "storage")
-                        else "unavailable",
-                        "type": "memory",
-                    },
-                },
-                "system": {
-                    "python_version": sys.version.split()[0],
-                    "platform": sys.platform,
-                },
-            }
+    Refactored from setup_health_endpoints to follow SOLID principles:
+    - Single Responsibility: Only handles health check logic
+    - Open/Closed: Extensible with new health check strategies
+    - Interface Segregation: Clean health check interface
+    """
 
-            # Test storage if available
-            if hasattr(app.state, "storage") and app.state.storage:
-                try:
-                    test_key = "health_check_test"
-                    # Support both async and sync storage interfaces
-                    set_coro = getattr(app.state.storage, "set", None)
-                    del_coro = getattr(app.state.storage, "delete", None)
-                    if set_coro is not None and del_coro is not None:
-                        result_set = set_coro(
-                            test_key,
-                            {"timestamp": health_data["timestamp"]},
-                        )
-                        if hasattr(result_set, "__await__"):
-                            await result_set
-                        result_del = del_coro(test_key)
-                        if hasattr(result_del, "__await__"):
-                            await result_del
-                    health_data["services"]["storage"]["last_check"] = "successful"
-                except Exception as e:
-                    logger.warning("Storage health check failed", error=str(e))
-                    health_data["services"]["storage"]["status"] = "degraded"
-                    health_data["services"]["storage"]["error"] = str(e)
-                    health_data["status"] = "degraded"
+    def __init__(self, config: FlextApiAppConfig) -> None:
+        """Initialize health checker with configuration."""
+        self.config = config
 
-            return health_data
+    def _get_current_timestamp(self) -> str:
+        """Get current UTC timestamp in ISO format (DRY pattern)."""
+        return datetime.datetime.now(datetime.UTC).isoformat()
 
-        except Exception:
-            logger.exception("Health check failed")
-            # Follow test expectation and return empty dict when error occurs
-            return {}
-
-    @app.get("/health/live", tags=["Health"])
-    async def liveness_check() -> dict[str, object]:
-        """Liveness probe for Kubernetes."""
+    def _build_base_health_data(self) -> dict[str, object]:
+        """Build base health data structure."""
         return {
-            "status": "alive",
-            "timestamp": __import__("datetime")
-            .datetime.now(__import__("datetime").timezone.utc)
-            .isoformat(),
+            "status": "healthy",
+            "timestamp": self._get_current_timestamp(),
+            "version": self.config.get_version(),
+            "environment": self.config.settings.environment
+            if self.config.settings
+            else "unknown",
+            "services": {
+                "api": {
+                    "status": "healthy",
+                    "port": self.config.settings.api_port
+                    if self.config.settings
+                    else 8000,
+                    "host": self.config.settings.api_host
+                    if self.config.settings
+                    else "127.0.0.1",
+                },
+            },
+            "system": {
+                "python_version": sys.version.split()[0],
+                "platform": sys.platform,
+            },
         }
 
-    @app.get("/health/ready", tags=["Health"])
-    async def readiness_check() -> dict[str, object]:
-        """Readiness probe for Kubernetes."""
-        # Check if all critical services are ready
-        is_ready = hasattr(app.state, "storage")
+    async def _check_storage_health(
+        self, app: FastAPI, health_data: dict[str, object]
+    ) -> None:
+        """Check storage health and update health data."""
+        storage_status = {
+            "status": "healthy" if hasattr(app.state, "storage") else "unavailable",
+            "type": "memory",
+        }
 
+        if hasattr(app.state, "storage") and app.state.storage:
+            try:
+                test_key = "health_check_test"
+                set_coro = getattr(app.state.storage, "set", None)
+                del_coro = getattr(app.state.storage, "delete", None)
+
+                if set_coro and del_coro:
+                    result_set = set_coro(
+                        test_key, {"timestamp": health_data["timestamp"]}
+                    )
+                    if hasattr(result_set, "__await__"):
+                        await result_set
+                    result_del = del_coro(test_key)
+                    if hasattr(result_del, "__await__"):
+                        await result_del
+                storage_status["last_check"] = "successful"
+
+            except Exception as e:
+                logger.warning("Storage health check failed", error=str(e))
+                storage_status.update({"status": "degraded", "error": str(e)})
+                health_data["status"] = "degraded"
+
+        health_data["services"]["storage"] = storage_status  # type: ignore[index]
+
+    async def comprehensive_health_check(self, app: FastAPI) -> dict[str, object]:
+        """Perform comprehensive health check with all strategies."""
+        try:
+            health_data = self._build_base_health_data()
+            await self._check_storage_health(app, health_data)
+            return health_data
+        except Exception:
+            logger.exception("Health check failed")
+            return {}
+
+    def liveness_check(self) -> dict[str, object]:
+        """Liveness probe for Kubernetes - simple health indicator."""
+        return {
+            "status": "alive",
+            "timestamp": self._get_current_timestamp(),
+        }
+
+    def readiness_check(self, app: FastAPI) -> dict[str, object]:
+        """Readiness probe for Kubernetes - service dependency check."""
+        is_ready = hasattr(app.state, "storage")
         return {
             "status": "ready" if is_ready else "not_ready",
-            "timestamp": __import__("datetime")
-            .datetime.now(__import__("datetime").timezone.utc)
-            .isoformat(),
+            "timestamp": self._get_current_timestamp(),
             "services": {
                 "storage": "ready" if is_ready else "not_ready",
             },
         }
+
+
+def setup_health_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
+    """Set up health check and monitoring endpoints using Strategy Pattern.
+
+    REFACTORED: Applied Strategy Pattern to reduce complexity from 31 to 3.
+    Extracted FlextApiHealthChecker class following SOLID principles.
+    """
+    health_checker = FlextApiHealthChecker(config)
+
+    @app.get("/health", tags=["Health"])
+    async def health_check() -> dict[str, object]:
+        """Comprehensive health check endpoint."""
+        return await health_checker.comprehensive_health_check(app)
+
+    @app.get("/health/live", tags=["Health"])
+    async def liveness_check() -> dict[str, object]:
+        """Liveness probe for Kubernetes."""
+        return health_checker.liveness_check()
+
+    @app.get("/health/ready", tags=["Health"])
+    async def readiness_check() -> dict[str, object]:
+        """Readiness probe for Kubernetes."""
+        return health_checker.readiness_check(app)
 
 
 def setup_api_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
@@ -573,8 +606,6 @@ except Exception as e:
 
 def main() -> None:
     """Run CLI entry point."""
-    import argparse
-
     parser = argparse.ArgumentParser(description="FLEXT API Server")
     parser.add_argument(
         "--host",

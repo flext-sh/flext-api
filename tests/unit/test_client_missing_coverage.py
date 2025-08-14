@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import pytest
 
+from flext_api import client
 from flext_api.client import (
     FlextApiClient,
     FlextApiClientConfig,
@@ -25,9 +26,6 @@ class TestMissingClientCoverage:
 
     def test_type_checking_import_coverage(self) -> None:
         """Test TYPE_CHECKING import coverage - line 15."""
-        # This test ensures the types import is covered during runtime
-        from flext_api import client
-
         # Access the module to trigger import coverage
         assert hasattr(client, "FlextApiClient")
 

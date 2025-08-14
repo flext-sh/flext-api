@@ -224,6 +224,7 @@ class FlextApiQueryBuilderProtocol(Protocol):
     def add_filter(
         self,
         field: str,
+        *,
         value: FlextTypes.Core.JsonDict | str | float | bool | None,
         operator: str = "eq",
     ) -> FlextApiQueryBuilderProtocol:
@@ -332,6 +333,7 @@ class FlextApiResponseBuilderProtocol(Protocol):
 
     def set_data(
         self,
+        *,
         data: FlextTypes.Core.JsonDict | list[object] | str | float | bool | None,
     ) -> FlextApiResponseBuilderProtocol:
         """Set response data.
@@ -372,6 +374,7 @@ class FlextApiResponseBuilderProtocol(Protocol):
     def add_metadata(
         self,
         key: str,
+        *,
         value: FlextTypes.Core.JsonDict | str | float | bool | None,
     ) -> FlextApiResponseBuilderProtocol:
         """Add metadata to response.

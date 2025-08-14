@@ -1,3 +1,5 @@
+"""Test more branches paths."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,7 +13,7 @@ from flext_api.api_app import FlextApiAppConfig, create_flext_api_app
 
 
 def test_cors_origins_fallback_when_exception(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Force exception in get_cors_origins try block to return fallback list
+    """Force exception in get_cors_origins try block to return fallback list."""
     cfg = FlextApiAppConfig()
     monkeypatch.setattr("flext_api.api_app.FlextConstants", object())
     origins = cfg.get_cors_origins()
@@ -19,6 +21,7 @@ def test_cors_origins_fallback_when_exception(monkeypatch: pytest.MonkeyPatch) -
 
 
 def test_root_and_info_paths() -> None:
+    """Test root and info paths are available."""
     app = create_flext_api_app()
     c = TestClient(app)
     r = c.get("/")

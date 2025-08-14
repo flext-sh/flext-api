@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_api.models import ApiRequest, ApiResponse, HttpMethod
+from flext_api.api_models import ApiRequest, ApiResponse, HttpMethod
 
 
 def test_response_model_basic() -> None:
