@@ -14,14 +14,19 @@ from flext_api.api_client import (
 
 
 class _CM:
+    """Context manager for fake response."""
+
     def __init__(self, resp: Any) -> None:
+        """Initialize context manager with fake response."""
         self._resp = resp
 
     async def __aenter__(self) -> Any:
+        """Enter context manager."""
         return self._resp
 
     async def __aexit__(self, *_args: object, **_kwargs: object) -> None:
-        return None
+        """Exit context manager."""
+        return
 
 
 class _FakeResponse:
@@ -62,6 +67,7 @@ class _FakeSession:
 async def test_perform_http_request_success_json(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Test perform_http_request success json path."""
     client = FlextApiClient(
         FlextApiClientConfig(base_url="https://api.example", timeout=5.0),
     )
@@ -87,6 +93,7 @@ async def test_perform_http_request_success_json(
 async def test_perform_http_request_text_jsonlike(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Test perform_http_request text jsonlike path."""
     client = FlextApiClient(
         FlextApiClientConfig(base_url="https://api.example", timeout=5.0),
     )
@@ -101,6 +108,8 @@ async def test_perform_http_request_text_jsonlike(
 
 
 class _PluginFail:
+    """Plugin that fails before request."""
+
     enabled = True
 
     async def before_request(
@@ -112,6 +121,8 @@ class _PluginFail:
 
 
 class _PluginModify:
+    """Plugin that modifies request."""
+
     enabled = True
 
     async def before_request(
@@ -119,7 +130,7 @@ class _PluginModify:
         request: FlextApiClientRequest,
         _context: object = None,
     ) -> FlextApiClientRequest:
-        # add header
+        """Modify request headers."""
         new_headers = dict(request.headers)
         new_headers["X"] = "1"
         return FlextApiClientRequest(
@@ -134,6 +145,8 @@ class _PluginModify:
 
 
 class _PluginAfterFail:
+    """Plugin that fails after response."""
+
     enabled = True
 
     async def after_response(
@@ -145,6 +158,8 @@ class _PluginAfterFail:
 
 
 class _PluginAfterModify:
+    """Plugin that modifies response."""
+
     enabled = True
 
     async def after_response(
@@ -164,6 +179,7 @@ class _PluginAfterModify:
 
 @pytest.mark.asyncio
 async def test_plugins_before_and_after_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test plugins before and after paths."""
     # before_request fail
     c1 = FlextApiClient(
         FlextApiClientConfig(base_url="https://api.example"),
@@ -206,6 +222,7 @@ async def test_plugins_before_and_after_paths(monkeypatch: pytest.MonkeyPatch) -
 
 
 def test_format_request_error_variants() -> None:
+    """Test format request error variants."""
     client = FlextApiClient(FlextApiClientConfig(base_url="https://api.example"))
     err1 = client._format_request_error(
         FlextResult.fail("HTTP session not available: x"),
@@ -220,6 +237,7 @@ def test_format_request_error_variants() -> None:
 
 @pytest.mark.asyncio
 async def test_build_stub_response_variants() -> None:
+    """Test build_stub_response variants."""
     client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
     # Invalid URL format
     bad_req = FlextApiClientRequest(method="GET", url="ftp://x")

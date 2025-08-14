@@ -37,6 +37,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
+import fnmatch
 import json
 import time
 from abc import ABC, abstractmethod
@@ -270,7 +271,6 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
                 return FlextResult.ok(data=all_keys)
 
             # Simple pattern matching (supports * wildcard)
-            import fnmatch
 
             filtered_keys = [key for key in all_keys if fnmatch.fnmatch(key, pattern)]
             return FlextResult.ok(data=filtered_keys)
@@ -405,8 +405,6 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
 
                 if pattern is None:
                     return FlextResult.ok(data=all_keys)
-
-                import fnmatch
 
                 filtered_keys = [
                     key for key in all_keys if fnmatch.fnmatch(key, pattern)

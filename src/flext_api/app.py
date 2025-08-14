@@ -8,6 +8,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from fastapi import FastAPI
+from flext_core import FlextResult
+
 from flext_api.api_app import app as _app
 
 # Re-export the main app
@@ -20,8 +23,6 @@ def flext_api_create_app() -> object:
     This app exposes /health and uses `create_flext_api()` so tests can patch it
     and force specific behaviors (like returning None data).
     """
-    from fastapi import FastAPI
-
     compat_app = FastAPI(
         title="FLEXT API",
         version="0.9.0",
@@ -47,7 +48,6 @@ def create_flext_api() -> object:
 
     Returns a mock-compatible API object.
     """
-    from flext_core import FlextResult
 
     class FlextAPI:
         def health_check(self) -> object:

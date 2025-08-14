@@ -12,6 +12,7 @@ from flext_api.api_client import (
     FlextApiClientConfig,
     FlextApiClientRequest,
     FlextApiClientResponse,
+    create_client,
 )
 
 
@@ -173,7 +174,5 @@ async def test_head_and_options_methods(monkeypatch: pytest.MonkeyPatch) -> None
 
 def test_create_client_invalid_url_raises() -> None:
     """Factory should raise on invalid URL scheme."""
-    from flext_api.api_client import create_client
-
     with pytest.raises(ValueError):
         create_client({"base_url": "ftp://bad"})

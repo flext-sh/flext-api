@@ -10,10 +10,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import asyncio as _asyncio
+from threading import Thread
+from typing import TYPE_CHECKING, cast
 
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextResult as _Res, get_logger
 from pydantic import Field
+
+from flext_api.api_client import FlextApiBuilder, FlextApiClient, FlextApiClientConfig
+from flext_api.api_models import ClientConfig
+from flext_api.base_service import FlextApiBaseService, FlextApiBaseService as _Base
 
 if TYPE_CHECKING:
     from flext_api.api_protocols import (
@@ -22,12 +28,6 @@ if TYPE_CHECKING:
         FlextApiResponseBuilderProtocol,
     )
     from flext_api.typings import FlextTypes
-
-from typing import cast
-
-from flext_api.api_client import FlextApiBuilder, FlextApiClient, FlextApiClientConfig
-from flext_api.base_service import FlextApiBaseService
-from flext_api.models import ClientConfig
 
 logger = get_logger(__name__)
 
@@ -96,10 +96,6 @@ class FlextApi(FlextApiBaseService):
         mutating the global event loop. If a loop is running, return the
         coroutine for the caller to await.
         """
-        import asyncio as _asyncio
-
-        from flext_api.base_service import FlextApiBaseService as _Base
-
         try:
             _asyncio.get_running_loop()
         except RuntimeError:
@@ -119,17 +115,10 @@ class FlextApi(FlextApiBaseService):
 
         Always uses a private event loop to avoid interfering with pytest's loop.
         """
-        import asyncio as _asyncio
-
-        from flext_api.base_service import FlextApiBaseService as _Base
-
         # If a loop is already running (pytest-asyncio), run the coroutine in a
         # separate thread with its own event loop to avoid nested-loop errors.
         try:
             _asyncio.get_running_loop()
-            from threading import Thread
-
-            from flext_core import FlextResult as _Res
 
             result_holder: list[_Res[dict[str, object]]] = []
             error_holder: list[BaseException] = []

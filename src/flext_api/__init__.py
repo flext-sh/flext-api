@@ -45,6 +45,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import dataclasses
 import importlib.metadata
 
 try:
@@ -92,6 +93,7 @@ from flext_api.api_client import (
     build_error_response,
     build_paginated_response,
     build_query,
+    build_query_from_params,
     build_success_response,
     # Factory Functions
     create_client,
@@ -134,7 +136,7 @@ from flext_api.api_types import (
 from flext_api.client import create_client_with_plugins
 
 # Domain Models and Entities
-from flext_api.models import (
+from flext_api.api_models import (
     DEFAULT_MAX_RETRIES,
     DEFAULT_PAGE_SIZE,
     # Constants
@@ -170,6 +172,22 @@ from flext_api.models import (
 
 
 # Backwards-compatibility helper used by tests expecting a dict
+@dataclasses.dataclass
+class FlextApiQueryParameters:
+    """Parameter Object Pattern: Encapsulates query building parameters.
+
+    REFACTORED: Applied Parameter Object pattern to reduce function complexity
+    from 6 parameters to single object following SOLID principles.
+    """
+
+    filters: dict[str, object] | list[dict[str, object]] | None = None
+    sorts: list[dict[str, str]] | None = None
+    page: int = 1
+    page_size: int = 20
+    search: str | None = None
+    fields: list[str] | None = None
+
+
 def build_query_dict(
     filters: dict[str, object] | None = None,
     sorts: list[dict[str, str]] | None = None,
@@ -182,8 +200,10 @@ def build_query_dict(
 
     This is a thin wrapper around ``build_query`` that returns the serialized
     representation expected by legacy tests.
+
+    REFACTORED: Function signature maintained for backward compatibility.
     """
-    query = build_query(
+    params = FlextApiQueryParameters(
         filters=filters,
         sorts=sorts,
         page=page,
@@ -191,6 +211,7 @@ def build_query_dict(
         search=search,
         fields=fields,
     )
+    query = build_query_from_params(params)
     return query.to_dict()
 
 
@@ -470,6 +491,7 @@ __all__: list[str] = [
     "build_paginated_response",
     "build_query",
     "build_query_dict",
+    "build_query_from_params",
     "build_success_response",
     "create_api_builder",
     "create_api_client",
@@ -497,9 +519,6 @@ __all__: list[str] = [
     "sync_health_check",
     "user_role_field",
     "validate_configuration",
-]
-
-__all__ += [
     "FlextApi",
     "FlextApiBaseAuthService",
     "FlextApiBaseBuilderService",

@@ -11,7 +11,7 @@ from flext_api.api_app import create_flext_api_app
 
 
 def test_docs_enabled_when_debug_true(monkeypatch) -> None:
-    # Create app with debug=True via settings overrides path
+    """Create app with debug=True via settings overrides path."""
     app = create_flext_api_app()
     app.state.config.settings.debug = True  # type: ignore[attr-defined]
     app = create_flext_api_app(app.state.config)  # rebuild with debug enabled
@@ -25,9 +25,9 @@ def test_docs_enabled_when_debug_true(monkeypatch) -> None:
 
 
 def test_error_middleware_generic_exception(monkeypatch) -> None:
+    """Inject a route that raises generic exception to hit generic handler."""
     app = create_flext_api_app()
 
-    # Inject a route that raises generic exception to hit generic handler
     @app.get("/boom")
     async def boom():
         msg = "explode"

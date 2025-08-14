@@ -31,6 +31,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import IntEnum, StrEnum
@@ -44,6 +45,8 @@ from flext_core import (
     get_logger,
 )
 from pydantic import Field
+
+from flext_api.constants import FlextApiConstants
 
 if TYPE_CHECKING:
     from flext_api.typings import FlextTypes
@@ -414,7 +417,6 @@ class BearerToken(FlextValue):
             )
 
         # JWT format validation - check for empty parts in any 3-part token
-        from flext_api.constants import FlextApiConstants
 
         if self.token.count(".") == FlextApiConstants.Auth.JWT_SEPARATOR_COUNT:
             parts = self.token.split(".")
@@ -561,8 +563,6 @@ class PaginationInfo(FlextValue):
     ) -> FlextResult[PaginationInfo]:
         """Create pagination info with validation."""
         try:
-            import math
-
             total_pages = math.ceil(total / page_size) if page_size > 0 else 0
             has_next = page < total_pages
             has_previous = page > 1
@@ -751,8 +751,6 @@ class ApiResponse(FlextEntity):
 
     def is_success(self) -> bool:
         """Check if response is successful."""
-        from flext_api.constants import FlextApiConstants
-
         return (
             FlextApiConstants.HTTP.SUCCESS_MIN
             <= self.status_code
@@ -761,8 +759,6 @@ class ApiResponse(FlextEntity):
 
     def is_error(self) -> bool:
         """Check if response is error."""
-        from flext_api.constants import FlextApiConstants
-
         return self.status_code >= FlextApiConstants.HTTP.CLIENT_ERROR_MIN
 
     def mark_success(self) -> FlextResult[ApiResponse]:

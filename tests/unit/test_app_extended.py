@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from fastapi import FastAPI
 
 
-def _make_app(debug: bool = True) -> FastAPI:
+def _make_app(*, debug: bool = True) -> FastAPI:
     """Create app with debug flag toggled for docs/openapi visibility."""
     config = FlextApiAppConfig()
     # force debug to enable docs/openapi paths

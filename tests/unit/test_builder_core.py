@@ -15,6 +15,7 @@ from flext_api.builder import (
     FlextApiQueryBuilder,
     FlextApiResponse,
     FlextApiResponseBuilder,
+    PaginationConfig,
     build_error_response_object,
     build_paginated_response_object,
     build_query,
@@ -353,8 +354,6 @@ class TestFactoryFunctions:
 
     def test_build_paginated_response(self) -> None:
         """Test build_paginated_response function."""
-        from flext_api.builder import PaginationConfig
-
         data = [{"id": 1}, {"id": 2}]
         config = PaginationConfig(
             data=data,

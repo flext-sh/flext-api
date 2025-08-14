@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Never
+from typing import TYPE_CHECKING, Never
 
 import pytest
 from flext_core import FlextResult
@@ -14,14 +14,15 @@ from flext_api.api_client import (
     FlextApiClientResponse,
 )
 
+if TYPE_CHECKING:
+    from typisng import ClassVar
+
 
 @pytest.mark.asyncio
 async def test_read_response_data_parse_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     # Simulate JSON header but bad JSON body
     class FakeResponse:
         """Fake aiohttp-like response object for testing parse fallbacks."""
-
-        from typing import ClassVar
 
         headers: ClassVar[dict[str, str]] = {"Content-Type": "application/json"}
 

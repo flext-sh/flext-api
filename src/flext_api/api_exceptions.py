@@ -36,8 +36,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import traceback
 from typing import TYPE_CHECKING
 
+from flext_core import get_logger
 from flext_core.exceptions import (
     FlextAuthenticationError,
     FlextConfigurationError,
@@ -47,6 +49,10 @@ from flext_core.exceptions import (
     FlextTimeoutError,
     FlextValidationError,
 )
+
+from flext_api.constants import FlextApiConstants
+
+logger = get_logger(__name__)
 
 if TYPE_CHECKING:
     from flext_api.typings import FlextTypes
@@ -114,7 +120,6 @@ class FlextApiValidationError(FlextValidationError):
             validation_details["field"] = field
         if value is not None:
             # Truncate long values for security and readability
-            from flext_api.constants import FlextApiConstants
 
             str_value = str(value)
             max_len = FlextApiConstants.Validation.MAX_ERROR_VALUE_LENGTH
@@ -417,7 +422,7 @@ class FlextApiTimeoutError(FlextTimeoutError):
                 if isinstance(inner, dict) and "endpoint" in inner:
                     self.context = inner
             except Exception:
-                pass
+                logger.exception("Error flattening context")
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP timeout error response."""
@@ -631,8 +636,6 @@ def create_error_response(
     response = exception.to_http_response()
 
     if include_traceback:
-        import traceback
-
         error_dict = response["error"]
         if isinstance(error_dict, dict):
             error_dict["traceback"] = traceback.format_exc()
@@ -703,7 +706,6 @@ def map_http_status_to_exception(
         return specific_exception
 
     # Range-based fallbacks
-    from flext_api.constants import FlextApiConstants
 
     if (
         FlextApiConstants.HTTP.CLIENT_ERROR_MIN

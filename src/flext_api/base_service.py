@@ -16,38 +16,19 @@ from typing import TYPE_CHECKING, TypeVar, cast
 from flext_core import FlextDomainService, FlextResult, get_logger
 from pydantic import Field
 
+from flext_api.api_client import FlextApiQueryBuilder, FlextApiResponseBuilder
+
 if TYPE_CHECKING:
-    # Import application types only for type checking to avoid runtime coupling
     from collections.abc import AsyncIterator, Mapping
 
+    from flext_api.api_models import ClientConfig
     from flext_api.api_protocols import (
         FlextApiMiddlewareProtocol,
         FlextApiPluginProtocol,
         FlextApiQueryBuilderProtocol,
         FlextApiResponseBuilderProtocol,
     )
-    from flext_api.models import ClientConfig
     from flext_api.typings import FlextTypes
-else:
-    # Minimal runtime fallback for forward-referenced type annotations used by Pydantic
-    class FlextTypes:  # type: ignore[no-redef]
-        class Core:
-            JsonDict = dict[str, object]
-
-    # Runtime stubs for plugins to satisfy typing usage in this module
-    class _PluginStub:
-        async def before_request(
-            self,
-            **_: object,
-        ) -> FlextResult[None]:  # pragma: no cover - stub
-            return FlextResult.ok(None)
-
-        async def after_response(
-            self,
-            **_: object,
-        ) -> FlextResult[dict[str, object]]:  # pragma: no cover - stub
-            return FlextResult.ok({})
-
 
 logger = get_logger(__name__)
 
@@ -324,7 +305,7 @@ class FlextApiBaseAuthService(
         try:
             # Basic validation: require non-empty token; policy specifics are delegated
             if not token:
-                return FlextResult.ok(False)
+                return FlextResult.ok(data=False)
 
             # Perform token validation (implemented by subclass)
             return await self._do_validate_token(token)
@@ -578,14 +559,10 @@ class FlextApiBaseBuilderService(
 
     def for_query(self) -> FlextApiQueryBuilderProtocol:
         """Get query builder instance."""
-        from flext_api.api_client import FlextApiQueryBuilder
-
         return cast("FlextApiQueryBuilderProtocol", FlextApiQueryBuilder())
 
     def for_response(self) -> FlextApiResponseBuilderProtocol:
         """Get response builder instance."""
-        from flext_api.api_client import FlextApiResponseBuilder
-
         return cast("FlextApiResponseBuilderProtocol", FlextApiResponseBuilder())
 
 

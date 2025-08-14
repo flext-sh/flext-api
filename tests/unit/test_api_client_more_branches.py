@@ -1,3 +1,5 @@
+"""Test more branches paths."""
+
 from __future__ import annotations
 
 import pytest
@@ -14,8 +16,8 @@ from flext_api.api_client import (
 
 
 def test_request_method_conversion_and_to_dict() -> None:
+    """Test method conversion and to_dict."""
     r = FlextApiClientRequest(method="get", url="https://x", params=None)
-    # method should convert to enum; params None -> {}
     d = r.to_dict()
     assert d["method"] == "GET"
     assert isinstance(r.method, type(r.method))
@@ -24,19 +26,19 @@ def test_request_method_conversion_and_to_dict() -> None:
 
 @pytest.mark.asyncio
 async def test_caching_plugin_cache_hit_path() -> None:
+    """Test caching plugin cache hit path."""
     plugin = FlextApiCachingPlugin(ttl=300)
     req = FlextApiClientRequest(method="GET", url="https://x/headers", params={"a": 1})
     key = f"{req.url}?{req.params or ''}"
-    plugin._cache[key] = (0.0, FlextApiClientResponse(status_code=200))  # type: ignore[attr-defined]
-    # Should go through cache branch and simply return the request unchanged
+    plugin._cache[key] = (0.0, FlextApiClientResponse(status_code=200))
     out = await plugin.before_request(req)
     assert isinstance(out, FlextApiClientRequest)
 
 
 @pytest.mark.asyncio
 async def test_perform_http_request_no_session(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test perform_http_request no session path."""
     client = FlextApiClient(FlextApiClientConfig(base_url="https://x"))
-    # Force real path and no session to trigger explicit error
     monkeypatch.setattr(client, "_is_external_calls_disabled", lambda: False)
     req = FlextApiClientRequest(method="GET", url="https://x")
     res = await client._perform_http_request(req)
@@ -45,6 +47,7 @@ async def test_perform_http_request_no_session(monkeypatch: pytest.MonkeyPatch) 
 
 
 def test_build_stub_response_status_nonint() -> None:
+    """Test build_stub_response status non-int path."""
     client = FlextApiClient(FlextApiClientConfig(base_url="https://x"))
     r = client._build_stub_response(
         FlextApiClientRequest(method="GET", url="https://x/status/abc"),
@@ -56,6 +59,8 @@ def test_build_stub_response_status_nonint() -> None:
 
 @pytest.mark.asyncio
 async def test_process_response_pipeline_none_response() -> None:
+    """Test process response pipeline none response."""
+
     class _AfterNone:
         enabled = True
 
@@ -84,6 +89,7 @@ async def test_process_response_pipeline_none_response() -> None:
 
 
 def test_response_builder_with_metadata_key_requires_value() -> None:
+    """Test response builder with metadata key requires value."""
     b = FlextApiResponseBuilder()
     with pytest.raises(ValueError):
         b.with_metadata("key")

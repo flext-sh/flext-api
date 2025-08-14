@@ -41,6 +41,7 @@ class DummyAuth(FlextApiBaseAuthService):
 
 @pytest.mark.asyncio
 async def test_auth_service_paths() -> None:
+    """Test auth service paths."""
     auth = DummyAuth()
     # Empty credentials -> fail
     assert not (await auth.authenticate({})).success
@@ -82,6 +83,7 @@ class DummyRepo(FlextApiBaseRepositoryService):
 
 @pytest.mark.asyncio
 async def test_repository_service_paths() -> None:
+    """Test repository service paths."""
     repo = DummyRepo()
     assert not (await repo.find_by_id("")).success
     assert not (await repo.find_all(limit=0)).success
@@ -132,6 +134,7 @@ class DummyHandler(FlextApiBaseHandlerService):
 
 @pytest.mark.asyncio
 async def test_handler_middleware_chain_and_error() -> None:
+    """Test handler middleware chain and error."""
     h = DummyHandler()
     ok = await h.handle({"a": 1})
     assert ok.success
@@ -162,6 +165,7 @@ class DummyStream(FlextApiBaseStreamingService):
 
 @pytest.mark.asyncio
 async def test_streaming_validation_and_errors() -> None:
+    """Test streaming validation and errors."""
     s = DummyStream()
     chunks = [c async for c in s.stream_data(b"abc")]
     assert b"x" in chunks

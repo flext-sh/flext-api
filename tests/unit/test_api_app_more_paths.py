@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
+import sys
 from typing import TYPE_CHECKING
 
 from flext_api import api_app as api_app_module
 
-if TYPE_CHECKING:  # pragma: no cover - type-only import
+if TYPE_CHECKING:
     import pytest
 
 
@@ -22,9 +25,6 @@ def test_error_fallback_app_when_failure(monkeypatch: pytest.MonkeyPatch) -> Non
     """When app init fails, fallback app should expose /error route."""
     # Force failure using env knob and reload module
     monkeypatch.setenv("FLEXT_API_FORCE_APP_INIT_FAIL", "1")
-    import importlib
-    import importlib.util
-    import sys
 
     spec = importlib.util.find_spec("flext_api.api_app")
     assert spec is not None
