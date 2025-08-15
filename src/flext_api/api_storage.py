@@ -1,38 +1,4 @@
-"""FLEXT API Storage - Enhanced storage and persistence following PEP8 standards.
-
-Enhanced storage module providing persistent storage solutions for API data
-with support for multiple backends, caching, and transaction management.
-Follows flext-core patterns for consistent error handling and type safety.
-
-Architecture:
-    Storage Interface → Backend Implementation → Persistence Layer
-
-Core Features:
-    - Multiple storage backends (memory, file, database)
-    - Async/sync operation support
-    - Transaction management with rollback
-    - Caching layer for performance optimization
-    - Data serialization and validation
-
-Design Patterns:
-    - Repository Pattern: Data access abstraction
-    - Factory Pattern: Storage backend creation
-    - Strategy Pattern: Pluggable storage backends
-    - Decorator Pattern: Caching and transaction support
-
-Usage:
-    from flext_api.api_storage import FlextApiStorage, create_storage
-
-    # Create storage with memory backend
-    storage = create_storage("memory")
-
-    # Store and retrieve data
-    result = storage.set("user:123", user_data)
-    user = storage.get("user:123")
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT API storage and persistence."""
 
 from __future__ import annotations
 

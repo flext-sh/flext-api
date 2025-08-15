@@ -1,33 +1,4 @@
-"""FLEXT API Models - Consolidated domain models following PEP8 standards.
-
-Consolidated model module combining models.py + entities.py + value_objects.py into
-a single PEP8-compliant module. Defines all domain models extending flext-core base
-classes and following Domain-Driven Design principles with comprehensive validation.
-
-Architecture:
-    Domain Layer → FlextEntity/FlextValue → Business Logic → FlextResult
-
-Core Components:
-    - Enumerations: HTTP methods, status codes, protocol types
-    - Value Objects: Immutable domain values with validation
-    - Entities: Identity-based objects with lifecycle management
-    - DTOs: Data transfer objects for API communication
-
-Design Patterns:
-    - Value Object Pattern: Immutable objects with value-based equality
-    - Entity Pattern: Identity-based objects with behavior
-    - Validation Logic: Embedded validation within domain objects
-    - Railway-Oriented Programming: FlextResult integration
-
-Usage:
-    from flext_api.api_models import (
-        HttpMethod, HttpStatus, ApiRequest, ApiResponse,
-        URL, HttpHeader, BearerToken
-    )
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT API domain models."""
 
 from __future__ import annotations
 

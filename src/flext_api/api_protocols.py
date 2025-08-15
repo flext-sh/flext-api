@@ -1,34 +1,4 @@
-"""FLEXT API Protocols - Enhanced interface definitions following PEP8 standards.
-
-Enhanced protocol module providing comprehensive interface definitions for the
-FLEXT API library. Follows Interface Segregation Principle and Dependency
-Inversion Principle with type-safe protocol definitions.
-
-Architecture:
-    Protocol Layer → Interface Contracts → Implementation Guidelines
-
-Core Features:
-    - Type-safe protocol definitions with runtime checking
-    - Interface segregation for focused responsibilities
-    - Async/sync method support for different use cases
-    - Generic protocols for flexible implementations
-
-Design Patterns:
-    - Interface Segregation Principle: Minimal focused interfaces
-    - Dependency Inversion Principle: Depend on abstractions
-    - Protocol Pattern: Structural typing for flexible implementations
-    - Strategy Pattern: Pluggable algorithm interfaces
-
-Usage:
-    from flext_api.api_protocols import FlextApiClientProtocol
-
-    class MyApiClient:
-        def __init__(self, client: FlextApiClientProtocol):
-            self._client = client
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT API protocol definitions."""
 
 from __future__ import annotations
 

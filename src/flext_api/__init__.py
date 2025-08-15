@@ -1,47 +1,4 @@
-"""FLEXT API - High-Performance REST API Library for FLEXT ecosystem.
-
-A comprehensive API library for building high-performance REST APIs with FastAPI,
-implementing Clean Architecture and Domain-Driven Design principles across the
-FLEXT ecosystem. This library provides enterprise-grade API services with type safety,
-async operations, and comprehensive error handling.
-
-The library has been reorganized according to PEP8 naming standards with consolidated
-modules providing clean separation of concerns and maintainable architecture patterns.
-
-Core Features:
-    - FastAPI-based REST API framework with automatic OpenAPI documentation
-    - Async HTTP client with plugin support and connection pooling
-    - Query and response builders with fluent interfaces
-    - Domain models following DDD patterns with value objects
-    - Protocol-based interfaces for extensibility and testing
-    - Base service abstractions following SOLID principles
-    - Comprehensive error handling with FlextResult integration
-    - Type-safe request/response handling with Pydantic models
-    - Built-in authentication and authorization support
-    - Metrics collection and observability integration
-
-Module Organization (PEP8 Compliant):
-    - api_config.py: Configuration management and environment settings
-    - api_models.py: Domain models, entities, and value objects
-    - api_types.py: Type definitions, field patterns, and protocols
-    - api_client.py: HTTP client, query builders, and response handlers
-    - api_exceptions.py: API-specific exception hierarchy
-    - api_storage.py: Storage interfaces and persistence patterns
-    - api_protocols.py: Interface definitions for services and repositories
-    - api_app.py: FastAPI application factory and route definitions
-
-Example:
-    Basic API setup and usage:
-
-    >>> from flext_api import FlextAPIApp, create_api_config
-    >>> config = create_api_config()
-    >>> app = FlextAPIApp(config)
-    >>> # FastAPI app is available at app.fastapi_app
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""High-performance REST API library for FLEXT ecosystem."""
 
 from __future__ import annotations
 
