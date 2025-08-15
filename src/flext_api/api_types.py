@@ -1,38 +1,4 @@
-"""FLEXT API Types - Consolidated types and fields following PEP8 standards.
-
-Consolidated type module combining api_types.py + fields.py into a single PEP8-compliant
-module. Provides project-specific type extensions with field definitions and validation
-patterns for API-specific operations.
-
-Architecture:
-    Foundation Layer (flext-core) → Project Layer (flext-api) → Application Layer
-
-Core Features:
-    - Project-specific type system extending flext-core
-    - Field definitions with validation patterns
-    - Type-safe HTTP operations
-    - Authentication field patterns
-
-Design Patterns:
-    - Type Extensions: API-specific types building on flext-core foundation
-    - Field Factories: Reusable field creation patterns
-    - Validation Integration: Type-safe validation with detailed feedback
-    - Backward Compatibility: Legacy type aliases for migration
-
-Usage:
-    from flext_api.api_types import APITypes, FlextAPIFields
-
-    # Type-safe HTTP operations
-    endpoint: APITypes.HTTP.Endpoint = "/api/v1/users"
-    method: APITypes.HTTP.Method = "GET"
-
-    # Field definitions
-    api_key = FlextAPIFields.API_KEY
-    user_role = FlextAPIFields.USER_ROLE
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT API types and field definitions."""
 
 from __future__ import annotations
 

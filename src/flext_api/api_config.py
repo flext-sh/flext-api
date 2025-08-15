@@ -1,50 +1,17 @@
-"""FLEXT API Configuration - Consolidated configuration management following PEP8 standards.
-
-Consolidated configuration module combining basic API settings and infrastructure configuration
-into a single PEP8-compliant module. Provides environment-aware settings with validation,
-type safety, and integration patterns for the FLEXT API ecosystem.
-
-Architecture:
-    Infrastructure Layer → Configuration Management → Environment Integration
-
-Core Features:
-    - Environment-specific configuration with type safety
-    - Configuration validation and error handling
-    - Secret management with security patterns
-    - Multi-environment configuration (dev, staging, prod)
-    - Dependency injection integration
-
-Design Patterns:
-    1. Settings Management: Environment-aware configuration with validation
-    2. Type Safety: Comprehensive type definitions for configuration values
-    3. Validation Logic: Configuration validation with detailed error reporting
-    4. Secret Management: Secure handling of sensitive configuration values
-    5. Environment Integration: Multi-environment support with override patterns
-
-Usage:
-    from flext_api.api_config import FlextApiSettings, create_api_settings
-
-    # Create settings with validation
-    settings_result = create_api_settings(api_host="0.0.0.0", api_port=8081)
-    if settings_result.success:
-        settings = settings_result.data
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT API configuration management."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core import FlextConstants, FlextResult, FlextSettings
+from flext_core import FlextConstants, FlextResult, FlextBaseConfigModel
 from pydantic import Field, field_validator
 
 if TYPE_CHECKING:
     from flext_api.typings import FlextTypes
 
 
-class FlextApiSettings(FlextSettings):
+class FlextApiSettings(FlextBaseConfigModel):
     """API-specific configuration settings extending flext-core patterns.
 
     Follows Single Responsibility Principle by handling only API configuration.
@@ -149,12 +116,36 @@ class FlextApiSettings(FlextSettings):
             raise ValueError(msg)
         return v.upper()
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate API-specific business rules."""
+        # API port validation
+        if self.api_port < 1024 and self.environment == "production":
+            return FlextResult.fail("Production API should not use privileged ports (< 1024)")
+        
+        # Debug mode validation
+        if self.debug and self.environment == "production":
+            return FlextResult.fail("Debug mode cannot be enabled in production")
+        
+        # Database configuration validation
+        if self.database_url and self.database_pool_size > 50:
+            return FlextResult.fail("Database pool size should not exceed 50 for optimal performance")
+        
+        # Cache configuration validation
+        if self.enable_caching and self.cache_ttl <= 0:
+            return FlextResult.fail("Cache TTL must be positive when caching is enabled")
+        
+        # External API configuration validation
+        if self.external_api_retries > 10:
+            return FlextResult.fail("External API retries should not exceed 10 to avoid excessive delays")
+        
+        return FlextResult.ok(None)
+
     @classmethod
     def create_with_validation(
         cls,
         overrides: FlextTypes.Core.JsonDict | None = None,
         **kwargs: object,
-    ) -> FlextResult[FlextSettings]:
+    ) -> FlextResult[FlextApiSettings]:
         """Create settings instance with validation and return FlextResult.
 
         Args:

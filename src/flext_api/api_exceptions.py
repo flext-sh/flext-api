@@ -1,38 +1,4 @@
-"""FLEXT API Exceptions - Enhanced exception hierarchy following PEP8 standards.
-
-Enhanced exception module providing API-specific exception hierarchy built on
-FLEXT ecosystem error handling patterns. Includes comprehensive error context,
-HTTP status code mapping, and structured error responses.
-
-Architecture:
-    FlextError (flext-core) → FlextApiError → Specific API Exceptions
-
-Core Features:
-    - Hierarchical exception structure with proper inheritance
-    - HTTP status code mapping for REST API responses
-    - Detailed error context with API-specific information
-    - Structured error responses for API consistency
-
-Design Patterns:
-    - Exception Hierarchy: Clear inheritance from flext-core base classes
-    - Context Preservation: Rich error context for debugging
-    - Status Code Mapping: HTTP status code integration
-    - Error Response Building: Consistent API error responses
-
-Usage:
-    from flext_api.api_exceptions import FlextApiValidationError
-
-    # Raise with context
-    raise FlextApiValidationError(
-        "Invalid email format",
-        field="email",
-        value=email_value,
-        endpoint="/api/users"
-    )
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT API exception hierarchy."""
 
 from __future__ import annotations
 

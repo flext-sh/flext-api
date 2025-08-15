@@ -1,38 +1,4 @@
-"""FLEXT API Client - Consolidated HTTP client and builder following PEP8 standards.
-
-Consolidated module combining client.py + builder.py into a single PEP8-compliant
-module. Provides HTTP client functionality with async operations, query/response
-builders, and plugin architecture for comprehensive API operations.
-
-Architecture:
-    HTTP Client Layer → Builder Pattern Layer → Plugin Architecture
-
-Core Features:
-    - Async HTTP client with aiohttp backend
-    - Query and response builders with fluent interfaces
-    - Plugin system for request/response middleware
-    - Configuration validation and error handling
-
-Design Patterns:
-    - Client Pattern: HTTP operations with session management
-    - Builder Pattern: Fluent API construction interfaces
-    - Plugin Pattern: Extensible middleware architecture
-    - Factory Pattern: Client and builder creation utilities
-
-Usage:
-    from flext_api.api_client import FlextApiClient, FlextApiBuilder
-
-    # HTTP client operations
-    client = create_client({"base_url": "https://api.example.com"})
-    response = await client.get("/users")
-
-    # Builder pattern for queries
-    builder = FlextApiBuilder()
-    query = builder.for_query().with_filters({"active": True}).build()
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT API HTTP client and builders."""
 
 from __future__ import annotations
 

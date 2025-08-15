@@ -1,10 +1,4 @@
-"""FLEXT API Builder Module.
-
-Compatibility module that bridges to api_client.py builder functionality.
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT API builder module."""
 
 from __future__ import annotations
 

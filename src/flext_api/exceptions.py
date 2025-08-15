@@ -1,10 +1,4 @@
-"""FLEXT API Exceptions Module.
-
-Compatibility module that bridges to api_exceptions.py functionality.
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT API exceptions module."""
 
 from __future__ import annotations
 

@@ -1,36 +1,4 @@
-"""FLEXT API Application - Consolidated FastAPI application following PEP8 standards.
-
-Consolidated application module combining app.py + main.py into a single PEP8-compliant
-module. Provides FastAPI application factory with comprehensive configuration, middleware
-pipeline, and service integration for enterprise-grade API deployment.
-
-Architecture:
-    Presentation Layer → FastAPI Factory → Service Integration → HTTP Endpoints
-
-Core Features:
-    - FastAPI application factory with comprehensive configuration
-    - Middleware pipeline for authentication, logging, and error handling
-    - Health check and monitoring endpoints for operational visibility
-    - Service layer integration with proper dependency injection
-
-Design Patterns:
-    - Factory Pattern: Standardized application creation with configuration injection
-    - Dependency Injection: Service layer integration without tight coupling
-    - Layer Separation: Clear boundaries between presentation and application layers
-    - Configuration Management: Environment-aware application behavior
-
-Usage:
-    from flext_api.api_app import create_flext_api_app
-
-    # Create application
-    app = create_flext_api_app()
-
-    # Run with uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8081)
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""FLEXT API FastAPI application."""
 
 from __future__ import annotations
 
