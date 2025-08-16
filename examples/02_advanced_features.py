@@ -19,8 +19,13 @@ from flext_api import (
     build_error_response,
     build_query,
     build_success_response,
+    create_client,
     create_flext_api,
     create_flext_api_app,
+)
+from flext_api.api_client import (
+    PaginationConfig,
+    build_paginated_response as build_paginated,
 )
 
 
@@ -81,11 +86,6 @@ def example_advanced_response_building() -> None:
         {"id": i, "name": f"Product {i}", "price": 99.99 + i} for i in range(1, 21)
     ]
 
-    from flext_api.api_client import (
-        PaginationConfig,
-        build_paginated_response as build_paginated,
-    )
-
     paginated_response = build_paginated(
         PaginationConfig(
             data=products,
@@ -109,7 +109,6 @@ def example_advanced_response_building() -> None:
 async def example_advanced_client_configuration() -> None:
     """Example: Advanced HTTP client configuration with plugins."""
     # Client with multiple plugins using factory function
-    from flext_api import create_client
 
     client = create_client(
         {
@@ -295,19 +294,15 @@ def example_comprehensive_fastapi_app() -> None:
 
 async def main() -> None:
     """Execute all advanced examples."""
-    try:
-        # Sync examples
-        example_advanced_query_building()
-        example_advanced_response_building()
-        example_factory_functions_advanced()
-        example_comprehensive_fastapi_app()
+    # Sync examples
+    example_advanced_query_building()
+    example_advanced_response_building()
+    example_factory_functions_advanced()
+    example_comprehensive_fastapi_app()
 
-        # Async examples
-        await example_advanced_client_configuration()
-        await example_full_api_service_integration()
-
-    except (RuntimeError, ValueError, TypeError):
-        raise
+    # Async examples
+    await example_advanced_client_configuration()
+    await example_full_api_service_integration()
 
 
 if __name__ == "__main__":

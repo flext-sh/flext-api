@@ -1,16 +1,15 @@
+"""Test API app additional paths."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    pass
-else:
-    from fastapi.testclient import TestClient
+import pytest
+from fastapi.testclient import TestClient
 
 from flext_api.api_app import create_flext_api_app
 
 
-def test_docs_enabled_when_debug_true(monkeypatch) -> None:
+@pytest.mark.usefixtures("monkeypatch")
+def test_docs_enabled_when_debug_true() -> None:
     """Create app with debug=True via settings overrides path."""
     app = create_flext_api_app()
     app.state.config.settings.debug = True  # type: ignore[attr-defined]
@@ -24,12 +23,13 @@ def test_docs_enabled_when_debug_true(monkeypatch) -> None:
     assert r2.status_code in {200, 404}
 
 
-def test_error_middleware_generic_exception(monkeypatch) -> None:
+@pytest.mark.usefixtures("monkeypatch")
+def test_error_middleware_generic_exception() -> None:
     """Inject a route that raises generic exception to hit generic handler."""
     app = create_flext_api_app()
 
     @app.get("/boom")
-    async def boom():
+    async def boom() -> dict[str, str]:
         msg = "explode"
         raise RuntimeError(msg)
 

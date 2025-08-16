@@ -43,10 +43,10 @@ dependencies = [
     "flext-auth @ file:///home/marlonsc/flext/flext-auth",
     "flext-plugin @ file:///home/marlonsc/flext/flext-plugin",
     "flext-grpc @ file:///home/marlonsc/flext/flext-grpc",
-    "flext-core @ file:///home/marlonsc/flext/flext-core",
     "aiohttp>=3.12.14",
     "httpx>=0.28.1",
     "ecdsa>=0.19.1,<0.20.0",
+    "flext-core @ file:///home/marlonsc/flext/flext-core",
 ]
 keywords = ["async", "enterprise", "fastapi", "flext", "http", "rest", "typed"]
 
@@ -313,9 +313,10 @@ python_functions = ["test_*"]
 # Asyncio configuration
 asyncio_mode = "auto"
 
+
 [tool.ruff]
 extend = "../.ruff-shared.toml"
-lint.isort.known-first-party = ["flext_api"]
+lint.isort.known-first-party = ["flext_api" ]
 
 [tool.vulture]
 extend = "../.vulture-shared.toml"

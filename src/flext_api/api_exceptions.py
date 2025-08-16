@@ -18,10 +18,11 @@ from flext_core.exceptions import (
 
 from flext_api.constants import FlextApiConstants
 
-logger = get_logger(__name__)
-
 if TYPE_CHECKING:
     from flext_api.typings import FlextTypes
+
+logger = get_logger(__name__)
+
 
 # keep runtime import context minimal for static typing only
 # ==============================================================================
@@ -42,6 +43,7 @@ class FlextApiError(FlextError):
     ) -> None:
         """Initialize with message, status code, and context."""
         self.status_code = status_code
+        self.error_code = error_code
         context["status_code"] = status_code
         super().__init__(message, error_code=error_code, context=context)
 
@@ -151,7 +153,8 @@ class FlextApiAuthenticationError(FlextAuthenticationError):
             formatted_message,
             service="flext_api",
             user_id=None,
-            **context,
+            code=None,
+            context=context,
         )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
@@ -222,8 +225,12 @@ class FlextApiConfigurationError(FlextConfigurationError):
             message,
             config_key=config_key,
             config_file=None,
-            **context,
+            error_code=None,
         )
+
+        # Add context items manually
+        for key, value in context.items():
+            self.context[key] = value
 
         # Ensure config_key is in context for test compatibility
         if config_key is not None and "config_key" not in self.context:
@@ -274,8 +281,12 @@ class FlextApiConnectionError(FlextConnectionError):
             message,
             service="flext_api_connection",
             endpoint=None,
-            **context,
+            error_code=None,
         )
+
+        # Add context items manually
+        for key, value in context.items():
+            self.context[key] = value
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP connection error response."""
@@ -322,7 +333,8 @@ class FlextApiProcessingError(FlextProcessingError):
             message,
             business_rule="flext_api_processing",
             operation=operation,
-            **init_kwargs,
+            code=None,
+            context=init_kwargs,
         )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
@@ -371,12 +383,17 @@ class FlextApiTimeoutError(FlextTimeoutError):
         # Prepare flat context for base class; FlextError flattens inner context keys
         init_kwargs = dict(context)
         # Call base with explicit keywords to match signature
+        # FlextTimeoutError expects timeout_seconds as int | None
+        int_timeout: int | None
+        if isinstance(timeout_seconds, (int, float)):
+            int_timeout = int(timeout_seconds)
+        else:
+            int_timeout = None
+
         super().__init__(
             message=message,
             service="flext_api_service",
-            timeout_seconds=(
-                int(timeout_seconds) if timeout_seconds is not None else None
-            ),
+            timeout_seconds=int_timeout,
             context=init_kwargs,
         )
 

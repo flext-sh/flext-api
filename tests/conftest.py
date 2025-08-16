@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 # Garanta um loop corrente no thread principal para pytest-asyncio (Py3.13)
@@ -45,12 +45,12 @@ def _ensure_event_loop() -> None:
         asyncio.set_event_loop(asyncio.new_event_loop())
 
 
-def pytest_sessionstart(session: pytest.Session) -> None:  # type: ignore[override]
+def pytest_sessionstart(session: pytest.Session) -> None:  # type: ignore[override]  # noqa: ARG001
     """Avoid pre-creating event loops at session start."""
     _ensure_event_loop()
 
 
-def pytest_runtest_setup(item: pytest.Item) -> None:  # type: ignore[override]
+def pytest_runtest_setup(item: pytest.Item) -> None:  # type: ignore[override]  # noqa: ARG001
     """Avoid altering event loop before each test."""
     _ensure_event_loop()
 
@@ -247,7 +247,6 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config,
     items: list[pytest.Item],
 ) -> None:
     """Modify test collection to add markers based on test location."""
@@ -317,17 +316,23 @@ def optimize_test_performance() -> None:
 
 
 # -----------------------------------------------------------------------------
-# Benchmark fixture fallback (when pytest-benchmark plugin is unavailable)
+# Benchmark fixture fallback (define only if pytest-benchmark is NOT installed)
 # -----------------------------------------------------------------------------
-@pytest.fixture
-def benchmark() -> Callable[[Callable[..., Any]], Any]:
-    """Lightweight benchmark shim that simply calls the function under test.
+try:  # pragma: no cover - optional dependency
+    import pytest_benchmark  # noqa: F401
+except Exception:  # plugin not available; provide lightweight shim
 
-    This provides compatibility for tests that expect the `benchmark` fixture
-    without requiring the pytest-benchmark plugin for local runs.
-    """
+    @pytest.fixture
+    def benchmark() -> Callable[[Callable[..., object]], object]:
+        """Lightweight benchmark shim that simply calls the function under test.
 
-    def _bench(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
-        return func(*args, **kwargs)
+        Provides compatibility for tests that expect the `benchmark` fixture
+        without requiring the pytest-benchmark plugin for local runs.
+        """
 
-    return _bench
+        def _bench(
+            func: Callable[..., object], *args: object, **kwargs: object
+        ) -> object:
+            return func(*args, **kwargs)
+
+        return _bench

@@ -50,14 +50,14 @@ class TestMainCoverageComplete:
 
     def test_main_module_execution(self) -> None:
         """Test main module code coverage directly."""
-        from unittest.mock import patch
+        from unittest.mock import patch  # noqa: PLC0415
 
         # Directly test the main execution block content
         with patch("uvicorn.run") as mock_run:
             # Simulate the import and execution that happens in __main__
-            import uvicorn
+            import uvicorn  # noqa: PLC0415
 
-            from flext_api.main import app
+            from flext_api.main import app  # noqa: PLC0415
 
             # This simulates what's in the if __name__ == "__main__" block
             uvicorn.run(app, host="0.0.0.0", port=8000)
@@ -92,11 +92,11 @@ class TestMainCoverageComplete:
 
     def test_main_execution_direct_coverage(self) -> None:
         """Test direct execution of main module for full coverage."""
-        from unittest.mock import patch
+        from unittest.mock import patch  # noqa: PLC0415
 
-        import uvicorn
+        import uvicorn  # noqa: PLC0415
 
-        from flext_api.main import app
+        from flext_api.main import app  # noqa: PLC0415
 
         # Test the main execution block by calling uvicorn.run directly
         with patch("uvicorn.run") as mock_run:

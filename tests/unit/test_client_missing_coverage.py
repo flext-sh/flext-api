@@ -36,7 +36,7 @@ class TestMissingClientCoverage:
         class TestPlugin(FlextApiPlugin):
             async def after_request(
                 self,
-                request: FlextApiClientRequest,
+                _request: FlextApiClientRequest,
                 response: FlextApiClientResponse,
             ) -> FlextApiClientResponse:
                 # Process response properly
@@ -59,7 +59,7 @@ class TestMissingClientCoverage:
         class TestPlugin(FlextApiPlugin):
             async def on_error(
                 self,
-                request: FlextApiClientRequest,
+                _request: FlextApiClientRequest,
                 error: Exception,
             ) -> Exception:
                 # Process error properly

@@ -26,8 +26,7 @@ def example_query_builder() -> None:
     Notes:
         Builds simple and complex queries, including pagination and sorting.
 
-    """
-    # Criar query builder
+    """  # Criar query builder
     qb = FlextApiQueryBuilder()
 
     # Construir query simples
@@ -61,8 +60,7 @@ def example_response_builder() -> None:
     Notes:
         Shows success, error, and paginated responses with metadata.
 
-    """
-    # Response de sucesso
+    """  # Response de sucesso
     rb = FlextApiResponseBuilder()
     (
         rb.success(data={"id": 123, "name": "John Doe"})
@@ -92,8 +90,7 @@ def example_fastapi_builder() -> None:
         Creates a basic FastAPI app and uses the unified builder for
         query/response construction.
 
-    """
-    # App básica com features automáticas
+    """  # App básica com features automáticas
     create_flext_api_app()
 
     # Demonstrar uso do builder para queries e responses
@@ -128,8 +125,7 @@ async def example_http_client() -> None:
         effective configuration. Network requests are not performed in this
         example.
 
-    """
-    # Configure client
+    """  # Configure client
     config = FlextApiClientConfig(
         base_url="https://jsonplaceholder.typicode.com",
         timeout=30.0,
@@ -165,8 +161,7 @@ def example_integration() -> None:
         Builds a query, simulates results, and creates a standardized
         API response, asserting expected fields.
 
-    """
-    # 1. Construir query para buscar usuários
+    """  # 1. Construir query para buscar usuários
     qb = FlextApiQueryBuilder()
     (
         qb.equals("department", "sales")
@@ -222,8 +217,7 @@ def example_integration() -> None:
 
 
 async def main() -> None:
-    """Run all examples."""
-    # Exemplos síncronos
+    """Run all examples."""  # Exemplos síncronos
     example_query_builder()
     example_response_builder()
     example_fastapi_builder()

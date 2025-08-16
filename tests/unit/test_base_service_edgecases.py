@@ -42,7 +42,7 @@ async def test_start_failure_path() -> None:
 
 
 @pytest.mark.asyncio
-async def test_stop_warning_path(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_stop_warning_path() -> None:
     """Stop returns ok even if _do_stop fails, logging a warning."""
     svc = BrokenStopService()
     # Stop should still return ok even when _do_stop fails, but log warning
@@ -51,7 +51,7 @@ async def test_stop_warning_path(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_health_check_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_health_check_failure() -> None:
     """Health check returns failure when details provider fails."""
 
     class BrokenHealth(FlextApiBaseService):
@@ -67,7 +67,7 @@ async def test_health_check_failure(monkeypatch: pytest.MonkeyPatch) -> None:
         ) -> FlextResult[None]:  # pragma: no cover - not used here
             return FlextResult.ok(None)
 
-        async def _get_health_details(self):  # type: ignore[override]
+        async def _get_health_details(self) -> FlextResult[object]:  # type: ignore[override]
             return FlextResult.fail("boom")
 
     svc = BrokenHealth()

@@ -30,14 +30,10 @@ class TestFinalCoverage:
     def test_init_package_not_found_direct(self) -> None:
         """Test init.py package not found handling."""
         # Test the import error handling in __init__.py
-        try:
-            # This should not raise an exception
-            from flext_api import FlextApi
+        # This should not raise an exception
+        from flext_api import FlextApi  # noqa: PLC0415
 
-            assert FlextApi is not None
-        except ImportError:
-            # This is expected if dependencies are missing
-            pass
+        assert FlextApi is not None
 
     def test_main_execution_direct(self) -> None:
         """Test main execution path."""
@@ -88,7 +84,7 @@ class TestFinalCoverage:
     def test_fields_import_line_13(self) -> None:
         """Test fields.py line 13 by importing the specific line."""
         # Import fields module directly to ensure line 13 is covered
-        import flext_api.fields as fields_module
+        import flext_api.fields as fields_module  # noqa: PLC0415
 
         # Access the classes to ensure import is executed
         assert FlextAPIFields is not None

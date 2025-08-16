@@ -96,11 +96,11 @@ class TestInitCoverage:
 
     def test_version_fallback(self) -> None:
         """Test version fallback when package metadata not found."""
-        import importlib.metadata
-        from unittest.mock import patch
+        import importlib.metadata  # noqa: PLC0415
+        from unittest.mock import patch  # noqa: PLC0415
 
         # Save original version
-        import flext_api
+        import flext_api  # noqa: PLC0415
 
         original_version = flext_api.__version__
 
@@ -111,7 +111,7 @@ class TestInitCoverage:
             side_effect=importlib.metadata.PackageNotFoundError,
         ):
             # Re-import the module to trigger exception handling
-            import importlib
+            import importlib  # noqa: PLC0415
 
             importlib.reload(flext_api)
 

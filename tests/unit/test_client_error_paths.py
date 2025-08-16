@@ -1,3 +1,5 @@
+"""Client error path tests for request build and perform failures."""
+
 from __future__ import annotations
 
 import pytest
@@ -14,10 +16,11 @@ from flext_api.api_client import (
 async def test_request_build_failure_and_pipeline_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Force failures in _build_request and _perform_http_request paths."""
     client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
 
     # Force _build_request to fail
-    def bad_build(*_a, **_k):
+    def bad_build(*_a: object, **_k: object) -> FlextResult[object]:
         return FlextResult.fail("bad build")
 
     monkeypatch.setattr(client, "_build_request", bad_build)
@@ -26,7 +29,7 @@ async def test_request_build_failure_and_pipeline_error(
     assert "bad build" in (res.error or "")
 
     # Force _perform_http_request to fail and error formatting to trigger
-    async def bad_perform(_req):
+    async def bad_perform(_req: FlextApiClientRequest) -> FlextResult[object]:
         return FlextResult.fail("exec fail")
 
     monkeypatch.setattr(client, "_build_request", FlextApiClient._build_request)

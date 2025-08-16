@@ -1,3 +1,5 @@
+"""Transaction and cache behavior tests for storage backends."""
+
 from __future__ import annotations
 
 import pytest
@@ -7,6 +9,7 @@ from flext_api.api_storage import FlextApiStorage, StorageBackend, StorageConfig
 
 @pytest.mark.asyncio
 async def test_transaction_commit_set_and_delete_and_cache() -> None:
+    """Transaction commit persists set/delete and populates cache."""
     storage = FlextApiStorage(
         StorageConfig(
             namespace="txn",
@@ -32,6 +35,7 @@ async def test_transaction_commit_set_and_delete_and_cache() -> None:
 
 @pytest.mark.asyncio
 async def test_transaction_rollback_and_clear_cache_and_close() -> None:
+    """Rollback clears changes; clear() empties cache; close() succeeds."""
     storage = FlextApiStorage(
         StorageConfig(
             namespace="rb",
@@ -57,6 +61,7 @@ async def test_transaction_rollback_and_clear_cache_and_close() -> None:
 async def test_cache_ttl_expiration_via_time_monkeypatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """TTL expiration is respected using a time monkeypatch."""
     storage = FlextApiStorage(
         StorageConfig(
             namespace="ttl",
@@ -66,7 +71,7 @@ async def test_cache_ttl_expiration_via_time_monkeypatch(
         ),
     )
     # Monkeypatch time to control expiry
-    import time as _time
+    import time as _time  # noqa: PLC0415
 
     base = _time.time()
     monkeypatch.setattr("time.time", lambda: base)

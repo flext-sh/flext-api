@@ -5,12 +5,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
-
-if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
 
     from flext_core import FlextResult
+
+    from flext_api.typings import FlextTypes
+
 
 # ==============================================================================
 # HTTP CLIENT PROTOCOLS
@@ -34,7 +34,6 @@ class FlextApiClientProtocol(Protocol):
         data: FlextTypes.Core.JsonDict | str | bytes | None = None,
         json: FlextTypes.Core.JsonDict | None = None,
         params: Mapping[str, str] | None = None,
-        timeout: float | None = None,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Make an HTTP request.
 
@@ -59,7 +58,6 @@ class FlextApiClientProtocol(Protocol):
         *,
         params: Mapping[str, str] | None = None,
         headers: Mapping[str, str] | None = None,
-        timeout: float | None = None,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Perform GET request."""
         ...
@@ -71,7 +69,6 @@ class FlextApiClientProtocol(Protocol):
         json: FlextTypes.Core.JsonDict | None = None,
         data: str | bytes | None = None,
         headers: Mapping[str, str] | None = None,
-        timeout: float | None = None,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Perform POST request."""
         ...
@@ -83,7 +80,6 @@ class FlextApiClientProtocol(Protocol):
         json: FlextTypes.Core.JsonDict | None = None,
         data: str | bytes | None = None,
         headers: Mapping[str, str] | None = None,
-        timeout: float | None = None,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Perform PUT request."""
         ...
@@ -93,7 +89,6 @@ class FlextApiClientProtocol(Protocol):
         url: str,
         *,
         headers: Mapping[str, str] | None = None,
-        timeout: float | None = None,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Perform DELETE request."""
         ...

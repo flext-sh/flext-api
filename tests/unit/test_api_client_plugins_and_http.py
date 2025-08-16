@@ -1,6 +1,6 @@
-from __future__ import annotations
+"""Test plugins and http."""
 
-from typing import Any
+from __future__ import annotations
 
 import pytest
 from flext_core import FlextResult
@@ -16,11 +16,11 @@ from flext_api.api_client import (
 class _CM:
     """Context manager for fake response."""
 
-    def __init__(self, resp: Any) -> None:
+    def __init__(self, resp: _FakeResponse) -> None:
         """Initialize context manager with fake response."""
         self._resp = resp
 
-    async def __aenter__(self) -> Any:
+    async def __aenter__(self) -> _FakeResponse:
         """Enter context manager."""
         return self._resp
 
@@ -34,7 +34,7 @@ class _FakeResponse:
         self,
         status: int,
         headers: dict[str, str],
-        json_obj: Any | None,
+        json_obj: object,
         text_value: str,
     ) -> None:
         self.status = status
@@ -42,7 +42,7 @@ class _FakeResponse:
         self._json_obj = json_obj
         self._text_value = text_value
 
-    async def json(self) -> Any:
+    async def json(self) -> object:
         if isinstance(self._json_obj, Exception):
             raise self._json_obj
         return self._json_obj
@@ -56,7 +56,7 @@ class _FakeSession:
         self._resp = resp
         self.closed = False
 
-    def request(self, *args: object, **kwargs: object) -> _CM:
+    def request(self, *_args: object, **_kwargs: object) -> _CM:
         return _CM(self._resp)
 
     async def close(self) -> None:
@@ -177,8 +177,9 @@ class _PluginAfterModify:
         return FlextResult.ok(new_resp)
 
 
+@pytest.mark.usefixtures("monkeypatch")
 @pytest.mark.asyncio
-async def test_plugins_before_and_after_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_plugins_before_and_after_paths() -> None:
     """Test plugins before and after paths."""
     # before_request fail
     c1 = FlextApiClient(

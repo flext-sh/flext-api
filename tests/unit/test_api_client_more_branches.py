@@ -64,10 +64,18 @@ async def test_process_response_pipeline_none_response() -> None:
     class _AfterNone:
         enabled = True
 
-        async def before_request(self, request, _ctx=None):
+        async def before_request(
+            self,
+            request: FlextApiClientRequest,
+            _ctx: dict[str, object] | None = None,
+        ) -> FlextApiClientRequest:
             return request
 
-        async def after_response(self, _resp, _ctx=None):
+        async def after_response(
+            self,
+            _resp: FlextApiClientResponse,
+            _ctx: dict[str, object] | None = None,
+        ) -> FlextResult:
             return FlextResult.ok(None)
 
     c = FlextApiClient(
@@ -76,7 +84,9 @@ async def test_process_response_pipeline_none_response() -> None:
     )
     # Return a valid response from perform to reach after_response None
 
-    async def ok_perform(_r):
+    async def ok_perform(
+        _r: FlextApiClientRequest,
+    ) -> FlextResult[FlextApiClientResponse]:
         return FlextResult.ok(FlextApiClientResponse(status_code=200, data={}))
 
     req = FlextApiClientRequest(method="GET", url="https://x")

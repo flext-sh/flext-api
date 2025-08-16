@@ -5,7 +5,9 @@ from __future__ import annotations
 import pytest
 from flext_core import FlextResult
 
-# Ensure forward-ref'd protocols exist in eval namespace for model_rebuild
+from flext_api.api_models import ClientConfig
+
+# Ensure forward-ref'd protocols and types exist in eval namespace for model_rebuild
 from flext_api.api_protocols import (  # noqa: F401
     FlextApiMiddlewareProtocol,
     FlextApiPluginProtocol,
@@ -18,7 +20,7 @@ from flext_api.base_service import (
     FlextApiBaseHandlerService,
     FlextApiBaseRepositoryService,
 )
-from flext_api.api_models import ClientConfig
+from flext_api.typings import FlextTypes  # noqa: F401
 
 
 class DummyClientService(FlextApiBaseClientService):
@@ -74,7 +76,7 @@ class DummyAuth(FlextApiBaseAuthService):
 
     async def _do_authenticate(
         self,
-        credentials: dict[str, object],
+        _credentials: dict[str, object],
     ) -> FlextResult[dict[str, object]]:
         return FlextResult.ok({"token": "abcdefghijklmnop"})
 
@@ -116,7 +118,12 @@ class DummyRepo(FlextApiBaseRepositoryService):
     async def _do_find_by_id(self, entity_id: str) -> FlextResult[dict[str, object]]:
         return FlextResult.ok({"id": entity_id})
 
-    async def _do_find_all(self, filters, limit, offset):  # type: ignore[no-untyped-def]
+    async def _do_find_all(
+        self,
+        _filters: dict[str, object] | None,
+        _limit: int | None,
+        _offset: int | None,
+    ) -> FlextResult[list[dict[str, object]]]:
         return FlextResult.ok([{"id": 1}])
 
     async def _do_save(
@@ -125,7 +132,7 @@ class DummyRepo(FlextApiBaseRepositoryService):
     ) -> FlextResult[dict[str, object]]:
         return FlextResult.ok(entity)
 
-    async def _do_delete(self, entity_id: str) -> FlextResult[None]:
+    async def _do_delete(self, _entity_id: str) -> FlextResult[None]:
         return FlextResult.ok(None)
 
 

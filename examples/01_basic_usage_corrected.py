@@ -218,20 +218,16 @@ def example_main_builder() -> None:
 
 async def main() -> None:
     """Run all examples."""
-    try:
-        # Basic examples
-        example_query_builder()
-        example_response_builder()
-        example_factory_functions()
-        example_main_builder()
-        example_fastapi_app()
+    # Basic examples
+    example_query_builder()
+    example_response_builder()
+    example_factory_functions()
+    example_main_builder()
+    example_fastapi_app()
 
-        # Async examples
-        await example_api_service()
-        await example_http_client()
-
-    except (RuntimeError, ValueError, TypeError):
-        raise
+    # Async examples
+    await example_api_service()
+    await example_http_client()
 
 
 if __name__ == "__main__":

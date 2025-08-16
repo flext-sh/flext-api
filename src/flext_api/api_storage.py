@@ -648,8 +648,6 @@ class FlextApiStorage:
             return FlextResult.fail(tx_result.error or "Invalid transaction")
 
         tx = tx_result.data
-        if tx is None:
-            return FlextResult.fail("Invalid transaction context")
 
         for op, key, value in tx.operations:
             if op == "set":

@@ -1,3 +1,5 @@
+"""Public API helper tests and additional coverage for app behaviors."""
+
 from __future__ import annotations
 
 import os
@@ -18,6 +20,7 @@ from flext_api.api import FlextApi as FlextApiClass
 
 
 def test_public_sync_health_check_and_helpers() -> None:
+    """Smoke test for root helpers and sync health check."""
     api = FlextApiClass()
     # sync helper exported in package root
     res = sync_health_check(api)
@@ -41,6 +44,7 @@ def test_public_sync_health_check_and_helpers() -> None:
 
 @pytest.mark.asyncio
 async def test_storage_set_get_via_factory() -> None:
+    """Ensure storage factory creates working storage and set/get works."""
     storage = create_api_storage("memory", namespace="t2")
     assert (await storage.set("k", "v")).success
     got = await storage.get("k")
@@ -49,9 +53,10 @@ async def test_storage_set_get_via_factory() -> None:
 
 
 def test_deprecated_create_api_service_and_client_paths() -> None:
+    """Ensure deprecated helpers still import and function nominally."""
     api = FlextApi()
     # Deprecated create_api_service function
-    from flext_api.api import create_api_service
+    from flext_api.api import create_api_service  # noqa: PLC0415
 
     svc = create_api_service()
     assert isinstance(svc, FlextApi)
@@ -69,6 +74,7 @@ def test_deprecated_create_api_service_and_client_paths() -> None:
 
 @pytest.mark.asyncio
 async def test__create_client_impl_failure_and_success() -> None:
+    """Validate client creation failure and success paths."""
     api = FlextApi()
     # Failure: empty base_url
     with pytest.raises(ValueError):
@@ -78,20 +84,20 @@ async def test__create_client_impl_failure_and_success() -> None:
     assert client is not None
 
 
-def test_app_health_storage_error_and_nonawaitable_paths(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+@pytest.mark.usefixtures("monkeypatch")
+def test_app_health_storage_error_and_nonawaitable_paths() -> None:
+    """Health endpoint handles storage errors and non-awaitable returns."""
     # Normal app
     app = create_flext_api_app()
     client = TestClient(app)
 
     # First, simulate storage set raising to hit degraded branch
     class BadStorage:
-        def set(self, *_args, **_kwargs) -> Never:  # no awaitable
+        def set(self, *_args: object, **_kwargs: object) -> Never:  # no awaitable
             msg = "boom"
             raise RuntimeError(msg)
 
-        def delete(self, *_args, **_kwargs):  # no awaitable
+        def delete(self, *_args: object, **_kwargs: object) -> dict[str, object]:  # no awaitable
             return {"ok": True}
 
     app.state.storage = BadStorage()
@@ -103,10 +109,10 @@ def test_app_health_storage_error_and_nonawaitable_paths(
 
     # Second, simulate non-awaitable set/delete returning plain objects
     class PlainStorage:
-        def set(self, *_args, **_kwargs):  # returns non-awaitable
+        def set(self, *_args: object, **_kwargs: object) -> dict[str, object]:  # returns non-awaitable
             return {"ok": True}
 
-        def delete(self, *_args, **_kwargs):  # returns non-awaitable
+        def delete(self, *_args: object, **_kwargs: object) -> dict[str, object]:  # returns non-awaitable
             return {"ok": True}
 
     app.state.storage = PlainStorage()
@@ -119,20 +125,21 @@ def test_app_health_storage_error_and_nonawaitable_paths(
 
 
 def test_app_error_fallback_route_via_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Re-import app with forced init fail and hit /error route."""
     # Force app init to fail and hit /error route
     monkeypatch.setenv("FLEXT_API_FORCE_APP_INIT_FAIL", "1")
     # Re-import module to trigger fallback path
     try:
         # Remove cached module if any
-        import sys
+        import sys  # noqa: PLC0415
 
         if "flext_api.api_app" in sys.modules:
             del sys.modules["flext_api.api_app"]
         # Use TestClient on the reloaded module's app
-        from importlib import reload
+        from importlib import reload  # noqa: PLC0415
 
-        import flext_api.api_app as api_app2
-        from flext_api import api_app as api_app_mod  # noqa: F401
+        import flext_api.api_app as api_app2  # noqa: PLC0415
+        from flext_api import api_app as api_app_mod  # noqa: F401, PLC0415
 
         reload(api_app2)
         c = TestClient(api_app2.app)
