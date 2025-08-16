@@ -7,7 +7,7 @@ import asyncio
 import pytest
 from flext_core import FlextResult
 
-from flext_api.api import FlextApi, create_flext_api
+from flext_api import FlextApi, create_flext_api
 
 
 @pytest.mark.asyncio

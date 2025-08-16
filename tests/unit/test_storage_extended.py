@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api.api_storage import (
+from flext_api import (
     FileStorageBackend,
     FlextApiStorage,
     MemoryCache,

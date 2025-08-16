@@ -1,4 +1,9 @@
-"""FLEXT API HTTP client and builders."""
+"""FLEXT API HTTP client and builders.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -930,11 +935,13 @@ class FlextApiClient:
 
         # Handle plugin short-circuit response or update request
         request, should_short_circuit = self._handle_plugin_result(
-            request_result, request,
+            request_result,
+            request,
         )
         if should_short_circuit:
             if request_result.data is None or not isinstance(
-                request_result.data, FlextApiClientResponse,
+                request_result.data,
+                FlextApiClientResponse,
             ):
                 return FlextResult.fail("Plugin returned no response")
             return FlextResult.ok(request_result.data)
@@ -1577,6 +1584,7 @@ def build_query_from_params(params: object) -> FlextApiQuery:
     REFACTORED: Uses Parameter Object pattern to reduce complexity
     and improve maintainability. Supports backward compatibility.
     """
+
     # Helper to read attributes from either dict or dataclass-like object
     def _get(field: str, default: object | None = None) -> object | None:
         if isinstance(params, dict):
@@ -1592,17 +1600,25 @@ def build_query_from_params(params: object) -> FlextApiQuery:
         ]
     elif isinstance(filters_val, list):
         # Only accept list of dicts; otherwise, ignore
-        prepared_filters = [f for f in filters_val if isinstance(f, dict)]  # narrow type
+        prepared_filters = [
+            f for f in filters_val if isinstance(f, dict)
+        ]  # narrow type
     else:
         prepared_filters = []
 
     sorts_val = _get("sorts")
     sorts: list[dict[str, str]] = (
-        [s for s in sorts_val if isinstance(s, dict)] if isinstance(sorts_val, list) else []
+        [s for s in sorts_val if isinstance(s, dict)]
+        if isinstance(sorts_val, list)
+        else []
     )
 
     page_val = _get("page")
-    page = int(page_val) if isinstance(page_val, (int, str)) and str(page_val).isdigit() else 1
+    page = (
+        int(page_val)
+        if isinstance(page_val, (int, str)) and str(page_val).isdigit()
+        else 1
+    )
 
     page_size_val = _get("page_size")
     page_size = (

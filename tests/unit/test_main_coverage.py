@@ -11,9 +11,7 @@ from unittest.mock import patch
 
 import uvicorn
 
-import flext_api.main as main_module
-from flext_api.main import app, storage
-from flext_api.storage import FlextAPIStorage
+from flext_api import FlextAPIStorage, app, main as main_module, storage
 
 
 class TestMainCoverageComplete:
@@ -57,7 +55,7 @@ class TestMainCoverageComplete:
             # Simulate the import and execution that happens in __main__
             import uvicorn  # noqa: PLC0415
 
-            from flext_api.main import app  # noqa: PLC0415
+            from flext_api import app  # noqa: PLC0415
 
             # This simulates what's in the if __name__ == "__main__" block
             uvicorn.run(app, host="0.0.0.0", port=8000)
@@ -96,7 +94,7 @@ class TestMainCoverageComplete:
 
         import uvicorn  # noqa: PLC0415
 
-        from flext_api.main import app  # noqa: PLC0415
+        from flext_api import app  # noqa: PLC0415
 
         # Test the main execution block by calling uvicorn.run directly
         with patch("uvicorn.run") as mock_run:

@@ -11,7 +11,7 @@ import http
 
 from flext_core import FlextFieldType
 
-from flext_api.constants import (
+from flext_api import (
     FLEXT_API_CACHE_TTL,
     FLEXT_API_MAX_RETRIES,
     FLEXT_API_TIMEOUT,

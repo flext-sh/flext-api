@@ -74,7 +74,6 @@ class TestAPIPerformanceBenchmarks:
 
         def complex_builder_operations() -> tuple[FlextApiQuery, FlextApiResponse]:
             builder = FlextApiBuilder()
-
             query = (
                 builder.for_query()
                 .equals("status", "published")
@@ -84,7 +83,6 @@ class TestAPIPerformanceBenchmarks:
                 .page_size(25)
                 .build()
             )
-
             response = (
                 builder.for_response()
                 .success(data={"items": list(range(25))})
@@ -92,7 +90,6 @@ class TestAPIPerformanceBenchmarks:
                 .with_metadata("query_time", "0.042s")
                 .build()
             )
-
             return query, response
 
         query, response = benchmark(complex_builder_operations)
@@ -151,7 +148,6 @@ class TestAPIPerformanceBenchmarks:
                 "metadata": {f"key_{i}": f"value_{i}" for i in range(50)},
                 "total": 1000,
             }
-
             return build_success_response(
                 data=large_data,
                 message="Large dataset retrieved",

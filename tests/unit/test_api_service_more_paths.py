@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api.api import FlextApi
+from flext_api import FlextApi
 
 
 @pytest.mark.asyncio

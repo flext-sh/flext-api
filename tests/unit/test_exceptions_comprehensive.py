@@ -22,7 +22,7 @@ from flext_core.exceptions import (
     FlextValidationError,
 )
 
-from flext_api.exceptions import (
+from flext_api import (
     FlextApiAuthenticationError,
     FlextApiBuilderError,
     FlextApiConfigurationError,

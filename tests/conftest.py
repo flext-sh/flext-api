@@ -9,7 +9,6 @@ from __future__ import annotations
 import asyncio
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 # Garanta um loop corrente no thread principal para pytest-asyncio (Py3.13)
@@ -17,16 +16,17 @@ try:
     asyncio.get_event_loop()
 except RuntimeError:
     asyncio.set_event_loop(asyncio.new_event_loop())
+
+from typing import TYPE_CHECKING
+
 import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
-from flext_api.api_app import app
-from flext_api.api_client import FlextApiClient
+from flext_api import FlextApiClient, app
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable, Iterator
-
 
 # Configure faker for consistent test data
 fake = Faker()
@@ -331,7 +331,9 @@ except Exception:  # plugin not available; provide lightweight shim
         """
 
         def _bench(
-            func: Callable[..., object], *args: object, **kwargs: object,
+            func: Callable[..., object],
+            *args: object,
+            **kwargs: object,
         ) -> object:
             return func(*args, **kwargs)
 

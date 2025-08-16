@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from flext_api import api_app as api_app_module
-from flext_api.api_exceptions import FlextApiError
+from flext_api import FlextApiError, api_app as api_app_module
 
 
 def test_error_middleware_handles_flextapierror_and_generic() -> None:

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from flext_api.app import flext_api_create_app
+from flext_api import flext_api_create_app
 
 
 class TestFlextApiApp:

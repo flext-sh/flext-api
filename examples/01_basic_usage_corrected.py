@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """FLEXT API - Basic usage examples (corrected).
 
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-
 This example demonstrates basic FLEXT API usage with real functionality.
 All methods used exist and work as expected.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
 
 """
 

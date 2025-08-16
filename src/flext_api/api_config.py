@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_core import FlextBaseConfigModel, FlextConstants, FlextResult, FlextSettings
 from pydantic import Field, field_validator
 
 from flext_api.constants import FlextApiConstants
-
-if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
+from flext_api.typings import FlextTypes
 
 
 class FlextApiSettings(FlextBaseConfigModel):
@@ -29,15 +25,12 @@ class FlextApiSettings(FlextBaseConfigModel):
         le=FlextConstants.Platform.MAX_PORT_NUMBER,
     )
     api_workers: int = Field(default=1, description="Number of worker processes", ge=1)
-
     # API Client Configuration
     default_timeout: int = Field(default=30, description="Default HTTP timeout", ge=1)
     max_retries: int = Field(default=3, description="Maximum retry attempts", ge=0)
-
     # Plugin Configuration
     enable_caching: bool = Field(default=True, description="Enable response caching")
     cache_ttl: int = Field(default=300, description="Cache TTL in seconds", ge=0)
-
     # Database Configuration
     database_url: str | None = Field(
         default=None,
@@ -53,7 +46,6 @@ class FlextApiSettings(FlextBaseConfigModel):
         description="Database timeout in seconds",
         ge=1,
     )
-
     # External Service Configuration
     external_api_timeout: int = Field(
         default=60,
@@ -65,7 +57,6 @@ class FlextApiSettings(FlextBaseConfigModel):
         description="External API max retries",
         ge=0,
     )
-
     # Security Configuration
     secret_key: str | None = Field(default=None, description="Application secret key")
     jwt_expiry: int = Field(default=3600, description="JWT expiry in seconds", ge=60)
@@ -73,7 +64,6 @@ class FlextApiSettings(FlextBaseConfigModel):
         default_factory=list,
         description="CORS allowed origins",
     )
-
     # Environment Configuration
     environment: str = Field(
         default="development",
@@ -81,7 +71,6 @@ class FlextApiSettings(FlextBaseConfigModel):
     )
     debug: bool = Field(default=False, description="Enable debug mode")
     log_level: str = Field(default="INFO", description="Logging level")
-
     # Inherit base model_config and customize env_prefix
     model_config = FlextBaseConfigModel.model_config | {"env_prefix": "FLEXT_API_"}
 
@@ -126,11 +115,9 @@ class FlextApiSettings(FlextBaseConfigModel):
             return FlextResult.fail(
                 f"Production API should not use privileged ports (< {FlextApiConstants.Connection.PRIVILEGED_PORT_LIMIT})",
             )
-
         # Debug mode validation
         if self.debug and self.environment == "production":
             return FlextResult.fail("Debug mode cannot be enabled in production")
-
         # Database configuration validation
         if (
             self.database_url
@@ -139,19 +126,16 @@ class FlextApiSettings(FlextBaseConfigModel):
             return FlextResult.fail(
                 f"Database pool size should not exceed {FlextApiConstants.Database.MAX_POOL_SIZE} for optimal performance",
             )
-
         # Cache configuration validation
         if self.enable_caching and self.cache_ttl <= 0:
             return FlextResult.fail(
                 "Cache TTL must be positive when caching is enabled",
             )
-
         # External API configuration validation
         if self.external_api_retries > FlextApiConstants.Config.MAX_RETRIES:
             return FlextResult.fail(
                 f"External API retries should not exceed {FlextApiConstants.Config.MAX_RETRIES} to avoid excessive delays",
             )
-
         return FlextResult.ok(None)
 
     @classmethod
@@ -165,7 +149,6 @@ class FlextApiSettings(FlextBaseConfigModel):
         Args:
             overrides: Optional dictionary of configuration overrides
             **kwargs: Additional keyword arguments for settings
-
         Returns:
             FlextResult containing validated FlextApiSettings instance
 
@@ -176,9 +159,10 @@ class FlextApiSettings(FlextBaseConfigModel):
             if overrides:
                 config_data.update(overrides)
             config_data.update(kwargs)
-
             settings = (
-                cls.model_validate(config_data) if config_data else cls.model_validate({})
+                cls.model_validate(config_data)
+                if config_data
+                else cls.model_validate({})
             )
             return FlextResult.ok(settings)
         except (RuntimeError, ValueError, TypeError, OSError) as e:
@@ -193,7 +177,6 @@ def create_api_settings(**overrides: object) -> FlextResult[FlextApiSettings]:
 
     Args:
         **overrides: Configuration overrides to apply
-
     Returns:
         FlextResult containing validated FlextApiSettings instance
 
@@ -201,14 +184,12 @@ def create_api_settings(**overrides: object) -> FlextResult[FlextApiSettings]:
     try:
         # Create settings - Pydantic settings automatically load from environment
         settings = FlextApiSettings()
-
         # Apply any overrides after creation if needed
         if overrides:
             # Merge current values with overrides and validate
             current_values = settings.model_dump()
             current_values.update(overrides)
             settings = FlextApiSettings.model_validate(current_values)
-
         return FlextResult.ok(settings)
     except Exception as e:
         return FlextResult.fail(f"Failed to create settings: {e}")

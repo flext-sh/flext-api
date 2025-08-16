@@ -20,7 +20,7 @@ import importlib
 import pathlib
 from types import ModuleType
 
-from flext_api.infrastructure_config import __doc__ as infrastructure_doc
+from flext_api import __doc__ as infrastructure_doc
 
 
 class TestInfrastructureModule:

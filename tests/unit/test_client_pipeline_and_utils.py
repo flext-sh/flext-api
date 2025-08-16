@@ -7,7 +7,7 @@ from typing import Never
 import pytest
 from flext_core import FlextResult
 
-from flext_api.api_client import (
+from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientRequest,
@@ -51,7 +51,9 @@ class BeforePluginFail:
     name = "before_fail"
     enabled = True
 
-    async def before_request(self, _request: object, _context: object | None = None) -> FlextResult[object]:
+    async def before_request(
+        self, _request: object, _context: object | None = None
+    ) -> FlextResult[object]:
         return FlextResult.fail("bad before")
 
 
@@ -61,7 +63,9 @@ class AfterPluginFail:
     name = "after_fail"
     enabled = True
 
-    async def after_response(self, _response: object, _context: object | None = None) -> FlextResult[object]:
+    async def after_response(
+        self, _response: object, _context: object | None = None
+    ) -> FlextResult[object]:
         return FlextResult.fail("bad after")
 
 

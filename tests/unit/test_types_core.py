@@ -7,14 +7,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.api_types import TData
+from flext_api import TData
 
 
 class TestTypes:
     """Test cases for type definitions."""
 
     def test_tdata_typevar(self) -> None:
-        """Test TData type variable."""        # TData is a TypeVar, basic existence test
+        """Test TData type variable."""  # TData is a TypeVar, basic existence test
         assert TData is not None
         assert hasattr(TData, "__name__")
         if TData.__name__ != "TData":
@@ -23,6 +23,7 @@ class TestTypes:
 
     def test_tdata_usage(self) -> None:
         """Test TData can be used in type annotations."""
+
         def example_function(data: TData) -> TData:
             """Example function function.
 

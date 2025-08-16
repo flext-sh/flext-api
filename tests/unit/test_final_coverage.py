@@ -13,15 +13,18 @@ from unittest.mock import patch
 import aiohttp
 import pytest
 
-from flext_api import FlextApi
-from flext_api.builder import FlextApiQueryBuilder, FlextApiResponseBuilder
-from flext_api.client import (
+from flext_api import (
+    FlextApi,
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientMethod,
     FlextApiClientRequest,
+    FlextAPIFieldCore,
+    FlextAPIFields,
+    FlextApiQueryBuilder,
+    FlextApiResponseBuilder,
+    fields as fields_module,
 )
-from flext_api.fields import FlextAPIFieldCore, FlextAPIFields
 
 
 class TestFinalCoverage:
@@ -84,7 +87,6 @@ class TestFinalCoverage:
     def test_fields_import_line_13(self) -> None:
         """Test fields.py line 13 by importing the specific line."""
         # Import fields module directly to ensure line 13 is covered
-        import flext_api.fields as fields_module  # noqa: PLC0415
 
         # Access the classes to ensure import is executed
         assert FlextAPIFields is not None

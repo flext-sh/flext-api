@@ -428,7 +428,9 @@ class HttpHeader(FlextValue):
         """Check if this is a content-type header."""
         return self.name.lower() == "content-type"
 
-    def to_dict(self, *, by_alias: bool = False, exclude_none: bool = False) -> dict[str, object]:
+    def to_dict(
+        self, *, by_alias: bool = False, exclude_none: bool = False
+    ) -> dict[str, object]:
         """Convert to dictionary representation."""
         _ = by_alias, exclude_none  # Parameters maintained for compatibility
         return {self.name: self.value}
@@ -685,7 +687,9 @@ class QueryConfig(FlextValue):
 
         return FlextResult.ok(None)
 
-    def to_dict(self, *, by_alias: bool = False, exclude_none: bool = False) -> dict[str, object]:
+    def to_dict(
+        self, *, by_alias: bool = False, exclude_none: bool = False
+    ) -> dict[str, object]:
         """Convert to dictionary representation."""
         _ = by_alias, exclude_none  # Parameters maintained for compatibility
         return {
@@ -1209,7 +1213,8 @@ class ResponseDto(FlextValue):
     status_code: int = Field(description="HTTP status code")
     headers: dict[str, str] | None = Field(None, description="Response headers")
     data: dict[str, object] | list[object] | str | bytes | None = Field(
-        None, description="Response data",
+        None,
+        description="Response data",
     )
     elapsed_time: float = Field(default=0.0, description="Request duration")
     request_id: str | None = Field(None, description="Associated request ID")
@@ -1237,15 +1242,16 @@ class ApiErrorContext(FlextValue):
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate error context business rules."""
-        if (
-            self.status_code is not None
-            and not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS)
+        if self.status_code is not None and not (
+            MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS
         ):
             return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
 
         return FlextResult.ok(None)
 
-    def to_dict(self, *, by_alias: bool = False, exclude_none: bool = False) -> dict[str, object]:
+    def to_dict(
+        self, *, by_alias: bool = False, exclude_none: bool = False
+    ) -> dict[str, object]:
         """Convert to dictionary representation."""
         _ = by_alias, exclude_none  # Parameters maintained for compatibility
         result: dict[str, object] = {}
@@ -1273,14 +1279,19 @@ class QueryBuilder(FlextValue):
     """Query builder configuration using pure Pydantic patterns."""
 
     filters: list[dict[str, object]] = Field(
-        default_factory=list, description="Query filters",
+        default_factory=list,
+        description="Query filters",
     )
     sorts: list[dict[str, str]] = Field(
-        default_factory=list, description="Sort criteria",
+        default_factory=list,
+        description="Sort criteria",
     )
     page: int = Field(default=1, ge=1, description="Page number")
     page_size: int = Field(
-        default=DEFAULT_PAGE_SIZE, ge=1, le=1000, description="Items per page",
+        default=DEFAULT_PAGE_SIZE,
+        ge=1,
+        le=1000,
+        description="Items per page",
     )
     search: str | None = Field(None, description="Search term")
     fields: list[str] | None = Field(None, description="Fields to include")
@@ -1292,8 +1303,13 @@ class QueryBuilder(FlextValue):
         if self.page < 1:
             return FlextResult.fail("Page number must be positive")
 
-        if self.page_size < 1 or self.page_size > FlextApiConstants.Config.MAX_PAGE_SIZE:
-            return FlextResult.fail(f"Page size must be between 1 and {FlextApiConstants.Config.MAX_PAGE_SIZE}")
+        if (
+            self.page_size < 1
+            or self.page_size > FlextApiConstants.Config.MAX_PAGE_SIZE
+        ):
+            return FlextResult.fail(
+                f"Page size must be between 1 and {FlextApiConstants.Config.MAX_PAGE_SIZE}"
+            )
 
         return FlextResult.ok(None)
 
@@ -1314,14 +1330,18 @@ class ResponseBuilder(FlextValue):
 
     success: bool = Field(default=True, description="Success indicator")
     data: dict[str, object] | list[object] | str | None = Field(
-        None, description="Response data",
+        None,
+        description="Response data",
     )
     message: str | None = Field(None, description="Response message")
     errors: list[str] | None = Field(None, description="Error messages")
     metadata: dict[str, object] | None = Field(None, description="Response metadata")
     pagination: PaginationInfo | None = Field(None, description="Pagination info")
     status_code: int = Field(
-        default=200, ge=100, le=599, description="HTTP status code",
+        default=200,
+        ge=100,
+        le=599,
+        description="HTTP status code",
     )
 
     def validate_business_rules(self) -> FlextResult[None]:
@@ -1336,7 +1356,9 @@ class ResponseBuilder(FlextValue):
 
         return FlextResult.ok(None)
 
-    def to_dict(self, *, by_alias: bool = False, exclude_none: bool = False) -> dict[str, object]:
+    def to_dict(
+        self, *, by_alias: bool = False, exclude_none: bool = False
+    ) -> dict[str, object]:
         """Convert to dictionary representation."""
         _ = by_alias, exclude_none  # Parameters maintained for compatibility
         result: dict[str, object] = {

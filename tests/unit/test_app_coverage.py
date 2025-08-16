@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from flext_api.app import flext_api_create_app
+from flext_api import flext_api_create_app
 
 # Constants
 HTTP_OK = 200

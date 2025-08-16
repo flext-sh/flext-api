@@ -6,7 +6,7 @@ import os
 
 import pytest
 
-from flext_api.api_client import FlextApiClient, FlextApiClientConfig
+from flext_api import FlextApiClient, FlextApiClientConfig
 
 
 @pytest.mark.asyncio

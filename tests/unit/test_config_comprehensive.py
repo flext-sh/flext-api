@@ -21,7 +21,7 @@ import pytest
 from flext_core import FlextConstants, FlextResult, FlextSettings
 from pydantic import ValidationError
 
-from flext_api.config import FlextApiSettings, create_api_settings
+from flext_api import FlextApiSettings, create_api_settings
 
 
 class TestFlextApiSettings:

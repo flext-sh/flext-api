@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.storage import FlextAPIStorage
+from flext_api import FlextAPIStorage
 
 
 class TestFlextAPIStorage:

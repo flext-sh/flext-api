@@ -18,24 +18,21 @@ from flext_core import FlextDomainService, FlextResult, get_logger
 from pydantic import Field
 
 from flext_api.api_client import FlextApiQueryBuilder, FlextApiResponseBuilder
+from flext_api.api_models import ClientConfig
+from flext_api.api_protocols import (
+    FlextApiMiddlewareProtocol,
+    FlextApiPluginProtocol,
+    FlextApiQueryBuilderProtocol,
+    FlextApiResponseBuilderProtocol,
+)
+from flext_api.typings import FlextTypes
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
 
-    from flext_api.api_models import ClientConfig
-    from flext_api.api_protocols import (
-        FlextApiMiddlewareProtocol,
-        FlextApiPluginProtocol,
-        FlextApiQueryBuilderProtocol,
-        FlextApiResponseBuilderProtocol,
-    )
-    from flext_api.typings import FlextTypes
-
 
 logger = get_logger(__name__)
-
 # Note: Protocols are used only for typing; no runtime aliasing required.
-
 # Type variables for generic services
 T = TypeVar("T")
 TRequest = TypeVar("TRequest")

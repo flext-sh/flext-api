@@ -15,16 +15,15 @@ from flext_api import (
     FlextApi,
     FlextApiClient,
     FlextApiClientConfig,
+    FlextApiClientRequest,
+    FlextApiClientResponse,
+    FlextApiPlugin,
+    FlextApiQueryBuilder,
+    FlextApiResponseBuilder,
     build_query,
     build_query_dict,
     build_success_response,
     create_flext_api,
-)
-from flext_api.builder import FlextApiQueryBuilder, FlextApiResponseBuilder
-from flext_api.client import (
-    FlextApiClientRequest,
-    FlextApiClientResponse,
-    FlextApiPlugin,
 )
 
 # Constants

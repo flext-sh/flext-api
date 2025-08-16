@@ -7,8 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import flext_api.main as main_module
-from flext_api.main import app, storage
+from flext_api import app, main as main_module, storage
 
 
 class TestMainModule:

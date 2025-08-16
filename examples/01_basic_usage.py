@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """FLEXT API - Basic usage examples.
 
+This example demonstrates basic usage of the FLEXT API with real functionality.
+
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
-This example demonstrates basic usage of the FLEXT API with real functionality.
-
 """
+
+from __future__ import annotations
 
 import asyncio
 

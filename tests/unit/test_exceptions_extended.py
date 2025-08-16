@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api.api_exceptions import (
+from flext_api import (
     FlextApiAuthenticationError,
     FlextApiAuthorizationError,
     FlextApiConfigurationError,
@@ -67,7 +67,7 @@ def test_request_response_and_storage_errors() -> None:
     assert isinstance(FlextApiStorageError("bad", storage_type="memory"), FlextApiError)
 
 
-from flext_api.api_exceptions import FlextApiStorageError  # noqa: E402
+from flext_api import FlextApiStorageError  # noqa: E402
 
 
 def test_authorization_notfound_rate_limit_errors() -> None:

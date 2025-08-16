@@ -4,9 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
 
-if TYPE_CHECKING:  # Keep runtime lean; satisfies TC003 in lint
-    from collections.abc import AsyncIterator
-
 import pytest
 from flext_core import FlextResult
 
@@ -16,6 +13,9 @@ from flext_api.base_service import (
     FlextApiBaseRepositoryService,
     FlextApiBaseStreamingService,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 
 class DummyAuth(FlextApiBaseAuthService):
@@ -29,7 +29,9 @@ class DummyAuth(FlextApiBaseAuthService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_authenticate(self, _credentials: dict[str, object]) -> FlextResult[dict[str, object]]:
+    async def _do_authenticate(
+        self, _credentials: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         return FlextResult.ok({"token": "t"})
 
     async def _do_validate_token(self, token: str) -> FlextResult[bool]:
@@ -81,7 +83,9 @@ class DummyRepo(FlextApiBaseRepositoryService):
     ) -> FlextResult[list[dict[str, object]]]:
         return FlextResult.ok([{}, {}, {}])
 
-    async def _do_save(self, entity: dict[str, object]) -> FlextResult[dict[str, object]]:
+    async def _do_save(
+        self, entity: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         return FlextResult.ok(entity | {"saved": True})
 
     async def _do_delete(self, _entity_id: str) -> FlextResult[None]:
@@ -110,12 +114,16 @@ async def test_repository_service_paths() -> None:
 class DummyMw:
     """Simple middleware to mutate request/response dicts."""
 
-    async def process_request(self, req: dict[str, object]) -> FlextResult[dict[str, object]]:
+    async def process_request(
+        self, req: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         r = dict(req)
         r["mw"] = 1
         return FlextResult.ok(r)
 
-    async def process_response(self, resp: dict[str, object]) -> FlextResult[dict[str, object]]:
+    async def process_response(
+        self, resp: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         r = dict(resp)
         r["mw2"] = 1
         return FlextResult.ok(r)
@@ -133,7 +141,9 @@ class DummyHandler(FlextApiBaseHandlerService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_handle(self, request: dict[str, object]) -> FlextResult[dict[str, object]]:
+    async def _do_handle(
+        self, request: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         if request.get("crash"):
             return FlextResult.fail("boom")
         return FlextResult.ok(request | {"handled": True})
