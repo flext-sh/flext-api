@@ -16,16 +16,14 @@ import asyncio
 from flext_api import (
     FlextApiQueryBuilder,
     FlextApiResponseBuilder,
+    PaginationConfig,
     build_error_response,
+    build_paginated_response as build_paginated,
     build_query,
     build_success_response,
     create_client,
     create_flext_api,
     create_flext_api_app,
-)
-from flext_api.api_client import (
-    PaginationConfig,
-    build_paginated_response as build_paginated,
 )
 
 

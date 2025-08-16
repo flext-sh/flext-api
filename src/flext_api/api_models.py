@@ -16,6 +16,7 @@ from flext_core import (
     FlextValue,
     get_logger,
 )
+from flext_core.models import flext_alias_generator
 from pydantic import AliasGenerator, ConfigDict, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
@@ -215,13 +216,11 @@ class URL(FlextValue):
     """
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextValue
         alias_generator=AliasGenerator(
-            alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            validation_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            serialization_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
+            alias=flext_alias_generator,
+            validation_alias=flext_alias_generator,
+            serialization_alias=flext_alias_generator,
         ),
-        # FlextValue patterns: immutable with validation
         extra="allow",
         validate_assignment=True,
         use_enum_values=True,
@@ -230,12 +229,6 @@ class URL(FlextValue):
         validate_default=True,
         populate_by_name=True,
         frozen=True,  # Immutable value object
-        use_attribute_docstrings=True,
-        json_schema_extra={
-            "examples": [],
-            "description": "HTTP URL value object with modern Pydantic patterns",
-            "title": "URL",
-        },
     )
 
     raw_url: str = Field(description="Raw URL string")
@@ -345,13 +338,11 @@ class HttpHeader(FlextValue):
     """HTTP header value object following FlextValue foundation pattern."""
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextValue
         alias_generator=AliasGenerator(
-            alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            validation_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            serialization_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
+            alias=flext_alias_generator,
+            validation_alias=flext_alias_generator,
+            serialization_alias=flext_alias_generator,
         ),
-        # FlextValue patterns: immutable with validation
         extra="allow",
         validate_assignment=True,
         use_enum_values=True,
@@ -360,12 +351,6 @@ class HttpHeader(FlextValue):
         validate_default=True,
         populate_by_name=True,
         frozen=True,  # Immutable value object
-        use_attribute_docstrings=True,
-        json_schema_extra={
-            "examples": [],
-            "description": "HTTP header value object with modern Pydantic patterns",
-            "title": "HttpHeader",
-        },
     )
 
     name: str = Field(description="Header name")
@@ -457,13 +442,11 @@ class BearerToken(FlextValue):
     """Bearer token value object with JWT format validation."""
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextValue
         alias_generator=AliasGenerator(
-            alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            validation_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            serialization_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
+            alias=flext_alias_generator,
+            validation_alias=flext_alias_generator,
+            serialization_alias=flext_alias_generator,
         ),
-        # FlextValue patterns: immutable with validation
         extra="allow",
         validate_assignment=True,
         use_enum_values=True,
@@ -472,12 +455,6 @@ class BearerToken(FlextValue):
         validate_default=True,
         populate_by_name=True,
         frozen=True,  # Immutable value object
-        use_attribute_docstrings=True,
-        json_schema_extra={
-            "examples": [],
-            "description": "Bearer token value object with modern Pydantic patterns",
-            "title": "BearerToken",
-        },
     )
 
     token: str = Field(description="Bearer token string")
@@ -594,9 +571,9 @@ class ClientConfig(FlextValue):
     model_config = ConfigDict(
         # Inherit modern Pydantic patterns from FlextValue
         alias_generator=AliasGenerator(
-            alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            validation_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            serialization_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
+            alias=flext_alias_generator,
+            validation_alias=flext_alias_generator,
+            serialization_alias=flext_alias_generator,
         ),
         # FlextValue patterns: immutable with validation
         extra="allow",
@@ -676,13 +653,11 @@ class QueryConfig(FlextValue):
     """Query configuration value object."""
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextValue
         alias_generator=AliasGenerator(
-            alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            validation_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            serialization_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
+            alias=flext_alias_generator,
+            validation_alias=flext_alias_generator,
+            serialization_alias=flext_alias_generator,
         ),
-        # FlextValue patterns: immutable with validation
         extra="allow",
         validate_assignment=True,
         use_enum_values=True,
@@ -691,12 +666,6 @@ class QueryConfig(FlextValue):
         validate_default=True,
         populate_by_name=True,
         frozen=True,  # Immutable value object
-        use_attribute_docstrings=True,
-        json_schema_extra={
-            "examples": [],
-            "description": "Query configuration value object with modern Pydantic patterns",
-            "title": "QueryConfig",
-        },
     )
 
     filters: list[dict[str, object]] = Field(default_factory=list)
@@ -737,9 +706,9 @@ class PaginationInfo(FlextValue):
     model_config = ConfigDict(
         # Inherit modern Pydantic patterns from FlextValue
         alias_generator=AliasGenerator(
-            alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            validation_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            serialization_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
+            alias=flext_alias_generator,
+            validation_alias=flext_alias_generator,
+            serialization_alias=flext_alias_generator,
         ),
         # FlextValue patterns: immutable with validation
         extra="allow",
@@ -805,13 +774,11 @@ class ApiRequest(FlextEntity):
     """HTTP request entity with lifecycle management."""
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextEntity
         alias_generator=AliasGenerator(
-            alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            validation_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            serialization_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
+            alias=flext_alias_generator,
+            validation_alias=flext_alias_generator,
+            serialization_alias=flext_alias_generator,
         ),
-        # FlextEntity patterns: mutable with lifecycle management
         extra="allow",
         validate_assignment=True,
         use_enum_values=True,
@@ -820,12 +787,6 @@ class ApiRequest(FlextEntity):
         validate_default=True,
         populate_by_name=True,
         frozen=False,  # Mutable entity
-        use_attribute_docstrings=True,
-        json_schema_extra={
-            "examples": [],
-            "description": "HTTP request entity with modern Pydantic patterns and lifecycle management",
-            "title": "ApiRequest",
-        },
     )
 
     method: HttpMethod = Field(description="HTTP method")
@@ -937,9 +898,9 @@ class ApiResponse(FlextEntity):
     model_config = ConfigDict(
         # Inherit modern Pydantic patterns from FlextEntity
         alias_generator=AliasGenerator(
-            alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            validation_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            serialization_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
+            alias=flext_alias_generator,
+            validation_alias=flext_alias_generator,
+            serialization_alias=flext_alias_generator,
         ),
         # FlextEntity patterns: mutable with lifecycle management
         extra="allow",
@@ -1054,13 +1015,11 @@ class ApiEndpoint(FlextEntity):
     """API endpoint entity with routing and configuration."""
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextEntity
         alias_generator=AliasGenerator(
-            alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            validation_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            serialization_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
+            alias=flext_alias_generator,
+            validation_alias=flext_alias_generator,
+            serialization_alias=flext_alias_generator,
         ),
-        # FlextEntity patterns: mutable with lifecycle management
         extra="allow",
         validate_assignment=True,
         use_enum_values=True,
@@ -1069,12 +1028,6 @@ class ApiEndpoint(FlextEntity):
         validate_default=True,
         populate_by_name=True,
         frozen=False,  # Mutable entity
-        use_attribute_docstrings=True,
-        json_schema_extra={
-            "examples": [],
-            "description": "API endpoint entity with modern Pydantic patterns, routing and configuration",
-            "title": "ApiEndpoint",
-        },
     )
 
     path: str = Field(description="Endpoint path pattern")
@@ -1133,9 +1086,9 @@ class ApiSession(FlextEntity):
     model_config = ConfigDict(
         # Inherit modern Pydantic patterns from FlextEntity
         alias_generator=AliasGenerator(
-            alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            validation_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
-            serialization_alias=lambda field_name: "".join(word.capitalize() if i > 0 else word for i, word in enumerate(field_name.split("_"))),
+            alias=flext_alias_generator,
+            validation_alias=flext_alias_generator,
+            serialization_alias=flext_alias_generator,
         ),
         # FlextEntity patterns: mutable with lifecycle management
         extra="allow",
@@ -1256,7 +1209,7 @@ class ResponseDto(FlextValue):
     status_code: int = Field(description="HTTP status code")
     headers: dict[str, str] | None = Field(None, description="Response headers")
     data: dict[str, object] | list[object] | str | bytes | None = Field(
-        None, description="Response data"
+        None, description="Response data",
     )
     elapsed_time: float = Field(default=0.0, description="Request duration")
     request_id: str | None = Field(None, description="Associated request ID")
@@ -1320,14 +1273,14 @@ class QueryBuilder(FlextValue):
     """Query builder configuration using pure Pydantic patterns."""
 
     filters: list[dict[str, object]] = Field(
-        default_factory=list, description="Query filters"
+        default_factory=list, description="Query filters",
     )
     sorts: list[dict[str, str]] = Field(
-        default_factory=list, description="Sort criteria"
+        default_factory=list, description="Sort criteria",
     )
     page: int = Field(default=1, ge=1, description="Page number")
     page_size: int = Field(
-        default=DEFAULT_PAGE_SIZE, ge=1, le=1000, description="Items per page"
+        default=DEFAULT_PAGE_SIZE, ge=1, le=1000, description="Items per page",
     )
     search: str | None = Field(None, description="Search term")
     fields: list[str] | None = Field(None, description="Fields to include")
@@ -1361,14 +1314,14 @@ class ResponseBuilder(FlextValue):
 
     success: bool = Field(default=True, description="Success indicator")
     data: dict[str, object] | list[object] | str | None = Field(
-        None, description="Response data"
+        None, description="Response data",
     )
     message: str | None = Field(None, description="Response message")
     errors: list[str] | None = Field(None, description="Error messages")
     metadata: dict[str, object] | None = Field(None, description="Response metadata")
     pagination: PaginationInfo | None = Field(None, description="Pagination info")
     status_code: int = Field(
-        default=200, ge=100, le=599, description="HTTP status code"
+        default=200, ge=100, le=599, description="HTTP status code",
     )
 
     def validate_business_rules(self) -> FlextResult[None]:
@@ -1378,7 +1331,7 @@ class ResponseBuilder(FlextValue):
 
         if not self.success and not (self.errors or self.message):
             return FlextResult.fail(
-                "Error responses must include error messages or details"
+                "Error responses must include error messages or details",
             )
 
         return FlextResult.ok(None)

@@ -331,7 +331,7 @@ except Exception:  # plugin not available; provide lightweight shim
         """
 
         def _bench(
-            func: Callable[..., object], *args: object, **kwargs: object
+            func: Callable[..., object], *args: object, **kwargs: object,
         ) -> object:
             return func(*args, **kwargs)
 
