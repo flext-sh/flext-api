@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from flext_api.api_client import (
+from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientRequest,

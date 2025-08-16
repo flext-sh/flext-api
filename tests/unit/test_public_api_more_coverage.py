@@ -10,13 +10,15 @@ from fastapi.testclient import TestClient
 
 from flext_api import (
     FlextApi,
+    FlextApi as FlextApiClass,
+    api_app as api_app2,  # noqa: PLC0415
+    api_app as api_app_mod,  # noqa: F401, PLC0415
     create_api_builder,
     create_api_client,
     create_api_storage,
     create_flext_api_app,
     sync_health_check,
 )
-from flext_api.api import FlextApi as FlextApiClass
 
 
 def test_public_sync_health_check_and_helpers() -> None:
@@ -56,7 +58,7 @@ def test_deprecated_create_api_service_and_client_paths() -> None:
     """Ensure deprecated helpers still import and function nominally."""
     api = FlextApi()
     # Deprecated create_api_service function
-    from flext_api.api import create_api_service  # noqa: PLC0415
+    from flext_api import create_api_service  # noqa: PLC0415
 
     svc = create_api_service()
     assert isinstance(svc, FlextApi)
@@ -97,7 +99,9 @@ def test_app_health_storage_error_and_nonawaitable_paths() -> None:
             msg = "boom"
             raise RuntimeError(msg)
 
-        def delete(self, *_args: object, **_kwargs: object) -> dict[str, object]:  # no awaitable
+        def delete(
+            self, *_args: object, **_kwargs: object
+        ) -> dict[str, object]:  # no awaitable
             return {"ok": True}
 
     app.state.storage = BadStorage()
@@ -109,10 +113,14 @@ def test_app_health_storage_error_and_nonawaitable_paths() -> None:
 
     # Second, simulate non-awaitable set/delete returning plain objects
     class PlainStorage:
-        def set(self, *_args: object, **_kwargs: object) -> dict[str, object]:  # returns non-awaitable
+        def set(
+            self, *_args: object, **_kwargs: object
+        ) -> dict[str, object]:  # returns non-awaitable
             return {"ok": True}
 
-        def delete(self, *_args: object, **_kwargs: object) -> dict[str, object]:  # returns non-awaitable
+        def delete(
+            self, *_args: object, **_kwargs: object
+        ) -> dict[str, object]:  # returns non-awaitable
             return {"ok": True}
 
     app.state.storage = PlainStorage()
@@ -137,9 +145,6 @@ def test_app_error_fallback_route_via_env(monkeypatch: pytest.MonkeyPatch) -> No
             del sys.modules["flext_api.api_app"]
         # Use TestClient on the reloaded module's app
         from importlib import reload  # noqa: PLC0415
-
-        import flext_api.api_app as api_app2  # noqa: PLC0415
-        from flext_api import api_app as api_app_mod  # noqa: F401, PLC0415
 
         reload(api_app2)
         c = TestClient(api_app2.app)

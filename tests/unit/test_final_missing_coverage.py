@@ -9,15 +9,15 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-from flext_api.builder import build_success_response_object
-from flext_api.client import (
+from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientRequest,
+    FlextAPIFieldCore,
+    build_success_response_object,
     create_client,
     create_client_with_plugins,
 )
-from flext_api.fields import FlextAPIFieldCore
 
 
 class TestFinalMissingCoverage:
@@ -127,7 +127,7 @@ class TestFinalMissingCoverage:
 
         if hasattr(typing, "TYPE_CHECKING"):
             # This covers the TYPE_CHECKING import path
-            from flext_api.client import FlextApiClient  # noqa: PLC0415
+            from flext_api import FlextApiClient  # noqa: PLC0415
 
             assert FlextApiClient is not None
 
@@ -136,7 +136,7 @@ class TestFinalMissingCoverage:
         # Simple test to cover the functionality without complex subprocess
         import uvicorn  # noqa: PLC0415
 
-        from flext_api.main import app  # noqa: PLC0415
+        from flext_api import app  # noqa: PLC0415
 
         # Test the exact same call that would happen in __main__
         with patch("uvicorn.run") as mock_run:

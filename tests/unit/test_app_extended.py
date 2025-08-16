@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from flext_api.api_app import FlextApiAppConfig, create_flext_api_app
 from flext_api.api_exceptions import FlextApiError
-
-if TYPE_CHECKING:
-    from fastapi import FastAPI
 
 
 def _make_app(*, debug: bool = True) -> FastAPI:
@@ -28,21 +24,17 @@ def test_health_and_info_endpoints_happy_path() -> None:
         r_root = client.get("/")
         assert r_root.status_code == 200
         assert r_root.json()["health_url"] == "/health"
-
         r_info = client.get("/info")
         assert r_info.status_code == 200
         body = r_info.json()
         assert body["api"]["name"] == "FLEXT API"
         assert isinstance(body["environment"], dict)
-
         r_live = client.get("/health/live")
         assert r_live.status_code == 200
         assert r_live.json()["status"] == "alive"
-
         r_ready = client.get("/health/ready")
         assert r_ready.status_code == 200
         assert r_ready.json()["status"] in {"ready", "not_ready"}
-
         r_health = client.get("/health")
         assert r_health.status_code == 200
         health = r_health.json()
@@ -56,7 +48,9 @@ def test_health_storage_error_path_sets_degraded_status() -> None:
 
     # Replace storage with an object that raises on set/delete to go through error branch
     class BadStorage:
-        def set(self, *_: object, **__: object) -> None:  # non-async, but middleware accepts both
+        def set(
+            self, *_: object, **__: object
+        ) -> None:  # non-async, but middleware accepts both
             message = "boom"
             raise RuntimeError(message)
 
@@ -65,7 +59,6 @@ def test_health_storage_error_path_sets_degraded_status() -> None:
             raise RuntimeError(message)
 
     app.state.storage = BadStorage()  # type: ignore[assignment]
-
     with TestClient(app) as client:
         r = client.get("/health")
         assert r.status_code == 200
@@ -96,7 +89,6 @@ def test_error_handler_middleware_handles_custom_and_unexpected_errors() -> None
         body1 = r1.json()
         assert body1["success"] is False
         assert r1.headers["X-Error-Type"] == "FlextApiError"
-
         r2 = client.get("/raise_unexpected")
         assert r2.status_code == 500
         body2 = r2.json()

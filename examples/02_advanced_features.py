@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """FLEXT API - Advanced Features Examples.
 
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-
 Este exemplo demonstra recursos avançados da FLEXT API com funcionalidade REAL.
 Todos os métodos usados existem e funcionam.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
 
 """
 

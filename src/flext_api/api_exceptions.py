@@ -6,11 +6,6 @@ import traceback
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from collections.abc import Mapping
-
-    from flext_api.typings import FlextTypes
-
 from flext_core import get_logger
 from flext_core.exceptions import (
     FlextAuthenticationError,
@@ -23,6 +18,10 @@ from flext_core.exceptions import (
 )
 
 from flext_api.constants import FlextApiConstants
+from flext_api.typings import FlextTypes
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 logger = get_logger(__name__)
 
@@ -130,7 +129,9 @@ class FlextApiValidationError(FlextValidationError):
         if value is not None:
             str_value = str(value)
             max_len = FlextApiConstants.Validation.MAX_ERROR_VALUE_LENGTH
-            truncated_value = str_value[:max_len] if len(str_value) > max_len else str_value
+            truncated_value = (
+                str_value[:max_len] if len(str_value) > max_len else str_value
+            )
 
         super().__init__(
             message,
@@ -773,7 +774,9 @@ def map_http_status_to_exception(
         <= status_code
         < FlextApiConstants.HTTP.CLIENT_ERROR_MAX
     ):
-        return FlextApiRequestError(message or "Client error", status_code=status_code, context=context)
+        return FlextApiRequestError(
+            message or "Client error", status_code=status_code, context=context
+        )
 
     if (
         FlextApiConstants.HTTP.SERVER_ERROR_MIN

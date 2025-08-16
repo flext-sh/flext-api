@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.fields import (
+from flext_api import (
     FlextAPIFieldCore,
     FlextAPIFields,
     api_key_field,

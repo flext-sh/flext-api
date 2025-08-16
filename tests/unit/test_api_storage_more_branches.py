@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 from flext_core import FlextResult
 
-from flext_api.api_storage import FileStorageBackend, StorageConfig
+from flext_api import FileStorageBackend, StorageConfig
 
 if TYPE_CHECKING:
     from pathlib import Path

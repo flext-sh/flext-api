@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from flext_core import FlextResult
 
-from flext_api.api_client import (
+from flext_api import (
     FlextApiCachingPlugin,
     FlextApiClient,
     FlextApiClientConfig,

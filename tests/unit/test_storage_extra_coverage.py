@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api.api_storage import FlextApiStorage, StorageBackend, StorageConfig
+from flext_api import FlextApiStorage, StorageBackend, StorageConfig
 
 
 @pytest.mark.asyncio

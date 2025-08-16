@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+import pytest
 from fastapi.testclient import TestClient
 
-from flext_api.api_app import FlextApiAppConfig, create_flext_api_app
-
-if TYPE_CHECKING:
-    import pytest
+from flext_api import FlextApiAppConfig, create_flext_api_app
 
 
 def test_cors_origins_fallback_when_exception(monkeypatch: pytest.MonkeyPatch) -> None:

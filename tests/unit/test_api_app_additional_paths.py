@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from flext_api.api_app import create_flext_api_app
+from flext_api import create_flext_api_app
 
 
 @pytest.mark.usefixtures("monkeypatch")

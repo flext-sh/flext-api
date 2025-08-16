@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from flext_core import FlextResult
 
-from flext_api.base_service import FlextApiBaseService
+from flext_api import FlextApiBaseService
 
 
 class BrokenStartService(FlextApiBaseService):

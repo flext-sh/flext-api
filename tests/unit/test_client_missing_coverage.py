@@ -9,13 +9,13 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api import client
-from flext_api.client import (
+from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientRequest,
     FlextApiClientResponse,
     FlextApiPlugin,
+    client,
     create_client,
     create_client_with_plugins,
 )

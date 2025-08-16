@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from contextlib import suppress
 
-from flext_api.api_config import (
+from flext_api import (
     FlextApiSettings,
     create_api_settings,
     validate_configuration,

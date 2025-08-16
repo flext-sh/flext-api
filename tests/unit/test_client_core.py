@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api.client import (
+from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientMethod,

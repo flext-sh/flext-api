@@ -2,20 +2,17 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Never
+from typing import ClassVar, Never
 
 import pytest
 from flext_core import FlextResult
 
-from flext_api.api_client import (
+from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientRequest,
     FlextApiClientResponse,
 )
-
-if TYPE_CHECKING:
-    from typing import ClassVar
 
 
 @pytest.mark.usefixtures("monkeypatch")

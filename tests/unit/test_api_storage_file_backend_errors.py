@@ -7,12 +7,8 @@ from typing import TYPE_CHECKING
 import pytest
 from flext_core import FlextResult
 
-from flext_api.api_storage import FileStorageBackend, StorageConfig
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-
+from flext_api import FileStorageBackend, StorageConfig
+from pathlib import Path
 @pytest.mark.asyncio
 async def test_file_backend_save_and_delete_error_paths(
     tmp_path: Path,

@@ -5,22 +5,19 @@ from __future__ import annotations
 import pytest
 from flext_core import FlextResult
 
-from flext_api.api_models import ClientConfig
-
 # Ensure forward-ref'd protocols and types exist in eval namespace for model_rebuild
-from flext_api.api_protocols import (  # noqa: F401
-    FlextApiMiddlewareProtocol,
-    FlextApiPluginProtocol,
-    FlextApiQueryBuilderProtocol,
-    FlextApiResponseBuilderProtocol,
-)
-from flext_api.base_service import (
+from flext_api import (  # noqa: F401
+    ClientConfig,
     FlextApiBaseAuthService,
     FlextApiBaseClientService,
     FlextApiBaseHandlerService,
     FlextApiBaseRepositoryService,
+    FlextApiMiddlewareProtocol,
+    FlextApiPluginProtocol,
+    FlextApiQueryBuilderProtocol,
+    FlextApiResponseBuilderProtocol,
+    FlextTypes,  # noqa: F401
 )
-from flext_api.typings import FlextTypes  # noqa: F401
 
 
 class DummyClientService(FlextApiBaseClientService):

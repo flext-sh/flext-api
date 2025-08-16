@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from flext_api.api_storage import (
+from flext_api import (
     FlextApiStorage,
     StorageBackend,
     StorageConfig,

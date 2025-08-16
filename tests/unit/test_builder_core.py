@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api.builder import (
+from flext_api import (
     FlextApiBuilder,
     FlextApiQuery,
     FlextApiQueryBuilder,

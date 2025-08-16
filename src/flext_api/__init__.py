@@ -1,4 +1,9 @@
-"""High-performance REST API library for FLEXT ecosystem."""
+"""High-performance REST API library for FLEXT ecosystem.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -10,6 +15,7 @@ from flext_core import FlextResult, get_logger
 
 # Legacy Compatibility Imports
 from flext_api.api import FlextApi, create_flext_api
+from flext_api.app import flext_api_create_app
 from flext_api.api_app import (
     app,  # Default app instance
     create_flext_api_app,
@@ -346,6 +352,8 @@ __all__: list[str] = [
     "FlextAPIFieldCore",
     "FlextAPIFields",
     "FlextApi",
+    # App Functions
+    "flext_api_create_app",
     "FlextApiAuthProtocol",
     "FlextApiAuthenticationError",
     "FlextApiAuthorizationError",
@@ -468,3 +476,7 @@ __all__: list[str] = [
     "user_role_field",
     "validate_configuration",
 ]
+
+from . import api_app
+from . import fields
+from . import main
