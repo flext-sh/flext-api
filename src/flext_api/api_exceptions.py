@@ -1,16 +1,22 @@
-"""FLEXT API exception hierarchy."""
+"""FLEXT API exception hierarchy using modern Pydantic patterns."""
 
 from __future__ import annotations
 
 import traceback
+from enum import StrEnum
 from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from flext_api.typings import FlextTypes
 
 from flext_core import get_logger
 from flext_core.exceptions import (
     FlextAuthenticationError,
     FlextConfigurationError,
     FlextConnectionError,
-    FlextError,
+    FlextErrorMixin,
     FlextProcessingError,
     FlextTimeoutError,
     FlextValidationError,
@@ -18,10 +24,26 @@ from flext_core.exceptions import (
 
 from flext_api.constants import FlextApiConstants
 
-if TYPE_CHECKING:
-    from flext_api.typings import FlextTypes
-
 logger = get_logger(__name__)
+
+
+class FlextApiErrorCodes(StrEnum):
+    """Error codes specific to FLEXT API operations."""
+
+    GENERIC_API_ERROR = "FLEXT_API_ERROR"
+    API_VALIDATION_ERROR = "API_VALIDATION_ERROR"
+    API_AUTHENTICATION_ERROR = "API_AUTHENTICATION_ERROR"
+    API_AUTHORIZATION_ERROR = "API_AUTHORIZATION_ERROR"
+    API_CONFIGURATION_ERROR = "API_CONFIGURATION_ERROR"
+    API_CONNECTION_ERROR = "API_CONNECTION_ERROR"
+    API_PROCESSING_ERROR = "API_PROCESSING_ERROR"
+    API_TIMEOUT_ERROR = "API_TIMEOUT_ERROR"
+    API_REQUEST_ERROR = "API_REQUEST_ERROR"
+    API_RESPONSE_ERROR = "API_RESPONSE_ERROR"
+    API_STORAGE_ERROR = "API_STORAGE_ERROR"
+    API_BUILDER_ERROR = "API_BUILDER_ERROR"
+    API_RATE_LIMIT_ERROR = "API_RATE_LIMIT_ERROR"
+    API_NOT_FOUND_ERROR = "API_NOT_FOUND_ERROR"
 
 
 # keep runtime import context minimal for static typing only
@@ -30,22 +52,33 @@ logger = get_logger(__name__)
 # ==============================================================================
 
 
-class FlextApiError(FlextError):
-    """Base API error inheriting from FlextError with HTTP status code support."""
+class FlextApiError(FlextErrorMixin, Exception):
+    """Base API error with HTTP status code support using FlextErrorMixin pattern."""
 
     def __init__(
         self,
         message: str = "flext_api error",
         *,
         status_code: int = 500,
-        error_code: str = "FLEXT_API_ERROR",
-        **context: object,
+        code: FlextApiErrorCodes | None = None,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize with message, status code, and context."""
         self.status_code = status_code
-        self.error_code = error_code
-        context["status_code"] = status_code
-        super().__init__(message, error_code=error_code, context=context)
+
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+        merged_context["status_code"] = status_code
+
+        FlextErrorMixin.__init__(
+            self,
+            message,
+            code=code or FlextApiErrorCodes.GENERIC_API_ERROR,
+            context=merged_context,
+        )
+        Exception.__init__(self, message)
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert exception to HTTP response format."""
@@ -77,33 +110,34 @@ class FlextApiValidationError(FlextValidationError):
         value: object = None,
         endpoint: str | None = None,
         status_code: int = 400,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize validation error with field and value context."""
         self.status_code = status_code
 
-        # Prepare validation details
-        validation_details: dict[str, object] = {}
-        if field is not None:
-            validation_details["field"] = field
-        if value is not None:
-            # Truncate long values for security and readability
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
 
+        # Add API-specific context
+        if endpoint is not None:
+            merged_context["endpoint"] = endpoint
+        merged_context["status_code"] = status_code
+
+        # Truncate long values for security
+        truncated_value = value
+        if value is not None:
             str_value = str(value)
             max_len = FlextApiConstants.Validation.MAX_ERROR_VALUE_LENGTH
-            validation_details["value"] = (
-                str_value[:max_len] if len(str_value) > max_len else str_value
-            )
-
-        # Add endpoint to general context
-        if endpoint is not None:
-            context["endpoint"] = endpoint
-            context["status_code"] = status_code
+            truncated_value = str_value[:max_len] if len(str_value) > max_len else str_value
 
         super().__init__(
             message,
-            validation_details=validation_details,
-            context=context,
+            field=field,
+            value=truncated_value,
+            code=FlextApiErrorCodes.API_VALIDATION_ERROR,
+            context=merged_context,
         )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
@@ -132,18 +166,24 @@ class FlextApiAuthenticationError(FlextAuthenticationError):
         endpoint: str | None = None,
         token_type: str | None = None,
         status_code: int = 401,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize authentication error with auth method context."""
         self.status_code = status_code
 
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add API-specific context
         if auth_method is not None:
-            context["auth_method"] = auth_method
+            merged_context["auth_method"] = auth_method
         if endpoint is not None:
-            context["endpoint"] = endpoint
+            merged_context["endpoint"] = endpoint
         if token_type is not None:
-            context["token_type"] = token_type
-        context["status_code"] = status_code
+            merged_context["token_type"] = token_type
+        merged_context["status_code"] = status_code
 
         # Format message to include flext_api prefix for test compatibility
         formatted_message = (
@@ -153,8 +193,8 @@ class FlextApiAuthenticationError(FlextAuthenticationError):
             formatted_message,
             service="flext_api",
             user_id=None,
-            code=None,
-            context=context,
+            code=FlextApiErrorCodes.API_AUTHENTICATION_ERROR,
+            context=merged_context,
         )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
@@ -181,21 +221,27 @@ class FlextApiAuthorizationError(FlextApiError):
         required_permission: str | None = None,
         user_permissions: list[str] | None = None,
         endpoint: str | None = None,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize authorization error with permission context."""
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add authorization-specific context
         if required_permission is not None:
-            context["required_permission"] = required_permission
+            merged_context["required_permission"] = required_permission
         if user_permissions is not None:
-            context["user_permissions"] = user_permissions
+            merged_context["user_permissions"] = user_permissions
         if endpoint is not None:
-            context["endpoint"] = endpoint
+            merged_context["endpoint"] = endpoint
 
         super().__init__(
             f"Authorization: {message}",
             status_code=403,
-            error_code="FLEXT_API_ERROR",
-            **context,
+            code=FlextApiErrorCodes.API_AUTHORIZATION_ERROR,
+            context=merged_context,
         )
 
 
@@ -210,31 +256,30 @@ class FlextApiConfigurationError(FlextConfigurationError):
         expected_type: str | None = None,
         actual_value: object = None,
         status_code: int = 500,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize configuration error with config context."""
         self.status_code = status_code
 
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add configuration-specific context
         if expected_type is not None:
-            context["expected_type"] = expected_type
+            merged_context["expected_type"] = expected_type
         if actual_value is not None:
-            context["actual_value"] = str(actual_value)
-        context["status_code"] = status_code
+            merged_context["actual_value"] = str(actual_value)
+        merged_context["status_code"] = status_code
 
         super().__init__(
             message,
             config_key=config_key,
             config_file=None,
-            error_code=None,
+            code=FlextApiErrorCodes.API_CONFIGURATION_ERROR,
+            context=merged_context,
         )
-
-        # Add context items manually
-        for key, value in context.items():
-            self.context[key] = value
-
-        # Ensure config_key is in context for test compatibility
-        if config_key is not None and "config_key" not in self.context:
-            self.context["config_key"] = config_key
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP configuration error response."""
@@ -262,31 +307,34 @@ class FlextApiConnectionError(FlextConnectionError):
         ssl_error: str | None = None,
         connection_timeout: float | None = None,
         status_code: int = 503,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize connection error with network context."""
         self.status_code = status_code
 
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add connection-specific context
         if host is not None:
-            context["host"] = host
+            merged_context["host"] = host
         if port is not None:
-            context["port"] = port
+            merged_context["port"] = port
         if ssl_error is not None:
-            context["ssl_error"] = ssl_error
+            merged_context["ssl_error"] = ssl_error
         if connection_timeout is not None:
-            context["connection_timeout"] = connection_timeout
-        context["status_code"] = status_code
+            merged_context["connection_timeout"] = connection_timeout
+        merged_context["status_code"] = status_code
 
         super().__init__(
             message,
             service="flext_api_connection",
             endpoint=None,
-            error_code=None,
+            code=FlextApiErrorCodes.API_CONNECTION_ERROR,
+            context=merged_context,
         )
-
-        # Add context items manually
-        for key, value in context.items():
-            self.context[key] = value
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP connection error response."""
@@ -313,28 +361,29 @@ class FlextApiProcessingError(FlextProcessingError):
         endpoint: str | None = None,
         processing_stage: str | None = None,
         status_code: int = 500,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize processing error with operation context."""
         self.status_code = status_code
 
-        if operation is not None:
-            context["operation"] = operation
-        if endpoint is not None:
-            context["endpoint"] = endpoint
-        if processing_stage is not None:
-            context["processing_stage"] = processing_stage
-        context["status_code"] = status_code
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
 
-        # Avoid passing duplicate 'operation' when also included in **context
-        init_kwargs = dict(context)
-        init_kwargs.pop("operation", None)
+        # Add processing-specific context
+        if endpoint is not None:
+            merged_context["endpoint"] = endpoint
+        if processing_stage is not None:
+            merged_context["processing_stage"] = processing_stage
+        merged_context["status_code"] = status_code
+
         super().__init__(
             message,
             business_rule="flext_api_processing",
             operation=operation,
-            code=None,
-            context=init_kwargs,
+            code=FlextApiErrorCodes.API_PROCESSING_ERROR,
+            context=merged_context,
         )
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
@@ -363,27 +412,30 @@ class FlextApiTimeoutError(FlextTimeoutError):
         query_type: str | None = None,
         operation: str | None = None,
         status_code: int = 504,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize timeout error with timeout context."""
         self.status_code = status_code
 
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add timeout-specific context
         if endpoint is not None:
-            context["endpoint"] = endpoint
-        # Keep timeout information both at top-level and passed to base
+            merged_context["endpoint"] = endpoint
         if query_type is not None:
-            context["query_type"] = query_type
+            merged_context["query_type"] = query_type
         if operation is not None:
-            context["operation"] = operation
-        context["status_code"] = status_code
+            merged_context["operation"] = operation
+        merged_context["status_code"] = status_code
 
         # Include timeout_seconds in context for test expectations with precision
         if timeout_seconds is not None:
-            context["timeout_seconds"] = float(timeout_seconds)
-        # Prepare flat context for base class; FlextError flattens inner context keys
-        init_kwargs = dict(context)
-        # Call base with explicit keywords to match signature
-        # FlextTimeoutError expects timeout_seconds as int | None
+            merged_context["timeout_seconds"] = float(timeout_seconds)
+
+        # Convert timeout_seconds to int for base class
         int_timeout: int | None
         if isinstance(timeout_seconds, (int, float)):
             int_timeout = int(timeout_seconds)
@@ -394,18 +446,9 @@ class FlextApiTimeoutError(FlextTimeoutError):
             message=message,
             service="flext_api_service",
             timeout_seconds=int_timeout,
-            context=init_kwargs,
+            code=FlextApiErrorCodes.API_TIMEOUT_ERROR,
+            context=merged_context,
         )
-
-        # Ensure final context has endpoint at top-level for tests
-        if endpoint is not None and "endpoint" not in self.context:
-            try:
-                # When base wraps context under 'context', flatten expected key
-                inner = self.context.get("context")
-                if isinstance(inner, dict) and "endpoint" in inner:
-                    self.context = inner
-            except Exception:
-                logger.exception("Error flattening context")
 
     def to_http_response(self) -> FlextTypes.Core.JsonDict:
         """Convert to HTTP timeout error response."""
@@ -437,21 +480,27 @@ class FlextApiRequestError(FlextApiError):
         endpoint: str | None = None,
         status_code: int = 400,
         request_id: str | None = None,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize with API request context."""
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add request-specific context
         if method is not None:
-            context["method"] = method
+            merged_context["method"] = method
         if endpoint is not None:
-            context["endpoint"] = endpoint
+            merged_context["endpoint"] = endpoint
         if request_id is not None:
-            context["request_id"] = request_id
+            merged_context["request_id"] = request_id
 
         super().__init__(
             f"API request: {message}",
             status_code=status_code,
-            error_code="FLEXT_API_ERROR",
-            **context,
+            code=FlextApiErrorCodes.API_REQUEST_ERROR,
+            context=merged_context,
         )
 
 
@@ -465,20 +514,26 @@ class FlextApiResponseError(FlextApiError):
         status_code: int = 502,
         response_body: str | None = None,
         content_type: str | None = None,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize with API response context."""
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add response-specific context
         if response_body is not None:
             # Limit response body size for security and readability
-            context["response_body"] = str(response_body)[:200]
+            merged_context["response_body"] = str(response_body)[:200]
         if content_type is not None:
-            context["content_type"] = content_type
+            merged_context["content_type"] = content_type
 
         super().__init__(
             f"API response: {message}",
             status_code=status_code,
-            error_code="FLEXT_API_ERROR",
-            **context,
+            code=FlextApiErrorCodes.API_RESPONSE_ERROR,
+            context=merged_context,
         )
 
 
@@ -494,23 +549,29 @@ class FlextApiStorageError(FlextApiError):
         pool_size: int | None = None,
         active_connections: int | None = None,
         status_code: int = 500,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize with API storage context."""
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add storage-specific context
         if storage_type is not None:
-            context["storage_type"] = storage_type
+            merged_context["storage_type"] = storage_type
         if operation is not None:
-            context["operation"] = operation
+            merged_context["operation"] = operation
         if pool_size is not None:
-            context["pool_size"] = pool_size
+            merged_context["pool_size"] = pool_size
         if active_connections is not None:
-            context["active_connections"] = active_connections
+            merged_context["active_connections"] = active_connections
 
         super().__init__(
             f"API storage: {message}",
             status_code=status_code,
-            error_code="FLEXT_API_ERROR",
-            **context,
+            code=FlextApiErrorCodes.API_STORAGE_ERROR,
+            context=merged_context,
         )
 
 
@@ -526,23 +587,29 @@ class FlextApiBuilderError(FlextApiError):
         actual_value: str | None = None,
         builder_type: str | None = None,
         status_code: int = 400,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize with API builder context."""
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add builder-specific context
         if builder_step is not None:
-            context["builder_step"] = builder_step
+            merged_context["builder_step"] = builder_step
         if expected_type is not None:
-            context["expected_type"] = expected_type
+            merged_context["expected_type"] = expected_type
         if actual_value is not None:
-            context["actual_value"] = actual_value
+            merged_context["actual_value"] = actual_value
         if builder_type is not None:
-            context["builder_type"] = builder_type
+            merged_context["builder_type"] = builder_type
 
         super().__init__(
             f"API builder: {message}",
             status_code=status_code,
-            error_code="FLEXT_API_ERROR",
-            **context,
+            code=FlextApiErrorCodes.API_BUILDER_ERROR,
+            context=merged_context,
         )
 
 
@@ -557,23 +624,29 @@ class FlextApiRateLimitError(FlextApiError):
         window_seconds: int | None = None,
         retry_after: int | None = None,
         endpoint: str | None = None,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize with rate limiting context."""
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add rate limit-specific context
         if limit is not None:
-            context["limit"] = limit
+            merged_context["limit"] = limit
         if window_seconds is not None:
-            context["window_seconds"] = window_seconds
+            merged_context["window_seconds"] = window_seconds
         if retry_after is not None:
-            context["retry_after"] = retry_after
+            merged_context["retry_after"] = retry_after
         if endpoint is not None:
-            context["endpoint"] = endpoint
+            merged_context["endpoint"] = endpoint
 
         super().__init__(
             f"Rate limit: {message}",
             status_code=429,
-            error_code="FLEXT_API_ERROR",
-            **context,
+            code=FlextApiErrorCodes.API_RATE_LIMIT_ERROR,
+            context=merged_context,
         )
 
 
@@ -587,21 +660,27 @@ class FlextApiNotFoundError(FlextApiError):
         resource_type: str | None = None,
         resource_id: str | None = None,
         endpoint: str | None = None,
-        **context: object,
+        context: Mapping[str, object] | None = None,
+        **extra_context: object,
     ) -> None:
         """Initialize with resource context."""
+        # Merge contexts
+        merged_context: dict[str, object] = dict(context or {})
+        merged_context.update(extra_context)
+
+        # Add not found-specific context
         if resource_type is not None:
-            context["resource_type"] = resource_type
+            merged_context["resource_type"] = resource_type
         if resource_id is not None:
-            context["resource_id"] = resource_id
+            merged_context["resource_id"] = resource_id
         if endpoint is not None:
-            context["endpoint"] = endpoint
+            merged_context["endpoint"] = endpoint
 
         super().__init__(
             f"Not found: {message}",
             status_code=404,
-            error_code="FLEXT_API_ERROR",
-            **context,
+            code=FlextApiErrorCodes.API_NOT_FOUND_ERROR,
+            context=merged_context,
         )
 
 
@@ -689,13 +768,12 @@ def map_http_status_to_exception(
         return specific_exception
 
     # Range-based fallbacks
-
     if (
         FlextApiConstants.HTTP.CLIENT_ERROR_MIN
         <= status_code
         < FlextApiConstants.HTTP.CLIENT_ERROR_MAX
     ):
-        return FlextApiRequestError(message or "Client error", status_code=status_code)
+        return FlextApiRequestError(message or "Client error", status_code=status_code, context=context)
 
     if (
         FlextApiConstants.HTTP.SERVER_ERROR_MIN
@@ -705,16 +783,16 @@ def map_http_status_to_exception(
         return FlextApiError(
             message or "Server error",
             status_code=status_code,
-            error_code="FLEXT_API_ERROR",
-            **context,
+            code=FlextApiErrorCodes.GENERIC_API_ERROR,
+            context=context,
         )
 
     # Default fallback
     return FlextApiError(
         message or "Unknown error",
         status_code=status_code,
-        error_code="FLEXT_API_ERROR",
-        **context,
+        code=FlextApiErrorCodes.GENERIC_API_ERROR,
+        context=context,
     )
 
 
