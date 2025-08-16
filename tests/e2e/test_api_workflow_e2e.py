@@ -13,6 +13,7 @@ import pytest
 
 from flext_api import (
     FlextApi,
+    FlextApiBuilder,
     FlextApiCachingPlugin,
     FlextApiRetryPlugin,
     build_query,
@@ -107,7 +108,6 @@ class TestApiWorkflowE2E:
     def test_builder_patterns_integration(self) -> None:
         """Test integration between different builder patterns."""
         # Query building
-        from flext_api import FlextApiBuilder
 
         builder = FlextApiBuilder()
         query = (

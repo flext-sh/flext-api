@@ -5,20 +5,18 @@ from __future__ import annotations
 import dataclasses
 import importlib.metadata
 
-try:
-    __version__ = importlib.metadata.version("flext-api")
-except Exception:
-    __version__ = "0.9.0"
-
-# Version info tuple
-__version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
-
-# ==============================================================================
-# CORE FLEXT IMPORTS
-# ==============================================================================
-
 # Core types from flext-core
 from flext_core import FlextResult, get_logger
+
+# Legacy Compatibility Imports
+from flext_api.api import FlextApi, create_flext_api
+from flext_api.api_app import (
+    app,  # Default app instance
+    create_flext_api_app,
+    create_flext_api_app_with_settings,
+    run_development_server,
+    run_production_server,
+)
 
 # HTTP Client and Builder System
 from flext_api.api_client import (
@@ -56,9 +54,6 @@ from flext_api.api_client import (
     create_client,
 )
 
-# ==============================================================================
-# CONSOLIDATED MODULE IMPORTS (PEP8)
-# ==============================================================================
 # Configuration Management
 from flext_api.api_config import (
     FlextApiSettings,
@@ -66,31 +61,28 @@ from flext_api.api_config import (
     load_configuration,
     validate_configuration,
 )
-
-# Type System and Field Patterns
-from flext_api.api_types import (
-    # Type System
-    APITypes,
-    APITypesCompat,
-    # Field System
-    FlextAPIFieldCore,
-    FlextAPIFields,
-    T_Payload,
-    T_Request,
-    T_Response,
-    TData,
-    # Field Functions
-    api_key_field,
-    bearer_token_field,
-    endpoint_path_field,
-    get_api_types,
-    http_method_field,
-    pipeline_config_field,
-    plugin_config_field,
-    response_format_field,
-    user_role_field,
+from flext_api.api_exceptions import (
+    FlextApiAuthenticationError,
+    FlextApiAuthorizationError,
+    FlextApiBuilderError,
+    FlextApiConfigurationError,
+    FlextApiConnectionError,
+    # Base Error
+    FlextApiError,
+    FlextApiNotFoundError,
+    FlextApiProcessingError,
+    FlextApiRateLimitError,
+    # Specific API Errors
+    FlextApiRequestError,
+    FlextApiResponseError,
+    FlextApiStorageError,
+    FlextApiTimeoutError,
+    # Core API Errors
+    FlextApiValidationError,
+    # Utility Functions
+    create_error_response,
+    map_http_status_to_exception,
 )
-from flext_api.client import create_client_with_plugins
 
 # Domain Models and Entities
 from flext_api.api_models import (
@@ -126,6 +118,92 @@ from flext_api.api_models import (
     ResponseState,
     TokenType,
 )
+from flext_api.api_protocols import (
+    FlextApiAuthorizationProtocol,
+    FlextApiAuthProtocol,
+    FlextApiCacheProtocol,
+    FlextApiConnectionPoolProtocol,
+    # Handler Protocols
+    FlextApiHandlerProtocol,
+    FlextApiHealthCheckProtocol,
+    # Monitoring Protocols
+    FlextApiMetricsProtocol,
+    # Middleware Protocols
+    FlextApiMiddlewareProtocol,
+    # HTTP Client Protocols
+    FlextApiPluginProtocol,
+    # Builder Protocols
+    FlextApiQueryBuilderProtocol,
+    FlextApiRateLimitProtocol,
+    # Repository Protocols
+    FlextApiRepositoryProtocol,
+    FlextApiResponseBuilderProtocol,
+    # Service Protocols
+    FlextApiServiceProtocol,
+    # Streaming Protocols
+    FlextApiStreamProtocol,
+    FlextApiValidatorProtocol,
+    FlextApiWebSocketProtocol,
+)
+from flext_api.api_storage import (
+    FileStorageBackend,
+    # Main Classes
+    FlextApiStorage,
+    # Cache Implementation
+    MemoryCache,
+    # Backends
+    MemoryStorageBackend,
+    StorageBackend,
+    # Configuration
+    StorageConfig,
+    create_file_storage,
+    create_memory_storage,
+    # Factory Functions
+    create_storage,
+)
+
+# Type System and Field Patterns
+from flext_api.api_types import (
+    # Type System
+    APITypes,
+    APITypesCompat,
+    # Field System
+    FlextAPIFieldCore,
+    FlextAPIFields,
+    T_Payload,
+    T_Request,
+    T_Response,
+    TData,
+    # Field Functions
+    api_key_field,
+    bearer_token_field,
+    endpoint_path_field,
+    get_api_types,
+    http_method_field,
+    pipeline_config_field,
+    plugin_config_field,
+    response_format_field,
+    user_role_field,
+)
+from flext_api.base_service import (
+    FlextApiBaseAuthService,
+    FlextApiBaseBuilderService,
+    FlextApiBaseClientService,
+    FlextApiBaseHandlerService,
+    FlextApiBaseRepositoryService,
+    FlextApiBaseService,
+    FlextApiBaseStreamingService,
+)
+from flext_api.client import create_client_with_plugins
+from flext_api.constants import FlextApiConstants
+
+try:
+    __version__ = importlib.metadata.version("flext-api")
+except Exception:
+    __version__ = "0.9.0"
+
+# Version info tuple
+__version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 
 
 # Backwards-compatibility helper used by tests expecting a dict
@@ -172,92 +250,7 @@ def build_query_dict(
     return query.to_dict()
 
 
-# Exception Hierarchy
-# ==============================================================================
-# LEGACY COMPATIBILITY IMPORTS
-# ==============================================================================
-# Core API components (canonical)
-from flext_api.api import FlextApi, create_flext_api
-
-# FastAPI Application
-from flext_api.api_app import (
-    app,  # Default app instance
-    create_flext_api_app,
-    create_flext_api_app_with_settings,
-    run_development_server,
-    run_production_server,
-)
-from flext_api.api_exceptions import (
-    FlextApiAuthenticationError,
-    FlextApiAuthorizationError,
-    FlextApiBuilderError,
-    FlextApiConfigurationError,
-    FlextApiConnectionError,
-    # Base Error
-    FlextApiError,
-    FlextApiNotFoundError,
-    FlextApiProcessingError,
-    FlextApiRateLimitError,
-    # Specific API Errors
-    FlextApiRequestError,
-    FlextApiResponseError,
-    FlextApiStorageError,
-    FlextApiTimeoutError,
-    # Core API Errors
-    FlextApiValidationError,
-    # Utility Functions
-    create_error_response,
-    map_http_status_to_exception,
-)
-
-# Protocol Definitions (Interfaces)
-from flext_api.api_protocols import (
-    FlextApiAuthorizationProtocol,
-    FlextApiAuthProtocol,
-    FlextApiCacheProtocol,
-    FlextApiConnectionPoolProtocol,
-    # Handler Protocols
-    FlextApiHandlerProtocol,
-    FlextApiHealthCheckProtocol,
-    # Monitoring Protocols
-    FlextApiMetricsProtocol,
-    # Middleware Protocols
-    FlextApiMiddlewareProtocol,
-    # HTTP Client Protocols
-    FlextApiPluginProtocol,
-    # Builder Protocols
-    FlextApiQueryBuilderProtocol,
-    FlextApiRateLimitProtocol,
-    # Repository Protocols
-    FlextApiRepositoryProtocol,
-    FlextApiResponseBuilderProtocol,
-    # Service Protocols
-    FlextApiServiceProtocol,
-    # Streaming Protocols
-    FlextApiStreamProtocol,
-    FlextApiValidatorProtocol,
-    FlextApiWebSocketProtocol,
-)
-
-# Storage and Persistence
-from flext_api.api_storage import (
-    FileStorageBackend,
-    # Main Classes
-    FlextApiStorage,
-    # Cache Implementation
-    MemoryCache,
-    # Backends
-    MemoryStorageBackend,
-    StorageBackend,
-    # Configuration
-    StorageConfig,
-    create_file_storage,
-    create_memory_storage,
-    # Factory Functions
-    create_storage,
-)
-
-"""Legacy helper aliases and behavior adjustments for tests."""
+# Legacy helper aliases and behavior adjustments for tests
 
 
 # Expose sync-compatible health_check for legacy tests without monkey-patching
@@ -267,18 +260,6 @@ def sync_health_check(api: FlextApi) -> FlextResult[dict[str, object]]:
 
 
 # Note: Do not monkey-patch FlextApi.health_check. Async tests expect an awaitable.
-
-
-from flext_api.base_service import (
-    FlextApiBaseAuthService,
-    FlextApiBaseBuilderService,
-    FlextApiBaseClientService,
-    FlextApiBaseHandlerService,
-    FlextApiBaseRepositoryService,
-    FlextApiBaseService,
-    FlextApiBaseStreamingService,
-)
-from flext_api.constants import FlextApiConstants
 
 # Extract constants
 FLEXT_API_TIMEOUT = FlextApiConstants.Config.DEFAULT_TIMEOUT
@@ -364,10 +345,18 @@ __all__: list[str] = [
     "FileStorageBackend",
     "FlextAPIFieldCore",
     "FlextAPIFields",
+    "FlextApi",
     "FlextApiAuthProtocol",
     "FlextApiAuthenticationError",
     "FlextApiAuthorizationError",
     "FlextApiAuthorizationProtocol",
+    "FlextApiBaseAuthService",
+    "FlextApiBaseBuilderService",
+    "FlextApiBaseClientService",
+    "FlextApiBaseHandlerService",
+    "FlextApiBaseRepositoryService",
+    "FlextApiBaseService",
+    "FlextApiBaseStreamingService",
     "FlextApiBuilder",
     "FlextApiBuilderError",
     "FlextApiCacheProtocol",
@@ -382,6 +371,7 @@ __all__: list[str] = [
     "FlextApiConfigurationError",
     "FlextApiConnectionError",
     "FlextApiConnectionPoolProtocol",
+    "FlextApiConstants",
     "FlextApiError",
     "FlextApiHandlerProtocol",
     "FlextApiHealthCheckProtocol",
@@ -458,6 +448,7 @@ __all__: list[str] = [
     "create_client_with_plugins",
     "create_error_response",
     "create_file_storage",
+    "create_flext_api",
     "create_flext_api_app",
     "create_flext_api_app_with_settings",
     "create_memory_storage",
@@ -476,14 +467,4 @@ __all__: list[str] = [
     "sync_health_check",
     "user_role_field",
     "validate_configuration",
-    "FlextApi",
-    "FlextApiBaseAuthService",
-    "FlextApiBaseBuilderService",
-    "FlextApiBaseClientService",
-    "FlextApiBaseHandlerService",
-    "FlextApiBaseRepositoryService",
-    "FlextApiBaseService",
-    "FlextApiBaseStreamingService",
-    "FlextApiConstants",
-    "create_flext_api",
 ]

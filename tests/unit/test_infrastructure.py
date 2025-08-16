@@ -28,10 +28,10 @@ class TestInfrastructureModule:
 
     def test_module_imports_successfully(self) -> None:
         """Test infrastructure module can be imported without errors."""
-        import flext_api.infrastructure_config
+        mod = importlib.import_module("flext_api.infrastructure_config")
 
-        assert flext_api.infrastructure_config is not None
-        assert isinstance(flext_api.infrastructure_config, ModuleType)
+        assert mod is not None
+        assert isinstance(mod, ModuleType)
 
     def test_module_has_comprehensive_documentation(self) -> None:
         """Test infrastructure module has comprehensive documentation."""
@@ -103,14 +103,14 @@ class TestInfrastructureConfig:
 
     def test_config_module_imports_successfully(self) -> None:
         """Test config module can be imported without errors."""
-        from flext_api.infrastructure import config
+        config = importlib.import_module("flext_api.infrastructure.config")
 
         assert config is not None
         assert isinstance(config, ModuleType)
 
     def test_config_module_has_documentation(self) -> None:
         """Test config module has comprehensive documentation."""
-        from flext_api.infrastructure.config import __doc__ as config_doc
+        config_doc = importlib.import_module("flext_api.infrastructure.config").__doc__
 
         assert config_doc is not None
         assert len(config_doc) > 2000  # Ensure substantial documentation
@@ -129,7 +129,7 @@ class TestInfrastructureConfig:
 
     def test_config_follows_foundation_patterns(self) -> None:
         """Test config module follows foundation patterns."""
-        from flext_api.infrastructure.config import __doc__ as config_doc
+        config_doc = importlib.import_module("flext_api.infrastructure.config").__doc__
 
         # Check for foundation pattern compliance
         foundation_patterns = [
@@ -144,7 +144,7 @@ class TestInfrastructureConfig:
 
     def test_config_documentation_structure(self) -> None:
         """Test config module has proper documentation structure."""
-        from flext_api.infrastructure.config import __doc__ as config_doc
+        config_doc = importlib.import_module("flext_api.infrastructure.config").__doc__
 
         # Check for documentation sections
         doc_sections = [
@@ -164,7 +164,7 @@ class TestInfrastructureConfig:
 
     def test_config_integration_points_documented(self) -> None:
         """Test config module documents integration points."""
-        from flext_api.infrastructure.config import __doc__ as config_doc
+        config_doc = importlib.import_module("flext_api.infrastructure.config").__doc__
 
         # Check for integration documentation
         integration_points = [
@@ -185,11 +185,11 @@ class TestInfrastructureArchitectureCompliance:
     def test_infrastructure_follows_clean_architecture_principles(self) -> None:
         """Test infrastructure layer follows Clean Architecture principles."""
         # Import infrastructure components
-        import flext_api.infrastructure
-        from flext_api.infrastructure import config
+        infra = importlib.import_module("flext_api.infrastructure")
+        config = importlib.import_module("flext_api.infrastructure.config")
 
         # Verify modules can be imported (no circular dependencies)
-        assert flext_api.infrastructure is not None
+        assert infra is not None
         assert config is not None
 
         # Verify infrastructure layer separation
@@ -197,11 +197,11 @@ class TestInfrastructureArchitectureCompliance:
         infrastructure_dir = "flext_api.infrastructure"
 
         # This is a structural test - infrastructure imports should be clean
-        assert infrastructure_dir in str(flext_api.infrastructure)
+        assert infrastructure_dir in str(infra)
 
     def test_infrastructure_documentation_quality(self) -> None:
         """Test infrastructure documentation meets quality standards."""
-        from flext_api.infrastructure.config import __doc__ as config_doc
+        config_doc = importlib.import_module("flext_api.infrastructure.config").__doc__
 
         # Quality metrics for documentation
         assert len(config_doc) > 2000  # Substantial content
@@ -218,11 +218,11 @@ class TestInfrastructureArchitectureCompliance:
     def test_infrastructure_layer_boundaries(self) -> None:
         """Test infrastructure layer maintains proper boundaries."""
         # Import infrastructure modules
-        import flext_api.infrastructure
-        from flext_api.infrastructure import config
+        infra = importlib.import_module("flext_api.infrastructure")
+        config = importlib.import_module("flext_api.infrastructure.config")
 
         # Verify no circular imports by successful module loading
-        assert hasattr(flext_api.infrastructure, "__doc__")
+        assert hasattr(infra, "__doc__")
         assert hasattr(config, "__doc__")
 
         # Infrastructure modules should be importable independently
@@ -262,7 +262,7 @@ class TestInfrastructureIntegrationPatterns:
 
     def test_configuration_management_patterns_documented(self) -> None:
         """Test configuration management patterns are documented."""
-        from flext_api.infrastructure.config import __doc__ as config_doc
+        config_doc = importlib.import_module("flext_api.infrastructure.config").__doc__
 
         config_patterns = [
             "Environment",
@@ -305,7 +305,7 @@ class TestInfrastructureQualityStandards:
 
     def test_documentation_follows_flext_standards(self) -> None:
         """Test documentation follows FLEXT ecosystem standards."""
-        from flext_api.infrastructure.config import __doc__ as config_doc
+        config_doc = importlib.import_module("flext_api.infrastructure.config").__doc__
 
         # Check for FLEXT-specific standards
         flext_standards = [
@@ -323,18 +323,18 @@ class TestInfrastructureQualityStandards:
     def test_module_structure_supports_testing(self) -> None:
         """Test infrastructure module structure supports comprehensive testing."""
         # Verify modules can be imported for testing
-        import flext_api.infrastructure
-        from flext_api.infrastructure import config
+        infra = importlib.import_module("flext_api.infrastructure")
+        config = importlib.import_module("flext_api.infrastructure.config")
 
         # Should be able to access module attributes for testing
-        assert hasattr(flext_api.infrastructure, "__doc__")
-        assert hasattr(flext_api.infrastructure, "__file__")
+        assert hasattr(infra, "__doc__")
+        assert hasattr(infra, "__file__")
         assert hasattr(config, "__doc__")
         assert hasattr(config, "__file__")
 
     def test_infrastructure_error_handling_documented(self) -> None:
         """Test infrastructure error handling patterns are documented."""
-        from flext_api.infrastructure.config import __doc__ as config_doc
+        config_doc = importlib.import_module("flext_api.infrastructure.config").__doc__
 
         # Check for error handling documentation
         error_patterns = ["Error Handling", "validation", "error", "Configuration"]
@@ -345,7 +345,7 @@ class TestInfrastructureQualityStandards:
 
     def test_performance_characteristics_documented(self) -> None:
         """Test performance characteristics are documented."""
-        from flext_api.infrastructure.config import __doc__ as config_doc
+        config_doc = importlib.import_module("flext_api.infrastructure.config").__doc__
 
         # Check for performance documentation
         performance_concepts = [
@@ -367,15 +367,15 @@ class TestInfrastructureModuleStructure:
 
     def test_infrastructure_module_exports(self) -> None:
         """Test infrastructure module has appropriate exports."""
-        import flext_api.infrastructure
+        infra = importlib.import_module("flext_api.infrastructure")
 
         # Module should be importable and have documentation
-        assert flext_api.infrastructure.__doc__ is not None
-        assert len(flext_api.infrastructure.__doc__) > 100
+        assert infra.__doc__ is not None
+        assert len(infra.__doc__) > 100
 
     def test_config_module_structure(self) -> None:
         """Test config module has proper structure."""
-        from flext_api.infrastructure import config
+        config = importlib.import_module("flext_api.infrastructure.config")
 
         # Config module should have proper documentation structure
         assert config.__doc__ is not None
@@ -387,14 +387,14 @@ class TestInfrastructureModuleStructure:
 
     def test_infrastructure_follows_python_conventions(self) -> None:
         """Test infrastructure follows Python module conventions."""
-        import flext_api.infrastructure
-        from flext_api.infrastructure import config
+        infra = importlib.import_module("flext_api.infrastructure")
+        config = importlib.import_module("flext_api.infrastructure.config")
 
         # Check for proper module attributes
         required_attributes = ["__doc__", "__file__"]
 
         for attr in required_attributes:
-            assert hasattr(flext_api.infrastructure, attr), f"Missing attribute: {attr}"
+            assert hasattr(infra, attr), f"Missing attribute: {attr}"
             assert hasattr(config, attr), f"Config missing attribute: {attr}"
 
     def test_infrastructure_readme_exists_and_structured(self) -> None:

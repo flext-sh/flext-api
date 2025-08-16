@@ -1,3 +1,5 @@
+"""Test more paths."""
+
 from __future__ import annotations
 
 import pytest
@@ -7,6 +9,7 @@ from flext_api.api import FlextApi
 
 @pytest.mark.asyncio
 async def test_flext_api_health_check_sync_and_info() -> None:
+    """Test flext api health check sync and info."""
     api = FlextApi()
     # health_check returns coroutine when loop is running; call compat sync wrapper
     res = api.health_check_sync()

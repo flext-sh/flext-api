@@ -32,7 +32,7 @@ async def test_memory_backend_ttl_and_keys() -> None:
 @pytest.mark.asyncio
 async def test_file_backend_persistence_roundtrip(tmp_path: object) -> None:
     """File backend persists data across operations within a single run."""
-    from pathlib import Path
+    from pathlib import Path  # noqa: PLC0415
 
     base = Path(tmp_path)  # pytest passes a Path-like object
     cfg = StorageConfig(backend=StorageBackend.FILE, file_path=str(base / "s.json"))

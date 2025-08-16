@@ -574,7 +574,10 @@ class TestExceptionModuleExports:
 
     def test_all_exceptions_in_module_all(self) -> None:
         """Test all exception classes are in __all__ export."""
-        from flext_api.exceptions import __all__
+        from importlib import import_module  # noqa: PLC0415
+
+        exceptions_module = import_module("flext_api.exceptions")
+        module_all = set(getattr(exceptions_module, "__all__", []))
 
         expected_exports = {
             "FlextApiAuthenticationError",
@@ -590,41 +593,30 @@ class TestExceptionModuleExports:
             "FlextApiValidationError",
         }
 
-        assert set(__all__) == expected_exports
+        assert module_all == expected_exports
 
     def test_all_exports_importable(self) -> None:
         """Test all exported exceptions can be imported."""
-        from flext_api.exceptions import (
-            FlextApiAuthenticationError,
-            FlextApiBuilderError,
-            FlextApiConfigurationError,
-            FlextApiConnectionError,
-            FlextApiError,
-            FlextApiProcessingError,
-            FlextApiRequestError,
-            FlextApiResponseError,
-            FlextApiStorageError,
-            FlextApiTimeoutError,
-            FlextApiValidationError,
-        )
+        from importlib import import_module  # noqa: PLC0415
 
-        # Verify all are exception classes
-        exception_classes = [
-            FlextApiError,
-            FlextApiValidationError,
-            FlextApiAuthenticationError,
-            FlextApiConfigurationError,
-            FlextApiConnectionError,
-            FlextApiProcessingError,
-            FlextApiTimeoutError,
-            FlextApiRequestError,
-            FlextApiResponseError,
-            FlextApiStorageError,
-            FlextApiBuilderError,
+        exceptions_module = import_module("flext_api.exceptions")
+        export_names = [
+            "FlextApiAuthenticationError",
+            "FlextApiBuilderError",
+            "FlextApiConfigurationError",
+            "FlextApiConnectionError",
+            "FlextApiError",
+            "FlextApiProcessingError",
+            "FlextApiRequestError",
+            "FlextApiResponseError",
+            "FlextApiStorageError",
+            "FlextApiTimeoutError",
+            "FlextApiValidationError",
         ]
 
-        for exc_class in exception_classes:
+        # Verify all are exception classes and instantiable
+        for name in export_names:
+            exc_class = getattr(exceptions_module, name)
             assert issubclass(exc_class, Exception)
-            # Test each can be instantiated
             instance = exc_class("Test message")
             assert isinstance(instance, Exception)

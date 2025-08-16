@@ -15,11 +15,14 @@ from flext_api.api_client import (
 )
 
 if TYPE_CHECKING:
-    from typisng import ClassVar
+    from typing import ClassVar
 
 
+@pytest.mark.usefixtures("monkeypatch")
 @pytest.mark.asyncio
-async def test_read_response_data_parse_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_read_response_data_parse_errors() -> None:
+    """Test read response data parse errors."""
+
     # Simulate JSON header but bad JSON body
     class FakeResponse:
         """Fake aiohttp-like response object for testing parse fallbacks."""
@@ -39,10 +42,10 @@ async def test_read_response_data_parse_errors(monkeypatch: pytest.MonkeyPatch) 
     assert "{" in data
 
 
+@pytest.mark.usefixtures("monkeypatch")
 @pytest.mark.asyncio
-async def test_prepare_headers_merge_and_request_build(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+async def test_prepare_headers_merge_and_request_build() -> None:
+    """Test prepare headers merge and request build."""
     client = FlextApiClient(
         FlextApiClientConfig(base_url="https://api.example.com", headers={"A": "1"}),
     )
@@ -59,10 +62,13 @@ async def test_prepare_headers_merge_and_request_build(
 async def test_execute_request_pipeline_empty_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Test execute request pipeline empty response."""
     client = FlextApiClient(FlextApiClientConfig(base_url="https://api.example.com"))
     req = FlextApiClientRequest(method="GET", url="https://api.example.com/x")
 
-    async def bad_perform(_req):
+    async def bad_perform(
+        _req: FlextApiClientRequest,
+    ) -> FlextResult[FlextApiClientResponse]:
         return FlextResult.ok(FlextApiClientResponse(status_code=200, data=None))
 
     await client.start()

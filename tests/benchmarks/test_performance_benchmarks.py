@@ -24,9 +24,6 @@ from flext_api import (
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-else:
-    # Use fixture provided in tests/conftest.py
-    from collections.abc import Callable as _Callable  # noqa: F401
 
 
 class TestAPIPerformanceBenchmarks:

@@ -111,7 +111,7 @@ class TestFinalMissingCoverage:
     def test_fields_type_checking_import_coverage(self) -> None:
         """Test TYPE_CHECKING import coverage in fields.py - line 13."""
         # This test ensures the TYPE_CHECKING import is covered
-        from flext_api import fields
+        from flext_api import fields  # noqa: PLC0415
 
         # Access the module to trigger import coverage
         assert hasattr(fields, "FlextAPIFieldCore")
@@ -123,20 +123,20 @@ class TestFinalMissingCoverage:
     def test_client_type_checking_import_coverage_complete(self) -> None:
         """Test complete TYPE_CHECKING coverage in client.py - line 15."""
         # Force import of types during runtime to cover TYPE_CHECKING block
-        import typing
+        import typing  # noqa: PLC0415
 
         if hasattr(typing, "TYPE_CHECKING"):
             # This covers the TYPE_CHECKING import path
-            from flext_api.client import FlextApiClient
+            from flext_api.client import FlextApiClient  # noqa: PLC0415
 
             assert FlextApiClient is not None
 
     def test_main_module_direct_execution(self) -> None:
         """Test main module execution to cover __name__ == '__main__' block."""
         # Simple test to cover the functionality without complex subprocess
-        import uvicorn
+        import uvicorn  # noqa: PLC0415
 
-        from flext_api.main import app
+        from flext_api.main import app  # noqa: PLC0415
 
         # Test the exact same call that would happen in __main__
         with patch("uvicorn.run") as mock_run:

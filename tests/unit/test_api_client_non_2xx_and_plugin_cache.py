@@ -21,7 +21,11 @@ class FakeCachePlugin(FlextApiPlugin):
         super().__init__("caching")
         self._cache: dict[str, FlextApiClientResponse] = {}
 
-    async def before_request(self, request, context=None):
+    async def before_request(
+        self,
+        request: FlextApiClientRequest,
+        context: dict[str, object] | None = None,
+    ) -> FlextApiClientRequest:
         if (
             isinstance(request, FlextApiClientRequest)
             and str(request.method) == "GET"
@@ -32,7 +36,11 @@ class FakeCachePlugin(FlextApiPlugin):
             context["cached_response"] = self._cache[request.url]
         return request
 
-    async def after_response(self, response, context=None):
+    async def after_response(
+        self,
+        response: FlextApiClientResponse,
+        _context: dict[str, object] | None = None,
+    ) -> FlextApiClientResponse:
         if isinstance(response, FlextApiClientResponse) and response.status_code == 200:
             # store a shallow cache
             self._cache["last"] = response
@@ -67,7 +75,9 @@ async def test_cached_short_circuit_and_non_2xx(
     assert res.data.data.get("cached") is True
 
     # Simulate non-2xx error response path
-    async def perform_bad(_req):
+    async def perform_bad(
+        _req: FlextApiClientRequest,
+    ) -> FlextResult[FlextApiClientResponse]:
         return FlextResult.ok(FlextApiClientResponse(status_code=500, data={"e": 1}))
 
     monkeypatch.setattr(client, "_perform_http_request", perform_bad)

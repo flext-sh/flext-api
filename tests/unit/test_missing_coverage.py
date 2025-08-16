@@ -35,13 +35,10 @@ class TestMissingCoverageInit:
     def test_import_error_handling(self) -> None:
         """Test import error handling."""
         # Test that imports work correctly
-        try:
-            from flext_api import FlextApi
+        # Import should work; exercise error path handling in __init__ if any
+        from flext_api import FlextApi  # noqa: PLC0415
 
-            assert FlextApi is not None
-        except ImportError:
-            # This is expected if dependencies are missing
-            pass
+        assert FlextApi is not None
 
 
 class TestMissingCoverageApi:
@@ -73,7 +70,7 @@ class TestMissingCoverageApp:
     def test_app_health_check_none_result(self) -> None:
         """Test app health check with none result."""
         # Test health check functionality
-        from flext_api.app import app
+        from flext_api.app import app  # noqa: PLC0415
 
         # This should not raise an exception
         assert app is not None
@@ -81,7 +78,7 @@ class TestMissingCoverageApp:
     def test_health_endpoint_error_path(self) -> None:
         """Test health endpoint error path."""
         # Test health endpoint
-        from flext_api.app import app
+        from flext_api.app import app  # noqa: PLC0415
 
         # This should not raise an exception
         assert app is not None
@@ -92,7 +89,7 @@ class TestMissingCoverageBuilder:
 
     def test_query_builder_error_paths(self) -> None:
         """Test query builder error paths."""
-        from flext_api.builder import FlextApiQueryBuilder
+        from flext_api.builder import FlextApiQueryBuilder  # noqa: PLC0415
 
         builder = FlextApiQueryBuilder()
 
@@ -105,7 +102,7 @@ class TestMissingCoverageBuilder:
 
     def test_response_builder_error_paths(self) -> None:
         """Test response builder error paths."""
-        from flext_api.builder import FlextApiResponseBuilder
+        from flext_api.builder import FlextApiResponseBuilder  # noqa: PLC0415
 
         builder = FlextApiResponseBuilder()
 
@@ -128,7 +125,7 @@ class TestMissingCoverageBuilder:
             )
 
         # Test paginated response building
-        from flext_api.builder import PaginationConfig
+        from flext_api.builder import PaginationConfig  # noqa: PLC0415
 
         config = PaginationConfig(
             data=[1, 2, 3],
@@ -281,24 +278,19 @@ class TestMissingCoverageMain:
     def test_main_storage_import_error(self) -> None:
         """Test main storage import error."""
         # Test that main module can be imported
-        try:
-            from flext_api.main import app
-
-            assert app is not None
-        except ImportError:
-            # This is expected if dependencies are missing
-            pass
+        from flext_api.main import app  # noqa: PLC0415
+        assert app is not None
 
     def test_main_app_availability(self) -> None:
         """Test main app availability."""
-        from flext_api.main import app
+        from flext_api.main import app  # noqa: PLC0415
 
         assert app is not None
 
     def test_main_conditional_execution(self) -> None:
         """Test main conditional execution."""
         # Test that main module can be executed
-        from flext_api.main import app
+        from flext_api.main import app  # noqa: PLC0415
 
         assert app is not None
 
@@ -330,7 +322,10 @@ class TestCompleteCoverageIntegration:
 
     def test_builder_edge_cases(self) -> None:
         """Test builder edge cases."""
-        from flext_api.builder import FlextApiQueryBuilder, FlextApiResponseBuilder
+        from flext_api.builder import (  # noqa: PLC0415
+            FlextApiQueryBuilder,
+            FlextApiResponseBuilder,
+        )
 
         # Test query builder edge cases
         builder = FlextApiQueryBuilder()

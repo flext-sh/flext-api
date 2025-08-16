@@ -23,13 +23,13 @@ class DummyAuth(FlextApiBaseAuthService):
 
     service_name: str = "dummy-auth"
 
-    async def _do_start(self):
+    async def _do_start(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_stop(self):
+    async def _do_stop(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_authenticate(self, credentials):
+    async def _do_authenticate(self, _credentials: dict[str, object]) -> FlextResult[dict[str, object]]:
         return FlextResult.ok({"token": "t"})
 
     async def _do_validate_token(self, token: str) -> FlextResult[bool]:
@@ -42,6 +42,8 @@ class DummyAuth(FlextApiBaseAuthService):
 @pytest.mark.asyncio
 async def test_auth_service_paths() -> None:
     """Test auth service paths."""
+    # Ensure model is fully built before instantiation
+    DummyAuth.model_rebuild()
     auth = DummyAuth()
     # Empty credentials -> fail
     assert not (await auth.authenticate({})).success
@@ -62,22 +64,27 @@ class DummyRepo(FlextApiBaseRepositoryService):
     service_name: str = "dummy-repo"
     entity_type: type = dict
 
-    async def _do_start(self):
+    async def _do_start(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_stop(self):
+    async def _do_stop(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_find_by_id(self, entity_id: str):
+    async def _do_find_by_id(self, entity_id: str) -> FlextResult[dict[str, object]]:
         return FlextResult.ok({"id": entity_id})
 
-    async def _do_find_all(self, filters, limit, offset):
+    async def _do_find_all(
+        self,
+        _filters: dict[str, object] | None,
+        _limit: int | None,
+        _offset: int | None,
+    ) -> FlextResult[list[dict[str, object]]]:
         return FlextResult.ok([{}, {}, {}])
 
-    async def _do_save(self, entity):
+    async def _do_save(self, entity: dict[str, object]) -> FlextResult[dict[str, object]]:
         return FlextResult.ok(entity | {"saved": True})
 
-    async def _do_delete(self, entity_id: str):
+    async def _do_delete(self, _entity_id: str) -> FlextResult[None]:
         return FlextResult.ok(None)
 
 
@@ -93,7 +100,7 @@ async def test_repository_service_paths() -> None:
     assert (await repo.save({"id": 1})).success
     # delete will first call find_by_id; ensure failure propagates
 
-    async def fail_find(_):
+    async def fail_find(_: object) -> FlextResult[object]:
         return FlextResult.fail("nf")
 
     repo._do_find_by_id = fail_find  # type: ignore[assignment]
@@ -103,12 +110,12 @@ async def test_repository_service_paths() -> None:
 class DummyMw:
     """Simple middleware to mutate request/response dicts."""
 
-    async def process_request(self, req):
+    async def process_request(self, req: dict[str, object]) -> FlextResult[dict[str, object]]:
         r = dict(req)
         r["mw"] = 1
         return FlextResult.ok(r)
 
-    async def process_response(self, resp):
+    async def process_response(self, resp: dict[str, object]) -> FlextResult[dict[str, object]]:
         r = dict(resp)
         r["mw2"] = 1
         return FlextResult.ok(r)
@@ -120,13 +127,13 @@ class DummyHandler(FlextApiBaseHandlerService):
     service_name: str = "dummy-handler"
     middlewares: ClassVar[list[DummyMw]] = [DummyMw()]
 
-    async def _do_start(self):
+    async def _do_start(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_stop(self):
+    async def _do_stop(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_handle(self, request):
+    async def _do_handle(self, request: dict[str, object]) -> FlextResult[dict[str, object]]:
         if request.get("crash"):
             return FlextResult.fail("boom")
         return FlextResult.ok(request | {"handled": True})
@@ -149,13 +156,13 @@ class DummyStream(FlextApiBaseStreamingService):
 
     service_name: str = "dummy-stream"
 
-    async def _do_start(self):
+    async def _do_start(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_stop(self):
+    async def _do_stop(self) -> FlextResult[None]:
         return FlextResult.ok(None)
 
-    async def _do_stream(self, source) -> AsyncIterator[bytes]:
+    async def _do_stream(self, source: object) -> AsyncIterator[bytes]:
         if isinstance(source, dict) and source.get("fail"):
             msg = "stream fail"
             raise RuntimeError(msg)

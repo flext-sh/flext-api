@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from fastapi.testclient import TestClient
 
@@ -56,15 +56,11 @@ def test_health_storage_error_path_sets_degraded_status() -> None:
 
     # Replace storage with an object that raises on set/delete to go through error branch
     class BadStorage:
-        def set(
-            self,
-            *_: Any,
-            **__: Any,
-        ) -> None:  # non-async, but middleware accepts both
+        def set(self, *_: object, **__: object) -> None:  # non-async, but middleware accepts both
             message = "boom"
             raise RuntimeError(message)
 
-        def delete(self, *_: Any, **__: Any) -> None:
+        def delete(self, *_: object, **__: object) -> None:
             message = "boom"
             raise RuntimeError(message)
 

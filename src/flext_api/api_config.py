@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core import FlextConstants, FlextResult, FlextBaseConfigModel
+from flext_core import FlextBaseConfigModel, FlextConstants, FlextResult, FlextSettings
 from pydantic import Field, field_validator
+
+from flext_api.constants import FlextApiConstants
 
 if TYPE_CHECKING:
     from flext_api.typings import FlextTypes
@@ -80,10 +82,8 @@ class FlextApiSettings(FlextBaseConfigModel):
     debug: bool = Field(default=False, description="Enable debug mode")
     log_level: str = Field(default="INFO", description="Logging level")
 
-    class Config:
-        """Pydantic configuration class for API settings."""
-
-        env_prefix = "FLEXT_API_"
+    # Inherit base model_config and customize env_prefix
+    model_config = FlextBaseConfigModel.model_config | {"env_prefix": "FLEXT_API_"}
 
     @field_validator("api_port")
     @classmethod
@@ -119,25 +119,39 @@ class FlextApiSettings(FlextBaseConfigModel):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate API-specific business rules."""
         # API port validation
-        if self.api_port < 1024 and self.environment == "production":
-            return FlextResult.fail("Production API should not use privileged ports (< 1024)")
-        
+        if (
+            self.api_port < FlextApiConstants.Connection.PRIVILEGED_PORT_LIMIT
+            and self.environment == "production"
+        ):
+            return FlextResult.fail(
+                f"Production API should not use privileged ports (< {FlextApiConstants.Connection.PRIVILEGED_PORT_LIMIT})",
+            )
+
         # Debug mode validation
         if self.debug and self.environment == "production":
             return FlextResult.fail("Debug mode cannot be enabled in production")
-        
+
         # Database configuration validation
-        if self.database_url and self.database_pool_size > 50:
-            return FlextResult.fail("Database pool size should not exceed 50 for optimal performance")
-        
+        if (
+            self.database_url
+            and self.database_pool_size > FlextApiConstants.Database.MAX_POOL_SIZE
+        ):
+            return FlextResult.fail(
+                f"Database pool size should not exceed {FlextApiConstants.Database.MAX_POOL_SIZE} for optimal performance",
+            )
+
         # Cache configuration validation
         if self.enable_caching and self.cache_ttl <= 0:
-            return FlextResult.fail("Cache TTL must be positive when caching is enabled")
-        
+            return FlextResult.fail(
+                "Cache TTL must be positive when caching is enabled",
+            )
+
         # External API configuration validation
-        if self.external_api_retries > 10:
-            return FlextResult.fail("External API retries should not exceed 10 to avoid excessive delays")
-        
+        if self.external_api_retries > FlextApiConstants.Config.MAX_RETRIES:
+            return FlextResult.fail(
+                f"External API retries should not exceed {FlextApiConstants.Config.MAX_RETRIES} to avoid excessive delays",
+            )
+
         return FlextResult.ok(None)
 
     @classmethod
@@ -145,7 +159,7 @@ class FlextApiSettings(FlextBaseConfigModel):
         cls,
         overrides: FlextTypes.Core.JsonDict | None = None,
         **kwargs: object,
-    ) -> FlextResult[FlextApiSettings]:
+    ) -> FlextResult[FlextSettings]:
         """Create settings instance with validation and return FlextResult.
 
         Args:
@@ -163,7 +177,9 @@ class FlextApiSettings(FlextBaseConfigModel):
                 config_data.update(overrides)
             config_data.update(kwargs)
 
-            settings = cls.model_validate(config_data) if config_data else cls()
+            settings = (
+                cls.model_validate(config_data) if config_data else cls.model_validate({})
+            )
             return FlextResult.ok(settings)
         except (RuntimeError, ValueError, TypeError, OSError) as e:
             return FlextResult.fail(f"Failed to create settings: {e}")

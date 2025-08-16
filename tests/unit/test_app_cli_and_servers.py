@@ -16,7 +16,7 @@ def test_run_development_server_invokes_uvicorn(
     """Ensure development server calls uvicorn.run with factory flag."""
     calls: list[dict[str, Any]] = []
 
-    def fake_run(*args: Any, **kwargs: Any) -> None:  # uvicorn.run
+    def fake_run(*args: object, **kwargs: object) -> None:  # uvicorn.run
         calls.append({"args": args, "kwargs": kwargs})
 
     monkeypatch.setattr(
@@ -40,7 +40,7 @@ def test_run_production_server_invokes_uvicorn(monkeypatch: pytest.MonkeyPatch) 
     """Ensure production server passes explicit host/port to uvicorn.run."""
     calls: list[dict[str, Any]] = []
 
-    def fake_run(*args: Any, **kwargs: Any) -> None:  # uvicorn.run
+    def fake_run(*args: object, **kwargs: object) -> None:  # uvicorn.run
         calls.append({"args": args, "kwargs": kwargs})
 
     monkeypatch.setattr(
@@ -67,7 +67,7 @@ def test_create_flext_api_app_with_settings_failure(
 ) -> None:
     """When settings creation fails, the wrapper raises RuntimeError."""
 
-    def fake_create_api_settings(**_: Any) -> FlextResult[object]:
+    def fake_create_api_settings(**_: object) -> FlextResult[object]:
         return FlextResult.fail("boom")
 
     monkeypatch.setattr(api_app_module, "create_api_settings", fake_create_api_settings)
@@ -80,7 +80,7 @@ def test_main_entrypoint_smoke(monkeypatch: pytest.MonkeyPatch) -> None:
     """Smoke test for main entrypoint wiring and uvicorn invocation."""
     calls: list[dict[str, Any]] = []
 
-    def fake_run(*args: Any, **kwargs: Any) -> None:
+    def fake_run(*args: object, **kwargs: object) -> None:
         calls.append({"args": args, "kwargs": kwargs})
 
     monkeypatch.setattr(

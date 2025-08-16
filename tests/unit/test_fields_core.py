@@ -356,18 +356,5 @@ class TestFieldsModuleIntegration:
 
     def test_type_annotations_coverage(self) -> None:
         """Test type annotations to cover TYPE_CHECKING imports."""
-        from typing import TYPE_CHECKING
-
-        if TYPE_CHECKING:
-            # Force import of types module during type checking
-            from flext_api.types import TData
-
-            # Create a function with type hints to trigger usage
-            def typed_function(data: TData) -> TData:
-                return data
-
-            # Verify the function exists (this covers the import)
-            assert callable(typed_function)
-
-        # This test always passes but ensures TYPE_CHECKING import is covered
-        assert True
+        # Runtime-safe coverage without inline imports
+        assert hasattr(FlextAPIFields, "API_KEY")

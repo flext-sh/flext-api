@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import sys
 import uuid
 from contextlib import asynccontextmanager, suppress as _suppress
 from typing import TYPE_CHECKING
-import datetime
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -98,7 +98,7 @@ class FlextApiAppConfig:
 async def add_request_id_middleware(
     request: Request,
     call_next: Callable[[Request], object],
-) -> object:
+) -> JSONResponse | object:
     """Add request ID to all requests for tracing."""
     request_id = str(uuid.uuid4())
 
@@ -123,7 +123,7 @@ async def add_request_id_middleware(
 async def error_handler_middleware(
     request: Request,
     call_next: Callable[[Request], object],
-) -> object:
+) -> JSONResponse | object:
     """Global error handler middleware."""
     try:
         # call_next is callable from FastAPI middleware contract
@@ -248,7 +248,9 @@ class FlextApiHealthChecker:
         }
 
     async def _check_storage_health(
-        self, app: FastAPI, health_data: dict[str, object]
+        self,
+        app: FastAPI,
+        health_data: dict[str, object],
     ) -> None:
         """Check storage health and update health data."""
         storage_status = {
@@ -264,7 +266,8 @@ class FlextApiHealthChecker:
 
                 if set_coro and del_coro:
                     result_set = set_coro(
-                        test_key, {"timestamp": health_data["timestamp"]}
+                        test_key,
+                        {"timestamp": health_data["timestamp"]},
                     )
                     if hasattr(result_set, "__await__"):
                         await result_set
@@ -403,6 +406,9 @@ def create_flext_api_app(config: FlextApiAppConfig | None = None) -> FastAPI:
         redoc_url="/redoc" if config.settings and config.settings.debug else None,
         openapi_url="/openapi.json",
     )
+
+    # Use FastAPI's default route registration without additional wrappers to
+    # preserve strict typing and avoid mypy mismatches.
 
     # Add middleware
     app.add_middleware(GZipMiddleware, minimum_size=1000)

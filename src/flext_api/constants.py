@@ -65,6 +65,7 @@ class FlextApiConstants(FlextConstants):
         DEFAULT_MAX_RETRIES = 3
         RETRY_BACKOFF_FACTOR = 2.0
         RETRY_MAX_WAIT = 60
+        MAX_RETRIES = 10  # Maximum allowable retries for external APIs
 
         # Pagination
         DEFAULT_PAGE_SIZE = 50
@@ -110,6 +111,12 @@ class FlextApiConstants(FlextConstants):
         MAX_CONNECTIONS = 100
         KEEP_ALIVE_TIMEOUT = 120  # seconds
         IDLE_TIMEOUT = 300  # seconds
+        PRIVILEGED_PORT_LIMIT = 1024  # Ports below this require elevated privileges
+
+    class Database:
+        """Database configuration limits."""
+
+        MAX_POOL_SIZE = 50  # Maximum database connection pool size
 
     class Performance:
         """Performance monitoring thresholds."""

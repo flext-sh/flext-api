@@ -22,7 +22,11 @@ class BeforePluginPass:
     name = "before_pass"
     enabled = True
 
-    async def before_request(self, request, _context=None):
+    async def before_request(
+        self,
+        request: object,
+        _context: object | None = None,
+    ) -> FlextResult[object] | object:
         # replace header
         if isinstance(request, FlextApiClientRequest):
             new_headers = dict(request.headers)
@@ -47,7 +51,7 @@ class BeforePluginFail:
     name = "before_fail"
     enabled = True
 
-    async def before_request(self, request, _context=None):
+    async def before_request(self, _request: object, _context: object | None = None) -> FlextResult[object]:
         return FlextResult.fail("bad before")
 
 
@@ -57,7 +61,7 @@ class AfterPluginFail:
     name = "after_fail"
     enabled = True
 
-    async def after_response(self, response, _context=None):
+    async def after_response(self, _response: object, _context: object | None = None) -> FlextResult[object]:
         return FlextResult.fail("bad after")
 
 
@@ -131,7 +135,7 @@ async def test_format_request_error_and_legacy_make_request(
     assert (formatted.error or "").startswith("HTTP session not available")
 
     # _make_request exception path
-    async def boom(_req) -> Never:
+    async def boom(_req: FlextApiClientRequest) -> Never:
         msg = "kaput"
         raise RuntimeError(msg)
 

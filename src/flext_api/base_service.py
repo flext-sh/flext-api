@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import asyncio
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, TypeVar, cast
 
@@ -29,6 +30,7 @@ if TYPE_CHECKING:
         FlextApiResponseBuilderProtocol,
     )
     from flext_api.typings import FlextTypes
+
 
 logger = get_logger(__name__)
 
@@ -179,7 +181,6 @@ class FlextApiBaseClientService(
         data: FlextTypes.Core.JsonDict | str | bytes | None = None,
         json: FlextTypes.Core.JsonDict | None = None,
         params: Mapping[str, str] | None = None,
-        timeout: float | None = None,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Make an HTTP request with plugin processing."""
         try:
@@ -200,14 +201,14 @@ class FlextApiBaseClientService(
                     return FlextResult.fail(f"Plugin failed: {plugin_result.error}")
 
             # Execute request (implemented by subclass)
-            response_result = await self._execute_request(
+            response_result = await self._execute_request_with_timeout(
                 method=method,
                 url=url,
                 headers=request_headers,
                 data=data,
                 json=json,
                 params=params,
-                timeout=timeout or self.client_config.timeout,
+                timeout_seconds=None,
             )
 
             if not response_result.success:
@@ -244,9 +245,34 @@ class FlextApiBaseClientService(
         data: FlextTypes.Core.JsonDict | str | bytes | None,
         json: FlextTypes.Core.JsonDict | None,
         params: Mapping[str, str] | None,
-        timeout: float,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Execute the actual HTTP request. Implemented by subclasses."""
+
+    async def _execute_request_with_timeout(
+        self,
+        method: str,
+        url: str,
+        headers: dict[str, str],
+        data: FlextTypes.Core.JsonDict | str | bytes | None,
+        json: FlextTypes.Core.JsonDict | None,
+        params: Mapping[str, str] | None,
+        timeout_seconds: float | None = None,
+    ) -> FlextResult[FlextTypes.Core.JsonDict]:
+        """Execute HTTP request with asyncio.timeout wrapper."""
+        effective_timeout = (
+            float(timeout_seconds)
+            if timeout_seconds is not None
+            else float(self.client_config.timeout)
+        )
+        async with asyncio.timeout(effective_timeout):
+            return await self._execute_request(
+                method=method,
+                url=url,
+                headers=headers,
+                data=data,
+                json=json,
+                params=params,
+            )
 
 
 # ==============================================================================

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import TYPE_CHECKING
 
 from flext_api.api_config import (
     FlextApiSettings,
@@ -11,12 +10,9 @@ from flext_api.api_config import (
     validate_configuration,
 )
 
-if TYPE_CHECKING:  # pragma: no cover - type-only import
-    import pytest
-
 
 def test_settings_validators() -> None:
-    """Ensure default settings satisfy basic validators."""
+    """Test settings validators."""
     s = FlextApiSettings()
     assert s.api_port >= 1
     # Invalid configs should raise during model validation
@@ -27,7 +23,7 @@ def test_settings_validators() -> None:
 
 
 def test_create_api_settings_overrides_and_fail() -> None:
-    """Overriding host should work and bad port should fail."""
+    """Test create api settings overrides and fail."""
     ok = create_api_settings(api_host="127.0.0.1", api_port=8081)
     assert ok.success
     assert ok.data.api_host == "127.0.0.1"
@@ -35,8 +31,8 @@ def test_create_api_settings_overrides_and_fail() -> None:
     assert not bad.success
 
 
-def test_validate_configuration_rules(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Production requires secret and database; dev may omit."""
+def test_validate_configuration_rules() -> None:
+    """Test validate configuration rules."""
     # production requires secret_key and database_url
     prod = FlextApiSettings.model_validate(
         {"environment": "production", "api_port": 8081},

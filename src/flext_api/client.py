@@ -27,8 +27,16 @@ from flext_api.api_client import (
 
 # Add missing factory functions
 def create_client_with_plugins(config: object = None, plugins: object = None) -> object:
-    """Create client with plugins support."""
-    # Handle None config - use empty base_url for test compatibility
+    """Create client with plugins support.
+
+    Args:
+        config (object): Description.
+        plugins (object): Description.
+
+    Returns:
+        object: Description.
+
+    """  # Handle None config - use empty base_url for test compatibility
     if config is None:
         config_dict: dict[str, object] = {"base_url": ""}
     elif isinstance(config, dict):
@@ -64,6 +72,13 @@ class FlextApiCircuitBreakerPlugin(FlextApiPlugin):
     """
 
     def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60) -> None:
+        """Init   function.
+
+        Args:
+            failure_threshold (int): Description.
+            recovery_timeout (int): Description.
+
+        """
         super().__init__(name="circuit_breaker")
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
