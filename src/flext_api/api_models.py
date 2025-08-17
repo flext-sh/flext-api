@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import math
-
-# dataclasses removed - using pure Pydantic patterns instead
 from datetime import UTC, datetime, timedelta
 from enum import IntEnum, StrEnum
 from urllib.parse import ParseResult, urlparse
@@ -14,12 +12,13 @@ from flext_core import (
     FlextResult,
     FlextTimestamp,
     FlextValue,
+    flext_alias_generator,
     get_logger,
 )
-from flext_core.models import flext_alias_generator
 from pydantic import AliasGenerator, ConfigDict, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
+from flext_api.typings import FlextTypes as _ApiFlextTypes  # noqa: F401
 
 # keep runtime import context clean for pydantic rebuilds
 logger = get_logger(__name__)
@@ -106,48 +105,48 @@ class HttpStatus(IntEnum):
 
     @property
     def is_informational(self) -> bool:
-        """Check if status is informational (1xx)."""
-        return (
-            HTTP_STATUS_RANGES["INFORMATIONAL"][0]
-            <= self.value
-            < HTTP_STATUS_RANGES["INFORMATIONAL"][1]
-        )
+      """Check if status is informational (1xx)."""
+      return (
+          HTTP_STATUS_RANGES["INFORMATIONAL"][0]
+          <= self.value
+          < HTTP_STATUS_RANGES["INFORMATIONAL"][1]
+      )
 
     @property
     def is_success(self) -> bool:
-        """Check if status indicates success (2xx)."""
-        return (
-            HTTP_STATUS_RANGES["SUCCESS"][0]
-            <= self.value
-            < HTTP_STATUS_RANGES["SUCCESS"][1]
-        )
+      """Check if status indicates success (2xx)."""
+      return (
+          HTTP_STATUS_RANGES["SUCCESS"][0]
+          <= self.value
+          < HTTP_STATUS_RANGES["SUCCESS"][1]
+      )
 
     @property
     def is_redirection(self) -> bool:
-        """Check if status indicates redirection (3xx)."""
-        return (
-            HTTP_STATUS_RANGES["REDIRECTION"][0]
-            <= self.value
-            < HTTP_STATUS_RANGES["REDIRECTION"][1]
-        )
+      """Check if status indicates redirection (3xx)."""
+      return (
+          HTTP_STATUS_RANGES["REDIRECTION"][0]
+          <= self.value
+          < HTTP_STATUS_RANGES["REDIRECTION"][1]
+      )
 
     @property
     def is_client_error(self) -> bool:
-        """Check if status indicates client error (4xx)."""
-        return (
-            HTTP_STATUS_RANGES["CLIENT_ERROR"][0]
-            <= self.value
-            < HTTP_STATUS_RANGES["CLIENT_ERROR"][1]
-        )
+      """Check if status indicates client error (4xx)."""
+      return (
+          HTTP_STATUS_RANGES["CLIENT_ERROR"][0]
+          <= self.value
+          < HTTP_STATUS_RANGES["CLIENT_ERROR"][1]
+      )
 
     @property
     def is_server_error(self) -> bool:
-        """Check if status indicates server error (5xx)."""
-        return (
-            HTTP_STATUS_RANGES["SERVER_ERROR"][0]
-            <= self.value
-            < HTTP_STATUS_RANGES["SERVER_ERROR"][1]
-        )
+      """Check if status indicates server error (5xx)."""
+      return (
+          HTTP_STATUS_RANGES["SERVER_ERROR"][0]
+          <= self.value
+          < HTTP_STATUS_RANGES["SERVER_ERROR"][1]
+      )
 
 
 class ClientProtocol(StrEnum):
@@ -216,19 +215,19 @@ class URL(FlextValue):
     """
 
     model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            alias=flext_alias_generator,
-            validation_alias=flext_alias_generator,
-            serialization_alias=flext_alias_generator,
-        ),
-        extra="allow",
-        validate_assignment=True,
-        use_enum_values=True,
-        str_strip_whitespace=True,
-        arbitrary_types_allowed=True,
-        validate_default=True,
-        populate_by_name=True,
-        frozen=True,  # Immutable value object
+      alias_generator=AliasGenerator(
+          alias=flext_alias_generator,
+          validation_alias=flext_alias_generator,
+          serialization_alias=flext_alias_generator,
+      ),
+      extra="allow",
+      validate_assignment=True,
+      use_enum_values=True,
+      str_strip_whitespace=True,
+      arbitrary_types_allowed=True,
+      validate_default=True,
+      populate_by_name=True,
+      frozen=True,  # Immutable value object
     )
 
     raw_url: str = Field(description="Raw URL string")
@@ -242,221 +241,221 @@ class URL(FlextValue):
     @field_validator("raw_url")
     @classmethod
     def validate_raw_url(cls, v: str) -> str:
-        """Validate URL string is non-empty."""
-        if not v or not v.strip():
-            msg = "URL cannot be empty"
-            raise ValueError(msg)
-        return v.strip()
+      """Validate URL string is non-empty."""
+      if not v or not v.strip():
+          msg = "URL cannot be empty"
+          raise ValueError(msg)
+      return v.strip()
 
     @field_validator("scheme")
     @classmethod
     def validate_scheme(cls, v: str) -> str:
-        """Validate URL scheme is http or https."""
-        if v not in {"http", "https"}:
-            msg = f"Invalid URL scheme: {v}"
-            raise ValueError(msg)
-        return v
+      """Validate URL scheme is http or https."""
+      if v not in {"http", "https"}:
+          msg = f"Invalid URL scheme: {v}"
+          raise ValueError(msg)
+      return v
 
     @field_validator("host")
     @classmethod
     def validate_host(cls, v: str) -> str:
-        """Validate host is non-empty."""
-        if not v or not v.strip():
-            msg = "URL must have a valid host"
-            raise ValueError(msg)
-        return v.strip()
+      """Validate host is non-empty."""
+      if not v or not v.strip():
+          msg = "URL must have a valid host"
+          raise ValueError(msg)
+      return v.strip()
 
     @field_validator("port")
     @classmethod
     def validate_port(cls, v: int | None) -> int | None:
-        """Validate port number is within valid range."""
-        if v is not None and not (MIN_PORT <= v <= MAX_PORT):
-            msg = f"Invalid port number: {v}"
-            raise ValueError(msg)
-        return v
+      """Validate port number is within valid range."""
+      if v is not None and not (MIN_PORT <= v <= MAX_PORT):
+          msg = f"Invalid port number: {v}"
+          raise ValueError(msg)
+      return v
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate URL business rules following foundation pattern."""
-        if not self.raw_url or not self.raw_url.strip():
-            return FlextResult.fail("URL cannot be empty")
+      """Validate URL business rules following foundation pattern."""
+      if not self.raw_url or not self.raw_url.strip():
+          return FlextResult.fail("URL cannot be empty")
 
-        if self.scheme not in {"http", "https"}:
-            return FlextResult.fail(f"Invalid URL scheme: {self.scheme}")
+      if self.scheme not in {"http", "https"}:
+          return FlextResult.fail(f"Invalid URL scheme: {self.scheme}")
 
-        if not self.host or not self.host.strip():
-            return FlextResult.fail("URL must have a valid host")
+      if not self.host or not self.host.strip():
+          return FlextResult.fail("URL must have a valid host")
 
-        if self.port is not None and not (MIN_PORT <= self.port <= MAX_PORT):
-            return FlextResult.fail(f"Invalid port number: {self.port}")
+      if self.port is not None and not (MIN_PORT <= self.port <= MAX_PORT):
+          return FlextResult.fail(f"Invalid port number: {self.port}")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     @classmethod
     def create(cls, url: str) -> FlextResult[URL]:
-        """Create URL with validation following foundation pattern."""
-        try:
-            parsed: ParseResult = urlparse(url)
+      """Create URL with validation following foundation pattern."""
+      try:
+          parsed: ParseResult = urlparse(url)
 
-            instance = cls(
-                raw_url=url,
-                scheme=parsed.scheme or "https",
-                host=parsed.hostname or "",
-                port=parsed.port,
-                path=parsed.path or "/",
-                query=parsed.query or None,
-                fragment=parsed.fragment or None,
-            )
+          instance = cls(
+              raw_url=url,
+              scheme=parsed.scheme or "https",
+              host=parsed.hostname or "",
+              port=parsed.port,
+              path=parsed.path or "/",
+              query=parsed.query or None,
+              fragment=parsed.fragment or None,
+          )
 
-            validation_result = instance.validate_business_rules()
-            if not validation_result.success:
-                return FlextResult.fail(
-                    f"URL validation failed: {validation_result.error}",
-                )
+          validation_result = instance.validate_business_rules()
+          if not validation_result.success:
+              return FlextResult.fail(
+                  f"URL validation failed: {validation_result.error}",
+              )
 
-            return FlextResult.ok(instance)
-        except (RuntimeError, ValueError, TypeError, KeyError) as e:
-            return FlextResult.fail(f"URL parsing failed: {e}")
+          return FlextResult.ok(instance)
+      except (RuntimeError, ValueError, TypeError, KeyError) as e:
+          return FlextResult.fail(f"URL parsing failed: {e}")
 
     def is_secure(self) -> bool:
-        """Check if URL uses HTTPS."""
-        return self.scheme == "https"
+      """Check if URL uses HTTPS."""
+      return self.scheme == "https"
 
     def base_url(self) -> str:
-        """Get base URL without path, query, or fragment."""
-        port_part = f":{self.port}" if self.port else ""
-        return f"{self.scheme}://{self.host}{port_part}"
+      """Get base URL without path, query, or fragment."""
+      port_part = f":{self.port}" if self.port else ""
+      return f"{self.scheme}://{self.host}{port_part}"
 
     def full_path(self) -> str:
-        """Get full path including query and fragment (no scheme/host)."""
-        path_part = self.path or "/"
-        query_part = f"?{self.query}" if self.query else ""
-        fragment_part = f"#{self.fragment}" if self.fragment else ""
-        return f"{path_part}{query_part}{fragment_part}"
+      """Get full path including query and fragment (no scheme/host)."""
+      path_part = self.path or "/"
+      query_part = f"?{self.query}" if self.query else ""
+      fragment_part = f"#{self.fragment}" if self.fragment else ""
+      return f"{path_part}{query_part}{fragment_part}"
 
 
 class HttpHeader(FlextValue):
     """HTTP header value object following FlextValue foundation pattern."""
 
     model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            alias=flext_alias_generator,
-            validation_alias=flext_alias_generator,
-            serialization_alias=flext_alias_generator,
-        ),
-        extra="allow",
-        validate_assignment=True,
-        use_enum_values=True,
-        str_strip_whitespace=True,
-        arbitrary_types_allowed=True,
-        validate_default=True,
-        populate_by_name=True,
-        frozen=True,  # Immutable value object
+      alias_generator=AliasGenerator(
+          alias=flext_alias_generator,
+          validation_alias=flext_alias_generator,
+          serialization_alias=flext_alias_generator,
+      ),
+      extra="allow",
+      validate_assignment=True,
+      use_enum_values=True,
+      str_strip_whitespace=True,
+      arbitrary_types_allowed=True,
+      validate_default=True,
+      populate_by_name=True,
+      frozen=True,  # Immutable value object
     )
 
     name: str = Field(description="Header name")
     value: str = Field(description="Header value")
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate header business rules."""
-        if not self.name or not self.name.strip():
-            return FlextResult.fail("Header name cannot be empty")
+      """Validate header business rules."""
+      if not self.name or not self.name.strip():
+          return FlextResult.fail("Header name cannot be empty")
 
-        if not self.value or not self.value.strip():
-            return FlextResult.fail("Header value cannot be empty")
+      if not self.value or not self.value.strip():
+          return FlextResult.fail("Header value cannot be empty")
 
-        # Header name validation (no control characters)
-        if any(ord(c) < MIN_CONTROL_CHAR for c in self.name):
-            return FlextResult.fail("Header name contains invalid characters")
+      # Header name validation (no control characters)
+      if any(ord(c) < MIN_CONTROL_CHAR for c in self.name):
+          return FlextResult.fail("Header name contains invalid characters")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     @classmethod
     def create(cls, name: str, value: str) -> FlextResult[HttpHeader]:
-        """Create HTTP header with validation.
+      """Create HTTP header with validation.
 
-        Args:
-            name: Header name
-            value: Header value
+      Args:
+          name: Header name
+          value: Header value
 
-        Returns:
-            FlextResult containing HttpHeader or error
+      Returns:
+          FlextResult containing HttpHeader or error
 
-        """
+      """
 
-        # Validation helper
-        def validate_header_input() -> str | None:
-            """Validate header input and return error message if invalid."""
-            # Validate header name
-            if not name or not name.strip():
-                return "Header name cannot be empty"
+      # Validation helper
+      def validate_header_input() -> str | None:
+          """Validate header input and return error message if invalid."""
+          # Validate header name
+          if not name or not name.strip():
+              return "Header name cannot be empty"
 
-            # RFC 7230 header name validation - no spaces or special characters allowed
-            if " " in name:
-                return "Invalid header name"
+          # RFC 7230 header name validation - no spaces or special characters allowed
+          if " " in name:
+              return "Invalid header name"
 
-            # Check for common invalid characters in header names
-            invalid_chars = '@(){}[]<>\\"/?='
-            if any(char in name for char in invalid_chars):
-                return "Invalid header name"
+          # Check for common invalid characters in header names
+          invalid_chars = '@(){}[]<>\\"/?='
+          if any(char in name for char in invalid_chars):
+              return "Invalid header name"
 
-            if any(ord(char) < MIN_CONTROL_CHAR for char in name):
-                return "Header name contains invalid control characters"
+          if any(ord(char) < MIN_CONTROL_CHAR for char in name):
+              return "Header name contains invalid control characters"
 
-            # Validate header value
-            if any(ord(char) < MIN_CONTROL_CHAR and char != "\t" for char in value):
-                return "Header value contains invalid control characters"
+          # Validate header value
+          if any(ord(char) < MIN_CONTROL_CHAR and char != "\t" for char in value):
+              return "Header value contains invalid control characters"
 
-            return None
+          return None
 
-        # Perform validation
-        error = validate_header_input()
-        if error:
-            return FlextResult.fail(error)
+      # Perform validation
+      error = validate_header_input()
+      if error:
+          return FlextResult.fail(error)
 
-        # Create header
-        try:
-            header = cls(name=name.strip(), value=value)
-            return FlextResult.ok(header)
-        except Exception as e:
-            return FlextResult.fail(f"Failed to create header: {e}")
+      # Create header
+      try:
+          header = cls(name=name.strip(), value=value)
+          return FlextResult.ok(header)
+      except Exception as e:
+          return FlextResult.fail(f"Failed to create header: {e}")
 
     def is_authorization(self) -> bool:
-        """Check if this is an authorization header."""
-        return self.name.lower() == "authorization"
+      """Check if this is an authorization header."""
+      return self.name.lower() == "authorization"
 
     def is_content_type(self) -> bool:
-        """Check if this is a content-type header."""
-        return self.name.lower() == "content-type"
+      """Check if this is a content-type header."""
+      return self.name.lower() == "content-type"
 
     def to_dict(
-        self, *, by_alias: bool = False, exclude_none: bool = False
+      self, *, by_alias: bool = False, exclude_none: bool = False,
     ) -> dict[str, object]:
-        """Convert to dictionary representation."""
-        _ = by_alias, exclude_none  # Parameters maintained for compatibility
-        return {self.name: self.value}
+      """Convert to dictionary representation."""
+      _ = by_alias, exclude_none  # Parameters maintained for compatibility
+      return {self.name: self.value}
 
     def to_tuple(self) -> tuple[str, str]:
-        """Convert to tuple format."""
-        return (self.name, self.value)
+      """Convert to tuple format."""
+      return (self.name, self.value)
 
 
 class BearerToken(FlextValue):
     """Bearer token value object with JWT format validation."""
 
     model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            alias=flext_alias_generator,
-            validation_alias=flext_alias_generator,
-            serialization_alias=flext_alias_generator,
-        ),
-        extra="allow",
-        validate_assignment=True,
-        use_enum_values=True,
-        str_strip_whitespace=True,
-        arbitrary_types_allowed=True,
-        validate_default=True,
-        populate_by_name=True,
-        frozen=True,  # Immutable value object
+      alias_generator=AliasGenerator(
+          alias=flext_alias_generator,
+          validation_alias=flext_alias_generator,
+          serialization_alias=flext_alias_generator,
+      ),
+      extra="allow",
+      validate_assignment=True,
+      use_enum_values=True,
+      str_strip_whitespace=True,
+      arbitrary_types_allowed=True,
+      validate_default=True,
+      populate_by_name=True,
+      frozen=True,  # Immutable value object
     )
 
     token: str = Field(description="Bearer token string")
@@ -466,208 +465,208 @@ class BearerToken(FlextValue):
     @field_validator("token")
     @classmethod
     def validate_token(cls, v: str) -> str:
-        """Validate bearer token format and length."""
-        if not v or not v.strip():
-            msg = "Bearer token cannot be empty"
-            raise ValueError(msg)
+      """Validate bearer token format and length."""
+      if not v or not v.strip():
+          msg = "Bearer token cannot be empty"
+          raise ValueError(msg)
 
-        v = v.strip()
-        if len(v) < MIN_TOKEN_LENGTH:
-            msg = f"Token must be at least {MIN_TOKEN_LENGTH} characters"
-            raise ValueError(msg)
+      v = v.strip()
+      if len(v) < MIN_TOKEN_LENGTH:
+          msg = f"Token must be at least {MIN_TOKEN_LENGTH} characters"
+          raise ValueError(msg)
 
-        # JWT format validation - check for empty parts in any 3-part token
-        if v.count(".") == FlextApiConstants.Auth.JWT_SEPARATOR_COUNT:
-            parts = v.split(".")
-            if len(parts) == FlextApiConstants.Auth.JWT_PARTS_COUNT and not all(
-                part.strip() for part in parts
-            ):
-                msg = "JWT format error - empty parts not allowed"
-                raise ValueError(msg)
+      # JWT format validation - check for empty parts in any 3-part token
+      if v.count(".") == FlextApiConstants.Auth.JWT_SEPARATOR_COUNT:
+          parts = v.split(".")
+          if len(parts) == FlextApiConstants.Auth.JWT_PARTS_COUNT and not all(
+              part.strip() for part in parts
+          ):
+              msg = "JWT format error - empty parts not allowed"
+              raise ValueError(msg)
 
-        return v
+      return v
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate bearer token business rules."""
-        if not self.token or not self.token.strip():
-            return FlextResult.fail("Bearer token cannot be empty")
+      """Validate bearer token business rules."""
+      if not self.token or not self.token.strip():
+          return FlextResult.fail("Bearer token cannot be empty")
 
-        if len(self.token.strip()) < MIN_TOKEN_LENGTH:
-            return FlextResult.fail(
-                f"Token must be at least {MIN_TOKEN_LENGTH} characters",
-            )
+      if len(self.token.strip()) < MIN_TOKEN_LENGTH:
+          return FlextResult.fail(
+              f"Token must be at least {MIN_TOKEN_LENGTH} characters",
+          )
 
-        # JWT format validation - check for empty parts in any 3-part token
+      # JWT format validation - check for empty parts in any 3-part token
 
-        if self.token.count(".") == FlextApiConstants.Auth.JWT_SEPARATOR_COUNT:
-            parts = self.token.split(".")
-            if len(parts) == FlextApiConstants.Auth.JWT_PARTS_COUNT and not all(
-                part.strip() for part in parts
-            ):
-                return FlextResult.fail("JWT format error - empty parts not allowed")
+      if self.token.count(".") == FlextApiConstants.Auth.JWT_SEPARATOR_COUNT:
+          parts = self.token.split(".")
+          if len(parts) == FlextApiConstants.Auth.JWT_PARTS_COUNT and not all(
+              part.strip() for part in parts
+          ):
+              return FlextResult.fail("JWT format error - empty parts not allowed")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     @classmethod
     def create(
-        cls,
-        token: str,
-        token_type: str | TokenType | None = None,
+      cls,
+      token: str,
+      token_type: str | TokenType | None = None,
     ) -> FlextResult[BearerToken]:
-        """Create bearer token with validation."""
-        # Normalize token type
-        token_type_enum: TokenType
-        if token_type is None:
-            token_type_enum = TokenType.BEARER
-        elif isinstance(token_type, TokenType):  # Check enum first (subclass of str)
-            token_type_enum = token_type
-        elif isinstance(token_type, str):
-            valid_types = [t.value for t in TokenType]
-            if token_type not in valid_types:
-                return FlextResult.fail(f"Invalid token type: {token_type}")
-            token_type_enum = TokenType(token_type)
-        # No else branch needed: all union members are covered above
+      """Create bearer token with validation."""
+      # Normalize token type
+      token_type_enum: TokenType
+      if token_type is None:
+          token_type_enum = TokenType.BEARER
+      elif isinstance(token_type, TokenType):  # Check enum first (subclass of str)
+          token_type_enum = token_type
+      elif isinstance(token_type, str):
+          valid_types = [t.value for t in TokenType]
+          if token_type not in valid_types:
+              return FlextResult.fail(f"Invalid token type: {token_type}")
+          token_type_enum = TokenType(token_type)
+      # No else branch needed: all union members are covered above
 
-        try:
-            instance = cls(token=token, token_type=token_type_enum)
-        except Exception as e:
-            return FlextResult.fail(f"Token creation failed: {e}")
+      try:
+          instance = cls(token=token, token_type=token_type_enum)
+      except Exception as e:
+          return FlextResult.fail(f"Token creation failed: {e}")
 
-        validation_result = instance.validate_business_rules()
-        if not validation_result.success:
-            return FlextResult.fail(
-                validation_result.error or "Token validation failed",
-            )
-        return FlextResult.ok(instance)
+      validation_result = instance.validate_business_rules()
+      if not validation_result.success:
+          return FlextResult.fail(
+              validation_result.error or "Token validation failed",
+          )
+      return FlextResult.ok(instance)
 
     def is_expired(self) -> bool:
-        """Check if token is expired."""
-        if not self.expires_at:
-            return False
-        return datetime.now(UTC) >= self.expires_at
+      """Check if token is expired."""
+      if not self.expires_at:
+          return False
+      return datetime.now(UTC) >= self.expires_at
 
     def is_jwt_format(self) -> bool:
-        """Check if token follows JWT format (3 parts separated by dots)."""
-        parts = self.token.split(".")
-        return len(parts) == JWT_PARTS_COUNT and all(part.strip() for part in parts)
+      """Check if token follows JWT format (3 parts separated by dots)."""
+      parts = self.token.split(".")
+      return len(parts) == JWT_PARTS_COUNT and all(part.strip() for part in parts)
 
     def to_authorization_header(self) -> HttpHeader:
-        """Convert to authorization header."""
-        token_type_str = (
-            self.token_type.value
-            if hasattr(self.token_type, "value")
-            else str(self.token_type)
-        )
-        header_value = f"{token_type_str} {self.token}"
-        # Direct instantiation since we know the values are valid
-        return HttpHeader(name="Authorization", value=header_value)
+      """Convert to authorization header."""
+      token_type_str = (
+          self.token_type.value
+          if hasattr(self.token_type, "value")
+          else str(self.token_type)
+      )
+      header_value = f"{token_type_str} {self.token}"
+      # Direct instantiation since we know the values are valid
+      return HttpHeader(name="Authorization", value=header_value)
 
     def get_raw_token(self) -> str:
-        """Get raw token value."""
-        return self.token
+      """Get raw token value."""
+      return self.token
 
 
 class ClientConfig(FlextValue):
     """Client configuration value object with validation."""
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextValue
-        alias_generator=AliasGenerator(
-            alias=flext_alias_generator,
-            validation_alias=flext_alias_generator,
-            serialization_alias=flext_alias_generator,
-        ),
-        # FlextValue patterns: immutable with validation
-        extra="allow",
-        validate_assignment=True,
-        use_enum_values=True,
-        str_strip_whitespace=True,
-        arbitrary_types_allowed=True,
-        validate_default=True,
-        populate_by_name=True,
-        frozen=True,  # Immutable value object
-        use_attribute_docstrings=True,
-        json_schema_extra={
-            "examples": [],
-            "description": "Client configuration value object with modern Pydantic patterns",
-            "title": "ClientConfig",
-        },
+      # Inherit modern Pydantic patterns from FlextValue
+      alias_generator=AliasGenerator(
+          alias=flext_alias_generator,
+          validation_alias=flext_alias_generator,
+          serialization_alias=flext_alias_generator,
+      ),
+      # FlextValue patterns: immutable with validation
+      extra="allow",
+      validate_assignment=True,
+      use_enum_values=True,
+      str_strip_whitespace=True,
+      arbitrary_types_allowed=True,
+      validate_default=True,
+      populate_by_name=True,
+      frozen=True,  # Immutable value object
+      use_attribute_docstrings=True,
+      json_schema_extra={
+          "examples": [],
+          "description": "Client configuration value object with modern Pydantic patterns",
+          "title": "ClientConfig",
+      },
     )
 
     base_url: str = Field(description="Base URL for requests")
     timeout: float = Field(default=DEFAULT_TIMEOUT, description="Request timeout")
     headers: dict[str, str] = Field(default_factory=dict, description="Default headers")
     max_retries: int = Field(
-        default=DEFAULT_MAX_RETRIES,
-        description="Maximum retry attempts",
+      default=DEFAULT_MAX_RETRIES,
+      description="Maximum retry attempts",
     )
 
     @field_validator("base_url")
     @classmethod
     def validate_base_url(cls, v: str) -> str:
-        """Validate base URL format."""
-        if not v:
-            msg = "base_url is required"
-            raise ValueError(msg)
+      """Validate base URL format."""
+      if not v:
+          msg = "base_url is required"
+          raise ValueError(msg)
 
-        if not v.startswith(("http://", "https://")):
-            msg = "Invalid URL format"
-            raise ValueError(msg)
+      if not v.startswith(("http://", "https://")):
+          msg = "Invalid URL format"
+          raise ValueError(msg)
 
-        return v
+      return v
 
     @field_validator("timeout")
     @classmethod
     def validate_timeout(cls, v: float) -> float:
-        """Validate timeout is positive."""
-        if v <= 0:
-            msg = "Timeout must be positive"
-            raise ValueError(msg)
-        return v
+      """Validate timeout is positive."""
+      if v <= 0:
+          msg = "Timeout must be positive"
+          raise ValueError(msg)
+      return v
 
     @field_validator("max_retries")
     @classmethod
     def validate_max_retries(cls, v: int) -> int:
-        """Validate max retries is non-negative."""
-        if v < 0:
-            msg = "Max retries must be non-negative"
-            raise ValueError(msg)
-        return v
+      """Validate max retries is non-negative."""
+      if v < 0:
+          msg = "Max retries must be non-negative"
+          raise ValueError(msg)
+      return v
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate configuration business rules."""
-        if not self.base_url:
-            return FlextResult.fail("base_url is required")
+      """Validate configuration business rules."""
+      if not self.base_url:
+          return FlextResult.fail("base_url is required")
 
-        if not self.base_url.startswith(("http://", "https://")):
-            return FlextResult.fail("Invalid URL format")
+      if not self.base_url.startswith(("http://", "https://")):
+          return FlextResult.fail("Invalid URL format")
 
-        if self.timeout <= 0:
-            return FlextResult.fail("Timeout must be positive")
+      if self.timeout <= 0:
+          return FlextResult.fail("Timeout must be positive")
 
-        if self.max_retries < 0:
-            return FlextResult.fail("Max retries must be non-negative")
+      if self.max_retries < 0:
+          return FlextResult.fail("Max retries must be non-negative")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
 
 class QueryConfig(FlextValue):
     """Query configuration value object."""
 
     model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            alias=flext_alias_generator,
-            validation_alias=flext_alias_generator,
-            serialization_alias=flext_alias_generator,
-        ),
-        extra="allow",
-        validate_assignment=True,
-        use_enum_values=True,
-        str_strip_whitespace=True,
-        arbitrary_types_allowed=True,
-        validate_default=True,
-        populate_by_name=True,
-        frozen=True,  # Immutable value object
+      alias_generator=AliasGenerator(
+          alias=flext_alias_generator,
+          validation_alias=flext_alias_generator,
+          serialization_alias=flext_alias_generator,
+      ),
+      extra="allow",
+      validate_assignment=True,
+      use_enum_values=True,
+      str_strip_whitespace=True,
+      arbitrary_types_allowed=True,
+      validate_default=True,
+      populate_by_name=True,
+      frozen=True,  # Immutable value object
     )
 
     filters: list[dict[str, object]] = Field(default_factory=list)
@@ -678,57 +677,57 @@ class QueryConfig(FlextValue):
     fields: list[str] | None = None
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate query configuration."""
-        if self.page <= 0:
-            return FlextResult.fail("Page must be positive")
+      """Validate query configuration."""
+      if self.page <= 0:
+          return FlextResult.fail("Page must be positive")
 
-        if self.page_size <= 0:
-            return FlextResult.fail("Page size must be positive")
+      if self.page_size <= 0:
+          return FlextResult.fail("Page size must be positive")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     def to_dict(
-        self, *, by_alias: bool = False, exclude_none: bool = False
+      self, *, by_alias: bool = False, exclude_none: bool = False,
     ) -> dict[str, object]:
-        """Convert to dictionary representation."""
-        _ = by_alias, exclude_none  # Parameters maintained for compatibility
-        return {
-            "filters": self.filters,
-            "sorts": self.sorts,
-            "page": self.page,
-            "page_size": self.page_size,
-            "limit": self.page_size,
-            "offset": (self.page - 1) * self.page_size,
-            "search": self.search,
-            "fields": self.fields,
-        }
+      """Convert to dictionary representation."""
+      _ = by_alias, exclude_none  # Parameters maintained for compatibility
+      return {
+          "filters": self.filters,
+          "sorts": self.sorts,
+          "page": self.page,
+          "page_size": self.page_size,
+          "limit": self.page_size,
+          "offset": (self.page - 1) * self.page_size,
+          "search": self.search,
+          "fields": self.fields,
+      }
 
 
 class PaginationInfo(FlextValue):
     """Pagination information value object."""
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextValue
-        alias_generator=AliasGenerator(
-            alias=flext_alias_generator,
-            validation_alias=flext_alias_generator,
-            serialization_alias=flext_alias_generator,
-        ),
-        # FlextValue patterns: immutable with validation
-        extra="allow",
-        validate_assignment=True,
-        use_enum_values=True,
-        str_strip_whitespace=True,
-        arbitrary_types_allowed=True,
-        validate_default=True,
-        populate_by_name=True,
-        frozen=True,  # Immutable value object
-        use_attribute_docstrings=True,
-        json_schema_extra={
-            "examples": [],
-            "description": "Pagination information value object with modern Pydantic patterns",
-            "title": "PaginationInfo",
-        },
+      # Inherit modern Pydantic patterns from FlextValue
+      alias_generator=AliasGenerator(
+          alias=flext_alias_generator,
+          validation_alias=flext_alias_generator,
+          serialization_alias=flext_alias_generator,
+      ),
+      # FlextValue patterns: immutable with validation
+      extra="allow",
+      validate_assignment=True,
+      use_enum_values=True,
+      str_strip_whitespace=True,
+      arbitrary_types_allowed=True,
+      validate_default=True,
+      populate_by_name=True,
+      frozen=True,  # Immutable value object
+      use_attribute_docstrings=True,
+      json_schema_extra={
+          "examples": [],
+          "description": "Pagination information value object with modern Pydantic patterns",
+          "title": "PaginationInfo",
+      },
     )
 
     page: int = Field(ge=1, description="Current page number")
@@ -740,33 +739,33 @@ class PaginationInfo(FlextValue):
 
     @classmethod
     def create(
-        cls,
-        page: int,
-        page_size: int,
-        total: int,
+      cls,
+      page: int,
+      page_size: int,
+      total: int,
     ) -> FlextResult[PaginationInfo]:
-        """Create pagination info with validation."""
-        try:
-            total_pages = math.ceil(total / page_size) if page_size > 0 else 0
-            has_next = page < total_pages
-            has_previous = page > 1
+      """Create pagination info with validation."""
+      try:
+          total_pages = math.ceil(total / page_size) if page_size > 0 else 0
+          has_next = page < total_pages
+          has_previous = page > 1
 
-            instance = cls(
-                page=page,
-                page_size=page_size,
-                total=total,
-                total_pages=total_pages,
-                has_next=has_next,
-                has_previous=has_previous,
-            )
+          instance = cls(
+              page=page,
+              page_size=page_size,
+              total=total,
+              total_pages=total_pages,
+              has_next=has_next,
+              has_previous=has_previous,
+          )
 
-            validation = instance.validate_business_rules()
-            if not validation.success:
-                return FlextResult.fail(validation.error or "Validation failed")
+          validation = instance.validate_business_rules()
+          if not validation.success:
+              return FlextResult.fail(validation.error or "Validation failed")
 
-            return FlextResult.ok(instance)
-        except Exception as e:
-            return FlextResult.fail(f"Failed to create pagination info: {e}")
+          return FlextResult.ok(instance)
+      except Exception as e:
+          return FlextResult.fail(f"Failed to create pagination info: {e}")
 
 
 # ==============================================================================
@@ -778,19 +777,19 @@ class ApiRequest(FlextEntity):
     """HTTP request entity with lifecycle management."""
 
     model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            alias=flext_alias_generator,
-            validation_alias=flext_alias_generator,
-            serialization_alias=flext_alias_generator,
-        ),
-        extra="allow",
-        validate_assignment=True,
-        use_enum_values=True,
-        str_strip_whitespace=True,
-        arbitrary_types_allowed=True,
-        validate_default=True,
-        populate_by_name=True,
-        frozen=False,  # Mutable entity
+      alias_generator=AliasGenerator(
+          alias=flext_alias_generator,
+          validation_alias=flext_alias_generator,
+          serialization_alias=flext_alias_generator,
+      ),
+      extra="allow",
+      validate_assignment=True,
+      use_enum_values=True,
+      str_strip_whitespace=True,
+      arbitrary_types_allowed=True,
+      validate_default=True,
+      populate_by_name=True,
+      frozen=False,  # Mutable entity
     )
 
     method: HttpMethod = Field(description="HTTP method")
@@ -798,12 +797,12 @@ class ApiRequest(FlextEntity):
     headers: dict[str, str] = Field(default_factory=dict, description="HTTP headers")
     body: dict[str, object] | None = Field(None, description="Request body")
     query_params: dict[str, str] = Field(
-        default_factory=dict,
-        description="Query parameters",
+      default_factory=dict,
+      description="Query parameters",
     )
     state: RequestState = Field(
-        default=RequestState.CREATED,
-        description="Request state",
+      default=RequestState.CREATED,
+      description="Request state",
     )
     timeout: float = Field(default=DEFAULT_TIMEOUT, description="Request timeout")
     retry_count: int = Field(default=0, description="Current retry count")
@@ -812,126 +811,126 @@ class ApiRequest(FlextEntity):
     # NOTE: Using FlextTimestamp from FlextEntity base class for lifecycle fields
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate request business rules."""
-        # Consolidated validation checks
-        checks = [
-            (not self.url or not self.url.strip(), "Request URL cannot be empty"),
-            (
-                not self.url.startswith(("http://", "https://", "/")),
-                "Request URL must be valid HTTP URL or path",
-            ),
-            (self.method not in HttpMethod, f"Invalid HTTP method: {self.method}"),
-            (self.timeout <= 0, "Timeout must be positive"),
-        ]
+      """Validate request business rules."""
+      # Consolidated validation checks
+      checks = [
+          (not self.url or not self.url.strip(), "Request URL cannot be empty"),
+          (
+              not self.url.startswith(("http://", "https://", "/")),
+              "Request URL must be valid HTTP URL or path",
+          ),
+          (self.method not in HttpMethod, f"Invalid HTTP method: {self.method}"),
+          (self.timeout <= 0, "Timeout must be positive"),
+      ]
 
-        # Check basic validations
-        for condition, message in checks:
-            if condition:
-                return FlextResult.fail(message)
+      # Check basic validations
+      for condition, message in checks:
+          if condition:
+              return FlextResult.fail(message)
 
-        # Check headers if they exist
-        if self.headers:
-            for key, value in self.headers.items():
-                if not key:
-                    return FlextResult.fail("Header keys must be non-empty strings")
-                if not value:
-                    return FlextResult.fail("Header values cannot be empty")
+      # Check headers if they exist
+      if self.headers:
+          for key, value in self.headers.items():
+              if not key:
+                  return FlextResult.fail("Header keys must be non-empty strings")
+              if not value:
+                  return FlextResult.fail("Header values cannot be empty")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     def can_retry(self) -> bool:
-        """Check if request can be retried."""
-        return self.retry_count < self.max_retries
+      """Check if request can be retried."""
+      return self.retry_count < self.max_retries
 
     def increment_retry(self) -> FlextResult[ApiRequest]:
-        """Increment retry count."""
-        if not self.can_retry():
-            return FlextResult.fail("Maximum retries exceeded")
+      """Increment retry count."""
+      if not self.can_retry():
+          return FlextResult.fail("Maximum retries exceeded")
 
-        updated = self.model_copy(
-            update={
-                "retry_count": self.retry_count + 1,
-                "updated_at": FlextTimestamp.now(),
-            },
-        )
-        return FlextResult.ok(updated)
+      updated = self.model_copy(
+          update={
+              "retry_count": self.retry_count + 1,
+              "updated_at": FlextTimestamp.now(),
+          },
+      )
+      return FlextResult.ok(updated)
 
     def start_processing(self) -> FlextResult[ApiRequest]:
-        """Start request processing with state transition."""
-        if self.state != RequestState.VALIDATED:
-            return FlextResult.fail(f"Cannot start processing from state: {self.state}")
+      """Start request processing with state transition."""
+      if self.state != RequestState.VALIDATED:
+          return FlextResult.fail(f"Cannot start processing from state: {self.state}")
 
-        updated = self.model_copy(
-            update={
-                "state": RequestState.PROCESSING,
-                "updated_at": FlextTimestamp.now(),
-            },
-        )
-        logger.info("Request processing started", request_id=self.id)
-        return FlextResult.ok(updated)
+      updated = self.model_copy(
+          update={
+              "state": RequestState.PROCESSING,
+              "updated_at": FlextTimestamp.now(),
+          },
+      )
+      logger.info("Request processing started", request_id=self.id)
+      return FlextResult.ok(updated)
 
     def complete_processing(self) -> FlextResult[ApiRequest]:
-        """Complete request processing."""
-        if self.state != RequestState.PROCESSING:
-            return FlextResult.fail(f"Cannot complete from state: {self.state}")
+      """Complete request processing."""
+      if self.state != RequestState.PROCESSING:
+          return FlextResult.fail(f"Cannot complete from state: {self.state}")
 
-        updated = self.model_copy(
-            update={
-                "state": RequestState.COMPLETED,
-                "updated_at": FlextTimestamp.now(),
-            },
-        )
-        logger.info("Request processing completed", request_id=self.id)
-        return FlextResult.ok(updated)
+      updated = self.model_copy(
+          update={
+              "state": RequestState.COMPLETED,
+              "updated_at": FlextTimestamp.now(),
+          },
+      )
+      logger.info("Request processing completed", request_id=self.id)
+      return FlextResult.ok(updated)
 
     def fail_processing(self, error: str) -> FlextResult[ApiRequest]:
-        """Mark request as failed."""
-        updated = self.model_copy(
-            update={
-                "state": RequestState.FAILED,
-                "updated_at": FlextTimestamp.now(),
-            },
-        )
-        logger.error("Request processing failed", request_id=self.id, error=error)
-        return FlextResult.ok(updated)
+      """Mark request as failed."""
+      updated = self.model_copy(
+          update={
+              "state": RequestState.FAILED,
+              "updated_at": FlextTimestamp.now(),
+          },
+      )
+      logger.error("Request processing failed", request_id=self.id, error=error)
+      return FlextResult.ok(updated)
 
 
 class ApiResponse(FlextEntity):
     """HTTP response entity with state management."""
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextEntity
-        alias_generator=AliasGenerator(
-            alias=flext_alias_generator,
-            validation_alias=flext_alias_generator,
-            serialization_alias=flext_alias_generator,
-        ),
-        # FlextEntity patterns: mutable with lifecycle management
-        extra="allow",
-        validate_assignment=True,
-        use_enum_values=True,
-        str_strip_whitespace=True,
-        arbitrary_types_allowed=True,
-        validate_default=True,
-        populate_by_name=True,
-        frozen=False,  # Mutable entity
-        use_attribute_docstrings=True,
-        json_schema_extra={
-            "examples": [],
-            "description": "HTTP response entity with modern Pydantic patterns and state management",
-            "title": "ApiResponse",
-        },
+      # Inherit modern Pydantic patterns from FlextEntity
+      alias_generator=AliasGenerator(
+          alias=flext_alias_generator,
+          validation_alias=flext_alias_generator,
+          serialization_alias=flext_alias_generator,
+      ),
+      # FlextEntity patterns: mutable with lifecycle management
+      extra="allow",
+      validate_assignment=True,
+      use_enum_values=True,
+      str_strip_whitespace=True,
+      arbitrary_types_allowed=True,
+      validate_default=True,
+      populate_by_name=True,
+      frozen=False,  # Mutable entity
+      use_attribute_docstrings=True,
+      json_schema_extra={
+          "examples": [],
+          "description": "HTTP response entity with modern Pydantic patterns and state management",
+          "title": "ApiResponse",
+      },
     )
 
     status_code: int = Field(description="HTTP status code")
     headers: dict[str, str] = Field(
-        default_factory=dict,
-        description="Response headers",
+      default_factory=dict,
+      description="Response headers",
     )
     body: dict[str, object] | None = Field(None, description="Response body")
     state: ResponseState = Field(
-        default=ResponseState.PENDING,
-        description="Response state",
+      default=ResponseState.PENDING,
+      description="Response state",
     )
     request_id: str | None = Field(None, description="Associated request ID")
     elapsed_time: float = Field(default=0.0, description="Response time in seconds")
@@ -941,97 +940,97 @@ class ApiResponse(FlextEntity):
     # NOTE: Using FlextTimestamp from FlextEntity base class for lifecycle fields
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate response business rules."""
-        if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
-            return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
+      """Validate response business rules."""
+      if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
+          return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
 
-        if self.headers:
-            for key, value in self.headers.items():
-                if not key:
-                    return FlextResult.fail(
-                        "Response header keys must be non-empty strings",
-                    )
-                # Allow falsy values like '0' or 'false'; only reject None or empty strings
-                if value is None or (isinstance(value, str) and not value.strip()):
-                    return FlextResult.fail("Response header values cannot be empty")
+      if self.headers:
+          for key, value in self.headers.items():
+              if not key:
+                  return FlextResult.fail(
+                      "Response header keys must be non-empty strings",
+                  )
+              # Allow falsy values like '0' or 'false'; only reject None or empty strings
+              if value is None or (isinstance(value, str) and not value.strip()):
+                  return FlextResult.fail("Response header values cannot be empty")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     def is_success(self) -> bool:
-        """Check if response is successful."""
-        return (
-            FlextApiConstants.HTTP.SUCCESS_MIN
-            <= self.status_code
-            < FlextApiConstants.HTTP.SUCCESS_MAX
-        )
+      """Check if response is successful."""
+      return (
+          FlextApiConstants.HTTP.SUCCESS_MIN
+          <= self.status_code
+          < FlextApiConstants.HTTP.SUCCESS_MAX
+      )
 
     def is_error(self) -> bool:
-        """Check if response is error."""
-        return self.status_code >= FlextApiConstants.HTTP.CLIENT_ERROR_MIN
+      """Check if response is error."""
+      return self.status_code >= FlextApiConstants.HTTP.CLIENT_ERROR_MIN
 
     def mark_success(self) -> FlextResult[ApiResponse]:
-        """Mark response as successful."""
-        updated = self.model_copy(
-            update={
-                "state": ResponseState.SUCCESS,
-                "updated_at": FlextTimestamp.now(),
-            },
-        )
-        logger.info("Response marked as success", response_id=self.id)
-        return FlextResult.ok(updated)
+      """Mark response as successful."""
+      updated = self.model_copy(
+          update={
+              "state": ResponseState.SUCCESS,
+              "updated_at": FlextTimestamp.now(),
+          },
+      )
+      logger.info("Response marked as success", response_id=self.id)
+      return FlextResult.ok(updated)
 
     def mark_error(self, error_message: str) -> FlextResult[ApiResponse]:
-        """Mark response as error with message."""
-        error_body = {
-            "error": error_message,
-            "timestamp": datetime.now(UTC).isoformat(),
-            "response_id": self.id,
-        }
+      """Mark response as error with message."""
+      error_body = {
+          "error": error_message,
+          "timestamp": datetime.now(UTC).isoformat(),
+          "response_id": self.id,
+      }
 
-        updated = self.model_copy(
-            update={
-                "state": ResponseState.ERROR,
-                "body": error_body,
-                "error_message": error_message,
-                "updated_at": FlextTimestamp.now(),
-            },
-        )
-        logger.error(
-            "Response marked as error",
-            response_id=self.id,
-            error=error_message,
-        )
-        return FlextResult.ok(updated)
+      updated = self.model_copy(
+          update={
+              "state": ResponseState.ERROR,
+              "body": error_body,
+              "error_message": error_message,
+              "updated_at": FlextTimestamp.now(),
+          },
+      )
+      logger.error(
+          "Response marked as error",
+          response_id=self.id,
+          error=error_message,
+      )
+      return FlextResult.ok(updated)
 
     def mark_timeout(self) -> FlextResult[ApiResponse]:
-        """Mark response as timeout."""
-        updated = self.model_copy(
-            update={
-                "state": ResponseState.TIMEOUT,
-                "error_message": "Request timeout",
-                "updated_at": FlextTimestamp.now(),
-            },
-        )
-        return FlextResult.ok(updated)
+      """Mark response as timeout."""
+      updated = self.model_copy(
+          update={
+              "state": ResponseState.TIMEOUT,
+              "error_message": "Request timeout",
+              "updated_at": FlextTimestamp.now(),
+          },
+      )
+      return FlextResult.ok(updated)
 
 
 class ApiEndpoint(FlextEntity):
     """API endpoint entity with routing and configuration."""
 
     model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            alias=flext_alias_generator,
-            validation_alias=flext_alias_generator,
-            serialization_alias=flext_alias_generator,
-        ),
-        extra="allow",
-        validate_assignment=True,
-        use_enum_values=True,
-        str_strip_whitespace=True,
-        arbitrary_types_allowed=True,
-        validate_default=True,
-        populate_by_name=True,
-        frozen=False,  # Mutable entity
+      alias_generator=AliasGenerator(
+          alias=flext_alias_generator,
+          validation_alias=flext_alias_generator,
+          serialization_alias=flext_alias_generator,
+      ),
+      extra="allow",
+      validate_assignment=True,
+      use_enum_values=True,
+      str_strip_whitespace=True,
+      arbitrary_types_allowed=True,
+      validate_default=True,
+      populate_by_name=True,
+      frozen=False,  # Mutable entity
     )
 
     path: str = Field(description="Endpoint path pattern")
@@ -1046,69 +1045,69 @@ class ApiEndpoint(FlextEntity):
     # NOTE: Using FlextTimestamp from FlextEntity base class for lifecycle fields
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate endpoint business rules."""
-        # Consolidated validation checks
-        checks = [
-            (not self.path or not self.path.strip(), "Endpoint path cannot be empty"),
-            (not self.path.startswith("/"), "Endpoint path must start with '/'"),
-            (not self.methods, "Endpoint must support at least one HTTP method"),
-            (
-                self.rate_limit is not None and self.rate_limit <= 0,
-                "Rate limit must be positive",
-            ),
-            (self.timeout <= 0, "Timeout must be positive"),
-        ]
+      """Validate endpoint business rules."""
+      # Consolidated validation checks
+      checks = [
+          (not self.path or not self.path.strip(), "Endpoint path cannot be empty"),
+          (not self.path.startswith("/"), "Endpoint path must start with '/'"),
+          (not self.methods, "Endpoint must support at least one HTTP method"),
+          (
+              self.rate_limit is not None and self.rate_limit <= 0,
+              "Rate limit must be positive",
+          ),
+          (self.timeout <= 0, "Timeout must be positive"),
+      ]
 
-        # Check basic validations
-        for condition, message in checks:
-            if condition:
-                return FlextResult.fail(message)
+      # Check basic validations
+      for condition, message in checks:
+          if condition:
+              return FlextResult.fail(message)
 
-        # Check methods validity
-        for method in self.methods:
-            if method not in HttpMethod:
-                return FlextResult.fail(f"Invalid HTTP method: {method}")
+      # Check methods validity
+      for method in self.methods:
+          if method not in HttpMethod:
+              return FlextResult.fail(f"Invalid HTTP method: {method}")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     def supports_method(self, method: HttpMethod) -> bool:
-        """Check if endpoint supports HTTP method."""
-        return method in self.methods
+      """Check if endpoint supports HTTP method."""
+      return method in self.methods
 
     def requires_authentication(self) -> bool:
-        """Check if endpoint requires authentication."""
-        return self.auth_required
+      """Check if endpoint requires authentication."""
+      return self.auth_required
 
     def is_deprecated(self) -> bool:
-        """Check if endpoint is deprecated."""
-        return self.deprecated
+      """Check if endpoint is deprecated."""
+      return self.deprecated
 
 
 class ApiSession(FlextEntity):
     """API session entity with authentication state."""
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextEntity
-        alias_generator=AliasGenerator(
-            alias=flext_alias_generator,
-            validation_alias=flext_alias_generator,
-            serialization_alias=flext_alias_generator,
-        ),
-        # FlextEntity patterns: mutable with lifecycle management
-        extra="allow",
-        validate_assignment=True,
-        use_enum_values=True,
-        str_strip_whitespace=True,
-        arbitrary_types_allowed=True,
-        validate_default=True,
-        populate_by_name=True,
-        frozen=False,  # Mutable entity
-        use_attribute_docstrings=True,
-        json_schema_extra={
-            "examples": [],
-            "description": "API session entity with modern Pydantic patterns and authentication state",
-            "title": "ApiSession",
-        },
+      # Inherit modern Pydantic patterns from FlextEntity
+      alias_generator=AliasGenerator(
+          alias=flext_alias_generator,
+          validation_alias=flext_alias_generator,
+          serialization_alias=flext_alias_generator,
+      ),
+      # FlextEntity patterns: mutable with lifecycle management
+      extra="allow",
+      validate_assignment=True,
+      use_enum_values=True,
+      str_strip_whitespace=True,
+      arbitrary_types_allowed=True,
+      validate_default=True,
+      populate_by_name=True,
+      frozen=False,  # Mutable entity
+      use_attribute_docstrings=True,
+      json_schema_extra={
+          "examples": [],
+          "description": "API session entity with modern Pydantic patterns and authentication state",
+          "title": "ApiSession",
+      },
     )
 
     user_id: str | None = Field(None, description="Authenticated user ID")
@@ -1119,62 +1118,62 @@ class ApiSession(FlextEntity):
     is_active: bool = Field(default=True, description="Session active state")
     refresh_token: str | None = Field(None, description="Refresh token")
     permissions: list[str] = Field(
-        default_factory=list,
-        description="Session permissions",
+      default_factory=list,
+      description="Session permissions",
     )
 
     # NOTE: Using FlextTimestamp from FlextEntity base class for lifecycle fields
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate session business rules."""
-        if self.token and len(self.token) < MIN_TOKEN_LENGTH:
-            return FlextResult.fail(
-                f"Session token must be at least {MIN_TOKEN_LENGTH} characters",
-            )
+      """Validate session business rules."""
+      if self.token and len(self.token) < MIN_TOKEN_LENGTH:
+          return FlextResult.fail(
+              f"Session token must be at least {MIN_TOKEN_LENGTH} characters",
+          )
 
-        if self.expires_at and self.expires_at <= datetime.now(UTC):
-            return FlextResult.fail("Session cannot be created with past expiration")
+      if self.expires_at and self.expires_at <= datetime.now(UTC):
+          return FlextResult.fail("Session cannot be created with past expiration")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     def is_expired(self) -> bool:
-        """Check if session is expired."""
-        if not self.expires_at:
-            return False
-        return datetime.now(UTC) >= self.expires_at
+      """Check if session is expired."""
+      if not self.expires_at:
+          return False
+      return datetime.now(UTC) >= self.expires_at
 
     def has_permission(self, permission: str) -> bool:
-        """Check if session has specific permission."""
-        return permission in self.permissions
+      """Check if session has specific permission."""
+      return permission in self.permissions
 
     def extend_session(self, duration_minutes: int = 60) -> FlextResult[ApiSession]:
-        """Extend session expiration."""
-        if not self.is_active:
-            return FlextResult.fail("Cannot extend inactive session")
+      """Extend session expiration."""
+      if not self.is_active:
+          return FlextResult.fail("Cannot extend inactive session")
 
-        if self.is_expired():
-            return FlextResult.fail("Cannot extend expired session")
+      if self.is_expired():
+          return FlextResult.fail("Cannot extend expired session")
 
-        new_expiration = datetime.now(UTC) + timedelta(minutes=duration_minutes)
+      new_expiration = datetime.now(UTC) + timedelta(minutes=duration_minutes)
 
-        updated = self.model_copy(
-            update={
-                "expires_at": new_expiration,
-                "last_activity": datetime.now(UTC),
-                "updated_at": FlextTimestamp.now(),
-            },
-        )
-        return FlextResult.ok(updated)
+      updated = self.model_copy(
+          update={
+              "expires_at": new_expiration,
+              "last_activity": datetime.now(UTC),
+              "updated_at": FlextTimestamp.now(),
+          },
+      )
+      return FlextResult.ok(updated)
 
     def deactivate(self) -> FlextResult[ApiSession]:
-        """Deactivate session."""
-        updated = self.model_copy(
-            update={
-                "is_active": False,
-                "updated_at": FlextTimestamp.now(),
-            },
-        )
-        return FlextResult.ok(updated)
+      """Deactivate session."""
+      updated = self.model_copy(
+          update={
+              "is_active": False,
+              "updated_at": FlextTimestamp.now(),
+          },
+      )
+      return FlextResult.ok(updated)
 
 
 # ==============================================================================
@@ -1194,17 +1193,17 @@ class RequestDto(FlextValue):
     timeout: float | None = Field(None, description="Request timeout")
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate request DTO business rules."""
-        if not self.method or not self.method.strip():
-            return FlextResult.fail("HTTP method is required")
+      """Validate request DTO business rules."""
+      if not self.method or not self.method.strip():
+          return FlextResult.fail("HTTP method is required")
 
-        if not self.url or not self.url.strip():
-            return FlextResult.fail("Request URL is required")
+      if not self.url or not self.url.strip():
+          return FlextResult.fail("Request URL is required")
 
-        if self.timeout is not None and self.timeout <= 0:
-            return FlextResult.fail("Timeout must be positive")
+      if self.timeout is not None and self.timeout <= 0:
+          return FlextResult.fail("Timeout must be positive")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
 
 class ResponseDto(FlextValue):
@@ -1213,22 +1212,22 @@ class ResponseDto(FlextValue):
     status_code: int = Field(description="HTTP status code")
     headers: dict[str, str] | None = Field(None, description="Response headers")
     data: dict[str, object] | list[object] | str | bytes | None = Field(
-        None,
-        description="Response data",
+      None,
+      description="Response data",
     )
     elapsed_time: float = Field(default=0.0, description="Request duration")
     request_id: str | None = Field(None, description="Associated request ID")
     from_cache: bool = Field(default=False, description="Cache hit indicator")
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate response DTO business rules."""
-        if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
-            return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
+      """Validate response DTO business rules."""
+      if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
+          return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
 
-        if self.elapsed_time < 0:
-            return FlextResult.fail("Elapsed time cannot be negative")
+      if self.elapsed_time < 0:
+          return FlextResult.fail("Elapsed time cannot be negative")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
 
 class ApiErrorContext(FlextValue):
@@ -1241,33 +1240,33 @@ class ApiErrorContext(FlextValue):
     details: dict[str, object] | None = Field(None, description="Error details")
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate error context business rules."""
-        if self.status_code is not None and not (
-            MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS
-        ):
-            return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
+      """Validate error context business rules."""
+      if self.status_code is not None and not (
+          MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS
+      ):
+          return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     def to_dict(
-        self, *, by_alias: bool = False, exclude_none: bool = False
+      self, *, by_alias: bool = False, exclude_none: bool = False,
     ) -> dict[str, object]:
-        """Convert to dictionary representation."""
-        _ = by_alias, exclude_none  # Parameters maintained for compatibility
-        result: dict[str, object] = {}
+      """Convert to dictionary representation."""
+      _ = by_alias, exclude_none  # Parameters maintained for compatibility
+      result: dict[str, object] = {}
 
-        if self.method is not None:
-            result["method"] = self.method
-        if self.endpoint is not None:
-            result["endpoint"] = self.endpoint
-        if self.status_code is not None:
-            result["status_code"] = self.status_code
-        if self.error_code is not None:
-            result["error_code"] = self.error_code
-        if self.details is not None:
-            result["details"] = self.details
+      if self.method is not None:
+          result["method"] = self.method
+      if self.endpoint is not None:
+          result["endpoint"] = self.endpoint
+      if self.status_code is not None:
+          result["status_code"] = self.status_code
+      if self.error_code is not None:
+          result["error_code"] = self.error_code
+      if self.details is not None:
+          result["details"] = self.details
 
-        return result
+      return result
 
 
 # ==============================================================================
@@ -1279,19 +1278,19 @@ class QueryBuilder(FlextValue):
     """Query builder configuration using pure Pydantic patterns."""
 
     filters: list[dict[str, object]] = Field(
-        default_factory=list,
-        description="Query filters",
+      default_factory=list,
+      description="Query filters",
     )
     sorts: list[dict[str, str]] = Field(
-        default_factory=list,
-        description="Sort criteria",
+      default_factory=list,
+      description="Sort criteria",
     )
     page: int = Field(default=1, ge=1, description="Page number")
     page_size: int = Field(
-        default=DEFAULT_PAGE_SIZE,
-        ge=1,
-        le=1000,
-        description="Items per page",
+      default=DEFAULT_PAGE_SIZE,
+      ge=1,
+      le=1000,
+      description="Items per page",
     )
     search: str | None = Field(None, description="Search term")
     fields: list[str] | None = Field(None, description="Fields to include")
@@ -1299,30 +1298,30 @@ class QueryBuilder(FlextValue):
     excludes: list[str] | None = Field(None, description="Fields to exclude")
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate query builder business rules."""
-        if self.page < 1:
-            return FlextResult.fail("Page number must be positive")
+      """Validate query builder business rules."""
+      if self.page < 1:
+          return FlextResult.fail("Page number must be positive")
 
-        if (
-            self.page_size < 1
-            or self.page_size > FlextApiConstants.Config.MAX_PAGE_SIZE
-        ):
-            return FlextResult.fail(
-                f"Page size must be between 1 and {FlextApiConstants.Config.MAX_PAGE_SIZE}"
-            )
+      if (
+          self.page_size < 1
+          or self.page_size > FlextApiConstants.Config.MAX_PAGE_SIZE
+      ):
+          return FlextResult.fail(
+              f"Page size must be between 1 and {FlextApiConstants.Config.MAX_PAGE_SIZE}",
+          )
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     def to_query_config(self) -> QueryConfig:
-        """Convert to QueryConfig value object."""
-        return QueryConfig(
-            filters=self.filters,
-            sorts=self.sorts,
-            page=self.page,
-            page_size=self.page_size,
-            search=self.search,
-            fields=self.fields,
-        )
+      """Convert to QueryConfig value object."""
+      return QueryConfig(
+          filters=self.filters,
+          sorts=self.sorts,
+          page=self.page,
+          page_size=self.page_size,
+          search=self.search,
+          fields=self.fields,
+      )
 
 
 class ResponseBuilder(FlextValue):
@@ -1330,86 +1329,76 @@ class ResponseBuilder(FlextValue):
 
     success: bool = Field(default=True, description="Success indicator")
     data: dict[str, object] | list[object] | str | None = Field(
-        None,
-        description="Response data",
+      None,
+      description="Response data",
     )
     message: str | None = Field(None, description="Response message")
     errors: list[str] | None = Field(None, description="Error messages")
     metadata: dict[str, object] | None = Field(None, description="Response metadata")
     pagination: PaginationInfo | None = Field(None, description="Pagination info")
     status_code: int = Field(
-        default=200,
-        ge=100,
-        le=599,
-        description="HTTP status code",
+      default=200,
+      ge=100,
+      le=599,
+      description="HTTP status code",
     )
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate response builder business rules."""
-        if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
-            return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
+      """Validate response builder business rules."""
+      if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
+          return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
 
-        if not self.success and not (self.errors or self.message):
-            return FlextResult.fail(
-                "Error responses must include error messages or details",
-            )
+      if not self.success and not (self.errors or self.message):
+          return FlextResult.fail(
+              "Error responses must include error messages or details",
+          )
 
-        return FlextResult.ok(None)
+      return FlextResult.ok(None)
 
     def to_dict(
-        self, *, by_alias: bool = False, exclude_none: bool = False
+      self, *, by_alias: bool = False, exclude_none: bool = False,
     ) -> dict[str, object]:
-        """Convert to dictionary representation."""
-        _ = by_alias, exclude_none  # Parameters maintained for compatibility
-        result: dict[str, object] = {
-            "success": self.success,
-            "data": self.data,
-        }
+      """Convert to dictionary representation."""
+      _ = by_alias, exclude_none  # Parameters maintained for compatibility
+      result: dict[str, object] = {
+          "success": self.success,
+          "data": self.data,
+      }
 
-        if self.message:
-            result["message"] = self.message
-        if self.errors:
-            result["errors"] = self.errors
-        if self.metadata:
-            result["metadata"] = self.metadata
-        if self.pagination:
-            result["pagination"] = self.pagination.model_dump()
+      if self.message:
+          result["message"] = self.message
+      if self.errors:
+          result["errors"] = self.errors
+      if self.metadata:
+          result["metadata"] = self.metadata
+      if self.pagination:
+          result["pagination"] = self.pagination.model_dump()
 
-        return result
+      return result
 
 
-# Ensure Pydantic resolves forward refs with FlextTypes available by importing
-# the local typings facade before calling model_rebuild
-try:
-    from flext_api.typings import FlextTypes as _ApiFlextTypes  # noqa: F401
+# Value Objects
+URL.model_rebuild()
+HttpHeader.model_rebuild()
+BearerToken.model_rebuild()
+ClientConfig.model_rebuild()
+QueryConfig.model_rebuild()
+PaginationInfo.model_rebuild()
 
-    # Value Objects
-    URL.model_rebuild()
-    HttpHeader.model_rebuild()
-    BearerToken.model_rebuild()
-    ClientConfig.model_rebuild()
-    QueryConfig.model_rebuild()
-    PaginationInfo.model_rebuild()
+# Entities
+ApiRequest.model_rebuild()
+ApiResponse.model_rebuild()
+ApiEndpoint.model_rebuild()
+ApiSession.model_rebuild()
 
-    # Entities
-    ApiRequest.model_rebuild()
-    ApiResponse.model_rebuild()
-    ApiEndpoint.model_rebuild()
-    ApiSession.model_rebuild()
+# DTOs (now using pure Pydantic)
+RequestDto.model_rebuild()
+ResponseDto.model_rebuild()
+ApiErrorContext.model_rebuild()
 
-    # DTOs (now using pure Pydantic)
-    RequestDto.model_rebuild()
-    ResponseDto.model_rebuild()
-    ApiErrorContext.model_rebuild()
-
-    # Builders (now using pure Pydantic)
-    QueryBuilder.model_rebuild()
-    ResponseBuilder.model_rebuild()
-except Exception as e:
-    logger.warning(
-        "Pydantic model_rebuild failed; continuing without explicit rebuild",
-        error=str(e),
-    )
+# Builders (now using pure Pydantic)
+QueryBuilder.model_rebuild()
+ResponseBuilder.model_rebuild()
 
 
 # ==============================================================================

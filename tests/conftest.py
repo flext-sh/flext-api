@@ -4,20 +4,11 @@ Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
 """
 
-from __future__ import annotations
-
 import asyncio
 import os
+from collections.abc import AsyncGenerator, Callable, Iterator
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
-
-# Garanta um loop corrente no thread principal para pytest-asyncio (Py3.13)
-try:
-    asyncio.get_event_loop()
-except RuntimeError:
-    asyncio.set_event_loop(asyncio.new_event_loop())
-
-from typing import TYPE_CHECKING
 
 import pytest
 from faker import Faker
@@ -25,8 +16,12 @@ from fastapi.testclient import TestClient
 
 from flext_api import FlextApiClient, app
 
-if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable, Iterator
+# Garanta um loop corrente no thread principal para pytest-asyncio (Py3.13)
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+
 
 # Configure faker for consistent test data
 fake = Faker()

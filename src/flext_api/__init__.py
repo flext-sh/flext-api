@@ -245,12 +245,12 @@ def build_query_dict(
     REFACTORED: Function signature maintained for backward compatibility.
     """
     params = FlextApiQueryParameters(
-        filters=filters,
-        sorts=sorts,
-        page=page,
-        page_size=page_size,
-        search=search,
-        fields=fields,
+      filters=filters,
+      sorts=sorts,
+      page=page,
+      page_size=page_size,
+      search=search,
+      fields=fields,
     )
     query = build_query_from_params(params)
     return query.to_dict()
@@ -285,13 +285,13 @@ def create_api_client(config: dict[str, object] | None = None) -> FlextApiClient
     Convenience function that creates a configured client instance.
 
     Args:
-        config: Client configuration dictionary
+      config: Client configuration dictionary
 
     Returns:
-        Configured FlextApiClient instance
+      Configured FlextApiClient instance
 
     Raises:
-        ValueError: If configuration is invalid
+      ValueError: If configuration is invalid
 
     """
     return create_client(config)
@@ -304,7 +304,7 @@ def create_api_builder() -> FlextApiBuilder:
     instantiating the full API service.
 
     Returns:
-        FlextApiBuilder instance
+      FlextApiBuilder instance
 
     """
     return FlextApiBuilder()
@@ -314,11 +314,11 @@ def create_api_storage(backend: str = "memory", **kwargs: object) -> FlextApiSto
     """Create storage instance with specified backend.
 
     Args:
-        backend: Storage backend type
-        **kwargs: Backend-specific configuration
+      backend: Storage backend type
+      **kwargs: Backend-specific configuration
 
     Returns:
-        Configured FlextApiStorage instance
+      Configured FlextApiStorage instance
 
     """
     return create_storage(backend, **kwargs)
@@ -476,7 +476,3 @@ __all__: list[str] = [
     "user_role_field",
     "validate_configuration",
 ]
-
-from . import api_app
-from . import fields
-from . import main

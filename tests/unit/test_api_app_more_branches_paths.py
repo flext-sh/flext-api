@@ -1,7 +1,5 @@
 """Test more branches paths."""
 
-from __future__ import annotations
-
 import pytest
 from fastapi.testclient import TestClient
 

@@ -15,6 +15,7 @@ from flext_api import (
     api_app as api_app_mod,  # noqa: F401, PLC0415
     create_api_builder,
     create_api_client,
+    create_api_service,
     create_api_storage,
     create_flext_api_app,
     sync_health_check,
@@ -58,8 +59,6 @@ def test_deprecated_create_api_service_and_client_paths() -> None:
     """Ensure deprecated helpers still import and function nominally."""
     api = FlextApi()
     # Deprecated create_api_service function
-    from flext_api import create_api_service  # noqa: PLC0415
-
     svc = create_api_service()
     assert isinstance(svc, FlextApi)
 

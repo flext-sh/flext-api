@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import pytest
 
@@ -13,9 +13,6 @@ from flext_api import (
     StorageConfig,
     create_file_storage,
 )
-
-if TYPE_CHECKING:  # pragma: no cover - type-only import
-    from pathlib import Path
 
 
 @pytest.mark.asyncio
