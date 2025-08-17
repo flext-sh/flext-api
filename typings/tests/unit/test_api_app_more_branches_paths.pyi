@@ -1,0 +1,6 @@
+import pytest
+
+def test_cors_origins_fallback_when_exception(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None: ...
+def test_root_and_info_paths() -> None: ...

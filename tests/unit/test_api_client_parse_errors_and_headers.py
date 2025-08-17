@@ -22,16 +22,16 @@ async def test_read_response_data_parse_errors() -> None:
 
     # Simulate JSON header but bad JSON body
     class FakeResponse:
-      """Fake aiohttp-like response object for testing parse fallbacks."""
+        """Fake aiohttp-like response object for testing parse fallbacks."""
 
-      headers: ClassVar[dict[str, str]] = {"Content-Type": "application/json"}
+        headers: ClassVar[dict[str, str]] = {"Content-Type": "application/json"}
 
-      async def json(self) -> Never:
-          msg = "bad json"
-          raise ValueError(msg)
+        async def json(self) -> Never:
+            msg = "bad json"
+            raise ValueError(msg)
 
-      async def text(self) -> str:
-          return "{not json}"
+        async def text(self) -> str:
+            return "{not json}"
 
     client = FlextApiClient(FlextApiClientConfig(base_url="https://x"))
     data = await client._read_response_data(FakeResponse())  # type: ignore[arg-type]
@@ -44,7 +44,7 @@ async def test_read_response_data_parse_errors() -> None:
 async def test_prepare_headers_merge_and_request_build() -> None:
     """Test prepare headers merge and request build."""
     client = FlextApiClient(
-      FlextApiClientConfig(base_url="https://api.example.com", headers={"A": "1"}),
+        FlextApiClientConfig(base_url="https://api.example.com", headers={"A": "1"}),
     )
     r = client._build_request("GET", "/p", None, None, None, {"B": "2"}, None)
     assert r.success
@@ -64,9 +64,9 @@ async def test_execute_request_pipeline_empty_response(
     req = FlextApiClientRequest(method="GET", url="https://api.example.com/x")
 
     async def bad_perform(
-      _req: FlextApiClientRequest,
+        _req: FlextApiClientRequest,
     ) -> FlextResult[FlextApiClientResponse]:
-      return FlextResult.ok(FlextApiClientResponse(status_code=200, data=None))
+        return FlextResult.ok(FlextApiClientResponse(status_code=200, data=None))
 
     await client.start()
     monkeypatch.setattr(client, "_perform_http_request", bad_perform)

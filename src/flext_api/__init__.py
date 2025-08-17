@@ -245,12 +245,12 @@ def build_query_dict(
     REFACTORED: Function signature maintained for backward compatibility.
     """
     params = FlextApiQueryParameters(
-      filters=filters,
-      sorts=sorts,
-      page=page,
-      page_size=page_size,
-      search=search,
-      fields=fields,
+        filters=filters,
+        sorts=sorts,
+        page=page,
+        page_size=page_size,
+        search=search,
+        fields=fields,
     )
     query = build_query_from_params(params)
     return query.to_dict()

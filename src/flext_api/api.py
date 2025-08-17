@@ -46,309 +46,309 @@ class FlextApi(FlextApiBaseService):
     _client_config: ClientConfig | None = None
 
     def __init__(self, **_data: object) -> None:
-      """Initialize FlextApi service with builder."""
-      # Initialize base class with default field values, ignoring extra data
-      super().__init__(service_name="FlextApi", service_version=__version__)
-      self._builder = FlextApiBuilder()
-      logger.info("FlextApi service initialized", version=self.service_version)
+        """Initialize FlextApi service with builder."""
+        # Initialize base class with default field values, ignoring extra data
+        super().__init__(service_name="FlextApi", service_version=__version__)
+        self._builder = FlextApiBuilder()
+        logger.info("FlextApi service initialized", version=self.service_version)
 
     async def _do_start(self) -> FlextResult[None]:
-      """Perform service-specific startup logic."""
-      logger.debug("FlextApi service startup complete")
-      return FlextResult.ok(None)
+        """Perform service-specific startup logic."""
+        logger.debug("FlextApi service startup complete")
+        return FlextResult.ok(None)
 
     async def _do_stop(self) -> FlextResult[None]:
-      """Perform service-specific shutdown logic."""
-      try:
-          # Close client if exists
-          if self._client:
-              await self._client.close()
-              self._client = None
-          logger.debug("FlextApi service shutdown complete")
-          return FlextResult.ok(None)
-      except Exception as e:
-          logger.exception("Error during service shutdown")
-          return FlextResult.fail(f"Shutdown error: {e}")
+        """Perform service-specific shutdown logic."""
+        try:
+            # Close client if exists
+            if self._client:
+                await self._client.close()
+                self._client = None
+            logger.debug("FlextApi service shutdown complete")
+            return FlextResult.ok(None)
+        except Exception as e:
+            logger.exception("Error during service shutdown")
+            return FlextResult.fail(f"Shutdown error: {e}")
 
     async def _get_health_details(self) -> FlextResult[FlextTypes.Core.JsonDict]:
-      """Get service-specific health details."""
-      details: FlextTypes.Core.JsonDict = {
-          "client_configured": self._client is not None,
-          "client_type": type(self._client).__name__ if self._client else None,
-          "builder_available": self._builder is not None,
-      }
-      if self._client_config:
-          details["client_base_url"] = self._client_config.base_url
-          details["client_timeout"] = self._client_config.timeout
-      return FlextResult.ok(details)
+        """Get service-specific health details."""
+        details: FlextTypes.Core.JsonDict = {
+            "client_configured": self._client is not None,
+            "client_type": type(self._client).__name__ if self._client else None,
+            "builder_available": self._builder is not None,
+        }
+        if self._client_config:
+            details["client_base_url"] = self._client_config.base_url
+            details["client_timeout"] = self._client_config.timeout
+        return FlextResult.ok(details)
 
     def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict] | object:  # type: ignore[override]
-      """Health check supporting both sync and async usage.
+        """Health check supporting both sync and async usage.
 
-      If there is no running loop, execute in a private loop without
-      mutating the global event loop. If a loop is running, return the
-      coroutine for the caller to await.
-      """
-      try:
-          _asyncio.get_running_loop()
-      except RuntimeError:
-          # No running loop: use a private event loop without set_event_loop
-          loop = _asyncio.new_event_loop()
-          try:
-              return loop.run_until_complete(_Base.health_check(self))
-          finally:
-              loop.close()
-      # Running loop present: return coroutine for awaiting in async context
-      return _Base.health_check(self)
+        If there is no running loop, execute in a private loop without
+        mutating the global event loop. If a loop is running, return the
+        coroutine for the caller to await.
+        """
+        try:
+            _asyncio.get_running_loop()
+        except RuntimeError:
+            # No running loop: use a private event loop without set_event_loop
+            loop = _asyncio.new_event_loop()
+            try:
+                return loop.run_until_complete(_Base.health_check(self))
+            finally:
+                loop.close()
+        # Running loop present: return coroutine for awaiting in async context
+        return _Base.health_check(self)
 
     # Compatibility: allow calling health_check in sync contexts within tests
     def sync_health_check(self) -> FlextResult[dict[str, object]]:
-      """Run health check synchronously for compatibility tests.
+        """Run health check synchronously for compatibility tests.
 
-      Always uses a private event loop to avoid interfering with pytest's loop.
-      """
-      # If a loop is already running (pytest-asyncio), run the coroutine in a
-      # separate thread with its own event loop to avoid nested-loop errors.
-      try:
-          _asyncio.get_running_loop()
-          result_holder: list[_Res[dict[str, object]]] = []
-          error_holder: list[BaseException] = []
+        Always uses a private event loop to avoid interfering with pytest's loop.
+        """
+        # If a loop is already running (pytest-asyncio), run the coroutine in a
+        # separate thread with its own event loop to avoid nested-loop errors.
+        try:
+            _asyncio.get_running_loop()
+            result_holder: list[_Res[dict[str, object]]] = []
+            error_holder: list[BaseException] = []
 
-          def _runner() -> None:
-              loop_inner = _asyncio.new_event_loop()
-              try:
-                  res = loop_inner.run_until_complete(_Base.health_check(self))
-                  result_holder.append(res)
-              except BaseException as exc:  # pragma: no cover - defensive
-                  error_holder.append(exc)
-              finally:
-                  loop_inner.close()
+            def _runner() -> None:
+                loop_inner = _asyncio.new_event_loop()
+                try:
+                    res = loop_inner.run_until_complete(_Base.health_check(self))
+                    result_holder.append(res)
+                except BaseException as exc:  # pragma: no cover - defensive
+                    error_holder.append(exc)
+                finally:
+                    loop_inner.close()
 
-          t = Thread(target=_runner, daemon=True)
-          t.start()
-          t.join()
-          if result_holder:
-              return result_holder[0]
-          if error_holder:
-              return _Res.fail(f"Failed to run health check: {error_holder[0]}")
-          return _Res.fail("Failed to run health check: unknown error")
-      except RuntimeError:
-          loop = _asyncio.new_event_loop()
-          try:
-              return loop.run_until_complete(_Base.health_check(self))
-          finally:
-              loop.close()
+            t = Thread(target=_runner, daemon=True)
+            t.start()
+            t.join()
+            if result_holder:
+                return result_holder[0]
+            if error_holder:
+                return _Res.fail(f"Failed to run health check: {error_holder[0]}")
+            return _Res.fail("Failed to run health check: unknown error")
+        except RuntimeError:
+            loop = _asyncio.new_event_loop()
+            try:
+                return loop.run_until_complete(_Base.health_check(self))
+            finally:
+                loop.close()
 
     def health_check_sync(self) -> FlextResult[dict[str, object]]:
-      """Synchronous wrapper for health_check for legacy tests."""
-      return self.sync_health_check()
+        """Synchronous wrapper for health_check for legacy tests."""
+        return self.sync_health_check()
 
     def create_client(
-      self,
-      config: dict[str, object] | None = None,
+        self,
+        config: dict[str, object] | None = None,
     ) -> FlextResult[FlextApiClientProtocol]:
-      """Create HTTP client with configuration using FlextResult pattern.
+        """Create HTTP client with configuration using FlextResult pattern.
 
-      Args:
-          config: Client configuration dictionary with:
-              - base_url: Required string, must start with http:// or https://
-              - timeout: Optional float, defaults to 30.0 seconds
-              - headers: Optional dict of string key-value pairs
-              - max_retries: Optional int, defaults to 3
-      Returns:
-          FlextResult containing configured client or error
+        Args:
+            config: Client configuration dictionary with:
+                - base_url: Required string, must start with http:// or https://
+                - timeout: Optional float, defaults to 30.0 seconds
+                - headers: Optional dict of string key-value pairs
+                - max_retries: Optional int, defaults to 3
+        Returns:
+            FlextResult containing configured client or error
 
-      """
-      try:
-          # Create ClientConfig value object
-          config_dict = config or {}
-          # Type-safe extraction of config values
-          timeout_val = config_dict.get("timeout", 30.0)
-          timeout = (
-              float(timeout_val)
-              if isinstance(timeout_val, (int, float, str))
-              else 30.0
-          )
-          headers_val = config_dict.get("headers", {})
-          headers = dict(headers_val) if isinstance(headers_val, dict) else {}
-          max_retries_val = config_dict.get("max_retries", 3)
-          max_retries = (
-              int(max_retries_val)
-              if isinstance(max_retries_val, (int, float, str))
-              else 3
-          )
-          client_config = ClientConfig(
-              base_url=str(config_dict.get("base_url", "")),
-              timeout=timeout,
-              headers=headers,
-              max_retries=max_retries,
-          )
-          # Validate configuration
-          validation_result = client_config.validate_business_rules()
-          if not validation_result.success:
-              return FlextResult.fail(
-                  validation_result.error or "Invalid client configuration",
-              )
-          # Convert to legacy config format for backward compatibility
-          legacy_config = FlextApiClientConfig(
-              base_url=client_config.base_url,
-              timeout=client_config.timeout,
-              headers=client_config.headers,
-              max_retries=client_config.max_retries,
-          )
-          # Create client
-          api_client = FlextApiClient(legacy_config)
-          self._client = api_client  # type: ignore[assignment]
-          self._client_config = client_config
-          logger.info("HTTP client created", base_url=client_config.base_url)
-          return FlextResult.ok(api_client)  # type: ignore[arg-type]
-      except Exception as e:
-          logger.exception("Failed to create client")
-          return FlextResult.fail(f"Failed to create client: {e}")
+        """
+        try:
+            # Create ClientConfig value object
+            config_dict = config or {}
+            # Type-safe extraction of config values
+            timeout_val = config_dict.get("timeout", 30.0)
+            timeout = (
+                float(timeout_val)
+                if isinstance(timeout_val, (int, float, str))
+                else 30.0
+            )
+            headers_val = config_dict.get("headers", {})
+            headers = dict(headers_val) if isinstance(headers_val, dict) else {}
+            max_retries_val = config_dict.get("max_retries", 3)
+            max_retries = (
+                int(max_retries_val)
+                if isinstance(max_retries_val, (int, float, str))
+                else 3
+            )
+            client_config = ClientConfig(
+                base_url=str(config_dict.get("base_url", "")),
+                timeout=timeout,
+                headers=headers,
+                max_retries=max_retries,
+            )
+            # Validate configuration
+            validation_result = client_config.validate_business_rules()
+            if not validation_result.success:
+                return FlextResult.fail(
+                    validation_result.error or "Invalid client configuration",
+                )
+            # Convert to legacy config format for backward compatibility
+            legacy_config = FlextApiClientConfig(
+                base_url=client_config.base_url,
+                timeout=client_config.timeout,
+                headers=client_config.headers,
+                max_retries=client_config.max_retries,
+            )
+            # Create client
+            api_client = FlextApiClient(legacy_config)
+            self._client = api_client  # type: ignore[assignment]
+            self._client_config = client_config
+            logger.info("HTTP client created", base_url=client_config.base_url)
+            return FlextResult.ok(api_client)  # type: ignore[arg-type]
+        except Exception as e:
+            logger.exception("Failed to create client")
+            return FlextResult.fail(f"Failed to create client: {e}")
 
     def get_builder(self) -> FlextApiBuilder:
-      """Get builder instance for advanced operations.
+        """Get builder instance for advanced operations.
 
-      Returns:
-          FlextApiBuilder instance for query/response construction
+        Returns:
+            FlextApiBuilder instance for query/response construction
 
-      """
-      if not self._builder:
-          self._builder = FlextApiBuilder()
-      return self._builder
+        """
+        if not self._builder:
+            self._builder = FlextApiBuilder()
+        return self._builder
 
     def get_query_builder(self) -> FlextApiQueryBuilderProtocol:
-      """Get query builder for constructing API queries.
+        """Get query builder for constructing API queries.
 
-      Returns:
-          Query builder instance
+        Returns:
+            Query builder instance
 
-      """
-      # FlextApiQueryBuilder implements FlextApiQueryBuilderProtocol
-      return cast("FlextApiQueryBuilderProtocol", self.get_builder().for_query())
+        """
+        # FlextApiQueryBuilder implements FlextApiQueryBuilderProtocol
+        return cast("FlextApiQueryBuilderProtocol", self.get_builder().for_query())
 
     def get_response_builder(self) -> FlextApiResponseBuilderProtocol:
-      """Get response builder for constructing API responses.
+        """Get response builder for constructing API responses.
 
-      Returns:
-          Response builder instance
+        Returns:
+            Response builder instance
 
-      """
-      # FlextApiResponseBuilder implements FlextApiResponseBuilderProtocol
-      return cast(
-          "FlextApiResponseBuilderProtocol",
-          self.get_builder().for_response(),
-      )
+        """
+        # FlextApiResponseBuilder implements FlextApiResponseBuilderProtocol
+        return cast(
+            "FlextApiResponseBuilderProtocol",
+            self.get_builder().for_response(),
+        )
 
     def get_client(self) -> FlextApiClientProtocol | None:
-      """Get current client instance.
+        """Get current client instance.
 
-      Returns:
-          Current client instance or None if not configured
+        Returns:
+            Current client instance or None if not configured
 
-      """
-      return self._client
+        """
+        return self._client
 
     def get_service_info(self) -> FlextTypes.Core.JsonDict:
-      """Get detailed service information.
+        """Get detailed service information.
 
-      Returns:
-          Dictionary with service details
+        Returns:
+            Dictionary with service details
 
-      """
-      return {
-          "name": self.service_name,
-          "version": self.service_version,
-          "is_running": self.is_running,
-          "client_configured": self._client is not None,
-          "client_type": type(self._client).__name__ if self._client else None,
-          "builder_available": self._builder is not None,
-      }
+        """
+        return {
+            "name": self.service_name,
+            "version": self.service_version,
+            "is_running": self.is_running,
+            "client_configured": self._client is not None,
+            "client_type": type(self._client).__name__ if self._client else None,
+            "builder_available": self._builder is not None,
+        }
 
     def _create_client_impl(
-      self,
-      config: FlextTypes.Core.JsonDict | None = None,
+        self,
+        config: FlextTypes.Core.JsonDict | None = None,
     ) -> FlextApiClient:
-      """Create internal client for testing and edge cases.
+        """Create internal client for testing and edge cases.
 
-      Args:
-          config: Client configuration dictionary
-      Returns:
-          FlextApiClient instance
-      Raises:
-          ValueError: If configuration is invalid
+        Args:
+            config: Client configuration dictionary
+        Returns:
+            FlextApiClient instance
+        Raises:
+            ValueError: If configuration is invalid
 
-      """
-      config_dict = config or {}
-      # Handle invalid types gracefully with defaults
-      base_url = str(config_dict.get("base_url", ""))
-      if not base_url:
-          msg = "Invalid URL format"
-          raise ValueError(msg)
-      # Type-safe extraction of timeout
-      timeout_val = config_dict.get("timeout", 30.0)
-      if isinstance(timeout_val, (int, float, str)):
-          try:
-              timeout = float(timeout_val)
-          except (ValueError, TypeError):
-              timeout = 30.0
-      else:
-          timeout = 30.0
-      # Type-safe extraction of max_retries
-      max_retries_val = config_dict.get("max_retries", 3)
-      if isinstance(max_retries_val, (int, float, str)):
-          try:
-              max_retries = int(float(max_retries_val))
-          except (ValueError, TypeError):
-              max_retries = 3
-      else:
-          max_retries = 3
-      headers = config_dict.get("headers", {})
-      if not isinstance(headers, dict):
-          headers = {}
-      # Create ClientConfig and validate
-      client_config = ClientConfig(
-          base_url=base_url,
-          timeout=timeout,
-          headers=headers,
-          max_retries=max_retries,
-      )
-      # Validate configuration
-      validation_result = client_config.validate_business_rules()
-      if not validation_result.success:
-          raise ValueError(validation_result.error or "Invalid URL format")
-      # Convert to legacy config format
-      legacy_config = FlextApiClientConfig(
-          base_url=client_config.base_url,
-          timeout=client_config.timeout,
-          headers=client_config.headers,
-          max_retries=client_config.max_retries,
-      )
-      return FlextApiClient(legacy_config)
+        """
+        config_dict = config or {}
+        # Handle invalid types gracefully with defaults
+        base_url = str(config_dict.get("base_url", ""))
+        if not base_url:
+            msg = "Invalid URL format"
+            raise ValueError(msg)
+        # Type-safe extraction of timeout
+        timeout_val = config_dict.get("timeout", 30.0)
+        if isinstance(timeout_val, (int, float, str)):
+            try:
+                timeout = float(timeout_val)
+            except (ValueError, TypeError):
+                timeout = 30.0
+        else:
+            timeout = 30.0
+        # Type-safe extraction of max_retries
+        max_retries_val = config_dict.get("max_retries", 3)
+        if isinstance(max_retries_val, (int, float, str)):
+            try:
+                max_retries = int(float(max_retries_val))
+            except (ValueError, TypeError):
+                max_retries = 3
+        else:
+            max_retries = 3
+        headers = config_dict.get("headers", {})
+        if not isinstance(headers, dict):
+            headers = {}
+        # Create ClientConfig and validate
+        client_config = ClientConfig(
+            base_url=base_url,
+            timeout=timeout,
+            headers=headers,
+            max_retries=max_retries,
+        )
+        # Validate configuration
+        validation_result = client_config.validate_business_rules()
+        if not validation_result.success:
+            raise ValueError(validation_result.error or "Invalid URL format")
+        # Convert to legacy config format
+        legacy_config = FlextApiClientConfig(
+            base_url=client_config.base_url,
+            timeout=client_config.timeout,
+            headers=client_config.headers,
+            max_retries=client_config.max_retries,
+        )
+        return FlextApiClient(legacy_config)
 
     # Legacy compatibility methods
     def flext_api_create_client(
-      self,
-      config: FlextTypes.Core.JsonDict | None = None,
+        self,
+        config: FlextTypes.Core.JsonDict | None = None,
     ) -> FlextResult[FlextApiClient]:
-      """Legacy method for creating HTTP client.
+        """Legacy method for creating HTTP client.
 
-      DEPRECATED: Use create_client() instead.
+        DEPRECATED: Use create_client() instead.
 
-      Args:
-          config: Client configuration dictionary
-      Returns:
-          FlextResult containing client or error
+        Args:
+            config: Client configuration dictionary
+        Returns:
+            FlextResult containing client or error
 
-      """
-      logger.warning("Using deprecated method flext_api_create_client")
-      result = self.create_client(config)
-      if result.success and result.data is not None:
-          # Convert protocol to concrete type for legacy compatibility
-          return FlextResult.ok(cast("FlextApiClient", result.data))
-      # Handle failure case
-      error_msg = result.error or "Unknown error"
-      return FlextResult.fail(f"Failed to create client: {error_msg}")
+        """
+        logger.warning("Using deprecated method flext_api_create_client")
+        result = self.create_client(config)
+        if result.success and result.data is not None:
+            # Convert protocol to concrete type for legacy compatibility
+            return FlextResult.ok(cast("FlextApiClient", result.data))
+        # Handle failure case
+        error_msg = result.error or "Unknown error"
+        return FlextResult.fail(f"Failed to create client: {error_msg}")
 
 
 def create_flext_api(**config: object) -> FlextApi:

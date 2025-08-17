@@ -21,7 +21,7 @@ async def test_request_build_failure_and_pipeline_error(
 
     # Force _build_request to fail
     def bad_build(*_a: object, **_k: object) -> FlextResult[object]:
-      return FlextResult.fail("bad build")
+        return FlextResult.fail("bad build")
 
     monkeypatch.setattr(client, "_build_request", bad_build)
     res = await client.get("/json")
@@ -30,7 +30,7 @@ async def test_request_build_failure_and_pipeline_error(
 
     # Force _perform_http_request to fail and error formatting to trigger
     async def bad_perform(_req: FlextApiClientRequest) -> FlextResult[object]:
-      return FlextResult.fail("exec fail")
+        return FlextResult.fail("exec fail")
 
     monkeypatch.setattr(client, "_build_request", FlextApiClient._build_request)
     await client.start()

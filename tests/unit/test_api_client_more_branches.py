@@ -50,7 +50,7 @@ def test_build_stub_response_status_nonint() -> None:
     """Test build_stub_response status non-int path."""
     client = FlextApiClient(FlextApiClientConfig(base_url="https://x"))
     r = client._build_stub_response(
-      FlextApiClientRequest(method="GET", url="https://x/status/abc"),
+        FlextApiClientRequest(method="GET", url="https://x/status/abc"),
     )
     assert r.success
     assert r.data.status_code == 200
@@ -62,32 +62,32 @@ async def test_process_response_pipeline_none_response() -> None:
     """Test process response pipeline none response."""
 
     class _AfterNone:
-      enabled = True
+        enabled = True
 
-      async def before_request(
-          self,
-          request: FlextApiClientRequest,
-          _ctx: dict[str, object] | None = None,
-      ) -> FlextApiClientRequest:
-          return request
+        async def before_request(
+            self,
+            request: FlextApiClientRequest,
+            _ctx: dict[str, object] | None = None,
+        ) -> FlextApiClientRequest:
+            return request
 
-      async def after_response(
-          self,
-          _resp: FlextApiClientResponse,
-          _ctx: dict[str, object] | None = None,
-      ) -> FlextResult:
-          return FlextResult.ok(None)
+        async def after_response(
+            self,
+            _resp: FlextApiClientResponse,
+            _ctx: dict[str, object] | None = None,
+        ) -> FlextResult:
+            return FlextResult.ok(None)
 
     c = FlextApiClient(
-      FlextApiClientConfig(base_url="https://x"),
-      plugins=[_AfterNone()],
+        FlextApiClientConfig(base_url="https://x"),
+        plugins=[_AfterNone()],
     )
     # Return a valid response from perform to reach after_response None
 
     async def ok_perform(
-      _r: FlextApiClientRequest,
+        _r: FlextApiClientRequest,
     ) -> FlextResult[FlextApiClientResponse]:
-      return FlextResult.ok(FlextApiClientResponse(status_code=200, data={}))
+        return FlextResult.ok(FlextApiClientResponse(status_code=200, data={}))
 
     req = FlextApiClientRequest(method="GET", url="https://x")
     await c.start()
@@ -102,4 +102,4 @@ def test_response_builder_with_metadata_key_requires_value() -> None:
     """Test response builder with metadata key requires value."""
     b = FlextApiResponseBuilder()
     with pytest.raises(ValueError):
-      b.with_metadata("key")
+        b.with_metadata("key")

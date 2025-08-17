@@ -17,20 +17,20 @@ def test_run_development_server_invokes_uvicorn(
     calls: list[dict[str, Any]] = []
 
     def fake_run(*args: object, **kwargs: object) -> None:  # uvicorn.run
-      calls.append({"args": args, "kwargs": kwargs})
+        calls.append({"args": args, "kwargs": kwargs})
 
     monkeypatch.setattr(
-      api_app_module,
-      "uvicorn",
-      type("_U", (), {"run": staticmethod(fake_run)}),
+        api_app_module,
+        "uvicorn",
+        type("_U", (), {"run": staticmethod(fake_run)}),
     )
 
     # Should not raise and must call uvicorn.run with factory path
     api_app_module.run_development_server(
-      host="127.0.0.1",
-      port=8081,
-      reload=False,
-      log_level="warning",
+        host="127.0.0.1",
+        port=8081,
+        reload=False,
+        log_level="warning",
     )
     assert calls, "uvicorn.run was not called"
     assert calls[0]["kwargs"]["factory"] is True
@@ -41,12 +41,12 @@ def test_run_production_server_invokes_uvicorn(monkeypatch: pytest.MonkeyPatch) 
     calls: list[dict[str, Any]] = []
 
     def fake_run(*args: object, **kwargs: object) -> None:  # uvicorn.run
-      calls.append({"args": args, "kwargs": kwargs})
+        calls.append({"args": args, "kwargs": kwargs})
 
     monkeypatch.setattr(
-      api_app_module,
-      "uvicorn",
-      type("_U", (), {"run": staticmethod(fake_run)}),
+        api_app_module,
+        "uvicorn",
+        type("_U", (), {"run": staticmethod(fake_run)}),
     )
 
     # Force specific host/port
@@ -68,12 +68,12 @@ def test_create_flext_api_app_with_settings_failure(
     """When settings creation fails, the wrapper raises RuntimeError."""
 
     def fake_create_api_settings(**_: object) -> FlextResult[object]:
-      return FlextResult.fail("boom")
+        return FlextResult.fail("boom")
 
     monkeypatch.setattr(api_app_module, "create_api_settings", fake_create_api_settings)
 
     with pytest.raises(RuntimeError):
-      _ = api_app_module.create_flext_api_app_with_settings(debug=True)
+        _ = api_app_module.create_flext_api_app_with_settings(debug=True)
 
 
 def test_main_entrypoint_smoke(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -81,19 +81,19 @@ def test_main_entrypoint_smoke(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[dict[str, Any]] = []
 
     def fake_run(*args: object, **kwargs: object) -> None:
-      calls.append({"args": args, "kwargs": kwargs})
+        calls.append({"args": args, "kwargs": kwargs})
 
     monkeypatch.setattr(
-      api_app_module,
-      "uvicorn",
-      type("_U", (), {"run": staticmethod(fake_run)}),
+        api_app_module,
+        "uvicorn",
+        type("_U", (), {"run": staticmethod(fake_run)}),
     )
     monkeypatch.setenv("PYTEST_RUNNING", "1")
     # Simula execução de main com args
     monkeypatch.setattr(
-      "sys.argv",
-      ["prog", "--host", "127.0.0.1", "--port", "8090", "--log-level", "warning"],
-      raising=False,
+        "sys.argv",
+        ["prog", "--host", "127.0.0.1", "--port", "8090", "--log-level", "warning"],
+        raising=False,
     )
     api_app_module.main()
     assert calls, "main did not call uvicorn.run"
