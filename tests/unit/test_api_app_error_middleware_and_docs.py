@@ -13,13 +13,13 @@ def test_error_middleware_handles_flextapierror_and_generic() -> None:
 
     @app.get("/boom-api")
     def boom_api() -> None:  # type: ignore[return-type]
-        msg = "broken"
-        raise FlextApiError(msg, status_code=418)
+      msg = "broken"
+      raise FlextApiError(msg, status_code=418)
 
     @app.get("/boom")
     def boom() -> None:  # type: ignore[return-type]
-        msg = "kaboom"
-        raise RuntimeError(msg)
+      msg = "kaboom"
+      raise RuntimeError(msg)
 
     client = TestClient(app)
 

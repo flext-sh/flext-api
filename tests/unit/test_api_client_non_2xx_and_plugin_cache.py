@@ -18,33 +18,33 @@ class FakeCachePlugin(FlextApiPlugin):
     """Simple cache plugin to test before/after hooks."""
 
     def __init__(self) -> None:
-        super().__init__("caching")
-        self._cache: dict[str, FlextApiClientResponse] = {}
+      super().__init__("caching")
+      self._cache: dict[str, FlextApiClientResponse] = {}
 
     async def before_request(
-        self,
-        request: FlextApiClientRequest,
-        context: dict[str, object] | None = None,
+      self,
+      request: FlextApiClientRequest,
+      context: dict[str, object] | None = None,
     ) -> FlextApiClientRequest:
-        if (
-            isinstance(request, FlextApiClientRequest)
-            and str(request.method) == "GET"
-            and request.url in self._cache
-            and context is not None
-            and isinstance(context, dict)
-        ):
-            context["cached_response"] = self._cache[request.url]
-        return request
+      if (
+          isinstance(request, FlextApiClientRequest)
+          and str(request.method) == "GET"
+          and request.url in self._cache
+          and context is not None
+          and isinstance(context, dict)
+      ):
+          context["cached_response"] = self._cache[request.url]
+      return request
 
     async def after_response(
-        self,
-        response: FlextApiClientResponse,
-        _context: dict[str, object] | None = None,
+      self,
+      response: FlextApiClientResponse,
+      _context: dict[str, object] | None = None,
     ) -> FlextApiClientResponse:
-        if isinstance(response, FlextApiClientResponse) and response.status_code == 200:
-            # store a shallow cache
-            self._cache["last"] = response
-        return response
+      if isinstance(response, FlextApiClientResponse) and response.status_code == 200:
+          # store a shallow cache
+          self._cache["last"] = response
+      return response
 
 
 @pytest.mark.asyncio
@@ -55,8 +55,8 @@ async def test_cached_short_circuit_and_non_2xx(
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     plugin = FakeCachePlugin()
     client = FlextApiClient(
-        FlextApiClientConfig(base_url="https://httpbin.org"),
-        plugins=[plugin],
+      FlextApiClientConfig(base_url="https://httpbin.org"),
+      plugins=[plugin],
     )
 
     await client.start()
@@ -66,8 +66,8 @@ async def test_cached_short_circuit_and_non_2xx(
 
     # Prepare a cached response and ensure pipeline returns it
     plugin._cache["https://httpbin.org/json"] = FlextApiClientResponse(
-        status_code=200,
-        data={"cached": True},
+      status_code=200,
+      data={"cached": True},
     )
     req = FlextApiClientRequest(method="GET", url="https://httpbin.org/json")
     res = await client._execute_request_pipeline(req, "GET")
@@ -76,9 +76,9 @@ async def test_cached_short_circuit_and_non_2xx(
 
     # Simulate non-2xx error response path
     async def perform_bad(
-        _req: FlextApiClientRequest,
+      _req: FlextApiClientRequest,
     ) -> FlextResult[FlextApiClientResponse]:
-        return FlextResult.ok(FlextApiClientResponse(status_code=500, data={"e": 1}))
+      return FlextResult.ok(FlextApiClientResponse(status_code=500, data={"e": 1}))
 
     monkeypatch.setattr(client, "_perform_http_request", perform_bad)
     _ = await client._execute_request_pipeline(req, "GET")

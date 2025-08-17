@@ -32,30 +32,30 @@ def example_advanced_query_building() -> None:
     # Query complexa com múltiplos filtros e ordenação
     qb = FlextApiQueryBuilder()
     complex_query = (
-        qb.equals("status", "active")
-        .equals("type", "premium")
-        .greater_than("created_at", "2024-01-01")
-        .greater_than("score", 8.5)
-        .equals("verified", value=True)
-        .sort_desc("created_at")
-        .sort_asc("name")
-        .sort_desc("score")
-        .page(3)
-        .page_size(50)  # Página 3, 50 itens por página
-        .build()
+      qb.equals("status", "active")
+      .equals("type", "premium")
+      .greater_than("created_at", "2024-01-01")
+      .greater_than("score", 8.5)
+      .equals("verified", value=True)
+      .sort_desc("created_at")
+      .sort_asc("name")
+      .sort_desc("score")
+      .page(3)
+      .page_size(50)  # Página 3, 50 itens por página
+      .build()
     )
 
     complex_query.to_dict()
 
     # Construir query usando factory function com filtros
     search_filters = {
-        "category": "electronics",
-        "brand": "apple",
-        "in_stock": True,
-        "rating": 5,
+      "category": "electronics",
+      "brand": "apple",
+      "in_stock": True,
+      "rating": 5,
     }
     factory_filters = [
-        {"field": k, "value": v, "operator": "eq"} for k, v in search_filters.items()
+      {"field": k, "value": v, "operator": "eq"} for k, v in search_filters.items()
     ]
     build_query(factory_filters)
 
@@ -65,40 +65,40 @@ def example_advanced_response_building() -> None:
     # Response com metadados complexos
     rb = FlextApiResponseBuilder()
     (
-        rb.success(data={"results": [], "summary": {"total": 0, "categories": 3}})
-        .metadata(
-            {
-                "query_id": "qry_12345",
-                "execution_time_ms": 234,
-                "cache_hit": True,
-                "database_queries": 2,
-                "facets": {"categories": ["electronics", "books", "clothing"]},
-                "suggestions": ["apple", "samsung", "google"],
-            },
-        )
-        .build()
+      rb.success(data={"results": [], "summary": {"total": 0, "categories": 3}})
+      .metadata(
+          {
+              "query_id": "qry_12345",
+              "execution_time_ms": 234,
+              "cache_hit": True,
+              "database_queries": 2,
+              "facets": {"categories": ["electronics", "books", "clothing"]},
+              "suggestions": ["apple", "samsung", "google"],
+          },
+      )
+      .build()
     )
 
     # Response paginada com metadados detalhados
     products = [
-        {"id": i, "name": f"Product {i}", "price": 99.99 + i} for i in range(1, 21)
+      {"id": i, "name": f"Product {i}", "price": 99.99 + i} for i in range(1, 21)
     ]
 
     paginated_response = build_paginated(
-        PaginationConfig(
-            data=products,
-            total=1500,
-            page=2,
-            page_size=20,
-            message="Products retrieved successfully",
-            metadata={
-                "search_terms": ["smartphone", "android"],
-                "filters_applied": 4,
-                "sort_by": "popularity",
-                "execution_time": "0.089s",
-                "cache_status": "partial_hit",
-            },
-        ),
+      PaginationConfig(
+          data=products,
+          total=1500,
+          page=2,
+          page_size=20,
+          message="Products retrieved successfully",
+          metadata={
+              "search_terms": ["smartphone", "android"],
+              "filters_applied": 4,
+              "sort_by": "popularity",
+              "execution_time": "0.089s",
+              "cache_status": "partial_hit",
+          },
+      ),
     )
 
     (paginated_response.data if isinstance(paginated_response.data, list) else [])
@@ -109,29 +109,29 @@ async def example_advanced_client_configuration() -> None:
     # Client with multiple plugins using factory function
 
     client = create_client(
-        {
-            "base_url": "https://api.github.com",
-            "timeout": 45.0,
-            "headers": {
-                "User-Agent": "FlextAPI-Advanced/2.0.0",
-                "Accept": "application/vnd.github.v3+json",
-                "X-Request-ID": "req_advanced_example_001",
-            },
-            "max_retries": 5,
-        },
+      {
+          "base_url": "https://api.github.com",
+          "timeout": 45.0,
+          "headers": {
+              "User-Agent": "FlextAPI-Advanced/2.0.0",
+              "Accept": "application/vnd.github.v3+json",
+              "X-Request-ID": "req_advanced_example_001",
+          },
+          "max_retries": 5,
+      },
     )
 
     try:
-        # Iniciar cliente
-        await client.start()
+      # Iniciar cliente
+      await client.start()
 
-        # Health check detalhado
-        client.health_check()
+      # Health check detalhado
+      client.health_check()
 
     except (ConnectionError, TimeoutError):
-        pass
+      pass
     finally:
-        await client.stop()
+      await client.stop()
 
 
 async def example_full_api_service_integration() -> None:
@@ -140,137 +140,137 @@ async def example_full_api_service_integration() -> None:
     api = create_flext_api()
 
     try:
-        # Inicializar serviço
-        await api.start()
+      # Inicializar serviço
+      await api.start()
 
-        # Health check do serviço
-        health_result = await api.health_check()
-        if health_result.success and health_result.data is not None:
-            pass
+      # Health check do serviço
+      health_result = await api.health_check()
+      if health_result.success and health_result.data is not None:
+          pass
 
-        # Obter builder e criar query complexa
-        builder = api.get_builder()
+      # Obter builder e criar query complexa
+      builder = api.get_builder()
 
-        # Query builder avançada
-        query_builder = builder.for_query()
-        (
-            query_builder.equals("department", "engineering")
-            .equals("level", "senior")
-            .greater_than("experience_years", 5)
-            .greater_than("salary", 80000)
-            .equals("remote_eligible", value=True)
-            .sort_desc("salary")
-            .sort_asc("hire_date")
-            .sort_desc("performance_rating")
-            .page(1)
-            .page_size(25)
-            .build()
-        )
+      # Query builder avançada
+      query_builder = builder.for_query()
+      (
+          query_builder.equals("department", "engineering")
+          .equals("level", "senior")
+          .greater_than("experience_years", 5)
+          .greater_than("salary", 80000)
+          .equals("remote_eligible", value=True)
+          .sort_desc("salary")
+          .sort_asc("hire_date")
+          .sort_desc("performance_rating")
+          .page(1)
+          .page_size(25)
+          .build()
+      )
 
-        # Response builder avançada
-        response_builder = builder.for_response()
-        mock_employees = [
-            {"id": i, "name": f"Engineer {i}", "salary": 90000 + (i * 5000)}
-            for i in range(1, 6)
-        ]
+      # Response builder avançada
+      response_builder = builder.for_response()
+      mock_employees = [
+          {"id": i, "name": f"Engineer {i}", "salary": 90000 + (i * 5000)}
+          for i in range(1, 6)
+      ]
 
-        advanced_response = (
-            response_builder.success(
-                data=mock_employees,
-                message="Senior engineers retrieved",
-            )
-            .metadata(
-                {
-                    "query_complexity": "high",
-                    "optimization_applied": True,
-                    "cache_strategy": "write_through",
-                    "data_source": "primary_db",
-                    "query_plan": "index_scan_optimal",
-                },
-            )
-            .pagination(page=1, page_size=25, total=147)
-            .build()
-        )
+      advanced_response = (
+          response_builder.success(
+              data=mock_employees,
+              message="Senior engineers retrieved",
+          )
+          .metadata(
+              {
+                  "query_complexity": "high",
+                  "optimization_applied": True,
+                  "cache_strategy": "write_through",
+                  "data_source": "primary_db",
+                  "query_plan": "index_scan_optimal",
+              },
+          )
+          .pagination(page=1, page_size=25, total=147)
+          .build()
+      )
 
-        (len(advanced_response.data) if isinstance(advanced_response.data, list) else 0)
+      (len(advanced_response.data) if isinstance(advanced_response.data, list) else 0)
 
-        # Criar cliente HTTP via serviço
-        client_config = {
-            "base_url": "https://api.production-company.com",
-            "timeout": 60.0,
-            "headers": {
-                "Authorization": "Bearer prod_token_12345",
-                "X-Service": "flext-api-advanced",
-                "X-Version": "0.9.0",
-            },
-        }
+      # Criar cliente HTTP via serviço
+      client_config = {
+          "base_url": "https://api.production-company.com",
+          "timeout": 60.0,
+          "headers": {
+              "Authorization": "Bearer prod_token_12345",
+              "X-Service": "flext-api-advanced",
+              "X-Version": "0.9.0",
+          },
+      }
 
-        client_result = api.flext_api_create_client(client_config)
-        if client_result.success and client_result.data is not None:
-            pass
+      client_result = api.flext_api_create_client(client_config)
+      if client_result.success and client_result.data is not None:
+          pass
 
-        # Verificar cliente do serviço
-        api.get_client()
+      # Verificar cliente do serviço
+      api.get_client()
 
     except (ConnectionError, TimeoutError):
-        pass
+      pass
     finally:
-        # Parar serviço
-        await api.stop()
+      # Parar serviço
+      await api.stop()
 
 
 def example_factory_functions_advanced() -> None:
     """Example: Advanced usage of factory functions."""
     # Success response com metadados complexos
     success_data = {
-        "users": [
-            {"id": 1, "name": "Alice", "role": "admin"},
-            {"id": 2, "name": "Bob", "role": "user"},
-            {"id": 3, "name": "Carol", "role": "moderator"},
-        ],
-        "summary": {"total": 3, "active": 3, "roles": ["admin", "user", "moderator"]},
+      "users": [
+          {"id": 1, "name": "Alice", "role": "admin"},
+          {"id": 2, "name": "Bob", "role": "user"},
+          {"id": 3, "name": "Carol", "role": "moderator"},
+      ],
+      "summary": {"total": 3, "active": 3, "roles": ["admin", "user", "moderator"]},
     }
 
     advanced_success = build_success_response(
-        data=success_data,
-        message="Users and summary retrieved successfully",
-        metadata={
-            "query_execution_time": "0.156s",
-            "database_hits": 2,
-            "cache_hits": 1,
-            "optimization_level": "aggressive",
-            "data_freshness": "realtime",
-            "security_context": "authenticated_admin",
-            "api_rate_limit_remaining": 4850,
-        },
+      data=success_data,
+      message="Users and summary retrieved successfully",
+      metadata={
+          "query_execution_time": "0.156s",
+          "database_hits": 2,
+          "cache_hits": 1,
+          "optimization_level": "aggressive",
+          "data_freshness": "realtime",
+          "security_context": "authenticated_admin",
+          "api_rate_limit_remaining": 4850,
+      },
     )
 
     if isinstance(advanced_success.data, dict):
-        users = advanced_success.data.get("users")
-        if isinstance(users, list):
-            len(users)
+      users = advanced_success.data.get("users")
+      if isinstance(users, list):
+          len(users)
 
     # Error response com detalhes complexos
     error_details = {
-        "validation_errors": {
-            "email": ["Invalid format", "Domain not allowed"],
-            "password": ["Too weak", "Must contain special characters"],
-            "age": ["Must be between 18 and 100"],
-        },
-        "suggested_fixes": [
-            "Use a company email address",
-            "Include uppercase, lowercase, numbers, and symbols in password",
-            "Verify age is correct",
-        ],
-        "error_code": "VALIDATION_FAILED_MULTIPLE",
-        "retry_strategy": "fix_and_resubmit",
-        "support_reference": "ERR_VAL_20250129_001",
+      "validation_errors": {
+          "email": ["Invalid format", "Domain not allowed"],
+          "password": ["Too weak", "Must contain special characters"],
+          "age": ["Must be between 18 and 100"],
+      },
+      "suggested_fixes": [
+          "Use a company email address",
+          "Include uppercase, lowercase, numbers, and symbols in password",
+          "Verify age is correct",
+      ],
+      "error_code": "VALIDATION_FAILED_MULTIPLE",
+      "retry_strategy": "fix_and_resubmit",
+      "support_reference": "ERR_VAL_20250129_001",
     }
 
     advanced_error = build_error_response(
-        error="Multiple validation errors occurred",
-        status_code=422,
-        metadata={"error_code": "VALIDATION_FAILED_MULTIPLE", "details": error_details},
+      error="Multiple validation errors occurred",
+      status_code=422,
+      metadata={"error_code": "VALIDATION_FAILED_MULTIPLE", "details": error_details},
     )
 
     details = advanced_error.metadata.get("details", {})
@@ -285,9 +285,9 @@ def example_comprehensive_fastapi_app() -> None:
     # Listar todas as rotas disponíveis
     route_count = 0
     for route in app.routes:
-        if hasattr(route, "path") and hasattr(route, "methods"):
-            ", ".join(sorted(route.methods))
-            route_count += 1
+      if hasattr(route, "path") and hasattr(route, "methods"):
+          ", ".join(sorted(route.methods))
+          route_count += 1
 
 
 async def main() -> None:

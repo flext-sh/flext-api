@@ -11,7 +11,7 @@ from flext_api import FlextApiStorage, StorageBackend, StorageConfig
 async def test_keys_pattern_and_unknown_operation_commit() -> None:
     """Wildcard key pattern works and unknown tx op triggers failure on commit."""
     storage = FlextApiStorage(
-        StorageConfig(namespace="ns", backend=StorageBackend.MEMORY),
+      StorageConfig(namespace="ns", backend=StorageBackend.MEMORY),
     )
     await storage.set("a", 1)
     await storage.set("alpha", 2)

@@ -20,7 +20,7 @@ async def test_offline_stub_and_error_formatting(
     """Offline stub should error on invalid host; formatter should include method."""
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     client = FlextApiClient(
-        FlextApiClientConfig(base_url="https://nonexistent.invalid"),
+      FlextApiClientConfig(base_url="https://nonexistent.invalid"),
     )
     await client.start()
 

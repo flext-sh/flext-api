@@ -1084,8 +1084,8 @@ class TestHttpPluginPatterns:
 
 def create_test_request() -> ApiRequest:
     """Helper to create test HTTP request"""
-    from flext_api.domain.entities import ApiRequest
-    from flext_api.domain.value_objects import HttpUrl, HttpHeaders
+from flext_api.domain.entities import ApiRequest
+from flext_api.domain.value_objects import HttpUrl, HttpHeaders
 
     return ApiRequest(
         method="GET",
@@ -1096,8 +1096,8 @@ def create_test_request() -> ApiRequest:
 
 def create_test_response() -> ApiResponse:
     """Helper to create test HTTP response"""
-    from flext_api.domain.entities import ApiResponse
-    from flext_api.domain.value_objects import HttpHeaders
+from flext_api.domain.entities import ApiResponse
+from flext_api.domain.value_objects import HttpHeaders
 
     return ApiResponse(
         status_code=200,
