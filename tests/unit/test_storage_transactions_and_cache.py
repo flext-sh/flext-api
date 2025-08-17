@@ -11,11 +11,11 @@ from flext_api import FlextApiStorage, StorageBackend, StorageConfig
 async def test_transaction_commit_set_and_delete_and_cache() -> None:
     """Transaction commit persists set/delete and populates cache."""
     storage = FlextApiStorage(
-      StorageConfig(
-          namespace="txn",
-          backend=StorageBackend.MEMORY,
-          enable_caching=True,
-      ),
+        StorageConfig(
+            namespace="txn",
+            backend=StorageBackend.MEMORY,
+            enable_caching=True,
+        ),
     )
     tx = storage.begin_transaction()
     assert (await storage.set("a", 1, transaction_id=tx)).success
@@ -37,11 +37,11 @@ async def test_transaction_commit_set_and_delete_and_cache() -> None:
 async def test_transaction_rollback_and_clear_cache_and_close() -> None:
     """Rollback clears changes; clear() empties cache; close() succeeds."""
     storage = FlextApiStorage(
-      StorageConfig(
-          namespace="rb",
-          backend=StorageBackend.MEMORY,
-          enable_caching=True,
-      ),
+        StorageConfig(
+            namespace="rb",
+            backend=StorageBackend.MEMORY,
+            enable_caching=True,
+        ),
     )
     tx = storage.begin_transaction()
     await storage.set("x", 99, transaction_id=tx)
@@ -63,12 +63,12 @@ async def test_cache_ttl_expiration_via_time_monkeypatch(
 ) -> None:
     """TTL expiration is respected using a time monkeypatch."""
     storage = FlextApiStorage(
-      StorageConfig(
-          namespace="ttl",
-          backend=StorageBackend.MEMORY,
-          enable_caching=True,
-          cache_ttl_seconds=10,
-      ),
+        StorageConfig(
+            namespace="ttl",
+            backend=StorageBackend.MEMORY,
+            enable_caching=True,
+            cache_ttl_seconds=10,
+        ),
     )
     # Monkeypatch time to control expiry
     import time as _time  # noqa: PLC0415

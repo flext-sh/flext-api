@@ -17,9 +17,9 @@ def test_settings_validators() -> None:
     assert s.api_port >= 1
     # Invalid configs should raise during model validation
     with suppress(Exception):
-      FlextApiSettings.model_validate({"log_level": "SILLY"})
+        FlextApiSettings.model_validate({"log_level": "SILLY"})
     with suppress(Exception):
-      FlextApiSettings.model_validate({"environment": "x"})
+        FlextApiSettings.model_validate({"environment": "x"})
 
 
 def test_create_api_settings_overrides_and_fail() -> None:
@@ -35,18 +35,18 @@ def test_validate_configuration_rules() -> None:
     """Test validate configuration rules."""
     # production requires secret_key and database_url
     prod = FlextApiSettings.model_validate(
-      {"environment": "production", "api_port": 8081},
+        {"environment": "production", "api_port": 8081},
     )
     res = validate_configuration(prod)
     assert not res.success
     assert "Secret key" in (res.error or "")
 
     prod2 = FlextApiSettings.model_validate(
-      {
-          "environment": "production",
-          "secret_key": "s",
-          "database_url": None,
-      },
+        {
+            "environment": "production",
+            "secret_key": "s",
+            "database_url": None,
+        },
     )
     res2 = validate_configuration(prod2)
     assert not res2.success

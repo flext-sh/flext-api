@@ -1,0 +1,13 @@
+import pytest
+from _typeshed import Incomplete
+
+class TestApiWorkflowE2E:
+    @pytest.mark.asyncio
+    async def test_complete_api_workflow(self) -> None: ...
+    @pytest.mark.asyncio
+    async def test_error_handling_workflow(self) -> None: ...
+    def test_builder_patterns_integration(self) -> None: ...
+    @pytest.mark.asyncio
+    async def test_plugin_system_integration(self) -> None: ...
+
+api: Incomplete

@@ -27,10 +27,10 @@ async def test_client_headers_merge_and_prepare_params() -> None:
     """Client merges headers and serializes params correctly."""
     os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = "true"
     client = FlextApiClient(
-      FlextApiClientConfig(
-          base_url="https://httpbin.org",
-          headers={"A": "1"},
-      ),
+        FlextApiClientConfig(
+            base_url="https://httpbin.org",
+            headers={"A": "1"},
+        ),
     )
     await client.start()
     result = await client.post("/post", json_data={"x": 1}, headers={"B": "2"})

@@ -30,8 +30,8 @@ def test_error_middleware_generic_exception() -> None:
 
     @app.get("/boom")
     async def boom() -> dict[str, str]:
-      msg = "explode"
-      raise RuntimeError(msg)
+        msg = "explode"
+        raise RuntimeError(msg)
 
     c = TestClient(app)
     resp = c.get("/boom")

@@ -1,0 +1,26 @@
+from collections.abc import Callable as Callable
+from typing import Any
+
+class TestAPIPerformanceBenchmarks:
+    def test_api_creation_benchmark(self, benchmark: Callable[[Any], Any]) -> None: ...
+    def test_query_building_benchmark(
+        self, benchmark: Callable[[Any], Any]
+    ) -> None: ...
+    def test_response_building_benchmark(
+        self, benchmark: Callable[[Any], Any]
+    ) -> None: ...
+    def test_builder_pattern_benchmark(
+        self, benchmark: Callable[[Any], Any]
+    ) -> None: ...
+    def test_client_creation_benchmark(
+        self, benchmark: Callable[[Any], Any]
+    ) -> None: ...
+    def test_multiple_queries_benchmark(
+        self, benchmark: Callable[[Any], Any]
+    ) -> None: ...
+    def test_large_response_benchmark(
+        self, benchmark: Callable[[Any], Any]
+    ) -> None: ...
+    def test_paginated_response_benchmark(
+        self, benchmark: Callable[[Any], Any]
+    ) -> None: ...

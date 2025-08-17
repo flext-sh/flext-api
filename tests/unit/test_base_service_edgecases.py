@@ -14,10 +14,10 @@ class BrokenStartService(FlextApiBaseService):
     service_name: str = "broken"
 
     async def _do_start(self) -> FlextResult[None]:
-      return FlextResult.fail("init failed")
+        return FlextResult.fail("init failed")
 
     async def _do_stop(self) -> FlextResult[None]:
-      return FlextResult.ok(None)
+        return FlextResult.ok(None)
 
 
 class BrokenStopService(FlextApiBaseService):
@@ -26,10 +26,10 @@ class BrokenStopService(FlextApiBaseService):
     service_name: str = "broken-stop"
 
     async def _do_start(self) -> FlextResult[None]:
-      return FlextResult.ok(None)
+        return FlextResult.ok(None)
 
     async def _do_stop(self) -> FlextResult[None]:
-      return FlextResult.fail("shutdown issues")
+        return FlextResult.fail("shutdown issues")
 
 
 @pytest.mark.asyncio
@@ -55,20 +55,20 @@ async def test_health_check_failure() -> None:
     """Health check returns failure when details provider fails."""
 
     class BrokenHealth(FlextApiBaseService):
-      service_name: str = "broken-health"
+        service_name: str = "broken-health"
 
-      async def _do_start(
-          self,
-      ) -> FlextResult[None]:  # pragma: no cover - not used here
-          return FlextResult.ok(None)
+        async def _do_start(
+            self,
+        ) -> FlextResult[None]:  # pragma: no cover - not used here
+            return FlextResult.ok(None)
 
-      async def _do_stop(
-          self,
-      ) -> FlextResult[None]:  # pragma: no cover - not used here
-          return FlextResult.ok(None)
+        async def _do_stop(
+            self,
+        ) -> FlextResult[None]:  # pragma: no cover - not used here
+            return FlextResult.ok(None)
 
-      async def _get_health_details(self) -> FlextResult[object]:  # type: ignore[override]
-          return FlextResult.fail("boom")
+        async def _get_health_details(self) -> FlextResult[object]:  # type: ignore[override]
+            return FlextResult.fail("boom")
 
     svc = BrokenHealth()
     res = await svc.health_check()

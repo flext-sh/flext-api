@@ -1,0 +1,6 @@
+import pytest
+
+@pytest.mark.asyncio
+async def test_client_build_and_error_formatting_on_invalid_url() -> None: ...
+@pytest.mark.asyncio
+async def test_client_headers_merge_and_prepare_params() -> None: ...

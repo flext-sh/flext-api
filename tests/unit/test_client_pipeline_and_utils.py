@@ -23,26 +23,26 @@ class BeforePluginPass:
     enabled = True
 
     async def before_request(
-      self,
-      request: object,
-      _context: object | None = None,
+        self,
+        request: object,
+        _context: object | None = None,
     ) -> FlextResult[object] | object:
-      # replace header
-      if isinstance(request, FlextApiClientRequest):
-          new_headers = dict(request.headers)
-          new_headers["X-Test"] = "1"
-          return FlextResult.ok(
-              FlextApiClientRequest(
-                  method=request.method,
-                  url=request.url,
-                  headers=new_headers,
-                  params=request.params,
-                  json_data=request.json_data,
-                  data=request.data,
-                  timeout=request.timeout,
-              ),
-          )
-      return request
+        # replace header
+        if isinstance(request, FlextApiClientRequest):
+            new_headers = dict(request.headers)
+            new_headers["X-Test"] = "1"
+            return FlextResult.ok(
+                FlextApiClientRequest(
+                    method=request.method,
+                    url=request.url,
+                    headers=new_headers,
+                    params=request.params,
+                    json_data=request.json_data,
+                    data=request.data,
+                    timeout=request.timeout,
+                ),
+            )
+        return request
 
 
 class BeforePluginFail:
@@ -52,9 +52,11 @@ class BeforePluginFail:
     enabled = True
 
     async def before_request(
-      self, _request: object, _context: object | None = None,
+        self,
+        _request: object,
+        _context: object | None = None,
     ) -> FlextResult[object]:
-      return FlextResult.fail("bad before")
+        return FlextResult.fail("bad before")
 
 
 class AfterPluginFail:
@@ -64,21 +66,23 @@ class AfterPluginFail:
     enabled = True
 
     async def after_response(
-      self, _response: object, _context: object | None = None,
+        self,
+        _response: object,
+        _context: object | None = None,
     ) -> FlextResult[object]:
-      return FlextResult.fail("bad after")
+        return FlextResult.fail("bad after")
 
 
 @pytest.mark.asyncio
 async def test_prepare_request_params_and_headers_merge() -> None:
     """Prepared params/headers should merge defaults and return None for missing fields."""
     client = FlextApiClient(
-      FlextApiClientConfig(base_url="https://example.com", headers={"A": "1"}),
+        FlextApiClientConfig(base_url="https://example.com", headers={"A": "1"}),
     )
     req = FlextApiClientRequest(
-      method="GET",
-      url="https://example.com/x",
-      headers={"B": "2"},
+        method="GET",
+        url="https://example.com/x",
+        headers={"B": "2"},
     )
     params, headers, json_data, data, timeout = client._prepare_request_params(req)
     assert params is None
@@ -96,8 +100,8 @@ async def test_plugin_before_failure_short_circuits(
     """A failing before hook should short-circuit the request."""
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     client = FlextApiClient(
-      FlextApiClientConfig(base_url="https://httpbin.org"),
-      plugins=[BeforePluginFail()],
+        FlextApiClientConfig(base_url="https://httpbin.org"),
+        plugins=[BeforePluginFail()],
     )
     await client.start()
     result = await client.get("/json")
@@ -113,8 +117,8 @@ async def test_plugin_before_replace_request_and_after_failure(
     """After hook failure should be returned even if before replaced the request."""
     monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     client = FlextApiClient(
-      FlextApiClientConfig(base_url="https://httpbin.org"),
-      plugins=[BeforePluginPass(), AfterPluginFail()],
+        FlextApiClientConfig(base_url="https://httpbin.org"),
+        plugins=[BeforePluginPass(), AfterPluginFail()],
     )
     await client.start()
     res = await client.get("/headers")
@@ -132,20 +136,20 @@ async def test_format_request_error_and_legacy_make_request(
 
     # _format_request_error with session not available
     formatted = client._format_request_error(
-      FlextResult.fail("HTTP session not available"),
-      "GET",
+        FlextResult.fail("HTTP session not available"),
+        "GET",
     )
     assert not formatted.success
     assert (formatted.error or "").startswith("HTTP session not available")
 
     # _make_request exception path
     async def boom(_req: FlextApiClientRequest) -> Never:
-      msg = "kaput"
-      raise RuntimeError(msg)
+        msg = "kaput"
+        raise RuntimeError(msg)
 
     monkeypatch.setattr(client, "_make_request_impl", boom)
     result = await client._make_request(
-      FlextApiClientRequest(method="GET", url="https://example.com"),
+        FlextApiClientRequest(method="GET", url="https://example.com"),
     )
     assert not result.success
     assert "Failed to make GET request" in (result.error or "")
@@ -183,4 +187,4 @@ async def test_head_and_options_methods(monkeypatch: pytest.MonkeyPatch) -> None
 def test_create_client_invalid_url_raises() -> None:
     """Factory should raise on invalid URL scheme."""
     with pytest.raises(ValueError):
-      create_client({"base_url": "ftp://bad"})
+        create_client({"base_url": "ftp://bad"})

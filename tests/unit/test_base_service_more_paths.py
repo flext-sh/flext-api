@@ -14,13 +14,13 @@ class OkService(FlextApiBaseService):
     service_name: str = "ok"
 
     async def _do_start(self) -> FlextResult[None]:
-      return FlextResult.ok(None)
+        return FlextResult.ok(None)
 
     async def _do_stop(self) -> FlextResult[None]:
-      return FlextResult.ok(None)
+        return FlextResult.ok(None)
 
     async def _get_health_details(self) -> FlextResult[dict[str, object]]:
-      return FlextResult.ok({"extra": True})
+        return FlextResult.ok({"extra": True})
 
 
 @pytest.mark.asyncio

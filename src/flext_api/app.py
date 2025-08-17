@@ -24,21 +24,21 @@ def flext_api_create_app() -> object:
     and force specific behaviors (like returning None data).
     """
     compat_app = FastAPI(
-      title="FLEXT API",
-      version="0.9.0",
-      description="Enterprise-grade distributed data integration platform",
+        title="FLEXT API",
+        version="0.9.0",
+        description="Enterprise-grade distributed data integration platform",
     )
 
     @compat_app.get("/health")
     async def health() -> dict[str, object]:
-      api = create_flext_api()
-      # health_check in compat API returns a result object directly (sync)
-      result = api.health_check()  # type: ignore[attr-defined]
-      try:
-          data = getattr(result, "data", None)
-      except Exception:
-          data = None
-      return {} if data is None else data
+        api = create_flext_api()
+        # health_check in compat API returns a result object directly (sync)
+        result = api.health_check()  # type: ignore[attr-defined]
+        try:
+            data = getattr(result, "data", None)
+        except Exception:
+            data = None
+        return {} if data is None else data
 
     return compat_app
 
@@ -50,8 +50,8 @@ def create_flext_api() -> object:
     """
 
     class FlextAPI:
-      def health_check(self) -> object:
-          return FlextResult.ok({"status": "healthy"})
+        def health_check(self) -> object:
+            return FlextResult.ok({"status": "healthy"})
 
     return FlextAPI()
 
