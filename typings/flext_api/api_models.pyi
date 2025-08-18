@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import IntEnum, StrEnum
+from typing import ClassVar
 
 from _typeshed import Incomplete
 from flext_core import FlextEntity, FlextResult, FlextValue
@@ -122,7 +123,7 @@ class OperationType(StrEnum):
     STREAM = "stream"
 
 class URL(FlextValue):
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     raw_url: str
     scheme: str
     host: str
@@ -146,7 +147,7 @@ class URL(FlextValue):
     def full_path(self) -> str: ...
 
 class HttpHeader(FlextValue):
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     name: str
     value: str
     def validate_business_rules(self) -> FlextResult[None]: ...
@@ -160,7 +161,7 @@ class HttpHeader(FlextValue):
     def to_tuple(self) -> tuple[str, str]: ...
 
 class BearerToken(FlextValue):
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     token: str
     token_type: TokenType
     expires_at: datetime | None
@@ -177,7 +178,7 @@ class BearerToken(FlextValue):
     def get_raw_token(self) -> str: ...
 
 class ClientConfig(FlextValue):
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     base_url: str
     timeout: float
     headers: dict[str, str]
@@ -191,7 +192,7 @@ class ClientConfig(FlextValue):
     def validate_business_rules(self) -> FlextResult[None]: ...
 
 class QueryConfig(FlextValue):
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     filters: list[dict[str, object]]
     sorts: list[dict[str, str]]
     page: int
@@ -204,7 +205,7 @@ class QueryConfig(FlextValue):
     ) -> dict[str, object]: ...
 
 class PaginationInfo(FlextValue):
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     page: int
     page_size: int
     total: int
@@ -217,7 +218,7 @@ class PaginationInfo(FlextValue):
     ) -> FlextResult[PaginationInfo]: ...
 
 class ApiRequest(FlextEntity):
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     method: HttpMethod
     url: str
     headers: dict[str, str]
@@ -235,7 +236,7 @@ class ApiRequest(FlextEntity):
     def fail_processing(self, error: str) -> FlextResult[ApiRequest]: ...
 
 class ApiResponse(FlextEntity):
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     status_code: int
     headers: dict[str, str]
     body: dict[str, object] | None
@@ -252,7 +253,7 @@ class ApiResponse(FlextEntity):
     def mark_timeout(self) -> FlextResult[ApiResponse]: ...
 
 class ApiEndpoint(FlextEntity):
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     path: str
     methods: list[HttpMethod]
     description: str | None
@@ -267,7 +268,7 @@ class ApiEndpoint(FlextEntity):
     def is_deprecated(self) -> bool: ...
 
 class ApiSession(FlextEntity):
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     user_id: str | None
     token: str | None
     token_type: TokenType

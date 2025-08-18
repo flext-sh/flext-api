@@ -11,8 +11,8 @@ import argparse
 import datetime
 import sys
 import uuid
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager, suppress as _suppress
-from typing import TYPE_CHECKING
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -24,9 +24,6 @@ from flext_core import FlextConstants, get_logger
 from flext_api.api_config import FlextApiSettings, create_api_settings
 from flext_api.api_exceptions import FlextApiError, create_error_response
 from flext_api.api_storage import FlextApiStorage, create_memory_storage
-
-if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable
 
 logger = get_logger(__name__)
 
@@ -285,7 +282,7 @@ class FlextApiHealthChecker:
                 storage_status.update({"status": "degraded", "error": str(e)})
                 health_data["status"] = "degraded"
 
-        health_data["services"]["storage"] = storage_status  # type: ignore[index]
+        health_data["services"]["storage"] = storage_status
 
     async def comprehensive_health_check(self, app: FastAPI) -> dict[str, object]:
         """Perform comprehensive health check with all strategies."""

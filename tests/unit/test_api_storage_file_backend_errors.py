@@ -10,7 +10,7 @@ from flext_api import FileStorageBackend, StorageConfig
 
 @pytest.mark.asyncio
 async def test_file_backend_save_and_delete_error_paths(
-    tmp_path: object,  # type: ignore[no-untyped-def]
+    tmp_path: object,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test file backend save and delete error paths."""
@@ -26,7 +26,7 @@ async def test_file_backend_save_and_delete_error_paths(
 
     # Restore and write something
     monkeypatch.setattr(backend, "_save_data", FileStorageBackend._save_data)
-    assert (await FileStorageBackend._save_data(backend)).success  # type: ignore[arg-type]
+    assert (await FileStorageBackend._save_data(backend)).success
     assert (await backend.set("a", 1)).success
 
     # Monkeypatch _save_data to fail on delete

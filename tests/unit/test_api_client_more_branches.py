@@ -91,7 +91,7 @@ async def test_process_response_pipeline_none_response() -> None:
 
     req = FlextApiClientRequest(method="GET", url="https://x")
     await c.start()
-    c._perform_http_request = ok_perform  # type: ignore[assignment]
+    c._perform_http_request = ok_perform
     out = await c._execute_request_pipeline(req, "GET")
     assert not out.success
     assert "Empty response after processing" in (out.error or "")

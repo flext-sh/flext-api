@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from _typeshed import Incomplete
 from flext_core import FlextBaseConfigModel, FlextResult, FlextSettings as FlextSettings
 
@@ -23,7 +25,7 @@ class FlextApiSettings(FlextBaseConfigModel):
     environment: str
     debug: bool
     log_level: str
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     @classmethod
     def validate_port(cls, v: int) -> int: ...
     @classmethod

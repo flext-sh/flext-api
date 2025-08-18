@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import Self, TypeVar
+from typing import Self
 
 from _typeshed import Incomplete
 from flext_core import FlextResult, FlextTypes
@@ -31,8 +31,6 @@ __all__ = [
     "build_success_response",
     "create_client",
 ]
-
-T = TypeVar("T")
 
 class FlextApiClientProtocol(StrEnum):
     HTTP = "http"

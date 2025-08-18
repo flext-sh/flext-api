@@ -23,6 +23,6 @@ async def test_keys_pattern_and_unknown_operation_commit() -> None:
 
     # Inject unknown operation in transaction to hit error branch
     tx = storage.begin_transaction()
-    storage._transactions[tx].operations.append(("unknown", "ns:zzz", None))  # type: ignore[attr-defined]
+    storage._transactions[tx].operations.append(("unknown", "ns:zzz", None))
     res = await storage.commit_transaction(tx)
     assert not res.success

@@ -75,7 +75,7 @@ async def test_perform_http_request_success_json(
     # Force network path
     monkeypatch.setattr(client, "_is_external_calls_disabled", lambda: False)
     resp = _FakeResponse(200, {"Content-Type": "application/json"}, {"ok": True}, "")
-    client._session = _FakeSession(resp)  # type: ignore[assignment]
+    client._session = _FakeSession(resp)
 
     req = FlextApiClientRequest(
         method="GET",
@@ -99,7 +99,7 @@ async def test_perform_http_request_text_jsonlike(
     )
     monkeypatch.setattr(client, "_is_external_calls_disabled", lambda: False)
     resp = _FakeResponse(200, {"Content-Type": "text/plain"}, None, '{"x":1}')
-    client._session = _FakeSession(resp)  # type: ignore[assignment]
+    client._session = _FakeSession(resp)
     req = FlextApiClientRequest(method="GET", url="https://api.example/y")
     r = await client._perform_http_request(req)
     assert r.success

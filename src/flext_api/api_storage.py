@@ -71,7 +71,7 @@ class TransactionContext(Generic[V]):  # noqa: UP046
 
     transaction_id: str = field(default_factory=lambda: str(uuid4()))
     operations: list[tuple[str, str, V]] = field(
-        default_factory=list,
+        default_factory=list[tuple[str, str, V]],
     )  # (operation, key, value)
     started_at: float = field(default_factory=time.time)
     is_active: bool = True
@@ -321,7 +321,9 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                 except TypeError:
                     # When a class coroutine function is assigned directly to the instance,
                     # it becomes an unbound function and requires explicit self
-                    save_result = await FileStorageBackend._save_data(self)
+                    save_result: FlextResult[
+                        None
+                    ] = await FileStorageBackend._save_data(self)
                 if save_result.is_failure:
                     return save_result
 
@@ -640,7 +642,7 @@ class FlextApiStorage:
         async def _apply_delete(key: str) -> FlextResult[None]:
             res = await self._backend.delete(key)
             if res.is_failure:
-                return res  # type: ignore[return-value]
+                return res
             return FlextResult.ok(data=None)
 
         tx_result = _get_active_tx()
