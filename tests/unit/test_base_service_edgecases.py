@@ -67,7 +67,7 @@ async def test_health_check_failure() -> None:
         ) -> FlextResult[None]:  # pragma: no cover - not used here
             return FlextResult.ok(None)
 
-        async def _get_health_details(self) -> FlextResult[object]:  # type: ignore[override]
+        async def _get_health_details(self) -> FlextResult[object]:
             return FlextResult.fail("boom")
 
     svc = BrokenHealth()

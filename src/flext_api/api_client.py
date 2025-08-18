@@ -99,7 +99,7 @@ class FlextApiClientRequest:
 
     method: str | FlextApiClientMethod
     url: str
-    headers: dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict[str, str])
     params: FlextTypes.Core.JsonDict | None = field(default_factory=dict)
     json_data: FlextTypes.Core.JsonDict | None = None
     data: str | bytes | None = None
@@ -107,10 +107,7 @@ class FlextApiClientRequest:
 
     def __post_init__(self) -> None:
         """Convert string method to enum if needed."""
-        if (
-            isinstance(self.method, str)
-            and self.method.upper() in FlextApiClientMethod._value2member_map_
-        ):
+        if self.method.upper() in FlextApiClientMethod._value2member_map_:
             # Use object.__setattr__ for frozen dataclass
             object.__setattr__(
                 self,
@@ -139,7 +136,7 @@ class FlextApiClientResponse:
     """HTTP response data structure."""
 
     status_code: int
-    headers: dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict[str, str])
     data: FlextTypes.Core.JsonDict | list[object] | str | bytes | None = None
     elapsed_time: float = 0.0
     request_id: str | None = None
@@ -677,7 +674,7 @@ class FlextApiClient:
         context: dict[str, object],
     ) -> FlextResult[FlextApiClientResponse]:
         """Process plugins after response received."""
-        current_response = response
+        current_response: FlextApiClientResponse = response
         for plugin in self._plugins:
             if not plugin.enabled:
                 continue
@@ -690,11 +687,11 @@ class FlextApiClient:
                         f"Plugin {plugin_name} failed: {result.error}",
                     )
                 # Allow plugins to explicitly clear the response by returning data=None
-                current_response = result.data if result.data is not None else None  # type: ignore[assignment]
+                current_response = result.data if result.data is not None else None
             elif isinstance(result, FlextApiClientResponse):
                 current_response = result
 
-        return FlextResult.ok(current_response)
+        return FlextResult[FlextApiClientResponse].ok(current_response)
 
     async def _perform_http_request(
         self,

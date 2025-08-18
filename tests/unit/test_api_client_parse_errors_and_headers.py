@@ -34,7 +34,7 @@ async def test_read_response_data_parse_errors() -> None:
             return "{not json}"
 
     client = FlextApiClient(FlextApiClientConfig(base_url="https://x"))
-    data = await client._read_response_data(FakeResponse())  # type: ignore[arg-type]
+    data = await client._read_response_data(FakeResponse())
     assert isinstance(data, str)
     assert "{" in data
 

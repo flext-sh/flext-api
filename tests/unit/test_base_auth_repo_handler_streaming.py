@@ -107,7 +107,7 @@ async def test_repository_service_paths() -> None:
     async def fail_find(_: object) -> FlextResult[object]:
         return FlextResult.fail("nf")
 
-    repo._do_find_by_id = fail_find  # type: ignore[assignment]
+    repo._do_find_by_id = fail_find
     assert not (await repo.delete("1")).success
 
 

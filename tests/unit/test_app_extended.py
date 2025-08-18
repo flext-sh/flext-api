@@ -59,7 +59,7 @@ def test_health_storage_error_path_sets_degraded_status() -> None:
             message = "boom"
             raise RuntimeError(message)
 
-    app.state.storage = BadStorage()  # type: ignore[assignment]
+    app.state.storage = BadStorage()
     with TestClient(app) as client:
         r = client.get("/health")
         assert r.status_code == 200

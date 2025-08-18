@@ -82,7 +82,7 @@ class FlextApi(FlextApiBaseService):
             details["client_timeout"] = self._client_config.timeout
         return FlextResult.ok(details)
 
-    def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict] | object:  # type: ignore[override]
+    def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict] | object:
         """Health check supporting both sync and async usage.
 
         If there is no running loop, execute in a private loop without
@@ -198,10 +198,10 @@ class FlextApi(FlextApiBaseService):
             )
             # Create client
             api_client = FlextApiClient(legacy_config)
-            self._client = api_client  # type: ignore[assignment]
+            self._client = api_client
             self._client_config = client_config
             logger.info("HTTP client created", base_url=client_config.base_url)
-            return FlextResult.ok(api_client)  # type: ignore[arg-type]
+            return FlextResult.ok(api_client)
         except Exception as e:
             logger.exception("Failed to create client")
             return FlextResult.fail(f"Failed to create client: {e}")

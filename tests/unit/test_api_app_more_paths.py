@@ -28,7 +28,7 @@ def test_error_fallback_app_when_failure(monkeypatch: pytest.MonkeyPatch) -> Non
     assert spec.loader is not None
     new_module = importlib.util.module_from_spec(spec)
     sys.modules["flext_api.api_app_reloaded"] = new_module
-    spec.loader.exec_module(new_module)  # type: ignore[arg-type]
+    spec.loader.exec_module(new_module)
     assert hasattr(new_module, "app")
     routes = {r.path for r in new_module.app.routes}
     assert "/error" in routes

@@ -1,4 +1,14 @@
-"""FLEXT API domain models."""
+"""FLEXT API domain models.
+
+Este módulo implementa modelos de domínio usando padrões FLEXT Core centralizados,
+eliminando duplicação de código e garantindo consistência arquitetural.
+
+Padrões FLEXT aplicados:
+- FlextModel como base para todos os modelos Pydantic
+- FlextResult para operações que podem falhar
+- Imports diretos sem TYPE_CHECKING
+- Tipos centralizados do flext-core
+"""
 
 from __future__ import annotations
 
@@ -7,20 +17,19 @@ from datetime import UTC, datetime, timedelta
 from enum import IntEnum, StrEnum
 from urllib.parse import ParseResult, urlparse
 
+# Imports centralizados do flext-core (sem TYPE_CHECKING)
 from flext_core import (
     FlextEntity,
+    FlextModel,
     FlextResult,
     FlextTimestamp,
-    FlextValue,
     flext_alias_generator,
     get_logger,
 )
 from pydantic import AliasGenerator, ConfigDict, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
-from flext_api.typings import FlextTypes as _ApiFlextTypes  # noqa: F401
 
-# keep runtime import context clean for pydantic rebuilds
 logger = get_logger(__name__)
 
 # ==============================================================================
@@ -208,13 +217,15 @@ class OperationType(StrEnum):
 # ==============================================================================
 
 
-class URL(FlextValue):
-    """HTTP URL value object following FlextValue foundation pattern.
+class URL(FlextModel):
+    """HTTP URL value object following FlextModel foundation pattern.
 
     Immutable URL representation with validation, parsing, and domain behavior.
+    Uses centralized FlextModel patterns from flext-core.
     """
 
     model_config = ConfigDict(
+        # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
             validation_alias=flext_alias_generator,
@@ -228,6 +239,12 @@ class URL(FlextValue):
         validate_default=True,
         populate_by_name=True,
         frozen=True,  # Immutable value object
+        use_attribute_docstrings=True,
+        json_schema_extra={
+            "examples": [],
+            "description": "HTTP URL value object with modern FlextModel patterns",
+            "title": "URL",
+        },
     )
 
     raw_url: str = Field(description="Raw URL string")
@@ -333,10 +350,15 @@ class URL(FlextValue):
         return f"{path_part}{query_part}{fragment_part}"
 
 
-class HttpHeader(FlextValue):
-    """HTTP header value object following FlextValue foundation pattern."""
+class HttpHeader(FlextModel):
+    """HTTP header value object following FlextModel foundation pattern.
+
+    Uses centralized FlextModel patterns from flext-core for consistent validation
+    and serialization across the FLEXT ecosystem.
+    """
 
     model_config = ConfigDict(
+        # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
             validation_alias=flext_alias_generator,
@@ -350,6 +372,12 @@ class HttpHeader(FlextValue):
         validate_default=True,
         populate_by_name=True,
         frozen=True,  # Immutable value object
+        use_attribute_docstrings=True,
+        json_schema_extra={
+            "examples": [],
+            "description": "HTTP header value object with modern FlextModel patterns",
+            "title": "HttpHeader",
+        },
     )
 
     name: str = Field(description="Header name")
@@ -442,10 +470,15 @@ class HttpHeader(FlextValue):
         return (self.name, self.value)
 
 
-class BearerToken(FlextValue):
-    """Bearer token value object with JWT format validation."""
+class BearerToken(FlextModel):
+    """Bearer token value object with JWT format validation.
+
+    Uses centralized FlextModel patterns from flext-core for consistent token
+    validation and serialization across the FLEXT ecosystem.
+    """
 
     model_config = ConfigDict(
+        # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
             validation_alias=flext_alias_generator,
@@ -459,6 +492,12 @@ class BearerToken(FlextValue):
         validate_default=True,
         populate_by_name=True,
         frozen=True,  # Immutable value object
+        use_attribute_docstrings=True,
+        json_schema_extra={
+            "examples": [],
+            "description": "Bearer token value object with modern FlextModel patterns",
+            "title": "BearerToken",
+        },
     )
 
     token: str = Field(description="Bearer token string")
@@ -569,17 +608,21 @@ class BearerToken(FlextValue):
         return self.token
 
 
-class ClientConfig(FlextValue):
-    """Client configuration value object with validation."""
+class ClientConfig(FlextModel):
+    """Client configuration value object with validation.
+
+    Uses centralized FlextModel patterns from flext-core for consistent configuration
+    management across the FLEXT ecosystem.
+    """
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextValue
+        # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
             validation_alias=flext_alias_generator,
             serialization_alias=flext_alias_generator,
         ),
-        # FlextValue patterns: immutable with validation
+        # FlextModel patterns: immutable configuration object
         extra="allow",
         validate_assignment=True,
         use_enum_values=True,
@@ -591,7 +634,7 @@ class ClientConfig(FlextValue):
         use_attribute_docstrings=True,
         json_schema_extra={
             "examples": [],
-            "description": "Client configuration value object with modern Pydantic patterns",
+            "description": "Client configuration value object with modern FlextModel patterns",
             "title": "ClientConfig",
         },
     )
@@ -653,10 +696,15 @@ class ClientConfig(FlextValue):
         return FlextResult.ok(None)
 
 
-class QueryConfig(FlextValue):
-    """Query configuration value object."""
+class QueryConfig(FlextModel):
+    """Query configuration value object following FlextModel foundation pattern.
+
+    Uses centralized FlextModel patterns from flext-core for consistent query
+    configuration across the FLEXT ecosystem.
+    """
 
     model_config = ConfigDict(
+        # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
             validation_alias=flext_alias_generator,
@@ -670,6 +718,12 @@ class QueryConfig(FlextValue):
         validate_default=True,
         populate_by_name=True,
         frozen=True,  # Immutable value object
+        use_attribute_docstrings=True,
+        json_schema_extra={
+            "examples": [],
+            "description": "Query configuration value object with modern FlextModel patterns",
+            "title": "QueryConfig",
+        },
     )
 
     filters: list[dict[str, object]] = Field(default_factory=list)
@@ -709,17 +763,21 @@ class QueryConfig(FlextValue):
         }
 
 
-class PaginationInfo(FlextValue):
-    """Pagination information value object."""
+class PaginationInfo(FlextModel):
+    """Pagination information value object following FlextModel foundation pattern.
+
+    Uses centralized FlextModel patterns from flext-core for consistent pagination
+    information across the FLEXT ecosystem.
+    """
 
     model_config = ConfigDict(
-        # Inherit modern Pydantic patterns from FlextValue
+        # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
             validation_alias=flext_alias_generator,
             serialization_alias=flext_alias_generator,
         ),
-        # FlextValue patterns: immutable with validation
+        # FlextModel patterns: immutable with validation
         extra="allow",
         validate_assignment=True,
         use_enum_values=True,
@@ -731,7 +789,7 @@ class PaginationInfo(FlextValue):
         use_attribute_docstrings=True,
         json_schema_extra={
             "examples": [],
-            "description": "Pagination information value object with modern Pydantic patterns",
+            "description": "Pagination information value object with modern FlextModel patterns",
             "title": "PaginationInfo",
         },
     )
@@ -1187,7 +1245,7 @@ class ApiSession(FlextEntity):
 # ==============================================================================
 
 
-class RequestDto(FlextValue):
+class RequestDto(FlextModel):
     """Request data transfer object using pure Pydantic patterns."""
 
     method: str = Field(description="HTTP method")
@@ -1212,7 +1270,7 @@ class RequestDto(FlextValue):
         return FlextResult.ok(None)
 
 
-class ResponseDto(FlextValue):
+class ResponseDto(FlextModel):
     """Response data transfer object using pure Pydantic patterns."""
 
     status_code: int = Field(description="HTTP status code")
@@ -1236,7 +1294,7 @@ class ResponseDto(FlextValue):
         return FlextResult.ok(None)
 
 
-class ApiErrorContext(FlextValue):
+class ApiErrorContext(FlextModel):
     """API error context using pure Pydantic patterns."""
 
     method: str | None = Field(None, description="HTTP method")
@@ -1283,7 +1341,7 @@ class ApiErrorContext(FlextValue):
 # ==============================================================================
 
 
-class QueryBuilder(FlextValue):
+class QueryBuilder(FlextModel):
     """Query builder configuration using pure Pydantic patterns."""
 
     filters: list[dict[str, object]] = Field(
@@ -1333,7 +1391,7 @@ class QueryBuilder(FlextValue):
         )
 
 
-class ResponseBuilder(FlextValue):
+class ResponseBuilder(FlextModel):
     """Response builder configuration using pure Pydantic patterns."""
 
     success: bool = Field(default=True, description="Success indicator")

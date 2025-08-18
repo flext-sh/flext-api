@@ -12,7 +12,7 @@ from flext_api import create_flext_api_app
 def test_docs_enabled_when_debug_true() -> None:
     """Create app with debug=True via settings overrides path."""
     app = create_flext_api_app()
-    app.state.config.settings.debug = True  # type: ignore[attr-defined]
+    app.state.config.settings.debug = True
     app = create_flext_api_app(app.state.config)  # rebuild with debug enabled
     c = TestClient(app)
     # /docs should be available

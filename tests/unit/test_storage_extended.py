@@ -27,7 +27,7 @@ async def test_memory_backend_ttl_and_keys() -> None:
     assert "k" in keys
     # Simulate expiry
     # Directly manipulate internal expiry to force expiration
-    backend._expiry["k"] = 0  # type: ignore[attr-defined]
+    backend._expiry["k"] = 0
     assert (await backend.get("k")).data is None
 
 
@@ -72,7 +72,7 @@ async def test_flext_storage_namespace_and_transactions() -> None:
     assert (await storage.commit_transaction(tx)).success
 
     # after commit, x should be gone; to avoid flaky cache hits, disable cache on read
-    storage._cache = None  # type: ignore[attr-defined]
+    storage._cache = None
     assert (await storage.get("x", use_cache=False)).data is None
     assert (await storage.get("y")).data == 2
 
