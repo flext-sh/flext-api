@@ -17,14 +17,14 @@ from typing import cast
 from flext_core import FlextResult, FlextResult as _Res, get_logger
 from pydantic import Field
 
-from flext_api.api_client import FlextApiBuilder, FlextApiClient, FlextApiClientConfig
-from flext_api.api_models import ClientConfig
-from flext_api.api_protocols import (
+from flext_api.base_service import FlextApiBaseService, FlextApiBaseService as _Base
+from flext_api.client import FlextApiBuilder, FlextApiClient, FlextApiClientConfig
+from flext_api.models import ClientConfig
+from flext_api.protocols import (
     FlextApiClientProtocol,
     FlextApiQueryBuilderProtocol,
     FlextApiResponseBuilderProtocol,
 )
-from flext_api.base_service import FlextApiBaseService, FlextApiBaseService as _Base
 from flext_api.typings import FlextTypes
 
 logger = get_logger(__name__)
@@ -80,26 +80,11 @@ class FlextApi(FlextApiBaseService):
         if self._client_config:
             details["client_base_url"] = self._client_config.base_url
             details["client_timeout"] = self._client_config.timeout
-        return FlextResult[None].ok(details)
+        return FlextResult[FlextTypes.Core.JsonDict].ok(details)
 
-    def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict] | object:
-        """Health check supporting both sync and async usage.
-
-        If there is no running loop, execute in a private loop without
-        mutating the global event loop. If a loop is running, return the
-        coroutine for the caller to await.
-        """
-        try:
-            _asyncio.get_running_loop()
-        except RuntimeError:
-            # No running loop: use a private event loop without set_event_loop
-            loop = _asyncio.new_event_loop()
-            try:
-                return loop.run_until_complete(_Base.health_check(self))
-            finally:
-                loop.close()
-        # Running loop present: return coroutine for awaiting in async context
-        return _Base.health_check(self)
+    async def health_check(self) -> FlextResult[dict[str, object]]:
+        """Health check following parent async signature."""
+        return await super().health_check()
 
     # Compatibility: allow calling health_check in sync contexts within tests
     def sync_health_check(self) -> FlextResult[dict[str, object]]:
@@ -130,8 +115,8 @@ class FlextApi(FlextApiBaseService):
             if result_holder:
                 return result_holder[0]
             if error_holder:
-                return _Res.fail(f"Failed to run health check: {error_holder[0]}")
-            return _Res.fail("Failed to run health check: unknown error")
+                return FlextResult[dict[str, object]].fail(f"Failed to run health check: {error_holder[0]}")
+            return FlextResult[dict[str, object]].fail("Failed to run health check: unknown error")
         except RuntimeError:
             loop = _asyncio.new_event_loop()
             try:
@@ -170,7 +155,7 @@ class FlextApi(FlextApiBaseService):
                 else 30.0
             )
             headers_val = config_dict.get("headers", {})
-            headers = dict(headers_val) if isinstance(headers_val, dict) else {}
+            headers: dict[str, str] = dict(headers_val) if isinstance(headers_val, dict) else {}
             max_retries_val = config_dict.get("max_retries", 3)
             max_retries = (
                 int(max_retries_val)
@@ -186,7 +171,7 @@ class FlextApi(FlextApiBaseService):
             # Validate configuration
             validation_result = client_config.validate_business_rules()
             if not validation_result.success:
-                return FlextResult[None].fail(
+                return FlextResult[FlextApiClientProtocol].fail(
                     validation_result.error or "Invalid client configuration",
                 )
             # Convert to legacy config format for backward compatibility
@@ -198,13 +183,13 @@ class FlextApi(FlextApiBaseService):
             )
             # Create client
             api_client = FlextApiClient(legacy_config)
-            self._client = api_client
+            self._client = cast("FlextApiClientProtocol", api_client)
             self._client_config = client_config
             logger.info("HTTP client created", base_url=client_config.base_url)
-            return FlextResult[None].ok(api_client)
+            return FlextResult[FlextApiClientProtocol].ok(cast("FlextApiClientProtocol", api_client))
         except Exception as e:
             logger.exception("Failed to create client")
-            return FlextResult[None].fail(f"Failed to create client: {e}")
+            return FlextResult[FlextApiClientProtocol].fail(f"Failed to create client: {e}")
 
     def get_builder(self) -> FlextApiBuilder:
         """Get builder instance for advanced operations.
@@ -343,12 +328,12 @@ class FlextApi(FlextApiBaseService):
         """
         logger.warning("Using deprecated method flext_api_create_client")
         result = self.create_client(config)
-        if result.success and result.data is not None:
+        if result.success:
             # Convert protocol to concrete type for legacy compatibility
-            return FlextResult[None].ok(cast("FlextApiClient", result.data))
+            return FlextResult[FlextApiClient].ok(cast("FlextApiClient", result.data))
         # Handle failure case
         error_msg = result.error or "Unknown error"
-        return FlextResult[None].fail(f"Failed to create client: {error_msg}")
+        return FlextResult[FlextApiClient].fail(f"Failed to create client: {error_msg}")
 
 
 def create_flext_api(**config: object) -> FlextApi:

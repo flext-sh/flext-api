@@ -98,7 +98,7 @@ class FlextAPIFieldCore:
         min_length: int,
         max_length: int,
         pattern: str,
-        **kwargs: TData,
+        **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create authentication field with common properties.
 
@@ -120,7 +120,7 @@ class FlextAPIFieldCore:
     def api_key_field(
         cls,
         description: str = "API key for authentication",
-        **kwargs: TData,
+        **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create API key field definition using DRY factory method."""
         return cls._create_auth_field(
@@ -136,7 +136,7 @@ class FlextAPIFieldCore:
     def bearer_token_field(
         cls,
         description: str = "Bearer token for authentication",
-        **kwargs: TData,
+        **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create bearer token field definition using DRY factory method."""
         return cls._create_auth_field(
@@ -152,7 +152,7 @@ class FlextAPIFieldCore:
     def pipeline_config_field(
         cls,
         description: str = "Pipeline configuration data",
-        **kwargs: TData,
+        **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create pipeline configuration field definition."""
         return {
@@ -172,7 +172,7 @@ class FlextAPIFieldCore:
     def plugin_config_field(
         cls,
         description: str = "Plugin configuration data",
-        **kwargs: TData,
+        **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create plugin configuration field definition."""
         return {
@@ -191,7 +191,7 @@ class FlextAPIFieldCore:
     def user_role_field(
         cls,
         description: str = "User role for authorization",
-        **kwargs: TData,
+        **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create user role field definition."""
         return {
@@ -207,7 +207,7 @@ class FlextAPIFieldCore:
     def endpoint_path_field(
         cls,
         description: str = "API endpoint path",
-        **kwargs: TData,
+        **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create endpoint path field definition."""
         return {
@@ -225,7 +225,7 @@ class FlextAPIFieldCore:
     def http_method_field(
         cls,
         description: str = "HTTP method",
-        **kwargs: TData,
+        **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create HTTP method field definition."""
         return {
@@ -249,7 +249,7 @@ class FlextAPIFieldCore:
     def response_format_field(
         cls,
         description: str = "Response format type",
-        **kwargs: TData,
+        **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create response format field definition."""
         return {
@@ -424,65 +424,65 @@ class FlextAPIFields:
 # =============================================================================
 
 
-def api_key_field[TData](
+def api_key_field(
     description: str = "API key for authentication",
-    **kwargs: TData,
+    **kwargs: object,
 ) -> FlextTypes.Core.JsonDict:
     """Create API key field definition."""
     return FlextAPIFieldCore.api_key_field(description=description, **kwargs)
 
 
-def bearer_token_field[TData](
+def bearer_token_field(
     description: str = "Bearer token for authentication",
-    **kwargs: TData,
+    **kwargs: object,
 ) -> FlextTypes.Core.JsonDict:
     """Create bearer token field definition."""
     return FlextAPIFieldCore.bearer_token_field(description=description, **kwargs)
 
 
-def pipeline_config_field[TData](
+def pipeline_config_field(
     description: str = "Pipeline configuration data",
-    **kwargs: TData,
+    **kwargs: object,
 ) -> FlextTypes.Core.JsonDict:
     """Create pipeline configuration field definition."""
     return FlextAPIFieldCore.pipeline_config_field(description=description, **kwargs)
 
 
-def plugin_config_field[TData](
+def plugin_config_field(
     description: str = "Plugin configuration data",
-    **kwargs: TData,
+    **kwargs: object,
 ) -> FlextTypes.Core.JsonDict:
     """Create plugin configuration field definition."""
     return FlextAPIFieldCore.plugin_config_field(description=description, **kwargs)
 
 
-def user_role_field[TData](
+def user_role_field(
     description: str = "User role for authorization",
-    **kwargs: TData,
+    **kwargs: object,
 ) -> FlextTypes.Core.JsonDict:
     """Create user role field definition."""
     return FlextAPIFieldCore.user_role_field(description=description, **kwargs)
 
 
-def endpoint_path_field[TData](
+def endpoint_path_field(
     description: str = "API endpoint path",
-    **kwargs: TData,
+    **kwargs: object,
 ) -> FlextTypes.Core.JsonDict:
     """Create endpoint path field definition."""
     return FlextAPIFieldCore.endpoint_path_field(description=description, **kwargs)
 
 
-def http_method_field[TData](
+def http_method_field(
     description: str = "HTTP method",
-    **kwargs: TData,
+    **kwargs: object,
 ) -> FlextTypes.Core.JsonDict:
     """Create HTTP method field definition."""
     return FlextAPIFieldCore.http_method_field(description=description, **kwargs)
 
 
-def response_format_field[TData](
+def response_format_field(
     description: str = "Response format type",
-    **kwargs: TData,
+    **kwargs: object,
 ) -> FlextTypes.Core.JsonDict:
     """Create response format field definition."""
     return FlextAPIFieldCore.response_format_field(description=description, **kwargs)
