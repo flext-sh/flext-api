@@ -19,7 +19,7 @@ async def test_file_backend_save_and_delete_error_paths(
 
     # Monkeypatch _save_data to fail on set to hit error branch
     async def fail_save() -> FlextResult[None]:
-        return FlextResult.fail("disk full")
+        return FlextResult[None].fail("disk full")
 
     monkeypatch.setattr(backend, "_save_data", fail_save)
     assert not (await backend.set("a", 1)).success
@@ -31,7 +31,7 @@ async def test_file_backend_save_and_delete_error_paths(
 
     # Monkeypatch _save_data to fail on delete
     async def fail_save2() -> FlextResult[None]:
-        return FlextResult.fail("no space")
+        return FlextResult[None].fail("no space")
 
     monkeypatch.setattr(backend, "_save_data", fail_save2)
     res = await backend.delete("a")

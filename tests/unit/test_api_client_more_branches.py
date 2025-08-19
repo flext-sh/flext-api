@@ -76,7 +76,7 @@ async def test_process_response_pipeline_none_response() -> None:
             _resp: FlextApiClientResponse,
             _ctx: dict[str, object] | None = None,
         ) -> FlextResult:
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
     c = FlextApiClient(
         FlextApiClientConfig(base_url="https://x"),
@@ -87,7 +87,7 @@ async def test_process_response_pipeline_none_response() -> None:
     async def ok_perform(
         _r: FlextApiClientRequest,
     ) -> FlextResult[FlextApiClientResponse]:
-        return FlextResult.ok(FlextApiClientResponse(status_code=200, data={}))
+        return FlextResult[None].ok(FlextApiClientResponse(status_code=200, data={}))
 
     req = FlextApiClientRequest(method="GET", url="https://x")
     await c.start()

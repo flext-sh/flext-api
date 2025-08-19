@@ -144,7 +144,7 @@ class TestInitCoverage:
         assert get_logger is not None
 
         # Test FlextResult basic functionality
-        result = FlextResult.ok("test")
+        result = FlextResult[None].ok("test")
         assert result.success
         if result.data != "test":
             msg = f"Expected test, got {result.data}"

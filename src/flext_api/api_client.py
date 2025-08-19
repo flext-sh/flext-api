@@ -377,7 +377,7 @@ class FlextApiCachingPlugin(FlextApiPlugin):
                 timestamp, cached_response = cached
                 if time.time() - timestamp < self.ttl:
                     # Return a FlextResult-wrapped response to instruct client to skip HTTP
-                    return FlextResult.ok(cached_response)
+                    return FlextResult[None].ok(cached_response)
         return request
 
     async def after_response(
@@ -448,13 +448,13 @@ class FlextApiClient:
         """Start client service."""
         await self._ensure_session()
         self._status = FlextApiClientStatus.RUNNING
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     async def stop(self) -> FlextResult[None]:
         """Stop client service."""
         await self.close()
         self._status = FlextApiClientStatus.STOPPED
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def _prepare_request_params(
         self,
@@ -654,19 +654,19 @@ class FlextApiClient:
             if isinstance(result, FlextResult):
                 if not result.success:
                     plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
-                    return FlextResult.fail(
+                    return FlextResult[None].fail(
                         f"Plugin {plugin_name} failed: {result.error}",
                     )
                 # Short-circuit: plugin returned a response instead of request
                 if isinstance(result.data, FlextApiClientResponse):
-                    return FlextResult.ok(result.data)
+                    return FlextResult[None].ok(result.data)
                 # Update request when provided
                 if isinstance(result.data, FlextApiClientRequest):
                     current_request = result.data
             elif isinstance(result, FlextApiClientRequest):
                 current_request = result
 
-        return FlextResult.ok(current_request)
+        return FlextResult[None].ok(current_request)
 
     async def _process_plugins_after_response(
         self,
@@ -683,7 +683,7 @@ class FlextApiClient:
             if isinstance(result, FlextResult):
                 if not result.success:
                     plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
-                    return FlextResult.fail(
+                    return FlextResult[None].fail(
                         f"Plugin {plugin_name} failed: {result.error}",
                     )
                 # Allow plugins to explicitly clear the response by returning data=None
@@ -703,7 +703,7 @@ class FlextApiClient:
             return self._build_stub_response(request)
 
         if self._session is None:
-            return FlextResult.fail("HTTP session not available")
+            return FlextResult[None].fail("HTTP session not available")
 
         # Convert params to proper type for aiohttp
         params_for_request = (
@@ -732,7 +732,7 @@ class FlextApiClient:
                     response_data = response_data_obj
                 else:
                     response_data = None
-                return FlextResult.ok(
+                return FlextResult[None].ok(
                     FlextApiClientResponse(
                         status_code=response.status,
                         headers=dict(response.headers),
@@ -741,7 +741,7 @@ class FlextApiClient:
                     ),
                 )
         except Exception as e:
-            return FlextResult.fail(f"HTTP request execution failed: {e}")
+            return FlextResult[None].fail(f"HTTP request execution failed: {e}")
 
     def _is_external_calls_disabled(self) -> bool:
         return os.getenv("FLEXT_DISABLE_EXTERNAL_CALLS", "1").lower() in {
@@ -760,14 +760,14 @@ class FlextApiClient:
             str(request.url).startswith("http://")
             or str(request.url).startswith("https://")
         ):
-            return FlextResult.fail("HTTP request execution failed: Invalid URL format")
+            return FlextResult[None].fail("HTTP request execution failed: Invalid URL format")
 
         parsed = urlparse(request.url)
         path = parsed.path
         host = (parsed.netloc or "").lower()
         # Simulate DNS/connection error for invalid/non-existent hostnames
         if host.startswith("nonexistent-") or host.endswith(".invalid"):
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 "HTTP request execution failed: DNS resolution failed",
             )
 
@@ -795,7 +795,7 @@ class FlextApiClient:
         elif path == "/delay/1":
             data = {"delay": 1}
 
-        return FlextResult.ok(
+        return FlextResult[None].ok(
             FlextApiClientResponse(
                 status_code=status,
                 headers={},
@@ -863,7 +863,7 @@ class FlextApiClient:
                 headers,
             )
             if not request_result.success or request_result.data is None:
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     request_result.error or "Failed to build request",
                 )
 
@@ -876,7 +876,7 @@ class FlextApiClient:
             return await self._execute_request_pipeline(request, method)
 
         except Exception as e:
-            return FlextResult.fail(f"Request failed: {e}")
+            return FlextResult[None].fail(f"Request failed: {e}")
 
     def _build_request(
         self,
@@ -906,9 +906,9 @@ class FlextApiClient:
                 data=data,
                 timeout=self._config.timeout if timeout is None else timeout,
             )
-            return FlextResult.ok(request)
+            return FlextResult[None].ok(request)
         except Exception as e:
-            return FlextResult.fail(f"Failed to build request: {e}")
+            return FlextResult[None].fail(f"Failed to build request: {e}")
 
     async def _execute_request_pipeline(
         self,
@@ -928,7 +928,7 @@ class FlextApiClient:
             context_data,
         )
         if not request_result.success:
-            return FlextResult.fail(request_result.error or "Plugin processing failed")
+            return FlextResult[None].fail(request_result.error or "Plugin processing failed")
 
         # Handle plugin short-circuit response or update request
         request, should_short_circuit = self._handle_plugin_result(
@@ -940,8 +940,8 @@ class FlextApiClient:
                 request_result.data,
                 FlextApiClientResponse,
             ):
-                return FlextResult.fail("Plugin returned no response")
-            return FlextResult.ok(request_result.data)
+                return FlextResult[None].fail("Plugin returned no response")
+            return FlextResult[None].ok(request_result.data)
 
         # Step 2: Check for cached response
         cache_result = self._check_cached_response(context_data)
@@ -989,8 +989,8 @@ class FlextApiClient:
         if "cached_response" in context_data:
             cached_response = context_data["cached_response"]
             if isinstance(cached_response, FlextApiClientResponse):
-                return FlextResult.ok(cached_response)
-        return FlextResult.fail("No cached response")
+                return FlextResult[None].ok(cached_response)
+        return FlextResult[None].fail("No cached response")
 
     def _validate_response_data(
         self,
@@ -998,13 +998,13 @@ class FlextApiClient:
     ) -> FlextResult[FlextApiClientResponse]:
         """Validate response data integrity."""
         if response_obj is None:
-            return FlextResult.fail("No response data received")
+            return FlextResult[None].fail("No response data received")
         if (
             isinstance(response_obj, FlextApiClientResponse)
             and response_obj.data is None
         ):
-            return FlextResult.fail("No response data received")
-        return FlextResult.ok(response_obj)
+            return FlextResult[None].fail("No response data received")
+        return FlextResult[None].ok(response_obj)
 
     async def _process_and_validate_response(
         self,
@@ -1030,7 +1030,7 @@ class FlextApiClient:
         else:
             suffix = f"Failed to make {method} request"
             error_out = suffix if not base else f"{suffix}: {base}"
-        return FlextResult.fail(error_out)
+        return FlextResult[None].fail(error_out)
 
     async def _process_response_pipeline(
         self,
@@ -1058,7 +1058,7 @@ class FlextApiClient:
                     parsed = json.loads(text_trim)
                     object.__setattr__(final_response, "data", parsed)
         # After plugins, we have a concrete response (guaranteed by success check above)
-        return FlextResult.ok(final_response)
+        return FlextResult[None].ok(final_response)
 
     # Legacy alias expected by some tests
     async def _make_request(
@@ -1073,7 +1073,7 @@ class FlextApiClient:
             return await self._make_request_impl(request)
         except Exception as e:  # Match error message formatting expected by tests
             method = str(request.method)
-            return FlextResult.fail(f"Failed to make {method} request: {e}")
+            return FlextResult[None].fail(f"Failed to make {method} request: {e}")
 
     async def head(
         self,

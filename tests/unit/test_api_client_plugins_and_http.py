@@ -117,7 +117,7 @@ class _PluginFail:
         _request: object,
         _context: object = None,
     ) -> FlextResult:
-        return FlextResult.fail("nope")
+        return FlextResult[None].fail("nope")
 
 
 class _PluginModify:
@@ -154,7 +154,7 @@ class _PluginAfterFail:
         _response: object,
         _context: object = None,
     ) -> FlextResult:
-        return FlextResult.fail("bad")
+        return FlextResult[None].fail("bad")
 
 
 class _PluginAfterModify:
@@ -174,7 +174,7 @@ class _PluginAfterModify:
             data={"mod": True},
             elapsed_time=response.elapsed_time,
         )
-        return FlextResult.ok(new_resp)
+        return FlextResult[None].ok(new_resp)
 
 
 @pytest.mark.usefixtures("monkeypatch")
@@ -226,12 +226,12 @@ def test_format_request_error_variants() -> None:
     """Test format request error variants."""
     client = FlextApiClient(FlextApiClientConfig(base_url="https://api.example"))
     err1 = client._format_request_error(
-        FlextResult.fail("HTTP session not available: x"),
+        FlextResult[None].fail("HTTP session not available: x"),
         "GET",
     )
     assert not err1.success
     assert (err1.error or "").startswith("HTTP session not available")
-    err2 = client._format_request_error(FlextResult.fail("boom"), "POST")
+    err2 = client._format_request_error(FlextResult[None].fail("boom"), "POST")
     assert not err2.success
     assert (err2.error or "").startswith("Failed to make POST request")
 

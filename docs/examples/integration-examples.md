@@ -81,10 +81,10 @@ class FlexCoreIntegrationExample:
             logger.info("FlexCore health check successful",
                        status=health_data.get("status"),
                        uptime=health_data.get("uptime"))
-            return FlextResult.ok(health_data)
+            return FlextResult[None].ok(health_data)
         else:
             logger.warning("FlexCore health check failed", error=response.error)
-            return FlextResult.fail(f"Health check failed: {response.error}")
+            return FlextResult[None].fail(f"Health check failed: {response.error}")
 
     def list_available_plugins(self) -> FlextResult[List[Dict[str, Any]]]:
         """List all available plugins in FlexCore runtime."""
@@ -95,10 +95,10 @@ class FlexCoreIntegrationExample:
         if response.success:
             plugins = response.data.get("plugins", [])
             logger.info("Retrieved plugins list", plugin_count=len(plugins))
-            return FlextResult.ok(plugins)
+            return FlextResult[None].ok(plugins)
         else:
             logger.error("Failed to retrieve plugins", error=response.error)
-            return FlextResult.fail(f"Plugin list retrieval failed: {response.error}")
+            return FlextResult[None].fail(f"Plugin list retrieval failed: {response.error}")
 
     def execute_meltano_pipeline(self, pipeline_config: Dict[str, Any]) -> FlextResult[str]:
         """Execute Meltano pipeline via FlexCore plugin system."""
@@ -121,12 +121,12 @@ class FlexCoreIntegrationExample:
             logger.info("Meltano pipeline execution started",
                        execution_id=execution_id,
                        pipeline=pipeline_config.get("name"))
-            return FlextResult.ok(execution_id)
+            return FlextResult[None].ok(execution_id)
         else:
             logger.error("Meltano pipeline execution failed",
                         pipeline=pipeline_config.get("name"),
                         error=response.error)
-            return FlextResult.fail(f"Pipeline execution failed: {response.error}")
+            return FlextResult[None].fail(f"Pipeline execution failed: {response.error}")
 
     def monitor_execution(self, execution_id: str) -> FlextResult[Dict[str, Any]]:
         """Monitor plugin execution status."""
@@ -140,9 +140,9 @@ class FlexCoreIntegrationExample:
                        execution_id=execution_id,
                        status=status_data.get("status"),
                        progress=status_data.get("progress", 0))
-            return FlextResult.ok(status_data)
+            return FlextResult[None].ok(status_data)
         else:
-            return FlextResult.fail(f"Status monitoring failed: {response.error}")
+            return FlextResult[None].fail(f"Status monitoring failed: {response.error}")
 
 async def flexcore_integration_demo():
     """Demonstrate complete FlexCore integration workflow."""
@@ -318,15 +318,15 @@ class AuthenticatedApiClient:
             logger.info("Authentication successful",
                        username=username,
                        expires_in=expires_in)
-            return FlextResult.ok(auth_token)
+            return FlextResult[None].ok(auth_token)
         else:
             logger.warning("Authentication failed", username=username)
-            return FlextResult.fail(f"Authentication failed: {response.error}")
+            return FlextResult[None].fail(f"Authentication failed: {response.error}")
 
     def refresh_token(self) -> FlextResult[AuthToken]:
         """Refresh expired access token using refresh token."""
         if not self.auth_token or not self.auth_token.refresh_token:
-            return FlextResult.fail("No refresh token available")
+            return FlextResult[None].fail("No refresh token available")
 
         logger.info("Refreshing access token")
 
@@ -345,31 +345,31 @@ class AuthenticatedApiClient:
             self.auth_token.expires_at = expires_at
 
             logger.info("Token refreshed successfully", expires_in=expires_in)
-            return FlextResult.ok(self.auth_token)
+            return FlextResult[None].ok(self.auth_token)
         else:
             logger.error("Token refresh failed", error=response.error)
-            return FlextResult.fail(f"Token refresh failed: {response.error}")
+            return FlextResult[None].fail(f"Token refresh failed: {response.error}")
 
     def ensure_valid_token(self) -> FlextResult[str]:
         """Ensure we have a valid access token, refreshing if necessary."""
         if not self.auth_token:
-            return FlextResult.fail("Not authenticated")
+            return FlextResult[None].fail("Not authenticated")
 
         # Check if token is expired or expires soon (within 60 seconds)
         if self.auth_token.is_expired() or self.auth_token.expires_in_seconds() < 60:
             logger.info("Token expired or expiring soon, refreshing")
             refresh_result = self.refresh_token()
             if not refresh_result.success:
-                return FlextResult.fail("Token refresh failed")
+                return FlextResult[None].fail("Token refresh failed")
 
-        return FlextResult.ok(self.auth_token.access_token)
+        return FlextResult[None].ok(self.auth_token.access_token)
 
     def create_authenticated_client(self, base_url: str, additional_headers: Dict[str, str] = None) -> FlextResult[object]:
         """Create HTTP client with authentication headers."""
         # Ensure we have a valid token
         token_result = self.ensure_valid_token()
         if not token_result.success:
-            return FlextResult.fail(f"Authentication required: {token_result.error}")
+            return FlextResult[None].fail(f"Authentication required: {token_result.error}")
 
         access_token = token_result.data
 
@@ -400,7 +400,7 @@ class AuthenticatedApiClient:
     def logout(self) -> FlextResult[bool]:
         """Logout and invalidate tokens."""
         if not self.auth_token:
-            return FlextResult.ok(data=True)  # Already logged out
+            return FlextResult[None].ok(data=True)  # Already logged out
 
         logger.info("Logging out and invalidating tokens")
 
@@ -414,11 +414,11 @@ class AuthenticatedApiClient:
 
         if response.success:
             logger.info("Logout successful")
-            return FlextResult.ok(data=True)
+            return FlextResult[None].ok(data=True)
         else:
             logger.warning("Server logout failed, but local token cleared",
                           error=response.error)
-            return FlextResult.ok(data=True)  # Still consider it successful
+            return FlextResult[None].ok(data=True)  # Still consider it successful
 
 def authentication_integration_demo():
     """Demonstrate complete authentication integration workflow."""
@@ -610,9 +610,9 @@ class SingerPipelineOrchestrator:
         if response.success:
             taps = response.data.get("taps", [])
             logger.info("Retrieved taps list", tap_count=len(taps))
-            return FlextResult.ok(taps)
+            return FlextResult[None].ok(taps)
         else:
-            return FlextResult.fail(f"Taps retrieval failed: {response.error}")
+            return FlextResult[None].fail(f"Taps retrieval failed: {response.error}")
 
     def list_available_targets(self) -> FlextResult[List[Dict[str, Any]]]:
         """List all available Singer targets."""
@@ -623,9 +623,9 @@ class SingerPipelineOrchestrator:
         if response.success:
             targets = response.data.get("targets", [])
             logger.info("Retrieved targets list", target_count=len(targets))
-            return FlextResult.ok(targets)
+            return FlextResult[None].ok(targets)
         else:
-            return FlextResult.fail(f"Targets retrieval failed: {response.error}")
+            return FlextResult[None].fail(f"Targets retrieval failed: {response.error}")
 
     def execute_tap_to_target(self,
                              tap_name: str,
@@ -683,12 +683,12 @@ class SingerPipelineOrchestrator:
             logger.info("Pipeline execution started",
                        execution_id=execution_id,
                        pipeline=pipeline_name)
-            return FlextResult.ok(execution_id)
+            return FlextResult[None].ok(execution_id)
         else:
             logger.error("Pipeline execution failed",
                         pipeline=pipeline_name,
                         error=response.error)
-            return FlextResult.fail(f"Pipeline execution failed: {response.error}")
+            return FlextResult[None].fail(f"Pipeline execution failed: {response.error}")
 
     def get_execution_status(self, execution_id: str) -> FlextResult[PipelineExecution]:
         """Get detailed execution status and metrics."""
@@ -719,7 +719,7 @@ class SingerPipelineOrchestrator:
                            status=status_str,
                            records=execution.records_processed)
 
-                return FlextResult.ok(execution)
+                return FlextResult[None].ok(execution)
             else:
                 # Create new tracking entry
                 execution = PipelineExecution(
@@ -730,9 +730,9 @@ class SingerPipelineOrchestrator:
                     error_message=status_data.get("error_message")
                 )
                 self.executions[execution_id] = execution
-                return FlextResult.ok(execution)
+                return FlextResult[None].ok(execution)
         else:
-            return FlextResult.fail(f"Status retrieval failed: {response.error}")
+            return FlextResult[None].fail(f"Status retrieval failed: {response.error}")
 
     def execute_dbt_transformation(self,
                                   project_path: str,
@@ -764,10 +764,10 @@ class SingerPipelineOrchestrator:
         if response.success:
             execution_id = response.data.get("execution_id")
             logger.info("DBT transformation started", execution_id=execution_id)
-            return FlextResult.ok(execution_id)
+            return FlextResult[None].ok(execution_id)
         else:
             logger.error("DBT transformation failed", error=response.error)
-            return FlextResult.fail(f"DBT execution failed: {response.error}")
+            return FlextResult[None].fail(f"DBT execution failed: {response.error}")
 
     async def wait_for_completion(self,
                                 execution_id: str,
@@ -784,7 +784,7 @@ class SingerPipelineOrchestrator:
             status_result = self.get_execution_status(execution_id)
 
             if not status_result.success:
-                return FlextResult.fail(f"Status check failed: {status_result.error}")
+                return FlextResult[None].fail(f"Status check failed: {status_result.error}")
 
             execution = status_result.data
 
@@ -794,7 +794,7 @@ class SingerPipelineOrchestrator:
                            status=execution.status.value,
                            duration=execution.duration_seconds(),
                            records=execution.records_processed)
-                return FlextResult.ok(execution)
+                return FlextResult[None].ok(execution)
 
             # Still running, wait and check again
             await asyncio.sleep(poll_interval)
@@ -809,7 +809,7 @@ class SingerPipelineOrchestrator:
         logger.warning("Execution timeout reached",
                       execution_id=execution_id,
                       max_wait=max_wait_seconds)
-        return FlextResult.fail(f"Execution timeout after {max_wait_seconds} seconds")
+        return FlextResult[None].fail(f"Execution timeout after {max_wait_seconds} seconds")
 
 async def singer_pipeline_integration_demo():
     """Demonstrate complete Singer pipeline integration."""
@@ -1176,7 +1176,7 @@ class ObservabilityIntegration:
     def send_metrics_batch(self) -> FlextResult[int]:
         """Send accumulated metrics to monitoring system."""
         if not self.metrics_client or not self.metrics:
-            return FlextResult.ok(0)
+            return FlextResult[None].ok(0)
 
         logger.info("Sending metrics batch", count=len(self.metrics))
 
@@ -1200,15 +1200,15 @@ class ObservabilityIntegration:
             sent_count = len(self.metrics)
             self.metrics.clear()  # Clear sent metrics
             logger.info("Metrics sent successfully", count=sent_count)
-            return FlextResult.ok(sent_count)
+            return FlextResult[None].ok(sent_count)
         else:
             logger.error("Metrics send failed", error=response.error)
-            return FlextResult.fail(f"Metrics send failed: {response.error}")
+            return FlextResult[None].fail(f"Metrics send failed: {response.error}")
 
     def send_traces_batch(self) -> FlextResult[int]:
         """Send completed traces to tracing system."""
         if not self.tracing_client or not self.completed_spans:
-            return FlextResult.ok(0)
+            return FlextResult[None].ok(0)
 
         logger.info("Sending traces batch", count=len(self.completed_spans))
 
@@ -1244,10 +1244,10 @@ class ObservabilityIntegration:
             sent_count = len(self.completed_spans)
             self.completed_spans.clear()  # Clear sent spans
             logger.info("Traces sent successfully", count=sent_count)
-            return FlextResult.ok(sent_count)
+            return FlextResult[None].ok(sent_count)
         else:
             logger.error("Traces send failed", error=response.error)
-            return FlextResult.fail(f"Traces send failed: {response.error}")
+            return FlextResult[None].fail(f"Traces send failed: {response.error}")
 
     def health_check_all_services(self) -> FlextResult[Dict[str, Any]]:
         """Perform health checks on all ecosystem services."""
@@ -1334,7 +1334,7 @@ class ObservabilityIntegration:
                    total=total_count,
                    score=health_score)
 
-        return FlextResult.ok({
+        return FlextResult[None].ok({
             "overall_health_score": health_score,
             "services": health_results,
             "healthy_services": healthy_count,
@@ -1499,7 +1499,7 @@ class EnterpriseCircuitBreaker:
         self.last_request_time = current_time
 
         if self.state == CircuitState.CLOSED:
-            return FlextResult.ok(data=True)
+            return FlextResult[None].ok(data=True)
 
         elif self.state == CircuitState.OPEN:
             # Check if enough time has passed to try half-open
@@ -1507,15 +1507,15 @@ class EnterpriseCircuitBreaker:
                 logger.info("Circuit breaker transitioning to HALF_OPEN", name=self.name)
                 self.state = CircuitState.HALF_OPEN
                 self.success_count = 0
-                return FlextResult.ok(data=True)
+                return FlextResult[None].ok(data=True)
             else:
-                return FlextResult.fail("Circuit breaker OPEN - service unavailable")
+                return FlextResult[None].fail("Circuit breaker OPEN - service unavailable")
 
         elif self.state == CircuitState.HALF_OPEN:
             # Allow limited requests to test service health
-            return FlextResult.ok(data=True)
+            return FlextResult[None].ok(data=True)
 
-        return FlextResult.fail("Invalid circuit breaker state")
+        return FlextResult[None].fail("Invalid circuit breaker state")
 
     def record_success(self) -> None:
         """Record successful request."""
@@ -1608,11 +1608,11 @@ class EnterpriseHttpClient:
             if client_result.success:
                 self.clients[service_name] = client_result.data
                 logger.info("HTTP client created", service=service_name)
-                return FlextResult.ok(client_result.data)
+                return FlextResult[None].ok(client_result.data)
             else:
-                return FlextResult.fail(f"Client creation failed: {client_result.error}")
+                return FlextResult[None].fail(f"Client creation failed: {client_result.error}")
 
-        return FlextResult.ok(self.clients[service_name])
+        return FlextResult[None].ok(self.clients[service_name])
 
     async def request_with_fault_tolerance(self,
                                          service_name: str,
@@ -1632,13 +1632,13 @@ class EnterpriseHttpClient:
             logger.warning("Request blocked by circuit breaker",
                           service=service_name,
                           reason=can_execute.error)
-            return FlextResult.fail(can_execute.error)
+            return FlextResult[None].fail(can_execute.error)
 
         # Get HTTP client
         client_result = self.get_or_create_client(service_name, base_url)
         if not client_result.success:
             circuit_breaker.record_failure()
-            return FlextResult.fail(client_result.error)
+            return FlextResult[None].fail(client_result.error)
 
         client = client_result.data
 
@@ -1662,7 +1662,7 @@ class EnterpriseHttpClient:
                 elif method.upper() == "DELETE":
                     response = client.delete(path, **kwargs)
                 else:
-                    return FlextResult.fail(f"Unsupported HTTP method: {method}")
+                    return FlextResult[None].fail(f"Unsupported HTTP method: {method}")
 
                 if response.success:
                     circuit_breaker.record_success()
@@ -1671,7 +1671,7 @@ class EnterpriseHttpClient:
                                method=method,
                                path=path,
                                attempt=attempt + 1)
-                    return FlextResult.ok(response.data)
+                    return FlextResult[None].ok(response.data)
                 else:
                     last_error = response.error
                     logger.warning("Request failed",
@@ -1706,7 +1706,7 @@ class EnterpriseHttpClient:
                     path=path,
                     error=error_msg)
 
-        return FlextResult.fail(error_msg)
+        return FlextResult[None].fail(error_msg)
 
     def get_circuit_breaker_status(self) -> Dict[str, Dict[str, Any]]:
         """Get status of all circuit breakers."""
@@ -1988,7 +1988,7 @@ class FlextServiceRegistry:
     def discover_service(self, service_name: str) -> FlextResult[ServiceEndpoint]:
         """Discover healthy service endpoint with load balancing."""
         if service_name not in self.services:
-            return FlextResult.fail(f"Service not found: {service_name}")
+            return FlextResult[None].fail(f"Service not found: {service_name}")
 
         endpoints = self.services[service_name]
 
@@ -2003,10 +2003,10 @@ class FlextServiceRegistry:
                            service=service_name,
                            endpoint=endpoint.name,
                            url=endpoint.url)
-                return FlextResult.ok(endpoint)
+                return FlextResult[None].ok(endpoint)
 
         # No healthy endpoints found
-        return FlextResult.fail(f"No healthy endpoints found for service: {service_name}")
+        return FlextResult[None].fail(f"No healthy endpoints found for service: {service_name}")
 
     def _check_endpoint_health(self, endpoint: ServiceEndpoint) -> FlextResult[Dict[str, Any]]:
         """Check if endpoint is healthy."""
@@ -2017,24 +2017,24 @@ class FlextServiceRegistry:
             })
 
             if not client_result.success:
-                return FlextResult.fail(f"Client creation failed: {client_result.error}")
+                return FlextResult[None].fail(f"Client creation failed: {client_result.error}")
 
             client = client_result.data
             response = client.get(endpoint.health_path)
 
             if response.success:
-                return FlextResult.ok(response.data)
+                return FlextResult[None].ok(response.data)
             else:
-                return FlextResult.fail(f"Health check failed: {response.error}")
+                return FlextResult[None].fail(f"Health check failed: {response.error}")
 
         except Exception as e:
-            return FlextResult.fail(f"Health check exception: {e}")
+            return FlextResult[None].fail(f"Health check exception: {e}")
 
     def create_service_client(self, service_name: str, **client_options) -> FlextResult[Any]:
         """Create HTTP client for discovered service."""
         discovery_result = self.discover_service(service_name)
         if not discovery_result.success:
-            return FlextResult.fail(discovery_result.error)
+            return FlextResult[None].fail(discovery_result.error)
 
         endpoint = discovery_result.data
 

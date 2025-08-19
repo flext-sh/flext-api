@@ -294,18 +294,18 @@ class URL(FlextModel):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate URL business rules following foundation pattern."""
         if not self.raw_url or not self.raw_url.strip():
-            return FlextResult.fail("URL cannot be empty")
+            return FlextResult[object].fail("URL cannot be empty")
 
         if self.scheme not in {"http", "https"}:
-            return FlextResult.fail(f"Invalid URL scheme: {self.scheme}")
+            return FlextResult[object].fail(f"Invalid URL scheme: {self.scheme}")
 
         if not self.host or not self.host.strip():
-            return FlextResult.fail("URL must have a valid host")
+            return FlextResult[object].fail("URL must have a valid host")
 
         if self.port is not None and not (MIN_PORT <= self.port <= MAX_PORT):
-            return FlextResult.fail(f"Invalid port number: {self.port}")
+            return FlextResult[object].fail(f"Invalid port number: {self.port}")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     @classmethod
     def create(cls, url: str) -> FlextResult[URL]:
@@ -325,13 +325,13 @@ class URL(FlextModel):
 
             validation_result = instance.validate_business_rules()
             if not validation_result.success:
-                return FlextResult.fail(
+                return FlextResult[object].fail(
                     f"URL validation failed: {validation_result.error}",
                 )
 
-            return FlextResult.ok(instance)
+            return FlextResult[object].ok(instance)
         except (RuntimeError, ValueError, TypeError, KeyError) as e:
-            return FlextResult.fail(f"URL parsing failed: {e}")
+            return FlextResult[object].fail(f"URL parsing failed: {e}")
 
     def is_secure(self) -> bool:
         """Check if URL uses HTTPS."""
@@ -386,16 +386,16 @@ class HttpHeader(FlextModel):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate header business rules."""
         if not self.name or not self.name.strip():
-            return FlextResult.fail("Header name cannot be empty")
+            return FlextResult[object].fail("Header name cannot be empty")
 
         if not self.value or not self.value.strip():
-            return FlextResult.fail("Header value cannot be empty")
+            return FlextResult[object].fail("Header value cannot be empty")
 
         # Header name validation (no control characters)
         if any(ord(c) < MIN_CONTROL_CHAR for c in self.name):
-            return FlextResult.fail("Header name contains invalid characters")
+            return FlextResult[object].fail("Header name contains invalid characters")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     @classmethod
     def create(cls, name: str, value: str) -> FlextResult[HttpHeader]:
@@ -438,14 +438,14 @@ class HttpHeader(FlextModel):
         # Perform validation
         error = validate_header_input()
         if error:
-            return FlextResult.fail(error)
+            return FlextResult[object].fail(error)
 
         # Create header
         try:
             header = cls(name=name.strip(), value=value)
-            return FlextResult.ok(header)
+            return FlextResult[object].ok(header)
         except Exception as e:
-            return FlextResult.fail(f"Failed to create header: {e}")
+            return FlextResult[object].fail(f"Failed to create header: {e}")
 
     def is_authorization(self) -> bool:
         """Check if this is an authorization header."""
@@ -531,10 +531,10 @@ class BearerToken(FlextModel):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate bearer token business rules."""
         if not self.token or not self.token.strip():
-            return FlextResult.fail("Bearer token cannot be empty")
+            return FlextResult[object].fail("Bearer token cannot be empty")
 
         if len(self.token.strip()) < MIN_TOKEN_LENGTH:
-            return FlextResult.fail(
+            return FlextResult[object].fail(
                 f"Token must be at least {MIN_TOKEN_LENGTH} characters",
             )
 
@@ -545,9 +545,9 @@ class BearerToken(FlextModel):
             if len(parts) == FlextApiConstants.Auth.JWT_PARTS_COUNT and not all(
                 part.strip() for part in parts
             ):
-                return FlextResult.fail("JWT format error - empty parts not allowed")
+                return FlextResult[object].fail("JWT format error - empty parts not allowed")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     @classmethod
     def create(
@@ -565,21 +565,21 @@ class BearerToken(FlextModel):
         elif isinstance(token_type, str):
             valid_types = [t.value for t in TokenType]
             if token_type not in valid_types:
-                return FlextResult.fail(f"Invalid token type: {token_type}")
+                return FlextResult[object].fail(f"Invalid token type: {token_type}")
             token_type_enum = TokenType(token_type)
         # No else branch needed: all union members are covered above
 
         try:
             instance = cls(token=token, token_type=token_type_enum)
         except Exception as e:
-            return FlextResult.fail(f"Token creation failed: {e}")
+            return FlextResult[object].fail(f"Token creation failed: {e}")
 
         validation_result = instance.validate_business_rules()
         if not validation_result.success:
-            return FlextResult.fail(
+            return FlextResult[object].fail(
                 validation_result.error or "Token validation failed",
             )
-        return FlextResult.ok(instance)
+        return FlextResult[object].ok(instance)
 
     def is_expired(self) -> bool:
         """Check if token is expired."""
@@ -682,18 +682,18 @@ class ClientConfig(FlextModel):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate configuration business rules."""
         if not self.base_url:
-            return FlextResult.fail("base_url is required")
+            return FlextResult[object].fail("base_url is required")
 
         if not self.base_url.startswith(("http://", "https://")):
-            return FlextResult.fail("Invalid URL format")
+            return FlextResult[object].fail("Invalid URL format")
 
         if self.timeout <= 0:
-            return FlextResult.fail("Timeout must be positive")
+            return FlextResult[object].fail("Timeout must be positive")
 
         if self.max_retries < 0:
-            return FlextResult.fail("Max retries must be non-negative")
+            return FlextResult[object].fail("Max retries must be non-negative")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
 
 class QueryConfig(FlextModel):
@@ -736,12 +736,12 @@ class QueryConfig(FlextModel):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate query configuration."""
         if self.page <= 0:
-            return FlextResult.fail("Page must be positive")
+            return FlextResult[object].fail("Page must be positive")
 
         if self.page_size <= 0:
-            return FlextResult.fail("Page size must be positive")
+            return FlextResult[object].fail("Page size must be positive")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     def to_dict(
         self,
@@ -825,11 +825,11 @@ class PaginationInfo(FlextModel):
 
             validation = instance.validate_business_rules()
             if not validation.success:
-                return FlextResult.fail(validation.error or "Validation failed")
+                return FlextResult[object].fail(validation.error or "Validation failed")
 
-            return FlextResult.ok(instance)
+            return FlextResult[object].ok(instance)
         except Exception as e:
-            return FlextResult.fail(f"Failed to create pagination info: {e}")
+            return FlextResult[object].fail(f"Failed to create pagination info: {e}")
 
 
 # ==============================================================================
@@ -890,17 +890,17 @@ class ApiRequest(FlextEntity):
         # Check basic validations
         for condition, message in checks:
             if condition:
-                return FlextResult.fail(message)
+                return FlextResult[object].fail(message)
 
         # Check headers if they exist
         if self.headers:
             for key, value in self.headers.items():
                 if not key:
-                    return FlextResult.fail("Header keys must be non-empty strings")
+                    return FlextResult[object].fail("Header keys must be non-empty strings")
                 if not value:
-                    return FlextResult.fail("Header values cannot be empty")
+                    return FlextResult[object].fail("Header values cannot be empty")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     def can_retry(self) -> bool:
         """Check if request can be retried."""
@@ -909,7 +909,7 @@ class ApiRequest(FlextEntity):
     def increment_retry(self) -> FlextResult[ApiRequest]:
         """Increment retry count."""
         if not self.can_retry():
-            return FlextResult.fail("Maximum retries exceeded")
+            return FlextResult[object].fail("Maximum retries exceeded")
 
         updated = self.model_copy(
             update={
@@ -917,12 +917,12 @@ class ApiRequest(FlextEntity):
                 "updated_at": FlextTimestamp.now(),
             },
         )
-        return FlextResult.ok(updated)
+        return FlextResult[object].ok(updated)
 
     def start_processing(self) -> FlextResult[ApiRequest]:
         """Start request processing with state transition."""
         if self.state != RequestState.VALIDATED:
-            return FlextResult.fail(f"Cannot start processing from state: {self.state}")
+            return FlextResult[object].fail(f"Cannot start processing from state: {self.state}")
 
         updated = self.model_copy(
             update={
@@ -931,12 +931,12 @@ class ApiRequest(FlextEntity):
             },
         )
         logger.info("Request processing started", request_id=self.id)
-        return FlextResult.ok(updated)
+        return FlextResult[object].ok(updated)
 
     def complete_processing(self) -> FlextResult[ApiRequest]:
         """Complete request processing."""
         if self.state != RequestState.PROCESSING:
-            return FlextResult.fail(f"Cannot complete from state: {self.state}")
+            return FlextResult[object].fail(f"Cannot complete from state: {self.state}")
 
         updated = self.model_copy(
             update={
@@ -945,7 +945,7 @@ class ApiRequest(FlextEntity):
             },
         )
         logger.info("Request processing completed", request_id=self.id)
-        return FlextResult.ok(updated)
+        return FlextResult[object].ok(updated)
 
     def fail_processing(self, error: str) -> FlextResult[ApiRequest]:
         """Mark request as failed."""
@@ -956,7 +956,7 @@ class ApiRequest(FlextEntity):
             },
         )
         logger.error("Request processing failed", request_id=self.id, error=error)
-        return FlextResult.ok(updated)
+        return FlextResult[object].ok(updated)
 
 
 class ApiResponse(FlextEntity):
@@ -1006,19 +1006,19 @@ class ApiResponse(FlextEntity):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate response business rules."""
         if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
-            return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
+            return FlextResult[object].fail(f"Invalid HTTP status code: {self.status_code}")
 
         if self.headers:
             for key, value in self.headers.items():
                 if not key:
-                    return FlextResult.fail(
+                    return FlextResult[object].fail(
                         "Response header keys must be non-empty strings",
                     )
                 # Allow falsy values like '0' or 'false'; only reject None or empty strings
                 if value is None or (isinstance(value, str) and not value.strip()):
-                    return FlextResult.fail("Response header values cannot be empty")
+                    return FlextResult[object].fail("Response header values cannot be empty")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     def is_success(self) -> bool:
         """Check if response is successful."""
@@ -1041,7 +1041,7 @@ class ApiResponse(FlextEntity):
             },
         )
         logger.info("Response marked as success", response_id=self.id)
-        return FlextResult.ok(updated)
+        return FlextResult[object].ok(updated)
 
     def mark_error(self, error_message: str) -> FlextResult[ApiResponse]:
         """Mark response as error with message."""
@@ -1064,7 +1064,7 @@ class ApiResponse(FlextEntity):
             response_id=self.id,
             error=error_message,
         )
-        return FlextResult.ok(updated)
+        return FlextResult[object].ok(updated)
 
     def mark_timeout(self) -> FlextResult[ApiResponse]:
         """Mark response as timeout."""
@@ -1075,7 +1075,7 @@ class ApiResponse(FlextEntity):
                 "updated_at": FlextTimestamp.now(),
             },
         )
-        return FlextResult.ok(updated)
+        return FlextResult[object].ok(updated)
 
 
 class ApiEndpoint(FlextEntity):
@@ -1125,14 +1125,14 @@ class ApiEndpoint(FlextEntity):
         # Check basic validations
         for condition, message in checks:
             if condition:
-                return FlextResult.fail(message)
+                return FlextResult[object].fail(message)
 
         # Check methods validity
         for method in self.methods:
             if method not in HttpMethod:
-                return FlextResult.fail(f"Invalid HTTP method: {method}")
+                return FlextResult[object].fail(f"Invalid HTTP method: {method}")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     def supports_method(self, method: HttpMethod) -> bool:
         """Check if endpoint supports HTTP method."""
@@ -1191,14 +1191,14 @@ class ApiSession(FlextEntity):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate session business rules."""
         if self.token and len(self.token) < MIN_TOKEN_LENGTH:
-            return FlextResult.fail(
+            return FlextResult[object].fail(
                 f"Session token must be at least {MIN_TOKEN_LENGTH} characters",
             )
 
         if self.expires_at and self.expires_at <= datetime.now(UTC):
-            return FlextResult.fail("Session cannot be created with past expiration")
+            return FlextResult[object].fail("Session cannot be created with past expiration")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     def is_expired(self) -> bool:
         """Check if session is expired."""
@@ -1213,10 +1213,10 @@ class ApiSession(FlextEntity):
     def extend_session(self, duration_minutes: int = 60) -> FlextResult[ApiSession]:
         """Extend session expiration."""
         if not self.is_active:
-            return FlextResult.fail("Cannot extend inactive session")
+            return FlextResult[object].fail("Cannot extend inactive session")
 
         if self.is_expired():
-            return FlextResult.fail("Cannot extend expired session")
+            return FlextResult[object].fail("Cannot extend expired session")
 
         new_expiration = datetime.now(UTC) + timedelta(minutes=duration_minutes)
 
@@ -1227,7 +1227,7 @@ class ApiSession(FlextEntity):
                 "updated_at": FlextTimestamp.now(),
             },
         )
-        return FlextResult.ok(updated)
+        return FlextResult[object].ok(updated)
 
     def deactivate(self) -> FlextResult[ApiSession]:
         """Deactivate session."""
@@ -1237,7 +1237,7 @@ class ApiSession(FlextEntity):
                 "updated_at": FlextTimestamp.now(),
             },
         )
-        return FlextResult.ok(updated)
+        return FlextResult[object].ok(updated)
 
 
 # ==============================================================================
@@ -1259,15 +1259,15 @@ class RequestDto(FlextModel):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate request DTO business rules."""
         if not self.method or not self.method.strip():
-            return FlextResult.fail("HTTP method is required")
+            return FlextResult[object].fail("HTTP method is required")
 
         if not self.url or not self.url.strip():
-            return FlextResult.fail("Request URL is required")
+            return FlextResult[object].fail("Request URL is required")
 
         if self.timeout is not None and self.timeout <= 0:
-            return FlextResult.fail("Timeout must be positive")
+            return FlextResult[object].fail("Timeout must be positive")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
 
 class ResponseDto(FlextModel):
@@ -1286,12 +1286,12 @@ class ResponseDto(FlextModel):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate response DTO business rules."""
         if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
-            return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
+            return FlextResult[object].fail(f"Invalid HTTP status code: {self.status_code}")
 
         if self.elapsed_time < 0:
-            return FlextResult.fail("Elapsed time cannot be negative")
+            return FlextResult[object].fail("Elapsed time cannot be negative")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
 
 class ApiErrorContext(FlextModel):
@@ -1308,9 +1308,9 @@ class ApiErrorContext(FlextModel):
         if self.status_code is not None and not (
             MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS
         ):
-            return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
+            return FlextResult[object].fail(f"Invalid HTTP status code: {self.status_code}")
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     def to_dict(
         self,
@@ -1367,17 +1367,17 @@ class QueryBuilder(FlextModel):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate query builder business rules."""
         if self.page < 1:
-            return FlextResult.fail("Page number must be positive")
+            return FlextResult[object].fail("Page number must be positive")
 
         if (
             self.page_size < 1
             or self.page_size > FlextApiConstants.Config.MAX_PAGE_SIZE
         ):
-            return FlextResult.fail(
+            return FlextResult[object].fail(
                 f"Page size must be between 1 and {FlextApiConstants.Config.MAX_PAGE_SIZE}",
             )
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     def to_query_config(self) -> QueryConfig:
         """Convert to QueryConfig value object."""
@@ -1413,14 +1413,14 @@ class ResponseBuilder(FlextModel):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate response builder business rules."""
         if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
-            return FlextResult.fail(f"Invalid HTTP status code: {self.status_code}")
+            return FlextResult[object].fail(f"Invalid HTTP status code: {self.status_code}")
 
         if not self.success and not (self.errors or self.message):
-            return FlextResult.fail(
+            return FlextResult[object].fail(
                 "Error responses must include error messages or details",
             )
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
     def to_dict(
         self,

@@ -60,7 +60,7 @@ def create_flext_api() -> FlextAPIProtocol:
 
     class FlextAPI:
         def health_check(self) -> FlextResult[dict[str, object]]:
-            return FlextResult.ok({"status": "healthy"})
+            return FlextResult[None].ok({"status": "healthy"})
 
     return FlextAPI()
 

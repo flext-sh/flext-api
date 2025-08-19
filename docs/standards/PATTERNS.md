@@ -58,15 +58,15 @@ async def service_operation() -> FlextResult[DataType]:
         result = await some_operation()
 
         logger.info("Operation completed successfully")
-        return FlextResult.ok(result)
+        return FlextResult[None].ok(result)
 
     except SomeSpecificError as e:
         logger.warning(f"Expected error: {e}")
-        return FlextResult.fail(f"Operation failed: {e}")
+        return FlextResult[None].fail(f"Operation failed: {e}")
 
     except Exception as e:
         logger.exception("Unexpected error in operation")
-        return FlextResult.fail(f"Unexpected error: {e}")
+        return FlextResult[None].fail(f"Unexpected error: {e}")
 ```
 
 ### 3. Service Class Pattern
@@ -312,7 +312,7 @@ try:
     result = risky_operation()
 except SpecificError as e:
     logger.warning(f"Expected error: {e}")
-    return FlextResult.fail(f"Operation failed: {e}")
+    return FlextResult[None].fail(f"Operation failed: {e}")
 ```
 
 ### ❌ Legacy Code Patterns

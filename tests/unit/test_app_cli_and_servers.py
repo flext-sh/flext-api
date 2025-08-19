@@ -68,7 +68,7 @@ def test_create_flext_api_app_with_settings_failure(
     """When settings creation fails, the wrapper raises RuntimeError."""
 
     def fake_create_api_settings(**_: object) -> FlextResult[object]:
-        return FlextResult.fail("boom")
+        return FlextResult[None].fail("boom")
 
     monkeypatch.setattr(api_app_module, "create_api_settings", fake_create_api_settings)
 

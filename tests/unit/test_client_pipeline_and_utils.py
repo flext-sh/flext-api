@@ -31,7 +31,7 @@ class BeforePluginPass:
         if isinstance(request, FlextApiClientRequest):
             new_headers = dict(request.headers)
             new_headers["X-Test"] = "1"
-            return FlextResult.ok(
+            return FlextResult[None].ok(
                 FlextApiClientRequest(
                     method=request.method,
                     url=request.url,
@@ -56,7 +56,7 @@ class BeforePluginFail:
         _request: object,
         _context: object | None = None,
     ) -> FlextResult[object]:
-        return FlextResult.fail("bad before")
+        return FlextResult[None].fail("bad before")
 
 
 class AfterPluginFail:
@@ -70,7 +70,7 @@ class AfterPluginFail:
         _response: object,
         _context: object | None = None,
     ) -> FlextResult[object]:
-        return FlextResult.fail("bad after")
+        return FlextResult[None].fail("bad after")
 
 
 @pytest.mark.asyncio
@@ -136,7 +136,7 @@ async def test_format_request_error_and_legacy_make_request(
 
     # _format_request_error with session not available
     formatted = client._format_request_error(
-        FlextResult.fail("HTTP session not available"),
+        FlextResult[None].fail("HTTP session not available"),
         "GET",
     )
     assert not formatted.success
