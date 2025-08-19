@@ -18,9 +18,9 @@ from typing import TypeVar, cast
 from flext_core import FlextDomainService, FlextResult, get_logger
 from pydantic import Field
 
-from flext_api.api_client import FlextApiQueryBuilder, FlextApiResponseBuilder
-from flext_api.api_models import ClientConfig
-from flext_api.api_protocols import (
+from flext_api.client import FlextApiQueryBuilder, FlextApiResponseBuilder
+from flext_api.models import ClientConfig
+from flext_api.protocols import (
     FlextApiMiddlewareProtocol,
     FlextApiPluginProtocol,
     FlextApiQueryBuilderProtocol,
@@ -117,19 +117,19 @@ class FlextApiBaseService(
 
             # Get service-specific health details
             details_result = await self._get_health_details()
-            if details_result.success and details_result.data is not None:
+            if details_result.success:
                 health_info.update(details_result.data)
             elif details_result.is_failure:
-                return FlextResult[None].fail(details_result.error or "Health details failed")
+                return FlextResult[dict[str, object]].fail(details_result.error or "Health details failed")
 
-            return FlextResult[None].ok(health_info)
+            return FlextResult[dict[str, object]].ok(health_info)
         except Exception as e:
             logger.exception("Health check failed", service=self.service_name)
-            return FlextResult[None].fail(f"Health check failed: {e}")
+            return FlextResult[dict[str, object]].fail(f"Health check failed: {e}")
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute service operation (from FlextDomainService)."""
-        return FlextResult[None].ok({"service": self.service_name, "status": "executed"})
+        return FlextResult[dict[str, object]].ok({"service": self.service_name, "status": "executed"})
 
     @abstractmethod
     async def _do_start(self) -> FlextResult[None]:
@@ -141,7 +141,7 @@ class FlextApiBaseService(
 
     async def _get_health_details(self) -> FlextResult[dict[str, object]]:
         """Get service-specific health details. Override in subclasses."""
-        return FlextResult[None].ok({})
+        return FlextResult[dict[str, object]].ok({})
 
 
 # ==============================================================================
@@ -192,7 +192,7 @@ class FlextApiBaseClientService(
                     params=dict(params) if params else {},
                 )
                 if not plugin_result.success:
-                    return FlextResult[None].fail(f"Plugin failed: {plugin_result.error}")
+                    return FlextResult[FlextTypes.Core.JsonDict].fail(f"Plugin failed: {plugin_result.error}")
 
             # Execute request (implemented by subclass)
             response_result = await self._execute_request_with_timeout(
@@ -218,13 +218,13 @@ class FlextApiBaseClientService(
                     method=method,
                     url=url,
                 )
-                if after_plugin_result.success and after_plugin_result.data is not None:
+                if after_plugin_result.success:
                     response_data = after_plugin_result.data
 
-            return FlextResult[None].ok(response_data)
+            return FlextResult[FlextTypes.Core.JsonDict].ok(response_data)
         except Exception as e:
             logger.exception("Request failed", method=method, url=url)
-            return FlextResult[None].fail(f"Request failed: {e}")
+            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Request failed: {e}")
 
     async def close(self) -> None:
         """Close the client and cleanup resources."""
@@ -299,7 +299,7 @@ class FlextApiBaseAuthService(
             # Validate credentials format
             validation_result = self._validate_credentials(credentials)
             if not validation_result.success:
-                return FlextResult[None].fail(
+                return FlextResult[FlextTypes.Core.JsonDict].fail(
                     validation_result.error or "Credential validation failed",
                 )
 
@@ -318,20 +318,20 @@ class FlextApiBaseAuthService(
             return session_result
         except Exception as e:
             logger.exception("Authentication failed")
-            return FlextResult[None].fail(f"Authentication failed: {e}")
+            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Authentication failed: {e}")
 
     async def validate_token(self, token: str) -> FlextResult[bool]:
         """Validate an authentication token."""
         try:
             # Basic validation: require non-empty token; policy specifics are delegated
             if not token:
-                return FlextResult[None].ok(False)
+                return FlextResult[bool].ok(False)  # noqa: FBT003
 
             # Perform token validation (implemented by subclass)
             return await self._do_validate_token(token)
         except Exception as e:
             logger.exception("Token validation failed")
-            return FlextResult[None].fail(f"Token validation failed: {e}")
+            return FlextResult[bool].fail(f"Token validation failed: {e}")
 
     async def refresh_token(self, token: str) -> FlextResult[str]:
         """Refresh an authentication token."""
@@ -339,13 +339,13 @@ class FlextApiBaseAuthService(
             # Validate current token
             validation_result = await self.validate_token(token)
             if not validation_result.success or not validation_result.data:
-                return FlextResult[None].fail("Invalid token")
+                return FlextResult[str].fail("Invalid token")
 
             # Perform token refresh (implemented by subclass)
             return await self._do_refresh_token(token)
         except Exception as e:
             logger.exception("Token refresh failed")
-            return FlextResult[None].fail(f"Token refresh failed: {e}")
+            return FlextResult[str].fail(f"Token refresh failed: {e}")
 
     def _validate_credentials(
         self,
@@ -376,7 +376,7 @@ class FlextApiBaseAuthService(
         auth_data: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Create session from authentication data. Override in subclasses."""
-        return FlextResult[None].ok(auth_data)
+        return FlextResult[FlextTypes.Core.JsonDict].ok(auth_data)
 
 
 # ==============================================================================
@@ -401,13 +401,13 @@ class FlextApiBaseRepositoryService(
         """Find entity by ID."""
         try:
             if not entity_id:
-                return FlextResult[None].fail("Entity ID cannot be empty")
+                return FlextResult[FlextTypes.Core.JsonDict].fail("Entity ID cannot be empty")
 
             # Perform lookup (implemented by subclass)
             return await self._do_find_by_id(entity_id)
         except Exception as e:
             logger.exception("Failed to find entity", entity_id=entity_id)
-            return FlextResult[None].fail(f"Failed to find entity: {e}")
+            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Failed to find entity: {e}")
 
     async def find_all(
         self,
@@ -419,15 +419,15 @@ class FlextApiBaseRepositoryService(
         try:
             # Validate pagination parameters
             if limit is not None and limit <= 0:
-                return FlextResult[None].fail("Limit must be positive")
+                return FlextResult[list[FlextTypes.Core.JsonDict]].fail("Limit must be positive")
             if offset is not None and offset < 0:
-                return FlextResult[None].fail("Offset must be non-negative")
+                return FlextResult[list[FlextTypes.Core.JsonDict]].fail("Offset must be non-negative")
 
             # Perform query (implemented by subclass)
             return await self._do_find_all(filters, limit, offset)
         except Exception as e:
             logger.exception("Failed to find entities")
-            return FlextResult[None].fail(f"Failed to find entities: {e}")
+            return FlextResult[list[FlextTypes.Core.JsonDict]].fail(f"Failed to find entities: {e}")
 
     async def save(
         self,
@@ -436,12 +436,12 @@ class FlextApiBaseRepositoryService(
         """Save an entity."""
         try:
             if not entity:
-                return FlextResult[None].fail("Entity cannot be None")
+                return FlextResult[FlextTypes.Core.JsonDict].fail("Entity cannot be None")
 
             # Validate entity
             validation_result = self._validate_entity(entity)
             if not validation_result.success:
-                return FlextResult[None].fail(
+                return FlextResult[FlextTypes.Core.JsonDict].fail(
                     validation_result.error or "Entity validation failed",
                 )
 
@@ -449,7 +449,7 @@ class FlextApiBaseRepositoryService(
             return await self._do_save(entity)
         except Exception as e:
             logger.exception("Failed to save entity")
-            return FlextResult[None].fail(f"Failed to save entity: {e}")
+            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Failed to save entity: {e}")
 
     async def delete(self, entity_id: str) -> FlextResult[None]:
         """Delete an entity by ID."""
@@ -549,10 +549,10 @@ class FlextApiBaseHandlerService(
                 if middleware_result.success and middleware_result.data:
                     processed_response = middleware_result.data
 
-            return FlextResult[None].ok(processed_response)
+            return FlextResult[FlextTypes.Core.JsonDict].ok(processed_response)
         except Exception as e:
             logger.exception("Request handling failed")
-            return FlextResult[None].fail(f"Request handling failed: {e}")
+            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Request handling failed: {e}")
 
     @abstractmethod
     async def _do_handle(
