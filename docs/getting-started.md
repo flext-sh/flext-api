@@ -98,7 +98,7 @@ def http_client_example() -> FlextResult[dict]:
 
     if client_result.is_failure:
         logger.error("Client creation failed", error=client_result.error)
-        return FlextResult.fail(
+        return FlextResult[None].fail(
             error=f"Failed to create HTTP client: {client_result.error}",
             error_code="CLIENT_CREATION_FAILED"
         )
@@ -107,7 +107,7 @@ def http_client_example() -> FlextResult[dict]:
     logger.info("HTTP client created successfully")
 
     # ✅ Type-safe response
-    return FlextResult.ok({
+    return FlextResult[None].ok({
         "client_type": type(client).__name__,
         "base_url": "https://api.github.com",
         "status": "ready"
@@ -169,7 +169,7 @@ def query_builder_example() -> FlextResult[Dict[str, Any]]:
         logger.error("Query building failed",
                     error=query_result.error,
                     params=query_params)
-        return FlextResult.fail(
+        return FlextResult[None].fail(
             error=f"Query construction failed: {query_result.error}",
             error_code="QUERY_BUILD_FAILED"
         )
@@ -179,7 +179,7 @@ def query_builder_example() -> FlextResult[Dict[str, Any]]:
                query_size=len(str(query)),
                filters_count=len(query_params.get("filters", {})))
 
-    return FlextResult.ok({
+    return FlextResult[None].ok({
         "query": query,
         "estimated_results": 50,
         "cache_key": f"query_{hash(str(query))}",
@@ -262,7 +262,7 @@ def client_with_plugins_example() -> FlextResult[dict]:
                    plugins_count=len(plugins),
                    base_url=config["base_url"])
 
-        return FlextResult.ok({
+        return FlextResult[None].ok({
             "client_type": type(client).__name__,
             "plugins_enabled": [type(p).__name__ for p in plugins],
             "base_url": config["base_url"],
@@ -274,7 +274,7 @@ def client_with_plugins_example() -> FlextResult[dict]:
         logger.exception("Client creation with plugins failed",
                         error=str(e),
                         config=config)
-        return FlextResult.fail(
+        return FlextResult[None].fail(
             error=f"Failed to create client with plugins: {e}",
             error_code="CLIENT_PLUGINS_FAILED"
         )
@@ -451,7 +451,7 @@ class TestFlextApiGettingStarted:
 
         api = create_flext_api()
 
-        # ✅ Test invalid config - should return FlextResult.fail()
+        # ✅ Test invalid config - should return FlextResult[None].fail()
         invalid_config = {"base_url": "invalid_url"}  # Invalid URL
 
         client_result = api.flext_api_create_client(invalid_config)

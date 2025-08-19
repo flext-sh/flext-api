@@ -363,7 +363,7 @@ def test_with_mock(self, mock_client):
 **Symptoms**:
 
 ```python
-FlextResult.fail("Connection refused")
+FlextResult[None].fail("Connection refused")
 ConnectionError: [Errno 61] Connection refused
 ```
 
@@ -421,7 +421,7 @@ if not client_result.success:
 **Symptoms**:
 
 ```python
-FlextResult.fail("Request timeout")
+FlextResult[None].fail("Request timeout")
 TimeoutError: Request timed out after 30 seconds
 ```
 
@@ -530,7 +530,7 @@ class AuthenticatedClient:
         })
 
         if not auth_client_result.success:
-            return FlextResult.fail("Auth client creation failed")
+            return FlextResult[None].fail("Auth client creation failed")
 
         auth_client = auth_client_result.data
         response = auth_client.post("/auth/token", json={
@@ -541,15 +541,15 @@ class AuthenticatedClient:
         if response.success:
             self.token = response.data.get("access_token")
             logger.info("Authentication successful")
-            return FlextResult.ok(self.token)
+            return FlextResult[None].ok(self.token)
         else:
             logger.error("Authentication failed", error=response.error)
-            return FlextResult.fail(f"Auth failed: {response.error}")
+            return FlextResult[None].fail(f"Auth failed: {response.error}")
 
     def create_authenticated_client(self, base_url: str) -> FlextResult[object]:
         """Create client with authentication."""
         if not self.token:
-            return FlextResult.fail("Not authenticated")
+            return FlextResult[None].fail("Not authenticated")
 
         return self.api.flext_api_create_client({
             "base_url": base_url,
@@ -596,15 +596,15 @@ def good_operation() -> FlextResult[dict]:
     try:
         if error_condition:
             logger.warning("Operation condition not met")
-            return FlextResult.fail("Invalid operation state")
+            return FlextResult[None].fail("Invalid operation state")
 
         result = perform_operation()
         logger.info("Operation completed successfully")
-        return FlextResult.ok(result)
+        return FlextResult[None].ok(result)
 
     except Exception as e:
         logger.exception("Operation failed unexpectedly")
-        return FlextResult.fail(f"Operation failed: {e}")
+        return FlextResult[None].fail(f"Operation failed: {e}")
 
 # Usage
 result = good_operation()
@@ -646,12 +646,12 @@ def service_operation():
         logger.info("Operation completed",
                    operation="service_operation",
                    records_processed=len(result))
-        return FlextResult.ok(result)
+        return FlextResult[None].ok(result)
     except Exception as e:
         logger.exception("Operation failed",
                         operation="service_operation",
                         error_type=type(e).__name__)
-        return FlextResult.fail(f"Operation failed: {e}")
+        return FlextResult[None].fail(f"Operation failed: {e}")
 ```
 
 ### **Dependency Injection Issues**
@@ -927,10 +927,10 @@ from flext_core import FlextResult
 def typed_function(name: str, age: int) -> FlextResult[Dict[str, Any]]:
     """Function with proper type annotations."""
     if not name:
-        return FlextResult.fail("Name is required")
+        return FlextResult[None].fail("Name is required")
 
     result = {"name": name, "age": age}
-    return FlextResult.ok(result)
+    return FlextResult[None].ok(result)
 
 # ✅ Handle Optional types properly
 def handle_optional(value: Optional[str]) -> str:
@@ -946,9 +946,9 @@ def process_items(items: List[Union[str, int]]) -> FlextResult[List[str]]:
     """Process items with proper typing."""
     try:
         result = [str(item) for item in items]
-        return FlextResult.ok(result)
+        return FlextResult[None].ok(result)
     except Exception as e:
-        return FlextResult.fail(f"Processing failed: {e}")
+        return FlextResult[None].fail(f"Processing failed: {e}")
 ```
 
 ---

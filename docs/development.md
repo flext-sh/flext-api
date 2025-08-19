@@ -147,10 +147,10 @@ make deps-audit     # Security audit of dependencies
    def service_operation() -> FlextResult[DataType]:
        try:
            result = perform_operation()
-           return FlextResult.ok(result)
+           return FlextResult[None].ok(result)
        except Exception as e:
            logger.exception("Operation failed", operation="service_operation")
-           return FlextResult.fail(f"Operation failed: {e}")
+           return FlextResult[None].fail(f"Operation failed: {e}")
    ```
 
 2. **Structured Logging** (Currently 25% compliant)

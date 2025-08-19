@@ -55,7 +55,7 @@ class FlextApi(FlextApiBaseService):
     async def _do_start(self) -> FlextResult[None]:
         """Perform service-specific startup logic."""
         logger.debug("FlextApi service startup complete")
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     async def _do_stop(self) -> FlextResult[None]:
         """Perform service-specific shutdown logic."""
@@ -65,10 +65,10 @@ class FlextApi(FlextApiBaseService):
                 await self._client.close()
                 self._client = None
             logger.debug("FlextApi service shutdown complete")
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
         except Exception as e:
             logger.exception("Error during service shutdown")
-            return FlextResult.fail(f"Shutdown error: {e}")
+            return FlextResult[None].fail(f"Shutdown error: {e}")
 
     async def _get_health_details(self) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Get service-specific health details."""
@@ -80,7 +80,7 @@ class FlextApi(FlextApiBaseService):
         if self._client_config:
             details["client_base_url"] = self._client_config.base_url
             details["client_timeout"] = self._client_config.timeout
-        return FlextResult.ok(details)
+        return FlextResult[None].ok(details)
 
     def health_check(self) -> FlextResult[FlextTypes.Core.JsonDict] | object:
         """Health check supporting both sync and async usage.
@@ -186,7 +186,7 @@ class FlextApi(FlextApiBaseService):
             # Validate configuration
             validation_result = client_config.validate_business_rules()
             if not validation_result.success:
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     validation_result.error or "Invalid client configuration",
                 )
             # Convert to legacy config format for backward compatibility
@@ -201,10 +201,10 @@ class FlextApi(FlextApiBaseService):
             self._client = api_client
             self._client_config = client_config
             logger.info("HTTP client created", base_url=client_config.base_url)
-            return FlextResult.ok(api_client)
+            return FlextResult[None].ok(api_client)
         except Exception as e:
             logger.exception("Failed to create client")
-            return FlextResult.fail(f"Failed to create client: {e}")
+            return FlextResult[None].fail(f"Failed to create client: {e}")
 
     def get_builder(self) -> FlextApiBuilder:
         """Get builder instance for advanced operations.
@@ -345,10 +345,10 @@ class FlextApi(FlextApiBaseService):
         result = self.create_client(config)
         if result.success and result.data is not None:
             # Convert protocol to concrete type for legacy compatibility
-            return FlextResult.ok(cast("FlextApiClient", result.data))
+            return FlextResult[None].ok(cast("FlextApiClient", result.data))
         # Handle failure case
         error_msg = result.error or "Unknown error"
-        return FlextResult.fail(f"Failed to create client: {error_msg}")
+        return FlextResult[None].fail(f"Failed to create client: {error_msg}")
 
 
 def create_flext_api(**config: object) -> FlextApi:

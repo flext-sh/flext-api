@@ -112,31 +112,31 @@ class FlextApiSettings(FlextBaseConfigModel):
             self.api_port < FlextApiConstants.Connection.PRIVILEGED_PORT_LIMIT
             and self.environment == "production"
         ):
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 f"Production API should not use privileged ports (< {FlextApiConstants.Connection.PRIVILEGED_PORT_LIMIT})",
             )
         # Debug mode validation
         if self.debug and self.environment == "production":
-            return FlextResult.fail("Debug mode cannot be enabled in production")
+            return FlextResult[None].fail("Debug mode cannot be enabled in production")
         # Database configuration validation
         if (
             self.database_url
             and self.database_pool_size > FlextApiConstants.Database.MAX_POOL_SIZE
         ):
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 f"Database pool size should not exceed {FlextApiConstants.Database.MAX_POOL_SIZE} for optimal performance",
             )
         # Cache configuration validation
         if self.enable_caching and self.cache_ttl <= 0:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 "Cache TTL must be positive when caching is enabled",
             )
         # External API configuration validation
         if self.external_api_retries > FlextApiConstants.Config.MAX_RETRIES:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 f"External API retries should not exceed {FlextApiConstants.Config.MAX_RETRIES} to avoid excessive delays",
             )
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     @classmethod
     def create_with_validation(
@@ -164,9 +164,9 @@ class FlextApiSettings(FlextBaseConfigModel):
                 if config_data
                 else cls.model_validate({})
             )
-            return FlextResult.ok(settings)
+            return FlextResult[None].ok(settings)
         except (RuntimeError, ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Failed to create settings: {e}")
+            return FlextResult[None].fail(f"Failed to create settings: {e}")
 
 
 def create_api_settings(**overrides: object) -> FlextResult[FlextApiSettings]:
@@ -190,9 +190,9 @@ def create_api_settings(**overrides: object) -> FlextResult[FlextApiSettings]:
             current_values = settings.model_dump()
             current_values.update(overrides)
             settings = FlextApiSettings.model_validate(current_values)
-        return FlextResult.ok(settings)
+        return FlextResult[None].ok(settings)
     except Exception as e:
-        return FlextResult.fail(f"Failed to create settings: {e}")
+        return FlextResult[None].fail(f"Failed to create settings: {e}")
 
 
 # Legacy compatibility - maintain backward compatibility
@@ -226,19 +226,19 @@ def validate_configuration(settings: FlextApiSettings) -> FlextResult[None]:
         # Validate required fields for production
         if settings.environment == "production":
             if not settings.secret_key:
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     "Secret key is required for production environment",
                 )
             if not settings.database_url:
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     "Database URL is required for production environment",
                 )
 
         # Validate CORS origins format
         for origin in settings.cors_origins:
             if not origin.startswith(("http://", "https://")):
-                return FlextResult.fail(f"Invalid CORS origin format: {origin}")
+                return FlextResult[None].fail(f"Invalid CORS origin format: {origin}")
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
     except Exception as e:
-        return FlextResult.fail(f"Configuration validation failed: {e}")
+        return FlextResult[None].fail(f"Configuration validation failed: {e}")

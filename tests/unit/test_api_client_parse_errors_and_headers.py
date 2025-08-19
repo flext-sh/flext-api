@@ -66,7 +66,7 @@ async def test_execute_request_pipeline_empty_response(
     async def bad_perform(
         _req: FlextApiClientRequest,
     ) -> FlextResult[FlextApiClientResponse]:
-        return FlextResult.ok(FlextApiClientResponse(status_code=200, data=None))
+        return FlextResult[None].ok(FlextApiClientResponse(status_code=200, data=None))
 
     await client.start()
     monkeypatch.setattr(client, "_perform_http_request", bad_perform)

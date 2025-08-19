@@ -52,22 +52,22 @@ class FlexCoreClient:
     def health_check(self) -> FlextResult[dict]:
         """Check FlexCore service health."""
         if not self.client_result.success:
-            return FlextResult.fail("Client not initialized")
+            return FlextResult[None].fail("Client not initialized")
 
         client = self.client_result.data
         response = client.get("/health")
 
         if response.success:
             logger.info("FlexCore health check successful")
-            return FlextResult.ok(response.data)
+            return FlextResult[None].ok(response.data)
         else:
             logger.warning("FlexCore health check failed", error=response.error)
-            return FlextResult.fail(f"Health check failed: {response.error}")
+            return FlextResult[None].fail(f"Health check failed: {response.error}")
 
     def execute_plugin(self, plugin_name: str, command: dict) -> FlextResult[dict]:
         """Execute plugin command via FlexCore."""
         if not self.client_result.success:
-            return FlextResult.fail("Client not initialized")
+            return FlextResult[None].fail("Client not initialized")
 
         client = self.client_result.data
         response = client.post(
@@ -77,10 +77,10 @@ class FlexCoreClient:
 
         if response.success:
             logger.info("Plugin executed successfully", plugin=plugin_name)
-            return FlextResult.ok(response.data)
+            return FlextResult[None].ok(response.data)
         else:
             logger.error("Plugin execution failed", plugin=plugin_name, error=response.error)
-            return FlextResult.fail(f"Plugin execution failed: {response.error}")
+            return FlextResult[None].fail(f"Plugin execution failed: {response.error}")
 ```
 
 ### **FLEXT Service (Go/Python:8081)**
@@ -112,7 +112,7 @@ class FlextServiceClient:
     def execute_meltano_pipeline(self, pipeline_config: Dict[str, Any]) -> FlextResult[dict]:
         """Execute Meltano pipeline via FLEXT Service."""
         if not self.client_result.success:
-            return FlextResult.fail("Client not initialized")
+            return FlextResult[None].fail("Client not initialized")
 
         client = self.client_result.data
         response = client.post(
@@ -122,23 +122,23 @@ class FlextServiceClient:
 
         if response.success:
             logger.info("Meltano pipeline executed", pipeline=pipeline_config.get('name'))
-            return FlextResult.ok(response.data)
+            return FlextResult[None].ok(response.data)
         else:
             logger.error("Meltano pipeline failed", error=response.error)
-            return FlextResult.fail(f"Pipeline execution failed: {response.error}")
+            return FlextResult[None].fail(f"Pipeline execution failed: {response.error}")
 
     def get_pipeline_status(self, pipeline_id: str) -> FlextResult[dict]:
         """Get pipeline execution status."""
         if not self.client_result.success:
-            return FlextResult.fail("Client not initialized")
+            return FlextResult[None].fail("Client not initialized")
 
         client = self.client_result.data
         response = client.get(f"/api/v1/pipelines/{pipeline_id}/status")
 
         if response.success:
-            return FlextResult.ok(response.data)
+            return FlextResult[None].ok(response.data)
         else:
-            return FlextResult.fail(f"Status check failed: {response.error}")
+            return FlextResult[None].fail(f"Status check failed: {response.error}")
 ```
 
 ---
@@ -173,7 +173,7 @@ class AuthenticatedApiClient:
         })
 
         if not auth_client_result.success:
-            return FlextResult.fail("Auth client creation failed")
+            return FlextResult[None].fail("Auth client creation failed")
 
         auth_client = auth_client_result.data
         response = auth_client.post("/auth/login", json={
@@ -186,17 +186,17 @@ class AuthenticatedApiClient:
             if token:
                 self.auth_token = token
                 logger.info("Authentication successful", username=username)
-                return FlextResult.ok(token)
+                return FlextResult[None].ok(token)
             else:
-                return FlextResult.fail("No token in response")
+                return FlextResult[None].fail("No token in response")
         else:
             logger.warning("Authentication failed", username=username)
-            return FlextResult.fail(f"Authentication failed: {response.error}")
+            return FlextResult[None].fail(f"Authentication failed: {response.error}")
 
     def create_authenticated_client(self, base_url: str) -> FlextResult[object]:
         """Create HTTP client with authentication headers."""
         if not self.auth_token:
-            return FlextResult.fail("Not authenticated")
+            return FlextResult[None].fail("Not authenticated")
 
         client_result = self.api.flext_api_create_client({
             "base_url": base_url,
@@ -232,14 +232,14 @@ class FlextApiAuthPlugin(FlextApiPlugin):
         headers["Authorization"] = f"Bearer {self.auth_token}"
         request_config["headers"] = headers
 
-        return FlextResult.ok(request_config)
+        return FlextResult[None].ok(request_config)
 
     def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
         """Process response and handle auth errors."""
         if response.get("status_code") == 401:
-            return FlextResult.fail("Authentication expired")
+            return FlextResult[None].fail("Authentication expired")
 
-        return FlextResult.ok(response)
+        return FlextResult[None].ok(response)
 ```
 
 ---
@@ -298,14 +298,14 @@ class FlextApiMetricsPlugin:
         """Record request metrics."""
         self.metrics.increment("flext_api.requests.started")
         self.metrics.histogram("flext_api.request.size", len(str(request_config)))
-        return FlextResult.ok(request_config)
+        return FlextResult[None].ok(request_config)
 
     def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
         """Record response metrics."""
         status_code = response.get("status_code", 0)
         self.metrics.increment(f"flext_api.responses.{status_code}")
         self.metrics.histogram("flext_api.response.size", len(str(response)))
-        return FlextResult.ok(response)
+        return FlextResult[None].ok(response)
 
 class FlextApiTracingPlugin:
     """Plugin for distributed tracing."""
@@ -321,7 +321,7 @@ class FlextApiTracingPlugin:
 
         # Store span in request context
         request_config["_trace_span"] = span
-        return FlextResult.ok(request_config)
+        return FlextResult[None].ok(request_config)
 
     def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
         """Complete trace span."""
@@ -330,7 +330,7 @@ class FlextApiTracingPlugin:
             span.set_attribute("http.status_code", response.get("status_code", 0))
             span.finish()
 
-        return FlextResult.ok(response)
+        return FlextResult[None].ok(response)
 ```
 
 ---
@@ -389,11 +389,11 @@ class OracleApiIntegration:
                     logger.warning("Record insert failed", record_id=record.get("id"))
 
             logger.info("Data sync completed", records=records_processed)
-            return FlextResult.ok(records_processed)
+            return FlextResult[None].ok(records_processed)
 
         except Exception as e:
             logger.exception("Data sync failed")
-            return FlextResult.fail(f"Sync failed: {e}")
+            return FlextResult[None].fail(f"Sync failed: {e}")
 ```
 
 ### **LDAP Integration**
@@ -421,17 +421,17 @@ class LdapApiIntegration:
         # Authenticate with LDAP
         auth_result = self.ldap_client.authenticate(username, password)
         if not auth_result.success:
-            return FlextResult.fail(f"LDAP authentication failed: {auth_result.error}")
+            return FlextResult[None].fail(f"LDAP authentication failed: {auth_result.error}")
 
         # Get user attributes
         user_result = self.ldap_client.get_user_attributes(username)
         if not user_result.success:
-            return FlextResult.fail(f"User lookup failed: {user_result.error}")
+            return FlextResult[None].fail(f"User lookup failed: {user_result.error}")
 
         user_data = user_result.data
         logger.info("User authenticated successfully", username=username)
 
-        return FlextResult.ok({
+        return FlextResult[None].ok({
             "authenticated": True,
             "username": username,
             "attributes": user_data
@@ -443,7 +443,7 @@ class LdapApiIntegration:
         # Get user information from LDAP
         user_result = self.ldap_client.get_user_attributes(username)
         if not user_result.success:
-            return FlextResult.fail("User not found in LDAP")
+            return FlextResult[None].fail("User not found in LDAP")
 
         user_data = user_result.data
 
@@ -498,7 +498,7 @@ class MeltanoPipelineApi:
         })
 
         if not client_result.success:
-            return FlextResult.fail("Pipeline client creation failed")
+            return FlextResult[None].fail("Pipeline client creation failed")
 
         client = client_result.data
 
@@ -514,10 +514,10 @@ class MeltanoPipelineApi:
         if response.success:
             execution_id = response.data.get("execution_id")
             logger.info("Pipeline execution started", execution_id=execution_id)
-            return FlextResult.ok(execution_id)
+            return FlextResult[None].ok(execution_id)
         else:
             logger.error("Pipeline execution failed", error=response.error)
-            return FlextResult.fail(f"Execution failed: {response.error}")
+            return FlextResult[None].fail(f"Execution failed: {response.error}")
 
     def monitor_pipeline_execution(self, execution_id: str) -> FlextResult[Dict[str, Any]]:
         """Monitor pipeline execution status."""
@@ -528,7 +528,7 @@ class MeltanoPipelineApi:
         })
 
         if not client_result.success:
-            return FlextResult.fail("Monitoring client creation failed")
+            return FlextResult[None].fail("Monitoring client creation failed")
 
         client = client_result.data
         response = client.get(f"/api/v1/pipelines/{execution_id}/status")
@@ -538,9 +538,9 @@ class MeltanoPipelineApi:
             logger.info("Pipeline status retrieved",
                        execution_id=execution_id,
                        status=status_data.get("status"))
-            return FlextResult.ok(status_data)
+            return FlextResult[None].ok(status_data)
         else:
-            return FlextResult.fail(f"Status retrieval failed: {response.error}")
+            return FlextResult[None].fail(f"Status retrieval failed: {response.error}")
 ```
 
 ### **DBT Transformation Integration**
@@ -573,7 +573,7 @@ class DbtTransformationApi:
         })
 
         if not client_result.success:
-            return FlextResult.fail("DBT client creation failed")
+            return FlextResult[None].fail("DBT client creation failed")
 
         client = client_result.data
         response = client.post("/api/v1/transformations/dbt/run", json={
@@ -588,10 +588,10 @@ class DbtTransformationApi:
             logger.info("DBT models executed",
                        models=models,
                        status=result.get("status"))
-            return FlextResult.ok(result)
+            return FlextResult[None].ok(result)
         else:
             logger.error("DBT execution failed", models=models, error=response.error)
-            return FlextResult.fail(f"DBT execution failed: {response.error}")
+            return FlextResult[None].fail(f"DBT execution failed: {response.error}")
 ```
 
 ---
@@ -628,7 +628,7 @@ class WebInterfaceApi:
         })
 
         if not client_result.success:
-            return FlextResult.fail("Web client creation failed")
+            return FlextResult[None].fail("Web client creation failed")
 
         client = client_result.data
         response = client.get("/api/v1/dashboard/data")
@@ -636,10 +636,10 @@ class WebInterfaceApi:
         if response.success:
             dashboard_data = response.data
             logger.info("Dashboard data retrieved successfully")
-            return FlextResult.ok(dashboard_data)
+            return FlextResult[None].ok(dashboard_data)
         else:
             logger.warning("Dashboard data retrieval failed", error=response.error)
-            return FlextResult.fail(f"Dashboard data failed: {response.error}")
+            return FlextResult[None].fail(f"Dashboard data failed: {response.error}")
 
     def update_pipeline_status_ui(self, pipeline_id: str, status: str) -> FlextResult[bool]:
         """Update pipeline status in web interface."""
@@ -650,7 +650,7 @@ class WebInterfaceApi:
         })
 
         if not client_result.success:
-            return FlextResult.fail("Web client creation failed")
+            return FlextResult[None].fail("Web client creation failed")
 
         client = client_result.data
         response = client.put(f"/api/v1/pipelines/{pipeline_id}/status", json={
@@ -660,9 +660,9 @@ class WebInterfaceApi:
 
         if response.success:
             logger.info("Pipeline status updated in UI", pipeline_id=pipeline_id, status=status)
-            return FlextResult.ok(data=True)
+            return FlextResult[None].ok(data=True)
         else:
-            return FlextResult.fail(f"Status update failed: {response.error}")
+            return FlextResult[None].fail(f"Status update failed: {response.error}")
 ```
 
 ---
@@ -699,7 +699,7 @@ class CliApiIntegration:
         })
 
         if not client_result.success:
-            return FlextResult.fail("CLI client creation failed")
+            return FlextResult[None].fail("CLI client creation failed")
 
         client = client_result.data
         response = client.post("/api/v1/cli/execute", json={
@@ -711,10 +711,10 @@ class CliApiIntegration:
         if response.success:
             result = response.data
             logger.info("CLI command executed", command=" ".join(command))
-            return FlextResult.ok(result)
+            return FlextResult[None].ok(result)
         else:
             logger.error("CLI command failed", command=" ".join(command), error=response.error)
-            return FlextResult.fail(f"CLI execution failed: {response.error}")
+            return FlextResult[None].fail(f"CLI execution failed: {response.error}")
 ```
 
 ---
@@ -748,7 +748,7 @@ class FlextServiceDiscovery:
 
         service_url = self.service_registry.get(service_name)
         if not service_url:
-            return FlextResult.fail(f"Service not found: {service_name}")
+            return FlextResult[None].fail(f"Service not found: {service_name}")
 
         # Health check service before creating client
         health_result = self.check_service_health(service_name)
@@ -771,7 +771,7 @@ class FlextServiceDiscovery:
 
         service_url = self.service_registry.get(service_name)
         if not service_url:
-            return FlextResult.fail(f"Service not found: {service_name}")
+            return FlextResult[None].fail(f"Service not found: {service_name}")
 
         client_result = self.api.flext_api_create_client({
             "base_url": service_url,
@@ -779,15 +779,15 @@ class FlextServiceDiscovery:
         })
 
         if not client_result.success:
-            return FlextResult.fail("Health check client creation failed")
+            return FlextResult[None].fail("Health check client creation failed")
 
         client = client_result.data
         response = client.get("/health")
 
         if response.success:
-            return FlextResult.ok(response.data)
+            return FlextResult[None].ok(response.data)
         else:
-            return FlextResult.fail(f"Health check failed: {response.error}")
+            return FlextResult[None].fail(f"Health check failed: {response.error}")
 ```
 
 ### **Circuit Breaker Pattern**
@@ -820,9 +820,9 @@ class FlextCircuitBreakerPlugin(FlextApiCircuitBreakerPlugin):
                 self.state = "HALF_OPEN"
                 logger.info("Circuit breaker transitioning to HALF_OPEN")
             else:
-                return FlextResult.fail("Circuit breaker OPEN - service unavailable")
+                return FlextResult[None].fail("Circuit breaker OPEN - service unavailable")
 
-        return FlextResult.ok(request_config)
+        return FlextResult[None].ok(request_config)
 
     def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
         """Update circuit breaker state after response."""
@@ -845,7 +845,7 @@ class FlextCircuitBreakerPlugin(FlextApiCircuitBreakerPlugin):
             elif self.state == "CLOSED" and self.failure_count > 0:
                 self.failure_count = max(0, self.failure_count - 1)
 
-        return FlextResult.ok(response)
+        return FlextResult[None].ok(response)
 ```
 
 ---
