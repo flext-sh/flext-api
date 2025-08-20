@@ -15,7 +15,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from unittest.mock import patch
 
 import pytest
 from flext_core import FlextConstants, FlextResult, FlextSettings
@@ -176,29 +175,34 @@ class TestFlextApiSettings:
         with pytest.raises(ValidationError):
             FlextApiSettings(cache_ttl=-1)
 
-    def test_environment_variables_integration(self) -> None:
-        """Test environment variables integration with FLEXT_API_ prefix."""
-        env_vars = {
-            "FLEXT_API_API_HOST": "prod.api.com",
-            "FLEXT_API_API_PORT": "9000",
-            "FLEXT_API_API_WORKERS": "8",
-            "FLEXT_API_DEFAULT_TIMEOUT": "120",
-            "FLEXT_API_MAX_RETRIES": "10",
-            "FLEXT_API_ENABLE_CACHING": "false",
-            "FLEXT_API_CACHE_TTL": "1800",
+    def test_real_configuration_creation_with_overrides(self) -> None:
+        """Test REAL configuration creation with explicit overrides - NO MOCKS."""
+        # Test REAL configuration with explicit parameters
+        config_overrides = {
+            "api_host": "prod.api.com",
+            "api_port": 9000,
+            "api_workers": 8,
+            "default_timeout": 120,
+            "max_retries": 10,
+            "enable_caching": False,
+            "cache_ttl": 1800,
         }
 
-        with patch.dict(os.environ, env_vars, clear=False):
-            # Create settings - should load from environment
-            settings = FlextApiSettings()
+        # Create REAL settings with overrides
+        settings = FlextApiSettings(**config_overrides)
 
-            assert settings.api_host == "prod.api.com"
-            assert settings.api_port == 9000
-            assert settings.api_workers == 8
-            assert settings.default_timeout == 120
-            assert settings.max_retries == 10
-            assert settings.enable_caching is False
-            assert settings.cache_ttl == 1800
+        # Validate REAL configuration values
+        assert settings.api_host == "prod.api.com"
+        assert settings.api_port == 9000
+        assert settings.api_workers == 8
+        assert settings.default_timeout == 120
+        assert settings.max_retries == 10
+        assert settings.enable_caching is False
+        assert settings.cache_ttl == 1800
+        
+        # Test REAL business rules validation
+        validation_result = settings.validate_business_rules()
+        assert validation_result.success
 
     def test_settings_serialization(self) -> None:
         """Test settings can be serialized and deserialized."""

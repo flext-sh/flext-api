@@ -570,7 +570,7 @@ class BearerToken(FlextModel):
         # No else branch needed: all union members are covered above
 
         try:
-            instance = cls(token=token, token_type=token_type_enum)
+            instance = cls(token=token, token_type=token_type_enum, expires_at=None)
         except Exception as e:
             return FlextResult[BearerToken].fail(f"Token creation failed: {e}")
 

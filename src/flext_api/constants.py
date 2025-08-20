@@ -86,7 +86,7 @@ class FlextApiConstants(FlextConstants):
         MAX_SIZE = 1000
         CLEANUP_INTERVAL = 600  # 10 minutes
 
-    class Validation:
+    class ApiValidation:
         """Validation limits and constraints."""
 
         MAX_REQUEST_SIZE = 10485760  # 10MB
@@ -118,7 +118,7 @@ class FlextApiConstants(FlextConstants):
 
         MAX_POOL_SIZE = 50  # Maximum database connection pool size
 
-    class Performance:
+    class ApiPerformance:
         """Performance monitoring thresholds."""
 
         SLOW_REQUEST_THRESHOLD = 3.0  # seconds

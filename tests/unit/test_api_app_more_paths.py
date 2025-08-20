@@ -21,13 +21,13 @@ def test_default_app_instance_exposes_routes() -> None:
 
 def test_error_fallback_app_when_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     """When app init fails, fallback app should expose /error route."""
-    # Force failure using env knob and reload module
+    # Force failure using env knob and reload the app module
     monkeypatch.setenv("FLEXT_API_FORCE_APP_INIT_FAIL", "1")
-    spec = importlib.util.find_spec("flext_api.api_app")
+    spec = importlib.util.find_spec("flext_api.app")
     assert spec is not None
     assert spec.loader is not None
     new_module = importlib.util.module_from_spec(spec)
-    sys.modules["flext_api.api_app_reloaded"] = new_module
+    sys.modules["flext_api.app_reloaded"] = new_module
     spec.loader.exec_module(new_module)
     assert hasattr(new_module, "app")
     routes = {r.path for r in new_module.app.routes}

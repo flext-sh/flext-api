@@ -309,7 +309,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
         self,
         key: str,
         value: V,
-        _ttl_seconds: int | None = None,
+        ttl_seconds: int | None = None,  # noqa: ARG002
     ) -> FlextResult[None]:
         """Set value by key (TTL not supported in file backend)."""
         async with self._lock:

@@ -525,30 +525,30 @@ class TestExceptionInheritance:
 
     def test_all_specific_errors_inherit_from_correct_base(self) -> None:
         """Test all specific errors inherit from correct flext-core exceptions."""
-        # Test inheritance chain
+        # Test inheritance chain - note: not all flext-core exceptions inherit from FlextError
         validation_error = FlextApiValidationError("Test")
         assert isinstance(validation_error, FlextValidationError)
-        assert isinstance(validation_error, FlextError)
+        # FlextValidationError inherits from FlextErrorMixin + ValueError, not FlextError
 
         auth_error = FlextApiAuthenticationError("Test")
         assert isinstance(auth_error, FlextAuthenticationError)
-        assert isinstance(auth_error, FlextError)
+        # FlextAuthenticationError inherits from FlextErrorMixin + PermissionError, not FlextError
 
         config_error = FlextApiConfigurationError("Test")
         assert isinstance(config_error, FlextConfigurationError)
-        assert isinstance(config_error, FlextError)
+        # FlextConfigurationError inherits from FlextErrorMixin + ValueError, not FlextError
 
         connection_error = FlextApiConnectionError("Test")
         assert isinstance(connection_error, FlextConnectionError)
-        assert isinstance(connection_error, FlextError)
+        # FlextConnectionError inherits from FlextErrorMixin + ConnectionError, not FlextError
 
         processing_error = FlextApiProcessingError("Test")
         assert isinstance(processing_error, FlextProcessingError)
-        assert isinstance(processing_error, FlextError)
+        # FlextProcessingError inherits from FlextErrorMixin + RuntimeError, not FlextError
 
         timeout_error = FlextApiTimeoutError("Test")
         assert isinstance(timeout_error, FlextTimeoutError)
-        assert isinstance(timeout_error, FlextError)
+        # FlextTimeoutError inherits from FlextErrorMixin + TimeoutError, not FlextError
 
     def test_api_specific_errors_inherit_from_api_error(self) -> None:
         """Test API-specific errors inherit from FlextApiError."""
@@ -581,16 +581,21 @@ class TestExceptionModuleExports:
 
         expected_exports = {
             "FlextApiAuthenticationError",
-            "FlextApiBuilderError",
+            "FlextApiAuthorizationError",
+            "FlextApiBuilderError", 
             "FlextApiConfigurationError",
             "FlextApiConnectionError",
             "FlextApiError",
+            "FlextApiNotFoundError",
             "FlextApiProcessingError",
+            "FlextApiRateLimitError",
             "FlextApiRequestError",
-            "FlextApiResponseError",
+            "FlextApiResponseError", 
             "FlextApiStorageError",
             "FlextApiTimeoutError",
             "FlextApiValidationError",
+            "create_error_response",
+            "map_http_status_to_exception",
         }
 
         assert module_all == expected_exports

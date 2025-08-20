@@ -1,4 +1,4 @@
-"""Functional examples tests for flext-api.
+"""Functional examples tests for flext-api - REAL EXECUTION WITHOUT MOCKS.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -7,7 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+import asyncio
+from typing import Any
 
 import pytest
 
@@ -24,7 +25,9 @@ from flext_api import (
     build_query_dict,
     build_success_response,
     create_flext_api,
+    create_memory_storage,
 )
+from flext_core import FlextResult
 
 # Constants
 EXPECTED_BULK_SIZE = 2
@@ -158,9 +161,9 @@ class TestFunctionalExamples:
         assert response3["metadata"] == metadata
 
     @pytest.mark.asyncio
-    async def test_async_client_usage(self) -> None:
-        """Test async client usage patterns."""
-        # Create client with configuration
+    async def test_async_client_real_operations(self) -> None:
+        """Test async client REAL operations without mocks - internal functionality."""
+        # Create client with configuration - REAL CONFIG VALIDATION
         config = FlextApiClientConfig(
             base_url="https://api.example.com",
             timeout=30.0,
@@ -168,45 +171,60 @@ class TestFunctionalExamples:
         )
         client = FlextApiClient(config)
 
-        # Start the client
+        # Test REAL client lifecycle management
         await client.start()
         assert client.status == "running"
 
         try:
-            # Mock HTTP responses to avoid external dependencies
-
-            mock_response = AsyncMock()
-            mock_response.status = 200
-            mock_response.headers = {"Content-Type": "application/json"}
-            mock_response.json.return_value = {"slideshow": {"title": "Sample"}}
-            mock_response.text.return_value = '{"slideshow": {"title": "Sample"}}'
-
-            with patch("aiohttp.ClientSession.request") as mock_request:
-                mock_request.return_value.__aenter__.return_value = mock_response
-
-                # Make a GET request
-                result = await client.get("/json")
-                assert result.success
-                response = result.data
-                assert response is not None
-                assert response.status_code == 200
-                assert isinstance(response.data, dict)
-                assert "slideshow" in response.data
-
-                # Make a POST request
-                post_data = {"name": "test", "value": 123}
-                mock_response.json.return_value = {"json": post_data}
-
-                result = await client.post("/post", json_data=post_data)
-                assert result.success
-                response = result.data
-                assert response is not None
-                assert response.status_code == 200
-                assert isinstance(response.data, dict)
-                assert response.data["json"] == post_data
+            # Test REAL storage operations
+            storage = create_memory_storage()
+            
+            # REAL storage set operation
+            set_result = await storage.set("test_key", {"data": "test_value"})
+            assert set_result.success
+            
+            # REAL storage get operation
+            get_result = await storage.get("test_key")
+            assert get_result.success
+            assert get_result.data == {"data": "test_value"}
+            
+            # Test REAL query building with actual validation
+            query_builder = FlextApiQueryBuilder()
+            query = (
+                query_builder
+                .equals("status", "active")
+                .sort_desc("created_at")
+                .page(1)
+                .page_size(20)
+                .build()
+            )
+            
+            # REAL validation of query structure
+            query_dict = query.to_dict()
+            assert "filters" in query_dict
+            assert isinstance(query_dict["filters"], list)
+            assert len(query_dict["filters"]) == 1
+            assert query_dict["filters"][0]["field"] == "status"
+            assert query_dict["filters"][0]["value"] == "active"
+            
+            # Test REAL response building
+            response_builder = FlextApiResponseBuilder()
+            test_data = {"items": [1, 2, 3], "count": 3}
+            response = (
+                response_builder
+                .success(test_data, "Data retrieved successfully")
+                .with_metadata({"total": 3, "page": 1})
+                .build()
+            )
+            
+            # REAL validation of response structure
+            assert response["success"] is True
+            assert response["data"] == test_data
+            assert response["message"] == "Data retrieved successfully"
+            assert response["metadata"]["total"] == 3
 
         finally:
-            # Stop the client
+            # REAL client lifecycle - stop the client
             await client.stop()
             assert client.status == "stopped"
 

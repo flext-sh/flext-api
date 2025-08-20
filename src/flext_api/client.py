@@ -687,7 +687,10 @@ class FlextApiClient:
                         f"Plugin {plugin_name} failed: {result.error}",
                     )
                 # Allow plugins to explicitly clear the response by returning data=None
-                if result.data is not None and isinstance(result.data, FlextApiClientResponse):
+                if result.data is None:
+                    # Plugin wants to clear/nullify the response
+                    current_response = None  # type: ignore[assignment]
+                elif isinstance(result.data, FlextApiClientResponse):
                     current_response = result.data
             elif isinstance(result, FlextApiClientResponse):
                 current_response = result
@@ -1049,6 +1052,11 @@ class FlextApiClient:
 
         # Ensure response.data is a dictionary when JSON is expected
         final_response = after_result.data
+        
+        # Check if plugins returned None/empty response
+        if final_response is None:
+            return FlextResult[FlextApiClientResponse].fail("Empty response after processing")
+        
         if isinstance(final_response, FlextApiClientResponse) and isinstance(
             final_response.data,
             str,
