@@ -48,7 +48,7 @@ class FlextApi(FlextApiBaseService):
     def __init__(self, **_data: object) -> None:
         """Initialize FlextApi service with builder."""
         # Initialize base class with default field values, ignoring extra data
-        super().__init__(service_name="FlextApi", service_version=__version__)
+        super().__init__(service_name="FlextApi", service_version=__version__, is_running=False)
         self._builder = FlextApiBuilder()
         logger.info("FlextApi service initialized", version=self.service_version)
 

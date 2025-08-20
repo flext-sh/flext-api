@@ -570,7 +570,8 @@ except Exception as e:
         title="FLEXT API - Error",
         description="Failed to initialize properly",
     )
-    # storage is already defined above, just assign None
+    # Create storage for error case to prevent import errors
+    storage = create_memory_storage()
     error_message = str(e)
 
     @app.get("/error")
@@ -625,9 +626,6 @@ def main() -> None:
             log_level=args.log_level,
         )
 
-
-# Create default app instance for testing and legacy compatibility
-app = create_flext_api_app()
 
 if __name__ == "__main__":
     main()

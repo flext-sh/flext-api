@@ -83,10 +83,15 @@ class TestMainCoverageComplete:
         assert hasattr(app, "version") or hasattr(app, "description")
 
     def test_storage_instance_valid(self) -> None:
-        """Test that storage instance is valid or None."""
-        # Storage should either be FlextAPIStorage instance or None
-        if storage is not None:
-            assert isinstance(storage, FlextAPIStorage)
+        """Test that storage instance is valid and functional."""
+        # Storage should be a functional wrapper with required methods
+        assert storage is not None
+        assert hasattr(storage, "get")
+        assert hasattr(storage, "set") 
+        assert hasattr(storage, "delete")
+        # Test that it actually works
+        storage.set("test_valid", "value")
+        assert storage.get("test_valid") == "value"
 
     def test_main_execution_direct_coverage(self) -> None:
         """Test direct execution of main module for full coverage."""

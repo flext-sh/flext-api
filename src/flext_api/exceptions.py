@@ -123,10 +123,17 @@ class FlextApiValidationError(FlextValidationError):
         truncated_value = value
         if value is not None:
             str_value = str(value)
-            max_len = FlextApiConstants.Validation.MAX_ERROR_VALUE_LENGTH
+            max_len = FlextApiConstants.ApiValidation.MAX_ERROR_VALUE_LENGTH
             truncated_value = (
                 str_value[:max_len] if len(str_value) > max_len else str_value
             )
+
+        # Store validation details for test compatibility
+        self.validation_details: dict[str, object] = {}
+        if field is not None:
+            self.validation_details["field"] = field
+        if truncated_value is not None:
+            self.validation_details["value"] = str(truncated_value)
 
         super().__init__(
             message,
@@ -189,6 +196,7 @@ class FlextApiAuthenticationError(FlextAuthenticationError):
             formatted_message,
             service="flext_api",
             user_id=None,
+            code="AUTH_ERROR",
             context=merged_context,
         )
 
@@ -235,7 +243,7 @@ class FlextApiAuthorizationError(FlextApiError):
         super().__init__(
             f"Authorization: {message}",
             status_code=403,
-            code=FlextApiErrorCodes.API_AUTHORIZATION_ERROR,
+            code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -272,6 +280,7 @@ class FlextApiConfigurationError(FlextConfigurationError):
             message,
             config_key=config_key,
             config_file=None,
+            code="CONFIG_ERROR",
             context=merged_context,
         )
 
@@ -376,6 +385,7 @@ class FlextApiProcessingError(FlextProcessingError):
             message,
             business_rule="flext_api_processing",
             operation=operation,
+            code="PROCESSING_ERROR",
             context=merged_context,
         )
 
@@ -485,7 +495,7 @@ class FlextApiRequestError(FlextApiError):
         super().__init__(
             f"API request: {message}",
             status_code=status_code,
-            code=FlextApiErrorCodes.API_REQUEST_ERROR,
+            code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -518,7 +528,7 @@ class FlextApiResponseError(FlextApiError):
         super().__init__(
             f"API response: {message}",
             status_code=status_code,
-            code=FlextApiErrorCodes.API_RESPONSE_ERROR,
+            code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -556,7 +566,7 @@ class FlextApiStorageError(FlextApiError):
         super().__init__(
             f"API storage: {message}",
             status_code=status_code,
-            code=FlextApiErrorCodes.API_STORAGE_ERROR,
+            code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -594,7 +604,7 @@ class FlextApiBuilderError(FlextApiError):
         super().__init__(
             f"API builder: {message}",
             status_code=status_code,
-            code=FlextApiErrorCodes.API_BUILDER_ERROR,
+            code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -631,7 +641,7 @@ class FlextApiRateLimitError(FlextApiError):
         super().__init__(
             f"Rate limit: {message}",
             status_code=429,
-            code=FlextApiErrorCodes.API_RATE_LIMIT_ERROR,
+            code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -665,7 +675,7 @@ class FlextApiNotFoundError(FlextApiError):
         super().__init__(
             f"Not found: {message}",
             status_code=404,
-            code=FlextApiErrorCodes.API_NOT_FOUND_ERROR,
+            code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
