@@ -328,11 +328,12 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                 self._data[key] = value
                 # Be resilient to monkey-patching of _save_data on the instance
                 try:
-                    save_result = await self._save_data()
+                    save_result: FlextResult[None] = await self._save_data()
                 except TypeError:
                     # When a class coroutine function is assigned directly to the instance,
                     # it becomes an unbound function and requires explicit self
-                    save_result = await FileStorageBackend._save_data(self)
+                    # Explicit type annotation to avoid Unknown types in PyRight
+                    save_result = await FileStorageBackend[object]._save_data(self)
                 if save_result.is_failure:
                     return save_result
 
@@ -352,9 +353,10 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                 if existed:
                     # Be resilient to monkey-patching of _save_data on the instance
                     try:
-                        save_result = await self._save_data()
+                        save_result: FlextResult[None] = await self._save_data()
                     except TypeError:
-                        save_result = await FileStorageBackend._save_data(self)
+                        # Explicit type annotation to avoid Unknown types in PyRight
+                        save_result = await FileStorageBackend[object]._save_data(self)
                     if save_result.is_failure:
                         return FlextResult[bool].fail(
                             f"Failed to save after delete: {save_result.error}",
@@ -401,9 +403,10 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                 self._data.clear()
                 # Be resilient to monkey-patching of _save_data on the instance
                 try:
-                    save_result = await self._save_data()
+                    save_result: FlextResult[None] = await self._save_data()
                 except TypeError:
-                    save_result = await FileStorageBackend._save_data(self)
+                    # Explicit type annotation to avoid Unknown types in PyRight
+                    save_result = await FileStorageBackend[object]._save_data(self)
                 if not save_result.success:
                     return save_result
 

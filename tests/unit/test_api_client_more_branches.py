@@ -36,11 +36,13 @@ async def test_caching_plugin_cache_hit_path() -> None:
 
 
 @pytest.mark.asyncio
-async def test_perform_http_request_no_session(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Test perform_http_request no session path."""
-    client = FlextApiClient(FlextApiClientConfig(base_url="https://x"))
-    monkeypatch.setattr(client, "_is_external_calls_disabled", lambda: False)
-    req = FlextApiClientRequest(method="GET", url="https://x")
+async def test_perform_http_request_no_session() -> None:
+    """Test perform_http_request no session path using real execution."""
+    # Create client but don't start it - session will be None
+    client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
+    req = FlextApiClientRequest(method="GET", url="https://httpbin.org/get")
+
+    # Call without starting client - should fail with session error
     res = await client._perform_http_request(req)
     assert not res.success
     assert "HTTP session not available" in (res.error or "")
