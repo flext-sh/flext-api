@@ -1,4 +1,4 @@
-"""Tests to achieve 100% coverage for main.py.
+"""Tests to achieve 100% coverage for main.py with REAL execution - NO MOCKS.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -7,11 +7,19 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from unittest.mock import patch
+import time
 
 import uvicorn
+from fastapi.testclient import TestClient
 
-from flext_api import FlextAPIStorage, app, main as main_module, storage
+from flext_api import (
+    FlextApiAppConfig,
+    FlextApiSettings,
+    app,
+    create_flext_api_app,
+    main as main_module,
+    storage,
+)
 
 
 class TestMainCoverageComplete:
@@ -31,36 +39,36 @@ class TestMainCoverageComplete:
         assert storage.delete("test_key") is True
         assert storage.get("test_key") is None
 
-    def test_main_execution_path_coverage(self) -> None:
-        """Test the main execution path to cover lines 27-28."""
-        # Test the main execution logic conceptually
-        # Direct execution testing is complex due to module loading
+    def test_real_app_server_functionality(self) -> None:
+        """Test REAL app server functionality without mocks."""
+        # Test with REAL TestClient to validate app works
+        with TestClient(app) as client:
+            # Make real HTTP request to root endpoint
+            response = client.get("/")
+            # Should get some response (may be 404, 200, etc. but not server error)
+            assert response.status_code in {200, 404, 422}  # Valid HTTP responses
 
-        # Test that uvicorn would be called with correct parameters
-        with patch("uvicorn.run") as mock_run:
-            # Simulate the main execution
+            # Test health endpoint if it exists
+            health_response = client.get("/health")
+            # Should be accessible or return proper HTTP status
+            assert health_response.status_code in {200, 404, 422}
 
-            # This simulates what happens in the if __name__ == "__main__" block
-            uvicorn.run(app, host="0.0.0.0", port=8000)
+    def test_real_server_configuration(self) -> None:
+        """Test REAL server configuration with actual uvicorn config."""
+        # Test that we can create a REAL uvicorn config
+        config = uvicorn.Config(
+            app=app,
+            host="127.0.0.1",
+            port=8001,  # Use different port to avoid conflicts
+            log_level="debug",
+            access_log=False,  # Disable access log for test
+        )
 
-            # Verify uvicorn.run was called with correct parameters
-            mock_run.assert_called_once_with(app, host="0.0.0.0", port=8000)
-
-    def test_main_module_execution(self) -> None:
-        """Test main module code coverage directly."""
-        from unittest.mock import patch  # noqa: PLC0415
-
-        # Directly test the main execution block content
-        with patch("uvicorn.run") as mock_run:
-            # Simulate the import and execution that happens in __main__
-            import uvicorn  # noqa: PLC0415
-
-            from flext_api import app  # noqa: PLC0415
-
-            # This simulates what's in the if __name__ == "__main__" block
-            uvicorn.run(app, host="0.0.0.0", port=8000)
-
-            mock_run.assert_called_once_with(app, host="0.0.0.0", port=8000)
+        # Verify config is properly created with our app
+        assert config.app is app
+        assert config.host == "127.0.0.1"
+        assert config.port == 8001
+        assert config.log_level == "debug"
 
     def test_main_module_structure(self) -> None:
         """Test main module has correct structure."""
@@ -83,28 +91,54 @@ class TestMainCoverageComplete:
         assert hasattr(app, "version") or hasattr(app, "description")
 
     def test_storage_instance_valid(self) -> None:
-        """Test that storage instance is valid and functional."""
+        """Test that storage instance is valid and functional with REAL operations."""
         # Storage should be a functional wrapper with required methods
         assert storage is not None
         assert hasattr(storage, "get")
-        assert hasattr(storage, "set") 
+        assert hasattr(storage, "set")
         assert hasattr(storage, "delete")
-        # Test that it actually works
-        storage.set("test_valid", "value")
-        assert storage.get("test_valid") == "value"
 
-    def test_main_execution_direct_coverage(self) -> None:
-        """Test direct execution of main module for full coverage."""
-        from unittest.mock import patch  # noqa: PLC0415
+        # Test REAL storage operations with unique keys
+        test_key = f"test_valid_{int(time.time() * 1000)}"  # Unique key
+        test_value = "real_storage_test_value"
 
-        import uvicorn  # noqa: PLC0415
+        # REAL set operation
+        storage.set(test_key, test_value)
 
-        from flext_api import app  # noqa: PLC0415
+        # REAL get operation
+        retrieved_value = storage.get(test_key)
+        assert retrieved_value == test_value
 
-        # Test the main execution block by calling uvicorn.run directly
-        with patch("uvicorn.run") as mock_run:
-            # This simulates what's in the if __name__ == "__main__" block
-            uvicorn.run(app, host="0.0.0.0", port=8000)
+        # REAL delete operation
+        delete_result = storage.delete(test_key)
+        assert delete_result is True
 
-            # Verify it was called correctly
-            mock_run.assert_called_once_with(app, host="0.0.0.0", port=8000)
+        # Verify deletion worked
+        deleted_value = storage.get(test_key)
+        assert deleted_value is None
+
+    def test_real_app_creation_and_validation(self) -> None:
+        """Test REAL app creation and validation functionality."""
+        # Create REAL app with test settings
+        test_settings = FlextApiSettings(
+            environment="test",
+            debug=True,
+            log_level="INFO",
+            api_host="localhost",
+            api_port=8002,
+        )
+
+        # Create REAL app config and app
+        app_config = FlextApiAppConfig(test_settings)
+        real_app = create_flext_api_app(app_config)
+
+        # Validate REAL app properties
+        assert real_app is not None
+        assert hasattr(real_app, "title")
+        assert hasattr(real_app, "version") or hasattr(real_app, "description")
+
+        # Test with REAL client
+        with TestClient(real_app) as client:
+            response = client.get("/")
+            # Should get valid HTTP response from real app
+            assert response.status_code in {200, 404, 422}

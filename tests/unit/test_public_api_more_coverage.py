@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from typing import Never
 
 import pytest
@@ -11,7 +10,6 @@ from fastapi.testclient import TestClient
 from flext_api import (
     FlextApi,
     FlextApi as FlextApiClass,
-    api_app as api_app2,  # noqa: PLC0415
     api_app as api_app_mod,  # noqa: F401, PLC0415
     create_api_builder,
     create_api_client,
@@ -131,18 +129,17 @@ def test_app_health_storage_error_and_nonawaitable_paths() -> None:
     )
 
 
-def test_app_error_fallback_route_via_env(monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.usefixtures("monkeypatch")
+def test_app_error_fallback_route_via_env() -> None:
     """Test error fallback creation and route functionality."""
     # Test creating an error app directly to verify the route works
     from fastapi import FastAPI  # noqa: PLC0415
-    from flext_api.storage import create_memory_storage  # noqa: PLC0415
-    
+
     # Create minimal error app similar to what app.py does in except block
     error_app = FastAPI(
         title="FLEXT API - Error",
         description="Failed to initialize properly",
     )
-    storage = create_memory_storage()
     error_message = "Test initialization failure"
 
     @error_app.get("/error")

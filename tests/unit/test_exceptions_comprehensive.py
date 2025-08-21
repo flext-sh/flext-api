@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core.exceptions import (
+from flext_core import (
     FlextAuthenticationError,
     FlextConfigurationError,
     FlextConnectionError,
@@ -582,7 +582,7 @@ class TestExceptionModuleExports:
         expected_exports = {
             "FlextApiAuthenticationError",
             "FlextApiAuthorizationError",
-            "FlextApiBuilderError", 
+            "FlextApiBuilderError",
             "FlextApiConfigurationError",
             "FlextApiConnectionError",
             "FlextApiError",
@@ -590,7 +590,7 @@ class TestExceptionModuleExports:
             "FlextApiProcessingError",
             "FlextApiRateLimitError",
             "FlextApiRequestError",
-            "FlextApiResponseError", 
+            "FlextApiResponseError",
             "FlextApiStorageError",
             "FlextApiTimeoutError",
             "FlextApiValidationError",

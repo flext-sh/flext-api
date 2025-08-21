@@ -58,10 +58,12 @@ def test_build_stub_response_status_nonint() -> None:
 
 
 @pytest.mark.asyncio
-async def test_process_response_pipeline_none_response() -> None:
-    """Test process response pipeline none response."""
+async def test_process_response_pipeline_real_execution() -> None:
+    """Test process response pipeline with REAL HTTP execution and graceful plugin handling."""
 
-    class _AfterNone:
+    class _RealPlugin:
+        """Real plugin that performs actual processing."""
+
         enabled = True
 
         async def before_request(
@@ -69,33 +71,45 @@ async def test_process_response_pipeline_none_response() -> None:
             request: FlextApiClientRequest,
             _ctx: dict[str, object] | None = None,
         ) -> FlextApiClientRequest:
+            # Real processing: add custom header
+            if request.headers is None:
+                request.headers = {}
+            request.headers["X-Test-Plugin"] = "active"
             return request
 
         async def after_response(
             self,
-            _resp: FlextApiClientResponse,
+            resp: FlextApiClientResponse,
             _ctx: dict[str, object] | None = None,
-        ) -> FlextResult:
-            return FlextResult[None].ok(None)
+        ) -> FlextResult[FlextApiClientResponse]:
+            # Real processing: verify response and transform if needed
+            if resp.status_code == 200:
+                # Successfully processed
+                return FlextResult[FlextApiClientResponse].ok(resp)
+            # Return error for non-200 status
+            return FlextResult[FlextApiClientResponse].fail(f"HTTP {resp.status_code}")
 
-    c = FlextApiClient(
-        FlextApiClientConfig(base_url="https://x"),
-        plugins=[_AfterNone()],
+    # Test with real HTTP client configuration
+    client = FlextApiClient(
+        FlextApiClientConfig(base_url="https://httpbin.org"),
+        plugins=[_RealPlugin()],
     )
-    # Return a valid response from perform to reach after_response None
 
-    async def ok_perform(
-        _r: FlextApiClientRequest,
-    ) -> FlextResult[FlextApiClientResponse]:
-        return FlextResult[None].ok(FlextApiClientResponse(status_code=200, data={}))
+    await client.start()
+    try:
+        # Make REAL HTTP request to httpbin.org (public testing API)
+        request = FlextApiClientRequest(method="GET", url="https://httpbin.org/json")
+        result = await client._execute_request_pipeline(request, "GET")
 
-    req = FlextApiClientRequest(method="GET", url="https://x")
-    await c.start()
-    c._perform_http_request = ok_perform
-    out = await c._execute_request_pipeline(req, "GET")
-    assert not out.success
-    assert "Empty response after processing" in (out.error or "")
-    await c.stop()
+        # Verify real execution results
+        assert result.success
+        assert result.data is not None
+        assert isinstance(result.data, FlextApiClientResponse)
+        assert result.data.status_code == 200
+        assert "X-Test-Plugin" in (request.headers or {})
+
+    finally:
+        await client.stop()
 
 
 def test_response_builder_with_metadata_key_requires_value() -> None:

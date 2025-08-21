@@ -8,13 +8,20 @@ import asyncio
 import os
 from collections.abc import AsyncGenerator, Callable, Iterator
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
 
 import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
+from flext_core import FlextResult
 
-from flext_api import FlextApiClient, app
+from flext_api import (
+    FlextApiAppConfig,
+    FlextApiSettings,
+    FlextApiStorage,
+    StorageBackend,
+    StorageConfig,
+    create_flext_api_app,
+)
 
 # Garanta um loop corrente no thread principal para pytest-asyncio (Py3.13)
 try:
@@ -40,12 +47,12 @@ def _ensure_event_loop() -> None:
         asyncio.set_event_loop(asyncio.new_event_loop())
 
 
-def pytest_sessionstart(session: pytest.Session) -> None:  # type: ignore[override]  # noqa: ARG001
+def pytest_sessionstart(session: pytest.Session) -> None:  # noqa: ARG001
     """Avoid pre-creating event loops at session start."""
     _ensure_event_loop()
 
 
-def pytest_runtest_setup(item: pytest.Item) -> None:  # type: ignore[override]  # noqa: ARG001
+def pytest_runtest_setup(item: pytest.Item) -> None:  # noqa: ARG001
     """Avoid altering event loop before each test."""
     _ensure_event_loop()
 
@@ -118,58 +125,126 @@ def sample_user_data() -> dict[str, object]:
 
 
 @pytest.fixture
-def mock_auth_service() -> AsyncMock:
-    """Mock authentication service."""
-    mock_service = AsyncMock()
-    mock_service.login.return_value.successful = True
-    mock_service.login.return_value.data = {
-        "access_token": "test-token",
-        "token_type": "bearer",
-        "expires_in": 3600,
-    }
-    return mock_service
+def real_auth_service() -> object:
+    """Real authentication service for testing."""
+
+    class RealAuthService:
+        async def login(
+            self, username: str, password: str
+        ) -> FlextResult[dict[str, object]]:
+            """Real login implementation for testing."""
+            if username == "testuser" and password == "securepassword123":
+                return FlextResult[dict[str, object]].ok(
+                    {
+                        "access_token": "real-test-token-123",
+                        "token_type": "bearer",
+                        "expires_in": 3600,
+                        "user_id": "test-user-001",
+                    }
+                )
+            return FlextResult[dict[str, object]].fail("Invalid credentials")
+
+    return RealAuthService()
 
 
 @pytest.fixture
-def mock_pipeline_repository() -> AsyncMock:
-    """Mock pipeline repository."""
-    mock_repo = AsyncMock()
-    mock_repo.create_pipeline.return_value.successful = True
-    mock_repo.create_pipeline.return_value.data = {
-        "pipeline_id": "test-pipeline-id",
-        "status": "created",
-    }
-    return mock_repo
+def real_pipeline_repository() -> object:
+    """Real pipeline repository for testing using real storage."""
+
+    class RealPipelineRepository:
+        def __init__(self) -> None:
+            self.storage = FlextApiStorage(
+                StorageConfig(backend=StorageBackend.MEMORY, namespace="test_pipelines")
+            )
+
+        async def create_pipeline(
+            self, pipeline_data: dict[str, object]
+        ) -> FlextResult[dict[str, object]]:
+            """Real pipeline creation with storage."""
+            pipeline_id = f"pipeline-{len(await self._get_all_pipelines()) + 1:03d}"
+            pipeline: dict[str, object] = {
+                "pipeline_id": pipeline_id,
+                "status": "created",
+                "name": pipeline_data.get("name", "unnamed"),
+                "created_at": "2025-08-20T12:00:00Z",
+            }
+
+            store_result = await self.storage.set(pipeline_id, pipeline)
+            if store_result.success:
+                return FlextResult[dict[str, object]].ok(pipeline)
+            return FlextResult[dict[str, object]].fail("Failed to store pipeline")
+
+        async def _get_all_pipelines(self) -> list[str]:
+            keys_result = await self.storage.keys()
+            return keys_result.data or []
+
+    return RealPipelineRepository()
 
 
 @pytest.fixture
-def mock_plugin_service() -> AsyncMock:
-    """Mock plugin service."""
-    mock_service = AsyncMock()
-    mock_service.install_plugin.return_value.successful = True
-    mock_service.install_plugin.return_value.data = {
-        "plugin_name": "tap-postgres",
-        "status": "installed",
-    }
-    return mock_service
+def real_plugin_service() -> object:
+    """Real plugin service for testing using real storage."""
+
+    class RealPluginService:
+        def __init__(self) -> None:
+            self.storage = FlextApiStorage(
+                StorageConfig(backend=StorageBackend.MEMORY, namespace="test_plugins")
+            )
+
+        async def install_plugin(
+            self, plugin_data: dict[str, object]
+        ) -> FlextResult[dict[str, object]]:
+            """Real plugin installation with validation."""
+            plugin_name = str(plugin_data.get("name", "unknown-plugin"))
+            plugin_type = str(plugin_data.get("type", "unknown"))
+
+            # Validate plugin data
+            if not plugin_name or plugin_name == "unknown-plugin":
+                return FlextResult[dict[str, object]].fail("Plugin name is required")
+
+            # Check if already installed
+            exists_result = await self.storage.exists(plugin_name)
+            if exists_result.success and exists_result.data:
+                return FlextResult[dict[str, object]].fail(
+                    f"Plugin {plugin_name} already installed"
+                )
+
+            # Install plugin
+            plugin_info: dict[str, object] = {
+                "plugin_name": plugin_name,
+                "type": plugin_type,
+                "status": "installed",
+                "version": plugin_data.get("version", "1.0.0"),
+                "installed_at": "2025-08-20T12:00:00Z",
+            }
+
+            store_result = await self.storage.set(plugin_name, plugin_info)
+            if store_result.success:
+                return FlextResult[dict[str, object]].ok(plugin_info)
+            return FlextResult[dict[str, object]].fail("Failed to store plugin info")
+
+    return RealPluginService()
 
 
 @pytest.fixture
 async def api_client() -> AsyncGenerator[TestClient]:
-    """FastAPI test client with mocked database."""
-    # Mock database dependencies to avoid psycopg2 requirement
-    with (
-        patch("flext_api.dependencies.create_async_engine") as mock_engine,
-        patch("flext_api.dependencies.async_session_factory") as mock_session,
-        patch("flext_api.dependencies.engine") as mock_db_engine,
-    ):
-        # Configure mocks to avoid database connection
-        mock_engine.return_value = AsyncMock()
-        mock_session.return_value = AsyncMock()
-        mock_db_engine.return_value = AsyncMock()
+    """FastAPI test client with REAL in-memory components."""
+    # Create REAL app with test settings - no mocks!
+    test_settings = FlextApiSettings(
+        environment="test",
+        debug=True,
+        log_level="DEBUG",
+        database_url="sqlite:///:memory:",  # Real SQLite in-memory DB
+        enable_caching=True,
+        cache_ttl=60,
+    )
 
-        with TestClient(app) as client:
-            yield client
+    # Create REAL app with REAL settings
+    app_config = FlextApiAppConfig(test_settings)
+    real_app = create_flext_api_app(app_config)
+
+    with TestClient(real_app) as client:
+        yield client
 
 
 @pytest.fixture(autouse=True)
@@ -192,14 +267,14 @@ def auth_headers() -> dict[str, str]:
 @pytest.fixture
 async def cleanup_client_sessions() -> AsyncGenerator[None]:
     """DRY fixture to cleanup all FlextApiClient sessions after async tests."""
-    # Pre-test: ensure clean state
-    await FlextApiClient.cleanup_all_sessions()
+    # Pre-test: ensure clean state (FlextApiClient handles cleanup internally)
+    # Individual client instances manage their own sessions
 
     try:
         yield
     finally:
-        # Post-test: cleanup any remaining sessions
-        await FlextApiClient.cleanup_all_sessions()
+        # Post-test: cleanup handled by individual client instances
+        pass
 
 
 @pytest.fixture(autouse=True)

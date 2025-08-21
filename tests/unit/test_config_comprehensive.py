@@ -14,8 +14,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import os
-
 import pytest
 from flext_core import FlextConstants, FlextResult, FlextSettings
 from pydantic import ValidationError
@@ -199,7 +197,7 @@ class TestFlextApiSettings:
         assert settings.max_retries == 10
         assert settings.enable_caching is False
         assert settings.cache_ttl == 1800
-        
+
         # Test REAL business rules validation
         validation_result = settings.validate_business_rules()
         assert validation_result.success
@@ -234,9 +232,9 @@ class TestCreateApiSettingsFactory:
 
         assert isinstance(result, FlextResult)
         assert result.success
-        assert isinstance(result.data, FlextApiSettings)
+        assert isinstance(result.value, FlextApiSettings)
 
-        settings = result.data
+        settings = result.value
         assert settings.api_host == "localhost"
         assert settings.api_port == FlextConstants.Platform.FLEXT_API_PORT
 
@@ -249,7 +247,7 @@ class TestCreateApiSettingsFactory:
         )
 
         assert result.success
-        settings = result.data
+        settings = result.value
         assert settings.api_host == "custom.host.com"
         assert settings.api_port == 9999
         assert settings.api_workers == 6
@@ -286,7 +284,7 @@ class TestCreateApiSettingsFactory:
         result = create_api_settings()
 
         assert result.success
-        settings = result.data
+        settings = result.value
         # Should have all default values
         assert settings.api_host == "localhost"
         assert settings.api_port == FlextConstants.Platform.FLEXT_API_PORT
@@ -300,7 +298,7 @@ class TestCreateApiSettingsFactory:
         )
 
         assert result.success
-        settings = result.data
+        settings = result.value
         assert settings.api_port == 8080
         assert settings.api_workers == 4
         assert settings.enable_caching is True
@@ -318,14 +316,14 @@ class TestCreateApiSettingsFactory:
         # Test success case
         assert result.success is True
         assert result.is_failure is False
-        assert result.data is not None
+        assert result.value is not None
         assert result.error is None
 
         # Test failure case
         failed_result = create_api_settings(api_port="invalid")
         assert failed_result.success is False
         assert failed_result.is_failure is True
-        assert failed_result.data is None
+        assert failed_result.value is None
         assert failed_result.error is not None
 
 
@@ -348,9 +346,9 @@ class TestFlextApiSettingsIntegration:
         )
 
         assert result.success
-        assert isinstance(result.data, FlextApiSettings)
-        assert result.data.api_host == "test.com"
-        assert result.data.api_port == 8080
+        assert isinstance(result.value, FlextApiSettings)
+        assert result.value.api_host == "test.com"
+        assert result.value.api_port == 8080
 
     def test_create_with_validation_failure(self) -> None:
         """Test create_with_validation handles failures correctly."""

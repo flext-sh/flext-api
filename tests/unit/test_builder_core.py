@@ -111,8 +111,8 @@ class TestFlextApiResponse:
         if not response.success:
             msg = f"Expected True, got {response.success}"
             raise AssertionError(msg)
-        if response.data != data:
-            msg = f"Expected {data}, got {response.data}"
+        if response.value != data:
+            msg = f"Expected {data}, got {response.value}"
             raise AssertionError(msg)
         assert response.message == "Success"
 
@@ -261,7 +261,7 @@ class TestFlextApiResponseBuilder:
         response = FlextApiResponseBuilder().success(data, "Success").build()
 
         assert response.success is True
-        assert response.data == data
+        assert response.value == data
         assert response.message == "Success"
 
     def test_error_response(self) -> None:
@@ -270,7 +270,7 @@ class TestFlextApiResponseBuilder:
 
         assert response.success is False
         assert response.message == "Error occurred"
-        assert response.data is None
+        assert response.value is None
 
     def test_with_metadata(self) -> None:
         """Test response with metadata."""
@@ -290,7 +290,7 @@ class TestFlextApiResponseBuilder:
         )
 
         assert response.success is True
-        assert response.data == data
+        assert response.value == data
         assert response.metadata["page"] == 2
         assert response.metadata["page_size"] == 10
         assert response.metadata["total"] == 100
@@ -341,7 +341,7 @@ class TestFactoryFunctions:
 
         assert isinstance(response, FlextApiResponse)
         assert response.success is True
-        assert response.data == data
+        assert response.value == data
         assert response.message == "Success"
 
     def test_build_error_response(self) -> None:
@@ -367,7 +367,7 @@ class TestFactoryFunctions:
 
         assert isinstance(response, FlextApiResponse)
         assert response.success is True
-        assert response.data == data
+        assert response.value == data
         assert response.metadata["page"] == 2
         assert response.metadata["page_size"] == 10
         assert response.metadata["total"] == 100

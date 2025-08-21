@@ -7,9 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio
-from typing import Any
-
 import pytest
 
 from flext_api import (
@@ -27,7 +24,6 @@ from flext_api import (
     create_flext_api,
     create_memory_storage,
 )
-from flext_core import FlextResult
 
 # Constants
 EXPECTED_BULK_SIZE = 2
@@ -178,27 +174,26 @@ class TestFunctionalExamples:
         try:
             # Test REAL storage operations
             storage = create_memory_storage()
-            
+
             # REAL storage set operation
             set_result = await storage.set("test_key", {"data": "test_value"})
             assert set_result.success
-            
+
             # REAL storage get operation
             get_result = await storage.get("test_key")
             assert get_result.success
             assert get_result.data == {"data": "test_value"}
-            
+
             # Test REAL query building with actual validation
             query_builder = FlextApiQueryBuilder()
             query = (
-                query_builder
-                .equals("status", "active")
+                query_builder.equals("status", "active")
                 .sort_desc("created_at")
                 .page(1)
                 .page_size(20)
                 .build()
             )
-            
+
             # REAL validation of query structure
             query_dict = query.to_dict()
             assert "filters" in query_dict
@@ -206,17 +201,16 @@ class TestFunctionalExamples:
             assert len(query_dict["filters"]) == 1
             assert query_dict["filters"][0]["field"] == "status"
             assert query_dict["filters"][0]["value"] == "active"
-            
+
             # Test REAL response building
             response_builder = FlextApiResponseBuilder()
             test_data = {"items": [1, 2, 3], "count": 3}
             response = (
-                response_builder
-                .success(test_data, "Data retrieved successfully")
+                response_builder.success(test_data, "Data retrieved successfully")
                 .with_metadata({"total": 3, "page": 1})
                 .build()
             )
-            
+
             # REAL validation of response structure
             assert response["success"] is True
             assert response["data"] == test_data

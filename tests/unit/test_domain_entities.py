@@ -58,7 +58,7 @@ class TestApiRequest:
 
         result = request.validate_business_rules()
         assert result.success
-        assert result.data is None
+        assert result.value is None
 
     def test_validation_empty_url_fails(self) -> None:
         """Test validation fails for empty URL."""
@@ -136,9 +136,9 @@ class TestApiRequest:
 
         result = request.start_processing()
         assert result.success
-        assert result.data is not None
-        assert result.data.state == RequestState.PROCESSING
-        assert result.data.updated_at > request.updated_at
+        assert result.value is not None
+        assert result.value.state == RequestState.PROCESSING
+        assert result.value.updated_at > request.updated_at
 
     def test_start_processing_invalid_state_fails(self) -> None:
         """Test start processing fails from invalid state."""
@@ -164,9 +164,9 @@ class TestApiRequest:
 
         result = request.complete_processing()
         assert result.success
-        assert result.data is not None
-        assert result.data.state == RequestState.COMPLETED
-        assert result.data.updated_at > request.updated_at
+        assert result.value is not None
+        assert result.value.state == RequestState.COMPLETED
+        assert result.value.updated_at > request.updated_at
 
     def test_complete_processing_invalid_state_fails(self) -> None:
         """Test complete processing fails from invalid state."""
@@ -269,9 +269,9 @@ class TestApiResponse:
 
         result = response.mark_success()
         assert result.success
-        assert result.data is not None
-        assert result.data.state == ResponseState.SUCCESS
-        assert result.data.updated_at > response.updated_at
+        assert result.value is not None
+        assert result.value.state == ResponseState.SUCCESS
+        assert result.value.updated_at > response.updated_at
 
     def test_mark_error(self) -> None:
         """Test marking response as error."""
@@ -283,12 +283,12 @@ class TestApiResponse:
 
         result = response.mark_error(error_message)
         assert result.success
-        assert result.data is not None
-        assert result.data.state == ResponseState.ERROR
-        assert result.data.body is not None
-        assert result.data.body["error"] == error_message
-        assert result.data.body["response_id"] == response.id
-        assert "timestamp" in result.data.body
+        assert result.value is not None
+        assert result.value.state == ResponseState.ERROR
+        assert result.value.body is not None
+        assert result.value.body["error"] == error_message
+        assert result.value.body["response_id"] == response.id
+        assert "timestamp" in result.value.body
 
 
 class TestApiEndpoint:
@@ -518,10 +518,10 @@ class TestApiSession:
 
         result = session.extend_session(duration_minutes=30)
         assert result.success
-        assert result.data is not None
-        assert result.data.expires_at is not None
-        assert result.data.last_activity is not None
-        assert result.data.updated_at > session.updated_at
+        assert result.value is not None
+        assert result.value.expires_at is not None
+        assert result.value.last_activity is not None
+        assert result.value.updated_at > session.updated_at
 
     def test_extend_session_custom_duration(self) -> None:
         """Test session extension with custom duration."""
@@ -529,10 +529,10 @@ class TestApiSession:
 
         result = session.extend_session(duration_minutes=120)
         assert result.success
-        assert result.data is not None
+        assert result.value is not None
         # Verify duration is approximately correct (within 5 seconds)
         expected_expiry = datetime.now(UTC) + timedelta(minutes=120)
-        actual_expiry = result.data.expires_at
+        actual_expiry = result.value.expires_at
         assert actual_expiry is not None
         assert abs((actual_expiry - expected_expiry).total_seconds()) < 5
 
@@ -550,6 +550,6 @@ class TestApiSession:
 
         result = session.deactivate()
         assert result.success
-        assert result.data is not None
-        assert result.data.is_active is False
-        assert result.data.updated_at > session.updated_at
+        assert result.value is not None
+        assert result.value.is_active is False
+        assert result.value.updated_at > session.updated_at

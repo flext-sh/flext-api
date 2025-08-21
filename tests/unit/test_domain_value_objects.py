@@ -112,8 +112,8 @@ class TestURL:
         result = URL.create("https://api.example.com/v1/users")
 
         assert result.success
-        assert result.data is not None
-        url = result.data
+        assert result.value is not None
+        url = result.value
         assert url.raw_url == "https://api.example.com/v1/users"
         assert url.scheme == "https"
         assert url.host == "api.example.com"
@@ -127,8 +127,8 @@ class TestURL:
         result = URL.create("http://localhost:8080/api")
 
         assert result.success
-        assert result.data is not None
-        url = result.data
+        assert result.value is not None
+        url = result.value
         assert url.scheme == "http"
         assert url.host == "localhost"
         assert url.port == 8080
@@ -139,8 +139,8 @@ class TestURL:
         result = URL.create("https://api.example.com/search?q=test&limit=10#results")
 
         assert result.success
-        assert result.data is not None
-        url = result.data
+        assert result.value is not None
+        url = result.value
         assert url.path == "/search"
         assert url.query == "q=test&limit=10"
         assert url.fragment == "results"
@@ -150,8 +150,8 @@ class TestURL:
         result = URL.create("//api.example.com/users")
 
         assert result.success
-        assert result.data is not None
-        assert result.data.scheme == "https"
+        assert result.value is not None
+        assert result.value.scheme == "https"
 
     def test_create_empty_url_fails(self) -> None:
         """Test URL creation fails for empty URL."""
@@ -210,57 +210,57 @@ class TestURL:
         http_result = URL.create("http://api.example.com")
 
         assert https_result.success
-        assert https_result.data.is_secure()
+        assert https_result.value.is_secure()
         assert http_result.success
-        assert not http_result.data.is_secure()
+        assert not http_result.value.is_secure()
 
     def test_base_url_without_port(self) -> None:
         """Test base URL extraction without port."""
         result = URL.create("https://api.example.com/v1/users?q=test")
 
         assert result.success
-        assert result.data is not None
-        assert result.data.base_url() == "https://api.example.com"
+        assert result.value is not None
+        assert result.value.base_url() == "https://api.example.com"
 
     def test_base_url_with_port(self) -> None:
         """Test base URL extraction with port."""
         result = URL.create("http://localhost:8080/api/users")
 
         assert result.success
-        assert result.data is not None
-        assert result.data.base_url() == "http://localhost:8080"
+        assert result.value is not None
+        assert result.value.base_url() == "http://localhost:8080"
 
     def test_full_path_simple(self) -> None:
         """Test full path extraction without query or fragment."""
         result = URL.create("https://api.example.com/v1/users")
 
         assert result.success
-        assert result.data is not None
-        assert result.data.full_path() == "/v1/users"
+        assert result.value is not None
+        assert result.value.full_path() == "/v1/users"
 
     def test_full_path_with_query(self) -> None:
         """Test full path extraction with query parameters."""
         result = URL.create("https://api.example.com/search?q=test&limit=10")
 
         assert result.success
-        assert result.data is not None
-        assert result.data.full_path() == "/search?q=test&limit=10"
+        assert result.value is not None
+        assert result.value.full_path() == "/search?q=test&limit=10"
 
     def test_full_path_with_fragment(self) -> None:
         """Test full path extraction with fragment."""
         result = URL.create("https://api.example.com/docs#introduction")
 
         assert result.success
-        assert result.data is not None
-        assert result.data.full_path() == "/docs#introduction"
+        assert result.value is not None
+        assert result.value.full_path() == "/docs#introduction"
 
     def test_full_path_with_query_and_fragment(self) -> None:
         """Test full path extraction with both query and fragment."""
         result = URL.create("https://api.example.com/search?q=test#results")
 
         assert result.success
-        assert result.data is not None
-        assert result.data.full_path() == "/search?q=test#results"
+        assert result.value is not None
+        assert result.value.full_path() == "/search?q=test#results"
 
 
 class TestHttpHeader:
@@ -271,8 +271,8 @@ class TestHttpHeader:
         result = HttpHeader.create("Content-Type", "application/json")
 
         assert result.success
-        assert result.data is not None
-        header = result.data
+        assert result.value is not None
+        header = result.value
         assert header.name == "Content-Type"
         assert header.value == "application/json"
 
@@ -281,8 +281,8 @@ class TestHttpHeader:
         result = HttpHeader.create("Authorization", "Bearer token123")
 
         assert result.success
-        assert result.data is not None
-        header = result.data
+        assert result.value is not None
+        header = result.value
         assert header.name == "Authorization"
         assert header.value == "Bearer token123"
 
@@ -348,17 +348,17 @@ class TestHttpHeader:
         content_result = HttpHeader.create("Content-Type", "application/json")
 
         assert auth_result.success
-        assert auth_result.data.is_authorization()
+        assert auth_result.value.is_authorization()
         assert content_result.success
-        assert not content_result.data.is_authorization()
+        assert not content_result.value.is_authorization()
 
     def test_is_authorization_case_insensitive(self) -> None:
         """Test authorization header detection is case insensitive."""
         result = HttpHeader.create("authorization", "Bearer token")
 
         assert result.success
-        assert result.data is not None
-        assert result.data.is_authorization()
+        assert result.value is not None
+        assert result.value.is_authorization()
 
     def test_is_content_type(self) -> None:
         """Test content-type header detection."""
@@ -366,25 +366,25 @@ class TestHttpHeader:
         auth_result = HttpHeader.create("Authorization", "Bearer token")
 
         assert content_result.success
-        assert content_result.data.is_content_type()
+        assert content_result.value.is_content_type()
         assert auth_result.success
-        assert not auth_result.data.is_content_type()
+        assert not auth_result.value.is_content_type()
 
     def test_is_content_type_case_insensitive(self) -> None:
         """Test content-type header detection is case insensitive."""
         result = HttpHeader.create("content-type", "application/json")
 
         assert result.success
-        assert result.data is not None
-        assert result.data.is_content_type()
+        assert result.value is not None
+        assert result.value.is_content_type()
 
     def test_to_dict(self) -> None:
         """Test header conversion to dictionary."""
         result = HttpHeader.create("Accept", "application/json")
 
         assert result.success
-        assert result.data is not None
-        header_dict = result.data.to_dict()
+        assert result.value is not None
+        header_dict = result.value.to_dict()
         assert header_dict == {"Accept": "application/json"}
 
     def test_to_tuple(self) -> None:
@@ -392,8 +392,8 @@ class TestHttpHeader:
         result = HttpHeader.create("User-Agent", "FLEXT-API/1.0")
 
         assert result.success
-        assert result.data is not None
-        header_tuple = result.data.to_tuple()
+        assert result.value is not None
+        header_tuple = result.value.to_tuple()
         assert header_tuple == ("User-Agent", "FLEXT-API/1.0")
 
 
@@ -405,8 +405,8 @@ class TestBearerToken:
         result = BearerToken.create("valid-token-123456789")
 
         assert result.success
-        assert result.data is not None
-        token = result.data
+        assert result.value is not None
+        token = result.value
         assert token.token == "valid-token-123456789"
         assert token.token_type == "Bearer"
 
@@ -415,8 +415,8 @@ class TestBearerToken:
         result = BearerToken.create("jwt-token-123456789", token_type="JWT")
 
         assert result.success
-        assert result.data is not None
-        token = result.data
+        assert result.value is not None
+        token = result.value
         assert token.token == "jwt-token-123456789"
         assert token.token_type == "JWT"
 
@@ -454,8 +454,8 @@ class TestBearerToken:
         result = BearerToken.create(jwt_token)
 
         assert result.success
-        assert result.data is not None
-        assert result.data.is_jwt_format()
+        assert result.value is not None
+        assert result.value.is_jwt_format()
 
     def test_create_jwt_invalid_parts_fails(self) -> None:
         """Test that tokens with 2 parts are treated as regular (non-JWT) tokens."""
@@ -464,8 +464,8 @@ class TestBearerToken:
 
         # Should succeed as a regular bearer token (not JWT)
         assert result.success
-        assert result.data is not None
-        assert not result.data.is_jwt_format()  # Not treated as JWT
+        assert result.value is not None
+        assert not result.value.is_jwt_format()  # Not treated as JWT
 
     def test_create_jwt_empty_parts_fails(self) -> None:
         """Test JWT format validation fails for empty parts."""
@@ -481,8 +481,8 @@ class TestBearerToken:
         result = BearerToken.create(jwt_token)
 
         assert result.success
-        assert result.data is not None
-        assert result.data.is_jwt_format()
+        assert result.value is not None
+        assert result.value.is_jwt_format()
 
     def test_is_jwt_format_false(self) -> None:
         """Test JWT format detection returns false for non-JWT."""
@@ -490,16 +490,16 @@ class TestBearerToken:
         result = BearerToken.create(simple_token)
 
         assert result.success
-        assert result.data is not None
-        assert not result.data.is_jwt_format()
+        assert result.value is not None
+        assert not result.value.is_jwt_format()
 
     def test_to_authorization_header(self) -> None:
         """Test conversion to authorization header."""
         result = BearerToken.create("test-token-123456789")
 
         assert result.success
-        assert result.data is not None
-        header = result.data.to_authorization_header()
+        assert result.value is not None
+        header = result.value.to_authorization_header()
         assert header.name == "Authorization"
         assert header.value == "Bearer test-token-123456789"
 
@@ -508,8 +508,8 @@ class TestBearerToken:
         result = BearerToken.create("jwt-token-123456789", token_type="JWT")
 
         assert result.success
-        assert result.data is not None
-        header = result.data.to_authorization_header()
+        assert result.value is not None
+        header = result.value.to_authorization_header()
         assert header.name == "Authorization"
         assert header.value == "JWT jwt-token-123456789"
 
@@ -519,5 +519,5 @@ class TestBearerToken:
         result = BearerToken.create(token_string)
 
         assert result.success
-        assert result.data is not None
-        assert result.data.get_raw_token() == token_string
+        assert result.value is not None
+        assert result.value.get_raw_token() == token_string
