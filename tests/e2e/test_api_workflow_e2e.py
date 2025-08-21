@@ -56,7 +56,7 @@ class TestApiWorkflowE2E:
         )
         assert client_result.success
 
-        client = client_result.data
+        client = client_result.value
 
         try:
             # 5. Perform HTTP operations
@@ -64,9 +64,9 @@ class TestApiWorkflowE2E:
             assert get_result.success
 
             # 6. Verify response structure
-            http_response = get_result.data
+            http_response = get_result.value
             assert http_response.status_code == 200
-            assert isinstance(http_response.data, dict)
+            assert isinstance(http_response.value, dict)
 
         finally:
             await client.close()
@@ -94,7 +94,7 @@ class TestApiWorkflowE2E:
         )
         assert client_result.success
 
-        client = client_result.data
+        client = client_result.value
 
         try:
             # This should fail gracefully
@@ -161,7 +161,7 @@ class TestApiWorkflowE2E:
         )
         assert client_result.success
 
-        client = client_result.data
+        client = client_result.value
 
         # Add plugins manually for testing
         client.plugins.extend(plugins)
@@ -175,7 +175,7 @@ class TestApiWorkflowE2E:
             # Test actual request with plugins
             result = await client.get("/delay/1")
             if result.success:
-                assert result.data.status_code == 200
+                assert result.value.status_code == 200
 
         finally:
             await client.close()

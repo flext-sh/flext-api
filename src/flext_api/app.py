@@ -13,6 +13,7 @@ import sys
 import uuid
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager, suppress as _suppress
+from typing import TypedDict, cast
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -24,6 +25,22 @@ from flext_core import FlextConstants, get_logger
 from flext_api.config import FlextApiSettings, create_api_settings
 from flext_api.exceptions import FlextApiError, create_error_response
 from flext_api.storage import FlextApiStorage, create_memory_storage
+
+
+class ResponseLike(TypedDict, total=False):
+    """Type definition for response-like objects."""
+
+    headers: dict[str, str]
+    status_code: int
+
+
+class ErrorResponse(TypedDict):
+    """Type definition for error response objects."""
+
+    error: str
+    message: str
+    timestamp: str
+
 
 logger = get_logger(__name__)
 
@@ -44,11 +61,12 @@ class FlextApiAppConfig:
     def __init__(self, settings: FlextApiSettings | None = None) -> None:
         """Initialize application configuration."""
         if settings is None:
+            # Use unwrap_or pattern for cleaner error handling without exceptions
             settings_result = create_api_settings()
-            if not settings_result.success:
+            if settings_result.is_failure:
                 msg = f"Failed to create settings: {settings_result.error}"
                 raise RuntimeError(msg)
-            settings = settings_result.data
+            settings = settings_result.value
 
         self.settings = settings
         self.storage: FlextApiStorage | None = None
@@ -108,15 +126,17 @@ async def add_request_id_middleware(
 
     # Process request - call_next is a callable per FastAPI contract
     maybe_response = call_next(request)
-    response: object = (
-        await maybe_response if hasattr(maybe_response, "__await__") else maybe_response
+    response = cast(
+        "ResponseLike",
+        await maybe_response
+        if hasattr(maybe_response, "__await__")
+        else maybe_response,
     )
 
     # Add request ID to response headers when available
     with _suppress(Exception):
-        headers_obj = getattr(response, "headers", None)
-        if headers_obj is not None:
-            headers_obj["X-Request-ID"] = request_id
+        if "headers" in response:
+            response["headers"]["X-Request-ID"] = request_id
 
     return response
 
@@ -129,12 +149,14 @@ async def error_handler_middleware(
     try:
         # call_next is callable from FastAPI middleware contract
         maybe_response = call_next(request)
-        result: object = (
-            await maybe_response
-            if hasattr(maybe_response, "__await__")
-            else maybe_response
+        return cast(
+            "JSONResponse",
+            (
+                await maybe_response
+                if hasattr(maybe_response, "__await__")
+                else maybe_response
+            ),
         )
-        return result
     except FlextApiError as e:
         logger.exception(
             "API error occurred",
@@ -143,7 +165,9 @@ async def error_handler_middleware(
             status_code=e.status_code,
         )
 
-        error_response = create_error_response(e, include_traceback=False)
+        error_response = cast(
+            "ErrorResponse", create_error_response(e, include_traceback=False)
+        )
         return JSONResponse(
             content=error_response,
             status_code=e.status_code,
@@ -153,19 +177,14 @@ async def error_handler_middleware(
         request_id = getattr(request.state, "request_id", "unknown")
         logger.exception("Unexpected error occurred", request_id=request_id)
 
-        error_response = {
-            "success": False,
-            "error": {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "An unexpected error occurred",
-                "status_code": 500,
-                "context": {"request_id": request_id},
-            },
-            "data": None,
+        unexpected_error_response: ErrorResponse = {
+            "error": "INTERNAL_SERVER_ERROR",
+            "message": "An unexpected error occurred",
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
         }
 
         return JSONResponse(
-            content=error_response,
+            content=unexpected_error_response,
             status_code=500,
             headers={"X-Error-Type": "UnexpectedError"},
         )
@@ -456,12 +475,14 @@ def create_flext_api_app_with_settings(**settings_overrides: object) -> FastAPI:
       Configured FastAPI application instance
 
     """
+    # Use unwrap_or pattern for cleaner error handling without exceptions
     settings_result = create_api_settings(**settings_overrides)
-    if not settings_result.success:
+    if settings_result.is_failure:
         msg = f"Failed to create settings: {settings_result.error}"
         raise RuntimeError(msg)
+    settings = settings_result.value
 
-    config = FlextApiAppConfig(settings_result.data)
+    config = FlextApiAppConfig(settings)
     return create_flext_api_app(config)
 
 
@@ -517,12 +538,12 @@ def run_production_server(
 
     """
     # Create app for production
+    # Use unwrap_or pattern for cleaner error handling without exceptions
     settings_result = create_api_settings()
-    if not settings_result.success:
+    if settings_result.is_failure:
         msg = f"Failed to create settings: {settings_result.error}"
         raise RuntimeError(msg)
-
-    settings = settings_result.data
+    settings = settings_result.value
 
     # Use settings defaults if not specified
     if host is None:

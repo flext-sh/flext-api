@@ -13,7 +13,7 @@ from __future__ import annotations
 import asyncio
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Mapping
-from typing import TypeVar, cast
+from typing import TypeVar, cast, override
 
 from flext_core import FlextDomainService, FlextResult, get_logger
 from pydantic import Field
@@ -118,18 +118,23 @@ class FlextApiBaseService(
             # Get service-specific health details
             details_result = await self._get_health_details()
             if details_result.success:
-                health_info.update(details_result.data)
+                health_info.update(details_result.value)
             elif details_result.is_failure:
-                return FlextResult[dict[str, object]].fail(details_result.error or "Health details failed")
+                return FlextResult[dict[str, object]].fail(
+                    details_result.error or "Health details failed"
+                )
 
             return FlextResult[dict[str, object]].ok(health_info)
         except Exception as e:
             logger.exception("Health check failed", service=self.service_name)
             return FlextResult[dict[str, object]].fail(f"Health check failed: {e}")
 
+    @override
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute service operation (from FlextDomainService)."""
-        return FlextResult[dict[str, object]].ok({"service": self.service_name, "status": "executed"})
+        return FlextResult[dict[str, object]].ok(
+            {"service": self.service_name, "status": "executed"}
+        )
 
     @abstractmethod
     async def _do_start(self) -> FlextResult[None]:
@@ -162,7 +167,7 @@ class FlextApiBaseClientService(
 
     client_config: ClientConfig = Field(description="Client configuration")
     plugins: list[FlextApiPluginProtocol] = Field(
-        default_factory=list,
+        default_factory=list[FlextApiPluginProtocol],
         description="Client plugins",
     )
 
@@ -192,7 +197,9 @@ class FlextApiBaseClientService(
                     params=dict(params) if params else {},
                 )
                 if not plugin_result.success:
-                    return FlextResult[FlextTypes.Core.JsonDict].fail(f"Plugin failed: {plugin_result.error}")
+                    return FlextResult[FlextTypes.Core.JsonDict].fail(
+                        f"Plugin failed: {plugin_result.error}"
+                    )
 
             # Execute request (implemented by subclass)
             response_result = await self._execute_request_with_timeout(
@@ -209,7 +216,7 @@ class FlextApiBaseClientService(
                 return response_result
 
             # Apply after_response plugins
-            response_data: FlextTypes.Core.JsonDict = response_result.data or {}
+            response_data: FlextTypes.Core.JsonDict = response_result.value or {}
             for plugin in self.plugins:
                 after_plugin_result: FlextResult[
                     FlextTypes.Core.JsonDict
@@ -219,7 +226,7 @@ class FlextApiBaseClientService(
                     url=url,
                 )
                 if after_plugin_result.success:
-                    response_data = after_plugin_result.data
+                    response_data = after_plugin_result.value
 
             return FlextResult[FlextTypes.Core.JsonDict].ok(response_data)
         except Exception as e:
@@ -309,7 +316,7 @@ class FlextApiBaseAuthService(
                 return auth_result
 
             # Create session
-            auth_data = auth_result.data or {}
+            auth_data = auth_result.value or {}
             session_result = await self._create_session(auth_data)
             if not session_result.success:
                 return session_result
@@ -318,7 +325,9 @@ class FlextApiBaseAuthService(
             return session_result
         except Exception as e:
             logger.exception("Authentication failed")
-            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Authentication failed: {e}")
+            return FlextResult[FlextTypes.Core.JsonDict].fail(
+                f"Authentication failed: {e}"
+            )
 
     async def validate_token(self, token: str) -> FlextResult[bool]:
         """Validate an authentication token."""
@@ -336,9 +345,8 @@ class FlextApiBaseAuthService(
     async def refresh_token(self, token: str) -> FlextResult[str]:
         """Refresh an authentication token."""
         try:
-            # Validate current token
-            validation_result = await self.validate_token(token)
-            if not validation_result.success or not validation_result.data:
+            # Validate current token - use unwrap_or for cleaner code
+            if not (await self.validate_token(token)).unwrap_or(False):
                 return FlextResult[str].fail("Invalid token")
 
             # Perform token refresh (implemented by subclass)
@@ -401,13 +409,17 @@ class FlextApiBaseRepositoryService(
         """Find entity by ID."""
         try:
             if not entity_id:
-                return FlextResult[FlextTypes.Core.JsonDict].fail("Entity ID cannot be empty")
+                return FlextResult[FlextTypes.Core.JsonDict].fail(
+                    "Entity ID cannot be empty"
+                )
 
             # Perform lookup (implemented by subclass)
             return await self._do_find_by_id(entity_id)
         except Exception as e:
             logger.exception("Failed to find entity", entity_id=entity_id)
-            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Failed to find entity: {e}")
+            return FlextResult[FlextTypes.Core.JsonDict].fail(
+                f"Failed to find entity: {e}"
+            )
 
     async def find_all(
         self,
@@ -419,15 +431,21 @@ class FlextApiBaseRepositoryService(
         try:
             # Validate pagination parameters
             if limit is not None and limit <= 0:
-                return FlextResult[list[FlextTypes.Core.JsonDict]].fail("Limit must be positive")
+                return FlextResult[list[FlextTypes.Core.JsonDict]].fail(
+                    "Limit must be positive"
+                )
             if offset is not None and offset < 0:
-                return FlextResult[list[FlextTypes.Core.JsonDict]].fail("Offset must be non-negative")
+                return FlextResult[list[FlextTypes.Core.JsonDict]].fail(
+                    "Offset must be non-negative"
+                )
 
             # Perform query (implemented by subclass)
             return await self._do_find_all(filters, limit, offset)
         except Exception as e:
             logger.exception("Failed to find entities")
-            return FlextResult[list[FlextTypes.Core.JsonDict]].fail(f"Failed to find entities: {e}")
+            return FlextResult[list[FlextTypes.Core.JsonDict]].fail(
+                f"Failed to find entities: {e}"
+            )
 
     async def save(
         self,
@@ -436,7 +454,9 @@ class FlextApiBaseRepositoryService(
         """Save an entity."""
         try:
             if not entity:
-                return FlextResult[FlextTypes.Core.JsonDict].fail("Entity cannot be None")
+                return FlextResult[FlextTypes.Core.JsonDict].fail(
+                    "Entity cannot be None"
+                )
 
             # Validate entity
             validation_result = self._validate_entity(entity)
@@ -449,7 +469,9 @@ class FlextApiBaseRepositoryService(
             return await self._do_save(entity)
         except Exception as e:
             logger.exception("Failed to save entity")
-            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Failed to save entity: {e}")
+            return FlextResult[FlextTypes.Core.JsonDict].fail(
+                f"Failed to save entity: {e}"
+            )
 
     async def delete(self, entity_id: str) -> FlextResult[None]:
         """Delete an entity by ID."""
@@ -517,7 +539,7 @@ class FlextApiBaseHandlerService(
     """
 
     middlewares: list[FlextApiMiddlewareProtocol] = Field(
-        default_factory=list,
+        default_factory=list[FlextApiMiddlewareProtocol],
         description="Handler middlewares",
     )
 
@@ -533,7 +555,7 @@ class FlextApiBaseHandlerService(
                 middleware_result = await middleware.process_request(processed_request)
                 if not middleware_result.success:
                     return middleware_result
-                processed_request = middleware_result.data or {}
+                processed_request = middleware_result.value or {}
 
             # Handle request (implemented by subclass)
             response_result = await self._do_handle(processed_request)
@@ -541,18 +563,20 @@ class FlextApiBaseHandlerService(
                 return response_result
 
             # Process response through middlewares (reverse order)
-            processed_response = response_result.data or {}
+            processed_response = response_result.value or {}
             for middleware in reversed(self.middlewares):
                 middleware_result = await middleware.process_response(
                     processed_response,
                 )
-                if middleware_result.success and middleware_result.data:
-                    processed_response = middleware_result.data
+                # Use unwrap_or to get value or keep current response
+                processed_response = middleware_result.unwrap_or(processed_response)
 
             return FlextResult[FlextTypes.Core.JsonDict].ok(processed_response)
         except Exception as e:
             logger.exception("Request handling failed")
-            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Request handling failed: {e}")
+            return FlextResult[FlextTypes.Core.JsonDict].fail(
+                f"Request handling failed: {e}"
+            )
 
     @abstractmethod
     async def _do_handle(

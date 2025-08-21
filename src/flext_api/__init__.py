@@ -13,23 +13,31 @@ import importlib.metadata
 # Core types from flext-core
 import asyncio
 import threading
-from typing import Protocol, Union
+from typing import Protocol
 
 from flext_core import FlextResult, get_logger
 
 # Legacy Compatibility Imports
 from flext_api.api import FlextApi, create_flext_api, create_api_service
+
 # Legacy app compatibility - create alias
 try:
     from flext_api.app import create_flext_api_app as flext_api_create_app
 except ImportError:
     # Fallback - create wrapper for app instance
-    from flext_api.app import app as _flext_api_app_instance, storage as _flext_api_storage_instance, FlextApiAppConfig
+    from flext_api.app import (
+        app as _flext_api_app_instance,
+        storage as _flext_api_storage_instance,
+        FlextApiAppConfig,
+    )
     from fastapi import FastAPI
+
     def flext_api_create_app(config: FlextApiAppConfig | None = None) -> FastAPI:
         """Fallback function returning the app instance."""
         del config  # Ignore parameter
         return _flext_api_app_instance
+
+
 from flext_api.app import (
     FlextApiAppConfig,  # Configuration class for tests
     app as _flext_api_app_instance,  # Default app instance (avoid name collision)
@@ -39,8 +47,10 @@ from flext_api.app import (
     run_development_server,
     run_production_server,
 )
+
 # Export app and storage for backwards compatibility
 app = _flext_api_app_instance
+
 
 # Create sync wrapper for storage to maintain test compatibility
 class _AsyncStorageProtocol(Protocol):
@@ -48,6 +58,8 @@ class _AsyncStorageProtocol(Protocol):
 
     async def set(self, key: str, value: object) -> FlextResult[None]: ...
     async def get(self, key: str) -> FlextResult[object]: ...
+    async def delete(self, key: str) -> FlextResult[bool]: ...
+
 
 class _SyncStorageWrapper:
     """Sync wrapper for async storage to maintain test compatibility."""
@@ -62,13 +74,17 @@ class _SyncStorageWrapper:
             if loop.is_running():
                 # Create new event loop for sync operation
                 result: list[FlextResult[None] | FlextResult[object] | None] = [None]
+
                 def run_async() -> None:
                     new_loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(new_loop)
                     try:
-                        result[0] = new_loop.run_until_complete(self._async_storage.set(key, value))
+                        result[0] = new_loop.run_until_complete(
+                            self._async_storage.set(key, value)
+                        )
                     finally:
                         new_loop.close()
+
                 thread = threading.Thread(target=run_async)
                 thread.start()
                 thread.join()
@@ -86,30 +102,40 @@ class _SyncStorageWrapper:
             if loop.is_running():
                 # Create new event loop for sync operation
                 result: list[FlextResult[None] | FlextResult[object] | None] = [None]
+
                 def run_async() -> None:
                     new_loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(new_loop)
                     try:
-                        result[0] = new_loop.run_until_complete(self._async_storage.get(key))
+                        result[0] = new_loop.run_until_complete(
+                            self._async_storage.get(key)
+                        )
                     finally:
                         new_loop.close()
+
                 thread = threading.Thread(target=run_async)
                 thread.start()
                 thread.join()
                 result_obj = result[0]
-                if isinstance(result_obj, FlextResult) and result_obj.success:
-                    return result_obj.data
-                return None
+                return (
+                    result_obj.unwrap_or(default=None)
+                    if isinstance(result_obj, FlextResult)
+                    else None
+                )
             result_obj = loop.run_until_complete(self._async_storage.get(key))
-            if isinstance(result_obj, FlextResult) and result_obj.success:
-                return result_obj.data
-            return None
+            return (
+                result_obj.unwrap_or(default=None)
+                if isinstance(result_obj, FlextResult)
+                else None
+            )
         except RuntimeError:
             # No event loop
             result_any = asyncio.run(self._async_storage.get(key))
-            if isinstance(result_any, FlextResult) and result_any.success:
-                return result_any.data
-            return None
+            return (
+                result_any.unwrap_or(default=None)
+                if isinstance(result_any, FlextResult)
+                else None
+            )
 
     def delete(self, key: str) -> bool:
         """Sync delete method."""
@@ -123,7 +149,9 @@ class _SyncStorageWrapper:
                     new_loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(new_loop)
                     try:
-                        result[0] = new_loop.run_until_complete(self._async_storage.delete(key))
+                        result[0] = new_loop.run_until_complete(
+                            self._async_storage.delete(key)
+                        )
                     finally:
                         new_loop.close()
 
@@ -131,23 +159,30 @@ class _SyncStorageWrapper:
                 thread.start()
                 thread.join()
                 result_obj = result[0]
-                if isinstance(result_obj, FlextResult) and result_obj.success:
-                    return result_obj.data or False
-                return False
+                return (
+                    (result_obj.unwrap_or(default=False) or False)
+                    if isinstance(result_obj, FlextResult)
+                    else False
+                )
             result_obj = loop.run_until_complete(self._async_storage.delete(key))
-            if isinstance(result_obj, FlextResult) and result_obj.success:
-                return result_obj.data or False
-            return False
+            return (
+                (result_obj.unwrap_or(default=False) or False)
+                if isinstance(result_obj, FlextResult)
+                else False
+            )
         except RuntimeError:
             # No event loop
             result_any = asyncio.run(self._async_storage.delete(key))
-            if isinstance(result_any, FlextResult) and result_any.success:
-                return result_any.data or False
-            return False
+            return (
+                (result_any.unwrap_or(default=False) or False)
+                if isinstance(result_any, FlextResult)
+                else False
+            )
 
     def __getattr__(self, name: str) -> object:
         """Delegate other attributes to the async storage."""
         return getattr(self._async_storage, name)
+
 
 storage = _SyncStorageWrapper(_flext_api_storage_instance)
 
@@ -322,6 +357,7 @@ from flext_api.types import (
     response_format_field,
     user_role_field,
 )
+
 # Import FlextTypes for tests
 from flext_api.typings import FlextTypes
 
@@ -334,19 +370,33 @@ from flext_api.base_service import (
     FlextApiBaseService,
     FlextApiBaseStreamingService,
 )
+
+
 # Legacy client plugin function - fallback implementation
-def create_client_with_plugins(config: dict[str, object] | None, plugins: object = None) -> object:
+def create_client_with_plugins(
+    config: dict[str, object] | None, plugins: object = None
+) -> object:
     """Fallback function for legacy client plugin creation."""
     del plugins  # Ignore unused parameter
     return create_client(config)
-from flext_api.constants import FlextApiConstants, FlextApiEndpoints, FlextApiFieldType, FlextApiStatus
+
+
+from flext_api.constants import (
+    FlextApiConstants,
+    FlextApiEndpoints,
+    FlextApiFieldType,
+    FlextApiStatus,
+)
+
 # Import the actual app module for tests
 # Work around Python import issue by getting the real module from sys.modules
 import flext_api.app  # Trigger module loading
 import sys
+
 api_app_module = sys.modules["flext_api.app"]  # Get the actual module
 # Create api_app alias for legacy compatibility
 api_app = api_app_module
+
 
 # Legacy stubs for missing classes in tests
 class FlextApiCircuitBreakerPlugin:
@@ -361,11 +411,10 @@ class FlextApiCircuitBreakerPlugin:
 
     async def after_request(self, request: object, response: object) -> None:
         """Process response after receiving."""
-        pass
 
     async def on_error(self, request: object, error: Exception) -> None:
         """Handle request errors."""
-        pass
+
 
 try:
     __version__ = importlib.metadata.version("flext-api")

@@ -136,8 +136,8 @@ class TestMissingCoverageBuilder:
         if not paginated_resp.success:
             msg = f"Expected True, got {paginated_resp.success}"
             raise AssertionError(msg)
-        if paginated_resp.data != [1, 2, 3]:
-            msg = f"Expected [1, 2, 3], got {paginated_resp.data}"
+        if paginated_resp.value != [1, 2, 3]:
+            msg = f"Expected [1, 2, 3], got {paginated_resp.value}"
             raise AssertionError(msg)
         assert paginated_resp.metadata["page"] == 1
 
@@ -195,12 +195,17 @@ class TestMissingCoverageClient:
                 msg = f"Expected {request}, got {result}"
                 raise AssertionError(msg)
 
-            # Test after_request and on_error with correct signatures
-            mock_response = FlextApiClientResponse(status_code=200)
-            await plugin.after_request(request, mock_response)
+            # Test after_request and on_error with REAL response and error
+            real_response = FlextApiClientResponse(
+                status_code=200,
+                headers={"content-type": "application/json"},
+                data={"success": True, "message": "Real response data"},
+                elapsed_time=0.5,
+            )
+            await plugin.after_request(request, real_response)
 
-            mock_error = Exception("Test error")
-            await plugin.on_error(request, mock_error)
+            real_error = ConnectionError("Real network connection error")
+            await plugin.on_error(request, real_error)
 
         asyncio.run(test_retry())
 
@@ -221,12 +226,19 @@ class TestMissingCoverageClient:
                 msg = f"Expected {request}, got {result}"
                 raise AssertionError(msg)
 
-            # Test after_request and on_error with correct signatures
-            mock_response = FlextApiClientResponse(status_code=200)
-            await plugin.after_request(request, mock_response)
+            # Test after_request and on_error with REAL response and error
+            real_response = FlextApiClientResponse(
+                status_code=200,
+                headers={"content-type": "application/json"},
+                data={"circuit_breaker": "response"},
+                elapsed_time=0.3,
+            )
+            await plugin.after_request(
+                request, real_response
+            )  # Use correct method name
 
-            mock_error = Exception("Test error")
-            await plugin.on_error(request, mock_error)
+            real_error = TimeoutError("Real timeout error from circuit breaker")
+            await plugin.on_error(request, real_error)
 
         asyncio.run(test_circuit_breaker())
 
@@ -298,26 +310,40 @@ class TestCompleteCoverageIntegration:
     """Test complete coverage integration."""
 
     @pytest.mark.asyncio
-    async def test_full_client_workflow_with_errors(self) -> None:
-        """Test full client workflow with errors."""
-        config = FlextApiClientConfig(base_url="https://httpbin.org")
+    async def test_full_client_workflow_with_real_requests(self) -> None:
+        """Test full client workflow with REAL HTTP requests."""
+        config = FlextApiClientConfig(base_url="https://httpbin.org", timeout=15.0)
         client = FlextApiClient(config)
 
-        # Test complete workflow
-        await client.start()
-
+        # Test complete REAL workflow - no mocks!
         try:
-            # Test successful request
-            response = await client.get("/json")
-            assert response.success
+            # Initialize session for real HTTP requests
+            await client._ensure_session()
 
-            # Test error request (404 status)
-            response = await client.get("/status/404")
-            assert response.success  # HTTP request succeeded
-            assert response.data.status_code == 404  # But returned 404 status
+            # Test REAL successful request to httpbin.org
+            get_request = FlextApiClientRequest(
+                method=FlextApiClientMethod.GET, url="https://httpbin.org/json"
+            )
+            response_result = await client._perform_http_request(get_request)
+            assert response_result.success
+            assert response_result.value.status_code == 200
+            assert isinstance(response_result.value.value, dict)
+            assert (
+                "slideshow" in response_result.value.value
+            )  # httpbin.org/json has slideshow
+
+            # Test REAL error request (404 status from httpbin.org)
+            error_request = FlextApiClientRequest(
+                method=FlextApiClientMethod.GET, url="https://httpbin.org/status/404"
+            )
+            error_response = await client._perform_http_request(error_request)
+            assert error_response.success  # HTTP request succeeded
+            assert error_response.value.status_code == 404  # But returned 404 status
 
         finally:
-            await client.stop()
+            # Clean up real HTTP session
+            if hasattr(client, "_session") and client._session:
+                await client._session.close()
 
     def test_builder_edge_cases(self) -> None:
         """Test builder edge cases."""

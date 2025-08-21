@@ -15,9 +15,9 @@ from __future__ import annotations
 import math
 from datetime import UTC, datetime, timedelta
 from enum import IntEnum, StrEnum
+from typing import override
 from urllib.parse import ParseResult, urlparse
 
-# Imports centralizados do flext-core (sem TYPE_CHECKING)
 from flext_core import (
     FlextEntity,
     FlextModel,
@@ -291,6 +291,7 @@ class URL(FlextModel):
             raise ValueError(msg)
         return v
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate URL business rules following foundation pattern."""
         if not self.raw_url or not self.raw_url.strip():
@@ -383,6 +384,7 @@ class HttpHeader(FlextModel):
     name: str = Field(description="Header name")
     value: str = Field(description="Header value")
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate header business rules."""
         if not self.name or not self.name.strip():
@@ -455,6 +457,7 @@ class HttpHeader(FlextModel):
         """Check if this is a content-type header."""
         return self.name.lower() == "content-type"
 
+    @override
     def to_dict(
         self,
         *,
@@ -528,6 +531,7 @@ class BearerToken(FlextModel):
 
         return v
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate bearer token business rules."""
         if not self.token or not self.token.strip():
@@ -545,7 +549,9 @@ class BearerToken(FlextModel):
             if len(parts) == FlextApiConstants.Auth.JWT_PARTS_COUNT and not all(
                 part.strip() for part in parts
             ):
-                return FlextResult[None].fail("JWT format error - empty parts not allowed")
+                return FlextResult[None].fail(
+                    "JWT format error - empty parts not allowed"
+                )
 
         return FlextResult[None].ok(None)
 
@@ -565,7 +571,9 @@ class BearerToken(FlextModel):
         elif isinstance(token_type, str):
             valid_types = [t.value for t in TokenType]
             if token_type not in valid_types:
-                return FlextResult[BearerToken].fail(f"Invalid token type: {token_type}")
+                return FlextResult[BearerToken].fail(
+                    f"Invalid token type: {token_type}"
+                )
             token_type_enum = TokenType(token_type)
         # No else branch needed: all union members are covered above
 
@@ -679,6 +687,7 @@ class ClientConfig(FlextModel):
             raise ValueError(msg)
         return v
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate configuration business rules."""
         if not self.base_url:
@@ -726,13 +735,14 @@ class QueryConfig(FlextModel):
         },
     )
 
-    filters: list[dict[str, object]] = Field(default_factory=list)
-    sorts: list[dict[str, str]] = Field(default_factory=list)
+    filters: list[dict[str, object]] = Field(default_factory=list[dict[str, object]])
+    sorts: list[dict[str, str]] = Field(default_factory=list[dict[str, str]])
     page: int = Field(default=1)
     page_size: int = Field(default=DEFAULT_PAGE_SIZE)
     search: str | None = None
     fields: list[str] | None = None
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate query configuration."""
         if self.page <= 0:
@@ -743,6 +753,7 @@ class QueryConfig(FlextModel):
 
         return FlextResult[None].ok(None)
 
+    @override
     def to_dict(
         self,
         *,
@@ -825,11 +836,15 @@ class PaginationInfo(FlextModel):
 
             validation = instance.validate_business_rules()
             if not validation.success:
-                return FlextResult[PaginationInfo].fail(validation.error or "Validation failed")
+                return FlextResult[PaginationInfo].fail(
+                    validation.error or "Validation failed"
+                )
 
             return FlextResult[PaginationInfo].ok(instance)
         except Exception as e:
-            return FlextResult[PaginationInfo].fail(f"Failed to create pagination info: {e}")
+            return FlextResult[PaginationInfo].fail(
+                f"Failed to create pagination info: {e}"
+            )
 
 
 # ==============================================================================
@@ -874,6 +889,7 @@ class ApiRequest(FlextEntity):
 
     # NOTE: Using FlextTimestamp from FlextEntity base class for lifecycle fields
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate request business rules."""
         # Consolidated validation checks
@@ -896,7 +912,9 @@ class ApiRequest(FlextEntity):
         if self.headers:
             for key, value in self.headers.items():
                 if not key:
-                    return FlextResult[None].fail("Header keys must be non-empty strings")
+                    return FlextResult[None].fail(
+                        "Header keys must be non-empty strings"
+                    )
                 if not value:
                     return FlextResult[None].fail("Header values cannot be empty")
 
@@ -922,7 +940,9 @@ class ApiRequest(FlextEntity):
     def start_processing(self) -> FlextResult[ApiRequest]:
         """Start request processing with state transition."""
         if self.state != RequestState.VALIDATED:
-            return FlextResult[ApiRequest].fail(f"Cannot start processing from state: {self.state}")
+            return FlextResult[ApiRequest].fail(
+                f"Cannot start processing from state: {self.state}"
+            )
 
         updated = self.model_copy(
             update={
@@ -936,7 +956,9 @@ class ApiRequest(FlextEntity):
     def complete_processing(self) -> FlextResult[ApiRequest]:
         """Complete request processing."""
         if self.state != RequestState.PROCESSING:
-            return FlextResult[ApiRequest].fail(f"Cannot complete from state: {self.state}")
+            return FlextResult[ApiRequest].fail(
+                f"Cannot complete from state: {self.state}"
+            )
 
         updated = self.model_copy(
             update={
@@ -1003,10 +1025,13 @@ class ApiResponse(FlextEntity):
 
     # NOTE: Using FlextTimestamp from FlextEntity base class for lifecycle fields
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate response business rules."""
         if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
-            return FlextResult[None].fail(f"Invalid HTTP status code: {self.status_code}")
+            return FlextResult[None].fail(
+                f"Invalid HTTP status code: {self.status_code}"
+            )
 
         if self.headers:
             for key, value in self.headers.items():
@@ -1014,9 +1039,11 @@ class ApiResponse(FlextEntity):
                     return FlextResult[None].fail(
                         "Response header keys must be non-empty strings",
                     )
-                # Allow falsy values like '0' or 'false'; only reject None or empty strings
-                if value is None or (isinstance(value, str) and not value.strip()):
-                    return FlextResult[None].fail("Response header values cannot be empty")
+                # Only reject empty strings (value is always str in dict[str, str])
+                if not value.strip():
+                    return FlextResult[None].fail(
+                        "Response header values cannot be empty"
+                    )
 
         return FlextResult[None].ok(None)
 
@@ -1045,7 +1072,7 @@ class ApiResponse(FlextEntity):
 
     def mark_error(self, error_message: str) -> FlextResult[ApiResponse]:
         """Mark response as error with message."""
-        error_body = {
+        error_body: dict[str, object] = {
             "error": error_message,
             "timestamp": datetime.now(UTC).isoformat(),
             "response_id": self.id,
@@ -1108,6 +1135,7 @@ class ApiEndpoint(FlextEntity):
 
     # NOTE: Using FlextTimestamp from FlextEntity base class for lifecycle fields
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate endpoint business rules."""
         # Consolidated validation checks
@@ -1182,12 +1210,13 @@ class ApiSession(FlextEntity):
     is_active: bool = Field(default=True, description="Session active state")
     refresh_token: str | None = Field(None, description="Refresh token")
     permissions: list[str] = Field(
-        default_factory=list,
+        default_factory=list[str],
         description="Session permissions",
     )
 
     # NOTE: Using FlextTimestamp from FlextEntity base class for lifecycle fields
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate session business rules."""
         if self.token and len(self.token) < MIN_TOKEN_LENGTH:
@@ -1196,7 +1225,9 @@ class ApiSession(FlextEntity):
             )
 
         if self.expires_at and self.expires_at <= datetime.now(UTC):
-            return FlextResult[None].fail("Session cannot be created with past expiration")
+            return FlextResult[None].fail(
+                "Session cannot be created with past expiration"
+            )
 
         return FlextResult[None].ok(None)
 
@@ -1256,6 +1287,7 @@ class RequestDto(FlextModel):
     data: str | bytes | None = Field(None, description="Raw request data")
     timeout: float | None = Field(None, description="Request timeout")
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate request DTO business rules."""
         if not self.method or not self.method.strip():
@@ -1283,10 +1315,13 @@ class ResponseDto(FlextModel):
     request_id: str | None = Field(None, description="Associated request ID")
     from_cache: bool = Field(default=False, description="Cache hit indicator")
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate response DTO business rules."""
         if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
-            return FlextResult[None].fail(f"Invalid HTTP status code: {self.status_code}")
+            return FlextResult[None].fail(
+                f"Invalid HTTP status code: {self.status_code}"
+            )
 
         if self.elapsed_time < 0:
             return FlextResult[None].fail("Elapsed time cannot be negative")
@@ -1303,15 +1338,19 @@ class ApiErrorContext(FlextModel):
     error_code: str | None = Field(None, description="Application error code")
     details: dict[str, object] | None = Field(None, description="Error details")
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate error context business rules."""
         if self.status_code is not None and not (
             MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS
         ):
-            return FlextResult[None].fail(f"Invalid HTTP status code: {self.status_code}")
+            return FlextResult[None].fail(
+                f"Invalid HTTP status code: {self.status_code}"
+            )
 
         return FlextResult[None].ok(None)
 
+    @override
     def to_dict(
         self,
         *,
@@ -1345,11 +1384,11 @@ class QueryBuilder(FlextModel):
     """Query builder configuration using pure Pydantic patterns."""
 
     filters: list[dict[str, object]] = Field(
-        default_factory=list,
+        default_factory=list[dict[str, object]],
         description="Query filters",
     )
     sorts: list[dict[str, str]] = Field(
-        default_factory=list,
+        default_factory=list[dict[str, str]],
         description="Sort criteria",
     )
     page: int = Field(default=1, ge=1, description="Page number")
@@ -1364,6 +1403,7 @@ class QueryBuilder(FlextModel):
     includes: list[str] | None = Field(None, description="Relations to include")
     excludes: list[str] | None = Field(None, description="Fields to exclude")
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate query builder business rules."""
         if self.page < 1:
@@ -1410,10 +1450,13 @@ class ResponseBuilder(FlextModel):
         description="HTTP status code",
     )
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate response builder business rules."""
         if not (MIN_HTTP_STATUS <= self.status_code <= MAX_HTTP_STATUS):
-            return FlextResult[None].fail(f"Invalid HTTP status code: {self.status_code}")
+            return FlextResult[None].fail(
+                f"Invalid HTTP status code: {self.status_code}"
+            )
 
         if not self.success and not (self.errors or self.message):
             return FlextResult[None].fail(
@@ -1422,6 +1465,7 @@ class ResponseBuilder(FlextModel):
 
         return FlextResult[None].ok(None)
 
+    @override
     def to_dict(
         self,
         *,

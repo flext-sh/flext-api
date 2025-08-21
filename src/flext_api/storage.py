@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, override
 from uuid import uuid4
 
 from flext_core import FlextResult, get_logger
@@ -153,6 +153,7 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
         self._data: dict[str, V] = {}
         self._expiry: dict[str, float] = {}
 
+    @override
     async def get(self, key: str) -> FlextResult[V | None]:
         """Get value by key."""
         try:
@@ -171,6 +172,7 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
         except Exception as e:
             return FlextResult[V | None].fail(f"Failed to get key '{key}': {e}")
 
+    @override
     async def set(
         self,
         key: str,
@@ -195,6 +197,7 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
         except Exception as e:
             return FlextResult[None].fail(f"Failed to set key '{key}': {e}")
 
+    @override
     async def delete(self, key: str) -> FlextResult[bool]:
         """Delete key and return True if existed."""
         try:
@@ -207,6 +210,7 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
         except Exception as e:
             return FlextResult[bool].fail(f"Failed to delete key '{key}': {e}")
 
+    @override
     async def exists(self, key: str) -> FlextResult[bool]:
         """Check if key exists."""
         try:
@@ -218,8 +222,11 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
             exists = key in self._data
             return FlextResult[bool].ok(exists)
         except Exception as e:
-            return FlextResult[bool].fail(f"Failed to check existence of key '{key}': {e}")
+            return FlextResult[bool].fail(
+                f"Failed to check existence of key '{key}': {e}"
+            )
 
+    @override
     async def keys(self, pattern: str | None = None) -> FlextResult[list[str]]:
         """Get all keys, optionally filtered by pattern."""
         try:
@@ -243,6 +250,7 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
         except Exception as e:
             return FlextResult[list[str]].fail(f"Failed to get keys: {e}")
 
+    @override
     async def clear(self) -> FlextResult[None]:
         """Clear all data."""
         try:
@@ -253,6 +261,7 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
         except Exception as e:
             return FlextResult[None].fail(f"Failed to clear storage: {e}")
 
+    @override
     async def close(self) -> FlextResult[None]:
         """Close storage connection (no-op for memory)."""
         return FlextResult[None].ok(None)
@@ -296,6 +305,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
         except Exception as e:
             return FlextResult[None].fail(f"Failed to save data to file: {e}")
 
+    @override
     async def get(self, key: str) -> FlextResult[V | None]:
         """Get value by key."""
         async with self._lock:
@@ -305,6 +315,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
             except Exception as e:
                 return FlextResult[V | None].fail(f"Failed to get key '{key}': {e}")
 
+    @override
     async def set(
         self,
         key: str,
@@ -330,6 +341,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
             except Exception as e:
                 return FlextResult[None].fail(f"Failed to set key '{key}': {e}")
 
+    @override
     async def delete(self, key: str) -> FlextResult[bool]:
         """Delete key and return True if existed."""
         async with self._lock:
@@ -352,6 +364,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
             except Exception as e:
                 return FlextResult[bool].fail(f"Failed to delete key '{key}': {e}")
 
+    @override
     async def exists(self, key: str) -> FlextResult[bool]:
         """Check if key exists."""
         async with self._lock:
@@ -363,6 +376,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                     f"Failed to check existence of key '{key}': {e}",
                 )
 
+    @override
     async def keys(self, pattern: str | None = None) -> FlextResult[list[str]]:
         """Get all keys, optionally filtered by pattern."""
         async with self._lock:
@@ -379,6 +393,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
             except Exception as e:
                 return FlextResult[list[str]].fail(f"Failed to get keys: {e}")
 
+    @override
     async def clear(self) -> FlextResult[None]:
         """Clear all data."""
         async with self._lock:
@@ -397,6 +412,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
             except Exception as e:
                 return FlextResult[None].fail(f"Failed to clear storage: {e}")
 
+    @override
     async def close(self) -> FlextResult[None]:
         """Close storage connection."""
         return await self._save_data()
@@ -414,6 +430,7 @@ class MemoryCache(CacheInterface):
         """Initialize memory cache."""
         self._cache: dict[str, CacheEntry[object]] = {}
 
+    @override
     def get_cached(self, key: str) -> object | None:
         """Get cached value."""
         entry = self._cache.get(key)
@@ -426,6 +443,7 @@ class MemoryCache(CacheInterface):
 
         return entry.value
 
+    @override
     def set_cached(self, key: str, value: object, ttl_seconds: int) -> None:
         """Set cached value with TTL."""
         entry = CacheEntry(
@@ -435,10 +453,12 @@ class MemoryCache(CacheInterface):
         )
         self._cache[key] = entry
 
+    @override
     def delete_cached(self, key: str) -> bool:
         """Delete cached value."""
         return self._cache.pop(key, None) is not None
 
+    @override
     def clear_cache(self) -> None:
         """Clear all cached values."""
         self._cache.clear()
@@ -495,11 +515,12 @@ class FlextApiStorage:
         if result.is_failure:
             return result
 
-        # Cache the result if caching is enabled
-        if result.data is not None and self._cache is not None:
+        # Cache the result if caching is enabled and has value
+        cached_value = result.unwrap_or(None)
+        if cached_value is not None and self._cache is not None:
             self._cache.set_cached(
                 namespaced_key,
-                result.data,
+                cached_value,
                 self._config.cache_ttl_seconds,
             )
 
@@ -522,7 +543,9 @@ class FlextApiStorage:
 
             transaction = self._transactions[transaction_id]
             if not transaction.is_active:
-                return FlextResult[None].fail(f"Transaction {transaction_id} is not active")
+                return FlextResult[None].fail(
+                    f"Transaction {transaction_id} is not active"
+                )
 
             transaction.operations.append(("set", namespaced_key, value))
             return FlextResult[None].ok(None)
@@ -554,7 +577,9 @@ class FlextApiStorage:
 
             transaction = self._transactions[transaction_id]
             if not transaction.is_active:
-                return FlextResult[bool].fail(f"Transaction {transaction_id} is not active")
+                return FlextResult[bool].fail(
+                    f"Transaction {transaction_id} is not active"
+                )
 
             transaction.operations.append(("delete", namespaced_key, None))
             return FlextResult[bool].ok(True)  # noqa: FBT003
@@ -589,7 +614,7 @@ class FlextApiStorage:
 
         # Remove namespace prefix from returned keys
         prefix_len = len(self._config.namespace) + 1
-        clean_keys = [key[prefix_len:] for key in result.data or []]
+        clean_keys = [key[prefix_len:] for key in result.value or []]
         return FlextResult[list[str]].ok(clean_keys)
 
     async def clear(self) -> FlextResult[None]:
@@ -601,7 +626,7 @@ class FlextApiStorage:
                 f"Failed to get keys for clearing: {keys_result.error}",
             )
 
-        for key in keys_result.data or []:
+        for key in keys_result.value or []:
             delete_result = await self.delete(key)
             if delete_result.is_failure:
                 return FlextResult[None].fail(
@@ -628,9 +653,13 @@ class FlextApiStorage:
         def _get_active_tx() -> FlextResult[TransactionContext[object]]:
             tx = self._transactions.get(transaction_id)
             if tx is None:
-                return FlextResult[TransactionContext[object]].fail(f"Transaction {transaction_id} not found")
+                return FlextResult[TransactionContext[object]].fail(
+                    f"Transaction {transaction_id} not found"
+                )
             if not tx.is_active:
-                return FlextResult[TransactionContext[object]].fail(f"Transaction {transaction_id} is not active")
+                return FlextResult[TransactionContext[object]].fail(
+                    f"Transaction {transaction_id} is not active"
+                )
             return FlextResult[TransactionContext[object]].ok(tx)
 
         async def _apply_set(key: str, value: object) -> FlextResult[None]:
@@ -647,7 +676,7 @@ class FlextApiStorage:
         if tx_result.is_failure:
             return FlextResult[None].fail(tx_result.error or "Invalid transaction")
 
-        tx = tx_result.data
+        tx = tx_result.value
 
         for op, key, value in tx.operations:
             if op == "set":
@@ -657,7 +686,9 @@ class FlextApiStorage:
             else:
                 return FlextResult[None].fail(f"Unknown transaction operation: {op}")
             if applied.is_failure:
-                return FlextResult[None].fail(applied.error or "Transaction operation failed")
+                return FlextResult[None].fail(
+                    applied.error or "Transaction operation failed"
+                )
 
         tx.is_active = False
         del self._transactions[transaction_id]

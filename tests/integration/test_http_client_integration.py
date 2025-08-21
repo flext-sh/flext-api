@@ -37,15 +37,15 @@ class TestHttpClientIntegration:
             # Test GET request
             result = await client.get("/get", params={"test": "integration"})
             assert result.success
-            assert result.data is not None
+            assert result.value is not None
 
-            response = result.data
+            response = result.value
             assert response.status_code == 200
 
             # Verify JSON response structure
-            if isinstance(response.data, dict):
-                assert "args" in response.data
-                assert response.data["args"]["test"] == "integration"
+            if isinstance(response.value, dict):
+                assert "args" in response.value
+                assert response.value["args"]["test"] == "integration"
 
         finally:
             await client.close()
@@ -74,8 +74,8 @@ class TestHttpClientIntegration:
             assert result2.success
 
             # Both should succeed even if second is from cache
-            assert result1.data.status_code == 200
-            assert result2.data.status_code == 200
+            assert result1.value.status_code == 200
+            assert result2.value.status_code == 200
 
         finally:
             await client.close()
@@ -95,14 +95,14 @@ class TestHttpClientIntegration:
             result = await client.post("/post", json_data=test_data)
             assert result.success
 
-            response = result.data
+            response = result.value
             assert response.status_code == 200
 
             # Verify JSON data was sent correctly
-            if isinstance(response.data, dict):
-                assert "json" in response.data
-                assert response.data["json"]["message"] == "integration test"
-                assert response.data["json"]["value"] == 42
+            if isinstance(response.value, dict):
+                assert "json" in response.value
+                assert response.value["json"]["message"] == "integration test"
+                assert response.value["json"]["value"] == 42
 
         finally:
             await client.close()
@@ -118,7 +118,7 @@ class TestHttpClientIntegration:
         async with FlextApiClient(config) as client:
             result = await client.get("/status/200")
             assert result.success
-            assert result.data.status_code == 200
+            assert result.value.status_code == 200
 
         # Client should be stopped automatically
         assert client.status.value == "stopped"

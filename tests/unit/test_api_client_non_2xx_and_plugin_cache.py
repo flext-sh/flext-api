@@ -78,7 +78,9 @@ async def test_cached_short_circuit_and_non_2xx(
     async def perform_bad(
         _req: FlextApiClientRequest,
     ) -> FlextResult[FlextApiClientResponse]:
-        return FlextResult[None].ok(FlextApiClientResponse(status_code=500, data={"e": 1}))
+        return FlextResult[None].ok(
+            FlextApiClientResponse(status_code=500, data={"e": 1})
+        )
 
     monkeypatch.setattr(client, "_perform_http_request", perform_bad)
     _ = await client._execute_request_pipeline(req, "GET")

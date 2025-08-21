@@ -111,7 +111,7 @@ class FlextApiPluginProtocol(Protocol):
         method: str,
         url: str,
         headers: dict[str, str],
-        **kwargs: FlextTypes.Core.JsonDict,
+        **kwargs: object,
     ) -> FlextResult[None]:
         """Call before request execution.
 

@@ -146,7 +146,7 @@ async def example_api_service() -> None:
         },
     )
 
-    if client_result.success and client_result.data is not None:
+    if client_result.success and client_result.value is not None:
         # Get client from service
         api.get_client()
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import override
 
 from flext_core import FlextBaseConfigModel, FlextConstants, FlextResult, FlextSettings
 from pydantic import Field, field_validator
@@ -62,7 +63,7 @@ class FlextApiSettings(FlextBaseConfigModel):
     secret_key: str | None = Field(default=None, description="Application secret key")
     jwt_expiry: int = Field(default=3600, description="JWT expiry in seconds", ge=60)
     cors_origins: list[str] = Field(
-        default_factory=list,
+        default_factory=list[str],
         description="CORS allowed origins",
     )
     # Environment Configuration
@@ -106,6 +107,7 @@ class FlextApiSettings(FlextBaseConfigModel):
             raise ValueError(msg)
         return v.upper()
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate API-specific business rules."""
         # API port validation
@@ -140,6 +142,7 @@ class FlextApiSettings(FlextBaseConfigModel):
         return FlextResult[None].ok(None)
 
     @classmethod
+    @override
     def create_with_validation(
         cls,
         overrides: Mapping[str, object] | None = None,

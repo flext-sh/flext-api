@@ -53,8 +53,8 @@ async def test_base_client_service_lifecycle_and_request() -> None:
     assert start_res.success
     health = await svc.health_check()
     assert health.success
-    assert health.data is not None
-    assert health.data["status"] in {"healthy", "stopped"}
+    assert health.value is not None
+    assert health.value["status"] in {"healthy", "stopped"}
     res = await svc.request("GET", "http://example.com")
     assert res.success
     assert (await svc.stop()).success
@@ -93,11 +93,11 @@ async def test_base_auth_service_flows() -> None:
     auth = DummyAuth()
     res = await auth.authenticate({"u": 1})
     assert res.success
-    assert res.data is not None
-    token = str(res.data.get("token"))
+    assert res.value is not None
+    token = str(res.value.get("token"))
     assert len(token) >= 16
-    assert (await auth.validate_token(token)).data is True
-    assert (await auth.refresh_token(token)).data == token + "1"
+    assert (await auth.validate_token(token)).value is True
+    assert (await auth.refresh_token(token)).value == token + "1"
 
 
 class DummyRepo(FlextApiBaseRepositoryService):
@@ -140,9 +140,9 @@ DummyRepo.model_rebuild()
 async def test_base_repository_crud() -> None:
     """Repository CRUD operations return expected results."""
     repo = DummyRepo()
-    assert (await repo.find_by_id("1")).data == {"id": "1"}
-    assert (await repo.find_all()).data == [{"id": 1}]
-    assert (await repo.save({"id": 2})).data == {"id": 2}
+    assert (await repo.find_by_id("1")).value == {"id": "1"}
+    assert (await repo.find_all()).value == [{"id": 1}]
+    assert (await repo.save({"id": 2})).value == {"id": 2}
     assert (await repo.delete("2")).success
 
 
@@ -173,4 +173,4 @@ async def test_base_handler_flow() -> None:
     h = DummyHandler()
     res = await h.handle({"a": 1})
     assert res.success
-    assert res.data == {"echo": {"a": 1}}
+    assert res.value == {"echo": {"a": 1}}

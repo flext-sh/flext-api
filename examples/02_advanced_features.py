@@ -101,7 +101,7 @@ def example_advanced_response_building() -> None:
         ),
     )
 
-    (paginated_response.data if isinstance(paginated_response.data, list) else [])
+    (paginated_response.value if isinstance(paginated_response.value, list) else [])
 
 
 async def example_advanced_client_configuration() -> None:
@@ -145,7 +145,7 @@ async def example_full_api_service_integration() -> None:
 
         # Health check do serviço
         health_result = await api.health_check()
-        if health_result.success and health_result.data is not None:
+        if health_result.success and health_result.value is not None:
             pass
 
         # Obter builder e criar query complexa
@@ -192,7 +192,11 @@ async def example_full_api_service_integration() -> None:
             .build()
         )
 
-        (len(advanced_response.data) if isinstance(advanced_response.data, list) else 0)
+        (
+            len(advanced_response.value)
+            if isinstance(advanced_response.value, list)
+            else 0
+        )
 
         # Criar cliente HTTP via serviço
         client_config = {
@@ -206,7 +210,7 @@ async def example_full_api_service_integration() -> None:
         }
 
         client_result = api.flext_api_create_client(client_config)
-        if client_result.success and client_result.data is not None:
+        if client_result.success and client_result.value is not None:
             pass
 
         # Verificar cliente do serviço
@@ -245,8 +249,8 @@ def example_factory_functions_advanced() -> None:
         },
     )
 
-    if isinstance(advanced_success.data, dict):
-        users = advanced_success.data.get("users")
+    if isinstance(advanced_success.value, dict):
+        users = advanced_success.value.get("users")
         if isinstance(users, list):
             len(users)
 
