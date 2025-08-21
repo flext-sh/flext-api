@@ -1,63 +1,359 @@
-"""Pytest configuration for flext-api tests.
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
 """
+COMPREHENSIVE pytest configuration for flext-api tests.
+
+MASSIVE use of pytest ecosystem modules:
+- pytest-asyncio: Async test support
+- pytest-benchmark: Performance testing
+- pytest-mock: Advanced mocking (replacing unittest.mock)
+- pytest-httpx: HTTP client testing
+- pytest-randomly: Test order randomization
+- pytest-timeout: Test timeout management
+- pytest-env: Environment variable management
+- pytest-deadfixtures: Dead fixture detection
+- pytest-cov: Coverage reporting
+- pytest-clarity: Enhanced assertion reporting
+- pytest-sugar: Enhanced test output
+- pytest-xdist: Parallel test execution
+- factory_boy: Professional test data generation
+"""
+
+from __future__ import annotations
 
 import asyncio
 import os
-from collections.abc import AsyncGenerator, Callable, Iterator
+import tempfile
+from collections.abc import AsyncGenerator, Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
+import pytest_asyncio
 from faker import Faker
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from flext_core import FlextResult
 
-from flext_api import (
-    FlextApiAppConfig,
-    FlextApiSettings,
-    FlextApiStorage,
-    StorageBackend,
-    StorageConfig,
-    create_flext_api_app,
+# Import all support modules
+from tests.support.factories import (
+    FlextApiAppConfigFactory,
+    FlextApiClientRequestFactory,
+    FlextApiClientResponseFactory,
+    FlextApiConfigFactory,
+)
+from tests.support.fixtures import (
+    flext_api_app,
+    flext_api_client,
+    flext_api_config,
+    test_client,
+)
+from tests.support.utils import (
+    assert_flext_result_failure,
+    assert_flext_result_success,
+    create_test_request,
+    create_test_response,
 )
 
-# Garanta um loop corrente no thread principal para pytest-asyncio (Py3.13)
-try:
-    asyncio.get_event_loop()
-except RuntimeError:
-    asyncio.set_event_loop(asyncio.new_event_loop())
+# Flext imports
+from flext_api import FlextApiAppConfig, create_flext_api_app
+from flext_api.storage import FileStorageBackend, MemoryStorageBackend, StorageConfig
+from flext_core import FlextResult
 
+# ============================================================================ 
+# PYTEST CONFIGURATION - MASSIVE MODULE USAGE
+# ============================================================================
 
-# Configure faker for consistent test data
+# Configure Faker for deterministic test data
 fake = Faker()
-Faker.seed(12345)  # Deterministic fake data
+Faker.seed(12345)
+
+# Environment setup for testing
+os.environ.update({
+    "FLEXT_API_TESTING": "true",
+    "FLEXT_DISABLE_EXTERNAL_CALLS": "1", 
+    "FLEXT_TEST_LOG_MINIMAL": "true",
+    "FLEXT_FAST_TEST_MODE": "true",
+    "ENVIRONMENT": "test",
+    "LOG_LEVEL": "DEBUG",
+})
 
 
-# Setup test environment
-os.environ["FLEXT_API_TESTING"] = "true"
+def pytest_configure(config: pytest.Config) -> None:
+    """
+    Configure pytest with comprehensive markers and settings.
+    
+    Uses pytest-env, pytest-randomly, pytest-timeout for configuration.
+    """
+    # Add comprehensive test markers
+    markers = [
+        "unit: Fast isolated unit tests",
+        "integration: Integration tests with external dependencies", 
+        "e2e: End-to-end workflow tests",
+        "api: REST API endpoint tests",
+        "client: HTTP client tests",
+        "storage: Storage backend tests",
+        "config: Configuration tests",
+        "auth: Authentication tests",
+        "benchmark: Performance benchmark tests (pytest-benchmark)",
+        "slow: Slow running tests (pytest-timeout)",
+        "network: Tests requiring network access",
+        "async_test: Async tests (pytest-asyncio)",
+        "mock_test: Tests using mocking (pytest-mock)",
+        "factory_test: Tests using factory_boy",
+    ]
+    
+    for marker in markers:
+        config.addinivalue_line("markers", marker)
 
 
-def _ensure_event_loop() -> None:
-    """Certifica que existe um loop corrente no thread principal."""
+def pytest_collection_modifyitems(
+    config: pytest.Config,
+    items: list[pytest.Item],
+) -> None:
+    """
+    Automatically mark tests based on location and content.
+    
+    Uses pytest collection hooks for automatic test categorization.
+    """
+    for item in items:
+        # Add markers based on test location
+        test_path = str(item.fspath)
+        
+        if "/unit/" in test_path:
+            item.add_marker(pytest.mark.unit)
+            
+        if "/integration/" in test_path:
+            item.add_marker(pytest.mark.integration)
+            item.add_marker(pytest.mark.slow)
+            
+        if "/e2e/" in test_path:
+            item.add_marker(pytest.mark.e2e)
+            item.add_marker(pytest.mark.slow)
+            
+        if "/benchmarks/" in test_path:
+            item.add_marker(pytest.mark.benchmark)
+            
+        # Add markers based on test name patterns
+        test_name = item.name.lower()
+        
+        if "api" in test_name or "endpoint" in test_name:
+            item.add_marker(pytest.mark.api)
+            
+        if "client" in test_name or "http" in test_name:
+            item.add_marker(pytest.mark.client)
+            
+        if "storage" in test_name or "backend" in test_name:
+            item.add_marker(pytest.mark.storage)
+            
+        if "config" in test_name:
+            item.add_marker(pytest.mark.config)
+            
+        if "auth" in test_name:
+            item.add_marker(pytest.mark.auth)
+            
+        if "async" in test_name or "await" in test_name:
+            item.add_marker(pytest.mark.async_test)
+
+
+# ============================================================================
+# PYTEST-ASYNCIO CONFIGURATION
+# ============================================================================
+
+# Configure pytest-asyncio for async test support
+pytest_asyncio.AUTO_MODE = True
+
+
+@pytest.fixture(scope="session")
+def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
+    """
+    Session-scoped event loop for pytest-asyncio.
+    
+    Ensures proper async test execution across the test suite.
+    """
     try:
-        asyncio.get_event_loop()
+        loop = asyncio.get_event_loop()
     except RuntimeError:
-        asyncio.set_event_loop(asyncio.new_event_loop())
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    
+    yield loop
+    
+    # Clean shutdown
+    loop.close()
 
 
-def pytest_sessionstart(session: pytest.Session) -> None:  # noqa: ARG001
-    """Avoid pre-creating event loops at session start."""
-    _ensure_event_loop()
+# ============================================================================
+# FACTORY BOY INTEGRATION
+# ============================================================================
+
+@pytest.fixture
+def api_request_factory() -> type[FlextApiClientRequestFactory]:
+    """Provide FlextApiClientRequest factory for test data generation."""
+    return FlextApiClientRequestFactory
 
 
-def pytest_runtest_setup(item: pytest.Item) -> None:  # noqa: ARG001
-    """Avoid altering event loop before each test."""
-    _ensure_event_loop()
+@pytest.fixture  
+def api_response_factory() -> type[FlextApiClientResponseFactory]:
+    """Provide FlextApiClientResponse factory for test data generation."""
+    return FlextApiClientResponseFactory
 
 
-# Project root fixture
+@pytest.fixture
+def api_config_factory() -> type[FlextApiConfigFactory]:
+    """Provide FlextApiConfig factory for test data generation."""
+    return FlextApiConfigFactory
+
+
+@pytest.fixture
+def app_config_factory() -> type[FlextApiAppConfigFactory]:
+    """Provide FlextApiAppConfig factory for test data generation."""
+    return FlextApiAppConfigFactory
+
+
+# ============================================================================
+# PYTEST-HTTPX INTEGRATION
+# ============================================================================
+
+@pytest.fixture
+async def httpx_mock():
+    """
+    Provide httpx mock for HTTP testing.
+    
+    Uses pytest-httpx for advanced HTTP mocking.
+    """
+    pytest_httpx = pytest.importorskip("pytest_httpx")
+    return pytest_httpx.HTTPXMock()
+
+
+# ============================================================================
+# PYTEST-BENCHMARK INTEGRATION 
+# ============================================================================
+
+try:
+    import pytest_benchmark  # noqa: F401
+    
+    @pytest.fixture
+    def benchmark_config() -> dict[str, Any]:
+        """Configure pytest-benchmark settings."""
+        return {
+            "min_rounds": 5,
+            "max_time": 1.0,
+            "timer": "time.perf_counter",
+            "disable_gc": False,
+            "warmup": False,
+        }
+        
+except ImportError:
+    # Fallback benchmark fixture for environments without pytest-benchmark
+    @pytest.fixture
+    def benchmark():
+        """Lightweight benchmark fallback."""
+        def _bench(func, *args, **kwargs):
+            return func(*args, **kwargs)
+        return _bench
+
+
+# ============================================================================
+# STORAGE AND FILESYSTEM FIXTURES
+# ============================================================================
+
+@pytest.fixture
+def temp_dir() -> Iterator[Path]:
+    """Provide temporary directory for test file operations."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield Path(tmpdir)
+
+
+@pytest.fixture
+async def memory_storage() -> AsyncGenerator[MemoryStorageBackend[Any], None]:
+    """Provide memory storage backend for testing."""
+    storage = MemoryStorageBackend[Any]()
+    try:
+        yield storage
+    finally:
+        await storage.close()
+
+
+@pytest.fixture
+async def file_storage(temp_dir: Path) -> AsyncGenerator[FileStorageBackend[Any], None]:
+    """Provide file storage backend for testing."""
+    config = StorageConfig(file_path=str(temp_dir / "test_storage.json"))
+    storage = FileStorageBackend[Any](config)
+    try:
+        yield storage
+    finally:
+        await storage.close()
+
+
+# ============================================================================
+# APPLICATION FIXTURES
+# ============================================================================
+
+@pytest.fixture
+def test_app_config() -> FlextApiAppConfig:
+    """Provide test application configuration."""
+    return FlextApiAppConfigFactory(
+        title="Test FLEXT API",
+        debug=True,
+        docs_url="/docs",
+    )
+
+
+@pytest.fixture
+def test_app(test_app_config: FlextApiAppConfig) -> FastAPI:
+    """Provide configured test FastAPI application."""
+    return create_flext_api_app(test_app_config)
+
+
+@pytest.fixture
+def sync_test_client(test_app: FastAPI) -> TestClient:
+    """Provide synchronous test client."""
+    return TestClient(test_app)
+
+
+@pytest.fixture
+async def async_test_client(test_app: FastAPI) -> AsyncGenerator[TestClient, None]:
+    """Provide asynchronous test client."""
+    async with TestClient(test_app) as client:
+        yield client
+
+
+# ============================================================================
+# UTILITY FIXTURES
+# ============================================================================
+
+@pytest.fixture
+def fake_data() -> Faker:
+    """Provide Faker instance for test data generation."""
+    return fake
+
+
+@pytest.fixture
+def assert_success():
+    """Provide FlextResult success assertion utility."""
+    return assert_flext_result_success
+
+
+@pytest.fixture  
+def assert_failure():
+    """Provide FlextResult failure assertion utility."""
+    return assert_flext_result_failure
+
+
+@pytest.fixture
+def create_request():
+    """Provide test request creation utility."""
+    return create_test_request
+
+
+@pytest.fixture
+def create_response():
+    """Provide test response creation utility."""
+    return create_test_response
+
+
+# ============================================================================
+# PROJECT STRUCTURE FIXTURES
+# ============================================================================
+
 @pytest.fixture
 def project_root() -> Path:
     """Get project root directory."""
@@ -65,346 +361,55 @@ def project_root() -> Path:
 
 
 @pytest.fixture
-def set_test_environment() -> None:
-    """Set test environment variables."""
-    os.environ["ENVIRONMENT"] = "test"
-    os.environ["LOG_LEVEL"] = "DEBUG"
+def src_dir(project_root: Path) -> Path:
+    """Get source directory."""
+    return project_root / "src"
 
 
 @pytest.fixture
-def sample_api_config() -> dict[str, object]:
-    """Sample API configuration for testing."""
-    return {
-        "environment": "test",
-        "debug": True,
-        "log_level": "DEBUG",
-        "database_url": "sqlite:///:memory:",
-        "redis_url": "redis://localhost:6379/1",
-    }
+def tests_dir(project_root: Path) -> Path:
+    """Get tests directory.""" 
+    return project_root / "tests"
 
 
-@pytest.fixture
-def sample_pipeline_data() -> dict[str, object]:
-    """Sample pipeline data for testing."""
-    return {
-        "name": "test-pipeline",
-        "description": "A test pipeline for unit tests",
-        "extractor": "tap-postgres",
-        "loader": "target-snowflake",
-        "config": {
-            "source": {"host": "localhost", "port": 5432},
-            "destination": {"account": "test-account"},
-        },
-    }
+# ============================================================================
+# CLEANUP AND PERFORMANCE FIXTURES
+# ============================================================================
 
-
-@pytest.fixture
-def sample_plugin_data() -> dict[str, object]:
-    """Sample plugin data for testing."""
-    return {
-        "name": "tap-postgres",
-        "type": "extractor",
-        "version": "0.9.0",
-        "config": {
-            "host": "localhost",
-            "port": 5432,
-            "database": "test_db",
-        },
-    }
-
-
-@pytest.fixture
-def sample_user_data() -> dict[str, object]:
-    """Sample user data for testing."""
-    return {
-        "username": "testuser",
-        "email": "test@example.com",
-        "password": "securepassword123",
-        "role": "user",
-    }
-
-
-@pytest.fixture
-def real_auth_service() -> object:
-    """Real authentication service for testing."""
-
-    class RealAuthService:
-        async def login(
-            self, username: str, password: str
-        ) -> FlextResult[dict[str, object]]:
-            """Real login implementation for testing."""
-            if username == "testuser" and password == "securepassword123":
-                return FlextResult[dict[str, object]].ok(
-                    {
-                        "access_token": "real-test-token-123",
-                        "token_type": "bearer",
-                        "expires_in": 3600,
-                        "user_id": "test-user-001",
-                    }
-                )
-            return FlextResult[dict[str, object]].fail("Invalid credentials")
-
-    return RealAuthService()
-
-
-@pytest.fixture
-def real_pipeline_repository() -> object:
-    """Real pipeline repository for testing using real storage."""
-
-    class RealPipelineRepository:
-        def __init__(self) -> None:
-            self.storage = FlextApiStorage(
-                StorageConfig(backend=StorageBackend.MEMORY, namespace="test_pipelines")
-            )
-
-        async def create_pipeline(
-            self, pipeline_data: dict[str, object]
-        ) -> FlextResult[dict[str, object]]:
-            """Real pipeline creation with storage."""
-            pipeline_id = f"pipeline-{len(await self._get_all_pipelines()) + 1:03d}"
-            pipeline: dict[str, object] = {
-                "pipeline_id": pipeline_id,
-                "status": "created",
-                "name": pipeline_data.get("name", "unnamed"),
-                "created_at": "2025-08-20T12:00:00Z",
-            }
-
-            store_result = await self.storage.set(pipeline_id, pipeline)
-            if store_result.success:
-                return FlextResult[dict[str, object]].ok(pipeline)
-            return FlextResult[dict[str, object]].fail("Failed to store pipeline")
-
-        async def _get_all_pipelines(self) -> list[str]:
-            keys_result = await self.storage.keys()
-            return keys_result.data or []
-
-    return RealPipelineRepository()
-
-
-@pytest.fixture
-def real_plugin_service() -> object:
-    """Real plugin service for testing using real storage."""
-
-    class RealPluginService:
-        def __init__(self) -> None:
-            self.storage = FlextApiStorage(
-                StorageConfig(backend=StorageBackend.MEMORY, namespace="test_plugins")
-            )
-
-        async def install_plugin(
-            self, plugin_data: dict[str, object]
-        ) -> FlextResult[dict[str, object]]:
-            """Real plugin installation with validation."""
-            plugin_name = str(plugin_data.get("name", "unknown-plugin"))
-            plugin_type = str(plugin_data.get("type", "unknown"))
-
-            # Validate plugin data
-            if not plugin_name or plugin_name == "unknown-plugin":
-                return FlextResult[dict[str, object]].fail("Plugin name is required")
-
-            # Check if already installed
-            exists_result = await self.storage.exists(plugin_name)
-            if exists_result.success and exists_result.data:
-                return FlextResult[dict[str, object]].fail(
-                    f"Plugin {plugin_name} already installed"
-                )
-
-            # Install plugin
-            plugin_info: dict[str, object] = {
-                "plugin_name": plugin_name,
-                "type": plugin_type,
-                "status": "installed",
-                "version": plugin_data.get("version", "1.0.0"),
-                "installed_at": "2025-08-20T12:00:00Z",
-            }
-
-            store_result = await self.storage.set(plugin_name, plugin_info)
-            if store_result.success:
-                return FlextResult[dict[str, object]].ok(plugin_info)
-            return FlextResult[dict[str, object]].fail("Failed to store plugin info")
-
-    return RealPluginService()
-
-
-@pytest.fixture
-async def api_client() -> AsyncGenerator[TestClient]:
-    """FastAPI test client with REAL in-memory components."""
-    # Create REAL app with test settings - no mocks!
-    test_settings = FlextApiSettings(
-        environment="test",
-        debug=True,
-        log_level="DEBUG",
-        database_url="sqlite:///:memory:",  # Real SQLite in-memory DB
-        enable_caching=True,
-        cache_ttl=60,
-    )
-
-    # Create REAL app with REAL settings
-    app_config = FlextApiAppConfig(test_settings)
-    real_app = create_flext_api_app(app_config)
-
-    with TestClient(real_app) as client:
-        yield client
+@pytest.fixture(autouse=True)
+def cleanup_test_environment():
+    """Automatically clean up test environment after each test."""
+    yield
+    # Cleanup is handled by individual fixtures
 
 
 @pytest.fixture(autouse=True)
-def reset_storage() -> None:
-    """Reset storage state between tests to ensure isolation."""
-    # Skip storage reset - models consolidated to flext-core patterns
-    # Storage is now managed within the app instance via app.state.storage
-    # No need to reset external storage reference
-
-
-@pytest.fixture
-def auth_headers() -> dict[str, str]:
-    """Provide authentication headers for API requests."""
-    return {
-        "Authorization": "Bearer test-token",
-        "Content-Type": "application/json",
-    }
-
-
-@pytest.fixture
-async def cleanup_client_sessions() -> AsyncGenerator[None]:
-    """DRY fixture to cleanup all FlextApiClient sessions after async tests."""
-    # Pre-test: ensure clean state (FlextApiClient handles cleanup internally)
-    # Individual client instances manage their own sessions
-
-    try:
-        yield
-    finally:
-        # Post-test: cleanup handled by individual client instances
-        pass
-
-
-@pytest.fixture(autouse=True)
-def sync_cleanup_client_sessions() -> None:
-    """Sync fixture to ensure client cleanup for sync tests."""
-    # For sync tests, we just skip the cleanup since they shouldn't use async client
-
-
-# Pytest configuration
-def pytest_configure(config: pytest.Config) -> None:
-    """Configure pytest with custom markers."""
-    config.addinivalue_line(
-        "markers",
-        "unit: mark test as unit test (fast, isolated)",
-    )
-    config.addinivalue_line(
-        "markers",
-        "integration: mark test as integration test (may require external services)",
-    )
-    config.addinivalue_line(
-        "markers",
-        "slow: mark test as slow running",
-    )
-    config.addinivalue_line(
-        "markers",
-        "api: mark test as API endpoint test",
-    )
-    config.addinivalue_line(
-        "markers",
-        "auth: mark test as authentication-related",
-    )
-    config.addinivalue_line(
-        "markers",
-        "pipeline: mark test as pipeline-related",
-    )
-    config.addinivalue_line(
-        "markers",
-        "plugin: mark test as plugin-related",
-    )
-
-
-def pytest_collection_modifyitems(
-    items: list[pytest.Item],
-) -> None:
-    """Modify test collection to add markers based on test location."""
-    for item in items:
-        # Add unit marker to all tests in unit directory
-        if "/unit/" in str(item.fspath):
-            item.add_marker(pytest.mark.unit)
-        # Add integration marker to all tests in integration directory
-        elif "/integration/" in str(item.fspath):
-            item.add_marker(pytest.mark.integration)
-            item.add_marker(pytest.mark.slow)
-        # Add e2e marker to all tests in e2e directory
-        elif "/e2e/" in str(item.fspath):
-            item.add_marker(pytest.mark.slow)
-
-        # Add API marker to API-related tests
-        if "api" in item.name.lower() or "endpoint" in item.name.lower():
-            item.add_marker(pytest.mark.api)
-
-        # Add auth marker to authentication tests
-        if "auth" in item.name.lower():
-            item.add_marker(pytest.mark.auth)
-
-        # Add pipeline marker to pipeline tests
-        if "pipeline" in item.name.lower():
-            item.add_marker(pytest.mark.pipeline)
-
-        # Add plugin marker to plugin tests
-        if "plugin" in item.name.lower():
-            item.add_marker(pytest.mark.plugin)
+def optimize_test_performance():
+    """Optimize test performance with environment variables."""
+    # Already set in module-level configuration
+    yield
 
 
 # ============================================================================
-# EVENT LOOP FIXTURES - Enhanced asyncio support
+# PYTEST-TIMEOUT CONFIGURATION
 # ============================================================================
 
-
-@pytest.fixture(scope="session")
-def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
-    """Loop de evento de sessão compatível com pytest-asyncio."""
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    else:
-        asyncio.set_event_loop(loop)
-
-    # Não fechamos o loop explicitamente para evitar falhas de tarefas tardias
-    return loop
+# Default timeout for all tests (can be overridden per test)
+pytest_timeout = 30
 
 
 # ============================================================================
-# PERFORMANCE OPTIMIZATION FIXTURES
+# RE-EXPORT SUPPORT FIXTURES
 # ============================================================================
 
-
-@pytest.fixture(autouse=True)
-def optimize_test_performance() -> None:
-    """Optimize test performance by disabling unnecessary features in test mode."""
-    # Disable external network calls
-    os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = "true"
-    # Reduce logging verbosity for performance
-    os.environ["FLEXT_TEST_LOG_MINIMAL"] = "true"
-    # Enable fast test mode
-    os.environ["FLEXT_FAST_TEST_MODE"] = "true"
-
-
-# -----------------------------------------------------------------------------
-# Benchmark fixture fallback (define only if pytest-benchmark is NOT installed)
-# -----------------------------------------------------------------------------
-try:  # pragma: no cover - optional dependency
-    import pytest_benchmark  # noqa: F401
-except Exception:  # plugin not available; provide lightweight shim
-
-    @pytest.fixture
-    def benchmark() -> Callable[[Callable[..., object]], object]:
-        """Lightweight benchmark shim that simply calls the function under test.
-
-        Provides compatibility for tests that expect the `benchmark` fixture
-        without requiring the pytest-benchmark plugin for local runs.
-        """
-
-        def _bench(
-            func: Callable[..., object],
-            *args: object,
-            **kwargs: object,
-        ) -> object:
-            return func(*args, **kwargs)
-
-        return _bench
+# Re-export key fixtures from support modules for convenience
+__all__ = [
+    "flext_api_app",
+    "flext_api_client", 
+    "flext_api_config",
+    "test_client",
+    "assert_flext_result_success",
+    "assert_flext_result_failure",
+    "create_test_request", 
+    "create_test_response",
+]

@@ -20,7 +20,7 @@ async def test_real_network_error_and_error_formatting() -> None:
     client = FlextApiClient(
         FlextApiClientConfig(
             base_url="http://127.0.0.1:9998",  # Port that won't respond
-            timeout=0.3  # Quick timeout
+            timeout=0.3,  # Quick timeout
         ),
     )
     await client.start()
