@@ -126,7 +126,7 @@ class ApiRequest(FlextEntity):
     def with_retry(self) -> FlextResult[ApiRequest]:
         return self.copy_with(retry_count=self.retry_count + 1)
 
-class HttpUrl(FlextValueObject):
+class HttpUrl(FlextValue):
     url: str
 
     def __post_init__(self):
@@ -518,10 +518,10 @@ class ApiResponse(FlextEntity):
 ### **HTTP Value Object Patterns**
 
 ```python
-from flext_core import FlextValueObject
+from flext_core import FlextValue
 from urllib.parse import urlparse, urljoin
 
-class HttpUrl(FlextValueObject):
+class HttpUrl(FlextValue):
     """Immutable URL value object with validation"""
     url: str
 
@@ -562,7 +562,7 @@ class HttpUrl(FlextValueObject):
         new_url = f"{self.url}{separator}{query_string}"
         return HttpUrl(new_url)
 
-class HttpHeaders(FlextValueObject):
+class HttpHeaders(FlextValue):
     """HTTP headers value object"""
     headers: dict[str, str]
 
@@ -592,7 +592,7 @@ class HttpHeaders(FlextValueObject):
     def authorization(self) -> str | None:
         return self.get("authorization")
 
-class HttpTimeout(FlextValueObject):
+class HttpTimeout(FlextValue):
     """HTTP timeout value object with validation"""
     connect_timeout: float
     read_timeout: float

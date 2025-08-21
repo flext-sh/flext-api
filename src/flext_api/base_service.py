@@ -197,7 +197,9 @@ class FlextApiBaseClientService(
                     "json": json or {},
                     "params": dict(params) if params else {},
                 }
-                plugin_result = await plugin.before_request(request_context, request_context)
+                plugin_result = await plugin.before_request(
+                    request_context, request_context
+                )
                 if isinstance(plugin_result, FlextResult) and not plugin_result.success:
                     return FlextResult[FlextTypes.Core.JsonDict].fail(
                         f"Plugin failed: {plugin_result.error or 'Unknown plugin error'}"
@@ -226,8 +228,13 @@ class FlextApiBaseClientService(
                     "method": str(method),
                     "url": str(url),
                 }
-                after_plugin_result = await plugin.after_response(response_data, response_context)
-                if isinstance(after_plugin_result, FlextResult) and after_plugin_result.success:
+                after_plugin_result = await plugin.after_response(
+                    response_data, response_context
+                )
+                if (
+                    isinstance(after_plugin_result, FlextResult)
+                    and after_plugin_result.success
+                ):
                     # Type-safe extraction with explicit typing
                     plugin_response: object = after_plugin_result.value
                     if isinstance(plugin_response, dict):

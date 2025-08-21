@@ -31,7 +31,9 @@ async def test_file_backend_save_and_delete_error_paths(
 
     try:
         # Try to create backend with read-only file - this will test REAL save failures
-        readonly_backend = FileStorageBackend(StorageConfig(file_path=str(readonly_file_path)))
+        readonly_backend = FileStorageBackend(
+            StorageConfig(file_path=str(readonly_file_path))
+        )
 
         # Try to set - should fail with REAL permission error during save
         set_result = await readonly_backend.set("b", 2)

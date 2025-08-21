@@ -120,9 +120,7 @@ class FlextApiClientRequest:
     method: str | FlextApiClientMethod
     url: str
     headers: dict[str, str] = field(default_factory=dict[str, str])
-    params: FlextTypes.Core.JsonDict | None = field(
-        default_factory=dict[str, object]
-    )
+    params: FlextTypes.Core.JsonDict | None = field(default_factory=dict[str, object])
     json_data: FlextTypes.Core.JsonDict | None = None
     data: str | bytes | None = None
     timeout: float | None = None
@@ -152,7 +150,7 @@ class FlextApiClientRequest:
             "timeout": self.timeout,
         }
 
-    @property 
+    @property
     def value(self) -> FlextTypes.Core.JsonDict:
         """Alias for to_dict() to maintain compatibility with FlextResult patterns."""
         return self.to_dict()
@@ -440,7 +438,7 @@ class FlextApiCachingPlugin(FlextApiPlugin):
             if isinstance(_context, dict):
                 # Convert any dict to properly typed dict[str, object]
                 context_dict = {
-                    str(k): v 
+                    str(k): v
                     for k, v in _context.items()
                     if isinstance(k, (str, int, float, bool))
                 }
@@ -723,7 +721,9 @@ class FlextApiClient:
                 # Use FlextResult's unwrap_or method for cleaner code and type safety
                 # Explicit typing to avoid Unknown types in PyRight
                 default_value: FlextApiClientRequest = current_request
-                plugin_value: FlextApiClientRequest | FlextApiClientResponse = plugin_result.unwrap_or(default_value)
+                plugin_value: FlextApiClientRequest | FlextApiClientResponse = (
+                    plugin_result.unwrap_or(default_value)
+                )
                 if isinstance(plugin_value, FlextApiClientResponse):
                     return FlextResult[
                         FlextApiClientRequest | FlextApiClientResponse
@@ -759,7 +759,9 @@ class FlextApiClient:
                 # Use FlextResult's unwrap_or method for cleaner code
                 # Explicit None default to avoid Unknown types in PyRight
                 default_none: FlextApiClientResponse | None = None
-                plugin_value: FlextApiClientResponse | None = plugin_result.unwrap_or(default_none)
+                plugin_value: FlextApiClientResponse | None = plugin_result.unwrap_or(
+                    default_none
+                )
                 if plugin_value is None:
                     # Plugin wants to clear/nullify the response
                     current_response = None
@@ -797,10 +799,7 @@ class FlextApiClient:
         # Explicit typing to avoid Unknown types in PyRight
         params_for_request: dict[str, str] | None = None
         if request.params:
-            params_for_request = {
-                str(k): str(v) 
-                for k, v in request.params.items()
-            }
+            params_for_request = {str(k): str(v) for k, v in request.params.items()}
 
         start_time = time.time()
 
@@ -936,7 +935,9 @@ class FlextApiClient:
                 if json_data is None:
                     return None
                 if isinstance(json_data, (str, int, float, bool)):
-                    return json_data  # Return actual type instead of converting to string
+                    return (
+                        json_data  # Return actual type instead of converting to string
+                    )
                 # For any other types, convert to string representation
                 return str(json_data)
             except Exception:
@@ -1656,8 +1657,12 @@ def create_client(
 
         config_dict = {
             "base_url": str(config.get("base_url", "")),
-            "timeout": float(timeout_val) if isinstance(timeout_val, (int, float)) else None,
-            "max_retries": int(max_retries_val) if isinstance(max_retries_val, (int, float)) else None,
+            "timeout": float(timeout_val)
+            if isinstance(timeout_val, (int, float))
+            else None,
+            "max_retries": int(max_retries_val)
+            if isinstance(max_retries_val, (int, float))
+            else None,
             "headers": typed_headers,
             "verify_ssl": bool(config.get("verify_ssl", True)),
             "follow_redirects": bool(config.get("follow_redirects", True)),
@@ -1806,7 +1811,9 @@ def build_query_from_params(params: dict[str, object] | object | None) -> FlextA
     if isinstance(filters_val, dict):
         for key, value in filters_val.items():
             if key is not None:
-                prepared_filters.append({"field": str(key), "value": value, "operator": "eq"})
+                prepared_filters.append(
+                    {"field": str(key), "value": value, "operator": "eq"}
+                )
     elif isinstance(filters_val, list):
         # Only accept list of dicts; otherwise, ignore
         for filter_item in filters_val:

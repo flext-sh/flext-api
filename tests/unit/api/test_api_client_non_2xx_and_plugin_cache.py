@@ -73,7 +73,9 @@ async def test_cached_short_circuit_and_non_2xx() -> None:
 
         # Test real non-2xx error response using httpbin's /status/500 endpoint
         plugin._cache.clear()  # Clear cache to force real HTTP call
-        error_req = FlextApiClientRequest(method="GET", url="https://httpbin.org/status/500")
+        error_req = FlextApiClientRequest(
+            method="GET", url="https://httpbin.org/status/500"
+        )
         res3 = await client._execute_request_pipeline(error_req, "GET")
         assert res3.success  # Pipeline succeeds even with 500 status
         assert res3.value.status_code == 500  # But HTTP status is 500

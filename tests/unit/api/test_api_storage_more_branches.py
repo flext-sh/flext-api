@@ -29,10 +29,13 @@ async def test_file_backend_load_data_failure_and_close(
 
     # Make directory read-only to cause REAL save failure
     import stat
+
     readonly_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
     try:
-        readonly_backend = FileStorageBackend(StorageConfig(file_path=str(readonly_file)))
+        readonly_backend = FileStorageBackend(
+            StorageConfig(file_path=str(readonly_file))
+        )
         # Try operations that require saving - should fail with REAL I/O error
         clear_result = await readonly_backend.clear()
         # Either succeeds or fails based on REAL file system permissions
