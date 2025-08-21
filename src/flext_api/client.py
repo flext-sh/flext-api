@@ -99,8 +99,8 @@ class FlextApiClientConfig:
     timeout: float = 30.0
     headers: dict[str, str] = field(default_factory=dict[str, str])
     max_retries: int = 3
-    plugins: list["FlextApiPlugin"] = field(
-        default_factory=lambda: []
+    plugins: list[FlextApiPlugin] = field(
+        default_factory=lambda: list[FlextApiPlugin]()
     )
     verify_ssl: bool = True
     follow_redirects: bool = True
@@ -152,6 +152,11 @@ class FlextApiClientRequest:
             "timeout": self.timeout,
         }
 
+    @property 
+    def value(self) -> FlextTypes.Core.JsonDict:
+        """Alias for to_dict() to maintain compatibility with FlextResult patterns."""
+        return self.to_dict()
+
 
 @dataclass(frozen=True)
 class FlextApiClientResponse:
@@ -163,6 +168,11 @@ class FlextApiClientResponse:
     elapsed_time: float = 0.0
     request_id: str | None = None
     from_cache: bool = False
+
+    @property
+    def value(self) -> FlextTypes.Core.JsonDict | list[object] | str | bytes | None:
+        """Alias for data to maintain compatibility with FlextResult patterns."""
+        return self.data
 
     def is_success(self) -> bool:
         """Check if response indicates success."""
@@ -296,6 +306,11 @@ class FlextApiResponse:
     status_code: int = 200
     timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
+    @property
+    def value(self) -> object:
+        """Alias for data to maintain compatibility with FlextResult patterns."""
+        return self.data
+
     def to_dict(self) -> FlextTypes.Core.JsonDict:
         """Convert to dictionary representation."""
         result: FlextTypes.Core.JsonDict = {
@@ -420,12 +435,24 @@ class FlextApiCachingPlugin(FlextApiPlugin):
         """Store successful GET responses in cache respecting max_size."""
         if isinstance(response, FlextApiClientResponse):
             # Only cache successful responses with URL available in context (set by client)
-            context_url = (
-                _context.get("request_url") if isinstance(_context, dict) else None
-            )
-            context_params = (
-                _context.get("request_params") if isinstance(_context, dict) else None
-            )
+            # Type-safe context extraction with explicit typing to avoid Unknown types
+            context_dict: dict[str, object] | None = None
+            if isinstance(_context, dict):
+                # Convert any dict to properly typed dict[str, object]
+                context_dict = {
+                    str(k): v 
+                    for k, v in _context.items()
+                    if isinstance(k, (str, int, float, bool))
+                }
+
+            context_url: str | None = None
+            context_params: str | None = None
+
+            if context_dict:
+                url_value = context_dict.get("request_url")
+                params_value = context_dict.get("request_params")
+                context_url = str(url_value) if url_value else None
+                context_params = str(params_value) if params_value else None
             if (
                 isinstance(context_url, str)
                 and response.status_code >= FlextApiConstants.HTTP.SUCCESS_MIN
@@ -681,26 +708,31 @@ class FlextApiClient:
             if not plugin.enabled:
                 continue
 
-            result = await plugin.before_request(current_request, context)
+            plugin_result = await plugin.before_request(current_request, context)
 
-            if isinstance(result, FlextResult):
-                if not result.success:
+            if isinstance(plugin_result, FlextResult):
+                if not plugin_result.success:
                     plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
+                    error_msg: str = plugin_result.error or "Plugin failed"
                     return FlextResult[
                         FlextApiClientRequest | FlextApiClientResponse
                     ].fail(
-                        f"Plugin {plugin_name} failed: {result.error}",
+                        f"Plugin {plugin_name} failed: {error_msg}",
                     )
                 # Short-circuit: plugin returned a response instead of request
-                if isinstance(result.value, FlextApiClientResponse):
+                # Use FlextResult's unwrap_or method for cleaner code and type safety
+                # Explicit typing to avoid Unknown types in PyRight
+                default_value: FlextApiClientRequest = current_request
+                plugin_value: FlextApiClientRequest | FlextApiClientResponse = plugin_result.unwrap_or(default_value)
+                if isinstance(plugin_value, FlextApiClientResponse):
                     return FlextResult[
                         FlextApiClientRequest | FlextApiClientResponse
-                    ].ok(result.value)
+                    ].ok(plugin_value)
                 # Update request when provided
-                if isinstance(result.value, FlextApiClientRequest):
-                    current_request = result.value
-            elif isinstance(result, FlextApiClientRequest):
-                current_request = result
+                if isinstance(plugin_value, FlextApiClientRequest):
+                    current_request = plugin_value
+            elif isinstance(plugin_result, FlextApiClientRequest):
+                current_request = plugin_result
 
         return FlextResult[FlextApiClientRequest | FlextApiClientResponse].ok(
             current_request
@@ -717,22 +749,24 @@ class FlextApiClient:
             if not plugin.enabled:
                 continue
 
-            result = await plugin.after_response(current_response, context)
-            if isinstance(result, FlextResult):
-                if not result.success:
+            plugin_result = await plugin.after_response(current_response, context)
+            if isinstance(plugin_result, FlextResult):
+                if not plugin_result.success:
                     plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
                     return FlextResult[FlextApiClientResponse].fail(
-                        f"Plugin {plugin_name} failed: {result.error}",
+                        f"Plugin {plugin_name} failed: {plugin_result.error}",
                     )
                 # Use FlextResult's unwrap_or method for cleaner code
-                result_value = result.unwrap_or(None)
-                if result_value is None:
+                # Explicit None default to avoid Unknown types in PyRight
+                default_none: FlextApiClientResponse | None = None
+                plugin_value: FlextApiClientResponse | None = plugin_result.unwrap_or(default_none)
+                if plugin_value is None:
                     # Plugin wants to clear/nullify the response
                     current_response = None
-                elif isinstance(result_value, FlextApiClientResponse):
-                    current_response = result_value
-            elif isinstance(result, FlextApiClientResponse):
-                current_response = result
+                elif isinstance(plugin_value, FlextApiClientResponse):
+                    current_response = plugin_value
+            elif isinstance(plugin_result, FlextApiClientResponse):
+                current_response = plugin_result
 
         # Ensure we return a valid response - if None, create a default error response
         if current_response is None:
@@ -760,9 +794,13 @@ class FlextApiClient:
             )
 
         # Convert params to proper type for aiohttp
-        params_for_request = (
-            {k: str(v) for k, v in request.params.items()} if request.params else None
-        )
+        # Explicit typing to avoid Unknown types in PyRight
+        params_for_request: dict[str, str] | None = None
+        if request.params:
+            params_for_request = {
+                str(k): str(v) 
+                for k, v in request.params.items()
+            }
 
         start_time = time.time()
 
@@ -862,30 +900,65 @@ class FlextApiClient:
             ),
         )
 
-    async def _read_response_data(self, response: aiohttp.ClientResponse) -> object:
+    async def _read_response_data(
+        self, response: aiohttp.ClientResponse
+    ) -> dict[str, object] | list[object] | str | bytes | int | float | bool | None:
         """Read and parse response data based on Content-Type with safe fallbacks."""
         try:
-            content_type_header = next(
-                (
-                    v
-                    for k, v in response.headers.items()
-                    if str(k).lower() == "content-type"
-                ),
-                "",
-            )
+            # Type-safe header extraction to avoid Unknown types
+            content_type_header = ""
+            for header_name, header_value in response.headers.items():
+                if str(header_name).lower() == "content-type":
+                    content_type_header = str(header_value)
+                    break
         except Exception:
             content_type_header = ""
         content_type = str(content_type_header).lower()
 
         if "application/json" in content_type:
             try:
-                return await response.json()
+                json_data: object = await response.json()
+                # Type-safe conversion avoiding Unknown types with explicit type guards
+                if isinstance(json_data, dict):
+                    # Type-safe dict comprehension with explicit str conversion for keys
+                    parsed_dict: dict[str, object] = {}
+                    for key, value in json_data.items():
+                        if key is not None:
+                            parsed_dict[str(key)] = value
+                    return parsed_dict
+                if isinstance(json_data, list):
+                    # Type-safe list comprehension preserving elements
+                    parsed_list: list[object] = []
+                    for element in json_data:
+                        if element is not None:
+                            parsed_list.append(element)
+                    return parsed_list
+                if json_data is None:
+                    return None
+                if isinstance(json_data, (str, int, float, bool)):
+                    return json_data  # Return actual type instead of converting to string
+                # For any other types, convert to string representation
+                return str(json_data)
             except Exception:
                 # Fallback: read text and attempt JSON parse
                 text_data = await response.text()
 
                 try:
-                    return json.loads(text_data)
+                    parsed_data: object = json.loads(text_data)
+                    # Type-safe conversion for parsed JSON with explicit type annotation
+                    if isinstance(parsed_data, dict):
+                        fallback_dict: dict[str, object] = {}
+                        for key, value in parsed_data.items():
+                            if key is not None:
+                                fallback_dict[str(key)] = value
+                        return fallback_dict
+                    if isinstance(parsed_data, list):
+                        fallback_list: list[object] = []
+                        for element in parsed_data:
+                            if element is not None:
+                                fallback_list.append(element)
+                        return fallback_list
+                    return text_data
                 except Exception:
                     return text_data
 
@@ -895,7 +968,20 @@ class FlextApiClient:
         text_trim = text.strip()
         if text_trim.startswith(("{", "[")):
             with suppress(Exception):
-                return json.loads(text_trim)
+                fallback_parsed_data: object = json.loads(text_trim)
+                if isinstance(fallback_parsed_data, dict):
+                    final_dict: dict[str, object] = {}
+                    for key, value in fallback_parsed_data.items():
+                        if key is not None:
+                            final_dict[str(key)] = value
+                    return final_dict
+                if isinstance(fallback_parsed_data, list):
+                    final_list: list[object] = []
+                    for element in fallback_parsed_data:
+                        if element is not None:
+                            final_list.append(element)
+                    return final_list
+                return text_trim
         return text
 
     async def _request(
@@ -998,12 +1084,7 @@ class FlextApiClient:
             request,
         )
         if should_short_circuit:
-            # Handle plugin short-circuit response
-            if not request_result.success:
-                return FlextResult[FlextApiClientResponse].fail(
-                    request_result.error or "Plugin processing failed"
-                )
-
+            # Handle plugin short-circuit response (success already validated above)
             request_result_value = request_result.value
             if not isinstance(
                 request_result_value,
@@ -1503,7 +1584,7 @@ class PaginatedResponseBuilder:
             math.ceil(self._total / self._page_size) if self._page_size > 0 else 0
         )
 
-        pagination = {
+        pagination: dict[str, int | bool] = {
             "page": self._page,
             "page_size": self._page_size,
             "total": self._total,
@@ -1536,11 +1617,12 @@ def create_client(
 ) -> FlextApiClient:
     """Create HTTP client with configuration."""
     # Handle both dict and FlextApiClientConfig objects
+    config_dict: ClientConfigDict
     if config is None:
-        config_dict: ClientConfigDict = {}
+        config_dict = {}
     elif isinstance(config, FlextApiClientConfig):
         # Convert FlextApiClientConfig to dict for processing
-        config_dict: ClientConfigDict = {
+        config_dict = {
             "base_url": config.base_url,
             "timeout": config.timeout,
             "max_retries": config.max_retries,
@@ -1550,7 +1632,37 @@ def create_client(
             "plugins": config.plugins,
         }
     else:
-        config_dict: ClientConfigDict = dict(config)  # type: ignore[misc]
+        # Type-safe conversion to ClientConfigDict
+        timeout_val = config.get("timeout")
+        max_retries_val = config.get("max_retries")
+        headers_val = config.get("headers")
+        plugins_val = config.get("plugins")
+
+        # Type-safe header conversion to avoid Unknown types with explicit key filtering
+        typed_headers: dict[str, str] | None = None
+        if isinstance(headers_val, dict):
+            typed_headers = {}
+            for key, value in headers_val.items():
+                if key is not None and value is not None:
+                    typed_headers[str(key)] = str(value)
+
+        # Type-safe plugins conversion with type guard filtering
+        typed_plugins: list[FlextApiPlugin] | None = None
+        if isinstance(plugins_val, list):
+            typed_plugins = []
+            for plugin in plugins_val:
+                if isinstance(plugin, FlextApiPlugin):
+                    typed_plugins.append(plugin)
+
+        config_dict = {
+            "base_url": str(config.get("base_url", "")),
+            "timeout": float(timeout_val) if isinstance(timeout_val, (int, float)) else None,
+            "max_retries": int(max_retries_val) if isinstance(max_retries_val, (int, float)) else None,
+            "headers": typed_headers,
+            "verify_ssl": bool(config.get("verify_ssl", True)),
+            "follow_redirects": bool(config.get("follow_redirects", True)),
+            "plugins": typed_plugins,
+        }
 
     # Validate base URL - allow empty for test compatibility
     base_url = config_dict.get("base_url", "")
@@ -1664,48 +1776,59 @@ def build_paginated_response(
 
     # Add any additional metadata
     if config.metadata:
-        current_metadata = builder._metadata or {}
-        current_metadata.update(config.metadata)
-        builder.metadata(current_metadata)
+        # Use metadata method directly rather than accessing protected member
+        builder.metadata(config.metadata)
 
     return builder.build()
 
 
-def build_query_from_params(params: object | None) -> FlextApiQuery:
+def build_query_from_params(params: dict[str, object] | object | None) -> FlextApiQuery:
     """Build query from Parameter Object following SOLID principles.
 
     REFACTORED: Uses Parameter Object pattern to reduce complexity
     and improve maintainability. Supports backward compatibility.
     """
 
-    # Helper to read attributes from either dict or dataclass-like object
+    # Helper to read attributes from params dict or dataclass with type safety
     def _get(field: str, default: object | None = None) -> object | None:
+        if params is None:
+            return default
         if isinstance(params, dict):
-            result = params.get(field, default)
-            return result if result is not None else default
+            # Type-safe dict access to avoid Unknown types
+            if field in params:
+                return params[field]
+            return default
+        # For dataclass objects, use getattr
         return getattr(params, field, default)
 
     filters_val = _get("filters")
     prepared_filters: list[dict[str, object]] = []
     if isinstance(filters_val, dict):
-        prepared_filters = [
-            {"field": str(k), "value": v, "operator": "eq"}
-            for k, v in filters_val.items()
-        ]
+        for key, value in filters_val.items():
+            if key is not None:
+                prepared_filters.append({"field": str(key), "value": value, "operator": "eq"})
     elif isinstance(filters_val, list):
         # Only accept list of dicts; otherwise, ignore
-        prepared_filters = [
-            f for f in filters_val if isinstance(f, dict)
-        ]  # narrow type
+        for filter_item in filters_val:
+            if isinstance(filter_item, dict):
+                filter_obj: dict[str, object] = {}
+                for key, value in filter_item.items():
+                    if key is not None:
+                        filter_obj[str(key)] = value
+                prepared_filters.append(filter_obj)
     else:
         prepared_filters = []
 
     sorts_val = _get("sorts")
-    sorts: list[dict[str, str]] = (
-        [s for s in sorts_val if isinstance(s, dict)]
-        if isinstance(sorts_val, list)
-        else []
-    )
+    sorts: list[dict[str, str]] = []
+    if isinstance(sorts_val, list):
+        for sort_item in sorts_val:
+            if isinstance(sort_item, dict):
+                sort_obj: dict[str, str] = {}
+                for key, value in sort_item.items():
+                    if key is not None and value is not None:
+                        sort_obj[str(key)] = str(value)
+                sorts.append(sort_obj)
 
     page_val = _get("page")
     page = (
@@ -1725,7 +1848,12 @@ def build_query_from_params(params: object | None) -> FlextApiQuery:
     search = str(search_val) if isinstance(search_val, str) else None
 
     fields_val = _get("fields")
-    fields = [str(f) for f in fields_val] if isinstance(fields_val, list) else None
+    fields: list[str] | None = None
+    if isinstance(fields_val, list):
+        fields = []
+        for field in fields_val:
+            if field is not None:
+                fields.append(str(field))
 
     return FlextApiQuery(
         filters=prepared_filters,

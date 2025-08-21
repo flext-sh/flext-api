@@ -108,40 +108,34 @@ class FlextApiPluginProtocol(Protocol):
 
     async def before_request(
         self,
-        method: str,
-        url: str,
-        headers: dict[str, str],
-        **kwargs: object,
-    ) -> FlextResult[None]:
+        request: object,
+        context: object = None,
+    ) -> FlextResult[object] | object:
         """Call before request execution.
 
         Args:
-            method: HTTP method
-            url: Target URL
-            headers: Request headers (mutable)
-            **kwargs: Additional request parameters
+            request: Request object (FlextApiClientRequest)
+            context: Optional context data dict
 
         Returns:
-            FlextResult indicating success or failure
+            FlextResult containing modified request, or request directly
 
         """
         ...
 
     async def after_response(
         self,
-        response: FlextTypes.Core.JsonDict,
-        method: str,
-        url: str,
-    ) -> FlextResult[FlextTypes.Core.JsonDict]:
+        response: object,
+        context: object = None,
+    ) -> FlextResult[object] | object:
         """Call after response received.
 
         Args:
-            response: Response data
-            method: HTTP method used
-            url: Target URL
+            response: Response object (FlextApiClientResponse)
+            context: Optional context data dict
 
         Returns:
-            FlextResult containing modified response or error
+            FlextResult containing modified response, or response directly
 
         """
         ...

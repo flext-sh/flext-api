@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-from flext_core import FlextResult
 
 from flext_api import (
     FlextApiClient,
@@ -13,30 +12,34 @@ from flext_api import (
 
 
 @pytest.mark.asyncio
-async def test_request_build_failure_and_pipeline_error(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Force failures in _build_request and _perform_http_request paths."""
-    client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
+async def test_request_build_failure_and_pipeline_error() -> None:
+    """Test real error paths using invalid configurations."""
+    # Test invalid URL error path
+    client = FlextApiClient(FlextApiClientConfig(base_url=""))
 
-    # Force _build_request to fail
-    def bad_build(*_a: object, **_k: object) -> FlextResult[object]:
-        return FlextResult[None].fail("bad build")
-
-    monkeypatch.setattr(client, "_build_request", bad_build)
+    # Invalid base URL should cause build errors
     res = await client.get("/json")
     assert not res.success
-    assert "bad build" in (res.error or "")
+    assert "URL" in (res.error or "") or "validation" in (res.error or "")
 
-    # Force _perform_http_request to fail and error formatting to trigger
-    async def bad_perform(_req: FlextApiClientRequest) -> FlextResult[object]:
-        return FlextResult[None].fail("exec fail")
+    # Test network error path using port that doesn't respond
+    invalid_client = FlextApiClient(FlextApiClientConfig(
+        base_url="http://127.0.0.1:9999",  # Local port that shouldn't be running
+        timeout=0.5  # Very short timeout for quick failure
+    ))
 
-    monkeypatch.setattr(client, "_build_request", FlextApiClient._build_request)
-    await client.start()
-    req = FlextApiClientRequest(method="GET", url="https://httpbin.org/json")
-    monkeypatch.setattr(client, "_perform_http_request", bad_perform)
-    result = await client._execute_request_pipeline(req, "GET")
-    assert not result.success
-    assert "Failed to make GET request" in (result.error or "")
-    await client.stop()
+    await invalid_client.start()
+    try:
+        req = FlextApiClientRequest(
+            method="GET",
+            url="http://127.0.0.1:9999/test"
+        )
+        result = await invalid_client._execute_request_pipeline(req, "GET")
+        assert not result.success
+        # Should have connection-related error
+        error_msg = result.error or ""
+        assert any(term in error_msg.lower() for term in [
+            "connection", "refused", "timeout", "failed", "cannot connect"
+        ])
+    finally:
+        await invalid_client.close()

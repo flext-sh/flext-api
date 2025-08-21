@@ -188,17 +188,19 @@ class FlextApiBaseClientService(
 
             # Apply before_request plugins
             for plugin in self.plugins:
-                plugin_result: FlextResult[None] = await plugin.before_request(
-                    method=method,
-                    url=url,
-                    headers=request_headers,
-                    data=data if isinstance(data, dict) else {},
-                    json=json or {},
-                    params=dict(params) if params else {},
-                )
-                if not plugin_result.success:
+                # Create context for plugin with request information - type-safe dict creation
+                request_context: dict[str, object] = {
+                    "method": str(method),
+                    "url": str(url),
+                    "headers": request_headers,
+                    "data": data if isinstance(data, dict) else {},
+                    "json": json or {},
+                    "params": dict(params) if params else {},
+                }
+                plugin_result = await plugin.before_request(request_context, request_context)
+                if isinstance(plugin_result, FlextResult) and not plugin_result.success:
                     return FlextResult[FlextTypes.Core.JsonDict].fail(
-                        f"Plugin failed: {plugin_result.error}"
+                        f"Plugin failed: {plugin_result.error or 'Unknown plugin error'}"
                     )
 
             # Execute request (implemented by subclass)
@@ -218,15 +220,30 @@ class FlextApiBaseClientService(
             # Apply after_response plugins
             response_data: FlextTypes.Core.JsonDict = response_result.value or {}
             for plugin in self.plugins:
-                after_plugin_result: FlextResult[
-                    FlextTypes.Core.JsonDict
-                ] = await plugin.after_response(
-                    response=response_data,
-                    method=method,
-                    url=url,
-                )
-                if after_plugin_result.success:
-                    response_data = after_plugin_result.value
+                # Create context for plugin with response information - type-safe dict creation
+                response_context: dict[str, object] = {
+                    "response": response_data,
+                    "method": str(method),
+                    "url": str(url),
+                }
+                after_plugin_result = await plugin.after_response(response_data, response_context)
+                if isinstance(after_plugin_result, FlextResult) and after_plugin_result.success:
+                    # Type-safe extraction with explicit typing
+                    plugin_response: object = after_plugin_result.value
+                    if isinstance(plugin_response, dict):
+                        # Type-safe dict comprehension with explicit object typing
+                        response_data: dict[str, object] = {
+                            str(k): v
+                            for k, v in plugin_response.items()
+                            if k is not None and isinstance(k, (str, int, float, bool))
+                        }
+                elif isinstance(after_plugin_result, dict):
+                    # Direct dict response from plugin with type safety
+                    response_data = {
+                        str(k): v
+                        for k, v in after_plugin_result.items()
+                        if k is not None and isinstance(k, (str, int, float, bool))
+                    }
 
             return FlextResult[FlextTypes.Core.JsonDict].ok(response_data)
         except Exception as e:

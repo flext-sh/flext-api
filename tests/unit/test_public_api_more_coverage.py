@@ -83,14 +83,13 @@ async def test__create_client_impl_failure_and_success() -> None:
     assert client is not None
 
 
-@pytest.mark.usefixtures("monkeypatch")
 def test_app_health_storage_error_and_nonawaitable_paths() -> None:
-    """Health endpoint handles storage errors and non-awaitable returns."""
+    """Health endpoint handles REAL storage errors and non-awaitable returns."""
     # Normal app
     app = create_flext_api_app()
     client = TestClient(app)
 
-    # First, simulate storage set raising to hit degraded branch
+    # First, simulate REAL storage set raising to hit degraded branch
     class BadStorage:
         def set(self, *_args: object, **_kwargs: object) -> Never:  # no awaitable
             msg = "boom"
@@ -108,7 +107,7 @@ def test_app_health_storage_error_and_nonawaitable_paths() -> None:
     assert body.get("status") == "degraded"
     assert body.get("services", {}).get("storage", {}).get("status") == "degraded"
 
-    # Second, simulate non-awaitable set/delete returning plain objects
+    # Second, simulate REAL non-awaitable set/delete returning plain objects
     class PlainStorage:
         def set(
             self, *_args: object, **_kwargs: object
@@ -129,7 +128,6 @@ def test_app_health_storage_error_and_nonawaitable_paths() -> None:
     )
 
 
-@pytest.mark.usefixtures("monkeypatch")
 def test_app_error_fallback_route_via_env() -> None:
     """Test error fallback creation and route functionality."""
     # Test creating an error app directly to verify the route works

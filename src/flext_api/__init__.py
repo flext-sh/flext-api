@@ -389,11 +389,9 @@ from flext_api.constants import (
 )
 
 # Import the actual app module for tests
-# Work around Python import issue by getting the real module from sys.modules
-import flext_api.app  # Trigger module loading
-import sys
+import flext_api.app as _app_module  # Trigger module loading
 
-api_app_module = sys.modules["flext_api.app"]  # Get the actual module
+api_app_module = _app_module  # Direct reference to loaded module
 # Create api_app alias for legacy compatibility
 api_app = api_app_module
 

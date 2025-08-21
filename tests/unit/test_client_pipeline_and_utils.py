@@ -94,43 +94,39 @@ async def test_prepare_request_params_and_headers_merge() -> None:
 
 
 @pytest.mark.asyncio
-async def test_plugin_before_failure_short_circuits(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+async def test_plugin_before_failure_short_circuits() -> None:
     """A failing before hook should short-circuit the request."""
-    monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     client = FlextApiClient(
         FlextApiClientConfig(base_url="https://httpbin.org"),
         plugins=[BeforePluginFail()],
     )
     await client.start()
-    result = await client.get("/json")
-    assert not result.success
-    assert "bad before" in (result.error or "")
-    await client.stop()
+    try:
+        result = await client.get("/json")
+        assert not result.success
+        assert "bad before" in (result.error or "")
+    finally:
+        await client.stop()
 
 
 @pytest.mark.asyncio
-async def test_plugin_before_replace_request_and_after_failure(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+async def test_plugin_before_replace_request_and_after_failure() -> None:
     """After hook failure should be returned even if before replaced the request."""
-    monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
     client = FlextApiClient(
         FlextApiClientConfig(base_url="https://httpbin.org"),
         plugins=[BeforePluginPass(), AfterPluginFail()],
     )
     await client.start()
-    res = await client.get("/headers")
-    # after plugin fails should propagate failure
-    assert not res.success
-    await client.stop()
+    try:
+        res = await client.get("/headers")
+        # after plugin fails should propagate failure
+        assert not res.success
+    finally:
+        await client.stop()
 
 
 @pytest.mark.asyncio
-async def test_format_request_error_and_legacy_make_request(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+async def test_format_request_error_and_legacy_make_request() -> None:
     """Format errors consistently and handle `_make_request` exception path."""
     client = FlextApiClient(FlextApiClientConfig(base_url="https://example.com"))
 
@@ -190,16 +186,31 @@ async def test_response_pipeline_parse_json_string() -> None:
 
 
 @pytest.mark.asyncio
-async def test_head_and_options_methods(monkeypatch: pytest.MonkeyPatch) -> None:
-    """HEAD and OPTIONS convenience methods should succeed under stubbed mode."""
-    monkeypatch.setenv("FLEXT_DISABLE_EXTERNAL_CALLS", "true")
-    client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
-    await client.start()
-    head_res = await client.head("/status/200")
-    opt_res = await client.options("/status/200")
-    assert head_res.success
-    assert opt_res.success
-    await client.stop()
+async def test_head_and_options_methods() -> None:
+    """HEAD and OPTIONS convenience methods should succeed with REAL execution."""
+    import os  # Local import for environment handling
+
+    # Set environment for external calls
+    original_env = os.environ.get("FLEXT_DISABLE_EXTERNAL_CALLS")
+    os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = "false"
+
+    try:
+        client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
+        await client.start()
+        try:
+            # REAL HEAD and OPTIONS requests to httpbin.org
+            head_res = await client.head("/status/200")
+            opt_res = await client.options("/status/200")
+            assert head_res.success
+            assert opt_res.success
+        finally:
+            await client.stop()
+    finally:
+        # Restore environment
+        if original_env is not None:
+            os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = original_env
+        else:
+            os.environ.pop("FLEXT_DISABLE_EXTERNAL_CALLS", None)
 
 
 def test_create_client_invalid_url_raises() -> None:
