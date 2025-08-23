@@ -79,15 +79,15 @@ from flext_core import FlextService
 class FlextApi(FlextService):
     def start(self) -> FlextResult[None]:
         """Start service following FlextService contract."""
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def stop(self) -> FlextResult[None]:
         """Stop service following FlextService contract."""
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def health_check(self) -> FlextResult[dict[str, object]]:
         """Health check following FlextService contract."""
-        return FlextResult.ok({"status": "healthy"})
+        return FlextResult[None].ok({"status": "healthy"})
 ```
 
 **Implementation Tasks**:
@@ -110,7 +110,7 @@ class FlextApi(FlextService):
 **Affected Components**: 15+ direct `raise` statements
 
 **Problem Analysis**:
-Multiple modules use direct exception raising instead of FlextResult.fail(), breaking the railway-oriented programming pattern and error handling consistency.
+Multiple modules use direct exception raising instead of FlextResult[None].fail(), breaking the railway-oriented programming pattern and error handling consistency.
 
 **Violation Locations**:
 
@@ -135,16 +135,16 @@ def validate_config(config: dict) -> dict:
 # ✅ CORRECT - FlextResult pattern
 def validate_config(config: dict) -> FlextResult[dict]:
     if not config.get("base_url"):
-        return FlextResult.fail(
+        return FlextResult[None].fail(
             error="base_url is required",
             error_code="MISSING_BASE_URL"
         )
-    return FlextResult.ok(config)
+    return FlextResult[None].ok(config)
 ```
 
 **Implementation Tasks**:
 
-- [ ] Replace all 15+ `raise` statements with `FlextResult.fail()`
+- [ ] Replace all 15+ `raise` statements with `FlextResult[None].fail()`
 - [ ] Implement structured error codes for all failure cases
 - [ ] Add error context metadata for debugging
 - [ ] Update method signatures to return `FlextResult<T>`
@@ -231,16 +231,16 @@ class ApiRequest(FlextEntity):
     def validate_domain_rules(self) -> FlextResult[None]:
         """Business rule validation."""
         if not self.url.startswith(('http://', 'https://')):
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error="Invalid URL protocol",
                 error_code="INVALID_URL_PROTOCOL"
             )
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def increment_retry_count(self) -> FlextResult[Self]:
         """Domain logic for retry handling."""
         if self.retry_count >= self.max_retries:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error="Maximum retries exceeded",
                 error_code="MAX_RETRIES_EXCEEDED"
             )
@@ -289,9 +289,9 @@ from flext_core import TAnyDict, TEntityId, FlextResult
 def process_data(data: TAnyDict) -> FlextResult[TAnyDict]:
     try:
         processed = {k: v for k, v in data.items() if v is not None}
-        return FlextResult.ok(processed)
+        return FlextResult[None].ok(processed)
     except Exception as e:
-        return FlextResult.fail(f"Data processing failed: {e}")
+        return FlextResult[None].fail(f"Data processing failed: {e}")
 ```
 
 **Implementation Tasks**:
@@ -340,8 +340,8 @@ class FlextApiSettings(FlextSettings):
         if self.flext_api_port < 1 or self.flext_api_port > 65535:
             errors.append("Port must be between 1 and 65535")
         if errors:
-            return FlextResult.fail(f"Configuration validation failed: {', '.join(errors)}")
-        return FlextResult.ok(None)
+            return FlextResult[None].fail(f"Configuration validation failed: {', '.join(errors)}")
+        return FlextResult[None].ok(None)
 ```
 
 **Implementation Tasks**:
@@ -412,7 +412,7 @@ class FlextApiSettings(FlextSettings):
 
 **Day 3-4**: Exception Handling Migration
 
-- Replace all raise statements with FlextResult.fail()
+- Replace all raise statements with FlextResult[None].fail()
 - Add structured error codes
 
 **Day 5**: FlextService Compliance

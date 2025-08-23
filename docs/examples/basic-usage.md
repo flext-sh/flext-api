@@ -705,7 +705,7 @@ class SimpleApiClient:
     def get(self, path: str, params: Optional[Dict[str, Any]] = None) -> FlextResult[Dict[str, Any]]:
         """Make a GET request."""
         if not self.client:
-            return FlextResult.fail("Client not initialized")
+            return FlextResult[None].fail("Client not initialized")
 
         logger.info("Making GET request", path=path, params=params)
 
@@ -713,15 +713,15 @@ class SimpleApiClient:
 
         if response.success:
             logger.info("GET request successful", path=path)
-            return FlextResult.ok(response.data)
+            return FlextResult[None].ok(response.data)
         else:
             logger.error("GET request failed", path=path, error=response.error)
-            return FlextResult.fail(response.error)
+            return FlextResult[None].fail(response.error)
 
     def post(self, path: str, data: Optional[Dict[str, Any]] = None) -> FlextResult[Dict[str, Any]]:
         """Make a POST request."""
         if not self.client:
-            return FlextResult.fail("Client not initialized")
+            return FlextResult[None].fail("Client not initialized")
 
         logger.info("Making POST request", path=path)
 
@@ -729,10 +729,10 @@ class SimpleApiClient:
 
         if response.success:
             logger.info("POST request successful", path=path)
-            return FlextResult.ok(response.data)
+            return FlextResult[None].ok(response.data)
         else:
             logger.error("POST request failed", path=path, error=response.error)
-            return FlextResult.fail(response.error)
+            return FlextResult[None].fail(response.error)
 
 def main():
     """Main application entry point."""

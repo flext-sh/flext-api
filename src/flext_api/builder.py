@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_api.api_client import (
+from flext_api.client import (
     FlextApiBuilder,
     FlextApiQuery,
     FlextApiQueryBuilder,

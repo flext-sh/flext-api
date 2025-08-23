@@ -173,9 +173,9 @@ def basic_http_client_example() -> FlextResult[dict]:
     })
 
     if client_result.is_failure:
-        return FlextResult.fail(f"Client creation failed: {client_result.error}")
+        return FlextResult[None].fail(f"Client creation failed: {client_result.error}")
 
-    return FlextResult.ok({"status": "client_ready"})
+    return FlextResult[None].ok({"status": "client_ready"})
 ```
 
 ### **2. Advanced Plugin System**

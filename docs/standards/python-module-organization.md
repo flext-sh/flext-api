@@ -61,7 +61,7 @@ from flext_api.builder import FlextApiQueryBuilder, FlextApiResponseBuilder
 
 def setup_http_client() -> FlextResult[FlextApiClient]:
     config = FlextApiClientConfig(base_url="https://api.example.com")
-    return FlextResult.ok(FlextApiClient(config))
+    return FlextResult[None].ok(FlextApiClient(config))
 ```
 
 ### **Configuration & Infrastructure Layer**
@@ -120,13 +120,13 @@ class ApiRequest(FlextEntity):
 
     def validate_domain_rules(self) -> FlextResult[None]:
         if self.timeout <= 0:
-            return FlextResult.fail("Timeout must be positive")
-        return FlextResult.ok(None)
+            return FlextResult[None].fail("Timeout must be positive")
+        return FlextResult[None].ok(None)
 
     def with_retry(self) -> FlextResult[ApiRequest]:
         return self.copy_with(retry_count=self.retry_count + 1)
 
-class HttpUrl(FlextValueObject):
+class HttpUrl(FlextValue):
     url: str
 
     def __post_init__(self):
@@ -226,7 +226,7 @@ from flext_core import FlextResult, get_logger
 # Use patterns directly for HTTP operations
 def setup_http_service() -> FlextResult[FlextApi]:
     api = create_flext_api()
-    return FlextResult.ok(api)
+    return FlextResult[None].ok(api)
 ```
 
 #### **2. Specific Module Pattern (For Advanced HTTP Usage)**
@@ -404,7 +404,7 @@ async def execute_http_plugins(
             return plugin_result
         processed_request = plugin_result.data
 
-    return FlextResult.ok(processed_request)
+    return FlextResult[None].ok(processed_request)
 
 # Response plugin chain
 async def process_http_response_plugins(
@@ -419,7 +419,7 @@ async def process_http_response_plugins(
             return plugin_result
         processed_response = plugin_result.data
 
-    return FlextResult.ok(processed_response)
+    return FlextResult[None].ok(processed_response)
 ```
 
 ---
@@ -446,23 +446,23 @@ class ApiRequest(FlextEntity):
     def validate_domain_rules(self) -> FlextResult[None]:
         """HTTP request validation business rules"""
         if self.timeout <= 0:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error="Timeout must be positive",
                 error_code="INVALID_TIMEOUT"
             )
 
         if self.method not in ["GET", "POST", "PUT", "DELETE", "PATCH"]:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error=f"Unsupported HTTP method: {self.method}",
                 error_code="INVALID_HTTP_METHOD"
             )
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def increment_retry(self) -> FlextResult[ApiRequest]:
         """Retry logic with domain validation"""
         if self.retry_count >= self.max_retries:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error="Maximum retries exceeded",
                 error_code="MAX_RETRIES_EXCEEDED"
             )
@@ -474,14 +474,14 @@ class ApiRequest(FlextEntity):
             "retry_count": updated_request.retry_count,
             "correlation_id": self.correlation_id
         })
-        return FlextResult.ok(updated_request)
+        return FlextResult[None].ok(updated_request)
 
     def with_timeout(self, timeout: float) -> FlextResult[ApiRequest]:
         """Timeout modification with validation"""
         if timeout <= 0:
-            return FlextResult.fail("Timeout must be positive")
+            return FlextResult[None].fail("Timeout must be positive")
 
-        return FlextResult.ok(self.copy_with(timeout=timeout))
+        return FlextResult[None].ok(self.copy_with(timeout=timeout))
 
 class ApiResponse(FlextEntity):
     """HTTP response entity with metadata"""
@@ -495,12 +495,12 @@ class ApiResponse(FlextEntity):
     def validate_domain_rules(self) -> FlextResult[None]:
         """HTTP response validation"""
         if not (100 <= self.status_code <= 599):
-            return FlextResult.fail("Invalid HTTP status code")
+            return FlextResult[None].fail("Invalid HTTP status code")
 
         if self.duration_ms < 0:
-            return FlextResult.fail("Duration cannot be negative")
+            return FlextResult[None].fail("Duration cannot be negative")
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def success(self) -> bool:
         """HTTP success status check"""
@@ -518,10 +518,10 @@ class ApiResponse(FlextEntity):
 ### **HTTP Value Object Patterns**
 
 ```python
-from flext_core import FlextValueObject
+from flext_core import FlextValue
 from urllib.parse import urlparse, urljoin
 
-class HttpUrl(FlextValueObject):
+class HttpUrl(FlextValue):
     """Immutable URL value object with validation"""
     url: str
 
@@ -562,7 +562,7 @@ class HttpUrl(FlextValueObject):
         new_url = f"{self.url}{separator}{query_string}"
         return HttpUrl(new_url)
 
-class HttpHeaders(FlextValueObject):
+class HttpHeaders(FlextValue):
     """HTTP headers value object"""
     headers: dict[str, str]
 
@@ -592,7 +592,7 @@ class HttpHeaders(FlextValueObject):
     def authorization(self) -> str | None:
         return self.get("authorization")
 
-class HttpTimeout(FlextValueObject):
+class HttpTimeout(FlextValue):
     """HTTP timeout value object with validation"""
     connect_timeout: float
     read_timeout: float
@@ -688,9 +688,9 @@ class FlextApiSettings(FlextSettings):
             errors.append("HTTP timeout must be positive")
 
         if errors:
-            return FlextResult.fail(f"Configuration validation failed: {'; '.join(errors)}")
+            return FlextResult[None].fail(f"Configuration validation failed: {'; '.join(errors)}")
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 # Environment variables example:
 # FLEXT_API_HOST=localhost
@@ -766,14 +766,14 @@ class HttpConnectionPool:
             )
             self._sessions[base_url] = session
 
-        return FlextResult.ok(self._sessions[base_url])
+        return FlextResult[None].ok(self._sessions[base_url])
 
     async def close_all(self) -> FlextResult[None]:
         """Close all HTTP sessions"""
         for session in self._sessions.values():
             await session.close()
         self._sessions.clear()
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 # Usage in HTTP client
 class FlextApiClient:
@@ -830,19 +830,19 @@ class HttpCache:
         cache_key = self._generate_cache_key(request)
 
         if cache_key not in self._cache:
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
         entry = self._cache[cache_key]
         if entry.is_expired():
             del self._cache[cache_key]
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
-        return FlextResult.ok(entry.response)
+        return FlextResult[None].ok(entry.response)
 
     def set(self, request: ApiRequest, response: ApiResponse, ttl: int) -> FlextResult[None]:
         """Cache response with TTL"""
         if not response.success():
-            return FlextResult.ok(None)  # Don't cache errors
+            return FlextResult[None].ok(None)  # Don't cache errors
 
         cache_key = self._generate_cache_key(request)
 
@@ -853,7 +853,7 @@ class HttpCache:
             del self._cache[oldest_key]
 
         self._cache[cache_key] = HttpCacheEntry(response, ttl)
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 # Caching plugin implementation
 class FlextApiCachingPlugin(FlextApiPlugin):
@@ -864,15 +864,15 @@ class FlextApiCachingPlugin(FlextApiPlugin):
     async def before_request(self, request: ApiRequest) -> FlextResult[ApiRequest]:
         """Check cache before making request"""
         if request.method != "GET":
-            return FlextResult.ok(request)  # Only cache GET requests
+            return FlextResult[None].ok(request)  # Only cache GET requests
 
         cached_response_result = self.cache.get(request)
         if cached_response_result.success and cached_response_result.data:
             # Mark request as satisfied by cache
             cached_request = request.copy_with(cached_response=cached_response_result.data)
-            return FlextResult.ok(cached_request)
+            return FlextResult[None].ok(cached_request)
 
-        return FlextResult.ok(request)
+        return FlextResult[None].ok(request)
 
     async def after_response(self, response: ApiResponse) -> FlextResult[ApiResponse]:
         """Cache successful responses"""
@@ -881,7 +881,7 @@ class FlextApiCachingPlugin(FlextApiPlugin):
         if request and response.success():
             await self.cache.set(request, response, self.ttl)
 
-        return FlextResult.ok(response)
+        return FlextResult[None].ok(response)
 ```
 
 ---
@@ -985,7 +985,7 @@ class TestHttpFlextResultPatterns:
         api = create_flext_api()
 
         result = (
-            FlextResult.fail("Initial HTTP configuration error")
+            FlextResult[None].fail("Initial HTTP configuration error")
             .flat_map_async(lambda client: client.get("/users"))  # Should not execute
             .map(lambda response: response.json())  # Should not execute
         )
@@ -1135,13 +1135,13 @@ def parse_http_response(
 ) -> FlextResult[T]:
     """Generic HTTP response parsing with type safety"""
     if not response.success():
-        return FlextResult.fail(f"HTTP error: {response.status_code}")
+        return FlextResult[None].fail(f"HTTP error: {response.status_code}")
 
     try:
         parsed_data = parser(response.body)
-        return FlextResult.ok(parsed_data)
+        return FlextResult[None].ok(parsed_data)
     except Exception as e:
-        return FlextResult.fail(f"Response parsing failed: {e}")
+        return FlextResult[None].fail(f"Response parsing failed: {e}")
 
 # ❌ Missing HTTP type annotations
 def make_request(client, url):  # Missing types
@@ -1159,9 +1159,9 @@ def http_get_request(client: FlextApiClient, url: str) -> FlextResult[dict]:
 
     request_result = client.get(url_result.data)
     if request_result.is_failure:
-        return FlextResult.fail(f"HTTP request failed: {request_result.error}")
+        return FlextResult[None].fail(f"HTTP request failed: {request_result.error}")
 
-    return FlextResult.ok(request_result.data.json())
+    return FlextResult[None].ok(request_result.data.json())
 
 # ✅ Chain HTTP operations safely
 def complex_http_workflow(
@@ -1315,7 +1315,7 @@ class OracleDataRequest(FlextEntity):
     def to_http_request(self, base_url: HttpUrl) -> FlextResult[ApiRequest]:
         """Convert to HTTP request using flext-api patterns"""
         if not self.oracle_query:
-            return FlextResult.fail("Oracle query is required")
+            return FlextResult[None].fail("Oracle query is required")
 
         url = base_url.join("/oracle/query")
         headers = HttpHeaders({"Content-Type": "application/json"})
@@ -1324,7 +1324,7 @@ class OracleDataRequest(FlextEntity):
             "parameters": self.parameters
         }
 
-        return FlextResult.ok(ApiRequest(
+        return FlextResult[None].ok(ApiRequest(
             method="POST",
             url=url,
             headers=headers,
@@ -1348,7 +1348,7 @@ class LdapSearchRequest(FlextEntity):
             "attributes": self.attributes
         }
 
-        return FlextResult.ok(ApiRequest(
+        return FlextResult[None].ok(ApiRequest(
             method="POST",
             url=url,
             headers=headers,
