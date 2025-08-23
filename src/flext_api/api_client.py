@@ -44,7 +44,7 @@ FlextApiConfig = FlextTypes.Core.Dict
 
 
 class FlextApiClientProtocol(StrEnum):
-    """Supported client protocols."""
+    """Supported HTTP protocols."""
 
     HTTP = "http"
     HTTPS = "https"

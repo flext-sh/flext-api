@@ -125,6 +125,8 @@ from flext_api.api_models import (
     TokenType,
 )
 from flext_api.api_protocols import (
+    # Main hierarchical protocol class
+    FlextApiProtocols,
     FlextApiAuthorizationProtocol,
     FlextApiAuthProtocol,
     FlextApiCacheProtocol,
@@ -390,6 +392,7 @@ __all__: list[str] = [
     "FlextApiPlugin",
     "FlextApiPluginProtocol",
     "FlextApiProcessingError",
+    "FlextApiProtocols",
     "FlextApiQuery",
     "FlextApiQueryBuilder",
     "FlextApiQueryBuilderProtocol",
