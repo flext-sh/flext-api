@@ -1550,9 +1550,9 @@ def create_client(
     # Create configuration with validated values
     client_config = FlextApiClientConfig(
         base_url=str(validated_config.get("base_url", "https://httpbin.org")),
-        timeout=float(validated_config.get("timeout", 30)),
-        headers=validated_config.get("headers") or {},
-        max_retries=int(validated_config.get("max_retries", 3)),
+        timeout=float(cast("int | float | str", validated_config.get("timeout", 30))),
+        headers=cast("dict[str, str]", validated_config.get("headers") or {}),
+        max_retries=int(cast("int | float | str", validated_config.get("max_retries", 3))),
         verify_ssl=bool(validated_config.get("verify_ssl", True)),
         follow_redirects=bool(validated_config.get("follow_redirects", True)),
     )

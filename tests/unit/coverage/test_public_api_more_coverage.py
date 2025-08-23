@@ -68,7 +68,7 @@ def test_deprecated_create_api_service_and_client_paths() -> None:
     # Use modern API for failure case
     bad = api.create_client({"base_url": ""})
     assert not bad.success
-    assert "Invalid client configuration" in (bad.error or "")
+    assert "base_url is required" in (bad.error or "")
 
 
 @pytest.mark.asyncio

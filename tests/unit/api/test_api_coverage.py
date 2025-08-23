@@ -25,7 +25,7 @@ class TestFlextApiCoverage:
         # Test client creation with invalid config should return FlextResult failure
         result = api.create_client({"base_url": "invalid://test"})
         assert not result.success
-        assert "Failed to create client" in result.error
+        assert "Invalid URL format" in result.error
 
     def test_create_client_impl_with_complex_config(self) -> None:
         """Test _create_client_impl with various config types."""
