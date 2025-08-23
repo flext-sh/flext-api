@@ -1394,5 +1394,5 @@ class LdapSearchRequest(FlextEntity):
 **Last Updated**: January 2, 2025  
 **Target Audience**: FLEXT ecosystem developers implementing HTTP functionality  
 **Scope**: HTTP module organization for FLEXT API foundation library  
-**Version**: 0.9.0 → 1.0.0 development guidelines  
+**Version**: 0.9.0 → 0.9.0 development guidelines  
 **Related**: flext-core/docs/Python-module-organization.md for foundation patterns
