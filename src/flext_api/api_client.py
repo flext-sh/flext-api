@@ -34,9 +34,9 @@ logger = get_logger(__name__)
 # Type variables for generic operations
 T = TypeVar("T")
 FlextApiValue = FlextTypes.Core.Value
-FlextApiEntityId = FlextTypes.Core.EntityId
+FlextApiEntityId = FlextTypes.Core.Id
 FlextApiServiceName = FlextTypes.Service.ServiceName
-FlextApiConfig = FlextTypes.Core.AnyDict
+FlextApiConfig = FlextTypes.Core.Dict
 
 # ==============================================================================
 # CLIENT ENUMS AND VALUE OBJECTS
