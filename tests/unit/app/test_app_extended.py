@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from flext_api import FlextApiError, create_flext_api_app
-from flext_api.api_app import FlextApiAppConfig
+from flext_api.app import FlextApiAppConfig
 
 
 def _make_app(*, debug: bool = True) -> FastAPI:
