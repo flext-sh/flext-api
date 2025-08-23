@@ -57,7 +57,7 @@ class RequestLoggingPlugin(FlextApiPlugin):
         logger.info("HTTP request starting", **log_data)
         request_config["_request_id"] = request_id
 
-        return FlextResult.ok(request_config)
+        return FlextResult[None].ok(request_config)
 
     def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
         """Log response and calculate request duration."""
@@ -78,7 +78,7 @@ class RequestLoggingPlugin(FlextApiPlugin):
 
             logger.info("HTTP request completed", **log_data)
 
-        return FlextResult.ok(response)
+        return FlextResult[None].ok(response)
 
     def _generate_request_id(self, request_config: Dict[str, Any]) -> str:
         """Generate unique request ID."""
@@ -110,7 +110,7 @@ class RequestThrottlingPlugin(FlextApiPlugin):
             logger.warning("Rate limit exceeded",
                           requests_in_window=len(self.request_times),
                           wait_time_seconds=wait_time)
-            return FlextResult.fail(f"Rate limit exceeded. Wait {wait_time:.1f} seconds")
+            return FlextResult[None].fail(f"Rate limit exceeded. Wait {wait_time:.1f} seconds")
 
         # Add current request to tracking
         self.request_times.append(current_time)
@@ -118,7 +118,7 @@ class RequestThrottlingPlugin(FlextApiPlugin):
                     requests_in_window=len(self.request_times),
                     max_requests=self.max_requests)
 
-        return FlextResult.ok(request_config)
+        return FlextResult[None].ok(request_config)
 
 def advanced_plugin_example():
     """Example using advanced custom plugins."""
@@ -205,17 +205,17 @@ class AdvancedCircuitBreakerPlugin(FlextApiPlugin):
                 logger.warning("Circuit breaker is OPEN",
                               remaining_time=remaining_time,
                               failure_count=self.failure_count)
-                return FlextResult.fail(f"Circuit breaker OPEN. Retry in {remaining_time:.1f}s")
+                return FlextResult[None].fail(f"Circuit breaker OPEN. Retry in {remaining_time:.1f}s")
 
         if self.state == CircuitState.HALF_OPEN:
             if self.half_open_calls >= self.half_open_max_calls:
                 logger.warning("Half-open call limit reached")
-                return FlextResult.fail("Circuit breaker half-open call limit reached")
+                return FlextResult[None].fail("Circuit breaker half-open call limit reached")
 
             self.half_open_calls += 1
             logger.info("Half-open request allowed", calls=self.half_open_calls)
 
-        return FlextResult.ok(request_config)
+        return FlextResult[None].ok(request_config)
 
     def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
         """Update circuit state based on response."""
@@ -227,7 +227,7 @@ class AdvancedCircuitBreakerPlugin(FlextApiPlugin):
         else:
             self._handle_failure()
 
-        return FlextResult.ok(response)
+        return FlextResult[None].ok(response)
 
     def _handle_success(self):
         """Handle successful response."""
@@ -350,10 +350,10 @@ class AsyncFlextApiWrapper:
         if client_result.success:
             self.client = client_result.data
             logger.info("Async client initialized")
-            return FlextResult.ok(data=True)
+            return FlextResult[None].ok(data=True)
         else:
             logger.error("Async client initialization failed", error=client_result.error)
-            return FlextResult.fail(client_result.error)
+            return FlextResult[None].fail(client_result.error)
 
     def _create_client(self):
         """Create client (runs in thread pool)."""
@@ -365,7 +365,7 @@ class AsyncFlextApiWrapper:
     async def get_async(self, path: str, **kwargs) -> FlextResult[Dict[str, Any]]:
         """Async GET request."""
         if not self.client:
-            return FlextResult.fail("Client not initialized")
+            return FlextResult[None].fail("Client not initialized")
 
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, self.client.get, path, kwargs)
@@ -375,7 +375,7 @@ class AsyncFlextApiWrapper:
     async def post_async(self, path: str, **kwargs) -> FlextResult[Dict[str, Any]]:
         """Async POST request."""
         if not self.client:
-            return FlextResult.fail("Client not initialized")
+            return FlextResult[None].fail("Client not initialized")
 
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, self.client.post, path, kwargs)
@@ -481,10 +481,10 @@ class BatchProcessor:
             logger.info("Batch processor initialized",
                        base_url=self.base_url,
                        max_concurrent=self.max_concurrent)
-            return FlextResult.ok(data=True)
+            return FlextResult[None].ok(data=True)
         else:
             logger.error("Batch processor initialization failed", error=client_result.error)
-            return FlextResult.fail(client_result.error)
+            return FlextResult[None].fail(client_result.error)
 
     async def process_batch(self, requests: List[BatchRequest],
                           progress_callback: Optional[Callable[[int, int], None]] = None) -> List[BatchResult]:
@@ -692,7 +692,7 @@ class AdvancedRetryPlugin(FlextApiPlugin):
         should_retry = any(condition(response) for condition in self.retry_conditions)
 
         if not should_retry:
-            return FlextResult.ok(response)
+            return FlextResult[None].ok(response)
 
         # Get retry count from response metadata
         retry_count = response.get("_retry_count", 0)
@@ -701,7 +701,7 @@ class AdvancedRetryPlugin(FlextApiPlugin):
             logger.warning("Max retries exceeded",
                           retry_count=retry_count,
                           max_retries=self.max_retries)
-            return FlextResult.ok(response)
+            return FlextResult[None].ok(response)
 
         # Calculate delay with exponential backoff and jitter
         delay = self._calculate_delay(retry_count)
@@ -719,7 +719,7 @@ class AdvancedRetryPlugin(FlextApiPlugin):
         response["_retry_count"] = retry_count + 1
         response["_retry_delay"] = delay
 
-        return FlextResult.ok(response)
+        return FlextResult[None].ok(response)
 
     def _calculate_delay(self, retry_count: int) -> float:
         """Calculate delay with exponential backoff and optional jitter."""
@@ -785,7 +785,7 @@ class ResilientHttpClient:
                 elif method.upper() == "POST":
                     response = self.client.post(path, **kwargs)
                 else:
-                    return FlextResult.fail(f"Unsupported method: {method}")
+                    return FlextResult[None].fail(f"Unsupported method: {method}")
 
                 if response.success:
                     logger.info("Resilient request successful",
@@ -808,9 +808,9 @@ class ResilientHttpClient:
                 if attempt < max_attempts - 1:
                     time.sleep(2 ** attempt)
                     continue
-                return FlextResult.fail(f"All attempts failed: {e}")
+                return FlextResult[None].fail(f"All attempts failed: {e}")
 
-        return FlextResult.fail("All resilience attempts exhausted")
+        return FlextResult[None].fail("All resilience attempts exhausted")
 
 def resilient_client_example():
     """Example of resilient HTTP client usage."""
@@ -882,7 +882,7 @@ class ConnectionPoolManager:
                                pool_key=pool_key,
                                usage_count=pool_info["usage_count"])
 
-                    return FlextResult.ok(pool_info["client"])
+                    return FlextResult[None].ok(pool_info["client"])
                 else:
                     # Pool expired, remove it
                     logger.info("Connection pool expired, creating new", pool_key=pool_key)
@@ -1049,9 +1049,9 @@ class AdvancedCachingPlugin(FlextApiPlugin):
 
         # Only cache GET requests by default
         if method == "GET" and not self.cache_get:
-            return FlextResult.ok(request_config)
+            return FlextResult[None].ok(request_config)
         if method == "POST" and not self.cache_post:
-            return FlextResult.ok(request_config)
+            return FlextResult[None].ok(request_config)
 
         cache_key = self._generate_cache_key(request_config)
 
@@ -1086,19 +1086,19 @@ class AdvancedCachingPlugin(FlextApiPlugin):
                 request_config["_cached_response"] = cached_response
 
         self.stats["misses"] += 1
-        return FlextResult.ok(request_config)
+        return FlextResult[None].ok(request_config)
 
     def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
         """Cache successful responses."""
 
         # Don't cache if request was skipped (cache hit)
         if response.get("_from_cache"):
-            return FlextResult.ok(response)
+            return FlextResult[None].ok(response)
 
         # Only cache successful responses
         status_code = response.get("status_code", 0)
         if not (200 <= status_code < 300):
-            return FlextResult.ok(response)
+            return FlextResult[None].ok(response)
 
         # Get original request config from response metadata
         request_config = response.get("_request_config", {})
@@ -1109,7 +1109,7 @@ class AdvancedCachingPlugin(FlextApiPlugin):
         elif method == "POST" and self.cache_post:
             self._cache_response(request_config, response)
 
-        return FlextResult.ok(response)
+        return FlextResult[None].ok(response)
 
     def _cache_response(self, request_config: Dict[str, Any], response: Dict[str, Any]):
         """Cache the response."""

@@ -99,23 +99,23 @@ class ApiRequest(FlextEntity):
     def validate_domain_rules(self) -> FlextResult[None]:
         """Business rules validation."""
         if not self.url.startswith(('http://', 'https://')):
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error="Invalid URL protocol",
                 error_code="INVALID_URL_PROTOCOL"
             )
 
         if self.timeout <= 0:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error="Timeout must be positive",
                 error_code="INVALID_TIMEOUT"
             )
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def increment_retry(self) -> FlextResult[Self]:
         """Domain logic for retry handling."""
         if self.retry_count >= self.max_retries:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error="Maximum retries exceeded",
                 error_code="MAX_RETRIES_EXCEEDED"
             )
@@ -152,7 +152,7 @@ def service_operation(request: dict) -> FlextResult[dict]:
         return pipeline_result
 
     processed_data = pipeline_result.data
-    return FlextResult.ok({"processed": processed_data.to_dict()})
+    return FlextResult[None].ok({"processed": processed_data.to_dict()})
 ```
 
 ---
@@ -193,10 +193,10 @@ class FlextApi(FlextService):
             # Initialize components
             self._builder = self.container.get_typed("api_builder", FlextApiBuilder)
             self.logger.info("FlextApi service started")
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
         except Exception as e:
             self.logger.exception("Service start failed")
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error=f"Service startup failed: {e}",
                 error_code="SERVICE_START_FAILED"
             )
@@ -208,9 +208,9 @@ class FlextApi(FlextService):
                 # Cleanup client resources
                 pass
             self.logger.info("FlextApi service stopped")
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
         except Exception as e:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error=f"Service shutdown failed: {e}",
                 error_code="SERVICE_STOP_FAILED"
             )
@@ -223,7 +223,7 @@ class FlextApi(FlextService):
             "client_configured": self._client is not None,
             "builder_available": self._builder is not None
         }
-        return FlextResult.ok(health_data)
+        return FlextResult[None].ok(health_data)
 ```
 
 ### **2. HTTP Client Architecture**
@@ -271,9 +271,9 @@ class FlextApiCachingPlugin(FlextApiPlugin):
             if not cache_entry.is_expired():
                 self.logger.debug("Cache hit", cache_key=cache_key)
                 # Return cached response directly
-                return FlextResult.ok(request.with_cached_response(cache_entry.response))
+                return FlextResult[None].ok(request.with_cached_response(cache_entry.response))
 
-        return FlextResult.ok(request)
+        return FlextResult[None].ok(request)
 
     async def after_response(self, response: ApiResponse) -> FlextResult[ApiResponse]:
         if response.status_code == 200:
@@ -281,7 +281,7 @@ class FlextApiCachingPlugin(FlextApiPlugin):
             self.cache[cache_key] = CacheEntry(response, self.ttl)
             self.logger.debug("Response cached", cache_key=cache_key)
 
-        return FlextResult.ok(response)
+        return FlextResult[None].ok(response)
 ```
 
 ### **3. Builder Patterns**
@@ -364,11 +364,11 @@ class FlextApiQueryBuilder:
                            filters_count=len(self._filters),
                            sorts_count=len(self._sorting))
 
-            return FlextResult.ok(query)
+            return FlextResult[None].ok(query)
 
         except Exception as e:
             self.logger.exception("Query building failed")
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error=f"Query construction failed: {e}",
                 error_code="QUERY_BUILD_ERROR"
             )
@@ -378,7 +378,7 @@ class FlextApiQueryBuilder:
         # Validate filter fields
         invalid_fields = [f for f in query["filters"] if not f.replace("_", "").isalnum()]
         if invalid_fields:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error=f"Invalid filter fields: {invalid_fields}",
                 error_code="INVALID_FILTER_FIELDS"
             )
@@ -386,12 +386,12 @@ class FlextApiQueryBuilder:
         # Validate pagination limits
         if pagination := query.get("pagination"):
             if pagination.get("size", 0) > 1000:
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     error="Pagination size cannot exceed 1000",
                     error_code="PAGINATION_SIZE_EXCEEDED"
                 )
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 ```
 
 ---
@@ -430,10 +430,10 @@ def configure_flext_api_services() -> FlextResult[None]:
 
         container.register("api_settings", settings_result.data)
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     except Exception as e:
-        return FlextResult.fail(
+        return FlextResult[None].fail(
             error=f"Service configuration failed: {e}",
             error_code="SERVICE_CONFIG_FAILED"
         )
@@ -479,7 +479,7 @@ class FlextApiError:
                     error=str(exception),
                     context=error_context)
 
-        return FlextResult.fail(
+        return FlextResult[None].fail(
             error=f"Client {operation} failed: {exception}",
             error_code=f"CLIENT_{operation.upper()}_FAILED",
             context=error_context
@@ -504,7 +504,7 @@ class FlextApiError:
                       constraint=constraint,
                       context=error_context)
 
-        return FlextResult.fail(
+        return FlextResult[None].fail(
             error=f"Validation failed for {field}: {constraint}",
             error_code="VALIDATION_FAILED",
             context=error_context
@@ -570,12 +570,12 @@ class FlextApiSettings(FlextSettings):
             errors.append("Cache max size must be positive when caching is enabled")
 
         if errors:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error=f"Configuration validation failed: {'; '.join(errors)}",
                 error_code="CONFIG_VALIDATION_FAILED"
             )
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     @classmethod
     def create_with_validation(cls) -> FlextResult[FlextApiSettings]:
@@ -587,10 +587,10 @@ class FlextApiSettings(FlextSettings):
             if validation_result.is_failure:
                 return validation_result
 
-            return FlextResult.ok(settings)
+            return FlextResult[None].ok(settings)
 
         except Exception as e:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 error=f"Settings creation failed: {e}",
                 error_code="SETTINGS_CREATION_FAILED"
             )
@@ -605,7 +605,7 @@ def register_settings() -> FlextResult[None]:
     container = get_flext_container()
     container.register("flext_api_settings", settings_result.data)
 
-    return FlextResult.ok(None)
+    return FlextResult[None].ok(None)
 ```
 
 ---
@@ -767,9 +767,9 @@ class TestFlextResultPatterns:
 
         # Test chaining operations
         result = (
-            FlextResult.ok({"test": "data"})
+            FlextResult[None].ok({"test": "data"})
             .map(lambda data: {**data, "processed": True})
-            .flat_map(lambda data: FlextResult.ok({**data, "validated": True}))
+            .flat_map(lambda data: FlextResult[None].ok({**data, "validated": True}))
         )
 
         assert result.success
@@ -811,7 +811,7 @@ class TestFlextResultPatterns:
 
 2. **Error Handling Refactoring**
 
-   - Converter todas as exceptions para FlextResult.fail()
+   - Converter todas as exceptions para FlextResult[None].fail()
    - Implementar error codes estruturados
    - Adicionar error context com metadata
 

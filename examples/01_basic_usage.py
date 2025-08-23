@@ -190,7 +190,7 @@ def example_integration() -> None:
         .build()
     )
 
-    len(api_response.data) if isinstance(api_response.data, list) else 0
+    len(api_response.value) if isinstance(api_response.value, list) else 0
     (
         api_response.pagination.get("total")
         if isinstance(api_response.pagination, dict)
@@ -205,10 +205,10 @@ def example_integration() -> None:
         msg: str = f"Expected True, got {api_response.success}"
         raise AssertionError(msg)
     if (
-        len(api_response.data) if isinstance(api_response.data, list) else 0
+        len(api_response.value) if isinstance(api_response.value, list) else 0
     ) != expected_data_count:
         actual_len = (
-            len(api_response.data) if isinstance(api_response.data, list) else 0
+            len(api_response.value) if isinstance(api_response.value, list) else 0
         )
         err_msg = f"Expected {expected_data_count}, got {actual_len}"
         raise AssertionError(err_msg)
