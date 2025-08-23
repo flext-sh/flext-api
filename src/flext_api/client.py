@@ -96,7 +96,7 @@ class FlextApiClientConfig:
     timeout: float = 30.0
     headers: dict[str, str] = field(default_factory=dict[str, str])
     max_retries: int = 3
-    plugins: list[FlextApiPlugin] = field(default_factory=list[FlextApiPlugin])
+    plugins: list[FlextApiPlugin] = field(default_factory=list)
     verify_ssl: bool = True
     follow_redirects: bool = True
 
