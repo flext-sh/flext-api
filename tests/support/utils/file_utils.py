@@ -5,6 +5,7 @@ Provides file creation and manipulation utilities for testing.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import stat
 from pathlib import Path
@@ -25,7 +26,5 @@ def create_readonly_file(path: Path, content: str = "{}") -> Path:
 
 def restore_file_permissions(path: Path) -> None:
     """Restore normal file permissions."""
-    try:
+    with contextlib.suppress(OSError, PermissionError, FileNotFoundError):
         path.chmod(stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)
-    except (OSError, PermissionError, FileNotFoundError):
-        pass

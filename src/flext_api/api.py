@@ -348,7 +348,6 @@ class FlextApi(FlextApiBaseService):
         return FlextApiClient(legacy_config)
 
 
-
 def create_flext_api(**config: object) -> FlextApi:
     """Create FlextApi service instance.
 

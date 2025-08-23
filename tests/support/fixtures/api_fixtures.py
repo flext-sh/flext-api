@@ -38,10 +38,14 @@ def flext_api_config() -> FlextApiSettings:
 
 
 @pytest.fixture
-async def flext_api_client(flext_api_config: FlextApiSettings) -> AsyncGenerator[FlextApiClient]:
+async def flext_api_client(
+    flext_api_config: FlextApiSettings,
+) -> AsyncGenerator[FlextApiClient]:
     """Provide configured FlextApiClient for testing."""
     # Convert FlextApiSettings to FlextApiClientConfig
-    client_config = FlextApiClientConfig(base_url=f"https://{flext_api_config.api_host}")
+    client_config = FlextApiClientConfig(
+        base_url=f"https://{flext_api_config.api_host}"
+    )
     client = FlextApiClient(client_config)
     try:
         yield client

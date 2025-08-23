@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+
 import pytest
 from flext_core import FlextResult
 
@@ -53,10 +55,8 @@ async def test_file_backend_save_and_delete_error_paths(
         pass
     finally:
         # Restore write permissions for cleanup
-        try:
+        with contextlib.suppress(OSError, PermissionError, FileNotFoundError):
             readonly_file_path.chmod(stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)
-        except (OSError, PermissionError, FileNotFoundError):
-            pass
 
     # Test invalid file path to trigger REAL path errors
     invalid_path = "/dev/null/impossible/path/store.json"

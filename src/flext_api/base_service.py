@@ -199,7 +199,9 @@ class FlextApiBaseClientService(
                 request_context, request_context
             )
             if isinstance(plugin_result, FlextResult) and not plugin_result:
-                error_msg = f"Plugin failed: {plugin_result.error or 'Unknown plugin error'}"
+                error_msg = (
+                    f"Plugin failed: {plugin_result.error or 'Unknown plugin error'}"
+                )
                 raise RuntimeError(error_msg)
 
         # Execute request (implemented by subclass)
@@ -228,10 +230,7 @@ class FlextApiBaseClientService(
             after_plugin_result = await plugin.after_response(
                 response_data, response_context
             )
-            if (
-                isinstance(after_plugin_result, FlextResult)
-                and after_plugin_result
-            ):
+            if isinstance(after_plugin_result, FlextResult) and after_plugin_result:
                 # Type-safe extraction with explicit typing
                 plugin_response: object = after_plugin_result.value
                 if isinstance(plugin_response, dict):
@@ -240,7 +239,9 @@ class FlextApiBaseClientService(
                     # Cast to specific types for PyRight type inference
                     dict_data = cast("dict[str, object]", plugin_response)
                     for response_key, response_value in dict_data.items():
-                        if response_key is not None and isinstance(response_key, (str, int, float, bool)):
+                        if response_key is not None and isinstance(
+                            response_key, (str, int, float, bool)
+                        ):
                             response_key_str: str = str(response_key)
                             updated_response_data[response_key_str] = response_value
                     response_data = updated_response_data
@@ -250,7 +251,9 @@ class FlextApiBaseClientService(
                 # Cast to specific types for PyRight type inference
                 dict_data = cast("dict[str, object]", after_plugin_result)
                 for result_key, result_value in dict_data.items():
-                    if result_key is not None and isinstance(result_key, (str, int, float, bool)):
+                    if result_key is not None and isinstance(
+                        result_key, (str, int, float, bool)
+                    ):
                         result_key_str: str = str(result_key)
                         typed_response_data[result_key_str] = result_value
                 response_data = typed_response_data
@@ -259,8 +262,12 @@ class FlextApiBaseClientService(
         try:
             return FlextResult[FlextTypes.Core.JsonDict].ok(response_data)
         except Exception as e:
-            logger.exception("Unexpected error in request processing", method=method, url=url)
-            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Request processing failed: {e}")
+            logger.exception(
+                "Unexpected error in request processing", method=method, url=url
+            )
+            return FlextResult[FlextTypes.Core.JsonDict].fail(
+                f"Request processing failed: {e}"
+            )
 
     async def close(self) -> None:
         """Close the client and cleanup resources."""

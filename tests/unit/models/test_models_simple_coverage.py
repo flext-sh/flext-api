@@ -6,14 +6,14 @@ Focus on testing actual functionality that works rather than assumed interfaces.
 from __future__ import annotations
 
 from flext_api.models import (
+    MAX_PORT,
+    MIN_CONTROL_CHAR,
+    MIN_PORT,
     URL,
+    ClientStatus,
     HttpHeader,
     HttpMethod,
     HttpStatus,
-    ClientStatus,
-    MIN_PORT,
-    MAX_PORT,
-    MIN_CONTROL_CHAR,
 )
 
 
@@ -26,7 +26,7 @@ class TestURLRealValidation:
         result = URL.create("")
         assert not result.success
         assert "cannot be empty" in result.error
-        
+
         # Whitespace URL
         result2 = URL.create("   ")
         assert not result2.success
@@ -60,7 +60,7 @@ class TestHttpHeaderRealValidation:
         """Test empty header name validation - covers lines 390-391."""
         # Test with empty name
         header = HttpHeader(name="", value="test")
-        if hasattr(header, 'validate_business_rules'):
+        if hasattr(header, "validate_business_rules"):
             validation_result = header.validate_business_rules()
             if not validation_result.success:
                 assert "name" in validation_result.error.lower()
@@ -69,7 +69,7 @@ class TestHttpHeaderRealValidation:
         """Test empty header value validation - covers lines 393-394."""
         # Test with empty value
         header = HttpHeader(name="X-Test", value="")
-        if hasattr(header, 'validate_business_rules'):
+        if hasattr(header, "validate_business_rules"):
             validation_result = header.validate_business_rules()
             if not validation_result.success:
                 assert "value" in validation_result.error.lower()
@@ -79,15 +79,18 @@ class TestHttpHeaderRealValidation:
         # Header with control character
         control_char_name = f"X-Test{chr(10)}"
         header = HttpHeader(name=control_char_name, value="test")
-        if hasattr(header, 'validate_business_rules'):
+        if hasattr(header, "validate_business_rules"):
             validation_result = header.validate_business_rules()
             if not validation_result.success:
-                assert "character" in validation_result.error.lower() or "invalid" in validation_result.error.lower()
+                assert (
+                    "character" in validation_result.error.lower()
+                    or "invalid" in validation_result.error.lower()
+                )
 
     def test_header_success_validation(self) -> None:
         """Test successful header validation - covers line 400."""
         header = HttpHeader(name="X-Custom", value="test-value")
-        if hasattr(header, 'validate_business_rules'):
+        if hasattr(header, "validate_business_rules"):
             validation_result = header.validate_business_rules()
             assert validation_result.success
 
@@ -98,38 +101,38 @@ class TestEnumsRealCoverage:
     def test_http_method_enum_values(self) -> None:
         """Test HttpMethod enum - covers enum lines."""
         # Test all available enum values
-        methods = [method for method in HttpMethod]
+        methods = list(HttpMethod)
         assert len(methods) > 0
-        
+
         # Test specific methods that should exist
         assert HttpMethod.GET
         assert HttpMethod.POST
-        if hasattr(HttpMethod, 'PUT'):
+        if hasattr(HttpMethod, "PUT"):
             assert HttpMethod.PUT
-        if hasattr(HttpMethod, 'DELETE'):
+        if hasattr(HttpMethod, "DELETE"):
             assert HttpMethod.DELETE
 
     def test_http_status_enum_values(self) -> None:
         """Test HttpStatus enum - covers enum lines."""
         # Test common status codes
         assert HttpStatus.OK.value == 200
-        if hasattr(HttpStatus, 'NOT_FOUND'):
+        if hasattr(HttpStatus, "NOT_FOUND"):
             assert HttpStatus.NOT_FOUND.value == 404
-        if hasattr(HttpStatus, 'INTERNAL_SERVER_ERROR'):
+        if hasattr(HttpStatus, "INTERNAL_SERVER_ERROR"):
             assert HttpStatus.INTERNAL_SERVER_ERROR.value == 500
 
     def test_client_status_enum_values(self) -> None:
         """Test ClientStatus enum - covers enum lines."""
         # Test enum values that actually exist
-        status_values = [status for status in ClientStatus]
+        status_values = list(ClientStatus)
         assert len(status_values) > 0
-        
+
         # Test specific values if they exist
-        if hasattr(ClientStatus, 'IDLE'):
+        if hasattr(ClientStatus, "IDLE"):
             assert ClientStatus.IDLE
-        if hasattr(ClientStatus, 'ACTIVE'):
+        if hasattr(ClientStatus, "ACTIVE"):
             assert ClientStatus.ACTIVE
-        if hasattr(ClientStatus, 'ERROR'):
+        if hasattr(ClientStatus, "ERROR"):
             assert ClientStatus.ERROR
 
 
@@ -142,12 +145,12 @@ class TestValidationBoundaries:
         min_url = f"https://example.com:{MIN_PORT}"
         result_min = URL.create(min_url)
         assert result_min.success
-        
+
         # Test maximum port
         max_url = f"https://example.com:{MAX_PORT}"
         result_max = URL.create(max_url)
         assert result_max.success
-        
+
         # Test below minimum (should fail)
         below_min_url = f"https://example.com:{MIN_PORT - 1}"
         result_below = URL.create(below_min_url)
@@ -158,17 +161,17 @@ class TestValidationBoundaries:
         # Test valid character at boundary
         valid_char = chr(MIN_CONTROL_CHAR)
         header_valid = HttpHeader(name=f"X{valid_char}Test", value="value")
-        
+
         # Test invalid character below boundary
         invalid_char = chr(MIN_CONTROL_CHAR - 1)
         header_invalid = HttpHeader(name=f"X{invalid_char}Test", value="value")
-        
-        if hasattr(header_valid, 'validate_business_rules'):
+
+        if hasattr(header_valid, "validate_business_rules"):
             valid_result = header_valid.validate_business_rules()
             # Valid should pass
             assert valid_result.success
-        
-        if hasattr(header_invalid, 'validate_business_rules'):
+
+        if hasattr(header_invalid, "validate_business_rules"):
             invalid_result = header_invalid.validate_business_rules()
             # Invalid should fail
             assert not invalid_result.success
@@ -185,7 +188,7 @@ class TestComplexValidationScenarios:
             "http://192.168.1.1:8080",
             "https://sub.example.com:443/path",
         ]
-        
+
         for url in valid_urls:
             result = URL.create(url)
             assert result.success, f"Failed for URL: {url}"
@@ -198,7 +201,7 @@ class TestComplexValidationScenarios:
             ("invalid://host", "scheme"),
             ("https://", "host"),
         ]
-        
+
         for invalid_url, expected_error_keyword in invalid_cases:
             result = URL.create(invalid_url)
             assert not result.success
@@ -222,9 +225,9 @@ class TestModelCreationSuccess:
         header = HttpHeader(name="Content-Type", value="application/json")
         assert header.name == "Content-Type"
         assert header.value == "application/json"
-        
+
         # Test validation if available
-        if hasattr(header, 'validate_business_rules'):
+        if hasattr(header, "validate_business_rules"):
             result = header.validate_business_rules()
             assert result.success
 
@@ -236,19 +239,19 @@ class TestModelProperties:
         """Test URL properties."""
         result = URL.create("https://example.com:443/api?key=value#section")
         assert result.success
-        
+
         url = result.value
         assert url.scheme == "https"
         assert url.host == "example.com"
         assert url.port == 443
         assert "/api" in url.path
-        if hasattr(url, 'query'):
+        if hasattr(url, "query"):
             assert "key=value" in (url.query or "")
 
     def test_model_serialization(self) -> None:
         """Test model serialization."""
         header = HttpHeader(name="X-Test", value="test-value")
-        
+
         # Should be able to serialize
         model_dict = header.model_dump()
         assert "name" in model_dict

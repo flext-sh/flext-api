@@ -36,14 +36,20 @@ class FlextApiUtilities:
             # Cast to specific types for PyRight type inference
             dict_data = cast("dict[str, object]", json_data)
             # Use dict comprehension for performance
-            return {dict_key: dict_value for dict_key, dict_value in dict_data.items() if dict_key}
+            return {
+                dict_key: dict_value
+                for dict_key, dict_value in dict_data.items()
+                if dict_key
+            }
 
         if isinstance(json_data, list):
             # Type-safe list processing with explicit casting
             # Cast to specific types for PyRight type inference
             list_data = cast("list[object]", json_data)
             # Use list comprehension for performance
-            return [list_element for list_element in list_data if list_element is not None]
+            return [
+                list_element for list_element in list_data if list_element is not None
+            ]
 
         if json_data is None:
             return None
@@ -68,12 +74,20 @@ class FlextApiUtilities:
                 # Cast to specific types for PyRight type inference
                 dict_data = cast("dict[str, object]", parsed_data)
                 # Use dict comprehension for performance
-                return {parsed_key: parsed_value for parsed_key, parsed_value in dict_data.items() if parsed_key}
+                return {
+                    parsed_key: parsed_value
+                    for parsed_key, parsed_value in dict_data.items()
+                    if parsed_key
+                }
             if isinstance(parsed_data, list):
                 # Cast to specific types for PyRight type inference
                 list_data = cast("list[object]", parsed_data)
                 # Use list comprehension for performance
-                return [parsed_element for parsed_element in list_data if parsed_element is not None]
+                return [
+                    parsed_element
+                    for parsed_element in list_data
+                    if parsed_element is not None
+                ]
             return text_data
         except Exception:
             return text_data
@@ -92,12 +106,20 @@ class FlextApiUtilities:
                 # Cast to specific types for PyRight type inference
                 dict_data = cast("dict[str, object]", fallback_parsed_data)
                 # Use dict comprehension for performance
-                return {fallback_key: fallback_value for fallback_key, fallback_value in dict_data.items() if fallback_key}
+                return {
+                    fallback_key: fallback_value
+                    for fallback_key, fallback_value in dict_data.items()
+                    if fallback_key
+                }
             if isinstance(fallback_parsed_data, list):
                 # Cast to specific types for PyRight type inference
                 list_data = cast("list[object]", fallback_parsed_data)
                 # Use list comprehension for performance
-                return [fallback_element for fallback_element in list_data if fallback_element is not None]
+                return [
+                    fallback_element
+                    for fallback_element in list_data
+                    if fallback_element is not None
+                ]
             return text_trim
         except Exception:
             return text_trim
@@ -112,7 +134,9 @@ class FlextApiUtilities:
         Uses utility methods to handle different parsing scenarios.
         """
         content_type = response.headers.get("content-type", "")
-        logger.debug("Processing response", content_type=content_type, status=response.status)
+        logger.debug(
+            "Processing response", content_type=content_type, status=response.status
+        )
 
         # JSON content handling
         if "application/json" in content_type or "text/json" in content_type:
@@ -145,11 +169,13 @@ class FlextApiUtilities:
         Extracts validation logic to reduce create_client complexity.
         """
         if config is None:
-            return FlextResult[dict[str, object]].ok({
-                "base_url": "",
-                "timeout": 30,
-                "max_retries": 3,
-            })
+            return FlextResult[dict[str, object]].ok(
+                {
+                    "base_url": "",
+                    "timeout": 30,
+                    "max_retries": 3,
+                }
+            )
 
         # Apply defaults for missing values, validating headers type
         headers_raw = config.get("headers", {})
@@ -160,15 +186,17 @@ class FlextApiUtilities:
             "timeout": config.get("timeout", 30),
             "max_retries": config.get("max_retries", 3),
             "headers": headers,  # Use validated headers
-            **{k: v for k, v in config.items() if k not in ["base_url", "timeout", "max_retries", "headers"]},  # Include other values
+            **{
+                k: v
+                for k, v in config.items()
+                if k not in ["base_url", "timeout", "max_retries", "headers"]
+            },  # Include other values
         }
 
         # Validate base_url - allow empty string but require string type
         base_url = validated_config.get("base_url")
         if not isinstance(base_url, str):
-            return FlextResult[dict[str, object]].fail(
-                "base_url must be a string"
-            )
+            return FlextResult[dict[str, object]].fail("base_url must be a string")
 
         # Validate timeout
         timeout = validated_config.get("timeout")

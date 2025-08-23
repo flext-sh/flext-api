@@ -241,7 +241,9 @@ class TestFlextApiConnectionError:
         assert str(error) == "[FLEXT_2001] SSL handshake failed"
         assert error.context["context"]["host"] == "secure.api.com"
         assert error.context["context"]["port"] == 443
-        assert error.context["context"]["ssl_error"] == "Certificate verification failed"
+        assert (
+            error.context["context"]["ssl_error"] == "Certificate verification failed"
+        )
 
     def test_default_message(self) -> None:
         """Test connection error with default message."""
@@ -402,7 +404,10 @@ class TestFlextApiResponseError:
 
         assert str(error) == "[FLEXT_API_ERROR] API response: Parse error"
         assert error.context["context"]["status_code"] == 422
-        assert error.context["context"]["response_body"] == '{"error": "validation failed"}'
+        assert (
+            error.context["context"]["response_body"]
+            == '{"error": "validation failed"}'
+        )
 
     def test_long_response_body_truncation(self) -> None:
         """Test response error truncates long response bodies."""

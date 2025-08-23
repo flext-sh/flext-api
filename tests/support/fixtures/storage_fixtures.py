@@ -16,12 +16,13 @@ from flext_api.storage import FileStorageBackend, MemoryStorageBackend, StorageC
 @pytest.fixture
 def temp_storage_path(tmp_path: Path) -> Path:
     """Provide temporary path for file storage testing."""
-    storage_file = tmp_path / "test_storage.json"
-    return storage_file
+    return tmp_path / "test_storage.json"
 
 
 @pytest.fixture
-async def file_storage_backend(temp_storage_path: Path) -> AsyncGenerator[FileStorageBackend[object]]:
+async def file_storage_backend(
+    temp_storage_path: Path,
+) -> AsyncGenerator[FileStorageBackend[object]]:
     """Provide configured file storage backend for testing."""
     config = StorageConfig(file_path=str(temp_storage_path))
     backend = FileStorageBackend[object](config)
