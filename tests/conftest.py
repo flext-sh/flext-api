@@ -67,14 +67,16 @@ fake = Faker()
 Faker.seed(12345)
 
 # Environment setup for testing
-os.environ.update({
-    "FLEXT_API_TESTING": "true",
-    "FLEXT_DISABLE_EXTERNAL_CALLS": "0",  # ENABLE external calls for real testing
-    "FLEXT_TEST_LOG_MINIMAL": "true",
-    "FLEXT_FAST_TEST_MODE": "true",
-    "ENVIRONMENT": "test",
-    "LOG_LEVEL": "DEBUG",
-})
+os.environ.update(
+    {
+        "FLEXT_API_TESTING": "true",
+        "FLEXT_DISABLE_EXTERNAL_CALLS": "0",  # ENABLE external calls for real testing
+        "FLEXT_TEST_LOG_MINIMAL": "true",
+        "FLEXT_FAST_TEST_MODE": "true",
+        "ENVIRONMENT": "test",
+        "LOG_LEVEL": "DEBUG",
+    }
+)
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -199,14 +201,28 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
 # FACTORY BOY INTEGRATION
 # ============================================================================
 
+
 @pytest.fixture
-def api_request_factory() -> Callable[[str, str, dict[str, str] | None, dict[str, object] | None, float], FlextApiClientRequest]:
+def api_request_factory() -> Callable[
+    [str, str, dict[str, str] | None, dict[str, object] | None, float],
+    FlextApiClientRequest,
+]:
     """Provide FlextApiClientRequest factory for test data generation."""
     return FlextApiClientRequestFactory
 
 
 @pytest.fixture
-def api_response_factory() -> Callable[[int, dict[str, str] | None, dict[str, object] | list[object] | str | bytes | None, float, str | None, bool], FlextApiClientResponse]:
+def api_response_factory() -> Callable[
+    [
+        int,
+        dict[str, str] | None,
+        dict[str, object] | list[object] | str | bytes | None,
+        float,
+        str | None,
+        bool,
+    ],
+    FlextApiClientResponse,
+]:
     """Provide FlextApiClientResponse factory for test data generation."""
     return FlextApiClientResponseFactory
 
@@ -226,6 +242,7 @@ def app_config_factory() -> Callable[[object | None], FlextApiAppConfig]:
 # ============================================================================
 # PYTEST-HTTPX INTEGRATION
 # ============================================================================
+
 
 @pytest.fixture
 async def httpx_mock() -> object:
@@ -260,14 +277,17 @@ except ImportError:
     @pytest.fixture
     def benchmark() -> object:
         """Lightweight benchmark fallback."""
+
         def _bench(func: object, *args: object, **kwargs: object) -> object:
             return func(*args, **kwargs)  # type: ignore[operator]
+
         return _bench
 
 
 # ============================================================================
 # STORAGE AND FILESYSTEM FIXTURES
 # ============================================================================
+
 
 @pytest.fixture
 def temp_dir() -> Iterator[Path]:
@@ -302,6 +322,7 @@ async def file_storage(temp_dir: Path) -> AsyncGenerator[FileStorageBackend[obje
 # APPLICATION FIXTURES
 # ============================================================================
 
+
 @pytest.fixture
 def test_app_config() -> FlextApiAppConfig:
     """Provide test application configuration."""
@@ -330,6 +351,7 @@ def async_test_client(test_app: FastAPI) -> TestClient:
 # UTILITY FIXTURES
 # ============================================================================
 
+
 @pytest.fixture
 def fake_data() -> Faker:
     """Provide Faker instance for test data generation."""
@@ -349,13 +371,26 @@ def assert_failure() -> Callable[[object, str | None], None]:
 
 
 @pytest.fixture
-def create_request() -> Callable[[str, str, dict[str, str] | None, dict[str, object] | None, float], FlextApiClientRequest]:
+def create_request() -> Callable[
+    [str, str, dict[str, str] | None, dict[str, object] | None, float],
+    FlextApiClientRequest,
+]:
     """Provide test request creation utility."""
     return create_test_request
 
 
 @pytest.fixture
-def create_response() -> Callable[[int, dict[str, object] | list[object] | str | bytes | None, dict[str, str] | None, float, str | None, bool], FlextApiClientResponse]:
+def create_response() -> Callable[
+    [
+        int,
+        dict[str, object] | list[object] | str | bytes | None,
+        dict[str, str] | None,
+        float,
+        str | None,
+        bool,
+    ],
+    FlextApiClientResponse,
+]:
     """Provide test response creation utility."""
     return create_test_response
 
@@ -363,6 +398,7 @@ def create_response() -> Callable[[int, dict[str, object] | list[object] | str |
 # ============================================================================
 # PROJECT STRUCTURE FIXTURES
 # ============================================================================
+
 
 @pytest.fixture
 def project_root() -> Path:
@@ -385,6 +421,7 @@ def tests_dir(project_root: Path) -> Path:
 # ============================================================================
 # CLEANUP AND PERFORMANCE FIXTURES
 # ============================================================================
+
 
 @pytest.fixture(autouse=True)
 def cleanup_test_environment() -> None:

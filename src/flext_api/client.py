@@ -96,9 +96,7 @@ class FlextApiClientConfig:
     timeout: float = 30.0
     headers: dict[str, str] = field(default_factory=dict[str, str])
     max_retries: int = 3
-    plugins: list[FlextApiPlugin] = field(
-        default_factory=lambda: list[FlextApiPlugin]()
-    )
+    plugins: list[FlextApiPlugin] = field(default_factory=list[FlextApiPlugin])
     verify_ssl: bool = True
     follow_redirects: bool = True
 
@@ -719,7 +717,8 @@ class FlextApiClient:
                 # Short-circuit: plugin returned a response instead of request
                 # At this point, plugin_result.success is guaranteed to be True
                 plugin_value: FlextApiClientRequest | FlextApiClientResponse = cast(
-                    "FlextApiClientRequest | FlextApiClientResponse", plugin_result.value
+                    "FlextApiClientRequest | FlextApiClientResponse",
+                    plugin_result.value,
                 )
                 if isinstance(plugin_value, FlextApiClientResponse):
                     return FlextResult[
@@ -1146,12 +1145,16 @@ class FlextApiClient:
         try:
             result = await self._make_request_impl(request)
             if not result:  # FlextResult has __bool__
-                return FlextResult[FlextApiClientResponse].fail(result.error or "Request failed")
+                return FlextResult[FlextApiClientResponse].fail(
+                    result.error or "Request failed"
+                )
             return FlextResult[FlextApiClientResponse].ok(result.value)
         except Exception as e:
             # Match error message formatting expected by tests
             method = str(request.method)
-            return FlextResult[FlextApiClientResponse].fail(f"Failed to make {method} request: {e}")
+            return FlextResult[FlextApiClientResponse].fail(
+                f"Failed to make {method} request: {e}"
+            )
 
     async def head(
         self,
@@ -1552,7 +1555,9 @@ def create_client(
         base_url=str(validated_config.get("base_url", "https://httpbin.org")),
         timeout=float(cast("int | float | str", validated_config.get("timeout", 30))),
         headers=cast("dict[str, str]", validated_config.get("headers") or {}),
-        max_retries=int(cast("int | float | str", validated_config.get("max_retries", 3))),
+        max_retries=int(
+            cast("int | float | str", validated_config.get("max_retries", 3))
+        ),
         verify_ssl=bool(validated_config.get("verify_ssl", True)),
         follow_redirects=bool(validated_config.get("follow_redirects", True)),
     )
@@ -1655,6 +1660,7 @@ def build_query_from_params(params: dict[str, object] | object | None) -> FlextA
     REFACTORED: Uses Parameter Object pattern with extracted utilities
     to reduce complexity and improve maintainability.
     """
+
     # Helper to read attributes from params dict or dataclass with type safety
     def _get(field: str, default: object | None = None) -> object | None:
         if params is None:
@@ -1705,10 +1711,7 @@ def _process_sorts_param(sorts_val: object | None) -> list[dict[str, str]]:
     for item in sorts_list:
         if isinstance(item, dict):
             sort_data = cast("dict[str, object]", item)
-            sort_obj = {
-                k: str(v) for k, v in sort_data.items()
-                if k and v is not None
-            }
+            sort_obj = {k: str(v) for k, v in sort_data.items() if k and v is not None}
             result.append(sort_obj)
     return result
 

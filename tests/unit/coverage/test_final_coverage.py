@@ -114,7 +114,14 @@ class TestFinalCoverage:
         # Should contain connection error message
         assert any(
             keyword in result.error.lower()
-            for keyword in ["failed", "error", "connection", "session", "available", "invalid"]
+            for keyword in [
+                "failed",
+                "error",
+                "connection",
+                "session",
+                "available",
+                "invalid",
+            ]
         )
 
     def test_client_request_data_paths_conceptual(self) -> None:

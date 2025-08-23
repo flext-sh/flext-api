@@ -32,10 +32,9 @@ class HealthyTestService(FlextApiBaseService):
     @override
     async def _get_health_details(self) -> FlextResult[dict[str, object]]:
         """Health details that succeed."""
-        return FlextResult[dict[str, object]].ok({
-            "status": "healthy",
-            "message": "All systems operational"
-        })
+        return FlextResult[dict[str, object]].ok(
+            {"status": "healthy", "message": "All systems operational"}
+        )
 
 
 class FailingStartService(FlextApiBaseService):
@@ -56,10 +55,9 @@ class FailingStartService(FlextApiBaseService):
     @override
     async def _get_health_details(self) -> FlextResult[dict[str, object]]:
         """Health details that succeed."""
-        return FlextResult[dict[str, object]].ok({
-            "status": "not_started",
-            "message": "Service failed to start"
-        })
+        return FlextResult[dict[str, object]].ok(
+            {"status": "not_started", "message": "Service failed to start"}
+        )
 
 
 class FailingHealthService(FlextApiBaseService):
@@ -90,9 +88,9 @@ class TestBaseServiceMissingCoverage:
     async def test_service_start_failure_path(self) -> None:
         """Test service start failure path - covers error handling lines."""
         service = FailingStartService()
-        
+
         result = await service.start()
-        
+
         # Should fail with specific error
         assert not result.success
         assert "Start operation failed" in result.error
@@ -102,10 +100,10 @@ class TestBaseServiceMissingCoverage:
         """Test health check failure paths - covers health detail error lines."""
         service = FailingHealthService()
         await service.start()
-        
+
         # Test health check failure - this service has health details that fail
         health_result = await service.health_check()
-        
+
         # When health details fail, the health check itself may fail
         assert not health_result.success
         assert "Health check operation failed" in health_result.error
@@ -114,20 +112,20 @@ class TestBaseServiceMissingCoverage:
     async def test_service_concurrent_operations(self) -> None:
         """Test concurrent operations - covers concurrency paths."""
         service = HealthyTestService()
-        
+
         # Start service
         start_result = await service.start()
         assert start_result.success
-        
+
         # Try multiple concurrent health checks
         tasks = [
             service.health_check(),
             service.health_check(),
             service.health_check(),
         ]
-        
+
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         # All should succeed
         for result in results:
             assert not isinstance(result, Exception)
@@ -142,32 +140,32 @@ class TestBaseServiceMissingCoverage:
         """Test health check response structure - covers aggregation lines."""
         service = HealthyTestService()
         await service.start()
-        
+
         health_result = await service.health_check()
         assert health_result.success
-        
+
         health_data = health_result.value
-        
+
         # Verify basic structure (structure may vary based on implementation)
         assert "status" in health_data
         # Don't assume specific fields exist, just verify it's a valid health response
-        assert health_data["status"] in ["healthy", "degraded"]
-        
+        assert health_data["status"] in {"healthy", "degraded"}
+
         await service.stop()
 
     @pytest.mark.asyncio
     async def test_service_lifecycle_complete(self) -> None:
         """Test complete service lifecycle - covers various lifecycle lines."""
         service = HealthyTestService()
-        
+
         # Start service
         start_result = await service.start()
         assert start_result.success
-        
+
         # Health check
         health_result = await service.health_check()
         assert health_result.success
-        
+
         # Stop service
         stop_result = await service.stop()
         assert stop_result.success
@@ -177,14 +175,14 @@ class TestBaseServiceMissingCoverage:
         """Test service error handling robustness."""
         # Test with service that fails to start
         failing_service = FailingStartService()
-        
+
         start_result = await failing_service.start()
         assert not start_result.success
-        
+
         # Health check should still work
         health_result = await failing_service.health_check()
         assert health_result.success
-        
+
         # Stop should work even if start failed
         stop_result = await failing_service.stop()
         assert stop_result.success
@@ -194,28 +192,28 @@ class TestBaseServiceMissingCoverage:
         """Test health details with custom data structures."""
         service = HealthyTestService()
         await service.start()
-        
+
         health_result = await service.health_check()
         assert health_result.success
-        
+
         health_data = health_result.value
-        assert health_data["status"] in ["healthy", "degraded"]
-        
+        assert health_data["status"] in {"healthy", "degraded"}
+
         await service.stop()
 
     @pytest.mark.asyncio
     async def test_service_state_consistency(self) -> None:
         """Test service state consistency across operations."""
         service = HealthyTestService()
-        
+
         # Multiple start/stop cycles
         for _ in range(3):
             start_result = await service.start()
             assert start_result.success
-            
+
             health_result = await service.health_check()
             assert health_result.success
-            
+
             stop_result = await service.stop()
             assert stop_result.success
 
@@ -236,13 +234,15 @@ class CustomDetailsService(FlextApiBaseService):
     @override
     async def _get_health_details(self) -> FlextResult[dict[str, object]]:
         """Return complex health details."""
-        return FlextResult[dict[str, object]].ok({
-            "custom_metric": 42,
-            "service_info": "custom implementation",
-            "nested": {"level1": {"level2": "deep"}},
-            "list_data": [1, 2, 3],
-            "flag": True
-        })
+        return FlextResult[dict[str, object]].ok(
+            {
+                "custom_metric": 42,
+                "service_info": "custom implementation",
+                "nested": {"level1": {"level2": "deep"}},
+                "list_data": [1, 2, 3],
+                "flag": True,
+            }
+        )
 
 
 class TestComplexHealthScenarios:
@@ -253,10 +253,10 @@ class TestComplexHealthScenarios:
         """Test complex health details structure handling."""
         service = CustomDetailsService()
         await service.start()
-        
+
         health_result = await service.health_check()
         assert health_result.success
-        
+
         await service.stop()
 
     @pytest.mark.asyncio
@@ -264,13 +264,13 @@ class TestComplexHealthScenarios:
         """Test concurrent health checks."""
         service = HealthyTestService()
         await service.start()
-        
+
         # Run multiple health checks concurrently
         tasks = [service.health_check() for _ in range(5)]
         results = await asyncio.gather(*tasks)
-        
+
         # All should succeed
         for result in results:
             assert result.success
-        
+
         await service.stop()

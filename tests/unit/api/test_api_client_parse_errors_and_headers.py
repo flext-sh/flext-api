@@ -27,7 +27,9 @@ async def test_read_response_data_parse_errors() -> None:
             response = result.value
             # HTML content returned instead of JSON
             assert isinstance(response.value, str)
-            assert "html" in response.value.lower() or "doctype" in response.value.lower()
+            assert (
+                "html" in response.value.lower() or "doctype" in response.value.lower()
+            )
     finally:
         await client.close()
 

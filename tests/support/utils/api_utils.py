@@ -15,14 +15,18 @@ from flext_api import FlextApiClientRequest, FlextApiClientResponse
 T = TypeVar("T")
 
 
-def assert_flext_result_success(result: FlextResult[T], expected_value: T | None = None) -> None:
+def assert_flext_result_success(
+    result: FlextResult[T], expected_value: T | None = None
+) -> None:
     """Assert FlextResult is successful with optional value check."""
     assert result.success, f"Expected success but got error: {result.error}"
     if expected_value is not None:
         assert result.value == expected_value
 
 
-def assert_flext_result_failure(result: FlextResult[T], expected_error: str | None = None) -> None:
+def assert_flext_result_failure[T](
+    result: FlextResult[T], expected_error: str | None = None
+) -> None:
     """Assert FlextResult is failure with optional error message check."""
     assert not result.success, f"Expected failure but got success: {result.value}"
     if expected_error is not None:

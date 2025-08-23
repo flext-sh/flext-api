@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from pathlib import Path
 
 import pytest
@@ -49,7 +50,5 @@ async def test_file_backend_load_data_failure_and_close(
             pass
     finally:
         # Restore write permissions for cleanup
-        try:
+        with contextlib.suppress(OSError, PermissionError):
             readonly_path.chmod(stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)
-        except (OSError, PermissionError):
-            pass

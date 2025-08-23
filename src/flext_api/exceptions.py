@@ -54,8 +54,10 @@ class FlextApiErrorMixin:
 
     # Just declare the attributes exist for MyPy - flext-core provides the implementation
     if TYPE_CHECKING:
+
         @property
         def error_code(self) -> str: ...
+
         context: dict[str, object]
 
 

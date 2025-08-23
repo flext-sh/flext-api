@@ -13,7 +13,7 @@ from typing import TypeVar
 T = TypeVar("T")
 
 
-async def run_async_test(coro: Awaitable[T]) -> T:
+async def run_async_test[T](coro: Awaitable[T]) -> T:
     """Run async test with proper error handling."""
     try:
         return await coro
