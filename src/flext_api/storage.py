@@ -333,7 +333,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                     # When a class coroutine function is assigned directly to the instance,
                     # it becomes an unbound function and requires explicit self
                     # Explicit type annotation to avoid Unknown types in PyRight
-                    save_result = await FileStorageBackend[object]._save_data(self)
+                    save_result = await FileStorageBackend._save_data(self)
                 if save_result.is_failure:
                     return save_result
 
@@ -356,7 +356,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                         save_result: FlextResult[None] = await self._save_data()
                     except TypeError:
                         # Explicit type annotation to avoid Unknown types in PyRight
-                        save_result = await FileStorageBackend[object]._save_data(self)
+                        save_result = await FileStorageBackend._save_data(self)
                     if save_result.is_failure:
                         return FlextResult[bool].fail(
                             f"Failed to save after delete: {save_result.error}",
@@ -406,8 +406,8 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                     save_result: FlextResult[None] = await self._save_data()
                 except TypeError:
                     # Explicit type annotation to avoid Unknown types in PyRight
-                    save_result = await FileStorageBackend[object]._save_data(self)
-                if not save_result.success:
+                    save_result = await FileStorageBackend._save_data(self)
+                if not save_result:
                     return save_result
 
                 logger.info("Cleared all data from file storage")
@@ -589,7 +589,7 @@ class FlextApiStorage:
 
         # Direct delete operation
         result = await self._backend.delete(namespaced_key)
-        if not result.success:
+        if not result:
             return result
 
         # Remove from cache
@@ -612,7 +612,7 @@ class FlextApiStorage:
             namespaced_pattern = f"{self._config.namespace}:*"
 
         result = await self._backend.keys(namespaced_pattern)
-        if not result.success:
+        if not result:
             return result
 
         # Remove namespace prefix from returned keys

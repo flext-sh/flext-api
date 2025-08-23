@@ -370,6 +370,7 @@ from flext_api.base_service import (
     FlextApiBaseService,
     FlextApiBaseStreamingService,
 )
+from flext_api.utilities import FlextApiUtilities
 
 
 # Legacy client plugin function - fallback implementation
@@ -392,8 +393,8 @@ from flext_api.constants import (
 import flext_api.app as _app_module  # Trigger module loading
 
 api_app_module = _app_module  # Direct reference to loaded module
-# Create api_app alias for legacy compatibility
-api_app = api_app_module
+# Create api_app alias for legacy compatibility - reference the module, not the app instance
+api_app = _app_module
 
 
 # Legacy stubs for missing classes in tests
@@ -633,6 +634,7 @@ __all__: list[str] = [
     "FlextApiStorageError",
     "FlextApiStreamProtocol",
     "FlextApiTimeoutError",
+    "FlextApiUtilities",
     "FlextApiValidationError",
     "FlextApiValidatorProtocol",
     "FlextApiWebSocketProtocol",

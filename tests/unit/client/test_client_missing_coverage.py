@@ -50,7 +50,7 @@ class TestMissingClientCoverage:
         result = await plugin.after_request(request, response)
         assert isinstance(result, FlextApiClientResponse)
         assert result.status_code == 200
-        assert result.data == {"test": "data"}
+        assert result.value == {"test": "data"}
 
     @pytest.mark.asyncio
     async def test_plugin_on_error_proper_signature(self) -> None:

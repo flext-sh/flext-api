@@ -51,13 +51,13 @@ class TestFunctionalExamples:
             msg = f"Expected 2, got {len(filters)}"
             raise AssertionError(msg)
 
-        # Create client configuration
+        # Create client configuration using modern API
         client_config = {"base_url": "https://api.example.com", "timeout": 30}
-        client_result = api.flext_api_create_client(client_config)
+        client_result = api.create_client(client_config)
 
         # Should succeed
         assert client_result.success
-        assert client_result.data is not None
+        assert client_result.value is not None
 
     def test_client_configuration_examples(self) -> None:
         """Test various client configuration examples."""
@@ -182,7 +182,7 @@ class TestFunctionalExamples:
             # REAL storage get operation
             get_result = await storage.get("test_key")
             assert get_result.success
-            assert get_result.data == {"data": "test_value"}
+            assert get_result.value == {"data": "test_value"}
 
             # Test REAL query building with actual validation
             query_builder = FlextApiQueryBuilder()
@@ -227,14 +227,14 @@ class TestFunctionalExamples:
         # Test invalid configuration
         api = FlextApi()
 
-        # Test with empty configuration
-        result = api.flext_api_create_client({})
+        # Test with empty configuration using modern API
+        result = api.create_client({})
         assert not result.success
         assert result.error is not None
         assert "base_url" in result.error.lower()
 
-        # Test with invalid URL
-        result = api.flext_api_create_client({"base_url": "invalid-url"})
+        # Test with invalid URL using modern API
+        result = api.create_client({"base_url": "invalid-url"})
         assert not result.success
         assert result.error is not None
         assert "invalid" in result.error.lower()
@@ -266,8 +266,8 @@ class TestFunctionalExamples:
         )
 
         assert response.success is True
-        assert isinstance(response.data, dict)
-        assert response.data["id"] == 1
+        assert isinstance(response.value, dict)
+        assert response.value["id"] == 1
         assert response.message == "Resource created"
         assert isinstance(response.metadata, dict)
         assert response.metadata["request_id"] == "12345"

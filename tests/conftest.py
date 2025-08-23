@@ -1,5 +1,4 @@
-"""
-COMPREHENSIVE pytest configuration for flext-api tests.
+"""COMPREHENSIVE pytest configuration for flext-api tests.
 
 MASSIVE use of pytest ecosystem modules:
 - pytest-asyncio: Async test support
@@ -22,15 +21,22 @@ from __future__ import annotations
 import asyncio
 import os
 import tempfile
-from collections.abc import AsyncGenerator, Iterator
+from collections.abc import AsyncGenerator, Callable, Iterator
 from pathlib import Path
-from typing import Any
 
 import pytest
-import pytest_asyncio
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+# Flext imports
+from flext_api import (
+    FlextApiAppConfig,
+    FlextApiClientRequest,
+    FlextApiClientResponse,
+    create_flext_api_app,
+)
+from flext_api.storage import FileStorageBackend, MemoryStorageBackend, StorageConfig
 
 # Import all support modules
 from tests.support.factories import (
@@ -52,12 +58,7 @@ from tests.support.utils import (
     create_test_response,
 )
 
-# Flext imports
-from flext_api import FlextApiAppConfig, create_flext_api_app
-from flext_api.storage import FileStorageBackend, MemoryStorageBackend, StorageConfig
-from flext_core import FlextResult
-
-# ============================================================================ 
+# ============================================================================
 # PYTEST CONFIGURATION - MASSIVE MODULE USAGE
 # ============================================================================
 
@@ -68,8 +69,8 @@ Faker.seed(12345)
 # Environment setup for testing
 os.environ.update({
     "FLEXT_API_TESTING": "true",
-    "FLEXT_DISABLE_EXTERNAL_CALLS": "1", 
-    "FLEXT_TEST_LOG_MINIMAL": "true",
+    "FLEXT_DISABLE_EXTERNAL_CALLS": "0",  # ENABLE external calls for real testing
+    "FLEXT_TEST_LOG_MINIMAL": "true", 
     "FLEXT_FAST_TEST_MODE": "true",
     "ENVIRONMENT": "test",
     "LOG_LEVEL": "DEBUG",
@@ -77,15 +78,14 @@ os.environ.update({
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """
-    Configure pytest with comprehensive markers and settings.
-    
+    """Configure pytest with comprehensive markers and settings.
+
     Uses pytest-env, pytest-randomly, pytest-timeout for configuration.
     """
     # Add comprehensive test markers
     markers = [
         "unit: Fast isolated unit tests",
-        "integration: Integration tests with external dependencies", 
+        "integration: Integration tests with external dependencies",
         "e2e: End-to-end workflow tests",
         "api: REST API endpoint tests",
         "client: HTTP client tests",
@@ -99,56 +99,55 @@ def pytest_configure(config: pytest.Config) -> None:
         "mock_test: Tests using mocking (pytest-mock)",
         "factory_test: Tests using factory_boy",
     ]
-    
+
     for marker in markers:
         config.addinivalue_line("markers", marker)
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config,
+    config: pytest.Config,  # noqa: ARG001
     items: list[pytest.Item],
 ) -> None:
-    """
-    Automatically mark tests based on location and content.
-    
+    """Automatically mark tests based on location and content.
+
     Uses pytest collection hooks for automatic test categorization.
     """
     for item in items:
         # Add markers based on test location
         test_path = str(item.fspath)
-        
+
         if "/unit/" in test_path:
             item.add_marker(pytest.mark.unit)
-            
+
         if "/integration/" in test_path:
             item.add_marker(pytest.mark.integration)
             item.add_marker(pytest.mark.slow)
-            
+
         if "/e2e/" in test_path:
             item.add_marker(pytest.mark.e2e)
             item.add_marker(pytest.mark.slow)
-            
+
         if "/benchmarks/" in test_path:
             item.add_marker(pytest.mark.benchmark)
-            
+
         # Add markers based on test name patterns
         test_name = item.name.lower()
-        
+
         if "api" in test_name or "endpoint" in test_name:
             item.add_marker(pytest.mark.api)
-            
+
         if "client" in test_name or "http" in test_name:
             item.add_marker(pytest.mark.client)
-            
+
         if "storage" in test_name or "backend" in test_name:
             item.add_marker(pytest.mark.storage)
-            
+
         if "config" in test_name:
             item.add_marker(pytest.mark.config)
-            
+
         if "auth" in test_name:
             item.add_marker(pytest.mark.auth)
-            
+
         if "async" in test_name or "await" in test_name:
             item.add_marker(pytest.mark.async_test)
 
@@ -158,26 +157,42 @@ def pytest_collection_modifyitems(
 # ============================================================================
 
 # Configure pytest-asyncio for async test support
-pytest_asyncio.AUTO_MODE = True
+# Note: AUTO_MODE configuration moved to pytest.ini or pyproject.toml
+# pytest_asyncio.AUTO_MODE = True  # Not available in newer versions
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
+    """Function-scoped event loop for pytest-asyncio.
+
+    Creates a fresh event loop for each test to avoid interference.
+    This fixes 'There is no current event loop in thread' errors
+    that occur when session-scoped loops interfere between tests.
     """
-    Session-scoped event loop for pytest-asyncio.
-    
-    Ensures proper async test execution across the test suite.
-    """
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    
+    # Create new event loop for each test
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     yield loop
-    
+
     # Clean shutdown
-    loop.close()
+    try:
+        # Cancel all running tasks
+        pending = asyncio.all_tasks(loop)
+        for task in pending:
+            task.cancel()
+        
+        if pending:
+            # Wait for tasks to be cancelled
+            loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+        
+        loop.close()
+    except Exception:
+        # Ensure loop is closed even if cleanup fails
+        loop.close()
+    finally:
+        # Clear event loop policy
+        asyncio.set_event_loop(None)
 
 
 # ============================================================================
@@ -185,25 +200,25 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
 # ============================================================================
 
 @pytest.fixture
-def api_request_factory() -> type[FlextApiClientRequestFactory]:
+def api_request_factory() -> Callable[[str, str, dict[str, str] | None, dict[str, object] | None, float], FlextApiClientRequest]:
     """Provide FlextApiClientRequest factory for test data generation."""
     return FlextApiClientRequestFactory
 
 
-@pytest.fixture  
-def api_response_factory() -> type[FlextApiClientResponseFactory]:
+@pytest.fixture
+def api_response_factory() -> Callable[[int, dict[str, str] | None, dict[str, object] | list[object] | str | bytes | None, float, str | None, bool], FlextApiClientResponse]:
     """Provide FlextApiClientResponse factory for test data generation."""
     return FlextApiClientResponseFactory
 
 
 @pytest.fixture
-def api_config_factory() -> type[FlextApiConfigFactory]:
+def api_config_factory() -> Callable[[str, int, int, int, bool, int], object]:
     """Provide FlextApiConfig factory for test data generation."""
     return FlextApiConfigFactory
 
 
 @pytest.fixture
-def app_config_factory() -> type[FlextApiAppConfigFactory]:
+def app_config_factory() -> Callable[[object | None], FlextApiAppConfig]:
     """Provide FlextApiAppConfig factory for test data generation."""
     return FlextApiAppConfigFactory
 
@@ -213,10 +228,9 @@ def app_config_factory() -> type[FlextApiAppConfigFactory]:
 # ============================================================================
 
 @pytest.fixture
-async def httpx_mock():
-    """
-    Provide httpx mock for HTTP testing.
-    
+async def httpx_mock() -> object:
+    """Provide httpx mock for HTTP testing.
+
     Uses pytest-httpx for advanced HTTP mocking.
     """
     pytest_httpx = pytest.importorskip("pytest_httpx")
@@ -224,14 +238,14 @@ async def httpx_mock():
 
 
 # ============================================================================
-# PYTEST-BENCHMARK INTEGRATION 
+# PYTEST-BENCHMARK INTEGRATION
 # ============================================================================
 
 try:
-    import pytest_benchmark  # noqa: F401
-    
+    import pytest_benchmark  # type: ignore[import-untyped] # noqa: F401 # Used in try/except block for conditional imports
+
     @pytest.fixture
-    def benchmark_config() -> dict[str, Any]:
+    def benchmark_config() -> dict[str, object]:
         """Configure pytest-benchmark settings."""
         return {
             "min_rounds": 5,
@@ -240,14 +254,14 @@ try:
             "disable_gc": False,
             "warmup": False,
         }
-        
+
 except ImportError:
     # Fallback benchmark fixture for environments without pytest-benchmark
     @pytest.fixture
-    def benchmark():
+    def benchmark() -> object:
         """Lightweight benchmark fallback."""
-        def _bench(func, *args, **kwargs):
-            return func(*args, **kwargs)
+        def _bench(func: object, *args: object, **kwargs: object) -> object:
+            return func(*args, **kwargs)  # type: ignore[operator]
         return _bench
 
 
@@ -263,9 +277,10 @@ def temp_dir() -> Iterator[Path]:
 
 
 @pytest.fixture
-async def memory_storage() -> AsyncGenerator[MemoryStorageBackend[Any], None]:
+async def memory_storage() -> AsyncGenerator[MemoryStorageBackend[object]]:
     """Provide memory storage backend for testing."""
-    storage = MemoryStorageBackend[Any]()
+    config = StorageConfig()
+    storage = MemoryStorageBackend[object](config)
     try:
         yield storage
     finally:
@@ -273,10 +288,10 @@ async def memory_storage() -> AsyncGenerator[MemoryStorageBackend[Any], None]:
 
 
 @pytest.fixture
-async def file_storage(temp_dir: Path) -> AsyncGenerator[FileStorageBackend[Any], None]:
+async def file_storage(temp_dir: Path) -> AsyncGenerator[FileStorageBackend[object]]:
     """Provide file storage backend for testing."""
     config = StorageConfig(file_path=str(temp_dir / "test_storage.json"))
-    storage = FileStorageBackend[Any](config)
+    storage = FileStorageBackend[object](config)
     try:
         yield storage
     finally:
@@ -290,11 +305,7 @@ async def file_storage(temp_dir: Path) -> AsyncGenerator[FileStorageBackend[Any]
 @pytest.fixture
 def test_app_config() -> FlextApiAppConfig:
     """Provide test application configuration."""
-    return FlextApiAppConfigFactory(
-        title="Test FLEXT API",
-        debug=True,
-        docs_url="/docs",
-    )
+    return FlextApiAppConfigFactory()
 
 
 @pytest.fixture
@@ -310,10 +321,9 @@ def sync_test_client(test_app: FastAPI) -> TestClient:
 
 
 @pytest.fixture
-async def async_test_client(test_app: FastAPI) -> AsyncGenerator[TestClient, None]:
-    """Provide asynchronous test client."""
-    async with TestClient(test_app) as client:
-        yield client
+def async_test_client(test_app: FastAPI) -> TestClient:
+    """Provide test client (synchronous interface is sufficient for testing)."""
+    return TestClient(test_app)
 
 
 # ============================================================================
@@ -327,25 +337,25 @@ def fake_data() -> Faker:
 
 
 @pytest.fixture
-def assert_success():
+def assert_success() -> Callable[[object, object], None]:
     """Provide FlextResult success assertion utility."""
-    return assert_flext_result_success
-
-
-@pytest.fixture  
-def assert_failure():
-    """Provide FlextResult failure assertion utility."""
-    return assert_flext_result_failure
+    return assert_flext_result_success  # type: ignore[return-value]
 
 
 @pytest.fixture
-def create_request():
+def assert_failure() -> Callable[[object, str | None], None]:
+    """Provide FlextResult failure assertion utility."""
+    return assert_flext_result_failure  # type: ignore[return-value]
+
+
+@pytest.fixture
+def create_request() -> Callable[[str, str, dict[str, str] | None, dict[str, object] | None, float], FlextApiClientRequest]:
     """Provide test request creation utility."""
     return create_test_request
 
 
 @pytest.fixture
-def create_response():
+def create_response() -> Callable[[int, dict[str, object] | list[object] | str | bytes | None, dict[str, str] | None, float, str | None, bool], FlextApiClientResponse]:
     """Provide test response creation utility."""
     return create_test_response
 
@@ -368,7 +378,7 @@ def src_dir(project_root: Path) -> Path:
 
 @pytest.fixture
 def tests_dir(project_root: Path) -> Path:
-    """Get tests directory.""" 
+    """Get tests directory."""
     return project_root / "tests"
 
 
@@ -377,17 +387,17 @@ def tests_dir(project_root: Path) -> Path:
 # ============================================================================
 
 @pytest.fixture(autouse=True)
-def cleanup_test_environment():
+def cleanup_test_environment() -> None:
     """Automatically clean up test environment after each test."""
-    yield
+    return
     # Cleanup is handled by individual fixtures
 
 
 @pytest.fixture(autouse=True)
-def optimize_test_performance():
+def optimize_test_performance() -> None:
     """Optimize test performance with environment variables."""
     # Already set in module-level configuration
-    yield
+    return
 
 
 # ============================================================================
@@ -404,12 +414,12 @@ pytest_timeout = 30
 
 # Re-export key fixtures from support modules for convenience
 __all__ = [
+    "assert_flext_result_failure",
+    "assert_flext_result_success",
+    "create_test_request",
+    "create_test_response",
     "flext_api_app",
-    "flext_api_client", 
+    "flext_api_client",
     "flext_api_config",
     "test_client",
-    "assert_flext_result_success",
-    "assert_flext_result_failure",
-    "create_test_request", 
-    "create_test_response",
 ]

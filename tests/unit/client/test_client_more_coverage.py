@@ -53,8 +53,8 @@ async def test_read_response_data_real_json_parsing() -> None:
         response = res.value  # FlextResult[FlextApiClientResponse] -> response
 
         # Verify JSON parsing worked correctly
-        assert isinstance(response.data, dict)
+        assert isinstance(response.value, dict)
         # httpbin.org /json returns a slideshow example
-        assert "slideshow" in json.dumps(response.data)
+        assert "slideshow" in json.dumps(response.value)
     finally:
         await client.close()

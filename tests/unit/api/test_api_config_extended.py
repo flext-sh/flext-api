@@ -26,7 +26,7 @@ def test_create_api_settings_overrides_and_fail() -> None:
     """Test create api settings overrides and fail."""
     ok = create_api_settings(api_host="127.0.0.1", api_port=8081)
     assert ok.success
-    assert ok.data.api_host == "127.0.0.1"
+    assert ok.value.api_host == "127.0.0.1"
     bad = create_api_settings(api_port=9999999)
     assert not bad.success
 

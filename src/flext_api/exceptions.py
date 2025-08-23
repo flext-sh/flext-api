@@ -5,6 +5,7 @@ from __future__ import annotations
 import traceback
 from collections.abc import Mapping
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from flext_core import get_logger
 from flext_core.exceptions import (
@@ -44,11 +45,25 @@ class FlextApiErrorCodes(StrEnum):
 
 # keep runtime import context minimal for static typing only
 # ==============================================================================
+# API ERROR MIXIN FOR MYPY COMPATIBILITY
+# ==============================================================================
+
+
+class FlextApiErrorMixin:
+    """Mixin to provide MyPy-compatible access to flext-core error attributes."""
+
+    # Just declare the attributes exist for MyPy - flext-core provides the implementation
+    if TYPE_CHECKING:
+        error_code: str
+        context: dict[str, object]
+
+
+# ==============================================================================
 # BASE API ERROR
 # ==============================================================================
 
 
-class FlextApiError(FlextError):
+class FlextApiError(FlextApiErrorMixin, FlextError):
     """Base API error with HTTP status code support using FlextErrorMixin pattern."""
 
     def __init__(
@@ -70,7 +85,7 @@ class FlextApiError(FlextError):
 
         super().__init__(
             message,
-            code=code or FlextApiErrorCodes.GENERIC_API_ERROR,
+            error_code=code or FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -93,7 +108,7 @@ class FlextApiError(FlextError):
 # ==============================================================================
 
 
-class FlextApiValidationError(FlextValidationError):
+class FlextApiValidationError(FlextApiErrorMixin, FlextValidationError):
     """Validation error in API with field-specific context."""
 
     def __init__(
@@ -137,9 +152,7 @@ class FlextApiValidationError(FlextValidationError):
 
         super().__init__(
             message,
-            field=field,
-            value=truncated_value,
-            code="FLEXT_3001",
+            error_code="FLEXT_3001",
             context=merged_context,
         )
 
@@ -158,7 +171,7 @@ class FlextApiValidationError(FlextValidationError):
         }
 
 
-class FlextApiAuthenticationError(FlextAuthenticationError):
+class FlextApiAuthenticationError(FlextApiErrorMixin, FlextAuthenticationError):
     """Authentication error in API with auth method context."""
 
     def __init__(
@@ -194,9 +207,7 @@ class FlextApiAuthenticationError(FlextAuthenticationError):
         )
         super().__init__(
             formatted_message,
-            service="flext_api",
-            user_id=None,
-            code="AUTH_ERROR",
+            error_code="AUTH_ERROR",
             context=merged_context,
         )
 
@@ -243,12 +254,12 @@ class FlextApiAuthorizationError(FlextApiError):
         super().__init__(
             f"Authorization: {message}",
             status_code=403,
-            code=FlextApiErrorCodes.GENERIC_API_ERROR,
+            error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
 
-class FlextApiConfigurationError(FlextConfigurationError):
+class FlextApiConfigurationError(FlextApiErrorMixin, FlextConfigurationError):
     """Configuration error in API with config key context."""
 
     def __init__(
@@ -270,6 +281,8 @@ class FlextApiConfigurationError(FlextConfigurationError):
         merged_context.update(extra_context)
 
         # Add configuration-specific context
+        if config_key is not None:
+            merged_context["config_key"] = config_key
         if expected_type is not None:
             merged_context["expected_type"] = expected_type
         if actual_value is not None:
@@ -278,9 +291,7 @@ class FlextApiConfigurationError(FlextConfigurationError):
 
         super().__init__(
             message,
-            config_key=config_key,
-            config_file=None,
-            code="CONFIG_ERROR",
+            error_code="CONFIG_ERROR",
             context=merged_context,
         )
 
@@ -298,7 +309,7 @@ class FlextApiConfigurationError(FlextConfigurationError):
         }
 
 
-class FlextApiConnectionError(FlextConnectionError):
+class FlextApiConnectionError(FlextApiErrorMixin, FlextConnectionError):
     """Connection error in API with network context."""
 
     def __init__(
@@ -333,9 +344,7 @@ class FlextApiConnectionError(FlextConnectionError):
 
         super().__init__(
             message,
-            service="flext_api_connection",
-            endpoint=None,
-            code="FLEXT_2001",
+            error_code="FLEXT_2001",
             context=merged_context,
         )
 
@@ -353,7 +362,7 @@ class FlextApiConnectionError(FlextConnectionError):
         }
 
 
-class FlextApiProcessingError(FlextProcessingError):
+class FlextApiProcessingError(FlextApiErrorMixin, FlextProcessingError):
     """Processing error in API with operation context."""
 
     def __init__(
@@ -375,6 +384,8 @@ class FlextApiProcessingError(FlextProcessingError):
         merged_context.update(extra_context)
 
         # Add processing-specific context
+        if operation is not None:
+            merged_context["operation"] = operation
         if endpoint is not None:
             merged_context["endpoint"] = endpoint
         if processing_stage is not None:
@@ -383,9 +394,7 @@ class FlextApiProcessingError(FlextProcessingError):
 
         super().__init__(
             message,
-            business_rule="flext_api_processing",
-            operation=operation,
-            code="PROCESSING_ERROR",
+            error_code="PROCESSING_ERROR",
             context=merged_context,
         )
 
@@ -403,7 +412,7 @@ class FlextApiProcessingError(FlextProcessingError):
         }
 
 
-class FlextApiTimeoutError(FlextTimeoutError):
+class FlextApiTimeoutError(FlextApiErrorMixin, FlextTimeoutError):
     """Timeout error in API with timeout context."""
 
     def __init__(
@@ -439,10 +448,8 @@ class FlextApiTimeoutError(FlextTimeoutError):
             merged_context["timeout_seconds"] = float(timeout_seconds)
 
         super().__init__(
-            message=message,
-            service="flext_api_service",
-            timeout_seconds=timeout_seconds,
-            code="FLEXT_2002",
+            message,
+            error_code="FLEXT_2002",
             context=merged_context,
         )
 
@@ -495,7 +502,7 @@ class FlextApiRequestError(FlextApiError):
         super().__init__(
             f"API request: {message}",
             status_code=status_code,
-            code=FlextApiErrorCodes.GENERIC_API_ERROR,
+            error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -528,7 +535,7 @@ class FlextApiResponseError(FlextApiError):
         super().__init__(
             f"API response: {message}",
             status_code=status_code,
-            code=FlextApiErrorCodes.GENERIC_API_ERROR,
+            error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -566,7 +573,7 @@ class FlextApiStorageError(FlextApiError):
         super().__init__(
             f"API storage: {message}",
             status_code=status_code,
-            code=FlextApiErrorCodes.GENERIC_API_ERROR,
+            error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -604,7 +611,7 @@ class FlextApiBuilderError(FlextApiError):
         super().__init__(
             f"API builder: {message}",
             status_code=status_code,
-            code=FlextApiErrorCodes.GENERIC_API_ERROR,
+            error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -641,7 +648,7 @@ class FlextApiRateLimitError(FlextApiError):
         super().__init__(
             f"Rate limit: {message}",
             status_code=429,
-            code=FlextApiErrorCodes.GENERIC_API_ERROR,
+            error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 
@@ -675,7 +682,7 @@ class FlextApiNotFoundError(FlextApiError):
         super().__init__(
             f"Not found: {message}",
             status_code=404,
-            code=FlextApiErrorCodes.GENERIC_API_ERROR,
+            error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
             context=merged_context,
         )
 

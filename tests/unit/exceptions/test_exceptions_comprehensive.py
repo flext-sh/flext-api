@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import (
+from flext_core.exceptions import (
     FlextAuthenticationError,
     FlextConfigurationError,
     FlextConnectionError,
@@ -53,7 +53,7 @@ class TestFlextApiError:
         error = FlextApiError("Error occurred", endpoint="/api/users")
 
         assert str(error) == "[FLEXT_API_ERROR] Error occurred"
-        assert error.context["endpoint"] == "/api/users"
+        assert error.context["context"]["endpoint"] == "/api/users"
 
     def test_creation_with_additional_context(self) -> None:
         """Test FlextApiError with additional context kwargs."""
@@ -65,9 +65,9 @@ class TestFlextApiError:
         )
 
         assert str(error) == "[FLEXT_API_ERROR] Error occurred"
-        assert error.context["endpoint"] == "/api/users"
-        assert error.context["user_id"] == 123
-        assert error.context["action"] == "create"
+        assert error.context["context"]["endpoint"] == "/api/users"
+        assert error.context["context"]["user_id"] == 123
+        assert error.context["context"]["action"] == "create"
 
     def test_default_message(self) -> None:
         """Test FlextApiError with default message."""
@@ -107,7 +107,7 @@ class TestFlextApiValidationError:
         assert str(error) == "[FLEXT_3001] Invalid data"
         assert error.validation_details["field"] == "email"
         assert error.validation_details["value"] == "invalid-email"
-        assert error.context["endpoint"] == "/api/users"
+        assert error.context["context"]["endpoint"] == "/api/users"
 
     def test_long_value_truncation(self) -> None:
         """Test validation error truncates long values."""
@@ -145,7 +145,7 @@ class TestFlextApiAuthenticationError:
         error = FlextApiAuthenticationError("Invalid token", auth_method="Bearer")
 
         assert str(error) == "[AUTH_ERROR] flext_api: Invalid token"
-        assert error.context["auth_method"] == "Bearer"
+        assert error.context["context"]["auth_method"] == "Bearer"
 
     def test_creation_with_endpoint(self) -> None:
         """Test authentication error with endpoint context."""
@@ -156,8 +156,8 @@ class TestFlextApiAuthenticationError:
         )
 
         assert str(error) == "[AUTH_ERROR] flext_api: Access denied"
-        assert error.context["auth_method"] == "API Key"
-        assert error.context["endpoint"] == "/api/admin"
+        assert error.context["context"]["auth_method"] == "API Key"
+        assert error.context["context"]["endpoint"] == "/api/admin"
 
     def test_default_message(self) -> None:
         """Test authentication error with default message."""
@@ -184,7 +184,7 @@ class TestFlextApiConfigurationError:
         )
 
         assert str(error) == "[CONFIG_ERROR] Missing required setting"
-        assert error.context["config_key"] == "api_secret"
+        assert error.context["context"]["config_key"] == "api_secret"
 
     def test_creation_with_additional_context(self) -> None:
         """Test configuration error with additional context."""
@@ -196,9 +196,9 @@ class TestFlextApiConfigurationError:
         )
 
         assert str(error) == "[CONFIG_ERROR] Invalid port"
-        assert error.context["config_key"] == "api_port"
-        assert error.context["expected_type"] == "int"
-        assert error.context["actual_value"] == "invalid"
+        assert error.context["context"]["config_key"] == "api_port"
+        assert error.context["context"]["expected_type"] == "int"
+        assert error.context["context"]["actual_value"] == "invalid"
 
     def test_default_message(self) -> None:
         """Test configuration error with default message."""
@@ -226,8 +226,8 @@ class TestFlextApiConnectionError:
         )
 
         assert str(error) == "[FLEXT_2001] Cannot connect to server"
-        assert error.context["host"] == "api.example.com"
-        assert error.context["port"] == 443
+        assert error.context["context"]["host"] == "api.example.com"
+        assert error.context["context"]["port"] == 443
 
     def test_creation_with_additional_context(self) -> None:
         """Test connection error with additional context."""
@@ -239,9 +239,9 @@ class TestFlextApiConnectionError:
         )
 
         assert str(error) == "[FLEXT_2001] SSL handshake failed"
-        assert error.context["host"] == "secure.api.com"
-        assert error.context["port"] == 443
-        assert error.context["ssl_error"] == "Certificate verification failed"
+        assert error.context["context"]["host"] == "secure.api.com"
+        assert error.context["context"]["port"] == 443
+        assert error.context["context"]["ssl_error"] == "Certificate verification failed"
 
     def test_default_message(self) -> None:
         """Test connection error with default message."""
@@ -268,7 +268,7 @@ class TestFlextApiProcessingError:
         )
 
         assert str(error) == "[PROCESSING_ERROR] Data transformation failed"
-        assert error.context["operation"] == "json_transform"
+        assert error.context["context"]["operation"] == "json_transform"
 
     def test_creation_with_endpoint(self) -> None:
         """Test processing error with endpoint context."""
@@ -279,8 +279,8 @@ class TestFlextApiProcessingError:
         )
 
         assert str(error) == "[PROCESSING_ERROR] Query execution failed"
-        assert error.context["operation"] == "database_query"
-        assert error.context["endpoint"] == "/api/reports"
+        assert error.context["context"]["operation"] == "database_query"
+        assert error.context["context"]["endpoint"] == "/api/reports"
 
     def test_default_message(self) -> None:
         """Test processing error with default message."""
@@ -308,8 +308,8 @@ class TestFlextApiTimeoutError:
         )
 
         assert str(error) == "[FLEXT_2002] Operation exceeded timeout"
-        assert error.context["endpoint"] == "/api/data/export"
-        assert error.context["timeout_seconds"] == 30.5
+        assert error.context["context"]["endpoint"] == "/api/data/export"
+        assert error.context["context"]["timeout_seconds"] == 30.5
 
     def test_creation_with_additional_context(self) -> None:
         """Test timeout error with additional context."""
@@ -321,9 +321,9 @@ class TestFlextApiTimeoutError:
         )
 
         assert str(error) == "[FLEXT_2002] Database query timeout"
-        assert error.context["endpoint"] == "/api/search"
-        assert error.context["timeout_seconds"] == 15.0
-        assert error.context["query_type"] == "complex_join"
+        assert error.context["context"]["endpoint"] == "/api/search"
+        assert error.context["context"]["timeout_seconds"] == 15.0
+        assert error.context["context"]["query_type"] == "complex_join"
 
     def test_default_message(self) -> None:
         """Test timeout error with default message."""
@@ -351,8 +351,8 @@ class TestFlextApiRequestError:
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API request: Invalid request format"
-        assert error.context["method"] == "POST"
-        assert error.context["endpoint"] == "/api/users"
+        assert error.context["context"]["method"] == "POST"
+        assert error.context["context"]["endpoint"] == "/api/users"
 
     def test_creation_with_status_code(self) -> None:
         """Test request error with status code context."""
@@ -364,9 +364,9 @@ class TestFlextApiRequestError:
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API request: Client error"
-        assert error.context["method"] == "GET"
-        assert error.context["endpoint"] == "/api/data"
-        assert error.context["status_code"] == 400
+        assert error.context["context"]["method"] == "GET"
+        assert error.context["context"]["endpoint"] == "/api/data"
+        assert error.context["context"]["status_code"] == 400
 
     def test_default_message(self) -> None:
         """Test request error with default message."""
@@ -390,7 +390,7 @@ class TestFlextApiResponseError:
         error = FlextApiResponseError("Server error", status_code=500)
 
         assert str(error) == "[FLEXT_API_ERROR] API response: Server error"
-        assert error.context["status_code"] == 500
+        assert error.context["context"]["status_code"] == 500
 
     def test_creation_with_response_body(self) -> None:
         """Test response error with response body context."""
@@ -401,8 +401,8 @@ class TestFlextApiResponseError:
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API response: Parse error"
-        assert error.context["status_code"] == 422
-        assert error.context["response_body"] == '{"error": "validation failed"}'
+        assert error.context["context"]["status_code"] == 422
+        assert error.context["context"]["response_body"] == '{"error": "validation failed"}'
 
     def test_long_response_body_truncation(self) -> None:
         """Test response error truncates long response bodies."""
@@ -410,8 +410,8 @@ class TestFlextApiResponseError:
         error = FlextApiResponseError("Large response error", response_body=long_body)
 
         assert str(error) == "[FLEXT_API_ERROR] API response: Large response error"
-        assert len(error.context["response_body"]) == 200
-        assert error.context["response_body"] == "x" * 200
+        assert len(error.context["context"]["response_body"]) == 200
+        assert error.context["context"]["response_body"] == "x" * 200
 
     def test_default_message(self) -> None:
         """Test response error with default message."""
@@ -435,7 +435,7 @@ class TestFlextApiStorageError:
         error = FlextApiStorageError("Write operation failed", storage_type="redis")
 
         assert str(error) == "[FLEXT_API_ERROR] API storage: Write operation failed"
-        assert error.context["storage_type"] == "redis"
+        assert error.context["context"]["storage_type"] == "redis"
 
     def test_creation_with_operation(self) -> None:
         """Test storage error with operation context."""
@@ -446,8 +446,8 @@ class TestFlextApiStorageError:
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API storage: Cache miss"
-        assert error.context["storage_type"] == "memcached"
-        assert error.context["operation"] == "get"
+        assert error.context["context"]["storage_type"] == "memcached"
+        assert error.context["context"]["operation"] == "get"
 
     def test_creation_with_additional_context(self) -> None:
         """Test storage error with additional context."""
@@ -460,10 +460,10 @@ class TestFlextApiStorageError:
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API storage: Connection pool exhausted"
-        assert error.context["storage_type"] == "postgresql"
-        assert error.context["operation"] == "connect"
-        assert error.context["pool_size"] == 10
-        assert error.context["active_connections"] == 10
+        assert error.context["context"]["storage_type"] == "postgresql"
+        assert error.context["context"]["operation"] == "connect"
+        assert error.context["context"]["pool_size"] == 10
+        assert error.context["context"]["active_connections"] == 10
 
     def test_default_message(self) -> None:
         """Test storage error with default message."""
@@ -490,7 +490,7 @@ class TestFlextApiBuilderError:
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API builder: Invalid query construction"
-        assert error.context["builder_step"] == "filter_validation"
+        assert error.context["context"]["builder_step"] == "filter_validation"
 
     def test_creation_with_additional_context(self) -> None:
         """Test builder error with additional context."""
@@ -502,9 +502,9 @@ class TestFlextApiBuilderError:
         )
 
         assert str(error) == "[FLEXT_API_ERROR] API builder: Response build failed"
-        assert error.context["builder_step"] == "pagination"
-        assert error.context["expected_type"] == "int"
-        assert error.context["actual_value"] == "invalid"
+        assert error.context["context"]["builder_step"] == "pagination"
+        assert error.context["context"]["expected_type"] == "int"
+        assert error.context["context"]["actual_value"] == "invalid"
 
     def test_default_message(self) -> None:
         """Test builder error with default message."""

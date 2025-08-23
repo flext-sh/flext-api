@@ -50,7 +50,7 @@ async def test_storage_set_get_via_factory() -> None:
     assert (await storage.set("k", "v")).success
     got = await storage.get("k")
     assert got.success
-    assert got.data == "v"
+    assert got.value == "v"
 
 
 def test_deprecated_create_api_service_and_client_paths() -> None:
@@ -60,15 +60,15 @@ def test_deprecated_create_api_service_and_client_paths() -> None:
     svc = create_api_service()
     assert isinstance(svc, FlextApi)
 
-    # Deprecated flext_api_create_client success
-    ok = api.flext_api_create_client({"base_url": "https://example.org"})
+    # Use modern API instead of deprecated create_client
+    ok = api.create_client({"base_url": "https://example.org"})
     assert ok.success
-    assert ok.data is not None
+    assert ok.value is not None
 
-    # Deprecated flext_api_create_client failure
-    bad = api.flext_api_create_client({"base_url": ""})
+    # Use modern API for failure case
+    bad = api.create_client({"base_url": ""})
     assert not bad.success
-    assert "Failed to create client" in (bad.error or "")
+    assert "Invalid client configuration" in (bad.error or "")
 
 
 @pytest.mark.asyncio

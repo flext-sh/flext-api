@@ -1,5 +1,4 @@
-"""
-File system testing utilities for flext-api.
+"""File system testing utilities for flext-api.
 
 Provides file creation and manipulation utilities for testing.
 """
@@ -9,10 +8,9 @@ from __future__ import annotations
 import json
 import stat
 from pathlib import Path
-from typing import Any
 
 
-def create_temp_json_file(path: Path, data: dict[str, Any]) -> Path:
+def create_temp_json_file(path: Path, data: dict[str, object]) -> Path:
     """Create temporary JSON file with data."""
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     return path

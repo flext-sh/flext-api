@@ -4,17 +4,22 @@ from __future__ import annotations
 
 import inspect
 
-from flext_api import api_app as api_app_module
+# Import functions directly from the app module
+from flext_api.app import (
+    create_flext_api_app_with_settings,
+    main,
+    run_development_server,
+    run_production_server,
+)
 
 
 def test_run_development_server_function_exists() -> None:
     """Test that development server function exists and can be called - REAL function validation."""
     # Test that the function exists and is callable
-    assert hasattr(api_app_module, "run_development_server")
-    assert callable(api_app_module.run_development_server)
+    assert callable(run_development_server)
 
     # Test the function signature by inspecting it
-    sig = inspect.signature(api_app_module.run_development_server)
+    sig = inspect.signature(run_development_server)
 
     # Verify expected parameters exist
     assert "host" in sig.parameters
@@ -31,11 +36,10 @@ def test_run_development_server_function_exists() -> None:
 def test_run_production_server_function_exists() -> None:
     """Test that production server function exists and can be called - REAL function validation."""
     # Test that the function exists and is callable
-    assert hasattr(api_app_module, "run_production_server")
-    assert callable(api_app_module.run_production_server)
+    assert callable(run_production_server)
 
     # Test the function signature
-    sig = inspect.signature(api_app_module.run_production_server)
+    sig = inspect.signature(run_production_server)
 
     # Verify expected parameters exist
     assert "host" in sig.parameters
@@ -55,18 +59,17 @@ def test_run_production_server_function_exists() -> None:
 
 def test_create_flext_api_app_with_settings_success() -> None:
     """App factory with debug flag returns app with state config."""
-    app = api_app_module.create_flext_api_app_with_settings(debug=True)
+    app = create_flext_api_app_with_settings(debug=True)
     assert hasattr(app.state, "config")
 
 
 def test_create_flext_api_app_with_settings_validation() -> None:
     """Test REAL settings validation and app creation - NO MOCKS."""
     # Test that the function exists and is callable
-    assert hasattr(api_app_module, "create_flext_api_app_with_settings")
-    assert callable(api_app_module.create_flext_api_app_with_settings)
+    assert callable(create_flext_api_app_with_settings)
 
     # Test function signature
-    sig = inspect.signature(api_app_module.create_flext_api_app_with_settings)
+    sig = inspect.signature(create_flext_api_app_with_settings)
 
     # Should accept **kwargs for settings overrides
     assert "settings_overrides" in sig.parameters
@@ -75,19 +78,19 @@ def test_create_flext_api_app_with_settings_validation() -> None:
 
     # Test REAL app creation with various settings
     # Test with debug=True
-    app_debug = api_app_module.create_flext_api_app_with_settings(debug=True)
+    app_debug = create_flext_api_app_with_settings(debug=True)
 
     # Validate real app structure
     assert app_debug is not None
     assert hasattr(app_debug, "state"), "App should have state attribute"
 
     # Test with debug=False
-    app_prod = api_app_module.create_flext_api_app_with_settings(debug=False)
+    app_prod = create_flext_api_app_with_settings(debug=False)
     assert app_prod is not None
     assert hasattr(app_prod, "state")
 
     # Test with environment setting
-    app_env = api_app_module.create_flext_api_app_with_settings(environment="test")
+    app_env = create_flext_api_app_with_settings(environment="test")
     assert app_env is not None
 
     # Apps should be different instances
@@ -98,11 +101,10 @@ def test_create_flext_api_app_with_settings_validation() -> None:
 def test_main_entrypoint_function_exists() -> None:
     """Test that main entrypoint function exists and is properly structured - REAL validation."""
     # Test that main function exists
-    assert hasattr(api_app_module, "main")
-    assert callable(api_app_module.main)
+    assert callable(main)
 
     # Test the function signature
-    sig = inspect.signature(api_app_module.main)
+    sig = inspect.signature(main)
 
     # Main should typically accept no required arguments
     required_params = [p for p in sig.parameters.values() if p.default == p.empty]
@@ -110,10 +112,4 @@ def test_main_entrypoint_function_exists() -> None:
 
     # Test that we can import the module where main is defined
     # This validates that all dependencies are properly available
-    assert api_app_module.__name__ is not None
-
-    # Test that the module has proper structure for a CLI entrypoint
-    module_attrs = dir(api_app_module)
-    expected_attrs = ["main", "run_development_server", "run_production_server"]
-    for attr in expected_attrs:
-        assert attr in module_attrs, f"Missing expected attribute: {attr}"
+    assert main.__module__ is not None

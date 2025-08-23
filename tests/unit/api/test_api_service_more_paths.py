@@ -14,7 +14,7 @@ async def test_flext_api_health_check_sync_and_info() -> None:
     # health_check returns coroutine when loop is running; call compat sync wrapper
     res = api.health_check_sync()
     assert res.success
-    assert isinstance(res.data, dict)
+    assert isinstance(res.value, dict)
     info = api.get_service_info()
     assert info["name"] == "FlextApi"
     assert "version" in info

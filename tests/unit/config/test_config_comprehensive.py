@@ -310,7 +310,7 @@ class TestCreateApiSettingsFactory:
         # Test FlextResult interface
         assert hasattr(result, "success")
         assert hasattr(result, "is_failure")
-        assert hasattr(result, "data")
+        assert hasattr(result, "value")
         assert hasattr(result, "error")
 
         # Test success case
@@ -323,7 +323,7 @@ class TestCreateApiSettingsFactory:
         failed_result = create_api_settings(api_port="invalid")
         assert failed_result.success is False
         assert failed_result.is_failure is True
-        assert failed_result.value is None
+        assert failed_result.unwrap_or(None) is None  # Use unwrap_or for safe access
         assert failed_result.error is not None
 
 

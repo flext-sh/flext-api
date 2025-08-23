@@ -1,5 +1,4 @@
-"""
-Utility functions for flext-api testing.
+"""Utility functions for flext-api testing.
 
 Provides common testing utilities following SOLID principles
 and flext-core patterns.
@@ -24,7 +23,7 @@ from tests.support.utils.file_utils import (
 
 __all__ = [
     "assert_flext_result_success",
-    "assert_flext_result_failure", 
+    "assert_flext_result_failure",
     "create_test_request",
     "create_test_response",
     "run_async_test",

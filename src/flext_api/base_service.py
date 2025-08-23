@@ -62,14 +62,14 @@ class FlextApiBaseService(
 
             # Validate configuration
             config_result = self.validate_config()
-            if not config_result.success:
+            if not config_result:
                 return FlextResult[None].fail(
                     f"Configuration validation failed: {config_result.error}",
                 )
 
             # Perform service-specific startup
             startup_result = await self._do_start()
-            if not startup_result.success:
+            if not startup_result:
                 return startup_result
 
             # Update state
@@ -88,7 +88,7 @@ class FlextApiBaseService(
 
             # Perform service-specific shutdown
             shutdown_result = await self._do_stop()
-            if not shutdown_result.success:
+            if not shutdown_result:
                 logger.warning(
                     "Service shutdown had issues",
                     service=self.service_name,
@@ -115,14 +115,13 @@ class FlextApiBaseService(
                 "is_running": self.is_running,
             }
 
-            # Get service-specific health details
+            # Get service-specific health details using unwrap_or pattern
             details_result = await self._get_health_details()
-            if details_result.success:
-                health_info.update(details_result.value)
-            elif details_result.is_failure:
+            if details_result.is_failure:
                 return FlextResult[dict[str, object]].fail(
                     details_result.error or "Health details failed"
                 )
+            health_info.update(details_result.unwrap_or({}))
 
             return FlextResult[dict[str, object]].ok(health_info)
         except Exception as e:
@@ -182,80 +181,86 @@ class FlextApiBaseClientService(
         params: Mapping[str, str] | None = None,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Make an HTTP request with plugin processing."""
-        try:
-            # Prepare headers
-            request_headers = dict(headers) if headers else {}
+        # Prepare headers - decorator handles exceptions
+        request_headers = dict(headers) if headers else {}
 
-            # Apply before_request plugins
-            for plugin in self.plugins:
-                # Create context for plugin with request information - type-safe dict creation
-                request_context: dict[str, object] = {
-                    "method": str(method),
-                    "url": str(url),
-                    "headers": request_headers,
-                    "data": data if isinstance(data, dict) else {},
-                    "json": json or {},
-                    "params": dict(params) if params else {},
-                }
-                plugin_result = await plugin.before_request(
-                    request_context, request_context
-                )
-                if isinstance(plugin_result, FlextResult) and not plugin_result.success:
-                    return FlextResult[FlextTypes.Core.JsonDict].fail(
-                        f"Plugin failed: {plugin_result.error or 'Unknown plugin error'}"
-                    )
-
-            # Execute request (implemented by subclass)
-            response_result = await self._execute_request_with_timeout(
-                method=method,
-                url=url,
-                headers=request_headers,
-                data=data,
-                json=json,
-                params=params,
-                timeout_seconds=None,
+        # Apply before_request plugins
+        for plugin in self.plugins:
+            # Create context for plugin with request information - type-safe dict creation
+            request_context: dict[str, object] = {
+                "method": str(method),
+                "url": str(url),
+                "headers": request_headers,
+                "data": data if isinstance(data, dict) else {},
+                "json": json or {},
+                "params": dict(params) if params else {},
+            }
+            plugin_result = await plugin.before_request(
+                request_context, request_context
             )
+            if isinstance(plugin_result, FlextResult) and not plugin_result:
+                error_msg = f"Plugin failed: {plugin_result.error or 'Unknown plugin error'}"
+                raise RuntimeError(error_msg)
 
-            if not response_result.success:
-                return response_result
+        # Execute request (implemented by subclass)
+        response_result = await self._execute_request_with_timeout(
+            method=method,
+            url=url,
+            headers=request_headers,
+            data=data,
+            json=json,
+            params=params,
+            timeout_seconds=None,
+        )
 
-            # Apply after_response plugins
-            response_data: FlextTypes.Core.JsonDict = response_result.value or {}
-            for plugin in self.plugins:
-                # Create context for plugin with response information - type-safe dict creation
-                response_context: dict[str, object] = {
-                    "response": response_data,
-                    "method": str(method),
-                    "url": str(url),
-                }
-                after_plugin_result = await plugin.after_response(
-                    response_data, response_context
-                )
-                if (
-                    isinstance(after_plugin_result, FlextResult)
-                    and after_plugin_result.success
-                ):
-                    # Type-safe extraction with explicit typing
-                    plugin_response: object = after_plugin_result.value
-                    if isinstance(plugin_response, dict):
-                        # Type-safe dict comprehension with explicit object typing
-                        response_data: dict[str, object] = {
-                            str(k): v
-                            for k, v in plugin_response.items()
-                            if k is not None and isinstance(k, (str, int, float, bool))
-                        }
-                elif isinstance(after_plugin_result, dict):
-                    # Direct dict response from plugin with type safety
-                    response_data = {
-                        str(k): v
-                        for k, v in after_plugin_result.items()
-                        if k is not None and isinstance(k, (str, int, float, bool))
-                    }
+        if not response_result:
+            raise RuntimeError(response_result.error or "Request execution failed")
 
+        # Apply after_response plugins - use modern FlextResult.value
+        response_data: FlextTypes.Core.JsonDict = response_result.value
+        for plugin in self.plugins:
+            # Create context for plugin with response information - type-safe dict creation
+            response_context: dict[str, object] = {
+                "response": response_data,
+                "method": str(method),
+                "url": str(url),
+            }
+            after_plugin_result = await plugin.after_response(
+                response_data, response_context
+            )
+            if (
+                isinstance(after_plugin_result, FlextResult)
+                and after_plugin_result
+            ):
+                # Type-safe extraction with explicit typing
+                plugin_response: object = after_plugin_result.value
+                if isinstance(plugin_response, dict):
+                    # Type-safe dict iteration with explicit object typing
+                    updated_response_data: dict[str, object] = {}
+                    # Cast to specific types for PyRight type inference
+                    dict_data = cast("dict[str, object]", plugin_response)
+                    for response_key, response_value in dict_data.items():
+                        if response_key is not None and isinstance(response_key, (str, int, float, bool)):
+                            response_key_str: str = str(response_key)
+                            updated_response_data[response_key_str] = response_value
+                    response_data = updated_response_data
+            elif isinstance(after_plugin_result, dict):
+                # Direct dict response from plugin with type safety
+                typed_response_data: dict[str, object] = {}
+                # Cast to specific types for PyRight type inference
+                dict_data = cast("dict[str, object]", after_plugin_result)
+                for result_key, result_value in dict_data.items():
+                    if result_key is not None and isinstance(result_key, (str, int, float, bool)):
+                        result_key_str: str = str(result_key)
+                        typed_response_data[result_key_str] = result_value
+                response_data = typed_response_data
+
+        # Manual FlextResult wrapper for type safety
+        try:
             return FlextResult[FlextTypes.Core.JsonDict].ok(response_data)
         except Exception as e:
-            logger.exception("Request failed", method=method, url=url)
-            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Request failed: {e}")
+            logger.exception("Unexpected error in request processing", method=method, url=url)
+            return FlextResult[FlextTypes.Core.JsonDict].fail(f"Request processing failed: {e}")
 
     async def close(self) -> None:
         """Close the client and cleanup resources."""
@@ -329,20 +334,21 @@ class FlextApiBaseAuthService(
         try:
             # Validate credentials format
             validation_result = self._validate_credentials(credentials)
-            if not validation_result.success:
+            if not validation_result:
                 return FlextResult[FlextTypes.Core.JsonDict].fail(
                     validation_result.error or "Credential validation failed",
                 )
 
             # Perform authentication (implemented by subclass)
             auth_result = await self._do_authenticate(credentials)
-            if not auth_result.success:
+            if not auth_result:
                 return auth_result
 
             # Create session
-            auth_data = auth_result.value or {}
+            # Use unwrap_or for cleaner default value handling
+            auth_data = auth_result.unwrap_or({})
             session_result = await self._create_session(auth_data)
-            if not session_result.success:
+            if not session_result:
                 return session_result
 
             logger.info("Authentication successful")
@@ -370,7 +376,7 @@ class FlextApiBaseAuthService(
         """Refresh an authentication token."""
         try:
             # Validate current token - use unwrap_or for cleaner code
-            if not (await self.validate_token(token)).unwrap_or(False):
+            if not (await self.validate_token(token)).unwrap_or(default=False):
                 return FlextResult[str].fail("Invalid token")
 
             # Perform token refresh (implemented by subclass)
@@ -484,7 +490,7 @@ class FlextApiBaseRepositoryService(
 
             # Validate entity
             validation_result = self._validate_entity(entity)
-            if not validation_result.success:
+            if not validation_result:
                 return FlextResult[FlextTypes.Core.JsonDict].fail(
                     validation_result.error or "Entity validation failed",
                 )
@@ -505,7 +511,7 @@ class FlextApiBaseRepositoryService(
 
             # Check entity exists
             exists_result = await self.find_by_id(entity_id)
-            if not exists_result.success:
+            if not exists_result:
                 return FlextResult[None].fail("Entity not found")
 
             # Perform delete (implemented by subclass)
@@ -577,17 +583,19 @@ class FlextApiBaseHandlerService(
             processed_request = request
             for middleware in self.middlewares:
                 middleware_result = await middleware.process_request(processed_request)
-                if not middleware_result.success:
+                if not middleware_result:
                     return middleware_result
-                processed_request = middleware_result.value or {}
+                # Use unwrap_or for cleaner default handling
+                processed_request = middleware_result.unwrap_or({})
 
             # Handle request (implemented by subclass)
             response_result = await self._do_handle(processed_request)
-            if not response_result.success:
+            if not response_result:
                 return response_result
 
             # Process response through middlewares (reverse order)
-            processed_response = response_result.value or {}
+            # Use unwrap_or for cleaner default handling
+            processed_response = response_result.unwrap_or({})
             for middleware in reversed(self.middlewares):
                 middleware_result = await middleware.process_response(
                     processed_response,
@@ -658,7 +666,7 @@ class FlextApiBaseStreamingService(
         """Stream data from source."""
         # Validate source outside try to avoid TRY301
         validation_result = self._validate_source(source)
-        if not validation_result.success:
+        if not validation_result:
             raise ValueError(validation_result.error)
 
         try:

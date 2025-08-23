@@ -47,7 +47,7 @@ class TestMissingCoverageApi:
         api = FlextApi()
 
         # Test with invalid configuration
-        result = api.flext_api_create_client({})
+        result = api.create_client({})
         assert not result.success
         assert "base_url" in result.error.lower()
 
@@ -372,8 +372,8 @@ class TestCompleteCoverageIntegration:
         api = FlextApi()
 
         # Test various error conditions
-        result = api.flext_api_create_client({})
+        result = api.create_client({})
         assert not result.success
 
-        result = api.flext_api_create_client({"base_url": "invalid-url"})
+        result = api.create_client({"base_url": "invalid-url"})
         assert not result.success

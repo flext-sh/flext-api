@@ -1,11 +1,11 @@
-"""
-Storage backend fixtures for flext-api testing.
+"""Storage backend fixtures for flext-api testing.
 
 Provides reusable pytest fixtures for storage testing with temporary paths.
 """
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from pathlib import Path
 
 import pytest
@@ -21,7 +21,7 @@ def temp_storage_path(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-async def file_storage_backend(temp_storage_path: Path) -> FileStorageBackend[object]:
+async def file_storage_backend(temp_storage_path: Path) -> AsyncGenerator[FileStorageBackend[object]]:
     """Provide configured file storage backend for testing."""
     config = StorageConfig(file_path=str(temp_storage_path))
     backend = FileStorageBackend[object](config)
@@ -32,9 +32,10 @@ async def file_storage_backend(temp_storage_path: Path) -> FileStorageBackend[ob
 
 
 @pytest.fixture
-async def memory_storage_backend() -> MemoryStorageBackend[object]:
+async def memory_storage_backend() -> AsyncGenerator[MemoryStorageBackend[object]]:
     """Provide memory storage backend for testing."""
-    backend = MemoryStorageBackend[object]()
+    config = StorageConfig()
+    backend = MemoryStorageBackend[object](config)
     try:
         yield backend
     finally:

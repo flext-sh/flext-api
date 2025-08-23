@@ -1,26 +1,28 @@
-"""
-API testing utilities for flext-api.
+"""API testing utilities for flext-api.
 
 Provides common assertions and object creation for API testing.
 """
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TypeVar
 
 from flext_core import FlextResult
 
 from flext_api import FlextApiClientRequest, FlextApiClientResponse
 
+# Type variable for generic FlextResult operations
+T = TypeVar("T")
 
-def assert_flext_result_success(result: FlextResult[Any], expected_value: Any = None) -> None:
+
+def assert_flext_result_success(result: FlextResult[T], expected_value: T | None = None) -> None:
     """Assert FlextResult is successful with optional value check."""
     assert result.success, f"Expected success but got error: {result.error}"
     if expected_value is not None:
         assert result.value == expected_value
 
 
-def assert_flext_result_failure(result: FlextResult[Any], expected_error: str = None) -> None:
+def assert_flext_result_failure(result: FlextResult[T], expected_error: str | None = None) -> None:
     """Assert FlextResult is failure with optional error message check."""
     assert not result.success, f"Expected failure but got success: {result.value}"
     if expected_error is not None:
@@ -30,24 +32,34 @@ def assert_flext_result_failure(result: FlextResult[Any], expected_error: str = 
 def create_test_request(
     method: str = "GET",
     url: str = "https://httpbin.org/get",
-    **kwargs: Any,
+    headers: dict[str, str] | None = None,
+    params: dict[str, object] | None = None,
+    timeout: float = 30.0,
 ) -> FlextApiClientRequest:
     """Create test request with sensible defaults."""
     return FlextApiClientRequest(
         method=method,
         url=url,
-        **kwargs,
+        headers=headers or {},
+        params=params or {},
+        timeout=timeout,
     )
 
 
 def create_test_response(
     status_code: int = 200,
-    data: Any = None,
-    **kwargs: Any,
+    data: dict[str, object] | list[object] | str | bytes | None = None,
+    headers: dict[str, str] | None = None,
+    elapsed_time: float = 0.5,
+    request_id: str | None = None,
+    from_cache: bool = False,
 ) -> FlextApiClientResponse:
     """Create test response with sensible defaults."""
     return FlextApiClientResponse(
         status_code=status_code,
         data=data or {"message": "success"},
-        **kwargs,
+        headers=headers or {"content-type": "application/json"},
+        elapsed_time=elapsed_time,
+        request_id=request_id or "test-request",
+        from_cache=from_cache,
     )

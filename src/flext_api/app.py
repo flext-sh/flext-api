@@ -20,7 +20,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
-from flext_core import FlextConstants, get_logger
+from flext_core import FlextConstants, FlextResult, get_logger
 
 from flext_api.config import FlextApiSettings, create_api_settings
 from flext_api.exceptions import FlextApiError, create_error_response
@@ -62,11 +62,8 @@ class FlextApiAppConfig:
         """Initialize application configuration."""
         if settings is None:
             # Use unwrap_or pattern for cleaner error handling without exceptions
-            settings_result = create_api_settings()
-            if settings_result.is_failure:
-                msg = f"Failed to create settings: {settings_result.error}"
-                raise RuntimeError(msg)
-            settings = settings_result.value
+            # Modern FlextResult pattern: unwrap_or_raise
+            settings = FlextResult.unwrap_or_raise(create_api_settings(), RuntimeError)
 
         self.settings = settings
         self.storage: FlextApiStorage | None = None
@@ -475,12 +472,10 @@ def create_flext_api_app_with_settings(**settings_overrides: object) -> FastAPI:
       Configured FastAPI application instance
 
     """
-    # Use unwrap_or pattern for cleaner error handling without exceptions
-    settings_result = create_api_settings(**settings_overrides)
-    if settings_result.is_failure:
-        msg = f"Failed to create settings: {settings_result.error}"
-        raise RuntimeError(msg)
-    settings = settings_result.value
+    # Modern FlextResult pattern: unwrap_or_raise
+    settings = FlextResult.unwrap_or_raise(
+        create_api_settings(**settings_overrides), RuntimeError
+    )
 
     config = FlextApiAppConfig(settings)
     return create_flext_api_app(config)
@@ -538,12 +533,8 @@ def run_production_server(
 
     """
     # Create app for production
-    # Use unwrap_or pattern for cleaner error handling without exceptions
-    settings_result = create_api_settings()
-    if settings_result.is_failure:
-        msg = f"Failed to create settings: {settings_result.error}"
-        raise RuntimeError(msg)
-    settings = settings_result.value
+    # Modern FlextResult pattern: unwrap_or_raise
+    settings = FlextResult.unwrap_or_raise(create_api_settings(), RuntimeError)
 
     # Use settings defaults if not specified
     if host is None:

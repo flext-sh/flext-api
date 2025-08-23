@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from flext_api import FlextApiError, api_app as api_app_module
+from flext_api import FlextApiError
+from flext_api.app import create_flext_api_app_with_settings
 
 
 def test_error_middleware_handles_flextapierror_and_generic() -> None:
     """Middleware should map custom and unexpected errors properly."""
-    app = api_app_module.create_flext_api_app_with_settings(debug=True)
+    app = create_flext_api_app_with_settings(debug=True)
 
     @app.get("/boom-api")
     def boom_api() -> None:

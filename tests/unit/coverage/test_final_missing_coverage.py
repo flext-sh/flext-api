@@ -33,7 +33,7 @@ class TestFinalMissingCoverage:
         )
 
         assert response.success is True
-        assert response.data == {"result": "success"}
+        assert response.value == {"result": "success"}
         assert response.metadata["request_id"] == "test123"
         assert response.metadata["user"] == "admin"
 

@@ -283,8 +283,8 @@ def test_real_sync_health_check() -> None:
     # Test sync health check with REAL API
     result = sync_health_check(real_api)
     assert result.success
-    assert isinstance(result.data, dict)
-    assert "status" in result.data
+    assert isinstance(result.value, dict)
+    assert "status" in result.value
 
 
 def test_convenience_functions() -> None:

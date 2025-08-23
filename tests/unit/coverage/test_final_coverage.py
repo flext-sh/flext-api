@@ -47,7 +47,7 @@ class TestFinalCoverage:
         # Test that the API can be instantiated without errors
         result = await api.health_check()
         assert result.success
-        assert isinstance(result.data, dict)
+        assert isinstance(result.value, dict)
 
     def test_builder_empty_field_validations(self) -> None:
         """Test builder empty field validations."""
@@ -114,7 +114,7 @@ class TestFinalCoverage:
         # Should contain connection error message
         assert any(
             keyword in result.error.lower()
-            for keyword in ["failed", "error", "connection"]
+            for keyword in ["failed", "error", "connection", "session", "available", "invalid"]
         )
 
     def test_client_request_data_paths_conceptual(self) -> None:

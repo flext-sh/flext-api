@@ -69,7 +69,7 @@ async def test_cached_short_circuit_and_non_2xx() -> None:
         req = FlextApiClientRequest(method="GET", url="https://httpbin.org/json")
         res = await client._execute_request_pipeline(req, "GET")
         assert res.success
-        assert res.value.data.get("cached") is True
+        assert res.value.value.get("cached") is True
 
         # Test real non-2xx error response using httpbin's /status/500 endpoint
         plugin._cache.clear()  # Clear cache to force real HTTP call

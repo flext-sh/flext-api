@@ -1,5 +1,4 @@
-"""
-Async testing utilities for flext-api.
+"""Async testing utilities for flext-api.
 
 Provides async test helpers using pytest-asyncio patterns.
 """
@@ -7,10 +6,14 @@ Provides async test helpers using pytest-asyncio patterns.
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from typing import TypeVar
+
+# Type variable for generic async operations
+T = TypeVar("T")
 
 
-async def run_async_test(coro: Awaitable[Any]) -> Any:
+async def run_async_test(coro: Awaitable[T]) -> T:
     """Run async test with proper error handling."""
     try:
         return await coro

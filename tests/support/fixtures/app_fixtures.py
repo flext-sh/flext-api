@@ -1,5 +1,4 @@
-"""
-FastAPI application fixtures for flext-api testing.
+"""FastAPI application fixtures for flext-api testing.
 
 Provides reusable pytest fixtures for FastAPI apps and test clients.
 """
@@ -10,18 +9,14 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from flext_api import create_flext_api_app, FlextApiAppConfig
+from flext_api import FlextApiAppConfig, create_flext_api_app
 from tests.support.factories import FlextApiAppConfigFactory
 
 
 @pytest.fixture
 def flext_api_app_config() -> FlextApiAppConfig:
     """Provide test app configuration using factory."""
-    return FlextApiAppConfigFactory(
-        title="Test FLEXT API",
-        debug=True,
-        docs_url="/docs",
-    )
+    return FlextApiAppConfigFactory()
 
 
 @pytest.fixture

@@ -26,7 +26,7 @@ def test_sync_health_check_runs_ok() -> None:
     svc = create_flext_api()
     res = svc.sync_health_check()
     assert res.success
-    assert "service" in (res.data or {})
+    assert "service" in (res.value or {})
 
 
 def test_client_creation_and_info_and_legacy() -> None:
@@ -39,11 +39,11 @@ def test_client_creation_and_info_and_legacy() -> None:
     assert info["client_configured"] is True
 
     # Legacy wrapper success
-    legacy_ok = svc.flext_api_create_client({"base_url": "https://example.com"})
+    legacy_ok = svc.create_client({"base_url": "https://example.com"})
     assert legacy_ok.success
 
     # Legacy wrapper failure
-    bad = svc.flext_api_create_client({"base_url": ""})
+    bad = svc.create_client({"base_url": ""})
     assert not bad.success
 
 

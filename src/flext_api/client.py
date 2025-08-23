@@ -17,27 +17,24 @@ from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum, StrEnum
-from typing import Self, TypedDict, TypeVar, override
+from typing import Self, TypedDict, TypeVar, cast, override
 from urllib.parse import urljoin, urlparse
 
 import aiohttp
 import aiohttp.hdrs
-from flext_core import (
-    FlextResult,
-    FlextTypes,
-    get_logger,
-)
+from flext_core import FlextResult, FlextTypes, get_logger
 
 from flext_api.constants import FlextApiConstants
+from flext_api.utilities import FlextApiUtilities
 
 logger = get_logger(__name__)
 
 # Type variables for generic operations
 T = TypeVar("T")
 FlextApiValue = FlextTypes.Core.Value
-FlextApiEntityId = FlextTypes.Core.EntityId
+FlextApiEntityId = FlextTypes.Core.Id
 FlextApiServiceName = FlextTypes.Service.ServiceName
-FlextApiConfig = FlextTypes.Core.AnyDict
+FlextApiConfig = FlextTypes.Core.Dict
 
 # ==============================================================================
 # TYPE DEFINITIONS
@@ -437,11 +434,13 @@ class FlextApiCachingPlugin(FlextApiPlugin):
             context_dict: dict[str, object] | None = None
             if isinstance(_context, dict):
                 # Convert any dict to properly typed dict[str, object]
-                context_dict = {
-                    str(k): v
-                    for k, v in _context.items()
-                    if isinstance(k, (str, int, float, bool))
-                }
+                context_dict = {}
+                # Cast to specific types for PyRight type inference
+                context_data = cast("dict[str, object]", _context)
+                for context_key, context_value in context_data.items():
+                    # Types are now fully known: context_key: str, context_value: object
+                    if context_key:
+                        context_dict[context_key] = context_value
 
             context_url: str | None = None
             context_params: str | None = None
@@ -709,7 +708,7 @@ class FlextApiClient:
             plugin_result = await plugin.before_request(current_request, context)
 
             if isinstance(plugin_result, FlextResult):
-                if not plugin_result.success:
+                if not plugin_result:
                     plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
                     error_msg: str = plugin_result.error or "Plugin failed"
                     return FlextResult[
@@ -718,11 +717,9 @@ class FlextApiClient:
                         f"Plugin {plugin_name} failed: {error_msg}",
                     )
                 # Short-circuit: plugin returned a response instead of request
-                # Use FlextResult's unwrap_or method for cleaner code and type safety
-                # Explicit typing to avoid Unknown types in PyRight
-                default_value: FlextApiClientRequest = current_request
-                plugin_value: FlextApiClientRequest | FlextApiClientResponse = (
-                    plugin_result.unwrap_or(default_value)
+                # At this point, plugin_result.success is guaranteed to be True
+                plugin_value: FlextApiClientRequest | FlextApiClientResponse = cast(
+                    "FlextApiClientRequest | FlextApiClientResponse", plugin_result.value
                 )
                 if isinstance(plugin_value, FlextApiClientResponse):
                     return FlextResult[
@@ -751,16 +748,15 @@ class FlextApiClient:
 
             plugin_result = await plugin.after_response(current_response, context)
             if isinstance(plugin_result, FlextResult):
-                if not plugin_result.success:
+                if not plugin_result:
                     plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
                     return FlextResult[FlextApiClientResponse].fail(
                         f"Plugin {plugin_name} failed: {plugin_result.error}",
                     )
                 # Use FlextResult's unwrap_or method for cleaner code
-                # Explicit None default to avoid Unknown types in PyRight
-                default_none: FlextApiClientResponse | None = None
-                plugin_value: FlextApiClientResponse | None = plugin_result.unwrap_or(
-                    default_none
+                # At this point, plugin_result.success is guaranteed to be True
+                plugin_value: FlextApiClientResponse | None = cast(
+                    "FlextApiClientResponse | None", plugin_result.value
                 )
                 if plugin_value is None:
                     # Plugin wants to clear/nullify the response
@@ -902,88 +898,8 @@ class FlextApiClient:
     async def _read_response_data(
         self, response: aiohttp.ClientResponse
     ) -> dict[str, object] | list[object] | str | bytes | int | float | bool | None:
-        """Read and parse response data based on Content-Type with safe fallbacks."""
-        try:
-            # Type-safe header extraction to avoid Unknown types
-            content_type_header = ""
-            for header_name, header_value in response.headers.items():
-                if str(header_name).lower() == "content-type":
-                    content_type_header = str(header_value)
-                    break
-        except Exception:
-            content_type_header = ""
-        content_type = str(content_type_header).lower()
-
-        if "application/json" in content_type:
-            try:
-                json_data: object = await response.json()
-                # Type-safe conversion avoiding Unknown types with explicit type guards
-                if isinstance(json_data, dict):
-                    # Type-safe dict comprehension with explicit str conversion for keys
-                    parsed_dict: dict[str, object] = {}
-                    for key, value in json_data.items():
-                        if key is not None:
-                            parsed_dict[str(key)] = value
-                    return parsed_dict
-                if isinstance(json_data, list):
-                    # Type-safe list comprehension preserving elements
-                    parsed_list: list[object] = []
-                    for element in json_data:
-                        if element is not None:
-                            parsed_list.append(element)
-                    return parsed_list
-                if json_data is None:
-                    return None
-                if isinstance(json_data, (str, int, float, bool)):
-                    return (
-                        json_data  # Return actual type instead of converting to string
-                    )
-                # For any other types, convert to string representation
-                return str(json_data)
-            except Exception:
-                # Fallback: read text and attempt JSON parse
-                text_data = await response.text()
-
-                try:
-                    parsed_data: object = json.loads(text_data)
-                    # Type-safe conversion for parsed JSON with explicit type annotation
-                    if isinstance(parsed_data, dict):
-                        fallback_dict: dict[str, object] = {}
-                        for key, value in parsed_data.items():
-                            if key is not None:
-                                fallback_dict[str(key)] = value
-                        return fallback_dict
-                    if isinstance(parsed_data, list):
-                        fallback_list: list[object] = []
-                        for element in parsed_data:
-                            if element is not None:
-                                fallback_list.append(element)
-                        return fallback_list
-                    return text_data
-                except Exception:
-                    return text_data
-
-        # Non-JSON content
-        text = await response.text()
-        # If it looks like JSON, attempt to parse
-        text_trim = text.strip()
-        if text_trim.startswith(("{", "[")):
-            with suppress(Exception):
-                fallback_parsed_data: object = json.loads(text_trim)
-                if isinstance(fallback_parsed_data, dict):
-                    final_dict: dict[str, object] = {}
-                    for key, value in fallback_parsed_data.items():
-                        if key is not None:
-                            final_dict[str(key)] = value
-                    return final_dict
-                if isinstance(fallback_parsed_data, list):
-                    final_list: list[object] = []
-                    for element in fallback_parsed_data:
-                        if element is not None:
-                            final_list.append(element)
-                    return final_list
-                return text_trim
-        return text
+        """Read and parse response data using FlextApiUtilities for complexity reduction."""
+        return await FlextApiUtilities.read_response_data_safely(response)
 
     async def _request(
         self,
@@ -1007,7 +923,7 @@ class FlextApiClient:
                 data,
                 headers,
             )
-            if not request_result.success:
+            if not request_result:
                 return FlextResult[FlextApiClientResponse].fail(
                     request_result.error or "Failed to build request",
                 )
@@ -1074,7 +990,7 @@ class FlextApiClient:
             request,
             context_data,
         )
-        if not request_result.success:
+        if not request_result:
             return FlextResult[FlextApiClientResponse].fail(
                 request_result.error or "Plugin processing failed"
             )
@@ -1098,7 +1014,7 @@ class FlextApiClient:
 
         # Step 2: Check for cached response
         cache_result = self._check_cached_response(context_data)
-        if cache_result.success:
+        if cache_result:
             return cache_result
 
         # Step 3: Execute HTTP request and validate
@@ -1112,11 +1028,11 @@ class FlextApiClient:
     ) -> FlextResult[FlextApiClientResponse]:
         """Execute HTTP request and validate response."""
         response_result = await self._perform_http_request(request)
-        if not response_result.success:
+        if not response_result:
             return self._format_request_error(response_result, method)
 
-        validation_result = self._validate_response_data(response_result.value)
-        if not validation_result.success:
+        validation_result = self._validate_response_data(response_result.value, method)
+        if not validation_result:
             return validation_result
         return await self._process_and_validate_response(
             validation_result.value,
@@ -1148,6 +1064,7 @@ class FlextApiClient:
     def _validate_response_data(
         self,
         response_obj: FlextApiClientResponse | None,
+        method: str = "GET",
     ) -> FlextResult[FlextApiClientResponse]:
         """Validate response data integrity."""
         if response_obj is None:
@@ -1155,6 +1072,7 @@ class FlextApiClient:
         if (
             isinstance(response_obj, FlextApiClientResponse)
             and response_obj.data is None
+            and method.upper() != "HEAD"  # HEAD requests are expected to have no data
         ):
             return FlextResult[FlextApiClientResponse].fail("No response data received")
         return FlextResult[FlextApiClientResponse].ok(response_obj)
@@ -1166,7 +1084,7 @@ class FlextApiClient:
     ) -> FlextResult[FlextApiClientResponse]:
         """Process response through pipeline and validate final result."""
         processed = await self._process_response_pipeline(response_obj, context_data)
-        if not processed.success:
+        if not processed:
             return processed
         return processed
 
@@ -1196,7 +1114,7 @@ class FlextApiClient:
             response,
             context_data,
         )
-        if not after_result.success:
+        if not after_result:
             return after_result
 
         # Ensure response.data is a dictionary when JSON is expected
@@ -1224,13 +1142,16 @@ class FlextApiClient:
 
         This method is patched in tests; keep the indirection to `_make_request_impl`.
         """
+        # Delegate to implementation with proper error handling
         try:
-            return await self._make_request_impl(request)
-        except Exception as e:  # Match error message formatting expected by tests
+            result = await self._make_request_impl(request)
+            if not result:  # FlextResult has __bool__
+                return FlextResult[FlextApiClientResponse].fail(result.error or "Request failed")
+            return FlextResult[FlextApiClientResponse].ok(result.value)
+        except Exception as e:
+            # Match error message formatting expected by tests
             method = str(request.method)
-            return FlextResult[FlextApiClientResponse].fail(
-                f"Failed to make {method} request: {e}"
-            )
+            return FlextResult[FlextApiClientResponse].fail(f"Failed to make {method} request: {e}")
 
     async def head(
         self,
@@ -1485,7 +1406,9 @@ class FlextApiResponseBuilder:
 
     def metadata(self, metadata: FlextTypes.Core.JsonDict) -> Self:
         """Set response metadata."""
-        self._metadata = metadata
+        if self._metadata is None:
+            self._metadata = {}
+        self._metadata.update(metadata)
         return self
 
     def pagination(self, page: int, page_size: int, total: int) -> Self:
@@ -1617,13 +1540,35 @@ def create_client(
     config: Mapping[str, object] | FlextApiClientConfig | None = None,
 ) -> FlextApiClient:
     """Create HTTP client with configuration."""
-    # Handle both dict and FlextApiClientConfig objects
-    config_dict: ClientConfigDict
+    # Convert to standardized dict format
+    config_dict = _normalize_client_config(config)
+
+    # Use utility for validation and default assignment
+    validation_result = FlextApiUtilities.validate_client_config(config_dict)
+    validated_config = validation_result.unwrap_or({})
+
+    # Create configuration with validated values
+    client_config = FlextApiClientConfig(
+        base_url=str(validated_config.get("base_url", "https://httpbin.org")),
+        timeout=float(validated_config.get("timeout", 30)),
+        headers=validated_config.get("headers") or {},
+        max_retries=int(validated_config.get("max_retries", 3)),
+        verify_ssl=bool(validated_config.get("verify_ssl", True)),
+        follow_redirects=bool(validated_config.get("follow_redirects", True)),
+    )
+
+    return FlextApiClient(client_config)
+
+
+def _normalize_client_config(
+    config: Mapping[str, object] | FlextApiClientConfig | None,
+) -> dict[str, object] | None:
+    """Normalize client configuration to dict format."""
     if config is None:
-        config_dict = {}
-    elif isinstance(config, FlextApiClientConfig):
+        return None
+    if isinstance(config, FlextApiClientConfig):
         # Convert FlextApiClientConfig to dict for processing
-        config_dict = {
+        return {
             "base_url": config.base_url,
             "timeout": config.timeout,
             "max_retries": config.max_retries,
@@ -1632,91 +1577,8 @@ def create_client(
             "follow_redirects": config.follow_redirects,
             "plugins": config.plugins,
         }
-    else:
-        # Type-safe conversion to ClientConfigDict
-        timeout_val = config.get("timeout")
-        max_retries_val = config.get("max_retries")
-        headers_val = config.get("headers")
-        plugins_val = config.get("plugins")
-
-        # Type-safe header conversion to avoid Unknown types with explicit key filtering
-        typed_headers: dict[str, str] | None = None
-        if isinstance(headers_val, dict):
-            typed_headers = {}
-            for key, value in headers_val.items():
-                if key is not None and value is not None:
-                    typed_headers[str(key)] = str(value)
-
-        # Type-safe plugins conversion with type guard filtering
-        typed_plugins: list[FlextApiPlugin] | None = None
-        if isinstance(plugins_val, list):
-            typed_plugins = []
-            for plugin in plugins_val:
-                if isinstance(plugin, FlextApiPlugin):
-                    typed_plugins.append(plugin)
-
-        config_dict = {
-            "base_url": str(config.get("base_url", "")),
-            "timeout": float(timeout_val)
-            if isinstance(timeout_val, (int, float))
-            else None,
-            "max_retries": int(max_retries_val)
-            if isinstance(max_retries_val, (int, float))
-            else None,
-            "headers": typed_headers,
-            "verify_ssl": bool(config.get("verify_ssl", True)),
-            "follow_redirects": bool(config.get("follow_redirects", True)),
-            "plugins": typed_plugins,
-        }
-
-    # Validate base URL - allow empty for test compatibility
-    base_url = config_dict.get("base_url", "")
-    if (
-        base_url
-        and isinstance(base_url, str)
-        and not base_url.startswith(("http://", "https://"))
-    ):
-        msg = "Invalid URL format"
-        raise ValueError(msg)
-
-    # Handle headers - ensure it's a dict
-    headers = config_dict.get("headers", {})
-    if not isinstance(headers, dict):
-        headers = {}
-
-    # Handle timeout - convert to float or use default
-    timeout = 30.0
-    try:
-        timeout_val = config_dict.get("timeout", 30.0)
-        if timeout_val is not None:
-            timeout = (
-                float(timeout_val)
-                if isinstance(timeout_val, (str, int, float))
-                else 30.0
-            )
-    except (ValueError, TypeError):
-        timeout = 30.0
-
-    # Handle max_retries - convert to int or use default
-    max_retries = 3
-    try:
-        retries_val = config_dict.get("max_retries", 3)
-        if retries_val is not None:
-            max_retries = int(retries_val) if isinstance(retries_val, (str, int)) else 3
-    except (ValueError, TypeError):
-        max_retries = 3
-
-    # Create configuration
-    client_config = FlextApiClientConfig(
-        base_url=str(base_url),
-        timeout=timeout,
-        headers=headers,
-        max_retries=max_retries,
-        verify_ssl=bool(config_dict.get("verify_ssl", True)),
-        follow_redirects=bool(config_dict.get("follow_redirects", True)),
-    )
-
-    return FlextApiClient(client_config)
+    # Already a dict-like mapping
+    return dict(config)
 
 
 def build_success_response(
@@ -1790,86 +1652,86 @@ def build_paginated_response(
 def build_query_from_params(params: dict[str, object] | object | None) -> FlextApiQuery:
     """Build query from Parameter Object following SOLID principles.
 
-    REFACTORED: Uses Parameter Object pattern to reduce complexity
-    and improve maintainability. Supports backward compatibility.
+    REFACTORED: Uses Parameter Object pattern with extracted utilities
+    to reduce complexity and improve maintainability.
     """
-
     # Helper to read attributes from params dict or dataclass with type safety
     def _get(field: str, default: object | None = None) -> object | None:
         if params is None:
             return default
         if isinstance(params, dict):
-            # Type-safe dict access to avoid Unknown types
-            if field in params:
-                return params[field]
-            return default
+            return params.get(field, default)
         # For dataclass objects, use getattr
         return getattr(params, field, default)
 
-    filters_val = _get("filters")
-    prepared_filters: list[dict[str, object]] = []
-    if isinstance(filters_val, dict):
-        for key, value in filters_val.items():
-            if key is not None:
-                prepared_filters.append(
-                    {"field": str(key), "value": value, "operator": "eq"}
-                )
-    elif isinstance(filters_val, list):
-        # Only accept list of dicts; otherwise, ignore
-        for filter_item in filters_val:
-            if isinstance(filter_item, dict):
-                filter_obj: dict[str, object] = {}
-                for key, value in filter_item.items():
-                    if key is not None:
-                        filter_obj[str(key)] = value
-                prepared_filters.append(filter_obj)
-    else:
-        prepared_filters = []
-
-    sorts_val = _get("sorts")
-    sorts: list[dict[str, str]] = []
-    if isinstance(sorts_val, list):
-        for sort_item in sorts_val:
-            if isinstance(sort_item, dict):
-                sort_obj: dict[str, str] = {}
-                for key, value in sort_item.items():
-                    if key is not None and value is not None:
-                        sort_obj[str(key)] = str(value)
-                sorts.append(sort_obj)
-
-    page_val = _get("page")
-    page = (
-        int(page_val)
-        if isinstance(page_val, (int, str)) and str(page_val).isdigit()
-        else 1
-    )
-
-    page_size_val = _get("page_size")
-    page_size = (
-        int(page_size_val)
-        if isinstance(page_size_val, (int, str)) and str(page_size_val).isdigit()
-        else 20
-    )
-
-    search_val = _get("search")
-    search = str(search_val) if isinstance(search_val, str) else None
-
-    fields_val = _get("fields")
-    fields: list[str] | None = None
-    if isinstance(fields_val, list):
-        fields = []
-        for field in fields_val:
-            if field is not None:
-                fields.append(str(field))
-
     return FlextApiQuery(
-        filters=prepared_filters,
-        sorts=sorts,
-        page=page,
-        page_size=page_size,
-        search=search,
-        fields=fields,
+        filters=_process_filters_param(_get("filters")),
+        sorts=_process_sorts_param(_get("sorts")),
+        page=_process_int_param(_get("page"), default=1),
+        page_size=_process_int_param(_get("page_size"), default=20),
+        search=_process_string_param(_get("search")),
+        fields=_process_list_param(_get("fields")),
     )
+
+
+def _process_filters_param(filters_val: object | None) -> list[dict[str, object]]:
+    """Process filters parameter into normalized format."""
+    if isinstance(filters_val, dict):
+        filters_data = cast("dict[str, object]", filters_val)
+        return [
+            {"field": k, "value": v, "operator": "eq"}
+            for k, v in filters_data.items()
+            if k
+        ]
+    if isinstance(filters_val, list):
+        filters_list = cast("list[object]", filters_val)
+        result = []
+        for item in filters_list:
+            if isinstance(item, dict):
+                item_data = cast("dict[str, object]", item)
+                filter_obj = {k: v for k, v in item_data.items() if k}
+                result.append(filter_obj)
+        return result
+    return []
+
+
+def _process_sorts_param(sorts_val: object | None) -> list[dict[str, str]]:
+    """Process sorts parameter into normalized format."""
+    if not isinstance(sorts_val, list):
+        return []
+
+    sorts_list = cast("list[object]", sorts_val)
+    result = []
+    for item in sorts_list:
+        if isinstance(item, dict):
+            sort_data = cast("dict[str, object]", item)
+            sort_obj = {
+                k: str(v) for k, v in sort_data.items()
+                if k and v is not None
+            }
+            result.append(sort_obj)
+    return result
+
+
+def _process_int_param(value: object | None, default: int) -> int:
+    """Process integer parameter with validation."""
+    if isinstance(value, (int, str)) and str(value).isdigit():
+        return int(value)
+    return default
+
+
+def _process_string_param(value: object | None) -> str | None:
+    """Process string parameter."""
+    return str(value) if isinstance(value, str) else None
+
+
+def _process_list_param(value: object | None) -> list[str] | None:
+    """Process list parameter into string list."""
+    if not isinstance(value, list):
+        return None
+
+    value_list = cast("list[object]", value)
+    return [str(item) for item in value_list if item is not None]
 
 
 def build_query(
@@ -1885,7 +1747,7 @@ def build_query(
     REFACTORED: Maintained for backward compatibility, delegates to Parameter Object.
     Supports filters as list of dicts or as a simple mapping field->value (converted to equals filters).
     """
-    params = {
+    params: dict[str, object] = {
         "filters": filters,
         "sorts": sorts,
         "page": page,
