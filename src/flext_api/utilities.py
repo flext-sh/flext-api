@@ -33,25 +33,17 @@ class FlextApiUtilities:
         """
         if isinstance(json_data, dict):
             # Type-safe dict processing with explicit casting
-            parsed_dict: dict[str, object] = {}
             # Cast to specific types for PyRight type inference
             dict_data = cast("dict[str, object]", json_data)
-            for dict_key, dict_value in dict_data.items():
-                # Types are now fully known: dict_key: str, dict_value: object
-                if dict_key:
-                    parsed_dict[dict_key] = dict_value
-            return parsed_dict
+            # Use dict comprehension for performance
+            return {dict_key: dict_value for dict_key, dict_value in dict_data.items() if dict_key}
 
         if isinstance(json_data, list):
             # Type-safe list processing with explicit casting
-            filtered_elements: list[object] = []
             # Cast to specific types for PyRight type inference
             list_data = cast("list[object]", json_data)
-            for list_element in list_data:
-                # Type is now fully known: list_element: object
-                if list_element is not None:
-                    filtered_elements.append(list_element)
-            return filtered_elements
+            # Use list comprehension for performance
+            return [list_element for list_element in list_data if list_element is not None]
 
         if json_data is None:
             return None
@@ -73,24 +65,15 @@ class FlextApiUtilities:
         try:
             parsed_data: object = json.loads(text_data)
             if isinstance(parsed_data, dict):
-                fallback_dict: dict[str, object] = {}
                 # Cast to specific types for PyRight type inference
                 dict_data = cast("dict[str, object]", parsed_data)
-                for parsed_key, parsed_value in dict_data.items():
-                    # Types are now fully known: parsed_key: str, parsed_value: object
-                    if parsed_key:
-                        fallback_dict[parsed_key] = parsed_value
-                return fallback_dict
+                # Use dict comprehension for performance
+                return {parsed_key: parsed_value for parsed_key, parsed_value in dict_data.items() if parsed_key}
             if isinstance(parsed_data, list):
-                # Type-safe list processing
-                filtered_list: list[object] = []
                 # Cast to specific types for PyRight type inference
                 list_data = cast("list[object]", parsed_data)
-                for parsed_element in list_data:
-                    # Type is now fully known: parsed_element: object
-                    if parsed_element is not None:
-                        filtered_list.append(parsed_element)
-                return filtered_list
+                # Use list comprehension for performance
+                return [parsed_element for parsed_element in list_data if parsed_element is not None]
             return text_data
         except Exception:
             return text_data
@@ -106,24 +89,15 @@ class FlextApiUtilities:
         try:
             fallback_parsed_data: object = json.loads(text_trim)
             if isinstance(fallback_parsed_data, dict):
-                final_dict: dict[str, object] = {}
                 # Cast to specific types for PyRight type inference
                 dict_data = cast("dict[str, object]", fallback_parsed_data)
-                for fallback_key, fallback_value in dict_data.items():
-                    # Types are now fully known: fallback_key: str, fallback_value: object
-                    if fallback_key:
-                        final_dict[fallback_key] = fallback_value
-                return final_dict
+                # Use dict comprehension for performance
+                return {fallback_key: fallback_value for fallback_key, fallback_value in dict_data.items() if fallback_key}
             if isinstance(fallback_parsed_data, list):
-                # Type-safe list processing
-                final_list: list[object] = []
                 # Cast to specific types for PyRight type inference
                 list_data = cast("list[object]", fallback_parsed_data)
-                for fallback_element in list_data:
-                    # Type is now fully known: fallback_element: object
-                    if fallback_element is not None:
-                        final_list.append(fallback_element)
-                return final_list
+                # Use list comprehension for performance
+                return [fallback_element for fallback_element in list_data if fallback_element is not None]
             return text_trim
         except Exception:
             return text_trim
@@ -180,7 +154,7 @@ class FlextApiUtilities:
         # Apply defaults for missing values, validating headers type
         headers_raw = config.get("headers", {})
         headers: dict[str, str] = headers_raw if isinstance(headers_raw, dict) else {}
-        
+
         validated_config: dict[str, object] = {
             "base_url": config.get("base_url", ""),
             "timeout": config.get("timeout", 30),

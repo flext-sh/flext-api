@@ -70,7 +70,7 @@ Faker.seed(12345)
 os.environ.update({
     "FLEXT_API_TESTING": "true",
     "FLEXT_DISABLE_EXTERNAL_CALLS": "0",  # ENABLE external calls for real testing
-    "FLEXT_TEST_LOG_MINIMAL": "true", 
+    "FLEXT_TEST_LOG_MINIMAL": "true",
     "FLEXT_FAST_TEST_MODE": "true",
     "ENVIRONMENT": "test",
     "LOG_LEVEL": "DEBUG",
@@ -161,7 +161,7 @@ def pytest_collection_modifyitems(
 # pytest_asyncio.AUTO_MODE = True  # Not available in newer versions
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
     """Function-scoped event loop for pytest-asyncio.
 
@@ -181,11 +181,11 @@ def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
         pending = asyncio.all_tasks(loop)
         for task in pending:
             task.cancel()
-        
+
         if pending:
             # Wait for tasks to be cancelled
             loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
-        
+
         loop.close()
     except Exception:
         # Ensure loop is closed even if cleanup fails

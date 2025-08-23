@@ -334,7 +334,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                     # it becomes an unbound function and requires explicit self
                     # Explicit type annotation to avoid Unknown types in PyRight
                     save_result = await FileStorageBackend._save_data(self)
-                if save_result.is_failure:
+                if not save_result:
                     return save_result
 
                 logger.debug("Stored value in file storage", key=key)
@@ -357,7 +357,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
                     except TypeError:
                         # Explicit type annotation to avoid Unknown types in PyRight
                         save_result = await FileStorageBackend._save_data(self)
-                    if save_result.is_failure:
+                    if not save_result:
                         return FlextResult[bool].fail(
                             f"Failed to save after delete: {save_result.error}",
                         )
@@ -515,7 +515,7 @@ class FlextApiStorage:
 
         # Get from backend
         result = await self._backend.get(namespaced_key)
-        if result.is_failure:
+        if not result:
             return result
 
         # Cache the result if caching is enabled and has value
@@ -555,7 +555,7 @@ class FlextApiStorage:
 
         # Direct set operation
         result = await self._backend.set(namespaced_key, value, ttl_seconds)
-        if result.is_failure:
+        if not result:
             return result
 
         # Update cache
@@ -585,7 +585,7 @@ class FlextApiStorage:
                 )
 
             transaction.operations.append(("delete", namespaced_key, None))
-            return FlextResult[bool].ok(True)  # noqa: FBT003
+            return FlextResult[bool].ok(data=True)  # noqa: FBT003
 
         # Direct delete operation
         result = await self._backend.delete(namespaced_key)
@@ -624,14 +624,14 @@ class FlextApiStorage:
         """Clear all data in namespace."""
         # Get all keys in namespace and delete them
         keys_result = await self.keys()
-        if keys_result.is_failure:
+        if not keys_result:
             return FlextResult[None].fail(
                 f"Failed to get keys for clearing: {keys_result.error}",
             )
 
         for key in keys_result.value or []:
             delete_result = await self.delete(key)
-            if delete_result.is_failure:
+            if not delete_result:
                 return FlextResult[None].fail(
                     f"Failed to delete key '{key}': {delete_result.error}",
                 )
@@ -667,16 +667,16 @@ class FlextApiStorage:
 
         async def _apply_set(key: str, value: object) -> FlextResult[None]:
             res = await self._backend.set(key, value)
-            return res if res.is_failure else FlextResult[None].ok(None)
+            return res if not res else FlextResult[None].ok(None)
 
         async def _apply_delete(key: str) -> FlextResult[None]:
             res = await self._backend.delete(key)
-            if res.is_failure:
+            if not res:
                 return FlextResult[None].fail(res.error or "Delete failed")
             return FlextResult[None].ok(None)
 
         tx_result = _get_active_tx()
-        if tx_result.is_failure:
+        if not tx_result:
             return FlextResult[None].fail(tx_result.error or "Invalid transaction")
 
         tx = tx_result.value
@@ -688,7 +688,7 @@ class FlextApiStorage:
                 applied = await _apply_delete(key)
             else:
                 return FlextResult[None].fail(f"Unknown transaction operation: {op}")
-            if applied.is_failure:
+            if not applied:
                 return FlextResult[None].fail(
                     applied.error or "Transaction operation failed"
                 )

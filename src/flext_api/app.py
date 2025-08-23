@@ -37,9 +37,11 @@ class ResponseLike(TypedDict, total=False):
 class ErrorResponse(TypedDict):
     """Type definition for error response objects."""
 
-    error: str
-    message: str
-    timestamp: str
+    success: bool
+    error: dict[str, object] | str
+    data: None
+    message: str | None
+    timestamp: str | None
 
 
 logger = get_logger(__name__)
@@ -132,8 +134,11 @@ async def add_request_id_middleware(
 
     # Add request ID to response headers when available
     with _suppress(Exception):
-        if "headers" in response:
-            response["headers"]["X-Request-ID"] = request_id
+        if hasattr(response, "headers"):
+            headers = getattr(response, "headers", None)
+            if headers and hasattr(headers, "__setitem__"):
+                # Use cast to dict for type safety instead of Any
+                cast("dict[str, str]", headers)["X-Request-ID"] = request_id
 
     return response
 
@@ -175,7 +180,9 @@ async def error_handler_middleware(
         logger.exception("Unexpected error occurred", request_id=request_id)
 
         unexpected_error_response: ErrorResponse = {
+            "success": False,
             "error": "INTERNAL_SERVER_ERROR",
+            "data": None,
             "message": "An unexpected error occurred",
             "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
         }

@@ -115,13 +115,13 @@ class FlextApiBaseService(
                 "is_running": self.is_running,
             }
 
-            # Get service-specific health details using unwrap_or pattern
+            # Get service-specific health details using modern FlextResult patterns
             details_result = await self._get_health_details()
-            if details_result.is_failure:
+            if not details_result:
                 return FlextResult[dict[str, object]].fail(
                     details_result.error or "Health details failed"
                 )
-            health_info.update(details_result.unwrap_or({}))
+            health_info.update(details_result.value or {})
 
             return FlextResult[dict[str, object]].ok(health_info)
         except Exception as e:

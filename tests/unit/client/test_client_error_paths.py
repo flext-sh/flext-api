@@ -20,10 +20,10 @@ async def test_request_build_failure_and_pipeline_error() -> None:
     # Invalid base URL should cause build errors
     res = await client.get("/json")
     assert not res.success
-    assert any(keyword in (res.error or "").lower() 
+    assert any(keyword in (res.error or "").lower()
               for keyword in ["url", "validation", "json", "format", "invalid"])
 
-    # Test network error path using hostname that triggers stub failure  
+    # Test network error path using hostname that triggers stub failure
     invalid_client = FlextApiClient(
         FlextApiClientConfig(
             base_url="http://nonexistent-host.invalid",  # Hostname recognized as should fail
