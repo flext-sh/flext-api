@@ -30,8 +30,8 @@ async def test_execute_and_lifecycle_and_health_ok() -> None:
     assert (await svc.start()).success
     exec_res = svc.execute()
     assert exec_res.success
-    assert exec_res.data["status"] == "executed"
+    assert exec_res.value["status"] == "executed"
     health = await svc.health_check()
     assert health.success
-    assert health.data["extra"] is True
+    assert health.value["extra"] is True
     assert (await svc.stop()).success

@@ -38,7 +38,7 @@ class BeforePluginPass:
                     headers=new_headers,
                     params=request.params,
                     json_data=request.json_data,
-                    data=request.data,
+                    data=request.value,
                     timeout=request.timeout,
                 ),
             )
@@ -161,56 +161,32 @@ async def test_format_request_error_and_legacy_make_request() -> None:
 @pytest.mark.asyncio
 async def test_response_pipeline_parse_json_string() -> None:
     """Response pipeline should parse JSON-like strings into dictionaries - REAL test."""
-    # Set REAL environment variable
-    import os  # Local import for environment handling
-
-    original_env = os.environ.get("FLEXT_DISABLE_EXTERNAL_CALLS")
-    os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = "true"
-
+    client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
+    await client.start()
     try:
-        client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
-        await client.start()
         # Fabricate a response with JSON-like string - REAL response processing
         resp = FlextApiClientResponse(status_code=200, data='{"a": 1}')
         final = await client._process_response_pipeline(resp, {})
 
         assert final.success
-        assert isinstance(final.data.data, dict)
-        await client.stop()
+        assert isinstance(final.value.value, dict)
     finally:
-        # Restore environment
-        if original_env is not None:
-            os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = original_env
-        else:
-            os.environ.pop("FLEXT_DISABLE_EXTERNAL_CALLS", None)
+        await client.stop()
 
 
 @pytest.mark.asyncio
 async def test_head_and_options_methods() -> None:
     """HEAD and OPTIONS convenience methods should succeed with REAL execution."""
-    import os  # Local import for environment handling
-
-    # Set environment for external calls
-    original_env = os.environ.get("FLEXT_DISABLE_EXTERNAL_CALLS")
-    os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = "false"
-
+    client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
+    await client.start()
     try:
-        client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
-        await client.start()
-        try:
-            # REAL HEAD and OPTIONS requests to httpbin.org
-            head_res = await client.head("/status/200")
-            opt_res = await client.options("/status/200")
-            assert head_res.success
-            assert opt_res.success
-        finally:
-            await client.stop()
+        # REAL HEAD and OPTIONS requests to httpbin.org
+        head_res = await client.head("/status/200")
+        opt_res = await client.options("/status/200")
+        assert head_res.success
+        assert opt_res.success
     finally:
-        # Restore environment
-        if original_env is not None:
-            os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = original_env
-        else:
-            os.environ.pop("FLEXT_DISABLE_EXTERNAL_CALLS", None)
+        await client.stop()
 
 
 def test_create_client_invalid_url_raises() -> None:

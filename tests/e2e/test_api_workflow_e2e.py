@@ -47,8 +47,8 @@ class TestApiWorkflowE2E:
         assert response["success"] is True
         assert response["data"]["total"] == 1
 
-        # 4. Create HTTP client
-        client_result = api.flext_api_create_client(
+        # 4. Create HTTP client using modern API
+        client_result = api.create_client(
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10.0,
@@ -76,8 +76,8 @@ class TestApiWorkflowE2E:
         """Test complete error handling workflow."""
         api = FlextApi()
 
-        # Test client creation with invalid config
-        invalid_result = api.flext_api_create_client(
+        # Test client creation with invalid config using modern API
+        invalid_result = api.create_client(
             {
                 "base_url": "invalid-url-format",
             },
@@ -85,8 +85,8 @@ class TestApiWorkflowE2E:
         assert not invalid_result.success
         assert "Invalid URL format" in invalid_result.error
 
-        # Test with valid config but unreachable URL
-        client_result = api.flext_api_create_client(
+        # Test with valid config but unreachable URL using modern API
+        client_result = api.create_client(
             {
                 "base_url": "https://nonexistent-domain-12345.com",
                 "timeout": 2.0,
@@ -152,8 +152,8 @@ class TestApiWorkflowE2E:
         ]
 
         # This would typically use create_client_with_plugins
-        # but we'll test the basic client creation
-        client_result = api.flext_api_create_client(
+        # but we'll test the basic client creation using modern API
+        client_result = api.create_client(
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 5.0,

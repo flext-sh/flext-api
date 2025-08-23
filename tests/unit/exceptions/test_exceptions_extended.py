@@ -54,7 +54,7 @@ def test_timeout_error_context_and_http() -> None:
     )
     resp = exc.to_http_response()
     assert resp["error"]["status_code"] == 504
-    assert exc.context.get("timeout_seconds") == 1.5
+    assert exc.context["context"].get("timeout_seconds") == 1.5
 
 
 def test_request_response_and_storage_errors() -> None:
@@ -96,7 +96,7 @@ def test_configuration_error_context_and_http() -> None:
     )
     resp = exc.to_http_response()
     assert resp["error"]["code"] == "CONFIGURATION_ERROR"
-    assert exc.context.get("config_key") == "api_port"
+    assert exc.context["context"].get("config_key") == "api_port"
 
 
 def test_connection_error_http_response() -> None:

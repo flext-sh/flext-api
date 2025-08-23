@@ -19,7 +19,7 @@ async def test_keys_pattern_and_unknown_operation_commit() -> None:
     # Pattern matching (wildcard)
     keys = await storage.keys("a*")
     assert keys.success
-    assert set(keys.data or []) >= {"a", "alpha"}
+    assert set(keys.value or []) >= {"a", "alpha"}
 
     # Inject unknown operation in transaction to hit error branch
     tx = storage.begin_transaction()

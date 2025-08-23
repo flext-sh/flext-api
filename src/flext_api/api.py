@@ -165,58 +165,60 @@ class FlextApi(FlextApiBaseService):
             FlextResult containing configured client or error
 
         """
+        # Create ClientConfig value object - decorator handles exceptions
+        config_dict = config or {}
+        # Type-safe extraction of config values
+        timeout_val = config_dict.get("timeout", 30.0)
+        timeout = (
+            float(timeout_val)
+            if isinstance(timeout_val, (int, float, str))
+            else 30.0
+        )
+        headers_val = config_dict.get("headers", {})
+        headers: dict[str, str] = (
+            dict(headers_val) if isinstance(headers_val, dict) else {}
+        )
+        max_retries_val = config_dict.get("max_retries", 3)
+        max_retries = (
+            int(max_retries_val)
+            if isinstance(max_retries_val, (int, float, str))
+            else 3
+        )
         try:
-            # Create ClientConfig value object
-            config_dict = config or {}
-            # Type-safe extraction of config values
-            timeout_val = config_dict.get("timeout", 30.0)
-            timeout = (
-                float(timeout_val)
-                if isinstance(timeout_val, (int, float, str))
-                else 30.0
-            )
-            headers_val = config_dict.get("headers", {})
-            headers: dict[str, str] = (
-                dict(headers_val) if isinstance(headers_val, dict) else {}
-            )
-            max_retries_val = config_dict.get("max_retries", 3)
-            max_retries = (
-                int(max_retries_val)
-                if isinstance(max_retries_val, (int, float, str))
-                else 3
-            )
             client_config = ClientConfig(
                 base_url=str(config_dict.get("base_url", "")),
                 timeout=timeout,
                 headers=headers,
                 max_retries=max_retries,
             )
-            # Validate configuration
-            validation_result = client_config.validate_business_rules()
-            if not validation_result.success:
-                return FlextResult[FlextApiClientProtocol].fail(
-                    validation_result.error or "Invalid client configuration",
-                )
-            # Convert to legacy config format for backward compatibility
-            legacy_config = FlextApiClientConfig(
-                base_url=client_config.base_url,
-                timeout=client_config.timeout,
-                headers=client_config.headers,
-                max_retries=client_config.max_retries,
-            )
-            # Create client
-            api_client = FlextApiClient(legacy_config)
-            self._client = cast("FlextApiClientProtocol", api_client)
-            self._client_config = client_config
-            logger.info("HTTP client created", base_url=client_config.base_url)
-            return FlextResult[FlextApiClientProtocol].ok(
-                cast("FlextApiClientProtocol", api_client)
-            )
         except Exception as e:
-            logger.exception("Failed to create client")
             return FlextResult[FlextApiClientProtocol].fail(
-                f"Failed to create client: {e}"
+                f"Invalid client configuration: {e}"
             )
+        # Validate configuration - use modern FlextResult pattern
+        validation_result = client_config.validate_business_rules()
+        if not validation_result:  # FlextResult has __bool__ support
+            return FlextResult[FlextApiClientProtocol].fail(
+                validation_result.error or "Invalid client configuration"
+            )
+        # Convert to legacy config format for backward compatibility
+        legacy_config = FlextApiClientConfig(
+            base_url=client_config.base_url,
+            timeout=client_config.timeout,
+            headers=client_config.headers,
+            max_retries=client_config.max_retries,
+        )
+        # Create client - decorator will wrap in FlextResult
+        api_client = FlextApiClient(legacy_config)
+        self._client = cast("FlextApiClientProtocol", api_client)
+        self._client_config = client_config
+        logger.info("HTTP client created", base_url=client_config.base_url)
+        # Manual FlextResult wrapper for type safety
+        try:
+            return FlextResult[FlextApiClientProtocol].ok(cast("FlextApiClientProtocol", api_client))
+        except Exception as e:
+            logger.exception("Unexpected error wrapping client result")
+            return FlextResult[FlextApiClientProtocol].fail(f"Client creation failed: {e}")
 
     def get_builder(self) -> FlextApiBuilder:
         """Get builder instance for advanced operations.
@@ -327,9 +329,9 @@ class FlextApi(FlextApiBaseService):
             headers=headers,
             max_retries=max_retries,
         )
-        # Validate configuration
+        # Validate configuration - use modern FlextResult pattern
         validation_result = client_config.validate_business_rules()
-        if not validation_result.success:
+        if not validation_result:  # FlextResult has __bool__ support
             raise ValueError(validation_result.error or "Invalid URL format")
         # Convert to legacy config format
         legacy_config = FlextApiClientConfig(
@@ -340,29 +342,6 @@ class FlextApi(FlextApiBaseService):
         )
         return FlextApiClient(legacy_config)
 
-    # Legacy compatibility methods
-    def flext_api_create_client(
-        self,
-        config: ClientConfigDict | None = None,
-    ) -> FlextResult[FlextApiClient]:
-        """Legacy method for creating HTTP client.
-
-        DEPRECATED: Use create_client() instead.
-
-        Args:
-            config: Client configuration dictionary
-        Returns:
-            FlextResult containing client or error
-
-        """
-        logger.warning("Using deprecated method flext_api_create_client")
-        result = self.create_client(config)
-        if result.success:
-            # Convert protocol to concrete type for legacy compatibility
-            return FlextResult[FlextApiClient].ok(cast("FlextApiClient", result.value))
-        # Handle failure case
-        error_msg = result.error or "Unknown error"
-        return FlextResult[FlextApiClient].fail(f"Failed to create client: {error_msg}")
 
 
 def create_flext_api(**config: object) -> FlextApi:

@@ -35,8 +35,8 @@ class TestAppRealExecution:
         # Test REAL health check functionality
         health_result = api.health_check_sync()
         assert health_result.success
-        assert health_result.data is not None
-        assert isinstance(health_result.data, dict)
+        assert health_result.value is not None
+        assert isinstance(health_result.value, dict)
 
         # Create REAL app with REAL API
         test_app = flext_api_create_app()

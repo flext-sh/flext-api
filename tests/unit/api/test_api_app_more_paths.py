@@ -11,8 +11,8 @@ from flext_api import api_app as api_app_module
 
 def test_default_app_instance_exposes_routes() -> None:
     """Default app should expose index and health routes."""
-    app = api_app_module.app
-    routes = {r.path for r in app.routes}
+    # api_app_module is the FastAPI app instance directly
+    routes = {r.path for r in api_app_module.routes}
     assert "/" in routes
     assert "/health" in routes
 

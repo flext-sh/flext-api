@@ -1,5 +1,4 @@
-"""
-Unified fixture library for flext-api tests.
+"""Unified fixture library for flext-api tests.
 
 Provides reusable pytest fixtures following SOLID principles
 and flext-core patterns.
@@ -24,7 +23,7 @@ from tests.support.fixtures.storage_fixtures import (
 
 __all__ = [
     "flext_api_client",
-    "flext_api_config", 
+    "flext_api_config",
     "http_client_session",
     "flext_api_app",
     "test_client",

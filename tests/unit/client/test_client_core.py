@@ -121,7 +121,7 @@ class TestFlextApiClientResponse:
             msg = f"Expected 200, got {response.status_code}"
             raise AssertionError(msg)
         assert response.headers == {}
-        assert response.data is None
+        assert response.value is None
         if response.elapsed_time != 0.0:
             msg = f"Expected 0.0, got {response.elapsed_time}"
             raise AssertionError(msg)
@@ -136,7 +136,7 @@ class TestFlextApiClientResponse:
         )
 
         assert response.status_code == 200
-        assert response.data == data
+        assert response.value == data
         assert response.headers is not None
         assert response.headers["Content-Type"] == "application/json"
 

@@ -325,7 +325,7 @@ class URL(FlextModel):
             )
 
             validation_result = instance.validate_business_rules()
-            if not validation_result.success:
+            if not validation_result:
                 return FlextResult[URL].fail(
                     f"URL validation failed: {validation_result.error}",
                 )
@@ -583,7 +583,7 @@ class BearerToken(FlextModel):
             return FlextResult[BearerToken].fail(f"Token creation failed: {e}")
 
         validation_result = instance.validate_business_rules()
-        if not validation_result.success:
+        if not validation_result:
             return FlextResult[BearerToken].fail(
                 validation_result.error or "Token validation failed",
             )
@@ -835,7 +835,7 @@ class PaginationInfo(FlextModel):
             )
 
             validation = instance.validate_business_rules()
-            if not validation.success:
+            if not validation:
                 return FlextResult[PaginationInfo].fail(
                     validation.error or "Validation failed"
                 )

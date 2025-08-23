@@ -51,10 +51,10 @@ async def test_auth_service_paths() -> None:
     # Valid credentials -> ok and session creation pass-through
     ok = await auth.authenticate({"u": 1})
     assert ok.success
-    assert ok.data.get("token") == "t"
+    assert ok.value.get("token") == "t"
     # Token validation
-    assert (await auth.validate_token("valid")).data is True
-    assert (await auth.validate_token("")).data is False
+    assert (await auth.validate_token("valid")).value is True
+    assert (await auth.validate_token("")).value is False
     # Refresh invalid -> fail
     assert not (await auth.refresh_token("invalid")).success
 
@@ -158,8 +158,8 @@ async def test_handler_middleware_chain_and_error() -> None:
     h = DummyHandler()
     ok = await h.handle({"a": 1})
     assert ok.success
-    assert ok.data["mw2"] == 1
-    assert ok.data["handled"] is True
+    assert ok.value["mw2"] == 1
+    assert ok.value["handled"] is True
     bad = await h.handle({"crash": True})
     assert not bad.success
 

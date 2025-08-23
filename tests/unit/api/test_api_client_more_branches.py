@@ -55,8 +55,8 @@ def test_build_stub_response_status_nonint() -> None:
         FlextApiClientRequest(method="GET", url="https://x/status/abc"),
     )
     assert r.success
-    assert r.data.status_code == 200
-    assert r.data.text() == ""
+    assert r.value.status_code == 200
+    assert r.value.text() == ""
 
 
 @pytest.mark.asyncio
@@ -105,9 +105,9 @@ async def test_process_response_pipeline_real_execution() -> None:
 
         # Verify real execution results
         assert result.success
-        assert result.data is not None
-        assert isinstance(result.data, FlextApiClientResponse)
-        assert result.data.status_code == 200
+        assert result.value is not None
+        assert isinstance(result.value, FlextApiClientResponse)
+        assert result.value.status_code == 200
         assert "X-Test-Plugin" in (request.headers or {})
 
     finally:

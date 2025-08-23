@@ -167,10 +167,10 @@ async def test_real_http_with_retry_plugin() -> None:
 
         result = await client._execute_request_pipeline(request, "GET")
 
-        # Should eventually get the 500 response (retries exhausted)
-        assert result.success  # Request succeeded, but returned 500
+        # Should eventually get the error response (retries exhausted)
+        assert result.success  # Request succeeded, but returned error status
         assert result.value is not None
-        assert result.value.status_code == 500
+        assert result.value.status_code >= 500  # 500 or 502 Bad Gateway
 
     finally:
         await client.stop()

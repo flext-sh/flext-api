@@ -1,5 +1,4 @@
-"""
-Test support utilities for flext-api.
+"""Test support utilities for flext-api.
 
 This module provides comprehensive testing utilities including:
 - Fixtures for reusable test data
@@ -13,7 +12,7 @@ from __future__ import annotations
 
 __all__ = [
     "fixtures",
-    "factories", 
+    "factories",
     "builders",
     "utils",
     "mocks",

@@ -41,7 +41,7 @@ async def test_exists_and_keys_namespace() -> None:
         StorageConfig(namespace="ns2", backend=StorageBackend.MEMORY),
     )
     await storage.set("zz", 1)
-    assert (await storage.exists("zz")).data is True
+    assert (await storage.exists("zz")).value is True
     keys = await storage.keys()
     assert keys.success
-    assert keys.data == ["zz"]
+    assert keys.value == ["zz"]

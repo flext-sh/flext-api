@@ -105,4 +105,4 @@ def test_builder_functional_usage() -> None:
     response = build_success_response_object({"test": "data"})
     assert response is not None
     assert response.success is True
-    assert response.data == {"test": "data"}
+    assert response.value == {"test": "data"}

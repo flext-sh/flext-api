@@ -34,8 +34,8 @@ class TestFlextApi:
 
             assert isinstance(result, FlextResult)
             assert result.success, f"Health check failed: {result.error}"
-            assert result.data is not None
-            assert "service" in result.data
+            assert result.value is not None
+            assert "service" in result.value
 
             # Cleanup
             await api.stop()
@@ -60,12 +60,12 @@ class TestFlextApi:
         api = FlextApi()
         config = {"base_url": "https://api.example.com", "timeout": 30}
 
-        result = api.flext_api_create_client(config)
+        result = api.create_client(config)
         assert isinstance(result, FlextResult)
         if not (result.success):
             msg: str = f"Expected True, got {result.success}"
             raise AssertionError(msg)
-        assert result.data is not None
+        assert result.value is not None
 
         # Client should now be available
         client = api.get_client()
@@ -74,7 +74,7 @@ class TestFlextApi:
     def test_create_client_with_none_config(self) -> None:
         """Test creating client with None config fails validation."""
         api = FlextApi()
-        result = api.flext_api_create_client(None)
+        result = api.create_client(None)
 
         assert isinstance(result, FlextResult)
         assert not result.success
@@ -84,7 +84,7 @@ class TestFlextApi:
     def test_create_client_with_empty_config(self) -> None:
         """Test creating client with empty config."""
         api = FlextApi()
-        result = api.flext_api_create_client({})
+        result = api.create_client({})
 
         assert isinstance(result, FlextResult)
         assert not result.success
@@ -125,7 +125,7 @@ class TestFlextApi:
             raise AssertionError(msg)
 
         # Create client
-        client_result = api.flext_api_create_client(
+        client_result = api.create_client(
             {"base_url": "https://api.example.com"},
         )
         if not (client_result.success):
