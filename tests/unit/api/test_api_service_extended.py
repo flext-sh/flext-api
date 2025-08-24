@@ -12,9 +12,9 @@ from flext_api import FlextApi, create_flext_api
 
 @pytest.mark.asyncio
 async def test_health_check_async_returns_coroutine_and_ok() -> None:
-    """health_check should return a coroutine and yield success."""
+    """health_check_async should return a coroutine and yield success."""
     svc = create_flext_api()
-    coro = svc.health_check()
+    coro = svc.health_check_async()
     assert asyncio.iscoroutine(coro)
     res = await coro
     assert isinstance(res, FlextResult)
@@ -48,17 +48,19 @@ def test_client_creation_and_info_and_legacy() -> None:
 
 
 def test_create_client_impl_valid_and_invalid() -> None:
-    """Internal client creation should raise on invalid and succeed on valid."""
+    """Internal client creation returns FlextResult for invalid and valid configs."""
     svc = FlextApi()
-    # Invalid -> raises
-    with pytest.raises(ValueError):
-        svc._create_client_impl({"base_url": ""})
+    # Invalid -> returns failure FlextResult
+    result = svc._create_client_impl({"base_url": ""})
+    assert not result.success
+    assert "Invalid URL format" in result.error
 
-    # Valid -> returns instance
-    client = svc._create_client_impl(
+    # Valid -> returns success FlextResult with instance
+    result = svc._create_client_impl(
         {"base_url": "https://api.example.com", "timeout": 0.1},
     )
-    assert client is not None
+    assert result.success
+    assert result.value is not None
 
 
 def test_builders_accessors() -> None:

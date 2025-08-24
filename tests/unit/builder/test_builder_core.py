@@ -8,6 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from flext_api import (
     FlextApiBuilder,
@@ -63,13 +64,13 @@ class TestFlextApiQuery:
         assert query.page_size == 50
 
     def test_query_validation_negative_page(self) -> None:
-        """Test query validation for negative page."""
-        with pytest.raises(ValueError, match="Page must be greater than 0"):
+        """Test query validation for negative page with Pydantic validation."""
+        with pytest.raises(ValidationError, match="Input should be greater than or equal to 1"):
             FlextApiQuery(page=0)
 
     def test_query_validation_negative_page_size(self) -> None:
-        """Test query validation for negative page size."""
-        with pytest.raises(ValueError, match="Page size must be greater than 0"):
+        """Test query validation for negative page size with Pydantic validation."""
+        with pytest.raises(ValidationError, match="Input should be greater than or equal to 1"):
             FlextApiQuery(page_size=0)
 
     def test_query_to_dict(self) -> None:

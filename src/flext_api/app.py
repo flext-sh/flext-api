@@ -9,10 +9,11 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import inspect
 import sys
 import uuid
 from collections.abc import AsyncGenerator, Callable
-from contextlib import asynccontextmanager, suppress as _suppress
+from contextlib import asynccontextmanager
 from typing import TypedDict, cast
 
 import uvicorn
@@ -125,20 +126,25 @@ async def add_request_id_middleware(
 
     # Process request - call_next is a callable per FastAPI contract
     maybe_response = call_next(request)
-    response = cast(
-        "ResponseLike",
-        await maybe_response
-        if hasattr(maybe_response, "__await__")
-        else maybe_response,
-    )
+    if inspect.iscoroutine(maybe_response):
+        response = cast("ResponseLike", await maybe_response)
+    else:
+        response = cast("ResponseLike", maybe_response)
 
     # Add request ID to response headers when available
-    with _suppress(Exception):
+    try:
         if hasattr(response, "headers"):
             headers = getattr(response, "headers", None)
             if headers and hasattr(headers, "__setitem__"):
-                # Use cast to dict for type safety instead of Any
-                cast("dict[str, str]", headers)["X-Request-ID"] = request_id
+                # Directly set the header on the original headers object
+                headers["X-Request-ID"] = request_id
+    except Exception as e:
+        # For debugging - normally would suppress but let's see what's happening
+        logger.debug(
+            "Failed to add request ID to headers",
+            error=str(e),
+            response_type=type(response).__name__,
+        )
 
     return response
 
@@ -151,14 +157,9 @@ async def error_handler_middleware(
     try:
         # call_next is callable from FastAPI middleware contract
         maybe_response = call_next(request)
-        return cast(
-            "JSONResponse",
-            (
-                await maybe_response
-                if hasattr(maybe_response, "__await__")
-                else maybe_response
-            ),
-        )
+        if inspect.iscoroutine(maybe_response):
+            return cast("JSONResponse", await maybe_response)
+        return cast("JSONResponse", maybe_response)
     except FlextApiError as e:
         logger.exception(
             "API error occurred",
@@ -349,17 +350,17 @@ def setup_health_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
     health_checker = FlextApiHealthChecker(config)
 
     @app.get("/health", tags=["Health"])
-    async def health_check() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
+    async def health_check() -> dict[str, object]:
         """Comprehensive health check endpoint."""
         return await health_checker.comprehensive_health_check(app)
 
     @app.get("/health/live", tags=["Health"])
-    async def liveness_check() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
+    async def liveness_check() -> dict[str, object]:
         """Liveness probe for Kubernetes."""
         return health_checker.liveness_check()
 
     @app.get("/health/ready", tags=["Health"])
-    async def readiness_check() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
+    async def readiness_check() -> dict[str, object]:
         """Readiness probe for Kubernetes."""
         return health_checker.readiness_check(app)
 
@@ -368,7 +369,7 @@ def setup_api_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
     """Set up main API endpoints."""
 
     @app.get("/", tags=["Root"])
-    async def root() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
+    async def root() -> dict[str, object]:
         """Root endpoint with API information."""
         return {
             "name": config.get_title(),
@@ -382,7 +383,7 @@ def setup_api_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
         }
 
     @app.get("/info", tags=["Info"])
-    async def api_info() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
+    async def api_info() -> dict[str, object]:
         """Detailed API information."""
         return {
             "api": {

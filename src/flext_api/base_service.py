@@ -1,47 +1,19 @@
-"""Minimal base service for fixing imports."""
+"""Legacy compatibility facade for base_service -> service_base migration.
+
+DEPRECATED: Use service_base module instead.
+This facade maintains backward compatibility during PEP8 migration.
+"""
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from typing import Any, TypeVar
+import warnings
 
-from flext_core import FlextDomainService, FlextResult, get_logger
+# Facade import - redirect to PEP8 module
+from flext_api.service_base import *  # type: ignore[misc] # noqa: F403,F401
 
-logger = get_logger(__name__)
-
-# Type variable for service responses
-T = TypeVar('T')
-
-class FlextApiBaseService(FlextDomainService):
-    """Base service for all FLEXT API services."""
-
-    def __init__(self) -> None:
-        super().__init__()
-
-    async def execute(self, request: Any) -> FlextResult[Any]:
-        """Execute service operation."""
-        return FlextResult[Any].ok(None)
-
-class FlextApiBaseClientService(FlextApiBaseService):
-    """Base client service."""
-    pass
-
-class FlextApiBaseBuilderService(FlextApiBaseService):
-    """Base builder service."""
-    pass
-
-class FlextApiBaseAuthService(FlextApiBaseService):
-    """Base authentication service."""
-    pass
-
-class FlextApiBaseRepositoryService(FlextApiBaseService):
-    """Base repository service."""
-    pass
-
-class FlextApiBaseHandlerService(FlextApiBaseService):
-    """Base handler service."""
-    pass
-
-class FlextApiBaseStreamingService(FlextApiBaseService):
-    """Base streaming service."""
-    pass
+# Deprecation warning for legacy usage
+warnings.warn(
+    "base_service is deprecated. Use service_base instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)

@@ -95,9 +95,9 @@ class TestMissingClientCoverage:
         assert timeout is None
 
     def test_prepare_request_params_no_config_headers(self) -> None:
-        """Test prepare_request_params with no config headers - line 294."""
-        # Config with no headers
-        config = FlextApiClientConfig(base_url="https://api.example.com", headers=None)
+        """Test prepare_request_params with empty config headers - line 294."""
+        # Config with empty headers (default)
+        config = FlextApiClientConfig(base_url="https://api.example.com")  # headers defaults to {}
         client = FlextApiClient(config)
 
         # Request with headers but config has none
@@ -179,6 +179,13 @@ class TestMissingClientCoverage:
         assert client.config.headers["Content-Type"] == "application/json"
 
     def test_invalid_url_format_error(self) -> None:
-        """Test invalid URL format raises ValueError."""
-        with pytest.raises(ValueError, match="Invalid URL format"):
-            create_client({"base_url": "invalid-url-format"})
+        """Test create_client with invalid URL format creates client but validation fails."""
+        # create_client() doesn't raise exception but creates client with invalid URL
+        # The validation happens at the business rules level
+        client = create_client({"base_url": "invalid-url-format"})
+        assert client is not None
+
+        # The business rules validation should fail
+        config_validation = client._config.validate_business_rules()
+        assert not config_validation.success
+        assert "Invalid URL format" in config_validation.error

@@ -73,14 +73,16 @@ def test_deprecated_create_api_service_and_client_paths() -> None:
 
 @pytest.mark.asyncio
 async def test__create_client_impl_failure_and_success() -> None:
-    """Validate client creation failure and success paths."""
+    """Validate client creation failure and success paths using FlextResult."""
     api = FlextApi()
     # Failure: empty base_url
-    with pytest.raises(ValueError):
-        api._create_client_impl({"base_url": ""})
+    result = api._create_client_impl({"base_url": ""})
+    assert not result.success
+    assert "Invalid URL format" in result.error
     # Success
-    client = api._create_client_impl({"base_url": "https://api.example"})
-    assert client is not None
+    result = api._create_client_impl({"base_url": "https://api.example"})
+    assert result.success
+    assert result.value is not None
 
 
 def test_app_health_storage_error_and_nonawaitable_paths() -> None:

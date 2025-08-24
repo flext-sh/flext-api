@@ -7,12 +7,10 @@ and flext-core patterns for common operations.
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
+import aiohttp
 from flext_core import FlextResult, get_logger
-
-if TYPE_CHECKING:
-    import aiohttp
 
 logger = get_logger(__name__)
 

@@ -8,19 +8,25 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from flext_api import FlextApiAppConfig
+from flext_api.config import FlextApiSettings
 
 
 def create_flext_api_app_config(
     settings: object | None = None,
 ) -> FlextApiAppConfig:
     """Create FlextApiAppConfig for testing."""
-    return FlextApiAppConfig(settings=settings)  # type: ignore[arg-type] # Testing purpose
+    if settings is None:
+        return FlextApiAppConfig(settings=None)
+    if isinstance(settings, FlextApiSettings):
+        return FlextApiAppConfig(settings=settings)
+    return FlextApiAppConfig(settings=None)  # Fallback for object type
 
 
 def create_fastapi_application(
     title: str = "Test FLEXT API",
     description: str = "Test API Description",
     version: str = "0.1.0",
+    *,
     debug: bool = True,
     docs_url: str = "/docs",
     redoc_url: str = "/redoc",

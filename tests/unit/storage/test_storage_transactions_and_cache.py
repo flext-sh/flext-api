@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 
 from flext_api import FlextApiStorage, StorageBackend, StorageConfig
@@ -60,8 +62,6 @@ async def test_transaction_rollback_and_clear_cache_and_close() -> None:
 @pytest.mark.asyncio
 async def test_cache_ttl_expiration_with_real_time() -> None:
     """TTL expiration is respected using REAL time delay - NO MOCKS."""
-    import asyncio  # noqa: PLC0415
-
     # Use very short TTL for fast test execution
     storage = FlextApiStorage(
         StorageConfig(

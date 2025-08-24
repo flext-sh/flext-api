@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import contextlib
+import stat
+from pathlib import Path
 
 import pytest
 from flext_core import FlextResult
@@ -12,15 +14,12 @@ from flext_api import FileStorageBackend, StorageConfig
 
 @pytest.mark.asyncio
 async def test_file_backend_save_and_delete_error_paths(
-    tmp_path: object,
+    tmp_path: Path,
 ) -> None:
     """Test file backend save and delete error paths with REAL I/O conditions."""
-    import stat
-    from pathlib import Path
-
     # Create initial backend and test normal operation
     file_path = Path(tmp_path) / "store.json"
-    backend = FileStorageBackend(StorageConfig(file_path=str(file_path)))
+    backend: FileStorageBackend[object] = FileStorageBackend(StorageConfig(file_path=str(file_path)))
 
     # First, test successful operation
     assert (await backend.set("a", 1)).success
@@ -33,7 +32,7 @@ async def test_file_backend_save_and_delete_error_paths(
 
     try:
         # Try to create backend with read-only file - this will test REAL save failures
-        readonly_backend = FileStorageBackend(
+        readonly_backend: FileStorageBackend[object] = FileStorageBackend(
             StorageConfig(file_path=str(readonly_file_path))
         )
 
@@ -61,7 +60,7 @@ async def test_file_backend_save_and_delete_error_paths(
     # Test invalid file path to trigger REAL path errors
     invalid_path = "/dev/null/impossible/path/store.json"
     try:
-        invalid_backend = FileStorageBackend(StorageConfig(file_path=invalid_path))
+        invalid_backend: FileStorageBackend[object] = FileStorageBackend(StorageConfig(file_path=invalid_path))
         # Operations on invalid path should handle errors gracefully
         invalid_result = await invalid_backend.set("test", "value")
         assert isinstance(invalid_result, FlextResult)

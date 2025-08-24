@@ -1,69 +1,27 @@
-"""Extended tests for auth, repo, handler, and streaming base services."""
+"""Extended tests for base services using flext-core patterns."""
 
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from typing import ClassVar
 
 import pytest
 from flext_core import FlextResult
 
-from flext_api import (
-    FlextApiBaseAuthService,
-    FlextApiBaseHandlerService,
-    FlextApiBaseRepositoryService,
-    FlextApiBaseStreamingService,
-)
+from flext_api import FlextApiBaseService
 
 
-class DummyAuth(FlextApiBaseAuthService):
-    """Minimal auth service for path coverage."""
+class DummyAuthService(FlextApiBaseService):
+    """Minimal auth service for testing authentication patterns."""
 
-    service_name: str = "dummy-auth"
+    def __init__(self) -> None:
+        super().__init__()
+        # Store service name as a simple attribute (not in Pydantic data)
+        object.__setattr__(self, "_service_name", "dummy-auth")
 
-    async def _do_start(self) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-    async def _do_stop(self) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-    async def _do_authenticate(
-        self,
-        _credentials: dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
-        return FlextResult[None].ok({"token": "t"})
-
-    async def _do_validate_token(self, token: str) -> FlextResult[bool]:
-        return FlextResult[None].ok(token == "valid")
-
-    async def _do_refresh_token(self, token: str) -> FlextResult[str]:
-        return FlextResult[None].ok(token + ".ref")
-
-
-@pytest.mark.asyncio
-async def test_auth_service_paths() -> None:
-    """Test auth service paths."""
-    # Ensure model is fully built before instantiation
-    DummyAuth.model_rebuild()
-    auth = DummyAuth()
-    # Empty credentials -> fail
-    assert not (await auth.authenticate({})).success
-    # Valid credentials -> ok and session creation pass-through
-    ok = await auth.authenticate({"u": 1})
-    assert ok.success
-    assert ok.value.get("token") == "t"
-    # Token validation
-    assert (await auth.validate_token("valid")).value is True
-    assert (await auth.validate_token("")).value is False
-    # Refresh invalid -> fail
-    assert not (await auth.refresh_token("invalid")).success
-
-
-class DummyRepo(FlextApiBaseRepositoryService):
-    """Minimal repository service for path coverage."""
-
-    service_name: str = "dummy-repo"
-    entity_type: type = dict
+    @property
+    def service_name(self) -> str:
+        """Get service name."""
+        return self._service_name
 
     async def _do_start(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
@@ -71,71 +29,31 @@ class DummyRepo(FlextApiBaseRepositoryService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
 
-    async def _do_find_by_id(self, entity_id: str) -> FlextResult[dict[str, object]]:
-        return FlextResult[None].ok({"id": entity_id})
-
-    async def _do_find_all(
-        self,
-        _filters: dict[str, object] | None,
-        _limit: int | None,
-        _offset: int | None,
-    ) -> FlextResult[list[dict[str, object]]]:
-        return FlextResult[None].ok([{}, {}, {}])
-
-    async def _do_save(
-        self,
-        entity: dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
-        return FlextResult[None].ok(entity | {"saved": True})
-
-    async def _do_delete(self, _entity_id: str) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
+    async def authenticate(self, credentials: dict[str, object]) -> FlextResult[dict[str, object]]:
+        """Authenticate user with credentials."""
+        username = credentials.get("username")
+        if username == "valid_user":
+            return FlextResult[dict[str, object]].ok({
+                "token": "auth_token_123",
+                "user_id": "user_123",
+                "expires_in": 3600,
+            })
+        return FlextResult[dict[str, object]].fail("Invalid credentials")
 
 
-@pytest.mark.asyncio
-async def test_repository_service_paths() -> None:
-    """Test repository service paths."""
-    repo = DummyRepo()
-    assert not (await repo.find_by_id("")).success
-    assert not (await repo.find_all(limit=0)).success
-    assert not (await repo.find_all(offset=-1)).success
-    assert (await repo.find_all()).success
-    assert not (await repo.save({})).success
-    assert (await repo.save({"id": 1})).success
-    # delete will first call find_by_id; ensure failure propagates
+class DummyRepositoryService(FlextApiBaseService):
+    """Minimal repository service for testing data access patterns."""
 
-    async def fail_find(_: object) -> FlextResult[object]:
-        return FlextResult[None].fail("nf")
+    def __init__(self) -> None:
+        super().__init__()
+        # Store service name as a simple attribute (not in Pydantic data)
+        object.__setattr__(self, "_service_name", "dummy-repository")
+        self._data: dict[str, dict[str, object]] = {}
 
-    repo._do_find_by_id = fail_find
-    assert not (await repo.delete("1")).success
-
-
-class DummyMw:
-    """Simple middleware to mutate request/response dicts."""
-
-    async def process_request(
-        self,
-        req: dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
-        r = dict(req)
-        r["mw"] = 1
-        return FlextResult[None].ok(r)
-
-    async def process_response(
-        self,
-        resp: dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
-        r = dict(resp)
-        r["mw2"] = 1
-        return FlextResult[None].ok(r)
-
-
-class DummyHandler(FlextApiBaseHandlerService):
-    """Handler service with two middlewares and simple echo handle."""
-
-    service_name: str = "dummy-handler"
-    middlewares: ClassVar[list[DummyMw]] = [DummyMw()]
+    @property
+    def service_name(self) -> str:
+        """Get service name."""
+        return self._service_name
 
     async def _do_start(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
@@ -143,31 +61,37 @@ class DummyHandler(FlextApiBaseHandlerService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
 
-    async def _do_handle(
-        self,
-        request: dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
-        if request.get("crash"):
-            return FlextResult[None].fail("boom")
-        return FlextResult[None].ok(request | {"handled": True})
+    async def save(self, entity_id: str, data: dict[str, object]) -> FlextResult[dict[str, object]]:
+        """Save entity data."""
+        self._data[entity_id] = data
+        return FlextResult[dict[str, object]].ok(data)
+
+    async def find_by_id(self, entity_id: str) -> FlextResult[dict[str, object] | None]:
+        """Find entity by ID."""
+        if entity_id in self._data:
+            return FlextResult[dict[str, object] | None].ok(self._data[entity_id])
+        return FlextResult[dict[str, object] | None].ok(None)
+
+    async def delete(self, entity_id: str) -> FlextResult[bool]:
+        """Delete entity by ID."""
+        if entity_id in self._data:
+            del self._data[entity_id]
+            return FlextResult[bool].ok(True)
+        return FlextResult[bool].ok(False)
 
 
-@pytest.mark.asyncio
-async def test_handler_middleware_chain_and_error() -> None:
-    """Test handler middleware chain and error."""
-    h = DummyHandler()
-    ok = await h.handle({"a": 1})
-    assert ok.success
-    assert ok.value["mw2"] == 1
-    assert ok.value["handled"] is True
-    bad = await h.handle({"crash": True})
-    assert not bad.success
+class DummyStreamingService(FlextApiBaseService):
+    """Minimal streaming service for testing async iteration patterns."""
 
+    def __init__(self) -> None:
+        super().__init__()
+        # Store service name as a simple attribute (not in Pydantic data)
+        object.__setattr__(self, "_service_name", "dummy-streaming")
 
-class DummyStream(FlextApiBaseStreamingService):
-    """Streaming service yielding bytes and raising on fail."""
-
-    service_name: str = "dummy-stream"
+    @property
+    def service_name(self) -> str:
+        """Get service name."""
+        return self._service_name
 
     async def _do_start(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
@@ -175,20 +99,133 @@ class DummyStream(FlextApiBaseStreamingService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
 
-    async def _do_stream(self, source: object) -> AsyncIterator[bytes]:
-        if isinstance(source, dict) and source.get("fail"):
-            msg = "stream fail"
-            raise RuntimeError(msg)
-        yield b"x"
-        yield b"y"
+    async def stream_data(self, count: int = 5) -> AsyncIterator[dict[str, object]]:
+        """Stream data items asynchronously."""
+        for i in range(count):
+            yield {"item": i, "value": f"data_{i}", "timestamp": f"2023-01-0{i + 1}"}
 
 
 @pytest.mark.asyncio
-async def test_streaming_validation_and_errors() -> None:
-    """Test streaming validation and errors."""
-    s = DummyStream()
-    chunks = [c async for c in s.stream_data(b"abc")]
-    assert b"x" in chunks
-    assert b"y" in chunks
-    with pytest.raises(RuntimeError):
-        await anext(s.stream_data({"fail": True}))
+async def test_auth_service_authentication() -> None:
+    """Test authentication service functionality."""
+    auth_service = DummyAuthService()
+
+    await auth_service.start_async()
+
+    # Test valid authentication
+    valid_result = await auth_service.authenticate({"username": "valid_user", "password": "test"})
+    assert valid_result.success
+    assert valid_result.value is not None
+    assert valid_result.value["token"] == "auth_token_123"
+    assert valid_result.value["user_id"] == "user_123"
+
+    # Test invalid authentication
+    invalid_result = await auth_service.authenticate({"username": "invalid_user"})
+    assert not invalid_result.success
+    assert invalid_result.error == "Invalid credentials"
+
+    await auth_service.stop_async()
+
+
+@pytest.mark.asyncio
+async def test_repository_service_crud_operations() -> None:
+    """Test repository service CRUD operations."""
+    repo_service = DummyRepositoryService()
+
+    await repo_service.start_async()
+
+    # Test save
+    test_data = {"name": "Test Entity", "value": 42, "active": True}
+    save_result = await repo_service.save("entity_1", test_data)
+    assert save_result.success
+    assert save_result.value == test_data
+
+    # Test find
+    find_result = await repo_service.find_by_id("entity_1")
+    assert find_result.success
+    assert find_result.value == test_data
+
+    # Test find non-existent
+    not_found_result = await repo_service.find_by_id("non_existent")
+    assert not_found_result.success
+    assert not_found_result.value is None
+
+    # Test delete
+    delete_result = await repo_service.delete("entity_1")
+    assert delete_result.success
+    assert delete_result.value is True
+
+    # Test delete non-existent
+    delete_missing_result = await repo_service.delete("non_existent")
+    assert delete_missing_result.success
+    assert delete_missing_result.value is False
+
+    await repo_service.stop_async()
+
+
+@pytest.mark.asyncio
+async def test_streaming_service_async_iteration() -> None:
+    """Test streaming service async iteration."""
+    streaming_service = DummyStreamingService()
+
+    await streaming_service.start_async()
+
+    # Test streaming data
+    items = [item async for item in streaming_service.stream_data(3)]
+
+    assert len(items) == 3
+    assert items[0]["item"] == 0
+    assert items[0]["value"] == "data_0"
+    assert items[1]["item"] == 1
+    assert items[2]["item"] == 2
+
+    await streaming_service.stop_async()
+
+
+@pytest.mark.asyncio
+async def test_service_lifecycle_integration() -> None:
+    """Test service lifecycle and integration patterns."""
+    auth_service = DummyAuthService()
+    repo_service = DummyRepositoryService()
+    stream_service = DummyStreamingService()
+
+    # Start all services
+    await auth_service.start_async()
+    await repo_service.start_async()
+    await stream_service.start_async()
+
+    # Test integrated workflow
+    # 1. Authenticate user
+    auth_result = await auth_service.authenticate({"username": "valid_user"})
+    assert auth_result.success
+
+    # 2. Save user session data
+    session_data = {"user_id": auth_result.value["user_id"], "token": auth_result.value["token"]}
+    save_result = await repo_service.save("session_123", session_data)
+    assert save_result.success
+
+    # 3. Stream some data
+    stream_count = 0
+    async for _ in stream_service.stream_data(2):
+        stream_count += 1
+    assert stream_count == 2
+
+    # Stop all services
+    await auth_service.stop_async()
+    await repo_service.stop_async()
+    await stream_service.stop_async()
+
+
+def test_service_initialization_and_properties() -> None:
+    """Test service initialization and basic properties."""
+    auth_service = DummyAuthService()
+    repo_service = DummyRepositoryService()
+    stream_service = DummyStreamingService()
+
+    assert auth_service.service_name == "dummy-auth"
+    assert repo_service.service_name == "dummy-repository"
+    assert stream_service.service_name == "dummy-streaming"
+
+    assert hasattr(auth_service, "is_running")
+    assert hasattr(repo_service, "is_running")
+    assert hasattr(stream_service, "is_running")

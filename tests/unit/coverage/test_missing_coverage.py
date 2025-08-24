@@ -49,6 +49,7 @@ class TestMissingCoverageApi:
         # Test with invalid configuration
         result = api.create_client({})
         assert not result.success
+        assert result.error is not None
         assert "base_url" in result.error.lower()
 
     def test_api_service_info_error(self) -> None:

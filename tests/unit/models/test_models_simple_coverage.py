@@ -25,6 +25,7 @@ class TestURLRealValidation:
         # Empty URL
         result = URL.create("")
         assert not result.success
+        assert result.error is not None
         assert "cannot be empty" in result.error
 
         # Whitespace URL
@@ -36,12 +37,13 @@ class TestURLRealValidation:
         """Test invalid scheme validation - covers line 301."""
         result = URL.create("ftp://example.com")
         assert not result.success
-        assert "Invalid URL scheme" in result.error or "scheme" in result.error
+        assert (result.error is not None and "Invalid URL scheme" in result.error) or "scheme" in result.error
 
     def test_url_empty_host_validation(self) -> None:
         """Test empty host validation - covers line 304."""
         result = URL.create("https://")
         assert not result.success
+        assert result.error is not None
         assert "host" in result.error
 
     def test_url_invalid_port_validation(self) -> None:
@@ -50,7 +52,7 @@ class TestURLRealValidation:
         result = URL.create("https://example.com:99999")
         assert not result.success
         # The error might vary, but should be about port
-        assert "port" in result.error.lower() or "range" in result.error.lower()
+        assert (result.error is not None and "port" in result.error.lower()) or "range" in result.error.lower()
 
 
 class TestHttpHeaderRealValidation:

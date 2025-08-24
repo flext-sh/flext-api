@@ -9,12 +9,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 from flext_api import (
     FlextApi,
     FlextApiBuilder,
     FlextApiCachingPlugin,
+    FlextApiClientResponse,
     FlextApiRetryPlugin,
     build_query,
     build_success_response,
@@ -44,8 +47,9 @@ class TestApiWorkflowE2E:
             data=response_data,
             message="Data retrieved successfully",
         )
-        assert response["success"] is True
-        assert response["data"]["total"] == 1
+        assert response.success is True
+        assert isinstance(response.data, dict)
+        assert response.data["total"] == 1
 
         # 4. Create HTTP client using modern API
         client_result = api.create_client(
@@ -64,7 +68,8 @@ class TestApiWorkflowE2E:
             assert get_result.success
 
             # 6. Verify response structure
-            http_response = get_result.value
+            assert get_result.value is not None
+            http_response = cast("FlextApiClientResponse", get_result.value)
             assert http_response.status_code == 200
             assert isinstance(http_response.value, dict)
 
@@ -83,6 +88,7 @@ class TestApiWorkflowE2E:
             },
         )
         assert not invalid_result.success
+        assert invalid_result.error is not None
         assert "Invalid URL format" in invalid_result.error
 
         # Test with valid config but unreachable URL using modern API
@@ -100,7 +106,8 @@ class TestApiWorkflowE2E:
             # This should fail gracefully
             result = await client.get("/test")
             assert not result.success
-            assert "Failed to make GET request" in result.error
+            assert result.error is not None
+            assert "Request failed:" in result.error
 
         finally:
             await client.close()
@@ -135,6 +142,7 @@ class TestApiWorkflowE2E:
         )
 
         assert response.success is True
+        assert response.pagination is not None
         assert response.pagination["total"] == 100
         assert response.pagination["has_next"] is True
         assert response.pagination["has_previous"] is True
@@ -175,7 +183,9 @@ class TestApiWorkflowE2E:
             # Test actual request with plugins
             result = await client.get("/delay/1")
             if result.success:
-                assert result.value.status_code == 200
+                assert result.value is not None
+                response = cast("FlextApiClientResponse", result.value)
+                assert response.status_code == 200
 
         finally:
             await client.close()

@@ -19,6 +19,7 @@ from flext_api import (
     create_flext_api_app_with_settings,
     flext_api_create_app,
 )
+from flext_api.config import FlextApiSettings
 
 # Constants
 HTTP_OK = 200
@@ -60,7 +61,6 @@ class TestAppRealExecution:
     def test_real_app_configuration_validation(self) -> None:
         """Test REAL app configuration and endpoint functionality."""
         # Create REAL settings with proper configuration
-        from flext_api.config import FlextApiSettings  # noqa: PLC0415
 
         # Test settings creation and validation
         FlextApiSettings(api_host="test.api.com", api_port=9001, debug=True)
@@ -90,7 +90,6 @@ class TestAppRealExecution:
         assert "Enterprise-grade" in default_app.description
 
         # Test custom configuration with REAL settings
-        from flext_api.config import FlextApiSettings  # noqa: PLC0415
 
         # Test custom settings creation
         custom_settings = FlextApiSettings(

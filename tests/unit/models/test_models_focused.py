@@ -104,14 +104,14 @@ class TestEnums:
     def test_http_status_enum(self) -> None:
         """Test HTTP status enum values."""
         # Test common status codes
-        assert HttpStatus.OK == 200
-        assert HttpStatus.CREATED == 201
-        assert HttpStatus.NO_CONTENT == 204
-        assert HttpStatus.BAD_REQUEST == 400
-        assert HttpStatus.UNAUTHORIZED == 401
-        assert HttpStatus.FORBIDDEN == 403
-        assert HttpStatus.NOT_FOUND == 404
-        assert HttpStatus.INTERNAL_SERVER_ERROR == 500
+        assert HttpStatus.OK.value == 200
+        assert HttpStatus.CREATED.value == 201
+        assert HttpStatus.NO_CONTENT.value == 204
+        assert HttpStatus.BAD_REQUEST.value == 400
+        assert HttpStatus.UNAUTHORIZED.value == 401
+        assert HttpStatus.FORBIDDEN.value == 403
+        assert HttpStatus.NOT_FOUND.value == 404
+        assert HttpStatus.INTERNAL_SERVER_ERROR.value == 500
 
     def test_client_status_enum(self) -> None:
         """Test ClientStatus enum."""
@@ -134,7 +134,7 @@ class TestApiModels:
     def test_api_request_creation(self) -> None:
         """Test ApiRequest model creation."""
         # Test with minimal required fields (id, method, url are required by FlextEntity)
-        request = ApiRequest(id="req_123", method="GET", url="/api/users")
+        request = ApiRequest(id="req_123", method=HttpMethod.GET, url="/api/users")
 
         assert request.method == "GET"
         assert request.url == "/api/users"
@@ -145,7 +145,7 @@ class TestApiModels:
         # Test with additional fields - use required fields
         request = ApiRequest(
             id="req_456",
-            method="POST",
+            method=HttpMethod.POST,
             url="/api/users",
             headers={"Content-Type": "application/json"},
         )
@@ -222,7 +222,7 @@ class TestModelIntegration:
         """Test API models using HTTP enums."""
         # Create request using enum values (with required fields)
         request = ApiRequest(
-            id="req_789", method=HttpMethod.POST.value, url="/api/resources"
+            id="req_789", method=HttpMethod.POST, url="/api/resources"
         )
 
         assert request.method == HttpMethod.POST

@@ -1,35 +1,25 @@
-"""Extended tests for base service abstractions in flext_api."""
+"""Extended tests for base service abstractions in flext_api using flext-core patterns."""
 
 from __future__ import annotations
 
 import pytest
 from flext_core import FlextResult
 
-# Ensure forward-ref'd protocols and types exist in eval namespace for model_rebuild
-from flext_api import (  # noqa: F401
-    ClientConfig,
-    FlextApiBaseAuthService,
-    FlextApiBaseClientService,
-    FlextApiBaseHandlerService,
-    FlextApiBaseRepositoryService,
-    FlextApiMiddlewareProtocol,
-    FlextApiPluginProtocol,
-    FlextApiQueryBuilderProtocol,
-    FlextApiResponseBuilderProtocol,
-    FlextTypes,
-)
+from flext_api import FlextApiBaseService
 
 
-class DummyClientService(FlextApiBaseClientService):
-    """Minimal concrete client service for lifecycle and request tests."""
+class DummyService(FlextApiBaseService):
+    """Minimal concrete service for lifecycle tests using flext-core patterns."""
 
-    service_name: str = "dummy"
-    client_config: ClientConfig = ClientConfig(
-        base_url="https://example.com",
-        timeout=5.0,
-        headers={},
-        max_retries=0,
-    )
+    def __init__(self) -> None:
+        super().__init__()
+        # Store service name as a simple attribute (not in Pydantic data)
+        object.__setattr__(self, "_service_name", "dummy")
+
+    @property
+    def service_name(self) -> str:
+        """Get service name."""
+        return self._service_name
 
     async def _do_start(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
@@ -37,140 +27,53 @@ class DummyClientService(FlextApiBaseClientService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
 
-    async def _execute_request(self, **_: object) -> FlextResult[dict[str, object]]:
-        return FlextResult[None].ok({"ok": True})
-
-
-# Ensure Pydantic resolves forward refs for subclass models
-DummyClientService.model_rebuild()
-
-
-@pytest.mark.asyncio
-async def test_base_client_service_lifecycle_and_request() -> None:
-    """Lifecycle start/stop, health, and request execution for client service."""
-    svc = DummyClientService()
-    start_res = await svc.start()
-    assert start_res.success
-    health = await svc.health_check()
-    assert health.success
-    assert health.value is not None
-    assert health.value["status"] in {"healthy", "stopped"}
-    res = await svc.request("GET", "http://example.com")
-    assert res.success
-    assert (await svc.stop()).success
-
-
-class DummyAuth(FlextApiBaseAuthService):
-    """Minimal concrete auth service for flow tests."""
-
-    service_name: str = "auth"
-
-    async def _do_start(self) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-    async def _do_stop(self) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-    async def _do_authenticate(
-        self,
-        _credentials: dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
-        return FlextResult[None].ok({"token": "abcdefghijklmnop"})
-
-    async def _do_validate_token(self, token: str) -> FlextResult[bool]:
-        return FlextResult[None].ok(len(token) >= 16)
-
-    async def _do_refresh_token(self, token: str) -> FlextResult[str]:
-        return FlextResult[None].ok(token + "1")
-
-
-DummyAuth.model_rebuild()
+    async def process_data(self, data: dict[str, object]) -> FlextResult[dict[str, object]]:
+        """Mock processing method for testing."""
+        return FlextResult[dict[str, object]].ok({
+            "processed": True,
+            "input": data,
+        })
 
 
 @pytest.mark.asyncio
-async def test_base_auth_service_flows() -> None:
-    """Basic auth service flows: authenticate, validate, refresh."""
-    auth = DummyAuth()
-    res = await auth.authenticate({"u": 1})
-    assert res.success
-    assert res.value is not None
-    token = str(res.value.get("token"))
-    assert len(token) >= 16
-    assert (await auth.validate_token(token)).value is True
-    assert (await auth.refresh_token(token)).value == token + "1"
+async def test_base_service_lifecycle() -> None:
+    """Test basic service lifecycle operations."""
+    service = DummyService()
 
+    # Test start
+    start_result = await service.start_async()
+    assert start_result.success
 
-class DummyRepo(FlextApiBaseRepositoryService):
-    """Minimal concrete repository service for CRUD tests."""
+    # Test health check
+    health_result = await service.health_check_async()
+    assert health_result.success
+    assert health_result.value is not None
+    assert "status" in health_result.value
 
-    service_name: str = "repo"
-    entity_type: type = dict
-
-    async def _do_start(self) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-    async def _do_stop(self) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-    async def _do_find_by_id(self, entity_id: str) -> FlextResult[dict[str, object]]:
-        return FlextResult[None].ok({"id": entity_id})
-
-    async def _do_find_all(
-        self,
-        _filters: dict[str, object] | None,
-        _limit: int | None,
-        _offset: int | None,
-    ) -> FlextResult[list[dict[str, object]]]:
-        return FlextResult[None].ok([{"id": 1}])
-
-    async def _do_save(
-        self,
-        entity: dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
-        return FlextResult[None].ok(entity)
-
-    async def _do_delete(self, _entity_id: str) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-
-DummyRepo.model_rebuild()
+    # Test stop
+    stop_result = await service.stop_async()
+    assert stop_result.success
 
 
 @pytest.mark.asyncio
-async def test_base_repository_crud() -> None:
-    """Repository CRUD operations return expected results."""
-    repo = DummyRepo()
-    assert (await repo.find_by_id("1")).value == {"id": "1"}
-    assert (await repo.find_all()).value == [{"id": 1}]
-    assert (await repo.save({"id": 2})).value == {"id": 2}
-    assert (await repo.delete("2")).success
+async def test_base_service_data_processing() -> None:
+    """Test service data processing functionality."""
+    service = DummyService()
+
+    # Test data processing
+    test_data = {"key": "value", "number": 42}
+    result = await service.process_data(test_data)
+
+    assert result.success
+    assert result.value is not None
+    assert result.value["processed"] is True
+    assert result.value["input"] == test_data
 
 
-class DummyHandler(FlextApiBaseHandlerService):
-    """Minimal concrete handler for request flow tests."""
+def test_base_service_initialization() -> None:
+    """Test service initialization and properties."""
+    service = DummyService()
 
-    service_name: str = "handler"
-
-    async def _do_start(self) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-    async def _do_stop(self) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-    async def _do_handle(
-        self,
-        request: dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
-        return FlextResult[None].ok({"echo": request})
-
-
-DummyHandler.model_rebuild()
-
-
-@pytest.mark.asyncio
-async def test_base_handler_flow() -> None:
-    """Handler echoes request payload as response."""
-    h = DummyHandler()
-    res = await h.handle({"a": 1})
-    assert res.success
-    assert res.value == {"echo": {"a": 1}}
+    assert service.service_name == "dummy"
+    assert hasattr(service, "is_running")
+    assert service.is_running is False  # Service starts as stopped

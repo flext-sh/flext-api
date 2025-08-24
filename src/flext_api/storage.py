@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
-from typing import Generic, TypeVar, override
+from typing import TypeVar, override
 from uuid import uuid4
 
 from flext_core import FlextResult, get_logger
@@ -53,7 +53,7 @@ class StorageConfig:
 
 
 @dataclass
-class CacheEntry(Generic[T]):  # noqa: UP046
+class CacheEntry[T]:
     """Cache entry with expiration."""
 
     value: T
@@ -66,7 +66,7 @@ class CacheEntry(Generic[T]):  # noqa: UP046
 
 
 @dataclass
-class TransactionContext(Generic[V]):  # noqa: UP046
+class TransactionContext[V]:
     """Transaction context for atomic operations."""
 
     transaction_id: str = field(default_factory=lambda: str(uuid4()))
@@ -82,7 +82,7 @@ class TransactionContext(Generic[V]):  # noqa: UP046
 # ==============================================================================
 
 
-class StorageBackendInterface(ABC, Generic[K, V]):  # noqa: UP046
+class StorageBackendInterface[K, V](ABC):
     """Abstract interface for storage backends."""
 
     @abstractmethod
@@ -144,7 +144,7 @@ class CacheInterface(ABC):
 # ==============================================================================
 
 
-class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: UP046
+class MemoryStorageBackend[V](StorageBackendInterface[str, V]):
     """In-memory storage backend with TTL support."""
 
     def __init__(self, config: StorageConfig) -> None:
@@ -217,7 +217,7 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
             # Check expiration
             if key in self._expiry and time.time() > self._expiry[key]:
                 await self.delete(key)
-                return FlextResult[bool].ok(False)  # noqa: FBT003
+                return FlextResult[bool].ok(data=False)
 
             exists = key in self._data
             return FlextResult[bool].ok(exists)
@@ -267,7 +267,7 @@ class MemoryStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa
         return FlextResult[None].ok(None)
 
 
-class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: UP046
+class FileStorageBackend[V](StorageBackendInterface[str, V]):
     """File-based storage backend with JSON serialization."""
 
     def __init__(self, config: StorageConfig) -> None:
@@ -320,7 +320,7 @@ class FileStorageBackend(StorageBackendInterface[str, V], Generic[V]):  # noqa: 
         self,
         key: str,
         value: V,
-        ttl_seconds: int | None = None,  # noqa: ARG002
+        ttl_seconds: int | None = None,
     ) -> FlextResult[None]:
         """Set value by key (TTL not supported in file backend)."""
         async with self._lock:
@@ -585,7 +585,7 @@ class FlextApiStorage:
                 )
 
             transaction.operations.append(("delete", namespaced_key, None))
-            return FlextResult[bool].ok(data=True)  # noqa: FBT003
+            return FlextResult[bool].ok(data=True)
 
         # Direct delete operation
         result = await self._backend.delete(namespaced_key)

@@ -7,8 +7,7 @@ from collections.abc import Mapping
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from flext_core import get_logger
-from flext_core.exceptions import (
+from flext_core import (
     FlextAuthenticationError,
     FlextConfigurationError,
     FlextConnectionError,
@@ -16,6 +15,7 @@ from flext_core.exceptions import (
     FlextProcessingError,
     FlextTimeoutError,
     FlextValidationError,
+    get_logger,
 )
 
 from flext_api.constants import FlextApiConstants

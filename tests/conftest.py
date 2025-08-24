@@ -67,16 +67,14 @@ fake = Faker()
 Faker.seed(12345)
 
 # Environment setup for testing
-os.environ.update(
-    {
-        "FLEXT_API_TESTING": "true",
-        "FLEXT_DISABLE_EXTERNAL_CALLS": "0",  # ENABLE external calls for real testing
-        "FLEXT_TEST_LOG_MINIMAL": "true",
-        "FLEXT_FAST_TEST_MODE": "true",
-        "ENVIRONMENT": "test",
-        "LOG_LEVEL": "DEBUG",
-    }
-)
+os.environ.update({
+    "FLEXT_API_TESTING": "true",
+    "FLEXT_DISABLE_EXTERNAL_CALLS": "0",  # ENABLE external calls for real testing
+    "FLEXT_TEST_LOG_MINIMAL": "true",
+    "FLEXT_FAST_TEST_MODE": "true",
+    "ENVIRONMENT": "test",
+    "LOG_LEVEL": "DEBUG",
+})
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -212,23 +210,13 @@ def api_request_factory() -> Callable[
 
 
 @pytest.fixture
-def api_response_factory() -> Callable[
-    [
-        int,
-        dict[str, str] | None,
-        dict[str, object] | list[object] | str | bytes | None,
-        float,
-        str | None,
-        bool,
-    ],
-    FlextApiClientResponse,
-]:
+def api_response_factory() -> Callable[..., FlextApiClientResponse]:  # type: ignore[explicit-any]
     """Provide FlextApiClientResponse factory for test data generation."""
     return FlextApiClientResponseFactory
 
 
 @pytest.fixture
-def api_config_factory() -> Callable[[str, int, int, int, bool, int], object]:
+def api_config_factory() -> Callable[..., object]:  # type: ignore[explicit-any]
     """Provide FlextApiConfig factory for test data generation."""
     return FlextApiConfigFactory
 
@@ -259,7 +247,7 @@ async def httpx_mock() -> object:
 # ============================================================================
 
 try:
-    import pytest_benchmark  # type: ignore[import-untyped] # noqa: F401 # Used in try/except block for conditional imports
+    import pytest_benchmark  # noqa: F401  # type: ignore[import-untyped]
 
     @pytest.fixture
     def benchmark_config() -> dict[str, object]:
@@ -275,11 +263,11 @@ try:
 except ImportError:
     # Fallback benchmark fixture for environments without pytest-benchmark
     @pytest.fixture
-    def benchmark() -> object:
+    def benchmark() -> Callable[[Callable[..., object], ...], object]:
         """Lightweight benchmark fallback."""
 
-        def _bench(func: object, *args: object, **kwargs: object) -> object:
-            return func(*args, **kwargs)  # type: ignore[operator]
+        def _bench(func: Callable[..., object], *args: object, **kwargs: object) -> object:
+            return func(*args, **kwargs)
 
         return _bench
 
@@ -359,15 +347,15 @@ def fake_data() -> Faker:
 
 
 @pytest.fixture
-def assert_success() -> Callable[[object, object], None]:
+def assert_success() -> Callable[..., None]:  # type: ignore[explicit-any]
     """Provide FlextResult success assertion utility."""
-    return assert_flext_result_success  # type: ignore[return-value]
+    return assert_flext_result_success
 
 
 @pytest.fixture
-def assert_failure() -> Callable[[object, str | None], None]:
+def assert_failure() -> Callable[..., None]:  # type: ignore[explicit-any]
     """Provide FlextResult failure assertion utility."""
-    return assert_flext_result_failure  # type: ignore[return-value]
+    return assert_flext_result_failure
 
 
 @pytest.fixture
@@ -380,17 +368,7 @@ def create_request() -> Callable[
 
 
 @pytest.fixture
-def create_response() -> Callable[
-    [
-        int,
-        dict[str, object] | list[object] | str | bytes | None,
-        dict[str, str] | None,
-        float,
-        str | None,
-        bool,
-    ],
-    FlextApiClientResponse,
-]:
+def create_response() -> Callable[..., FlextApiClientResponse]:  # type: ignore[explicit-any]
     """Provide test response creation utility."""
     return create_test_response
 

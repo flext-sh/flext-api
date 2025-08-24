@@ -66,6 +66,7 @@ class TestApiRequest:
 
         result = request.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "URL cannot be empty" in result.error
 
     def test_validation_whitespace_url_fails(self) -> None:
@@ -74,6 +75,7 @@ class TestApiRequest:
 
         result = request.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "URL cannot be empty" in result.error
 
     def test_validation_invalid_url_scheme_fails(self) -> None:
@@ -86,6 +88,7 @@ class TestApiRequest:
 
         result = request.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "valid HTTP URL or path" in result.error
 
     def test_validation_relative_path_succeeds(self) -> None:
@@ -110,6 +113,7 @@ class TestApiRequest:
 
         result = request.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "Header keys must be non-empty" in result.error
 
     def test_validation_empty_header_value_fails(self) -> None:
@@ -123,6 +127,7 @@ class TestApiRequest:
 
         result = request.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "Header values cannot be empty" in result.error
 
     def test_start_processing_success(self) -> None:
@@ -151,6 +156,7 @@ class TestApiRequest:
 
         result = request.start_processing()
         assert not result.success
+        assert result.error is not None
         assert "Cannot start processing from state: created" in result.error
 
     def test_complete_processing_success(self) -> None:
@@ -179,6 +185,7 @@ class TestApiRequest:
 
         result = request.complete_processing()
         assert not result.success
+        assert result.error is not None
         assert "Cannot complete from state: created" in result.error
 
 
@@ -229,6 +236,7 @@ class TestApiResponse:
 
         result = response.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "Invalid HTTP status code: 99" in result.error
 
     def test_validation_high_status_code_fails(self) -> None:
@@ -237,6 +245,7 @@ class TestApiResponse:
 
         result = response.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "Invalid HTTP status code: 600" in result.error
 
     def test_validation_empty_header_key_fails(self) -> None:
@@ -249,6 +258,7 @@ class TestApiResponse:
 
         result = response.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "header keys must be non-empty" in result.error
 
     def test_validation_empty_header_value_fails(self) -> None:
@@ -261,6 +271,7 @@ class TestApiResponse:
 
         result = response.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "header values cannot be empty" in result.error
 
     def test_mark_success(self) -> None:
@@ -347,6 +358,7 @@ class TestApiEndpoint:
 
         result = endpoint.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "path cannot be empty" in result.error
 
     def test_validation_path_without_slash_fails(self) -> None:
@@ -359,6 +371,7 @@ class TestApiEndpoint:
 
         result = endpoint.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "path must start with '/'" in result.error
 
     def test_validation_empty_methods_fails(self) -> None:
@@ -367,6 +380,7 @@ class TestApiEndpoint:
 
         result = endpoint.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "at least one HTTP method" in result.error
 
     def test_validation_negative_rate_limit_fails(self) -> None:
@@ -380,6 +394,7 @@ class TestApiEndpoint:
 
         result = endpoint.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "Rate limit must be positive" in result.error
 
     def test_validation_zero_rate_limit_fails(self) -> None:
@@ -393,6 +408,7 @@ class TestApiEndpoint:
 
         result = endpoint.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "Rate limit must be positive" in result.error
 
     def test_supports_method(self) -> None:
@@ -478,6 +494,7 @@ class TestApiSession:
 
         result = session.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "at least 16 characters" in result.error
 
     def test_validation_past_expiration_fails(self) -> None:
@@ -489,6 +506,7 @@ class TestApiSession:
 
         result = session.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "past expiration" in result.error
 
     def test_is_expired_no_expiration(self) -> None:
@@ -542,6 +560,7 @@ class TestApiSession:
 
         result = session.extend_session()
         assert not result.success
+        assert result.error is not None
         assert "Cannot extend inactive session" in result.error
 
     def test_deactivate_session(self) -> None:

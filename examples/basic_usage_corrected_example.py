@@ -127,7 +127,7 @@ async def example_api_service() -> None:
     api = create_flext_api()
 
     # Start service
-    await api.start()
+    await api.start_async()
 
     # Health check
     api.health_check()
@@ -138,7 +138,7 @@ async def example_api_service() -> None:
     query_builder.equals("active", value=True).build()
 
     # Create HTTP client
-    client_result = api.flext_api_create_client(
+    client_result = api.create_client(
         {
             "base_url": "https://api.example.com",
             "timeout": 30.0,
@@ -151,7 +151,7 @@ async def example_api_service() -> None:
         api.get_client()
 
     # Stop service
-    await api.stop()
+    await api.stop_async()
 
 
 async def example_http_client() -> None:

@@ -39,7 +39,10 @@ class TestHttpMethod:
     def test_method_equality(self) -> None:
         """Test method equality comparisons."""
         assert HttpMethod.GET == HttpMethod.GET
-        assert HttpMethod.POST != HttpMethod.GET
+        # Test enum inequality - comparing different enum values
+        post_value = HttpMethod.POST.value
+        get_value = HttpMethod.GET.value
+        assert post_value != get_value
         assert HttpMethod.GET == "GET"
         assert HttpMethod.POST == "POST"
 
@@ -55,11 +58,11 @@ class TestHttpStatus:
 
     def test_status_codes_values(self) -> None:
         """Test HTTP status code values."""
-        assert HttpStatus.OK == 200
-        assert HttpStatus.CREATED == 201
-        assert HttpStatus.BAD_REQUEST == 400
-        assert HttpStatus.NOT_FOUND == 404
-        assert HttpStatus.INTERNAL_SERVER_ERROR == 500
+        assert HttpStatus.OK.value == 200
+        assert HttpStatus.CREATED.value == 201
+        assert HttpStatus.BAD_REQUEST.value == 400
+        assert HttpStatus.NOT_FOUND.value == 404
+        assert HttpStatus.INTERNAL_SERVER_ERROR.value == 500
 
     def test_is_informational(self) -> None:
         """Test informational status detection (1xx)."""
@@ -158,6 +161,7 @@ class TestURL:
         result = URL.create("")
 
         assert not result.success
+        assert result.error is not None
         assert "URL cannot be empty" in result.error
 
     def test_create_whitespace_url_fails(self) -> None:
@@ -165,6 +169,7 @@ class TestURL:
         result = URL.create("   ")
 
         assert not result.success
+        assert result.error is not None
         assert "URL cannot be empty" in result.error
 
     def test_create_invalid_scheme_fails(self) -> None:
@@ -172,6 +177,7 @@ class TestURL:
         result = URL.create("ftp://invalid.com")
 
         assert not result.success
+        assert result.error is not None
         assert "Invalid URL scheme: ftp" in result.error
 
     def test_create_no_host_fails(self) -> None:
@@ -179,6 +185,7 @@ class TestURL:
         result = URL.create("https://")
 
         assert not result.success
+        assert result.error is not None
         assert "valid host" in result.error
 
     def test_create_invalid_port_fails(self) -> None:
@@ -186,6 +193,7 @@ class TestURL:
         result = URL.create("https://api.example.com:99999")
 
         assert not result.success
+        assert result.error is not None
         assert "Port out of range" in result.error
 
     def test_create_zero_port_fails(self) -> None:
@@ -193,6 +201,7 @@ class TestURL:
         result = URL.create("https://api.example.com:0")
 
         assert not result.success
+        assert result.error is not None
         assert "Invalid port number: 0" in result.error
 
     def test_create_parsing_error_fails(self) -> None:
@@ -202,6 +211,7 @@ class TestURL:
 
         # Should handle the exception and return failure
         assert not result.success
+        assert result.error is not None
         assert "parsing failed" in result.error
 
     def test_is_secure(self) -> None:
@@ -291,6 +301,7 @@ class TestHttpHeader:
         result = HttpHeader.create("", "value")
 
         assert not result.success
+        assert result.error is not None
         assert "Header name cannot be empty" in result.error
 
     def test_create_whitespace_name_fails(self) -> None:
@@ -298,6 +309,7 @@ class TestHttpHeader:
         result = HttpHeader.create("   ", "value")
 
         assert not result.success
+        assert result.error is not None
         assert "Header name cannot be empty" in result.error
 
     def test_create_invalid_header_name_fails(self) -> None:
@@ -305,6 +317,7 @@ class TestHttpHeader:
         result = HttpHeader.create("Invalid Header Name", "value")
 
         assert not result.success
+        assert result.error is not None
         assert "Invalid header name" in result.error
 
     def test_create_header_name_with_special_chars_fails(self) -> None:
@@ -312,6 +325,7 @@ class TestHttpHeader:
         result = HttpHeader.create("Content@Type", "application/json")
 
         assert not result.success
+        assert result.error is not None
         assert "Invalid header name" in result.error
 
     def test_create_valid_header_names_succeed(self) -> None:
@@ -334,6 +348,7 @@ class TestHttpHeader:
         result = HttpHeader.create("Content-Type", "application/json\x00")
 
         assert not result.success
+        assert result.error is not None
         assert "invalid control characters" in result.error
 
     def test_create_tab_in_value_succeeds(self) -> None:
@@ -425,6 +440,7 @@ class TestBearerToken:
         result = BearerToken.create("")
 
         assert not result.success
+        assert result.error is not None
         assert "Bearer token cannot be empty" in result.error
 
     def test_create_whitespace_token_fails(self) -> None:
@@ -432,6 +448,7 @@ class TestBearerToken:
         result = BearerToken.create("   ")
 
         assert not result.success
+        assert result.error is not None
         assert "Bearer token cannot be empty" in result.error
 
     def test_create_short_token_fails(self) -> None:
@@ -439,6 +456,7 @@ class TestBearerToken:
         result = BearerToken.create("short")
 
         assert not result.success
+        assert result.error is not None
         assert "at least 16 characters" in result.error
 
     def test_create_invalid_token_type_fails(self) -> None:
@@ -446,6 +464,7 @@ class TestBearerToken:
         result = BearerToken.create("valid-token-123456789", token_type="Invalid")
 
         assert not result.success
+        assert result.error is not None
         assert "Invalid token type: Invalid" in result.error
 
     def test_create_jwt_format_validation_success(self) -> None:
@@ -473,6 +492,7 @@ class TestBearerToken:
         result = BearerToken.create(invalid_jwt)
 
         assert not result.success
+        assert result.error is not None
         assert "empty parts not allowed" in result.error
 
     def test_is_jwt_format_true(self) -> None:
