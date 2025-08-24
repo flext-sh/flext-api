@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import ClassVar as _ClassVar
 
-from flext_core.constants import FlextConstants
+from flext_core import FlextConstants
 
 
 class FlextApiConstants(FlextConstants):
@@ -184,7 +184,7 @@ class FlextApiFieldType:
     """API-specific field type identifiers (string constants)."""
 
     API_KEY = "api_key"
-    BEARER_TOKEN = "bearer_token"  # noqa: S105 - token type label, not secret
+    BEARER_TOKEN = "bearer_token"  # noqa: S105
     PIPELINE_CONFIG = "pipeline_config"
     PLUGIN_CONFIG = "plugin_config"
     USER_ROLE = "user_role"
@@ -245,38 +245,18 @@ __all__ = [
 ]
 
 
-class Validation:
-    """Validation limits and constraints."""
+# ----------------------------------------------------------------------------
+# Legacy aliases - Deprecated classes redirected to FlextApiConstants
+# ----------------------------------------------------------------------------
 
-    MAX_REQUEST_SIZE = 10485760  # 10MB
-    MAX_RESPONSE_SIZE = 52428800  # 50MB
-    MIN_PORT = 1
-    MAX_PORT = 65535
-    MAX_URL_LENGTH = 2048
-    MAX_HEADER_SIZE = 8192
-    MAX_ERROR_VALUE_LENGTH = 100  # Truncate error values for security
+# Validation constants aliases
+Validation = FlextApiConstants.ApiValidation
 
+# Auth constants aliases
+Auth = FlextApiConstants.Auth
 
-class Auth:
-    """Authentication and token constants."""
+# Connection constants aliases
+Connection = FlextApiConstants.Connection
 
-    JWT_PARTS_COUNT = 3  # JWT has 3 parts: header.payload.signature
-    JWT_SEPARATOR_COUNT = 2  # JWT has 2 dots separating 3 parts
-    MIN_TOKEN_LENGTH = 16  # Minimum viable token length
-
-
-class Connection:
-    """Connection pool settings."""
-
-    POOL_SIZE = 10
-    MAX_CONNECTIONS = 100
-    KEEP_ALIVE_TIMEOUT = 120  # seconds
-    IDLE_TIMEOUT = 300  # seconds
-
-
-class Performance:
-    """Performance monitoring thresholds."""
-
-    SLOW_REQUEST_THRESHOLD = 3.0  # seconds
-    CRITICAL_LATENCY_THRESHOLD = 10.0  # seconds
-    MONITORING_SAMPLE_RATE = 0.1  # 10% sampling
+# Performance constants aliases
+Performance = FlextApiConstants.ApiPerformance

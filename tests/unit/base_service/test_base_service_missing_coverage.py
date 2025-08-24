@@ -89,20 +89,21 @@ class TestBaseServiceMissingCoverage:
         """Test service start failure path - covers error handling lines."""
         service = FailingStartService()
 
-        result = await service.start()
+        result = await service.start_async()
 
         # Should fail with specific error
         assert not result.success
+        assert result.error is not None
         assert "Start operation failed" in result.error
 
     @pytest.mark.asyncio
     async def test_service_health_check_failure_paths(self) -> None:
         """Test health check failure paths - covers health detail error lines."""
         service = FailingHealthService()
-        await service.start()
+        await service.start_async()
 
         # Test health check failure - this service has health details that fail
-        health_result = await service.health_check()
+        health_result = await service.health_check_async()
 
         # When health details fail, the health check itself may fail
         assert not health_result.success
@@ -114,14 +115,14 @@ class TestBaseServiceMissingCoverage:
         service = HealthyTestService()
 
         # Start service
-        start_result = await service.start()
+        start_result = await service.start_async()
         assert start_result.success
 
         # Try multiple concurrent health checks
         tasks = [
-            service.health_check(),
-            service.health_check(),
-            service.health_check(),
+            service.health_check_async(),
+            service.health_check_async(),
+            service.health_check_async(),
         ]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -132,16 +133,16 @@ class TestBaseServiceMissingCoverage:
             assert result.success
 
         # Stop service
-        stop_result = await service.stop()
+        stop_result = await service.stop_async()
         assert stop_result.success
 
     @pytest.mark.asyncio
     async def test_health_check_structure(self) -> None:
         """Test health check response structure - covers aggregation lines."""
         service = HealthyTestService()
-        await service.start()
+        await service.start_async()
 
-        health_result = await service.health_check()
+        health_result = await service.health_check_async()
         assert health_result.success
 
         health_data = health_result.value
@@ -151,7 +152,7 @@ class TestBaseServiceMissingCoverage:
         # Don't assume specific fields exist, just verify it's a valid health response
         assert health_data["status"] in {"healthy", "degraded"}
 
-        await service.stop()
+        await service.stop_async()
 
     @pytest.mark.asyncio
     async def test_service_lifecycle_complete(self) -> None:
@@ -159,15 +160,15 @@ class TestBaseServiceMissingCoverage:
         service = HealthyTestService()
 
         # Start service
-        start_result = await service.start()
+        start_result = await service.start_async()
         assert start_result.success
 
         # Health check
-        health_result = await service.health_check()
+        health_result = await service.health_check_async()
         assert health_result.success
 
         # Stop service
-        stop_result = await service.stop()
+        stop_result = await service.stop_async()
         assert stop_result.success
 
     @pytest.mark.asyncio
@@ -176,30 +177,30 @@ class TestBaseServiceMissingCoverage:
         # Test with service that fails to start
         failing_service = FailingStartService()
 
-        start_result = await failing_service.start()
+        start_result = await failing_service.start_async()
         assert not start_result.success
 
         # Health check should still work
-        health_result = await failing_service.health_check()
+        health_result = await failing_service.health_check_async()
         assert health_result.success
 
         # Stop should work even if start failed
-        stop_result = await failing_service.stop()
+        stop_result = await failing_service.stop_async()
         assert stop_result.success
 
     @pytest.mark.asyncio
     async def test_health_details_custom_data(self) -> None:
         """Test health details with custom data structures."""
         service = HealthyTestService()
-        await service.start()
+        await service.start_async()
 
-        health_result = await service.health_check()
+        health_result = await service.health_check_async()
         assert health_result.success
 
         health_data = health_result.value
         assert health_data["status"] in {"healthy", "degraded"}
 
-        await service.stop()
+        await service.stop_async()
 
     @pytest.mark.asyncio
     async def test_service_state_consistency(self) -> None:
@@ -208,13 +209,13 @@ class TestBaseServiceMissingCoverage:
 
         # Multiple start/stop cycles
         for _ in range(3):
-            start_result = await service.start()
+            start_result = await service.start_async()
             assert start_result.success
 
-            health_result = await service.health_check()
+            health_result = await service.health_check_async()
             assert health_result.success
 
-            stop_result = await service.stop()
+            stop_result = await service.stop_async()
             assert stop_result.success
 
 
@@ -252,25 +253,25 @@ class TestComplexHealthScenarios:
     async def test_complex_health_details_structure(self) -> None:
         """Test complex health details structure handling."""
         service = CustomDetailsService()
-        await service.start()
+        await service.start_async()
 
-        health_result = await service.health_check()
+        health_result = await service.health_check_async()
         assert health_result.success
 
-        await service.stop()
+        await service.stop_async()
 
     @pytest.mark.asyncio
     async def test_concurrent_health_checks(self) -> None:
         """Test concurrent health checks."""
         service = HealthyTestService()
-        await service.start()
+        await service.start_async()
 
         # Run multiple health checks concurrently
-        tasks = [service.health_check() for _ in range(5)]
+        tasks = [service.health_check_async() for _ in range(5)]
         results = await asyncio.gather(*tasks)
 
         # All should succeed
         for result in results:
             assert result.success
 
-        await service.stop()
+        await service.stop_async()

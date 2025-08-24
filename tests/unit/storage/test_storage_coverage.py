@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import tempfile
+from pathlib import Path
+
 import pytest
 
 from flext_api import (
@@ -35,8 +38,9 @@ def test_storage_factory_functions() -> None:
     assert storage is not None
 
     # Test create_file_storage
-    storage = create_file_storage("/tmp/test.json", "test_namespace")
-    assert storage is not None
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp_file:
+        storage = create_file_storage(tmp_file.name, "test_namespace")
+        assert storage is not None
 
 
 @pytest.mark.asyncio
@@ -63,12 +67,9 @@ async def test_memory_storage_error_paths() -> None:
 @pytest.mark.asyncio
 async def test_file_storage_error_paths() -> None:
     """Test file storage error handling paths."""
-    import os
-    import tempfile
-
     with tempfile.TemporaryDirectory() as temp_dir:
-        storage_path = os.path.join(temp_dir, "test_storage.json")
-        storage = create_file_storage(storage_path, "test")
+        storage_path = Path(temp_dir) / "test_storage.json"
+        storage = create_file_storage(str(storage_path), "test")
 
         # Test basic operations
         result = await storage.set("test_key", "test_value")
@@ -216,9 +217,10 @@ def test_storage_config_validation() -> None:
     assert storage is not None
 
     # Test file backend config
-    config = StorageConfig(
-        backend=StorageBackend.FILE, file_path="/tmp/test.json", enable_caching=False
-    )
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp_file:
+        config = StorageConfig(
+            backend=StorageBackend.FILE, file_path=tmp_file.name, enable_caching=False
+        )
     storage = FlextApiStorage(config)
     assert storage is not None
 
@@ -232,9 +234,10 @@ def test_create_storage_with_kwargs() -> None:
     assert storage is not None
 
     # Test with file backend
-    storage = create_storage(
-        backend="file", file_path="/tmp/test.json", namespace="file_test"
-    )
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp_file:
+        storage = create_storage(
+            backend="file", file_path=tmp_file.name, namespace="file_test"
+        )
     assert storage is not None
 
 

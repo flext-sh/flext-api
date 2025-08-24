@@ -1,65 +1,83 @@
-"""Temporary minimal protocols for fixing import issues."""
+"""FLEXT API protocols leveraging flext-core hierarchical architecture.
+
+This module provides type-safe protocols by composing flext-core's hierarchical
+protocol architecture instead of defining local protocol duplications.
+
+Following CLAUDE.md Phase 2: Eliminate duplication using flext-core patterns.
+"""
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from typing import Any, Protocol
+from typing import Protocol
 
-from flext_core import FlextResult
+from flext_core import FlextProtocols, FlextResult
 
-# Minimal protocol definitions to fix imports
-class FlextApiAuthProtocol(Protocol):
-    async def authenticate(self, credentials: dict[str, Any]) -> FlextResult[str]: ...
+# ============================================================================
+# API-SPECIFIC PROTOCOLS USING FLEXT-CORE FOUNDATION
+# ============================================================================
 
-class FlextApiAuthorizationProtocol(Protocol):  
-    async def authorize(self, user_id: str, resource: str) -> FlextResult[bool]: ...
 
-class FlextApiCacheProtocol(Protocol):
-    async def get(self, key: str) -> FlextResult[Any]: ...
-    async def set(self, key: str, value: Any, ttl: int = 300) -> FlextResult[None]: ...
+class FlextApiHttpClientProtocol(FlextProtocols.Infrastructure.Connection, Protocol):
+    """HTTP client protocol extending flext-core Infrastructure.Connection."""
 
-class FlextApiConnectionPoolProtocol(Protocol):
-    async def get_connection(self) -> FlextResult[Any]: ...
+    async def request(self, method: str, url: str, **kwargs: object) -> FlextResult[object]:
+        """Make HTTP request with FlextResult error handling."""
+        ...
 
-class FlextApiHandlerProtocol(Protocol):
-    async def handle(self, request: Any) -> FlextResult[Any]: ...
+    async def close(self) -> None:
+        """Close client session."""
+        ...
 
-class FlextApiHealthCheckProtocol(Protocol):
-    async def check_health(self) -> FlextResult[dict[str, Any]]: ...
+    # HTTP convenience methods
+    async def get(self, url: str, **kwargs: object) -> FlextResult[object]:
+        """GET request."""
+        ...
 
-class FlextApiMetricsProtocol(Protocol):
-    async def record_metric(self, name: str, value: float) -> None: ...
+    async def post(self, url: str, **kwargs: object) -> FlextResult[object]:
+        """POST request."""
+        ...
 
-class FlextApiMiddlewareProtocol(Protocol):
-    async def process(self, request: Any, next_handler: Any) -> FlextResult[Any]: ...
+    async def put(self, url: str, **kwargs: object) -> FlextResult[object]:
+        ...
 
-class FlextApiPluginProtocol(Protocol):
-    async def before_request(self, request: Any) -> Any: ...
-    async def after_request(self, request: Any, response: Any) -> None: ...
+    async def delete(self, url: str, **kwargs: object) -> FlextResult[object]:
+        """DELETE request."""
+        ...
 
-class FlextApiQueryBuilderProtocol(Protocol):
-    def build(self) -> Any: ...
+    # Plugin system
+    @property
+    def plugins(self) -> list[object]:
+        """Get list of plugins."""
+        ...
 
-class FlextApiRateLimitProtocol(Protocol):
-    async def check_rate_limit(self, key: str) -> FlextResult[bool]: ...
 
-class FlextApiRepositoryProtocol(Protocol):
-    async def find_by_id(self, id: str) -> FlextResult[Any]: ...
+class FlextApiQueryBuilderProtocol(FlextProtocols.Foundation.Factory[object], Protocol):
+    """Query builder protocol extending flext-core Foundation.Factory."""
 
-class FlextApiResponseBuilderProtocol(Protocol):
-    def build(self) -> Any: ...
+    def build(self) -> object:
+        """Build query object (implements Factory.create pattern)."""
+        ...
 
-class FlextApiServiceProtocol(Protocol):
-    async def execute(self, request: Any) -> FlextResult[Any]: ...
+    def create(self, **kwargs: object) -> FlextResult[object]:
+        """Factory method for query creation."""
+        ...
 
-class FlextApiStreamProtocol(Protocol):
-    async def stream(self) -> Any: ...
 
-class FlextApiValidatorProtocol(Protocol):
-    async def validate(self, data: Any) -> FlextResult[bool]: ...
+class FlextApiResponseBuilderProtocol(FlextProtocols.Foundation.Factory[object], Protocol):
+    """Response builder protocol extending flext-core Foundation.Factory."""
 
-class FlextApiWebSocketProtocol(Protocol):
-    async def send(self, message: str) -> None: ...
+    def build(self) -> object:
+        """Build response object (implements Factory.create pattern)."""
+        ...
 
-class FlextApiClientProtocol(Protocol):
-    async def request(self, method: str, url: str, **kwargs: Any) -> FlextResult[Any]: ...
+    def create(self, **kwargs: object) -> FlextResult[object]:
+        """Factory method for response creation."""
+        ...
+
+
+# Export API-specific protocols (eliminate local duplication)
+__all__: list[str] = [
+    "FlextApiHttpClientProtocol",
+    "FlextApiQueryBuilderProtocol",
+    "FlextApiResponseBuilderProtocol",
+]

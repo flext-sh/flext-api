@@ -7,8 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-
 from flext_api import FlextApi
 
 # Test constants
@@ -25,13 +23,14 @@ class TestFlextApiCoverage:
         # Test client creation with invalid config should return FlextResult failure
         result = api.create_client({"base_url": "invalid://test"})
         assert not result.success
+        assert result.error is not None
         assert "Invalid URL format" in result.error
 
     def test_create_client_impl_with_complex_config(self) -> None:
-        """Test _create_client_impl with various config types."""
+        """Test _create_client_impl with invalid config types - now returns FlextResult failure."""
         api = FlextApi()
 
-        # Test with invalid timeout type (should use default)
+        # Test with invalid timeout type - should fail validation
         config = {
             "base_url": "https://test.com",
             "timeout": "invalid",  # Invalid type
@@ -39,26 +38,17 @@ class TestFlextApiCoverage:
             "max_retries": "invalid",  # Invalid type
         }
 
-        client = api._create_client_impl(config)
+        result = api._create_client_impl(config)
 
-        # Should handle invalid types gracefully and use defaults
-        assert client is not None
-        if client.config.base_url != "https://test.com":
-            msg = f"Expected https://test.com, got {client.config.base_url}"
-            raise AssertionError(
-                msg,
-            )
-        assert client.config.timeout == 30.0  # Default
-        if client.config.headers != {}:  # Default empty dict
-            msg = f"Expected empty dict, got {client.config.headers}"
-            raise AssertionError(msg)
-        assert client.config.max_retries == EXPECTED_DATA_COUNT  # Default
+        # Should fail validation due to invalid types
+        assert not result.success
+        assert "validation error" in result.error.lower()
 
     def test_create_client_impl_edge_cases(self) -> None:
         """Test _create_client_impl with edge case configurations."""
         api = FlextApi()
 
-        # Test with None base_url should raise ValueError due to validation
+        # Test with None base_url should return FlextResult failure (no longer raises exception)
         config = {
             "base_url": None,
             "timeout": None,
@@ -66,8 +56,9 @@ class TestFlextApiCoverage:
             "max_retries": None,
         }
 
-        with pytest.raises(ValueError, match="Invalid URL format"):
-            api._create_client_impl(config)
+        result = api._create_client_impl(config)
+        assert not result.success
+        assert "Invalid URL format" in result.error
 
     def test_create_client_impl_with_valid_headers(self) -> None:
         """Test _create_client_impl with valid headers dict."""
@@ -81,9 +72,11 @@ class TestFlextApiCoverage:
             },
         }
 
-        client = api._create_client_impl(config)
+        result = api._create_client_impl(config)
 
         # Should properly convert headers
+        assert result.success
+        client = result.value
         assert client is not None
         expected_headers = {
             "Authorization": "Bearer token",
@@ -106,9 +99,11 @@ class TestFlextApiCoverage:
             "max_retries": 5.0,  # float
         }
 
-        client = api._create_client_impl(config)
+        result = api._create_client_impl(config)
 
         # Should handle numeric conversions
+        assert result.success
+        client = result.value
         assert client is not None
         if client.config.timeout != 45.0:  # Converted to float
             msg = f"Expected 45.0, got {client.config.timeout}"
@@ -138,16 +133,19 @@ class TestFlextApiCoverage:
         # Test with empty config
         result = api.create_client({})
         assert not result.success
+        assert result.error is not None
         assert "base_url is required" in result.error
 
         # Test with missing base_url
         result = api.create_client({"timeout": 30})
         assert not result.success
+        assert result.error is not None
         assert "base_url is required" in result.error
 
         # Test with invalid base_url
         result = api.create_client({"base_url": "invalid-url"})
         assert not result.success
+        assert result.error is not None
         assert "Invalid URL format" in result.error
 
     def test_api_error_handling(self) -> None:

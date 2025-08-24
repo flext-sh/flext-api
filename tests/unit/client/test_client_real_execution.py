@@ -72,7 +72,7 @@ async def test_real_http_post_request() -> None:
     await client.start()
     try:
         # Test real POST request with JSON
-        test_data = {"name": "FLEXT API Test", "version": "0.9.0"}
+        test_data: dict[str, object] = {"name": "FLEXT API Test", "version": "0.9.0"}
         request = FlextApiClientRequest(
             method=FlextApiClientMethod.POST,
             url="https://httpbin.org/post",

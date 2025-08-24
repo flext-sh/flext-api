@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import stat
 from pathlib import Path
 
 import pytest
@@ -18,7 +19,7 @@ async def test_file_backend_load_data_failure_and_close(
     file_path = tmp_path / "store.json"
     # Write invalid json to test REAL JSON parsing failure
     file_path.write_text("{not json}", encoding="utf-8")
-    backend = FileStorageBackend(StorageConfig(file_path=str(file_path)))
+    backend: FileStorageBackend[object] = FileStorageBackend(StorageConfig(file_path=str(file_path)))
     # Should have reset data to {} after parsing failure
     assert (await backend.keys()).success
 
@@ -29,12 +30,11 @@ async def test_file_backend_load_data_failure_and_close(
     readonly_file.write_text("{}", encoding="utf-8")
 
     # Make directory read-only to cause REAL save failure
-    import stat
 
     readonly_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
     try:
-        readonly_backend = FileStorageBackend(
+        readonly_backend: FileStorageBackend[object] = FileStorageBackend(
             StorageConfig(file_path=str(readonly_file))
         )
         # Try operations that require saving - should fail with REAL I/O error

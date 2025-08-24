@@ -64,12 +64,18 @@ class TestFlextApiClientConfig:
         assert config.max_retries == 5
 
     def test_config_invalid_url(self) -> None:
-        """Test config with invalid URL format."""
-        with pytest.raises(ValueError, match="Invalid URL format"):
-            FlextApiClientConfig(base_url="invalid-url")
+        """Test config with invalid URL format using FlextResult validation."""
+        # Test invalid URL - should create successfully but fail business rules validation
+        config = FlextApiClientConfig(base_url="invalid-url")
+        result = config.validate_business_rules()
+        assert not result.success
+        assert "Invalid URL format" in result.error
 
-        with pytest.raises(ValueError, match="Invalid URL format"):
-            FlextApiClientConfig(base_url="ftp://example.com")
+        # Test FTP URL - should also fail validation
+        config = FlextApiClientConfig(base_url="ftp://example.com")
+        result = config.validate_business_rules()
+        assert not result.success
+        assert "Invalid URL format" in result.error
 
 
 class TestFlextApiClientRequest:
@@ -128,7 +134,7 @@ class TestFlextApiClientResponse:
 
     def test_response_with_data(self) -> None:
         """Test response with data."""
-        data = {"key": "value"}
+        data: dict[str, object] = {"key": "value"}
         response = FlextApiClientResponse(
             status_code=200,
             data=data,
@@ -142,7 +148,7 @@ class TestFlextApiClientResponse:
 
     def test_response_json_method(self) -> None:
         """Test response json method."""
-        data = {"key": "value"}
+        data: dict[str, object] = {"key": "value"}
         response = FlextApiClientResponse(status_code=200, data=data)
         assert response.json() == data
 
@@ -276,7 +282,7 @@ class TestFlextApiClient:
 
     def test_create_client_with_config(self) -> None:
         """Test create_client_with_config factory function."""
-        config = FlextApiClientConfig(base_url="https://api.example.com")
-        client = create_client_with_plugins(config=config)
+        config_dict: dict[str, object] = {"base_url": "https://api.example.com"}
+        client = create_client_with_plugins(config=config_dict)
         assert isinstance(client, FlextApiClient)
         assert client.config.base_url == "https://api.example.com"

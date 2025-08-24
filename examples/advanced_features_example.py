@@ -12,8 +12,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
+from typing import cast
 
 from flext_api import (
+    ClientConfigDict,
     FlextApiQueryBuilder,
     FlextApiResponseBuilder,
     PaginationConfig,
@@ -141,10 +143,10 @@ async def example_full_api_service_integration() -> None:
 
     try:
         # Inicializar serviço
-        await api.start()
+        await api.start_async()
 
         # Health check do serviço
-        health_result = await api.health_check()
+        health_result = await api.health_check_async()
         if health_result.success and health_result.value is not None:
             pass
 
@@ -209,7 +211,8 @@ async def example_full_api_service_integration() -> None:
             },
         }
 
-        client_result = api.flext_api_create_client(client_config)
+        # ClientConfigDict imported at top for type casting
+        client_result = api.create_client(cast("ClientConfigDict", client_config))
         if client_result.success and client_result.value is not None:
             pass
 
@@ -220,7 +223,7 @@ async def example_full_api_service_integration() -> None:
         pass
     finally:
         # Parar serviço
-        await api.stop()
+        await api.stop_async()
 
 
 def example_factory_functions_advanced() -> None:

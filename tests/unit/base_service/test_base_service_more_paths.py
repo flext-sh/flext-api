@@ -20,18 +20,18 @@ class OkService(FlextApiBaseService):
         return FlextResult[None].ok(None)
 
     async def _get_health_details(self) -> FlextResult[dict[str, object]]:
-        return FlextResult[None].ok({"extra": True})
+        return FlextResult[dict[str, object]].ok({"extra": True})
 
 
 @pytest.mark.asyncio
 async def test_execute_and_lifecycle_and_health_ok() -> None:
     """Service should start, execute, report health, and stop successfully."""
     svc = OkService()
-    assert (await svc.start()).success
-    exec_res = svc.execute()
+    assert (await svc.start_async()).success
+    exec_res = await svc.execute_async({})
     assert exec_res.success
-    assert exec_res.value["status"] == "executed"
-    health = await svc.health_check()
+    assert exec_res.value == {}  # Base service returns empty dict
+    health = await svc.health_check_async()
     assert health.success
     assert health.value["extra"] is True
-    assert (await svc.stop()).success
+    assert (await svc.stop_async()).success

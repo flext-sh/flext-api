@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 from flext_api import (
@@ -45,7 +47,9 @@ class TestHttpClientIntegration:
             # Verify JSON response structure
             if isinstance(response.value, dict):
                 assert "args" in response.value
-                assert response.value["args"]["test"] == "integration"
+                args = response.value["args"]
+                assert isinstance(args, dict)
+                assert args["test"] == "integration"
 
         finally:
             await client.close()
@@ -58,12 +62,14 @@ class TestHttpClientIntegration:
             FlextApiRetryPlugin(max_retries=2, backoff_factor=1.0),
         ]
 
-        config = FlextApiClientConfig(
-            base_url="https://httpbin.org",
-            timeout=10.0,
-        )
+        # Note: config is replaced with dict below for compatibility
 
-        client = create_client_with_plugins(config, plugins)
+        client_raw = create_client_with_plugins(
+            {"base_url": "https://httpbin.org", "timeout": 10.0}, plugins
+        )
+        assert hasattr(client_raw, "get"), "Client missing get method"
+        assert hasattr(client_raw, "close"), "Client missing close method"
+        client = cast("FlextApiClient", client_raw)
 
         try:
             # Test multiple requests to same endpoint (caching)
@@ -101,8 +107,10 @@ class TestHttpClientIntegration:
             # Verify JSON data was sent correctly
             if isinstance(response.value, dict):
                 assert "json" in response.value
-                assert response.value["json"]["message"] == "integration test"
-                assert response.value["json"]["value"] == 42
+                json_data = response.value["json"]
+                assert isinstance(json_data, dict)
+                assert json_data["message"] == "integration test"
+                assert json_data["value"] == 42
 
         finally:
             await client.close()

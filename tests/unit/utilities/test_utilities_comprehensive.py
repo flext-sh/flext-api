@@ -201,7 +201,7 @@ class TestFlextApiUtilitiesComprehensive:
     def test_validate_client_config_invalid_base_url_type(self) -> None:
         """Test base_url type validation failure - covers line 169."""
         # Non-string base_url to trigger validation error (line 169)
-        invalid_config = {
+        invalid_config: dict[str, object] = {
             "base_url": 12345,  # Invalid type - should be string
             "timeout": 30,
             "max_retries": 3,
@@ -211,6 +211,8 @@ class TestFlextApiUtilitiesComprehensive:
 
         # Should fail validation with specific error (line 169-171)
         assert not result.success
+        assert result.error is not None
+        assert result.error is not None
         assert "base_url must be a string" in result.error
         assert isinstance(result, FlextResult)
 
@@ -242,7 +244,7 @@ class TestFlextApiUtilitiesComprehensive:
     def test_validate_client_config_invalid_headers_type(self) -> None:
         """Test headers validation with invalid type."""
         # Invalid headers type to exercise headers validation logic
-        config_with_invalid_headers = {
+        config_with_invalid_headers: dict[str, object] = {
             "base_url": "https://api.example.com",
             "headers": "invalid_headers_should_be_dict",  # Invalid type
         }
@@ -258,16 +260,19 @@ class TestFlextApiUtilitiesComprehensive:
         # Invalid timeout type
         result1 = FlextApiUtilities.validate_client_config({"timeout": "not_a_number"})
         assert not result1.success
+        assert result1.error is not None
         assert "timeout must be a positive number" in result1.error
 
         # Negative timeout
         result2 = FlextApiUtilities.validate_client_config({"timeout": -5})
         assert not result2.success
+        assert result2.error is not None
         assert "timeout must be a positive number" in result2.error
 
         # Zero timeout
         result3 = FlextApiUtilities.validate_client_config({"timeout": 0})
         assert not result3.success
+        assert result3.error is not None
         assert "timeout must be a positive number" in result3.error
 
     def test_validate_client_config_max_retries_validation_failures(self) -> None:
@@ -277,16 +282,19 @@ class TestFlextApiUtilitiesComprehensive:
             {"max_retries": "not_an_int"}
         )
         assert not result1.success
+        assert result1.error is not None
         assert "max_retries must be a non-negative integer" in result1.error
 
         # Negative max_retries
         result2 = FlextApiUtilities.validate_client_config({"max_retries": -1})
         assert not result2.success
+        assert result2.error is not None
         assert "max_retries must be a non-negative integer" in result2.error
 
         # Float max_retries
         result3 = FlextApiUtilities.validate_client_config({"max_retries": 3.5})
         assert not result3.success
+        assert result3.error is not None
         assert "max_retries must be a non-negative integer" in result3.error
 
 

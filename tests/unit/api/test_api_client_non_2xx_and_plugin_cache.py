@@ -22,9 +22,9 @@ class FakeCachePlugin(FlextApiPlugin):
 
     async def before_request(
         self,
-        request: FlextApiClientRequest,
-        context: dict[str, object] | None = None,
-    ) -> FlextApiClientRequest:
+        request: object,
+        context: object = None,
+    ) -> object:
         if (
             isinstance(request, FlextApiClientRequest)
             and str(request.method) == "GET"
@@ -37,9 +37,9 @@ class FakeCachePlugin(FlextApiPlugin):
 
     async def after_response(
         self,
-        response: FlextApiClientResponse,
-        _context: dict[str, object] | None = None,
-    ) -> FlextApiClientResponse:
+        response: object,
+        _context: object = None,
+    ) -> object:
         if isinstance(response, FlextApiClientResponse) and response.status_code == 200:
             # store a shallow cache
             self._cache["last"] = response
@@ -69,6 +69,7 @@ async def test_cached_short_circuit_and_non_2xx() -> None:
         req = FlextApiClientRequest(method="GET", url="https://httpbin.org/json")
         res = await client._execute_request_pipeline(req, "GET")
         assert res.success
+        assert isinstance(res.value.value, dict)
         assert res.value.value.get("cached") is True
 
         # Test real non-2xx error response using httpbin's /status/500 endpoint

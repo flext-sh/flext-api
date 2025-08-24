@@ -6,19 +6,36 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 from flext_api import (
+    FLEXT_API_CACHE_TTL,
+    FLEXT_API_MAX_RETRIES,
+    FLEXT_API_TIMEOUT,
+    FLEXT_API_VERSION,
+    FlextApiCachingPlugin,
+    FlextApiCircuitBreakerPlugin,
+    FlextApiClientRequest,
+    FlextApiClientResponse,
+    FlextApiSettings,
     FlextApiStorage,
     StorageBackend,
     StorageConfig,
+    __version__,
+    __version_info__,
     _SyncStorageWrapper,
+    build_query_dict,
+    create_api_builder,
+    create_api_client,
+    create_api_storage,
+    create_client_with_plugins,
     create_flext_api,
+    flext_api_create_app,
+    sync_health_check,
 )
+from flext_api.app import FlextApiAppConfig, create_flext_api_app
 
 
 def test_real_app_creation() -> None:
     """Test REAL app creation with flext-api components."""
-    # Import and test REAL app creation
-    from flext_api import FlextApiSettings, flext_api_create_app
-    from flext_api.app import FlextApiAppConfig, create_flext_api_app
+    # Test REAL app creation
 
     # Test direct app creation
     result = flext_api_create_app(None)
@@ -69,7 +86,7 @@ def test_real_sync_storage_wrapper_get_no_loop() -> None:
     wrapper = _SyncStorageWrapper(real_storage)
 
     # Test in thread context (no active event loop)
-    def test_in_thread():
+    def test_in_thread() -> object:
         return wrapper.get("test_key")
 
     with ThreadPoolExecutor(max_workers=1) as executor:
@@ -88,7 +105,7 @@ def test_real_sync_storage_wrapper_get_failed_result() -> None:
     wrapper = _SyncStorageWrapper(real_storage)
 
     # Test getting non-existent key - real failure path
-    def test_in_thread():
+    def test_in_thread() -> object:
         return wrapper.get("nonexistent_key")
 
     with ThreadPoolExecutor(max_workers=1) as executor:
@@ -130,7 +147,7 @@ def test_real_sync_storage_wrapper_set_no_loop() -> None:
     wrapper = _SyncStorageWrapper(real_storage)
 
     # Test in thread context (no active event loop)
-    def test_in_thread():
+    def test_in_thread() -> None:
         wrapper.set("test_key", "test_value")
         # Verify the set operation worked by getting the value
         return wrapper.get("test_key")
@@ -183,7 +200,7 @@ def test_real_sync_storage_wrapper_delete_no_loop() -> None:
     wrapper = _SyncStorageWrapper(real_storage)
 
     # Test in thread context (no active event loop)
-    def test_in_thread():
+    def test_in_thread() -> bool:
         return wrapper.delete("test_key")
 
     with ThreadPoolExecutor(max_workers=1) as executor:
@@ -204,7 +221,7 @@ def test_real_sync_storage_wrapper_delete_failed_result() -> None:
     wrapper = _SyncStorageWrapper(real_storage)
 
     # Test deleting non-existent key - real failure path
-    def test_in_thread():
+    def test_in_thread() -> bool:
         return wrapper.delete("nonexistent_key")
 
     with ThreadPoolExecutor(max_workers=1) as executor:
@@ -231,12 +248,6 @@ def test_real_sync_storage_wrapper_getattr() -> None:
 
 def test_real_circuit_breaker_plugin_methods() -> None:
     """Test circuit breaker plugin async methods with REAL requests."""
-    from flext_api import (
-        FlextApiCircuitBreakerPlugin,
-        FlextApiClientRequest,
-        FlextApiClientResponse,
-    )
-
     # Create plugin instance
     plugin = FlextApiCircuitBreakerPlugin()
 
@@ -275,8 +286,6 @@ def test_real_circuit_breaker_plugin_methods() -> None:
 
 def test_real_sync_health_check() -> None:
     """Test sync health check function with REAL API."""
-    from flext_api import sync_health_check
-
     # Create REAL API instance
     real_api = create_flext_api()
 
@@ -289,8 +298,6 @@ def test_real_sync_health_check() -> None:
 
 def test_convenience_functions() -> None:
     """Test convenience functions for API creation."""
-    from flext_api import create_api_builder, create_api_client, create_api_storage
-
     # Test API client creation
     client = create_api_client({"base_url": "https://test.com"})
     assert client is not None
@@ -306,8 +313,6 @@ def test_convenience_functions() -> None:
 
 def test_build_query_dict_function() -> None:
     """Test build_query_dict function with parameters."""
-    from flext_api import build_query_dict
-
     # Test with all parameters
     result = build_query_dict(
         filters={"status": "active"},
@@ -329,8 +334,6 @@ def test_build_query_dict_function() -> None:
 
 def test_version_info_parsing() -> None:
     """Test version info parsing with different formats."""
-    from flext_api import __version__, __version_info__
-
     # Test version is string
     assert isinstance(__version__, str)
 
@@ -341,8 +344,6 @@ def test_version_info_parsing() -> None:
 
 def test_real_create_client_with_plugins() -> None:
     """Test create_client_with_plugins with REAL plugins."""
-    from flext_api import FlextApiCachingPlugin, create_client_with_plugins
-
     # Test with REAL config and REAL plugins
     config = {"base_url": "https://httpbin.org", "timeout": 30}
     real_plugins = [FlextApiCachingPlugin(ttl=300)]  # Use REAL caching plugin
@@ -356,13 +357,6 @@ def test_real_create_client_with_plugins() -> None:
 
 def test_api_constants_exports() -> None:
     """Test API constants are properly exported."""
-    from flext_api import (
-        FLEXT_API_CACHE_TTL,
-        FLEXT_API_MAX_RETRIES,
-        FLEXT_API_TIMEOUT,
-        FLEXT_API_VERSION,
-    )
-
     # Test constants exist and have expected types
     assert isinstance(FLEXT_API_TIMEOUT, int)
     assert isinstance(FLEXT_API_MAX_RETRIES, int)
@@ -382,7 +376,7 @@ def test_real_sync_storage_wrapper_edge_cases() -> None:
     real_storage_get = FlextApiStorage(config_get)
     wrapper_get = _SyncStorageWrapper(real_storage_get)
 
-    def test_get_none():
+    def test_get_none() -> object:
         return wrapper_get.get("nonexistent_key")
 
     with ThreadPoolExecutor(max_workers=1) as executor:
@@ -394,7 +388,7 @@ def test_real_sync_storage_wrapper_edge_cases() -> None:
     real_storage_delete = FlextApiStorage(config_delete)
     wrapper_delete = _SyncStorageWrapper(real_storage_delete)
 
-    def test_delete_false():
+    def test_delete_false() -> bool:
         return wrapper_delete.delete("nonexistent_key")
 
     with ThreadPoolExecutor(max_workers=1) as executor:

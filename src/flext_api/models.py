@@ -23,12 +23,18 @@ from flext_core import (
     FlextModel,
     FlextResult,
     FlextTimestamp,
+    flext_alias_generator,
     get_logger,
 )
-from flext_core.models import flext_alias_generator
-from pydantic import AliasGenerator, ConfigDict, Field, field_validator
+from pydantic import (
+    AliasGenerator,
+    ConfigDict as PydanticConfigDict,
+    Field,
+    field_validator,
+)
 
 from flext_api.constants import FlextApiConstants
+from flext_api.typings import HeadersDict, HttpUrl
 
 logger = get_logger(__name__)
 
@@ -224,7 +230,7 @@ class URL(FlextModel):
     Uses centralized FlextModel patterns from flext-core.
     """
 
-    model_config = ConfigDict(
+    model_config = PydanticConfigDict(
         # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
@@ -358,7 +364,7 @@ class HttpHeader(FlextModel):
     and serialization across the FLEXT ecosystem.
     """
 
-    model_config = ConfigDict(
+    model_config = PydanticConfigDict(
         # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
@@ -480,7 +486,7 @@ class BearerToken(FlextModel):
     validation and serialization across the FLEXT ecosystem.
     """
 
-    model_config = ConfigDict(
+    model_config = PydanticConfigDict(
         # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
@@ -623,7 +629,7 @@ class ClientConfig(FlextModel):
     management across the FLEXT ecosystem.
     """
 
-    model_config = ConfigDict(
+    model_config = PydanticConfigDict(
         # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
@@ -647,9 +653,9 @@ class ClientConfig(FlextModel):
         },
     )
 
-    base_url: str = Field(description="Base URL for requests")
+    base_url: HttpUrl = Field(description="Base URL for requests")
     timeout: float = Field(default=DEFAULT_TIMEOUT, description="Request timeout")
-    headers: dict[str, str] = Field(default_factory=dict, description="Default headers")
+    headers: HeadersDict = Field(default_factory=dict, description="Default headers")
     max_retries: int = Field(
         default=DEFAULT_MAX_RETRIES,
         description="Maximum retry attempts",
@@ -712,7 +718,7 @@ class QueryConfig(FlextModel):
     configuration across the FLEXT ecosystem.
     """
 
-    model_config = ConfigDict(
+    model_config = PydanticConfigDict(
         # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
@@ -781,7 +787,7 @@ class PaginationInfo(FlextModel):
     information across the FLEXT ecosystem.
     """
 
-    model_config = ConfigDict(
+    model_config = PydanticConfigDict(
         # Inherit from FlextModel base configuration
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
@@ -855,7 +861,7 @@ class PaginationInfo(FlextModel):
 class ApiRequest(FlextEntity):
     """HTTP request entity with lifecycle management."""
 
-    model_config = ConfigDict(
+    model_config = PydanticConfigDict(
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
             validation_alias=flext_alias_generator,
@@ -984,7 +990,7 @@ class ApiRequest(FlextEntity):
 class ApiResponse(FlextEntity):
     """HTTP response entity with state management."""
 
-    model_config = ConfigDict(
+    model_config = PydanticConfigDict(
         # Inherit modern Pydantic patterns from FlextEntity
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
@@ -1108,7 +1114,7 @@ class ApiResponse(FlextEntity):
 class ApiEndpoint(FlextEntity):
     """API endpoint entity with routing and configuration."""
 
-    model_config = ConfigDict(
+    model_config = PydanticConfigDict(
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,
             validation_alias=flext_alias_generator,
@@ -1178,7 +1184,7 @@ class ApiEndpoint(FlextEntity):
 class ApiSession(FlextEntity):
     """API session entity with authentication state."""
 
-    model_config = ConfigDict(
+    model_config = PydanticConfigDict(
         # Inherit modern Pydantic patterns from FlextEntity
         alias_generator=AliasGenerator(
             alias=flext_alias_generator,

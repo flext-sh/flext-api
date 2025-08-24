@@ -36,7 +36,7 @@ class BrokenStopService(FlextApiBaseService):
 async def test_start_failure_path() -> None:
     """Start returns failure when _do_start fails."""
     svc = BrokenStartService()
-    res = await svc.start()
+    res = await svc.start_async()
     assert not res.success
     assert "init failed" in (res.error or "")
 
@@ -46,7 +46,7 @@ async def test_stop_warning_path() -> None:
     """Stop returns ok even if _do_stop fails, logging a warning."""
     svc = BrokenStopService()
     # Stop should still return ok even when _do_stop fails, but log warning
-    res = await svc.stop()
+    res = await svc.stop_async()
     assert res.success
 
 
@@ -67,9 +67,9 @@ async def test_health_check_failure() -> None:
         ) -> FlextResult[None]:  # pragma: no cover - not used here
             return FlextResult[None].ok(None)
 
-        async def _get_health_details(self) -> FlextResult[object]:
-            return FlextResult[None].fail("boom")
+        async def _get_health_details(self) -> FlextResult[dict[str, object]]:
+            return FlextResult[dict[str, object]].fail("boom")
 
     svc = BrokenHealth()
-    res = await svc.health_check()
+    res = await svc.health_check_async()
     assert not res.success

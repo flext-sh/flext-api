@@ -23,6 +23,8 @@ from urllib.parse import urljoin, urlparse
 import aiohttp
 import aiohttp.hdrs
 from flext_core import FlextResult, FlextTypes, get_logger
+from flext_core.models import FlextModel
+from pydantic import Field
 
 from flext_api.constants import FlextApiConstants
 from flext_api.utilities import FlextApiUtilities
@@ -88,24 +90,26 @@ class FlextApiClientStatus(StrEnum):
     ERROR = "error"
 
 
-@dataclass(frozen=True)
-class FlextApiClientConfig:
-    """Client configuration using dataclass for immutability."""
+class FlextApiClientConfig(FlextModel):
+    """Client configuration using FlextModel with FlextResult validation."""
 
-    base_url: str = ""
-    timeout: float = 30.0
-    headers: dict[str, str] = field(default_factory=dict[str, str])
-    max_retries: int = 3
-    plugins: list[FlextApiPlugin] = field(default_factory=list)
-    verify_ssl: bool = True
-    follow_redirects: bool = True
+    model_config = FlextModel.model_config | {"arbitrary_types_allowed": True}
 
-    def __post_init__(self) -> None:
-        """Validate configuration after initialization."""
+    base_url: str = Field(default="", description="Base URL for HTTP requests")
+    timeout: float = Field(default=30.0, description="Request timeout in seconds", gt=0.0)
+    headers: dict[str, str] = Field(default_factory=dict, description="Default headers")
+    max_retries: int = Field(default=3, description="Maximum retry attempts", ge=0)
+    plugins: list[FlextApiPlugin] = Field(default_factory=list, description="Client plugins")
+    verify_ssl: bool = Field(default=True, description="Verify SSL certificates")
+    follow_redirects: bool = Field(default=True, description="Follow HTTP redirects")
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate client configuration business rules."""
         if self.base_url and not self.base_url.startswith(("http://", "https://")):
-            # Check for any non-http/https URL - should be invalid
-            msg = "Invalid URL format"
-            raise ValueError(msg)
+            return FlextResult[None].fail("Invalid URL format: must start with http:// or https://")
+
+        # Pydantic validators will handle timeout > 0 and max_retries >= 0
+        return FlextResult[None].ok(None)
 
 
 @dataclass(frozen=True)
@@ -114,7 +118,7 @@ class FlextApiClientRequest:
 
     method: str | FlextApiClientMethod
     url: str
-    headers: dict[str, str] = field(default_factory=dict[str, str])
+    headers: dict[str, str] | None = field(default_factory=dict[str, str])
     params: FlextTypes.Core.JsonDict | None = field(default_factory=dict[str, object])
     json_data: FlextTypes.Core.JsonDict | None = None
     data: str | bytes | None = None
@@ -132,6 +136,9 @@ class FlextApiClientRequest:
         # Set default params if None
         if self.params is None:
             object.__setattr__(self, "params", {})
+        # Set default headers if None (overrides default_factory when explicitly passed)
+        if self.headers is None:
+            object.__setattr__(self, "headers", {})
 
     def to_dict(self) -> FlextTypes.Core.JsonDict:
         """Convert to dictionary representation."""
@@ -210,28 +217,20 @@ class ResponseConfig:
     pagination: FlextTypes.Core.JsonDict | None = None
 
 
-@dataclass(frozen=True)
-class PaginationConfig:
+class PaginationConfig(FlextModel):
     """Configuration for pagination - simplifies paginated response creation."""
 
     data: object
-    total: int
-    page: int
-    page_size: int
-    message: str = "Success"
-    metadata: FlextTypes.Core.JsonDict | None = None
+    total: int = Field(ge=0, description="Total number of items")
+    page: int = Field(ge=1, description="Current page number")
+    page_size: int = Field(ge=1, description="Items per page")
+    message: str = Field(default="Success", description="Response message")
+    metadata: FlextTypes.Core.JsonDict | None = Field(default=None, description="Additional metadata")
 
-    def __post_init__(self) -> None:
-        """Validate pagination parameters."""
-        if self.total < 0:
-            msg = "Total must be non-negative"
-            raise ValueError(msg)
-        if self.page < 1:
-            msg = "Page must be positive"
-            raise ValueError(msg)
-        if self.page_size < 1:
-            msg = "Page size must be positive"
-            raise ValueError(msg)
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate pagination business rules."""
+        # Pydantic field validators handle the basic constraints
+        return FlextResult[None].ok(None)
 
 
 class FlextApiOperation(Enum):
@@ -246,29 +245,24 @@ class FlextApiOperation(Enum):
 # ==============================================================================
 
 
-@dataclass(frozen=True)
-class FlextApiQuery:
+class FlextApiQuery(FlextModel):
     """Query representation with filters, sorts, and pagination."""
 
-    filters: list[FlextTypes.Core.JsonDict] = field(
-        default_factory=list[FlextTypes.Core.JsonDict]
+    filters: list[FlextTypes.Core.JsonDict] = Field(
+        default_factory=list, description="Query filters"
     )
-    sorts: list[dict[str, str]] = field(default_factory=list[dict[str, str]])
-    page: int = 1
-    page_size: int = 20
-    search: str | None = None
-    fields: list[str] | None = None
-    includes: list[str] | None = None
-    excludes: list[str] | None = None
+    sorts: list[dict[str, str]] = Field(default_factory=list, description="Sort specifications")
+    page: int = Field(default=1, ge=1, description="Current page number")
+    page_size: int = Field(default=20, ge=1, description="Items per page")
+    search: str | None = Field(default=None, description="Search term")
+    fields: list[str] | None = Field(default=None, description="Fields to include")
+    includes: list[str] | None = Field(default=None, description="Relations to include")
+    excludes: list[str] | None = Field(default=None, description="Fields to exclude")
 
-    def __post_init__(self) -> None:
-        """Validate pagination parameters."""
-        if self.page < 1:
-            msg = "Page must be greater than 0"
-            raise ValueError(msg)
-        if self.page_size < 1:
-            msg = "Page size must be greater than 0"
-            raise ValueError(msg)
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate query business rules."""
+        # Pydantic field validators handle page >= 1 and page_size >= 1
+        return FlextResult[None].ok(None)
 
     def to_dict(self) -> FlextTypes.Core.JsonDict:
         """Convert to dictionary for HTTP transmission."""
@@ -1069,8 +1063,7 @@ class FlextApiClient:
         if response_obj is None:
             return FlextResult[FlextApiClientResponse].fail("No response data received")
         if (
-            isinstance(response_obj, FlextApiClientResponse)
-            and response_obj.data is None
+            response_obj.data is None
             and method.upper() != "HEAD"  # HEAD requests are expected to have no data
         ):
             return FlextResult[FlextApiClientResponse].fail("No response data received")
@@ -1120,10 +1113,7 @@ class FlextApiClient:
         # After successful plugin processing, final_response is guaranteed to be FlextApiClientResponse
         final_response = after_result.value
 
-        if isinstance(final_response, FlextApiClientResponse) and isinstance(
-            final_response.data,
-            str,
-        ):
+        if isinstance(final_response.data, str):
             with suppress(Exception):
                 text_trim = final_response.data.strip()
                 if text_trim.startswith(("{", "[")):
@@ -1333,7 +1323,7 @@ class FlextApiResponseBuilder:
     def with_error_data(self, error: str, status_code: int = 400) -> Self:
         """Set error data."""
         self._success = False
-        self._errors = [error] if isinstance(error, str) else error
+        self._errors = [error]
         self._status_code = status_code
         return self
 
@@ -1400,11 +1390,12 @@ class FlextApiResponseBuilder:
         self._message = message
         return self
 
-    def error(self, message: str) -> Self:
+    def error(self, message: str, status_code: int = 400) -> Self:
         """Set error response."""
         self._success = False
         self._message = message
         self._data = None
+        self._status_code = status_code
         return self
 
     def metadata(self, metadata: FlextTypes.Core.JsonDict) -> Self:
@@ -1440,6 +1431,13 @@ class FlextApiResponseBuilder:
             "page_size": page_size,
             "total": total,
         }
+        return self
+
+    def paginated(self, items: list[object], total: int, page: int, page_size: int) -> Self:
+        """Set paginated response data."""
+        self._success = True
+        self._data = items
+        self.pagination(page, page_size, total)
         return self
 
     def build(self) -> FlextApiResponse:

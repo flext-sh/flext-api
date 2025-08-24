@@ -8,6 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from flext_api import (
     FlextApiQueryBuilder,
@@ -82,17 +83,17 @@ class TestMissingBuilderCoverage:
 
     def test_pagination_validation_negative_total(self) -> None:
         """Test pagination validation with negative total - covers lines 197-198."""
-        with pytest.raises(ValueError, match="Total must be non-negative"):
+        with pytest.raises(ValidationError, match="Input should be greater than or equal to 0"):
             PaginationConfig(data=[], total=-1, page=1, page_size=10)
 
     def test_pagination_validation_zero_page(self) -> None:
-        """Test pagination validation with zero page - covers lines 200-201."""
-        with pytest.raises(ValueError, match="Page must be positive"):
+        """Test pagination validation with zero page using Pydantic validation."""
+        with pytest.raises(ValidationError, match="Input should be greater than or equal to 1"):
             PaginationConfig(data=[], total=100, page=0, page_size=10)
 
     def test_pagination_validation_zero_page_size(self) -> None:
-        """Test pagination validation with zero page size - covers lines 203-204."""
-        with pytest.raises(ValueError, match="Page size must be positive"):
+        """Test pagination validation with zero page size using Pydantic validation."""
+        with pytest.raises(ValidationError, match="Input should be greater than or equal to 1"):
             PaginationConfig(data=[], total=100, page=1, page_size=0)
 
     def test_response_builder_legacy_create_response(self) -> None:

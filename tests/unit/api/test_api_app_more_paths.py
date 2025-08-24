@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
+import os
 import sys
+from typing import cast
+
+from fastapi import FastAPI
 
 from flext_api import api_app as api_app_module
 
@@ -12,15 +16,14 @@ from flext_api import api_app as api_app_module
 def test_default_app_instance_exposes_routes() -> None:
     """Default app should expose index and health routes."""
     # api_app_module is the FastAPI app instance directly
-    routes = {r.path for r in api_app_module.routes}
+    app = cast("FastAPI", api_app_module)
+    routes = {getattr(r, "path", str(r)) for r in app.routes if hasattr(r, "path")}
     assert "/" in routes
     assert "/health" in routes
 
 
 def test_error_fallback_app_when_failure() -> None:
     """Test error fallback app behavior with REAL environment manipulation."""
-    import os
-
     # Test REAL fallback behavior by setting environment variable
     original_env = os.environ.get("FLEXT_API_FORCE_APP_INIT_FAIL")
     os.environ["FLEXT_API_FORCE_APP_INIT_FAIL"] = "1"

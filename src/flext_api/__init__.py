@@ -117,25 +117,13 @@ class _SyncStorageWrapper:
                 thread.start()
                 thread.join()
                 result_obj = result[0]
-                return (
-                    result_obj.unwrap_or(default=None)
-                    if isinstance(result_obj, FlextResult)
-                    else None
-                )
+                return result_obj.unwrap_or(default=None) if result_obj else None
             result_obj = loop.run_until_complete(self._async_storage.get(key))
-            return (
-                result_obj.unwrap_or(default=None)
-                if isinstance(result_obj, FlextResult)
-                else None
-            )
+            return result_obj.unwrap_or(default=None)
         except RuntimeError:
             # No event loop
             result_any = asyncio.run(self._async_storage.get(key))
-            return (
-                result_any.unwrap_or(default=None)
-                if isinstance(result_any, FlextResult)
-                else None
-            )
+            return result_any.unwrap_or(default=None)
 
     def delete(self, key: str) -> bool:
         """Sync delete method."""
@@ -159,25 +147,13 @@ class _SyncStorageWrapper:
                 thread.start()
                 thread.join()
                 result_obj = result[0]
-                return (
-                    (result_obj.unwrap_or(default=False) or False)
-                    if isinstance(result_obj, FlextResult)
-                    else False
-                )
+                return bool(result_obj.unwrap_or(default=False)) if result_obj else False
             result_obj = loop.run_until_complete(self._async_storage.delete(key))
-            return (
-                (result_obj.unwrap_or(default=False) or False)
-                if isinstance(result_obj, FlextResult)
-                else False
-            )
+            return bool(result_obj.unwrap_or(default=False))
         except RuntimeError:
             # No event loop
             result_any = asyncio.run(self._async_storage.delete(key))
-            return (
-                (result_any.unwrap_or(default=False) or False)
-                if isinstance(result_any, FlextResult)
-                else False
-            )
+            return bool(result_any.unwrap_or(default=False))
 
     def __getattr__(self, name: str) -> object:
         """Delegate other attributes to the async storage."""
@@ -195,8 +171,6 @@ from flext_api.client import (
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientMethod,
-    # Client Enums
-    FlextApiClientProtocol,
     FlextApiClientRequest,
     FlextApiClientResponse,
     FlextApiClientStatus,
@@ -290,31 +264,9 @@ from flext_api.models import (
     TokenType,
 )
 from flext_api.protocols import (
-    FlextApiAuthorizationProtocol,
-    FlextApiAuthProtocol,
-    FlextApiCacheProtocol,
-    FlextApiConnectionPoolProtocol,
-    # Handler Protocols
-    FlextApiHandlerProtocol,
-    FlextApiHealthCheckProtocol,
-    # Monitoring Protocols
-    FlextApiMetricsProtocol,
-    # Middleware Protocols
-    FlextApiMiddlewareProtocol,
-    # HTTP Client Protocols
-    FlextApiPluginProtocol,
-    # Builder Protocols
+    FlextApiHttpClientProtocol,
     FlextApiQueryBuilderProtocol,
-    FlextApiRateLimitProtocol,
-    # Repository Protocols
-    FlextApiRepositoryProtocol,
     FlextApiResponseBuilderProtocol,
-    # Service Protocols
-    FlextApiServiceProtocol,
-    # Streaming Protocols
-    FlextApiStreamProtocol,
-    FlextApiValidatorProtocol,
-    FlextApiWebSocketProtocol,
 )
 from flext_api.storage import (
     FileStorageBackend,
@@ -362,13 +314,11 @@ from flext_api.types import (
 from flext_api.typings import FlextTypes
 
 from flext_api.base_service import (
-    FlextApiBaseAuthService,
-    FlextApiBaseBuilderService,
-    FlextApiBaseClientService,
-    FlextApiBaseHandlerService,
-    FlextApiBaseRepositoryService,
     FlextApiBaseService,
-    FlextApiBaseStreamingService,
+    # Eliminated classes - use flext-core protocols:
+    # FlextProtocols.Domain.Repository for repositories
+    # FlextProtocols.Application.Handler for handlers
+    # FlextProtocols.Infrastructure.Auth for authentication
 )
 from flext_api.utilities import FlextApiUtilities
 
@@ -575,31 +525,22 @@ __all__: list[str] = [
     "FlextApi",
     # App Functions
     "flext_api_create_app",
-    "FlextApiAuthProtocol",
     "FlextApiAuthenticationError",
     "FlextApiAuthorizationError",
-    "FlextApiAuthorizationProtocol",
-    "FlextApiBaseAuthService",
-    "FlextApiBaseBuilderService",
-    "FlextApiBaseClientService",
-    "FlextApiBaseHandlerService",
-    "FlextApiBaseRepositoryService",
     "FlextApiBaseService",
-    "FlextApiBaseStreamingService",
+    # Eliminated classes - use flext-core protocols instead
     "FlextApiBuilder",
     "FlextApiBuilderError",
-    "FlextApiCacheProtocol",
     "FlextApiCachingPlugin",
     "FlextApiClient",
     "FlextApiClientConfig",
     "FlextApiClientMethod",
-    "FlextApiClientProtocol",
+    "FlextApiHttpClientProtocol",
     "FlextApiClientRequest",
     "FlextApiClientResponse",
     "FlextApiClientStatus",
     "FlextApiConfigurationError",
     "FlextApiConnectionError",
-    "FlextApiConnectionPoolProtocol",
     "FlextApiConstants",
     "FlextApiEndpoints",
     "FlextApiFieldType",
@@ -607,38 +548,26 @@ __all__: list[str] = [
     "build_error_response_object",
     "build_paginated_response_object",
     "FlextApiError",
-    "FlextApiHandlerProtocol",
-    "FlextApiHealthCheckProtocol",
-    "FlextApiMetricsProtocol",
-    "FlextApiMiddlewareProtocol",
     "FlextApiNotFoundError",
     "FlextApiOperation",
     "FlextApiPlugin",
-    "FlextApiPluginProtocol",
     "FlextApiProcessingError",
-    "FlextApiProtocols",
     "FlextApiQuery",
     "FlextApiQueryBuilder",
     "FlextApiQueryBuilderProtocol",
     "FlextApiRateLimitError",
-    "FlextApiRateLimitProtocol",
-    "FlextApiRepositoryProtocol",
     "FlextApiRequestError",
     "FlextApiResponse",
     "FlextApiResponseBuilder",
     "FlextApiResponseBuilderProtocol",
     "FlextApiResponseError",
     "FlextApiRetryPlugin",
-    "FlextApiServiceProtocol",
     "FlextApiSettings",
     "FlextApiStorage",
     "FlextApiStorageError",
-    "FlextApiStreamProtocol",
     "FlextApiTimeoutError",
     "FlextApiUtilities",
     "FlextApiValidationError",
-    "FlextApiValidatorProtocol",
-    "FlextApiWebSocketProtocol",
     "FlextResult",
     "HttpHeader",
     "HttpMethod",

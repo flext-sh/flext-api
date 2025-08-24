@@ -37,6 +37,7 @@ def create_flext_api_client_response(
     data: dict[str, object] | list[object] | str | bytes | None = None,
     elapsed_time: float = 0.5,
     request_id: str | None = None,
+    *,
     from_cache: bool = False,
 ) -> FlextApiClientResponse:
     """Create FlextApiClientResponse for testing."""
@@ -55,18 +56,20 @@ def create_flext_api_config(
     api_port: int = 8000,
     default_timeout: int = 30,
     max_retries: int = 3,
+    *,
     enable_caching: bool = True,
     cache_ttl: int = 300,
 ) -> FlextApiSettings:
     """Create FlextApiSettings for testing."""
-    return FlextApiSettings(
-        api_host=api_host,
-        api_port=api_port,
-        default_timeout=default_timeout,
-        max_retries=max_retries,
-        enable_caching=enable_caching,
-        cache_ttl=cache_ttl,
-    )
+    # Use Pydantic model_validate to create instance with values
+    return FlextApiSettings.model_validate({
+        "api_host": api_host,
+        "api_port": api_port,
+        "default_timeout": default_timeout,
+        "max_retries": max_retries,
+        "enable_caching": enable_caching,
+        "cache_ttl": cache_ttl,
+    })
 
 
 # Legacy aliases for factory patterns

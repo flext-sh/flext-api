@@ -231,11 +231,13 @@ class TestFunctionalExamples:
         result = api.create_client({})
         assert not result.success
         assert result.error is not None
+        assert result.error is not None
         assert "base_url" in result.error.lower()
 
         # Test with invalid URL using modern API
         result = api.create_client({"base_url": "invalid-url"})
         assert not result.success
+        assert result.error is not None
         assert result.error is not None
         assert "invalid" in result.error.lower()
 

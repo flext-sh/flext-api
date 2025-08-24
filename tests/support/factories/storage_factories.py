@@ -13,6 +13,7 @@ from flext_api.storage import StorageBackend, StorageConfig
 def create_file_storage_config(
     file_path: str | None = None,
     namespace: str = "test",
+    *,
     enable_caching: bool = True,
 ) -> StorageConfig:
     """Create file storage configuration for testing."""
@@ -26,6 +27,7 @@ def create_file_storage_config(
 
 def create_memory_storage_config(
     namespace: str = "test",
+    *,
     enable_caching: bool = True,
     cache_ttl_seconds: int = 300,
 ) -> StorageConfig:

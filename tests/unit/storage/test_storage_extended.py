@@ -20,7 +20,7 @@ from flext_api import (
 @pytest.mark.asyncio
 async def test_memory_backend_ttl_and_keys() -> None:
     """Memory backend supports TTL and keys enumeration with expiry."""
-    backend = MemoryStorageBackend(StorageConfig(namespace="ns"))
+    backend: MemoryStorageBackend[str] = MemoryStorageBackend(StorageConfig(namespace="ns"))
     await backend.set("k", "v", ttl_seconds=1)
     assert (await backend.get("k")).value == "v"
     keys = (await backend.keys()).value
@@ -34,9 +34,10 @@ async def test_memory_backend_ttl_and_keys() -> None:
 @pytest.mark.asyncio
 async def test_file_backend_persistence_roundtrip(tmp_path: object) -> None:
     """File backend persists data across operations within a single run."""
-    base = Path(tmp_path)  # pytest passes a Path-like object
+    # pytest passes a Path-like object, ensure it's converted properly
+    base = Path(str(tmp_path))  # Convert to string first, then to Path
     cfg = StorageConfig(backend=StorageBackend.FILE, file_path=str(base / "s.json"))
-    backend = FileStorageBackend(cfg)
+    backend: FileStorageBackend[object] = FileStorageBackend(cfg)
 
     assert (await backend.set("a", 1)).success
     assert (await backend.get("a")).value == 1
