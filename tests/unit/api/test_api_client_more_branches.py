@@ -3,17 +3,17 @@
 from __future__ import annotations
 
 import pytest
-
 from flext_core import FlextResult
+
 from flext_api import (
     FlextApiCachingPlugin,
     FlextApiClient,
     FlextApiClientConfig,
+    FlextApiClientMethod,
     FlextApiClientRequest,
     FlextApiClientResponse,
     FlextApiPlugin,
     FlextApiResponseBuilder,
-    FlextApiClientMethod,
 )
 
 
@@ -61,7 +61,7 @@ def test_build_stub_response_status_nonint() -> None:
     )
     assert r.success
     assert r.value.status_code == 200
-    assert hasattr(r.value, 'text')  # Check attribute exists
+    assert hasattr(r.value, "text")  # Check attribute exists
     # Handle both property and method cases
     if callable(r.value.text):
         assert r.value.text() == ""

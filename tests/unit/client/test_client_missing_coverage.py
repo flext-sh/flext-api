@@ -12,13 +12,13 @@ import pytest
 from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
+    FlextApiClientMethod,
     FlextApiClientRequest,
     FlextApiClientResponse,
     FlextApiPlugin,
     client,
     create_client,
     create_client_with_plugins,
-    FlextApiClientMethod,
 )
 
 

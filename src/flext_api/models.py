@@ -586,10 +586,11 @@ class FlextApiModels(FlextModel):
         ) -> FlextResult[object]:
             """Create bearer token with validation."""
             # Normalize token type
+            default_token_type = "Bearer"  # noqa: S105
             if token_type is None:
-                token_type_enum = "Bearer"
+                token_type_enum = default_token_type
             elif hasattr(token_type, "value"):
-                token_type_enum = getattr(token_type, "value")
+                token_type_enum = token_type.value
             elif isinstance(token_type, str):
                 valid_types = ["Bearer", "JWT", "ApiKey"]
                 if token_type not in valid_types:
@@ -922,7 +923,7 @@ class FlextApiModels(FlextModel):
                     not self.url.startswith(("http://", "https://", "/")),
                     "Request URL must be valid HTTP URL or path",
                 ),
-                (self.method not in ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE"], f"Invalid HTTP method: {self.method}"),
+                (self.method not in {"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE"}, f"Invalid HTTP method: {self.method}"),
                 (self.timeout <= 0, "Timeout must be positive"),
             ]
 
@@ -1498,8 +1499,8 @@ class FlextApiModels(FlextModel):
             if self.metadata:
                 result["metadata"] = self.metadata
             if self.pagination:
-                if hasattr(self.pagination, 'model_dump'):
-                    result["pagination"] = getattr(self.pagination, 'model_dump')()
+                if hasattr(self.pagination, "model_dump"):
+                    result["pagination"] = self.pagination.model_dump()
                 else:
                     result["pagination"] = self.pagination
 

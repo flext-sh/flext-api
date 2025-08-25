@@ -8,9 +8,9 @@ from __future__ import annotations
 from uuid import uuid4
 
 from flext_api import (
+    FlextApiClientMethod,
     FlextApiClientRequest,
     FlextApiClientResponse,
-    FlextApiClientMethod,
 )
 from flext_api.config import FlextApiSettings
 

@@ -30,7 +30,6 @@ from flext_api import (
     create_flext_api,
     flext_api_create_app,
     sync_health_check,
-    FlextApiClientMethod,
 )
 from flext_api.app import FlextApiAppConfig, create_flext_api_app
 
