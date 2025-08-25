@@ -8,15 +8,32 @@ from typing import override
 from flext_core import FlextBaseConfigModel, FlextConstants, FlextResult, FlextSettings
 from pydantic import Field, field_validator
 
+# Import from flext-api root - following FLEXT standards
 from flext_api.constants import FlextApiConstants
 
 
-class FlextApiSettings(FlextBaseConfigModel):
-    """API-specific configuration settings extending flext-core patterns.
+class FlextApiConfig(FlextBaseConfigModel):
+    """Main API configuration class inheriting from FlextBaseConfigModel.
+
+    This class follows the FLEXT pattern of having a single Flext[Area][Module] class
+    that inherits from the equivalent FlextCore class and provides all functionality
+    through internal method delegation.
+
+    Inherits ALL FlextBaseConfigModel functionality and extends with API-specific configuration:
+    - API server and client settings
+    - Database configuration
+    - Security and authentication settings
+    - Environment and logging configuration
+    - Plugin and caching configuration
+    - External service integration settings
 
     Follows Single Responsibility Principle by handling only API configuration.
     Uses Dependency Inversion Principle by depending on FlextSettings abstraction.
     """
+
+    # =============================================================================
+    # API-SPECIFIC CONFIGURATION - Extensions to FlextBaseConfigModel
+    # =============================================================================
 
     # API Server Configuration
     api_host: str = Field(default="localhost", description="API server host")
@@ -154,7 +171,7 @@ class FlextApiSettings(FlextBaseConfigModel):
             overrides: Optional dictionary of configuration overrides
             **kwargs: Additional keyword arguments for settings
         Returns:
-            FlextResult containing validated FlextApiSettings instance
+            FlextResult containing validated FlextApiConfig instance
 
         """
         try:
@@ -172,77 +189,129 @@ class FlextApiSettings(FlextBaseConfigModel):
         except (RuntimeError, ValueError, TypeError, OSError) as e:
             return FlextResult[FlextSettings].fail(f"Failed to create settings: {e}")
 
+    @classmethod
+    def create_api_settings(
+        cls,
+        **overrides: object,
+    ) -> FlextResult[FlextApiConfig]:
+        """Create API settings with overrides.
 
-def create_api_settings(**overrides: object) -> FlextResult[FlextApiSettings]:
-    """Create API settings with overrides.
+        Follows Factory Pattern and Open/Closed Principle.
+        Uses FlextResult for consistent error handling.
 
-    Follows Factory Pattern and Open/Closed Principle.
-    Uses FlextResult for consistent error handling.
+        Args:
+            **overrides: Configuration overrides to apply
+        Returns:
+            FlextResult containing validated FlextApiConfig instance
 
-    Args:
-      **overrides: Configuration overrides to apply
-    Returns:
-      FlextResult containing validated FlextApiSettings instance
+        """
+        try:
+            # Create settings - Pydantic settings automatically load from environment
+            settings = cls()
+            # Apply any overrides after creation if needed
+            if overrides:
+                # Merge current values with overrides and validate
+                current_values = settings.model_dump()
+                current_values.update(overrides)
+                settings = cls.model_validate(current_values)
+            return FlextResult[FlextApiConfig].ok(settings)
+        except Exception as e:
+            return FlextResult[FlextApiConfig].fail(f"Failed to create settings: {e}")
 
-    """
-    try:
-        # Create settings - Pydantic settings automatically load from environment
-        settings = FlextApiSettings()
-        # Apply any overrides after creation if needed
-        if overrides:
-            # Merge current values with overrides and validate
-            current_values = settings.model_dump()
-            current_values.update(overrides)
-            settings = FlextApiSettings.model_validate(current_values)
-        return FlextResult[FlextApiSettings].ok(settings)
-    except Exception as e:
-        return FlextResult[FlextApiSettings].fail(f"Failed to create settings: {e}")
+    @classmethod
+    def load_configuration(
+        cls,
+        environment: str = "development",
+    ) -> FlextResult[FlextApiConfig]:
+        """Load configuration for specified environment.
+
+        Args:
+            environment: Target environment
+
+        Returns:
+            FlextResult containing configuration
+
+        """
+        return cls.create_api_settings(environment=environment)
+
+    @classmethod
+    def validate_configuration(cls, settings: FlextApiConfig) -> FlextResult[None]:
+        """Validate configuration settings.
+
+        Args:
+            settings: Settings to validate
+
+        Returns:
+            FlextResult indicating validation success/failure
+
+        """
+        try:
+            # Validate required fields for production
+            if settings.environment == "production":
+                if not settings.secret_key:
+                    return FlextResult[None].fail(
+                        "Secret key is required for production environment",
+                    )
+                if not settings.database_url:
+                    return FlextResult[None].fail(
+                        "Database URL is required for production environment",
+                    )
+
+            # Validate CORS origins format
+            for origin in settings.cors_origins:
+                if not origin.startswith(("http://", "https://")):
+                    return FlextResult[None].fail(f"Invalid CORS origin format: {origin}")
+
+            return FlextResult[None].ok(None)
+        except Exception as e:
+            return FlextResult[None].fail(f"Configuration validation failed: {e}")
 
 
-# Legacy compatibility - maintain backward compatibility
+# =============================================================================
+# LEGACY COMPATIBILITY - Function aliases for backward compatibility
+# =============================================================================
+
+
+def create_api_settings(**overrides: object) -> FlextResult[FlextApiConfig]:
+    """Create API settings with overrides."""
+    return FlextApiConfig.create_api_settings(**overrides)
+
+
 def load_configuration(
     environment: str = "development",
-) -> FlextResult[FlextApiSettings]:
-    """Load configuration for specified environment.
-
-    Args:
-      environment: Target environment
-
-    Returns:
-      FlextResult containing configuration
-
-    """
-    return create_api_settings(environment=environment)
+) -> FlextResult[FlextApiConfig]:
+    """Load configuration for specified environment."""
+    return FlextApiConfig.load_configuration(environment)
 
 
-# Configuration validation utility
-def validate_configuration(settings: FlextApiSettings) -> FlextResult[None]:
-    """Validate configuration settings.
+def validate_configuration(settings: FlextApiConfig) -> FlextResult[None]:
+    """Validate configuration settings."""
+    return FlextApiConfig.validate_configuration(settings)
 
-    Args:
-      settings: Settings to validate
 
-    Returns:
-      FlextResult indicating validation success/failure
+# =============================================================================
+# LEGACY ALIASES - Class aliases for backward compatibility
+# =============================================================================
 
-    """
-    try:
-        # Validate required fields for production
-        if settings.environment == "production":
-            if not settings.secret_key:
-                return FlextResult[None].fail(
-                    "Secret key is required for production environment",
-                )
-            if not settings.database_url:
-                return FlextResult[None].fail(
-                    "Database URL is required for production environment",
-                )
 
-        # Validate CORS origins format
-        for origin in settings.cors_origins:
-            if not origin.startswith(("http://", "https://")):
-                return FlextResult[None].fail(f"Invalid CORS origin format: {origin}")
+FlextApiSettings = FlextApiConfig  # Legacy alias
+APIConfig = FlextApiConfig  # Alternative alias
+FlextAPISettings = FlextApiConfig  # Alternative alias
 
-        return FlextResult[None].ok(None)
-    except Exception as e:
-        return FlextResult[None].fail(f"Configuration validation failed: {e}")
+
+# =============================================================================
+# EXPORTS
+# =============================================================================
+
+__all__ = [
+    "APIConfig",
+    "FlextAPISettings",
+    # Main Configuration Class (Primary API)
+    "FlextApiConfig",
+    # Legacy Class Aliases (for backward compatibility)
+    "FlextApiSettings",
+    # Legacy Function Aliases (for backward compatibility)
+    "create_api_settings",
+    "load_configuration",
+    "validate_configuration",
+]

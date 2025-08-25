@@ -12,6 +12,7 @@ from flext_api import (
     FLEXT_API_VERSION,
     FlextApiCachingPlugin,
     FlextApiCircuitBreakerPlugin,
+    FlextApiClientMethod,
     FlextApiClientRequest,
     FlextApiClientResponse,
     FlextApiSettings,
@@ -29,6 +30,7 @@ from flext_api import (
     create_flext_api,
     flext_api_create_app,
     sync_health_check,
+    FlextApiClientMethod,
 )
 from flext_api.app import FlextApiAppConfig, create_flext_api_app
 
@@ -255,13 +257,15 @@ def test_real_circuit_breaker_plugin_methods() -> None:
     async def test_plugin_methods() -> None:
         # Create REAL request object
         real_request = FlextApiClientRequest(
-            method="GET",
+            id="test_request_1",
+            method=FlextApiClientMethod.GET,
             url="https://api.example.com/test",
             headers={"User-Agent": "FlextApi-Test"},
         )
 
         # Create REAL response object
         real_response = FlextApiClientResponse(
+            id="test_response_1",
             status_code=200,
             headers={"content-type": "application/json"},
             data={"status": "ok"},
@@ -327,7 +331,7 @@ def test_build_query_dict_function() -> None:
     assert "filters" in result
     assert "sorts" in result
     assert "page" in result
-    assert "page_size" in result
+    assert "pageSize" in result
     assert "search" in result
     assert "fields" in result
 

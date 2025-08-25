@@ -10,7 +10,7 @@ from typing import TypeVar
 import pytest
 from flext_core import FlextResult
 
-from flext_api import FlextApiClientRequest, FlextApiClientResponse
+from flext_api import FlextApiClientRequest, FlextApiClientMethod, FlextApiClientResponse
 
 # Type variable for generic FlextResult operations
 T = TypeVar("T")
@@ -45,7 +45,7 @@ def create_test_request(
 ) -> FlextApiClientRequest:
     """Create test request with sensible defaults."""
     return FlextApiClientRequest(
-        method=method,
+        method=FlextApiClientMethod(method) if isinstance(method, str) else method,
         url=url,
         headers=headers or {},
         params=params or {},

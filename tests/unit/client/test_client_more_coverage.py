@@ -10,6 +10,7 @@ from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientRequest,
+    FlextApiClientMethod,
 )
 
 
@@ -27,7 +28,7 @@ async def test_real_network_error_and_error_formatting() -> None:
 
     try:
         # Real network error triggers error path
-        req = FlextApiClientRequest(method="GET", url="http://127.0.0.1:9998/test")
+        req = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="http://127.0.0.1:9998/test")
         result = await client._make_request(req)
         assert not result.success
 
@@ -53,8 +54,8 @@ async def test_read_response_data_real_json_parsing() -> None:
         response = res.value  # FlextResult[FlextApiClientResponse] -> response
 
         # Verify JSON parsing worked correctly
-        assert isinstance(response.value, dict)
+        assert isinstance(response.data, dict)
         # httpbin.org /json returns a slideshow example
-        assert "slideshow" in json.dumps(response.value)
+        assert "slideshow" in json.dumps(response.data)
     finally:
         await client.close()

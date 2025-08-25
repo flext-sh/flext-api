@@ -8,6 +8,7 @@ from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientRequest,
+    FlextApiClientMethod,
 )
 
 
@@ -20,15 +21,15 @@ async def test_read_response_data_parse_errors() -> None:
 
     try:
         # Use httpbin.org response that claims to be JSON but isn't
-        request = FlextApiClientRequest(method="GET", url="https://httpbin.org/html")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/html")
         result = await client._execute_request_pipeline(request, "GET")
 
         if result.success:
             response = result.value
             # HTML content returned instead of JSON
-            assert isinstance(response.value, str)
+            assert isinstance(response.data, str)
             assert (
-                "html" in response.value.lower() or "doctype" in response.value.lower()
+                "html" in response.data.lower() or "doctype" in response.data.lower()
             )
     finally:
         await client.close()
@@ -57,7 +58,7 @@ async def test_execute_request_pipeline_empty_response() -> None:
     await client.start()
     try:
         # Use httpbin.org status endpoint to get 204 No Content
-        req = FlextApiClientRequest(method="GET", url="https://httpbin.org/status/204")
+        req = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/status/204")
         res = await client._execute_request_pipeline(req, "GET")
 
         # 204 No Content should succeed but with no/empty data
@@ -65,6 +66,6 @@ async def test_execute_request_pipeline_empty_response() -> None:
             response = res.value
             assert response.status_code == 204
             # No content response should have minimal or no data
-            assert response.value is None or response.value == ""
+            assert response.data is None or response.data == ""
     finally:
         await client.close()

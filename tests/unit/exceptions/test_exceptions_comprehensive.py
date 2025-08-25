@@ -27,6 +27,7 @@ from flext_core.exceptions import (
 from flext_api import (
     FlextApiAuthenticationError,
     FlextApiBuilderError,
+    FlextApiClientMethod,
     FlextApiConfigurationError,
     FlextApiConnectionError,
     FlextApiError,
@@ -440,7 +441,7 @@ class TestFlextApiRequestError:
         """Test request error with status code context."""
         error = FlextApiRequestError(
             "Client error",
-            method="GET",
+            method=FlextApiClientMethod.GET,
             endpoint="/api/data",
             status_code=400,
         )

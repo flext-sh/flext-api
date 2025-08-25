@@ -10,6 +10,7 @@ from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
     FlextApiClientRequest,
+    FlextApiClientMethod,
 )
 
 
@@ -36,7 +37,7 @@ async def test_perform_http_request_success_json() -> None:
 
     try:
         # Create REAL request to httpbin.org
-        request = FlextApiClientRequest(method="GET", url="https://httpbin.org/json")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/json")
 
         # Perform REAL HTTP request
         result = await client._perform_http_request(request)
@@ -45,8 +46,8 @@ async def test_perform_http_request_success_json() -> None:
         assert result.success
         assert result.value is not None
         assert result.value.status_code == 200
-        assert isinstance(result.value.value, dict)
-        assert "slideshow" in result.value.value  # httpbin.org/json returns slideshow data
+        assert isinstance(result.value.data, dict)
+        assert "slideshow" in result.value.data  # httpbin.org/json returns slideshow data
     finally:
         await client.stop()
 
@@ -60,14 +61,14 @@ async def test_perform_http_request_text_response() -> None:
 
     try:
         # Test text endpoint
-        request = FlextApiClientRequest(method="GET", url="https://httpbin.org/robots.txt")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/robots.txt")
         result = await client._perform_http_request(request)
 
         assert result.success
         assert result.value is not None
         assert result.value.status_code == 200
-        assert isinstance(result.value.value, str)
-        assert "User-agent" in result.value.value
+        assert isinstance(result.value.data, str)
+        assert "User-agent" in result.value.data
     finally:
         await client.stop()
 
@@ -84,14 +85,14 @@ async def test_real_http_headers_and_user_agent() -> None:
     await client.start()
 
     try:
-        request = FlextApiClientRequest(method="GET", url="https://httpbin.org/headers")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/headers")
         result = await client._perform_http_request(request)
 
         assert result.success
         assert result.value is not None
         assert result.value.status_code == 200
-        assert isinstance(result.value.value, dict)
-        response_data = result.value.value
+        assert isinstance(result.value.data, dict)
+        response_data = result.value.data
         assert isinstance(response_data, dict)
         headers = response_data["headers"]
         assert isinstance(headers, dict)
@@ -121,7 +122,7 @@ async def test_real_http_post_request() -> None:
         assert result.success
         assert result.value is not None
         assert result.value.status_code == 200
-        response_data = result.value.value
+        response_data = result.value.data
         assert isinstance(response_data, dict)
         json_data = response_data["json"]
         assert isinstance(json_data, dict)
@@ -140,7 +141,7 @@ async def test_real_http_timeout_handling() -> None:
     client = FlextApiClient(config)
 
     request = FlextApiClientRequest(
-        method="GET",
+        method=FlextApiClientMethod.GET,
         url="https://httpbin.org/delay/5",  # 5 second delay
     )
     result = await client._perform_http_request(request)
@@ -167,13 +168,13 @@ async def test_real_http_with_user_agent() -> None:
     await client.start()
 
     try:
-        request = FlextApiClientRequest(method="GET", url="https://httpbin.org/user-agent")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/user-agent")
         result = await client._perform_http_request(request)
 
         assert result.success
         assert result.value is not None
         assert result.value.status_code == 200
-        user_agent_data = result.value.value
+        user_agent_data = result.value.data
         assert isinstance(user_agent_data, dict)
         user_agent = user_agent_data["user-agent"]
         assert isinstance(user_agent, str)

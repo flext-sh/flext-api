@@ -46,10 +46,10 @@ class TestMissingBuilderCoverage:
         details = {"field_errors": ["name is required", "email invalid"]}
         result = build_error_response("Validation failed", 400, details)
 
-        assert result["success"] is False
-        assert result["message"] == "Validation failed"
-        assert "metadata" in result
-        assert result["metadata"]["details"] == details
+        assert result.success is False
+        assert result.message == "Validation failed"
+        assert hasattr(result, "metadata")
+        assert result.metadata["details"] == details
 
     def test_build_paginated_response_with_metadata(self) -> None:
         """Test build_paginated_response with metadata - covers lines 396-398."""
@@ -65,10 +65,10 @@ class TestMissingBuilderCoverage:
         )
         result = build_paginated_response(config)
 
-        assert result["success"] is True
-        assert result["data"] == data
-        assert result["metadata"]["custom_field"] == "value"
-        assert result["metadata"]["another"] == 123
+        assert result.success is True
+        assert result.data == data
+        assert result.metadata["custom_field"] == "value"
+        assert result.metadata["another"] == 123
 
     def test_build_success_response_with_metadata(self) -> None:
         """Test build_success_response with metadata - covers lines 411-412."""
@@ -76,10 +76,10 @@ class TestMissingBuilderCoverage:
         metadata = {"request_id": "12345", "timestamp": "2023-01-01"}
         result = build_success_response(data, "Operation successful", metadata)
 
-        assert result["success"] is True
-        assert result["data"] == data
-        assert result["metadata"]["request_id"] == "12345"
-        assert result["metadata"]["timestamp"] == "2023-01-01"
+        assert result.success is True
+        assert result.data == data
+        assert result.metadata["request_id"] == "12345"
+        assert result.metadata["timestamp"] == "2023-01-01"
 
     def test_pagination_validation_negative_total(self) -> None:
         """Test pagination validation with negative total - covers lines 197-198."""
@@ -125,9 +125,9 @@ class TestMissingBuilderCoverage:
 
         result = build_paginated_response(config)
 
-        assert result["success"] is True
-        assert result["data"] == [{"id": 1}, {"id": 2}]
-        assert result["message"] == "Retrieved items"
+        assert result.success is True
+        assert result.data == [{"id": 1}, {"id": 2}]
+        assert result.message == "Retrieved items"
 
     def test_paginated_response_builder_init(self) -> None:
         """Test PaginatedResponseBuilder initialization - covers lines 692-697."""
@@ -207,10 +207,10 @@ class TestMissingBuilderCoverage:
             .build()
         )
 
-        assert result["success"] is True
-        assert result["data"] == test_data
+        assert result.success is True
+        assert result.data == test_data
         # Check pagination data directly in metadata (not nested under "pagination")
-        metadata = result["metadata"]
+        metadata = result.metadata
         assert metadata["total"] == 50
         assert metadata["page"] == 2
         assert metadata["page_size"] == 10

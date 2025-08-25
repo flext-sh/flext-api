@@ -10,17 +10,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio as _asyncio
-from threading import Thread
 from typing import TypedDict, cast, override
 
-from flext_core import FlextResult, FlextResult as _Res, get_logger
+from flext_core import FlextDomainService, FlextResult, get_logger
 from pydantic import Field
 
-from flext_api.base_service import (
-    FlextApiBaseService,
-    FlextApiBaseService as _Base,
-)
 from flext_api.client import FlextApiBuilder, FlextApiClient, FlextApiClientConfig
 from flext_api.models import DEFAULT_MAX_RETRIES, DEFAULT_TIMEOUT, ClientConfig
 from flext_api.protocols import (
@@ -45,10 +39,10 @@ class ClientConfigDict(TypedDict, total=False):
 __version__ = "0.9.0"
 
 
-class FlextApi(FlextApiBaseService):
+class FlextApi(FlextDomainService[dict[str, object]]):
     """Unified API service using flext-core patterns.
 
-    Extends FlextApiBaseService to provide HTTP client and builder functionality
+    Extends FlextDomainService to provide HTTP client and builder functionality
     through composition. Follows SOLID principles with proper separation of concerns.
     """
 
@@ -64,111 +58,79 @@ class FlextApi(FlextApiBaseService):
         # Initialize base class without extra data (base class forbids extra fields)
         super().__init__()
         self._builder = FlextApiBuilder()
+        self._is_running = False
         logger.info("FlextApi service initialized", version=self.service_version)
 
     @override
-    async def _do_start(self) -> FlextResult[None]:
-        """Perform service-specific startup logic."""
-        logger.debug("FlextApi service startup complete")
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute the domain service operation (required by FlextDomainService)."""
+        return FlextResult[dict[str, object]].ok({
+            "status": "ready",
+            "service": "FlextApi",
+            "version": self.service_version
+        })
+
+    def start(self) -> FlextResult[None]:
+        """Start the service."""
+        logger.info("Starting service", service_type=type(self).__name__)
+        self._is_running = True
         return FlextResult[None].ok(None)
 
-    @override
-    async def _do_stop(self) -> FlextResult[None]:
-        """Perform service-specific shutdown logic."""
+    def stop(self) -> FlextResult[None]:
+        """Stop the service."""
+        logger.info("Stopping service", service_type=type(self).__name__)
+        self._is_running = False
+        return FlextResult[None].ok(None)
+
+    def health_check(self) -> FlextResult[dict[str, object]]:
+        """Perform health check."""
+        return FlextResult[dict[str, object]].ok({
+            "status": "healthy" if self._is_running else "stopped",
+            "service": type(self).__name__,
+            "is_running": self._is_running,
+            "client_configured": self._client is not None,
+            "builder_available": self._builder is not None,
+        })
+
+    @property
+    def is_running(self) -> bool:
+        """Check if service is running."""
+        return self._is_running
+
+    # Async service variants
+    async def start_async(self) -> FlextResult[None]:
+        """Start the FlextApi service (async interface)."""
+        result = self.start()
+        if result.success:
+            logger.debug("FlextApi service startup complete")
+        return result
+
+    async def stop_async(self) -> FlextResult[None]:
+        """Stop the FlextApi service (async interface)."""
         try:
             # Close client if exists
             if self._client:
                 await self._client.close()
                 self._client = None
             logger.debug("FlextApi service shutdown complete")
-            return FlextResult[None].ok(None)
+            return self.stop()
         except Exception as e:
             logger.exception("Error during service shutdown")
             return FlextResult[None].fail(f"Shutdown error: {e}")
 
-    @override
-    async def _get_health_details(self) -> FlextResult[FlextTypes.Core.JsonDict]:
-        """Get service-specific health details."""
-        details: FlextTypes.Core.JsonDict = {
-            "client_configured": self._client is not None,
-            "client_type": type(self._client).__name__ if self._client else None,
-            "builder_available": self._builder is not None,
-        }
-        if self._client_config:
-            details["client_base_url"] = self._client_config.base_url
-            details["client_timeout"] = self._client_config.timeout
-        return FlextResult[FlextTypes.Core.JsonDict].ok(details)
-
-    # Use inherited sync methods from base class and add async variants
-    async def start_async(self) -> FlextResult[None]:
-        """Start the FlextApi service (async interface)."""
-        result = super().start()
-        if result.success:
-            return await self._do_start()
-        return result
-
-    async def stop_async(self) -> FlextResult[None]:
-        """Stop the FlextApi service (async interface)."""
-        shutdown_result = await self._do_stop()
-        if shutdown_result.success:
-            return super().stop()
-        return shutdown_result
-
     async def health_check_async(self) -> FlextResult[dict[str, object]]:
         """Health check with async details."""
-        base_result = super().health_check()
+        base_result = self.health_check()
         if not base_result.success:
             return base_result
 
-        # Add service-specific health details
-        details_result = await self._get_health_details()
-        if details_result.success:
-            health_data = base_result.value
-            health_data.update(details_result.value)
-            return FlextResult[dict[str, object]].ok(health_data)
+        # Service is already providing comprehensive health details
         return base_result
 
     # Compatibility: allow calling health_check in sync contexts within tests
     def sync_health_check(self) -> FlextResult[dict[str, object]]:
-        """Run health check synchronously for compatibility tests.
-
-        Always uses a private event loop to avoid interfering with pytest's loop.
-        """
-        # If a loop is already running (pytest-asyncio), run the coroutine in a
-        # separate thread with its own event loop to avoid nested-loop errors.
-        try:
-            _asyncio.get_running_loop()
-            result_holder: list[_Res[dict[str, object]]] = []
-            error_holder: list[BaseException] = []
-
-            def _runner() -> None:
-                loop_inner = _asyncio.new_event_loop()
-                try:
-                    res = _Base.health_check(self)
-                    result_holder.append(res)
-                except BaseException as exc:  # pragma: no cover - defensive
-                    error_holder.append(exc)
-                finally:
-                    loop_inner.close()
-
-            t = Thread(target=_runner, daemon=True)
-            t.start()
-            t.join()
-            if result_holder:
-                return result_holder[0]
-            if error_holder:
-                return FlextResult[dict[str, object]].fail(
-                    f"Failed to run health check: {error_holder[0]}"
-                )
-            return FlextResult[dict[str, object]].fail(
-                "Failed to run health check: unknown error"
-            )
-        except RuntimeError:
-            loop = _asyncio.new_event_loop()
-            try:
-                return _Base.health_check(self)
-            finally:
-                loop.close()
+        """Run health check synchronously for compatibility tests."""
+        return self.health_check()
 
     def health_check_sync(self) -> FlextResult[dict[str, object]]:
         """Synchronous wrapper for health_check for legacy tests."""

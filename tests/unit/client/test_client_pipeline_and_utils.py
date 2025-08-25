@@ -9,6 +9,7 @@ import pytest
 from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
+    FlextApiClientMethod,
     FlextApiClientRequest,
     FlextApiClientResponse,
     create_client,
@@ -25,7 +26,7 @@ async def test_client_request_pipeline_success() -> None:
     )
     client = FlextApiClient(config)
 
-    request = FlextApiClientRequest(method="GET", url="https://httpbin.org/get")
+    request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/get")
 
     # Test the basic request pipeline
     await client._ensure_session()
@@ -47,7 +48,7 @@ async def test_client_error_handling_pipeline() -> None:
     await client.start()
 
     try:
-        request = FlextApiClientRequest(method="GET", url="https://invalid-domain-that-does-not-exist-12345.com/test")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://invalid-domain-that-does-not-exist-12345.com/test")
 
         # Should fail due to DNS resolution failure
         result = await client._perform_http_request(request)
@@ -117,13 +118,13 @@ async def test_client_request_validation() -> None:
     _ = FlextApiClient(config)
 
     # Valid request
-    valid_request = FlextApiClientRequest(method="GET", url="https://httpbin.org/get")
+    valid_request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/get")
     assert valid_request.method == "GET"
     assert valid_request.url == "https://httpbin.org/get"
 
     # Request with additional data
     post_request = FlextApiClientRequest(
-        method="POST",
+        method=FlextApiClientMethod.POST,
         url="https://httpbin.org/post",
         json_data={"test": "data"},
         headers={"Content-Type": "application/json"},
@@ -163,7 +164,7 @@ async def test_client_lifecycle_with_requests() -> None:
     assert client.status == "running"
 
     # Make a request during lifecycle
-    request = FlextApiClientRequest(method="GET", url="https://httpbin.org/uuid")
+    request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/uuid")
     result = await client._perform_http_request(request)
 
     assert result.success

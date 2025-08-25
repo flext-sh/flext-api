@@ -137,24 +137,24 @@ class TestFunctionalExamples:
         data = {"id": 1, "name": "test", "status": "active"}
         response1 = build_success_response(data, "Resource created successfully")
 
-        assert response1["success"] is True
-        assert response1["data"] == data
-        assert response1["message"] == "Resource created successfully"
+        assert response1.success is True
+        assert response1.data == data
+        assert response1.message == "Resource created successfully"
 
         # Success response without data
         response2 = build_success_response(None, "Operation completed")
 
-        assert response2["success"] is True
-        assert response2["data"] is None
-        assert response2["message"] == "Operation completed"
+        assert response2.success is True
+        assert response2.data is None
+        assert response2.message == "Operation completed"
 
         # Success response with metadata
         metadata: dict[str, object] = {"total": 100, "page": 1, "page_size": 10}
         response3 = build_success_response(data, "Data retrieved", metadata)
 
-        assert response3["success"] is True
-        assert response3["data"] == data
-        assert response3["metadata"] == metadata
+        assert response3.success is True
+        assert response3.data == data
+        assert response3.metadata == metadata
 
     @pytest.mark.asyncio
     async def test_async_client_real_operations(self) -> None:
@@ -212,10 +212,10 @@ class TestFunctionalExamples:
             )
 
             # REAL validation of response structure
-            assert response["success"] is True
-            assert response["data"] == test_data
-            assert response["message"] == "Data retrieved successfully"
-            assert response["metadata"]["total"] == 3
+            assert response.success is True
+            assert response.data == test_data
+            assert response.message == "Data retrieved successfully"
+            assert response.metadata["total"] == 3
 
         finally:
             # REAL client lifecycle - stop the client
@@ -268,8 +268,8 @@ class TestFunctionalExamples:
         )
 
         assert response.success is True
-        assert isinstance(response.value, dict)
-        assert response.value["id"] == 1
+        assert isinstance(response.data, dict)
+        assert response.data["id"] == 1
         assert response.message == "Resource created"
         assert isinstance(response.metadata, dict)
         assert response.metadata["request_id"] == "12345"

@@ -7,6 +7,7 @@ from typing import ClassVar, Generic, TypeVar
 import aiohttp.hdrs
 from flext_core import FlextFieldCore, FlextFields
 
+# Import from flext-api root - following FLEXT standards
 from flext_api.typings import FlextTypes
 
 # =============================================================================
@@ -263,20 +264,21 @@ class FlextApiTypes(FlextTypes):
         """Internal pre-defined field configurations for common API patterns."""
 
         # Authentication fields
-        API_KEY = None  # Lazy-loaded
-        BEARER_TOKEN = None  # Lazy-loaded
+        API_KEY: FlextTypes.Core.JsonDict | None = None  # Lazy-loaded
+        BEARER_TOKEN: FlextTypes.Core.JsonDict | None = None  # Lazy-loaded
 
         # Configuration fields
-        PIPELINE_CONFIG = None  # Lazy-loaded
-        PLUGIN_CONFIG = None  # Lazy-loaded
+        PIPELINE_CONFIG: FlextTypes.Core.JsonDict | None = None  # Lazy-loaded
+        PLUGIN_CONFIG: FlextTypes.Core.JsonDict | None = None  # Lazy-loaded
 
         # Authorization fields
-        USER_ROLE = None  # Lazy-loaded
+        USER_ROLE: FlextTypes.Core.JsonDict | None = None  # Lazy-loaded
 
         # API fields
-        ENDPOINT_PATH = None  # Lazy-loaded
-        HTTP_METHOD = None  # Lazy-loaded
-        RESPONSE_FORMAT = None  # Lazy-loaded
+        ENDPOINT_PATH: FlextTypes.Core.JsonDict | None = None  # Lazy-loaded
+        HTTP_METHOD: FlextTypes.Core.JsonDict | None = None  # Lazy-loaded
+        RESPONSE_FORMAT: FlextTypes.Core.JsonDict | None = None  # Lazy-loaded
+
 
         # User management fields
         USERNAME: ClassVar[FlextTypes.Core.JsonDict] = {
@@ -467,15 +469,28 @@ class FlextApiTypes(FlextTypes):
 
         """
         cls.Fields._ensure_lazy_loaded()
-        return {
-            "API_KEY": cls.Fields.API_KEY,
-            "BEARER_TOKEN": cls.Fields.BEARER_TOKEN,
-            "PIPELINE_CONFIG": cls.Fields.PIPELINE_CONFIG,
-            "PLUGIN_CONFIG": cls.Fields.PLUGIN_CONFIG,
-            "USER_ROLE": cls.Fields.USER_ROLE,
-            "ENDPOINT_PATH": cls.Fields.ENDPOINT_PATH,
-            "HTTP_METHOD": cls.Fields.HTTP_METHOD,
-            "RESPONSE_FORMAT": cls.Fields.RESPONSE_FORMAT,
+        result: dict[str, FlextTypes.Core.JsonDict] = {}
+
+        # Only include non-None fields
+        if cls.Fields.API_KEY is not None:
+            result["API_KEY"] = cls.Fields.API_KEY
+        if cls.Fields.BEARER_TOKEN is not None:
+            result["BEARER_TOKEN"] = cls.Fields.BEARER_TOKEN
+        if cls.Fields.PIPELINE_CONFIG is not None:
+            result["PIPELINE_CONFIG"] = cls.Fields.PIPELINE_CONFIG
+        if cls.Fields.PLUGIN_CONFIG is not None:
+            result["PLUGIN_CONFIG"] = cls.Fields.PLUGIN_CONFIG
+        if cls.Fields.USER_ROLE is not None:
+            result["USER_ROLE"] = cls.Fields.USER_ROLE
+        if cls.Fields.ENDPOINT_PATH is not None:
+            result["ENDPOINT_PATH"] = cls.Fields.ENDPOINT_PATH
+        if cls.Fields.HTTP_METHOD is not None:
+            result["HTTP_METHOD"] = cls.Fields.HTTP_METHOD
+        if cls.Fields.RESPONSE_FORMAT is not None:
+            result["RESPONSE_FORMAT"] = cls.Fields.RESPONSE_FORMAT
+
+        # Add static fields that are never None
+        result.update({
             "USERNAME": cls.Fields.USERNAME,
             "EMAIL": cls.Fields.EMAIL,
             "PASSWORD": cls.Fields.PASSWORD,
@@ -490,7 +505,9 @@ class FlextApiTypes(FlextTypes):
             "REQUEST_ID": cls.Fields.REQUEST_ID,
             "CORRELATION_ID": cls.Fields.CORRELATION_ID,
             "TIMESTAMP": cls.Fields.TIMESTAMP,
-        }
+        })
+
+        return result
 
     @classmethod
     def create_api_key_field(
@@ -668,11 +685,48 @@ class FlextAPIFieldCore:
         return FlextApiTypes.create_response_format_field(description=description, **kwargs)
 
 
-class FlextAPIFields:
+class FlextAPIFieldsMeta(type):
+    """Metaclass for FlextAPIFields to handle lazy initialization."""
+
+    def __getattr__(cls, name: str) -> object:
+        """Handle attribute access with lazy initialization."""
+        if name in ("API_KEY", "BEARER_TOKEN", "PIPELINE_CONFIG", "PLUGIN_CONFIG",
+                   "USER_ROLE", "ENDPOINT_PATH", "HTTP_METHOD", "RESPONSE_FORMAT"):
+            # Manually initialize fields if not done already
+            if not getattr(cls, "_initialized", False):
+                FlextApiTypes.Fields._ensure_lazy_loaded()
+                # Set class attributes dynamically
+                cls.API_KEY = FlextApiTypes.Fields.API_KEY
+                cls.BEARER_TOKEN = FlextApiTypes.Fields.BEARER_TOKEN
+                cls.PIPELINE_CONFIG = FlextApiTypes.Fields.PIPELINE_CONFIG
+                cls.PLUGIN_CONFIG = FlextApiTypes.Fields.PLUGIN_CONFIG
+                cls.USER_ROLE = FlextApiTypes.Fields.USER_ROLE
+                cls.ENDPOINT_PATH = FlextApiTypes.Fields.ENDPOINT_PATH
+                cls.HTTP_METHOD = FlextApiTypes.Fields.HTTP_METHOD
+                cls.RESPONSE_FORMAT = FlextApiTypes.Fields.RESPONSE_FORMAT
+                cls._initialized = True
+            # Access the attribute directly from __dict__ after initialization
+            if name in cls.__dict__:
+                return cls.__dict__[name]
+        error_msg = f"'{cls.__name__}' object has no attribute '{name}'"
+        raise AttributeError(error_msg)
+
+
+class FlextAPIFields(metaclass=FlextAPIFieldsMeta):
     """Legacy pre-defined field configurations - redirects to FlextApiTypes.Fields."""
 
     # Initialize with lazy loading
     _initialized = False
+
+    # Type annotations for dynamically set attributes
+    API_KEY: FlextTypes.Core.JsonDict
+    BEARER_TOKEN: FlextTypes.Core.JsonDict
+    PIPELINE_CONFIG: FlextTypes.Core.JsonDict
+    PLUGIN_CONFIG: FlextTypes.Core.JsonDict
+    USER_ROLE: FlextTypes.Core.JsonDict
+    ENDPOINT_PATH: FlextTypes.Core.JsonDict
+    HTTP_METHOD: FlextTypes.Core.JsonDict
+    RESPONSE_FORMAT: FlextTypes.Core.JsonDict
 
     @classmethod
     def _ensure_initialized(cls) -> None:
@@ -695,10 +749,15 @@ class FlextAPIFields:
         super().__init_subclass__()
         cls._ensure_initialized()
 
+
     def __class_getitem__(cls, item: str) -> FlextTypes.Core.JsonDict:
         """Get field by name with lazy loading."""
         cls._ensure_initialized()
-        return getattr(cls, item)
+        result = getattr(cls, item)
+        if isinstance(result, dict):
+            return result
+        error_msg = f"Field '{item}' not found or is not a dictionary"
+        raise AttributeError(error_msg)
 
     # Direct aliases for static fields that don't need lazy loading
     USERNAME: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.USERNAME
@@ -829,14 +888,14 @@ def get_api_types() -> FlextTypes.Core.JsonDict:
 # =============================================================================
 
 __all__ = [
-    # Main Type System (Primary API)
-    "FlextApiTypes",
     # Legacy Type System Aliases
     "APITypes",
     "APITypesCompat",
     # Legacy Field System (for backward compatibility)
     "FlextAPIFieldCore",
     "FlextAPIFields",
+    # Main Type System (Primary API)
+    "FlextApiTypes",
     "FlextFieldCore",  # Re-export from flext_core
     "FlextFields",  # Re-export from flext_core
     # Type Variables
