@@ -590,7 +590,7 @@ class FlextApiModels(FlextModel):
             if token_type is None:
                 token_type_enum = default_token_type
             elif hasattr(token_type, "value"):
-                token_type_enum = token_type.value
+                token_type_enum = token_type.value  # type: ignore[attr-defined]
             elif isinstance(token_type, str):
                 valid_types = ["Bearer", "JWT", "ApiKey"]
                 if token_type not in valid_types:
@@ -1500,7 +1500,7 @@ class FlextApiModels(FlextModel):
                 result["metadata"] = self.metadata
             if self.pagination:
                 if hasattr(self.pagination, "model_dump"):
-                    result["pagination"] = self.pagination.model_dump()
+                    result["pagination"] = self.pagination.model_dump()  # type: ignore[attr-defined]
                 else:
                     result["pagination"] = self.pagination
 

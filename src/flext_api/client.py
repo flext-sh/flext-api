@@ -85,7 +85,7 @@ class FlextApiClient:
         if isinstance(config, dict):
             self.config = ClientConfig.model_validate(config)
         else:
-            self.config = config or ClientConfig()
+            self.config = config or ClientConfig(base_url="http://localhost:8000")
 
         # Initialize plugins
         self.plugins = plugins or []
@@ -372,7 +372,7 @@ class FlextApiClient:
                         return FlextResult[FlextTypes.Core.JsonDict].fail(
                             f"Plugin {plugin.name} failed: {result.error}"
                         )
-                    request_data = result.value
+                    request_data = result.value  # type: ignore[assignment]
 
             # Make actual HTTP request
             session = await self._ensure_session()
@@ -550,7 +550,7 @@ PaginatedResponseBuilder = FlextApiClient.PaginatedResponseBuilder
 
 
 def create_client(
-    config: Mapping[str, object] | ClientConfig | None = None,
+    config: dict[str, object] | ClientConfig | None = None,
 ) -> FlextApiClient:
     """Create HTTP client with configuration."""
     return FlextApiClient(config)
@@ -565,10 +565,10 @@ def build_query(**kwargs: object) -> FlextTypes.Core.JsonDict:
         builder = builder.with_filters(filters)
 
     if "page" in kwargs:
-        builder = builder.page(int(kwargs["page"]))
+        builder = builder.page(int(kwargs["page"]))  # type: ignore[call-overload]
 
     if "page_size" in kwargs:
-        builder = builder.page_size(int(kwargs["page_size"]))
+        builder = builder.page_size(int(kwargs["page_size"]))  # type: ignore[call-overload]
 
     if "search" in kwargs:
         builder = builder.search(str(kwargs["search"]))

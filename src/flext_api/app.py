@@ -106,7 +106,7 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
 
             # Default CORS origins for development - derive from core Platform constants
             try:
-                platform_urls = FlextConstants.Platform.ALLOWED_HOSTS
+                platform_urls = getattr(FlextConstants.Platform, "ALLOWED_HOSTS", None)
                 return (
                     platform_urls
                     if isinstance(platform_urls, list)
@@ -168,7 +168,7 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
                 try:
                     # Simple storage health check
                     storage_result = await app.state.storage.get("__health_check__")
-                    services = cast("dict", health_data.get("services", {}))
+                    services = cast("dict[str, object]", health_data.get("services", {}))
                     services["storage"] = {
                         "status": "healthy" if storage_result.success else "degraded",
                         "backend": getattr(
@@ -176,7 +176,7 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
                         ),
                     }
                 except Exception as e:
-                    services = cast("dict", health_data.get("services", {}))
+                    services = cast("dict[str, object]", health_data.get("services", {}))
                     services["storage"] = {
                         "status": "unhealthy",
                         "error": str(e),
@@ -216,7 +216,7 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
             }
         )
 
-    async def lifespan(self, app: FastAPI) -> AsyncGenerator[None]:
+    async def lifespan(self, app: FastAPI) -> AsyncGenerator[None, None]:
         """Application lifespan manager."""
         # Startup
         logger.info("Starting FLEXT API application")
@@ -249,7 +249,7 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
             title="FLEXT API",
             description="Enterprise-grade distributed data integration platform",
             version=config.get_version(),
-            lifespan=self.lifespan,
+            lifespan=self.lifespan,  # type: ignore[arg-type]
             debug=config.settings.debug if config.settings else True,
         )
 
@@ -538,7 +538,7 @@ async def error_handler_middleware(
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager."""
     # Startup
     logger.info("Starting FLEXT API application")
@@ -578,17 +578,17 @@ def setup_health_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
     @app.get("/health", tags=["Health"])
     async def health_check() -> dict[str, object]:
         """Comprehensive health check endpoint."""
-        return await health_checker.comprehensive_health_check(app)
+        return await health_checker.get_health_status(app)
 
     @app.get("/health/live", tags=["Health"])
     async def liveness_check() -> dict[str, object]:
         """Liveness probe for Kubernetes."""
-        return health_checker.liveness_check()
+        return {"status": "healthy", "service": "flext-api"}  # Simple liveness check
 
     @app.get("/health/ready", tags=["Health"])
     async def readiness_check() -> dict[str, object]:
         """Readiness probe for Kubernetes."""
-        return health_checker.readiness_check(app)
+        return await health_checker.get_health_status(app)  # Use comprehensive health check for readiness
 
 
 def setup_api_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:

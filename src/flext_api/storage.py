@@ -429,9 +429,9 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
 
     def __init__(self, config: Config | None = None) -> None:
         """Initialize consolidated storage with configuration."""
-        super().__init__()
         # Use temporary variables to avoid mypy issues
         config_to_use = config or self.Config()
+        super().__init__(config=config_to_use)
         object.__setattr__(self, "config", config_to_use)
 
         # Get config for initialization
@@ -607,6 +607,16 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
     def get_repository(self) -> Repository:
         """Get repository instance for domain operations."""
         return self._repository
+
+    async def close(self) -> None:
+        """Close storage connections and cleanup resources."""
+        logger.info("Closing storage connections")
+        # Implementation depends on backend type - for now just clear cache
+        if self._cache:
+            try:
+                self._cache.clear()
+            except Exception as e:
+                logger.warning("Error clearing cache during close", error=str(e))
 
 
 # =============================================================================
