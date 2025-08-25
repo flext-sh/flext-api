@@ -1,8 +1,18 @@
-"""FLEXT API FastAPI application.
+"""FLEXT API FastAPI application - CONSOLIDATED ARCHITECTURE.
+
+Este módulo implementa o padrão CONSOLIDATED seguindo FLEXT_REFACTORING_PROMPT.md.
+Toda a funcionalidade da aplicação FastAPI está centralizada na classe FlextApiApp,
+eliminando a violação de "múltiplas classes por módulo" e garantindo
+consistência arquitetural.
+
+Padrões FLEXT aplicados:
+- Classe CONSOLIDADA FlextApiApp contendo toda a funcionalidade da aplicação
+- Herança de flext-core FlextDomainService
+- FlextResult para operações que podem falhar
+- Imports diretos sem TYPE_CHECKING
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
@@ -14,35 +24,20 @@ import sys
 import uuid
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
-from typing import TypedDict, cast
+from typing import TypedDict, cast, override
 
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
-from flext_core import FlextConstants, FlextResult, get_logger
+from flext_core import FlextConstants, FlextDomainService, FlextResult, get_logger
 
 from flext_api.config import FlextApiSettings, create_api_settings
 from flext_api.exceptions import FlextApiError, create_error_response
 from flext_api.storage import FlextApiStorage, create_memory_storage
 
-
-class ResponseLike(TypedDict, total=False):
-    """Type definition for response-like objects."""
-
-    headers: dict[str, str]
-    status_code: int
-
-
-class ErrorResponse(TypedDict):
-    """Type definition for error response objects."""
-
-    success: bool
-    error: dict[str, object] | str
-    data: None
-    message: str | None
-    timestamp: str | None
+# Type definitions will be provided by FlextApiApp consolidated class
 
 
 logger = get_logger(__name__)
@@ -54,59 +49,397 @@ def _forced_init_failure() -> None:
 
 
 # ==============================================================================
-# APPLICATION CONFIGURATION
+# CONSOLIDATED FLEXT API APP CLASS
 # ==============================================================================
 
 
-class FlextApiAppConfig:
-    """Configuration for FastAPI application."""
+class FlextApiApp(FlextDomainService[dict[str, object]]):
+    """Single consolidated class containing all FastAPI application functionality following FLEXT patterns.
 
-    def __init__(self, settings: FlextApiSettings | None = None) -> None:
-        """Initialize application configuration."""
-        if settings is None:
-            # Use unwrap_or pattern for cleaner error handling without exceptions
-            # Modern FlextResult pattern: unwrap_or_raise
-            settings = FlextResult.unwrap_or_raise(create_api_settings(), RuntimeError)
+    This class follows the CONSOLIDATED class pattern from FLEXT_REFACTORING_PROMPT.md,
+    centralizing all application functionality into a single class structure to eliminate
+    the "multiple classes per module" violation while maintaining clean
+    architecture principles.
 
-        self.settings = settings
-        self.storage: FlextApiStorage | None = None
+    All application classes and functionality are defined as nested classes and methods
+    within this consolidated structure, providing namespace organization.
+    """
 
-    def get_cors_origins(self) -> list[str]:
-        """Get CORS origins from configuration."""
-        if self.settings and self.settings.cors_origins:
-            return self.settings.cors_origins
+    # ==============================================================================
+    # NESTED CLASSES - CONFIGURATION AND UTILITIES
+    # ==============================================================================
 
-        # Default CORS origins for development - derive from core Platform constants
+    class ResponseLike(TypedDict, total=False):
+        """Type definition for response-like objects."""
+
+        headers: dict[str, str]
+        status_code: int
+
+    class ErrorResponse(TypedDict):
+        """Type definition for error response objects."""
+
+        success: bool
+        error: dict[str, object] | str
+        data: None
+        message: str | None
+        timestamp: str | None
+
+    class FlextApiAppConfig:
+        """Configuration for FastAPI application."""
+
+        def __init__(self, settings: FlextApiSettings | None = None) -> None:
+            """Initialize application configuration."""
+            if settings is None:
+                # Use unwrap_or pattern for cleaner error handling without exceptions
+                # Modern FlextResult pattern: unwrap_or_raise
+                settings = FlextResult.unwrap_or_raise(
+                    create_api_settings(), RuntimeError
+                )
+
+            self.settings = settings
+            self.storage: FlextApiStorage | None = None
+
+        def get_cors_origins(self) -> list[str]:
+            """Get CORS origins from configuration."""
+            if self.settings and self.settings.cors_origins:
+                return self.settings.cors_origins
+
+            # Default CORS origins for development - derive from core Platform constants
+            try:
+                platform_urls = FlextConstants.Platform.ALLOWED_HOSTS
+                return (
+                    platform_urls
+                    if isinstance(platform_urls, list)
+                    else ["http://localhost:3000"]
+                )
+            except (AttributeError, TypeError):
+                return ["http://localhost:3000"]
+
+        def get_version(self) -> str:
+            """Get application version."""
+            return self.settings.version if self.settings else "0.9.0"
+
+    class FlextApiHealthChecker:
+        """Health check service implementing Strategy Pattern to reduce complexity."""
+
+        def __init__(self, config: FlextApiApp.FlextApiAppConfig) -> None:
+            """Initialize health checker with configuration."""
+            self.config = config
+
+        def _get_current_timestamp(self) -> str:
+            """Get current UTC timestamp in ISO format (DRY pattern)."""
+            return datetime.datetime.now(datetime.UTC).isoformat()
+
+        def _build_base_health_data(self) -> dict[str, object]:
+            """Build base health data structure."""
+            return {
+                "status": "healthy",
+                "timestamp": self._get_current_timestamp(),
+                "version": self.config.get_version(),
+                "environment": self.config.settings.environment
+                if self.config.settings
+                else "unknown",
+                "services": {
+                    "api": {
+                        "status": "healthy",
+                        "port": self.config.settings.api_port
+                        if self.config.settings
+                        else 8000,
+                        "host": self.config.settings.api_host
+                        if self.config.settings
+                        else "127.0.0.1",
+                    },
+                },
+                "system": {
+                    "python_version": sys.version.split()[0],
+                    "platform": sys.platform,
+                },
+            }
+
+        async def _check_storage_health(
+            self,
+            app: FastAPI,
+            health_data: dict[str, object],
+        ) -> None:
+            """Check storage health and update health data."""
+            if hasattr(app.state, "storage") and app.state.storage:
+                try:
+                    # Simple storage health check
+                    storage_result = await app.state.storage.get("__health_check__")
+                    services = cast("dict", health_data.get("services", {}))
+                    services["storage"] = {
+                        "status": "healthy" if storage_result.success else "degraded",
+                        "backend": getattr(
+                            app.state.storage._config, "backend", "unknown"
+                        ),
+                    }
+                except Exception as e:
+                    services = cast("dict", health_data.get("services", {}))
+                    services["storage"] = {
+                        "status": "unhealthy",
+                        "error": str(e),
+                    }
+
+        async def get_health_status(self, app: FastAPI) -> dict[str, object]:
+            """Get comprehensive health status."""
+            health_data = self._build_base_health_data()
+            await self._check_storage_health(app, health_data)
+            return health_data
+
+    # ==============================================================================
+    # MAIN CONSOLIDATED CLASS IMPLEMENTATION
+    # ==============================================================================
+
+    def __init__(
+        self, config: FlextApiAppConfig | None = None, **kwargs: object
+    ) -> None:
+        """Initialize FlextApiApp with configuration."""
+        super().__init__(**kwargs)
+        self._config = config or self.FlextApiAppConfig()
+        self._health_checker = self.FlextApiHealthChecker(self._config)
+        self._app_instance: FastAPI | None = None
+
+    @override
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute the application service operation (required by FlextDomainService)."""
+        return FlextResult[dict[str, object]].ok({
+            "service": "FlextApiApp",
+            "status": "ready",
+            "version": self._config.get_version(),
+            "environment": self._config.settings.environment
+            if self._config.settings
+            else "unknown",
+            "app_created": self._app_instance is not None,
+        })
+
+    async def lifespan(self, app: FastAPI) -> AsyncGenerator[None]:
+        """Application lifespan manager."""
+        # Startup
+        logger.info("Starting FLEXT API application")
+
         try:
-            host = FlextConstants.Platform.DEFAULT_HOST
-            return [
-                f"http://{host}:{FlextConstants.Platform.FLEXT_WEB_PORT}",
-                f"http://{host}:{FlextConstants.Platform.FLEXCORE_PORT}",
-                "http://127.0.0.1:3000",
-                "http://127.0.0.1:8080",
-                "http://127.0.0.1:4200",
-            ]
-        except Exception:
-            return [
-                "http://localhost:3000",
-                "http://localhost:8080",
-                "http://localhost:4200",
-                "http://127.0.0.1:3000",
-                "http://127.0.0.1:8080",
-                "http://127.0.0.1:4200",
-            ]
+            # Initialize storage
+            app.state.storage = create_memory_storage(namespace="flext_api")
+            logger.info("Storage initialized successfully")
 
-    def get_title(self) -> str:
-        """Get application title."""
-        return "FLEXT API"
+            # Additional startup tasks can be added here
 
-    def get_description(self) -> str:
-        """Get application description."""
-        return "Enterprise-grade distributed data integration platform"
+            yield
 
-    def get_version(self) -> str:
-        """Get application version."""
-        return "0.9.0"
+        finally:
+            # Shutdown
+            logger.info("Shutting down FLEXT API application")
+
+            # Cleanup storage
+            if hasattr(app.state, "storage") and app.state.storage:
+                await app.state.storage.close()
+                logger.info("Storage closed successfully")
+
+    def create_fastapi_app(self, config: FlextApiAppConfig | None = None) -> FastAPI:
+        """Create FastAPI application with all middleware and routes."""
+        if config is None:
+            config = self._config
+
+        # Create FastAPI app with lifespan
+        app = FastAPI(
+            title="FLEXT API",
+            description="High-performance REST API for FLEXT ecosystem",
+            version=config.get_version(),
+            lifespan=self.lifespan,
+            debug=config.settings.debug if config.settings else True,
+        )
+
+        # Add CORS middleware
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=config.get_cors_origins(),
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+        # Add GZip middleware
+        app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+        # Setup routes
+        self._setup_health_endpoints(app)
+        self._setup_error_handlers(app)
+
+        self._app_instance = app
+        return app
+
+    def _setup_health_endpoints(self, app: FastAPI) -> None:
+        """Setup health check endpoints."""
+
+        @app.get("/health")
+        async def health_endpoint() -> dict[str, object]:
+            """Health check endpoint."""
+            return await self._health_checker.get_health_status(app)
+
+        @app.get("/health/ready")
+        async def readiness_endpoint() -> dict[str, object]:
+            """Readiness check endpoint."""
+            return {
+                "status": "ready",
+                "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            }
+
+        @app.get("/health/live")
+        async def liveness_endpoint() -> dict[str, object]:
+            """Liveness check endpoint."""
+            return {
+                "status": "alive",
+                "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            }
+
+    def _setup_error_handlers(self, app: FastAPI) -> None:
+        """Setup global error handlers."""
+
+        @app.exception_handler(FlextApiError)
+        async def flext_api_error_handler(
+            request: Request, exc: FlextApiError
+        ) -> JSONResponse:
+            """Handle FLEXT API errors."""
+            logger.warning(f"API error: {exc}", extra={"path": request.url.path})
+            error_response = create_error_response(exc, include_traceback=False)
+            return JSONResponse(
+                status_code=getattr(exc, "status_code", 500),
+                content=error_response,
+            )
+
+        @app.exception_handler(Exception)
+        async def generic_error_handler(
+            request: Request, exc: Exception
+        ) -> JSONResponse:
+            """Handle unexpected errors."""
+            error_id = str(uuid.uuid4())
+            logger.error(
+                f"Unexpected error [{error_id}]: {exc}",
+                extra={"path": request.url.path, "error_id": error_id},
+                exc_info=True,  # noqa: LOG014 - This is inside an exception handler
+            )
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "success": False,
+                    "error": {
+                        "code": "INTERNAL_SERVER_ERROR",
+                        "message": "An unexpected error occurred",
+                        "error_id": error_id,
+                    },
+                    "data": None,
+                },
+            )
+
+    def run_development_server(
+        self,
+        host: str = "127.0.0.1",
+        port: int | None = None,
+        *,
+        reload: bool = True,
+        log_level: str = "info",
+    ) -> None:
+        """Run development server with hot reload."""
+        if port is None:
+            port = self._config.settings.api_port if self._config.settings else 8000
+
+        app = self.create_fastapi_app()
+        logger.info("Starting development server", host=host, port=port)
+
+        uvicorn.run(
+            app,
+            host=host,
+            port=port,
+            reload=reload,
+            log_level=log_level,
+        )
+
+    def run_production_server(
+        self,
+        host: str = "127.0.0.1",
+        port: int | None = None,
+    ) -> None:
+        """Run production server."""
+        if port is None:
+            port = self._config.settings.api_port if self._config.settings else 8000
+
+        app = self.create_fastapi_app()
+        logger.info("Starting production server", host=host, port=port)
+
+        uvicorn.run(
+            app,
+            host=host,
+            port=port,
+            log_level="warning",
+            access_log=False,
+        )
+
+
+# ==============================================================================
+# CONVENIENCE ALIASES FOR BACKWARD COMPATIBILITY
+# ==============================================================================
+
+# Export consolidated class types for direct access
+ResponseLike = FlextApiApp.ResponseLike
+ErrorResponse = FlextApiApp.ErrorResponse
+FlextApiAppConfig = FlextApiApp.FlextApiAppConfig
+FlextApiHealthChecker = FlextApiApp.FlextApiHealthChecker
+
+# ==============================================================================
+# FACTORY FUNCTIONS - Delegate to FlextApiApp main class
+# ==============================================================================
+
+
+def create_flext_api_app_consolidated(
+    config: FlextApiApp.FlextApiAppConfig | None = None,
+) -> FlextApiApp:
+    """Create FlextApiApp instance with configuration - consolidated class factory."""
+    return FlextApiApp(config)
+
+
+def create_flext_api_app(config: FlextApiAppConfig | None = None) -> FastAPI:
+    """Create FastAPI application instance (legacy compatibility)."""
+    app_instance = FlextApiApp(config)
+    return app_instance.create_fastapi_app()
+
+
+def create_flext_api_app_with_settings(**settings_overrides: object) -> FastAPI:
+    """Create FastAPI app with settings overrides (legacy compatibility)."""
+    # Create settings with overrides
+    base_settings_result = create_api_settings()
+    if not base_settings_result.success:
+        # Fallback to empty config
+        config = FlextApiAppConfig()
+    else:
+        base_settings = base_settings_result.value
+        # Apply overrides to base settings (simplified for compatibility)
+        config = FlextApiAppConfig(base_settings)
+
+    app_instance = FlextApiApp(config)
+    return app_instance.create_fastapi_app()
+
+
+def run_development_server(
+    host: str = "127.0.0.1",
+    port: int | None = None,
+    *,
+    reload: bool = True,
+    log_level: str = "info",
+) -> None:
+    """Run development server using FlextApiApp (legacy compatibility)."""
+    app_instance = FlextApiApp()
+    app_instance.run_development_server(
+        host=host, port=port, reload=reload, log_level=log_level
+    )
+
+
+def run_production_server(
+    host: str = "127.0.0.1",
+    port: int | None = None,
+) -> None:
+    """Run production server using FlextApiApp (legacy compatibility)."""
+    app_instance = FlextApiApp()
+    app_instance.run_production_server(host=host, port=port)
 
 
 # ==============================================================================
@@ -576,8 +909,16 @@ try:
 
     # Export app and storage for external use
     __all__ = [
+        "ErrorResponse",
+        "FlextApiApp",
+        "FlextApiAppConfig",
+        "FlextApiHealthChecker",
+        "ResponseLike",
         "app",
         "create_flext_api_app",
+        "create_flext_api_app_consolidated",
+        "create_flext_api_app_with_settings",
+        "main",
         "run_development_server",
         "run_production_server",
         "storage",

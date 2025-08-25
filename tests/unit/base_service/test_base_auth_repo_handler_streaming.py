@@ -12,11 +12,13 @@ from flext_api import FlextApiBaseService
 
 class DummyAuthService(FlextApiBaseService):
     """Minimal auth service for testing authentication patterns."""
+    
+    _service_name: str
 
     def __init__(self) -> None:
         super().__init__()
         # Store service name as a simple attribute (not in Pydantic data)
-        object.__setattr__(self, "_service_name", "dummy-auth")
+        self._service_name = "dummy-auth"
 
     @property
     def service_name(self) -> str:
@@ -43,11 +45,13 @@ class DummyAuthService(FlextApiBaseService):
 
 class DummyRepositoryService(FlextApiBaseService):
     """Minimal repository service for testing data access patterns."""
+    
+    _service_name: str
 
     def __init__(self) -> None:
         super().__init__()
         # Store service name as a simple attribute (not in Pydantic data)
-        object.__setattr__(self, "_service_name", "dummy-repository")
+        self._service_name = "dummy-repository"
         self._data: dict[str, dict[str, object]] = {}
 
     @property
@@ -83,10 +87,12 @@ class DummyRepositoryService(FlextApiBaseService):
 class DummyStreamingService(FlextApiBaseService):
     """Minimal streaming service for testing async iteration patterns."""
 
+    _service_name: str
+    
     def __init__(self) -> None:
         super().__init__()
         # Store service name as a simple attribute (not in Pydantic data)
-        object.__setattr__(self, "_service_name", "dummy-streaming")
+        self._service_name = "dummy-streaming"
 
     @property
     def service_name(self) -> str:

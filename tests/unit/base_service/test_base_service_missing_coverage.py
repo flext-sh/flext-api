@@ -11,7 +11,7 @@ from typing import override
 import pytest
 from flext_core import FlextResult
 
-from flext_api.base_service import FlextApiBaseService
+from flext_api.service_base import FlextApiBaseService
 
 
 class HealthyTestService(FlextApiBaseService):

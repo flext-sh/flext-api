@@ -10,19 +10,32 @@ import json
 from typing import cast
 
 import aiohttp
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextUtilities, get_logger
 
 logger = get_logger(__name__)
 
 
-class FlextApiUtilities:
-    """Static utility methods for common FLEXT API operations.
+class FlextApiUtilities(FlextUtilities):
+    """Main API utilities class inheriting from FlextUtilities with API-specific extensions.
 
-    Follows Single Responsibility Principle by grouping related utility functions.
+    This class follows the FLEXT pattern of having a single Flext[Area][Module] class
+    that inherits from the equivalent FlextCore class and provides all functionality
+    through internal method delegation.
+
+    Inherits ALL FlextUtilities functionality and extends with API-specific utilities:
+    - JSON response parsing
+    - HTTP client configuration validation
+    - Response data processing
+    - Type-safe data extraction
     """
 
-    @staticmethod
+    # =============================================================================
+    # API-SPECIFIC UTILITIES - Extensions to FlextUtilities
+    # =============================================================================
+
+    @classmethod
     def parse_json_response_data(
+        cls,
         json_data: object,
     ) -> dict[str, object] | list[object] | str | int | float | bool | None:
         """Parse JSON response data with type safety.
@@ -58,8 +71,9 @@ class FlextApiUtilities:
         # For any other types, convert to string representation
         return str(json_data)
 
-    @staticmethod
+    @classmethod
     def parse_fallback_text_data(
+        cls,
         text_data: str,
     ) -> dict[str, object] | list[object] | str | None:
         """Parse fallback text data as JSON.
@@ -90,8 +104,9 @@ class FlextApiUtilities:
         except Exception:
             return text_data
 
-    @staticmethod
+    @classmethod
     def parse_final_json_attempt(
+        cls,
         text_trim: str,
     ) -> dict[str, object] | list[object] | str:
         """Parse final JSON attempt with fallback.
@@ -122,8 +137,9 @@ class FlextApiUtilities:
         except Exception:
             return text_trim
 
-    @staticmethod
+    @classmethod
     async def read_response_data_safely(
+        cls,
         response: aiohttp.ClientResponse,
     ) -> dict[str, object] | list[object] | str | bytes | int | float | bool | None:
         """Read response data with comprehensive type safety.
@@ -140,12 +156,12 @@ class FlextApiUtilities:
         if "application/json" in content_type or "text/json" in content_type:
             try:
                 json_data: object = await response.json()
-                return FlextApiUtilities.parse_json_response_data(json_data)
+                return cls.parse_json_response_data(json_data)
             except Exception:
                 # Fallback: read text and attempt JSON parse
                 try:
                     text_data = await response.text()
-                    return FlextApiUtilities.parse_fallback_text_data(text_data)
+                    return cls.parse_fallback_text_data(text_data)
                 except Exception:
                     return await response.text()
 
@@ -154,12 +170,13 @@ class FlextApiUtilities:
         # If it looks like JSON, attempt to parse
         text_trim = text.strip()
         if text_trim.startswith(("{", "[")):
-            return FlextApiUtilities.parse_final_json_attempt(text_trim)
+            return cls.parse_final_json_attempt(text_trim)
 
         return text
 
-    @staticmethod
+    @classmethod
     def validate_client_config(
+        cls,
         config: dict[str, object] | None,
     ) -> FlextResult[dict[str, object]]:
         """Validate client configuration with comprehensive checks.
@@ -211,3 +228,59 @@ class FlextApiUtilities:
             )
 
         return FlextResult[dict[str, object]].ok(validated_config)
+
+
+# =============================================================================
+# LEGACY COMPATIBILITY - Function aliases for backward compatibility
+# =============================================================================
+
+
+def parse_json_response_data(
+    json_data: object,
+) -> dict[str, object] | list[object] | str | int | float | bool | None:
+    """Parse JSON response data with type safety."""
+    return FlextApiUtilities.parse_json_response_data(json_data)
+
+
+def parse_fallback_text_data(
+    text_data: str,
+) -> dict[str, object] | list[object] | str | None:
+    """Parse fallback text data as JSON."""
+    return FlextApiUtilities.parse_fallback_text_data(text_data)
+
+
+def parse_final_json_attempt(
+    text_trim: str,
+) -> dict[str, object] | list[object] | str:
+    """Parse final JSON attempt with fallback."""
+    return FlextApiUtilities.parse_final_json_attempt(text_trim)
+
+
+async def read_response_data_safely(
+    response: aiohttp.ClientResponse,
+) -> dict[str, object] | list[object] | str | bytes | int | float | bool | None:
+    """Read response data with comprehensive type safety."""
+    return await FlextApiUtilities.read_response_data_safely(response)
+
+
+def validate_client_config(
+    config: dict[str, object] | None,
+) -> FlextResult[dict[str, object]]:
+    """Validate client configuration with comprehensive checks."""
+    return FlextApiUtilities.validate_client_config(config)
+
+
+# =============================================================================
+# EXPORTS
+# =============================================================================
+
+__all__ = [
+    # Main Utilities Class (Primary API)
+    "FlextApiUtilities",
+    "parse_fallback_text_data",
+    "parse_final_json_attempt",
+    # Legacy Function Aliases (for backward compatibility)
+    "parse_json_response_data",
+    "read_response_data_safely",
+    "validate_client_config",
+]

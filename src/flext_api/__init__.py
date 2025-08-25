@@ -313,13 +313,12 @@ from flext_api.types import (
 # Import FlextTypes for tests
 from flext_api.typings import FlextTypes
 
-from flext_api.base_service import (
-    FlextApiBaseService,
-    # Eliminated classes - use flext-core protocols:
-    # FlextProtocols.Domain.Repository for repositories
-    # FlextProtocols.Application.Handler for handlers
-    # FlextProtocols.Infrastructure.Auth for authentication
-)
+# Eliminated FlextApiBaseService - now using FlextDomainService from flext-core
+# Use flext-core protocols for consistency:
+# from flext_core import FlextDomainService  # Use this instead
+# FlextProtocols.Domain.Repository for repositories
+# FlextProtocols.Application.Handler for handlers
+# FlextProtocols.Infrastructure.Auth for authentication
 from flext_api.utilities import FlextApiUtilities
 
 
@@ -527,8 +526,7 @@ __all__: list[str] = [
     "flext_api_create_app",
     "FlextApiAuthenticationError",
     "FlextApiAuthorizationError",
-    "FlextApiBaseService",
-    # Eliminated classes - use flext-core protocols instead
+    # FlextApiBaseService eliminated - use FlextDomainService from flext-core instead
     "FlextApiBuilder",
     "FlextApiBuilderError",
     "FlextApiCachingPlugin",

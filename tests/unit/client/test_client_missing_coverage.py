@@ -18,6 +18,7 @@ from flext_api import (
     client,
     create_client,
     create_client_with_plugins,
+    FlextApiClientMethod,
 )
 
 
@@ -43,7 +44,7 @@ class TestMissingClientCoverage:
                 return response
 
         plugin = TestPlugin()
-        request = FlextApiClientRequest(method="GET", url="/test")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="/test")
         response = FlextApiClientResponse(status_code=200, data={"test": "data"})
 
         # Call with proper signature
@@ -66,7 +67,7 @@ class TestMissingClientCoverage:
                 return error
 
         plugin = TestPlugin()
-        request = FlextApiClientRequest(method="GET", url="/test")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="/test")
         original_error = ValueError("Test validation error")
 
         # Call with proper signature
@@ -80,7 +81,7 @@ class TestMissingClientCoverage:
         client = FlextApiClient(config)
 
         # Request with no params, headers, or data
-        request = FlextApiClientRequest(method="GET", url="/test")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="/test")
 
         params, headers, json_data, data, timeout = client._prepare_request_params(
             request,
@@ -102,7 +103,7 @@ class TestMissingClientCoverage:
 
         # Request with headers but config has none
         request = FlextApiClientRequest(
-            method="GET",
+            method=FlextApiClientMethod.GET,
             url="/test",
             headers={"User-Agent": "test"},
         )

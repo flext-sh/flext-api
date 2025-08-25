@@ -42,6 +42,7 @@ async def test_real_http_get_request() -> None:
     try:
         # Test real GET request
         request = FlextApiClientRequest(
+            id="test_get_request",
             method=FlextApiClientMethod.GET,
             url="https://httpbin.org/get",
             params={"test_param": "test_value"},
@@ -54,10 +55,13 @@ async def test_real_http_get_request() -> None:
         assert result.value.status_code == 200
 
         # Parse and validate response content
-        response_text = result.value.text()
-        response_json = json.loads(response_text)
+        response_data = result.value.data
+        response_json = response_data if isinstance(response_data, dict) else json.loads(str(response_data))
+        assert isinstance(response_json, dict)
         assert "args" in response_json
-        assert response_json["args"]["test_param"] == "test_value"
+        args_data = response_json["args"]
+        assert isinstance(args_data, dict)
+        assert args_data["test_param"] == "test_value"
 
     finally:
         await client.stop()
@@ -74,6 +78,7 @@ async def test_real_http_post_request() -> None:
         # Test real POST request with JSON
         test_data: dict[str, object] = {"name": "FLEXT API Test", "version": "0.9.0"}
         request = FlextApiClientRequest(
+            id="test_post_request",
             method=FlextApiClientMethod.POST,
             url="https://httpbin.org/post",
             json_data=test_data,
@@ -87,11 +92,14 @@ async def test_real_http_post_request() -> None:
         assert result.value.status_code == 200
 
         # Validate echoed JSON data
-        response_text = result.value.text()
-        response_json = json.loads(response_text)
+        response_data = result.value.data
+        response_json = response_data if isinstance(response_data, dict) else json.loads(str(response_data))
+        assert isinstance(response_json, dict)
         assert "json" in response_json
-        assert response_json["json"]["name"] == "FLEXT API Test"
-        assert response_json["json"]["version"] == "0.9.0"
+        json_data = response_json["json"]
+        assert isinstance(json_data, dict)
+        assert json_data["name"] == "FLEXT API Test"
+        assert json_data["version"] == "0.9.0"
 
     finally:
         await client.stop()
@@ -111,6 +119,7 @@ async def test_real_http_with_caching_plugin() -> None:
     try:
         # Use a static endpoint that returns the same data
         request = FlextApiClientRequest(
+            id="test_cache_request",
             method=FlextApiClientMethod.GET,
             url="https://httpbin.org/json",  # Returns static JSON
         )
@@ -119,9 +128,9 @@ async def test_real_http_with_caching_plugin() -> None:
         result1 = await client._execute_request_pipeline(request, "GET")
         assert result1.success, f"First request failed: {result1.error}"
 
-        response1_text = result1.value.text()
-        assert response1_text.strip(), "First request returned empty response"
-        response1_json = json.loads(response1_text)
+        response1_data = result1.value.data
+        assert response1_data, "First request returned empty response"
+        response1_json = response1_data if isinstance(response1_data, dict) else json.loads(str(response1_data))
 
         # Record if this came from cache
         getattr(result1.value, "from_cache", False)
@@ -130,9 +139,9 @@ async def test_real_http_with_caching_plugin() -> None:
         result2 = await client._execute_request_pipeline(request, "GET")
         assert result2.success, f"Second request failed: {result2.error}"
 
-        response2_text = result2.value.text()
-        assert response2_text.strip(), "Second request returned empty response"
-        response2_json = json.loads(response2_text)
+        response2_data = result2.value.data
+        assert response2_data, "Second request returned empty response"
+        response2_json = response2_data if isinstance(response2_data, dict) else json.loads(str(response2_data))
 
         # Responses should be identical (static endpoint)
         assert response1_json == response2_json, (
@@ -150,7 +159,7 @@ async def test_real_http_with_caching_plugin() -> None:
 @pytest.mark.asyncio
 async def test_real_http_with_retry_plugin() -> None:
     """Test real HTTP request with retry plugin on error."""
-    retry_plugin = FlextApiRetryPlugin(max_retries=3, backoff_factor=0.1)
+    retry_plugin = FlextApiRetryPlugin(max_retries=3, delay=0.1)
 
     config = FlextApiClientConfig(
         base_url="https://httpbin.org", timeout=5.0, plugins=[retry_plugin]
@@ -161,6 +170,7 @@ async def test_real_http_with_retry_plugin() -> None:
     try:
         # Test with 500 error - should trigger retries
         request = FlextApiClientRequest(
+            id="test_retry_500_request",
             method=FlextApiClientMethod.GET,
             url="https://httpbin.org/status/500",
         )
@@ -190,6 +200,7 @@ async def test_real_http_timeout_handling() -> None:
     try:
         # Test with delay that exceeds timeout
         request = FlextApiClientRequest(
+            id="test_timeout_request",
             method=FlextApiClientMethod.GET,
             url="https://httpbin.org/delay/2",  # 2 second delay vs 0.5s timeout
             timeout=0.5,  # Explicit request timeout
@@ -231,6 +242,7 @@ async def test_real_http_headers_and_user_agent() -> None:
     await client.start()
     try:
         request = FlextApiClientRequest(
+            id="test_headers_request",
             method=FlextApiClientMethod.GET,
             url="https://httpbin.org/headers",
             headers={"X-Custom-Header": "custom-value"},
@@ -240,12 +252,14 @@ async def test_real_http_headers_and_user_agent() -> None:
 
         assert result.success, f"Headers request failed: {result.error}"
 
-        # Get response text and validate it's not empty before parsing JSON
-        response_text = result.value.text()
-        assert response_text.strip(), "Headers request returned empty response"
+        # Get response data and validate it's not empty
+        response_data = result.value.data
+        assert response_data, "Headers request returned empty response"
 
-        response_json = json.loads(response_text)
+        response_json = response_data if isinstance(response_data, dict) else json.loads(str(response_data))
+        assert isinstance(response_json, dict)
         headers = response_json["headers"]
+        assert isinstance(headers, dict)
 
         # Verify custom headers were sent
         assert "X-Flext-Api" in headers or "X-FLEXT-API" in headers
@@ -269,16 +283,19 @@ async def test_real_client_factory_function() -> None:
 
     await client.start()
     try:
-        request = FlextApiClientRequest(method="GET", url="https://httpbin.org/get")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/get")
 
         result = await client._execute_request_pipeline(request, "GET")
 
         assert result.success
-        response_json = json.loads(result.value.text())
+        response_data = result.value.data
+        response_json = response_data if isinstance(response_data, dict) else json.loads(str(response_data))
+        assert isinstance(response_json, dict)
 
         # Verify factory-created client works
         assert "headers" in response_json
         headers = response_json["headers"]
+        assert isinstance(headers, dict)
         assert "X-Test" in headers
         assert headers["X-Test"] == "factory-created"
 
@@ -296,6 +313,7 @@ async def test_real_http_different_methods() -> None:
     try:
         # Test PUT request
         put_request = FlextApiClientRequest(
+            id="test_put_request",
             method=FlextApiClientMethod.PUT,
             url="https://httpbin.org/put",
             json_data={"operation": "update", "id": 123},
@@ -307,7 +325,9 @@ async def test_real_http_different_methods() -> None:
 
         # Test DELETE request
         delete_request = FlextApiClientRequest(
-            method=FlextApiClientMethod.DELETE, url="https://httpbin.org/delete"
+            id="test_delete_request",
+            method=FlextApiClientMethod.DELETE,
+            url="https://httpbin.org/delete"
         )
 
         delete_result = await client._execute_request_pipeline(delete_request, "DELETE")
@@ -316,6 +336,7 @@ async def test_real_http_different_methods() -> None:
 
         # Test PATCH request
         patch_request = FlextApiClientRequest(
+            id="test_patch_request",
             method=FlextApiClientMethod.PATCH,
             url="https://httpbin.org/patch",
             json_data={"field": "value"},
@@ -340,7 +361,9 @@ async def test_real_ssl_verification() -> None:
     await client.start()
     try:
         request = FlextApiClientRequest(
-            method=FlextApiClientMethod.GET, url="https://httpbin.org/get"
+            id="test_ssl_request",
+            method=FlextApiClientMethod.GET,
+            url="https://httpbin.org/get"
         )
 
         result = await client._execute_request_pipeline(request, "GET")
@@ -384,6 +407,7 @@ async def test_real_multiple_concurrent_requests() -> None:
         requests = []
         for i in range(3):
             request = FlextApiClientRequest(
+                id=f"test_concurrent_request_{i}",
                 method=FlextApiClientMethod.GET,
                 url="https://httpbin.org/get",
                 params={"request_id": str(i)},
@@ -400,12 +424,15 @@ async def test_real_multiple_concurrent_requests() -> None:
             )
             assert result.success, f"Request {i} failed: {result.error}"
 
-            # Get response text and validate it's not empty before parsing JSON
-            response_text = result.value.text()
-            assert response_text.strip(), f"Request {i} returned empty response"
+            # Get response data and validate it's not empty
+            response_data = result.value.data
+            assert response_data, f"Request {i} returned empty response"
 
-            response_json = json.loads(response_text)
-            assert response_json["args"]["request_id"] == str(i)
+            response_json = response_data if isinstance(response_data, dict) else json.loads(str(response_data))
+            assert isinstance(response_json, dict)
+            args_data = response_json["args"]
+            assert isinstance(args_data, dict)
+            assert args_data["request_id"] == str(i)
 
     finally:
         await client.stop()

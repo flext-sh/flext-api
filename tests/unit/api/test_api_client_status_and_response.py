@@ -21,7 +21,7 @@ def test_client_status_transitions() -> None:
 @pytest.mark.asyncio
 async def test_response_helpers() -> None:
     """Response helpers should indicate success and render JSON/text."""
-    resp = FlextApiClientResponse(status_code=200, data={"a": 1})
+    resp = FlextApiClientResponse(id="test_resp", status_code=200, data={"a": 1})
     assert resp.is_success() is True
     assert resp.is_error() is False
     assert resp.json() == {"a": 1}

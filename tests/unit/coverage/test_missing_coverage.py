@@ -137,8 +137,8 @@ class TestMissingCoverageBuilder:
         if not paginated_resp.success:
             msg = f"Expected True, got {paginated_resp.success}"
             raise AssertionError(msg)
-        if paginated_resp.value != [1, 2, 3]:
-            msg = f"Expected [1, 2, 3], got {paginated_resp.value}"
+        if paginated_resp.data != [1, 2, 3]:
+            msg = f"Expected [1, 2, 3], got {paginated_resp.data}"
             raise AssertionError(msg)
         assert paginated_resp.metadata["page"] == 1
 
@@ -182,7 +182,7 @@ class TestMissingCoverageClient:
 
     def test_retry_plugin_operations(self) -> None:
         """Test retry plugin operations."""
-        plugin = FlextApiRetryPlugin(max_retries=2, backoff_factor=1.5)
+        plugin = FlextApiRetryPlugin(max_retries=2, delay=1.5)
 
         # Test plugin methods
         request = FlextApiClientRequest(
@@ -328,9 +328,9 @@ class TestCompleteCoverageIntegration:
             response_result = await client._perform_http_request(get_request)
             assert response_result.success
             assert response_result.value.status_code == 200
-            assert isinstance(response_result.value.value, dict)
+            assert isinstance(response_result.value.data, dict)
             assert (
-                "slideshow" in response_result.value.value
+                "slideshow" in response_result.value.data
             )  # httpbin.org/json has slideshow
 
             # Test REAL error request (404 status from httpbin.org)
@@ -339,7 +339,7 @@ class TestCompleteCoverageIntegration:
             )
             error_response = await client._perform_http_request(error_request)
             assert error_response.success  # HTTP request succeeded
-            assert error_response.value.status_code == 404  # But returned 404 status
+            assert error_response.data.status_code == 404  # But returned 404 status
 
         finally:
             # Clean up real HTTP session

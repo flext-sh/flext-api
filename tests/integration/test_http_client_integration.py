@@ -45,9 +45,9 @@ class TestHttpClientIntegration:
             assert response.status_code == 200
 
             # Verify JSON response structure
-            if isinstance(response.value, dict):
-                assert "args" in response.value
-                args = response.value["args"]
+            if isinstance(response.data, dict):
+                assert "args" in response.data
+                args = response.data["args"]
                 assert isinstance(args, dict)
                 assert args["test"] == "integration"
 
@@ -59,7 +59,7 @@ class TestHttpClientIntegration:
         """Test client with caching and retry plugins."""
         plugins = [
             FlextApiCachingPlugin(ttl=60, max_size=100),
-            FlextApiRetryPlugin(max_retries=2, backoff_factor=1.0),
+            FlextApiRetryPlugin(max_retries=2, delay=1.0),
         ]
 
         # Note: config is replaced with dict below for compatibility
@@ -105,9 +105,9 @@ class TestHttpClientIntegration:
             assert response.status_code == 200
 
             # Verify JSON data was sent correctly
-            if isinstance(response.value, dict):
-                assert "json" in response.value
-                json_data = response.value["json"]
+            if isinstance(response.data, dict):
+                assert "json" in response.data
+                json_data = response.data["json"]
                 assert isinstance(json_data, dict)
                 assert json_data["message"] == "integration test"
                 assert json_data["value"] == 42

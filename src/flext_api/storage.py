@@ -1,4 +1,8 @@
-"""FLEXT API storage and persistence."""
+"""FLEXT API storage and persistence using flext-core protocols.
+
+This module provides storage functionality using flext-core Repository protocols
+instead of local abstract classes, following FLEXT architectural standards.
+"""
 
 from __future__ import annotations
 
@@ -6,14 +10,13 @@ import asyncio
 import fnmatch
 import json
 import time
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
-from typing import TypeVar, override
+from typing import Protocol, TypeVar, override
 from uuid import uuid4
 
-from flext_core import FlextResult, get_logger
+from flext_core import FlextDomainService, FlextProtocols, FlextResult, get_logger
 
 logger = get_logger(__name__)
 
@@ -82,65 +85,213 @@ class TransactionContext[V]:
 # ==============================================================================
 
 
-class StorageBackendInterface[K, V](ABC):
-    """Abstract interface for storage backends."""
+# ==============================================================================
+# FLEXT-CORE PROTOCOL IMPLEMENTATIONS - Using centralized protocols
+# ==============================================================================
 
-    @abstractmethod
-    async def get(self, key: K) -> FlextResult[V | None]:
-        """Get value by key."""
 
-    @abstractmethod
-    async def set(
+class FlextApiStorageRepository(FlextProtocols.Domain.Repository[object]):
+    """Storage repository implementation using flext-core Repository protocol.
+
+    This class follows the FLEXT pattern of using centralized protocols from
+    flext-core instead of local abstract classes.
+    """
+
+    def __init__(self, config: StorageConfig) -> None:
+        """Initialize storage repository with configuration."""
+        self._config = config
+        self._storage: dict[str, object] = {}
+        self._cache: dict[str, CacheEntry[object]] = {}
+
+    @override
+    def get_by_id(self, entity_id: str) -> FlextResult[object | None]:
+        """Get entity by ID using repository pattern."""
+        try:
+            # Check cache first if enabled
+            if self._config.enable_caching:
+                cached_entry = self._cache.get(entity_id)
+                if cached_entry and not cached_entry.is_expired():
+                    return FlextResult[object | None].ok(cached_entry.value)
+
+            # Get from storage
+            value = self._storage.get(entity_id)
+
+            # Cache result if caching enabled
+            if self._config.enable_caching and value is not None:
+                self._cache[entity_id] = CacheEntry(
+                    value=value,
+                    timestamp=time.time(),
+                    ttl_seconds=self._config.cache_ttl_seconds,
+                )
+
+            return FlextResult[object | None].ok(value)
+        except Exception as e:
+            return FlextResult[object | None].fail(f"Failed to get entity {entity_id}: {e}")
+
+    @override
+    def save(self, entity: object) -> FlextResult[object]:
+        """Save entity using repository pattern."""
+        try:
+            # Generate ID for entity if it doesn't have one
+            entity_id = str(uuid4())
+            self._storage[entity_id] = entity
+
+            # Clear cache entry if exists
+            if self._config.enable_caching and entity_id in self._cache:
+                del self._cache[entity_id]
+
+            return FlextResult[object].ok(entity)
+        except Exception as e:
+            return FlextResult[object].fail(f"Failed to save entity: {e}")
+
+    @override
+    def delete(self, entity_id: str) -> FlextResult[None]:
+        """Delete entity by ID using repository pattern."""
+        try:
+            if entity_id in self._storage:
+                del self._storage[entity_id]
+
+            # Clear cache entry if exists
+            if self._config.enable_caching and entity_id in self._cache:
+                del self._cache[entity_id]
+
+            return FlextResult[None].ok(None)
+        except Exception as e:
+            return FlextResult[None].fail(f"Failed to delete entity {entity_id}: {e}")
+
+    @override
+    def find_all(self) -> FlextResult[list[object]]:
+        """Find all entities using repository pattern."""
+        try:
+            return FlextResult[list[object]].ok(list(self._storage.values()))
+        except Exception as e:
+            return FlextResult[list[object]].fail(f"Failed to find all entities: {e}")
+
+    # Additional storage-specific methods
+    async def get_async(self, key: str) -> FlextResult[object | None]:
+        """Async version of get for storage operations."""
+        return self.get_by_id(key)
+
+    async def set_async(
         self,
-        key: K,
-        value: V,
+        key: str,
+        value: object,
         ttl_seconds: int | None = None,
     ) -> FlextResult[None]:
-        """Set value by key with optional TTL."""
+        """Async set operation with TTL support."""
+        try:
+            self._storage[key] = value
 
-    @abstractmethod
-    async def delete(self, key: K) -> FlextResult[bool]:
-        """Delete key and return True if existed."""
+            # Set cache entry with TTL
+            if self._config.enable_caching:
+                self._cache[key] = CacheEntry(
+                    value=value,
+                    timestamp=time.time(),
+                    ttl_seconds=ttl_seconds or self._config.cache_ttl_seconds,
+                )
 
-    @abstractmethod
-    async def exists(self, key: K) -> FlextResult[bool]:
-        """Check if key exists."""
+            return FlextResult[None].ok(None)
+        except Exception as e:
+            return FlextResult[None].fail(f"Failed to set key {key}: {e}")
 
-    @abstractmethod
-    async def keys(self, pattern: str | None = None) -> FlextResult[list[K]]:
+    async def exists_async(self, key: str) -> FlextResult[bool]:
+        """Check if key exists asynchronously."""
+        try:
+            return FlextResult[bool].ok(key in self._storage)
+        except Exception as e:
+            return FlextResult[bool].fail(f"Failed to check existence of key {key}: {e}")
+
+    async def keys_async(self, pattern: str | None = None) -> FlextResult[list[str]]:
         """Get all keys, optionally filtered by pattern."""
+        try:
+            keys = list(self._storage.keys())
+            if pattern:
+                keys = [key for key in keys if fnmatch.fnmatch(key, pattern)]
+            return FlextResult[list[str]].ok(keys)
+        except Exception as e:
+            return FlextResult[list[str]].fail(f"Failed to get keys: {e}")
 
-    @abstractmethod
-    async def clear(self) -> FlextResult[None]:
-        """Clear all data."""
+    async def clear_async(self) -> FlextResult[None]:
+        """Clear all data asynchronously."""
+        try:
+            self._storage.clear()
+            if self._config.enable_caching:
+                self._cache.clear()
+            return FlextResult[None].ok(None)
+        except Exception as e:
+            return FlextResult[None].fail(f"Failed to clear storage: {e}")
 
-    @abstractmethod
-    async def close(self) -> FlextResult[None]:
-        """Close storage connection."""
-
-
-class CacheInterface(ABC):
-    """Interface for caching layer."""
-
-    @abstractmethod
-    def get_cached(self, key: str) -> object | None:
-        """Get cached value."""
-
-    @abstractmethod
-    def set_cached(self, key: str, value: object, ttl_seconds: int) -> None:
-        """Set cached value with TTL."""
-
-    @abstractmethod
-    def delete_cached(self, key: str) -> bool:
-        """Delete cached value."""
-
-    @abstractmethod
-    def clear_cache(self) -> None:
-        """Clear all cached values."""
+    async def close_async(self) -> FlextResult[None]:
+        """Close storage connection asynchronously."""
+        try:
+            # Cleanup resources
+            self._storage.clear()
+            if self._config.enable_caching:
+                self._cache.clear()
+            return FlextResult[None].ok(None)
+        except Exception as e:
+            return FlextResult[None].fail(f"Failed to close storage: {e}")
 
 
 # ==============================================================================
-# STORAGE BACKENDS
+# STORAGE BACKEND INTERFACES - Custom protocols for storage-specific methods
+# ==============================================================================
+
+
+class StorageBackendInterface[K, V](Protocol):
+    """Storage backend interface for key-value operations."""
+
+    async def get(self, key: K) -> FlextResult[V | None]:
+        """Get value by key."""
+        ...
+
+    async def set(self, key: K, value: V, ttl_seconds: int | None = None) -> FlextResult[None]:
+        """Set value with optional TTL."""
+        ...
+
+    async def delete(self, key: K) -> FlextResult[bool]:
+        """Delete key, return True if existed."""
+        ...
+
+    async def exists(self, key: K) -> FlextResult[bool]:
+        """Check if key exists."""
+        ...
+
+    async def keys(self, pattern: str | None = None) -> FlextResult[list[K]]:
+        """Get all keys matching pattern."""
+        ...
+
+    async def clear(self) -> FlextResult[None]:
+        """Clear all data."""
+        ...
+
+    async def close(self) -> FlextResult[None]:
+        """Close connection."""
+        ...
+
+
+class CacheInterface[T](Protocol):
+    """Cache interface for caching operations."""
+
+    def get_cached(self, key: str) -> T | None:
+        """Get cached value."""
+        ...
+
+    def set_cached(self, key: str, value: T, ttl_seconds: int) -> None:
+        """Set cached value with TTL."""
+        ...
+
+    def delete_cached(self, key: str) -> bool:
+        """Delete cached value."""
+        ...
+
+    def clear_cache(self) -> None:
+        """Clear all cached values."""
+        ...
+
+
+# ==============================================================================
+# CONCRETE IMPLEMENTATIONS - Using storage-specific interfaces
 # ==============================================================================
 
 
@@ -334,7 +485,7 @@ class FileStorageBackend[V](StorageBackendInterface[str, V]):
                     # it becomes an unbound function and requires explicit self
                     # Explicit type annotation to avoid Unknown types in PyRight
                     save_result = await FileStorageBackend._save_data(self)
-                if not save_result:
+                if not save_result.success:
                     return save_result
 
                 logger.debug("Stored value in file storage", key=key)
@@ -357,7 +508,7 @@ class FileStorageBackend[V](StorageBackendInterface[str, V]):
                     except TypeError:
                         # Explicit type annotation to avoid Unknown types in PyRight
                         save_result = await FileStorageBackend._save_data(self)
-                    if not save_result:
+                    if not save_result.success:
                         return FlextResult[bool].fail(
                             f"Failed to save after delete: {save_result.error}",
                         )
@@ -407,7 +558,7 @@ class FileStorageBackend[V](StorageBackendInterface[str, V]):
                 except TypeError:
                     # Explicit type annotation to avoid Unknown types in PyRight
                     save_result = await FileStorageBackend._save_data(self)
-                if not save_result:
+                if not save_result.success:
                     return save_result
 
                 logger.info("Cleared all data from file storage")
@@ -426,7 +577,7 @@ class FileStorageBackend[V](StorageBackendInterface[str, V]):
 # ==============================================================================
 
 
-class MemoryCache(CacheInterface):
+class MemoryCache(CacheInterface[object]):
     """In-memory cache with TTL support."""
 
     def __init__(self) -> None:
@@ -472,14 +623,21 @@ class MemoryCache(CacheInterface):
 # ==============================================================================
 
 
-class FlextApiStorage:
-    """Main storage class with backend abstraction, caching, and transactions."""
+class FlextApiStorage(FlextDomainService[dict[str, object]]):
+    """Main storage class with backend abstraction, caching, and transactions.
 
-    def __init__(self, config: StorageConfig) -> None:
+    Single main class following FLEXT pattern: FlextApi[Module] inheriting from flext-core.
+    All other functionality in this module becomes aliases/facades to methods in this class.
+    """
+
+    def __init__(self, config: StorageConfig, **kwargs: object) -> None:
         """Initialize storage with configuration."""
+        # Initialize parent FlextDomainService
+        super().__init__(**kwargs)
+
         self._config = config
         self._backend = self._create_backend(config)
-        self._cache: CacheInterface | None = (
+        self._cache: CacheInterface[object] | None = (
             MemoryCache() if config.enable_caching else None
         )
         self._transactions: dict[str, TransactionContext[object]] = {}
@@ -495,6 +653,22 @@ class FlextApiStorage:
             return FileStorageBackend(config)
         msg = f"Unsupported storage backend: {config.backend}"
         raise ValueError(msg)
+
+    @override
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute storage service operation - domain service interface."""
+        try:
+            # Return storage configuration and status as execution result
+            return FlextResult[dict[str, object]].ok({
+                "backend": self._config.backend.value,
+                "namespace": self._config.namespace,
+                "caching_enabled": self._config.enable_caching,
+                "transactions_enabled": self._config.enable_transactions,
+                "active_transactions": len(self._transactions),
+                "cache_entries": len(self._cache._cache) if isinstance(self._cache, MemoryCache) else 0,
+            })
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"Storage execution failed: {e}")
 
     async def get(
         self,
@@ -515,7 +689,7 @@ class FlextApiStorage:
 
         # Get from backend
         result = await self._backend.get(namespaced_key)
-        if not result:
+        if not result.success:
             return result
 
         # Cache the result if caching is enabled and has value
@@ -555,7 +729,7 @@ class FlextApiStorage:
 
         # Direct set operation
         result = await self._backend.set(namespaced_key, value, ttl_seconds)
-        if not result:
+        if not result.success:
             return result
 
         # Update cache
@@ -589,7 +763,7 @@ class FlextApiStorage:
 
         # Direct delete operation
         result = await self._backend.delete(namespaced_key)
-        if not result:
+        if not result.success:
             return result
 
         # Remove from cache
@@ -612,7 +786,7 @@ class FlextApiStorage:
             namespaced_pattern = f"{self._config.namespace}:*"
 
         result = await self._backend.keys(namespaced_pattern)
-        if not result:
+        if not result.success:
             return result
 
         # Remove namespace prefix from returned keys
@@ -624,14 +798,14 @@ class FlextApiStorage:
         """Clear all data in namespace."""
         # Get all keys in namespace and delete them
         keys_result = await self.keys()
-        if not keys_result:
+        if not keys_result.success:
             return FlextResult[None].fail(
                 f"Failed to get keys for clearing: {keys_result.error}",
             )
 
         for key in keys_result.value or []:
             delete_result = await self.delete(key)
-            if not delete_result:
+            if not delete_result.success:
                 return FlextResult[None].fail(
                     f"Failed to delete key '{key}': {delete_result.error}",
                 )
@@ -667,16 +841,16 @@ class FlextApiStorage:
 
         async def _apply_set(key: str, value: object) -> FlextResult[None]:
             res = await self._backend.set(key, value)
-            return res if not res else FlextResult[None].ok(None)
+            return res if not res.success else FlextResult[None].ok(None)
 
         async def _apply_delete(key: str) -> FlextResult[None]:
             res = await self._backend.delete(key)
-            if not res:
+            if not res.success:
                 return FlextResult[None].fail(res.error or "Delete failed")
             return FlextResult[None].ok(None)
 
         tx_result = _get_active_tx()
-        if not tx_result:
+        if not tx_result.success:
             return FlextResult[None].fail(tx_result.error or "Invalid transaction")
 
         tx = tx_result.value
@@ -688,7 +862,7 @@ class FlextApiStorage:
                 applied = await _apply_delete(key)
             else:
                 return FlextResult[None].fail(f"Unknown transaction operation: {op}")
-            if not applied:
+            if not applied.success:
                 return FlextResult[None].fail(
                     applied.error or "Transaction operation failed"
                 )
@@ -729,7 +903,7 @@ class FlextApiStorage:
 
 
 # ==============================================================================
-# FACTORY FUNCTIONS
+# FACTORY FUNCTION ALIASES - Delegate to FlextApiStorage main class
 # ==============================================================================
 
 
@@ -737,7 +911,10 @@ def create_storage(
     backend: str = "memory",
     **config_kwargs: object,
 ) -> FlextApiStorage:
-    """Create storage instance with specified backend."""
+    """Create storage instance with specified backend.
+
+    Alias/facade function that delegates to FlextApiStorage main class.
+    """
     # Filter kwargs to only include valid StorageConfig fields
     valid_fields = {
         "connection_string",
@@ -809,7 +986,10 @@ def create_memory_storage(
     enable_caching: bool = True,
     cache_ttl_seconds: int = 300,
 ) -> FlextApiStorage:
-    """Create memory storage with caching."""
+    """Create memory storage with caching.
+
+    Alias/facade function that delegates to FlextApiStorage main class.
+    """
     config = StorageConfig(
         backend=StorageBackend.MEMORY,
         namespace=namespace,
@@ -825,7 +1005,10 @@ def create_file_storage(
     *,
     enable_caching: bool = True,
 ) -> FlextApiStorage:
-    """Create file storage with JSON persistence."""
+    """Create file storage with JSON persistence.
+
+    Alias/facade function that delegates to FlextApiStorage main class.
+    """
     config = StorageConfig(
         backend=StorageBackend.FILE,
         file_path=file_path,

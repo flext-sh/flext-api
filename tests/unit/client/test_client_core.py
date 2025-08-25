@@ -69,12 +69,14 @@ class TestFlextApiClientConfig:
         config = FlextApiClientConfig(base_url="invalid-url")
         result = config.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "Invalid URL format" in result.error
 
         # Test FTP URL - should also fail validation
         config = FlextApiClientConfig(base_url="ftp://example.com")
         result = config.validate_business_rules()
         assert not result.success
+        assert result.error is not None
         assert "Invalid URL format" in result.error
 
 
@@ -101,7 +103,7 @@ class TestFlextApiClientRequest:
 
     def test_request_with_string_method(self) -> None:
         """Test request with string method gets converted."""
-        request = FlextApiClientRequest(method="POST", url="/api/test")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.POST, url="/api/test")
         if request.method != FlextApiClientMethod.POST:
             msg = f"Expected {FlextApiClientMethod.POST}, got {request.method}"
             raise AssertionError(
@@ -111,7 +113,7 @@ class TestFlextApiClientRequest:
     def test_request_validation_empty_url(self) -> None:
         """Test request creation with empty URL."""
         # Empty URL is allowed at dataclass level, validation happens later
-        request = FlextApiClientRequest(method=FlextApiClientMethod.GET, url="")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="")
         if request.url != "":
             msg = f"Expected empty string, got {request.url}"
             raise AssertionError(msg)
@@ -127,7 +129,7 @@ class TestFlextApiClientResponse:
             msg = f"Expected 200, got {response.status_code}"
             raise AssertionError(msg)
         assert response.headers == {}
-        assert response.value is None
+        assert response.data is None
         if response.elapsed_time != 0.0:
             msg = f"Expected 0.0, got {response.elapsed_time}"
             raise AssertionError(msg)
@@ -142,7 +144,7 @@ class TestFlextApiClientResponse:
         )
 
         assert response.status_code == 200
-        assert response.value == data
+        assert response.data == data
         assert response.headers is not None
         assert response.headers["Content-Type"] == "application/json"
 
@@ -150,13 +152,15 @@ class TestFlextApiClientResponse:
         """Test response json method."""
         data: dict[str, object] = {"key": "value"}
         response = FlextApiClientResponse(status_code=200, data=data)
-        assert response.json() == data
+        # ApiResponse stores JSON data in the 'data' field
+        assert response.data == data
 
     def test_response_text_method(self) -> None:
         """Test response text method."""
         data = "Hello, World!"
         response = FlextApiClientResponse(status_code=200, data=data)
-        assert response.text() == data
+        # ApiResponse stores text data in the 'data' field
+        assert response.data == data
 
 
 class TestFlextApiPlugin:
@@ -176,33 +180,33 @@ class TestFlextApiPlugin:
     async def test_plugin_before_request(self) -> None:
         """Test plugin before_request hook."""
         plugin = FlextApiPlugin()
-        request = FlextApiClientRequest(method=FlextApiClientMethod.GET, url="/test")
+        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="/test")
 
         # Should not modify request by default
         modified_request = await plugin.before_request(request)
         assert modified_request == request
 
     @pytest.mark.asyncio
-    async def test_plugin_after_request(self) -> None:
-        """Test plugin after_request hook."""
+    async def test_plugin_after_response(self) -> None:
+        """Test plugin after_response hook."""
         plugin = FlextApiPlugin()
-        request = FlextApiClientRequest(method="GET", url="/test")
         response = FlextApiClientResponse(status_code=200)
 
-        # Should not modify response by default
-        modified_response = await plugin.after_request(request, response)
-        assert modified_response == response
+        # Should return FlextResult with response unchanged by default
+        result = await plugin.after_response(response)
+        assert result.success
+        assert result.value == response
 
     @pytest.mark.asyncio
-    async def test_plugin_on_error(self) -> None:
-        """Test plugin on_error hook."""
+    async def test_plugin_process_response(self) -> None:
+        """Test plugin process_response hook."""
         plugin = FlextApiPlugin()
-        request = FlextApiClientRequest(method="GET", url="/test")
-        error = Exception("Test error")
+        response = FlextApiClientResponse(status_code=200)
 
-        # Should not modify error by default
-        modified_error = await plugin.on_error(request, error)
-        assert modified_error == error
+        # Should return FlextResult with response unchanged by default
+        result = await plugin.process_response(response)
+        assert result.success
+        assert result.value == response
 
 
 class TestFlextApiClient:

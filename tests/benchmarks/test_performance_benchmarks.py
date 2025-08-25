@@ -8,7 +8,9 @@ SPDX-License-Identifier: MIT
 """
 
 from collections.abc import Callable
-from typing import Any
+from typing import TypeVar
+
+T = TypeVar("T")
 
 from flext_api import (
     FlextApi,
@@ -25,12 +27,15 @@ from flext_api import (
 class TestAPIPerformanceBenchmarks:
     """Performance benchmarks for API operations."""
 
-    def test_api_creation_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
+    def test_api_creation_benchmark(self, benchmark: Callable[[Callable[[], FlextApi]], FlextApi]) -> None:
         """Benchmark API instance creation."""
-        result = benchmark(FlextApi)
+        def create_api() -> FlextApi:
+            return FlextApi()
+        
+        result = benchmark(create_api)
         assert result is not None
 
-    def test_query_building_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
+    def test_query_building_benchmark(self, benchmark: Callable[[Callable[[], FlextApiQuery]], FlextApiQuery]) -> None:
         """Benchmark query building operations."""
 
         def build_complex_query() -> FlextApiQuery:
@@ -47,10 +52,10 @@ class TestAPIPerformanceBenchmarks:
         assert result is not None
         assert len(result.filters) > 0
 
-    def test_response_building_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
+    def test_response_building_benchmark(self, benchmark: Callable[[Callable[[], FlextApiResponse]], FlextApiResponse]) -> None:
         """Benchmark response building operations."""
 
-        def build_complex_response() -> dict[str, object]:
+        def build_complex_response() -> FlextApiResponse:
             return build_success_response(
                 data={"items": list(range(100)), "total": 100},
                 message="Data retrieved successfully",
@@ -63,9 +68,9 @@ class TestAPIPerformanceBenchmarks:
 
         result = benchmark(build_complex_response)
         assert result is not None
-        assert result["success"] is True
+        assert result.success is True
 
-    def test_builder_pattern_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
+    def test_builder_pattern_benchmark(self, benchmark: Callable[[Callable[[], tuple[FlextApiQuery, FlextApiResponse]]], tuple[FlextApiQuery, FlextApiResponse]]) -> None:
         """Benchmark builder pattern operations."""
 
         def complex_builder_operations() -> tuple[FlextApiQuery, FlextApiResponse]:
@@ -92,7 +97,7 @@ class TestAPIPerformanceBenchmarks:
         assert query is not None
         assert response is not None
 
-    def test_client_creation_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
+    def test_client_creation_benchmark(self, benchmark: Callable[[Callable[[], FlextApiClient]], FlextApiClient]) -> None:
         """Benchmark HTTP client creation."""
 
         def create_configured_client() -> FlextApiClient:
@@ -112,7 +117,7 @@ class TestAPIPerformanceBenchmarks:
         assert result is not None
         assert result.config.base_url == "https://api.example.com"
 
-    def test_multiple_queries_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
+    def test_multiple_queries_benchmark(self, benchmark: Callable[[Callable[[], list[FlextApiQuery]]], list[FlextApiQuery]]) -> None:
         """Benchmark multiple query operations."""
 
         def build_multiple_queries() -> list[FlextApiQuery]:
@@ -132,10 +137,10 @@ class TestAPIPerformanceBenchmarks:
         assert len(result) == 100
         assert all(len(q.filters) > 0 for q in result)
 
-    def test_large_response_benchmark(self, benchmark: Callable[[Any], Any]) -> None:
+    def test_large_response_benchmark(self, benchmark: Callable[[Callable[[], FlextApiResponse]], FlextApiResponse]) -> None:
         """Benchmark large response building."""
 
-        def build_large_response() -> dict[str, object]:
+        def build_large_response() -> FlextApiResponse:
             # Simulate large dataset response
             large_data = {
                 "items": [
@@ -151,12 +156,13 @@ class TestAPIPerformanceBenchmarks:
             )
 
         result = benchmark(build_large_response)
-        assert result["success"] is True
-        assert len(result["data"]["items"]) == 1000
+        assert result.success is True
+        assert isinstance(result.data, dict)
+        assert len(result.data["items"]) == 1000
 
     def test_paginated_response_benchmark(
         self,
-        benchmark: Callable[[Any], Any],
+        benchmark: Callable[[Callable[[], list[FlextApiResponse]]], list[FlextApiResponse]],
     ) -> None:
         """Benchmark paginated response operations."""
 

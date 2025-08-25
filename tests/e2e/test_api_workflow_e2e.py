@@ -71,7 +71,7 @@ class TestApiWorkflowE2E:
             assert get_result.value is not None
             http_response = cast("FlextApiClientResponse", get_result.value)
             assert http_response.status_code == 200
-            assert isinstance(http_response.value, dict)
+            assert isinstance(http_response.data, dict)
 
         finally:
             await client.close()
@@ -156,7 +156,7 @@ class TestApiWorkflowE2E:
         # Create client with multiple plugins
         plugins = [
             FlextApiCachingPlugin(ttl=120, max_size=50),
-            FlextApiRetryPlugin(max_retries=3, backoff_factor=2.0),
+            FlextApiRetryPlugin(max_retries=3, delay=2.0),
         ]
 
         # This would typically use create_client_with_plugins

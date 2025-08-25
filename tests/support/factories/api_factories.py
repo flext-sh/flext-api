@@ -10,6 +10,7 @@ from uuid import uuid4
 from flext_api import (
     FlextApiClientRequest,
     FlextApiClientResponse,
+    FlextApiClientMethod,
 )
 from flext_api.config import FlextApiSettings
 
@@ -23,7 +24,7 @@ def create_flext_api_client_request(
 ) -> FlextApiClientRequest:
     """Create FlextApiClientRequest for testing."""
     return FlextApiClientRequest(
-        method=method,
+        method=FlextApiClientMethod(method) if isinstance(method, str) else method,
         url=url,
         headers=headers or {},
         params=params or {},
