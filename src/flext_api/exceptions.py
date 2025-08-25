@@ -132,7 +132,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                     "code": self.error_code,
                     "message": str(self),
                     "status_code": self.status_code,
-                    "context": self.context,
+                    "context": self.get_context(),
                 },
                 "data": None,
             }
@@ -198,7 +198,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                     "message": str(self),
                     "status_code": self.status_code,
                     "validation_details": getattr(self, "validation_details", {}),
-                    "context": self.context,
+                    "context": self.get_context(),
                 },
                 "data": None,
             }
@@ -251,7 +251,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                     "code": "AUTHENTICATION_ERROR",
                     "message": str(self),
                     "status_code": self.status_code,
-                    "context": self.context,
+                    "context": self.get_context(),
                 },
                 "data": None,
             }
@@ -333,7 +333,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                     "code": "CONFIGURATION_ERROR",
                     "message": str(self),
                     "status_code": self.status_code,
-                    "context": self.context,
+                    "context": self.get_context(),
                 },
                 "data": None,
             }
@@ -385,7 +385,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                     "code": "CONNECTION_ERROR",
                     "message": str(self),
                     "status_code": self.status_code,
-                    "context": self.context,
+                    "context": self.get_context(),
                 },
                 "data": None,
             }
@@ -434,7 +434,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                     "code": "PROCESSING_ERROR",
                     "message": str(self),
                     "status_code": self.status_code,
-                    "context": self.context,
+                    "context": self.get_context(),
                 },
                 "data": None,
             }
@@ -488,7 +488,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                     "code": "TIMEOUT_ERROR",
                     "message": str(self),
                     "status_code": self.status_code,
-                    "context": self.context,
+                    "context": self.get_context(),
                 },
                 "data": None,
             }
@@ -747,10 +747,10 @@ class FlextApiExceptions(FlextError):  # noqa: N818
         exception_class = specific_exceptions.get(status_code)
         if exception_class:
             try:
-                return exception_class(message or "Error", status_code=status_code)
+                return exception_class(message or "Error", status_code=status_code)  # type: ignore[no-any-return]
             except TypeError:
                 # Handle exceptions that don't accept status_code parameter
-                return exception_class(message or "Error")
+                return exception_class(message or "Error")  # type: ignore[no-any-return]
         return None
 
     @staticmethod

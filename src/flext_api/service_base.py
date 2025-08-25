@@ -19,7 +19,7 @@ warnings.warn(
 # Legacy compatibility
 try:
     from flext_core import FlextDomainService
-    FlextApiBaseService = FlextDomainService
+    FlextApiBaseService = FlextDomainService  # type: ignore[assignment]
 except ImportError:
     # Fallback if flext-core has import issues
     class FlextApiBaseService:  # type: ignore[no-redef]

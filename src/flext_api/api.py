@@ -64,11 +64,9 @@ class FlextApi(FlextDomainService[dict[str, object]]):
     @override
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute the domain service operation (required by FlextDomainService)."""
-        return FlextResult[dict[str, object]].ok({
-            "status": "ready",
-            "service": "FlextApi",
-            "version": self.service_version
-        })
+        return FlextResult[dict[str, object]].ok(
+            {"status": "ready", "service": "FlextApi", "version": self.service_version}
+        )
 
     def start(self) -> FlextResult[None]:
         """Start the service."""
@@ -84,13 +82,15 @@ class FlextApi(FlextDomainService[dict[str, object]]):
 
     def health_check(self) -> FlextResult[dict[str, object]]:
         """Perform health check."""
-        return FlextResult[dict[str, object]].ok({
-            "status": "healthy" if self._is_running else "stopped",
-            "service": type(self).__name__,
-            "is_running": self._is_running,
-            "client_configured": self._client is not None,
-            "builder_available": self._builder is not None,
-        })
+        return FlextResult[dict[str, object]].ok(
+            {
+                "status": "healthy" if self._is_running else "stopped",
+                "service": type(self).__name__,
+                "is_running": self._is_running,
+                "client_configured": self._client is not None,
+                "builder_available": self._builder is not None,
+            }
+        )
 
     @property
     def is_running(self) -> bool:
@@ -195,7 +195,9 @@ class FlextApi(FlextDomainService[dict[str, object]]):
 
         except Exception as e:
             logger.exception("Client creation failed")
-            return FlextResult[FlextApiHttpClientProtocol].fail(f"Client creation error: {e}")
+            return FlextResult[FlextApiHttpClientProtocol].fail(
+                f"Client creation error: {e}"
+            )
 
     def get_builder(self) -> FlextApiBuilder:
         """Get builder instance for advanced operations.
@@ -274,7 +276,9 @@ class FlextApi(FlextDomainService[dict[str, object]]):
             # Type-safe extraction using TypedDict structure
             base_url = str(config_dict.get("base_url", ""))
             if not base_url:
-                return FlextResult[FlextApiClient].fail("Invalid URL format: base_url cannot be empty")
+                return FlextResult[FlextApiClient].fail(
+                    "Invalid URL format: base_url cannot be empty"
+                )
 
             timeout: float = config_dict.get("timeout") or DEFAULT_TIMEOUT
             max_retries: int = config_dict.get("max_retries") or DEFAULT_MAX_RETRIES
@@ -289,7 +293,9 @@ class FlextApi(FlextDomainService[dict[str, object]]):
             # Validate configuration - use modern FlextResult pattern
             validation_result = client_config.validate_business_rules()
             if not validation_result:  # FlextResult has __bool__ support
-                return FlextResult[FlextApiClient].fail(validation_result.error or "Invalid URL format")
+                return FlextResult[FlextApiClient].fail(
+                    validation_result.error or "Invalid URL format"
+                )
             # Convert to legacy config format
             legacy_config = FlextApiClientConfig(
                 base_url=client_config.base_url,

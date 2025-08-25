@@ -29,7 +29,7 @@ from flext_api.utilities import *
 # Tests should migrate to use flext_core.FlextDomainService or object directly
 try:
     from flext_core import FlextDomainService
-    FlextApiBaseService = FlextDomainService
+    FlextApiBaseService = FlextDomainService  # type: ignore[assignment]
 except ImportError:
     # Fallback if flext-core has import issues
     class FlextApiBaseService:  # type: ignore[no-redef]
