@@ -279,7 +279,6 @@ class FlextApiTypes(FlextTypes):
         HTTP_METHOD: FlextTypes.Core.JsonDict | None = None  # Lazy-loaded
         RESPONSE_FORMAT: FlextTypes.Core.JsonDict | None = None  # Lazy-loaded
 
-
         # User management fields
         USERNAME: ClassVar[FlextTypes.Core.JsonDict] = {
             "field_type": "username",
@@ -690,8 +689,8 @@ class FlextAPIFieldsMeta(type):
 
     def __getattr__(cls, name: str) -> object:
         """Handle attribute access with lazy initialization."""
-        if name in ("API_KEY", "BEARER_TOKEN", "PIPELINE_CONFIG", "PLUGIN_CONFIG",
-                   "USER_ROLE", "ENDPOINT_PATH", "HTTP_METHOD", "RESPONSE_FORMAT"):
+        if name in {"API_KEY", "BEARER_TOKEN", "PIPELINE_CONFIG", "PLUGIN_CONFIG",
+                   "USER_ROLE", "ENDPOINT_PATH", "HTTP_METHOD", "RESPONSE_FORMAT"}:
             # Manually initialize fields if not done already
             if not getattr(cls, "_initialized", False):
                 FlextApiTypes.Fields._ensure_lazy_loaded()
@@ -748,7 +747,6 @@ class FlextAPIFields(metaclass=FlextAPIFieldsMeta):
         """Initialize when class is accessed."""
         super().__init_subclass__()
         cls._ensure_initialized()
-
 
     def __class_getitem__(cls, item: str) -> FlextTypes.Core.JsonDict:
         """Get field by name with lazy loading."""

@@ -67,7 +67,7 @@ class FlextApiErrorCodes(StrEnum):
 # ==============================================================================
 
 
-class FlextApiExceptions(FlextError):
+class FlextApiExceptions(FlextError):  # noqa: N818
     """Single consolidated class containing all API exceptions following FLEXT patterns.
 
     This class follows the CONSOLIDATED class pattern from FLEXT_REFACTORING_PROMPT.md,

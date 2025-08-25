@@ -19,7 +19,7 @@ async def test_file_backend_load_data_failure_and_close(
     file_path = tmp_path / "store.json"
     # Write invalid json to test REAL JSON parsing failure
     file_path.write_text("{not json}", encoding="utf-8")
-    backend: FileStorageBackend[object] = FileStorageBackend(StorageConfig(file_path=str(file_path)))
+    backend: FileStorageBackend[object] = FileStorageBackend(str(file_path))
     # Should have reset data to {} after parsing failure
     assert (await backend.keys()).success
 

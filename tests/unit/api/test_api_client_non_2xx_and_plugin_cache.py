@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import pytest
-
 from flext_core import FlextResult
+
 from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
+    FlextApiClientMethod,
     FlextApiClientRequest,
     FlextApiClientResponse,
     FlextApiPlugin,
-    FlextApiClientMethod,
 )
 
 

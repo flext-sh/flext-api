@@ -10,7 +10,11 @@ from typing import TypeVar
 import pytest
 from flext_core import FlextResult
 
-from flext_api import FlextApiClientRequest, FlextApiClientMethod, FlextApiClientResponse
+from flext_api import (
+    FlextApiClientMethod,
+    FlextApiClientRequest,
+    FlextApiClientResponse,
+)
 
 # Type variable for generic FlextResult operations
 T = TypeVar("T")

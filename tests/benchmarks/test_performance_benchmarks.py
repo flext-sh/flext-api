@@ -31,7 +31,7 @@ class TestAPIPerformanceBenchmarks:
         """Benchmark API instance creation."""
         def create_api() -> FlextApi:
             return FlextApi()
-        
+
         result = benchmark(create_api)
         assert result is not None
 

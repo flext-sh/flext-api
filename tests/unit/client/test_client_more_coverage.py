@@ -9,8 +9,8 @@ import pytest
 from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
-    FlextApiClientRequest,
     FlextApiClientMethod,
+    FlextApiClientRequest,
 )
 
 

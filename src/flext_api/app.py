@@ -117,7 +117,9 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
 
         def get_version(self) -> str:
             """Get application version."""
-            return self.settings.version if self.settings else "0.9.0"
+            return (
+                getattr(self.settings, "version", "0.9.0") if self.settings else "0.9.0"
+            )
 
     class FlextApiHealthChecker:
         """Health check service implementing Strategy Pattern to reduce complexity."""
@@ -202,15 +204,17 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
     @override
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute the application service operation (required by FlextDomainService)."""
-        return FlextResult[dict[str, object]].ok({
-            "service": "FlextApiApp",
-            "status": "ready",
-            "version": self._config.get_version(),
-            "environment": self._config.settings.environment
-            if self._config.settings
-            else "unknown",
-            "app_created": self._app_instance is not None,
-        })
+        return FlextResult[dict[str, object]].ok(
+            {
+                "service": "FlextApiApp",
+                "status": "ready",
+                "version": self._config.get_version(),
+                "environment": self._config.settings.environment
+                if self._config.settings
+                else "unknown",
+                "app_created": self._app_instance is not None,
+            }
+        )
 
     async def lifespan(self, app: FastAPI) -> AsyncGenerator[None]:
         """Application lifespan manager."""
@@ -243,7 +247,7 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
         # Create FastAPI app with lifespan
         app = FastAPI(
             title="FLEXT API",
-            description="High-performance REST API for FLEXT ecosystem",
+            description="Enterprise-grade distributed data integration platform",
             version=config.get_version(),
             lifespan=self.lifespan,
             debug=config.settings.debug if config.settings else True,
@@ -406,7 +410,7 @@ def create_flext_api_app(config: FlextApiAppConfig | None = None) -> FastAPI:
 def create_flext_api_app_with_settings(**settings_overrides: object) -> FastAPI:
     """Create FastAPI app with settings overrides (legacy compatibility)."""
     # Create settings with overrides
-    base_settings_result = create_api_settings()
+    base_settings_result = create_api_settings(**settings_overrides)
     if not base_settings_result.success:
         # Fallback to empty config
         config = FlextApiAppConfig()
@@ -563,117 +567,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 # ==============================================================================
 
 
-class FlextApiHealthChecker:
-    """Health check service implementing Strategy Pattern to reduce complexity.
-
-    Refactored from setup_health_endpoints to follow SOLID principles:
-    - Single Responsibility: Only handles health check logic
-    - Open/Closed: Extensible with new health check strategies
-    - Interface Segregation: Clean health check interface
-    """
-
-    def __init__(self, config: FlextApiAppConfig) -> None:
-        """Initialize health checker with configuration."""
-        self.config = config
-
-    def _get_current_timestamp(self) -> str:
-        """Get current UTC timestamp in ISO format (DRY pattern)."""
-        return datetime.datetime.now(datetime.UTC).isoformat()
-
-    def _build_base_health_data(self) -> dict[str, object]:
-        """Build base health data structure."""
-        return {
-            "status": "healthy",
-            "timestamp": self._get_current_timestamp(),
-            "version": self.config.get_version(),
-            "environment": self.config.settings.environment
-            if self.config.settings
-            else "unknown",
-            "services": {
-                "api": {
-                    "status": "healthy",
-                    "port": self.config.settings.api_port
-                    if self.config.settings
-                    else 8000,
-                    "host": self.config.settings.api_host
-                    if self.config.settings
-                    else "127.0.0.1",
-                },
-            },
-            "system": {
-                "python_version": sys.version.split()[0],
-                "platform": sys.platform,
-            },
-        }
-
-    async def _check_storage_health(
-        self,
-        app: FastAPI,
-        health_data: dict[str, object],
-    ) -> None:
-        """Check storage health and update health data."""
-        storage_status: dict[str, object] = {
-            "status": "healthy" if hasattr(app.state, "storage") else "unavailable",
-            "type": "memory",
-        }
-
-        if hasattr(app.state, "storage") and app.state.storage:
-            try:
-                test_key = "health_check_test"
-                set_coro = getattr(app.state.storage, "set", None)
-                del_coro = getattr(app.state.storage, "delete", None)
-
-                if set_coro and del_coro:
-                    result_set = set_coro(
-                        test_key,
-                        {"timestamp": health_data["timestamp"]},
-                    )
-                    if hasattr(result_set, "__await__"):
-                        await result_set
-                    result_del = del_coro(test_key)
-                    if hasattr(result_del, "__await__"):
-                        await result_del
-                storage_status["last_check"] = "successful"
-
-            except Exception as e:
-                logger.warning("Storage health check failed", error=str(e))
-                storage_status.update({"status": "degraded", "error": str(e)})
-                health_data["status"] = "degraded"
-
-        services = health_data.get("services", {})
-        if isinstance(services, dict):
-            services["storage"] = storage_status
-            health_data["services"] = services
-
-    async def comprehensive_health_check(self, app: FastAPI) -> dict[str, object]:
-        """Perform comprehensive health check with all strategies."""
-        try:
-            health_data = self._build_base_health_data()
-            await self._check_storage_health(app, health_data)
-            return health_data
-        except Exception:
-            logger.exception("Health check failed")
-            return {}
-
-    def liveness_check(self) -> dict[str, object]:
-        """Liveness probe for Kubernetes - simple health indicator."""
-        return {
-            "status": "alive",
-            "timestamp": self._get_current_timestamp(),
-        }
-
-    def readiness_check(self, app: FastAPI) -> dict[str, object]:
-        """Readiness probe for Kubernetes - service dependency check."""
-        is_ready = hasattr(app.state, "storage")
-        return {
-            "status": "ready" if is_ready else "not_ready",
-            "timestamp": self._get_current_timestamp(),
-            "services": {
-                "storage": "ready" if is_ready else "not_ready",
-            },
-        }
-
-
 def setup_health_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
     """Set up health check and monitoring endpoints using Strategy Pattern.
 
@@ -705,8 +598,8 @@ def setup_api_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
     async def root() -> dict[str, object]:
         """Root endpoint with API information."""
         return {
-            "name": config.get_title(),
-            "description": config.get_description(),
+            "name": "FLEXT API",
+            "description": "Enterprise-grade distributed data integration platform",
             "version": config.get_version(),
             "environment": config.settings.environment
             if config.settings
@@ -720,9 +613,9 @@ def setup_api_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
         """Detailed API information."""
         return {
             "api": {
-                "name": config.get_title(),
+                "name": "FLEXT API",
                 "version": config.get_version(),
-                "description": config.get_description(),
+                "description": "Enterprise-grade distributed data integration platform",
             },
             "environment": {
                 "name": config.settings.environment if config.settings else "unknown",
@@ -740,160 +633,8 @@ def setup_api_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
 
 
 # ==============================================================================
-# APPLICATION FACTORY
-# ==============================================================================
-
-
-def create_flext_api_app(config: FlextApiAppConfig | None = None) -> FastAPI:
-    """Create and configure FastAPI application instance.
-
-    Args:
-      config: Optional application configuration
-
-    Returns:
-      Configured FastAPI application instance
-
-    """
-    if config is None:
-        config = FlextApiAppConfig()
-
-    # Create FastAPI app with lifespan management
-    app = FastAPI(
-        title=config.get_title(),
-        description=config.get_description(),
-        version=config.get_version(),
-        lifespan=lifespan,
-        # Always expose OpenAPI paths for tests; UI routes conditioned on debug
-        docs_url="/docs" if config.settings and config.settings.debug else None,
-        redoc_url="/redoc" if config.settings and config.settings.debug else None,
-        openapi_url="/openapi.json",
-    )
-
-    # Use FastAPI's default route registration without additional wrappers to
-    # preserve strict typing and avoid mypy mismatches.
-
-    # Add middleware
-    app.add_middleware(GZipMiddleware, minimum_size=1000)
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=config.get_cors_origins(),
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["*"],
-    )
-
-    # Add custom middleware
-    app.middleware("http")(add_request_id_middleware)
-    app.middleware("http")(error_handler_middleware)
-
-    # Setup endpoints
-    setup_health_endpoints(app, config)
-    setup_api_endpoints(app, config)
-
-    # Store config in app state for access in endpoints
-    app.state.config = config
-
-    logger.info(
-        "FLEXT API application created successfully",
-        title=config.get_title(),
-        version=config.get_version(),
-        environment=config.settings.environment if config.settings else "unknown",
-    )
-
-    return app
-
-
-def create_flext_api_app_with_settings(**settings_overrides: object) -> FastAPI:
-    """Create FastAPI app with custom settings.
-
-    Args:
-      **settings_overrides: Settings to override
-
-    Returns:
-      Configured FastAPI application instance
-
-    """
-    # Modern FlextResult pattern: unwrap_or_raise
-    settings = FlextResult.unwrap_or_raise(
-        create_api_settings(**settings_overrides), RuntimeError
-    )
-
-    config = FlextApiAppConfig(settings)
-    return create_flext_api_app(config)
-
-
-# ==============================================================================
 # APPLICATION INSTANCES AND ENTRY POINTS
 # ==============================================================================
-
-
-def run_development_server(
-    host: str = "127.0.0.1",  # Use localhost instead of binding to all interfaces
-    port: int | None = None,
-    *,
-    reload: bool = True,
-    log_level: str = "info",
-) -> None:
-    """Run development server with hot reload.
-
-    Args:
-      host: Host to bind to
-      port: Port to bind to (defaults to settings)
-      reload: Enable hot reload
-      log_level: Logging level
-
-    """
-    # Create app for development
-    app = create_flext_api_app()
-
-    # Get port from settings if not specified
-    if port is None:
-        port = app.state.config.settings.api_port if app.state.config.settings else 8000
-
-    logger.info("Starting development server", host=host, port=port, reload=reload)
-
-    uvicorn.run(
-        "flext_api.api_app:create_flext_api_app",
-        host=host,
-        port=port or 8000,
-        reload=reload,
-        log_level=log_level,
-        factory=True,
-    )
-
-
-def run_production_server(
-    host: str | None = None,
-    port: int | None = None,
-) -> None:
-    """Run production server.
-
-    Args:
-      host: Host to bind to (defaults to settings)
-      port: Port to bind to (defaults to settings)
-
-    """
-    # Create app for production
-    # Modern FlextResult pattern: unwrap_or_raise
-    settings = FlextResult.unwrap_or_raise(create_api_settings(), RuntimeError)
-
-    # Use settings defaults if not specified
-    if host is None:
-        host = settings.api_host if settings else "127.0.0.1"
-    if port is None:
-        port = settings.api_port if settings else 8000
-
-    app = create_flext_api_app_with_settings(api_host=host, api_port=port, debug=False)
-
-    logger.info("Starting production server", host=host, port=port)
-
-    uvicorn.run(
-        app,
-        host=host,
-        port=port,
-        log_level="warning",
-        access_log=False,
-    )
 
 
 # Create default app instance for ASGI servers and testing
@@ -987,6 +728,32 @@ def main() -> None:
             log_level=args.log_level,
         )
 
+
+# ==============================================================================
+# EXPORTS
+# ==============================================================================
+
+__all__ = [
+    "FlextApiApp",
+    "FlextApiAppConfig",
+    "FlextApiHealthChecker",
+    "api_app",
+    "app",
+    "create_flext_api_app",
+    "create_flext_api_app_consolidated",
+    "create_flext_api_app_with_settings",
+    "flext_api_create_app",
+    "main",
+    "run_development_server",
+    "run_production_server",
+    "setup_api_endpoints",
+    "setup_health_endpoints",
+    "storage",
+]
+
+# Legacy aliases for backward compatibility
+flext_api_create_app = create_flext_api_app
+api_app = app
 
 if __name__ == "__main__":
     main()
