@@ -18,22 +18,27 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import json
-import time
+# JSON operations now use FlextUtilities.ProcessingUtils - no direct json import needed
+# Time operations now use FlextUtilities.TimeUtils - no direct time import needed
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
-from typing import Protocol, TypeVar
-from uuid import uuid4
+from typing import Protocol, TypeVar, cast
 
+# UUID generation now uses FlextUtilities.generate_uuid() - no direct uuid import needed
 from flext_core import (
     FlextDomainService,
     FlextProtocols,
     FlextResult,
+    FlextUtilities,
     get_logger,
 )
+
+# Type definitions
+StorageValue = TypeVar("StorageValue")
+StorageOperation = tuple[str, str, object]
 
 logger = get_logger(__name__)
 
@@ -50,14 +55,14 @@ T = TypeVar("T")
 
 class FlextApiStorage(FlextDomainService[dict[str, object]]):
     """Single consolidated class containing ALL storage functionality following FLEXT patterns.
-    
+
     This class follows the CONSOLIDATED class pattern from FLEXT_REFACTORING_PROMPT.md,
     centralizing ALL storage functionality into a single class structure to eliminate
     the "multiple classes per module" violation while maintaining clean
     architecture principles following single-consolidated-class-per-module.
-    
+
     Note: Attributes are set dynamically to work around Pydantic frozen instances.
-    
+
     All storage components are implemented as nested classes within this consolidated structure:
     - Backend: Storage backend enumeration
     - Config: Configuration settings
@@ -73,13 +78,15 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
     This eliminates all individual classes and provides a single entry point
     for all storage operations while maintaining logical separation of concerns.
     """
-    
+
+    # Pydantic field for config (required by FlextDomainService)
+    config: Config | None = None  # Will be set in __init__
+
     # Type annotations for mypy (actual assignment done in __init__)
-    config: "FlextApiStorage.Config"
-    _backend: "FlextApiStorage.BackendInterface[str, object]"
-    _cache: "FlextApiStorage.CacheInterface[object] | None"
-    _repository: "FlextApiStorage.Repository"
-    _current_transaction: "FlextApiStorage.TransactionContext[object] | None"
+    _backend: FlextApiStorage.BackendInterface[str, object]
+    _cache: FlextApiStorage.CacheInterface[object] | None
+    _repository: FlextApiStorage.Repository
+    _current_transaction: FlextApiStorage.TransactionContext[object] | None
 
     # ==========================================================================
     # NESTED ENUMERATIONS AND CONFIGURATIONS
@@ -118,23 +125,23 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
 
         def is_expired(self) -> bool:
             """Check if cache entry is expired."""
-            return time.time() - self.timestamp > self.ttl_seconds
+            return FlextUtilities.TimeUtils.get_elapsed_time(self.timestamp) > self.ttl_seconds
 
     @dataclass
-    class TransactionContext[V]:
+    class TransactionContext[StorageValue]:
         """Transaction context for atomic operations."""
 
-        transaction_id: str = field(default_factory=lambda: str(uuid4()))
-        operations: list[tuple[str, str, V]] = field(default_factory=list)
-        started_at: float = field(default_factory=time.time)
+        transaction_id: str = field(default_factory=FlextUtilities.generate_uuid)
+        operations: list[tuple[str, str, StorageValue]] = field(default_factory=list)
+        started_at: float = field(default_factory=FlextUtilities.generate_timestamp)
 
-        def add_operation(self, operation: str, key: str, value: V) -> None:
+        def add_operation(self, operation: str, key: str, value: StorageValue) -> None:
             """Add operation to transaction."""
             self.operations.append((operation, key, value))
 
         def get_age_seconds(self) -> float:
             """Get transaction age in seconds."""
-            return time.time() - self.started_at
+            return FlextUtilities.TimeUtils.get_elapsed_time(self.started_at)
 
     # ==========================================================================
     # NESTED REPOSITORY PATTERN
@@ -150,15 +157,13 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
         def save(self, entity: object) -> FlextResult[object]:
             """Save entity to storage."""
             try:
-                # Extract entity identifier (simplified)
-                entity_id = getattr(entity, "id", str(hash(str(entity))))
                 # Note: This is a sync wrapper for the async method
                 # In real implementation, this should be properly async
                 return FlextResult[object].ok(entity)
             except Exception as e:
                 return FlextResult[object].fail(f"Repository save error: {e}")
 
-        def get_by_id(self, entity_id: str) -> FlextResult[object | None]:
+        def get_by_id(self, entity_id: str) -> FlextResult[object | None]:  # noqa: ARG002
             """Get entity by ID (required by protocol)."""
             try:
                 # Sync wrapper - in real implementation should be async
@@ -166,7 +171,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
             except Exception as e:
                 return FlextResult[object | None].fail(f"Repository get error: {e}")
 
-        def delete(self, entity_id: str) -> FlextResult[None]:
+        def delete(self, entity_id: str) -> FlextResult[None]:  # noqa: ARG002
             """Delete entity by ID."""
             try:
                 # Sync wrapper - in real implementation should be async
@@ -288,21 +293,30 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
             try:
                 if self.file_path.exists():
                     with self.file_path.open("r", encoding="utf-8") as f:
-                        data = json.load(f)
+                        # Read file content and use FlextUtilities JSON parser
+                        file_content = f.read()
+                        raw_data = FlextUtilities.ProcessingUtils.safe_json_parse(file_content)
                         # Type narrowing for mypy
-                        if isinstance(data, dict):
-                            return data
+                        if isinstance(raw_data, dict):
+                            # Cast the entire dict to the expected type for JSON-compatible data
+                            return cast("dict[str, V]", raw_data)
                         return {}
                 return {}
             except Exception as e:
-                logger.warning("Failed to load data from file", file_path=str(self.file_path), error=str(e))
+                logger.warning(
+                    "Failed to load data from file",
+                    file_path=str(self.file_path),
+                    error=str(e),
+                )
                 return {}
 
         async def _save_data(self, data: dict[str, V]) -> FlextResult[None]:
             """Save data to file."""
             try:
                 with self.file_path.open("w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, default=str)
+                    # Use FlextUtilities JSON stringifier
+                    json_string = FlextUtilities.ProcessingUtils.safe_json_stringify(data)
+                    f.write(json_string)
                 return FlextResult[None].ok(None)
             except Exception as e:
                 return FlextResult[None].fail(f"Failed to save data: {e}")
@@ -362,8 +376,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
         def _cleanup_expired(self) -> None:
             """Remove expired entries."""
             expired_keys = [
-                key for key, entry in self._cache.items()
-                if entry.is_expired()
+                key for key, entry in self._cache.items() if entry.is_expired()
             ]
             for key in expired_keys:
                 del self._cache[key]
@@ -372,10 +385,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
             """Ensure cache does not exceed max size."""
             if len(self._cache) >= self._max_size:
                 # Remove oldest entries (simplified LRU)
-                sorted_items = sorted(
-                    self._cache.items(),
-                    key=lambda x: x[1].timestamp
-                )
+                sorted_items = sorted(self._cache.items(), key=lambda x: x[1].timestamp)
                 remove_count = len(self._cache) - self._max_size + 1
                 for key, _ in sorted_items[:remove_count]:
                     del self._cache[key]
@@ -394,7 +404,9 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
 
             return FlextResult[object].ok(entry.value)
 
-        def set(self, key: str, value: object, ttl_seconds: int = 300) -> FlextResult[None]:
+        def set(
+            self, key: str, value: object, ttl_seconds: int = 300
+        ) -> FlextResult[None]:
             """Set cached value with TTL."""
             self._cleanup_expired()
             self._ensure_capacity()
@@ -403,9 +415,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 ttl_seconds = self._default_ttl
 
             entry = FlextApiStorage.CacheEntry(
-                value=value,
-                timestamp=time.time(),
-                ttl_seconds=ttl_seconds
+                value=value, timestamp=FlextUtilities.generate_timestamp(), ttl_seconds=ttl_seconds
             )
             self._cache[key] = entry
             return FlextResult[None].ok(None)
@@ -431,18 +441,20 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
         """Initialize consolidated storage with configuration."""
         # Use temporary variables to avoid mypy issues
         config_to_use = config or self.Config()
-        super().__init__(config=config_to_use)
-        object.__setattr__(self, "config", config_to_use)
+        # FlextDomainService is Pydantic, pass config as field
+        super().__init__(config=config_to_use)  # type: ignore[call-arg]
 
         # Get config for initialization
         storage_config = object.__getattribute__(self, "config")
-        
+
         # Initialize backend - simplified for mypy
         backend: object
         if storage_config.backend == "memory":
             backend = self.MemoryBackend[object]()
         elif storage_config.backend == "file":
-            file_path = storage_config.file_path or f"storage_{storage_config.namespace}.json"
+            file_path = (
+                storage_config.file_path or f"storage_{storage_config.namespace}.json"
+            )
             backend = self.FileBackend[object](file_path)
         else:
             # Default to memory for unsupported backends
@@ -463,25 +475,29 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
         # Transaction support
         object.__setattr__(self, "_current_transaction", None)
 
-        logger.info("FlextApiStorage initialized",
-                   backend=storage_config.backend,
-                   caching_enabled=storage_config.enable_caching,
-                   namespace=storage_config.namespace)
+        logger.info(
+            "FlextApiStorage initialized",
+            backend=storage_config.backend,
+            caching_enabled=storage_config.enable_caching,
+            namespace=storage_config.namespace,
+        )
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute storage service - return status information."""
         try:
             config = object.__getattribute__(self, "config")
-            return FlextResult[dict[str, object]].ok({
-                "service": "FlextApiStorage",
-                "status": "healthy",
-                "backend": config.backend,
-                "namespace": config.namespace,
-                "key_count": 0,  # Simplified for sync method
-                "caching_enabled": config.enable_caching,
-                "transactions_enabled": config.enable_transactions,
-                "timestamp": time.time(),
-            })
+            return FlextResult[dict[str, object]].ok(
+                {
+                    "service": "FlextApiStorage",
+                    "status": "healthy",
+                    "backend": config.backend,
+                    "namespace": config.namespace,
+                    "key_count": 0,  # Simplified for sync method
+                    "caching_enabled": config.enable_caching,
+                    "transactions_enabled": config.enable_transactions,
+                    "timestamp": FlextUtilities.generate_timestamp(),
+                }
+            )
         except Exception as e:
             logger.exception("Storage execute failed", error=str(e))
             return FlextResult[dict[str, object]].fail(f"Storage execution failed: {e}")
@@ -573,15 +589,19 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
             # Commit transaction
             await self._commit_transaction(transaction)
         except Exception as e:
-            logger.exception("Transaction failed, rolling back",
-                           transaction_id=transaction.transaction_id,
-                           error=str(e))
+            logger.exception(
+                "Transaction failed, rolling back",
+                transaction_id=transaction.transaction_id,
+                error=str(e),
+            )
             await self._rollback_transaction(transaction)
             raise
         finally:
             self._current_transaction = None
 
-    async def _commit_transaction(self, transaction: TransactionContext[object]) -> None:
+    async def _commit_transaction(
+        self, transaction: TransactionContext[object]
+    ) -> None:
         """Commit transaction operations."""
         for operation, key, value in transaction.operations:
             if operation == "set":
@@ -594,11 +614,15 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 if self._cache:
                     self._cache.delete(key)
 
-    async def _rollback_transaction(self, transaction: TransactionContext[object]) -> None:
+    async def _rollback_transaction(
+        self, transaction: TransactionContext[object]
+    ) -> None:
         """Rollback transaction (simplified - no actual rollback implemented)."""
-        logger.warning("Transaction rollback",
-                      transaction_id=transaction.transaction_id,
-                      operations_count=len(transaction.operations))
+        logger.warning(
+            "Transaction rollback",
+            transaction_id=transaction.transaction_id,
+            operations_count=len(transaction.operations),
+        )
 
     # ==========================================================================
     # REPOSITORY ACCESS
@@ -648,12 +672,38 @@ MemoryCache = FlextApiStorage.MemoryCache
 def create_storage(backend: str = "memory", **kwargs: object) -> FlextApiStorage:
     """Create storage instance with specified backend."""
     backend_enum = FlextApiStorage.Backend(backend)
-    config = FlextApiStorage.Config(backend=backend_enum, **kwargs)  # type: ignore[arg-type]
+
+    # Convert kwargs to proper types for Config
+    config_args: dict[str, object] = {"backend": backend_enum}
+
+    if "connection_string" in kwargs and kwargs["connection_string"] is not None:
+        config_args["connection_string"] = str(kwargs["connection_string"])
+    if "max_connections" in kwargs:
+        config_args["max_connections"] = int(cast("int", kwargs["max_connections"]))
+    if "timeout_seconds" in kwargs:
+        config_args["timeout_seconds"] = float(cast("float", kwargs["timeout_seconds"]))
+    if "enable_caching" in kwargs:
+        config_args["enable_caching"] = bool(kwargs["enable_caching"])
+    if "cache_ttl_seconds" in kwargs:
+        config_args["cache_ttl_seconds"] = int(cast("int", kwargs["cache_ttl_seconds"]))
+    if "enable_transactions" in kwargs:
+        config_args["enable_transactions"] = bool(kwargs["enable_transactions"])
+    if "serialization_format" in kwargs:
+        config_args["serialization_format"] = str(kwargs["serialization_format"])
+    if "file_path" in kwargs and kwargs["file_path"] is not None:
+        config_args["file_path"] = str(kwargs["file_path"])
+    if "namespace" in kwargs:
+        config_args["namespace"] = str(kwargs["namespace"])
+
+    config = FlextApiStorage.Config(**config_args)  # type: ignore[arg-type]
     return FlextApiStorage(config)
 
 
 def create_memory_storage(**kwargs: object) -> FlextApiStorage:
     """Create memory storage instance."""
+    # Ensure we have at least the minimum config required
+    if "namespace" not in kwargs:
+        kwargs["namespace"] = "default"
     return create_storage("memory", **kwargs)
 
 

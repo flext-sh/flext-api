@@ -40,12 +40,12 @@ def example_query_builder() -> None:
         .build()
     )
 
-    # Construir query complexa
+    # Construir query complexa - usando apenas métodos que existem
     qb2 = FlextApiQueryBuilder()  # Nova instância para query complexa
     (
         qb2.equals("department", "engineering")
-        .greater_than("salary", 50000)
-        .equals("active", value=True)
+        .not_equals("salary", 0)  # Usando not_equals que existe, não greater_than
+        .equals("active", True)  # Corrigido: value= não é necessário
         .sort_asc("last_name")
         .sort_desc("hire_date")
         .page(2)
@@ -53,12 +53,12 @@ def example_query_builder() -> None:
         .build()
     )
 
-    # Query com paginação
+    # Query com paginação - usando apenas métodos que existem
     qb3 = FlextApiQueryBuilder()  # Nova instância para query paginada
     (
         qb3.equals("status", "published")
-        .greater_than("views", 1000)
-        .sort_desc("popularity")
+        .not_equals("views", 0)  # Usando not_equals, não greater_than
+        .sort_desc("created_at")  # Campo que existe
         .page(1)  # Primeira página
         .page_size(50)  # 50 itens
         .build()
@@ -66,59 +66,53 @@ def example_query_builder() -> None:
 
 
 def example_response_builder() -> None:
-    """Demonstrate how to use ``FlextApiResponseBuilder``."""
+    """Demonstrate how to use ``FlextApiResponseBuilder`` with real methods."""
     # Response builder
     rb = FlextApiResponseBuilder()
 
-    # Success response
+    # Success response - usando apenas métodos que existem
     (
         rb.success(data={"id": 1, "name": "John"}, message="User created")
-        .metadata({"timestamp": "2025-01-01T00:00:00Z", "request_id": "req-123"})
+        .with_metadata(
+            {"timestamp": "2025-01-01T00:00:00Z", "request_id": "req-123"}
+        )  # with_metadata existe
         .build()
     )
 
     # Error response
     rb2 = FlextApiResponseBuilder()  # Nova instância para error response
     (
-        rb2.error("Validation failed")
-        .metadata({"field_errors": {"email": "Invalid format"}})
+        rb2.error("Validation failed", 400)  # error() precisa de status_code
+        .with_metadata(
+            {"field_errors": {"email": "Invalid format"}}
+        )  # with_metadata existe
         .build()
     )
 
-    # Paginated response
-    rb3 = FlextApiResponseBuilder()  # Nova instância para paginated response
-    (
-        rb3.success(data=[{"id": 1}, {"id": 2}])
-        .pagination(page=1, page_size=10, total=100)
-        .metadata({"query_time": "0.045s"})
-        .build()
-    )
+    # Para paginated response, use PaginatedResponseBuilder ou build_paginated_response()
+    # O ResponseBuilder comum não tem pagination() method
 
 
 def example_factory_functions() -> None:
-    """Demonstrate how to use factory functions."""
-    # Build query using factory function
-    query_dict = {"status": "active", "type": "premium"}
-    # build_query expects list[dict[str, object]]; convert dict to list with object values
-    query_filters: list[dict[str, object]] = [
-        {"field": str(k), "value": v, "operator": "eq"} for k, v in query_dict.items()
-    ]
-    build_query(query_filters)
+    """Demonstrate how to use factory functions with real signatures."""
+    # Build query using factory function - build_query(**kwargs)
+    query = build_query(
+        filters={"status": "active", "type": "premium"}, page=1, page_size=20
+    )
+    print("Query built:", query)
 
-    # Build success response
+    # Build success response - build_success_response(data, message)
     success_data = {"users": [{"id": 1}, {"id": 2}], "count": 2}
-    build_success_response(
-        data=success_data,
-        message="Users retrieved successfully",
-        metadata={"execution_time": "0.123s"},
+    success_response = build_success_response(
+        data=success_data, message="Users retrieved successfully"
     )
+    print("Success response:", success_response)
 
-    # Build error response
-    build_error_response(
-        error="Database connection failed",
-        status_code=503,
-        metadata={"details": {"retry_after": 30}},
+    # Build error response - build_error_response(message, status_code)
+    error_response = build_error_response(
+        message="Database connection failed", status_code=503
     )
+    print("Error response:", error_response)
 
 
 async def example_api_service() -> None:
@@ -167,16 +161,16 @@ async def example_http_client() -> None:
     # Create client
     client = FlextApiClient(config)
 
-    # Start client
-    await client.start()
+    # FlextApiClient não tem métodos start(), stop(), health_check()
+    # Esses métodos não existem na implementação atual
 
-    # Mock HTTP requests (since we don't want real network calls in examples)
-
-    # Health check
-    client.health_check()
-
-    # Stop client
-    await client.stop()
+    try:
+        # Example of actual HTTP request (commented to avoid network calls)
+        # response = await client.get("/test")
+        # print("Response:", response)
+        print("Client created successfully")
+    finally:
+        await client.close()  # Use close() instead of stop()
 
 
 def example_fastapi_app() -> None:
@@ -199,7 +193,7 @@ def example_main_builder() -> None:
     query_builder = builder.for_query()
     (
         query_builder.equals("category", "technology")
-        .greater_than("price", 100)
+        .not_equals("price", 0)  # Usando not_equals, não greater_than
         .sort_desc("rating")
         .page(1)
         .page_size(20)
@@ -210,8 +204,10 @@ def example_main_builder() -> None:
     response_builder = builder.for_response()
     (
         response_builder.success(data={"products": [], "total": 0})
-        .metadata({"search_terms": ["technology", "high-price"]})
-        .pagination(page=1, page_size=20, total=0)
+        .with_metadata(
+            {"search_terms": ["technology", "high-price"]}
+        )  # Corrigido para with_metadata
+        # ResponseBuilder não tem pagination(), usar PaginatedResponseBuilder ou build_paginated_response()
         .build()
     )
 

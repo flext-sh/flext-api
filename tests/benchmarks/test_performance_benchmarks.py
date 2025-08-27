@@ -10,8 +10,6 @@ SPDX-License-Identifier: MIT
 from collections.abc import Callable
 from typing import TypeVar
 
-T = TypeVar("T")
-
 from flext_api import (
     FlextApi,
     FlextApiBuilder,
@@ -22,6 +20,8 @@ from flext_api import (
     build_success_response,
     create_client,
 )
+
+T = TypeVar("T")
 
 
 class TestAPIPerformanceBenchmarks:

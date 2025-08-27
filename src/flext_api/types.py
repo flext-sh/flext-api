@@ -423,7 +423,9 @@ class FlextApiTypes(FlextTypes):
             if cls.BEARER_TOKEN is None:
                 cls.BEARER_TOKEN = FlextApiTypes.FieldCore.create_bearer_token_field()
             if cls.PIPELINE_CONFIG is None:
-                cls.PIPELINE_CONFIG = FlextApiTypes.FieldCore.create_pipeline_config_field()
+                cls.PIPELINE_CONFIG = (
+                    FlextApiTypes.FieldCore.create_pipeline_config_field()
+                )
             if cls.PLUGIN_CONFIG is None:
                 cls.PLUGIN_CONFIG = FlextApiTypes.FieldCore.create_plugin_config_field()
             if cls.USER_ROLE is None:
@@ -433,7 +435,14 @@ class FlextApiTypes(FlextTypes):
             if cls.HTTP_METHOD is None:
                 cls.HTTP_METHOD = FlextApiTypes.FieldCore.create_http_method_field()
             if cls.RESPONSE_FORMAT is None:
-                cls.RESPONSE_FORMAT = FlextApiTypes.FieldCore.create_response_format_field()
+                cls.RESPONSE_FORMAT = (
+                    FlextApiTypes.FieldCore.create_response_format_field()
+                )
+
+        @classmethod
+        def ensure_loaded(cls) -> None:
+            """Public method to ensure lazy-loaded fields are initialized."""
+            cls._ensure_lazy_loaded()
 
     # =============================================================================
     # PUBLIC API METHODS - Single entry point for all functionality
@@ -467,7 +476,7 @@ class FlextApiTypes(FlextTypes):
           Dictionary of field names mapped to their configurations
 
         """
-        cls.Fields._ensure_lazy_loaded()
+        cls.Fields.ensure_loaded()
         result: dict[str, FlextTypes.Core.JsonDict] = {}
 
         # Only include non-None fields
@@ -489,22 +498,24 @@ class FlextApiTypes(FlextTypes):
             result["RESPONSE_FORMAT"] = cls.Fields.RESPONSE_FORMAT
 
         # Add static fields that are never None
-        result.update({
-            "USERNAME": cls.Fields.USERNAME,
-            "EMAIL": cls.Fields.EMAIL,
-            "PASSWORD": cls.Fields.PASSWORD,
-            "PIPELINE_NAME": cls.Fields.PIPELINE_NAME,
-            "PIPELINE_DESCRIPTION": cls.Fields.PIPELINE_DESCRIPTION,
-            "PIPELINE_TIMEOUT": cls.Fields.PIPELINE_TIMEOUT,
-            "PLUGIN_ID": cls.Fields.PLUGIN_ID,
-            "PLUGIN_VERSION": cls.Fields.PLUGIN_VERSION,
-            "PLUGIN_ENABLED": cls.Fields.PLUGIN_ENABLED,
-            "SYSTEM_STATUS": cls.Fields.SYSTEM_STATUS,
-            "LOG_LEVEL": cls.Fields.LOG_LEVEL,
-            "REQUEST_ID": cls.Fields.REQUEST_ID,
-            "CORRELATION_ID": cls.Fields.CORRELATION_ID,
-            "TIMESTAMP": cls.Fields.TIMESTAMP,
-        })
+        result.update(
+            {
+                "USERNAME": cls.Fields.USERNAME,
+                "EMAIL": cls.Fields.EMAIL,
+                "PASSWORD": cls.Fields.PASSWORD,
+                "PIPELINE_NAME": cls.Fields.PIPELINE_NAME,
+                "PIPELINE_DESCRIPTION": cls.Fields.PIPELINE_DESCRIPTION,
+                "PIPELINE_TIMEOUT": cls.Fields.PIPELINE_TIMEOUT,
+                "PLUGIN_ID": cls.Fields.PLUGIN_ID,
+                "PLUGIN_VERSION": cls.Fields.PLUGIN_VERSION,
+                "PLUGIN_ENABLED": cls.Fields.PLUGIN_ENABLED,
+                "SYSTEM_STATUS": cls.Fields.SYSTEM_STATUS,
+                "LOG_LEVEL": cls.Fields.LOG_LEVEL,
+                "REQUEST_ID": cls.Fields.REQUEST_ID,
+                "CORRELATION_ID": cls.Fields.CORRELATION_ID,
+                "TIMESTAMP": cls.Fields.TIMESTAMP,
+            }
+        )
 
         return result
 
@@ -524,7 +535,9 @@ class FlextApiTypes(FlextTypes):
         **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create bearer token field definition."""
-        return cls.FieldCore.create_bearer_token_field(description=description, **kwargs)
+        return cls.FieldCore.create_bearer_token_field(
+            description=description, **kwargs
+        )
 
     @classmethod
     def create_pipeline_config_field(
@@ -533,7 +546,9 @@ class FlextApiTypes(FlextTypes):
         **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create pipeline configuration field definition."""
-        return cls.FieldCore.create_pipeline_config_field(description=description, **kwargs)
+        return cls.FieldCore.create_pipeline_config_field(
+            description=description, **kwargs
+        )
 
     @classmethod
     def create_plugin_config_field(
@@ -542,7 +557,9 @@ class FlextApiTypes(FlextTypes):
         **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create plugin configuration field definition."""
-        return cls.FieldCore.create_plugin_config_field(description=description, **kwargs)
+        return cls.FieldCore.create_plugin_config_field(
+            description=description, **kwargs
+        )
 
     @classmethod
     def create_user_role_field(
@@ -560,7 +577,9 @@ class FlextApiTypes(FlextTypes):
         **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create endpoint path field definition."""
-        return cls.FieldCore.create_endpoint_path_field(description=description, **kwargs)
+        return cls.FieldCore.create_endpoint_path_field(
+            description=description, **kwargs
+        )
 
     @classmethod
     def create_http_method_field(
@@ -578,7 +597,9 @@ class FlextApiTypes(FlextTypes):
         **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create response format field definition."""
-        return cls.FieldCore.create_response_format_field(description=description, **kwargs)
+        return cls.FieldCore.create_response_format_field(
+            description=description, **kwargs
+        )
 
 
 # =============================================================================
@@ -627,7 +648,9 @@ class FlextAPIFieldCore:
         **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create bearer token field definition."""
-        return FlextApiTypes.create_bearer_token_field(description=description, **kwargs)
+        return FlextApiTypes.create_bearer_token_field(
+            description=description, **kwargs
+        )
 
     @classmethod
     def pipeline_config_field(
@@ -636,7 +659,9 @@ class FlextAPIFieldCore:
         **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create pipeline configuration field definition."""
-        return FlextApiTypes.create_pipeline_config_field(description=description, **kwargs)
+        return FlextApiTypes.create_pipeline_config_field(
+            description=description, **kwargs
+        )
 
     @classmethod
     def plugin_config_field(
@@ -645,7 +670,9 @@ class FlextAPIFieldCore:
         **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create plugin configuration field definition."""
-        return FlextApiTypes.create_plugin_config_field(description=description, **kwargs)
+        return FlextApiTypes.create_plugin_config_field(
+            description=description, **kwargs
+        )
 
     @classmethod
     def user_role_field(
@@ -663,7 +690,9 @@ class FlextAPIFieldCore:
         **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create endpoint path field definition."""
-        return FlextApiTypes.create_endpoint_path_field(description=description, **kwargs)
+        return FlextApiTypes.create_endpoint_path_field(
+            description=description, **kwargs
+        )
 
     @classmethod
     def http_method_field(
@@ -681,7 +710,9 @@ class FlextAPIFieldCore:
         **kwargs: object,
     ) -> FlextTypes.Core.JsonDict:
         """Create response format field definition."""
-        return FlextApiTypes.create_response_format_field(description=description, **kwargs)
+        return FlextApiTypes.create_response_format_field(
+            description=description, **kwargs
+        )
 
 
 class FlextAPIFieldsMeta(type):
@@ -689,11 +720,19 @@ class FlextAPIFieldsMeta(type):
 
     def __getattr__(cls, name: str) -> object:
         """Handle attribute access with lazy initialization."""
-        if name in {"API_KEY", "BEARER_TOKEN", "PIPELINE_CONFIG", "PLUGIN_CONFIG",
-                   "USER_ROLE", "ENDPOINT_PATH", "HTTP_METHOD", "RESPONSE_FORMAT"}:
+        if name in {
+            "API_KEY",
+            "BEARER_TOKEN",
+            "PIPELINE_CONFIG",
+            "PLUGIN_CONFIG",
+            "USER_ROLE",
+            "ENDPOINT_PATH",
+            "HTTP_METHOD",
+            "RESPONSE_FORMAT",
+        }:
             # Manually initialize fields if not done already
             if not getattr(cls, "_initialized", False):
-                FlextApiTypes.Fields._ensure_lazy_loaded()
+                FlextApiTypes.Fields.ensure_loaded()
                 # Set class attributes dynamically
                 cls.API_KEY = FlextApiTypes.Fields.API_KEY
                 cls.BEARER_TOKEN = FlextApiTypes.Fields.BEARER_TOKEN
@@ -730,8 +769,8 @@ class FlextAPIFields(metaclass=FlextAPIFieldsMeta):
     @classmethod
     def _ensure_initialized(cls) -> None:
         """Ensure fields are initialized with lazy loading."""
-        if not cls._initialized:
-            FlextApiTypes.Fields._ensure_lazy_loaded()
+        if not cls.is_initialized():
+            FlextApiTypes.Fields.ensure_loaded()
             # Set class attributes dynamically
             cls.API_KEY = FlextApiTypes.Fields.API_KEY
             cls.BEARER_TOKEN = FlextApiTypes.Fields.BEARER_TOKEN
@@ -741,7 +780,17 @@ class FlextAPIFields(metaclass=FlextAPIFieldsMeta):
             cls.ENDPOINT_PATH = FlextApiTypes.Fields.ENDPOINT_PATH
             cls.HTTP_METHOD = FlextApiTypes.Fields.HTTP_METHOD
             cls.RESPONSE_FORMAT = FlextApiTypes.Fields.RESPONSE_FORMAT
-            cls._initialized = True
+            cls.mark_as_initialized()
+
+    @classmethod
+    def is_initialized(cls) -> bool:
+        """Check if fields are initialized."""
+        return getattr(cls, "_initialized", False)
+
+    @classmethod
+    def mark_as_initialized(cls) -> None:
+        """Mark fields as initialized."""
+        cls._initialized = True
 
     def __init_subclass__(cls) -> None:
         """Initialize when class is accessed."""
@@ -753,7 +802,9 @@ class FlextAPIFields(metaclass=FlextAPIFieldsMeta):
         cls._ensure_initialized()
         result = getattr(cls, item)
         if isinstance(result, dict):
-            return result
+            # Cast to the expected JsonDict type
+            typed_result: FlextTypes.Core.JsonDict = result
+            return typed_result
         error_msg = f"Field '{item}' not found or is not a dictionary"
         raise AttributeError(error_msg)
 
@@ -761,16 +812,30 @@ class FlextAPIFields(metaclass=FlextAPIFieldsMeta):
     USERNAME: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.USERNAME
     EMAIL: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.EMAIL
     PASSWORD: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.PASSWORD
-    PIPELINE_NAME: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.PIPELINE_NAME
-    PIPELINE_DESCRIPTION: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.PIPELINE_DESCRIPTION
-    PIPELINE_TIMEOUT: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.PIPELINE_TIMEOUT
+    PIPELINE_NAME: ClassVar[FlextTypes.Core.JsonDict] = (
+        FlextApiTypes.Fields.PIPELINE_NAME
+    )
+    PIPELINE_DESCRIPTION: ClassVar[FlextTypes.Core.JsonDict] = (
+        FlextApiTypes.Fields.PIPELINE_DESCRIPTION
+    )
+    PIPELINE_TIMEOUT: ClassVar[FlextTypes.Core.JsonDict] = (
+        FlextApiTypes.Fields.PIPELINE_TIMEOUT
+    )
     PLUGIN_ID: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.PLUGIN_ID
-    PLUGIN_VERSION: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.PLUGIN_VERSION
-    PLUGIN_ENABLED: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.PLUGIN_ENABLED
-    SYSTEM_STATUS: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.SYSTEM_STATUS
+    PLUGIN_VERSION: ClassVar[FlextTypes.Core.JsonDict] = (
+        FlextApiTypes.Fields.PLUGIN_VERSION
+    )
+    PLUGIN_ENABLED: ClassVar[FlextTypes.Core.JsonDict] = (
+        FlextApiTypes.Fields.PLUGIN_ENABLED
+    )
+    SYSTEM_STATUS: ClassVar[FlextTypes.Core.JsonDict] = (
+        FlextApiTypes.Fields.SYSTEM_STATUS
+    )
     LOG_LEVEL: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.LOG_LEVEL
     REQUEST_ID: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.REQUEST_ID
-    CORRELATION_ID: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.CORRELATION_ID
+    CORRELATION_ID: ClassVar[FlextTypes.Core.JsonDict] = (
+        FlextApiTypes.Fields.CORRELATION_ID
+    )
     TIMESTAMP: ClassVar[FlextTypes.Core.JsonDict] = FlextApiTypes.Fields.TIMESTAMP
 
 

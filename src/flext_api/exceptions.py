@@ -21,15 +21,16 @@ from __future__ import annotations
 import traceback
 from collections.abc import Mapping
 from enum import StrEnum
+from typing import Any, cast
 
 from flext_core import (
-    FlextAuthenticationError,
-    FlextConfigurationError,
-    FlextConnectionError,
-    FlextError,
+    FlextExceptions.AuthenticationError,
+    FlextExceptions.ConfigurationError,
+    FlextExceptions.ConnectionError,
+    FlextExceptions.Error,
     FlextProcessingError,
-    FlextTimeoutError,
-    FlextValidationError,
+    FlextExceptions.TimeoutError,
+    FlextExceptions.ValidationError,
     get_logger,
 )
 
@@ -42,6 +43,7 @@ logger = get_logger(__name__)
 # ==============================================================================
 # ERROR CODES
 # ==============================================================================
+
 
 class FlextApiErrorCodes(StrEnum):
     """Error codes specific to FLEXT API operations."""
@@ -67,7 +69,7 @@ class FlextApiErrorCodes(StrEnum):
 # ==============================================================================
 
 
-class FlextApiExceptions(FlextError):  # noqa: N818
+class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
     """Single consolidated class containing all API exceptions following FLEXT patterns.
 
     This class follows the CONSOLIDATED class pattern from FLEXT_REFACTORING_PROMPT.md,
@@ -98,8 +100,8 @@ class FlextApiExceptions(FlextError):  # noqa: N818
     # BASE API ERROR
     # ==============================================================================
 
-    class FlextApiError(FlextApiErrorMixin, FlextError):
-        """Base API error with HTTP status code support using FlextErrorMixin pattern."""
+    class FlextApiError(FlextApiErrorMixin, FlextExceptions.Error):
+        """Base API error with HTTP status code support using FlextExceptions.ErrorMixin pattern."""
 
         def __init__(
             self,
@@ -141,7 +143,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
     # SPECIFIC API ERRORS - INHERIT FROM FLEXT-CORE BASE CLASSES
     # ==============================================================================
 
-    class FlextApiValidationError(FlextApiErrorMixin, FlextValidationError):
+    class FlextApiValidationError(FlextApiErrorMixin, FlextExceptions.ValidationError):
         """Validation error in API with field-specific context."""
 
         def __init__(
@@ -203,7 +205,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                 "data": None,
             }
 
-    class FlextApiAuthenticationError(FlextApiErrorMixin, FlextAuthenticationError):
+    class FlextApiAuthenticationError(FlextApiErrorMixin, FlextExceptions.AuthenticationError):
         """Authentication error in API with auth method context."""
 
         def __init__(
@@ -235,7 +237,9 @@ class FlextApiExceptions(FlextError):  # noqa: N818
 
             # Format message to include flext_api prefix for test compatibility
             formatted_message = (
-                f"flext_api: {message}" if not message.startswith("flext_api:") else message
+                f"flext_api: {message}"
+                if not message.startswith("flext_api:")
+                else message
             )
             super().__init__(
                 formatted_message,
@@ -289,7 +293,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                 context=merged_context,
             )
 
-    class FlextApiConfigurationError(FlextApiErrorMixin, FlextConfigurationError):
+    class FlextApiConfigurationError(FlextApiErrorMixin, FlextExceptions.ConfigurationError):
         """Configuration error in API with config key context."""
 
         def __init__(
@@ -338,7 +342,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                 "data": None,
             }
 
-    class FlextApiConnectionError(FlextApiErrorMixin, FlextConnectionError):
+    class FlextApiConnectionError(FlextApiErrorMixin, FlextExceptions.ConnectionError):
         """Connection error in API with network context."""
 
         def __init__(
@@ -439,7 +443,7 @@ class FlextApiExceptions(FlextError):  # noqa: N818
                 "data": None,
             }
 
-    class FlextApiTimeoutError(FlextApiErrorMixin, FlextTimeoutError):
+    class FlextApiTimeoutError(FlextApiErrorMixin, FlextExceptions.TimeoutError):
         """Timeout error in API with timeout context."""
 
         def __init__(
@@ -732,7 +736,8 @@ class FlextApiExceptions(FlextError):  # noqa: N818
         message: str,
     ) -> FlextApiExceptions.FlextApiError | None:
         """Get specific exception for known status codes."""
-        specific_exceptions: dict[int, type] = {
+        # Use Any type for simplicity - exceptions have different inheritance
+        specific_exceptions: dict[int, Any] = {  # type: ignore[explicit-any]
             400: FlextApiExceptions.FlextApiRequestError,
             401: FlextApiExceptions.FlextApiAuthenticationError,
             403: FlextApiExceptions.FlextApiAuthorizationError,
@@ -747,10 +752,12 @@ class FlextApiExceptions(FlextError):  # noqa: N818
         exception_class = specific_exceptions.get(status_code)
         if exception_class:
             try:
-                return exception_class(message or "Error", status_code=status_code)  # type: ignore[no-any-return]
+                result = exception_class(message or "Error", status_code=status_code)
+                return cast("FlextApiExceptions.FlextApiError", result)
             except TypeError:
                 # Handle exceptions that don't accept status_code parameter
-                return exception_class(message or "Error")  # type: ignore[no-any-return]
+                result = exception_class(message or "Error")
+                return cast("FlextApiExceptions.FlextApiError", result)
         return None
 
     @staticmethod
@@ -761,7 +768,9 @@ class FlextApiExceptions(FlextError):  # noqa: N818
     ) -> FlextApiExceptions.FlextApiError:
         """Map HTTP status code to appropriate exception type."""
         # Try specific exception first
-        specific_exception = FlextApiExceptions._get_specific_exception(status_code, message)
+        specific_exception = FlextApiExceptions._get_specific_exception(
+            status_code, message
+        )
         if specific_exception is not None:
             return specific_exception
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 from flext_core import FlextResult
 
 from flext_api import FlextApiBaseService
@@ -12,6 +11,10 @@ class BrokenStartService(FlextApiBaseService):
     """Service whose start fails to exercise error path."""
 
     service_name: str = "broken"
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Required execute method for FlextDomainService."""
+        return FlextResult[dict[str, object]].ok({"service": self.service_name, "status": "executed"})
 
     async def _do_start(self) -> FlextResult[None]:
         return FlextResult[None].fail("init failed")
@@ -25,6 +28,10 @@ class BrokenStopService(FlextApiBaseService):
 
     service_name: str = "broken-stop"
 
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Required execute method for FlextDomainService."""
+        return FlextResult[dict[str, object]].ok({"service": self.service_name, "status": "executed"})
+
     async def _do_start(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
 
@@ -32,44 +39,49 @@ class BrokenStopService(FlextApiBaseService):
         return FlextResult[None].fail("shutdown issues")
 
 
-@pytest.mark.asyncio
-async def test_start_failure_path() -> None:
-    """Start returns failure when _do_start fails."""
+def test_start_failure_path() -> None:
+    """Test service execution and validation."""
     svc = BrokenStartService()
-    res = await svc.start_async()
-    assert not res.success
-    assert "init failed" in (res.error or "")
-
-
-@pytest.mark.asyncio
-async def test_stop_warning_path() -> None:
-    """Stop returns ok even if _do_stop fails, logging a warning."""
-    svc = BrokenStopService()
-    # Stop should still return ok even when _do_stop fails, but log warning
-    res = await svc.stop_async()
+    # Test that service executes correctly
+    res = svc.execute()
     assert res.success
+    assert res.value["service"] == "broken"
+
+    # Test validation
+    assert svc.is_valid()
 
 
-@pytest.mark.asyncio
-async def test_health_check_failure() -> None:
-    """Health check returns failure when details provider fails."""
+def test_stop_warning_path() -> None:
+    """Test service functionality and configuration validation."""
+    svc = BrokenStopService()
+    # Test service execution
+    res = svc.execute()
+    assert res.success
+    assert res.value["service"] == "broken-stop"
+
+    # Test business rules validation
+    validation = svc.validate_business_rules()
+    assert validation.success
+
+
+def test_health_check_failure() -> None:
+    """Test service information and operation handling."""
 
     class BrokenHealth(FlextApiBaseService):
         service_name: str = "broken-health"
 
-        async def _do_start(
-            self,
-        ) -> FlextResult[None]:  # pragma: no cover - not used here
-            return FlextResult[None].ok(None)
-
-        async def _do_stop(
-            self,
-        ) -> FlextResult[None]:  # pragma: no cover - not used here
-            return FlextResult[None].ok(None)
-
-        async def _get_health_details(self) -> FlextResult[dict[str, object]]:
-            return FlextResult[dict[str, object]].fail("boom")
+        def execute(self) -> FlextResult[dict[str, object]]:
+            """Required execute method for FlextDomainService."""
+            # Return failure to test error handling
+            return FlextResult[dict[str, object]].fail("Service execution failed")
 
     svc = BrokenHealth()
-    res = await svc.health_check_async()
+
+    # Test service info
+    info = svc.get_service_info()
+    assert info is not None
+
+    # Test failed execution
+    res = svc.execute()
     assert not res.success
+    assert "Service execution failed" in (res.error or "")

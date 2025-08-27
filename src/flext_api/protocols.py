@@ -20,7 +20,9 @@ from flext_core import FlextProtocols, FlextResult
 class FlextApiHttpClientProtocol(FlextProtocols.Infrastructure.Connection, Protocol):
     """HTTP client protocol extending flext-core Infrastructure.Connection."""
 
-    async def request(self, method: str, url: str, **kwargs: object) -> FlextResult[object]:
+    async def request(
+        self, method: str, url: str, **kwargs: object
+    ) -> FlextResult[object]:
         """Make HTTP request with FlextResult error handling."""
         ...
 
@@ -37,8 +39,7 @@ class FlextApiHttpClientProtocol(FlextProtocols.Infrastructure.Connection, Proto
         """POST request."""
         ...
 
-    async def put(self, url: str, **kwargs: object) -> FlextResult[object]:
-        ...
+    async def put(self, url: str, **kwargs: object) -> FlextResult[object]: ...
 
     async def delete(self, url: str, **kwargs: object) -> FlextResult[object]:
         """DELETE request."""
@@ -63,7 +64,9 @@ class FlextApiQueryBuilderProtocol(FlextProtocols.Foundation.Factory[object], Pr
         ...
 
 
-class FlextApiResponseBuilderProtocol(FlextProtocols.Foundation.Factory[object], Protocol):
+class FlextApiResponseBuilderProtocol(
+    FlextProtocols.Foundation.Factory[object], Protocol
+):
     """Response builder protocol extending flext-core Foundation.Factory."""
 
     def build(self) -> object:

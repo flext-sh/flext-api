@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from flext_api.storage import FileStorageBackend, MemoryStorageBackend, StorageConfig
+from flext_api.storage import FileStorageBackend, MemoryStorageBackend
 
 
 @pytest.fixture
@@ -24,20 +24,22 @@ async def file_storage_backend(
     temp_storage_path: Path,
 ) -> AsyncGenerator[FileStorageBackend[object]]:
     """Provide configured file storage backend for testing."""
-    config = StorageConfig(file_path=str(temp_storage_path))
-    backend = FileStorageBackend[object](config)
+    # FileBackend aceita string como parâmetro, não Config
+    backend = FileStorageBackend[object](str(temp_storage_path))
     try:
         yield backend
     finally:
-        await backend.close()
+        # Backends não têm método close(), remove a chamada
+        pass
 
 
 @pytest.fixture
 async def memory_storage_backend() -> AsyncGenerator[MemoryStorageBackend[object]]:
     """Provide memory storage backend for testing."""
-    config = StorageConfig()
-    backend = MemoryStorageBackend[object](config)
+    # MemoryBackend não aceita parâmetros no __init__
+    backend = MemoryStorageBackend[object]()
     try:
         yield backend
     finally:
-        await backend.close()
+        # Backends não têm método close(), remove a chamada
+        pass

@@ -15,13 +15,13 @@ from __future__ import annotations
 from importlib import import_module
 
 from flext_core.exceptions import (
-    FlextAuthenticationError,
-    FlextConfigurationError,
-    FlextConnectionError,
-    FlextError,
+    FlextExceptions.AuthenticationError,
+    FlextExceptions.ConfigurationError,
+    FlextExceptions.ConnectionError,
+    FlextExceptions.Error,
     FlextProcessingError,
-    FlextTimeoutError,
-    FlextValidationError,
+    FlextExceptions.TimeoutError,
+    FlextExceptions.ValidationError,
 )
 
 from flext_api import (
@@ -48,7 +48,7 @@ class TestFlextApiError:
         error = FlextApiError("Test error")
 
         assert str(error) == "[FLEXT_API_ERROR] Test error"
-        assert isinstance(error, FlextError)
+        assert isinstance(error, FlextExceptions.Error)
         assert error.error_code == "FLEXT_API_ERROR"
 
     def test_creation_with_endpoint(self) -> None:
@@ -97,7 +97,7 @@ class TestFlextApiValidationError:
         error = FlextApiValidationError("Invalid input")
 
         assert str(error) == "[FLEXT_3001] Invalid input"
-        assert isinstance(error, FlextValidationError)
+        assert isinstance(error, FlextExceptions.ValidationError)
 
     def test_creation_with_field_and_value(self) -> None:
         """Test validation error with field and value context."""
@@ -155,7 +155,7 @@ class TestFlextApiAuthenticationError:
         error = FlextApiAuthenticationError("Login failed")
 
         assert str(error) == "[AUTH_ERROR] flext_api: Login failed"
-        assert isinstance(error, FlextAuthenticationError)
+        assert isinstance(error, FlextExceptions.AuthenticationError)
 
     def test_creation_with_auth_method(self) -> None:
         """Test authentication error with auth method context."""
@@ -200,7 +200,7 @@ class TestFlextApiConfigurationError:
         error = FlextApiConfigurationError("Invalid config")
 
         assert str(error) == "[CONFIG_ERROR] Invalid config"
-        assert isinstance(error, FlextConfigurationError)
+        assert isinstance(error, FlextExceptions.ConfigurationError)
 
     def test_creation_with_config_key(self) -> None:
         """Test configuration error with config key context."""
@@ -253,7 +253,7 @@ class TestFlextApiConnectionError:
         error = FlextApiConnectionError("Connection refused")
 
         assert str(error) == "[FLEXT_2001] Connection refused"
-        assert isinstance(error, FlextConnectionError)
+        assert isinstance(error, FlextExceptions.ConnectionError)
 
     def test_creation_with_host_and_port(self) -> None:
         """Test connection error with host and port context."""
@@ -359,7 +359,7 @@ class TestFlextApiTimeoutError:
         error = FlextApiTimeoutError("Request timed out")
 
         assert str(error) == "[FLEXT_2002] Request timed out"
-        assert isinstance(error, FlextTimeoutError)
+        assert isinstance(error, FlextExceptions.TimeoutError)
 
     def test_creation_with_endpoint_and_timeout(self) -> None:
         """Test timeout error with endpoint and timeout context."""
@@ -659,56 +659,56 @@ class TestExceptionInheritance:
     """Test exception inheritance hierarchy."""
 
     def test_flext_api_error_hierarchy(self) -> None:
-        """Test FlextApiError inherits from FlextError."""
+        """Test FlextApiError inherits from FlextExceptions.Error."""
         error = FlextApiError("Test")
 
-        assert isinstance(error, FlextError)
+        assert isinstance(error, FlextExceptions.Error)
         assert isinstance(error, Exception)
 
     def test_all_specific_errors_inherit_from_correct_base(self) -> None:
         """Test all specific errors inherit from correct flext-core exceptions."""
-        # Test inheritance chain - note: not all flext-core exceptions inherit from FlextError
+        # Test inheritance chain - note: not all flext-core exceptions inherit from FlextExceptions.Error
         validation_error = FlextApiValidationError("Test")
-        assert isinstance(validation_error, FlextValidationError)
-        # FlextValidationError inherits from FlextErrorMixin + ValueError, not FlextError
+        assert isinstance(validation_error, FlextExceptions.ValidationError)
+        # FlextExceptions.ValidationError inherits from FlextExceptions.ErrorMixin + ValueError, not FlextExceptions.Error
 
         auth_error = FlextApiAuthenticationError("Test")
-        assert isinstance(auth_error, FlextAuthenticationError)
-        # FlextAuthenticationError inherits from FlextErrorMixin + PermissionError, not FlextError
+        assert isinstance(auth_error, FlextExceptions.AuthenticationError)
+        # FlextExceptions.AuthenticationError inherits from FlextExceptions.ErrorMixin + PermissionError, not FlextExceptions.Error
 
         config_error = FlextApiConfigurationError("Test")
-        assert isinstance(config_error, FlextConfigurationError)
-        # FlextConfigurationError inherits from FlextErrorMixin + ValueError, not FlextError
+        assert isinstance(config_error, FlextExceptions.ConfigurationError)
+        # FlextExceptions.ConfigurationError inherits from FlextExceptions.ErrorMixin + ValueError, not FlextExceptions.Error
 
         connection_error = FlextApiConnectionError("Test")
-        assert isinstance(connection_error, FlextConnectionError)
-        # FlextConnectionError inherits from FlextErrorMixin + ConnectionError, not FlextError
+        assert isinstance(connection_error, FlextExceptions.ConnectionError)
+        # FlextExceptions.ConnectionError inherits from FlextExceptions.ErrorMixin + ConnectionError, not FlextExceptions.Error
 
         processing_error = FlextApiProcessingError("Test")
         assert isinstance(processing_error, FlextProcessingError)
-        # FlextProcessingError inherits from FlextErrorMixin + RuntimeError, not FlextError
+        # FlextProcessingError inherits from FlextExceptions.ErrorMixin + RuntimeError, not FlextExceptions.Error
 
         timeout_error = FlextApiTimeoutError("Test")
-        assert isinstance(timeout_error, FlextTimeoutError)
-        # FlextTimeoutError inherits from FlextErrorMixin + TimeoutError, not FlextError
+        assert isinstance(timeout_error, FlextExceptions.TimeoutError)
+        # FlextExceptions.TimeoutError inherits from FlextExceptions.ErrorMixin + TimeoutError, not FlextExceptions.Error
 
     def test_api_specific_errors_inherit_from_api_error(self) -> None:
         """Test API-specific errors inherit from FlextApiError."""
         request_error = FlextApiRequestError("Test")
         assert isinstance(request_error, FlextApiError)
-        assert isinstance(request_error, FlextError)
+        assert isinstance(request_error, FlextExceptions.Error)
 
         response_error = FlextApiResponseError("Test")
         assert isinstance(response_error, FlextApiError)
-        assert isinstance(response_error, FlextError)
+        assert isinstance(response_error, FlextExceptions.Error)
 
         storage_error = FlextApiStorageError("Test")
         assert isinstance(storage_error, FlextApiError)
-        assert isinstance(storage_error, FlextError)
+        assert isinstance(storage_error, FlextExceptions.Error)
 
         builder_error = FlextApiBuilderError("Test")
         assert isinstance(builder_error, FlextApiError)
-        assert isinstance(builder_error, FlextError)
+        assert isinstance(builder_error, FlextExceptions.Error)
 
 
 class TestExceptionModuleExports:

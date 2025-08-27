@@ -19,10 +19,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
-import time
+
+# Time operations now use FlextUtilities.TimeUtils - no direct time import needed
 from typing import TypeVar, cast
 
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextUtilities, get_logger
 
 logger = get_logger(__name__)
 
@@ -131,7 +132,7 @@ class FlextApiPlugins:
         async def process_request(self, request: object) -> FlextResult[object]:
             """Check cache for cached response."""
             self._stats["calls"] += 1
-            start_time = time.time()
+            start_time = FlextUtilities.generate_timestamp()
 
             try:
                 # Generate cache key from request
@@ -141,16 +142,16 @@ class FlextApiPlugins:
                 if cache_key in self._cache:
                     cached_entry = self._cache[cache_key]
                     cached_time = cast("float", cached_entry.get("timestamp", 0.0))
-                    current_time = time.time()
+                    current_time = FlextUtilities.generate_timestamp()
 
                     if current_time - cached_time < self.ttl:
                         self._stats["successes"] += 1
-                        self._stats["total_time"] += time.time() - start_time
+                        self._stats["total_time"] += FlextUtilities.TimeUtils.get_elapsed_time(start_time)
                         logger.debug("Cache hit", cache_key=cache_key)
                         return FlextResult[object].ok(cached_entry.get("response"))
 
                 # Cache miss or expired - proceed with request
-                self._stats["total_time"] += time.time() - start_time
+                self._stats["total_time"] += FlextUtilities.TimeUtils.get_elapsed_time(start_time)
                 return FlextResult[object].ok(request)
 
             except Exception as e:
@@ -166,16 +167,16 @@ class FlextApiPlugins:
                     # Remove oldest entries
                     sorted_cache = sorted(
                         self._cache.items(),
-                        key=lambda x: cast("float", x[1].get("timestamp", 0.0))
+                        key=lambda x: cast("float", x[1].get("timestamp", 0.0)),
                     )
-                    for key, _ in sorted_cache[:len(self._cache) // 2]:
+                    for key, _ in sorted_cache[: len(self._cache) // 2]:
                         del self._cache[key]
 
                 # Cache the response
                 cache_key = str(hash(str(response)))
                 self._cache[cache_key] = {
                     "response": response,
-                    "timestamp": time.time(),
+                    "timestamp": FlextUtilities.generate_timestamp(),
                 }
 
                 logger.debug("Response cached", cache_key=cache_key)

@@ -1,36 +1,65 @@
-"""FLEXT API utility functions and classes.
+"""FLEXT API Utilities - EXTENDING FlextUtilities from flext-core.
 
-Provides utility classes and functions following SOLID principles
-and flext-core patterns for common operations.
+Provides API-specific utility extensions while inheriting ALL functionality
+from FlextUtilities. Follows the FLEXT pattern of creating a single
+FlextApi[Module] class that extends the flext-core equivalent.
+
+Extensions include:
+- HTTP/JSON response parsing
+- API client configuration validation
+- Response data processing
+- Type-safe data extraction for API operations
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-import json
+# JSON operations use FlextUtilities.ProcessingUtils - no direct json import needed
 from typing import cast
 
-import aiohttp
+import aiohttp  # HTTP client specific - not available in core utilities
 from flext_core import FlextResult, FlextUtilities, get_logger
 
 logger = get_logger(__name__)
 
 
 class FlextApiUtilities(FlextUtilities):
-    """Main API utilities class inheriting from FlextUtilities with API-specific extensions.
+    """CONSOLIDATED API utilities class extending FlextUtilities.
 
-    This class follows the FLEXT pattern of having a single Flext[Area][Module] class
-    that inherits from the equivalent FlextCore class and provides all functionality
-    through internal method delegation.
+    Follows FLEXT architectural pattern:
+    - INHERITS ALL functionality from flext-core FlextUtilities
+    - EXTENDS with API-specific utilities (HTTP, JSON, client validation)
+    - SINGLE consolidated class per module pattern
+    - Uses FlextResult for all operations that can fail
+    - Provides type-safe data extraction for API operations
 
-    Inherits ALL FlextUtilities functionality and extends with API-specific utilities:
-    - JSON response parsing
-    - HTTP client configuration validation
-    - Response data processing
-    - Type-safe data extraction
+    INHERITED FEATURES from FlextUtilities:
+    - ID generation (generate_uuid, generate_entity_id, etc.)
+    - Time operations (generate_timestamp, generate_iso_timestamp, etc.)
+    - Text processing (truncate, clean_text, mask_sensitive, etc.)
+    - Type conversions (safe_int, safe_float, safe_str, to_bool)
+    - Type guards (is_string, is_email, is_uuid, is_url, etc.)
+    - Performance tracking (@track_performance decorator)
+    - JSON operations (safe_json_parse, safe_json_stringify)
+    - Result utilities (chain_results, first_success, etc.)
+    - LDAP converters (safe_convert_value_to_str, etc.)
+    - Factory patterns (SimpleFactory, SimpleBuilder)
+
+    EXTENDED FEATURES for flext-api:
+    - HTTP response parsing with type safety
+    - API client configuration validation
+    - Response data processing for REST APIs
+    - Type-safe data extraction from complex JSON structures
     """
 
     # =============================================================================
     # API-SPECIFIC UTILITIES - Extensions to FlextUtilities
+    # =============================================================================
+
+    # =============================================================================
+    # API-SPECIFIC EXTENSIONS to FlextUtilities
     # =============================================================================
 
     @classmethod
@@ -40,7 +69,15 @@ class FlextApiUtilities(FlextUtilities):
     ) -> dict[str, object] | list[object] | str | int | float | bool | None:
         """Parse JSON response data with type safety.
 
-        Extracts complex parsing logic to reduce cyclomatic complexity.
+        Uses inherited ProcessingUtils.safe_json_parse for base JSON operations
+        and extends with API-specific response data parsing logic.
+
+        Args:
+            json_data: Raw JSON data from HTTP response
+
+        Returns:
+            Parsed and type-safe JSON data suitable for API responses
+
         """
         if isinstance(json_data, dict):
             # Type-safe dict processing with explicit casting
@@ -81,7 +118,7 @@ class FlextApiUtilities(FlextUtilities):
         Extracts fallback parsing logic to reduce cyclomatic complexity.
         """
         try:
-            parsed_data: object = json.loads(text_data)
+            parsed_data = FlextUtilities.ProcessingUtils.safe_json_parse(text_data)
             if isinstance(parsed_data, dict):
                 # Cast to specific types for PyRight type inference
                 dict_data = cast("dict[str, object]", parsed_data)
@@ -114,7 +151,7 @@ class FlextApiUtilities(FlextUtilities):
         Extracts final JSON parsing logic to reduce cyclomatic complexity.
         """
         try:
-            fallback_parsed_data: object = json.loads(text_trim)
+            fallback_parsed_data = FlextUtilities.ProcessingUtils.safe_json_parse(text_trim)
             if isinstance(fallback_parsed_data, dict):
                 # Cast to specific types for PyRight type inference
                 dict_data = cast("dict[str, object]", fallback_parsed_data)
@@ -194,7 +231,14 @@ class FlextApiUtilities(FlextUtilities):
 
         # Apply defaults for missing values, validating headers type
         headers_raw = config.get("headers", {})
-        headers: dict[str, str] = headers_raw if isinstance(headers_raw, dict) else {}
+        # Type-safe headers validation using cast
+        headers: dict[str, str]
+        if isinstance(headers_raw, dict):
+            # Cast to dict with unknown values then convert safely
+            unknown_dict = cast("dict[str, object]", headers_raw)
+            headers = {k: str(v) for k, v in unknown_dict.items() if v is not None}
+        else:
+            headers = {}
 
         validated_config: dict[str, object] = {
             "base_url": config.get("base_url", ""),

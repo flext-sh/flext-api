@@ -18,10 +18,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import argparse
-import datetime
+
+# Datetime operations now use FlextUtilities.generate_iso_timestamp() - no direct datetime import needed
 import inspect
 import sys
-import uuid
+
+# UUID generation now use FlextUtilities.generate_uuid() - no direct uuid import needed
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from typing import TypedDict, cast, override
@@ -31,7 +33,13 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
-from flext_core import FlextConstants, FlextDomainService, FlextResult, get_logger
+from flext_core import (
+    FlextConstants,
+    FlextDomainService,
+    FlextResult,
+    FlextUtilities,
+    get_logger,
+)
 
 from flext_api.config import FlextApiSettings, create_api_settings
 from flext_api.exceptions import FlextApiError, create_error_response
@@ -107,11 +115,12 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
             # Default CORS origins for development - derive from core Platform constants
             try:
                 platform_urls = getattr(FlextConstants.Platform, "ALLOWED_HOSTS", None)
-                return (
-                    platform_urls
-                    if isinstance(platform_urls, list)
-                    else ["http://localhost:3000"]
-                )
+                if isinstance(platform_urls, list):
+                    # Cast to expected type and filter string items
+                    urls_list = cast("list[object]", platform_urls)
+                    typed_urls = [item for item in urls_list if isinstance(item, str)]
+                    return typed_urls or ["http://localhost:3000"]
+                return ["http://localhost:3000"]
             except (AttributeError, TypeError):
                 return ["http://localhost:3000"]
 
@@ -130,7 +139,7 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
 
         def _get_current_timestamp(self) -> str:
             """Get current UTC timestamp in ISO format (DRY pattern)."""
-            return datetime.datetime.now(datetime.UTC).isoformat()
+            return FlextUtilities.generate_iso_timestamp()
 
         def _build_base_health_data(self) -> dict[str, object]:
             """Build base health data structure."""
@@ -168,7 +177,9 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
                 try:
                     # Simple storage health check
                     storage_result = await app.state.storage.get("__health_check__")
-                    services = cast("dict[str, object]", health_data.get("services", {}))
+                    services = cast(
+                        "dict[str, object]", health_data.get("services", {})
+                    )
                     services["storage"] = {
                         "status": "healthy" if storage_result.success else "degraded",
                         "backend": getattr(
@@ -176,7 +187,9 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
                         ),
                     }
                 except Exception as e:
-                    services = cast("dict[str, object]", health_data.get("services", {}))
+                    services = cast(
+                        "dict[str, object]", health_data.get("services", {})
+                    )
                     services["storage"] = {
                         "status": "unhealthy",
                         "error": str(e),
@@ -216,7 +229,7 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
             }
         )
 
-    async def lifespan(self, app: FastAPI) -> AsyncGenerator[None, None]:
+    async def lifespan(self, app: FastAPI) -> AsyncGenerator[None]:
         """Application lifespan manager."""
         # Startup
         logger.info("Starting FLEXT API application")
@@ -244,12 +257,15 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
         if config is None:
             config = self._config
 
+        # Use the lifespan method directly since it's already an AsyncGenerator
+        lifespan_func = self.lifespan
+
         # Create FastAPI app with lifespan
         app = FastAPI(
             title="FLEXT API",
             description="Enterprise-grade distributed data integration platform",
             version=config.get_version(),
-            lifespan=self.lifespan,  # type: ignore[arg-type]
+            lifespan=lifespan_func,  # type: ignore[arg-type]
             debug=config.settings.debug if config.settings else True,
         )
 
@@ -276,31 +292,31 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
         """Setup health check endpoints."""
 
         @app.get("/health")
-        async def health_endpoint() -> dict[str, object]:
+        async def health_endpoint() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
             """Health check endpoint."""
             return await self._health_checker.get_health_status(app)
 
         @app.get("/health/ready")
-        async def readiness_endpoint() -> dict[str, object]:
+        async def readiness_endpoint() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
             """Readiness check endpoint."""
             return {
                 "status": "ready",
-                "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+                "timestamp": FlextUtilities.generate_iso_timestamp(),
             }
 
         @app.get("/health/live")
-        async def liveness_endpoint() -> dict[str, object]:
+        async def liveness_endpoint() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
             """Liveness check endpoint."""
             return {
                 "status": "alive",
-                "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+                "timestamp": FlextUtilities.generate_iso_timestamp(),
             }
 
     def _setup_error_handlers(self, app: FastAPI) -> None:
         """Setup global error handlers."""
 
         @app.exception_handler(FlextApiError)
-        async def flext_api_error_handler(
+        async def flext_api_error_handler(  # pyright: ignore[reportUnusedFunction]
             request: Request, exc: FlextApiError
         ) -> JSONResponse:
             """Handle FLEXT API errors."""
@@ -312,11 +328,11 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
             )
 
         @app.exception_handler(Exception)
-        async def generic_error_handler(
+        async def generic_error_handler(  # pyright: ignore[reportUnusedFunction]
             request: Request, exc: Exception
         ) -> JSONResponse:
             """Handle unexpected errors."""
-            error_id = str(uuid.uuid4())
+            error_id = FlextUtilities.generate_uuid()
             logger.error(
                 f"Unexpected error [{error_id}]: {exc}",
                 extra={"path": request.url.path, "error_id": error_id},
@@ -456,7 +472,7 @@ async def add_request_id_middleware(
     call_next: Callable[[Request], object],
 ) -> JSONResponse | object:
     """Add request ID to all requests for tracing."""
-    request_id = str(uuid.uuid4())
+    request_id = FlextUtilities.generate_uuid()
 
     # Add request ID to request state
     request.state.request_id = request_id
@@ -522,7 +538,7 @@ async def error_handler_middleware(
             "error": "INTERNAL_SERVER_ERROR",
             "data": None,
             "message": "An unexpected error occurred",
-            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            "timestamp": FlextUtilities.generate_iso_timestamp(),
         }
 
         return JSONResponse(
@@ -538,7 +554,7 @@ async def error_handler_middleware(
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Application lifespan manager."""
     # Startup
     logger.info("Starting FLEXT API application")
@@ -576,26 +592,28 @@ def setup_health_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
     health_checker = FlextApiHealthChecker(config)
 
     @app.get("/health", tags=["Health"])
-    async def health_check() -> dict[str, object]:
+    async def health_check() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
         """Comprehensive health check endpoint."""
         return await health_checker.get_health_status(app)
 
     @app.get("/health/live", tags=["Health"])
-    async def liveness_check() -> dict[str, object]:
+    async def liveness_check() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
         """Liveness probe for Kubernetes."""
         return {"status": "healthy", "service": "flext-api"}  # Simple liveness check
 
     @app.get("/health/ready", tags=["Health"])
-    async def readiness_check() -> dict[str, object]:
+    async def readiness_check() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
         """Readiness probe for Kubernetes."""
-        return await health_checker.get_health_status(app)  # Use comprehensive health check for readiness
+        return await health_checker.get_health_status(
+            app
+        )  # Use comprehensive health check for readiness
 
 
 def setup_api_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
     """Set up main API endpoints."""
 
     @app.get("/", tags=["Root"])
-    async def root() -> dict[str, object]:
+    async def root() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
         """Root endpoint with API information."""
         return {
             "name": "FLEXT API",
@@ -609,7 +627,7 @@ def setup_api_endpoints(app: FastAPI, config: FlextApiAppConfig) -> None:
         }
 
     @app.get("/info", tags=["Info"])
-    async def api_info() -> dict[str, object]:
+    async def api_info() -> dict[str, object]:  # pyright: ignore[reportUnusedFunction]
         """Detailed API information."""
         return {
             "api": {

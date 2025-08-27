@@ -11,8 +11,9 @@ from __future__ import annotations
 # Import all from each module following flext-core pattern
 from flext_api.api import *
 from flext_api.app import *
+
 # builders.py eliminated - functionality consolidated into client.py
-from flext_api.client import *  # type: ignore[assignment]
+from flext_api.client import *
 from flext_api.config import *
 from flext_api.constants import *
 from flext_api.exceptions import *
@@ -29,7 +30,8 @@ from flext_api.utilities import *
 # Tests should migrate to use flext_core.FlextDomainService or object directly
 try:
     from flext_core import FlextDomainService
-    FlextApiBaseService = FlextDomainService  # type: ignore[assignment]
+
+    FlextApiBaseService = FlextDomainService  # type: ignore[misc]
 except ImportError:
     # Fallback if flext-core has import issues
     class FlextApiBaseService:  # type: ignore[no-redef]
@@ -38,9 +40,15 @@ except ImportError:
         def __init__(self, **kwargs: object) -> None:
             pass
 
+
+# Version information
+__version__ = FLEXT_API_VERSION
+
 # Note: __all__ is constructed dynamically at runtime from imported modules
 # This pattern is necessary for library aggregation but causes pyright warnings
 __all__: list[str] = [
     # Legacy aliases
     "FlextApiBaseService",
+    # Version
+    "__version__",
 ]

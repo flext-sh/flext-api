@@ -7,8 +7,6 @@ import pytest
 from flext_api import (
     FlextApiClient,
     FlextApiClientConfig,
-    FlextApiClientMethod,
-    FlextApiClientRequest,
 )
 
 
@@ -46,12 +44,9 @@ async def test_request_build_failure_and_pipeline_error() -> None:
         )
     )
 
-    await invalid_client.start()
     try:
-        req = FlextApiClientRequest(
-            id="test_req", method=FlextApiClientMethod.GET, url="http://nonexistent-host.invalid/test"
-        )
-        result = await invalid_client._execute_request_pipeline(req, "GET")
+        # Use the public API method instead of non-existent private methods
+        result = await invalid_client.get("/test")
         assert not result.success
         # Should have connection-related error
         error_msg = result.error or ""
