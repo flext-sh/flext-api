@@ -8,7 +8,7 @@
 
 ## 🎯 Configuration Overview
 
-FLEXT API uses **FlextSettings** patterns from flext-core for type-safe configuration management across all HTTP client operations, FastAPI applications, and plugin systems.
+FLEXT API uses **FlextConfig** patterns from flext-core for type-safe configuration management across all HTTP client operations, FastAPI applications, and plugin systems.
 
 ### **Configuration Sources**
 
@@ -70,11 +70,11 @@ FLEXT_AUTH_SERVICE_URL=""              # Authentication service endpoint
 
 ```python
 from flext_api import FlextApiClientConfig
-from flext_core import FlextSettings
+from flext_core import FlextConfig
 from pydantic import Field
 from typing import Optional, Dict, Any
 
-class FlextApiClientConfig(FlextSettings):
+class FlextApiClientConfig(FlextConfig):
     """HTTP client configuration with validation."""
 
     base_url: str = Field(..., description="Base URL for HTTP requests")
@@ -98,11 +98,11 @@ class FlextApiClientConfig(FlextSettings):
 ### **FastAPI Application Configuration**
 
 ```python
-from flext_core import FlextSettings
+from flext_core import FlextConfig
 from pydantic import Field
 from typing import List, Optional
 
-class FlextApiAppConfig(FlextSettings):
+class FlextApiAppConfig(FlextConfig):
     """FastAPI application configuration."""
 
     # Server configuration
@@ -137,11 +137,11 @@ class FlextApiAppConfig(FlextSettings):
 
 ```python
 from flext_api import FlextApiCachingPlugin
-from flext_core import FlextSettings
+from flext_core import FlextConfig
 from pydantic import Field
 from typing import Optional
 
-class CachingPluginConfig(FlextSettings):
+class CachingPluginConfig(FlextConfig):
     """Caching plugin configuration."""
 
     enabled: bool = Field(default=True, description="Enable caching plugin")
@@ -164,11 +164,11 @@ class CachingPluginConfig(FlextSettings):
 
 ```python
 from flext_api import FlextApiRetryPlugin
-from flext_core import FlextSettings
+from flext_core import FlextConfig
 from pydantic import Field
 from typing import List
 
-class RetryPluginConfig(FlextSettings):
+class RetryPluginConfig(FlextConfig):
     """Retry plugin configuration."""
 
     enabled: bool = Field(default=True, description="Enable retry plugin")

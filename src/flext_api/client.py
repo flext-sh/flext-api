@@ -19,14 +19,15 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import math
+import time
 
-# Time operations now use FlextUtilities.TimeUtils - no direct time import needed
-# Datetime operations now use FlextUtilities.generate_iso_timestamp() - no direct datetime import needed
+# Time operations now use time module directly - no FlextUtilities.TimeUtils needed
+# Datetime operations now use FlextUtilities.Generators.generate_iso_timestamp() - available
 from typing import Self, TypeVar, cast
 from urllib.parse import urljoin
 
 import aiohttp
-from flext_core import FlextResult, FlextTypes, FlextUtilities, get_logger
+from flext_core import FlextLogger, FlextResult, FlextTypes, FlextUtilities
 
 from flext_api.models import (
     ApiRequest,
@@ -37,7 +38,7 @@ from flext_api.models import (
 )
 from flext_api.plugins import FlextApiPlugin
 
-logger = get_logger(__name__)
+logger: FlextLogger = FlextLogger(__name__)
 
 # Type variables
 T = TypeVar("T")
@@ -350,7 +351,7 @@ class FlextApiClient:
         headers: dict[str, str] | None = None,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Make HTTP request with plugin processing."""
-        start_time = FlextUtilities.generate_timestamp()
+        start_time = time.time()
         self._stats["requests_made"] += 1
 
         try:
@@ -427,7 +428,7 @@ class FlextApiClient:
                 else:
                     self._stats["requests_failed"] += 1
 
-                self._stats["total_time"] += FlextUtilities.TimeUtils.get_elapsed_time(start_time)
+                self._stats["total_time"] += (time.time() - start_time)
 
                 return FlextResult[FlextTypes.Core.JsonDict].ok(result_data)
 
@@ -568,12 +569,12 @@ def build_query(**kwargs: object) -> FlextTypes.Core.JsonDict:
 
     if "page" in kwargs:
         page_value = kwargs["page"]
-        if isinstance(page_value, (int, str)) and str(page_value).isdigit():
+        if isinstance(page_value, int | str) and str(page_value).isdigit():
             builder = builder.page(int(page_value))
 
     if "page_size" in kwargs:
         page_size_value = kwargs["page_size"]
-        if isinstance(page_size_value, (int, str)) and str(page_size_value).isdigit():
+        if isinstance(page_size_value, int | str) and str(page_size_value).isdigit():
             builder = builder.page_size(int(page_size_value))
 
     if "search" in kwargs:

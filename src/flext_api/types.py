@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import ClassVar, Generic, TypeVar
 
 import aiohttp.hdrs
-from flext_core import FlextFieldCore, FlextFields
+from flext_core import FlextFieldType, FlextFields
 
 # Import from flext-api root - following FLEXT standards
 from flext_api.typings import FlextTypes
@@ -959,7 +959,7 @@ __all__ = [
     "FlextAPIFields",
     # Main Type System (Primary API)
     "FlextApiTypes",
-    "FlextFieldCore",  # Re-export from flext_core
+    "FlextFieldType",  # Re-export from flext_core
     "FlextFields",  # Re-export from flext_core
     # Type Variables
     "TData",  # Legacy compatibility

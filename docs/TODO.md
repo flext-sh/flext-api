@@ -179,7 +179,7 @@ from flext_core import get_flext_container, FlextServiceKey
 
 class FlextApiClient:
     def __init__(self):
-        self.container = get_flext_container()
+        self.container = FlextContainer.get_global()
 
     def get_service[T](self, key: FlextServiceKey[T]) -> FlextResult[T]:
         return self.container.get_typed(key)
@@ -188,7 +188,7 @@ class FlextApiClient:
 **Implementation Tasks**:
 
 - [ ] Remove all local `FlextContainer()` instantiations
-- [ ] Use `get_flext_container()` for global container access
+- [ ] Use `FlextContainer.get_global()` for global container access
 - [ ] Implement FlextServiceKey patterns for type-safe service resolution
 - [ ] Register services in global container
 - [ ] Update service resolution to use typed patterns
@@ -320,9 +320,9 @@ Configuration management not fully aligned with flext-core patterns, missing com
 
 ```python
 # ✅ Complete configuration with flext-core compliance
-from flext_core import FlextSettings, FlextResult, get_flext_container
+from flext_core import FlextConfig, FlextResult, get_flext_container
 
-class FlextApiSettings(FlextSettings):
+class FlextApiSettings(FlextConfig):
     """Comprehensive API settings following flext-core patterns."""
 
     # Server Configuration

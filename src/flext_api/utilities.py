@@ -20,9 +20,9 @@ from __future__ import annotations
 from typing import cast
 
 import aiohttp  # HTTP client specific - not available in core utilities
-from flext_core import FlextResult, FlextUtilities, get_logger
+from flext_core import FlextLogger, FlextResult, FlextUtilities
 
-logger = get_logger(__name__)
+logger: FlextLogger = FlextLogger(__name__)
 
 
 class FlextApiUtilities(FlextUtilities):
@@ -102,7 +102,7 @@ class FlextApiUtilities(FlextUtilities):
         if json_data is None:
             return None
 
-        if isinstance(json_data, (str, int, float, bool)):
+        if isinstance(json_data, str | int | float | bool):
             return json_data  # Return actual type instead of converting to string
 
         # For any other types, convert to string representation
@@ -120,12 +120,10 @@ class FlextApiUtilities(FlextUtilities):
         try:
             parsed_data = FlextUtilities.ProcessingUtils.safe_json_parse(text_data)
             if isinstance(parsed_data, dict):
-                # Cast to specific types for PyRight type inference
-                dict_data = cast("dict[str, object]", parsed_data)
                 # Use dict comprehension for performance
                 return {
                     parsed_key: parsed_value
-                    for parsed_key, parsed_value in dict_data.items()
+                    for parsed_key, parsed_value in parsed_data.items()
                     if parsed_key
                 }
             if isinstance(parsed_data, list):
@@ -259,7 +257,7 @@ class FlextApiUtilities(FlextUtilities):
 
         # Validate timeout
         timeout = validated_config.get("timeout")
-        if not isinstance(timeout, (int, float)) or timeout <= 0:
+        if not isinstance(timeout, int | float) or timeout <= 0:
             return FlextResult[dict[str, object]].fail(
                 "timeout must be a positive number"
             )

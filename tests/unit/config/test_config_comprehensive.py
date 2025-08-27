@@ -15,7 +15,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext_core import FlextConstants, FlextResult, FlextSettings
+from flext_core import FlextConfig, FlextConstants, FlextResult
 from pydantic import ValidationError
 
 from flext_api import FlextApiSettings, create_api_settings
@@ -334,9 +334,9 @@ class TestFlextApiSettingsIntegration:
     """Integration tests for FlextApiSettings with flext-core patterns."""
 
     def test_flext_base_settings_inheritance(self) -> None:
-        """Test FlextApiSettings properly inherits from FlextSettings."""
+        """Test FlextApiSettings properly inherits from FlextConfig."""
         settings = FlextApiSettings()
-        assert isinstance(settings, FlextSettings)
+        assert isinstance(settings, FlextConfig)
 
     def test_create_with_validation_method(self) -> None:
         """Test inherited create_with_validation method works correctly."""

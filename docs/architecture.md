@@ -171,7 +171,7 @@ def service_operation(request: dict) -> FlextResult[dict]:
 | **Inheritance** | 🔴 Doesn't inherit FlextService | ✅ class FlextApi(FlextService) |
 | **Lifecycle**   | 🟡 async start/stop             | ✅ sync start/stop/health_check |
 | **Logging**     | 🔴 direct structlog             | ✅ get_logger(**name**)         |
-| **Container**   | 🔴 Manual DI                    | ✅ get_flext_container()        |
+| **Container**   | 🔴 Manual DI                    | ✅ FlextContainer.get_global()        |
 
 #### **Target Implementation**
 
@@ -183,7 +183,7 @@ class FlextApi(FlextService):
 
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
-        self.container = get_flext_container()
+        self.container = FlextContainer.get_global()
         self._builder: FlextApiBuilder | None = None
         self._client: FlextApiClient | None = None
 
@@ -411,7 +411,7 @@ HTTP_CLIENT_KEY = FlextServiceKey[FlextApiClient]("api_http_client")
 def configure_flext_api_services() -> FlextResult[None]:
     """✅ Configure services no container global."""
     try:
-        container = get_flext_container()
+        container = FlextContainer.get_global()
 
         # Register builders
         container.register_typed(API_BUILDER_KEY, FlextApiQueryBuilder())
@@ -441,7 +441,7 @@ def configure_flext_api_services() -> FlextResult[None]:
 # Usage in services
 def get_query_builder() -> FlextResult[FlextApiQueryBuilder]:
     """✅ Get builder via container."""
-    container = get_flext_container()
+    container = FlextContainer.get_global()
     return container.get_typed(API_BUILDER_KEY)
 ```
 
@@ -518,11 +518,11 @@ class FlextApiError:
 ### **Settings Hierarchy**
 
 ```python
-from flext_core import FlextSettings, FlextResult, get_flext_container
+from flext_core import FlextConfig, FlextResult, get_flext_container
 from pydantic import Field, field_validator
 from typing import Dict, Any
 
-class FlextApiSettings(FlextSettings):
+class FlextApiSettings(FlextConfig):
     """✅ Configuration seguindo padrões flext-core."""
 
     # Server Configuration
@@ -602,7 +602,7 @@ def register_settings() -> FlextResult[None]:
     if settings_result.is_failure:
         return settings_result
 
-    container = get_flext_container()
+    container = FlextContainer.get_global()
     container.register("flext_api_settings", settings_result.data)
 
     return FlextResult[None].ok(None)
@@ -829,7 +829,7 @@ class TestFlextResultPatterns:
    - Mover business logic para domain layer
 
 2. **Dependency Injection Migration**
-   - Migrar para global `get_flext_container()`
+   - Migrar para global `FlextContainer.get_global()`
    - Implementar service registration patterns
    - Usar FlextServiceKey para type safety
 

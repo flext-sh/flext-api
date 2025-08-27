@@ -677,14 +677,14 @@ container = LocalContainer()
 from flext_core import get_flext_container, FlextService
 
 # ✅ Correct pattern
-container = get_flext_container()
+container = FlextContainer.get_global()
 
 class FlextApiService(FlextService):
     """Service using global DI container."""
 
     def __init__(self):
         super().__init__()
-        self.container = get_flext_container()
+        self.container = FlextContainer.get_global()
 
     def get_dependency(self, dependency_type):
         """Get dependency from global container."""

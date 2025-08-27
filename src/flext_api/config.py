@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import override
 
-from flext_core import FlextBaseConfigModel, FlextConstants, FlextResult, FlextSettings
+from flext_core import FlextBaseConfigModel, FlextConfig, FlextConstants, FlextResult
 from pydantic import Field, field_validator
 
 # Import from flext-api root - following FLEXT standards
@@ -28,7 +28,7 @@ class FlextApiConfig(FlextBaseConfigModel):
     - External service integration settings
 
     Follows Single Responsibility Principle by handling only API configuration.
-    Uses Dependency Inversion Principle by depending on FlextSettings abstraction.
+    Uses Dependency Inversion Principle by depending on FlextConfig abstraction.
     """
 
     # =============================================================================
@@ -164,7 +164,7 @@ class FlextApiConfig(FlextBaseConfigModel):
         cls,
         overrides: Mapping[str, object] | None = None,
         **kwargs: object,
-    ) -> FlextResult[FlextSettings]:
+    ) -> FlextResult[FlextConfig]:
         """Create settings instance with validation and return FlextResult.
 
         Args:
@@ -185,9 +185,9 @@ class FlextApiConfig(FlextBaseConfigModel):
                 if config_data
                 else cls.model_validate({})
             )
-            return FlextResult[FlextSettings].ok(settings)
+            return FlextResult[FlextConfig].ok(settings)
         except (RuntimeError, ValueError, TypeError, OSError) as e:
-            return FlextResult[FlextSettings].fail(f"Failed to create settings: {e}")
+            return FlextResult[FlextConfig].fail(f"Failed to create settings: {e}")
 
     @classmethod
     def create_api_settings(

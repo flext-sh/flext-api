@@ -19,7 +19,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 # JSON operations now use FlextUtilities.ProcessingUtils - no direct json import needed
-# Time operations now use FlextUtilities.TimeUtils - no direct time import needed
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -30,17 +30,17 @@ from typing import Protocol, TypeVar, cast
 # UUID generation now uses FlextUtilities.generate_uuid() - no direct uuid import needed
 from flext_core import (
     FlextDomainService,
-    FlextProtocols,
+    FlextLogger,
     FlextResult,
     FlextUtilities,
-    get_logger,
 )
+from flext_core.protocols import FlextProtocols
 
 # Type definitions
 StorageValue = TypeVar("StorageValue")
 StorageOperation = tuple[str, str, object]
 
-logger = get_logger(__name__)
+logger: FlextLogger = FlextLogger(__name__)
 
 # Type variables
 K = TypeVar("K")
@@ -125,7 +125,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
 
         def is_expired(self) -> bool:
             """Check if cache entry is expired."""
-            return FlextUtilities.TimeUtils.get_elapsed_time(self.timestamp) > self.ttl_seconds
+            return (time.time() - self.timestamp) > self.ttl_seconds
 
     @dataclass
     class TransactionContext[StorageValue]:
@@ -133,7 +133,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
 
         transaction_id: str = field(default_factory=FlextUtilities.generate_uuid)
         operations: list[tuple[str, str, StorageValue]] = field(default_factory=list)
-        started_at: float = field(default_factory=FlextUtilities.generate_timestamp)
+        started_at: float = field(default_factory=time.time)
 
         def add_operation(self, operation: str, key: str, value: StorageValue) -> None:
             """Add operation to transaction."""
@@ -141,7 +141,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
 
         def get_age_seconds(self) -> float:
             """Get transaction age in seconds."""
-            return FlextUtilities.TimeUtils.get_elapsed_time(self.started_at)
+            return time.time() - self.started_at
 
     # ==========================================================================
     # NESTED REPOSITORY PATTERN
@@ -415,7 +415,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 ttl_seconds = self._default_ttl
 
             entry = FlextApiStorage.CacheEntry(
-                value=value, timestamp=FlextUtilities.generate_timestamp(), ttl_seconds=ttl_seconds
+                value=value, timestamp=time.time(), ttl_seconds=ttl_seconds
             )
             self._cache[key] = entry
             return FlextResult[None].ok(None)
@@ -495,7 +495,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                     "key_count": 0,  # Simplified for sync method
                     "caching_enabled": config.enable_caching,
                     "transactions_enabled": config.enable_transactions,
-                    "timestamp": FlextUtilities.generate_timestamp(),
+                    "timestamp": time.time(),
                 }
             )
         except Exception as e:

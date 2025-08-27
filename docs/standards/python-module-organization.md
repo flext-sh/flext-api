@@ -317,7 +317,7 @@ client = FlextApiClient(config)  # Should return FlextResult
 │  (HTTP Clients, Configuration, I/O) │
 ├─────────────────────────────────────┤
 │       Foundation Layer              │  # From flext-core
-│   (FlextResult, FlextEntity, etc.)  │  # FlextSettings, logging
+│   (FlextResult, FlextEntity, etc.)  │  # FlextConfig, logging
 └─────────────────────────────────────┘
 ```
 
@@ -625,10 +625,10 @@ class HttpTimeout(FlextValue):
 ### **Environment-Aware HTTP Configuration**
 
 ```python
-from flext_core import FlextSettings
+from flext_core import FlextConfig
 from flext_api.domain.value_objects import HttpTimeout
 
-class HttpClientSettings(FlextSettings):
+class HttpClientSettings(FlextConfig):
     """HTTP client configuration with environment variables"""
     default_timeout: float = 30.0
     max_retries: int = 3
@@ -654,7 +654,7 @@ class HttpClientSettings(FlextSettings):
             "verify_ssl": self.verify_ssl
         }
 
-class FlextApiSettings(FlextSettings):
+class FlextApiSettings(FlextConfig):
     """FLEXT API configuration composition"""
     # Server Configuration
     api_host: str = Field(default="0.0.0.0", env="FLEXT_API_HOST")
@@ -703,7 +703,7 @@ class FlextApiSettings(FlextSettings):
 ### **Service-Specific HTTP Configuration**
 
 ```python
-class OracleApiSettings(FlextSettings):
+class OracleApiSettings(FlextConfig):
     """Oracle API specific HTTP configuration"""
     base_url: str = Field(env="ORACLE_API_BASE_URL")
     timeout: float = 120.0  # Oracle can be slow
@@ -713,7 +713,7 @@ class OracleApiSettings(FlextSettings):
     class Config:
         env_prefix = "ORACLE_API_"
 
-class LdapApiSettings(FlextSettings):
+class LdapApiSettings(FlextConfig):
     """LDAP API specific HTTP configuration"""
     base_url: str = Field(env="LDAP_API_BASE_URL")
     timeout: float = 30.0
@@ -723,7 +723,7 @@ class LdapApiSettings(FlextSettings):
     class Config:
         env_prefix = "LDAP_API_"
 
-class EcosystemHttpSettings(FlextSettings):
+class EcosystemHttpSettings(FlextConfig):
     """HTTP configuration for entire FLEXT ecosystem"""
     oracle: OracleApiSettings = field(default_factory=OracleApiSettings)
     ldap: LdapApiSettings = field(default_factory=LdapApiSettings)
@@ -1285,7 +1285,7 @@ class LdapHttpSettings(FlextApiSettings):
     class Config:
         env_prefix = "LDAP_HTTP_"
 
-class EcosystemHttpSettings(FlextSettings):
+class EcosystemHttpSettings(FlextConfig):
     """HTTP configuration composing all ecosystem services"""
     oracle: OracleHttpSettings = field(default_factory=OracleHttpSettings)
     ldap: LdapHttpSettings = field(default_factory=LdapHttpSettings)
