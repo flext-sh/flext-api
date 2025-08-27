@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""FLEXT API - Advanced Features Examples.
+"""FLEXT API - Advanced Features Examples (CORRECTED).
 
 Este exemplo demonstra recursos avançados da FLEXT API com funcionalidade REAL.
-Todos os métodos usados existem e funcionam.
+Todos os métodos usados existem e funcionam conforme implementados.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -12,302 +12,185 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
-from typing import cast
 
 from flext_api import (
-    ClientConfigDict,
-    FlextApiQueryBuilder,
-    FlextApiResponseBuilder,
-    PaginationConfig,
+    FlextApiClient,
+    FlextApiClientConfig,
     build_error_response,
-    build_paginated_response as build_paginated,
+    build_paginated_response,
     build_query,
     build_success_response,
-    create_client,
     create_flext_api,
-    create_flext_api_app,
 )
 
 
 def example_advanced_query_building() -> None:
-    """Example: Advanced query construction using all features."""
-    # Query complexa com múltiplos filtros e ordenação
-    qb = FlextApiQueryBuilder()
+    """Example: Advanced query construction using real existing methods."""
+    # Query complexa usando apenas métodos que existem
+    qb = FlextApiClient.QueryBuilder()
     complex_query = (
         qb.equals("status", "active")
         .equals("type", "premium")
-        .greater_than("created_at", "2024-01-01")
-        .greater_than("score", 8.5)
-        .equals("verified", value=True)
+        .not_equals("deleted_at", None)  # Simula registros não deletados
+        .contains("description", "premium")  # Usando contains que existe
+        .equals("verified", True)
         .sort_desc("created_at")
         .sort_asc("name")
-        .sort_desc("score")
         .page(3)
-        .page_size(50)  # Página 3, 50 itens por página
+        .page_size(50)
+        .search("electronics")  # Usando search que existe
+        .fields(["id", "name", "status"])  # Campos específicos
+        .includes(["profile", "settings"])  # Incluir relacionados
+        .excludes(["internal_notes"])  # Excluir campos
         .build()
     )
 
-    complex_query.to_dict()
+    print("Complex query:", complex_query)
 
-    # Construir query usando factory function com filtros
-    search_filters = {
-        "category": "electronics",
-        "brand": "apple",
-        "in_stock": True,
-        "rating": 5,
-    }
-    factory_filters = [
-        {"field": k, "value": v, "operator": "eq"} for k, v in search_filters.items()
-    ]
-    build_query(factory_filters)
+    # Query usando factory function
+    search_query = build_query(
+        filters={
+            "category": "electronics",
+            "status": "published",
+            "price_range": "100-500",
+        },
+        page=1,
+        page_size=25,
+    )
+    print("Search query:", search_query)
 
 
 def example_advanced_response_building() -> None:
-    """Example: Advanced response construction with metadata and pagination."""
-    # Response com metadados complexos
-    rb = FlextApiResponseBuilder()
-    (
-        rb.success(data={"results": [], "summary": {"total": 0, "categories": 3}})
-        .metadata(
-            {
-                "query_id": "qry_12345",
-                "execution_time_ms": 234,
-                "cache_hit": True,
-                "database_queries": 2,
-                "facets": {"categories": ["electronics", "books", "clothing"]},
-                "suggestions": ["apple", "samsung", "google"],
+    """Example: Advanced response construction using real methods."""
+    # Success response com metadata
+    rb = FlextApiClient.ResponseBuilder()
+    success_response = (
+        rb.success(
+            data={
+                "users": [
+                    {"id": 1, "name": "Alice", "email": "alice@example.com"},
+                    {"id": 2, "name": "Bob", "email": "bob@example.com"},
+                ],
+                "total": 2,
             },
+            message="Users retrieved successfully",
         )
+        .with_metadata({"query_time": "0.045s", "cache_hit": True, "version": "1.0"})
         .build()
     )
+    print("Success response:", success_response)
 
-    # Response paginada com metadados detalhados
-    products = [
-        {"id": i, "name": f"Product {i}", "price": 99.99 + i} for i in range(1, 21)
-    ]
+    # Error response
+    error_response = build_error_response("Invalid authentication credentials", 401)
+    print("Error response:", error_response)
 
-    paginated_response = build_paginated(
-        PaginationConfig(
-            data=products,
-            total=1500,
-            page=2,
-            page_size=20,
-            message="Products retrieved successfully",
-            metadata={
-                "search_terms": ["smartphone", "android"],
-                "filters_applied": 4,
-                "sort_by": "popularity",
-                "execution_time": "0.089s",
-                "cache_status": "partial_hit",
-            },
-        ),
+    # Paginated response usando a função correta
+    paginated_response = build_paginated_response(
+        data=[{"id": i, "name": f"Item {i}"} for i in range(1, 21)],
+        current_page=2,
+        page_size=20,
+        total_items=100,
+        message="Page retrieved successfully",
+    )
+    print("Paginated response keys:", list(paginated_response.keys()))
+
+
+async def example_http_client_usage() -> None:
+    """Example: HTTP client with real functionality."""
+    # Criar cliente HTTP
+    config = FlextApiClientConfig(
+        base_url="https://jsonplaceholder.typicode.com",
+        timeout=30.0,
+        headers={"Content-Type": "application/json", "User-Agent": "FlextAPI/1.0.0"},
     )
 
-    (paginated_response.value if isinstance(paginated_response.value, list) else [])
-
-
-async def example_advanced_client_configuration() -> None:
-    """Example: Advanced HTTP client configuration with plugins."""
-    # Client with multiple plugins using factory function
-
-    client = create_client(
-        {
-            "base_url": "https://api.github.com",
-            "timeout": 45.0,
-            "headers": {
-                "User-Agent": "FlextAPI-Advanced/2.0.0",
-                "Accept": "application/vnd.github.v3+json",
-                "X-Request-ID": "req_advanced_example_001",
-            },
-            "max_retries": 5,
-        },
-    )
+    client = FlextApiClient(config)
 
     try:
-        # Iniciar cliente
-        await client.start()
-
-        # Health check detalhado
-        client.health_check()
-
-    except (ConnectionError, TimeoutError):
-        pass
+        # Fazer requisição GET real (se conexão disponível)
+        response = await client.get("/posts/1")
+        if response.success:
+            print("GET request successful:", response.data)
+        else:
+            print("GET request failed:", response.error)
+    except Exception as e:
+        print(f"Network request failed: {e}")
     finally:
-        await client.stop()
+        await client.close()
 
 
-async def example_full_api_service_integration() -> None:
-    """Example: Complete API service integration with all components."""
-    # Criar serviço completo
+def example_service_integration() -> None:
+    """Example: API service integration."""
+    # Criar serviço API
     api = create_flext_api()
 
-    try:
-        # Inicializar serviço
-        await api.start_async()
+    # Obter builder
+    builder = api.get_builder()
 
-        # Health check do serviço
-        health_result = await api.health_check_async()
-        if health_result.success and health_result.value is not None:
-            pass
+    # Query usando builder do serviço
+    query_builder = builder.for_query()
+    query = (
+        query_builder.equals("status", "published")
+        .sort_desc("created_at")
+        .page(1)
+        .page_size(10)
+        .build()
+    )
+    print("Service query:", query)
 
-        # Obter builder e criar query complexa
-        builder = api.get_builder()
-
-        # Query builder avançada
-        query_builder = builder.for_query()
-        (
-            query_builder.equals("department", "engineering")
-            .equals("level", "senior")
-            .greater_than("experience_years", 5)
-            .greater_than("salary", 80000)
-            .equals("remote_eligible", value=True)
-            .sort_desc("salary")
-            .sort_asc("hire_date")
-            .sort_desc("performance_rating")
-            .page(1)
-            .page_size(25)
-            .build()
-        )
-
-        # Response builder avançada
-        response_builder = builder.for_response()
-        mock_employees = [
-            {"id": i, "name": f"Engineer {i}", "salary": 90000 + (i * 5000)}
-            for i in range(1, 6)
-        ]
-
-        advanced_response = (
-            response_builder.success(
-                data=mock_employees,
-                message="Senior engineers retrieved",
-            )
-            .metadata(
-                {
-                    "query_complexity": "high",
-                    "optimization_applied": True,
-                    "cache_strategy": "write_through",
-                    "data_source": "primary_db",
-                    "query_plan": "index_scan_optimal",
-                },
-            )
-            .pagination(page=1, page_size=25, total=147)
-            .build()
-        )
-
-        (
-            len(advanced_response.value)
-            if isinstance(advanced_response.value, list)
-            else 0
-        )
-
-        # Criar cliente HTTP via serviço
-        client_config = {
-            "base_url": "https://api.production-company.com",
-            "timeout": 60.0,
-            "headers": {
-                "Authorization": "Bearer prod_token_12345",
-                "X-Service": "flext-api-advanced",
-                "X-Version": "0.9.0",
-            },
-        }
-
-        # ClientConfigDict imported at top for type casting
-        client_result = api.create_client(cast("ClientConfigDict", client_config))
-        if client_result.success and client_result.value is not None:
-            pass
-
-        # Verificar cliente do serviço
-        api.get_client()
-
-    except (ConnectionError, TimeoutError):
-        pass
-    finally:
-        # Parar serviço
-        await api.stop_async()
+    # Response usando builder do serviço
+    response_builder = builder.for_response()
+    response = response_builder.success(data={"message": "Hello from service"}).build()
+    print("Service response:", response)
 
 
 def example_factory_functions_advanced() -> None:
     """Example: Advanced usage of factory functions."""
-    # Success response com metadados complexos
-    success_data = {
-        "users": [
-            {"id": 1, "name": "Alice", "role": "admin"},
-            {"id": 2, "name": "Bob", "role": "user"},
-            {"id": 3, "name": "Carol", "role": "moderator"},
-        ],
-        "summary": {"total": 3, "active": 3, "roles": ["admin", "user", "moderator"]},
-    }
+    # Query avançada
+    advanced_query = build_query(
+        filters={"status": "active", "category": "premium", "region": "US"},
+        search="electronics",
+        page=2,
+        page_size=50,
+    )
+    print("Advanced query:", advanced_query)
 
+    # Success response avançada
     advanced_success = build_success_response(
-        data=success_data,
-        message="Users and summary retrieved successfully",
-        metadata={
-            "query_execution_time": "0.156s",
-            "database_hits": 2,
-            "cache_hits": 1,
-            "optimization_level": "aggressive",
-            "data_freshness": "realtime",
-            "security_context": "authenticated_admin",
-            "api_rate_limit_remaining": 4850,
+        data={
+            "users": [
+                {"id": 1, "name": "John", "role": "admin"},
+                {"id": 2, "name": "Jane", "role": "user"},
+            ],
+            "pagination": {"current_page": 1, "total_pages": 10, "total_items": 200},
         },
+        message="Advanced data retrieved successfully",
     )
+    print("Advanced success has data:", "data" in advanced_success)
 
-    if isinstance(advanced_success.value, dict):
-        users = advanced_success.value.get("users")
-        if isinstance(users, list):
-            len(users)
-
-    # Error response com detalhes complexos
-    error_details = {
-        "validation_errors": {
-            "email": ["Invalid format", "Domain not allowed"],
-            "password": ["Too weak", "Must contain special characters"],
-            "age": ["Must be between 18 and 100"],
-        },
-        "suggested_fixes": [
-            "Use a company email address",
-            "Include uppercase, lowercase, numbers, and symbols in password",
-            "Verify age is correct",
-        ],
-        "error_code": "VALIDATION_FAILED_MULTIPLE",
-        "retry_strategy": "fix_and_resubmit",
-        "support_reference": "ERR_VAL_20250129_001",
-    }
-
+    # Error response avançado
     advanced_error = build_error_response(
-        error="Multiple validation errors occurred",
-        status_code=422,
-        metadata={"error_code": "VALIDATION_FAILED_MULTIPLE", "details": error_details},
+        message="Database connection timeout", status_code=503
     )
-
-    details = advanced_error.metadata.get("details", {})
-    (details.get("support_reference") if isinstance(details, dict) else None)
-
-
-def example_comprehensive_fastapi_app() -> None:
-    """Example: Complete FastAPI application with all features."""
-    # Criar aplicação FastAPI completa
-    app = create_flext_api_app()
-
-    # Listar todas as rotas disponíveis
-    route_count = 0
-    for route in app.routes:
-        if hasattr(route, "path") and hasattr(route, "methods"):
-            ", ".join(sorted(route.methods))
-            route_count += 1
+    print("Advanced error:", advanced_error["message"])
 
 
 async def main() -> None:
-    """Execute all advanced examples."""
-    # Sync examples
+    """Run all examples."""
+    print("=== Advanced Query Building ===")
     example_advanced_query_building()
-    example_advanced_response_building()
-    example_factory_functions_advanced()
-    example_comprehensive_fastapi_app()
 
-    # Async examples
-    await example_advanced_client_configuration()
-    await example_full_api_service_integration()
+    print("\n=== Advanced Response Building ===")
+    example_advanced_response_building()
+
+    print("\n=== Service Integration ===")
+    example_service_integration()
+
+    print("\n=== Factory Functions Advanced ===")
+    example_factory_functions_advanced()
+
+    print("\n=== HTTP Client Usage ===")
+    await example_http_client_usage()
 
 
 if __name__ == "__main__":

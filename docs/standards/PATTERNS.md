@@ -216,10 +216,10 @@ from flext_core import FlextServiceError
 class FlextApiError(FlextServiceError):
     """Base API error."""
 
-class FlextAuthenticationError(FlextApiError):
+class FlextExceptions.AuthenticationError(FlextApiError):
     """Authentication specific error."""
 
-class FlextValidationError(FlextApiError):
+class FlextExceptions.ValidationError(FlextApiError):
     """Request validation error."""
 ```
 

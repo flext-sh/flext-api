@@ -19,15 +19,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import math
-import time
-from collections.abc import Mapping
-from datetime import UTC, datetime
+
+# Time operations now use FlextUtilities.TimeUtils - no direct time import needed
+# Datetime operations now use FlextUtilities.generate_iso_timestamp() - no direct datetime import needed
 from typing import Self, TypeVar, cast
 from urllib.parse import urljoin
 
 import aiohttp
-import aiohttp.hdrs
-from flext_core import FlextResult, FlextTypes, get_logger
+from flext_core import FlextResult, FlextTypes, FlextUtilities, get_logger
 
 from flext_api.models import (
     ApiRequest,
@@ -277,7 +276,7 @@ class FlextApiClient:
                     "message": self._message,
                     "status_code": self._status_code,
                     "metadata": dict(self._metadata),
-                    "timestamp": datetime.now(UTC).isoformat(),
+                    "timestamp": FlextUtilities.generate_iso_timestamp(),
                 },
             )
 
@@ -351,7 +350,7 @@ class FlextApiClient:
         headers: dict[str, str] | None = None,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Make HTTP request with plugin processing."""
-        start_time = time.time()
+        start_time = FlextUtilities.generate_timestamp()
         self._stats["requests_made"] += 1
 
         try:
@@ -361,7 +360,7 @@ class FlextApiClient:
                 "url": url,
                 "data": data,
                 "headers": headers or {},
-                "timestamp": datetime.now(UTC).isoformat(),
+                "timestamp": FlextUtilities.generate_iso_timestamp(),
             }
 
             # Process through plugins (before request)
@@ -372,7 +371,10 @@ class FlextApiClient:
                         return FlextResult[FlextTypes.Core.JsonDict].fail(
                             f"Plugin {plugin.name} failed: {result.error}"
                         )
-                    request_data = result.value  # type: ignore[assignment]
+                    if isinstance(result.value, dict):
+                        request_data.update(result.value)
+                    else:
+                        request_data = cast("FlextTypes.Core.JsonDict", result.value)
 
             # Make actual HTTP request
             session = await self._ensure_session()
@@ -425,7 +427,7 @@ class FlextApiClient:
                 else:
                     self._stats["requests_failed"] += 1
 
-                self._stats["total_time"] += time.time() - start_time
+                self._stats["total_time"] += FlextUtilities.TimeUtils.get_elapsed_time(start_time)
 
                 return FlextResult[FlextTypes.Core.JsonDict].ok(result_data)
 
@@ -565,10 +567,14 @@ def build_query(**kwargs: object) -> FlextTypes.Core.JsonDict:
         builder = builder.with_filters(filters)
 
     if "page" in kwargs:
-        builder = builder.page(int(kwargs["page"]))  # type: ignore[call-overload]
+        page_value = kwargs["page"]
+        if isinstance(page_value, (int, str)) and str(page_value).isdigit():
+            builder = builder.page(int(page_value))
 
     if "page_size" in kwargs:
-        builder = builder.page_size(int(kwargs["page_size"]))  # type: ignore[call-overload]
+        page_size_value = kwargs["page_size"]
+        if isinstance(page_size_value, (int, str)) and str(page_size_value).isdigit():
+            builder = builder.page_size(int(page_size_value))
 
     if "search" in kwargs:
         builder = builder.search(str(kwargs["search"]))

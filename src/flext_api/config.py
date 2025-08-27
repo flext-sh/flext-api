@@ -260,7 +260,9 @@ class FlextApiConfig(FlextBaseConfigModel):
             # Validate CORS origins format
             for origin in settings.cors_origins:
                 if not origin.startswith(("http://", "https://")):
-                    return FlextResult[None].fail(f"Invalid CORS origin format: {origin}")
+                    return FlextResult[None].fail(
+                        f"Invalid CORS origin format: {origin}"
+                    )
 
             return FlextResult[None].ok(None)
         except Exception as e:

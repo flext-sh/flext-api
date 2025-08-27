@@ -13,10 +13,10 @@ from packaging.version import Version
 
 import flext_api
 from flext_api import (
-    __version__,
-    __version__ as main_version,
-    __version__ as reimported_version,
-    __version__ as version2,
+    FLEXT_API_VERSION as __version__,
+    FLEXT_API_VERSION as main_version,
+    FLEXT_API_VERSION as reimported_version,
+    FLEXT_API_VERSION as version2,
 )
 
 

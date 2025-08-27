@@ -7,12 +7,12 @@ from flext_api import (
     ApiRequest,
     ApiResponse,
     ClientStatus,
-    HttpMethod,
     HttpStatus,
 )
 from flext_api.models import (
     MAX_PORT,
     MIN_PORT,
+    HttpMethod,
 )
 
 

@@ -13,12 +13,13 @@ import warnings
 warnings.warn(
     "flext_api.service_base is deprecated. Use flext_core.FlextDomainService instead.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
 
 # Legacy compatibility
 try:
     from flext_core import FlextDomainService
+
     FlextApiBaseService = FlextDomainService  # type: ignore[assignment]
 except ImportError:
     # Fallback if flext-core has import issues
@@ -27,5 +28,6 @@ except ImportError:
 
         def __init__(self, **kwargs: object) -> None:
             pass
+
 
 __all__ = ["FlextApiBaseService"]

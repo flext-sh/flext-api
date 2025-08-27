@@ -19,7 +19,6 @@ from flext_api import (
     FlextApiQueryBuilder,
     FlextApiResponseBuilder,
     build_query,
-    build_query_dict,
     build_success_response,
     create_flext_api,
     create_memory_storage,
@@ -90,7 +89,7 @@ class TestFunctionalExamples:
     def test_query_building_examples(self) -> None:
         """Test various query building examples."""
         # Simple query
-        query1 = build_query_dict({"name": "test"})
+        query1 = build_query(filters={"name": "test"})
         if "filters" not in query1:
             msg = f"Expected filters in {query1}"
             raise AssertionError(msg)
@@ -103,25 +102,24 @@ class TestFunctionalExamples:
         assert filters1[0]["field"] == "name"
 
         # Complex query with multiple filters
-        query2 = build_query_dict(
-            {
+        query2 = build_query(
+            filters={
                 "status": "active",
                 "created_after": "2023-01-01",
-                "limit": 50,
-                "sort": "name",
             },
+            page_size=50,
         )
         if "filters" not in query2:
             msg = f"Expected filters in {query2}"
             raise AssertionError(msg)
         filters2 = query2["filters"]
         assert isinstance(filters2, list), f"Expected list, got {type(filters2)}"
-        if len(filters2) != 4:
-            msg = f"Expected 4, got {len(filters2)}"
+        if len(filters2) != 2:
+            msg = f"Expected 2, got {len(filters2)}"
             raise AssertionError(msg)
 
         # Empty query
-        query3 = build_query_dict({})
+        query3 = build_query()
         if "filters" not in query3:
             msg = f"Expected filters in {query3}"
             raise AssertionError(msg)

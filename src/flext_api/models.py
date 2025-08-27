@@ -18,7 +18,7 @@ from __future__ import annotations
 import math
 from datetime import UTC, datetime, timedelta
 from enum import IntEnum, StrEnum
-from typing import override
+from typing import cast, override
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import (
@@ -31,6 +31,7 @@ from flext_core import (
 )
 from pydantic import (
     AliasGenerator,
+    BaseModel,
     ConfigDict as PydanticConfigDict,
     Field,
     field_validator,
@@ -40,6 +41,15 @@ from flext_api.constants import FlextApiConstants
 from flext_api.typings import HeadersDict, HttpUrl
 
 logger = get_logger(__name__)
+
+# ==============================================================================
+# TYPE DEFINITIONS
+# ==============================================================================
+
+# Query filter type with proper typing
+QueryFilter = dict[str, str | int | bool | None]
+# Sort specification type
+SortSpec = dict[str, str]
 
 # ==============================================================================
 # CONSTANTS
@@ -590,16 +600,21 @@ class FlextApiModels(FlextModel):
             if token_type is None:
                 token_type_enum = default_token_type
             elif hasattr(token_type, "value"):
-                token_type_enum = token_type.value  # type: ignore[attr-defined]
+                # Handle enum-like objects
+                enum_value = getattr(token_type, "value", None)
+                token_type_enum = (
+                    str(enum_value) if enum_value is not None else default_token_type
+                )
             elif isinstance(token_type, str):
                 valid_types = ["Bearer", "JWT", "ApiKey"]
                 if token_type not in valid_types:
-                    return FlextResult[object].fail(
-                        f"Invalid token type: {token_type}"
-                    )
+                    return FlextResult[object].fail(f"Invalid token type: {token_type}")
                 token_type_enum = token_type
             else:
-                token_type_enum = str(token_type)
+                # Convert any other type to string
+                token_type_enum = (
+                    str(token_type) if token_type is not None else default_token_type
+                )
             # No else branch needed: all union members are covered above
 
             try:
@@ -672,15 +687,21 @@ class FlextApiModels(FlextModel):
 
         base_url: HttpUrl = Field(description="Base URL for requests")
         timeout: float = Field(default=DEFAULT_TIMEOUT, description="Request timeout")
-        headers: HeadersDict = Field(default_factory=dict, description="Default headers")
+        headers: HeadersDict = Field(
+            default_factory=dict, description="Default headers"
+        )
         max_retries: int = Field(
             default=DEFAULT_MAX_RETRIES,
             description="Maximum retry attempts",
         )
         # Additional fields for client compatibility
         verify_ssl: bool = Field(default=True, description="Verify SSL certificates")
-        follow_redirects: bool = Field(default=True, description="Follow HTTP redirects")
-        plugins: list[object] = Field(default_factory=list, description="Client plugins")
+        follow_redirects: bool = Field(
+            default=True, description="Follow HTTP redirects"
+        )
+        plugins: list[dict[str, object]] = Field(
+            default_factory=list, description="Client plugins"
+        )
 
         @field_validator("base_url")
         @classmethod
@@ -760,7 +781,9 @@ class FlextApiModels(FlextModel):
             },
         )
 
-        filters: list[dict[str, object]] = Field(default_factory=list[dict[str, object]])
+        filters: list[dict[str, object]] = Field(
+            default_factory=list[dict[str, object]]
+        )
         sorts: list[dict[str, str]] = Field(default_factory=list[dict[str, str]])
         page: int = Field(default=1)
         page_size: int = Field(default=DEFAULT_PAGE_SIZE)
@@ -894,7 +917,9 @@ class FlextApiModels(FlextModel):
 
         method: str = Field(description="HTTP method")
         url: str = Field(description="Request URL")
-        headers: dict[str, str] = Field(default_factory=dict, description="HTTP headers")
+        headers: dict[str, str] = Field(
+            default_factory=dict, description="HTTP headers"
+        )
         body: dict[str, object] | None = Field(None, description="Request body")
         query_params: dict[str, str] = Field(
             default_factory=dict,
@@ -902,7 +927,9 @@ class FlextApiModels(FlextModel):
         )
         # Additional fields for client compatibility
         params: dict[str, object] | None = Field(None, description="Request parameters")
-        json_data: dict[str, object] | None = Field(None, description="JSON data payload")
+        json_data: dict[str, object] | None = Field(
+            None, description="JSON data payload"
+        )
         data: str | bytes | None = Field(None, description="Raw request data")
 
         state: str = Field(
@@ -911,7 +938,9 @@ class FlextApiModels(FlextModel):
         )
         timeout: float = Field(default=DEFAULT_TIMEOUT, description="Request timeout")
         retry_count: int = Field(default=0, description="Current retry count")
-        max_retries: int = Field(default=DEFAULT_MAX_RETRIES, description="Maximum retries")
+        max_retries: int = Field(
+            default=DEFAULT_MAX_RETRIES, description="Maximum retries"
+        )
 
         @override
         def validate_business_rules(self) -> FlextResult[None]:
@@ -923,7 +952,20 @@ class FlextApiModels(FlextModel):
                     not self.url.startswith(("http://", "https://", "/")),
                     "Request URL must be valid HTTP URL or path",
                 ),
-                (self.method not in {"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE"}, f"Invalid HTTP method: {self.method}"),
+                (
+                    self.method
+                    not in {
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "HEAD",
+                        "OPTIONS",
+                        "TRACE",
+                    },
+                    f"Invalid HTTP method: {self.method}",
+                ),
                 (self.timeout <= 0, "Timeout must be positive"),
             ]
 
@@ -1151,10 +1193,14 @@ class FlextApiModels(FlextModel):
         path: str = Field(description="Endpoint path pattern")
         methods: list[str] = Field(description="Allowed HTTP methods")
         description: str | None = Field(None, description="Endpoint description")
-        auth_required: bool = Field(default=True, description="Authentication requirement")
+        auth_required: bool = Field(
+            default=True, description="Authentication requirement"
+        )
         rate_limit: int | None = Field(None, description="Rate limit per minute")
         timeout: float = Field(default=DEFAULT_TIMEOUT, description="Endpoint timeout")
-        deprecated: bool = Field(default=False, description="Endpoint deprecated status")
+        deprecated: bool = Field(
+            default=False, description="Endpoint deprecated status"
+        )
         api_version: str = Field(default="v1", description="API version")
 
         @override
@@ -1162,7 +1208,10 @@ class FlextApiModels(FlextModel):
             """Validate endpoint business rules."""
             # Consolidated validation checks
             checks = [
-                (not self.path or not self.path.strip(), "Endpoint path cannot be empty"),
+                (
+                    not self.path or not self.path.strip(),
+                    "Endpoint path cannot be empty",
+                ),
                 (not self.path.startswith("/"), "Endpoint path must start with '/'"),
                 (not self.methods, "Endpoint must support at least one HTTP method"),
                 (
@@ -1178,7 +1227,16 @@ class FlextApiModels(FlextModel):
                     return FlextResult[None].fail(message)
 
             # Check methods validity
-            valid_methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE"]
+            valid_methods = [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "HEAD",
+                "OPTIONS",
+                "TRACE",
+            ]
             for method in self.methods:
                 if method not in valid_methods:
                     return FlextResult[None].fail(f"Invalid HTTP method: {method}")
@@ -1228,7 +1286,9 @@ class FlextApiModels(FlextModel):
         token: str | None = Field(None, description="Session token")
         token_type: str = Field(default="Bearer", description="Token type")
         expires_at: datetime | None = Field(None, description="Session expiration")
-        last_activity: datetime | None = Field(None, description="Last activity timestamp")
+        last_activity: datetime | None = Field(
+            None, description="Last activity timestamp"
+        )
         is_active: bool = Field(default=True, description="Session active state")
         refresh_token: str | None = Field(None, description="Refresh token")
         permissions: list[str] = Field(
@@ -1454,7 +1514,9 @@ class FlextApiModels(FlextModel):
         )
         message: str | None = Field(None, description="Response message")
         errors: list[str] | None = Field(None, description="Error messages")
-        metadata: dict[str, object] | None = Field(None, description="Response metadata")
+        metadata: dict[str, object] | None = Field(
+            None, description="Response metadata"
+        )
         pagination: object | None = Field(None, description="Pagination info")
         status_code: int = Field(
             default=200,
@@ -1500,7 +1562,9 @@ class FlextApiModels(FlextModel):
                 result["metadata"] = self.metadata
             if self.pagination:
                 if hasattr(self.pagination, "model_dump"):
-                    result["pagination"] = self.pagination.model_dump()  # type: ignore[attr-defined]
+                    # Cast to ensure type checker knows it has model_dump method
+                    pydantic_model = cast("BaseModel", self.pagination)
+                    result["pagination"] = pydantic_model.model_dump()
                 else:
                     result["pagination"] = self.pagination
 
@@ -1513,10 +1577,10 @@ class FlextApiModels(FlextModel):
     class FlextApiQuery(FlextModel):
         """Query model for FlextApiQueryBuilder results."""
 
-        filters: list[dict[str, object]] = Field(
+        filters: list[QueryFilter] = Field(
             default_factory=list, description="Query filters"
         )
-        sorts: list[dict[str, str]] = Field(
+        sorts: list[SortSpec] = Field(
             default_factory=list, description="Sort specifications"
         )
         pagination: dict[str, int] = Field(
@@ -1529,7 +1593,9 @@ class FlextApiModels(FlextModel):
         includes: list[str] = Field(
             default_factory=list, description="Related resources to include"
         )
-        excludes: list[str] = Field(default_factory=list, description="Fields to exclude")
+        excludes: list[str] = Field(
+            default_factory=list, description="Fields to exclude"
+        )
 
     class FlextApiResponse(FlextModel):
         """Response model for FlextApiResponseBuilder results."""
@@ -1652,8 +1718,12 @@ FlextApiModels.model_rebuild()
 
 # Rebuild all nested classes for proper cross-references
 for model_class in FlextApiModels.get_all_model_classes().values():
-    if hasattr(model_class, "model_rebuild"):
-        model_class.model_rebuild()
+    try:
+        if hasattr(model_class, "model_rebuild"):
+            model_class.model_rebuild()
+    except (AttributeError, TypeError):
+        # Skip classes that don't support model_rebuild
+        pass
 
 
 # ==============================================================================

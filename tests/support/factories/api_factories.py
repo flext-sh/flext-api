@@ -5,7 +5,8 @@ Provides factory functions for API objects and configurations.
 
 from __future__ import annotations
 
-from uuid import uuid4
+# Use FlextUtilities.generate_uuid() instead of manual uuid import
+from flext_core import FlextUtilities
 
 from flext_api import (
     FlextApiClientMethod,
@@ -47,7 +48,7 @@ def create_flext_api_client_response(
         headers=headers or {"content-type": "application/json"},
         data=data or {"message": "success"},
         elapsed_time=elapsed_time,
-        request_id=request_id or str(uuid4()),
+        request_id=request_id or FlextUtilities.generate_uuid(),
         from_cache=from_cache,
     )
 

@@ -2,32 +2,19 @@
 
 from __future__ import annotations
 
-import pytest
-from flext_core import FlextResult
-
-from flext_api import FlextApiBaseService
+from flext_core import FlextDomainService, FlextResult
 
 
-class DummyService(FlextApiBaseService):
+class DummyService(FlextDomainService[dict[str, object]]):
     """Minimal concrete service for lifecycle tests using flext-core patterns."""
 
-    def __init__(self) -> None:
-        super().__init__()
-        # Store service name as a simple attribute (not in Pydantic data)
-        object.__setattr__(self, "_service_name", "dummy")
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute the domain service operation."""
+        return FlextResult[dict[str, object]].ok(
+            {"status": "processed", "message": "Data processed successfully"}
+        )
 
-    @property
-    def service_name(self) -> str:
-        """Get service name."""
-        return self._service_name
-
-    async def _do_start(self) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-    async def _do_stop(self) -> FlextResult[None]:
-        return FlextResult[None].ok(None)
-
-    async def process_data(self, data: dict[str, object]) -> FlextResult[dict[str, object]]:
+    def process_data(self, data: dict[str, object]) -> FlextResult[dict[str, object]]:
         """Mock processing method for testing."""
         return FlextResult[dict[str, object]].ok({
             "processed": True,
@@ -35,34 +22,32 @@ class DummyService(FlextApiBaseService):
         })
 
 
-@pytest.mark.asyncio
-async def test_base_service_lifecycle() -> None:
-    """Test basic service lifecycle operations."""
+def test_base_service_lifecycle() -> None:
+    """Test domain service execution."""
     service = DummyService()
 
-    # Test start
-    start_result = await service.start_async()
-    assert start_result.success
+    # Test execution
+    result = service.execute()
+    assert result.success
+    assert result.value is not None
+    assert "status" in result.value
+    assert result.value["status"] == "processed"
 
-    # Test health check
-    health_result = await service.health_check_async()
-    assert health_result.success
-    assert health_result.value is not None
-    assert "status" in health_result.value
+    # Test service validation
+    assert service.is_valid()
 
-    # Test stop
-    stop_result = await service.stop_async()
-    assert stop_result.success
+    # Test config validation
+    config_result = service.validate_config()
+    assert config_result.success
 
 
-@pytest.mark.asyncio
-async def test_base_service_data_processing() -> None:
+def test_base_service_data_processing() -> None:
     """Test service data processing functionality."""
     service = DummyService()
 
-    # Test data processing
+    # Test data processing method
     test_data = {"key": "value", "number": 42}
-    result = await service.process_data(test_data)
+    result = service.process_data(test_data)
 
     assert result.success
     assert result.value is not None
@@ -74,6 +59,8 @@ def test_base_service_initialization() -> None:
     """Test service initialization and properties."""
     service = DummyService()
 
-    assert service.service_name == "dummy"
-    assert hasattr(service, "is_running")
-    assert service.is_running is False  # Service starts as stopped
+    # Test domain service properties
+    assert hasattr(service, "execute")
+    assert hasattr(service, "is_valid")
+    assert callable(service.execute)
+    assert service.is_valid() is True

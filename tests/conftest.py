@@ -36,7 +36,7 @@ from flext_api import (
     FlextApiClientResponse,
     create_flext_api_app,
 )
-from flext_api.storage import FileStorageBackend, MemoryStorageBackend, StorageConfig
+from flext_api.storage import FileStorageBackend, MemoryStorageBackend
 
 # Import all support modules
 from tests.support.factories import (
@@ -263,10 +263,10 @@ try:
 except ImportError:
     # Fallback benchmark fixture for environments without pytest-benchmark
     @pytest.fixture
-    def benchmark() -> Callable[[Callable[..., object], ...], object]:
+    def benchmark() -> Callable[..., object]:  # type: ignore[explicit-any]
         """Lightweight benchmark fallback."""
 
-        def _bench(func: Callable[..., object], *args: object, **kwargs: object) -> object:
+        def _bench(func: Callable[..., object], *args: object, **kwargs: object) -> object:  # type: ignore[explicit-any]
             return func(*args, **kwargs)
 
         return _bench
@@ -287,23 +287,25 @@ def temp_dir() -> Iterator[Path]:
 @pytest.fixture
 async def memory_storage() -> AsyncGenerator[MemoryStorageBackend[object]]:
     """Provide memory storage backend for testing."""
-    config = StorageConfig()
-    storage = MemoryStorageBackend[object](config)
+    # MemoryBackend não aceita parâmetros no __init__
+    storage = MemoryStorageBackend[object]()
     try:
         yield storage
     finally:
-        await storage.close()
+        # Backends não têm método close()
+        pass
 
 
 @pytest.fixture
 async def file_storage(temp_dir: Path) -> AsyncGenerator[FileStorageBackend[object]]:
     """Provide file storage backend for testing."""
-    config = StorageConfig(file_path=str(temp_dir / "test_storage.json"))
-    storage = FileStorageBackend[object](config)
+    # FileBackend aceita string como parâmetro, não Config
+    storage = FileStorageBackend[object](str(temp_dir / "test_storage.json"))
     try:
         yield storage
     finally:
-        await storage.close()
+        # Backends não têm método close()
+        pass
 
 
 # ============================================================================
