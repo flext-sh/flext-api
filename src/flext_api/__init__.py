@@ -41,8 +41,11 @@ except ImportError:
             pass
 
 
-# Version information
-__version__ = FLEXT_API_VERSION
+# Version information - imported from constants module via wildcard import above
+try:
+    __version__ = FLEXT_API_VERSION  # This comes from constants.py via wildcard import  # noqa: F405
+except NameError:
+    __version__ = "0.9.0"  # Fallback version
 
 # Note: __all__ is constructed dynamically at runtime from imported modules
 # This pattern is necessary for library aggregation but causes pyright warnings

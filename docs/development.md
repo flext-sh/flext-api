@@ -172,7 +172,7 @@ make deps-audit     # Security audit of dependencies
    from flext_core import get_flext_container
 
    # ✅ Use global container
-   container = get_flext_container()
+   container = FlextContainer.get_global()
    service = container.get(SomeService)
 
    # ❌ Avoid - local containers

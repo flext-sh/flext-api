@@ -24,20 +24,15 @@ from enum import StrEnum
 from typing import Any, cast
 
 from flext_core import (
-    FlextExceptions.AuthenticationError,
-    FlextExceptions.ConfigurationError,
-    FlextExceptions.ConnectionError,
-    FlextExceptions.Error,
+    FlextExceptions,
+    FlextLogger,
     FlextProcessingError,
-    FlextExceptions.TimeoutError,
-    FlextExceptions.ValidationError,
-    get_logger,
 )
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextTypes
 
-logger = get_logger(__name__)
+logger: FlextLogger = FlextLogger(__name__)
 
 
 # ==============================================================================
@@ -69,7 +64,7 @@ class FlextApiErrorCodes(StrEnum):
 # ==============================================================================
 
 
-class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
+class FlextApiExceptions(FlextExceptions):  # noqa: N818
     """Single consolidated class containing all API exceptions following FLEXT patterns.
 
     This class follows the CONSOLIDATED class pattern from FLEXT_REFACTORING_PROMPT.md,
@@ -90,7 +85,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
 
         def get_error_code(self) -> str:
             """Get error code - implemented by flext-core."""
-            return getattr(self, "error_code", "UNKNOWN")
+            return getattr(self, "code", "UNKNOWN")
 
         def get_context(self) -> dict[str, object]:
             """Get error context - implemented by flext-core."""
@@ -100,8 +95,8 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
     # BASE API ERROR
     # ==============================================================================
 
-    class FlextApiError(FlextApiErrorMixin, FlextExceptions.Error):
-        """Base API error with HTTP status code support using FlextExceptions.ErrorMixin pattern."""
+    class FlextApiError(FlextApiErrorMixin, FlextExceptions.FlextExceptionBaseError):
+        """Base API error with HTTP status code support using FlextExceptionsMixin pattern."""
 
         def __init__(
             self,
@@ -122,7 +117,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
 
             super().__init__(
                 message,
-                error_code=code or FlextApiErrorCodes.GENERIC_API_ERROR,
+                code=code or FlextApiErrorCodes.GENERIC_API_ERROR,
                 context=merged_context,
             )
 
@@ -131,7 +126,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
             return {
                 "success": False,
                 "error": {
-                    "code": self.error_code,
+                    "code": self.code,
                     "message": str(self),
                     "status_code": self.status_code,
                     "context": self.get_context(),
@@ -143,7 +138,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
     # SPECIFIC API ERRORS - INHERIT FROM FLEXT-CORE BASE CLASSES
     # ==============================================================================
 
-    class FlextApiValidationError(FlextApiErrorMixin, FlextExceptions.ValidationError):
+    class FlextApiValidationError(FlextApiErrorMixin, FlextExceptions):
         """Validation error in API with field-specific context."""
 
         def __init__(
@@ -187,7 +182,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
 
             super().__init__(
                 message,
-                error_code="FLEXT_3001",
+                code="FLEXT_3001",
                 context=merged_context,
             )
 
@@ -205,7 +200,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
                 "data": None,
             }
 
-    class FlextApiAuthenticationError(FlextApiErrorMixin, FlextExceptions.AuthenticationError):
+    class FlextApiAuthenticationError(FlextApiErrorMixin, FlextExceptions):
         """Authentication error in API with auth method context."""
 
         def __init__(
@@ -243,7 +238,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
             )
             super().__init__(
                 formatted_message,
-                error_code="AUTH_ERROR",
+                code="AUTH_ERROR",
                 context=merged_context,
             )
 
@@ -289,11 +284,11 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
             super().__init__(
                 f"Authorization: {message}",
                 status_code=403,
-                error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
+                code=FlextApiErrorCodes.GENERIC_API_ERROR,
                 context=merged_context,
             )
 
-    class FlextApiConfigurationError(FlextApiErrorMixin, FlextExceptions.ConfigurationError):
+    class FlextApiConfigurationError(FlextApiErrorMixin, FlextExceptions.FlextConfigurationError):
         """Configuration error in API with config key context."""
 
         def __init__(
@@ -325,7 +320,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
 
             super().__init__(
                 message,
-                error_code="CONFIG_ERROR",
+                code="CONFIG_ERROR",
                 context=merged_context,
             )
 
@@ -342,7 +337,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
                 "data": None,
             }
 
-    class FlextApiConnectionError(FlextApiErrorMixin, FlextExceptions.ConnectionError):
+    class FlextApiConnectionError(FlextApiErrorMixin, FlextExceptions):
         """Connection error in API with network context."""
 
         def __init__(
@@ -377,7 +372,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
 
             super().__init__(
                 message,
-                error_code="FLEXT_2001",
+                code="FLEXT_2001",
                 context=merged_context,
             )
 
@@ -426,7 +421,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
 
             super().__init__(
                 message,
-                error_code="PROCESSING_ERROR",
+                code="PROCESSING_ERROR",
                 context=merged_context,
             )
 
@@ -443,7 +438,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
                 "data": None,
             }
 
-    class FlextApiTimeoutError(FlextApiErrorMixin, FlextExceptions.TimeoutError):
+    class FlextApiTimeoutError(FlextApiErrorMixin, FlextExceptions):
         """Timeout error in API with timeout context."""
 
         def __init__(
@@ -480,7 +475,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
 
             super().__init__(
                 message,
-                error_code="FLEXT_2002",
+                code="FLEXT_2002",
                 context=merged_context,
             )
 
@@ -531,7 +526,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
             super().__init__(
                 f"API request: {message}",
                 status_code=status_code,
-                error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
+                code=FlextApiErrorCodes.GENERIC_API_ERROR,
                 context=merged_context,
             )
 
@@ -563,7 +558,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
             super().__init__(
                 f"API response: {message}",
                 status_code=status_code,
-                error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
+                code=FlextApiErrorCodes.GENERIC_API_ERROR,
                 context=merged_context,
             )
 
@@ -600,7 +595,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
             super().__init__(
                 f"API storage: {message}",
                 status_code=status_code,
-                error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
+                code=FlextApiErrorCodes.GENERIC_API_ERROR,
                 context=merged_context,
             )
 
@@ -637,7 +632,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
             super().__init__(
                 f"API builder: {message}",
                 status_code=status_code,
-                error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
+                code=FlextApiErrorCodes.GENERIC_API_ERROR,
                 context=merged_context,
             )
 
@@ -673,7 +668,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
             super().__init__(
                 f"Rate limit: {message}",
                 status_code=429,
-                error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
+                code=FlextApiErrorCodes.GENERIC_API_ERROR,
                 context=merged_context,
             )
 
@@ -706,7 +701,7 @@ class FlextApiExceptions(FlextExceptions.Error):  # noqa: N818
             super().__init__(
                 f"Not found: {message}",
                 status_code=404,
-                error_code=FlextApiErrorCodes.GENERIC_API_ERROR,
+                code=FlextApiErrorCodes.GENERIC_API_ERROR,
                 context=merged_context,
             )
 

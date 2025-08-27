@@ -22,12 +22,13 @@ from typing import cast, override
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import (
+    FlextConstants,
     FlextEntity,
+    FlextLogger,
     FlextModel,
     FlextResult,
     FlextTimestamp,
     flext_alias_generator,
-    get_logger,
 )
 from pydantic import (
     AliasGenerator,
@@ -40,7 +41,7 @@ from pydantic import (
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import HeadersDict, HttpUrl
 
-logger = get_logger(__name__)
+logger: FlextLogger = FlextLogger(__name__)
 
 # ==============================================================================
 # TYPE DEFINITIONS
@@ -55,16 +56,18 @@ SortSpec = dict[str, str]
 # CONSTANTS
 # ==============================================================================
 
-MIN_PORT: int = 1
-MAX_PORT: int = 65535
-MIN_TOKEN_LENGTH: int = 16
-JWT_PARTS_COUNT: int = 3
-MIN_CONTROL_CHAR: int = 32
-MIN_HTTP_STATUS: int = 100
-MAX_HTTP_STATUS: int = 599
-DEFAULT_TIMEOUT: float = 30.0
-DEFAULT_PAGE_SIZE: int = 20
-DEFAULT_MAX_RETRIES: int = 3
+# FlextConstants already imported above in main imports
+
+MIN_PORT: int = FlextConstants.Web.MIN_PORT
+MAX_PORT: int = FlextConstants.Web.MAX_PORT
+MIN_TOKEN_LENGTH: int = 16  # API-specific
+JWT_PARTS_COUNT: int = 3  # API-specific
+MIN_CONTROL_CHAR: int = 32  # API-specific
+MIN_HTTP_STATUS: int = 100  # Could be centralized
+MAX_HTTP_STATUS: int = FlextConstants.Web.MAX_HTTP_STATUS
+DEFAULT_TIMEOUT: float = FlextConstants.Api.DEFAULT_API_TIMEOUT
+DEFAULT_PAGE_SIZE: int = FlextConstants.Defaults.PAGE_SIZE
+DEFAULT_MAX_RETRIES: int = FlextConstants.Defaults.MAX_RETRIES
 
 HTTP_STATUS_RANGES: dict[str, tuple[int, int]] = {
     "INFORMATIONAL": (100, 200),
@@ -1519,7 +1522,7 @@ class FlextApiModels(FlextModel):
         )
         pagination: object | None = Field(None, description="Pagination info")
         status_code: int = Field(
-            default=200,
+            default=FlextConstants.Web.HTTP_OK,
             ge=100,
             le=599,
             description="HTTP status code",
@@ -1587,7 +1590,7 @@ class FlextApiModels(FlextModel):
             default_factory=dict, description="Pagination parameters"
         )
         page: int = Field(default=1, ge=1, description="Page number")
-        page_size: int = Field(default=20, ge=1, le=1000, description="Items per page")
+        page_size: int = Field(default=FlextConstants.Defaults.PAGE_SIZE, ge=1, le=1000, description="Items per page")
         search: str = Field(default="", description="Search query")
         fields: list[str] = Field(default_factory=list, description="Fields to include")
         includes: list[str] = Field(
@@ -1603,7 +1606,7 @@ class FlextApiModels(FlextModel):
         success: bool = Field(description="Whether the response indicates success")
         data: object | None = Field(default=None, description="Response data payload")
         message: str = Field(default="", description="Response message")
-        status_code: int = Field(default=200, description="HTTP status code")
+        status_code: int = Field(default=FlextConstants.Web.HTTP_OK, description="HTTP status code")
         metadata: dict[str, object] = Field(
             default_factory=dict, description="Response metadata"
         )
@@ -1617,7 +1620,7 @@ class FlextApiModels(FlextModel):
 
         data: object | None = Field(default=None, description="Paginated data")
         page: int = Field(default=1, ge=1, description="Current page number")
-        page_size: int = Field(default=20, ge=1, le=1000, description="Items per page")
+        page_size: int = Field(default=FlextConstants.Defaults.PAGE_SIZE, ge=1, le=1000, description="Items per page")
         total_items: int = Field(default=0, ge=0, description="Total number of items")
         total: int = Field(default=0, ge=0, description="Total number of items (alias)")
         message: str = Field(default="", description="Response message")
@@ -1631,7 +1634,7 @@ class FlextApiModels(FlextModel):
         success: bool = Field(description="Whether response is successful")
         data: object | None = Field(default=None, description="Response data")
         message: str = Field(default="", description="Response message")
-        status_code: int = Field(default=200, description="HTTP status code")
+        status_code: int = Field(default=FlextConstants.Web.HTTP_OK, description="HTTP status code")
 
     @classmethod
     def get_all_model_classes(cls) -> dict[str, type]:

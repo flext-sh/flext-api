@@ -10,7 +10,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextProtocols, FlextResult
+from flext_core import FlextResult
+from flext_core.protocols import FlextProtocols
 
 # ============================================================================
 # API-SPECIFIC PROTOCOLS USING FLEXT-CORE FOUNDATION

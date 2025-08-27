@@ -122,7 +122,7 @@ Query/Response builders, fluent construction, and validation.
 graph LR
     subgraph "✅ Implemented"
         A[FlextResult 70%]
-        B[FlextSettings 90%]
+        B[FlextConfig 90%]
     end
 
     subgraph "🟡 Partial"
@@ -343,7 +343,7 @@ make format          # Auto-format code
 - [ ] FlextResult[T] used for operations that can fail
 - [ ] get_logger(**name**) from flext-core (not structlog)
 - [ ] Services inherit from FlextService correctly
-- [ ] Global container via get_flext_container()
+- [ ] Global container via FlextContainer.get_global()
 - [ ] Error handling with structured codes
 
 #### **Quality Standards**
