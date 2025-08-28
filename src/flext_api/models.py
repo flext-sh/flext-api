@@ -558,9 +558,9 @@ class FlextApiModels(FlextModel):
                 raise ValueError(msg)
 
             # JWT format validation - check for empty parts in any 3-part token
-            if v.count(".") == FlextApiConstants.Auth.JWT_SEPARATOR_COUNT:
+            if v.count(".") == FlextApiConstants.ApiAuth.JWT_SEPARATOR_COUNT:
                 parts = v.split(".")
-                if len(parts) == FlextApiConstants.Auth.JWT_PARTS_COUNT and not all(
+                if len(parts) == FlextApiConstants.ApiAuth.JWT_PARTS_COUNT and not all(
                     part.strip() for part in parts
                 ):
                     msg = "JWT format error - empty parts not allowed"
@@ -580,9 +580,9 @@ class FlextApiModels(FlextModel):
                 )
 
             # JWT format validation - check for empty parts in any 3-part token
-            if self.token.count(".") == FlextApiConstants.Auth.JWT_SEPARATOR_COUNT:
+            if self.token.count(".") == FlextApiConstants.ApiAuth.JWT_SEPARATOR_COUNT:
                 parts = self.token.split(".")
-                if len(parts) == FlextApiConstants.Auth.JWT_PARTS_COUNT and not all(
+                if len(parts) == FlextApiConstants.ApiAuth.JWT_PARTS_COUNT and not all(
                     part.strip() for part in parts
                 ):
                     return FlextResult[None].fail(
@@ -1046,7 +1046,7 @@ class FlextApiModels(FlextModel):
                     "updated_at": FlextTimestamp.now(),
                 },
             )
-            logger.error("Request processing failed", request_id=self.id, error=error)
+            logger.error("Request processing failed", request_id=self.id, failure_reason=str(error))
             return FlextResult[object].ok(updated)
 
     class ApiResponse(FlextEntity):
@@ -1159,7 +1159,7 @@ class FlextApiModels(FlextModel):
             logger.error(
                 "Response marked as error",
                 response_id=self.id,
-                error=error_message,
+                error_message=error_message,
             )
             return FlextResult[object].ok(updated)
 

@@ -5,14 +5,15 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import override
 
-from flext_core import FlextBaseConfigModel, FlextConfig, FlextConstants, FlextResult
+from flext_core import FlextConstants, FlextResult
+from flext_core.config import FlextConfig
 from pydantic import Field, field_validator
 
 # Import from flext-api root - following FLEXT standards
 from flext_api.constants import FlextApiConstants
 
 
-class FlextApiConfig(FlextBaseConfigModel):
+class FlextApiConfig(FlextConfig.BaseConfigModel):
     """Main API configuration class inheriting from FlextBaseConfigModel.
 
     This class follows the FLEXT pattern of having a single Flext[Area][Module] class
@@ -91,7 +92,7 @@ class FlextApiConfig(FlextBaseConfigModel):
     debug: bool = Field(default=False, description="Enable debug mode")
     log_level: str = Field(default="INFO", description="Logging level")
     # Inherit base model_config and customize env_prefix
-    model_config = FlextBaseConfigModel.model_config | {"env_prefix": "FLEXT_API_"}
+    model_config = FlextConfig.BaseConfigModel.model_config | {"env_prefix": "FLEXT_API_"}
 
     @field_validator("api_port")
     @classmethod
@@ -141,10 +142,10 @@ class FlextApiConfig(FlextBaseConfigModel):
         # Database configuration validation
         if (
             self.database_url
-            and self.database_pool_size > FlextApiConstants.Database.MAX_POOL_SIZE
+            and self.database_pool_size > FlextApiConstants.ApiDatabase.MAX_POOL_SIZE
         ):
             return FlextResult[None].fail(
-                f"Database pool size should not exceed {FlextApiConstants.Database.MAX_POOL_SIZE} for optimal performance",
+                f"Database pool size should not exceed {FlextApiConstants.ApiDatabase.MAX_POOL_SIZE} for optimal performance",
             )
         # Cache configuration validation
         if self.enable_caching and self.cache_ttl <= 0:
