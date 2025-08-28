@@ -163,7 +163,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
             except Exception as e:
                 return FlextResult[object].fail(f"Repository save error: {e}")
 
-        def get_by_id(self, entity_id: str) -> FlextResult[object | None]:  # noqa: ARG002
+        def get_by_id(self, entity_id: str) -> FlextResult[object | None]:
             """Get entity by ID (required by protocol)."""
             try:
                 # Sync wrapper - in real implementation should be async
@@ -171,7 +171,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
             except Exception as e:
                 return FlextResult[object | None].fail(f"Repository get error: {e}")
 
-        def delete(self, entity_id: str) -> FlextResult[None]:  # noqa: ARG002
+        def delete(self, entity_id: str) -> FlextResult[None]:
             """Delete entity by ID."""
             try:
                 # Sync wrapper - in real implementation should be async
@@ -295,7 +295,9 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                     with self.file_path.open("r", encoding="utf-8") as f:
                         # Read file content and use FlextUtilities JSON parser
                         file_content = f.read()
-                        raw_data = FlextUtilities.ProcessingUtils.safe_json_parse(file_content)
+                        raw_data = FlextUtilities.ProcessingUtils.safe_json_parse(
+                            file_content
+                        )
                         # safe_json_parse always returns dict[str, object]
                         return cast("dict[str, V]", raw_data)
                 return {}
@@ -312,7 +314,9 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
             try:
                 with self.file_path.open("w", encoding="utf-8") as f:
                     # Use FlextUtilities JSON stringifier
-                    json_string = FlextUtilities.ProcessingUtils.safe_json_stringify(data)
+                    json_string = FlextUtilities.ProcessingUtils.safe_json_stringify(
+                        data
+                    )
                     f.write(json_string)
                 return FlextResult[None].ok(None)
             except Exception as e:
@@ -483,18 +487,16 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
         """Execute storage service - return status information."""
         try:
             config = object.__getattribute__(self, "config")
-            return FlextResult[dict[str, object]].ok(
-                {
-                    "service": "FlextApiStorage",
-                    "status": "healthy",
-                    "backend": config.backend,
-                    "namespace": config.namespace,
-                    "key_count": 0,  # Simplified for sync method
-                    "caching_enabled": config.enable_caching,
-                    "transactions_enabled": config.enable_transactions,
-                    "timestamp": time.time(),
-                }
-            )
+            return FlextResult[dict[str, object]].ok({
+                "service": "FlextApiStorage",
+                "status": "healthy",
+                "backend": config.backend,
+                "namespace": config.namespace,
+                "key_count": 0,  # Simplified for sync method
+                "caching_enabled": config.enable_caching,
+                "transactions_enabled": config.enable_transactions,
+                "timestamp": time.time(),
+            })
         except Exception as e:
             logger.exception("Storage execute failed", error=str(e))
             return FlextResult[dict[str, object]].fail(f"Storage execution failed: {e}")
@@ -540,7 +542,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
         """Delete key with cache invalidation."""
         if self._current_transaction:
             self._current_transaction.add_operation("delete", key, None)
-            return FlextResult[bool].ok(True)  # noqa: FBT003
+            return FlextResult[bool].ok(True)
 
         # Delete from cache
         if self._cache:
@@ -692,7 +694,7 @@ def create_storage(backend: str = "memory", **kwargs: object) -> FlextApiStorage
     if "namespace" in kwargs:
         config_args["namespace"] = str(kwargs["namespace"])
 
-    config = FlextApiStorage.Config(**config_args)  # type: ignore[arg-type]
+    config = FlextApiStorage.Config(**config_args)
     return FlextApiStorage(config)
 
 

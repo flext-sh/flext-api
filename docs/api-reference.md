@@ -73,7 +73,7 @@ class FlextApiClient:
         self,
         path: str,
         json: dict = None,
-        data: Any = None,
+        data: object = None,
         headers: dict = None,
         timeout: float = None,
         **kwargs
@@ -129,7 +129,7 @@ class FlextApiClientRequest:
     headers: dict[str, str]
     params: dict[str, object]
     json: dict = None
-    data: Any = None
+    data: object = None
     timeout: float = None
 ```
 
@@ -232,14 +232,14 @@ class FlextApiQueryBuilder:
     def __init__(self)
 
     # Filtros de comparação
-    def equals(self, field: str, value: Any) -> FlextApiQueryBuilder
-    def not_equals(self, field: str, value: Any) -> FlextApiQueryBuilder
-    def greater_than(self, field: str, value: Any) -> FlextApiQueryBuilder
-    def greater_than_or_equal(self, field: str, value: Any) -> FlextApiQueryBuilder
-    def less_than(self, field: str, value: Any) -> FlextApiQueryBuilder
-    def less_than_or_equal(self, field: str, value: Any) -> FlextApiQueryBuilder
-    def between(self, field: str, min_val: Any, max_val: Any) -> FlextApiQueryBuilder
-    def not_between(self, field: str, min_val: Any, max_val: Any) -> FlextApiQueryBuilder
+    def equals(self, field: str, value: object) -> FlextApiQueryBuilder
+    def not_equals(self, field: str, value: object) -> FlextApiQueryBuilder
+    def greater_than(self, field: str, value: object) -> FlextApiQueryBuilder
+    def greater_than_or_equal(self, field: str, value: object) -> FlextApiQueryBuilder
+    def less_than(self, field: str, value: object) -> FlextApiQueryBuilder
+    def less_than_or_equal(self, field: str, value: object) -> FlextApiQueryBuilder
+    def between(self, field: str, min_val: object, max_val: object) -> FlextApiQueryBuilder
+    def not_between(self, field: str, min_val: object, max_val: object) -> FlextApiQueryBuilder
 
     # Filtros de texto
     def like(self, field: str, pattern: str) -> FlextApiQueryBuilder
@@ -258,10 +258,10 @@ class FlextApiQueryBuilder:
     def is_not_empty(self, field: str) -> FlextApiQueryBuilder
 
     # Filtros de data
-    def date_equals(self, field: str, date_val: Any) -> FlextApiQueryBuilder
-    def date_before(self, field: str, date_val: Any) -> FlextApiQueryBuilder
-    def date_after(self, field: str, date_val: Any) -> FlextApiQueryBuilder
-    def date_between(self, field: str, start: Any, end: Any) -> FlextApiQueryBuilder
+    def date_equals(self, field: str, date_val: object) -> FlextApiQueryBuilder
+    def date_before(self, field: str, date_val: object) -> FlextApiQueryBuilder
+    def date_after(self, field: str, date_val: object) -> FlextApiQueryBuilder
+    def date_between(self, field: str, start: object, end: object) -> FlextApiQueryBuilder
     def date_year(self, field: str, year: int) -> FlextApiQueryBuilder
     def date_month(self, field: str, month: int) -> FlextApiQueryBuilder
     def date_day(self, field: str, day: int) -> FlextApiQueryBuilder
@@ -324,10 +324,10 @@ class FlextApiQueryOperator(Enum):
 class FlextApiResponseBuilder:
     def __init__(self)
 
-    def success(self, data: Any = None) -> FlextApiResponseBuilder
+    def success(self, data: object = None) -> FlextApiResponseBuilder
     def error(self, message: str, code: int = None) -> FlextApiResponseBuilder
 
-    def with_metadata(self, key: str, value: Any) -> FlextApiResponseBuilder
+    def with_metadata(self, key: str, value: object) -> FlextApiResponseBuilder
     def with_pagination(
         self,
         total: int,
@@ -335,7 +335,7 @@ class FlextApiResponseBuilder:
         page_size: int
     ) -> FlextApiResponseBuilder
 
-    def with_error_details(self, details: Any) -> FlextApiResponseBuilder
+    def with_error_details(self, details: object) -> FlextApiResponseBuilder
     def with_status_code(self, code: int) -> FlextApiResponseBuilder
     def with_headers(self, headers: dict) -> FlextApiResponseBuilder
     def with_debug_info(self, info: dict) -> FlextApiResponseBuilder
@@ -418,7 +418,7 @@ def build_query(filters: dict) -> dict
 
 ```python
 def build_success_response(
-    data: Any = None,
+    data: object = None,
     metadata: dict = None
 ) -> dict
 ```
@@ -429,7 +429,7 @@ def build_success_response(
 def build_error_response(
     message: str,
     code: int = None,
-    details: Any = None
+    details: object = None
 ) -> dict
 ```
 
@@ -437,7 +437,7 @@ def build_error_response(
 
 ```python
 def build_paginated_response(
-    data: Any,
+    data: object,
     page: int,
     size: int,
     total: int,
@@ -502,7 +502,8 @@ class FlextApiHTTPError(Exception):
 ### Common Types
 
 ```python
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
+
 
 QueryDict = Dict[str, object]
 ResponseDict = Dict[str, object]

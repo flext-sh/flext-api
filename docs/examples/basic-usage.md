@@ -664,7 +664,7 @@ This example creates a simple CLI tool for making HTTP requests.
 
 import sys
 import json
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, object
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
 
@@ -702,7 +702,7 @@ class SimpleApiClient:
             logger.error("Failed to initialize HTTP client", error=client_result.error)
             raise RuntimeError(f"Client initialization failed: {client_result.error}")
 
-    def get(self, path: str, params: Optional[Dict[str, Any]] = None) -> FlextResult[Dict[str, Any]]:
+    def get(self, path: str, params: Optional[Dict[str, object]] = None) -> FlextResult[Dict[str, object]]:
         """Make a GET request."""
         if not self.client:
             return FlextResult[None].fail("Client not initialized")
@@ -718,7 +718,7 @@ class SimpleApiClient:
             logger.error("GET request failed", path=path, error=response.error)
             return FlextResult[None].fail(response.error)
 
-    def post(self, path: str, data: Optional[Dict[str, Any]] = None) -> FlextResult[Dict[str, Any]]:
+    def post(self, path: str, data: Optional[Dict[str, object]] = None) -> FlextResult[Dict[str, object]]:
         """Make a POST request."""
         if not self.client:
             return FlextResult[None].fail("Client not initialized")

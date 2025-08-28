@@ -531,7 +531,7 @@ def build_search_query(filters: dict):
 ### 3. Usar Type Hints
 
 ```python
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, object
 from flext_api import FlextApiQueryBuilder, FlextApiResponseBuilder
 
 def build_user_query(

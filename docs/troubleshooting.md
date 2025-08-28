@@ -920,11 +920,11 @@ error: "None" has no attribute "data"
 **Solutions**:
 
 ```python
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, object
 from flext_core import FlextResult
 
 # ✅ Add proper type annotations
-def typed_function(name: str, age: int) -> FlextResult[Dict[str, Any]]:
+def typed_function(name: str, age: int) -> FlextResult[Dict[str, object]]:
     """Function with proper type annotations."""
     if not name:
         return FlextResult[None].fail("Name is required")

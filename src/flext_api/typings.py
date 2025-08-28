@@ -14,7 +14,7 @@ from flext_core import FlextResult, FlextTypes as CoreFlextTypes
 # =============================================================================
 
 # API-specific type aliases using Python 3.13+ syntax
-type ConfigDict = dict[str, object]  # Not dict[str, Any] - be specific
+type ConfigDict = dict[str, object]  # Not dict[str, object] - be specific
 type ResultDict = dict[str, object]
 type HeadersDict = dict[str, str]
 type QueryParams = dict[str, str | int | float | bool]

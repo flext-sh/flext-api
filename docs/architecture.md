@@ -293,29 +293,30 @@ class FlextApiCachingPlugin(FlextApiPlugin):
 
 ```python
 from flext_core import FlextResult, get_logger
-from typing import Dict, Any, List, Optional
+from typing import Dict, List, Optional
+
 
 class FlextApiQueryBuilder:
     """✅ Builder para construção fluente de queries."""
 
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
-        self._filters: Dict[str, Any] = {}
+        self._filters: Dict[str, object] = {}
         self._sorting: List[Dict[str, str]] = []
         self._pagination: Dict[str, int] = {}
         self._includes: List[str] = []
 
-    def filter(self, field: str, value: Any) -> Self:
+    def filter(self, field: str, value: object) -> Self:
         """Add filter condition."""
         self._filters[field] = value
         return self
 
-    def filter_in(self, field: str, values: List[Any]) -> Self:
+    def filter_in(self, field: str, values: List[object]) -> Self:
         """Add IN filter condition."""
         self._filters[field] = {"in": values}
         return self
 
-    def filter_range(self, field: str, min_val: Any, max_val: Any) -> Self:
+    def filter_range(self, field: str, min_val: object, max_val: object) -> Self:
         """Add range filter condition."""
         self._filters[field] = {"gte": min_val, "lte": max_val}
         return self
@@ -345,7 +346,7 @@ class FlextApiQueryBuilder:
         self._includes.extend(fields)
         return self
 
-    def build(self) -> FlextResult[Dict[str, Any]]:
+    def build(self) -> FlextResult[Dict[str, object]]:
         """✅ Build final query retornando FlextResult."""
         try:
             query = {
@@ -373,7 +374,7 @@ class FlextApiQueryBuilder:
                 error_code="QUERY_BUILD_ERROR"
             )
 
-    def _validate_query(self, query: Dict[str, Any]) -> FlextResult[None]:
+    def _validate_query(self, query: Dict[str, object]) -> FlextResult[None]:
         """Validate query business rules."""
         # Validate filter fields
         invalid_fields = [f for f in query["filters"] if not f.replace("_", "").isalnum()]
@@ -453,7 +454,7 @@ def get_query_builder() -> FlextResult[FlextApiQueryBuilder]:
 
 ```python
 from flext_core import FlextResult, get_logger
-from typing import Dict, Any
+from typing import Dict, object
 
 logger = get_logger(__name__)
 
@@ -463,7 +464,7 @@ class FlextApiError:
     @staticmethod
     def create_client_error(
         operation: str,
-        config: Dict[str, Any],
+        config: Dict[str, object],
         exception: Exception
     ) -> FlextResult[None]:
         """Create structured client error."""
@@ -488,7 +489,7 @@ class FlextApiError:
     @staticmethod
     def create_validation_error(
         field: str,
-        value: Any,
+        value: object,
         constraint: str
     ) -> FlextResult[None]:
         """Create structured validation error."""
@@ -520,7 +521,7 @@ class FlextApiError:
 ```python
 from flext_core import FlextConfig, FlextResult, get_flext_container
 from pydantic import Field, field_validator
-from typing import Dict, Any
+from typing import Dict, object
 
 class FlextApiSettings(FlextConfig):
     """✅ Configuration seguindo padrões flext-core."""
@@ -616,7 +617,8 @@ def register_settings() -> FlextResult[None]:
 
 ```python
 from flext_core import get_logger
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
+
 import uuid
 from contextlib import contextmanager
 
@@ -628,7 +630,7 @@ class FlextApiObservability:
         self.correlation_id: Optional[str] = None
 
     @contextmanager
-    def operation_context(self, operation: str, **context: Any):
+    def operation_context(self, operation: str, **context: object):
         """Context manager para operações com correlation ID."""
         correlation_id = str(uuid.uuid4())
         old_correlation = self.correlation_id
@@ -659,7 +661,7 @@ class FlextApiObservability:
         finally:
             self.correlation_id = old_correlation
 
-    def log_http_request(self, method: str, url: str, **context: Any) -> None:
+    def log_http_request(self, method: str, url: str, **context: object) -> None:
         """Log HTTP request com contexto estruturado."""
         request_context = {
             "http_method": method,
@@ -669,7 +671,7 @@ class FlextApiObservability:
         }
         self.logger.info("HTTP request", **request_context)
 
-    def log_http_response(self, status_code: int, duration_ms: float, **context: Any) -> None:
+    def log_http_response(self, status_code: int, duration_ms: float, **context: object) -> None:
         """Log HTTP response com métricas."""
         response_context = {
             "http_status_code": status_code,

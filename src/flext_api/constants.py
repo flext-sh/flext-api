@@ -184,7 +184,7 @@ class FlextApiFieldType:
     """API-specific field type identifiers (string constants)."""
 
     API_KEY = "api_key"
-    BEARER_TOKEN = "bearer_token"  # noqa: S105
+    BEARER_TOKEN = "bearer_token"
     PIPELINE_CONFIG = "pipeline_config"
     PLUGIN_CONFIG = "plugin_config"
     USER_ROLE = "user_role"

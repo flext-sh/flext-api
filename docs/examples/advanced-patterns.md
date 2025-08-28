@@ -25,7 +25,8 @@ This guide covers sophisticated FLEXT API usage patterns for enterprise applicat
 ```python
 from flext_api import FlextApiPlugin, create_flext_api
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
+
 import time
 import hashlib
 
@@ -39,7 +40,7 @@ class RequestLoggingPlugin(FlextApiPlugin):
         self.include_body = include_body
         self.request_times = {}
 
-    def before_request(self, request_config: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def before_request(self, request_config: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Log and track request before execution."""
         request_id = self._generate_request_id(request_config)
         self.request_times[request_id] = time.time()
@@ -59,7 +60,7 @@ class RequestLoggingPlugin(FlextApiPlugin):
 
         return FlextResult[None].ok(request_config)
 
-    def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def after_response(self, response: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Log response and calculate request duration."""
         request_id = response.get("_request_id")
         if request_id and request_id in self.request_times:
@@ -80,7 +81,7 @@ class RequestLoggingPlugin(FlextApiPlugin):
 
         return FlextResult[None].ok(response)
 
-    def _generate_request_id(self, request_config: Dict[str, Any]) -> str:
+    def _generate_request_id(self, request_config: Dict[str, object]) -> str:
         """Generate unique request ID."""
         content = f"{request_config.get('method', 'GET')}{request_config.get('url', '')}{time.time()}"
         return hashlib.md5(content.encode()).hexdigest()[:8]
@@ -93,7 +94,7 @@ class RequestThrottlingPlugin(FlextApiPlugin):
         self.window_seconds = window_seconds
         self.request_times = []
 
-    def before_request(self, request_config: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def before_request(self, request_config: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Check rate limit before request."""
         current_time = time.time()
 
@@ -165,7 +166,7 @@ plugin_result = advanced_plugin_example()
 ```python
 from flext_api import FlextApiPlugin, create_flext_api
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any
+from typing import Dict, object
 import time
 from enum import Enum
 
@@ -193,7 +194,7 @@ class AdvancedCircuitBreakerPlugin(FlextApiPlugin):
         self.state = CircuitState.CLOSED
         self.half_open_calls = 0
 
-    def before_request(self, request_config: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def before_request(self, request_config: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Check circuit state before request."""
         current_time = time.time()
 
@@ -217,7 +218,7 @@ class AdvancedCircuitBreakerPlugin(FlextApiPlugin):
 
         return FlextResult[None].ok(request_config)
 
-    def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def after_response(self, response: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Update circuit state based on response."""
         status_code = response.get("status_code", 0)
         success = 200 <= status_code < 300
@@ -326,7 +327,7 @@ circuit_result = circuit_breaker_example()
 
 ```python
 import asyncio
-from typing import List, Dict, Any
+from typing import List, Dict, object
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
 
@@ -362,7 +363,7 @@ class AsyncFlextApiWrapper:
             "timeout": 30
         })
 
-    async def get_async(self, path: str, **kwargs) -> FlextResult[Dict[str, Any]]:
+    async def get_async(self, path: str, **kwargs) -> FlextResult[Dict[str, object]]:
         """Async GET request."""
         if not self.client:
             return FlextResult[None].fail("Client not initialized")
@@ -372,7 +373,7 @@ class AsyncFlextApiWrapper:
 
         return response
 
-    async def post_async(self, path: str, **kwargs) -> FlextResult[Dict[str, Any]]:
+    async def post_async(self, path: str, **kwargs) -> FlextResult[Dict[str, object]]:
         """Async POST request."""
         if not self.client:
             return FlextResult[None].fail("Client not initialized")
@@ -426,7 +427,8 @@ async def concurrent_requests_example():
 
 ```python
 import asyncio
-from typing import List, Dict, Any, Callable, Optional
+from typing import List, Dict, Callable, Optional
+
 from dataclasses import dataclass
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
@@ -439,15 +441,15 @@ class BatchRequest:
     id: str
     method: str
     path: str
-    data: Optional[Dict[str, Any]] = None
-    params: Optional[Dict[str, Any]] = None
+    data: Optional[Dict[str, object]] = None
+    params: Optional[Dict[str, object]] = None
 
 @dataclass
 class BatchResult:
     """Result item from batch processing."""
     request_id: str
     success: bool
-    data: Optional[Dict[str, Any]] = None
+    data: Optional[Dict[str, object]] = None
     error: Optional[str] = None
     duration_ms: float = 0.0
 
@@ -657,7 +659,7 @@ async def batch_processing_example():
 ```python
 import random
 import time
-from typing import List, Callable, Any
+from typing import List, Callable, object
 from flext_api import create_flext_api, FlextApiPlugin
 from flext_core import get_logger, FlextResult
 
@@ -672,7 +674,7 @@ class AdvancedRetryPlugin(FlextApiPlugin):
                  max_delay: float = 60.0,
                  exponential_base: float = 2.0,
                  jitter: bool = True,
-                 retry_conditions: List[Callable[[Any], bool]] = None):
+                 retry_conditions: List[Callable[[object], bool]] = None):
 
         self.max_retries = max_retries
         self.base_delay = base_delay
@@ -685,7 +687,7 @@ class AdvancedRetryPlugin(FlextApiPlugin):
             lambda r: "connection" in str(r.get("error", "")).lower()
         ]
 
-    def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def after_response(self, response: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Handle response with advanced retry logic."""
 
         # Check if retry is needed
@@ -774,7 +776,7 @@ class ResilientHttpClient:
             logger.error("Client initialization failed", error=client_result.error)
             raise RuntimeError(f"Client initialization failed: {client_result.error}")
 
-    def resilient_request(self, method: str, path: str, **kwargs) -> FlextResult[Dict[str, Any]]:
+    def resilient_request(self, method: str, path: str, **kwargs) -> FlextResult[Dict[str, object]]:
         """Make resilient request with advanced error handling."""
 
         max_attempts = 3
@@ -845,7 +847,8 @@ resilient_client_example()
 ### **Connection Pooling and Reuse**
 
 ```python
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
+
 import threading
 import time
 from flext_api import create_flext_api
@@ -859,11 +862,11 @@ class ConnectionPoolManager:
     def __init__(self, max_connections: int = 10, connection_timeout: int = 30):
         self.max_connections = max_connections
         self.connection_timeout = connection_timeout
-        self.pools: Dict[str, Dict[str, Any]] = {}
+        self.pools: Dict[str, Dict[str, object]] = {}
         self.pool_lock = threading.Lock()
         self.api = create_flext_api()
 
-    def get_client(self, base_url: str, config: Optional[Dict[str, Any]] = None) -> FlextResult[Any]:
+    def get_client(self, base_url: str, config: Optional[Dict[str, object]] = None) -> FlextResult[object]:
         """Get or create HTTP client with connection pooling."""
 
         with self.pool_lock:
@@ -916,7 +919,7 @@ class ConnectionPoolManager:
                 logger.error("Failed to create pooled client", error=client_result.error)
                 return client_result
 
-    def _generate_pool_key(self, base_url: str, config: Optional[Dict[str, Any]]) -> str:
+    def _generate_pool_key(self, base_url: str, config: Optional[Dict[str, object]]) -> str:
         """Generate unique key for connection pool."""
         config_str = str(sorted((config or {}).items()))
         return f"{base_url}:{hash(config_str)}"
@@ -937,7 +940,7 @@ class ConnectionPoolManager:
             if expired_keys:
                 logger.info(f"Cleaned up {len(expired_keys)} expired pools")
 
-    def get_pool_stats(self) -> Dict[str, Any]:
+    def get_pool_stats(self) -> Dict[str, object]:
         """Get connection pool statistics."""
         with self.pool_lock:
             stats = {
@@ -995,7 +998,8 @@ connection_pooling_example()
 import time
 import hashlib
 import json
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
+
 from dataclasses import dataclass, asdict
 from flext_api import create_flext_api, FlextApiPlugin
 from flext_core import get_logger, FlextResult
@@ -1005,7 +1009,7 @@ logger = get_logger(__name__)
 @dataclass
 class CacheEntry:
     """Cache entry with TTL and metadata."""
-    data: Dict[str, Any]
+    data: Dict[str, object]
     created_at: float
     ttl: int
     hit_count: int = 0
@@ -1014,7 +1018,7 @@ class CacheEntry:
     def is_expired(self) -> bool:
         return time.time() - self.created_at > self.ttl
 
-    def access(self) -> Dict[str, Any]:
+    def access(self) -> Dict[str, object]:
         self.hit_count += 1
         self.last_accessed = time.time()
         return self.data
@@ -1042,7 +1046,7 @@ class AdvancedCachingPlugin(FlextApiPlugin):
             "evictions": 0
         }
 
-    def before_request(self, request_config: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def before_request(self, request_config: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Check cache before making request."""
 
         method = request_config.get("method", "GET").upper()
@@ -1088,7 +1092,7 @@ class AdvancedCachingPlugin(FlextApiPlugin):
         self.stats["misses"] += 1
         return FlextResult[None].ok(request_config)
 
-    def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def after_response(self, response: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Cache successful responses."""
 
         # Don't cache if request was skipped (cache hit)
@@ -1111,7 +1115,7 @@ class AdvancedCachingPlugin(FlextApiPlugin):
 
         return FlextResult[None].ok(response)
 
-    def _cache_response(self, request_config: Dict[str, Any], response: Dict[str, Any]):
+    def _cache_response(self, request_config: Dict[str, object], response: Dict[str, object]):
         """Cache the response."""
 
         cache_key = self._generate_cache_key(request_config)
@@ -1140,7 +1144,7 @@ class AdvancedCachingPlugin(FlextApiPlugin):
                     cache_size=len(self.cache),
                     ttl=self.ttl)
 
-    def _generate_cache_key(self, request_config: Dict[str, Any]) -> str:
+    def _generate_cache_key(self, request_config: Dict[str, object]) -> str:
         """Generate cache key from request configuration."""
 
         # Create normalized key from method, URL, and parameters
@@ -1169,7 +1173,7 @@ class AdvancedCachingPlugin(FlextApiPlugin):
         del self.cache[lru_key]
         self.stats["evictions"] += 1
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> Dict[str, object]:
         """Get cache statistics."""
 
         total_requests = self.stats["hits"] + self.stats["misses"]

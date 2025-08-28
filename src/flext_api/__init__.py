@@ -43,7 +43,7 @@ except ImportError:
 
 # Version information - imported from constants module via wildcard import above
 try:
-    __version__ = FLEXT_API_VERSION  # This comes from constants.py via wildcard import  # noqa: F405
+    __version__ = FLEXT_API_VERSION  # This comes from constants.py via wildcard import
 except NameError:
     __version__ = "0.9.0"  # Fallback version
 
