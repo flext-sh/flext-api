@@ -1,8 +1,7 @@
-"""FLEXT API Utilities - EXTENDING FlextUtilities from flext-core.
+"""API-specific utilities using flext-core modern API.
 
-Provides API-specific utility extensions while inheriting ALL functionality
-from FlextUtilities. Follows the FLEXT pattern of creating a single
-FlextApi[Module] class that extends the flext-core equivalent.
+Migrated from legacy FlextUtilities inheritance to direct usage of flext-core
+functions, eliminating code bloat and using modern FLEXT architectural patterns.
 
 Extensions include:
 - HTTP/JSON response parsing
@@ -25,27 +24,19 @@ from flext_core import FlextLogger, FlextResult, FlextUtilities
 logger: FlextLogger = FlextLogger(__name__)
 
 
-class FlextApiUtilities(FlextUtilities):
-    """CONSOLIDATED API utilities class extending FlextUtilities.
+class FlextApiUtilities:
+    """API utilities using flext-core modern API.
 
-    Follows FLEXT architectural pattern:
-    - INHERITS ALL functionality from flext-core FlextUtilities
-    - EXTENDS with API-specific utilities (HTTP, JSON, client validation)
-    - SINGLE consolidated class per module pattern
-    - Uses FlextResult for all operations that can fail
-    - Provides type-safe data extraction for API operations
+    Uses FlextUtilities direct functions to reduce complexity and eliminate inheritance.
+    Only API-specific functionality is implemented here.
 
-    INHERITED FEATURES from FlextUtilities:
-    - ID generation (generate_uuid, generate_entity_id, etc.)
-    - Time operations (generate_timestamp, generate_iso_timestamp, etc.)
-    - Text processing (truncate, clean_text, mask_sensitive, etc.)
-    - Type conversions (safe_int, safe_float, safe_str, to_bool)
-    - Type guards (is_string, is_email, is_uuid, is_url, etc.)
-    - Performance tracking (@track_performance decorator)
-    - JSON operations (safe_json_parse, safe_json_stringify)
-    - Result utilities (chain_results, first_success, etc.)
-    - LDAP converters (safe_convert_value_to_str, etc.)
-    - Factory patterns (SimpleFactory, SimpleBuilder)
+    Uses FlextUtilities modern API:
+    - FlextUtilities.Generators: UUID, timestamps, correlation IDs
+    - FlextUtilities.TextProcessor: text processing, formatting, validation
+    - FlextUtilities.ProcessingUtils: JSON processing and data operations
+    - FlextUtilities.Performance: performance tracking, metrics
+    - FlextUtilities.TypeGuards: type validation and checking
+    - FlextUtilities.Formatters: data formatting utilities
 
     EXTENDED FEATURES for flext-api:
     - HTTP response parsing with type safety

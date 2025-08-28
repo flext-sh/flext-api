@@ -21,7 +21,7 @@ from __future__ import annotations
 import traceback
 from collections.abc import Mapping
 from enum import StrEnum
-from typing import Any, cast
+from typing import cast, object
 
 from flext_core import (
     FlextExceptions,
@@ -64,7 +64,7 @@ class FlextApiErrorCodes(StrEnum):
 # ==============================================================================
 
 
-class FlextApiExceptions(FlextExceptions):  # noqa: N818
+class FlextApiExceptions(FlextExceptions):
     """Single consolidated class containing all API exceptions following FLEXT patterns.
 
     This class follows the CONSOLIDATED class pattern from FLEXT_REFACTORING_PROMPT.md,
@@ -733,8 +733,8 @@ class FlextApiExceptions(FlextExceptions):  # noqa: N818
         message: str,
     ) -> FlextApiExceptions.FlextApiError | None:
         """Get specific exception for known status codes."""
-        # Use Any type for simplicity - exceptions have different inheritance
-        specific_exceptions: dict[int, Any] = {  # type: ignore[explicit-any]
+        # Use object type for simplicity - exceptions have different inheritance
+        specific_exceptions: dict[int, object] = {  # type: ignore[explicit-any]
             400: FlextApiExceptions.FlextApiRequestError,
             401: FlextApiExceptions.FlextApiAuthenticationError,
             403: FlextApiExceptions.FlextApiAuthorizationError,

@@ -90,7 +90,7 @@ FLEXT Service acts as the data platform service with Python bridge integration.
 ```python
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any
+from typing import Dict, object
 
 logger = get_logger(__name__)
 
@@ -109,7 +109,7 @@ class FlextServiceClient:
             }
         })
 
-    def execute_meltano_pipeline(self, pipeline_config: Dict[str, Any]) -> FlextResult[dict]:
+    def execute_meltano_pipeline(self, pipeline_config: Dict[str, object]) -> FlextResult[dict]:
         """Execute Meltano pipeline via FLEXT Service."""
         if not self.client_result.success:
             return FlextResult[None].fail("Client not initialized")
@@ -218,7 +218,7 @@ class AuthenticatedApiClient:
 ```python
 from flext_api import FlextApiPlugin
 from flext_core import FlextResult
-from typing import Dict, Any
+from typing import Dict, object
 
 class FlextApiAuthPlugin(FlextApiPlugin):
     """Authentication plugin for HTTP clients."""
@@ -226,7 +226,7 @@ class FlextApiAuthPlugin(FlextApiPlugin):
     def __init__(self, auth_token: str):
         self.auth_token = auth_token
 
-    def before_request(self, request_config: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def before_request(self, request_config: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Add authentication headers before request."""
         headers = request_config.get("headers", {})
         headers["Authorization"] = f"Bearer {self.auth_token}"
@@ -234,7 +234,7 @@ class FlextApiAuthPlugin(FlextApiPlugin):
 
         return FlextResult[None].ok(request_config)
 
-    def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def after_response(self, response: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Process response and handle auth errors."""
         if response.get("status_code") == 401:
             return FlextResult[None].fail("Authentication expired")
@@ -254,7 +254,7 @@ Integration with the observability stack for metrics, tracing, and health monito
 from flext_api import create_flext_api
 from flext_observability import FlextMetrics, FlextTracer
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any
+from typing import Dict, object
 
 logger = get_logger(__name__)
 metrics = FlextMetrics()
@@ -266,7 +266,7 @@ class ObservableApiClient:
     def __init__(self):
         self.api = create_flext_api()
 
-    def create_monitored_client(self, config: Dict[str, Any]) -> FlextResult[object]:
+    def create_monitored_client(self, config: Dict[str, object]) -> FlextResult[object]:
         """Create HTTP client with observability features."""
 
         # Add observability plugins
@@ -294,13 +294,13 @@ class FlextApiMetricsPlugin:
     def __init__(self, metrics: FlextMetrics):
         self.metrics = metrics
 
-    def before_request(self, request_config: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def before_request(self, request_config: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Record request metrics."""
         self.metrics.increment("flext_api.requests.started")
         self.metrics.histogram("flext_api.request.size", len(str(request_config)))
         return FlextResult[None].ok(request_config)
 
-    def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def after_response(self, response: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Record response metrics."""
         status_code = response.get("status_code", 0)
         self.metrics.increment(f"flext_api.responses.{status_code}")
@@ -313,7 +313,7 @@ class FlextApiTracingPlugin:
     def __init__(self, tracer: FlextTracer):
         self.tracer = tracer
 
-    def before_request(self, request_config: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def before_request(self, request_config: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Start trace span."""
         span = self.tracer.start_span("http_request")
         span.set_attribute("http.method", request_config.get("method", "GET"))
@@ -323,7 +323,7 @@ class FlextApiTracingPlugin:
         request_config["_trace_span"] = span
         return FlextResult[None].ok(request_config)
 
-    def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def after_response(self, response: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Complete trace span."""
         span = response.get("_trace_span")
         if span:
@@ -345,14 +345,15 @@ Integration with flext-db-oracle for database operations.
 from flext_api import create_flext_api
 from flext_db_oracle import FlextOracleClient
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any, List
+from typing import Dict, List
+
 
 logger = get_logger(__name__)
 
 class OracleApiIntegration:
     """Integration between FLEXT API and Oracle database operations."""
 
-    def __init__(self, db_config: Dict[str, Any]):
+    def __init__(self, db_config: Dict[str, object]):
         self.api = create_flext_api()
         self.db_client = FlextOracleClient(db_config)
 
@@ -376,7 +377,7 @@ class OracleApiIntegration:
 
         return client_result
 
-    def sync_api_data_to_db(self, api_data: List[Dict[str, Any]]) -> FlextResult[int]:
+    def sync_api_data_to_db(self, api_data: List[Dict[str, object]]) -> FlextResult[int]:
         """Synchronize API data to Oracle database."""
         try:
             records_processed = 0
@@ -404,18 +405,18 @@ Integration with flext-ldap for directory services.
 from flext_api import create_flext_api
 from flext_ldap import FlextLdapClient
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any
+from typing import Dict, object
 
 logger = get_logger(__name__)
 
 class LdapApiIntegration:
     """Integration between FLEXT API and LDAP directory services."""
 
-    def __init__(self, ldap_config: Dict[str, Any]):
+    def __init__(self, ldap_config: Dict[str, object]):
         self.api = create_flext_api()
         self.ldap_client = FlextLdapClient(ldap_config)
 
-    def authenticate_api_request(self, username: str, password: str) -> FlextResult[Dict[str, Any]]:
+    def authenticate_api_request(self, username: str, password: str) -> FlextResult[Dict[str, object]]:
         """Authenticate API request against LDAP directory."""
 
         # Authenticate with LDAP
@@ -473,7 +474,7 @@ Integration with flext-meltano for Singer tap and target orchestration.
 from flext_api import create_flext_api
 from flext_meltano import FlextMeltanoClient
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any
+from typing import Dict, object
 
 logger = get_logger(__name__)
 
@@ -484,7 +485,7 @@ class MeltanoPipelineApi:
         self.api = create_flext_api()
         self.meltano_client = FlextMeltanoClient()
 
-    def execute_singer_pipeline(self, pipeline_config: Dict[str, Any]) -> FlextResult[str]:
+    def execute_singer_pipeline(self, pipeline_config: Dict[str, object]) -> FlextResult[str]:
         """Execute Singer tap-to-target pipeline via API."""
 
         # Create client for pipeline API
@@ -519,7 +520,7 @@ class MeltanoPipelineApi:
             logger.error("Pipeline execution failed", error=response.error)
             return FlextResult[None].fail(f"Execution failed: {response.error}")
 
-    def monitor_pipeline_execution(self, execution_id: str) -> FlextResult[Dict[str, Any]]:
+    def monitor_pipeline_execution(self, execution_id: str) -> FlextResult[Dict[str, object]]:
         """Monitor pipeline execution status."""
 
         client_result = self.api.flext_api_create_client({
@@ -550,7 +551,8 @@ Integration with DBT projects for data transformation.
 ```python
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any, List
+from typing import Dict, List
+
 
 logger = get_logger(__name__)
 
@@ -560,7 +562,7 @@ class DbtTransformationApi:
     def __init__(self):
         self.api = create_flext_api()
 
-    def execute_dbt_models(self, project_path: str, models: List[str]) -> FlextResult[Dict[str, Any]]:
+    def execute_dbt_models(self, project_path: str, models: List[str]) -> FlextResult[Dict[str, object]]:
         """Execute DBT models via transformation API."""
 
         client_result = self.api.flext_api_create_client({
@@ -605,7 +607,7 @@ Integration with the web interface for dashboard and UI functionality.
 ```python
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any
+from typing import Dict, object
 
 logger = get_logger(__name__)
 
@@ -615,7 +617,7 @@ class WebInterfaceApi:
     def __init__(self):
         self.api = create_flext_api()
 
-    def get_dashboard_data(self) -> FlextResult[Dict[str, Any]]:
+    def get_dashboard_data(self) -> FlextResult[Dict[str, object]]:
         """Retrieve dashboard data for web interface."""
 
         client_result = self.api.flext_api_create_client({
@@ -676,7 +678,8 @@ Integration with command-line tools for automation and scripting.
 ```python
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any, List
+from typing import Dict, List
+
 
 logger = get_logger(__name__)
 
@@ -686,7 +689,7 @@ class CliApiIntegration:
     def __init__(self):
         self.api = create_flext_api()
 
-    def execute_cli_command(self, command: List[str], options: Dict[str, Any] = None) -> FlextResult[Dict[str, Any]]:
+    def execute_cli_command(self, command: List[str], options: Dict[str, object] = None) -> FlextResult[Dict[str, object]]:
         """Execute CLI command via API."""
 
         client_result = self.api.flext_api_create_client({
@@ -726,7 +729,8 @@ class CliApiIntegration:
 ```python
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
+
 
 logger = get_logger(__name__)
 
@@ -766,7 +770,7 @@ class FlextServiceDiscovery:
 
         return client_result
 
-    def check_service_health(self, service_name: str) -> FlextResult[Dict[str, Any]]:
+    def check_service_health(self, service_name: str) -> FlextResult[Dict[str, object]]:
         """Check health of specified service."""
 
         service_url = self.service_registry.get(service_name)
@@ -795,7 +799,7 @@ class FlextServiceDiscovery:
 ```python
 from flext_api import FlextApiCircuitBreakerPlugin
 from flext_core import get_logger, FlextResult
-from typing import Dict, Any
+from typing import Dict, object
 import time
 
 logger = get_logger(__name__)
@@ -810,7 +814,7 @@ class FlextCircuitBreakerPlugin(FlextApiCircuitBreakerPlugin):
         self.last_failure_time = 0
         self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
 
-    def before_request(self, request_config: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def before_request(self, request_config: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Check circuit breaker state before request."""
 
         current_time = time.time()
@@ -824,7 +828,7 @@ class FlextCircuitBreakerPlugin(FlextApiCircuitBreakerPlugin):
 
         return FlextResult[None].ok(request_config)
 
-    def after_response(self, response: Dict[str, Any]) -> FlextResult[Dict[str, Any]]:
+    def after_response(self, response: Dict[str, object]) -> FlextResult[Dict[str, object]]:
         """Update circuit breaker state after response."""
 
         status_code = response.get("status_code", 0)

@@ -34,7 +34,8 @@ Demonstrates HTTP communication with FlexCore runtime container service.
 """
 
 import asyncio
-from typing import Dict, Any, List
+from typing import Dict, List
+
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
 
@@ -70,7 +71,7 @@ class FlexCoreIntegrationExample:
             logger.error("FlexCore client initialization failed", error=client_result.error)
             raise RuntimeError(f"FlexCore client initialization failed: {client_result.error}")
 
-    def health_check(self) -> FlextResult[Dict[str, Any]]:
+    def health_check(self) -> FlextResult[Dict[str, object]]:
         """Check FlexCore service health with detailed diagnostics."""
         logger.info("Performing FlexCore health check")
 
@@ -86,7 +87,7 @@ class FlexCoreIntegrationExample:
             logger.warning("FlexCore health check failed", error=response.error)
             return FlextResult[None].fail(f"Health check failed: {response.error}")
 
-    def list_available_plugins(self) -> FlextResult[List[Dict[str, Any]]]:
+    def list_available_plugins(self) -> FlextResult[List[Dict[str, object]]]:
         """List all available plugins in FlexCore runtime."""
         logger.info("Retrieving available plugins from FlexCore")
 
@@ -100,7 +101,7 @@ class FlexCoreIntegrationExample:
             logger.error("Failed to retrieve plugins", error=response.error)
             return FlextResult[None].fail(f"Plugin list retrieval failed: {response.error}")
 
-    def execute_meltano_pipeline(self, pipeline_config: Dict[str, Any]) -> FlextResult[str]:
+    def execute_meltano_pipeline(self, pipeline_config: Dict[str, object]) -> FlextResult[str]:
         """Execute Meltano pipeline via FlexCore plugin system."""
         logger.info("Executing Meltano pipeline via FlexCore",
                    pipeline=pipeline_config.get("name"))
@@ -128,7 +129,7 @@ class FlexCoreIntegrationExample:
                         error=response.error)
             return FlextResult[None].fail(f"Pipeline execution failed: {response.error}")
 
-    def monitor_execution(self, execution_id: str) -> FlextResult[Dict[str, Any]]:
+    def monitor_execution(self, execution_id: str) -> FlextResult[Dict[str, object]]:
         """Monitor plugin execution status."""
         logger.info("Monitoring execution status", execution_id=execution_id)
 
@@ -239,7 +240,8 @@ Demonstrates JWT-based authentication with flext-auth service.
 """
 
 import time
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
+
 from dataclasses import dataclass
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
@@ -522,7 +524,8 @@ Demonstrates complete ETL pipeline orchestration with Singer ecosystem.
 """
 
 import asyncio
-from typing import Dict, Any, List, Optional
+from typing import Dict, List, Optional
+
 from enum import Enum
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -601,7 +604,7 @@ class SingerPipelineOrchestrator:
             logger.warning("FlexCore client initialization failed")
             self.flexcore_client = None
 
-    def list_available_taps(self) -> FlextResult[List[Dict[str, Any]]]:
+    def list_available_taps(self) -> FlextResult[List[Dict[str, object]]]:
         """List all available Singer taps."""
         logger.info("Retrieving available Singer taps")
 
@@ -614,7 +617,7 @@ class SingerPipelineOrchestrator:
         else:
             return FlextResult[None].fail(f"Taps retrieval failed: {response.error}")
 
-    def list_available_targets(self) -> FlextResult[List[Dict[str, Any]]]:
+    def list_available_targets(self) -> FlextResult[List[Dict[str, object]]]:
         """List all available Singer targets."""
         logger.info("Retrieving available Singer targets")
 
@@ -630,10 +633,10 @@ class SingerPipelineOrchestrator:
     def execute_tap_to_target(self,
                              tap_name: str,
                              target_name: str,
-                             tap_config: Dict[str, Any],
-                             target_config: Dict[str, Any],
-                             catalog: Optional[Dict[str, Any]] = None,
-                             state: Optional[Dict[str, Any]] = None) -> FlextResult[str]:
+                             tap_config: Dict[str, object],
+                             target_config: Dict[str, object],
+                             catalog: Optional[Dict[str, object]] = None,
+                             state: Optional[Dict[str, object]] = None) -> FlextResult[str]:
         """Execute complete tap-to-target data pipeline."""
 
         pipeline_name = f"{tap_name}-to-{target_name}"
@@ -737,7 +740,7 @@ class SingerPipelineOrchestrator:
     def execute_dbt_transformation(self,
                                   project_path: str,
                                   models: List[str],
-                                  vars: Dict[str, Any] = None) -> FlextResult[str]:
+                                  vars: Dict[str, object] = None) -> FlextResult[str]:
         """Execute DBT transformations after data loading."""
         logger.info("Executing DBT transformation",
                    project=project_path,
@@ -992,7 +995,8 @@ Demonstrates comprehensive monitoring, metrics, and tracing integration.
 
 import time
 import uuid
-from typing import Dict, Any, List, Optional
+from typing import Dict, List, Optional
+
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from flext_api import create_flext_api
@@ -1018,7 +1022,7 @@ class TraceSpan:
     start_time: float
     end_time: Optional[float] = None
     tags: Dict[str, str] = field(default_factory=dict)
-    logs: List[Dict[str, Any]] = field(default_factory=list)
+    logs: List[Dict[str, object]] = field(default_factory=list)
     parent_span_id: Optional[str] = None
 
     def duration_ms(self) -> Optional[float]:
@@ -1149,7 +1153,7 @@ class ObservabilityIntegration:
                         span_id=span_id,
                         duration_ms=span.duration_ms())
 
-    def add_span_log(self, span_id: str, message: str, fields: Dict[str, Any] = None) -> None:
+    def add_span_log(self, span_id: str, message: str, fields: Dict[str, object] = None) -> None:
         """Add a log entry to an active span."""
         if span_id in self.active_spans:
             span = self.active_spans[span_id]
@@ -1249,7 +1253,7 @@ class ObservabilityIntegration:
             logger.error("Traces send failed", error=response.error)
             return FlextResult[None].fail(f"Traces send failed: {response.error}")
 
-    def health_check_all_services(self) -> FlextResult[Dict[str, Any]]:
+    def health_check_all_services(self) -> FlextResult[Dict[str, object]]:
         """Perform health checks on all ecosystem services."""
         logger.info("Performing comprehensive health checks")
 
@@ -1455,7 +1459,8 @@ Demonstrates circuit breaker, retry logic, and fault tolerance patterns.
 
 import time
 import asyncio
-from typing import Dict, Any, Optional, Callable
+from typing import Dict, Optional, Callable
+
 from enum import Enum
 from dataclasses import dataclass
 from flext_api import create_flext_api
@@ -1559,7 +1564,7 @@ class EnterpriseCircuitBreaker:
                         failures=self.failure_count)
             self.state = CircuitState.OPEN
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> Dict[str, object]:
         """Get current circuit breaker status."""
         return {
             "name": self.name,
@@ -1576,7 +1581,7 @@ class EnterpriseHttpClient:
     def __init__(self):
         self.api = create_flext_api()
         self.circuit_breakers: Dict[str, EnterpriseCircuitBreaker] = {}
-        self.clients: Dict[str, Any] = {}
+        self.clients: Dict[str, object] = {}
 
     def get_or_create_circuit_breaker(self, service_name: str) -> EnterpriseCircuitBreaker:
         """Get or create circuit breaker for service."""
@@ -1593,7 +1598,7 @@ class EnterpriseHttpClient:
 
         return self.circuit_breakers[service_name]
 
-    def get_or_create_client(self, service_name: str, base_url: str) -> FlextResult[Any]:
+    def get_or_create_client(self, service_name: str, base_url: str) -> FlextResult[object]:
         """Get or create HTTP client for service."""
         if service_name not in self.clients:
             client_result = self.api.flext_api_create_client({
@@ -1621,7 +1626,7 @@ class EnterpriseHttpClient:
                                          path: str,
                                          max_retries: int = 3,
                                          backoff_factor: float = 2.0,
-                                         **kwargs) -> FlextResult[Dict[str, Any]]:
+                                         **kwargs) -> FlextResult[Dict[str, object]]:
         """Make HTTP request with comprehensive fault tolerance."""
 
         circuit_breaker = self.get_or_create_circuit_breaker(service_name)
@@ -1708,7 +1713,7 @@ class EnterpriseHttpClient:
 
         return FlextResult[None].fail(error_msg)
 
-    def get_circuit_breaker_status(self) -> Dict[str, Dict[str, Any]]:
+    def get_circuit_breaker_status(self) -> Dict[str, Dict[str, object]]:
         """Get status of all circuit breakers."""
         return {name: cb.get_status()
                 for name, cb in self.circuit_breakers.items()}
@@ -1867,7 +1872,8 @@ Demonstrates dynamic service discovery and configuration management.
 
 import os
 import json
-from typing import Dict, Any, Optional, List
+from typing import Dict, Optional, List
+
 from dataclasses import dataclass, field
 from flext_api import create_flext_api
 from flext_core import get_logger, FlextResult
@@ -2008,7 +2014,7 @@ class FlextServiceRegistry:
         # No healthy endpoints found
         return FlextResult[None].fail(f"No healthy endpoints found for service: {service_name}")
 
-    def _check_endpoint_health(self, endpoint: ServiceEndpoint) -> FlextResult[Dict[str, Any]]:
+    def _check_endpoint_health(self, endpoint: ServiceEndpoint) -> FlextResult[Dict[str, object]]:
         """Check if endpoint is healthy."""
         try:
             client_result = self.api.flext_api_create_client({
@@ -2030,7 +2036,7 @@ class FlextServiceRegistry:
         except Exception as e:
             return FlextResult[None].fail(f"Health check exception: {e}")
 
-    def create_service_client(self, service_name: str, **client_options) -> FlextResult[Any]:
+    def create_service_client(self, service_name: str, **client_options) -> FlextResult[object]:
         """Create HTTP client for discovered service."""
         discovery_result = self.discover_service(service_name)
         if not discovery_result.success:
@@ -2058,7 +2064,7 @@ class FlextServiceRegistry:
 
         return client_result
 
-    def list_services(self) -> Dict[str, List[Dict[str, Any]]]:
+    def list_services(self) -> Dict[str, List[Dict[str, object]]]:
         """List all registered services and their endpoints."""
         result = {}
         for service_name, endpoints in self.services.items():

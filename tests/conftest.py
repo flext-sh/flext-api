@@ -105,7 +105,7 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config,  # noqa: ARG001
+    config: pytest.Config,
     items: list[pytest.Item],
 ) -> None:
     """Automatically mark tests based on location and content.
@@ -247,7 +247,7 @@ async def httpx_mock() -> object:
 # ============================================================================
 
 try:
-    import pytest_benchmark  # noqa: F401  # type: ignore[import-untyped]
+    import pytest_benchmark
 
     @pytest.fixture
     def benchmark_config() -> dict[str, object]:
@@ -266,7 +266,9 @@ except ImportError:
     def benchmark() -> Callable[..., object]:  # type: ignore[explicit-any]
         """Lightweight benchmark fallback."""
 
-        def _bench(func: Callable[..., object], *args: object, **kwargs: object) -> object:  # type: ignore[explicit-any]
+        def _bench(
+            func: Callable[..., object], *args: object, **kwargs: object
+        ) -> object:  # type: ignore[explicit-any]
             return func(*args, **kwargs)
 
         return _bench

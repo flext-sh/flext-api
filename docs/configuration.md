@@ -72,7 +72,7 @@ FLEXT_AUTH_SERVICE_URL=""              # Authentication service endpoint
 from flext_api import FlextApiClientConfig
 from flext_core import FlextConfig
 from pydantic import Field
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, object
 
 class FlextApiClientConfig(FlextConfig):
     """HTTP client configuration with validation."""
@@ -88,7 +88,7 @@ class FlextApiClientConfig(FlextConfig):
 
     # SSL and security
     verify_ssl: bool = Field(default=True, description="Verify SSL certificates")
-    ssl_context: Optional[Any] = Field(default=None, description="Custom SSL context")
+    ssl_context: Optional[object] = Field(default=None, description="Custom SSL context")
 
     class Config:
         env_prefix = "FLEXT_API_CLIENT_"

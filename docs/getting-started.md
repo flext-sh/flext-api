@@ -132,11 +132,11 @@ if __name__ == "__main__":
 ```python
 from flext_api import create_flext_api, FlextApiQueryBuilder
 from flext_core import FlextResult, get_logger
-from typing import Dict, List, Any
+from typing import Dict, List, object
 
 logger = get_logger(__name__)
 
-def query_builder_example() -> FlextResult[Dict[str, Any]]:
+def query_builder_example() -> FlextResult[Dict[str, object]]:
     """Query builder example with flext-core patterns."""
 
     api = create_flext_api()
@@ -303,7 +303,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from flext_api import flext_api_create_app, create_flext_api
 from flext_core import FlextResult, get_logger
 from pydantic import BaseModel
-from typing import Dict, Any
+from typing import Dict, object
 
 # ✅ Logger seguindo padrão flext-core
 logger = get_logger(__name__)
@@ -316,11 +316,11 @@ class HealthResponse(BaseModel):
     timestamp: str
 
 class QueryRequest(BaseModel):
-    filters: Dict[str, Any]
+    filters: Dict[str, object]
     pagination: Dict[str, int] = {"page": 1, "size": 10}
 
 class QueryResponse(BaseModel):
-    query: Dict[str, Any]
+    query: Dict[str, object]
     results_count: int
     cache_key: str
 

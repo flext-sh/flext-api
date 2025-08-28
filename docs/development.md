@@ -35,7 +35,7 @@ FLEXT API follows **Clean Architecture** principles with **Domain-Driven Design 
 # Verify installations
 python --version    # Should show 3.13+
 poetry --version    # Should show 1.8+
-make --version      # Any recent version
+make --version      # object recent version
 ```
 
 ### **Initial Setup**

@@ -169,9 +169,11 @@ class FlextApiClient:
 
         def contains(self, field: str, value: str) -> Self:
             """Add contains filter."""
-            self._filters.append(
-                {"field": field, "value": value, "operator": "contains"}
-            )
+            self._filters.append({
+                "field": field,
+                "value": value,
+                "operator": "contains",
+            })
             return self
 
         def sort_asc(self, field: str) -> Self:
@@ -407,7 +409,7 @@ class FlextApiClient:
                         "headers": dict(response.headers),
                         "url": str(response.url),
                         "method": method.value,
-                        "success": 200 <= response.status < 300,  # noqa: PLR2004
+                        "success": 200 <= response.status < 300,
                     },
                 )
 
@@ -428,7 +430,7 @@ class FlextApiClient:
                 else:
                     self._stats["requests_failed"] += 1
 
-                self._stats["total_time"] += (time.time() - start_time)
+                self._stats["total_time"] += time.time() - start_time
 
                 return FlextResult[FlextTypes.Core.JsonDict].ok(result_data)
 

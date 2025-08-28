@@ -47,8 +47,8 @@ make build
 
 ### Critical Issues That STOP Development
 
-1. ❌ **Any lint errors** → Fix immediately
-2. ❌ **Any mypy errors** → Fix immediately
+1. ❌ **object lint errors** → Fix immediately
+2. ❌ **object mypy errors** → Fix immediately
 3. ❌ **Test failures** → Fix immediately
 4. ❌ **Import errors** → Fix immediately
 5. ❌ **Syntax errors** → Fix immediately

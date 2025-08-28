@@ -217,17 +217,15 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
     @override
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute the application service operation (required by FlextDomainService)."""
-        return FlextResult[dict[str, object]].ok(
-            {
-                "service": "FlextApiApp",
-                "status": "ready",
-                "version": self._config.get_version(),
-                "environment": self._config.settings.environment
-                if self._config.settings
-                else "unknown",
-                "app_created": self._app_instance is not None,
-            }
-        )
+        return FlextResult[dict[str, object]].ok({
+            "service": "FlextApiApp",
+            "status": "ready",
+            "version": self._config.get_version(),
+            "environment": self._config.settings.environment
+            if self._config.settings
+            else "unknown",
+            "app_created": self._app_instance is not None,
+        })
 
     async def lifespan(self, app: FastAPI) -> AsyncGenerator[None]:
         """Application lifespan manager."""
@@ -265,7 +263,7 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
             title="FLEXT API",
             description="Enterprise-grade distributed data integration platform",
             version=config.get_version(),
-            lifespan=lifespan_func,  # type: ignore[arg-type]
+            lifespan=lifespan_func,
             debug=config.settings.debug if config.settings else True,
         )
 
@@ -336,7 +334,7 @@ class FlextApiApp(FlextDomainService[dict[str, object]]):
             logger.error(
                 f"Unexpected error [{error_id}]: {exc}",
                 extra={"path": request.url.path, "error_id": error_id},
-                exc_info=True,  # noqa: LOG014 - This is inside an exception handler
+                exc_info=True,
             )
             return JSONResponse(
                 status_code=500,

@@ -599,7 +599,7 @@ class FlextApiModels(FlextModel):
         ) -> FlextResult[object]:
             """Create bearer token with validation."""
             # Normalize token type
-            default_token_type = "Bearer"  # noqa: S105
+            default_token_type = "Bearer"
             if token_type is None:
                 token_type_enum = default_token_type
             elif hasattr(token_type, "value"):
@@ -1046,7 +1046,11 @@ class FlextApiModels(FlextModel):
                     "updated_at": FlextTimestamp.now(),
                 },
             )
-            logger.error("Request processing failed", request_id=self.id, failure_reason=str(error))
+            logger.error(
+                "Request processing failed",
+                request_id=self.id,
+                failure_reason=str(error),
+            )
             return FlextResult[object].ok(updated)
 
     class ApiResponse(FlextEntity):
@@ -1590,7 +1594,12 @@ class FlextApiModels(FlextModel):
             default_factory=dict, description="Pagination parameters"
         )
         page: int = Field(default=1, ge=1, description="Page number")
-        page_size: int = Field(default=FlextConstants.Defaults.PAGE_SIZE, ge=1, le=1000, description="Items per page")
+        page_size: int = Field(
+            default=FlextConstants.Defaults.PAGE_SIZE,
+            ge=1,
+            le=1000,
+            description="Items per page",
+        )
         search: str = Field(default="", description="Search query")
         fields: list[str] = Field(default_factory=list, description="Fields to include")
         includes: list[str] = Field(
@@ -1606,7 +1615,9 @@ class FlextApiModels(FlextModel):
         success: bool = Field(description="Whether the response indicates success")
         data: object | None = Field(default=None, description="Response data payload")
         message: str = Field(default="", description="Response message")
-        status_code: int = Field(default=FlextConstants.Web.HTTP_OK, description="HTTP status code")
+        status_code: int = Field(
+            default=FlextConstants.Web.HTTP_OK, description="HTTP status code"
+        )
         metadata: dict[str, object] = Field(
             default_factory=dict, description="Response metadata"
         )
@@ -1620,7 +1631,12 @@ class FlextApiModels(FlextModel):
 
         data: object | None = Field(default=None, description="Paginated data")
         page: int = Field(default=1, ge=1, description="Current page number")
-        page_size: int = Field(default=FlextConstants.Defaults.PAGE_SIZE, ge=1, le=1000, description="Items per page")
+        page_size: int = Field(
+            default=FlextConstants.Defaults.PAGE_SIZE,
+            ge=1,
+            le=1000,
+            description="Items per page",
+        )
         total_items: int = Field(default=0, ge=0, description="Total number of items")
         total: int = Field(default=0, ge=0, description="Total number of items (alias)")
         message: str = Field(default="", description="Response message")
@@ -1634,7 +1650,9 @@ class FlextApiModels(FlextModel):
         success: bool = Field(description="Whether response is successful")
         data: object | None = Field(default=None, description="Response data")
         message: str = Field(default="", description="Response message")
-        status_code: int = Field(default=FlextConstants.Web.HTTP_OK, description="HTTP status code")
+        status_code: int = Field(
+            default=FlextConstants.Web.HTTP_OK, description="HTTP status code"
+        )
 
     @classmethod
     def get_all_model_classes(cls) -> dict[str, type]:
