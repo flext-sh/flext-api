@@ -79,7 +79,7 @@ class FlextApiConstants(FlextConstants):
         RATE_LIMIT_WINDOW = 60  # seconds
         BURST_SIZE = 10  # additional requests allowed in burst
 
-    class Cache:
+    class ApiCache:
         """Cache configuration."""
 
         DEFAULT_TTL = 300  # 5 minutes
@@ -97,7 +97,7 @@ class FlextApiConstants(FlextConstants):
         MAX_HEADER_SIZE = 8192
         MAX_ERROR_VALUE_LENGTH = 100  # Truncate error values for security
 
-    class Auth:
+    class ApiAuth:
         """Authentication and token constants."""
 
         JWT_PARTS_COUNT = 3  # JWT has 3 parts: header.payload.signature
@@ -113,7 +113,7 @@ class FlextApiConstants(FlextConstants):
         IDLE_TIMEOUT = 300  # seconds
         PRIVILEGED_PORT_LIMIT = 1024  # Ports below this require elevated privileges
 
-    class Database:
+    class ApiDatabase:
         """Database configuration limits."""
 
         MAX_POOL_SIZE = 50  # Maximum database connection pool size
@@ -230,7 +230,7 @@ FLEXT_API_VERSION: str = "0.9.0"
 # Configuration shortcuts
 FLEXT_API_TIMEOUT: int = int(FlextApiConstants.Config.DEFAULT_TIMEOUT)
 FLEXT_API_MAX_RETRIES: int = int(FlextApiConstants.Config.DEFAULT_MAX_RETRIES)
-FLEXT_API_CACHE_TTL: int = int(FlextApiConstants.Cache.DEFAULT_TTL)
+FLEXT_API_CACHE_TTL: int = int(FlextApiConstants.ApiCache.DEFAULT_TTL)
 
 
 __all__ = [
@@ -253,7 +253,7 @@ __all__ = [
 Validation = FlextApiConstants.ApiValidation
 
 # Auth constants aliases
-Auth = FlextApiConstants.Auth
+Auth = FlextApiConstants.ApiAuth
 
 # Connection constants aliases
 Connection = FlextApiConstants.Connection

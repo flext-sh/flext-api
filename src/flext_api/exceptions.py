@@ -95,7 +95,7 @@ class FlextApiExceptions(FlextExceptions):  # noqa: N818
     # BASE API ERROR
     # ==============================================================================
 
-    class FlextApiError(FlextApiErrorMixin, FlextExceptions.FlextExceptionBaseError):
+    class FlextApiError(FlextApiErrorMixin, FlextExceptions.BaseError):
         """Base API error with HTTP status code support using FlextExceptionsMixin pattern."""
 
         def __init__(
@@ -288,7 +288,9 @@ class FlextApiExceptions(FlextExceptions):  # noqa: N818
                 context=merged_context,
             )
 
-    class FlextApiConfigurationError(FlextApiErrorMixin, FlextExceptions.FlextConfigurationError):
+    class FlextApiConfigurationError(
+        FlextApiErrorMixin, FlextExceptions.ConfigurationError
+    ):
         """Configuration error in API with config key context."""
 
         def __init__(

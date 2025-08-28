@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import TypedDict, cast, override
 
-from flext_core import FlextDomainService, FlextLogger, FlextResult
+from flext_core import FlextDomainService, FlextLogger, FlextResult, get_flext_container
 from pydantic import Field
 
 from flext_api.client import FlextApiBuilder, FlextApiClient, FlextApiClientConfig
@@ -22,7 +22,6 @@ from flext_api.protocols import (
     FlextApiQueryBuilderProtocol,
     FlextApiResponseBuilderProtocol,
 )
-from flext_api.typings import FlextTypes
 
 logger: FlextLogger = FlextLogger(__name__)
 
@@ -54,11 +53,21 @@ class FlextApi(FlextDomainService[dict[str, object]]):
     _client_config: ClientConfig | None = None
 
     def __init__(self, **_data: object) -> None:
-        """Initialize FlextApi service with builder."""
+        """Initialize FlextApi service with builder and dependency injection."""
         # Initialize base class without extra data (base class forbids extra fields)
         super().__init__()
+
+        # Dependency injection following FLEXT-core patterns
+        self._container = get_flext_container()
+
+        # Register services in container
+        self._container.register("flext_api", self)
+        self._container.register_factory("api_builder", FlextApiBuilder)
+
+        # Initialize composed services
         self._builder = FlextApiBuilder()
         self._is_running = False
+
         logger.info("FlextApi service initialized", version=self.service_version)
 
     @override
@@ -152,52 +161,68 @@ class FlextApi(FlextDomainService[dict[str, object]]):
             FlextResult[FlextApiHttpClientProtocol]: Success with client or failure with error
 
         """
-        try:
-            config_dict = config or {}
+        # Railway-oriented programming pattern (FLEXT-core proven pattern)
+        def create_config(config_dict: dict[str, object]) -> FlextResult[ClientConfig]:
+            """Create and validate client configuration."""
+            try:
+                timeout_value = config_dict.get("timeout") or DEFAULT_TIMEOUT
+                timeout: float = float(timeout_value) if timeout_value else DEFAULT_TIMEOUT
 
-            # Type-safe extraction using TypedDict structure
-            timeout: float = config_dict.get("timeout") or DEFAULT_TIMEOUT
-            headers: dict[str, str] = config_dict.get("headers") or {}
-            max_retries: int = config_dict.get("max_retries") or DEFAULT_MAX_RETRIES
+                headers_value = config_dict.get("headers") or {}
+                headers: dict[str, str] = cast("dict[str, str]", headers_value)
 
-            # Create and validate configuration
-            client_config = ClientConfig(
-                base_url=str(config_dict.get("base_url", "")),
-                timeout=timeout,
-                headers=headers,
-                max_retries=max_retries,
-            )
+                retries_value = config_dict.get("max_retries") or DEFAULT_MAX_RETRIES
+                max_retries: int = int(retries_value) if retries_value else DEFAULT_MAX_RETRIES
 
-            # Validate configuration - use FlextResult pattern
+                client_config = ClientConfig(
+                    base_url=str(config_dict.get("base_url", "")),
+                    timeout=timeout,
+                    headers=headers,
+                    max_retries=max_retries,
+                )
+                return FlextResult[ClientConfig].ok(client_config)
+            except Exception as e:
+                return FlextResult[ClientConfig].fail(f"Configuration creation failed: {e}")
+
+        def validate_config(client_config: ClientConfig) -> FlextResult[ClientConfig]:
+            """Validate configuration using business rules."""
             validation_result = client_config.validate_business_rules()
             if not validation_result:
-                return FlextResult[FlextApiHttpClientProtocol].fail(
+                return FlextResult[ClientConfig].fail(
                     validation_result.error or "Invalid client configuration"
                 )
+            return FlextResult[ClientConfig].ok(client_config)
 
-            # Convert to legacy config format for backward compatibility
-            legacy_config = FlextApiClientConfig(
-                base_url=client_config.base_url,
-                timeout=client_config.timeout,
-                headers=client_config.headers,
-                max_retries=client_config.max_retries,
-            )
+        def create_client(client_config: ClientConfig) -> FlextResult[FlextApiHttpClientProtocol]:
+            """Create API client from validated configuration."""
+            try:
+                legacy_config = FlextApiClientConfig(
+                    base_url=client_config.base_url,
+                    timeout=client_config.timeout,
+                    headers=client_config.headers,
+                    max_retries=client_config.max_retries,
+                )
 
-            # Create client
-            api_client = FlextApiClient(legacy_config)
-            self._client = cast("FlextApiHttpClientProtocol", api_client)
-            self._client_config = client_config
-            logger.info("HTTP client created", base_url=client_config.base_url)
+                api_client = FlextApiClient(legacy_config)
+                self._client = cast("FlextApiHttpClientProtocol", api_client)
+                self._client_config = client_config
+                logger.info("HTTP client created", base_url=client_config.base_url)
 
-            return FlextResult[FlextApiHttpClientProtocol].ok(
-                cast("FlextApiHttpClientProtocol", api_client)
-            )
+                return FlextResult[FlextApiHttpClientProtocol].ok(
+                    cast("FlextApiHttpClientProtocol", api_client)
+                )
+            except Exception as e:
+                logger.exception("Client creation failed")
+                return FlextResult[FlextApiHttpClientProtocol].fail(f"Client creation error: {e}")
 
-        except Exception as e:
-            logger.exception("Client creation failed")
-            return FlextResult[FlextApiHttpClientProtocol].fail(
-                f"Client creation error: {e}"
-            )
+        # Railway-oriented composition (MANDATORY pattern)
+        config_dict = cast("dict[str, object]", config or {})
+        return (
+            create_config(config_dict)
+            .flat_map(validate_config)      # Chain validation
+            .flat_map(create_client)        # Chain client creation
+            .tap_error(lambda e: logger.error(f"HTTP client setup failed: {e}"))  # Log errors
+        )
 
     def get_builder(self) -> FlextApiBuilder:
         """Get builder instance for advanced operations.
@@ -243,7 +268,7 @@ class FlextApi(FlextDomainService[dict[str, object]]):
         return self._client
 
     @override
-    def get_service_info(self) -> FlextTypes.Core.JsonDict:
+    def get_service_info(self) -> dict[str, object]:
         """Get detailed service information.
 
         Returns:

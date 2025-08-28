@@ -112,30 +112,19 @@ class FlextApiUtilities(FlextUtilities):
     def parse_fallback_text_data(
         cls,
         text_data: str,
-    ) -> dict[str, object] | list[object] | str | None:
+    ) -> dict[str, object] | str:
         """Parse fallback text data as JSON.
 
         Extracts fallback parsing logic to reduce cyclomatic complexity.
         """
         try:
             parsed_data = FlextUtilities.ProcessingUtils.safe_json_parse(text_data)
-            if isinstance(parsed_data, dict):
-                # Use dict comprehension for performance
-                return {
-                    parsed_key: parsed_value
-                    for parsed_key, parsed_value in parsed_data.items()
-                    if parsed_key
-                }
-            if isinstance(parsed_data, list):
-                # Cast to specific types for PyRight type inference
-                list_data = cast("list[object]", parsed_data)
-                # Use list comprehension for performance
-                return [
-                    parsed_element
-                    for parsed_element in list_data
-                    if parsed_element is not None
-                ]
-            return text_data
+            # safe_json_parse always returns dict[str, object], so simplify
+            return {
+                parsed_key: parsed_value
+                for parsed_key, parsed_value in parsed_data.items()
+                if parsed_key
+            }
         except Exception:
             return text_data
 
@@ -143,32 +132,19 @@ class FlextApiUtilities(FlextUtilities):
     def parse_final_json_attempt(
         cls,
         text_trim: str,
-    ) -> dict[str, object] | list[object] | str:
+    ) -> dict[str, object] | str:
         """Parse final JSON attempt with fallback.
 
         Extracts final JSON parsing logic to reduce cyclomatic complexity.
         """
         try:
             fallback_parsed_data = FlextUtilities.ProcessingUtils.safe_json_parse(text_trim)
-            if isinstance(fallback_parsed_data, dict):
-                # Cast to specific types for PyRight type inference
-                dict_data = cast("dict[str, object]", fallback_parsed_data)
-                # Use dict comprehension for performance
-                return {
-                    fallback_key: fallback_value
-                    for fallback_key, fallback_value in dict_data.items()
-                    if fallback_key
-                }
-            if isinstance(fallback_parsed_data, list):
-                # Cast to specific types for PyRight type inference
-                list_data = cast("list[object]", fallback_parsed_data)
-                # Use list comprehension for performance
-                return [
-                    fallback_element
-                    for fallback_element in list_data
-                    if fallback_element is not None
-                ]
-            return text_trim
+            # safe_json_parse always returns dict[str, object], so simplify
+            return {
+                fallback_key: fallback_value
+                for fallback_key, fallback_value in fallback_parsed_data.items()
+                if fallback_key
+            }
         except Exception:
             return text_trim
 

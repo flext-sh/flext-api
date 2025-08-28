@@ -296,11 +296,8 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                         # Read file content and use FlextUtilities JSON parser
                         file_content = f.read()
                         raw_data = FlextUtilities.ProcessingUtils.safe_json_parse(file_content)
-                        # Type narrowing for mypy
-                        if isinstance(raw_data, dict):
-                            # Cast the entire dict to the expected type for JSON-compatible data
-                            return cast("dict[str, V]", raw_data)
-                        return {}
+                        # safe_json_parse always returns dict[str, object]
+                        return cast("dict[str, V]", raw_data)
                 return {}
             except Exception as e:
                 logger.warning(
