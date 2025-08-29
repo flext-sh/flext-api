@@ -27,9 +27,9 @@ make check  # Verify installation
 
 ```python
 from flext_api import create_flext_api, FlextResult
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def basic_api_creation():
     """Basic API instance creation example."""
@@ -53,9 +53,9 @@ print("✅ API instance ready")
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def create_http_client_example():
     """Example of creating HTTP clients with different configurations."""
@@ -96,9 +96,9 @@ else:
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def client_with_headers_example():
     """Example of HTTP client with custom headers."""
@@ -150,9 +150,9 @@ if headers_result:
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def get_request_examples():
     """Examples of various GET request patterns."""
@@ -198,10 +198,10 @@ get_request_examples()
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 import json
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def post_request_examples():
     """Examples of various POST request patterns."""
@@ -262,9 +262,9 @@ post_request_examples()
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def error_handling_examples():
     """Examples of proper error handling with FlextResult pattern."""
@@ -335,9 +335,9 @@ error_handling_examples()
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def query_builder_examples():
     """Examples of using query builders."""
@@ -398,9 +398,9 @@ query_builder_examples()
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def response_builder_examples():
     """Examples of using response builders."""
@@ -466,9 +466,9 @@ response_builder_examples()
 
 ```python
 from flext_api import create_flext_api, FlextApiClientConfig
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def basic_configuration_example():
     """Example of basic configuration patterns."""
@@ -521,9 +521,9 @@ basic_configuration_example()
 ```python
 import os
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def environment_configuration_example():
     """Example of environment-based configuration."""
@@ -574,9 +574,9 @@ environment_configuration_example()
 ```python
 import pytest
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class TestBasicFlextApi:
     """Basic test examples for FLEXT API."""
@@ -666,9 +666,9 @@ import sys
 import json
 from typing import Optional, Dict, object
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class SimpleApiClient:
     """Simple API client using FLEXT API."""

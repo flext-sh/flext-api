@@ -19,9 +19,9 @@ from __future__ import annotations
 from typing import cast
 
 import aiohttp  # HTTP client specific - not available in core utilities
-from flext_core import FlextResult, FlextUtilities, get_logger
+from flext_core import FlextLogger, FlextResult, FlextUtilities
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class FlextApiUtilities:
@@ -129,7 +129,9 @@ class FlextApiUtilities:
         Extracts final JSON parsing logic to reduce cyclomatic complexity.
         """
         try:
-            fallback_parsed_data = FlextUtilities.ProcessingUtils.safe_json_parse(text_trim)
+            fallback_parsed_data = FlextUtilities.ProcessingUtils.safe_json_parse(
+                text_trim
+            )
             # safe_json_parse always returns dict[str, object], so simplify
             return {
                 fallback_key: fallback_value
@@ -186,13 +188,11 @@ class FlextApiUtilities:
         Extracts validation logic to reduce create_client complexity.
         """
         if config is None:
-            return FlextResult[dict[str, object]].ok(
-                {
-                    "base_url": "",
-                    "timeout": 30,
-                    "max_retries": 3,
-                }
-            )
+            return FlextResult[dict[str, object]].ok({
+                "base_url": "",
+                "timeout": 30,
+                "max_retries": 3,
+            })
 
         # Apply defaults for missing values, validating headers type
         headers_raw = config.get("headers", {})

@@ -32,7 +32,7 @@ graph TB
     subgraph "flext-core Foundation"
         RESULT[FlextResult<T>]
         SERVICE[FlextService]
-        ENTITY[FlextEntity]
+        ENTITY[FlextModels.Entity]
         CONTAINER[FlextContainer]
         LOG[Structured Logging]
     end
@@ -83,9 +83,9 @@ src/flext_api/
 Rich domain modeling with entities that encapsulate business logic:
 
 ```python
-from flext_core import FlextEntity, FlextResult
+from flext_core import FlextModels.Entity, FlextResult
 
-class ApiRequest(FlextEntity):
+class ApiRequest(FlextModels.Entity):
     """Rich domain entity for HTTP requests."""
 
     method: str
@@ -170,19 +170,19 @@ def service_operation(request: dict) -> FlextResult[dict]:
 | --------------- | ------------------------------- | ------------------------------- |
 | **Inheritance** | 🔴 Doesn't inherit FlextService | ✅ class FlextApi(FlextService) |
 | **Lifecycle**   | 🟡 async start/stop             | ✅ sync start/stop/health_check |
-| **Logging**     | 🔴 direct structlog             | ✅ get_logger(**name**)         |
+| **Logging**     | 🔴 direct structlog             | ✅ FlextLogger(**name**)         |
 | **Container**   | 🔴 Manual DI                    | ✅ FlextContainer.get_global()        |
 
 #### **Target Implementation**
 
 ```python
-from flext_core import FlextService, FlextResult, get_logger, get_flext_container
+from flext_core import FlextService, FlextResult, FlextLogger, get_flext_container
 
 class FlextApi(FlextService):
     """✅ Service compliant with flext-core patterns."""
 
     def __init__(self) -> None:
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
         self.container = FlextContainer.get_global()
         self._builder: FlextApiBuilder | None = None
         self._client: FlextApiClient | None = None
@@ -234,7 +234,7 @@ class FlextApi(FlextService):
 #### **Plugin Architecture**
 
 ```python
-from flext_core import FlextService, FlextResult, get_logger
+from flext_core import FlextService, FlextResult, FlextLogger
 from abc import ABC, abstractmethod
 
 class FlextApiPlugin(ABC):
@@ -262,7 +262,7 @@ class FlextApiCachingPlugin(FlextApiPlugin):
         self.ttl = ttl
         self.max_size = max_size
         self.cache: dict[str, CacheEntry] = {}
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     async def before_request(self, request: ApiRequest) -> FlextResult[ApiRequest]:
         cache_key = self._generate_cache_key(request)
@@ -292,7 +292,7 @@ class FlextApiCachingPlugin(FlextApiPlugin):
 #### **Query Builder Architecture**
 
 ```python
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 from typing import Dict, List, Optional
 
 
@@ -300,7 +300,7 @@ class FlextApiQueryBuilder:
     """✅ Builder para construção fluente de queries."""
 
     def __init__(self) -> None:
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
         self._filters: Dict[str, object] = {}
         self._sorting: List[Dict[str, str]] = []
         self._pagination: Dict[str, int] = {}
@@ -402,12 +402,12 @@ class FlextApiQueryBuilder:
 ### **Container Configuration**
 
 ```python
-from flext_core import get_flext_container, FlextServiceKey, FlextResult
+from flext_core import get_flext_container, FlextContainer.ServiceKey, FlextResult
 
 # ✅ Service keys type-safe
-API_BUILDER_KEY = FlextServiceKey[FlextApiQueryBuilder]("api_query_builder")
-RESPONSE_BUILDER_KEY = FlextServiceKey[FlextApiResponseBuilder]("api_response_builder")
-HTTP_CLIENT_KEY = FlextServiceKey[FlextApiClient]("api_http_client")
+API_BUILDER_KEY = FlextContainer.ServiceKey[FlextApiQueryBuilder]("api_query_builder")
+RESPONSE_BUILDER_KEY = FlextContainer.ServiceKey[FlextApiResponseBuilder]("api_response_builder")
+HTTP_CLIENT_KEY = FlextContainer.ServiceKey[FlextApiClient]("api_http_client")
 
 def configure_flext_api_services() -> FlextResult[None]:
     """✅ Configure services no container global."""
@@ -453,10 +453,10 @@ def get_query_builder() -> FlextResult[FlextApiQueryBuilder]:
 ### **Structured Error Context**
 
 ```python
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 from typing import Dict, object
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class FlextApiError:
     """Structured error context para flext-api operations."""
@@ -616,7 +616,7 @@ def register_settings() -> FlextResult[None]:
 ### **Structured Logging with Context**
 
 ```python
-from flext_core import get_logger
+from flext_core import FlextLogger
 from typing import Dict, Optional
 
 import uuid
@@ -626,7 +626,7 @@ class FlextApiObservability:
     """✅ Observability patterns para flext-api."""
 
     def __init__(self) -> None:
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
         self.correlation_id: Optional[str] = None
 
     @contextmanager
@@ -718,9 +718,9 @@ tests/
 ```python
 import pytest
 from flext_api import create_flext_api
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class TestFlextResultPatterns:
     """✅ Test patterns para FlextResult operations."""
@@ -807,8 +807,8 @@ class TestFlextResultPatterns:
 
 1. **Logging Standardization**
 
-   - Substituir todas as instâncias de `structlog.get_logger()`
-   - Implementar `get_logger(__name__)` consistentemente
+   - Substituir todas as instâncias de `structlog.FlextLogger()`
+   - Implementar `FlextLogger(__name__)` consistentemente
    - Adicionar correlation IDs e contexto estruturado
 
 2. **Error Handling Refactoring**
@@ -833,7 +833,7 @@ class TestFlextResultPatterns:
 2. **Dependency Injection Migration**
    - Migrar para global `FlextContainer.get_global()`
    - Implementar service registration patterns
-   - Usar FlextServiceKey para type safety
+   - Usar FlextContainer.ServiceKey para type safety
 
 #### **Fase 3: Quality & Observability (Semana 3)**
 

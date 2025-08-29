@@ -28,9 +28,9 @@ FlexCore integrates with FLEXT API for HTTP communication between Go and Python 
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class FlexCoreClient:
     """HTTP client for FlexCore runtime service."""
@@ -89,10 +89,10 @@ FLEXT Service acts as the data platform service with Python bridge integration.
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, object
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class FlextServiceClient:
     """HTTP client for FLEXT data platform service."""
@@ -151,10 +151,10 @@ FLEXT API integrates with flext-auth for distributed authentication across the e
 
 ```python
 from flext_api import create_flext_api, FlextApiAuthPlugin
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Optional
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class AuthenticatedApiClient:
     """API client with flext-auth integration."""
@@ -253,10 +253,10 @@ Integration with the observability stack for metrics, tracing, and health monito
 ```python
 from flext_api import create_flext_api
 from flext_observability import FlextMetrics, FlextTracer
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, object
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 metrics = FlextMetrics()
 tracer = FlextTracer()
 
@@ -344,11 +344,11 @@ Integration with flext-db-oracle for database operations.
 ```python
 from flext_api import create_flext_api
 from flext_db_oracle import FlextOracleClient
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, List
 
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class OracleApiIntegration:
     """Integration between FLEXT API and Oracle database operations."""
@@ -404,10 +404,10 @@ Integration with flext-ldap for directory services.
 ```python
 from flext_api import create_flext_api
 from flext_ldap import FlextLdapClient
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, object
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class LdapApiIntegration:
     """Integration between FLEXT API and LDAP directory services."""
@@ -473,10 +473,10 @@ Integration with flext-meltano for Singer tap and target orchestration.
 ```python
 from flext_api import create_flext_api
 from flext_meltano import FlextMeltanoClient
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, object
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class MeltanoPipelineApi:
     """API integration for Meltano pipeline management."""
@@ -550,11 +550,11 @@ Integration with DBT projects for data transformation.
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, List
 
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class DbtTransformationApi:
     """API integration for DBT transformations."""
@@ -606,10 +606,10 @@ Integration with the web interface for dashboard and UI functionality.
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, object
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class WebInterfaceApi:
     """API client for web interface backend services."""
@@ -677,11 +677,11 @@ Integration with command-line tools for automation and scripting.
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, List
 
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class CliApiIntegration:
     """API integration for CLI command execution."""
@@ -728,11 +728,11 @@ class CliApiIntegration:
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, Optional
 
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class FlextServiceDiscovery:
     """Service discovery for FLEXT ecosystem."""
@@ -798,11 +798,11 @@ class FlextServiceDiscovery:
 
 ```python
 from flext_api import FlextApiCircuitBreakerPlugin
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, object
 import time
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class FlextCircuitBreakerPlugin(FlextApiCircuitBreakerPlugin):
     """Circuit breaker for service integration."""

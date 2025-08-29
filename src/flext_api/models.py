@@ -23,12 +23,12 @@ from urllib.parse import ParseResult, urlparse
 
 from flext_core import (
     FlextConstants,
-    FlextEntity,
     FlextModel,
+    FlextModels,
     FlextResult,
-    FlextTimestamp,
+    FlextModels.Timestamp,
     flext_alias_generator,
-    get_logger,
+    FlextLogger,
 )
 from pydantic import (
     AliasGenerator,
@@ -41,7 +41,7 @@ from pydantic import (
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import HeadersDict, HttpUrl
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # ==============================================================================
 # TYPE DEFINITIONS
@@ -899,7 +899,7 @@ class FlextApiModels(FlextModel):
     # ENTITIES (With Identity)
     # ==============================================================================
 
-    class ApiRequest(FlextEntity):
+    class ApiRequest(FlextModels.Entity):
         """HTTP request entity with lifecycle management."""
 
         model_config = PydanticConfigDict(
@@ -1001,7 +1001,7 @@ class FlextApiModels(FlextModel):
             updated = self.model_copy(
                 update={
                     "retry_count": self.retry_count + 1,
-                    "updated_at": FlextTimestamp.now(),
+                    "updated_at": FlextModels.Timestamp.now(),
                 },
             )
             return FlextResult[object].ok(updated)
@@ -1016,7 +1016,7 @@ class FlextApiModels(FlextModel):
             updated = self.model_copy(
                 update={
                     "state": "processing",
-                    "updated_at": FlextTimestamp.now(),
+                    "updated_at": FlextModels.Timestamp.now(),
                 },
             )
             logger.info("Request processing started", request_id=self.id)
@@ -1032,7 +1032,7 @@ class FlextApiModels(FlextModel):
             updated = self.model_copy(
                 update={
                     "state": "completed",
-                    "updated_at": FlextTimestamp.now(),
+                    "updated_at": FlextModels.Timestamp.now(),
                 },
             )
             logger.info("Request processing completed", request_id=self.id)
@@ -1043,7 +1043,7 @@ class FlextApiModels(FlextModel):
             updated = self.model_copy(
                 update={
                     "state": "failed",
-                    "updated_at": FlextTimestamp.now(),
+                    "updated_at": FlextModels.Timestamp.now(),
                 },
             )
             logger.error(
@@ -1053,7 +1053,7 @@ class FlextApiModels(FlextModel):
             )
             return FlextResult[object].ok(updated)
 
-    class ApiResponse(FlextEntity):
+    class ApiResponse(FlextModels.Entity):
         """HTTP response entity with state management."""
 
         model_config = PydanticConfigDict(
@@ -1062,7 +1062,7 @@ class FlextApiModels(FlextModel):
                 validation_alias=flext_alias_generator,
                 serialization_alias=flext_alias_generator,
             ),
-            # FlextEntity patterns: mutable with lifecycle management
+            # FlextModels.Entity patterns: mutable with lifecycle management
             extra="allow",
             validate_assignment=True,
             use_enum_values=True,
@@ -1138,7 +1138,7 @@ class FlextApiModels(FlextModel):
             updated = self.model_copy(
                 update={
                     "state": FlextApiModels.ResponseState.SUCCESS,
-                    "updated_at": FlextTimestamp.now(),
+                    "updated_at": FlextModels.Timestamp.now(),
                 },
             )
             logger.info("Response marked as success", response_id=self.id)
@@ -1157,7 +1157,7 @@ class FlextApiModels(FlextModel):
                     "state": FlextApiModels.ResponseState.ERROR,
                     "body": error_body,
                     "error_message": error_message,
-                    "updated_at": FlextTimestamp.now(),
+                    "updated_at": FlextModels.Timestamp.now(),
                 },
             )
             logger.error(
@@ -1173,12 +1173,12 @@ class FlextApiModels(FlextModel):
                 update={
                     "state": FlextApiModels.ResponseState.TIMEOUT,
                     "error_message": "Request timeout",
-                    "updated_at": FlextTimestamp.now(),
+                    "updated_at": FlextModels.Timestamp.now(),
                 },
             )
             return FlextResult[object].ok(updated)
 
-    class ApiEndpoint(FlextEntity):
+    class ApiEndpoint(FlextModels.Entity):
         """API endpoint entity with routing and configuration."""
 
         model_config = PydanticConfigDict(
@@ -1262,17 +1262,17 @@ class FlextApiModels(FlextModel):
             """Check if endpoint is deprecated."""
             return self.deprecated
 
-    class ApiSession(FlextEntity):
+    class ApiSession(FlextModels.Entity):
         """API session entity with authentication state."""
 
         model_config = PydanticConfigDict(
-            # Inherit modern Pydantic patterns from FlextEntity
+            # Inherit modern Pydantic patterns from FlextModels.Entity
             alias_generator=AliasGenerator(
                 alias=flext_alias_generator,
                 validation_alias=flext_alias_generator,
                 serialization_alias=flext_alias_generator,
             ),
-            # FlextEntity patterns: mutable with lifecycle management
+            # FlextModels.Entity patterns: mutable with lifecycle management
             extra="allow",
             validate_assignment=True,
             use_enum_values=True,
@@ -1342,7 +1342,7 @@ class FlextApiModels(FlextModel):
                 update={
                     "expires_at": new_expiration,
                     "last_activity": datetime.now(UTC),
-                    "updated_at": FlextTimestamp.now(),
+                    "updated_at": FlextModels.Timestamp.now(),
                 },
             )
             return FlextResult[object].ok(updated)
@@ -1352,7 +1352,7 @@ class FlextApiModels(FlextModel):
             updated = self.model_copy(
                 update={
                     "is_active": False,
-                    "updated_at": FlextTimestamp.now(),
+                    "updated_at": FlextModels.Timestamp.now(),
                 },
             )
             return FlextResult[object].ok(updated)

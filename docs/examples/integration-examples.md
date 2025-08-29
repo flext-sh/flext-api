@@ -37,9 +37,9 @@ import asyncio
 from typing import Dict, List
 
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class FlexCoreIntegrationExample:
     """Complete FlexCore integration example."""
@@ -244,9 +244,9 @@ from typing import Dict, Optional
 
 from dataclasses import dataclass
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 @dataclass
 class AuthToken:
@@ -530,9 +530,9 @@ from enum import Enum
 from dataclasses import dataclass, field
 from datetime import datetime
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class PipelineStatus(Enum):
     """Pipeline execution status enumeration."""
@@ -1000,9 +1000,9 @@ from typing import Dict, List, Optional
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 @dataclass
 class MetricDataPoint:
@@ -1464,9 +1464,9 @@ from typing import Dict, Optional, Callable
 from enum import Enum
 from dataclasses import dataclass
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class CircuitState(Enum):
     """Circuit breaker states."""
@@ -1876,9 +1876,9 @@ from typing import Dict, Optional, List
 
 from dataclasses import dataclass, field
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 @dataclass
 class ServiceEndpoint:

@@ -9,7 +9,7 @@ Padrões FLEXT aplicados:
 - Classe CONSOLIDADA FlextApiStorage contendo TODOS os componentes
 - FlextResult para operações que podem falhar
 - Nested classes para organização (backends, cache, configuração)
-- get_logger do flext-core
+- FlextLogger do flext-core
 - FlextDomainService como base
 
 Copyright (c) 2025 Flext. All rights reserved.
@@ -30,9 +30,9 @@ from typing import Protocol, TypeVar, cast
 # UUID generation now uses FlextUtilities.generate_uuid() - no direct uuid import needed
 from flext_core import (
     FlextDomainService,
+    FlextLogger,
     FlextResult,
     FlextUtilities,
-    get_logger,
 )
 from flext_core.protocols import FlextProtocols
 
@@ -40,7 +40,7 @@ from flext_core.protocols import FlextProtocols
 StorageValue = TypeVar("StorageValue")
 StorageOperation = tuple[str, str, object]
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # Type variables
 K = TypeVar("K")

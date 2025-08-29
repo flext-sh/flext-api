@@ -133,7 +133,7 @@ class TestApiModels:
 
     def test_api_request_creation(self) -> None:
         """Test ApiRequest model creation."""
-        # Test with minimal required fields (id, method, url are required by FlextEntity)
+        # Test with minimal required fields (id, method, url are required by FlextModels.Entity)
         request = ApiRequest(id="req_123", method=HttpMethod.GET, url="/api/users")
 
         assert request.method == "GET"
@@ -221,9 +221,7 @@ class TestModelIntegration:
     def test_api_models_with_http_enums(self) -> None:
         """Test API models using HTTP enums."""
         # Create request using enum values (with required fields)
-        request = ApiRequest(
-            id="req_789", method=HttpMethod.POST, url="/api/resources"
-        )
+        request = ApiRequest(id="req_789", method=HttpMethod.POST, url="/api/resources")
 
         assert request.method == HttpMethod.POST
         assert request.id == "req_789"
