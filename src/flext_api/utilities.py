@@ -19,9 +19,9 @@ from __future__ import annotations
 from typing import cast
 
 import aiohttp  # HTTP client specific - not available in core utilities
-from flext_core import FlextLogger, FlextResult, FlextUtilities
+from flext_core import FlextResult, FlextUtilities, get_logger
 
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 
 class FlextApiUtilities:

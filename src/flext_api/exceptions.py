@@ -23,16 +23,18 @@ from collections.abc import Mapping
 from enum import StrEnum
 from typing import cast, object
 
+from logging import Logger
+
 from flext_core import (
     FlextExceptions,
-    FlextLogger,
     FlextProcessingError,
+    get_logger,
 )
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextTypes
 
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 
 # ==============================================================================

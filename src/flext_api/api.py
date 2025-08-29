@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import TypedDict, cast, override
 
-from flext_core import FlextDomainService, FlextLogger, FlextResult, get_flext_container
+from flext_core import FlextDomainService, FlextResult, get_flext_container, get_logger
 from pydantic import Field
 
 from flext_api.client import FlextApiBuilder, FlextApiClient, FlextApiClientConfig
@@ -23,7 +23,7 @@ from flext_api.protocols import (
     FlextApiResponseBuilderProtocol,
 )
 
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ClientConfigDict(TypedDict, total=False):

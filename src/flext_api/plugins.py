@@ -22,9 +22,9 @@ import asyncio
 import time
 from typing import TypeVar, cast
 
-from flext_core import FlextLogger, FlextResult
+from flext_core import FlextResult, get_logger
 
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 # Type variables
 T = TypeVar("T")

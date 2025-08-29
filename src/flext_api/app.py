@@ -36,9 +36,9 @@ from fastapi.responses import JSONResponse
 from flext_core import (
     FlextConstants,
     FlextDomainService,
-    FlextLogger,
     FlextResult,
     FlextUtilities,
+    get_logger,
 )
 
 from flext_api.config import FlextApiSettings, create_api_settings
@@ -48,7 +48,7 @@ from flext_api.storage import FlextApiStorage, create_memory_storage
 # Type definitions will be provided by FlextApiApp consolidated class
 
 
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 
 # Internal helper to intentionally fail initialization for tests
