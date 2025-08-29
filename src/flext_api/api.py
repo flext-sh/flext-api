@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import TypedDict, cast, override
 
-from flext_core import FlextDomainService, FlextResult, get_flext_container, get_logger
+from flext_core import FlextDomainService, FlextLogger, FlextResult, get_flext_container
 from pydantic import Field
 
 from flext_api.client import FlextApiBuilder, FlextApiClient, FlextApiClientConfig
@@ -23,7 +23,7 @@ from flext_api.protocols import (
     FlextApiResponseBuilderProtocol,
 )
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class ClientConfigDict(TypedDict, total=False):
@@ -73,9 +73,11 @@ class FlextApi(FlextDomainService[dict[str, object]]):
     @override
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute the domain service operation (required by FlextDomainService)."""
-        return FlextResult[dict[str, object]].ok(
-            {"status": "ready", "service": "FlextApi", "version": self.service_version}
-        )
+        return FlextResult[dict[str, object]].ok({
+            "status": "ready",
+            "service": "FlextApi",
+            "version": self.service_version,
+        })
 
     def start(self) -> FlextResult[None]:
         """Start the service."""
@@ -91,15 +93,13 @@ class FlextApi(FlextDomainService[dict[str, object]]):
 
     def health_check(self) -> FlextResult[dict[str, object]]:
         """Perform health check."""
-        return FlextResult[dict[str, object]].ok(
-            {
-                "status": "healthy" if self._is_running else "stopped",
-                "service": type(self).__name__,
-                "is_running": self._is_running,
-                "client_configured": self._client is not None,
-                "builder_available": self._builder is not None,
-            }
-        )
+        return FlextResult[dict[str, object]].ok({
+            "status": "healthy" if self._is_running else "stopped",
+            "service": type(self).__name__,
+            "is_running": self._is_running,
+            "client_configured": self._client is not None,
+            "builder_available": self._builder is not None,
+        })
 
     @property
     def is_running(self) -> bool:
@@ -161,18 +161,23 @@ class FlextApi(FlextDomainService[dict[str, object]]):
             FlextResult[FlextApiHttpClientProtocol]: Success with client or failure with error
 
         """
+
         # Railway-oriented programming pattern (FLEXT-core proven pattern)
         def create_config(config_dict: dict[str, object]) -> FlextResult[ClientConfig]:
             """Create and validate client configuration."""
             try:
                 timeout_value = config_dict.get("timeout") or DEFAULT_TIMEOUT
-                timeout: float = float(timeout_value) if timeout_value else DEFAULT_TIMEOUT
+                timeout: float = (
+                    float(timeout_value) if timeout_value else DEFAULT_TIMEOUT
+                )
 
                 headers_value = config_dict.get("headers") or {}
                 headers: dict[str, str] = cast("dict[str, str]", headers_value)
 
                 retries_value = config_dict.get("max_retries") or DEFAULT_MAX_RETRIES
-                max_retries: int = int(retries_value) if retries_value else DEFAULT_MAX_RETRIES
+                max_retries: int = (
+                    int(retries_value) if retries_value else DEFAULT_MAX_RETRIES
+                )
 
                 client_config = ClientConfig(
                     base_url=str(config_dict.get("base_url", "")),
@@ -182,7 +187,9 @@ class FlextApi(FlextDomainService[dict[str, object]]):
                 )
                 return FlextResult[ClientConfig].ok(client_config)
             except Exception as e:
-                return FlextResult[ClientConfig].fail(f"Configuration creation failed: {e}")
+                return FlextResult[ClientConfig].fail(
+                    f"Configuration creation failed: {e}"
+                )
 
         def validate_config(client_config: ClientConfig) -> FlextResult[ClientConfig]:
             """Validate configuration using business rules."""
@@ -193,7 +200,9 @@ class FlextApi(FlextDomainService[dict[str, object]]):
                 )
             return FlextResult[ClientConfig].ok(client_config)
 
-        def create_client(client_config: ClientConfig) -> FlextResult[FlextApiHttpClientProtocol]:
+        def create_client(
+            client_config: ClientConfig,
+        ) -> FlextResult[FlextApiHttpClientProtocol]:
             """Create API client from validated configuration."""
             try:
                 legacy_config = FlextApiClientConfig(
@@ -213,15 +222,19 @@ class FlextApi(FlextDomainService[dict[str, object]]):
                 )
             except Exception as e:
                 logger.exception("Client creation failed")
-                return FlextResult[FlextApiHttpClientProtocol].fail(f"Client creation error: {e}")
+                return FlextResult[FlextApiHttpClientProtocol].fail(
+                    f"Client creation error: {e}"
+                )
 
         # Railway-oriented composition (MANDATORY pattern)
         config_dict = cast("dict[str, object]", config or {})
         return (
             create_config(config_dict)
-            .flat_map(validate_config)      # Chain validation
-            .flat_map(create_client)        # Chain client creation
-            .tap_error(lambda e: logger.error(f"HTTP client setup failed: {e}"))  # Log errors
+            .flat_map(validate_config)  # Chain validation
+            .flat_map(create_client)  # Chain client creation
+            .tap_error(
+                lambda e: logger.error(f"HTTP client setup failed: {e}")
+            )  # Log errors
         )
 
     def get_builder(self) -> FlextApiBuilder:

@@ -14,7 +14,7 @@
 #### 2. ✅ Logging Pattern
 
 - **Status**: FULLY COMPLIANT
-- **Implementation**: Uses `get_logger(__name__)` from flext-core
+- **Implementation**: Uses `FlextLogger(__name__)` from flext-core
 - **Evidence**: Module-level logger correctly configured
 - **Integration**: Seamless with flext-core logging infrastructure
 
@@ -34,7 +34,7 @@
 - **Structure**:
 
   ```python
-  from flext_core import FlextResult, get_logger, flatten_dict, merge_dicts
+  from flext_core import FlextResult, FlextLogger, flatten_dict, merge_dicts
   ```
 
 - **Root Access**: Core patterns available in root namespace
@@ -130,7 +130,7 @@
 ```
 ✅ FlextResult[None].ok() works: True
 ✅ FlextResult[None].fail() works: True
-✅ get_logger() from flext-core works
+✅ FlextLogger() from flext-core works
 ✅ flext_api_flatten_dict is alias to flext-core function
 ✅ flext_api_merge_dicts is alias to flext-core function
 ✅ Async/await patterns work: True
@@ -142,9 +142,9 @@
 
 ```python
 # All patterns work seamlessly together
-from flext_api import flext_api_create_enhanced_client, FlextResult, get_logger
+from flext_api import flext_api_create_enhanced_client, FlextResult, FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 client = flext_api_create_enhanced_client("https://api.example.com")
 response = await client.app_request("/data")
 result = FlextResult[None].ok(response)

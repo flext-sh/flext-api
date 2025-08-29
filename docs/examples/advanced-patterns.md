@@ -24,13 +24,13 @@ This guide covers sophisticated FLEXT API usage patterns for enterprise applicat
 
 ```python
 from flext_api import FlextApiPlugin, create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, Optional
 
 import time
 import hashlib
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class RequestLoggingPlugin(FlextApiPlugin):
     """Advanced logging plugin with request/response tracking."""
@@ -165,12 +165,12 @@ plugin_result = advanced_plugin_example()
 
 ```python
 from flext_api import FlextApiPlugin, create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from typing import Dict, object
 import time
 from enum import Enum
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class CircuitState(Enum):
     CLOSED = "closed"
@@ -329,9 +329,9 @@ circuit_result = circuit_breaker_example()
 import asyncio
 from typing import List, Dict, object
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class AsyncFlextApiWrapper:
     """Async wrapper for FLEXT API operations."""
@@ -431,9 +431,9 @@ from typing import List, Dict, Callable, Optional
 
 from dataclasses import dataclass
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 @dataclass
 class BatchRequest:
@@ -661,9 +661,9 @@ import random
 import time
 from typing import List, Callable, object
 from flext_api import create_flext_api, FlextApiPlugin
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class AdvancedRetryPlugin(FlextApiPlugin):
     """Advanced retry plugin with exponential backoff and jitter."""
@@ -852,9 +852,9 @@ from typing import Dict, Optional
 import threading
 import time
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class ConnectionPoolManager:
     """Advanced connection pool management."""
@@ -1002,9 +1002,9 @@ from typing import Dict, Optional
 
 from dataclasses import dataclass, asdict
 from flext_api import create_flext_api, FlextApiPlugin
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 @dataclass
 class CacheEntry:

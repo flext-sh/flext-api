@@ -18,12 +18,12 @@
 **Affected Components**: 15+ files across codebase
 
 **Problem Analysis**:
-Multiple source files use `structlog.get_logger()` instead of the required `get_logger()` from flext-core, breaking ecosystem logging consistency and preventing proper correlation ID tracking.
+Multiple source files use `structlog.FlextLogger()` instead of the required `FlextLogger()` from flext-core, breaking ecosystem logging consistency and preventing proper correlation ID tracking.
 
 **Affected Files**:
 
-- `src/flext_api/api.py:133` ❌ `logger = structlog.get_logger(__name__)`
-- `src/flext_api/builder.py:186` ❌ `logger = structlog.get_logger(__name__)`
+- `src/flext_api/api.py:133` ❌ `logger = structlog.FlextLogger(__name__)`
+- `src/flext_api/builder.py:186` ❌ `logger = structlog.FlextLogger(__name__)`
 - `src/flext_api/client.py:45` ❌ Direct structlog usage
 - Additional 12+ instances throughout codebase
 
@@ -32,16 +32,16 @@ Multiple source files use `structlog.get_logger()` instead of the required `get_
 ```python
 # ❌ INCORRECT - Current implementation
 import structlog
-logger = structlog.get_logger(__name__)
+logger = structlog.FlextLogger(__name__)
 
 # ✅ CORRECT - FLEXT-Core standard
-from flext_core import get_logger
-logger = get_logger(__name__)
+from flext_core import FlextLogger
+logger = FlextLogger(__name__)
 ```
 
 **Implementation Tasks**:
 
-- [ ] Replace all instances of `structlog.get_logger()` with `get_logger()`
+- [ ] Replace all instances of `structlog.FlextLogger()` with `FlextLogger()`
 - [ ] Remove direct `structlog` imports from all modules
 - [ ] Implement structured logging context with correlation IDs
 - [ ] Update logging configuration to use flext-core patterns
@@ -175,13 +175,13 @@ self._container = FlextContainer()
 
 ```python
 # ✅ CORRECT - Global container usage
-from flext_core import get_flext_container, FlextServiceKey
+from flext_core import get_flext_container, FlextContainer.ServiceKey
 
 class FlextApiClient:
     def __init__(self):
         self.container = FlextContainer.get_global()
 
-    def get_service[T](self, key: FlextServiceKey[T]) -> FlextResult[T]:
+    def get_service[T](self, key: FlextContainer.ServiceKey[T]) -> FlextResult[T]:
         return self.container.get_typed(key)
 ```
 
@@ -189,7 +189,7 @@ class FlextApiClient:
 
 - [ ] Remove all local `FlextContainer()` instantiations
 - [ ] Use `FlextContainer.get_global()` for global container access
-- [ ] Implement FlextServiceKey patterns for type-safe service resolution
+- [ ] Implement FlextContainer.ServiceKey patterns for type-safe service resolution
 - [ ] Register services in global container
 - [ ] Update service resolution to use typed patterns
 
@@ -219,9 +219,9 @@ Domain entities and value objects are minimal (near-empty files), with business 
 
 ```python
 # ✅ Rich domain entity example
-from flext_core import FlextEntity, FlextResult
+from flext_core import FlextModels.Entity, FlextResult
 
-class ApiRequest(FlextEntity):
+class ApiRequest(FlextModels.Entity):
     """Rich domain entity for API requests."""
     method: str
     url: str
@@ -407,7 +407,7 @@ class FlextApiSettings(FlextConfig):
 
 **Day 1-2**: Logging Pattern Migration
 
-- Replace all structlog usage with get_logger()
+- Replace all structlog usage with FlextLogger()
 - Implement structured logging context
 
 **Day 3-4**: Exception Handling Migration
@@ -423,7 +423,7 @@ class FlextApiSettings(FlextConfig):
 **Day 6-7**: Dependency Injection Migration
 
 - Replace local containers with global container
-- Implement FlextServiceKey patterns
+- Implement FlextContainer.ServiceKey patterns
 
 **Deliverable**: 60%+ compliance score
 
@@ -479,11 +479,11 @@ class FlextApiSettings(FlextConfig):
 
 ### **Critical Requirements (Must Pass)**
 
-- [ ] Zero instances of `structlog.get_logger()` usage
+- [ ] Zero instances of `structlog.FlextLogger()` usage
 - [ ] Zero direct exception raising - all operations return FlextResult<T>
 - [ ] FlextApi inherits from FlextService correctly
 - [ ] Global container used instead of local instances
-- [ ] Domain entities implemented with FlextEntity
+- [ ] Domain entities implemented with FlextModels.Entity
 - [ ] Type hints specific - zero generic `object` types
 
 ### **High Priority Requirements (Should Pass)**

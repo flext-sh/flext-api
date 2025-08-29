@@ -49,10 +49,10 @@ make validate
 
 ```python
 from flext_api import create_flext_api
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 
 # ✅ Logger following flext-core pattern
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # ✅ Factory function for API
 api = create_flext_api()
@@ -160,9 +160,9 @@ src/flext_api/
 
 ```python
 from flext_api import create_flext_api
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def basic_http_client_example() -> FlextResult[dict]:
     api = create_flext_api()
@@ -288,7 +288,7 @@ make format          # Auto-format code
 **Objective**: Achieve 95% flext-core compliance
 
 - [ ] **Phase 1 (Week 1)**: Critical fixes → 60% compliance
-  - [ ] Fix logging patterns (structlog → get_logger)
+  - [ ] Fix logging patterns (structlog → FlextLogger)
   - [ ] Fix exception handling (exceptions → FlextResult)
   - [ ] FlextService inheritance compliance
 - [ ] **Phase 2 (Week 2)**: Architectural improvements → 80% compliance
@@ -341,7 +341,7 @@ make format          # Auto-format code
 #### **FLEXT-Core Compliance**
 
 - [ ] FlextResult[T] used for operations that can fail
-- [ ] get_logger(**name**) from flext-core (not structlog)
+- [ ] FlextLogger(**name**) from flext-core (not structlog)
 - [ ] Services inherit from FlextService correctly
 - [ ] Global container via FlextContainer.get_global()
 - [ ] Error handling with structured codes

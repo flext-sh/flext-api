@@ -238,10 +238,10 @@ flext_api:
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 import yaml
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def load_configuration(config_path: str = "config/flext-api.yaml"):
     """Load configuration from YAML file with environment override."""
@@ -284,9 +284,9 @@ config = FlextApiClientConfig(
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def configure_authentication():
     """Configure API client with authentication."""

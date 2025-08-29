@@ -9,7 +9,7 @@ Padrões FLEXT aplicados:
 - Classe CONSOLIDADA FlextApiPlugins contendo todos os plugins
 - FlextResult para operações que podem falhar
 - Nested classes para organização
-- get_logger do flext-core
+- FlextLogger do flext-core
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -22,9 +22,9 @@ import asyncio
 import time
 from typing import TypeVar, cast
 
-from flext_core import FlextResult, get_logger
+from flext_core import FlextLogger, FlextResult
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # Type variables
 T = TypeVar("T")

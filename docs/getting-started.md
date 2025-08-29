@@ -19,7 +19,7 @@
 
 - **FastAPI** - Async web framework
 - **Pydantic** - Data validation and serialization
-- **flext-core patterns** - FlextResult, FlextService, FlextEntity
+- **flext-core patterns** - FlextResult, FlextService, FlextModels.Entity
 - **Type hints** - Python typing system
 - **Async/await** - Asynchronous programming
 
@@ -77,10 +77,10 @@ make dev
 
 ```python
 from flext_api import create_flext_api
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 
 # ✅ Logger following flext-core pattern
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def http_client_example() -> FlextResult[dict]:
     """HTTP client example following flext-core patterns."""
@@ -131,10 +131,10 @@ if __name__ == "__main__":
 
 ```python
 from flext_api import create_flext_api, FlextApiQueryBuilder
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 from typing import Dict, List, object
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def query_builder_example() -> FlextResult[Dict[str, object]]:
     """Query builder example with flext-core patterns."""
@@ -212,10 +212,10 @@ from flext_api import (
     FlextApiCircuitBreakerPlugin,
     create_client_with_plugins
 )
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 from typing import List
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def client_with_plugins_example() -> FlextResult[dict]:
     """HTTP client with plugins example following flext-core patterns."""
@@ -301,12 +301,12 @@ if __name__ == "__main__":
 ```python
 from fastapi import FastAPI, HTTPException, Depends
 from flext_api import flext_api_create_app, create_flext_api
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 from pydantic import BaseModel
 from typing import Dict, object
 
 # ✅ Logger seguindo padrão flext-core
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # ✅ Pydantic models para request/response
 class HealthResponse(BaseModel):
@@ -417,9 +417,9 @@ if __name__ == "__main__":
 # tests/test_getting_started_examples.py
 import pytest
 from flext_api import create_flext_api
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class TestFlextApiGettingStarted:
     """Test cases para exemplos do getting started."""

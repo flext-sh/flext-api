@@ -9,7 +9,7 @@ Padrões FLEXT aplicados:
 - Classe CONSOLIDADA FlextApiClient contendo TODOS os componentes
 - FlextResult para operações que podem falhar
 - Nested classes para organização (Operation, Builder, QueryBuilder, ResponseBuilder)
-- get_logger do flext-core
+- FlextLogger do flext-core
 - Eliminação completa de duplicação com builders.py
 
 Copyright (c) 2025 Flext. All rights reserved.
@@ -27,7 +27,7 @@ from typing import Self, TypeVar, cast
 from urllib.parse import urljoin
 
 import aiohttp
-from flext_core import FlextResult, FlextTypes, FlextUtilities, get_logger
+from flext_core import FlextLogger, FlextResult, FlextTypes, FlextUtilities
 
 from flext_api.models import (
     ApiRequest,
@@ -38,7 +38,7 @@ from flext_api.models import (
 )
 from flext_api.plugins import FlextApiPlugin
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # Type variables
 T = TypeVar("T")

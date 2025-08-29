@@ -34,10 +34,10 @@
 ### 1. FlextLoggerFactory Pattern
 
 ```python
-from flext_core import get_logger
+from flext_core import FlextLogger
 
 # ✅ ALWAYS use this pattern
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # ✅ Available methods (ALL VALID):
 logger.info("Operation successful", extra={"user_id": user.id})
@@ -72,9 +72,9 @@ async def service_operation() -> FlextResult[DataType]:
 ### 3. Service Class Pattern
 
 ```python
-from flext_core import FlextResult, FlextServiceError, get_logger
+from flext_core import FlextResult, FlextServiceError, FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class FlextApiService(BaseService):
     """FLEXT API service following core patterns.
@@ -145,9 +145,9 @@ def temp_validate():          # No temporary methods
 
 ```python
 from fastapi import APIRouter, Depends, HTTPException, status
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["resource"])
 
 @router.post("/resource")
@@ -183,9 +183,9 @@ async def create_resource(
 
 ```python
 from fastapi import Depends
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def get_flext_auth_service() -> FlextAuthService:
     """Get authentication service - NO FALLBACKS."""

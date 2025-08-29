@@ -140,9 +140,9 @@ make deps-audit     # Security audit of dependencies
 1. **FlextResult[T] Pattern** (Currently 70% compliant)
 
    ```python
-   from flext_core import FlextResult, get_logger
+   from flext_core import FlextResult, FlextLogger
 
-   logger = get_logger(__name__)
+   logger = FlextLogger(__name__)
 
    def service_operation() -> FlextResult[DataType]:
        try:
@@ -156,14 +156,14 @@ make deps-audit     # Security audit of dependencies
 2. **Structured Logging** (Currently 25% compliant)
 
    ```python
-   from flext_core import get_logger
+   from flext_core import FlextLogger
 
    # ✅ Correct pattern
-   logger = get_logger(__name__)
+   logger = FlextLogger(__name__)
    logger.info("Operation completed", user_id=123, operation="create_client")
 
    # ❌ Avoid - structlog direct usage
-   import structlog  # Use get_logger() instead
+   import structlog  # Use FlextLogger() instead
    ```
 
 3. **Dependency Injection** (Currently 40% compliant)
@@ -199,11 +199,11 @@ src/flext_api/
 
 ```python
 # Required domain entity pattern
-from flext_core import FlextEntity
+from flext_core import FlextModels.Entity
 from pydantic import Field
 from typing import Optional
 
-class HttpRequest(FlextEntity):
+class HttpRequest(FlextModels.Entity):
     """Domain entity representing an HTTP request."""
 
     method: str = Field(..., description="HTTP method")
@@ -254,7 +254,7 @@ git push origin feature/enhance-plugin-system
 #### **FLEXT-Core Compliance**
 
 - [ ] All operations return `FlextResult[T]`
-- [ ] Uses `get_logger(__name__)` for logging
+- [ ] Uses `FlextLogger(__name__)` for logging
 - [ ] Uses global dependency injection container
 - [ ] Follows Clean Architecture boundaries
 - [ ] Domain entities implement business rules
@@ -284,7 +284,7 @@ Brief description of changes and their purpose.
 ## FLEXT-Core Compliance
 
 - [ ] FlextResult pattern implemented
-- [ ] Structured logging with get_logger()
+- [ ] Structured logging with FlextLogger()
 - [ ] Global dependency injection used
 - [ ] Clean Architecture boundaries respected
 
@@ -358,9 +358,9 @@ tests/
 import pytest
 from unittest.mock import Mock, patch
 from flext_api import create_flext_api, FlextResult
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class TestFlextApiCore:
     """Unit tests for FlextApi core functionality."""
@@ -417,9 +417,9 @@ class TestFlextApiCore:
 ```python
 import pytest
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class TestHttpClientIntegration:
     """Integration tests with real HTTP services."""

@@ -15,7 +15,7 @@ This guide covers common issues encountered when developing with FLEXT API, thei
 1. **Investigate Deep** - Verify actual state before assuming causes
 2. **Use Tools First** - Leverage debugging tools before guessing
 3. **Follow Patterns** - Apply FlextResult error handling consistently
-4. **Log Structured** - Use get_logger() with context information
+4. **Log Structured** - Use FlextLogger() with context information
 5. **Test Systematically** - Isolate issues with targeted tests
 
 ---
@@ -95,7 +95,7 @@ cd ../flext-api && poetry install
 poetry add flext-core@^0.9.0
 
 # Verify installation
-python -c "from flext_core import FlextResult, get_logger; print('✅ OK')"
+python -c "from flext_core import FlextResult, FlextLogger; print('✅ OK')"
 ```
 
 ### **Development Server Issues**
@@ -394,9 +394,9 @@ except Exception as e:
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # Add connection retry logic
 api = create_flext_api()
@@ -450,9 +450,9 @@ if client_result.success:
 
 ```python
 from flext_api import create_flext_api, FlextApiRetryPlugin
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # Configure appropriate timeouts
 api = create_flext_api()
@@ -513,10 +513,10 @@ if client_result.success:
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 import os
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 class AuthenticatedClient:
     def __init__(self):
@@ -586,9 +586,9 @@ def bad_operation():
 **Solutions**:
 
 ```python
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # ✅ Correct pattern
 def good_operation() -> FlextResult[dict]:
@@ -623,7 +623,7 @@ else:
 ```python
 # ❌ Incorrect logging
 import structlog
-log = structlog.get_logger()
+log = structlog.FlextLogger()
 
 # ❌ Standard logging
 import logging
@@ -633,10 +633,10 @@ logger = logging.getLogger(__name__)
 **Solutions**:
 
 ```python
-from flext_core import get_logger
+from flext_core import FlextLogger
 
 # ✅ Correct pattern
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def service_operation():
     logger.info("Starting operation", operation="service_operation")
@@ -722,10 +722,10 @@ python -c "from flext_core import FlextResult; print('✅ flext_core OK')" 2>/de
 
 ```python
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 import traceback
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def debug_api_operation():
     """Debug API operation with comprehensive logging."""
@@ -782,9 +782,9 @@ import time
 import cProfile
 import pstats
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def profile_http_operations():
     """Profile HTTP client operations."""
@@ -830,9 +830,9 @@ profile_http_operations()
 ```python
 import tracemalloc
 from flext_api import create_flext_api
-from flext_core import get_logger
+from flext_core import FlextLogger
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 def analyze_memory_usage():
     """Analyze memory usage of API operations."""

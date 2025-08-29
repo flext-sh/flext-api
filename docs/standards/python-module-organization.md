@@ -112,7 +112,7 @@ class ProjectHttpSettings(FlextApiSettings):
 from flext_api.domain.entities import ApiRequest
 from flext_api.domain.value_objects import HttpUrl, HttpHeaders
 
-class ApiRequest(FlextEntity):
+class ApiRequest(FlextModels.Entity):
     method: str
     url: HttpUrl
     headers: HttpHeaders
@@ -126,7 +126,7 @@ class ApiRequest(FlextEntity):
     def with_retry(self) -> FlextResult[ApiRequest]:
         return self.copy_with(retry_count=self.retry_count + 1)
 
-class HttpUrl(FlextValue):
+class HttpUrl(FlextModels.Value):
     url: str
 
     def __post_init__(self):
@@ -221,7 +221,7 @@ class _InternalHttpHandler:
 ```python
 # Import from main package - gets HTTP foundation needs
 from flext_api import create_flext_api, FlextApiClient, FlextApiBuilder
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 
 # Use patterns directly for HTTP operations
 def setup_http_service() -> FlextResult[FlextApi]:
@@ -317,7 +317,7 @@ client = FlextApiClient(config)  # Should return FlextResult
 │  (HTTP Clients, Configuration, I/O) │
 ├─────────────────────────────────────┤
 │       Foundation Layer              │  # From flext-core
-│   (FlextResult, FlextEntity, etc.)  │  # FlextConfig, logging
+│   (FlextResult, FlextModels.Entity, etc.)  │  # FlextConfig, logging
 └─────────────────────────────────────┘
 ```
 
@@ -429,10 +429,10 @@ async def process_http_response_plugins(
 ### **HTTP Entity Patterns**
 
 ```python
-from flext_core import FlextEntity, FlextResult
+from flext_core import FlextModels.Entity, FlextResult
 from flext_api.domain.value_objects import HttpUrl, HttpHeaders
 
-class ApiRequest(FlextEntity):
+class ApiRequest(FlextModels.Entity):
     """Rich HTTP request entity with business logic"""
     method: str
     url: HttpUrl
@@ -483,7 +483,7 @@ class ApiRequest(FlextEntity):
 
         return FlextResult[None].ok(self.copy_with(timeout=timeout))
 
-class ApiResponse(FlextEntity):
+class ApiResponse(FlextModels.Entity):
     """HTTP response entity with metadata"""
     status_code: int
     headers: HttpHeaders
@@ -518,10 +518,10 @@ class ApiResponse(FlextEntity):
 ### **HTTP Value Object Patterns**
 
 ```python
-from flext_core import FlextValue
+from flext_core import FlextModels.Value
 from urllib.parse import urlparse, urljoin
 
-class HttpUrl(FlextValue):
+class HttpUrl(FlextModels.Value):
     """Immutable URL value object with validation"""
     url: str
 
@@ -562,7 +562,7 @@ class HttpUrl(FlextValue):
         new_url = f"{self.url}{separator}{query_string}"
         return HttpUrl(new_url)
 
-class HttpHeaders(FlextValue):
+class HttpHeaders(FlextModels.Value):
     """HTTP headers value object"""
     headers: dict[str, str]
 
@@ -592,7 +592,7 @@ class HttpHeaders(FlextValue):
     def authorization(self) -> str | None:
         return self.get("authorization")
 
-class HttpTimeout(FlextValue):
+class HttpTimeout(FlextModels.Value):
     """HTTP timeout value object with validation"""
     connect_timeout: float
     read_timeout: float
@@ -1239,7 +1239,7 @@ def execute_http_request_with_plugins(
 ```python
 # ✅ Standard HTTP ecosystem imports
 from flext_api import create_flext_api, FlextApiClient, FlextApiBuilder
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 from flext_observability import FlextMetricsService
 
 # ✅ Consistent HTTP error handling across projects
@@ -1306,7 +1306,7 @@ class EcosystemHttpSettings(FlextConfig):
 
 ```python
 # ✅ Use HTTP domain entities consistently across ecosystem
-class OracleDataRequest(FlextEntity):
+class OracleDataRequest(FlextModels.Entity):
     """Oracle data request following HTTP domain patterns"""
     oracle_query: str
     parameters: dict
@@ -1332,7 +1332,7 @@ class OracleDataRequest(FlextEntity):
             timeout=self.timeout
         ))
 
-class LdapSearchRequest(FlextEntity):
+class LdapSearchRequest(FlextModels.Entity):
     """LDAP search request following HTTP domain patterns"""
     base_dn: str
     filter_expr: str

@@ -14,13 +14,13 @@ from flext_api.constants import FlextApiConstants
 
 
 class FlextApiConfig(FlextConfig.BaseConfigModel):
-    """Main API configuration class inheriting from FlextBaseConfigModel.
+    """Main API configuration class inheriting from FlextConfig.BaseConfigModel.
 
     This class follows the FLEXT pattern of having a single Flext[Area][Module] class
     that inherits from the equivalent FlextCore class and provides all functionality
     through internal method delegation.
 
-    Inherits ALL FlextBaseConfigModel functionality and extends with API-specific configuration:
+    Inherits ALL FlextConfig.BaseConfigModel functionality and extends with API-specific configuration:
     - API server and client settings
     - Database configuration
     - Security and authentication settings
@@ -33,7 +33,7 @@ class FlextApiConfig(FlextConfig.BaseConfigModel):
     """
 
     # =============================================================================
-    # API-SPECIFIC CONFIGURATION - Extensions to FlextBaseConfigModel
+    # API-SPECIFIC CONFIGURATION - Extensions to FlextConfig.BaseConfigModel
     # =============================================================================
 
     # API Server Configuration
@@ -92,7 +92,9 @@ class FlextApiConfig(FlextConfig.BaseConfigModel):
     debug: bool = Field(default=False, description="Enable debug mode")
     log_level: str = Field(default="INFO", description="Logging level")
     # Inherit base model_config and customize env_prefix
-    model_config = FlextConfig.BaseConfigModel.model_config | {"env_prefix": "FLEXT_API_"}
+    model_config = FlextConfig.BaseConfigModel.model_config | {
+        "env_prefix": "FLEXT_API_"
+    }
 
     @field_validator("api_port")
     @classmethod
