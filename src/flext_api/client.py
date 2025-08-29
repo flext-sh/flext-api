@@ -27,7 +27,7 @@ from typing import Self, TypeVar, cast
 from urllib.parse import urljoin
 
 import aiohttp
-from flext_core import FlextLogger, FlextResult, FlextTypes, FlextUtilities
+from flext_core import FlextResult, FlextTypes, FlextUtilities, get_logger
 
 from flext_api.models import (
     ApiRequest,
@@ -38,7 +38,7 @@ from flext_api.models import (
 )
 from flext_api.plugins import FlextApiPlugin
 
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 # Type variables
 T = TypeVar("T")

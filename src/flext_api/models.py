@@ -24,11 +24,11 @@ from urllib.parse import ParseResult, urlparse
 from flext_core import (
     FlextConstants,
     FlextEntity,
-    FlextLogger,
     FlextModel,
     FlextResult,
     FlextTimestamp,
     flext_alias_generator,
+    get_logger,
 )
 from pydantic import (
     AliasGenerator,
@@ -41,7 +41,7 @@ from pydantic import (
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import HeadersDict, HttpUrl
 
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 # ==============================================================================
 # TYPE DEFINITIONS
