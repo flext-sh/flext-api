@@ -7,10 +7,10 @@ import pytest
 from flext_api import (
     FlextApiAuthenticationError,
     FlextApiAuthorizationError,
-    FlextApiClientMethod,
     FlextApiConfigurationError,
     FlextApiConnectionError,
     FlextApiError,
+    FlextApiModels,
     FlextApiNotFoundError,
     FlextApiProcessingError,
     FlextApiRateLimitError,
@@ -68,7 +68,7 @@ def test_timeout_error_context_and_http() -> None:
 def test_request_response_and_storage_errors() -> None:
     """Basic subclass instances should be recognized as FlextApiError."""
     assert isinstance(
-        FlextApiRequestError("bad", method=FlextApiClientMethod.GET, endpoint="/x"),
+        FlextApiRequestError("bad", method=FlextApiModels.HttpMethod.GET, endpoint="/x"),
         FlextApiError,
     )
     assert isinstance(FlextApiResponseError("bad", status_code=502), FlextApiError)

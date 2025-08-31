@@ -6,14 +6,13 @@ import pytest
 
 from flext_api import (
     FlextApiClient,
-    FlextApiClientConfig,
 )
 
 
 @pytest.mark.asyncio
 async def test_read_response_data_parse_errors() -> None:
     """Test response parsing with client."""
-    client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
+    client = FlextApiClient(base_url="https://httpbin.org")
 
     # Use GET method which returns HTML content
     response = await client.get("/html")
@@ -30,7 +29,7 @@ async def test_read_response_data_parse_errors() -> None:
 def test_prepare_headers_merge_and_request_build() -> None:
     """Test header configuration in client."""
     client = FlextApiClient(
-        FlextApiClientConfig(base_url="https://api.example.com", headers={"A": "1"}),
+        FlextApiClient(base_url="https://api.example.com", headers={"A": "1"}),
     )
 
     # Test that client is configured with headers
@@ -41,7 +40,7 @@ def test_prepare_headers_merge_and_request_build() -> None:
 @pytest.mark.asyncio
 async def test_execute_request_pipeline_empty_response() -> None:
     """Test request execution with empty response."""
-    client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
+    client = FlextApiClient(base_url="https://httpbin.org")
 
     # Use status endpoint that returns 204 No Content
     response = await client.get("/status/204")

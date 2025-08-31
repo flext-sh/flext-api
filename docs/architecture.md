@@ -425,7 +425,7 @@ def configure_flext_api_services() -> FlextResult[None]:
         )
 
         # Register configuration
-        settings_result = FlextApiSettings.create_with_validation()
+        settings_result = FlextApiConfig.create_with_validation()
         if settings_result.is_failure:
             return settings_result
 
@@ -523,7 +523,7 @@ from flext_core import FlextConfig, FlextResult, get_flext_container
 from pydantic import Field, field_validator
 from typing import Dict, object
 
-class FlextApiSettings(FlextConfig):
+class FlextApiConfig(FlextConfig):
     """✅ Configuration seguindo padrões flext-core."""
 
     # Server Configuration
@@ -579,7 +579,7 @@ class FlextApiSettings(FlextConfig):
         return FlextResult[None].ok(None)
 
     @classmethod
-    def create_with_validation(cls) -> FlextResult[FlextApiSettings]:
+    def create_with_validation(cls) -> FlextResult[FlextApiConfig]:
         """✅ Factory com validação completa."""
         try:
             settings = cls()
@@ -598,7 +598,7 @@ class FlextApiSettings(FlextConfig):
 
 def register_settings() -> FlextResult[None]:
     """✅ Register settings in global container."""
-    settings_result = FlextApiSettings.create_with_validation()
+    settings_result = FlextApiConfig.create_with_validation()
 
     if settings_result.is_failure:
         return settings_result

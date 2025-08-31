@@ -6,12 +6,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from flext_api import FlextApiError, create_flext_api_app
-from flext_api.app import FlextApiAppConfig
+from flext_api.app import FlextApiConfig
 
 
 def _make_app(*, debug: bool = True) -> FastAPI:
     """Create app with debug flag toggled for docs/openapi visibility."""
-    config = FlextApiAppConfig()
+    config = FlextApiConfig()
     # force debug to enable docs/openapi paths
     object.__setattr__(config.settings, "debug", debug)
     return create_flext_api_app(config)

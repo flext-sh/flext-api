@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api import FlextApiClient, FlextApiClientConfig
+from flext_api import FlextApiClient, FlextApiClient
 
 
 @pytest.mark.asyncio
 async def test_client_build_and_error_formatting_on_invalid_url() -> None:
     """Client handles REAL non-200 status and returns data."""
-    client = FlextApiClient(FlextApiClientConfig(base_url="https://httpbin.org"))
+    client = FlextApiClient(base_url="https://httpbin.org"))
     await client.start()
     try:
         # REAL HTTP request - httpbin.org/status/400 returns HTTP 400
@@ -27,7 +27,7 @@ async def test_client_build_and_error_formatting_on_invalid_url() -> None:
 async def test_client_headers_merge_and_prepare_params() -> None:
     """Client merges headers and serializes params correctly."""
     client = FlextApiClient(
-        FlextApiClientConfig(
+        FlextApiClient(
             base_url="https://httpbin.org",
             headers={"A": "1"},
         ),

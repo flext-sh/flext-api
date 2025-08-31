@@ -8,10 +8,7 @@ import pytest
 
 from flext_api import (
     FlextApiClient,
-    FlextApiClientConfig,
-    FlextApiClientMethod,
-    FlextApiClientRequest,
-    FlextApiClientResponse,
+    FlextApiModels,
     create_client,
 )
 
@@ -19,14 +16,16 @@ from flext_api import (
 @pytest.mark.asyncio
 async def test_client_request_pipeline_success() -> None:
     """Test successful client request pipeline execution."""
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://httpbin.org",
         timeout=10.0,
         headers={"User-Agent": "FlextApi-Test/1.0"},
     )
     client = FlextApiClient(config)
 
-    request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/get")
+    request = FlextApiModels.ApiRequest(
+        id="test_req", method=FlextApiModels.HttpMethod.GET, url="https://httpbin.org/get"
+    )
 
     # Test the basic request pipeline
     await client._ensure_session()
@@ -40,7 +39,7 @@ async def test_client_request_pipeline_success() -> None:
 @pytest.mark.asyncio
 async def test_client_error_handling_pipeline() -> None:
     """Test client error handling in request pipeline."""
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://invalid-domain-that-does-not-exist-12345.com",
         timeout=10.0,
     )
@@ -48,7 +47,11 @@ async def test_client_error_handling_pipeline() -> None:
     await client.start()
 
     try:
-        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://invalid-domain-that-does-not-exist-12345.com/test")
+        request = FlextApiModels.ApiRequest(
+            id="test_req",
+            method=FlextApiModels.HttpMethod.GET,
+            url="https://invalid-domain-that-does-not-exist-12345.com/test",
+        )
 
         # Should fail due to DNS resolution failure
         result = await client._perform_http_request(request)
@@ -57,7 +60,10 @@ async def test_client_error_handling_pipeline() -> None:
         assert result.error is not None
         # Check for common connection error messages
         error_lower = result.error.lower()
-        assert any(keyword in error_lower for keyword in ["failed", "error", "connection", "resolve", "name"])
+        assert any(
+            keyword in error_lower
+            for keyword in ["failed", "error", "connection", "resolve", "name"]
+        )
     finally:
         await client.stop()
 
@@ -65,7 +71,7 @@ async def test_client_error_handling_pipeline() -> None:
 @pytest.mark.asyncio
 async def test_client_session_management() -> None:
     """Test client session management utilities."""
-    config = FlextApiClientConfig(base_url="https://httpbin.org", timeout=10.0)
+    config = FlextApiClient(base_url="https://httpbin.org", timeout=10.0)
     client = FlextApiClient(config)
 
     # Test session creation
@@ -113,18 +119,20 @@ def test_create_client_validation_error() -> None:
 @pytest.mark.asyncio
 async def test_client_request_validation() -> None:
     """Test client request validation."""
-    config = FlextApiClientConfig(base_url="https://httpbin.org", timeout=10.0)
+    config = FlextApiClient(base_url="https://httpbin.org", timeout=10.0)
     # Client created for context but not used in this validation test
     _ = FlextApiClient(config)
 
     # Valid request
-    valid_request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/get")
+    valid_request = FlextApiModels.ApiRequest(
+        id="test_req", method=FlextApiModels.HttpMethod.GET, url="https://httpbin.org/get"
+    )
     assert valid_request.method == "GET"
     assert valid_request.url == "https://httpbin.org/get"
 
     # Request with additional data
-    post_request = FlextApiClientRequest(
-        method=FlextApiClientMethod.POST,
+    post_request = FlextApiModels.ApiRequest(
+        method=FlextApiModels.HttpMethod.POST,
         url="https://httpbin.org/post",
         json_data={"test": "data"},
         headers={"Content-Type": "application/json"},
@@ -136,7 +144,7 @@ async def test_client_request_validation() -> None:
 def test_client_response_structure() -> None:
     """Test client response structure validation."""
     # Test response construction
-    response = FlextApiClientResponse(
+    response = FlextApiModels.ApiResponse(
         status_code=200,
         headers={"Content-Type": "application/json"},
         data={"message": "success"},
@@ -152,7 +160,7 @@ def test_client_response_structure() -> None:
 @pytest.mark.asyncio
 async def test_client_lifecycle_with_requests() -> None:
     """Test complete client lifecycle with actual requests."""
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://httpbin.org",
         timeout=10.0,
         max_retries=1,
@@ -164,7 +172,9 @@ async def test_client_lifecycle_with_requests() -> None:
     assert client.status == "running"
 
     # Make a request during lifecycle
-    request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/uuid")
+    request = FlextApiModels.ApiRequest(
+        id="test_req", method=FlextApiModels.HttpMethod.GET, url="https://httpbin.org/uuid"
+    )
     result = await client._perform_http_request(request)
 
     assert result.success
@@ -179,7 +189,7 @@ async def test_client_lifecycle_with_requests() -> None:
 def test_client_configuration_inheritance() -> None:
     """Test client configuration inheritance and validation."""
     # Test minimal config
-    minimal_config = FlextApiClientConfig(base_url="https://api.example.com")
+    minimal_config = FlextApiClient(base_url="https://api.example.com")
     client = FlextApiClient(minimal_config)
 
     assert client.config.base_url == "https://api.example.com"
@@ -187,7 +197,7 @@ def test_client_configuration_inheritance() -> None:
     assert client.config.max_retries == 3  # Default value
 
     # Test full config
-    full_config = FlextApiClientConfig(
+    full_config = FlextApiClient(
         base_url="https://api.example.com",
         timeout=60.0,
         max_retries=5,

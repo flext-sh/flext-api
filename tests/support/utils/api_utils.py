@@ -11,9 +11,7 @@ import pytest
 from flext_core import FlextResult
 
 from flext_api import (
-    FlextApiClientMethod,
-    FlextApiClientRequest,
-    FlextApiClientResponse,
+    FlextApiModels,
 )
 
 # Type variable for generic FlextResult operations
@@ -37,7 +35,9 @@ def assert_flext_result_failure[T](
     if result.success:
         pytest.fail(f"Expected failure but got success: {result.value}")
     if expected_error is not None and expected_error not in str(result.error):
-        pytest.fail(f"Expected error containing '{expected_error}' but got: {result.error}")
+        pytest.fail(
+            f"Expected error containing '{expected_error}' but got: {result.error}"
+        )
 
 
 def create_test_request(
@@ -46,10 +46,10 @@ def create_test_request(
     headers: dict[str, str] | None = None,
     params: dict[str, object] | None = None,
     timeout: float = 30.0,
-) -> FlextApiClientRequest:
+) -> FlextApiModels.ApiRequest:
     """Create test request with sensible defaults."""
-    return FlextApiClientRequest(
-        method=FlextApiClientMethod(method) if isinstance(method, str) else method,
+    return FlextApiModels.ApiRequest(
+        method=FlextApiModels.HttpMethod(method) if isinstance(method, str) else method,
         url=url,
         headers=headers or {},
         params=params or {},
@@ -65,9 +65,9 @@ def create_test_response(
     request_id: str | None = None,
     *,
     from_cache: bool = False,
-) -> FlextApiClientResponse:
+) -> FlextApiModels.ApiResponse:
     """Create test response with sensible defaults."""
-    return FlextApiClientResponse(
+    return FlextApiModels.ApiResponse(
         status_code=status_code,
         data=data or {"message": "success"},
         headers=headers or {"content-type": "application/json"},

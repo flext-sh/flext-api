@@ -51,7 +51,7 @@ class TestMissingBuilderCoverage:
             current_page=1,
             page_size=10,
             total_items=100,
-            message="Data retrieved"
+            message="Data retrieved",
         )
 
         assert result["status_code"] == 200
@@ -71,17 +71,23 @@ class TestMissingBuilderCoverage:
 
     def test_pagination_validation_negative_total(self) -> None:
         """Test pagination validation with negative total - covers lines 197-198."""
-        with pytest.raises(ValidationError, match="Input should be greater than or equal to 0"):
+        with pytest.raises(
+            ValidationError, match="Input should be greater than or equal to 0"
+        ):
             PaginationConfig(data=[], total=-1, page=1, page_size=10)
 
     def test_pagination_validation_zero_page(self) -> None:
         """Test pagination validation with zero page using Pydantic validation."""
-        with pytest.raises(ValidationError, match="Input should be greater than or equal to 1"):
+        with pytest.raises(
+            ValidationError, match="Input should be greater than or equal to 1"
+        ):
             PaginationConfig(data=[], total=100, page=0, page_size=10)
 
     def test_pagination_validation_zero_page_size(self) -> None:
         """Test pagination validation with zero page size using Pydantic validation."""
-        with pytest.raises(ValidationError, match="Input should be greater than or equal to 1"):
+        with pytest.raises(
+            ValidationError, match="Input should be greater than or equal to 1"
+        ):
             PaginationConfig(data=[], total=100, page=1, page_size=0)
 
     def test_response_builder_legacy_create_response(self) -> None:
@@ -108,7 +114,7 @@ class TestMissingBuilderCoverage:
             current_page=1,
             page_size=10,
             total_items=2,
-            message="Retrieved items"
+            message="Retrieved items",
         )
 
         assert result["status_code"] == 200
@@ -188,11 +194,7 @@ class TestMissingBuilderCoverage:
         builder = PaginatedResponseBuilder()
         test_data = [{"id": 1}]
 
-        result = (
-            builder.success(test_data)
-            .with_pagination(2, 10, 50)
-            .build()
-        )
+        result = builder.success(test_data).with_pagination(2, 10, 50).build()
 
         assert result["status_code"] == 200
         assert result["data"] == test_data

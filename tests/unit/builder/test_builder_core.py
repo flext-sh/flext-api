@@ -1,383 +1,107 @@
-"""Test builder core functionality.
+"""Tests for flext_api.builder module - REAL classes only.
+
+Tests using only REAL classes directly from flext_api.
+No helpers, no aliases, no compatibility layers.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
-import pytest
-from pydantic import ValidationError
-
-from flext_api import (
-    FlextApiBuilder,
-    FlextApiQuery,
-    FlextApiQueryBuilder,
-    FlextApiResponse,
-    FlextApiResponseBuilder,
-    build_error_response,
-    build_paginated_response,
-    build_query,
-    build_success_response,
-)
-
-# Constants
-EXPECTED_BULK_SIZE = 2
+from flext_api import FlextApiModels
 
 
-class TestFlextApiQuery:
-    """Test FlextApiQuery dataclass."""
-
-    def test_query_creation(self) -> None:
-        """Test basic query creation."""
-        query = FlextApiQuery()
-        if query.page != 1:
-            msg = f"Expected 1, got {query.page}"
-            raise AssertionError(msg)
-        assert query.page_size == 20
-        assert isinstance(query.filters, list)
-        assert isinstance(query.sorts, list)
-
-    def test_query_with_custom_values(self) -> None:
-        """Test query with custom values."""
-        filters: list[dict[str, object]] = [
-            {"field": "name", "operator": "equals", "value": "test"},
-        ]
-        sorts = [{"field": "created_at", "direction": "desc"}]
-
-        query = FlextApiQuery(
-            filters=filters,
-            sorts=sorts,
-            page=2,
-            page_size=50,
-        )
-
-        if query.filters != filters:
-            msg = f"Expected {filters}, got {query.filters}"
-            raise AssertionError(msg)
-        assert query.sorts == sorts
-        if query.page != EXPECTED_BULK_SIZE:
-            msg = f"Expected 2, got {query.page}"
-            raise AssertionError(msg)
-        assert query.page_size == 50
-
-    def test_query_validation_negative_page(self) -> None:
-        """Test query validation for negative page with Pydantic validation."""
-        with pytest.raises(ValidationError, match="Input should be greater than or equal to 1"):
-            FlextApiQuery(page=0)
-
-    def test_query_validation_negative_page_size(self) -> None:
-        """Test query validation for negative page size with Pydantic validation."""
-        with pytest.raises(ValidationError, match="Input should be greater than or equal to 1"):
-            FlextApiQuery(page_size=0)
-
-    def test_query_to_dict(self) -> None:
-        """Test converting query to dictionary."""
-        query = FlextApiQuery(page=2, page_size=10)
-        result = query.to_dict()
-
-        assert isinstance(result, dict)
-        if result["page"] != EXPECTED_BULK_SIZE:
-            msg = f"Expected 2, got {result['page']}"
-            raise AssertionError(msg)
-        # FlextApiQuery inherits from FlextModel which provides standard to_dict()
-        # but doesn't include 'page_size' at root level, only in individual fields
-        assert result.get("page") == 2  # Direct field access works
-        # The pagination dict is a separate field, not page_size at root
-
-
-class TestFlextApiResponse:
-    """Test FlextApiResponse dataclass."""
-
-    def test_response_creation(self) -> None:
-        """Test basic response creation."""
-        response = FlextApiResponse(success=True)
-        if not response.success:
-            msg = f"Expected True, got {response.success}"
-            raise AssertionError(msg)
-        if response.message != "":
-            msg = f"Expected empty string, got {response.message}"
-            raise AssertionError(msg)
-        assert isinstance(response.metadata, dict)
-        # Timestamp is auto-generated when building response
-        assert hasattr(response, "success")
-
-    def test_response_with_data(self) -> None:
-        """Test response with data."""
-        data = {"key": "value"}
-        response = FlextApiResponse(success=True, data=data, message="Success")
-
-        if not response.success:
-            msg = f"Expected True, got {response.success}"
-            raise AssertionError(msg)
-        if response.data != data:
-            msg = f"Expected {data}, got {response.data}"
-            raise AssertionError(msg)
-        assert response.message == "Success"
-
-    def test_response_to_dict(self) -> None:
-        """Test converting response to dictionary."""
-        data = {"key": "value"}
-        response = FlextApiResponse(success=True, data=data, message="Success")
-        result = response.to_dict()
-
-        assert isinstance(result, dict)
-        assert result["success"] is True
-        assert result["data"] == data
-        assert result["message"] == "Success"
-        assert "metadata" in result  # timestamp not required in FlextApiResponse.to_dict()
-
-
-class TestFlextApiQueryBuilder:
-    """Test FlextApiQueryBuilder."""
+class TestFlextApiBuilderCore:
+    """Test FlextApiModels builder functionality."""
 
     def test_query_builder_creation(self) -> None:
         """Test query builder creation."""
-        builder = FlextApiQueryBuilder()
-        assert isinstance(builder, FlextApiQueryBuilder)
+        models = FlextApiModels()
+        builder = models.QueryBuilder()
 
-    def test_equals_filter(self) -> None:
-        """Test equals filter."""
-        builder = FlextApiQueryBuilder()
-        query_dict = builder.equals("name", "test").build()
+        assert builder.page == 1
+        assert builder.page_size == 50
+        assert builder.sort_order == "asc"
+        assert len(builder.filters) == 0
 
-        assert len(query_dict["filters"]) == 1
-        filter_obj = query_dict["filters"][0]
-        assert filter_obj["field"] == "name"
-        assert filter_obj["operator"] == "eq"  # Real implementation uses 'eq'
-        assert filter_obj["value"] == "test"
+    def test_query_builder_add_filters(self) -> None:
+        """Test adding filters to query builder."""
+        models = FlextApiModels()
+        builder = models.QueryBuilder()
 
-    def test_greater_than_filter(self) -> None:
-        """Test filtering with equals (greater_than not implemented)."""
-        builder = FlextApiQueryBuilder()
-        # Real implementation doesn't have greater_than, use equals instead
-        query_dict = builder.equals("age", 18).build()
+        # Add filters
+        filter_result = builder.add_filter("status", "active")
+        assert filter_result.success
 
-        assert len(query_dict["filters"]) == 1
-        filter_obj = query_dict["filters"][0]
-        assert filter_obj["field"] == "age"
-        assert filter_obj["operator"] == "eq"
-        assert filter_obj["value"] == 18
+        # Verify filter was added
+        assert len(builder.filters) == 1
+        assert builder.filters["status"] == "active"
 
-    def test_sort_desc(self) -> None:
-        """Test descending sort."""
-        builder = FlextApiQueryBuilder()
-        query_dict = builder.sort_desc("created_at").build()
+    def test_response_builder_success(self) -> None:
+        """Test response builder success response."""
+        models = FlextApiModels()
+        builder = models.ResponseBuilder()
 
-        assert len(query_dict["sorts"]) == 1
-        sort_obj = query_dict["sorts"][0]
-        assert sort_obj["field"] == "created_at"
-        assert sort_obj["direction"] == "desc"
-
-    def test_sort_asc(self) -> None:
-        """Test ascending sort."""
-        builder = FlextApiQueryBuilder()
-        query_dict = builder.sort_asc("name").build()
-
-        assert len(query_dict["sorts"]) == 1
-        sort_obj = query_dict["sorts"][0]
-        assert sort_obj["field"] == "name"
-        assert sort_obj["direction"] == "asc"
-
-    def test_pagination(self) -> None:
-        """Test pagination."""
-        builder = FlextApiQueryBuilder()
-        query_dict = builder.page(2).page_size(50).build()
-
-        assert query_dict["pagination"]["page"] == 2
-        assert query_dict["pagination"]["page_size"] == 50
-
-    def test_pagination_validation(self) -> None:
-        """Test pagination validation."""
-        builder = FlextApiQueryBuilder()
-
-        # Real implementation doesn't validate during building, only applies max/min
-        # Test that negative values are normalized to positive values
-        query_dict = builder.page(0).build()  # Should be normalized to 1
-        assert query_dict["pagination"]["page"] == 1  # page() uses max(1, page_number)
-
-        query_dict = builder.page_size(0).build()  # Should be normalized to 1
-        assert query_dict["pagination"]["page_size"] == 1  # page_size() uses max(1, min(1000, size))
-
-        # Test successful pagination
-        query_dict = builder.page(2).page_size(25).build()
-        assert query_dict["pagination"]["page"] == 2
-        assert query_dict["pagination"]["page_size"] == 25
-
-    def test_empty_field_validation(self) -> None:
-        """Test empty field validation."""
-        builder = FlextApiQueryBuilder()
-
-        # Real implementation doesn't validate field names during building
-        # It simply stores whatever is provided, validation would happen later
-        # Test that empty fields can be set (will be handled at API level)
-        query_dict = builder.equals("", "value").build()
-        assert len(query_dict["filters"]) == 1
-        assert query_dict["filters"][0]["field"] == ""
-
-        query_dict2 = builder.sort_asc("").build()
-        assert len(query_dict2["sorts"]) >= 1  # Previous sorts may exist
-
-        # Test that whitespace fields are accepted
-        query_dict3 = FlextApiQueryBuilder().equals("   ", 5).build()
-        assert query_dict3["filters"][0]["field"] == "   "
-
-    def test_chained_operations(self) -> None:
-        """Test chained operations."""
-        builder = FlextApiQueryBuilder()
-        query_dict = (
-            builder.equals("status", "active")
-            .equals("age", 18)  # Use equals instead of greater_than
-            .sort_desc("created_at")
-            .page(2)
-            .page_size(25)
-            .build()
-        )
-
-        assert len(query_dict["filters"]) == 2
-        assert len(query_dict["sorts"]) == 1
-        assert query_dict["pagination"]["page"] == 2
-        assert query_dict["pagination"]["page_size"] == 25
-
-
-class TestFlextApiResponseBuilder:
-    """Test FlextApiResponseBuilder."""
-
-    def test_response_builder_creation(self) -> None:
-        """Test response builder creation."""
-        builder = FlextApiResponseBuilder()
-        assert isinstance(builder, FlextApiResponseBuilder)
-
-    def test_success_response(self) -> None:
-        """Test success response."""
-        data = {"key": "value"}
-        response_dict = FlextApiResponseBuilder().success(data, "Success").build()
-
-        assert response_dict["data"] == data
-        assert response_dict["message"] == "Success"
-        assert response_dict["status_code"] == 200
-
-    def test_error_response(self) -> None:
-        """Test error response."""
-        response_dict = FlextApiResponseBuilder().error("Error occurred").build()
-
-        assert response_dict["message"] == "Error occurred"
-        assert response_dict["data"] is None
-        assert response_dict["status_code"] == 400
-
-    def test_with_metadata(self) -> None:
-        """Test response with metadata."""
-        metadata: dict[str, object] = {"total": 100, "page": 1}
-        response_dict = FlextApiResponseBuilder().with_metadata(metadata).build()
-
-        assert response_dict["metadata"] == metadata
-
-    def test_with_pagination(self) -> None:
-        """Test response with pagination using PaginatedResponseBuilder."""
-        data = [{"id": 1}, {"id": 2}]
-        # Use build_paginated_response factory function which works with real implementation
-        response_dict = build_paginated_response(
-            data=data,
-            current_page=2,
-            page_size=10,
-            total_items=100,
+        response_result = builder.success(
+            data={"items": [1, 2, 3]},
             message="Success"
         )
 
-        assert response_dict["data"] == data
-        assert response_dict["message"] == "Success"
-        assert response_dict["pagination"]["current_page"] == 2
-        assert response_dict["pagination"]["page_size"] == 10
-        assert response_dict["pagination"]["total_items"] == 100
+        assert response_result.success
+        response_data = response_result.data
+        assert response_data["status"] == "success"
+        assert response_data["message"] == "Success"
+        assert response_data["data"]["items"] == [1, 2, 3]
 
-    def test_pagination_validation(self) -> None:
-        """Test pagination validation using factory function."""
-        # Real implementation doesn't have ResponseBuilder.pagination method
-        # Use build_paginated_response which handles validation at factory level
+    def test_response_builder_error(self) -> None:
+        """Test response builder error response."""
+        models = FlextApiModels()
+        builder = models.ResponseBuilder()
 
-        # Test that normal values work
-        result = build_paginated_response(
-            data=[],
-            current_page=1,
-            page_size=10,
-            total_items=100
-        )
-        assert result["pagination"]["current_page"] == 1
-        assert result["pagination"]["page_size"] == 10
-        assert result["pagination"]["total_items"] == 100
+        response_result = builder.error("Not found", 404)
 
+        assert response_result.success
+        response_data = response_result.data
+        assert response_data["status"] == "error"
+        assert response_data["message"] == "Not found"
+        assert response_data["status_code"] == 404
 
-class TestFactoryFunctions:
-    """Test factory functions."""
+    def test_query_builder_pagination(self) -> None:
+        """Test query builder pagination settings."""
+        models = FlextApiModels()
+        builder = models.QueryBuilder()
 
-    def test_build_query(self) -> None:
-        """Test build_query function."""
-        # build_query doesn't accept filters list directly, it uses kwargs
-        query_dict = build_query(page=2, page_size=25)
+        builder.page = 2
+        builder.page_size = 25
 
-        assert isinstance(query_dict, dict)
-        assert query_dict["pagination"]["page"] == 2
-        assert query_dict["pagination"]["page_size"] == 25
+        assert builder.page == 2
+        assert builder.page_size == 25
 
-    def test_build_query_empty(self) -> None:
-        """Test build_query with empty parameters."""
-        query_dict = build_query()
+    def test_query_builder_sorting(self) -> None:
+        """Test query builder sorting."""
+        models = FlextApiModels()
+        builder = models.QueryBuilder()
 
-        assert isinstance(query_dict, dict)
-        assert query_dict["pagination"]["page"] == 1
-        assert query_dict["pagination"]["page_size"] == 20
+        builder.sort_by = "created_at"
+        builder.sort_order = "desc"
 
-    def test_build_success_response(self) -> None:
-        """Test build_success_response function."""
-        data = {"key": "value"}
-        response_dict = build_success_response(data=data, message="Success")
+        assert builder.sort_by == "created_at"
+        assert builder.sort_order == "desc"
 
-        assert isinstance(response_dict, dict)
-        assert response_dict["data"] == data
-        assert response_dict["message"] == "Success"
-        assert response_dict["status_code"] == 200
+    def test_query_params_conversion(self) -> None:
+        """Test converting query builder to params."""
+        models = FlextApiModels()
+        builder = models.QueryBuilder()
 
-    def test_build_error_response(self) -> None:
-        """Test build_error_response function."""
-        response = build_error_response(message="Error occurred", status_code=400)
+        builder.add_filter("status", "active")
+        builder.page = 2
+        builder.page_size = 10
 
-        assert isinstance(response, dict)
-        assert response["message"] == "Error occurred"
-        assert response["status_code"] == 400
+        params_result = builder.to_query_params()
+        assert params_result.success
 
-    def test_build_paginated_response(self) -> None:
-        """Test build_paginated_response function."""
-        data = [{"id": 1}, {"id": 2}]
-        response = build_paginated_response(
-            data=data,
-            current_page=2,
-            page_size=10,
-            total_items=100,
-            message="Success"
-        )
-
-        assert isinstance(response, dict)
-        assert response["data"] == data
-        assert response["pagination"]["current_page"] == 2
-        assert response["pagination"]["page_size"] == 10
-        assert response["pagination"]["total_items"] == 100
-
-
-class TestFlextApiBuilder:
-    """Test FlextApiBuilder."""
-
-    def test_builder_creation(self) -> None:
-        """Test builder creation."""
-        builder = FlextApiBuilder()
-        assert isinstance(builder, FlextApiBuilder)
-
-    def test_for_query(self) -> None:
-        """Test for_query method."""
-        query_builder = FlextApiBuilder().for_query()
-        assert isinstance(query_builder, FlextApiQueryBuilder)
-
-    def test_for_response(self) -> None:
-        """Test for_response method."""
-        response_builder = FlextApiBuilder().for_response()
-        assert isinstance(response_builder, FlextApiResponseBuilder)
+        params = params_result.data
+        assert params["status"] == "active"
+        assert params["page"] == 2
+        assert params["page_size"] == 10

@@ -8,12 +8,8 @@ from __future__ import annotations
 # Use FlextUtilities.generate_uuid() instead of manual uuid import
 from flext_core import FlextUtilities
 
-from flext_api import (
-    FlextApiClientMethod,
-    FlextApiClientRequest,
-    FlextApiClientResponse,
-)
-from flext_api.config import FlextApiSettings
+from flext_api import FlextApiModels
+from flext_api.config import FlextApiConfig
 
 
 def create_flext_api_client_request(
@@ -22,10 +18,10 @@ def create_flext_api_client_request(
     headers: dict[str, str] | None = None,
     params: dict[str, object] | None = None,
     timeout: float = 30.0,
-) -> FlextApiClientRequest:
-    """Create FlextApiClientRequest for testing."""
-    return FlextApiClientRequest(
-        method=FlextApiClientMethod(method) if isinstance(method, str) else method,
+) -> FlextApiModels.ApiRequest:
+    """Create FlextApiModels.ApiRequest for testing."""
+    return FlextApiModels.ApiRequest(
+        method=FlextApiModels.HttpMethod(method) if isinstance(method, str) else method,
         url=url,
         headers=headers or {},
         params=params or {},
@@ -41,9 +37,9 @@ def create_flext_api_client_response(
     request_id: str | None = None,
     *,
     from_cache: bool = False,
-) -> FlextApiClientResponse:
-    """Create FlextApiClientResponse for testing."""
-    return FlextApiClientResponse(
+) -> FlextApiModels.ApiResponse:
+    """Create FlextApiModels.ApiResponse for testing."""
+    return FlextApiModels.ApiResponse(
         status_code=status_code,
         headers=headers or {"content-type": "application/json"},
         data=data or {"message": "success"},
@@ -61,10 +57,10 @@ def create_flext_api_config(
     *,
     enable_caching: bool = True,
     cache_ttl: int = 300,
-) -> FlextApiSettings:
-    """Create FlextApiSettings for testing."""
+) -> FlextApiConfig:
+    """Create FlextApiConfig for testing."""
     # Use Pydantic model_validate to create instance with values
-    return FlextApiSettings.model_validate({
+    return FlextApiConfig.model_validate({
         "api_host": api_host,
         "api_port": api_port,
         "default_timeout": default_timeout,
@@ -76,5 +72,5 @@ def create_flext_api_config(
 
 # Legacy aliases for factory patterns
 FlextApiConfigFactory = create_flext_api_config
-FlextApiClientRequestFactory = create_flext_api_client_request
-FlextApiClientResponseFactory = create_flext_api_client_response
+FlextApiRequestFactory = create_flext_api_client_request
+FlextApiResponseFactory = create_flext_api_client_response

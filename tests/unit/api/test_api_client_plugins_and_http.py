@@ -8,9 +8,7 @@ import pytest
 
 from flext_api import (
     FlextApiClient,
-    FlextApiClientConfig,
-    FlextApiClientMethod,
-    FlextApiClientRequest,
+    FlextApiModels,
 )
 
 
@@ -27,7 +25,7 @@ def enable_external_calls() -> None:
 @pytest.mark.asyncio
 async def test_perform_http_request_success_json() -> None:
     """Test perform_http_request with REAL HTTP request to httpbin.org."""
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://httpbin.org",
         timeout=15.0,
         headers={"User-Agent": "FlextApi-Test/1.0"},
@@ -45,7 +43,9 @@ async def test_perform_http_request_success_json() -> None:
             if result.data and isinstance(result.data, dict):
                 # For httpbin.org/json, the data is nested under 'data' key
                 if "data" in result.data and isinstance(result.data["data"], dict):
-                    assert "slideshow" in result.data["data"]  # httpbin.org/json returns slideshow data
+                    assert (
+                        "slideshow" in result.data["data"]
+                    )  # httpbin.org/json returns slideshow data
     finally:
         await client.close()
 
@@ -53,7 +53,7 @@ async def test_perform_http_request_success_json() -> None:
 @pytest.mark.asyncio
 async def test_perform_http_request_text_response() -> None:
     """Test perform_http_request with text response from httpbin.org."""
-    config = FlextApiClientConfig(base_url="https://httpbin.org", timeout=10.0)
+    config = FlextApiClient(base_url="https://httpbin.org", timeout=10.0)
     client = FlextApiClient(config)
 
     try:
@@ -72,7 +72,7 @@ async def test_perform_http_request_text_response() -> None:
 @pytest.mark.asyncio
 async def test_real_http_headers_and_user_agent() -> None:
     """Test REAL HTTP request with custom headers."""
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://httpbin.org",
         timeout=10.0,
         headers={"X-Custom-Header": "test-value"},
@@ -80,12 +80,18 @@ async def test_real_http_headers_and_user_agent() -> None:
     client = FlextApiClient(config)
 
     try:
-        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/headers")
+        request = FlextApiModels.ApiRequest(
+            id="test_req",
+            method=FlextApiModels.HttpMethod.GET,
+            url="https://httpbin.org/headers",
+        )
         # Using public API methods instead of internal _perform_http_request
-        if request.method == FlextApiClientMethod.GET:
+        if request.method == FlextApiModels.HttpMethod.GET:
             result = await client.get(request.url.replace("https://httpbin.org", ""))
-        elif request.method == FlextApiClientMethod.POST:
-            result = await client.post(request.url.replace("https://httpbin.org", ""), data=request.data or {})
+        elif request.method == FlextApiModels.HttpMethod.POST:
+            result = await client.post(
+                request.url.replace("https://httpbin.org", ""), data=request.data or {}
+            )
 
         assert result is not None
         if hasattr(result, "success") and result.success:
@@ -107,22 +113,27 @@ async def test_real_http_headers_and_user_agent() -> None:
 @pytest.mark.asyncio
 async def test_real_http_post_request() -> None:
     """Test REAL HTTP POST request with JSON data."""
-    config = FlextApiClientConfig(base_url="https://httpbin.org", timeout=10.0)
+    config = FlextApiClient(base_url="https://httpbin.org", timeout=10.0)
     client = FlextApiClient(config)
 
     try:
         # Test POST with JSON
-        test_data: dict[str, object] = {"message": "Hello World", "timestamp": "2023-01-01"}
-        request = FlextApiClientRequest(
+        test_data: dict[str, object] = {
+            "message": "Hello World",
+            "timestamp": "2023-01-01",
+        }
+        request = FlextApiModels.ApiRequest(
             method="POST",
             url="https://httpbin.org/post",
             json_data=test_data,
         )
         # Using public API methods instead of internal _perform_http_request
-        if request.method == FlextApiClientMethod.GET:
+        if request.method == FlextApiModels.HttpMethod.GET:
             result = await client.get(request.url.replace("https://httpbin.org", ""))
-        elif request.method == FlextApiClientMethod.POST:
-            result = await client.post(request.url.replace("https://httpbin.org", ""), data=request.data or {})
+        elif request.method == FlextApiModels.HttpMethod.POST:
+            result = await client.post(
+                request.url.replace("https://httpbin.org", ""), data=request.data or {}
+            )
 
         assert result is not None
         if hasattr(result, "success") and result.success:
@@ -141,14 +152,14 @@ async def test_real_http_post_request() -> None:
 @pytest.mark.asyncio
 async def test_real_http_timeout_handling() -> None:
     """Test REAL HTTP timeout handling."""
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://httpbin.org",
         timeout=0.1,  # Very short timeout to trigger timeout
     )
     client = FlextApiClient(config)
 
-    request = FlextApiClientRequest(
-        method=FlextApiClientMethod.GET,
+    request = FlextApiModels.ApiRequest(
+        method=FlextApiModels.HttpMethod.GET,
         url="https://httpbin.org/delay/5",  # 5 second delay
     )
     result = await client._perform_http_request(request)
@@ -166,7 +177,7 @@ async def test_real_http_timeout_handling() -> None:
 @pytest.mark.asyncio
 async def test_real_http_with_user_agent() -> None:
     """Test REAL HTTP request with User-Agent verification."""
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://httpbin.org",
         timeout=10.0,
         headers={"User-Agent": "FlextApi-Test-Client/1.0"},
@@ -174,12 +185,18 @@ async def test_real_http_with_user_agent() -> None:
     client = FlextApiClient(config)
 
     try:
-        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/user-agent")
+        request = FlextApiModels.ApiRequest(
+            id="test_req",
+            method=FlextApiModels.HttpMethod.GET,
+            url="https://httpbin.org/user-agent",
+        )
         # Using public API methods instead of internal _perform_http_request
-        if request.method == FlextApiClientMethod.GET:
+        if request.method == FlextApiModels.HttpMethod.GET:
             result = await client.get(request.url.replace("https://httpbin.org", ""))
-        elif request.method == FlextApiClientMethod.POST:
-            result = await client.post(request.url.replace("https://httpbin.org", ""), data=request.data or {})
+        elif request.method == FlextApiModels.HttpMethod.POST:
+            result = await client.post(
+                request.url.replace("https://httpbin.org", ""), data=request.data or {}
+            )
 
         assert result is not None
         if hasattr(result, "success") and result.success:
@@ -198,7 +215,7 @@ async def test_real_http_with_user_agent() -> None:
 def test_client_configuration_validation() -> None:
     """Test client configuration validation."""
     # Valid configuration
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://api.example.com",
         timeout=30.0,
         max_retries=3,
@@ -215,7 +232,7 @@ def test_client_configuration_validation() -> None:
 @pytest.mark.asyncio
 async def test_client_lifecycle_operations() -> None:
     """Test client lifecycle start/stop operations."""
-    config = FlextApiClientConfig(base_url="https://httpbin.org", timeout=10.0)
+    config = FlextApiClient(base_url="https://httpbin.org", timeout=10.0)
     client = FlextApiClient(config)
 
     # Test lifecycle

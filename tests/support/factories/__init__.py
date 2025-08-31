@@ -7,15 +7,15 @@ following SOLID principles and flext-core patterns.
 from __future__ import annotations
 
 from tests.support.factories.api_factories import (
-    FlextApiClientRequestFactory,
-    FlextApiClientResponseFactory,
+    FlextApiRequestFactory,
+    FlextApiResponseFactory,
     FlextApiConfigFactory,
     create_flext_api_client_request,
     create_flext_api_client_response,
     create_flext_api_config,
 )
 from tests.support.factories.app_factories import (
-    FlextApiAppConfigFactory,
+    FlextApiConfigFactory,
     FastAPIApplicationFactory,
     create_flext_api_app_config,
     create_fastapi_application,
@@ -30,10 +30,10 @@ FileStorageConfigFactory = create_file_storage_config
 MemoryStorageConfigFactory = create_memory_storage_config
 
 __all__ = [
-    "FlextApiClientRequestFactory",
-    "FlextApiClientResponseFactory",
+    "FlextApiRequestFactory",
+    "FlextApiResponseFactory",
     "FlextApiConfigFactory",
-    "FlextApiAppConfigFactory",
+    "FlextApiConfigFactory",
     "FastAPIApplicationFactory",
     "FileStorageConfigFactory",
     "MemoryStorageConfigFactory",

@@ -322,7 +322,7 @@ Configuration management not fully aligned with flext-core patterns, missing com
 # ✅ Complete configuration with flext-core compliance
 from flext_core import FlextConfig, FlextResult, get_flext_container
 
-class FlextApiSettings(FlextConfig):
+class FlextApiConfig(FlextConfig):
     """Comprehensive API settings following flext-core patterns."""
 
     # Server Configuration

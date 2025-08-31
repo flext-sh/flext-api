@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
 from flext_api.app import (
-    FlextApiAppConfig,
+    FlextApiConfig,
     FlextApiHealthChecker,
     _forced_init_failure,
     add_request_id_middleware,
@@ -31,8 +31,8 @@ from flext_api.exceptions import FlextApiError
 from flext_api.storage import create_memory_storage
 
 
-class TestFlextApiAppConfigEdgeCases:
-    """Test FlextApiAppConfig edge cases covering missing lines."""
+class TestFlextApiConfigEdgeCases:
+    """Test FlextApiConfig edge cases covering missing lines."""
 
     def test_get_cors_origins_with_settings_empty(self) -> None:
         """Test CORS origins when settings.cors_origins is empty list - covers line 76."""
@@ -41,7 +41,7 @@ class TestFlextApiAppConfigEdgeCases:
         assert settings_result.success
         settings = settings_result.value
 
-        config = FlextApiAppConfig(settings)
+        config = FlextApiConfig(settings)
 
         cors_origins = config.get_cors_origins()
 
@@ -57,7 +57,7 @@ class TestFlextApiAppConfigEdgeCases:
         assert settings_result.success
         settings = settings_result.value
 
-        config = FlextApiAppConfig(settings)
+        config = FlextApiConfig(settings)
 
         # Directly patch the get_cors_origins method to simulate exception handling
         original_method = config.get_cors_origins
@@ -142,7 +142,9 @@ class TestRequestIdMiddlewareEdgeCases:
         # Create a real-like response object instead of MagicMock
         class MockResponse:
             def __init__(self) -> None:
-                self.headers: dict[str, str] = {"existing": "header"}  # Non-empty dict so condition passes
+                self.headers: dict[str, str] = {
+                    "existing": "header"
+                }  # Non-empty dict so condition passes
 
         mock_response = MockResponse()
 
@@ -237,7 +239,7 @@ class TestHealthCheckerEdgeCases:
     @pytest.mark.asyncio
     async def test_comprehensive_health_check_exception_handling(self) -> None:
         """Test health check exception handling - covers lines 320-322."""
-        config = FlextApiAppConfig()
+        config = FlextApiConfig()
         health_checker = FlextApiHealthChecker(config)
 
         # Mock app that will cause exception in health check
@@ -255,7 +257,7 @@ class TestHealthCheckerEdgeCases:
     @pytest.mark.asyncio
     async def test_check_storage_health_no_storage_attribute(self) -> None:
         """Test storage health check when app has no storage - covers line 292->302."""
-        config = FlextApiAppConfig()
+        config = FlextApiConfig()
         health_checker = FlextApiHealthChecker(config)
 
         # Mock app without storage attribute
@@ -277,7 +279,7 @@ class TestHealthCheckerEdgeCases:
     @pytest.mark.asyncio
     async def test_check_storage_health_storage_operation_failure(self) -> None:
         """Test storage health check when storage operation fails - covers line 310->exit."""
-        config = FlextApiAppConfig()
+        config = FlextApiConfig()
         health_checker = FlextApiHealthChecker(config)
 
         # Mock app with storage that fails operations
@@ -296,7 +298,10 @@ class TestHealthCheckerEdgeCases:
         mock_storage.delete = MagicMock()
         mock_app.state.storage = mock_storage
 
-        health_data: dict[str, object] = {"services": {}, "timestamp": "2025-01-01T00:00:00Z"}
+        health_data: dict[str, object] = {
+            "services": {},
+            "timestamp": "2025-01-01T00:00:00Z",
+        }
 
         await health_checker._check_storage_health(mock_app, health_data)
 
@@ -516,8 +521,7 @@ class TestCLIEntryPoint:
     def test_main_if_name_main(self) -> None:
         """Test __name__ == '__main__' execution - covers line 650."""
         # Mock sys.argv to provide valid arguments and prevent SystemExit
-        with patch("sys.argv", ["flext_api", "--help"]), \
-             patch("flext_api.app.uvicorn"):
+        with patch("sys.argv", ["flext_api", "--help"]), patch("flext_api.app.uvicorn"):
             # This should trigger SystemExit(0) from argparse --help
             with pytest.raises(SystemExit) as exc_info:
                 main()

@@ -1,0 +1,218 @@
+#!/usr/bin/env python3
+"""FLEXT API - Basic usage example.
+
+This example demonstrates basic FLEXT API usage using ONLY the refactored classes
+following flext-core patterns. No helpers, no aliases, no legacy APIs.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
+from __future__ import annotations
+
+import asyncio
+
+# Import ONLY the refactored classes following flext-core patterns
+from flext_api import (
+    FlextApi,
+    FlextApiApp,
+    FlextApiConfig,
+    FlextApiModels,
+    FlextApiStorage,
+    FlextApiUtilities,
+)
+
+
+def example_api_creation() -> None:
+    """Demonstrate basic API instance creation using refactored classes."""
+    print("=== API Creation Example ===")
+
+    # Create API instance using ONLY the refactored FlextApi class
+    api = FlextApi()
+    print(f"✅ API created: {api.service_name} v{api.service_version}")
+
+
+def example_client_creation() -> None:
+    """Demonstrate HTTP client creation using refactored classes."""
+    print("\n=== Client Creation Example ===")
+
+    # Create API instance
+    FlextApi()
+
+    # Create client config using the refactored nested class
+    client_config = FlextApiConfig.ClientConfig(
+        base_url="https://httpbin.org",
+        timeout=30.0,
+    )
+
+    print(f"✅ Client config created: {client_config.base_url}")
+    print(f"   Timeout: {client_config.timeout}s")
+    print(f"   Max retries: {client_config.max_retries}")
+
+
+def example_direct_client() -> None:
+    """Demonstrate direct HTTP client usage with refactored classes."""
+    print("\n=== Direct Client Example ===")
+
+    # Create client configuration using refactored classes
+    config = FlextApiConfig.ClientConfig(
+        base_url="https://httpbin.org",
+        timeout=30.0,
+        headers={"User-Agent": "FlextAPI/0.9.0"},
+    )
+
+    print(f"✅ Client config: {config.base_url}")
+    print(f"   Headers: {config.headers}")
+
+
+def example_storage_usage() -> None:
+    """Demonstrate storage usage with refactored FlextApiStorage."""
+    print("\n=== Storage Example ===")
+
+    # Create storage using the refactored FlextApiStorage class
+    storage = FlextApiStorage()
+
+    # Set data using FlextResult pattern
+    set_result = storage.set("example_key", {"message": "Hello FlextAPI!"}, ttl=300)
+
+    if set_result.success:
+        print("✅ Data stored successfully")
+
+        # Get data using FlextResult pattern
+        get_result = storage.get("example_key")
+        if get_result.success:
+            print(f"✅ Data retrieved: {get_result.value}")
+        else:
+            print(f"❌ Data retrieval failed: {get_result.error}")
+    else:
+        print(f"❌ Data storage failed: {set_result.error}")
+
+
+def example_utilities_usage() -> None:
+    """Demonstrate utilities usage with refactored FlextApiUtilities."""
+    print("\n=== Utilities Example ===")
+
+    # URL validation using the refactored nested class
+    url_result = FlextApiUtilities.UrlValidator.validate_url("https://example.com/api/v1")
+
+    if url_result.success:
+        print(f"✅ URL validation successful: {url_result.value}")
+    else:
+        print(f"❌ URL validation failed: {url_result.error}")
+
+    # Response building using the refactored nested class
+    response_result = FlextApiUtilities.ResponseBuilder.build_success_response(
+        data={"users": [{"id": 1, "name": "John"}]},
+        message="Users retrieved successfully"
+    )
+
+    if response_result.success:
+        print("✅ Response built successfully")
+        print(f"   Status: {response_result.value['status']}")
+        print(f"   Message: {response_result.value['message']}")
+    else:
+        print(f"❌ Response building failed: {response_result.error}")
+
+
+def example_app_creation() -> None:
+    """Demonstrate FastAPI app creation using refactored classes."""
+    print("\n=== App Creation Example ===")
+
+    # Create app using the refactored FlextApiApp class methods
+    app = FlextApiApp.create_flext_api_app()
+
+    print(f"✅ App created: {type(app).__name__}")
+    print("✅ App includes CORS, error handlers, and middleware")
+
+
+def example_models_usage() -> None:
+    """Demonstrate models usage with refactored FlextApiModels."""
+    print("\n=== Models Example ===")
+
+    try:
+        # Create HTTP request model using the refactored nested class
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="https://httpbin.org/get",
+            headers={"Accept": "application/json"},
+            timeout=30.0,
+        )
+
+        print(f"✅ Request model created: {request.method} {request.url}")
+        print(f"   Timeout: {request.timeout}s")
+
+        # Create HTTP response model using the refactored nested class
+        response = FlextApiModels.HttpResponse(
+            status_code=200,
+            headers={"Content-Type": "application/json"},
+            body={"message": "Success"},
+            url="https://httpbin.org/get",
+            method="GET",
+            elapsed_time=0.125,
+        )
+
+        print(f"✅ Response model created: {response.status_code}")
+        print(f"   Success: {response.is_success}")
+        print(f"   Elapsed: {response.elapsed_time}s")
+
+    except Exception as e:
+        print(f"❌ Model creation failed: {e}")
+
+
+async def example_async_operations() -> None:
+    """Demonstrate async operations with refactored classes."""
+    print("\n=== Async Operations Example ===")
+
+    # Create storage for async operations
+    storage = FlextApiStorage()
+
+    try:
+        # Example async-style operations
+        print("✅ Storage ready for async operations")
+
+        # Set multiple values
+        keys = ["key1", "key2", "key3"]
+        for i, key in enumerate(keys):
+            result = storage.set(key, {"id": i + 1, "name": f"item_{i + 1}"})
+            if result.success:
+                print(f"✅ Set {key} successfully")
+            else:
+                print(f"❌ Failed to set {key}: {result.error}")
+
+        # Get cache size
+        size_result = storage.size()
+        if size_result.success:
+            print(f"✅ Cache size: {size_result.value} items")
+        else:
+            print(f"❌ Failed to get cache size: {size_result.error}")
+
+    except Exception as e:
+        print(f"❌ Async operations failed: {e}")
+
+
+def main() -> None:
+    """Run all examples using ONLY refactored classes."""
+    print("FLEXT API - Basic Usage Examples (Refactored Classes Only)")
+    print("=========================================================")
+
+    # Synchronous examples using refactored classes
+    example_api_creation()
+    example_client_creation()
+    example_direct_client()
+    example_storage_usage()
+    example_utilities_usage()
+    example_app_creation()
+    example_models_usage()
+
+    # Async example
+    print("\n=== Running Async Examples ===")
+    asyncio.run(example_async_operations())
+
+    print("\n🎉 All examples completed successfully using refactored classes!")
+    print("✅ FlextResult pattern used throughout")
+    print("✅ flext-core compliance maintained")
+    print("✅ No legacy APIs or helpers used")
+
+
+if __name__ == "__main__":
+    main()

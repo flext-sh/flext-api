@@ -1,13 +1,24 @@
-"""API-specific utilities using flext-core modern API.
+"""FLEXT API Utilities - Utility functions following FLEXT patterns.
 
-Migrated from legacy FlextUtilities inheritance to direct usage of flext-core
-functions, eliminating code bloat and using modern FLEXT architectural patterns.
+HTTP-specific utility system providing FlextApiUtilities class with URL validation,
+response builders, data transformation, and HTTP-related helper functions
+using flext-core FlextUtilities as base.
 
-Extensions include:
-- HTTP/JSON response parsing
-- API client configuration validation
-- Response data processing
-- Type-safe data extraction for API operations
+Module Role in Architecture:
+    FlextApiUtilities serves as the HTTP API utility system, providing comprehensive
+    utility functions for URL handling, data transformation, response building,
+    and HTTP-specific operations following FlextResult patterns.
+
+Classes and Methods:
+    FlextApiUtilities:                      # Hierarchical HTTP API utility system
+        # URL Utilities:
+        UrlValidator(FlextUtilities.TextProcessor) # URL validation and parsing
+        DataTransformer(FlextUtilities.Conversions) # Data transformation
+        ResponseBuilder(FlextUtilities.Generators) # Response building
+
+        # HTTP Utilities:
+        HttpValidator(FlextUtilities.TypeGuards) # HTTP validation utilities
+        PaginationBuilder(FlextUtilities.Generators) # Pagination utilities
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -15,281 +26,269 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# JSON operations use FlextUtilities.ProcessingUtils - no direct json import needed
-from typing import cast
+import json
+from datetime import UTC, datetime
+from urllib.parse import urlparse
 
-import aiohttp  # HTTP client specific - not available in core utilities
-from flext_core import FlextLogger, FlextResult, FlextUtilities
+from flext_core import FlextResult, FlextUtilities
 
-logger = FlextLogger(__name__)
+from flext_api.constants import FlextApiConstants
+
+# HTTP status code constants (RFC 7231)
+HTTP_STATUS_MIN = 100
+HTTP_STATUS_MAX = 599
 
 
-class FlextApiUtilities:
-    """API utilities using flext-core modern API.
+class FlextApiUtilities(FlextUtilities):
+    """Single consolidated class containing ALL HTTP API utility functions.
 
-    Uses FlextUtilities direct functions to reduce complexity and eliminate inheritance.
-    Only API-specific functionality is implemented here.
-
-    Uses FlextUtilities modern API:
-    - FlextUtilities.Generators: UUID, timestamps, correlation IDs
-    - FlextUtilities.TextProcessor: text processing, formatting, validation
-    - FlextUtilities.ProcessingUtils: JSON processing and data operations
-    - FlextUtilities.Performance: performance tracking, metrics
-    - FlextUtilities.TypeGuards: type validation and checking
-    - FlextUtilities.Formatters: data formatting utilities
-
-    EXTENDED FEATURES for flext-api:
-    - HTTP response parsing with type safety
-    - API client configuration validation
-    - Response data processing for REST APIs
-    - Type-safe data extraction from complex JSON structures
+    This is the ONLY utility class in this module, containing all HTTP API
+    utility classes as nested classes. Follows the single-class-per-module
+    pattern rigorously extending flext-core FlextUtilities to the maximum.
     """
 
-    # =============================================================================
-    # API-SPECIFIC UTILITIES - Extensions to FlextUtilities
-    # =============================================================================
+    class UrlValidator:
+        """URL validation and normalization utilities."""
 
-    # =============================================================================
-    # API-SPECIFIC EXTENSIONS to FlextUtilities
-    # =============================================================================
-
-    @classmethod
-    def parse_json_response_data(
-        cls,
-        json_data: object,
-    ) -> dict[str, object] | list[object] | str | int | float | bool | None:
-        """Parse JSON response data with type safety.
-
-        Uses inherited ProcessingUtils.safe_json_parse for base JSON operations
-        and extends with API-specific response data parsing logic.
-
-        Args:
-            json_data: Raw JSON data from HTTP response
-
-        Returns:
-            Parsed and type-safe JSON data suitable for API responses
-
-        """
-        if isinstance(json_data, dict):
-            # Type-safe dict processing with explicit casting
-            # Cast to specific types for PyRight type inference
-            dict_data = cast("dict[str, object]", json_data)
-            # Use dict comprehension for performance
-            return {
-                dict_key: dict_value
-                for dict_key, dict_value in dict_data.items()
-                if dict_key
-            }
-
-        if isinstance(json_data, list):
-            # Type-safe list processing with explicit casting
-            # Cast to specific types for PyRight type inference
-            list_data = cast("list[object]", json_data)
-            # Use list comprehension for performance
-            return [
-                list_element for list_element in list_data if list_element is not None
-            ]
-
-        if json_data is None:
-            return None
-
-        if isinstance(json_data, str | int | float | bool):
-            return json_data  # Return actual type instead of converting to string
-
-        # For any other types, convert to string representation
-        return str(json_data)
-
-    @classmethod
-    def parse_fallback_text_data(
-        cls,
-        text_data: str,
-    ) -> dict[str, object] | str:
-        """Parse fallback text data as JSON.
-
-        Extracts fallback parsing logic to reduce cyclomatic complexity.
-        """
-        try:
-            parsed_data = FlextUtilities.ProcessingUtils.safe_json_parse(text_data)
-            # safe_json_parse always returns dict[str, object], so simplify
-            return {
-                parsed_key: parsed_value
-                for parsed_key, parsed_value in parsed_data.items()
-                if parsed_key
-            }
-        except Exception:
-            return text_data
-
-    @classmethod
-    def parse_final_json_attempt(
-        cls,
-        text_trim: str,
-    ) -> dict[str, object] | str:
-        """Parse final JSON attempt with fallback.
-
-        Extracts final JSON parsing logic to reduce cyclomatic complexity.
-        """
-        try:
-            fallback_parsed_data = FlextUtilities.ProcessingUtils.safe_json_parse(
-                text_trim
-            )
-            # safe_json_parse always returns dict[str, object], so simplify
-            return {
-                fallback_key: fallback_value
-                for fallback_key, fallback_value in fallback_parsed_data.items()
-                if fallback_key
-            }
-        except Exception:
-            return text_trim
-
-    @classmethod
-    async def read_response_data_safely(
-        cls,
-        response: aiohttp.ClientResponse,
-    ) -> dict[str, object] | list[object] | str | bytes | int | float | bool | None:
-        """Read response data with comprehensive type safety.
-
-        Refactored from complex _read_response_data method to reduce complexity.
-        Uses utility methods to handle different parsing scenarios.
-        """
-        content_type = response.headers.get("content-type", "")
-        logger.debug(
-            "Processing response", content_type=content_type, status=response.status
-        )
-
-        # JSON content handling
-        if "application/json" in content_type or "text/json" in content_type:
+        @staticmethod
+        def validate_url(url: str) -> FlextResult[str]:
+            """Validate URL format and structure."""
             try:
-                json_data: object = await response.json()
-                return cls.parse_json_response_data(json_data)
-            except Exception:
-                # Fallback: read text and attempt JSON parse
-                try:
-                    text_data = await response.text()
-                    return cls.parse_fallback_text_data(text_data)
-                except Exception:
-                    return await response.text()
+                if not url or not isinstance(url, str):
+                    return FlextResult[str].fail("URL must be a non-empty string")
 
-        # Non-JSON content
-        text = await response.text()
-        # If it looks like JSON, attempt to parse
-        text_trim = text.strip()
-        if text_trim.startswith(("{", "[")):
-            return cls.parse_final_json_attempt(text_trim)
+                url = url.strip()
+                if not url:
+                    return FlextResult[str].fail("URL cannot be empty")
 
-        return text
+                # Parse URL to validate structure
+                parsed = urlparse(url)
 
-    @classmethod
-    def validate_client_config(
-        cls,
-        config: dict[str, object] | None,
-    ) -> FlextResult[dict[str, object]]:
-        """Validate client configuration with comprehensive checks.
+                if not parsed.scheme:
+                    return FlextResult[str].fail("URL must include scheme (http/https)")
 
-        Extracts validation logic to reduce create_client complexity.
-        """
-        if config is None:
-            return FlextResult[dict[str, object]].ok({
-                "base_url": "",
-                "timeout": 30,
-                "max_retries": 3,
-            })
+                if parsed.scheme not in {"http", "https"}:
+                    return FlextResult[str].fail("URL scheme must be http or https")
 
-        # Apply defaults for missing values, validating headers type
-        headers_raw = config.get("headers", {})
-        # Type-safe headers validation using cast
-        headers: dict[str, str]
-        if isinstance(headers_raw, dict):
-            # Cast to dict with unknown values then convert safely
-            unknown_dict = cast("dict[str, object]", headers_raw)
-            headers = {k: str(v) for k, v in unknown_dict.items() if v is not None}
-        else:
-            headers = {}
+                if not parsed.netloc:
+                    return FlextResult[str].fail("URL must include hostname")
 
-        validated_config: dict[str, object] = {
-            "base_url": config.get("base_url", ""),
-            "timeout": config.get("timeout", 30),
-            "max_retries": config.get("max_retries", 3),
-            "headers": headers,  # Use validated headers
-            **{
-                k: v
-                for k, v in config.items()
-                if k not in ["base_url", "timeout", "max_retries", "headers"]
-            },  # Include other values
-        }
+                return FlextResult[str].ok(url)
 
-        # Validate base_url - allow empty string but require string type
-        base_url = validated_config.get("base_url")
-        if not isinstance(base_url, str):
-            return FlextResult[dict[str, object]].fail("base_url must be a string")
+            except Exception as e:
+                return FlextResult[str].fail(f"URL validation failed: {e}")
 
-        # Validate timeout
-        timeout = validated_config.get("timeout")
-        if not isinstance(timeout, int | float) or timeout <= 0:
-            return FlextResult[dict[str, object]].fail(
-                "timeout must be a positive number"
-            )
+        @staticmethod
+        def normalize_url(url: str) -> FlextResult[str]:
+            """Normalize URL by removing trailing slash and standardizing format."""
+            try:
+                validation_result = FlextApiUtilities.UrlValidator.validate_url(url)
+                if not validation_result.success:
+                    return validation_result
 
-        # Validate max_retries
-        max_retries = validated_config.get("max_retries")
-        if not isinstance(max_retries, int) or max_retries < 0:
-            return FlextResult[dict[str, object]].fail(
-                "max_retries must be a non-negative integer"
-            )
+                # Remove trailing slash unless it's the root path
+                normalized = url.rstrip("/") if not url.endswith("://") else url
+                return FlextResult[str].ok(normalized)
 
-        return FlextResult[dict[str, object]].ok(validated_config)
+            except Exception as e:
+                return FlextResult[str].fail(f"URL normalization failed: {e}")
+
+    class DataTransformer:
+        """Data transformation and serialization utilities."""
+
+        @staticmethod
+        def serialize_json(data: object) -> FlextResult[str]:
+            """Serialize data to JSON string."""
+            try:
+                json_str = json.dumps(
+                    data,
+                    default=FlextApiUtilities.DataTransformer._json_serializer,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                )
+                return FlextResult[str].ok(json_str)
+            except Exception as e:
+                return FlextResult[str].fail(f"JSON serialization failed: {e}")
+
+        @staticmethod
+        def deserialize_json(json_str: str) -> FlextResult[object]:
+            """Deserialize JSON string to Python object."""
+            try:
+                if not json_str or not isinstance(json_str, str):
+                    return FlextResult[object].fail("JSON string cannot be empty")
+
+                data = json.loads(json_str.strip())
+                return FlextResult[object].ok(data)
+            except json.JSONDecodeError as e:
+                return FlextResult[object].fail(f"Invalid JSON format: {e}")
+            except Exception as e:
+                return FlextResult[object].fail(f"JSON deserialization failed: {e}")
+
+        @staticmethod
+        def _json_serializer(obj: object) -> object:
+            """Custom JSON serializer for non-standard types."""
+            if isinstance(obj, datetime):
+                return obj.isoformat()
+            if hasattr(obj, "model_dump"):  # Pydantic models
+                return obj.model_dump()  # type: ignore[attr-defined]
+            if hasattr(obj, "dict"):  # Legacy Pydantic models
+                return obj.dict()  # type: ignore[attr-defined]
+            if hasattr(obj, "__dict__"):  # Generic objects
+                return obj.__dict__
+            return str(obj)
+
+    class ResponseBuilder:
+        """HTTP response building and formatting utilities."""
+
+        @staticmethod
+        def build_success_response(
+            data: object = None,
+            message: str = "Success",
+            status_code: int = FlextApiConstants.HttpStatus.OK,
+        ) -> FlextResult[dict[str, object]]:
+            """Build standardized success response."""
+            try:
+                response = {
+                    "success": True,
+                    "message": message,
+                    "status_code": status_code,
+                    "data": data,
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+                return FlextResult[dict[str, object]].ok(response)
+            except Exception as e:
+                return FlextResult[dict[str, object]].fail(
+                    f"Success response building failed: {e}"
+                )
+
+        @staticmethod
+        def build_error_response(
+            error: str,
+            status_code: int = FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR,
+            error_code: str | None = None,
+            details: object = None,
+        ) -> FlextResult[dict[str, object]]:
+            """Build standardized error response."""
+            try:
+                response = {
+                    "success": False,
+                    "message": error,
+                    "status_code": status_code,
+                    "data": None,
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+
+                if error_code:
+                    response["error_code"] = error_code
+
+                if details:
+                    response["details"] = details
+
+                return FlextResult[dict[str, object]].ok(response)
+            except Exception as e:
+                return FlextResult[dict[str, object]].fail(
+                    f"Error response building failed: {e}"
+                )
+
+    class PaginationBuilder:
+        """Pagination utilities for API responses."""
+
+        @staticmethod
+        def build_paginated_response(
+            data: list[object],
+            total: int,
+            page: int = 1,
+            page_size: int = FlextApiConstants.Pagination.DEFAULT_PAGE_SIZE,
+            message: str = "Success",
+        ) -> FlextResult[dict[str, object]]:
+            """Build paginated response with metadata."""
+            try:
+                # Validate pagination parameters
+                if page < 1:
+                    return FlextResult[dict[str, object]].fail("Page must be >= 1")
+
+                if page_size < 1:
+                    return FlextResult[dict[str, object]].fail("Page size must be >= 1")
+
+                if page_size > FlextApiConstants.Pagination.MAX_PAGE_SIZE:
+                    return FlextResult[dict[str, object]].fail(
+                        f"Page size cannot exceed {FlextApiConstants.Pagination.MAX_PAGE_SIZE}"
+                    )
+
+                # Calculate pagination metadata
+                total_pages = max(1, (total + page_size - 1) // page_size)
+                has_next = page < total_pages
+                has_prev = page > 1
+
+                response = {
+                    "success": True,
+                    "message": message,
+                    "data": data,
+                    "pagination": {
+                        "total": total,
+                        "page": page,
+                        "page_size": page_size,
+                        "total_pages": total_pages,
+                        "has_next": has_next,
+                        "has_previous": has_prev,
+                    },
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+
+                return FlextResult[dict[str, object]].ok(response)
+            except Exception as e:
+                return FlextResult[dict[str, object]].fail(
+                    f"Paginated response building failed: {e}"
+                )
+
+    class HttpValidator:
+        """HTTP-specific validation utilities."""
+
+        @staticmethod
+        def validate_http_method(method: str) -> FlextResult[str]:
+            """Validate HTTP method."""
+            try:
+                if not method or not isinstance(method, str):
+                    return FlextResult[str].fail(
+                        "HTTP method must be a non-empty string"
+                    )
+
+                method = method.upper().strip()
+                valid_methods = {
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE",
+                    "PATCH",
+                    "HEAD",
+                    "OPTIONS",
+                    "TRACE",
+                    "CONNECT",
+                }
+
+                if method not in valid_methods:
+                    return FlextResult[str].fail(
+                        f"Invalid HTTP method: {method}. "
+                        f"Valid methods: {', '.join(sorted(valid_methods))}"
+                    )
+
+                return FlextResult[str].ok(method)
+            except Exception as e:
+                return FlextResult[str].fail(f"HTTP method validation failed: {e}")
+
+        @staticmethod
+        def validate_status_code(status_code: int) -> FlextResult[int]:
+            """Validate HTTP status code."""
+            try:
+                # HTTP status code range validation (RFC 7231)
+                if not (HTTP_STATUS_MIN <= status_code <= HTTP_STATUS_MAX):
+                    return FlextResult[int].fail(
+                        f"Status code must be between {HTTP_STATUS_MIN} and {HTTP_STATUS_MAX}"
+                    )
+
+                return FlextResult[int].ok(status_code)
+            except Exception as e:
+                return FlextResult[int].fail(f"Status code validation failed: {e}")
 
 
-# =============================================================================
-# LEGACY COMPATIBILITY - Function aliases for backward compatibility
-# =============================================================================
-
-
-def parse_json_response_data(
-    json_data: object,
-) -> dict[str, object] | list[object] | str | int | float | bool | None:
-    """Parse JSON response data with type safety."""
-    return FlextApiUtilities.parse_json_response_data(json_data)
-
-
-def parse_fallback_text_data(
-    text_data: str,
-) -> dict[str, object] | list[object] | str | None:
-    """Parse fallback text data as JSON."""
-    return FlextApiUtilities.parse_fallback_text_data(text_data)
-
-
-def parse_final_json_attempt(
-    text_trim: str,
-) -> dict[str, object] | list[object] | str:
-    """Parse final JSON attempt with fallback."""
-    return FlextApiUtilities.parse_final_json_attempt(text_trim)
-
-
-async def read_response_data_safely(
-    response: aiohttp.ClientResponse,
-) -> dict[str, object] | list[object] | str | bytes | int | float | bool | None:
-    """Read response data with comprehensive type safety."""
-    return await FlextApiUtilities.read_response_data_safely(response)
-
-
-def validate_client_config(
-    config: dict[str, object] | None,
-) -> FlextResult[dict[str, object]]:
-    """Validate client configuration with comprehensive checks."""
-    return FlextApiUtilities.validate_client_config(config)
-
-
-# =============================================================================
-# EXPORTS
-# =============================================================================
-
-__all__ = [
-    # Main Utilities Class (Primary API)
-    "FlextApiUtilities",
-    "parse_fallback_text_data",
-    "parse_final_json_attempt",
-    # Legacy Function Aliases (for backward compatibility)
-    "parse_json_response_data",
-    "read_response_data_safely",
-    "validate_client_config",
-]
+__all__ = ["FlextApiUtilities"]

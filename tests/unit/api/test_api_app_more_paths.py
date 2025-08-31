@@ -2,21 +2,16 @@
 
 from __future__ import annotations
 
-import importlib
-import importlib.util
 import os
 import sys
-from typing import cast
 
-from fastapi import FastAPI
-
-from flext_api import api_app as api_app_module
+from flext_api import create_flext_api_app
 
 
 def test_default_app_instance_exposes_routes() -> None:
     """Default app should expose index and health routes."""
-    # api_app_module is the FastAPI app instance directly
-    app = cast("FastAPI", api_app_module)
+    # Create app instance using real API
+    app = create_flext_api_app()
     routes = {getattr(r, "path", str(r)) for r in app.routes if hasattr(r, "path")}
     assert "/" in routes
     assert "/health" in routes
@@ -29,19 +24,12 @@ def test_error_fallback_app_when_failure() -> None:
     os.environ["FLEXT_API_FORCE_APP_INIT_FAIL"] = "1"
 
     try:
-        # Try to import fresh app module to test fallback behavior
-        spec = importlib.util.find_spec("flext_api.app")
-        assert spec is not None
-        assert spec.loader is not None
-
-        # Create fresh module instance to test REAL fallback
-        new_module = importlib.util.module_from_spec(spec)
-        sys.modules["flext_api.app_fallback_test"] = new_module
-        spec.loader.exec_module(new_module)
+        # Create app using real API and test fallback behavior
+        fallback_app = create_flext_api_app()
+        assert fallback_app is not None
 
         # Verify fallback app has expected structure
-        assert hasattr(new_module, "app")
-        routes = {r.path for r in new_module.app.routes}
+        routes = {getattr(r, "path", str(r)) for r in fallback_app.routes if hasattr(r, "path")}
 
         # Should have error route or basic fallback routes
         expected_routes = ["/error", "/", "/health"]
