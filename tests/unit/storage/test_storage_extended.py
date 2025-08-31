@@ -20,7 +20,9 @@ from flext_api import (
 @pytest.mark.asyncio
 async def test_memory_backend_ttl_and_keys() -> None:
     """Memory backend supports TTL and keys enumeration with expiry."""
-    backend: MemoryStorageBackend[str] = MemoryStorageBackend(StorageConfig(namespace="ns"))
+    backend: MemoryStorageBackend[str] = MemoryStorageBackend(
+        StorageConfig(namespace="ns")
+    )
     await backend.set("k", "v", ttl_seconds=1)
     assert (await backend.get("k")).value == "v"
     keys = (await backend.keys()).value

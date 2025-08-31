@@ -2,12 +2,12 @@
 
 from fastapi.testclient import TestClient
 
-from flext_api import FlextApiAppConfig, create_flext_api_app
+from flext_api import FlextApiConfig, create_flext_api_app
 
 
 def test_cors_origins_fallback_when_exception() -> None:
     """Test CORS origins fallback behavior with REAL configuration."""
-    cfg = FlextApiAppConfig()
+    cfg = FlextApiConfig()
 
     # Test REAL CORS origins configuration
     origins = cfg.get_cors_origins()

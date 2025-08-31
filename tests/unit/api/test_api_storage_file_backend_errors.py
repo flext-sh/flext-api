@@ -19,7 +19,9 @@ async def test_file_backend_save_and_delete_error_paths(
     """Test file backend save and delete error paths with REAL I/O conditions."""
     # Create initial backend and test normal operation
     file_path = Path(tmp_path) / "store.json"
-    backend: FileStorageBackend[object] = FileStorageBackend(StorageConfig(file_path=str(file_path)))
+    backend: FileStorageBackend[object] = FileStorageBackend(
+        StorageConfig(file_path=str(file_path))
+    )
 
     # First, test successful operation
     assert (await backend.set("a", 1)).success
@@ -60,7 +62,9 @@ async def test_file_backend_save_and_delete_error_paths(
     # Test invalid file path to trigger REAL path errors
     invalid_path = "/dev/null/impossible/path/store.json"
     try:
-        invalid_backend: FileStorageBackend[object] = FileStorageBackend(StorageConfig(file_path=invalid_path))
+        invalid_backend: FileStorageBackend[object] = FileStorageBackend(
+            StorageConfig(file_path=invalid_path)
+        )
         # Operations on invalid path should handle errors gracefully
         invalid_result = await invalid_backend.set("test", "value")
         assert isinstance(invalid_result, FlextResult)

@@ -7,19 +7,19 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from flext_api import FlextApiAppConfig
-from flext_api.config import FlextApiSettings
+from flext_api import FlextApiApp
+from flext_api.config import FlextApiConfig
 
 
 def create_flext_api_app_config(
     settings: object | None = None,
-) -> FlextApiAppConfig:
-    """Create FlextApiAppConfig for testing."""
+) -> FlextApiApp:
+    """Create FlextApiApp for testing."""
     if settings is None:
-        return FlextApiAppConfig(settings=None)
-    if isinstance(settings, FlextApiSettings):
-        return FlextApiAppConfig(settings=settings)
-    return FlextApiAppConfig(settings=None)  # Fallback for object type
+        return FlextApiApp(settings=None)
+    if isinstance(settings, FlextApiConfig):
+        return FlextApiApp(settings=settings)
+    return FlextApiApp(settings=None)  # Fallback for object type
 
 
 def create_fastapi_application(
@@ -45,5 +45,5 @@ def create_fastapi_application(
 
 
 # Legacy aliases for backwards compatibility
-FlextApiAppConfigFactory = create_flext_api_app_config
+FlextApiConfigFactory = create_flext_api_app_config
 FastAPIApplicationFactory = create_fastapi_application

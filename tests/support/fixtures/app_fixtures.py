@@ -9,18 +9,18 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from flext_api import FlextApiAppConfig, create_flext_api_app
-from tests.support.factories import FlextApiAppConfigFactory
+from flext_api import FlextApiConfig, create_flext_api_app
+from tests.support.factories import FlextApiConfigFactory
 
 
 @pytest.fixture
-def flext_api_app_config() -> FlextApiAppConfig:
+def flext_api_app_config() -> FlextApiConfig:
     """Provide test app configuration using factory."""
-    return FlextApiAppConfigFactory()
+    return FlextApiConfigFactory()
 
 
 @pytest.fixture
-def flext_api_app(flext_api_app_config: FlextApiAppConfig) -> FastAPI:
+def flext_api_app(flext_api_app_config: FlextApiConfig) -> FastAPI:
     """Provide configured FLEXT API app for testing."""
     return create_flext_api_app(flext_api_app_config)
 

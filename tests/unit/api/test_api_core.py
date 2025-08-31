@@ -59,7 +59,10 @@ class TestFlextApi:
     def test_create_client(self) -> None:
         """Test creating HTTP client."""
         api = FlextApi()
-        config: ClientConfigDict = {"base_url": "https://api.example.com", "timeout": 30}
+        config: ClientConfigDict = {
+            "base_url": "https://api.example.com",
+            "timeout": 30,
+        }
 
         result = api.create_client(config)
         assert isinstance(result, FlextResult)

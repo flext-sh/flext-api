@@ -8,7 +8,6 @@ import pytest
 
 from flext_api import (
     FlextApiClient,
-    FlextApiClientConfig,
     create_client,
 )
 
@@ -26,7 +25,7 @@ def enable_external_calls() -> None:
 @pytest.mark.asyncio
 async def test_real_http_get_request() -> None:
     """Test real HTTP GET request using httpbin.org."""
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://httpbin.org", timeout=10.0, max_retries=2
     )
     client = FlextApiClient(config)
@@ -55,7 +54,7 @@ async def test_real_http_get_request() -> None:
 @pytest.mark.asyncio
 async def test_real_http_headers_and_user_agent() -> None:
     """Test real HTTP request with custom headers."""
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://httpbin.org", headers={"X-FLEXT-API": "test-version-0.9.0"}
     )
     client = FlextApiClient(config)
@@ -70,13 +69,15 @@ async def test_real_http_headers_and_user_agent() -> None:
             assert response.status_code == 200
 
         # If response has data, validate headers were sent
-        if hasattr(response, "data") and response.data and isinstance(response.data, dict):
+        if (
+            hasattr(response, "data")
+            and response.data
+            and isinstance(response.data, dict)
+        ):
             headers = response.data.get("headers", {})
             if isinstance(headers, dict):
                 # Check if custom header was sent (case-insensitive)
-                header_found = any(
-                    "flext" in k.lower() for k in headers
-                )
+                header_found = any("flext" in k.lower() for k in headers)
                 assert header_found or len(headers) > 0  # At least some headers
 
     finally:
@@ -114,7 +115,7 @@ async def test_real_client_factory_function() -> None:
 def test_client_configuration_validation() -> None:
     """Test client configuration validation."""
     # Test valid configuration
-    config = FlextApiClientConfig(
+    config = FlextApiClient(
         base_url="https://api.example.com",
         timeout=30.0,
         max_retries=3,

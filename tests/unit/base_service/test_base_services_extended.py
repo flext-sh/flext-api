@@ -16,10 +16,12 @@ class DummyService(FlextDomainService[dict[str, object]]):
 
     def process_data(self, data: dict[str, object]) -> FlextResult[dict[str, object]]:
         """Mock processing method for testing."""
-        return FlextResult[dict[str, object]].ok({
-            "processed": True,
-            "input": data,
-        })
+        return FlextResult[dict[str, object]].ok(
+            {
+                "processed": True,
+                "input": data,
+            }
+        )
 
 
 def test_base_service_lifecycle() -> None:

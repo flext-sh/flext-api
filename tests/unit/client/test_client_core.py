@@ -12,10 +12,10 @@ from flext_core import FlextUtilities
 
 from flext_api import (
     FlextApiClient,
-    FlextApiClientConfig,
-    FlextApiClientMethod,
-    FlextApiClientRequest,
-    FlextApiClientResponse,
+    FlextApiClient,
+    FlextApiModels,
+    
+    
     FlextApiPlugin,
     create_client,
 )
@@ -26,12 +26,12 @@ EXPECTED_BULK_SIZE = 2
 EXPECTED_DATA_COUNT = 3
 
 
-class TestFlextApiClientConfig:
-    """Test FlextApiClientConfig dataclass."""
+class TestFlextApiClient:
+    """Test FlextApiClient dataclass."""
 
     def test_config_creation(self) -> None:
         """Test creating client config with valid URL."""
-        config = FlextApiClientConfig(base_url="http://localhost:8000")
+        config = FlextApiClient(base_url="http://localhost:8000")
         assert config.base_url == "http://localhost:8000"
         assert config.timeout == 30.0
         if config.headers != {}:
@@ -42,7 +42,7 @@ class TestFlextApiClientConfig:
     def test_config_with_values(self) -> None:
         """Test config with custom values."""
         headers = {"Authorization": "Bearer token"}
-        config = FlextApiClientConfig(
+        config = FlextApiClient(
             base_url="https://api.example.com",
             timeout=60.0,
             headers=headers,
@@ -63,25 +63,25 @@ class TestFlextApiClientConfig:
     def test_config_properties(self) -> None:
         """Test config properties access."""
         # Test config with valid URL
-        config = FlextApiClientConfig(base_url="https://api.example.com", timeout=30.0)
+        config = FlextApiClient(base_url="https://api.example.com", timeout=30.0)
         assert config.base_url == "https://api.example.com"
         assert config.timeout == 30.0
 
 
-class TestFlextApiClientRequest:
-    """Test FlextApiClientRequest dataclass."""
+class TestFlextApiModels.ApiRequest:
+    """Test FlextApiModels.ApiRequest dataclass."""
 
     def test_request_creation(self) -> None:
         """Test creating client request with required ID field."""
         # Use FlextUtilities.generate_uuid() instead of manual uuid import
 
-        request = FlextApiClientRequest(
+        request = FlextApiModels.ApiRequest(
             id=FlextUtilities.generate_uuid(),
-            method=FlextApiClientMethod.GET,
+            method=FlextApiModels.HttpMethod.GET,
             url="/api/test",
         )
 
-        assert request.method == FlextApiClientMethod.GET
+        assert request.method == FlextApiModels.HttpMethod.GET
         assert request.url == "/api/test"
         assert request.id is not None
         assert isinstance(request.headers, dict)
@@ -90,8 +90,12 @@ class TestFlextApiClientRequest:
         """Test request with POST method."""
         # Use FlextUtilities.generate_uuid() instead of manual uuid import
 
-        request = FlextApiClientRequest(id=FlextUtilities.generate_uuid(), method=FlextApiClientMethod.POST, url="/api/test")
-        assert request.method == FlextApiClientMethod.POST
+        request = FlextApiModels.ApiRequest(
+            id=FlextUtilities.generate_uuid(),
+            method=FlextApiModels.HttpMethod.POST,
+            url="/api/test",
+        )
+        assert request.method == FlextApiModels.HttpMethod.POST
         assert request.id is not None
 
     def test_request_validation_empty_url(self) -> None:
@@ -99,19 +103,23 @@ class TestFlextApiClientRequest:
         # Use FlextUtilities.generate_uuid() instead of manual uuid import
 
         # Empty URL is allowed at model level, validation happens later
-        request = FlextApiClientRequest(id=FlextUtilities.generate_uuid(), method=FlextApiClientMethod.GET, url="")
+        request = FlextApiModels.ApiRequest(
+            id=FlextUtilities.generate_uuid(), method=FlextApiModels.HttpMethod.GET, url=""
+        )
         assert request.url == ""
         assert request.id is not None
 
 
-class TestFlextApiClientResponse:
-    """Test FlextApiClientResponse dataclass."""
+class TestFlextApiModels.ApiResponse:
+    """Test FlextApiModels.ApiResponse dataclass."""
 
     def test_response_creation(self) -> None:
         """Test creating client response with required ID field."""
         # Use FlextUtilities.generate_uuid() instead of manual uuid import
 
-        response = FlextApiClientResponse(id=FlextUtilities.generate_uuid(), status_code=200)
+        response = FlextApiModels.ApiResponse(
+            id=FlextUtilities.generate_uuid(), status_code=200
+        )
         assert response.status_code == 200
         assert response.id is not None
 
@@ -120,7 +128,7 @@ class TestFlextApiClientResponse:
         # Use FlextUtilities.generate_uuid() instead of manual uuid import
 
         data: dict[str, object] = {"key": "value"}
-        response = FlextApiClientResponse(
+        response = FlextApiModels.ApiResponse(
             id=FlextUtilities.generate_uuid(),
             status_code=200,
             data=data,
@@ -136,7 +144,9 @@ class TestFlextApiClientResponse:
         # Use FlextUtilities.generate_uuid() instead of manual uuid import
 
         data: dict[str, object] = {"key": "value"}
-        response = FlextApiClientResponse(id=FlextUtilities.generate_uuid(), status_code=200, data=data)
+        response = FlextApiModels.ApiResponse(
+            id=FlextUtilities.generate_uuid(), status_code=200, data=data
+        )
         # ApiResponse stores JSON data in the 'data' field
         assert response.data == data
         assert response.id is not None
@@ -146,7 +156,9 @@ class TestFlextApiClientResponse:
         # Use FlextUtilities.generate_uuid() instead of manual uuid import
 
         data = "Hello, World!"
-        response = FlextApiClientResponse(id=FlextUtilities.generate_uuid(), status_code=200, data=data)
+        response = FlextApiModels.ApiResponse(
+            id=FlextUtilities.generate_uuid(), status_code=200, data=data
+        )
         # ApiResponse stores text data in the 'data' field
         assert response.data == data
         assert response.id is not None
@@ -171,12 +183,17 @@ class TestFlextApiPlugin:
         # Use FlextUtilities.generate_uuid() instead of manual uuid import
 
         plugin = FlextApiPlugin()
-        request = FlextApiClientRequest(id=FlextUtilities.generate_uuid(), method=FlextApiClientMethod.GET, url="/test")
+        request = FlextApiModels.ApiRequest(
+            id=FlextUtilities.generate_uuid(),
+            method=FlextApiModels.HttpMethod.GET,
+            url="/test",
+        )
 
         # Should not modify request by default
         result = await plugin.before_request(request)
         # Plugin returns result, check it works
         from flext_core import FlextResult
+
         assert isinstance(result, FlextResult) or result == request
 
     @pytest.mark.asyncio
@@ -185,12 +202,19 @@ class TestFlextApiPlugin:
         # Use FlextUtilities.generate_uuid() instead of manual uuid import
 
         plugin = FlextApiPlugin()
-        FlextApiClientRequest(id=FlextUtilities.generate_uuid(), method=FlextApiClientMethod.GET, url="/test")
-        response = FlextApiClientResponse(id=FlextUtilities.generate_uuid(), status_code=200)
+        FlextApiModels.ApiRequest(
+            id=FlextUtilities.generate_uuid(),
+            method=FlextApiModels.HttpMethod.GET,
+            url="/test",
+        )
+        response = FlextApiModels.ApiResponse(
+            id=FlextUtilities.generate_uuid(), status_code=200
+        )
 
         # Should execute without error (using correct method signature)
         result = await plugin.after_response(response)
         from flext_core import FlextResult
+
         assert result is None or isinstance(result, FlextResult)
 
     def test_plugin_error_handling(self) -> None:
@@ -203,10 +227,10 @@ class TestFlextApiPlugin:
         assert hasattr(plugin, "before_request")
 
         # Test that plugin can be created with request (no need to raise exception)
-        request = FlextApiClientRequest(
+        request = FlextApiModels.ApiRequest(
             id=FlextUtilities.generate_uuid(),
-            method=FlextApiClientMethod.GET,
-            url="/test"
+            method=FlextApiModels.HttpMethod.GET,
+            url="/test",
         )
         assert request.id is not None
 
@@ -222,7 +246,7 @@ class TestFlextApiClient:
 
     def test_client_with_config(self) -> None:
         """Test client with custom config."""
-        config = FlextApiClientConfig(base_url="https://api.example.com")
+        config = FlextApiClient(base_url="https://api.example.com")
         client = FlextApiClient(config=config)
         assert client.config.base_url == "https://api.example.com"
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from contextlib import suppress
 
 from flext_api import (
-    FlextApiSettings,
+    FlextApiConfig,
     create_api_settings,
     validate_configuration,
 )
@@ -13,13 +13,13 @@ from flext_api import (
 
 def test_settings_validators() -> None:
     """Test settings validators."""
-    s = FlextApiSettings()
+    s = FlextApiConfig()
     assert s.api_port >= 1
     # Invalid configs should raise during model validation
     with suppress(Exception):
-        FlextApiSettings.model_validate({"log_level": "SILLY"})
+        FlextApiConfig.model_validate({"log_level": "SILLY"})
     with suppress(Exception):
-        FlextApiSettings.model_validate({"environment": "x"})
+        FlextApiConfig.model_validate({"environment": "x"})
 
 
 def test_create_api_settings_overrides_and_fail() -> None:
@@ -34,14 +34,14 @@ def test_create_api_settings_overrides_and_fail() -> None:
 def test_validate_configuration_rules() -> None:
     """Test validate configuration rules."""
     # production requires secret_key and database_url
-    prod = FlextApiSettings.model_validate(
+    prod = FlextApiConfig.model_validate(
         {"environment": "production", "api_port": 8081},
     )
     res = validate_configuration(prod)
     assert not res.success
     assert "Secret key" in (res.error or "")
 
-    prod2 = FlextApiSettings.model_validate(
+    prod2 = FlextApiConfig.model_validate(
         {
             "environment": "production",
             "secret_key": "s",
@@ -52,10 +52,10 @@ def test_validate_configuration_rules() -> None:
     assert not res2.success
     assert "Database URL" in (res2.error or "")
 
-    dev = FlextApiSettings()
+    dev = FlextApiConfig()
     dev.cors_origins = ["http://ok", "https://ok"]
     assert validate_configuration(dev).success
 
-    dev_bad = FlextApiSettings()
+    dev_bad = FlextApiConfig()
     dev_bad.cors_origins = ["ws://bad"]
     assert not validate_configuration(dev_bad).success

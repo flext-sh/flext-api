@@ -14,7 +14,9 @@ class BrokenStartService(FlextApiBaseService):
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Required execute method for FlextDomainService."""
-        return FlextResult[dict[str, object]].ok({"service": self.service_name, "status": "executed"})
+        return FlextResult[dict[str, object]].ok(
+            {"service": self.service_name, "status": "executed"}
+        )
 
     async def _do_start(self) -> FlextResult[None]:
         return FlextResult[None].fail("init failed")
@@ -30,7 +32,9 @@ class BrokenStopService(FlextApiBaseService):
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Required execute method for FlextDomainService."""
-        return FlextResult[dict[str, object]].ok({"service": self.service_name, "status": "executed"})
+        return FlextResult[dict[str, object]].ok(
+            {"service": self.service_name, "status": "executed"}
+        )
 
     async def _do_start(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)

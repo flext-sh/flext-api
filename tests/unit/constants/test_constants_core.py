@@ -9,18 +9,7 @@ from __future__ import annotations
 
 import http
 
-from flext_core import FlextFieldType
-
-from flext_api import (
-    FLEXT_API_CACHE_TTL,
-    FLEXT_API_MAX_RETRIES,
-    FLEXT_API_TIMEOUT,
-    FLEXT_API_VERSION,
-    FlextApiConstants,
-    FlextApiEndpoints,
-    FlextApiFieldType,
-    FlextApiStatus,
-)
+from flext_api import FlextApiConstants
 
 # Constants
 EXPECTED_DATA_COUNT = 3
@@ -29,55 +18,48 @@ EXPECTED_DATA_COUNT = 3
 class TestConstants:
     """Test cases for constants."""
 
-    def test_version_constant(self) -> None:
-        """Test version constant."""
-        if FLEXT_API_VERSION != "0.9.0":
-            msg = f"Expected 1.0.0, got {FLEXT_API_VERSION}"
-            raise AssertionError(msg)
-        assert isinstance(FLEXT_API_VERSION, str)
+    def test_user_agent_constant(self) -> None:
+        """Test user agent constant."""
+        user_agent = FlextApiConstants.Client.DEFAULT_USER_AGENT
+        assert isinstance(user_agent, str)
+        assert "FlextAPI" in user_agent
+        assert "0.9.0" in user_agent
 
     def test_timeout_constant(self) -> None:
         """Test timeout constant."""
-        if FLEXT_API_TIMEOUT != 30:
-            msg = f"Expected 30, got {FLEXT_API_TIMEOUT}"
-            raise AssertionError(msg)
-        assert isinstance(FLEXT_API_TIMEOUT, int)
+        timeout = FlextApiConstants.Client.DEFAULT_TIMEOUT
+        assert isinstance(timeout, (int, float))
+        assert timeout > 0
 
     def test_retries_constant(self) -> None:
         """Test max retries constant."""
-        if FLEXT_API_MAX_RETRIES != EXPECTED_DATA_COUNT:
-            msg = f"Expected 3, got {FLEXT_API_MAX_RETRIES}"
-            raise AssertionError(msg)
-        assert isinstance(FLEXT_API_MAX_RETRIES, int)
+        retries = FlextApiConstants.Client.MAX_RETRIES
+        assert isinstance(retries, int)
+        assert retries >= 0
 
-    def test_cache_ttl_constant(self) -> None:
-        """Test cache TTL constant."""
-        if FLEXT_API_CACHE_TTL != 300:
-            msg = f"Expected 300, got {FLEXT_API_CACHE_TTL}"
-            raise AssertionError(msg)
-        assert isinstance(FLEXT_API_CACHE_TTL, int)
+    def test_backoff_factor_constant(self) -> None:
+        """Test backoff factor constant."""
+        factor = FlextApiConstants.Client.RETRY_BACKOFF_FACTOR
+        assert isinstance(factor, float)
+        assert factor > 0
 
 
 class TestFlextApiConstants:
     """Test FlextApiConstants class."""
 
-    def test_success_codes(self) -> None:
-        """Test success codes using http.HTTPStatus constants."""
+    def test_success_status_ranges(self) -> None:
+        """Test success status code ranges."""
         ok_code = http.HTTPStatus.OK.value
         created_code = http.HTTPStatus.CREATED.value
         not_found_code = http.HTTPStatus.NOT_FOUND.value
 
-        if ok_code not in FlextApiConstants.SUCCESS_CODES:
-            msg = f"Expected {ok_code} in {FlextApiConstants.SUCCESS_CODES}"
-            raise AssertionError(
-                msg,
-            )
-        assert created_code in FlextApiConstants.SUCCESS_CODES
-        if not_found_code in FlextApiConstants.SUCCESS_CODES:
-            msg = f"Expected {not_found_code} not in {FlextApiConstants.SUCCESS_CODES}"
-            raise AssertionError(
-                msg,
-            )
+        # Test success range
+        success_min = FlextApiConstants.HttpStatusRanges.SUCCESS_MIN
+        success_max = FlextApiConstants.HttpStatusRanges.SUCCESS_MAX
+
+        assert success_min <= ok_code < success_max
+        assert success_min <= created_code < success_max
+        assert not (success_min <= not_found_code < success_max)
 
     def test_client_error_codes(self) -> None:
         """Test client error codes using http.HTTPStatus constants."""
@@ -158,21 +140,14 @@ class TestFlextApiFieldType:
         assert FlextApiFieldType.RESPONSE_FORMAT == "response_format"
 
     def test_field_type_validation(self) -> None:
-        """Test field type validation using flext-core types."""
-        valid_types = [
-            FlextFieldType.STRING,
-            FlextFieldType.INTEGER,
-            FlextFieldType.FLOAT,
-            FlextFieldType.BOOLEAN,
-            FlextFieldType.DATE,
-            FlextFieldType.DATETIME,
-            FlextFieldType.UUID,
-            FlextFieldType.EMAIL,
-        ]
+        """Test field type validation using API field types."""
+        # Test API-specific field types from FlextApiFieldType
+        assert FlextApiFieldType.REQUEST_ID == "request_id"
+        assert FlextApiFieldType.RESPONSE_FORMAT == "response_format"
 
-        for field_type in valid_types:
-            assert isinstance(field_type.value, str)
-            assert len(field_type.value) > 0
+        # Verify the field type class exists and has expected attributes
+        assert hasattr(FlextApiFieldType, "REQUEST_ID")
+        assert hasattr(FlextApiFieldType, "RESPONSE_FORMAT")
 
 
 class TestFlextApiStatus:

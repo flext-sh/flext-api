@@ -9,9 +9,7 @@ from flext_api import (
     FLEXT_API_MAX_RETRIES,
     FLEXT_API_TIMEOUT,
     FLEXT_API_VERSION,
-    FlextApiClientMethod,
-    FlextApiClientRequest,
-    FlextApiClientResponse,
+    FlextApiModels,
     FlextApiSettings,
     FlextApiStorage,
     StorageBackend,
@@ -21,7 +19,7 @@ from flext_api import (
     flext_api_create_app,
 )
 from flext_api.api import __version__
-from flext_api.app import FlextApiAppConfig, create_flext_api_app
+from flext_api.app import FlextApiConfig, create_flext_api_app
 
 
 def test_real_app_creation() -> None:
@@ -37,7 +35,7 @@ def test_real_app_creation() -> None:
     assert app is not None
 
     # Test direct factory function
-    app_config = FlextApiAppConfig(title="Test App", version="1.0.0")
+    app_config = FlextApiConfig(title="Test App", version="1.0.0")
     app2 = flext_api_create_app(app_config)
     assert app2 is not None
 
@@ -94,6 +92,7 @@ def test_api_constants_exports() -> None:
 
 def test_real_storage_operations() -> None:
     """Test storage operations with REAL backend."""
+
     async def test_storage() -> None:
         # Create REAL storage
         config = StorageConfig(backend=StorageBackend.MEMORY, namespace="test")
@@ -115,16 +114,16 @@ def test_real_storage_operations() -> None:
 
 def test_client_models_creation() -> None:
     """Test client model classes creation."""
-    # Test FlextApiClientRequest creation
-    request = FlextApiClientRequest(
-        method=FlextApiClientMethod.GET,
+    # Test FlextApiModels.ApiRequest creation
+    request = FlextApiModels.ApiRequest(
+        method=FlextApiModels.HttpMethod.GET,
         url="/test",
     )
-    assert request.method == FlextApiClientMethod.GET
+    assert request.method == FlextApiModels.HttpMethod.GET
     assert request.url == "/test"
 
-    # Test FlextApiClientResponse creation
-    response = FlextApiClientResponse(
+    # Test FlextApiModels.ApiResponse creation
+    response = FlextApiModels.ApiResponse(
         status_code=200,
         data={"message": "success"},
     )

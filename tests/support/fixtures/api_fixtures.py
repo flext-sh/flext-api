@@ -12,8 +12,8 @@ import aiohttp
 import pytest
 from httpx import AsyncClient
 
-from flext_api import FlextApiClient, FlextApiClientConfig
-from flext_api.config import FlextApiSettings
+from flext_api import FlextApiClient
+from flext_api.config import FlextApiConfig
 from tests.support.factories import FlextApiConfigFactory
 
 
@@ -28,8 +28,8 @@ async def http_client_session() -> AsyncGenerator[aiohttp.ClientSession]:
 
 
 @pytest.fixture
-def flext_api_config() -> FlextApiSettings:
-    """Provide test FlextApiSettings using factory."""
+def flext_api_config() -> FlextApiConfig:
+    """Provide test FlextApiConfig using factory."""
     return FlextApiConfigFactory(
         api_host="httpbin.org",
         default_timeout=10,
@@ -39,13 +39,11 @@ def flext_api_config() -> FlextApiSettings:
 
 @pytest.fixture
 async def flext_api_client(
-    flext_api_config: FlextApiSettings,
+    flext_api_config: FlextApiConfig,
 ) -> AsyncGenerator[FlextApiClient]:
     """Provide configured FlextApiClient for testing."""
-    # Convert FlextApiSettings to FlextApiClientConfig
-    client_config = FlextApiClientConfig(
-        base_url=f"https://{flext_api_config.api_host}"
-    )
+    # Convert FlextApiConfig to FlextApiClient
+    client_config = FlextApiClient(base_url=f"https://{flext_api_config.api_host}")
     client = FlextApiClient(client_config)
     try:
         yield client

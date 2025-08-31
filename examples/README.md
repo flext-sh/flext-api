@@ -1,91 +1,124 @@
-# Examples
+# FLEXT API Examples
 
-**Usage examples and demonstrations for FLEXT API library**
+**Usage examples demonstrating REAL classes and functionality**
 
-## Example Files
+## Example Files (REAL Classes Only)
 
 ### Basic Usage
 
-- **01_basic_usage.py** - Basic API usage patterns
-- **01_basic_usage_corrected.py** - Corrected version with fixes
+- **basic_usage_example.py** - Basic API usage patterns using REAL classes
+  - FlextApi creation and configuration
+  - HTTP client creation and setup
+  - Model instantiation and validation
+  - Error handling with FlextResult
 
-### Advanced Features
+### Advanced Features  
 
-- **02_advanced_features.py** - Advanced features demonstration
+- **advanced_example.py** - Advanced usage patterns using REAL classes
+  - Plugin system demonstration
+  - Storage backends usage
+  - Query builder with filters
+  - Response builder patterns
+  - Model validation examples
+  - Async patterns with HTTP client
 
-## Coverage
+## Key Patterns Demonstrated
 
-### Basic Usage Examples
+### REAL Classes Usage
 
-- FlextApi service creation and initialization
-- HTTP client configuration
-- Query building patterns
-- Error handling demonstration
+- **FlextApi** - Core API service class
+- **FlextApiClient** - HTTP client with async support
+- **FlextApiModels** - Domain models and data structures
+- **FlextApiStorage** - Storage backends (Memory, File)
+- **FlextApiPlugins** - Extensible plugin system
+- **create_flext_api()** - Factory function
+- **create_flext_api_app()** - FastAPI application factory
 
-### Advanced Examples
+### No Aliases or Helpers
 
-- Plugin architecture usage
-- Advanced HTTP client features
-- Complex query building
-- Integration patterns
+All examples use REAL classes directly from their modules:
+```python
+from flext_api import FlextApi, FlextApiClient, FlextApiModels
+# NOT helpers, NOT aliases, ONLY real functionality
+```
 
 ## Running Examples
 
 ```bash
-# Run basic usage example
-python examples/01_basic_usage_corrected.py
+# Run basic usage example  
+python examples/basic_usage_example.py
 
 # Run advanced features example
-python examples/02_advanced_features.py
+python examples/advanced_example.py
 
-# Run all examples
-python -m examples
-```
-
-## Development Testing
-
-```bash
-# Test examples against current implementation
-pytest tests/unit/test_functional_examples.py
-
-# Validate example accuracy
-make test-examples
-
-# Check example compliance
-make validate-examples
+# Run from project root
+cd /home/marlonsc/flext/flext-api
+PYTHONPATH=src python examples/basic_usage_example.py
+PYTHONPATH=src python examples/advanced_example.py
 ```
 
 ## Example Patterns
 
-### FlextResult Usage
+### FlextResult Usage (REAL Pattern)
 
 ```python
-# Always check success/failure
+# Always check success/failure using REAL FlextResult methods
 result = api_operation()
-if result.is_failure:
+if result.success:
+    data = result.data
+    logger.info("Operation successful", data=data)
+else:
     logger.error("Operation failed", error=result.error)
-    return
-
-# Use the data
-data = result.data
+    return result  # Return the failure result
 ```
 
-### Structured Logging
+### REAL Classes Import Pattern
 
 ```python
-from flext_core import FlextLogger
+# CORRECT: Import REAL classes directly
+from flext_api import FlextApi, FlextApiClient, FlextApiModels
 
-logger = FlextLogger(__name__)
-logger.info("Operation completed", count=len(results))
+# INCORRECT: Don't use aliases or helpers
+# from flext_api import create_client  # This is a helper, not a REAL class
+```
+
+### Error Handling with REAL Classes
+
+```python
+# Create API using REAL class
+api = FlextApi()
+
+# Create client using REAL method that returns FlextResult
+client_result = api.create_client({"base_url": "https://api.example.com"})
+
+if client_result.success:
+    client = client_result.data
+    # Use REAL client instance
+else:
+    print(f"Failed: {client_result.error}")
+```
+
+### Model Validation using REAL Classes
+
+```python
+# Use REAL nested model classes
+request = FlextApiModels.ApiRequest(
+    method=FlextApiModels.HttpMethod.GET,
+    url="https://api.example.com/data"
+)
+
+# Use REAL nested storage classes  
+storage = FlextApiStorage.MemoryBackend()
+result = storage.set("key", {"data": "value"})
 ```
 
 ## Development Guidelines
 
-- Test examples against actual code
-- Use only implemented features
-- Handle all failure cases with FlextResult
-- Include comprehensive error handling
-- Use structured logging patterns
-- Provide context and comments
+- **Use ONLY REAL classes** - No helpers, no aliases, no compatibility layers
+- **Import from root level** - Always `from flext_api import ClassName`
+- **Check FlextResult patterns** - Always handle `.success` and `.error`
+- **Use REAL nested classes** - Access via `ParentClass.NestedClass`
+- **Test examples regularly** - Ensure they work with actual implementation
+- **No placeholder code** - All examples must use working functionality
 
-See project documentation for development patterns, testing procedures, and API usage guidelines.
+See project documentation for complete API reference and architectural patterns.

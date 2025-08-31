@@ -11,10 +11,10 @@ import pytest
 
 from flext_api import (
     FlextApiClient,
-    FlextApiClientConfig,
-    FlextApiClientMethod,
-    FlextApiClientRequest,
-    FlextApiClientResponse,
+    FlextApiClient,
+    FlextApiModels,
+    
+    
     FlextApiPlugin,
     client,
     create_client,
@@ -36,19 +36,23 @@ class TestMissingClientCoverage:
         class TestPlugin(FlextApiPlugin):
             async def after_request(
                 self,
-                _request: FlextApiClientRequest,
-                response: FlextApiClientResponse,
-            ) -> FlextApiClientResponse:
+                _request: 
+                response: 
+            ) -> FlextApiModels.ApiResponse:
                 # Process response properly
                 return response
 
         plugin = TestPlugin()
-        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="/test")
-        response = FlextApiClientResponse(id="test_resp", status_code=200, data={"test": "data"})
+        request = FlextApiModels.ApiRequest(
+            id="test_req", method=FlextApiModels.HttpMethod.GET, url="/test"
+        )
+        response = FlextApiModels.ApiResponse(
+            id="test_resp", status_code=200, data={"test": "data"}
+        )
 
         # Call with proper signature
         result = await plugin.after_request(request, response)
-        assert isinstance(result, FlextApiClientResponse)
+        assert isinstance(result, FlextApiModels.ApiResponse)
         assert result.status_code == 200
         assert result.data == {"test": "data"}
 
@@ -59,14 +63,16 @@ class TestMissingClientCoverage:
         class TestPlugin(FlextApiPlugin):
             async def on_error(
                 self,
-                _request: FlextApiClientRequest,
+                _request: 
                 error: Exception,
             ) -> Exception:
                 # Process error properly
                 return error
 
         plugin = TestPlugin()
-        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="/test")
+        request = FlextApiModels.ApiRequest(
+            id="test_req", method=FlextApiModels.HttpMethod.GET, url="/test"
+        )
         original_error = ValueError("Test validation error")
 
         # Call with proper signature
@@ -76,11 +82,13 @@ class TestMissingClientCoverage:
 
     def test_prepare_request_params_empty_conditions(self) -> None:
         """Test client with empty request conditions."""
-        config = FlextApiClientConfig(base_url="https://api.example.com")
+        config = FlextApiClient(base_url="https://api.example.com")
         client = FlextApiClient(config)
 
         # Request with no params, headers, or data
-        request = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="/test")
+        request = FlextApiModels.ApiRequest(
+            id="test_req", method=FlextApiModels.HttpMethod.GET, url="/test"
+        )
 
         # Test that client can handle empty request configuration
         assert request.params is None
@@ -91,13 +99,15 @@ class TestMissingClientCoverage:
     def test_prepare_request_params_no_config_headers(self) -> None:
         """Test prepare_request_params with empty config headers - line 294."""
         # Config with empty headers (default)
-        config = FlextApiClientConfig(base_url="https://api.example.com")  # headers defaults to {}
+        config = FlextApiClient(
+            base_url="https://api.example.com"
+        )  # headers defaults to {}
         client = FlextApiClient(config)
 
         # Request with headers but config has none
-        request = FlextApiClientRequest(
+        request = FlextApiModels.ApiRequest(
             id="test_req",
-            method=FlextApiClientMethod.GET,
+            method=FlextApiModels.HttpMethod.GET,
             url="/test",
             headers={"User-Agent": "test"},
         )

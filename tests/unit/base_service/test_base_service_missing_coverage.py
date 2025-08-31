@@ -46,13 +46,15 @@ class CustomDetailsService(FlextDomainService[dict[str, object]]):
     @override
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute with complex health details."""
-        return FlextResult[dict[str, object]].ok({
-            "service_id": "custom-123",
-            "uptime": 3600,
-            "connections": 42,
-            "memory_usage": "256MB",
-            "last_check": "2024-01-01T12:00:00Z"
-        })
+        return FlextResult[dict[str, object]].ok(
+            {
+                "service_id": "custom-123",
+                "uptime": 3600,
+                "connections": 42,
+                "memory_usage": "256MB",
+                "last_check": "2024-01-01T12:00:00Z",
+            }
+        )
 
 
 class TestBaseServiceMissingCoverage:

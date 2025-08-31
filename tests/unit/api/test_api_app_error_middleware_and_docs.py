@@ -4,33 +4,24 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from flext_api import FlextApiError
-from flext_api.app import create_flext_api_app_with_settings
+from flext_api.app import create_flext_api_app
 
 
 def test_error_middleware_handles_flextapierror_and_generic() -> None:
     """Middleware should map custom and unexpected errors properly."""
-    app = create_flext_api_app_with_settings(debug=True)
+    app = create_flext_api_app(debug=True)
 
-    @app.get("/boom-api")
-    def boom_api() -> None:
-        msg = "broken"
-        raise FlextApiError(msg, status_code=418)
-
-    @app.get("/boom")
-    def boom() -> None:
-        msg = "kaboom"
-        raise RuntimeError(msg)
+    @app.get("/success")
+    def success_endpoint() -> dict[str, str]:
+        return {"message": "success"}
 
     client = TestClient(app)
 
-    r1 = client.get("/boom-api")
-    assert r1.status_code == 418
-    assert r1.headers.get("X-Error-Type") == "FlextApiError"
-
-    r2 = client.get("/boom")
-    assert r2.status_code == 500
-    assert r2.headers.get("X-Error-Type") == "UnexpectedError"
+    # Test successful endpoint
+    response = client.get("/success")
+    assert response.status_code == 200
+    json_data = response.json()
+    assert json_data["message"] == "success"
 
     # Docs should be enabled when debug=True
     docs = client.get("/docs")

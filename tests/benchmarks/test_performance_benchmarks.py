@@ -12,13 +12,9 @@ from typing import TypeVar
 
 from flext_api import (
     FlextApi,
-    FlextApiBuilder,
     FlextApiClient,
-    FlextApiQuery,
-    FlextApiResponse,
-    build_query,
-    build_success_response,
-    create_client,
+    FlextApiModels,
+    create_flext_api,
 )
 
 T = TypeVar("T")
@@ -27,120 +23,132 @@ T = TypeVar("T")
 class TestAPIPerformanceBenchmarks:
     """Performance benchmarks for API operations."""
 
-    def test_api_creation_benchmark(self, benchmark: Callable[[Callable[[], FlextApi]], FlextApi]) -> None:
+    def test_api_creation_benchmark(
+        self, benchmark: Callable[[Callable[[], FlextApi]], FlextApi]
+    ) -> None:
         """Benchmark API instance creation."""
+
         def create_api() -> FlextApi:
-            return FlextApi()
+            return create_flext_api()
 
         result = benchmark(create_api)
         assert result is not None
 
-    def test_query_building_benchmark(self, benchmark: Callable[[Callable[[], FlextApiQuery]], FlextApiQuery]) -> None:
+    def test_query_building_benchmark(
+        self, benchmark: Callable[[Callable[[], FlextApiModels.QueryBuilder]], FlextApiModels.QueryBuilder]
+    ) -> None:
         """Benchmark query building operations."""
 
-        def build_complex_query() -> FlextApiQuery:
-            return build_query(
-                {
-                    "status": "active",
-                    "category": "premium",
-                    "created_at": "2024-01-01",
-                    "limit": 50,
-                },
-            )
+        def build_complex_query() -> FlextApiModels.QueryBuilder:
+            models = FlextApiModels()
+            builder = models.QueryBuilder()
+            # Add filters
+            builder.add_filter("status", "active")
+            builder.add_filter("category", "premium")
+            builder.add_filter("created_at", "2024-01-01")
+            builder.add_filter("limit", 50)
+            return builder
 
         result = benchmark(build_complex_query)
         assert result is not None
         assert len(result.filters) > 0
 
-    def test_response_building_benchmark(self, benchmark: Callable[[Callable[[], FlextApiResponse]], FlextApiResponse]) -> None:
+    def test_response_building_benchmark(
+        self, benchmark: Callable[[Callable[[], object]], object]
+    ) -> None:
         """Benchmark response building operations."""
 
-        def build_complex_response() -> FlextApiResponse:
-            return build_success_response(
+        def build_complex_response() -> object:
+            models = FlextApiModels()
+            builder = models.ResponseBuilder()
+            response_result = builder.success(
                 data={"items": list(range(100)), "total": 100},
-                message="Data retrieved successfully",
-                metadata={
-                    "query_time": "0.042s",
-                    "cache_hit": True,
-                    "source": "database",
-                },
+                message="Data retrieved successfully"
             )
+            return response_result.data if response_result.success else None
 
         result = benchmark(build_complex_response)
         assert result is not None
-        assert result.success is True
+        assert isinstance(result, dict)
 
-    def test_builder_pattern_benchmark(self, benchmark: Callable[[Callable[[], tuple[FlextApiQuery, FlextApiResponse]]], tuple[FlextApiQuery, FlextApiResponse]]) -> None:
+    def test_builder_pattern_benchmark(
+        self,
+        benchmark: Callable[
+            [Callable[[], tuple[FlextApiModels.QueryBuilder, object]]],
+            tuple[FlextApiModels.QueryBuilder, object],
+        ],
+    ) -> None:
         """Benchmark builder pattern operations."""
 
-        def complex_builder_operations() -> tuple[FlextApiQuery, FlextApiResponse]:
-            builder = FlextApiBuilder()
-            query = (
-                builder.for_query()
-                .equals("status", "published")
-                .greater_than("created_at", "2024-01-01")
-                .sort_desc("updated_at")
-                .page(2)
-                .page_size(25)
-                .build()
-            )
-            response = (
-                builder.for_response()
-                .success(data={"items": list(range(25))})
-                .with_pagination(total=100, page=2, page_size=25)
-                .with_metadata("query_time", "0.042s")
-                .build()
-            )
-            return query, response
+        def complex_builder_operations() -> tuple[FlextApiModels.QueryBuilder, object]:
+            models = FlextApiModels()
+
+            # Query building
+            query_builder = models.QueryBuilder()
+            query_builder.add_filter("status", "published")
+            query_builder.add_filter("created_at", "2024-01-01")
+            query_builder.sort_by = "updated_at"
+            query_builder.sort_order = "desc"
+            query_builder.page = 2
+            query_builder.page_size = 25
+
+            # Response building
+            response_builder = models.ResponseBuilder()
+            response_result = response_builder.success(data={"items": list(range(25))})
+            response_data = response_result.data if response_result.success else None
+
+            return query_builder, response_data
 
         query, response = benchmark(complex_builder_operations)
         assert query is not None
         assert response is not None
 
-    def test_client_creation_benchmark(self, benchmark: Callable[[Callable[[], FlextApiClient]], FlextApiClient]) -> None:
+    def test_client_creation_benchmark(
+        self, benchmark: Callable[[Callable[[], FlextApiClient]], FlextApiClient]
+    ) -> None:
         """Benchmark HTTP client creation."""
 
         def create_configured_client() -> FlextApiClient:
-            return create_client(
-                {
-                    "base_url": "https://api.example.com",
-                    "timeout": 30.0,
-                    "headers": {
-                        "Content-Type": "application/json",
-                        "User-Agent": "FlextAPI/1.0.0",
-                    },
-                    "max_retries": 3,
-                },
-            )
+            api = create_flext_api()
+            client_result = api.create_client({
+                "base_url": "https://api.example.com",
+                "timeout": 30.0,
+                "max_retries": 3,
+            })
+            return client_result.data if client_result.success else FlextApiClient(base_url="https://fallback.com")
 
         result = benchmark(create_configured_client)
         assert result is not None
-        assert result.config.base_url == "https://api.example.com"
+        assert result.base_url == "https://api.example.com"
 
-    def test_multiple_queries_benchmark(self, benchmark: Callable[[Callable[[], list[FlextApiQuery]]], list[FlextApiQuery]]) -> None:
+    def test_multiple_queries_benchmark(
+        self,
+        benchmark: Callable[[Callable[[], list[FlextApiModels.QueryBuilder]]], list[FlextApiModels.QueryBuilder]],
+    ) -> None:
         """Benchmark multiple query operations."""
 
-        def build_multiple_queries() -> list[FlextApiQuery]:
+        def build_multiple_queries() -> list[FlextApiModels.QueryBuilder]:
             queries = []
+            models = FlextApiModels()
+
             for i in range(100):
-                query = build_query(
-                    {
-                        "id": i,
-                        "status": "active" if i % 2 == 0 else "inactive",
-                        "priority": "high" if i % 3 == 0 else "normal",
-                    },
-                )
-                queries.append(query)
+                query_builder = models.QueryBuilder()
+                query_builder.add_filter("id", i)
+                query_builder.add_filter("status", "active" if i % 2 == 0 else "inactive")
+                query_builder.add_filter("priority", "high" if i % 3 == 0 else "normal")
+                queries.append(query_builder)
             return queries
 
         result = benchmark(build_multiple_queries)
         assert len(result) == 100
         assert all(len(q.filters) > 0 for q in result)
 
-    def test_large_response_benchmark(self, benchmark: Callable[[Callable[[], FlextApiResponse]], FlextApiResponse]) -> None:
+    def test_large_response_benchmark(
+        self, benchmark: Callable[[Callable[[], object]], object]
+    ) -> None:
         """Benchmark large response building."""
 
-        def build_large_response() -> FlextApiResponse:
+        def build_large_response() -> object:
             # Simulate large dataset response
             large_data = {
                 "items": [
@@ -149,37 +157,41 @@ class TestAPIPerformanceBenchmarks:
                 "metadata": {f"key_{i}": f"value_{i}" for i in range(50)},
                 "total": 1000,
             }
-            return build_success_response(
+
+            models = FlextApiModels()
+            builder = models.ResponseBuilder()
+            response_result = builder.success(
                 data=large_data,
-                message="Large dataset retrieved",
-                metadata={"processing_time": "1.234s"},
+                message="Large dataset retrieved"
             )
+            return response_result.data if response_result.success else None
 
         result = benchmark(build_large_response)
-        assert result.success is True
-        assert isinstance(result.data, dict)
-        assert len(result.data["items"]) == 1000
+        assert result is not None
+        assert isinstance(result, dict)
+        assert result["status"] == "success"
+        assert len(result["data"]["items"]) == 1000
 
     def test_paginated_response_benchmark(
         self,
-        benchmark: Callable[[Callable[[], list[FlextApiResponse]]], list[FlextApiResponse]],
+        benchmark: Callable[[Callable[[], list[object]]], list[object]],
     ) -> None:
         """Benchmark paginated response operations."""
 
-        def build_paginated_responses() -> list[FlextApiResponse]:
+        def build_paginated_responses() -> list[object]:
             responses = []
+            models = FlextApiModels()
+
             for page in range(1, 11):  # 10 pages
-                builder = FlextApiBuilder()
-                response = (
-                    builder.for_response()
-                    .success(data={"items": list(range((page - 1) * 20, page * 20))})
-                    .with_pagination(total=200, page=page, page_size=20)
-                    .with_metadata("page_info", f"Page {page} of 10")
-                    .build()
+                builder = models.ResponseBuilder()
+                response_result = builder.success(
+                    data={"items": list(range((page - 1) * 20, page * 20))},
+                    message=f"Page {page} of 10"
                 )
-                responses.append(response)
+                if response_result.success:
+                    responses.append(response_result.data)
             return responses
 
         result = benchmark(build_paginated_responses)
         assert len(result) == 10
-        assert all(r.success for r in result)
+        assert all(isinstance(r, dict) and r.get("status") == "success" for r in result)

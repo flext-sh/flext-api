@@ -31,15 +31,19 @@ class DummyAuthService(FlextApiBaseService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
 
-    async def authenticate(self, credentials: dict[str, object]) -> FlextResult[dict[str, object]]:
+    async def authenticate(
+        self, credentials: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         """Authenticate user with credentials."""
         username = credentials.get("username")
         if username == "valid_user":
-            return FlextResult[dict[str, object]].ok({
-                "token": "auth_token_123",
-                "user_id": "user_123",
-                "expires_in": 3600,
-            })
+            return FlextResult[dict[str, object]].ok(
+                {
+                    "token": "auth_token_123",
+                    "user_id": "user_123",
+                    "expires_in": 3600,
+                }
+            )
         return FlextResult[dict[str, object]].fail("Invalid credentials")
 
 
@@ -65,7 +69,9 @@ class DummyRepositoryService(FlextApiBaseService):
     async def _do_stop(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)
 
-    async def save(self, entity_id: str, data: dict[str, object]) -> FlextResult[dict[str, object]]:
+    async def save(
+        self, entity_id: str, data: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         """Save entity data."""
         self._data[entity_id] = data
         return FlextResult[dict[str, object]].ok(data)
@@ -119,7 +125,9 @@ async def test_auth_service_authentication() -> None:
     await auth_service.start_async()
 
     # Test valid authentication
-    valid_result = await auth_service.authenticate({"username": "valid_user", "password": "test"})
+    valid_result = await auth_service.authenticate(
+        {"username": "valid_user", "password": "test"}
+    )
     assert valid_result.success
     assert valid_result.value is not None
     assert valid_result.value["token"] == "auth_token_123"
@@ -206,7 +214,10 @@ async def test_service_lifecycle_integration() -> None:
     assert auth_result.success
 
     # 2. Save user session data
-    session_data = {"user_id": auth_result.value["user_id"], "token": auth_result.value["token"]}
+    session_data = {
+        "user_id": auth_result.value["user_id"],
+        "token": auth_result.value["token"],
+    }
     save_result = await repo_service.save("session_123", session_data)
     assert save_result.success
 

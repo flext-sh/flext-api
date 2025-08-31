@@ -68,7 +68,7 @@ def setup_http_client() -> FlextResult[FlextApiClient]:
 
 ```python
 # Configuration and system integration
-├── config.py                # ⚙️ FlextApiSettings - HTTP configuration
+├── config.py                # ⚙️ FlextApiConfig - HTTP configuration
 ├── infrastructure/          # ⚙️ Infrastructure concerns
 │   ├── __init__.py
 │   └── config.py            # ⚙️ Advanced configuration patterns
@@ -83,9 +83,9 @@ def setup_http_client() -> FlextResult[FlextApiClient]:
 **Configuration Pattern**:
 
 ```python
-from flext_api.config import FlextApiSettings
+from flext_api.config import FlextApiConfig
 
-class ProjectHttpSettings(FlextApiSettings):
+class ProjectHttpSettings(FlextApiConfig):
     default_timeout: int = 30
     max_retries: int = 3
     enable_caching: bool = True
@@ -171,7 +171,7 @@ FlextApiMethod              # HTTP method enum
 FlextApiStatus              # HTTP status enum
 
 # Configuration patterns
-FlextApiSettings            # HTTP configuration settings
+FlextApiConfig            # HTTP configuration settings
 FlextApiClientStatus        # Client status enum
 FlextApiClientProtocol      # HTTP protocol enum
 ```
@@ -185,7 +185,7 @@ FlextApiClientProtocol      # HTTP protocol enum
 api.py                      # Contains FlextApi main service
 client.py                   # Contains FlextApiClient and HTTP client patterns
 builder.py                  # Contains FlextApiBuilder and construction patterns
-config.py                   # Contains FlextApiSettings and configuration
+config.py                   # Contains FlextApiConfig and configuration
 app.py                      # Contains FastAPI application factory
 main.py                     # Contains FastAPI application entry point
 ```
@@ -235,7 +235,7 @@ def setup_http_service() -> FlextResult[FlextApi]:
 # Import from specific modules for HTTP clarity
 from flext_api.client import FlextApiClient, FlextApiClientConfig
 from flext_api.builder import FlextApiQueryBuilder, FlextApiResponseBuilder
-from flext_api.config import FlextApiSettings
+from flext_api.config import FlextApiConfig
 
 # More explicit for HTTP-specific functionality
 ```
@@ -654,7 +654,7 @@ class HttpClientSettings(FlextConfig):
             "verify_ssl": self.verify_ssl
         }
 
-class FlextApiSettings(FlextConfig):
+class FlextApiConfig(FlextConfig):
     """FLEXT API configuration composition"""
     # Server Configuration
     api_host: str = Field(default="0.0.0.0", env="FLEXT_API_HOST")
@@ -1266,8 +1266,8 @@ class LdapHttpResult[T]:  # Creates ecosystem fragmentation
 ### **HTTP Configuration Integration**
 
 ```python
-# ✅ Extend FlextApiSettings in all ecosystem projects
-class OracleHttpSettings(FlextApiSettings):
+# ✅ Extend FlextApiConfig in all ecosystem projects
+class OracleHttpSettings(FlextApiConfig):
     """Oracle-specific HTTP configuration extending flext-api patterns"""
     oracle_base_url: str = Field(env="ORACLE_API_BASE_URL")
     oracle_timeout: float = 120.0  # Oracle can be slow
@@ -1276,7 +1276,7 @@ class OracleHttpSettings(FlextApiSettings):
     class Config:
         env_prefix = "ORACLE_HTTP_"
 
-class LdapHttpSettings(FlextApiSettings):
+class LdapHttpSettings(FlextApiConfig):
     """LDAP-specific HTTP configuration extending flext-api patterns"""
     ldap_base_url: str = Field(env="LDAP_API_BASE_URL")
     ldap_cert_path: str = Field(env="LDAP_CERT_PATH")
@@ -1289,7 +1289,7 @@ class EcosystemHttpSettings(FlextConfig):
     """HTTP configuration composing all ecosystem services"""
     oracle: OracleHttpSettings = field(default_factory=OracleHttpSettings)
     ldap: LdapHttpSettings = field(default_factory=LdapHttpSettings)
-    default: FlextApiSettings = field(default_factory=FlextApiSettings)
+    default: FlextApiConfig = field(default_factory=FlextApiConfig)
 
     def create_client_for_service(self, service: str) -> FlextResult[FlextApiClient]:
         """Create HTTP client for specific ecosystem service"""
@@ -1369,7 +1369,7 @@ class LdapSearchRequest(FlextModels.Entity):
 - [ ] **Error Handling**: Uses FlextResult for all HTTP error conditions
 - [ ] **Domain Modeling**: Uses HTTP domain entities and value objects where appropriate
 - [ ] **Plugin Support**: Implements HTTP plugin patterns if extending client functionality
-- [ ] **Configuration**: Extends FlextApiSettings for HTTP configuration needs
+- [ ] **Configuration**: Extends FlextApiConfig for HTTP configuration needs
 - [ ] **Documentation**: Comprehensive docstrings with HTTP usage examples
 - [ ] **Tests**: 90% coverage with HTTP unit, integration, and e2e tests
 - [ ] **Exports**: Added to `__init__.py` if part of public HTTP API

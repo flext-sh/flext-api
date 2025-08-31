@@ -12,9 +12,9 @@ import pytest
 from flext_api import (
     FlextApi,
     FlextApiClient,
-    FlextApiClientConfig,
-    FlextApiClientRequest,
-    FlextApiClientResponse,
+    FlextApiClient,
+    
+    
     FlextApiPlugin,
     FlextApiQueryBuilder,
     FlextApiResponseBuilder,
@@ -61,7 +61,7 @@ class TestFunctionalExamples:
     def test_client_configuration_examples(self) -> None:
         """Test various client configuration examples."""
         # Minimal configuration
-        config1 = FlextApiClientConfig(base_url="https://api.example.com")
+        config1 = FlextApiClient(base_url="https://api.example.com")
         client1 = FlextApiClient(config1)
         if client1.config.base_url != "https://api.example.com":
             msg = f"Expected https://api.example.com, got {client1.config.base_url}"
@@ -71,7 +71,7 @@ class TestFunctionalExamples:
         assert client1.config.timeout == 30.0  # Default value
 
         # Full configuration
-        config2 = FlextApiClientConfig(
+        config2 = FlextApiClient(
             base_url="https://api.example.com",
             timeout=60.0,
             headers={"Authorization": "Bearer token123"},
@@ -158,7 +158,7 @@ class TestFunctionalExamples:
     async def test_async_client_real_operations(self) -> None:
         """Test async client REAL operations without mocks - internal functionality."""
         # Create client with configuration - REAL CONFIG VALIDATION
-        config = FlextApiClientConfig(
+        config = FlextApiClient(
             base_url="https://api.example.com",
             timeout=30.0,
             headers={"User-Agent": "FlextApi/1.0"},
@@ -282,8 +282,8 @@ class TestFunctionalExamples:
 
             async def before_request(
                 self,
-                request: FlextApiClientRequest,
-            ) -> FlextApiClientRequest:
+                request: 
+            ) -> FlextApiModels.ApiRequest:
                 # Add custom header
                 if request.headers is None:
                     object.__setattr__(request, "headers", {})
@@ -293,21 +293,21 @@ class TestFunctionalExamples:
 
             async def after_request(
                 self,
-                request_or_response: FlextApiClientRequest | FlextApiClientResponse,
-                response: FlextApiClientResponse | None = None,
-            ) -> FlextApiClientResponse:
+                request_or_response: FlextApiModels.ApiRequest | 
+                response: FlextApiModels.ApiResponse | None = None,
+            ) -> FlextApiModels.ApiResponse:
                 # Handle both signatures
                 if response is None:
                     # New signature: after_request(response)
-                    if isinstance(request_or_response, FlextApiClientResponse):
+                    if isinstance(request_or_response, FlextApiModels.ApiResponse):
                         return request_or_response
                     # Fallback: create a basic response if request was passed
-                    return FlextApiClientResponse(status_code=200, data=None)
+                    return FlextApiModels.ApiResponse(status_code=200, data=None)
                 # Old signature: after_request(request, response)
                 return response
 
         # Use plugin with client
-        config = FlextApiClientConfig(base_url="https://httpbin.org")
+        config = FlextApiClient(base_url="https://httpbin.org")
         plugin = CustomPlugin()
         client = FlextApiClient(config, plugins=[plugin])
 
@@ -317,7 +317,7 @@ class TestFunctionalExamples:
     def test_performance_optimization_examples(self) -> None:
         """Test performance optimization examples."""
         # Test connection pooling
-        config = FlextApiClientConfig(
+        config = FlextApiClient(
             base_url="https://httpbin.org",
             timeout=10.0,
             max_retries=3,
@@ -332,7 +332,7 @@ class TestFunctionalExamples:
     def test_security_examples(self) -> None:
         """Test security configuration examples."""
         # Test with security headers
-        config = FlextApiClientConfig(
+        config = FlextApiClient(
             base_url="https://api.example.com",
             headers={
                 "Authorization": "Bearer secure-token",

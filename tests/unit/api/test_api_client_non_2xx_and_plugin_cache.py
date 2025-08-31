@@ -7,27 +7,26 @@ from flext_core import FlextResult
 
 from flext_api import (
     FlextApiClient,
-    FlextApiClientConfig,
-    FlextApiClientMethod,
-    FlextApiClientRequest,
-    FlextApiClientResponse,
-    FlextApiPlugin,
+    FlextApiModels,
+    FlextApiPlugins,
 )
 
 
-class FakeCachePlugin(FlextApiPlugin):
+class FakeCachePlugin(FlextApiPlugins.BasePlugin):
     """Simple cache plugin to test before/after hooks."""
 
-    def __init__(self) -> None:
-        super().__init__("caching")
-        self._cache: dict[str, FlextApiClientResponse] = {}
+    name: str = "caching"
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(name="caching", **kwargs)
+        self._cache: dict[str, FlextApiModels.ApiResponse] = {}
 
     async def before_request(
         self,
         request: object,
     ) -> FlextResult[object]:
         if (
-            isinstance(request, FlextApiClientRequest)
+            isinstance(request, FlextApiModels.ApiRequest)
             and str(request.method) == "GET"
             and request.url in self._cache
         ):
@@ -40,7 +39,7 @@ class FakeCachePlugin(FlextApiPlugin):
         self,
         response: object,
     ) -> FlextResult[object]:
-        if isinstance(response, FlextApiClientResponse) and response.status_code == 200:
+        if isinstance(response, FlextApiModels.ApiResponse) and response.status_code == 200:
             # store a shallow cache
             self._cache["last"] = response
         return FlextResult[object].ok(response)
@@ -51,8 +50,7 @@ async def test_cached_short_circuit_and_non_2xx() -> None:
     """Cached response should short-circuit; real 500 path exercised via httpbin."""
     plugin = FakeCachePlugin()
     client = FlextApiClient(
-        FlextApiClientConfig(base_url="https://httpbin.org"),
-        plugins=[plugin],
+        base_url="https://httpbin.org",
     )
 
     await client.start()
@@ -62,11 +60,16 @@ async def test_cached_short_circuit_and_non_2xx() -> None:
         assert ok.success
 
         # Prepare a cached response and ensure pipeline returns it
-        plugin._cache["https://httpbin.org/json"] = FlextApiClientResponse(id="test_resp",
+        plugin._cache["https://httpbin.org/json"] = FlextApiModels.ApiResponse(
+            id="test_resp",
             status_code=200,
             data={"cached": True},
         )
-        req = FlextApiClientRequest(id="test_req", method=FlextApiClientMethod.GET, url="https://httpbin.org/json")
+        req = FlextApiModels.ApiRequest(
+            id="test_req",
+            method=FlextApiModels.HttpMethod.GET,
+            url="https://httpbin.org/json",
+        )
         res = await client._execute_request_pipeline(req, "GET")
         assert res.success
         assert isinstance(res.value.data, dict)
@@ -74,8 +77,8 @@ async def test_cached_short_circuit_and_non_2xx() -> None:
 
         # Test real non-2xx error response using httpbin's /status/500 endpoint
         plugin._cache.clear()  # Clear cache to force real HTTP call
-        error_req = FlextApiClientRequest(
-            method=FlextApiClientMethod.GET, url="https://httpbin.org/status/500"
+        error_req = FlextApiModels.ApiRequest(
+            method=FlextApiModels.HttpMethod.GET, url="https://httpbin.org/status/500"
         )
         res3 = await client._execute_request_pipeline(error_req, "GET")
         assert res3.success  # Pipeline succeeds even with 500 status

@@ -13,13 +13,13 @@ import pytest
 from fastapi.testclient import TestClient
 
 from flext_api import (
-    FlextApiAppConfig,
+    FlextApiConfig,
     create_flext_api,
     create_flext_api_app,
     create_flext_api_app_with_settings,
     flext_api_create_app,
 )
-from flext_api.config import FlextApiSettings
+from flext_api.config import FlextApiConfig
 
 # Constants
 HTTP_OK = 200
@@ -63,7 +63,7 @@ class TestAppRealExecution:
         # Create REAL settings with proper configuration
 
         # Test settings creation and validation
-        FlextApiSettings(api_host="test.api.com", api_port=9001, debug=True)
+        FlextApiConfig(api_host="test.api.com", api_port=9001, debug=True)
 
         # Create REAL app with REAL settings - pass settings directly as kwargs
         app = create_flext_api_app_with_settings(
@@ -92,10 +92,10 @@ class TestAppRealExecution:
         # Test custom configuration with REAL settings
 
         # Test custom settings creation
-        custom_settings = FlextApiSettings(
+        custom_settings = FlextApiConfig(
             api_host="custom.api.com", api_port=9002, debug=False
         )
-        custom_config = FlextApiAppConfig(settings=custom_settings)
+        custom_config = FlextApiConfig(settings=custom_settings)
         custom_app = create_flext_api_app(custom_config)
 
         # Verify REAL app functionality
