@@ -293,7 +293,7 @@ class TestFunctionalExamples:
 
             async def after_request(
                 self,
-                request_or_response: FlextApiModels.ApiRequest | 
+                request_or_response: FlextApiModels.ApiRequest | FlextApiModels.ApiResponse,
                 response: FlextApiModels.ApiResponse | None = None,
             ) -> FlextApiModels.ApiResponse:
                 # Handle both signatures

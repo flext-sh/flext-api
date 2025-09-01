@@ -13,7 +13,6 @@ import asyncio
 import os
 import tempfile
 from pathlib import Path
-from typing import object
 
 import pytest
 from faker import Faker

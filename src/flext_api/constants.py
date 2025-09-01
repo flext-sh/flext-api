@@ -138,6 +138,9 @@ class FlextApiConstants(FlextConstants):
         # Network timeout error (custom)
         NETWORK_CONNECT_TIMEOUT_ERROR: Final[int] = 599
 
+        # Maximum valid HTTP status code
+        MAX_STATUS_CODE: Final[int] = 600
+
     class Client:
         """HTTP client configuration constants."""
 

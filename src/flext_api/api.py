@@ -160,4 +160,32 @@ class FlextApi(FlextModels.BaseConfig):
             return FlextResult[Result].fail(f"Health check failed: {e}")
 
 
-__all__ = ["FlextApi"]
+# =============================================================================
+# FACTORY FUNCTIONS - Following flext-core patterns
+# =============================================================================
+
+
+def create_flext_api(
+    service_name: str | None = None,
+    service_version: str | None = None,
+    default_base_url: str | None = None,
+) -> FlextApi:
+    """Create FlextApi instance with optional configuration.
+
+    Args:
+        service_name: Optional service name
+        service_version: Optional service version
+        default_base_url: Optional default base URL
+
+    Returns:
+        Configured FlextApi instance
+
+    """
+    return FlextApi(
+        service_name=service_name or "flext-api",
+        service_version=service_version or "0.9.0",
+        default_base_url=default_base_url or "http://localhost:8000",
+    )
+
+
+__all__ = ["FlextApi", "create_flext_api"]

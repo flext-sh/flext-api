@@ -33,11 +33,13 @@ import json
 import time
 from pathlib import Path
 
-from flext_core import FlextDomainService, FlextResult
+from flext_core import FlextDomainService, FlextLogger, FlextResult
 from pydantic import Field
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
+
+logger = FlextLogger(__name__)
 
 
 class FlextApiStorage(FlextDomainService[dict[str, object]]):
@@ -144,18 +146,22 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 for key in expired_keys:
                     self._cache.pop(key, None)
                     self._timestamps.pop(key, None)
-            except Exception:
-                # Silent cleanup failure - cache will continue working with expired entries
-                pass
+            except Exception as e:
+                # Cache cleanup failed but continue working with expired entries
+                logger.warning("Cache cleanup failed", error=str(e))
 
     class PersistentStorage(FlextDomainService[dict[str, object]]):
         """Persistent data storage following FLEXT patterns."""
 
         def __init__(
-            self, storage_path: str = "/tmp/flext_api", **data: object
+            self, storage_path: str | None = None, **data: object
         ) -> None:
             super().__init__(**data)
-            self.storage_path = storage_path
+            if storage_path is None:
+                # Use secure user cache directory instead of /tmp
+                self.storage_path = str(Path.home() / ".cache" / "flext_api")
+            else:
+                self.storage_path = storage_path
 
         def execute(self) -> FlextResult[dict[str, object]]:
             """Execute storage validation operation."""
@@ -510,9 +516,9 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 if key in self._ttl_data:
                     del self._ttl_data[key]
 
-        except Exception:
-            # Silent cleanup failure - cache will continue working with expired entries
-            pass
+        except Exception as e:
+            # Cache cleanup failed but continue working with expired entries
+            logger.warning("TTL cleanup failed", error=str(e))
 
     def serialize_data(
         self, data: FlextApiTypes.Response.JsonResponse

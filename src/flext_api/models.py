@@ -37,8 +37,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels, FlextResult
 from pydantic import Field, RootModel, computed_field, field_validator
@@ -168,16 +167,21 @@ class FlextApiModels(FlextModels):
 
             try:
                 parsed = urlparse(v)
-                if not parsed.scheme or not parsed.netloc:
-                    msg = "URL must include scheme and netloc"
-                    raise ValueError(msg)
-                if parsed.scheme not in {"http", "https"}:
-                    msg = "URL scheme must be http or https"
-                    raise ValueError(msg)
+                cls._validate_url_parts(parsed)
                 return v
             except Exception as e:
                 msg = f"Invalid URL: {e}"
                 raise ValueError(msg) from e
+
+        @staticmethod
+        def _validate_url_parts(parsed: ParseResult) -> None:
+            """Validate URL components and raise appropriate errors."""
+            if not parsed.scheme or not parsed.netloc:
+                msg = "URL must include scheme and netloc"
+                raise ValueError(msg)
+            if parsed.scheme not in {"http", "https"}:
+                msg = "URL scheme must be http or https"
+                raise ValueError(msg)
 
     class StatusCode(RootModel[int]):
         """HTTP status code with validation."""
@@ -246,7 +250,7 @@ class FlextApiModels(FlextModels):
         method: str = Field(..., description="HTTP method")
         url: str = Field(..., description="Request URL")
         headers: dict[str, str] = Field(default_factory=dict)
-        body: str | bytes | dict[str, Any] | None = Field(default=None)
+        body: str | bytes | dict[str, object] | None = Field(default=None)
         timeout: float = Field(default=30.0)
 
         @field_validator("url")
@@ -279,7 +283,7 @@ class FlextApiModels(FlextModels):
 
         status_code: int = Field(..., description="HTTP status code")
         headers: dict[str, str] = Field(default_factory=dict)
-        body: str | bytes | dict[str, Any] | None = Field(default=None)
+        body: str | bytes | dict[str, object] | None = Field(default=None)
         url: str = Field(..., description="Request URL")
         method: str = Field(..., description="HTTP method")
         elapsed_time: float = Field(default=0.0)
@@ -293,22 +297,19 @@ class FlextApiModels(FlextModels):
             return v
 
         @computed_field
-        @property
         def is_success(self) -> bool:
             """Check if response indicates success."""
             return FlextApiConstants.HttpStatus.OK <= self.status_code < FlextApiConstants.HttpStatus.MULTIPLE_CHOICES
 
         @computed_field
-        @property
         def is_client_error(self) -> bool:
             """Check if response indicates client error."""
             return FlextApiConstants.HttpStatus.BAD_REQUEST <= self.status_code < FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR
 
         @computed_field
-        @property
         def is_server_error(self) -> bool:
             """Check if response indicates server error."""
-            return FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR <= self.status_code < 600  # 600 is max HTTP status
+            return FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR <= self.status_code < FlextApiConstants.HttpStatus.MAX_STATUS_CODE
 
         def validate_business_rules(self) -> FlextResult[None]:
             """Validate HTTP response business rules."""
@@ -379,7 +380,7 @@ class FlextApiModels(FlextModels):
         method: str,
         url: str,
         headers: dict[str, str] | None = None,
-        body: str | bytes | dict[str, Any] | None = None,
+        body: str | bytes | dict[str, object] | None = None,
         timeout: float = 30.0,
     ) -> FlextResult[HttpRequest]:
         """Create HTTP request with validation."""
@@ -393,12 +394,12 @@ class FlextApiModels(FlextModels):
             )
             validation_result = request.validate_business_rules()
             if validation_result.is_failure:
-                return FlextResult[cls.HttpRequest].fail(
+                return FlextResult["FlextApiModels.HttpRequest"].fail(
                     f"HTTP request validation failed: {validation_result.error}"
                 )
-            return FlextResult[cls.HttpRequest].ok(request)
+            return FlextResult["FlextApiModels.HttpRequest"].ok(request)
         except Exception as e:
-            return FlextResult[cls.HttpRequest].fail(
+            return FlextResult["FlextApiModels.HttpRequest"].fail(
                 f"HTTP request creation failed: {e}"
             )
 
@@ -409,7 +410,7 @@ class FlextApiModels(FlextModels):
         url: str,
         method: str,
         headers: dict[str, str] | None = None,
-        body: str | bytes | dict[str, Any] | None = None,
+        body: str | bytes | dict[str, object] | None = None,
         elapsed_time: float = 0.0,
     ) -> FlextResult[HttpResponse]:
         """Create HTTP response with validation."""
@@ -424,12 +425,12 @@ class FlextApiModels(FlextModels):
             )
             validation_result = response.validate_business_rules()
             if validation_result.is_failure:
-                return FlextResult[cls.HttpResponse].fail(
+                return FlextResult["FlextApiModels.HttpResponse"].fail(
                     f"HTTP response validation failed: {validation_result.error}"
                 )
-            return FlextResult[cls.HttpResponse].ok(response)
+            return FlextResult["FlextApiModels.HttpResponse"].ok(response)
         except Exception as e:
-            return FlextResult[cls.HttpResponse].fail(
+            return FlextResult["FlextApiModels.HttpResponse"].fail(
                 f"HTTP response creation failed: {e}"
             )
 
@@ -440,6 +441,7 @@ class FlextApiModels(FlextModels):
         timeout: float = 30.0,
         max_retries: int = 3,
         headers: dict[str, str] | None = None,
+        *,
         verify_ssl: bool = True,
         allow_redirects: bool = True,
     ) -> FlextResult[ClientConfig]:
@@ -453,9 +455,9 @@ class FlextApiModels(FlextModels):
                 verify_ssl=verify_ssl,
                 allow_redirects=allow_redirects,
             )
-            return FlextResult[cls.ClientConfig].ok(config)
+            return FlextResult["FlextApiModels.ClientConfig"].ok(config)
         except Exception as e:
-            return FlextResult[cls.ClientConfig].fail(
+            return FlextResult["FlextApiModels.ClientConfig"].fail(
                 f"Client config creation failed: {e}"
             )
 
@@ -478,12 +480,12 @@ class FlextApiModels(FlextModels):
             )
             validation_result = session.validate_business_rules()
             if validation_result.is_failure:
-                return FlextResult[cls.HttpSession].fail(
+                return FlextResult["FlextApiModels.HttpSession"].fail(
                     f"HTTP session validation failed: {validation_result.error}"
                 )
-            return FlextResult[cls.HttpSession].ok(session)
+            return FlextResult["FlextApiModels.HttpSession"].ok(session)
         except Exception as e:
-            return FlextResult[cls.HttpSession].fail(
+            return FlextResult["FlextApiModels.HttpSession"].fail(
                 f"HTTP session creation failed: {e}"
             )
 
@@ -492,6 +494,7 @@ class FlextApiModels(FlextModels):
         cls,
         ttl: int = 300,
         max_size: int = 1000,
+        *,
         enabled: bool = True,
         priority: int = 0,
     ) -> FlextResult[CacheConfig]:
@@ -503,9 +506,9 @@ class FlextApiModels(FlextModels):
                 enabled=enabled,
                 priority=priority,
             )
-            return FlextResult[cls.CacheConfig].ok(config)
+            return FlextResult["FlextApiModels.CacheConfig"].ok(config)
         except Exception as e:
-            return FlextResult[cls.CacheConfig].fail(
+            return FlextResult["FlextApiModels.CacheConfig"].fail(
                 f"Cache config creation failed: {e}"
             )
 
@@ -515,6 +518,7 @@ class FlextApiModels(FlextModels):
         max_retries: int = 3,
         backoff_factor: float = 2.0,
         retry_on_status: list[int] | None = None,
+        *,
         enabled: bool = True,
         priority: int = 0,
     ) -> FlextResult[RetryConfig]:
@@ -527,9 +531,9 @@ class FlextApiModels(FlextModels):
                 enabled=enabled,
                 priority=priority,
             )
-            return FlextResult[cls.RetryConfig].ok(config)
+            return FlextResult["FlextApiModels.RetryConfig"].ok(config)
         except Exception as e:
-            return FlextResult[cls.RetryConfig].fail(
+            return FlextResult["FlextApiModels.RetryConfig"].fail(
                 f"Retry config creation failed: {e}"
             )
 
