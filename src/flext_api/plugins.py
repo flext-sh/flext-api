@@ -83,7 +83,7 @@ class FlextApiPlugins(FlextModels):
         """Base class for asynchronous plugins with lifecycle management."""
 
         def __init__(
-            self, name: str = "AsyncPlugin", enabled: bool = True, priority: int = 0
+            self, name: str = "AsyncPlugin", *, enabled: bool = True, priority: int = 0
         ) -> None:
             super().__init__(name=name, enabled=enabled, priority=priority)
             self._started = False
@@ -128,6 +128,7 @@ class FlextApiPlugins(FlextModels):
         def __init__(
             self,
             name: str = "caching_plugin",
+            *,
             enabled: bool = True,
             priority: int = 0,
             ttl: int = FlextApiConstants.HttpCache.DEFAULT_TTL,
@@ -286,6 +287,7 @@ class FlextApiPlugins(FlextModels):
         def __init__(
             self,
             name: str = "rate_limit_plugin",
+            *,
             enabled: bool = True,
             priority: int = 0,
             calls_per_second: float = 10.0,
@@ -340,6 +342,7 @@ class FlextApiPlugins(FlextModels):
         def __init__(
             self,
             name: str = "circuit_breaker_plugin",
+            *,
             enabled: bool = True,
             priority: int = 0,
             failure_threshold: int = 5,
@@ -448,10 +451,10 @@ class FlextApiPlugins(FlextModels):
             """Log error details."""
             if self.log_errors:
                 logger.error(
-                    f"HTTP Error: {method} {url}",
+                    f"HTTP Error: {_method} {_url}",
                     extra={
-                        "method": method,
-                        "url": url,
+                        "method": _method,
+                        "url": _url,
                         "error": str(error),
                         "error_type": type(error).__name__,
                     },

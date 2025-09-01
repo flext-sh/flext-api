@@ -172,6 +172,41 @@ class FlextApiApp(FlextModels.BaseConfig):
             return FlextResult[None].fail(f"Failed to run app: {e}")
 
 
+# =============================================================================
+# FACTORY FUNCTIONS - Following flext-core patterns
+# =============================================================================
+
+
+def create_flext_api_app(
+    title: str | None = None,
+    version: str | None = None,
+    description: str | None = None,
+) -> FastAPI:
+    """Create FastAPI app instance with default configuration.
+
+    Args:
+        title: Optional app title
+        version: Optional app version
+        description: Optional app description
+
+    Returns:
+        Configured FastAPI application instance
+
+    """
+    app_instance = FlextApiApp(
+        title=title or "FlextApi",
+        version=version or "0.9.0",
+        description=description or "HTTP Foundation Library",
+    )
+
+    app_result = app_instance.create_app()
+    if app_result.is_failure:
+        raise ValueError(f"Failed to create app: {app_result.error}")
+
+    return app_result.value
+
+
 __all__ = [
     "FlextApiApp",
+    "create_flext_api_app",
 ]

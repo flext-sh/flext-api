@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from urllib.parse import urlparse
+from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextResult, FlextUtilities
 
@@ -50,33 +50,47 @@ class FlextApiUtilities(FlextUtilities):
     class UrlValidator:
         """URL validation and normalization utilities."""
 
-        @staticmethod
-        def validate_url(url: str) -> FlextResult[str]:
+        @classmethod
+        def validate_url(cls, url: str) -> FlextResult[str]:
             """Validate URL format and structure."""
             try:
-                if not url or not isinstance(url, str):
-                    return FlextResult[str].fail("URL must be a non-empty string")
+                # Consolidated basic validations
+                validation_error = cls._validate_url_basics(url)
+                if validation_error:
+                    return FlextResult[str].fail(validation_error)
 
                 url = url.strip()
-                if not url:
-                    return FlextResult[str].fail("URL cannot be empty")
-
-                # Parse URL to validate structure
                 parsed = urlparse(url)
 
-                if not parsed.scheme:
-                    return FlextResult[str].fail("URL must include scheme (http/https)")
-
-                if parsed.scheme not in {"http", "https"}:
-                    return FlextResult[str].fail("URL scheme must be http or https")
-
-                if not parsed.netloc:
-                    return FlextResult[str].fail("URL must include hostname")
+                # Consolidated parsed URL validation
+                parsed_error = cls._validate_parsed_url(parsed)
+                if parsed_error:
+                    return FlextResult[str].fail(parsed_error)
 
                 return FlextResult[str].ok(url)
 
             except Exception as e:
                 return FlextResult[str].fail(f"URL validation failed: {e}")
+
+        @staticmethod
+        def _validate_url_basics(url: str) -> str | None:
+            """Validate basic URL requirements. Returns error message or None."""
+            if not url or not isinstance(url, str):
+                return "URL must be a non-empty string"
+            if not url.strip():
+                return "URL cannot be empty"
+            return None
+
+        @staticmethod
+        def _validate_parsed_url(parsed: ParseResult) -> str | None:
+            """Validate parsed URL structure. Returns error message or None."""
+            if not parsed.scheme:
+                return "URL must include scheme (http/https)"
+            if parsed.scheme not in {"http", "https"}:
+                return "URL scheme must be http or https"
+            if not parsed.netloc:
+                return "URL must include hostname"
+            return None
 
         @staticmethod
         def normalize_url(url: str) -> FlextResult[str]:
@@ -129,10 +143,10 @@ class FlextApiUtilities(FlextUtilities):
             """Custom JSON serializer for non-standard types."""
             if isinstance(obj, datetime):
                 return obj.isoformat()
-            if hasattr(obj, "model_dump"):  # Pydantic models
-                return obj.model_dump()  # type: ignore[attr-defined]
-            if hasattr(obj, "dict"):  # Legacy Pydantic models
-                return obj.dict()  # type: ignore[attr-defined]
+            if hasattr(obj, "model_dump") and callable(getattr(obj, "model_dump", None)):  # Pydantic models
+                return obj.model_dump()  # pyright: ignore[reportAttributeAccessIssue]
+            if hasattr(obj, "dict") and callable(getattr(obj, "dict", None)):  # Legacy Pydantic models
+                return obj.dict()  # pyright: ignore[reportAttributeAccessIssue]
             if hasattr(obj, "__dict__"):  # Generic objects
                 return obj.__dict__
             return str(obj)
