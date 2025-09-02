@@ -25,9 +25,7 @@ def enable_external_calls() -> None:
 @pytest.mark.asyncio
 async def test_real_http_get_request() -> None:
     """Test real HTTP GET request using httpbin.org."""
-    config = FlextApiClient(
-        base_url="https://httpbin.org", timeout=10.0, max_retries=2
-    )
+    config = FlextApiClient(base_url="https://httpbin.org", timeout=10.0, max_retries=2)
     client = FlextApiClient(config)
 
     try:
@@ -40,12 +38,15 @@ async def test_real_http_get_request() -> None:
             assert response.status_code == 200
 
         # If response has data, validate structure
-        if hasattr(response, "data") and response.data:
-            if isinstance(response.data, dict):
-                # For httpbin.org/get endpoint, response structure is:
-                # {"args": {"test_param": "test_value"}, "headers": {...}, ...}
-                if "args" in response.data:
-                    assert response.data["args"]["test_param"] == "test_value"
+        if (
+            hasattr(response, "data")
+            and response.data
+            and isinstance(response.data, dict)
+            and "args" in response.data
+        ):
+            # For httpbin.org/get endpoint, response structure is:
+            # {"args": {"test_param": "test_value"}, "headers": {...}, ...}
+            assert response.data["args"]["test_param"] == "test_value"
 
     finally:
         await client.close()

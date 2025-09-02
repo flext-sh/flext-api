@@ -98,15 +98,12 @@ class TestFlextApiConstants:
 
     def test_constants_all_required_present(self) -> None:
         """Test that all required constants are present."""
-        required_constants = [
-            "API_VERSION",
-            "CACHE_TTL",
-            "MAX_RETRIES",
-            "TIMEOUT"
-        ]
+        required_constants = ["API_VERSION", "CACHE_TTL", "MAX_RETRIES", "TIMEOUT"]
 
         for const_name in required_constants:
-            assert hasattr(FlextApiConstants, const_name), f"Missing constant: {const_name}"
+            assert hasattr(FlextApiConstants, const_name), (
+                f"Missing constant: {const_name}"
+            )
 
     def test_constants_nested_classes(self) -> None:
         """Test nested constant classes."""
@@ -114,6 +111,8 @@ class TestFlextApiConstants:
         nested_classes = ["HttpStatusRanges", "Client", "ContentTypes", "ApiConfig"]
 
         for class_name in nested_classes:
-            assert hasattr(FlextApiConstants, class_name), f"Missing nested class: {class_name}"
+            assert hasattr(FlextApiConstants, class_name), (
+                f"Missing nested class: {class_name}"
+            )
             nested_class = getattr(FlextApiConstants, class_name)
             assert isinstance(nested_class, type), f"{class_name} should be a class"

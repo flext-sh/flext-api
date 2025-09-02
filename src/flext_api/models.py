@@ -24,7 +24,7 @@ Python 3.13+ Features:
     - ConfigDict with strict validation settings
 
 Integration with flext-core:
-    - Extends FlextModels.BaseConfig for consistent configuration
+    - Extends FlextModels for consistent configuration
     - Uses FlextResult[T] for all factory methods and validation
     - Integrates with FlextLogger from flext-core
     - Follows entity/value object patterns from FlextModels
@@ -57,8 +57,8 @@ class FlextApiModels(FlextModels):
 
         - **HTTP Core Layer**: Request, Response, Headers, Session models
         - **Configuration Layer**: ClientConfig, RetryConfig, TimeoutConfig, PluginConfig
-        - **Domain Layer**: ApiEntity, HttpSession extending FlextModels.Entity
-        - **Value Objects Layer**: Url, StatusCode, Method extending FlextModels.Value
+        - **Domain Layer**: ApiEntity, HttpSession extending FlextModels
+        - **Value Objects Layer**: Url, StatusCode, Method extending FlextModels
         - **Primitive Validation**: RootModel classes for HTTP-specific primitives
         - **Builder Layer**: QueryBuilder, ResponseBuilder, RequestBuilder
         - **Factory Methods**: Creation methods returning FlextResult[T]
@@ -111,7 +111,7 @@ class FlextApiModels(FlextModels):
 
     Integration:
         Seamlessly integrates with flext-core foundation:
-        - Uses FlextModels.Entity and FlextModels.Value as base classes
+        - Uses FlextModels and FlextModels as base classes
         - Implements FlextResult[T] for all fallible operations
         - Follows FlextConstants for HTTP-specific constants
         - Uses get_logger() from flext-core for consistent logging
@@ -203,7 +203,7 @@ class FlextApiModels(FlextModels):
         root: int = Field(ge=1, le=65535, description="Valid network port")
 
     # =============================================================================
-    # HTTP DOMAIN ENTITIES (extending FlextModels.Entity)
+    # HTTP DOMAIN ENTITIES (extending FlextModels)
     # =============================================================================
 
     class HttpSession(FlextModels.Entity):
@@ -241,7 +241,7 @@ class FlextApiModels(FlextModels):
             return FlextResult[None].ok(None)
 
     # =============================================================================
-    # HTTP VALUE OBJECTS (extending FlextModels.Value)
+    # HTTP VALUE OBJECTS (extending FlextModels)
     # =============================================================================
 
     class HttpRequest(FlextModels.Value):
@@ -291,7 +291,11 @@ class FlextApiModels(FlextModels):
         @field_validator("status_code")
         @classmethod
         def validate_status_code(cls, v: int) -> int:
-            if not (FlextApiConstants.HttpStatus.CONTINUE <= v <= FlextApiConstants.HttpStatus.NETWORK_CONNECT_TIMEOUT_ERROR):
+            if not (
+                FlextApiConstants.HttpStatus.CONTINUE
+                <= v
+                <= FlextApiConstants.HttpStatus.NETWORK_CONNECT_TIMEOUT_ERROR
+            ):
                 msg = "Invalid HTTP status code"
                 raise ValueError(msg)
             return v
@@ -299,17 +303,29 @@ class FlextApiModels(FlextModels):
         @computed_field
         def is_success(self) -> bool:
             """Check if response indicates success."""
-            return FlextApiConstants.HttpStatus.OK <= self.status_code < FlextApiConstants.HttpStatus.MULTIPLE_CHOICES
+            return (
+                FlextApiConstants.HttpStatus.OK
+                <= self.status_code
+                < FlextApiConstants.HttpStatus.MULTIPLE_CHOICES
+            )
 
         @computed_field
         def is_client_error(self) -> bool:
             """Check if response indicates client error."""
-            return FlextApiConstants.HttpStatus.BAD_REQUEST <= self.status_code < FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR
+            return (
+                FlextApiConstants.HttpStatus.BAD_REQUEST
+                <= self.status_code
+                < FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR
+            )
 
         @computed_field
         def is_server_error(self) -> bool:
             """Check if response indicates server error."""
-            return FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR <= self.status_code < FlextApiConstants.HttpStatus.MAX_STATUS_CODE
+            return (
+                FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR
+                <= self.status_code
+                < FlextApiConstants.HttpStatus.MAX_STATUS_CODE
+            )
 
         def validate_business_rules(self) -> FlextResult[None]:
             """Validate HTTP response business rules."""
@@ -321,7 +337,7 @@ class FlextApiModels(FlextModels):
     # CONFIGURATION MODELS (extending BaseConfig)
     # =============================================================================
 
-    class ClientConfig(FlextModels.BaseConfig):
+    class ClientConfig(FlextModels.Value):
         """HTTP client configuration."""
 
         base_url: str = Field(..., description="Base URL for requests")
@@ -340,12 +356,26 @@ class FlextApiModels(FlextModels):
                 raise ValueError(msg)
             return v.rstrip("/")
 
-    class PluginConfig(FlextModels.BaseConfig):
+        def validate_business_rules(self) -> FlextResult[None]:
+            """Validate client configuration business rules."""
+            if self.timeout <= 0:
+                return FlextResult[None].fail("Timeout must be positive")
+            if self.max_retries < 0:
+                return FlextResult[None].fail("Max retries cannot be negative")
+            return FlextResult[None].ok(None)
+
+    class PluginConfig(FlextModels.Value):
         """Base plugin configuration."""
 
         name: str = Field(..., description="Plugin name")
         enabled: bool = Field(default=True)
         priority: int = Field(default=0)
+
+        def validate_business_rules(self) -> FlextResult[None]:
+            """Validate plugin configuration business rules."""
+            if not self.name.strip():
+                return FlextResult[None].fail("Plugin name cannot be empty")
+            return FlextResult[None].ok(None)
 
     class CacheConfig(PluginConfig):
         """Cache plugin configuration."""

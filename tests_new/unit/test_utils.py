@@ -57,10 +57,7 @@ class TestFlextUtils:
             page_size = 2
 
             response = FlextUtils.build_paginated_response(
-                items=items,
-                total=total,
-                page=page,
-                page_size=page_size
+                items=items, total=total, page=page, page_size=page_size
             )
 
             assert isinstance(response, dict)
@@ -81,7 +78,9 @@ class TestFlextUtils:
 
             # Invalid URL should fail
             result = FlextUtils.validate_url("invalid-url")
-            assert result is False or (hasattr(result, "success") and not result.success)
+            assert result is False or (
+                hasattr(result, "success") and not result.success
+            )
         else:
             pytest.skip("validate_url method not available")
 
@@ -101,11 +100,7 @@ class TestFlextUtils:
     def test_parse_config_method(self) -> None:
         """Test config parsing method if available."""
         if hasattr(FlextUtils, "parse_config"):
-            config_dict = {
-                "host": "localhost",
-                "port": 8000,
-                "debug": True
-            }
+            config_dict = {"host": "localhost", "port": 8000, "debug": True}
 
             result = FlextUtils.parse_config(config_dict)
 
@@ -122,7 +117,7 @@ class TestFlextUtils:
             headers = {
                 "Authorization": "Bearer secret123",
                 "Content-Type": "application/json",
-                "X-API-Key": "key123"
+                "X-API-Key": "key123",
             }
 
             sanitized = FlextUtils.sanitize_headers(headers)
@@ -160,7 +155,8 @@ class TestFlextUtils:
         """Test what utility methods are available."""
         # Get all public methods
         methods = [
-            attr for attr in dir(FlextUtils)
+            attr
+            for attr in dir(FlextUtils)
             if not attr.startswith("_") and callable(getattr(FlextUtils, attr, None))
         ]
 
@@ -173,7 +169,7 @@ class TestFlextUtils:
             "build_success_response",
             "build_paginated_response",
             "validate_url",
-            "format_timestamp"
+            "format_timestamp",
         ]
 
         # Check which expected methods are actually available
@@ -203,7 +199,8 @@ class TestFlextUtils:
 
         # Public methods should be documented
         public_methods = [
-            attr for attr in dir(FlextUtils)
+            attr
+            for attr in dir(FlextUtils)
             if not attr.startswith("_") and callable(getattr(FlextUtils, attr, None))
         ]
 

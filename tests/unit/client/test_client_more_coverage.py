@@ -8,9 +8,7 @@ import pytest
 
 from flext_api import (
     FlextApiClient,
-    FlextApiClient,
     FlextApiModels,
-    
 )
 
 
@@ -48,7 +46,7 @@ async def test_real_network_error_and_error_formatting() -> None:
 async def test_read_response_data_real_json_parsing() -> None:
     """Verify JSON parsing with real HTTP response."""
     # Use real httpbin.org service for JSON response parsing
-    client = FlextApiClient(base_url="https://httpbin.org"))
+    client = FlextApiClient(base_url="https://httpbin.org")
     await client.start()
 
     try:

@@ -26,7 +26,9 @@ class TestFlextApiPlugins:
     def test_plugin_base_class(self) -> None:
         """Test plugin base class availability."""
         # Should have a base plugin class or interface
-        assert hasattr(FlextApiPlugins, "BasePlugin") or hasattr(FlextApiPlugins, "Plugin")
+        assert hasattr(FlextApiPlugins, "BasePlugin") or hasattr(
+            FlextApiPlugins, "Plugin"
+        )
 
     def test_caching_plugin_creation(self) -> None:
         """Test caching plugin creation if available."""
@@ -48,8 +50,7 @@ class TestFlextApiPlugins:
         """Test circuit breaker plugin creation if available."""
         if hasattr(FlextApiPlugins, "CircuitBreakerPlugin"):
             plugin = FlextApiPlugins.CircuitBreakerPlugin(
-                failure_threshold=5,
-                recovery_timeout=30
+                failure_threshold=5, recovery_timeout=30
             )
 
             assert plugin.failure_threshold == 5
@@ -58,10 +59,12 @@ class TestFlextApiPlugins:
     def test_plugin_registry(self) -> None:
         """Test plugin registry functionality."""
         # Should have some way to register or manage plugins
-        assert hasattr(FlextApiPlugins, "registry") or \
-               hasattr(FlextApiPlugins, "register") or \
-               hasattr(FlextApiPlugins, "available_plugins") or \
-               hasattr(FlextApiPlugins, "__all__")
+        assert (
+            hasattr(FlextApiPlugins, "registry")
+            or hasattr(FlextApiPlugins, "register")
+            or hasattr(FlextApiPlugins, "available_plugins")
+            or hasattr(FlextApiPlugins, "__all__")
+        )
 
     def test_plugin_inheritance(self) -> None:
         """Test plugin inheritance from flext-core."""
@@ -79,9 +82,12 @@ class TestFlextApiPlugins:
         plugins_class = FlextApiPlugins
 
         # Should be instantiable or have nested classes
-        assert hasattr(plugins_class, "__init__") or \
-               any(hasattr(plugins_class, attr) and isinstance(getattr(plugins_class, attr), type)
-                   for attr in dir(plugins_class) if not attr.startswith("_"))
+        assert hasattr(plugins_class, "__init__") or any(
+            hasattr(plugins_class, attr)
+            and isinstance(getattr(plugins_class, attr), type)
+            for attr in dir(plugins_class)
+            if not attr.startswith("_")
+        )
 
     def test_available_plugin_types(self) -> None:
         """Test what plugin types are available."""
@@ -89,9 +95,10 @@ class TestFlextApiPlugins:
 
         # Get all class attributes that might be plugins
         potential_plugins = [
-            attr for attr in dir(plugins_class)
-            if not attr.startswith("_") and
-            isinstance(getattr(plugins_class, attr, None), type)
+            attr
+            for attr in dir(plugins_class)
+            if not attr.startswith("_")
+            and isinstance(getattr(plugins_class, attr, None), type)
         ]
 
         # Should have at least some plugin types available
@@ -109,8 +116,10 @@ class TestFlextApiPlugins:
 
         # Check if any nested classes have lifecycle methods
         nested_classes = [
-            getattr(plugins_class, attr) for attr in dir(plugins_class)
-            if not attr.startswith("_") and isinstance(getattr(plugins_class, attr, None), type)
+            getattr(plugins_class, attr)
+            for attr in dir(plugins_class)
+            if not attr.startswith("_")
+            and isinstance(getattr(plugins_class, attr, None), type)
         ]
 
         for nested_class in nested_classes:
@@ -141,8 +150,10 @@ class TestFlextApiPlugins:
 
         # Nested classes should also have documentation
         nested_classes = [
-            getattr(plugins_class, attr) for attr in dir(plugins_class)
-            if not attr.startswith("_") and isinstance(getattr(plugins_class, attr, None), type)
+            getattr(plugins_class, attr)
+            for attr in dir(plugins_class)
+            if not attr.startswith("_")
+            and isinstance(getattr(plugins_class, attr, None), type)
         ]
 
         for nested_class in nested_classes:

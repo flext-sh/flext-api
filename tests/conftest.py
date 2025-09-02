@@ -35,12 +35,14 @@ fake = Faker()
 Faker.seed(12345)
 
 # Environment setup for testing
-os.environ.update({
-    "FLEXT_API_TESTING": "true",
-    "FLEXT_DISABLE_EXTERNAL_CALLS": "0",  # ENABLE external calls for real testing
-    "ENVIRONMENT": "test",
-    "LOG_LEVEL": "INFO",
-})
+os.environ.update(
+    {
+        "FLEXT_API_TESTING": "true",
+        "FLEXT_DISABLE_EXTERNAL_CALLS": "0",  # ENABLE external calls for real testing
+        "ENVIRONMENT": "test",
+        "LOG_LEVEL": "INFO",
+    }
+)
 
 
 def pytest_configure(config: pytest.Config) -> None:

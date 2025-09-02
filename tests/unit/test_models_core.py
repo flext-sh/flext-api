@@ -49,9 +49,7 @@ class TestFlextApiModels:
 
     def test_client_config_creation_basic(self) -> None:
         """Test basic ClientConfig creation."""
-        config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com"
-        )
+        config = FlextApiModels.ClientConfig(base_url="https://api.example.com")
 
         assert config.base_url == "https://api.example.com"
         assert config.timeout == 30.0  # default
@@ -66,7 +64,7 @@ class TestFlextApiModels:
             base_url="https://api.test.com",
             timeout=60.0,
             max_retries=5,
-            headers=headers
+            headers=headers,
         )
 
         assert config.base_url == "https://api.test.com"
@@ -77,7 +75,11 @@ class TestFlextApiModels:
     def test_client_config_base_url_validation(self) -> None:
         """Test ClientConfig base_url validation."""
         # Valid URLs
-        for url in ["http://localhost", "https://api.example.com", "https://test.com:8080/api"]:
+        for url in [
+            "http://localhost",
+            "https://api.example.com",
+            "https://test.com:8080/api",
+        ]:
             config = FlextApiModels.ClientConfig(base_url=url)
             assert config.base_url == url
 
@@ -95,40 +97,33 @@ class TestFlextApiModels:
         """Test ClientConfig timeout validation."""
         # Valid timeout
         config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com",
-            timeout=45.0
+            base_url="https://api.example.com", timeout=45.0
         )
         assert config.timeout == 45.0
 
         # Invalid timeout should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiModels.ClientConfig(
-                base_url="https://api.example.com",
-                timeout=0.0
-            )
+            FlextApiModels.ClientConfig(base_url="https://api.example.com", timeout=0.0)
         assert "greater than 0" in str(exc_info.value)
 
     def test_client_config_max_retries_validation(self) -> None:
         """Test ClientConfig max_retries validation."""
         # Valid retries
         config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com",
-            max_retries=10
+            base_url="https://api.example.com", max_retries=10
         )
         assert config.max_retries == 10
 
         # Zero retries is valid
         config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com",
-            max_retries=0
+            base_url="https://api.example.com", max_retries=0
         )
         assert config.max_retries == 0
 
         # Negative retries should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.ClientConfig(
-                base_url="https://api.example.com",
-                max_retries=-1
+                base_url="https://api.example.com", max_retries=-1
             )
         assert "greater than or equal to 0" in str(exc_info.value)
 
@@ -141,7 +136,7 @@ class TestFlextApiModels:
             method=FlextApiModels.HttpMethod.POST,
             url="/api/test",
             headers=headers,
-            data=data
+            data=data,
         )
 
         assert request.method == FlextApiModels.HttpMethod.POST
@@ -153,17 +148,13 @@ class TestFlextApiModels:
         """Test ApiRequest URL validation."""
         # Valid URL
         request = FlextApiModels.ApiRequest(
-            method=FlextApiModels.HttpMethod.GET,
-            url="/api/users"
+            method=FlextApiModels.HttpMethod.GET, url="/api/users"
         )
         assert request.url == "/api/users"
 
         # Empty URL should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiModels.ApiRequest(
-                method=FlextApiModels.HttpMethod.GET,
-                url=""
-            )
+            FlextApiModels.ApiRequest(method=FlextApiModels.HttpMethod.GET, url="")
         assert "URL cannot be empty" in str(exc_info.value)
 
     def test_api_response_creation(self) -> None:
@@ -172,10 +163,7 @@ class TestFlextApiModels:
         data = {"result": "success"}
 
         response = FlextApiModels.ApiResponse(
-            status_code=200,
-            data=data,
-            headers=headers,
-            url="/api/test"
+            status_code=200, data=data, headers=headers, url="/api/test"
         )
 
         assert response.status_code == 200
@@ -187,19 +175,13 @@ class TestFlextApiModels:
         """Test ApiResponse status code validation."""
         # Valid status codes
         for code in [100, 200, 404, 500, 599]:
-            response = FlextApiModels.ApiResponse(
-                status_code=code,
-                url="/test"
-            )
+            response = FlextApiModels.ApiResponse(status_code=code, url="/test")
             assert response.status_code == code
 
         # Invalid status codes should raise ValidationError
         for code in [99, 600]:
             with pytest.raises(ValidationError):
-                FlextApiModels.ApiResponse(
-                    status_code=code,
-                    url="/test"
-                )
+                FlextApiModels.ApiResponse(status_code=code, url="/test")
 
     def test_api_response_status_properties(self) -> None:
         """Test ApiResponse status checking properties."""
@@ -240,7 +222,7 @@ class TestFlextApiModels:
             sort_by="created_at",
             sort_order="desc",
             page=2,
-            page_size=25
+            page_size=25,
         )
 
         assert builder.filters == filters
@@ -297,7 +279,7 @@ class TestFlextApiModels:
             sort_by="name",
             sort_order="asc",
             page=2,
-            page_size=25
+            page_size=25,
         )
 
         result = builder.to_query_params()
@@ -325,9 +307,7 @@ class TestFlextApiModels:
         data = {"id": 123, "name": "test"}
 
         builder = FlextApiModels.ResponseBuilder(
-            status_code=201,
-            data=data,
-            message="Created successfully"
+            status_code=201, data=data, message="Created successfully"
         )
 
         assert builder.status_code == 201
@@ -374,8 +354,7 @@ class TestFlextApiModels:
         assert isinstance(config, FlextApiModels.ClientConfig)
 
         request = FlextApiModels.ApiRequest(
-            method=FlextApiModels.HttpMethod.GET,
-            url="/test"
+            method=FlextApiModels.HttpMethod.GET, url="/test"
         )
         assert isinstance(request, FlextApiModels.ApiRequest)
 

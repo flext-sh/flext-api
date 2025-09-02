@@ -66,12 +66,12 @@ class TestFlextErrorsComprehensive:
 
     def test_error_exception_behavior(self) -> None:
         """Test errors behave as proper exceptions."""
+        msg = "Test error"
         with pytest.raises(FlextErrors.FlextApiError):
-            msg = "Test error"
             raise FlextErrors.FlextApiError(msg)
 
+        msg = "Invalid data"
         with pytest.raises(FlextErrors.ValidationError):
-            msg = "Invalid data"
             raise FlextErrors.ValidationError(msg)
 
     def test_multiple_error_instances(self) -> None:

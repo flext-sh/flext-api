@@ -42,7 +42,7 @@ class TestFlextApiModels:
             base_url="https://api.example.com",
             timeout=30.0,
             max_retries=3,
-            headers={"Authorization": "Bearer test"}
+            headers={"Authorization": "Bearer test"},
         )
 
         assert config.base_url == "https://api.example.com"
@@ -73,7 +73,7 @@ class TestFlextApiModels:
             method=FlextApiModels.HttpMethod.POST,
             url="https://api.example.com/users",
             headers={"Content-Type": "application/json"},
-            data={"name": "John", "email": "john@example.com"}
+            data={"name": "John", "email": "john@example.com"},
         )
 
         assert request.method == FlextApiModels.HttpMethod.POST
@@ -85,17 +85,13 @@ class TestFlextApiModels:
         """Test ApiRequest validation."""
         # Valid request should work
         request = FlextApiModels.ApiRequest(
-            method=FlextApiModels.HttpMethod.GET,
-            url="https://api.example.com"
+            method=FlextApiModels.HttpMethod.GET, url="https://api.example.com"
         )
         assert request.url == "https://api.example.com"
 
         # Empty URL should fail
         with pytest.raises(ValueError, match="URL cannot be empty"):
-            FlextApiModels.ApiRequest(
-                method=FlextApiModels.HttpMethod.GET,
-                url=""
-            )
+            FlextApiModels.ApiRequest(method=FlextApiModels.HttpMethod.GET, url="")
 
     def test_api_response_model(self) -> None:
         """Test ApiResponse model."""
@@ -103,7 +99,7 @@ class TestFlextApiModels:
             status_code=200,
             url="https://api.example.com/users",
             data={"id": 123, "name": "John"},
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
 
         assert response.status_code == 200
@@ -115,8 +111,7 @@ class TestFlextApiModels:
         """Test ApiResponse status properties."""
         # Success response
         success_response = FlextApiModels.ApiResponse(
-            status_code=200,
-            url="https://api.example.com"
+            status_code=200, url="https://api.example.com"
         )
         assert success_response.is_success is True
         assert success_response.is_client_error is False
@@ -124,8 +119,7 @@ class TestFlextApiModels:
 
         # Client error response
         client_error = FlextApiModels.ApiResponse(
-            status_code=400,
-            url="https://api.example.com"
+            status_code=400, url="https://api.example.com"
         )
         assert client_error.is_success is False
         assert client_error.is_client_error is True
@@ -133,8 +127,7 @@ class TestFlextApiModels:
 
         # Server error response
         server_error = FlextApiModels.ApiResponse(
-            status_code=500,
-            url="https://api.example.com"
+            status_code=500, url="https://api.example.com"
         )
         assert server_error.is_success is False
         assert server_error.is_client_error is False
@@ -147,7 +140,7 @@ class TestFlextApiModels:
             sort_by="created_at",
             sort_order="desc",
             page=2,
-            page_size=25
+            page_size=25,
         )
 
         assert query.filters["status"] == "active"
@@ -177,7 +170,7 @@ class TestFlextApiModels:
             sort_by="name",
             sort_order="asc",
             page=1,
-            page_size=10
+            page_size=10,
         )
 
         result = query.to_query_params()
@@ -194,8 +187,7 @@ class TestFlextApiModels:
     def test_response_builder_model(self) -> None:
         """Test ResponseBuilder model."""
         builder = FlextApiModels.ResponseBuilder(
-            status_code=201,
-            message="Resource created"
+            status_code=201, message="Resource created"
         )
 
         assert builder.status_code == 201
@@ -206,8 +198,7 @@ class TestFlextApiModels:
         builder = FlextApiModels.ResponseBuilder()
 
         result = builder.success(
-            data={"id": 123, "name": "Test"},
-            message="Operation successful"
+            data={"id": 123, "name": "Test"}, message="Operation successful"
         )
 
         assert result.success

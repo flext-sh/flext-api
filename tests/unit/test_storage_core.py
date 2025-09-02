@@ -29,9 +29,7 @@ class TestFlextAPIStorage:
     def test_storage_creation_custom(self) -> None:
         """Test storage creation with custom parameters."""
         storage = FlextApiStorage(
-            storage_name="CustomStorage",
-            default_ttl=600,
-            max_size=500
+            storage_name="CustomStorage", default_ttl=600, max_size=500
         )
 
         assert storage.storage_name == "CustomStorage"

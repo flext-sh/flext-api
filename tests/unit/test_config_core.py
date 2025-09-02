@@ -48,7 +48,7 @@ class TestFlextApiConfig:
             base_url="https://api.example.com",
             cors_origins=["https://example.com"],
             cors_methods=["GET", "POST"],
-            cors_headers=["Authorization", "Content-Type"]
+            cors_headers=["Authorization", "Content-Type"],
         )
 
         assert config.host == "0.0.0.0"
@@ -129,7 +129,11 @@ class TestFlextApiConfig:
     def test_config_base_url_validation(self) -> None:
         """Test base_url validation."""
         # Valid URLs
-        for url in ["http://localhost:8000", "https://api.example.com", "https://test.com:443"]:
+        for url in [
+            "http://localhost:8000",
+            "https://api.example.com",
+            "https://test.com:443",
+        ]:
             config = FlextApiConfig(base_url=url)
             assert config.base_url == url
 
@@ -145,12 +149,7 @@ class TestFlextApiConfig:
 
     def test_get_server_config(self) -> None:
         """Test getting server configuration."""
-        config = FlextApiConfig(
-            host="0.0.0.0",
-            port=8080,
-            workers=2,
-            debug=True
-        )
+        config = FlextApiConfig(host="0.0.0.0", port=8080, workers=2, debug=True)
 
         result = config.get_server_config()
         assert_flext_result_success(result)
@@ -165,9 +164,7 @@ class TestFlextApiConfig:
     def test_get_client_config(self) -> None:
         """Test getting client configuration."""
         config = FlextApiConfig(
-            base_url="https://api.test.com",
-            default_timeout=45.0,
-            max_retries=5
+            base_url="https://api.test.com", default_timeout=45.0, max_retries=5
         )
 
         result = config.get_client_config()
@@ -184,7 +181,7 @@ class TestFlextApiConfig:
         config = FlextApiConfig(
             cors_origins=["https://example.com", "https://test.com"],
             cors_methods=["GET", "POST", "PUT"],
-            cors_headers=["Authorization", "Content-Type"]
+            cors_headers=["Authorization", "Content-Type"],
         )
 
         result = config.get_cors_config()
@@ -192,7 +189,10 @@ class TestFlextApiConfig:
 
         cors_config = result.data
         assert isinstance(cors_config, dict)
-        assert cors_config["allow_origins"] == ["https://example.com", "https://test.com"]
+        assert cors_config["allow_origins"] == [
+            "https://example.com",
+            "https://test.com",
+        ]
         assert cors_config["allow_methods"] == ["GET", "POST", "PUT"]
         assert cors_config["allow_headers"] == ["Authorization", "Content-Type"]
         assert cors_config["allow_credentials"] is True
@@ -227,7 +227,7 @@ class TestFlextApiConfig:
             "host": "api.example.com",
             "port": 9000,
             "debug": True,
-            "default_timeout": 120.0
+            "default_timeout": 120.0,
         }
 
         config = FlextApiConfig(**data)

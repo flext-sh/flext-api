@@ -76,10 +76,7 @@ class TestFlextUtils:
         data = [{"id": 1}, {"id": 2}, {"id": 3}]
 
         response = FlextUtils.build_paginated_response(
-            data=data,
-            total=25,
-            page=3,
-            page_size=10
+            data=data, total=25, page=3, page_size=10
         )
 
         assert isinstance(response, dict)
@@ -123,10 +120,7 @@ class TestFlextUtils:
         data = [{"id": i} for i in range(20)]
 
         response = FlextUtils.build_paginated_response(
-            data=data,
-            total=1000,
-            page=5,
-            page_size=20
+            data=data, total=1000, page=5, page_size=20
         )
 
         pagination = response["pagination"]
@@ -141,7 +135,7 @@ class TestFlextUtils:
             "http://localhost",
             "http://localhost:8000",
             "http://example.com",
-            "http://api.example.com/v1/users"
+            "http://api.example.com/v1/users",
         ]
 
         for url in urls:
@@ -156,7 +150,7 @@ class TestFlextUtils:
             "https://localhost:8443",
             "https://example.com",
             "https://api.example.com/v1/users",
-            "https://secure.api.test.com:9000/api"
+            "https://secure.api.test.com:9000/api",
         ]
 
         for url in urls:
@@ -171,7 +165,7 @@ class TestFlextUtils:
 
     def test_validate_url_none_failure(self) -> None:
         """Test URL validation failure with None."""
-        result = FlextUtils.validate_url(None)  # type: ignore[arg-type]
+        result = FlextUtils.validate_url(None)
         assert_flext_result_failure(result, "Invalid URL format")
 
     def test_validate_url_non_string_failure(self) -> None:
@@ -179,7 +173,7 @@ class TestFlextUtils:
         invalid_inputs = [123, [], {}, True]
 
         for invalid_input in invalid_inputs:
-            result = FlextUtils.validate_url(invalid_input)  # type: ignore[arg-type]
+            result = FlextUtils.validate_url(invalid_input)
             assert_flext_result_failure(result, "Invalid URL format")
 
     def test_validate_url_invalid_scheme_failure(self) -> None:
@@ -190,22 +184,24 @@ class TestFlextUtils:
             "mailto:user@example.com",
             "example.com",
             "www.example.com",
-            "//example.com"
+            "//example.com",
         ]
 
         for url in invalid_urls:
             result = FlextUtils.validate_url(url)
-            assert_flext_result_failure(result, "URL must start with http:// or https://")
+            assert_flext_result_failure(
+                result, "URL must start with http:// or https://"
+            )
 
     def test_validate_url_whitespace_failure(self) -> None:
         """Test URL validation failure with whitespace."""
         # These should fail because they don't start with http/https or are just whitespace
         failing_urls = [
             "   ",  # just spaces
-            "\t",   # just tab
-            "\n",   # just newline
+            "\t",  # just tab
+            "\n",  # just newline
             " http://example.com",  # starts with space, not http
-            " http://example.com "  # starts with space, not http
+            " http://example.com ",  # starts with space, not http
         ]
 
         for url in failing_urls:

@@ -13,10 +13,10 @@ from packaging.version import Version
 
 import flext_api
 from flext_api import (
-    FLEXT_API_VERSION as __version__,
-    FLEXT_API_VERSION as main_version,
-    FLEXT_API_VERSION as reimported_version,
-    FLEXT_API_VERSION as version2,
+    FLEXT_API_VERSION as MAIN_VERSION,
+    FLEXT_API_VERSION as REIMPORTED_VERSION,
+    FLEXT_API_VERSION as VERSION2,
+    FLEXT_API_VERSION as VERSION_CONSTANT,
 )
 
 
@@ -25,23 +25,23 @@ class TestVersionModule:
 
     def test_version_import(self) -> None:
         """Test that version can be imported."""
-        # flext_api uses main package version, not separate __version__ module
+        # flext_api uses main package version, not separate VERSION_CONSTANT module
 
-        assert __version__ is not None
-        assert isinstance(__version__, str)
-        if __version__ != "0.9.0":
-            msg = f"Expected {'0.9.0'}, got {__version__}"
+        assert VERSION_CONSTANT is not None
+        assert isinstance(VERSION_CONSTANT, str)
+        if VERSION_CONSTANT != "0.9.0":
+            msg = f"Expected {'0.9.0'}, got {VERSION_CONSTANT}"
             raise AssertionError(msg)
 
     def test_version_format(self) -> None:
         """Test that version follows semantic versioning format."""
-        assert isinstance(__version__, str)
-        assert len(__version__.strip()) > 0
+        assert isinstance(VERSION_CONSTANT, str)
+        assert len(VERSION_CONSTANT.strip()) > 0
 
         # Should have at least X.Y.Z format
-        parts = __version__.strip().split(".")
+        parts = VERSION_CONSTANT.strip().split(".")
         if len(parts) < 3:
-            msg = f"Expected {len(parts)} >= 3, Version {__version__} should have at least 3 parts"
+            msg = f"Expected {len(parts)} >= 3, Version {VERSION_CONSTANT} should have at least 3 parts"
             raise AssertionError(
                 msg,
             )
@@ -53,27 +53,27 @@ class TestVersionModule:
     def test_version_constants(self) -> None:
         """Test version module constants."""
         # Should be a proper version string
-        assert isinstance(__version__, str)
-        assert len(__version__) > 0
+        assert isinstance(VERSION_CONSTANT, str)
+        assert len(VERSION_CONSTANT) > 0
 
         # Should match expected format
 
         version_pattern = r"^\d+\.\d+\.\d+(?:[-+].+)?$"
-        assert re.match(version_pattern, __version__), (
-            f"Invalid version format: {__version__}"
+        assert re.match(version_pattern, VERSION_CONSTANT), (
+            f"Invalid version format: {VERSION_CONSTANT}"
         )
 
     def test_version_comparison(self) -> None:
         """Test that version can be compared."""
         # Should be comparable to string
-        if __version__ < "0.0.0":
-            msg = f"Expected {__version__} >= {'0.0.0'}"
+        if VERSION_CONSTANT < "0.0.0":
+            msg = f"Expected {VERSION_CONSTANT} >= {'0.0.0'}"
             raise AssertionError(msg)
-        assert __version__ != ""
+        assert VERSION_CONSTANT != ""
 
         # Should be a valid version string for packaging
         try:
-            parsed_version = Version(__version__)
+            parsed_version = Version(VERSION_CONSTANT)
             assert parsed_version is not None
         except ImportError:
             # packaging module not available, skip this test
@@ -81,11 +81,11 @@ class TestVersionModule:
 
     def test_version_metadata(self) -> None:
         """Test additional version metadata if available."""
-        # flext_api doesn't use separate __version__ module with metadata
+        # flext_api doesn't use separate VERSION_CONSTANT module with metadata
         # Just verify the main version exists
 
-        assert __version__ is not None
-        assert isinstance(__version__, str)
+        assert VERSION_CONSTANT is not None
+        assert isinstance(VERSION_CONSTANT, str)
 
         # Optional: Check if main module has other metadata
 
@@ -96,11 +96,11 @@ class TestVersionModule:
 
     def test_version_module_structure(self) -> None:
         """Test version module structure."""
-        # flext_api doesn't use separate __version__ module
+        # flext_api doesn't use separate VERSION_CONSTANT module
         # Test the main module structure instead
 
-        # Should have __version__ attribute
-        assert hasattr(flext_api, "__version__")
+        # Should have VERSION_CONSTANT attribute
+        assert hasattr(flext_api, "VERSION_CONSTANT")
 
         # Should be a proper module
         assert hasattr(flext_api, "__name__")
@@ -113,31 +113,33 @@ class TestVersionModule:
         # Import from main package
         # Version should be consistent on multiple imports
 
-        if main_version != version2:  # Version should be consistent on reimport
-            msg = f"Expected {version2}, got {main_version}"
+        if MAIN_VERSION != VERSION2:  # Version should be consistent on reimport
+            msg = f"Expected {VERSION2}, got {MAIN_VERSION}"
             raise AssertionError(msg)
 
         # Check direct access
 
-        if flext_api.__version__ != main_version:  # Direct access should match import
-            msg = f"Expected {main_version}, got {flext_api.__version__}"
+        if (
+            flext_api.VERSION_CONSTANT != MAIN_VERSION
+        ):  # Direct access should match import
+            msg = f"Expected {MAIN_VERSION}, got {flext_api.VERSION_CONSTANT}"
             raise AssertionError(
                 msg,
             )
 
     def test_version_immutability(self) -> None:
         """Test that version cannot be easily modified."""
-        original_version = __version__
+        original_version = VERSION_CONSTANT
 
         # Attempting to modify should not affect the original
         # (This is more about documentation than enforcement)
-        modified_version = __version__ + "-modified"
-        assert modified_version != original_version
+        modified_version = VERSION_CONSTANT + "-modified"
+        assert original_version != modified_version
 
         # Re-import should still have original version
 
-        if reimported_version != original_version:
-            msg = f"Expected {original_version}, got {reimported_version}"
+        if original_version != REIMPORTED_VERSION:
+            msg = f"Expected {original_version}, got {REIMPORTED_VERSION}"
             raise AssertionError(
                 msg,
             )
@@ -153,8 +155,8 @@ class TestVersionModule:
 
     def test_version_attributes_types(self) -> None:
         """Test that version attributes have correct types."""
-        # __version__ must be string
-        assert isinstance(__version__, str)
+        # VERSION_CONSTANT must be string
+        assert isinstance(VERSION_CONSTANT, str)
 
         # Test other optional attributes from main module
 
@@ -176,8 +178,8 @@ class TestVersionModule:
     def test_version_export_consistency(self) -> None:
         """Test that version is properly exported from main package."""
         # Should be able to access version from main package
-        assert hasattr(flext_api, "__version__")
-        version = flext_api.__version__
+        assert hasattr(flext_api, "VERSION_CONSTANT")
+        version = flext_api.VERSION_CONSTANT
 
         assert isinstance(version, str)
         assert len(version) > 0

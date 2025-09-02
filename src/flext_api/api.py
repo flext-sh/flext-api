@@ -29,7 +29,7 @@ Result = dict[str, object]
 logger = FlextLogger(__name__)
 
 
-class FlextApi(FlextModels.BaseConfig):
+class FlextApi(FlextModels):
     """Main API class providing HTTP client and builder functionality.
 
     Single class following FLEXT patterns with FlextResult for all operations.

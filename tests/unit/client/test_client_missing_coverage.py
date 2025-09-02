@@ -11,10 +11,7 @@ import pytest
 
 from flext_api import (
     FlextApiClient,
-    FlextApiClient,
     FlextApiModels,
-    
-    
     FlextApiPlugin,
     client,
     create_client,
@@ -36,8 +33,8 @@ class TestMissingClientCoverage:
         class TestPlugin(FlextApiPlugin):
             async def after_request(
                 self,
-                _request: 
-                response: 
+                _request: FlextApiModels.ApiRequest,
+                response: FlextApiModels.ApiResponse,
             ) -> FlextApiModels.ApiResponse:
                 # Process response properly
                 return response
@@ -63,7 +60,7 @@ class TestMissingClientCoverage:
         class TestPlugin(FlextApiPlugin):
             async def on_error(
                 self,
-                _request: 
+                _request: FlextApiModels.ApiRequest,
                 error: Exception,
             ) -> Exception:
                 # Process error properly

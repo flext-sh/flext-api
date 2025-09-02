@@ -35,8 +35,7 @@ class TestMissingCoverage:
 
         # Test ApiRequest creation
         request = models.ApiRequest(
-            method=models.HttpMethod.POST,
-            url="https://api.example.com/data"
+            method=models.HttpMethod.POST, url="https://api.example.com/data"
         )
         assert request.method == models.HttpMethod.POST
         assert request.url == "https://api.example.com/data"

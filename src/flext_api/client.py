@@ -31,11 +31,11 @@ Result = dict[str, object]
 logger = FlextLogger(__name__)
 
 
-class FlextApiClient(FlextModels.BaseConfig):
+class FlextApiClient(FlextModels):
     """Single HTTP client class following FLEXT architectural patterns.
 
     Provides comprehensive HTTP client functionality with:
-    - Inherits from FlextModels.BaseConfig for type safety
+    - Inherits from FlextModels for type safety
     - FlextResult for all operations - zero exceptions
     - Global dependency injection container
     - Type-safe configuration
@@ -71,12 +71,14 @@ class FlextApiClient(FlextModels.BaseConfig):
 
     def get_info(self) -> FlextResult[Result]:
         """Get client information - returns FlextResult, never raises."""
-        return FlextResult[Result].ok({
-            "client": "FlextApiClient",
-            "base_url": self.base_url,
-            "status": "ready",
-            "has_session": self._session is not None,
-        })
+        return FlextResult[Result].ok(
+            {
+                "client": "FlextApiClient",
+                "base_url": self.base_url,
+                "status": "ready",
+                "has_session": self._session is not None,
+            }
+        )
 
     async def get(self, path: str) -> FlextResult[Response]:
         """Perform HTTP GET request - returns FlextResult, never raises."""
@@ -92,21 +94,21 @@ class FlextApiClient(FlextModels.BaseConfig):
                     )
 
             if self._session is None:  # Should not happen, but safety check
-                return FlextResult[Response].fail(
-                    "Session not initialized"
-                )
+                return FlextResult[Response].fail("Session not initialized")
             async with self._session.get(url) as response:
                 if response.content_type == "application/json":
                     data = await response.json()
                 else:
                     data = await response.text()
 
-                return FlextResult[Response].ok({
-                    "status_code": response.status,
-                    "data": data,
-                    "headers": dict(response.headers),
-                    "url": str(response.url),
-                })
+                return FlextResult[Response].ok(
+                    {
+                        "status_code": response.status,
+                        "data": data,
+                        "headers": dict(response.headers),
+                        "url": str(response.url),
+                    }
+                )
 
         except Exception as e:
             logger.exception(
@@ -132,21 +134,21 @@ class FlextApiClient(FlextModels.BaseConfig):
                     )
 
             if self._session is None:  # Should not happen, but safety check
-                return FlextResult[Response].fail(
-                    "Session not initialized"
-                )
+                return FlextResult[Response].fail("Session not initialized")
             async with self._session.post(url, json=data) as response:
                 if response.content_type == "application/json":
                     response_data = await response.json()
                 else:
                     response_data = await response.text()
 
-                return FlextResult[Response].ok({
-                    "status_code": response.status,
-                    "data": response_data,
-                    "headers": dict(response.headers),
-                    "url": str(response.url),
-                })
+                return FlextResult[Response].ok(
+                    {
+                        "status_code": response.status,
+                        "data": response_data,
+                        "headers": dict(response.headers),
+                        "url": str(response.url),
+                    }
+                )
 
         except Exception as e:
             logger.exception(
@@ -172,21 +174,21 @@ class FlextApiClient(FlextModels.BaseConfig):
                     )
 
             if self._session is None:  # Should not happen, but safety check
-                return FlextResult[Response].fail(
-                    "Session not initialized"
-                )
+                return FlextResult[Response].fail("Session not initialized")
             async with self._session.put(url, json=data) as response:
                 if response.content_type == "application/json":
                     response_data = await response.json()
                 else:
                     response_data = await response.text()
 
-                return FlextResult[Response].ok({
-                    "status_code": response.status,
-                    "data": response_data,
-                    "headers": dict(response.headers),
-                    "url": str(response.url),
-                })
+                return FlextResult[Response].ok(
+                    {
+                        "status_code": response.status,
+                        "data": response_data,
+                        "headers": dict(response.headers),
+                        "url": str(response.url),
+                    }
+                )
 
         except Exception as e:
             logger.exception(
@@ -208,21 +210,21 @@ class FlextApiClient(FlextModels.BaseConfig):
                     )
 
             if self._session is None:  # Should not happen, but safety check
-                return FlextResult[Response].fail(
-                    "Session not initialized"
-                )
+                return FlextResult[Response].fail("Session not initialized")
             async with self._session.delete(url) as response:
                 if response.content_type == "application/json":
                     response_data = await response.json()
                 else:
                     response_data = await response.text()
 
-                return FlextResult[Response].ok({
-                    "status_code": response.status,
-                    "data": response_data,
-                    "headers": dict(response.headers),
-                    "url": str(response.url),
-                })
+                return FlextResult[Response].ok(
+                    {
+                        "status_code": response.status,
+                        "data": response_data,
+                        "headers": dict(response.headers),
+                        "url": str(response.url),
+                    }
+                )
 
         except Exception as e:
             logger.exception(

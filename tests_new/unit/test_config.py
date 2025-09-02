@@ -39,7 +39,7 @@ class TestFlextApiConfig:
             debug=True,
             default_timeout=60.0,
             max_retries=5,
-            base_url="https://api.example.com"
+            base_url="https://api.example.com",
         )
 
         assert config.host == "0.0.0.0"
@@ -135,9 +135,7 @@ class TestFlextApiConfig:
     def test_config_get_client_config(self) -> None:
         """Test get_client_config method."""
         config = FlextApiConfig(
-            base_url="https://api.example.com",
-            default_timeout=45.0,
-            max_retries=5
+            base_url="https://api.example.com", default_timeout=45.0, max_retries=5
         )
 
         result = config.get_client_config()
@@ -153,7 +151,7 @@ class TestFlextApiConfig:
         config = FlextApiConfig(
             cors_origins=["http://localhost:3000"],
             cors_methods=["GET", "POST"],
-            cors_headers=["Content-Type"]
+            cors_headers=["Content-Type"],
         )
 
         result = config.get_cors_config()

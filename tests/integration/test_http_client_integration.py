@@ -26,10 +26,12 @@ class TestHttpClientIntegration:
         """Test real HTTP request with httpbin.org."""
         # Create client using modern API
         api = create_flext_api()
-        client_result = api.create_client({
-            "base_url": "https://httpbin.org",
-            "timeout": 10.0,
-        })
+        client_result = api.create_client(
+            {
+                "base_url": "https://httpbin.org",
+                "timeout": 10.0,
+            }
+        )
         assert client_result.success
         client = client_result.data
 
@@ -52,10 +54,9 @@ class TestHttpClientIntegration:
 
         # Create client using modern API
         api = create_flext_api()
-        client_result = api.create_client({
-            "base_url": "https://httpbin.org",
-            "timeout": 10.0
-        })
+        client_result = api.create_client(
+            {"base_url": "https://httpbin.org", "timeout": 10.0}
+        )
         assert client_result.success
         client = client_result.data
 
@@ -78,10 +79,12 @@ class TestHttpClientIntegration:
         """Test POST request with JSON data."""
         # Create client using modern API
         api = create_flext_api()
-        client_result = api.create_client({
-            "base_url": "https://httpbin.org",
-            "timeout": 10.0,
-        })
+        client_result = api.create_client(
+            {
+                "base_url": "https://httpbin.org",
+                "timeout": 10.0,
+            }
+        )
         assert client_result.success
         client = client_result.data
 
@@ -99,10 +102,12 @@ class TestHttpClientIntegration:
         """Test client as async context manager."""
         # Create client using modern API
         api = create_flext_api()
-        client_result = api.create_client({
-            "base_url": "https://httpbin.org",
-            "timeout": 10.0,
-        })
+        client_result = api.create_client(
+            {
+                "base_url": "https://httpbin.org",
+                "timeout": 10.0,
+            }
+        )
         assert client_result.success
         client = client_result.data
 

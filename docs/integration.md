@@ -403,7 +403,7 @@ Integration with flext-ldap for directory services.
 
 ```python
 from flext_api import create_flext_api
-from flext_ldap import FlextLdapClient
+from flext_ldap import FlextLDAPClient
 from flext_core import FlextLogger, FlextResult
 from typing import Dict, object
 
@@ -414,7 +414,7 @@ class LdapApiIntegration:
 
     def __init__(self, ldap_config: Dict[str, object]):
         self.api = create_flext_api()
-        self.ldap_client = FlextLdapClient(ldap_config)
+        self.ldap_client = FlextLDAPClient(ldap_config)
 
     def authenticate_api_request(self, username: str, password: str) -> FlextResult[Dict[str, object]]:
         """Authenticate API request against LDAP directory."""

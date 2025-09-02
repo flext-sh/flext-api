@@ -29,11 +29,11 @@ Result = dict[str, object]
 logger = FlextLogger(__name__)
 
 
-class FlextApiApp(FlextModels.BaseConfig):
+class FlextApiApp(FlextModels):
     """FastAPI application following FLEXT patterns.
 
     Provides web interface for API operations with:
-    - Inherits from FlextModels.BaseConfig for type safety
+    - Inherits from FlextModels for type safety
     - FlextResult for all operations - zero exceptions
     - Global dependency injection container
     - FastAPI integration with middleware
@@ -63,13 +63,15 @@ class FlextApiApp(FlextModels.BaseConfig):
 
     def get_info(self) -> FlextResult[Result]:
         """Get app information - returns FlextResult, never raises."""
-        return FlextResult[Result].ok({
-            "app": "FlextApiApp",
-            "app_name": self.app_name,
-            "version": self.app_version,
-            "debug": self.debug,
-            "has_fastapi_app": self._fastapi_app is not None,
-        })
+        return FlextResult[Result].ok(
+            {
+                "app": "FlextApiApp",
+                "app_name": self.app_name,
+                "version": self.app_version,
+                "debug": self.debug,
+                "has_fastapi_app": self._fastapi_app is not None,
+            }
+        )
 
     def create_app(self) -> FlextResult[FastAPI]:
         """Create FastAPI application - returns FlextResult, never raises."""
@@ -201,7 +203,8 @@ def create_flext_api_app(
 
     app_result = app_instance.create_app()
     if app_result.is_failure:
-        raise ValueError(f"Failed to create app: {app_result.error}")
+        msg = f"Failed to create app: {app_result.error}"
+        raise ValueError(msg)
 
     return app_result.value
 

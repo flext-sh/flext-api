@@ -12,9 +12,6 @@ import pytest
 from flext_api import (
     FlextApi,
     FlextApiClient,
-    FlextApiClient,
-    
-    
     FlextApiPlugin,
     FlextApiQueryBuilder,
     FlextApiResponseBuilder,
@@ -23,6 +20,7 @@ from flext_api import (
     create_flext_api,
     create_memory_storage,
 )
+from flext_api.models import FlextApiModels
 
 # Constants
 EXPECTED_BULK_SIZE = 2
@@ -282,7 +280,7 @@ class TestFunctionalExamples:
 
             async def before_request(
                 self,
-                request: 
+                request: FlextApiModels.ApiRequest,
             ) -> FlextApiModels.ApiRequest:
                 # Add custom header
                 if request.headers is None:
@@ -293,7 +291,8 @@ class TestFunctionalExamples:
 
             async def after_request(
                 self,
-                request_or_response: FlextApiModels.ApiRequest | FlextApiModels.ApiResponse,
+                request_or_response: FlextApiModels.ApiRequest
+                | FlextApiModels.ApiResponse,
                 response: FlextApiModels.ApiResponse | None = None,
             ) -> FlextApiModels.ApiResponse:
                 # Handle both signatures

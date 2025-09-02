@@ -24,7 +24,9 @@ async def test_client_request_pipeline_success() -> None:
     client = FlextApiClient(config)
 
     request = FlextApiModels.ApiRequest(
-        id="test_req", method=FlextApiModels.HttpMethod.GET, url="https://httpbin.org/get"
+        id="test_req",
+        method=FlextApiModels.HttpMethod.GET,
+        url="https://httpbin.org/get",
     )
 
     # Test the basic request pipeline
@@ -125,7 +127,9 @@ async def test_client_request_validation() -> None:
 
     # Valid request
     valid_request = FlextApiModels.ApiRequest(
-        id="test_req", method=FlextApiModels.HttpMethod.GET, url="https://httpbin.org/get"
+        id="test_req",
+        method=FlextApiModels.HttpMethod.GET,
+        url="https://httpbin.org/get",
     )
     assert valid_request.method == "GET"
     assert valid_request.url == "https://httpbin.org/get"
@@ -173,7 +177,9 @@ async def test_client_lifecycle_with_requests() -> None:
 
     # Make a request during lifecycle
     request = FlextApiModels.ApiRequest(
-        id="test_req", method=FlextApiModels.HttpMethod.GET, url="https://httpbin.org/uuid"
+        id="test_req",
+        method=FlextApiModels.HttpMethod.GET,
+        url="https://httpbin.org/uuid",
     )
     result = await client._perform_http_request(request)
 
