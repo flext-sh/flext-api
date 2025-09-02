@@ -11,7 +11,7 @@ Module Role in Architecture:
 Classes and Methods:
     FlextApiPlugins:                        # Hierarchical HTTP client plugin system
         # Base Plugin Classes:
-        BasePlugin(FlextModels.BaseConfig)  # Base plugin interface
+        BasePlugin(FlextModels)  # Base plugin interface
         AsyncPlugin(BasePlugin)             # Async plugin base class
 
         # Core Plugin Implementations:
@@ -49,7 +49,7 @@ class FlextApiPlugins(FlextModels):
     as nested classes. Follows the single-class-per-module pattern rigorously.
     """
 
-    class BasePlugin(FlextModels.BaseConfig, ABC):
+    class BasePlugin(FlextModels.Entity, ABC):
         """Base plugin class for HTTP client extensions."""
 
         name: str = Field(default="base_plugin", description="Plugin name")
@@ -85,7 +85,9 @@ class FlextApiPlugins(FlextModels):
         def __init__(
             self, name: str = "AsyncPlugin", *, enabled: bool = True, priority: int = 0
         ) -> None:
-            super().__init__(name=name, enabled=enabled, priority=priority)
+            super().__init__(
+                id=f"plugin_{name}", name=name, enabled=enabled, priority=priority
+            )
             self._started = False
             self._lock = asyncio.Lock()
 
@@ -200,7 +202,11 @@ class FlextApiPlugins(FlextModels):
         ) -> FlextResult[object]:
             """Cache successful responses."""
             # Only cache successful GET responses
-            if FlextApiConstants.HttpStatus.OK <= _status_code < FlextApiConstants.HttpStatus.MULTIPLE_CHOICES:
+            if (
+                FlextApiConstants.HttpStatus.OK
+                <= _status_code
+                < FlextApiConstants.HttpStatus.MULTIPLE_CHOICES
+            ):
                 # Cache key would need to be reconstructed or passed from before_request
                 # For simplicity, we'll use a basic caching strategy here
                 logger.debug("Caching response data")
@@ -379,7 +385,11 @@ class FlextApiPlugins(FlextModels):
             self, response_data: object, _headers: dict[str, str], _status_code: int
         ) -> FlextResult[object]:
             """Update circuit breaker state after response."""
-            if FlextApiConstants.HttpStatus.OK <= _status_code < FlextApiConstants.HttpStatus.MULTIPLE_CHOICES:
+            if (
+                FlextApiConstants.HttpStatus.OK
+                <= _status_code
+                < FlextApiConstants.HttpStatus.MULTIPLE_CHOICES
+            ):
                 # Success - reset failure count
                 if self._state == "half-open":
                     self._state = "closed"

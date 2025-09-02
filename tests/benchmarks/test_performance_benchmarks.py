@@ -35,7 +35,10 @@ class TestAPIPerformanceBenchmarks:
         assert result is not None
 
     def test_query_building_benchmark(
-        self, benchmark: Callable[[Callable[[], FlextApiModels.QueryBuilder]], FlextApiModels.QueryBuilder]
+        self,
+        benchmark: Callable[
+            [Callable[[], FlextApiModels.QueryBuilder]], FlextApiModels.QueryBuilder
+        ],
     ) -> None:
         """Benchmark query building operations."""
 
@@ -63,7 +66,7 @@ class TestAPIPerformanceBenchmarks:
             builder = models.ResponseBuilder()
             response_result = builder.success(
                 data={"items": list(range(100)), "total": 100},
-                message="Data retrieved successfully"
+                message="Data retrieved successfully",
             )
             return response_result.data if response_result.success else None
 
@@ -110,12 +113,18 @@ class TestAPIPerformanceBenchmarks:
 
         def create_configured_client() -> FlextApiClient:
             api = create_flext_api()
-            client_result = api.create_client({
-                "base_url": "https://api.example.com",
-                "timeout": 30.0,
-                "max_retries": 3,
-            })
-            return client_result.data if client_result.success else FlextApiClient(base_url="https://fallback.com")
+            client_result = api.create_client(
+                {
+                    "base_url": "https://api.example.com",
+                    "timeout": 30.0,
+                    "max_retries": 3,
+                }
+            )
+            return (
+                client_result.data
+                if client_result.success
+                else FlextApiClient(base_url="https://fallback.com")
+            )
 
         result = benchmark(create_configured_client)
         assert result is not None
@@ -123,7 +132,10 @@ class TestAPIPerformanceBenchmarks:
 
     def test_multiple_queries_benchmark(
         self,
-        benchmark: Callable[[Callable[[], list[FlextApiModels.QueryBuilder]]], list[FlextApiModels.QueryBuilder]],
+        benchmark: Callable[
+            [Callable[[], list[FlextApiModels.QueryBuilder]]],
+            list[FlextApiModels.QueryBuilder],
+        ],
     ) -> None:
         """Benchmark multiple query operations."""
 
@@ -134,7 +146,9 @@ class TestAPIPerformanceBenchmarks:
             for i in range(100):
                 query_builder = models.QueryBuilder()
                 query_builder.add_filter("id", i)
-                query_builder.add_filter("status", "active" if i % 2 == 0 else "inactive")
+                query_builder.add_filter(
+                    "status", "active" if i % 2 == 0 else "inactive"
+                )
                 query_builder.add_filter("priority", "high" if i % 3 == 0 else "normal")
                 queries.append(query_builder)
             return queries
@@ -161,8 +175,7 @@ class TestAPIPerformanceBenchmarks:
             models = FlextApiModels()
             builder = models.ResponseBuilder()
             response_result = builder.success(
-                data=large_data,
-                message="Large dataset retrieved"
+                data=large_data, message="Large dataset retrieved"
             )
             return response_result.data if response_result.success else None
 
@@ -186,7 +199,7 @@ class TestAPIPerformanceBenchmarks:
                 builder = models.ResponseBuilder()
                 response_result = builder.success(
                     data={"items": list(range((page - 1) * 20, page * 20))},
-                    message=f"Page {page} of 10"
+                    message=f"Page {page} of 10",
                 )
                 if response_result.success:
                     responses.append(response_result.data)

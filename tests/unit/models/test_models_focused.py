@@ -133,7 +133,7 @@ class TestApiModels:
 
     def test_api_request_creation(self) -> None:
         """Test ApiRequest model creation."""
-        # Test with minimal required fields (id, method, url are required by FlextModels.Entity)
+        # Test with minimal required fields (id, method, url are required by FlextModels)
         request = ApiRequest(id="req_123", method=HttpMethod.GET, url="/api/users")
 
         assert request.method == "GET"

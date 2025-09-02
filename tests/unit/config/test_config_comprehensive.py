@@ -38,15 +38,17 @@ class TestFlextApiConfig:
 
     def test_settings_creation_with_values(self) -> None:
         """Test settings creation with custom values."""
-        settings = FlextApiConfig.model_validate({
-            "api_host": "api.example.com",
-            "api_port": 8080,
-            "api_workers": 4,
-            "default_timeout": 60,
-            "max_retries": 5,
-            "enable_caching": False,
-            "cache_ttl": 600,
-        })
+        settings = FlextApiConfig.model_validate(
+            {
+                "api_host": "api.example.com",
+                "api_port": 8080,
+                "api_workers": 4,
+                "default_timeout": 60,
+                "max_retries": 5,
+                "enable_caching": False,
+                "cache_ttl": 600,
+            }
+        )
 
         assert settings.api_host == "api.example.com"
         assert settings.api_port == 8080
@@ -204,11 +206,13 @@ class TestFlextApiConfig:
 
     def test_settings_serialization(self) -> None:
         """Test settings can be serialized and deserialized."""
-        original_settings = FlextApiConfig.model_validate({
-            "api_host": "test.com",
-            "api_port": 8080,
-            "api_workers": 2,
-        })
+        original_settings = FlextApiConfig.model_validate(
+            {
+                "api_host": "test.com",
+                "api_port": 8080,
+                "api_workers": 2,
+            }
+        )
 
         # Test model_dump (Pydantic v2)
         data = original_settings.model_dump()

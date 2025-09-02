@@ -29,7 +29,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextConfig, FlextLogger, FlextResult
+from flext_core import FlextLogger, FlextModels, FlextResult
 from pydantic import Field, field_validator
 
 from flext_api.constants import FlextApiConstants
@@ -37,7 +37,7 @@ from flext_api.constants import FlextApiConstants
 logger = FlextLogger(__name__)
 
 
-class FlextApiConfig(FlextConfig):
+class FlextApiConfig(FlextModels.BaseConfig):
     """Single consolidated class containing ALL HTTP API configuration management.
 
     This is the ONLY configuration class in this module, containing all HTTP API
@@ -45,7 +45,7 @@ class FlextApiConfig(FlextConfig):
     pattern rigorously.
     """
 
-    class ServerConfig(FlextConfig.BaseModel):
+    class ServerConfig(FlextModels.BaseConfig):
         """HTTP server configuration with validation."""
 
         host: str = Field(default="127.0.0.1", description="Server host address")
@@ -94,7 +94,7 @@ class FlextApiConfig(FlextConfig):
                     f"Failed to create Uvicorn config: {e}"
                 )
 
-    class ClientConfig(FlextConfig.BaseModel):
+    class ClientConfig(FlextModels.BaseConfig):
         """HTTP client configuration with validation."""
 
         base_url: str = Field(
@@ -152,9 +152,7 @@ class FlextApiConfig(FlextConfig):
                 msg = "Timeout must be positive"
                 raise ValueError(msg)
             if v > FlextApiConstants.HttpValidation.MAX_TIMEOUT:
-                msg = (
-                    f"Timeout cannot exceed {FlextApiConstants.HttpValidation.MAX_TIMEOUT}"
-                )
+                msg = f"Timeout cannot exceed {FlextApiConstants.HttpValidation.MAX_TIMEOUT}"
                 raise ValueError(msg)
             return v
 
@@ -175,7 +173,7 @@ class FlextApiConfig(FlextConfig):
                     f"Failed to create HTTPX config: {e}"
                 )
 
-    class SecurityConfig(FlextConfig.BaseModel):
+    class SecurityConfig(FlextModels.BaseConfig):
         """HTTP security and CORS configuration."""
 
         cors_enabled: bool = Field(default=True, description="Enable CORS middleware")
@@ -245,7 +243,7 @@ class FlextApiConfig(FlextConfig):
                     f"Failed to create CORS config: {e}"
                 )
 
-    class EnvConfig(FlextConfig.BaseModel):
+    class EnvConfig(FlextModels.BaseConfig):
         """Environment variable configuration mapping."""
 
         # Server environment variables
@@ -255,10 +253,14 @@ class FlextApiConfig(FlextConfig):
             validation_alias="FLEXT_API_HOST",
         )
         server_port: int = Field(
-            default=8000, description="Server port from env", validation_alias="FLEXT_API_PORT"
+            default=8000,
+            description="Server port from env",
+            validation_alias="FLEXT_API_PORT",
         )
         debug_mode: bool = Field(
-            default=False, description="Debug mode from env", validation_alias="FLEXT_API_DEBUG"
+            default=False,
+            description="Debug mode from env",
+            validation_alias="FLEXT_API_DEBUG",
         )
 
         # Client environment variables
@@ -268,7 +270,9 @@ class FlextApiConfig(FlextConfig):
             validation_alias="FLEXT_API_BASE_URL",
         )
         timeout: float = Field(
-            default=30.0, description="Timeout from env", validation_alias="FLEXT_API_TIMEOUT"
+            default=30.0,
+            description="Timeout from env",
+            validation_alias="FLEXT_API_TIMEOUT",
         )
 
         # Security environment variables
@@ -335,17 +339,17 @@ class FlextApiConfig(FlextConfig):
                     f"Failed to create security config from env: {e}"
                 )
 
-    class MainConfig(FlextConfig.BaseModel):
+    class MainConfig(FlextModels.BaseConfig):
         """Main configuration combining all config types."""
 
         server: FlextApiConfig.ServerConfig = Field(
-            default_factory=lambda: FlextApiConfig.ServerConfig()
+            default_factory=FlextApiConfig.ServerConfig
         )
         client: FlextApiConfig.ClientConfig = Field(
-            default_factory=lambda: FlextApiConfig.ClientConfig()
+            default_factory=FlextApiConfig.ClientConfig
         )
         security: FlextApiConfig.SecurityConfig = Field(
-            default_factory=lambda: FlextApiConfig.SecurityConfig()
+            default_factory=FlextApiConfig.SecurityConfig
         )
 
         def create_complete_config(
@@ -390,7 +394,16 @@ class FlextApiConfig(FlextConfig):
 def create_server_config(**kwargs: object) -> FlextResult[FlextApiConfig.ServerConfig]:
     """Create server configuration with validation."""
     try:
-        config = FlextApiConfig.ServerConfig(**kwargs)  # type: ignore[arg-type]
+        # Filter kwargs to compatible types for ServerConfig
+        compatible_kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if isinstance(v, (str, int, bool, type(None)))
+            or (
+                isinstance(v, (list, tuple)) and k in {"template_dirs", "allowed_hosts"}
+            )
+        }
+        config = FlextApiConfig.ServerConfig.model_validate(compatible_kwargs)
         return FlextResult[FlextApiConfig.ServerConfig].ok(config)
     except Exception as e:
         logger.exception("Failed to create server config", error=str(e))
@@ -402,7 +415,13 @@ def create_server_config(**kwargs: object) -> FlextResult[FlextApiConfig.ServerC
 def create_client_config(**kwargs: object) -> FlextResult[FlextApiConfig.ClientConfig]:
     """Create client configuration with validation."""
     try:
-        config = FlextApiConfig.ClientConfig(**kwargs)  # type: ignore[arg-type]
+        # Filter kwargs to compatible types for ClientConfig
+        compatible_kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if isinstance(v, (str, int, float, bool, dict, type(None)))
+        }
+        config = FlextApiConfig.ClientConfig.model_validate(compatible_kwargs)
         return FlextResult[FlextApiConfig.ClientConfig].ok(config)
     except Exception as e:
         logger.exception("Failed to create client config", error=str(e))
@@ -416,7 +435,13 @@ def create_security_config(
 ) -> FlextResult[FlextApiConfig.SecurityConfig]:
     """Create security configuration with validation."""
     try:
-        config = FlextApiConfig.SecurityConfig(**kwargs)  # type: ignore[arg-type]
+        # Filter kwargs to compatible types for SecurityConfig
+        compatible_kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if isinstance(v, (str, int, bool, list, type(None)))
+        }
+        config = FlextApiConfig.SecurityConfig.model_validate(compatible_kwargs)
         return FlextResult[FlextApiConfig.SecurityConfig].ok(config)
     except Exception as e:
         logger.exception("Failed to create security config", error=str(e))
@@ -428,7 +453,10 @@ def create_security_config(
 def create_main_config(**kwargs: object) -> FlextResult[FlextApiConfig.MainConfig]:
     """Create main configuration with validation."""
     try:
-        config = FlextApiConfig.MainConfig(**kwargs)  # type: ignore[arg-type]
+        # Filter kwargs to compatible types for MainConfig
+        # MainConfig expects nested config objects, so we skip filtering for now
+        # and let Pydantic handle the validation
+        config = FlextApiConfig.MainConfig.model_validate(kwargs)
         return FlextResult[FlextApiConfig.MainConfig].ok(config)
     except Exception as e:
         logger.exception("Failed to create main config", error=str(e))

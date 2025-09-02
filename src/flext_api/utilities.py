@@ -143,9 +143,13 @@ class FlextApiUtilities(FlextUtilities):
             """Custom JSON serializer for non-standard types."""
             if isinstance(obj, datetime):
                 return obj.isoformat()
-            if hasattr(obj, "model_dump") and callable(getattr(obj, "model_dump", None)):  # Pydantic models
+            if hasattr(obj, "model_dump") and callable(
+                getattr(obj, "model_dump", None)
+            ):  # Pydantic models
                 return obj.model_dump()  # pyright: ignore[reportAttributeAccessIssue]
-            if hasattr(obj, "dict") and callable(getattr(obj, "dict", None)):  # Legacy Pydantic models
+            if hasattr(obj, "dict") and callable(
+                getattr(obj, "dict", None)
+            ):  # Legacy Pydantic models
                 return obj.dict()  # pyright: ignore[reportAttributeAccessIssue]
             if hasattr(obj, "__dict__"):  # Generic objects
                 return obj.__dict__

@@ -78,10 +78,12 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
         def execute(self) -> FlextResult[dict[str, object]]:
             """Execute cache cleanup operation."""
             self._cleanup_expired()
-            return FlextResult[dict[str, object]].ok({
-                "cache_size": len(self._cache),
-                "max_size": self.max_size,
-            })
+            return FlextResult[dict[str, object]].ok(
+                {
+                    "cache_size": len(self._cache),
+                    "max_size": self.max_size,
+                }
+            )
 
         def get(self, key: str) -> FlextResult[FlextApiTypes.Cache.CacheValue]:
             """Get value from memory cache with TTL validation."""
@@ -153,9 +155,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
     class PersistentStorage(FlextDomainService[dict[str, object]]):
         """Persistent data storage following FLEXT patterns."""
 
-        def __init__(
-            self, storage_path: str | None = None, **data: object
-        ) -> None:
+        def __init__(self, storage_path: str | None = None, **data: object) -> None:
             super().__init__(**data)
             if storage_path is None:
                 # Use secure user cache directory instead of /tmp
@@ -167,10 +167,12 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
             """Execute storage validation operation."""
             try:
                 Path(self.storage_path).mkdir(parents=True, exist_ok=True)
-                return FlextResult[dict[str, object]].ok({
-                    "storage_path": self.storage_path,
-                    "exists": Path(self.storage_path).exists(),
-                })
+                return FlextResult[dict[str, object]].ok(
+                    {
+                        "storage_path": self.storage_path,
+                        "exists": Path(self.storage_path).exists(),
+                    }
+                )
             except Exception as e:
                 return FlextResult[dict[str, object]].fail(
                     f"Storage validation failed: {e}"
@@ -383,12 +385,14 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute main service operation (required by FlextDomainService)."""
-        return FlextResult[dict[str, object]].ok({
-            "service": self.storage_name,
-            "cache_size": len(self._cache),
-            "max_size": self.max_size,
-            "default_ttl": self.default_ttl,
-        })
+        return FlextResult[dict[str, object]].ok(
+            {
+                "service": self.storage_name,
+                "cache_size": len(self._cache),
+                "max_size": self.max_size,
+                "default_ttl": self.default_ttl,
+            }
+        )
 
     def set(
         self, key: str, value: FlextApiTypes.Cache.CacheValue, ttl: int | None = None

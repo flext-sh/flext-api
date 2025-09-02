@@ -31,7 +31,7 @@ class TestFlextApiClient:
             base_url="https://api.example.com",
             timeout=45.0,
             max_retries=5,
-            headers={"Authorization": "Bearer test123"}
+            headers={"Authorization": "Bearer test123"},
         )
 
         assert client.base_url == "https://api.example.com"
@@ -80,10 +80,7 @@ class TestFlextApiClient:
     def test_client_headers_merge(self) -> None:
         """Test client headers merge with defaults."""
         custom_headers = {"Authorization": "Bearer test", "Accept": "application/json"}
-        client = FlextApiClient(
-            base_url="https://httpbin.org",
-            headers=custom_headers
-        )
+        client = FlextApiClient(base_url="https://httpbin.org", headers=custom_headers)
 
         # Should have both default and custom headers
         assert "User-Agent" in client.headers

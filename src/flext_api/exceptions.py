@@ -54,10 +54,10 @@ class FlextApiExceptions(FlextExceptions):
             self,
             message: str,
             status_code: int = 500,
-            error_code: str | None = None,  # noqa: ARG002
+            error_code: str | None = None,
             context: dict[str, object] | None = None,
         ) -> None:
-            super().__init__(message)
+            super().__init__(message, code=error_code, context=context)
             self.status_code = status_code
             self.context = context or {}
             # error_code is handled by parent class
@@ -81,7 +81,10 @@ class FlextApiExceptions(FlextExceptions):
                 **(context or {}),
             }
             super().__init__(
-                message, status_code, FlextApiConstants.HttpErrors.HTTP_ERROR, error_context
+                message,
+                status_code,
+                FlextApiConstants.HttpErrors.HTTP_ERROR,
+                error_context,
             )
 
     class ClientError(HttpError):
@@ -102,7 +105,14 @@ class FlextApiExceptions(FlextExceptions):
             headers: dict[str, str] | None = None,
             context: dict[str, object] | None = None,
         ) -> None:
-            super().__init__(message, FlextApiConstants.HttpStatus.BAD_REQUEST, url, method, headers, context)
+            super().__init__(
+                message,
+                FlextApiConstants.HttpStatus.BAD_REQUEST,
+                url,
+                method,
+                headers,
+                context,
+            )
 
     class UnauthorizedError(ClientError):
         """401 Unauthorized error."""
@@ -115,7 +125,14 @@ class FlextApiExceptions(FlextExceptions):
             headers: dict[str, str] | None = None,
             context: dict[str, object] | None = None,
         ) -> None:
-            super().__init__(message, FlextApiConstants.HttpStatus.UNAUTHORIZED, url, method, headers, context)
+            super().__init__(
+                message,
+                FlextApiConstants.HttpStatus.UNAUTHORIZED,
+                url,
+                method,
+                headers,
+                context,
+            )
 
     class ForbiddenError(ClientError):
         """403 Forbidden error."""
@@ -128,7 +145,14 @@ class FlextApiExceptions(FlextExceptions):
             headers: dict[str, str] | None = None,
             context: dict[str, object] | None = None,
         ) -> None:
-            super().__init__(message, FlextApiConstants.HttpStatus.FORBIDDEN, url, method, headers, context)
+            super().__init__(
+                message,
+                FlextApiConstants.HttpStatus.FORBIDDEN,
+                url,
+                method,
+                headers,
+                context,
+            )
 
     class NotFoundError(ClientError):
         """404 Not Found error."""
@@ -141,7 +165,14 @@ class FlextApiExceptions(FlextExceptions):
             headers: dict[str, str] | None = None,
             context: dict[str, object] | None = None,
         ) -> None:
-            super().__init__(message, FlextApiConstants.HttpStatus.NOT_FOUND, url, method, headers, context)
+            super().__init__(
+                message,
+                FlextApiConstants.HttpStatus.NOT_FOUND,
+                url,
+                method,
+                headers,
+                context,
+            )
 
     class RequestTimeoutError(ClientError):
         """Request timeout error."""
@@ -179,7 +210,12 @@ class FlextApiExceptions(FlextExceptions):
             context: dict[str, object] | None = None,
         ) -> None:
             super().__init__(
-                message, FlextApiConstants.HttpStatus.TOO_MANY_REQUESTS, url, method, headers, context
+                message,
+                FlextApiConstants.HttpStatus.TOO_MANY_REQUESTS,
+                url,
+                method,
+                headers,
+                context,
             )
 
     # Specific Server Errors (5xx)
@@ -195,7 +231,12 @@ class FlextApiExceptions(FlextExceptions):
             context: dict[str, object] | None = None,
         ) -> None:
             super().__init__(
-                message, FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR, url, method, headers, context
+                message,
+                FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR,
+                url,
+                method,
+                headers,
+                context,
             )
 
     class BadGatewayError(ServerError):
@@ -209,7 +250,14 @@ class FlextApiExceptions(FlextExceptions):
             headers: dict[str, str] | None = None,
             context: dict[str, object] | None = None,
         ) -> None:
-            super().__init__(message, FlextApiConstants.HttpStatus.BAD_GATEWAY, url, method, headers, context)
+            super().__init__(
+                message,
+                FlextApiConstants.HttpStatus.BAD_GATEWAY,
+                url,
+                method,
+                headers,
+                context,
+            )
 
     class ServiceUnavailableError(ServerError):
         """503 Service Unavailable error."""
@@ -223,7 +271,12 @@ class FlextApiExceptions(FlextExceptions):
             context: dict[str, object] | None = None,
         ) -> None:
             super().__init__(
-                message, FlextApiConstants.HttpStatus.SERVICE_UNAVAILABLE, url, method, headers, context
+                message,
+                FlextApiConstants.HttpStatus.SERVICE_UNAVAILABLE,
+                url,
+                method,
+                headers,
+                context,
             )
 
     # Network-specific Errors

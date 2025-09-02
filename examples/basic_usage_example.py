@@ -93,7 +93,9 @@ def example_utilities_usage() -> None:
     print("\n=== Utilities Example ===")
 
     # URL validation using the refactored nested class
-    url_result = FlextApiUtilities.UrlValidator.validate_url("https://example.com/api/v1")
+    url_result = FlextApiUtilities.UrlValidator.validate_url(
+        "https://example.com/api/v1"
+    )
 
     if url_result.success:
         print(f"✅ URL validation successful: {url_result.value}")
@@ -103,7 +105,7 @@ def example_utilities_usage() -> None:
     # Response building using the refactored nested class
     response_result = FlextApiUtilities.ResponseBuilder.build_success_response(
         data={"users": [{"id": 1, "name": "John"}]},
-        message="Users retrieved successfully"
+        message="Users retrieved successfully",
     )
 
     if response_result.success:

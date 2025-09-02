@@ -60,14 +60,16 @@ def create_flext_api_config(
 ) -> FlextApiConfig:
     """Create FlextApiConfig for testing."""
     # Use Pydantic model_validate to create instance with values
-    return FlextApiConfig.model_validate({
-        "api_host": api_host,
-        "api_port": api_port,
-        "default_timeout": default_timeout,
-        "max_retries": max_retries,
-        "enable_caching": enable_caching,
-        "cache_ttl": cache_ttl,
-    })
+    return FlextApiConfig.model_validate(
+        {
+            "api_host": api_host,
+            "api_port": api_port,
+            "default_timeout": default_timeout,
+            "max_retries": max_retries,
+            "enable_caching": enable_caching,
+            "cache_ttl": cache_ttl,
+        }
+    )
 
 
 # Legacy aliases for factory patterns

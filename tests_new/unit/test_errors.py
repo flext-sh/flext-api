@@ -51,9 +51,7 @@ class TestFlextErrors:
     def test_error_serialization(self) -> None:
         """Test error serialization to dict."""
         error = FlextErrors.FlextApiError(
-            "Test error",
-            code="TEST_001",
-            context={"key": "value"}
+            "Test error", code="TEST_001", context={"key": "value"}
         )
 
         error_dict = error.to_dict()

@@ -59,7 +59,11 @@ def example_storage_system() -> None:
 
     # Test storage operations
     key = "user:123"
-    value: dict[str, object] = {"name": "John Doe", "role": "admin", "created": "2025-01-01"}
+    value: dict[str, object] = {
+        "name": "John Doe",
+        "role": "admin",
+        "created": "2025-01-01",
+    }
 
     print("✅ Storage created with hierarchical structure")
 
@@ -99,7 +103,10 @@ def example_storage_system() -> None:
 
     # Test nested class usage - JsonStorage for serialization
     json_storage = storage.JsonStorage()
-    test_data: dict[str, object] = {"message": "Hello, World!", "timestamp": "2025-01-01T00:00:00Z"}
+    test_data: dict[str, object] = {
+        "message": "Hello, World!",
+        "timestamp": "2025-01-01T00:00:00Z",
+    }
 
     try:
         json_str = json_storage.serialize(test_data)
@@ -117,7 +124,9 @@ def example_utilities_usage() -> None:
     print("\n=== Utilities Example ===")
 
     # URL validation using the refactored nested class
-    url_result = FlextApiUtilities.UrlValidator.validate_url("https://api.example.com/v1/users")
+    url_result = FlextApiUtilities.UrlValidator.validate_url(
+        "https://api.example.com/v1/users"
+    )
 
     if url_result.success:
         print(f"✅ URL validation successful: {url_result.value}")
@@ -126,8 +135,11 @@ def example_utilities_usage() -> None:
 
     # Response building using the refactored nested class
     success_response_result = FlextApiUtilities.ResponseBuilder.build_success_response(
-        data={"users": [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}], "total": 2},
-        message="Users retrieved successfully"
+        data={
+            "users": [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}],
+            "total": 2,
+        },
+        message="Users retrieved successfully",
     )
 
     if success_response_result.success:
@@ -142,9 +154,7 @@ def example_utilities_usage() -> None:
 
     # Error response building
     error_response_result = FlextApiUtilities.ResponseBuilder.build_error_response(
-        "Invalid request parameters",
-        400,
-        {"field": "email", "issue": "format"}
+        "Invalid request parameters", 400, {"field": "email", "issue": "format"}
     )
 
     if error_response_result.success:
@@ -157,7 +167,9 @@ def example_utilities_usage() -> None:
         print(f"❌ Error response building failed: {error_response_result.error}")
 
     # Data transformation using nested class
-    transform_result = FlextApiUtilities.DataTransformer.to_json({"key": "value", "number": 42})
+    transform_result = FlextApiUtilities.DataTransformer.to_json(
+        {"key": "value", "number": 42}
+    )
     if transform_result.success:
         json_str = transform_result.value
         print(f"✅ Data transformed to JSON: {json_str}")
@@ -194,7 +206,12 @@ def example_models_usage() -> None:
         response = FlextApiModels.HttpResponse(
             status_code=201,
             headers={"Content-Type": "application/json", "Location": "/users/12345"},
-            body={"id": 12345, "name": "Alice", "email": "alice@example.com", "created": True},
+            body={
+                "id": 12345,
+                "name": "Alice",
+                "email": "alice@example.com",
+                "created": True,
+            },
             url="https://api.example.com/users",
             method="POST",
             elapsed_time=0.245,
@@ -211,7 +228,7 @@ def example_models_usage() -> None:
             base_url="https://api.example.com",
             timeout=30.0,
             max_retries=3,
-            headers={"User-Agent": "FlextAPI/0.9.0", "Accept": "application/json"}
+            headers={"User-Agent": "FlextAPI/0.9.0", "Accept": "application/json"},
         )
 
         print(f"✅ Config model created: {config.base_url}")
@@ -257,7 +274,10 @@ async def example_async_operations() -> None:
         # Set multiple values
         keys = ["async_key1", "async_key2", "async_key3"]
         for i, key in enumerate(keys):
-            result = storage.set(key, {"id": i + 1, "name": f"async_item_{i + 1}", "timestamp": "2025-01-01"})
+            result = storage.set(
+                key,
+                {"id": i + 1, "name": f"async_item_{i + 1}", "timestamp": "2025-01-01"},
+            )
             if result.success:
                 print(f"✅ Set {key} successfully")
             else:

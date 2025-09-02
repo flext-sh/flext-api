@@ -37,11 +37,7 @@ class TestFlextApi:
         """Test API client creation with valid config."""
         api = create_flext_api()
 
-        config = {
-            "base_url": "https://httpbin.org",
-            "timeout": 30.0,
-            "max_retries": 3
-        }
+        config = {"base_url": "https://httpbin.org", "timeout": 30.0, "max_retries": 3}
 
         result = api.create_client(config)
 
@@ -58,10 +54,7 @@ class TestFlextApi:
         api = create_flext_api()
 
         # Empty base_url should fail
-        config = {
-            "base_url": "",
-            "timeout": 30.0
-        }
+        config = {"base_url": "", "timeout": 30.0}
 
         result = api.create_client(config)
 
@@ -135,10 +128,7 @@ class TestFlextApi:
         api = create_flext_api()
 
         # Create a client
-        config = {
-            "base_url": "https://httpbin.org",
-            "timeout": 30.0
-        }
+        config = {"base_url": "https://httpbin.org", "timeout": 30.0}
 
         create_result = api.create_client(config)
         assert create_result.success

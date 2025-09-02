@@ -42,20 +42,14 @@ class TestFlextErrors:
 
     def test_flext_api_error_custom_status_code(self) -> None:
         """Test FlextApiError with custom status code."""
-        error = FlextErrors.FlextApiError(
-            "Custom error",
-            status_code=400
-        )
+        error = FlextErrors.FlextApiError("Custom error", status_code=400)
 
         assert "Custom error" in str(error)
         assert error.status_code == 400
 
     def test_flext_api_error_custom_code(self) -> None:
         """Test FlextApiError with custom code."""
-        error = FlextErrors.FlextApiError(
-            "Custom error",
-            code="CUSTOM_ERROR"
-        )
+        error = FlextErrors.FlextApiError("Custom error", code="CUSTOM_ERROR")
 
         assert "Custom error" in str(error)
         assert error.status_code == 500  # default
@@ -65,10 +59,7 @@ class TestFlextErrors:
         context = {"user_id": 123, "action": "create"}
 
         error = FlextErrors.FlextApiError(
-            "Action failed",
-            status_code=422,
-            code="ACTION_FAILED",
-            context=context
+            "Action failed", status_code=422, code="ACTION_FAILED", context=context
         )
 
         assert "Action failed" in str(error)
@@ -162,7 +153,7 @@ class TestFlextErrors:
             (FlextErrors.FlextApiError, 500),
             (FlextErrors.ValidationError, 400),
             (FlextErrors.AuthenticationError, 401),
-            (FlextErrors.NotFoundError, 404)
+            (FlextErrors.NotFoundError, 404),
         ]
 
         for error_class, expected_status in error_types:
@@ -175,7 +166,7 @@ class TestFlextErrors:
             (FlextErrors.FlextApiError, "API_ERROR"),
             (FlextErrors.ValidationError, "VALIDATION_ERROR"),
             (FlextErrors.AuthenticationError, "AUTHENTICATION_ERROR"),
-            (FlextErrors.NotFoundError, "NOT_FOUND_ERROR")
+            (FlextErrors.NotFoundError, "NOT_FOUND_ERROR"),
         ]
 
         # flext-core uses different error code system
@@ -204,7 +195,7 @@ class TestFlextErrors:
             FlextErrors.FlextApiError("API error message"),
             FlextErrors.ValidationError("Validation error message"),
             FlextErrors.AuthenticationError("Auth error message"),
-            FlextErrors.NotFoundError("Not found error message")
+            FlextErrors.NotFoundError("Not found error message"),
         ]
 
         for error in errors:
@@ -216,9 +207,7 @@ class TestFlextErrors:
     def test_error_attributes_persistence(self) -> None:
         """Test error attributes persist after creation."""
         error = FlextErrors.FlextApiError(
-            "Persistent error",
-            status_code=422,
-            code="PERSISTENT_ERROR"
+            "Persistent error", status_code=422, code="PERSISTENT_ERROR"
         )
 
         # Attributes should persist

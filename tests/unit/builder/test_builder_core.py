@@ -43,10 +43,7 @@ class TestFlextApiBuilderCore:
         models = FlextApiModels()
         builder = models.ResponseBuilder()
 
-        response_result = builder.success(
-            data={"items": [1, 2, 3]},
-            message="Success"
-        )
+        response_result = builder.success(data={"items": [1, 2, 3]}, message="Success")
 
         assert response_result.success
         response_data = response_result.data

@@ -127,8 +127,7 @@ class TestApiWorkflowE2E:
         # Response building with pagination
         response_builder = models.ResponseBuilder()
         response_result = response_builder.success(
-            data={"items": list(range(25))},
-            message="Success with pagination"
+            data={"items": list(range(25))}, message="Success with pagination"
         )
 
         assert response_result.success is True
