@@ -343,13 +343,13 @@ class FlextApiConfig(FlextModels.BaseConfig):
         """Main configuration combining all config types."""
 
         server: FlextApiConfig.ServerConfig = Field(
-            default_factory=lambda: FlextApiConfig.ServerConfig()
+            default_factory=FlextApiConfig.ServerConfig
         )
         client: FlextApiConfig.ClientConfig = Field(
-            default_factory=lambda: FlextApiConfig.ClientConfig()
+            default_factory=FlextApiConfig.ClientConfig
         )
         security: FlextApiConfig.SecurityConfig = Field(
-            default_factory=lambda: FlextApiConfig.SecurityConfig()
+            default_factory=FlextApiConfig.SecurityConfig
         )
 
         def create_complete_config(
