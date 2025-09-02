@@ -85,6 +85,7 @@ from flext_api.config import *
 from flext_api.api import *
 from flext_api.client import *
 from flext_api.plugins import *
+from flext_api.protocols import *
 
 # =============================================================================
 # INFRASTRUCTURE LAYER - Depends on Application + Domain + Foundation
@@ -112,6 +113,7 @@ import flext_api.constants as _constants
 import flext_api.exceptions as _exceptions
 import flext_api.models as _models
 import flext_api.plugins as _plugins
+import flext_api.protocols as _protocols
 import flext_api.storage as _storage
 import flext_api.typings as _typings
 import flext_api.utilities as _utilities
@@ -128,6 +130,7 @@ for module in [
     _api,
     _client,
     _plugins,
+    _protocols,
     _storage,
     _utilities,
     _app,
