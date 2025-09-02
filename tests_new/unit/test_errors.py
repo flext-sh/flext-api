@@ -70,8 +70,8 @@ class TestFlextErrors:
 
     def test_error_raising(self) -> None:
         """Test that errors can be raised properly."""
+        msg = "Test error for raising"
         with pytest.raises(FlextErrors.FlextApiError) as exc_info:
-            msg = "Test error for raising"
             raise FlextErrors.FlextApiError(msg)
 
         assert "Test error for raising" in str(exc_info.value)
@@ -80,11 +80,15 @@ class TestFlextErrors:
         """Test error chaining with __cause__."""
         original_error = ValueError("Original error")
 
-        try:
-            raise original_error
-        except ValueError as e:
+        def raise_chained_error() -> None:
             try:
+                raise original_error
+            except ValueError as e:
                 msg = "Chained error"
                 raise FlextErrors.FlextApiError(msg) from e
-            except FlextErrors.FlextApiError as chained_error:
-                assert chained_error.__cause__ is original_error
+
+        with pytest.raises(FlextErrors.FlextApiError) as exc_info:
+            raise_chained_error()
+
+        chained_error = exc_info.value
+        assert chained_error.__cause__ is original_error
