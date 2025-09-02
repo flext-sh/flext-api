@@ -556,5 +556,5 @@ def build_user_query(
 Veja exemplos completos em:
 
 - [Basic Usage](../examples/01_basic_usage.py) - Query e Response builders
-- [Advanced Patterns](../examples/advanced_patterns.py) - Patterns complexos
+- [Advanced Patterns](../examples/02_advanced.py) - Patterns complexos
 - [Real World Usage](../examples/real_world_usage.py) - Casos de uso reais

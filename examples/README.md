@@ -6,7 +6,7 @@
 
 ### Basic Usage
 
-- **basic_usage_example.py** - Basic API usage patterns using REAL classes
+- **01_basic_usage.py** - Basic API usage patterns using REAL classes
   - FlextApi creation and configuration
   - HTTP client creation and setup
   - Model instantiation and validation
@@ -14,7 +14,7 @@
 
 ### Advanced Features  
 
-- **advanced_example.py** - Advanced usage patterns using REAL classes
+- **02_advanced.py** - Advanced usage patterns using REAL classes
   - Plugin system demonstration
   - Storage backends usage
   - Query builder with filters
@@ -46,15 +46,15 @@ from flext_api import FlextApi, FlextApiClient, FlextApiModels
 
 ```bash
 # Run basic usage example  
-python examples/basic_usage_example.py
+python examples/01_basic_usage.py
 
 # Run advanced features example
-python examples/advanced_example.py
+python examples/02_advanced.py
 
 # Run from project root
 cd /home/marlonsc/flext/flext-api
-PYTHONPATH=src python examples/basic_usage_example.py
-PYTHONPATH=src python examples/advanced_example.py
+PYTHONPATH=src python examples/01_basic_usage.py
+PYTHONPATH=src python examples/02_advanced.py
 ```
 
 ## Example Patterns
