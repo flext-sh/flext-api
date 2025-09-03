@@ -63,15 +63,13 @@ class FlextApiApp(FlextModels):
 
     def get_info(self) -> FlextResult[Result]:
         """Get app information - returns FlextResult, never raises."""
-        return FlextResult[Result].ok(
-            {
-                "app": "FlextApiApp",
-                "app_name": self.app_name,
-                "version": self.app_version,
-                "debug": self.debug,
-                "has_fastapi_app": self._fastapi_app is not None,
-            }
-        )
+        return FlextResult[Result].ok({
+            "app": "FlextApiApp",
+            "app_name": self.app_name,
+            "version": self.app_version,
+            "debug": self.debug,
+            "has_fastapi_app": self._fastapi_app is not None,
+        })
 
     def create_app(self) -> FlextResult[FastAPI]:
         """Create FastAPI application - returns FlextResult, never raises."""
