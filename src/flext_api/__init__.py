@@ -26,16 +26,18 @@ Core Components:
 Examples:
     HTTP client with plugins:
     >>> api = FlextApi()
-    >>> client_result = api.flext_api_create_client({
-    ...     "base_url": "https://api.example.com",
-    ...     "timeout": 30,
-    ... })
+    >>> client_result = api.flext_api_create_client(
+    ...     {
+    ...         "base_url": "https://api.example.com",
+    ...         "timeout": 30,
+    ...     }
+    ... )
     >>> if client_result.success:
     ...     client = client_result.value
     ...     response = await client.get("/data")
 
     FastAPI app creation:
-    >>> app = FlextApiApp.create_flext_api_app_with_settings()
+    >>> app = FlextApiApp.create_app_instance()
     >>> # Includes CORS, error handlers, request ID middleware
 
     Builder pattern:
@@ -99,54 +101,20 @@ from flext_api.utilities import *
 from flext_api.app import *
 
 # =============================================================================
-# CONSOLIDATED EXPORTS - Combine all __all__ from modules
+# EXPORTS - Direct static list following flext-core simplicity
 # =============================================================================
 
-# Combine all __all__ exports from imported modules
-import flext_api.api as _api
-import flext_api.app as _app
-import flext_api.client as _client
-import flext_api.config as _config
-import flext_api.constants as _constants
-import flext_api.exceptions as _exceptions
-import flext_api.models as _models
-import flext_api.plugins as _plugins
-import flext_api.protocols as _protocols
-import flext_api.storage as _storage
-import flext_api.typings as _typings
-import flext_api.utilities as _utilities
-
-# Collect all __all__ exports from imported modules
-_temp_exports: list[str] = []
-
-for module in [
-    _constants,
-    _typings,
-    _exceptions,
-    _models,
-    _config,
-    _api,
-    _client,
-    _plugins,
-    _protocols,
-    _storage,
-    _utilities,
-    _app,
-]:
-    if hasattr(module, "__all__"):
-        _temp_exports.extend(module.__all__)
-
-# Remove duplicates and sort for consistent exports - build complete list first
-_seen: set[str] = set()
-_final_exports: list[str] = []
-for item in _temp_exports:
-    if item not in _seen:
-        _seen.add(item)
-        _final_exports.append(item)
-_final_exports.sort()
-
-# Define __all__ as literal list for linter compatibility
-# This dynamic assignment is necessary for aggregating module exports
-__all__: list[str] = _final_exports  # pyright: ignore[reportUnsupportedDunderAll] # noqa: PLE0605
+__all__ = [
+    "FlextApi",
+    "FlextApiApp",
+    "FlextApiClient",
+    "FlextApiConfig",
+    "FlextApiConstants",
+    "FlextApiExceptions",
+    "FlextApiModels",
+    "FlextApiStorage",
+    "FlextApiTypes",
+    "FlextApiUtilities",
+]
 
 __version__ = "0.9.0"

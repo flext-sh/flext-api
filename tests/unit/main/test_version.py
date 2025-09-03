@@ -12,12 +12,11 @@ import re
 from packaging.version import Version
 
 import flext_api
-from flext_api import (
-    FLEXT_API_VERSION as MAIN_VERSION,
-    FLEXT_API_VERSION as REIMPORTED_VERSION,
-    FLEXT_API_VERSION as VERSION2,
-    FLEXT_API_VERSION as VERSION_CONSTANT,
-)
+
+VERSION_CONSTANT = flext_api.__version__
+MAIN_VERSION = flext_api.__version__
+REIMPORTED_VERSION = flext_api.__version__
+VERSION2 = flext_api.__version__
 
 
 class TestVersionModule:
@@ -99,8 +98,8 @@ class TestVersionModule:
         # flext_api doesn't use separate VERSION_CONSTANT module
         # Test the main module structure instead
 
-        # Should have VERSION_CONSTANT attribute
-        assert hasattr(flext_api, "VERSION_CONSTANT")
+        # Should have __version__ attribute
+        assert hasattr(flext_api, "__version__")
 
         # Should be a proper module
         assert hasattr(flext_api, "__name__")
@@ -119,10 +118,8 @@ class TestVersionModule:
 
         # Check direct access
 
-        if (
-            flext_api.VERSION_CONSTANT != MAIN_VERSION
-        ):  # Direct access should match import
-            msg = f"Expected {MAIN_VERSION}, got {flext_api.VERSION_CONSTANT}"
+        if flext_api.__version__ != MAIN_VERSION:  # Direct access should match import
+            msg = f"Expected {MAIN_VERSION}, got {flext_api.__version__}"
             raise AssertionError(
                 msg,
             )
@@ -178,8 +175,8 @@ class TestVersionModule:
     def test_version_export_consistency(self) -> None:
         """Test that version is properly exported from main package."""
         # Should be able to access version from main package
-        assert hasattr(flext_api, "VERSION_CONSTANT")
-        version = flext_api.VERSION_CONSTANT
+        assert hasattr(flext_api, "__version__")
+        version = flext_api.__version__
 
         assert isinstance(version, str)
         assert len(version) > 0

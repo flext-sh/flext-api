@@ -74,35 +74,6 @@ PluginT = TypeVar("PluginT", bound=object)  # Plugin instance types
 # =============================================================================
 
 
-@runtime_checkable
-class HttpRequestProtocol(Protocol):
-    """Protocol for HTTP request objects with type safety."""
-
-    def get_method(self) -> str: ...
-    def get_url(self) -> str: ...
-    def get_headers(self) -> dict[str, str]: ...
-    def get_body(self) -> str | bytes | dict[str, object] | None: ...
-
-
-@runtime_checkable
-class HttpResponseProtocol(Protocol):
-    """Protocol for HTTP response objects with type safety."""
-
-    def get_status_code(self) -> int: ...
-    def get_headers(self) -> dict[str, str]: ...
-    def get_data(self) -> object: ...
-    def get_json(self) -> dict[str, object] | list[object]: ...
-
-
-@runtime_checkable
-class HttpClientConfigProtocol(Protocol):
-    """Protocol for HTTP client configuration with type safety."""
-
-    def get(self, key: str, default: object = None) -> object: ...
-    def items(self) -> object: ...
-    def keys(self) -> object: ...
-
-
 class FlextApiTypes(FlextTypes):
     """HTTP API type system extending flext-core FlextTypes with hierarchical organization.
 
@@ -373,20 +344,37 @@ class FlextApiTypes(FlextTypes):
         ]
         ResponseBuilder = Callable[[object], FlextResult[object]]
 
+    # =============================================================================
+    # HTTP PROTOCOLS - Runtime-checkable protocols for type safety
+    # =============================================================================
 
-# =============================================================================
-# EXPORTS - Hierarchical HTTP types and protocols following flext-core pattern
-# =============================================================================
+    @runtime_checkable
+    class HttpRequestProtocol(Protocol):
+        """Protocol for HTTP request objects with type safety."""
+
+        def get_method(self) -> str: ...
+        def get_url(self) -> str: ...
+        def get_headers(self) -> dict[str, str]: ...
+        def get_body(self) -> str | bytes | dict[str, object] | None: ...
+
+    @runtime_checkable
+    class HttpResponseProtocol(Protocol):
+        """Protocol for HTTP response objects with type safety."""
+
+        def get_status_code(self) -> int: ...
+        def get_headers(self) -> dict[str, str]: ...
+        def get_data(self) -> object: ...
+        def get_json(self) -> dict[str, object] | list[object]: ...
+
+    @runtime_checkable
+    class HttpClientConfigProtocol(Protocol):
+        """Protocol for HTTP client configuration with type safety."""
+
+        def get(self, key: str, default: object = None) -> object: ...
+        def items(self) -> object: ...
+        def keys(self) -> object: ...
+
 
 __all__: list[str] = [
-    # Main hierarchical type system (single export like flext-core)
     "FlextApiTypes",
-    "HttpClientConfigProtocol",
-    "HttpMethodT",
-    "HttpRequestProtocol",
-    "HttpResponseProtocol",
-    "HttpStatusT",
-    "PluginT",
-    "RequestBodyT",
-    "ResponseDataT",
 ]

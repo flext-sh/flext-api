@@ -15,13 +15,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from flext_core import (
-    FlextContainer,
-    FlextLogger,
-    FlextModels,
-    FlextResult,
-)
+from flext_core import FlextContainer, FlextLogger, FlextModels, FlextResult
 from pydantic import Field
+
+from flext_api.constants import FlextApiConstants
 
 # Type aliases for cleaner code
 Result = dict[str, object]
@@ -63,13 +60,15 @@ class FlextApiApp(FlextModels):
 
     def get_info(self) -> FlextResult[Result]:
         """Get app information - returns FlextResult, never raises."""
-        return FlextResult[Result].ok({
-            "app": "FlextApiApp",
-            "app_name": self.app_name,
-            "version": self.app_version,
-            "debug": self.debug,
-            "has_fastapi_app": self._fastapi_app is not None,
-        })
+        return FlextResult[Result].ok(
+            {
+                "app": "FlextApiApp",
+                "app_name": self.app_name,
+                "version": self.app_version,
+                "debug": self.debug,
+                "has_fastapi_app": self._fastapi_app is not None,
+            }
+        )
 
     def create_app(self) -> FlextResult[FastAPI]:
         """Create FastAPI application - returns FlextResult, never raises."""
@@ -130,7 +129,7 @@ class FlextApiApp(FlextModels):
                     "Unhandled exception", error=str(exc), path=request.url.path
                 )
                 return JSONResponse(
-                    status_code=500,
+                    status_code=FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR,
                     content={
                         "error": "Internal server error",
                         "message": str(exc) if self.debug else "An error occurred",
@@ -171,43 +170,40 @@ class FlextApiApp(FlextModels):
             logger.exception("Failed to run FastAPI app", error=str(e))
             return FlextResult[None].fail(f"Failed to run app: {e}")
 
+    # =========================================================================
+    # FACTORY METHODS - Following flext-core patterns
+    # =========================================================================
 
-# =============================================================================
-# FACTORY FUNCTIONS - Following flext-core patterns
-# =============================================================================
+    @staticmethod
+    def create_app_instance(
+        title: str | None = None,
+        version: str | None = None,
+        description: str | None = None,
+    ) -> FastAPI:
+        """Create FastAPI app instance with default configuration.
 
+        Args:
+            title: Optional app title
+            version: Optional app version
+            description: Optional app description
 
-def create_flext_api_app(
-    title: str | None = None,
-    version: str | None = None,
-    description: str | None = None,
-) -> FastAPI:
-    """Create FastAPI app instance with default configuration.
+        Returns:
+            Configured FastAPI application instance
 
-    Args:
-        title: Optional app title
-        version: Optional app version
-        description: Optional app description
+        """
+        app_instance = FlextApiApp(
+            app_name=title or "FlextApi",
+            app_version=version or "0.9.0",
+        )
 
-    Returns:
-        Configured FastAPI application instance
+        app_result = app_instance.create_app()
+        if app_result.is_failure:
+            msg = f"Failed to create app: {app_result.error}"
+            raise ValueError(msg)
 
-    """
-    app_instance = FlextApiApp(
-        title=title or "FlextApi",
-        version=version or "0.9.0",
-        description=description or "HTTP Foundation Library",
-    )
-
-    app_result = app_instance.create_app()
-    if app_result.is_failure:
-        msg = f"Failed to create app: {app_result.error}"
-        raise ValueError(msg)
-
-    return app_result.value
+        return app_result.value
 
 
 __all__ = [
     "FlextApiApp",
-    "create_flext_api_app",
 ]

@@ -26,8 +26,6 @@ from flext_api import (
     FlextApiClient,
     FlextApiConfig,
     FlextApiStorage,
-    create_flext_api,
-    create_flext_api_app,
 )
 
 # Configure Faker for deterministic test data
@@ -86,7 +84,7 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 @pytest.fixture
 def flext_api() -> FlextApi:
     """Provide real FlextApi instance for testing."""
-    return create_flext_api()
+    return FlextApi.create_instance()
 
 
 @pytest.fixture
@@ -110,7 +108,7 @@ def flext_api_client() -> FlextApiClient:
 @pytest.fixture
 def flext_api_app() -> FlextApiApp:
     """Provide real FlextApiApp instance for testing."""
-    return create_flext_api_app()
+    return FlextApiApp.create_app_instance()
 
 
 @pytest.fixture

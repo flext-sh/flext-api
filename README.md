@@ -7,6 +7,7 @@ HTTP client and FastAPI integration library for the FLEXT ecosystem, providing u
 ## Project Status
 
 **Current State**: Stable foundation with ongoing improvements
+
 - **Test Coverage**: 85% (684 tests passing)
 - **Code Quality**: PyRight/MyPy compliant with minimal warnings
 - **Architecture**: Clean Architecture patterns with FlextResult error handling
@@ -43,18 +44,21 @@ make test      # Run test suite with coverage
 ## Core Features
 
 ### HTTP Client System
+
 - **Modern Async Client**: Built on httpx/aiohttp with comprehensive error handling
 - **Plugin Architecture**: Extensible with caching, retry, circuit breaker, and custom plugins
 - **FlextResult Integration**: Type-safe error handling throughout HTTP operations
 - **Request/Response Pipeline**: Configurable pre/post processing with middleware support
 
 ### FastAPI Integration
+
 - **Production-Ready App**: Complete FastAPI application with health checks
 - **Middleware Stack**: Request ID, error handling, CORS, and compression
 - **API Documentation**: Automatic OpenAPI generation with ReDoc/Swagger UI
 - **Configuration Management**: Environment-based settings with validation
 
 ### Query & Response Builders
+
 - **Fluent Interface**: Chainable query builders for complex API requests
 - **Type Safety**: Full Pydantic model validation for all data structures
 - **Response Standardization**: Consistent response formats across all endpoints
@@ -62,6 +66,7 @@ make test      # Run test suite with coverage
 ## Architecture
 
 ### Design Patterns
+
 - **Clean Architecture**: Clear separation between domain, application, and infrastructure layers
 - **Railway-Oriented Programming**: FlextResult pattern for comprehensive error handling
 - **Composition over Inheritance**: Modular design with clear component boundaries
@@ -95,6 +100,7 @@ app = create_flext_api_app()
 ## Development
 
 ### Quality Standards
+
 - **Test Coverage**: Minimum 85% with comprehensive unit and integration tests
 - **Type Safety**: Full MyPy strict mode compliance with discriminated unions
 - **Code Quality**: Ruff linting with zero tolerance for errors
@@ -145,8 +151,9 @@ src/flext_api/
 **For complete FLEXT ecosystem overview, see [FLEXT README.md](../README.md)**
 
 This library integrates with:
+
 - **flext-core**: Foundation patterns, FlextResult, dependency injection
-- **FlexCore**: Go runtime service HTTP communication (port 8080) 
+- **FlexCore**: Go runtime service HTTP communication (port 8080)
 - **FLEXT Service**: Data platform service integration (port 8081)
 - **flext-auth**: Authentication over HTTP protocols
 - **flext-observability**: Metrics collection via REST APIs
@@ -154,6 +161,7 @@ This library integrates with:
 See [FLEXT Architecture Documentation](../docs/architecture/) for detailed integration patterns.
 
 ### External Dependencies
+
 - **FastAPI 0.116+**: Modern async web framework
 - **Pydantic 2.10+**: Data validation and serialization
 - **httpx 0.28+**: Modern HTTP client
@@ -162,6 +170,7 @@ See [FLEXT Architecture Documentation](../docs/architecture/) for detailed integ
 ## API Reference
 
 ### Health Endpoints
+
 - `GET /health` - Comprehensive health check with service status
 - `GET /health/live` - Liveness probe for Kubernetes
 - `GET /health/ready` - Readiness probe for Kubernetes
@@ -169,6 +178,7 @@ See [FLEXT Architecture Documentation](../docs/architecture/) for detailed integ
 - `GET /info` - Detailed API and environment information
 
 ### Documentation
+
 - `/docs` - Interactive Swagger UI (development mode)
 - `/redoc` - ReDoc documentation (development mode)
 - `/openapi.json` - OpenAPI schema

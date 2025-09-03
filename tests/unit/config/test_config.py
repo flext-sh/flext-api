@@ -18,7 +18,7 @@ import pytest
 from flext_core import FlextConfig, FlextConstants, FlextResult
 from pydantic import ValidationError
 
-from flext_api import FlextApiConfig, create_api_settings
+from flext_api import FlextApiConfig
 
 
 class TestFlextApiConfig:
@@ -38,17 +38,15 @@ class TestFlextApiConfig:
 
     def test_settings_creation_with_values(self) -> None:
         """Test settings creation with custom values."""
-        settings = FlextApiConfig.model_validate(
-            {
-                "api_host": "api.example.com",
-                "api_port": 8080,
-                "api_workers": 4,
-                "default_timeout": 60,
-                "max_retries": 5,
-                "enable_caching": False,
-                "cache_ttl": 600,
-            }
-        )
+        settings = FlextApiConfig.model_validate({
+            "api_host": "api.example.com",
+            "api_port": 8080,
+            "api_workers": 4,
+            "default_timeout": 60,
+            "max_retries": 5,
+            "enable_caching": False,
+            "cache_ttl": 600,
+        })
 
         assert settings.api_host == "api.example.com"
         assert settings.api_port == 8080
@@ -206,13 +204,11 @@ class TestFlextApiConfig:
 
     def test_settings_serialization(self) -> None:
         """Test settings can be serialized and deserialized."""
-        original_settings = FlextApiConfig.model_validate(
-            {
-                "api_host": "test.com",
-                "api_port": 8080,
-                "api_workers": 2,
-            }
-        )
+        original_settings = FlextApiConfig.model_validate({
+            "api_host": "test.com",
+            "api_port": 8080,
+            "api_workers": 2,
+        })
 
         # Test model_dump (Pydantic v2)
         data = original_settings.model_dump()
@@ -228,11 +224,11 @@ class TestFlextApiConfig:
 
 
 class TestCreateApiSettingsFactory:
-    """Test create_api_settings factory function."""
+    """Test FlextApiConfig.create_main factory method."""
 
-    def test_create_api_settings_no_overrides(self) -> None:
-        """Test factory function with no overrides."""
-        result = create_api_settings()
+    def test_create_main_no_overrides(self) -> None:
+        """Test factory method with no overrides."""
+        result = FlextApiConfig.create_main()
 
         assert isinstance(result, FlextResult)
         assert result.success
@@ -242,9 +238,9 @@ class TestCreateApiSettingsFactory:
         assert settings.api_host == "localhost"
         assert settings.api_port == FlextConstants.Platform.FLEXT_API_PORT
 
-    def test_create_api_settings_with_valid_overrides(self) -> None:
+    def test_create_main_with_valid_overrides(self) -> None:
         """Test factory function with valid overrides."""
-        result = create_api_settings(
+        result = FlextApiConfig.create_main(
             api_host="custom.host.com",
             api_port=9999,
             api_workers=6,
@@ -256,28 +252,28 @@ class TestCreateApiSettingsFactory:
         assert settings.api_port == 9999
         assert settings.api_workers == 6
 
-    def test_create_api_settings_with_invalid_overrides(self) -> None:
+    def test_create_main_with_invalid_overrides(self) -> None:
         """Test factory function with invalid overrides."""
-        result = create_api_settings(api_port=-1)
+        result = FlextApiConfig.create_main(api_port=-1)
 
         assert result.is_failure
         assert result.error is not None
         assert "Failed to create settings" in result.error
         assert isinstance(result.error, str)
 
-    def test_create_api_settings_with_invalid_port_validation(self) -> None:
+    def test_create_main_with_invalid_port_validation(self) -> None:
         """Test factory function with port that fails custom validation."""
         invalid_port = FlextConstants.Platform.MAX_PORT_NUMBER + 1000
-        result = create_api_settings(api_port=invalid_port)
+        result = FlextApiConfig.create_main(api_port=invalid_port)
 
         assert result.is_failure
         assert result.error is not None
         assert result.error is not None
         assert "Failed to create settings" in result.error
 
-    def test_create_api_settings_mixed_valid_invalid(self) -> None:
+    def test_create_main_mixed_valid_invalid(self) -> None:
         """Test factory function with mix of valid and invalid settings."""
-        result = create_api_settings(
+        result = FlextApiConfig.create_main(
             api_host="valid.host.com",  # Valid
             api_port=-100,  # Invalid
         )
@@ -286,9 +282,9 @@ class TestCreateApiSettingsFactory:
         assert result.error is not None
         assert "Failed to create settings" in result.error
 
-    def test_create_api_settings_empty_dict_override(self) -> None:
+    def test_create_main_empty_dict_override(self) -> None:
         """Test factory function handles empty overrides correctly."""
-        result = create_api_settings()
+        result = FlextApiConfig.create_main()
 
         assert result.success
         settings = result.value
@@ -296,9 +292,9 @@ class TestCreateApiSettingsFactory:
         assert settings.api_host == "localhost"
         assert settings.api_port == FlextConstants.Platform.FLEXT_API_PORT
 
-    def test_create_api_settings_type_conversion(self) -> None:
+    def test_create_main_type_conversion(self) -> None:
         """Test factory function handles type conversion correctly."""
-        result = create_api_settings(
+        result = FlextApiConfig.create_main(
             api_port="8080",  # String that should convert to int
             api_workers="4",  # String that should convert to int
             enable_caching="true",  # String that should convert to bool
@@ -310,9 +306,9 @@ class TestCreateApiSettingsFactory:
         assert settings.api_workers == 4
         assert settings.enable_caching is True
 
-    def test_create_api_settings_return_type_verification(self) -> None:
+    def test_create_main_return_type_verification(self) -> None:
         """Test factory function returns correct FlextResult type."""
-        result = create_api_settings()
+        result = FlextApiConfig.create_main()
 
         # Test FlextResult interface
         assert hasattr(result, "success")
@@ -327,7 +323,7 @@ class TestCreateApiSettingsFactory:
         assert result.error is None
 
         # Test failure case
-        failed_result = create_api_settings(api_port="invalid")
+        failed_result = FlextApiConfig.create_main(api_port="invalid")
         assert failed_result.success is False
         assert failed_result.is_failure is True
         assert failed_result.error is not None

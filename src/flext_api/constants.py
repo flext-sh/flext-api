@@ -141,6 +141,24 @@ class FlextApiConstants(FlextConstants):
         # Maximum valid HTTP status code
         MAX_STATUS_CODE: Final[int] = 600
 
+    class Validation:
+        """Validation and limit constants."""
+
+        # HTTP status ranges
+        CLIENT_ERROR_MIN: Final[int] = 400
+        SERVER_ERROR_MIN: Final[int] = 500
+
+        # Timeout limits
+        MAX_TIMEOUT: Final[float] = 3600.0
+        MIN_TIMEOUT: Final[float] = 0.1
+
+        # Retry limits
+        MAX_RETRIES: Final[int] = 10
+
+        # Name length limits
+        MAX_NAME_LENGTH: Final[int] = 50
+        MIN_NAME_LENGTH: Final[int] = 1
+
     class Client:
         """HTTP client configuration constants."""
 
@@ -202,60 +220,54 @@ class FlextApiConstants(FlextConstants):
         AUTHORIZATION_ERROR: Final[str] = "AUTHORIZATION_ERROR"
         RATE_LIMIT_ERROR: Final[str] = "RATE_LIMIT_ERROR"
 
+    class FieldTypes:
+        """API-specific field type constants."""
 
-class FlextApiFieldType:
-    """API-specific field type constants."""
+        API_KEY: Final[str] = "api_key"
+        BEARER_TOKEN: Final[str] = "bearer_token"
+        PIPELINE_CONFIG: Final[str] = "pipeline_config"
+        PLUGIN_CONFIG: Final[str] = "plugin_config"
+        USER_ROLE: Final[str] = "user_role"
+        ENDPOINT_PATH: Final[str] = "endpoint_path"
+        HTTP_METHOD: Final[str] = "http_method"
+        RESPONSE_FORMAT: Final[str] = "response_format"
+        REQUEST_ID: Final[str] = "request_id"
 
-    API_KEY: Final[str] = "api_key"
-    BEARER_TOKEN: Final[str] = "bearer_token"
-    PIPELINE_CONFIG: Final[str] = "pipeline_config"
-    PLUGIN_CONFIG: Final[str] = "plugin_config"
-    USER_ROLE: Final[str] = "user_role"
-    ENDPOINT_PATH: Final[str] = "endpoint_path"
-    HTTP_METHOD: Final[str] = "http_method"
-    RESPONSE_FORMAT: Final[str] = "response_format"
-    REQUEST_ID: Final[str] = "request_id"
+    class RequestStatus:
+        """API request status constants."""
 
+        PENDING: Final[str] = "pending"
+        PROCESSING: Final[str] = "processing"
+        COMPLETED: Final[str] = "completed"
 
-class FlextApiStatus:
-    """API request status constants."""
+    class Endpoints:
+        """API endpoint path constants."""
 
-    PENDING: Final[str] = "pending"
-    PROCESSING: Final[str] = "processing"
-    COMPLETED: Final[str] = "completed"
+        # Base paths
+        API_V1: Final[str] = "/api/v1"
+        HEALTH: Final[str] = "/health"
+        METRICS: Final[str] = "/metrics"
+        DOCS: Final[str] = "/docs"
 
+        # Authentication endpoints
+        AUTH_LOGIN: Final[str] = "/api/v1/auth/login"
+        AUTH_LOGOUT: Final[str] = "/api/v1/auth/logout"
+        AUTH_REFRESH: Final[str] = "/api/v1/auth/refresh"
+        AUTH_VERIFY: Final[str] = "/api/v1/auth/verify"
 
-class FlextApiEndpoints:
-    """API endpoint path constants."""
+        # Pipeline endpoints
+        PIPELINES: Final[str] = "/api/v1/pipelines"
+        PIPELINE_RUN: Final[str] = "/api/v1/pipelines/{pipeline_id}/run"
+        PIPELINE_STATUS: Final[str] = "/api/v1/pipelines/{pipeline_id}/status"
+        PIPELINE_LOGS: Final[str] = "/api/v1/pipelines/{pipeline_id}/logs"
 
-    # Base paths
-    API_V1: Final[str] = "/api/v1"
-    HEALTH: Final[str] = "/health"
-    METRICS: Final[str] = "/metrics"
-    DOCS: Final[str] = "/docs"
-
-    # Authentication endpoints
-    AUTH_LOGIN: Final[str] = "/api/v1/auth/login"
-    AUTH_LOGOUT: Final[str] = "/api/v1/auth/logout"
-    AUTH_REFRESH: Final[str] = "/api/v1/auth/refresh"
-    AUTH_VERIFY: Final[str] = "/api/v1/auth/verify"
-
-    # Pipeline endpoints
-    PIPELINES: Final[str] = "/api/v1/pipelines"
-    PIPELINE_RUN: Final[str] = "/api/v1/pipelines/{pipeline_id}/run"
-    PIPELINE_STATUS: Final[str] = "/api/v1/pipelines/{pipeline_id}/status"
-    PIPELINE_LOGS: Final[str] = "/api/v1/pipelines/{pipeline_id}/logs"
-
-    # Plugin endpoints
-    PLUGINS: Final[str] = "/api/v1/plugins"
-    PLUGIN_INSTALL: Final[str] = "/api/v1/plugins/install"
-    PLUGIN_UNINSTALL: Final[str] = "/api/v1/plugins/{plugin_id}/uninstall"
-    PLUGIN_CONFIG: Final[str] = "/api/v1/plugins/{plugin_id}/config"
+        # Plugin endpoints
+        PLUGINS: Final[str] = "/api/v1/plugins"
+        PLUGIN_INSTALL: Final[str] = "/api/v1/plugins/install"
+        PLUGIN_UNINSTALL: Final[str] = "/api/v1/plugins/{plugin_id}/uninstall"
+        PLUGIN_CONFIG: Final[str] = "/api/v1/plugins/{plugin_id}/config"
 
 
 __all__ = [
     "FlextApiConstants",
-    "FlextApiEndpoints",
-    "FlextApiFieldType",
-    "FlextApiStatus",
 ]

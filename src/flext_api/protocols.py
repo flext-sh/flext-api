@@ -10,15 +10,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Protocol, TypeVar, cast, runtime_checkable
+from typing import Protocol, cast, runtime_checkable
 
 from flext_core import FlextResult
 
 from flext_api.client import FlextApiClient as ConcreteClient
 
-# Type variables for generic protocols
-T = TypeVar("T")
-TData = TypeVar("TData")
+# Type variables moved inside protocol classes to avoid module-level declarations
 
 
 # =============================================================================
@@ -27,7 +25,7 @@ TData = TypeVar("TData")
 
 
 @runtime_checkable
-class FlextApiClientProtocol(Protocol[TData]):
+class FlextApiClientProtocol(Protocol):
     """Modern HTTP API client protocol for type-safe HTTP operations.
 
     Defines the contract that all FLEXT API clients must implement,
@@ -37,7 +35,7 @@ class FlextApiClientProtocol(Protocol[TData]):
     @abstractmethod
     async def get(
         self, path: str, params: dict[str, object] | None = None
-    ) -> FlextResult[TData]:
+    ) -> FlextResult[object]:
         """Execute HTTP GET request with type-safe response."""
         ...
 
@@ -47,7 +45,7 @@ class FlextApiClientProtocol(Protocol[TData]):
         path: str,
         json_data: dict[str, object] | None = None,
         data: bytes | None = None,
-    ) -> FlextResult[TData]:
+    ) -> FlextResult[object]:
         """Execute HTTP POST request with type-safe response."""
         ...
 
@@ -57,14 +55,14 @@ class FlextApiClientProtocol(Protocol[TData]):
         path: str,
         json_data: dict[str, object] | None = None,
         data: bytes | None = None,
-    ) -> FlextResult[TData]:
+    ) -> FlextResult[object]:
         """Execute HTTP PUT request with type-safe response."""
         ...
 
     @abstractmethod
     async def delete(
         self, path: str, params: dict[str, object] | None = None
-    ) -> FlextResult[TData]:
+    ) -> FlextResult[object]:
         """Execute HTTP DELETE request with type-safe response."""
         ...
 
@@ -197,102 +195,104 @@ class FlextApiAuthentication(Protocol):
 
 
 # =============================================================================
-# FACTORY FUNCTIONS - Modern API creation patterns
+# FACTORY CLASS - Modern API creation patterns consolidated
 # =============================================================================
 
 
-def create_flext_api_client(
-    config: dict[str, object],
-) -> FlextResult[FlextApiClientProtocol[object]]:
-    """Factory function to create FlextApiClient implementation.
+class FlextApiFactory:
+    """Factory class for creating API clients and managers following flext-core patterns.
 
-    Args:
-        config: Client configuration dictionary
-
-    Returns:
-        FlextResult containing configured API client
-
+    Consolidates all factory methods in a single class to eliminate helper functions.
     """
-    # This would be implemented by the concrete implementation
 
-    try:
-        if not config.get("base_url"):
-            return FlextResult[FlextApiClientProtocol[object]].fail(
-                "base_url is required"
+    @staticmethod
+    def create_client(
+        config: dict[str, object],
+    ) -> FlextResult[FlextApiClientProtocol[object]]:
+        """Factory function to create FlextApiClient implementation.
+
+        Args:
+            config: Client configuration dictionary
+
+        Returns:
+            FlextResult containing configured API client
+
+        """
+        # This would be implemented by the concrete implementation
+
+        try:
+            if not config.get("base_url"):
+                return FlextResult[FlextApiClientProtocol[object]].fail(
+                    "base_url is required"
+                )
+
+            # Extract timeout value safely
+            timeout_val = config.get("timeout", 30.0)
+            timeout = (
+                float(timeout_val) if isinstance(timeout_val, (int, float)) else 30.0
             )
 
-        # Extract timeout value safely
-        timeout_val = config.get("timeout", 30.0)
-        timeout = float(timeout_val) if isinstance(timeout_val, (int, float)) else 30.0
+            # Extract max_retries value safely
+            retries_val = config.get("max_retries", 3)
+            max_retries = retries_val if isinstance(retries_val, int) else 3
 
-        # Extract max_retries value safely
-        retries_val = config.get("max_retries", 3)
-        max_retries = retries_val if isinstance(retries_val, int) else 3
+            client = ConcreteClient(
+                base_url=str(config["base_url"]),
+                timeout=timeout,
+                headers=cast("dict[str, str]", config.get("headers", {})),
+                max_retries=max_retries,
+            )
+            return FlextResult[FlextApiClientProtocol[object]].ok(
+                cast("FlextApiClientProtocol[object]", client)
+            )
 
-        client = ConcreteClient(
-            base_url=str(config["base_url"]),
-            timeout=timeout,
-            headers=cast("dict[str, str]", config.get("headers", {})),
-            max_retries=max_retries,
-        )
-        return FlextResult[FlextApiClientProtocol[object]].ok(
-            cast("FlextApiClientProtocol[object]", client)
-        )
+        except Exception as e:
+            return FlextResult[FlextApiClientProtocol[object]].fail(
+                f"Failed to create client: {e}"
+            )
 
-    except Exception as e:
-        return FlextResult[FlextApiClientProtocol[object]].fail(
-            f"Failed to create client: {e}"
-        )
+    @staticmethod
+    def create_manager(
+        service_name: str | None = None,
+        service_version: str | None = None,
+        default_base_url: str | None = None,
+    ) -> FlextResult[FlextApiManagerProtocol]:
+        """Factory function to create FlextApiManager implementation.
 
+        Args:
+            service_name: Optional service name
+            service_version: Optional service version
+            default_base_url: Optional default base URL
 
-def create_flext_api_manager(
-    service_name: str | None = None,
-    service_version: str | None = None,
-    default_base_url: str | None = None,
-) -> FlextResult[FlextApiManagerProtocol]:
-    """Factory function to create FlextApiManager implementation.
+        Returns:
+            FlextResult containing configured API manager
 
-    Args:
-        service_name: Optional service name
-        service_version: Optional service version
-        default_base_url: Optional default base URL
+        """
+        from typing import cast
 
-    Returns:
-        FlextResult containing configured API manager
+        from flext_api.api import FlextApi
 
-    """
-    from typing import cast
+        try:
+            manager = FlextApi(
+                service_name=service_name or "flext-api",
+                service_version=service_version or "0.9.0",
+                default_base_url=default_base_url or "http://localhost:8000",
+            )
+            return FlextResult[FlextApiManagerProtocol].ok(
+                cast("FlextApiManagerProtocol", manager)
+            )
 
-    from flext_api.api import FlextApi
+        except Exception as e:
+            return FlextResult[FlextApiManagerProtocol].fail(
+                f"Failed to create manager: {e}"
+            )
 
-    try:
-        manager = FlextApi(
-            service_name=service_name or "flext-api",
-            service_version=service_version or "0.9.0",
-            default_base_url=default_base_url or "http://localhost:8000",
-        )
-        return FlextResult[FlextApiManagerProtocol].ok(
-            cast("FlextApiManagerProtocol", manager)
-        )
-
-    except Exception as e:
-        return FlextResult[FlextApiManagerProtocol].fail(
-            f"Failed to create manager: {e}"
-        )
-
-
-# =============================================================================
-# EXPORTS
-# =============================================================================
 
 __all__ = [
     "FlextApiAuthentication",
-    # Protocol definitions
     "FlextApiClientProtocol",
     "FlextApiDiscovery",
+    "FlextApiFactory",
     "FlextApiManagerProtocol",
     "FlextApiService",
-    # Factory functions
-    "create_flext_api_client",
-    "create_flext_api_manager",
 ]

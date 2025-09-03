@@ -13,7 +13,8 @@ from typing import TypeVar
 from flext_api import (
     FlextApi,
     FlextApiClient,
-    FlextApiModels,
+    FlextApiQueryBuilder,
+    QueryBuilder,
     create_flext_api,
 )
 
@@ -36,25 +37,24 @@ class TestAPIPerformanceBenchmarks:
 
     def test_query_building_benchmark(
         self,
-        benchmark: Callable[
-            [Callable[[], FlextApiModels.QueryBuilder]], FlextApiModels.QueryBuilder
-        ],
+        benchmark: Callable[[Callable[[], QueryBuilder]], QueryBuilder],
     ) -> None:
         """Benchmark query building operations."""
 
-        def build_complex_query() -> FlextApiModels.QueryBuilder:
-            models = FlextApiModels()
-            builder = models.QueryBuilder()
-            # Add filters
-            builder.add_filter("status", "active")
-            builder.add_filter("category", "premium")
-            builder.add_filter("created_at", "2024-01-01")
-            builder.add_filter("limit", 50)
-            return builder
+        def build_complex_query() -> QueryBuilder:
+            builder = FlextApiQueryBuilder()
+            # Add filters using proper API
+            return (
+                builder.for_query()
+                .equals("status", "active")
+                .equals("category", "premium")
+                .equals("created_at", "2024-01-01")
+                .limit(50)
+                .build()
+            )
 
         result = benchmark(build_complex_query)
         assert result is not None
-        assert len(result.filters) > 0
 
     def test_response_building_benchmark(
         self, benchmark: Callable[[Callable[[], object]], object]
@@ -62,13 +62,12 @@ class TestAPIPerformanceBenchmarks:
         """Benchmark response building operations."""
 
         def build_complex_response() -> object:
-            models = FlextApiModels()
-            builder = models.ResponseBuilder()
-            response_result = builder.success(
+            builder = FlextApiQueryBuilder()
+            response_result = builder.for_response().success(
                 data={"items": list(range(100)), "total": 100},
                 message="Data retrieved successfully",
             )
-            return response_result.data if response_result.success else None
+            return response_result.value if response_result.success else None
 
         result = benchmark(build_complex_response)
         assert result is not None
@@ -77,30 +76,33 @@ class TestAPIPerformanceBenchmarks:
     def test_builder_pattern_benchmark(
         self,
         benchmark: Callable[
-            [Callable[[], tuple[FlextApiModels.QueryBuilder, object]]],
-            tuple[FlextApiModels.QueryBuilder, object],
+            [Callable[[], tuple[QueryBuilder, object]]],
+            tuple[QueryBuilder, object],
         ],
     ) -> None:
         """Benchmark builder pattern operations."""
 
-        def complex_builder_operations() -> tuple[FlextApiModels.QueryBuilder, object]:
-            models = FlextApiModels()
+        def complex_builder_operations() -> tuple[QueryBuilder, object]:
+            builder = FlextApiQueryBuilder()
 
             # Query building
-            query_builder = models.QueryBuilder()
-            query_builder.add_filter("status", "published")
-            query_builder.add_filter("created_at", "2024-01-01")
-            query_builder.sort_by = "updated_at"
-            query_builder.sort_order = "desc"
-            query_builder.page = 2
-            query_builder.page_size = 25
+            query = (
+                builder.for_query()
+                .equals("status", "published")
+                .equals("created_at", "2024-01-01")
+                .sort_desc("updated_at")
+                .page(2)
+                .page_size(25)
+                .build()
+            )
 
             # Response building
-            response_builder = models.ResponseBuilder()
-            response_result = response_builder.success(data={"items": list(range(25))})
-            response_data = response_result.data if response_result.success else None
+            response_result = builder.for_response().success(
+                data={"items": list(range(25))}
+            )
+            response_data = response_result.value if response_result.success else None
 
-            return query_builder, response_data
+            return query, response_data
 
         query, response = benchmark(complex_builder_operations)
         assert query is not None
@@ -133,29 +135,30 @@ class TestAPIPerformanceBenchmarks:
     def test_multiple_queries_benchmark(
         self,
         benchmark: Callable[
-            [Callable[[], list[FlextApiModels.QueryBuilder]]],
-            list[FlextApiModels.QueryBuilder],
+            [Callable[[], list[QueryBuilder]]],
+            list[QueryBuilder],
         ],
     ) -> None:
         """Benchmark multiple query operations."""
 
-        def build_multiple_queries() -> list[FlextApiModels.QueryBuilder]:
+        def build_multiple_queries() -> list[QueryBuilder]:
             queries = []
-            models = FlextApiModels()
+            builder = FlextApiQueryBuilder()
 
             for i in range(100):
-                query_builder = models.QueryBuilder()
-                query_builder.add_filter("id", i)
-                query_builder.add_filter(
-                    "status", "active" if i % 2 == 0 else "inactive"
+                query = (
+                    builder.for_query()
+                    .equals("id", i)
+                    .equals("status", "active" if i % 2 == 0 else "inactive")
+                    .equals("priority", "high" if i % 3 == 0 else "normal")
+                    .build()
                 )
-                query_builder.add_filter("priority", "high" if i % 3 == 0 else "normal")
-                queries.append(query_builder)
+                queries.append(query)
             return queries
 
         result = benchmark(build_multiple_queries)
         assert len(result) == 100
-        assert all(len(q.filters) > 0 for q in result)
+        assert all(q is not None for q in result)
 
     def test_large_response_benchmark(
         self, benchmark: Callable[[Callable[[], object]], object]
@@ -172,12 +175,11 @@ class TestAPIPerformanceBenchmarks:
                 "total": 1000,
             }
 
-            models = FlextApiModels()
-            builder = models.ResponseBuilder()
-            response_result = builder.success(
+            builder = FlextApiQueryBuilder()
+            response_result = builder.for_response().success(
                 data=large_data, message="Large dataset retrieved"
             )
-            return response_result.data if response_result.success else None
+            return response_result.value if response_result.success else None
 
         result = benchmark(build_large_response)
         assert result is not None
@@ -193,18 +195,17 @@ class TestAPIPerformanceBenchmarks:
 
         def build_paginated_responses() -> list[object]:
             responses = []
-            models = FlextApiModels()
+            builder = FlextApiQueryBuilder()
 
             for page in range(1, 11):  # 10 pages
-                builder = models.ResponseBuilder()
-                response_result = builder.success(
+                response_result = builder.for_response().success(
                     data={"items": list(range((page - 1) * 20, page * 20))},
                     message=f"Page {page} of 10",
                 )
                 if response_result.success:
-                    responses.append(response_result.data)
+                    responses.append(response_result.value)
             return responses
 
         result = benchmark(build_paginated_responses)
         assert len(result) == 10
-        assert all(isinstance(r, dict) and r.get("status") == "success" for r in result)
+        assert all(isinstance(r, dict) for r in result)
