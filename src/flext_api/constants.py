@@ -141,7 +141,7 @@ class FlextApiConstants(FlextConstants):
         # Maximum valid HTTP status code
         MAX_STATUS_CODE: Final[int] = 600
 
-    class Validation:
+    class ApiValidation:
         """Validation and limit constants."""
 
         # HTTP status ranges
@@ -240,7 +240,7 @@ class FlextApiConstants(FlextConstants):
         PROCESSING: Final[str] = "processing"
         COMPLETED: Final[str] = "completed"
 
-    class Endpoints:
+    class ApiEndpoints:
         """API endpoint path constants."""
 
         # Base paths

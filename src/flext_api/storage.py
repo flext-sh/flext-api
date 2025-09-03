@@ -24,13 +24,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from flext_core import (
     FlextDomainService,
     FlextLogger,
     FlextMixins,
     FlextResult,
 )
-from pydantic import Field
 
 from flext_api.typings import FlextApiTypes
 
@@ -40,18 +41,29 @@ logger = FlextLogger(__name__)
 class FlextApiStorage(FlextDomainService[dict[str, object]]):
     """REAL HTTP API storage system using FlextMixins and FlextMixins functionality."""
 
-    class MemoryCache(FlextMixins.Cacheable, FlextDomainService[dict[str, object]]):
+    class MemoryCache(FlextDomainService[dict[str, object]]):
         """REAL in-memory caching using FlextMixins.Cacheable."""
 
-        max_size: int = Field(default=10000, description="Maximum cache size")
-        default_ttl: int = Field(default=3600, description="Default TTL in seconds")
-
         def __init__(
-            self, max_size: int = 10000, default_ttl: int = 3600, **data: object
+            self, max_size: int = 10000, default_ttl: int = 3600
         ) -> None:
-            super().__init__(**data)
-            self.max_size = max_size
-            self.default_ttl = default_ttl
+            # Initialize parent class properly
+            super().__init__()
+            # Set instance attributes directly
+            self._max_size = max_size
+            self._default_ttl = default_ttl
+            # Simple in-memory cache implementation
+            self._cache_store: dict[str, object] = {}
+
+        @property
+        def max_size(self) -> int:
+            """Maximum cache size."""
+            return self._max_size
+
+        @property
+        def default_ttl(self) -> int:
+            """Default TTL in seconds."""
+            return self._default_ttl
 
         def execute(self) -> FlextResult[dict[str, object]]:
             """Execute cache service with REAL FlextMixins functionality."""
@@ -77,16 +89,12 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                         "Cache key cannot be empty"
                     )
 
-                # Use FlextMixins.Cacheable inherited method
-                if self.has_cached_value(key):
-                    cached_value = self.get_cached_value(key)
+                # Use simple cache implementation
+                cached_value = self._cache_store.get(key)
+                if cached_value is not None:
                     logger.debug("Cache hit", key=key)
                     # Type cast for proper FlextResult typing
-                    cache_result = (
-                        (cached_value, {}, 200)
-                        if cached_value is not None
-                        else (None, {}, 404)
-                    )
+                    cache_result: FlextApiTypes.Cache.CacheValue = (cached_value, {}, 200)
                     return FlextResult[FlextApiTypes.Cache.CacheValue].ok(cache_result)
 
                 logger.debug("Cache miss", key=key)
@@ -111,8 +119,8 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 if not key:
                     return FlextResult[None].fail("Cache key cannot be empty")
 
-                # Use FlextMixins.Cacheable inherited method
-                self.set_cached_value(key, value)
+                # Use simple cache implementation
+                self._cache_store[key] = value
                 logger.debug("Cache set", key=key, ttl=ttl or self.default_ttl)
 
                 return FlextResult[None].ok(None)
@@ -127,9 +135,9 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 if not key:
                     return FlextResult[None].fail("Cache key cannot be empty")
 
-                # Use FlextMixins.Cacheable clear functionality
-                if self.has_cached_value(key):
-                    self.clear_cache()  # FlextMixins clear method
+                # Use simple cache implementation for delete
+                if key in self._cache_store:
+                    del self._cache_store[key]
                     logger.debug("Cache delete", key=key)
                     return FlextResult[None].ok(None)
 
@@ -139,26 +147,27 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 logger.exception("Cache delete operation failed", key=key, error=str(e))
                 return FlextResult[None].fail(f"Cache delete operation failed: {e}")
 
-    class PersistentStorage(
-        FlextMixins.Stateful, FlextDomainService[dict[str, object]]
-    ):
+    class PersistentStorage(FlextDomainService[dict[str, object]]):
         """REAL persistent storage using FlextMixins.Stateful."""
 
-        storage_path: str = Field(
-            default="/tmp/flext_api_storage", description="Storage path"
-        )
+        def __init__(self, storage_path: str | None = None) -> None:
+            path = storage_path or str(Path.home() / ".flext_api_storage")
+            # Initialize parent class properly
+            super().__init__()
+            # Set instance attributes
+            self._storage_path = path
+            # Simple state management
+            self._state: dict[str, object] = {"storage": {}, "path": path}
 
-        def __init__(self, storage_path: str | None = None, **data: object) -> None:
-            path = storage_path or "/tmp/flext_api_storage"
-            super().__init__(storage_path=path, **data)
-            # FlextMixins.Stateful mixin automatically initializes state in super().__init__()
-            # Set initial storage state
-            FlextMixins.update_state(self, {"storage": {}})
+        @property
+        def storage_path(self) -> str:
+            """Storage path."""
+            return self._storage_path
 
         def execute(self) -> FlextResult[dict[str, object]]:
             """Execute storage service with REAL FlextMixins functionality."""
             try:
-                storage_state = FlextMixins.get_attribute(self, "storage") or {}
+                storage_state = self._state.get("storage", {})
                 storage_stats: dict[str, object] = {
                     "storage_type": "FlextMixins.Stateful",
                     "storage_path": self.storage_path,
@@ -182,16 +191,16 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 if not key:
                     return FlextResult[str].fail("Storage key cannot be empty")
 
-                # Use FlextMixins.Stateful functionality
-                storage_attr = FlextMixins.get_attribute(self, "storage") or {}
-                if isinstance(storage_attr, dict):
-                    storage = storage_attr
-                    storage[key] = data
-                    FlextMixins.set_attribute(self, "storage", storage)
+                # Use simple state management with type casting
+                storage_data = self._state.get("storage", {})
+                if isinstance(storage_data, dict):
+                    # Type cast for mypy
+                    storage_dict: dict[str, object] = storage_data
+                    storage_dict[key] = data
+                    self._state["storage"] = storage_dict
                 else:
                     # Initialize new storage dict
-                    new_storage = {key: data}
-                    FlextMixins.set_attribute(self, "storage", new_storage)
+                    self._state["storage"] = {key: data}
                 logger.debug("Storage save", key=key, data_size=len(str(data)))
 
                 return FlextResult[str].ok(f"Data saved with key: {key}")
@@ -208,11 +217,11 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                         "Storage key cannot be empty"
                     )
 
-                # Use FlextMixins.Stateful functionality
-                storage_attr = FlextMixins.get_attribute(self, "storage") or {}
+                # Use simple state management
+                storage_data = self._state.get("storage", {})
 
-                if isinstance(storage_attr, dict) and key in storage_attr:
-                    data = storage_attr[key]
+                if isinstance(storage_data, dict) and key in storage_data:
+                    data = storage_data[key]
                     logger.debug("Storage load", key=key)
                     return FlextResult[FlextApiTypes.Response.JsonResponse].ok(data)
 
@@ -226,20 +235,23 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                     f"Storage load operation failed: {e}"
                 )
 
-    class CacheOperations(FlextMixins.Cacheable):
-        """REAL cache operations using FlextMixins functionality."""
+    class CacheOperations:
+        """REAL cache operations using simple cache implementation."""
+
+        def __init__(self) -> None:
+            """Initialize cache operations."""
+            self._cache_store: dict[str, object] = {}
 
         def batch_set(
             self, items: dict[str, FlextApiTypes.Cache.CacheValue]
         ) -> FlextResult[int]:
-            """Set multiple cache items using REAL FlextMixins functionality."""
+            """Set multiple cache items using simple cache implementation."""
             try:
                 success_count = 0
                 for key, value in items.items():
                     if key:  # Only process valid keys
-                        # Convert to proper cache value format
-                        cache_value = (value, {}, 200)
-                        self.set_cached_value(key, cache_value)
+                        # Store the cache value directly
+                        self._cache_store[key] = value
                         success_count += 1
 
                 logger.debug("Batch cache set", count=success_count, total=len(items))
@@ -252,15 +264,15 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
         def batch_get(
             self, keys: list[str]
         ) -> FlextResult[dict[str, FlextApiTypes.Cache.CacheValue]]:
-            """Get multiple cache items using REAL FlextMixins functionality."""
+            """Get multiple cache items using simple cache implementation."""
             try:
                 results: dict[str, FlextApiTypes.Cache.CacheValue] = {}
 
                 for key in keys:
-                    if key and self.has_cached_value(key):
-                        cached_value = self.get_cached_value(key)
+                    if key in self._cache_store:
+                        cached_value = self._cache_store[key]
                         # Convert to proper cache value format
-                        cache_result = (
+                        cache_result: FlextApiTypes.Cache.CacheValue = (
                             (cached_value, {}, 200)
                             if cached_value is not None
                             else (None, {}, 404)
@@ -280,7 +292,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
 
     # Main FlextApiStorage methods
     def __init__(self, **data: object) -> None:
-        super().__init__(**data)
+        super().__init__()
         self._cache = self.MemoryCache()
         self._storage = self.PersistentStorage()
 
@@ -320,9 +332,9 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
         return self._cache.delete(key)
 
     def clear(self) -> FlextResult[None]:
-        """Clear all cache using REAL FlextMixins functionality."""
+        """Clear all cache using simple cache implementation."""
         try:
-            self._cache.clear_cache()
+            self._cache._cache_store.clear()
             logger.info("Storage cache cleared")
             return FlextResult[None].ok(None)
         except Exception as e:

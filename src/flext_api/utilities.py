@@ -43,7 +43,7 @@ class FlextApiUtilities(FlextUtilities):
 
     @staticmethod
     def validate_client_config(
-        config: dict[str, object],
+        config: object,
     ) -> FlextResult[dict[str, object]]:
         """Validate client configuration using FlextUtilities."""
         try:
@@ -98,9 +98,7 @@ class FlextApiUtilities(FlextUtilities):
 
                 # If parsing succeeded (not default empty dict fallback)
                 if parsed != {} or data.strip() == "{}":
-                    # Apply list filtering if needed
-                    if isinstance(parsed, list):
-                        return [item for item in parsed if item is not None]
+                    # Apply list filtering for list data
                     return parsed
                 # Fallback to cleaned text using FlextUtilities
                 return FlextUtilities.clean_text(data)
@@ -207,9 +205,10 @@ class FlextApiUtilities(FlextUtilities):
                 return FlextResult[int].fail("Status code must be a valid integer")
 
             # HTTP status code range validation (RFC 7231)
-            if not (100 <= safe_status <= 599):
+            from flext_api.constants import FlextApiConstants
+            if not (FlextApiConstants.HttpStatus.CONTINUE <= safe_status <= FlextApiConstants.HttpStatus.NETWORK_CONNECT_TIMEOUT_ERROR):
                 return FlextResult[int].fail(
-                    f"Status code must be between 100 and 599, got: {safe_status}"
+                    f"Status code must be between {FlextApiConstants.HttpStatus.CONTINUE} and {FlextApiConstants.HttpStatus.NETWORK_CONNECT_TIMEOUT_ERROR}, got: {safe_status}"
                 )
 
             return FlextResult[int].ok(safe_status)

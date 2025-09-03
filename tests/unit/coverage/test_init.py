@@ -113,11 +113,13 @@ def test_storage_backends() -> None:
     assert memory_storage is not None
 
     # Test file backend
-    file_config = StorageConfig(
-        backend=StorageBackend.FILE,
-        namespace="file_test",
-        file_path="/tmp/flext_test.json",
-    )
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
+        file_config = StorageConfig(
+            backend=StorageBackend.FILE,
+            namespace="file_test",
+            file_path=tmp.name,
+        )
     file_storage = FlextApiStorage(file_config)
     assert file_storage is not None
 

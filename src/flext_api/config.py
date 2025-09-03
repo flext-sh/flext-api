@@ -9,19 +9,20 @@ Module Role in Architecture:
     and settings distribution following Pydantic patterns.
 
 Classes and Methods:
-    FlextApiConfig:                         # Hierarchical HTTP API configuration system
-        # Server Configuration:
-        ServerConfig(BaseConfig)            # HTTP server settings
-        ClientConfig(BaseConfig)            # HTTP client settings
-        SecurityConfig(BaseConfig)          # CORS and security settings
-
-        # Environment Handling:
-        EnvConfig(BaseConfig)               # Environment variable mapping
+    FlextApiConfig:                         # HTTP API configuration with direct attributes
+        # Direct Configuration Attributes:
+        api_host: str                       # API server host
+        api_port: int                       # API server port
+        api_workers: int                    # Number of worker processes
+        default_timeout: int                # Default HTTP timeout
+        max_retries: int                    # Maximum retry attempts
+        enable_caching: bool                # Enable response caching
+        cache_ttl: int                      # Cache TTL in seconds
 
         # Factory Methods:
-        create_server_config() -> FlextResult[ServerConfig]
-        create_client_config() -> FlextResult[ClientConfig]
-        create_security_config() -> FlextResult[SecurityConfig]
+        create_main() -> FlextResult[FlextApiConfig]
+        create_with_validation() -> FlextResult[FlextApiConfig]
+        validate_business_rules() -> FlextResult[None]
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -29,15 +30,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextModels, FlextResult
+from flext_core import FlextConfig, FlextLogger, FlextModels, FlextResult
 from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from flext_api.constants import FlextApiConstants
 
 logger = FlextLogger(__name__)
 
 
-class FlextApiConfig(FlextModels.BaseConfig):
+class FlextApiConfig(FlextConfig):  # type: ignore[misc]
     """Single consolidated class containing ALL HTTP API configuration management.
 
     This is the ONLY configuration class in this module, containing all HTTP API
@@ -45,7 +47,76 @@ class FlextApiConfig(FlextModels.BaseConfig):
     pattern rigorously.
     """
 
-    class ServerConfig(FlextModels.BaseConfig):
+    class ApiSettings(BaseSettings):
+        """Environment-aware configuration for FlextApiConfig."""
+
+        # Server Configuration
+        api_host: str = Field(default="127.0.0.1", description="API server host")
+        api_port: int = Field(
+            default=8000, ge=1, le=65535, description="API server port"
+        )
+        api_workers: int = Field(
+            default=1, ge=1, description="Number of worker processes"
+        )
+
+        # Client Configuration
+        default_timeout: int = Field(
+            default=30, ge=1, description="Default HTTP timeout"
+        )
+        max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts")
+
+        # Cache Configuration
+        enable_caching: bool = Field(
+            default=True, description="Enable response caching"
+        )
+        cache_ttl: int = Field(default=300, ge=1, description="Cache TTL in seconds")
+
+        model_config = SettingsConfigDict(
+            env_prefix="FLEXT_API_",
+            env_file=".env",
+            env_file_encoding="utf-8",
+            case_sensitive=False,
+            validate_assignment=True,
+            extra="ignore",
+            str_strip_whitespace=True,
+        )
+
+        @field_validator("api_port")
+        @classmethod
+        def validate_port(cls, v: int) -> int:
+            """Validate port number."""
+            max_port = 65535
+            if not (1 <= v <= max_port):
+                msg = f"Port must be between 1 and {max_port}"
+                raise ValueError(msg)
+            return v
+
+        @field_validator("api_workers")
+        @classmethod
+        def validate_workers(cls, v: int) -> int:
+            """Validate worker count."""
+            if v < 1:
+                msg = "Workers must be at least 1"
+                raise ValueError(msg)
+            if v > FlextApiConstants.Server.MAX_WORKERS:
+                msg = f"Workers cannot exceed {FlextApiConstants.Server.MAX_WORKERS}"
+                raise ValueError(msg)
+            return v
+
+        @classmethod
+        def create_with_validation(
+            cls, **kwargs: object
+        ) -> FlextResult[FlextApiConfig.ApiSettings]:
+            """Create validated settings instance."""
+            try:
+                settings = cls(**kwargs)  # type: ignore[arg-type]
+                return FlextResult["FlextApiConfig.ApiSettings"].ok(settings)
+            except Exception as e:
+                return FlextResult["FlextApiConfig.ApiSettings"].fail(
+                    f"Failed to create settings: {e}"
+                )
+
+    class ServerConfig(FlextModels.Config):
         """HTTP server configuration with validation."""
 
         host: str = Field(default="127.0.0.1", description="Server host address")
@@ -94,7 +165,7 @@ class FlextApiConfig(FlextModels.BaseConfig):
                     f"Failed to create Uvicorn config: {e}"
                 )
 
-    class ClientConfig(FlextModels.BaseConfig):
+    class ClientConfig(FlextModels.Config):
         """HTTP client configuration with validation."""
 
         base_url: str = Field(
@@ -173,7 +244,7 @@ class FlextApiConfig(FlextModels.BaseConfig):
                     f"Failed to create HTTPX config: {e}"
                 )
 
-    class SecurityConfig(FlextModels.BaseConfig):
+    class SecurityConfig(FlextModels.Config):  # type: ignore[misc]
         """HTTP security and CORS configuration."""
 
         cors_enabled: bool = Field(default=True, description="Enable CORS middleware")
@@ -243,7 +314,7 @@ class FlextApiConfig(FlextModels.BaseConfig):
                     f"Failed to create CORS config: {e}"
                 )
 
-    class EnvConfig(FlextModels.BaseConfig):
+    class EnvConfig(FlextModels.Config):
         """Environment variable configuration mapping."""
 
         # Server environment variables
@@ -343,18 +414,21 @@ class FlextApiConfig(FlextModels.BaseConfig):
     # MAIN CONFIGURATION - Complete configuration management
     # =========================================================================
 
-    class MainConfig(FlextModels.BaseConfig):
+    class MainConfig(FlextModels.Config):
         """Main configuration combining all config types."""
 
-        server: FlextApiConfig.ServerConfig = Field(
-            default_factory=FlextApiConfig.ServerConfig
-        )
-        client: FlextApiConfig.ClientConfig = Field(
-            default_factory=FlextApiConfig.ClientConfig
-        )
-        security: FlextApiConfig.SecurityConfig = Field(
-            default_factory=FlextApiConfig.SecurityConfig
-        )
+        def __init__(self, **data: object) -> None:
+            # Initialize parent without data
+            super().__init__()
+
+            # Set config instances manually
+            self.server = data.get("server", FlextApiConfig.ServerConfig())  # type: ignore[assignment]
+            self.client = data.get("client", FlextApiConfig.ClientConfig())  # type: ignore[assignment]
+            self.security = data.get("security", FlextApiConfig.SecurityConfig())  # type: ignore[assignment]
+
+        server: FlextApiConfig.ServerConfig
+        client: FlextApiConfig.ClientConfig
+        security: FlextApiConfig.SecurityConfig
 
         def create_complete_config(self) -> FlextResult[dict[str, object]]:
             """Create complete configuration dictionary."""

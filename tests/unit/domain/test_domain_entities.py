@@ -130,7 +130,7 @@ class TestApiRequestEntity:
         requests = []
         for i in range(10):
             request = ApiRequest(
-                id=f"unique_id_{i}_{datetime.now().timestamp()}",
+                id=f"unique_id_{i}_{datetime.now(datetime.UTC).timestamp()}",
                 method="GET",
                 url=f"https://api.example.com/resource/{i}",
             )

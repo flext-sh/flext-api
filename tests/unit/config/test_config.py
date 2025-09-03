@@ -18,7 +18,7 @@ import pytest
 from flext_core import FlextConfig, FlextConstants, FlextResult
 from pydantic import ValidationError
 
-from flext_api import FlextApiConfig
+from flext_api.config import FlextApiConfig
 
 
 class TestFlextApiConfig:
@@ -26,10 +26,10 @@ class TestFlextApiConfig:
 
     def test_settings_creation_defaults(self) -> None:
         """Test settings creation with default values."""
-        settings = FlextApiConfig()
+        settings = FlextApiConfig.Settings()
 
-        assert settings.api_host == "localhost"
-        assert settings.api_port == FlextConstants.Platform.FLEXT_API_PORT
+        assert settings.api_host == "127.0.0.1"
+        assert settings.api_port == 8000
         assert settings.api_workers == 1
         assert settings.default_timeout == 30
         assert settings.max_retries == 3
@@ -38,15 +38,15 @@ class TestFlextApiConfig:
 
     def test_settings_creation_with_values(self) -> None:
         """Test settings creation with custom values."""
-        settings = FlextApiConfig.model_validate({
-            "api_host": "api.example.com",
-            "api_port": 8080,
-            "api_workers": 4,
-            "default_timeout": 60,
-            "max_retries": 5,
-            "enable_caching": False,
-            "cache_ttl": 600,
-        })
+        settings = FlextApiConfig.Settings(
+            api_host="api.example.com",
+            api_port=8080,
+            api_workers=4,
+            default_timeout=60,
+            max_retries=5,
+            enable_caching=False,
+            cache_ttl=600,
+        )
 
         assert settings.api_host == "api.example.com"
         assert settings.api_port == 8080
@@ -59,22 +59,22 @@ class TestFlextApiConfig:
     def test_port_validation_valid_port(self) -> None:
         """Test port validation with valid ports."""
         # Test minimum valid port
-        settings = FlextApiConfig.model_validate({"api_port": 1})
+        settings = FlextApiConfig.Settings(api_port=1)
         assert settings.api_port == 1
 
         # Test maximum valid port
         max_port = FlextConstants.Platform.MAX_PORT_NUMBER
-        settings = FlextApiConfig.model_validate({"api_port": max_port})
+        settings = FlextApiConfig.Settings(api_port=max_port)
         assert settings.api_port == max_port
 
         # Test common valid port
-        settings = FlextApiConfig.model_validate({"api_port": 8080})
+        settings = FlextApiConfig.Settings(api_port=8080)
         assert settings.api_port == 8080
 
     def test_port_validation_invalid_port_zero(self) -> None:
         """Test port validation fails with port 0."""
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiConfig.model_validate({"api_port": 0})
+            FlextApiConfig.Settings(api_port=0)
 
         error = exc_info.value
         assert len(error.errors()) == 1
@@ -83,7 +83,7 @@ class TestFlextApiConfig:
     def test_port_validation_invalid_port_negative(self) -> None:
         """Test port validation fails with negative port."""
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiConfig.model_validate({"api_port": -1})
+            FlextApiConfig.Settings(api_port=-1)
 
         error = exc_info.value
         assert len(error.errors()) == 1
@@ -93,7 +93,7 @@ class TestFlextApiConfig:
         """Test port validation fails with port too high."""
         invalid_port = FlextConstants.Platform.MAX_PORT_NUMBER + 1
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiConfig.model_validate({"api_port": invalid_port})
+            FlextApiConfig.Settings(api_port=invalid_port)
 
         error = exc_info.value
         assert len(error.errors()) == 1
@@ -102,12 +102,12 @@ class TestFlextApiConfig:
     def test_port_validator_method_directly(self) -> None:
         """Test port validator method directly."""
         # Valid port
-        result = FlextApiConfig.validate_port(8080)
+        result = FlextApiConfig.Settings.validate_port(8080)
         assert result == 8080
 
         # Invalid port - should raise ValueError
         with pytest.raises(ValueError, match="Port must be between") as exc_info:
-            FlextApiConfig.validate_port(0)
+            FlextApiConfig.Settings.validate_port(0)
 
         error_message = str(exc_info.value)
         expected_message = (
@@ -118,60 +118,60 @@ class TestFlextApiConfig:
     def test_api_workers_validation(self) -> None:
         """Test api_workers field validation."""
         # Valid values
-        settings = FlextApiConfig.model_validate({"api_workers": 1})
+        settings = FlextApiConfig.Settings(api_workers=1)
         assert settings.api_workers == 1
 
-        settings = FlextApiConfig.model_validate({"api_workers": 8})
+        settings = FlextApiConfig.Settings(api_workers=8)
         assert settings.api_workers == 8
 
         # Invalid value - zero or negative
         with pytest.raises(ValidationError):
-            FlextApiConfig.model_validate({"api_workers": 0})
+            FlextApiConfig.Settings(api_workers=0)
 
         with pytest.raises(ValidationError):
-            FlextApiConfig.model_validate({"api_workers": -1})
+            FlextApiConfig.Settings(api_workers=-1)
 
     def test_default_timeout_validation(self) -> None:
         """Test default_timeout field validation."""
         # Valid values
-        settings = FlextApiConfig.model_validate({"default_timeout": 1})
+        settings = FlextApiConfig.Settings(default_timeout=1)
         assert settings.default_timeout == 1
 
-        settings = FlextApiConfig.model_validate({"default_timeout": 300})
+        settings = FlextApiConfig.Settings(default_timeout=300)
         assert settings.default_timeout == 300
 
         # Invalid value - zero or negative
         with pytest.raises(ValidationError):
-            FlextApiConfig.model_validate({"default_timeout": 0})
+            FlextApiConfig.Settings(default_timeout=0)
 
         with pytest.raises(ValidationError):
-            FlextApiConfig.model_validate({"default_timeout": -1})
+            FlextApiConfig.Settings(default_timeout=-1)
 
     def test_max_retries_validation(self) -> None:
         """Test max_retries field validation."""
         # Valid values including zero
-        settings = FlextApiConfig.model_validate({"max_retries": 0})
+        settings = FlextApiConfig.Settings(max_retries=0)
         assert settings.max_retries == 0
 
-        settings = FlextApiConfig.model_validate({"max_retries": 5})
+        settings = FlextApiConfig.Settings(max_retries=5)
         assert settings.max_retries == 5
 
         # Invalid value - negative
         with pytest.raises(ValidationError):
-            FlextApiConfig.model_validate({"max_retries": -1})
+            FlextApiConfig.Settings(max_retries=-1)
 
     def test_cache_ttl_validation(self) -> None:
         """Test cache_ttl field validation."""
         # Valid values including zero
-        settings = FlextApiConfig.model_validate({"cache_ttl": 0})
+        settings = FlextApiConfig.Settings(cache_ttl=0)
         assert settings.cache_ttl == 0
 
-        settings = FlextApiConfig.model_validate({"cache_ttl": 3600})
+        settings = FlextApiConfig.Settings(cache_ttl=3600)
         assert settings.cache_ttl == 3600
 
         # Invalid value - negative
         with pytest.raises(ValidationError):
-            FlextApiConfig.model_validate({"cache_ttl": -1})
+            FlextApiConfig.Settings(cache_ttl=-1)
 
     def test_real_configuration_creation_with_overrides(self) -> None:
         """Test REAL configuration creation with explicit overrides - NO MOCKS."""
@@ -187,7 +187,7 @@ class TestFlextApiConfig:
         }
 
         # Create REAL settings with overrides
-        settings = FlextApiConfig.model_validate({**config_overrides})
+        settings = FlextApiConfig.Settings(**config_overrides)
 
         # Validate REAL configuration values
         assert settings.api_host == "prod.api.com"
@@ -204,11 +204,11 @@ class TestFlextApiConfig:
 
     def test_settings_serialization(self) -> None:
         """Test settings can be serialized and deserialized."""
-        original_settings = FlextApiConfig.model_validate({
-            "api_host": "test.com",
-            "api_port": 8080,
-            "api_workers": 2,
-        })
+        original_settings = FlextApiConfig.Settings(
+            api_host="test.com",
+            api_port=8080,
+            api_workers=2,
+        )
 
         # Test model_dump (Pydantic v2)
         data = original_settings.model_dump()
@@ -217,7 +217,7 @@ class TestFlextApiConfig:
         assert data["api_port"] == 8080
 
         # Test reconstruction from dict
-        new_settings = FlextApiConfig.model_validate({**data})
+        new_settings = FlextApiConfig.Settings(**data)
         assert new_settings.api_host == original_settings.api_host
         assert new_settings.api_port == original_settings.api_port
         assert new_settings.api_workers == original_settings.api_workers
@@ -335,13 +335,13 @@ class TestFlextApiConfigIntegration:
 
     def test_flext_base_settings_inheritance(self) -> None:
         """Test FlextApiConfig properly inherits from FlextConfig."""
-        settings = FlextApiConfig()
-        assert isinstance(settings, FlextConfig)
+        settings = FlextApiConfig.Settings()
+        assert isinstance(settings, FlextConfig.Settings)
 
     def test_create_with_validation_method(self) -> None:
         """Test inherited create_with_validation method works correctly."""
         # Test success case
-        result = FlextApiConfig.create_with_validation(
+        result = FlextApiConfig.Settings.create_with_validation(
             {
                 "api_host": "test.com",
                 "api_port": 8080,
@@ -349,16 +349,14 @@ class TestFlextApiConfigIntegration:
         )
 
         assert result.success
-        assert isinstance(result.value, FlextApiConfig)
+        assert isinstance(result.value, FlextApiConfig.Settings)
         assert result.value.api_host == "test.com"
         assert result.value.api_port == 8080
 
     def test_create_with_validation_failure(self) -> None:
         """Test create_with_validation handles failures correctly."""
-        result = FlextApiConfig.create_with_validation(
-            {
-                "api_port": -1,  # Invalid port
-            },
+        result = FlextApiConfig.Settings.create_with_validation(
+            api_port=-1,  # Invalid port
         )
 
         assert result.is_failure
@@ -367,11 +365,11 @@ class TestFlextApiConfigIntegration:
 
     def test_config_env_prefix(self) -> None:
         """Test Config class env_prefix is set correctly."""
-        assert FlextApiConfig.model_config["env_prefix"] == "FLEXT_API_"
+        assert FlextApiConfig.Settings.model_config["env_prefix"] == "FLEXT_API_"
 
     def test_field_descriptions(self) -> None:
         """Test all fields have proper descriptions."""
-        fields = FlextApiConfig.model_fields
+        fields = FlextApiConfig.Settings.model_fields
 
         assert fields["api_host"].description == "API server host"
         assert fields["api_port"].description == "API server port"

@@ -156,13 +156,13 @@ class FlextApiPlugins(FlextModels):
 
         def _is_cache_valid(self, timestamp: float) -> bool:
             """Check if cache entry is still valid."""
-            return (
-                FlextUtilities.Generators.generate_timestamp() - timestamp
-            ) < self.ttl
+            import time
+            return (time.time() - timestamp) < self.ttl
 
         def _cleanup_expired(self) -> None:
             """Remove expired cache entries."""
-            current_time = FlextUtilities.Generators.generate_timestamp()
+            import time
+            current_time = time.time()
             expired_keys = [
                 key
                 for key, (_, timestamp) in self._cache.items()
@@ -273,9 +273,9 @@ class FlextApiPlugins(FlextModels):
             if self.auth_type == "bearer" and self.token:
                 auth_headers["Authorization"] = f"Bearer {self.token}"
             elif self.auth_type == "basic" and self.username and self.password:
-                credentials = FlextUtilities.Encoders.encode_base64(
-                    f"{self.username}:{self.password}"
-                )
+                import base64
+                credentials_str = f"{self.username}:{self.password}"
+                credentials = base64.b64encode(credentials_str.encode()).decode()
                 auth_headers["Authorization"] = f"Basic {credentials}"
 
             return FlextResult.ok((method, url, auth_headers, params, body))
@@ -313,7 +313,8 @@ class FlextApiPlugins(FlextModels):
             body: object = None,
         ) -> FlextResult[tuple[str, str, dict[str, str], dict[str, object], object]]:
             """Apply rate limiting before request."""
-            current_time = FlextUtilities.Generators.generate_timestamp()
+            import time
+            current_time = time.time()
 
             # Token bucket algorithm
             if self._last_call > 0:
@@ -369,7 +370,8 @@ class FlextApiPlugins(FlextModels):
             body: object = None,
         ) -> FlextResult[tuple[str, str, dict[str, str], dict[str, object], object]]:
             """Check circuit breaker state before request."""
-            current_time = FlextUtilities.Generators.generate_timestamp()
+            import time
+            current_time = time.time()
 
             if self._state == "open":
                 if current_time - self._last_failure_time > self.recovery_timeout:
@@ -397,7 +399,8 @@ class FlextApiPlugins(FlextModels):
             else:
                 # Failure - increment count
                 self._failure_count += 1
-                self._last_failure_time = FlextUtilities.Generators.generate_timestamp()
+                import time
+                self._last_failure_time = time.time()
 
                 if self._failure_count >= self.failure_threshold:
                     self._state = "open"
