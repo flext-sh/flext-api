@@ -5,11 +5,19 @@ from __future__ import annotations
 from flext_api import (
     URL,
     ApiRequest,
+    FlextApiModels,
 )
 from flext_api.models import (
     MAX_PORT,
     MIN_PORT,
 )
+from flext_api.typings import FlextApiTypes
+
+# Import enums and response types
+HttpMethod = FlextApiModels.HttpMethod
+HttpStatus = FlextApiModels.HttpStatus
+ApiResponse = FlextApiTypes.Response.ApiResponse
+ClientStatus = FlextApiModels.HttpStatus  # Use HttpStatus for client status as well
 
 
 class TestURL:

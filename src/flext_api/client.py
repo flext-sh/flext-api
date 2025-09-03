@@ -32,7 +32,6 @@ import asyncio
 
 import httpx
 from flext_core import FlextDomainService, FlextLogger, FlextResult, FlextUtilities
-from pydantic import Field
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
@@ -43,14 +42,25 @@ logger = FlextLogger(__name__)
 class FlextApiClient(FlextDomainService[dict[str, object]]):
     """REAL HTTP client using httpx with comprehensive FLEXT patterns integration."""
 
-    base_url: str = Field(..., description="Base URL for HTTP requests")
-    timeout: float = Field(default=30.0, description="Request timeout in seconds")
-    headers: dict[str, str] = Field(default_factory=dict, description="Default headers")
-    max_retries: int = Field(default=3, description="Maximum retry attempts")
-
     def __init__(self, **data: object) -> None:
         """Initialize REAL HTTP client with httpx and flext-core patterns."""
-        super().__init__(**data)
+        super().__init__()
+
+        # Set field values from data using private attributes with type safety
+        base_url = data.get("base_url", "")
+        self._base_url = str(base_url) if base_url is not None else ""
+
+        timeout = data.get("timeout", 30.0)
+        self._timeout = float(timeout) if isinstance(timeout, (int, float, str)) else 30.0
+
+        headers = data.get("headers", {})
+        if isinstance(headers, dict):
+            self._headers = {str(k): str(v) for k, v in headers.items()}
+        else:
+            self._headers = {}
+
+        max_retries = data.get("max_retries", 3)
+        self._max_retries = int(max_retries) if isinstance(max_retries, (int, str)) else 3
 
         # REAL httpx client - will be initialized in start()
         self._client: httpx.AsyncClient | None = None
@@ -62,6 +72,26 @@ class FlextApiClient(FlextDomainService[dict[str, object]]):
         logger.info(
             "HTTP client initialized", client_id=self._client_id, base_url=self.base_url
         )
+
+    @property
+    def base_url(self) -> str:
+        """Base URL for HTTP requests."""
+        return self._base_url
+
+    @property
+    def timeout(self) -> float:
+        """Request timeout in seconds."""
+        return self._timeout
+
+    @property
+    def headers(self) -> dict[str, str]:
+        """Default headers."""
+        return self._headers
+
+    @property
+    def max_retries(self) -> int:
+        """Maximum retry attempts."""
+        return self._max_retries
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute HTTP client service with REAL functionality."""
@@ -197,15 +227,19 @@ class FlextApiClient(FlextDomainService[dict[str, object]]):
 
         # Generate request ID using FlextUtilities
         request_id = FlextUtilities.Generators.generate_request_id()
-        url = FlextUtilities.TextProcessor.join_url_path(
-            self.base_url, path.lstrip("/")
-        )
 
-        # Prepare request parameters
-        request_kwargs = {
+        # Join URL path properly
+        base = self.base_url.rstrip("/")
+        clean_path = path.lstrip("/")
+        url = f"{base}/{clean_path}" if clean_path else base
+
+        # Prepare request parameters with proper typing for httpx
+        request_kwargs: dict[str, object] = {
             "method": method,
             "url": url,
-            "params": params,
+            "params": params or {},
+            "headers": self._headers,
+            "timeout": self.timeout,
         }
 
         if json_data is not None:
@@ -226,7 +260,18 @@ class FlextApiClient(FlextDomainService[dict[str, object]]):
                     attempt=attempt + 1,
                 )
 
-                response = await self._client.request(**request_kwargs)
+                # Make httpx request - using type ignore for httpx specific parameter types
+                from typing import cast
+                response = await self._client.request(
+                    method=cast(str, request_kwargs["method"]),
+                    url=cast(str, request_kwargs["url"]),
+                    params=request_kwargs.get("params"),  # type: ignore[arg-type]
+                    headers=request_kwargs.get("headers"),  # type: ignore[arg-type]
+                    timeout=cast(float, request_kwargs.get("timeout", 30.0)),
+                    json=request_kwargs.get("json"),
+                    content=request_kwargs.get("content"),  # type: ignore[arg-type]
+                    data=request_kwargs.get("data"),  # type: ignore[arg-type]
+                )
 
                 # Parse response
                 try:
@@ -248,7 +293,7 @@ class FlextApiClient(FlextDomainService[dict[str, object]]):
                 # Check for HTTP errors
                 if (
                     response.status_code
-                    >= FlextApiConstants.Validation.CLIENT_ERROR_MIN
+                    >= FlextApiConstants.ApiValidation.CLIENT_ERROR_MIN
                 ):
                     error_msg = f"HTTP {response.status_code}: {response.text}"
                     logger.warning(
@@ -261,7 +306,7 @@ class FlextApiClient(FlextDomainService[dict[str, object]]):
                     # Don't retry client errors (4xx), only server errors (5xx)
                     if (
                         response.status_code
-                        < FlextApiConstants.Validation.SERVER_ERROR_MIN
+                        < FlextApiConstants.ApiValidation.SERVER_ERROR_MIN
                         or attempt == self.max_retries
                     ):
                         return FlextResult[FlextApiTypes.Response.JsonResponse].fail(

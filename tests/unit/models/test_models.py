@@ -5,6 +5,8 @@ Focus on testing actual functionality that works rather than assumed interfaces.
 
 from __future__ import annotations
 
+import pytest
+
 from flext_api.models import (
     MAX_PORT,
     MIN_CONTROL_CHAR,
@@ -20,38 +22,22 @@ class TestURLRealValidation:
     def test_url_empty_validation(self) -> None:
         """Test empty URL validation - covers line 298."""
         # Empty URL should raise ValidationError
-        try:
+        with pytest.raises(ValueError, match="cannot be empty"):
             URL("")
-            msg = "Should have raised ValidationError"
-            raise AssertionError(msg)
-        except ValueError as e:
-            assert "cannot be empty" in str(e)
 
         # Whitespace URL should be cleaned and validated
-        try:
+        with pytest.raises(ValueError, match="cannot be empty"):
             URL("   ")
-            msg = "Should have raised ValidationError"
-            raise AssertionError(msg)
-        except ValueError as e:
-            assert "cannot be empty" in str(e)
 
     def test_url_invalid_scheme_validation(self) -> None:
         """Test invalid scheme validation - covers line 301."""
-        try:
+        with pytest.raises(ValueError, match="scheme"):
             URL("ftp://example.com")
-            msg = "Should have raised ValidationError"
-            raise AssertionError(msg)
-        except ValueError as e:
-            assert "scheme" in str(e).lower()
 
     def test_url_empty_host_validation(self) -> None:
         """Test empty host validation - covers line 304."""
-        try:
+        with pytest.raises(ValueError, match="netloc|host"):
             URL("https://")
-            msg = "Should have raised ValidationError"
-            raise AssertionError(msg)
-        except ValueError as e:
-            assert "netloc" in str(e).lower() or "host" in str(e).lower()
 
     def test_url_invalid_port_validation(self) -> None:
         """Test invalid port validation - covers line 307."""

@@ -93,12 +93,12 @@ class FlextApiManagerProtocol(Protocol):
     @abstractmethod
     def create_client(
         self, config: dict[str, object]
-    ) -> FlextResult[FlextApiClientProtocol[object]]:
+    ) -> FlextResult[FlextApiClientProtocol]:
         """Create HTTP client with configuration."""
         ...
 
     @abstractmethod
-    def get_client(self) -> FlextApiClientProtocol[object] | None:
+    def get_client(self) -> FlextApiClientProtocol | None:
         """Get current HTTP client instance."""
         ...
 
@@ -208,7 +208,7 @@ class FlextApiFactory:
     @staticmethod
     def create_client(
         config: dict[str, object],
-    ) -> FlextResult[FlextApiClientProtocol[object]]:
+    ) -> FlextResult[FlextApiClientProtocol]:
         """Factory function to create FlextApiClient implementation.
 
         Args:
@@ -222,7 +222,7 @@ class FlextApiFactory:
 
         try:
             if not config.get("base_url"):
-                return FlextResult[FlextApiClientProtocol[object]].fail(
+                return FlextResult[FlextApiClientProtocol].fail(
                     "base_url is required"
                 )
 
@@ -242,12 +242,12 @@ class FlextApiFactory:
                 headers=cast("dict[str, str]", config.get("headers", {})),
                 max_retries=max_retries,
             )
-            return FlextResult[FlextApiClientProtocol[object]].ok(
-                cast("FlextApiClientProtocol[object]", client)
+            return FlextResult[FlextApiClientProtocol].ok(
+                cast("FlextApiClientProtocol", client)
             )
 
         except Exception as e:
-            return FlextResult[FlextApiClientProtocol[object]].fail(
+            return FlextResult[FlextApiClientProtocol].fail(
                 f"Failed to create client: {e}"
             )
 

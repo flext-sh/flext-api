@@ -14,6 +14,16 @@ from flext_api import (
 )
 
 
+def create_file_storage(file_path: str, namespace: str) -> FlextApiStorage:
+    """Create file storage with config."""
+    config = StorageConfig(
+        backend=StorageBackend.FILE,
+        namespace=namespace,
+        file_path=file_path,
+    )
+    return FlextApiStorage(config)
+
+
 @pytest.mark.asyncio
 async def test_file_backend_persistence_and_clear(tmp_path: Path) -> None:
     """File backend should persist and clear namespace keys correctly."""

@@ -26,12 +26,10 @@ Core Components:
 Examples:
     HTTP client with plugins:
     >>> api = FlextApi()
-    >>> client_result = api.flext_api_create_client(
-    ...     {
-    ...         "base_url": "https://api.example.com",
-    ...         "timeout": 30,
-    ...     }
-    ... )
+    >>> client_result = api.flext_api_create_client({
+    ...     "base_url": "https://api.example.com",
+    ...     "timeout": 30,
+    ... })
     >>> if client_result.success:
     ...     client = client_result.value
     ...     response = await client.get("/data")
@@ -63,58 +61,79 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+# Import types for factory functions
+from flext_api.api import FlextApi
+from flext_api.app import FlextApiApp
+
 # =============================================================================
-# FOUNDATION LAYER - Import first, following flext-core pattern
+# MODULE AGGREGATION - Following flext-core pattern
 # =============================================================================
 
+# Import all from each module with proper type handling
 from flext_api.constants import *
 from flext_api.typings import *
 from flext_api.exceptions import *
-
-# =============================================================================
-# DOMAIN LAYER - Depends only on Foundation layer
-# =============================================================================
-
 from flext_api.models import *
 from flext_api.config import *
-
-# =============================================================================
-# APPLICATION LAYER - Depends on Domain + Foundation layers
-# =============================================================================
-
 from flext_api.api import *
 from flext_api.client import *
 from flext_api.plugins import *
 from flext_api.protocols import *
-
-# =============================================================================
-# INFRASTRUCTURE LAYER - Depends on Application + Domain + Foundation
-# =============================================================================
-
 from flext_api.storage import *
 from flext_api.utilities import *
-
-# =============================================================================
-# SUPPORT LAYER - Depends on layers as needed, imported last
-# =============================================================================
-
 from flext_api.app import *
 
-# =============================================================================
-# EXPORTS - Direct static list following flext-core simplicity
-# =============================================================================
-
+# Manually aggregated __all__ from all modules - star imports are intentional FLEXT pattern
 __all__ = [
-    "FlextApi",
-    "FlextApiApp",
-    "FlextApiClient",
-    "FlextApiConfig",
+    # From constants
     "FlextApiConstants",
-    "FlextApiExceptions",
-    "FlextApiModels",
-    "FlextApiStorage",
+    # From typings
     "FlextApiTypes",
+    # From exceptions
+    "FlextApiExceptions",
+    # From models
+    "FlextApiModels",
+    # From config
+    "FlextApiConfig",
+    # From api
+    "FlextApi",
+    # From client
+    "FlextApiClient",
+    # From plugins
+    "FlextApiCachingPlugin",
+    "FlextApiCircuitBreakerPlugin",
+    "FlextApiPlugin",
+    "FlextApiPlugins",
+    "FlextApiRetryPlugin",
+    # From protocols
+    "FlextApiAuthentication",
+    "FlextApiClientProtocol",
+    "FlextApiDiscovery",
+    "FlextApiFactory",
+    "FlextApiManagerProtocol",
+    "FlextApiService",
+    # From storage
+    "FlextApiStorage",
+    # From utilities
     "FlextApiUtilities",
+    # From app
+    "FlextApiApp",
+    "create_flext_api",
+    "create_flext_api_app",
 ]
+
+
+# Factory functions
+def create_flext_api(**kwargs: object) -> FlextApi:
+    """Factory function to create FlextApi instance."""
+    return FlextApi(**kwargs)
+
+
+def create_flext_api_app(**kwargs: object) -> FlextApiApp:
+    """Factory function to create FlextApiApp instance."""
+    return FlextApiApp(**kwargs)
+
 
 __version__ = "0.9.0"

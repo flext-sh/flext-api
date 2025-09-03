@@ -12,7 +12,6 @@ from __future__ import annotations
 from typing import cast
 
 from flext_core import FlextContainer, FlextDomainService, FlextLogger, FlextResult
-from pydantic import Field
 
 from flext_api.client import FlextApiClient
 from flext_api.models import FlextApiModels
@@ -25,25 +24,26 @@ Result = dict[str, object]
 logger = FlextLogger(__name__)
 
 
-class FlextApi(FlextDomainService):
+class FlextApi(FlextDomainService[dict[str, object]]):
     """Main API class providing HTTP client and builder functionality.
 
     Single class following FLEXT patterns with FlextResult for all operations.
     Provides HTTP client creation, builder patterns, and service lifecycle.
     """
 
-    # Pydantic fields
-    service_name: str = Field(default="FlextApi", description="Service name")
-    service_version: str = Field(default="0.9.0", description="Service version")
-    default_base_url: str = Field(
-        default="http://localhost:8000", description="Default base URL"
-    )
-
     def __init__(self, **kwargs: object) -> None:
         """Initialize API with flext-core patterns."""
-        # Ensure service_name defaults to "FlextApi" for compatibility
-        kwargs.setdefault("service_name", "FlextApi")
-        super().__init__(**kwargs)
+        super().__init__()
+
+        # Set field values from kwargs using private attributes with type safety
+        service_name = kwargs.get("service_name", "FlextApi")
+        self._service_name = str(service_name) if service_name is not None else "FlextApi"
+
+        service_version = kwargs.get("service_version", "0.9.0")
+        self._service_version = str(service_version) if service_version is not None else "0.9.0"
+
+        default_base_url = kwargs.get("default_base_url", "http://localhost:8000")
+        self._default_base_url = str(default_base_url) if default_base_url is not None else "http://localhost:8000"
 
         # Internal state
         self._is_running = False
@@ -56,7 +56,22 @@ class FlextApi(FlextDomainService):
         # Register self in global container
         self._container.register("flext_api", self)
 
-        logger.info("FlextApi initialized", version=self.service_version)
+        logger.info("FlextApi initialized", version=self._service_version)
+
+    @property
+    def service_name(self) -> str:
+        """Service name."""
+        return self._service_name
+
+    @property
+    def service_version(self) -> str:
+        """Service version."""
+        return self._service_version
+
+    @property
+    def default_base_url(self) -> str:
+        """Default base URL."""
+        return self._default_base_url
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute API service lifecycle."""

@@ -167,6 +167,14 @@ class FlextApiModels(FlextModels):
         @field_validator("root")
         @classmethod
         def validate_url(cls, v: str) -> str:
+            def _raise_scheme_netloc_error() -> None:
+                msg = "URL must include scheme and netloc"
+                raise ValueError(msg)
+
+            def _raise_scheme_validation_error() -> None:
+                msg = "URL scheme must be http or https"
+                raise ValueError(msg)
+
             # Use REAL FlextUtilities for string validation
             if not FlextUtilities.is_non_empty_string(v):
                 msg = "URL cannot be empty"
@@ -179,11 +187,9 @@ class FlextApiModels(FlextModels):
             try:
                 parsed = urlparse(cleaned_url)
                 if not parsed.scheme or not parsed.netloc:
-                    msg = "URL must include scheme and netloc"
-                    raise ValueError(msg)
+                    _raise_scheme_netloc_error()
                 if parsed.scheme not in {"http", "https"}:
-                    msg = "URL scheme must be http or https"
-                    raise ValueError(msg)
+                    _raise_scheme_validation_error()
                 return cleaned_url
             except Exception as e:
                 msg = f"Invalid URL format: {e}"
@@ -275,6 +281,10 @@ class FlextApiModels(FlextModels):
         @field_validator("url")
         @classmethod
         def validate_url(cls, v: str) -> str:
+            def _raise_invalid_url_error() -> None:
+                msg = "Invalid URL format"
+                raise ValueError(msg)
+
             # Use REAL FlextUtilities for string validation
             if not FlextUtilities.is_non_empty_string(v):
                 msg = "URL cannot be empty"
@@ -284,8 +294,7 @@ class FlextApiModels(FlextModels):
             try:
                 parsed = urlparse(v)
                 if not parsed.scheme or not parsed.netloc:
-                    msg = "Invalid URL format"
-                    raise ValueError(msg)
+                    _raise_invalid_url_error()
                 return v
             except Exception as e:
                 msg = f"URL validation failed: {e}"
@@ -363,7 +372,7 @@ class FlextApiModels(FlextModels):
             return FlextResult[None].ok(None)
 
     # =============================================================================
-    # CONFIGURATION MODELS (extending BaseConfig)
+    # CONFIGURATION MODELS (extending Config)
     # =============================================================================
 
     class ClientConfig(FlextModels.Value):
@@ -379,6 +388,10 @@ class FlextApiModels(FlextModels):
         @field_validator("base_url")
         @classmethod
         def validate_base_url(cls, v: str) -> str:
+            def _raise_invalid_base_url_error() -> None:
+                msg = "Invalid base URL format"
+                raise ValueError(msg)
+
             # Use REAL FlextUtilities for string validation and cleaning
             if not FlextUtilities.is_non_empty_string(v):
                 msg = "Base URL cannot be empty"
@@ -391,8 +404,7 @@ class FlextApiModels(FlextModels):
             try:
                 parsed = urlparse(cleaned_url)
                 if not parsed.scheme or not parsed.netloc:
-                    msg = "Invalid base URL format"
-                    raise ValueError(msg)
+                    _raise_invalid_base_url_error()
                 return cleaned_url.rstrip("/")
             except Exception as e:
                 msg = f"Base URL validation failed: {e}"
@@ -406,19 +418,19 @@ class FlextApiModels(FlextModels):
             )
             if (
                 safe_timeout <= 0
-                or safe_timeout > FlextApiConstants.Validation.MAX_TIMEOUT
+                or safe_timeout > FlextApiConstants.ApiValidation.MAX_TIMEOUT
             ):
                 return FlextResult[None].fail(
-                    f"Timeout must be between {FlextApiConstants.Validation.MIN_TIMEOUT} and {FlextApiConstants.Validation.MAX_TIMEOUT} seconds, got: {safe_timeout}"
+                    f"Timeout must be between {FlextApiConstants.ApiValidation.MIN_TIMEOUT} and {FlextApiConstants.ApiValidation.MAX_TIMEOUT} seconds, got: {safe_timeout}"
                 )
 
             safe_retries = FlextUtilities.safe_int(self.max_retries, -1)
             if (
                 safe_retries < 0
-                or safe_retries > FlextApiConstants.Validation.MAX_RETRIES
+                or safe_retries > FlextApiConstants.ApiValidation.MAX_RETRIES
             ):
                 return FlextResult[None].fail(
-                    f"Max retries must be between 0 and {FlextApiConstants.Validation.MAX_RETRIES}, got: {safe_retries}"
+                    f"Max retries must be between 0 and {FlextApiConstants.ApiValidation.MAX_RETRIES}, got: {safe_retries}"
                 )
 
             return FlextResult[None].ok(None)
@@ -439,11 +451,11 @@ class FlextApiModels(FlextModels):
             # Clean and validate name length
             clean_name = FlextUtilities.clean_text(self.name)
             if (
-                len(clean_name) < FlextApiConstants.Validation.MIN_NAME_LENGTH
-                or len(clean_name) > FlextApiConstants.Validation.MAX_NAME_LENGTH
+                len(clean_name) < FlextApiConstants.ApiValidation.MIN_NAME_LENGTH
+                or len(clean_name) > FlextApiConstants.ApiValidation.MAX_NAME_LENGTH
             ):
                 return FlextResult[None].fail(
-                    f"Plugin name length must be between {FlextApiConstants.Validation.MIN_NAME_LENGTH} and {FlextApiConstants.Validation.MAX_NAME_LENGTH} characters, got: {len(clean_name)}"
+                    f"Plugin name length must be between {FlextApiConstants.ApiValidation.MIN_NAME_LENGTH} and {FlextApiConstants.ApiValidation.MAX_NAME_LENGTH} characters, got: {len(clean_name)}"
                 )
 
             return FlextResult[None].ok(None)
@@ -644,7 +656,7 @@ class FlextApiModels(FlextModels):
     # HTTP-SPECIFIC QUERY SYSTEM - Using flext-core CQRS patterns
     # =============================================================================
 
-    class HttpQuery(FlextModels.BaseConfig):
+    class HttpQuery(FlextModels.Config):
         """HTTP query using flext-core CQRS QueryHandler pattern."""
 
         query_params: dict[str, str] = Field(default_factory=dict)
@@ -705,7 +717,7 @@ class FlextApiModels(FlextModels):
     # State management from flext-core
     StatefulService = FlextMixins.Stateful
 
-    class ApiBaseService(FlextDomainService):
+    class ApiBaseService(FlextDomainService[dict[str, object]]):
         """Concrete base service for HTTP API operations."""
 
         service_name: str = Field(default="FlextApiBaseService")
@@ -713,19 +725,17 @@ class FlextApiModels(FlextModels):
 
         def execute(self) -> FlextResult[dict[str, object]]:
             """Execute base service operation."""
-            return FlextResult[dict[str, object]].ok(
-                {
-                    "service": self.service_name,
-                    "version": self.service_version,
-                    "status": "active",
-                }
-            )
+            return FlextResult[dict[str, object]].ok({
+                "service": self.service_name,
+                "version": self.service_version,
+                "status": "active",
+            })
 
     # =========================================================================
     # CONFIGURATION MODELS - Configuration management patterns
     # =========================================================================
 
-    class StorageConfig(FlextModels.BaseConfig):
+    class StorageConfig(FlextModels.Config):
         """Storage configuration for FlextApiStorage."""
 
         namespace: str = Field(default="default", description="Storage namespace")
@@ -733,7 +743,7 @@ class FlextApiModels(FlextModels):
             default=FlextMixins.Cacheable, description="Storage backend class"
         )
 
-    class PaginationConfig(FlextModels.BaseConfig):
+    class PaginationConfig(FlextModels.Config):
         """Pagination configuration."""
 
         page: int = Field(default=1, description="Page number")
