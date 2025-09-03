@@ -53,7 +53,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping
-from typing import Literal, ParamSpec, Protocol, TypeVar, runtime_checkable
+from typing import Literal, Protocol, TypeVar, runtime_checkable
 
 from flext_core import FlextResult, FlextTypes
 
@@ -68,7 +68,6 @@ HttpStatusT = TypeVar("HttpStatusT", bound=int)  # HTTP status code types
 RequestBodyT = TypeVar("RequestBodyT", bound="str | bytes | dict[str, object] | None")
 ResponseDataT = TypeVar("ResponseDataT", bound=object)
 PluginT = TypeVar("PluginT", bound=object)  # Plugin instance types
-P = ParamSpec("P")  # Parameter specification for HTTP callables
 
 # =============================================================================
 # HTTP PROTOCOL INTERFACES - Runtime-checkable protocols for type safety
@@ -387,7 +386,6 @@ __all__: list[str] = [
     "HttpRequestProtocol",
     "HttpResponseProtocol",
     "HttpStatusT",
-    "P",
     "PluginT",
     "RequestBodyT",
     "ResponseDataT",

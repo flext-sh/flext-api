@@ -14,6 +14,8 @@ from typing import Protocol, TypeVar, cast, runtime_checkable
 
 from flext_core import FlextResult
 
+from flext_api.client import FlextApiClient as ConcreteClient
+
 # Type variables for generic protocols
 T = TypeVar("T")
 TData = TypeVar("TData")
@@ -22,6 +24,7 @@ TData = TypeVar("TData")
 # =============================================================================
 # FLEXT API PROTOCOLS - Modern HTTP API abstraction patterns
 # =============================================================================
+
 
 @runtime_checkable
 class FlextApiClientProtocol(Protocol[TData]):
@@ -33,9 +36,7 @@ class FlextApiClientProtocol(Protocol[TData]):
 
     @abstractmethod
     async def get(
-        self,
-        path: str,
-        params: dict[str, object] | None = None
+        self, path: str, params: dict[str, object] | None = None
     ) -> FlextResult[TData]:
         """Execute HTTP GET request with type-safe response."""
         ...
@@ -45,7 +46,7 @@ class FlextApiClientProtocol(Protocol[TData]):
         self,
         path: str,
         json_data: dict[str, object] | None = None,
-        data: bytes | None = None
+        data: bytes | None = None,
     ) -> FlextResult[TData]:
         """Execute HTTP POST request with type-safe response."""
         ...
@@ -55,16 +56,14 @@ class FlextApiClientProtocol(Protocol[TData]):
         self,
         path: str,
         json_data: dict[str, object] | None = None,
-        data: bytes | None = None
+        data: bytes | None = None,
     ) -> FlextResult[TData]:
         """Execute HTTP PUT request with type-safe response."""
         ...
 
     @abstractmethod
     async def delete(
-        self,
-        path: str,
-        params: dict[str, object] | None = None
+        self, path: str, params: dict[str, object] | None = None
     ) -> FlextResult[TData]:
         """Execute HTTP DELETE request with type-safe response."""
         ...
@@ -95,8 +94,7 @@ class FlextApiManagerProtocol(Protocol):
 
     @abstractmethod
     def create_client(
-        self,
-        config: dict[str, object]
+        self, config: dict[str, object]
     ) -> FlextResult[FlextApiClientProtocol[object]]:
         """Create HTTP client with configuration."""
         ...
@@ -156,17 +154,14 @@ class FlextApiDiscovery(Protocol):
 
     @abstractmethod
     async def get_entity_schema(
-        self,
-        entity_name: str
+        self, entity_name: str
     ) -> FlextResult[dict[str, object]]:
         """Get schema for a specific entity."""
         ...
 
     @abstractmethod
     async def get_entity_data(
-        self,
-        entity_name: str,
-        **kwargs: object
+        self, entity_name: str, **kwargs: object
     ) -> FlextResult[dict[str, object] | list[dict[str, object]]]:
         """Get data for a specific entity with query parameters."""
         ...
@@ -205,7 +200,10 @@ class FlextApiAuthentication(Protocol):
 # FACTORY FUNCTIONS - Modern API creation patterns
 # =============================================================================
 
-def create_flext_api_client(config: dict[str, object]) -> FlextResult[FlextApiClientProtocol[object]]:
+
+def create_flext_api_client(
+    config: dict[str, object],
+) -> FlextResult[FlextApiClientProtocol[object]]:
     """Factory function to create FlextApiClient implementation.
 
     Args:
@@ -216,22 +214,35 @@ def create_flext_api_client(config: dict[str, object]) -> FlextResult[FlextApiCl
 
     """
     # This would be implemented by the concrete implementation
-    from flext_api.client import FlextApiClient as ConcreteClient
 
     try:
         if not config.get("base_url"):
-            return FlextResult[FlextApiClientProtocol[object]].fail("base_url is required")
+            return FlextResult[FlextApiClientProtocol[object]].fail(
+                "base_url is required"
+            )
+
+        # Extract timeout value safely
+        timeout_val = config.get("timeout", 30.0)
+        timeout = float(timeout_val) if isinstance(timeout_val, (int, float)) else 30.0
+
+        # Extract max_retries value safely
+        retries_val = config.get("max_retries", 3)
+        max_retries = retries_val if isinstance(retries_val, int) else 3
 
         client = ConcreteClient(
             base_url=str(config["base_url"]),
-            timeout=float(config.get("timeout", 30.0)) if config.get("timeout") else 30.0,
+            timeout=timeout,
             headers=cast("dict[str, str]", config.get("headers", {})),
-            max_retries=int(config.get("max_retries", 3)) if config.get("max_retries") else 3,
+            max_retries=max_retries,
         )
-        return FlextResult[FlextApiClientProtocol[object]].ok(cast("FlextApiClientProtocol[object]", client))
+        return FlextResult[FlextApiClientProtocol[object]].ok(
+            cast("FlextApiClientProtocol[object]", client)
+        )
 
     except Exception as e:
-        return FlextResult[FlextApiClientProtocol[object]].fail(f"Failed to create client: {e}")
+        return FlextResult[FlextApiClientProtocol[object]].fail(
+            f"Failed to create client: {e}"
+        )
 
 
 def create_flext_api_manager(
@@ -260,10 +271,14 @@ def create_flext_api_manager(
             service_version=service_version or "0.9.0",
             default_base_url=default_base_url or "http://localhost:8000",
         )
-        return FlextResult[FlextApiManagerProtocol].ok(cast("FlextApiManagerProtocol", manager))
+        return FlextResult[FlextApiManagerProtocol].ok(
+            cast("FlextApiManagerProtocol", manager)
+        )
 
     except Exception as e:
-        return FlextResult[FlextApiManagerProtocol].fail(f"Failed to create manager: {e}")
+        return FlextResult[FlextApiManagerProtocol].fail(
+            f"Failed to create manager: {e}"
+        )
 
 
 # =============================================================================

@@ -26,12 +26,10 @@ Core Components:
 Examples:
     HTTP client with plugins:
     >>> api = FlextApi()
-    >>> client_result = api.flext_api_create_client(
-    ...     {
-    ...         "base_url": "https://api.example.com",
-    ...         "timeout": 30,
-    ...     }
-    ... )
+    >>> client_result = api.flext_api_create_client({
+    ...     "base_url": "https://api.example.com",
+    ...     "timeout": 30,
+    ... })
     >>> if client_result.success:
     ...     client = client_result.value
     ...     response = await client.get("/data")
