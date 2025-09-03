@@ -11,7 +11,6 @@ from flext_api import (
     FlextApiStorage,
     StorageBackend,
     StorageConfig,
-    create_file_storage,
 )
 
 

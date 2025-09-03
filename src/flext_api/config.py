@@ -339,6 +339,10 @@ class FlextApiConfig(FlextModels.BaseConfig):
                     f"Failed to create security config from env: {e}"
                 )
 
+    # =========================================================================
+    # MAIN CONFIGURATION - Complete configuration management
+    # =========================================================================
+
     class MainConfig(FlextModels.BaseConfig):
         """Main configuration combining all config types."""
 
@@ -352,9 +356,7 @@ class FlextApiConfig(FlextModels.BaseConfig):
             default_factory=FlextApiConfig.SecurityConfig
         )
 
-        def create_complete_config(
-            self,
-        ) -> FlextResult[dict[str, object]]:
+        def create_complete_config(self) -> FlextResult[dict[str, object]]:
             """Create complete configuration dictionary."""
             try:
                 server_result = self.server.to_uvicorn_config()
@@ -389,118 +391,128 @@ class FlextApiConfig(FlextModels.BaseConfig):
                     f"Failed to create complete config: {e}"
                 )
 
+    # =========================================================================
+    # FACTORY METHODS - Following flext-core patterns
+    # =========================================================================
 
-# Factory functions following FlextResult patterns
-def create_server_config(**kwargs: object) -> FlextResult[FlextApiConfig.ServerConfig]:
-    """Create server configuration with validation."""
-    try:
-        # Filter kwargs to compatible types for ServerConfig
-        compatible_kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if isinstance(v, (str, int, bool, type(None)))
-            or (
-                isinstance(v, (list, tuple)) and k in {"template_dirs", "allowed_hosts"}
-            )
-        }
-        config = FlextApiConfig.ServerConfig.model_validate(compatible_kwargs)
-        return FlextResult["FlextApiConfig.ServerConfig"].ok(config)
-    except Exception as e:
-        logger.exception("Failed to create server config", error=str(e))
-        return FlextResult["FlextApiConfig.ServerConfig"].fail(
-            f"Failed to create server config: {e}"
-        )
-
-
-def create_client_config(**kwargs: object) -> FlextResult[FlextApiConfig.ClientConfig]:
-    """Create client configuration with validation."""
-    try:
-        # Filter kwargs to compatible types for ClientConfig
-        compatible_kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if isinstance(v, (str, int, float, bool, dict, type(None)))
-        }
-        config = FlextApiConfig.ClientConfig.model_validate(compatible_kwargs)
-        return FlextResult["FlextApiConfig.ClientConfig"].ok(config)
-    except Exception as e:
-        logger.exception("Failed to create client config", error=str(e))
-        return FlextResult["FlextApiConfig.ClientConfig"].fail(
-            f"Failed to create client config: {e}"
-        )
-
-
-def create_security_config(
-    **kwargs: object,
-) -> FlextResult[FlextApiConfig.SecurityConfig]:
-    """Create security configuration with validation."""
-    try:
-        # Filter kwargs to compatible types for SecurityConfig
-        compatible_kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if isinstance(v, (str, int, bool, list, type(None)))
-        }
-        config = FlextApiConfig.SecurityConfig.model_validate(compatible_kwargs)
-        return FlextResult["FlextApiConfig.SecurityConfig"].ok(config)
-    except Exception as e:
-        logger.exception("Failed to create security config", error=str(e))
-        return FlextResult["FlextApiConfig.SecurityConfig"].fail(
-            f"Failed to create security config: {e}"
-        )
-
-
-def create_main_config(**kwargs: object) -> FlextResult[FlextApiConfig.MainConfig]:
-    """Create main configuration with validation."""
-    try:
-        # Filter kwargs to compatible types for MainConfig
-        # MainConfig expects nested config objects, so we skip filtering for now
-        # and let Pydantic handle the validation
-        config = FlextApiConfig.MainConfig.model_validate(kwargs)
-        return FlextResult["FlextApiConfig.MainConfig"].ok(config)
-    except Exception as e:
-        logger.exception("Failed to create main config", error=str(e))
-        return FlextResult["FlextApiConfig.MainConfig"].fail(
-            f"Failed to create main config: {e}"
-        )
-
-
-def load_from_env() -> FlextResult[FlextApiConfig.MainConfig]:
-    """Load configuration from environment variables."""
-    try:
-        env_config = FlextApiConfig.EnvConfig()
-
-        server_result = env_config.to_server_config()
-        if not server_result.success:
-            return FlextResult["FlextApiConfig.MainConfig"].fail(
-                f"Server config from env failed: {server_result.error}"
+    @staticmethod
+    def create_server(**kwargs: object) -> FlextResult[FlextApiConfig.ServerConfig]:
+        """Create server configuration with validation."""
+        try:
+            # Filter kwargs to compatible types for ServerConfig
+            compatible_kwargs = {
+                k: v
+                for k, v in kwargs.items()
+                if isinstance(v, (str, int, bool, type(None)))
+                or (
+                    isinstance(v, (list, tuple))
+                    and k in {"template_dirs", "allowed_hosts"}
+                )
+            }
+            config = FlextApiConfig.ServerConfig.model_validate(compatible_kwargs)
+            return FlextResult[FlextApiConfig.ServerConfig].ok(config)
+        except Exception as e:
+            logger.exception("Failed to create server config", error=str(e))
+            return FlextResult[FlextApiConfig.ServerConfig].fail(
+                f"Failed to create server config: {e}"
             )
 
-        client_result = env_config.to_client_config()
-        if not client_result.success:
-            return FlextResult["FlextApiConfig.MainConfig"].fail(
-                f"Client config from env failed: {client_result.error}"
+    @staticmethod
+    def create_client(**kwargs: object) -> FlextResult[FlextApiConfig.ClientConfig]:
+        """Create client configuration with validation."""
+        try:
+            # Filter kwargs to compatible types for ClientConfig
+            compatible_kwargs = {
+                k: v
+                for k, v in kwargs.items()
+                if isinstance(v, (str, int, float, bool, dict, type(None)))
+            }
+            config = FlextApiConfig.ClientConfig.model_validate(compatible_kwargs)
+            return FlextResult[FlextApiConfig.ClientConfig].ok(config)
+        except Exception as e:
+            logger.exception("Failed to create client config", error=str(e))
+            return FlextResult[FlextApiConfig.ClientConfig].fail(
+                f"Failed to create client config: {e}"
             )
 
-        security_result = env_config.to_security_config()
-        if not security_result.success:
-            return FlextResult["FlextApiConfig.MainConfig"].fail(
-                f"Security config from env failed: {security_result.error}"
+    @staticmethod
+    def create_security(
+        cors_origins: list[str] | None = None,
+        cors_methods: list[str] | None = None,
+        cors_headers: list[str] | None = None,
+        **kwargs: object,
+    ) -> FlextResult[FlextApiConfig.SecurityConfig]:
+        """Create security configuration with validation."""
+        try:
+            config_data = {
+                "cors_origins": cors_origins or ["*"],
+                "cors_methods": cors_methods
+                or ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "cors_headers": cors_headers or ["*"],
+                **{
+                    k: v
+                    for k, v in kwargs.items()
+                    if isinstance(v, (str, int, bool, list, type(None)))
+                },
+            }
+            config = FlextApiConfig.SecurityConfig.model_validate(config_data)
+            return FlextResult[FlextApiConfig.SecurityConfig].ok(config)
+        except Exception as e:
+            logger.exception("Failed to create security config", error=str(e))
+            return FlextResult[FlextApiConfig.SecurityConfig].fail(
+                f"Failed to create security config: {e}"
             )
 
-        main_config = FlextApiConfig.MainConfig(
-            server=server_result.value,
-            client=client_result.value,
-            security=security_result.value,
-        )
+    @staticmethod
+    def create_main(**kwargs: object) -> FlextResult[FlextApiConfig.MainConfig]:
+        """Create main configuration with validation."""
+        try:
+            config = FlextApiConfig.MainConfig.model_validate(kwargs)
+            return FlextResult[FlextApiConfig.MainConfig].ok(config)
+        except Exception as e:
+            logger.exception("Failed to create main config", error=str(e))
+            return FlextResult[FlextApiConfig.MainConfig].fail(
+                f"Failed to create main config: {e}"
+            )
 
-        return FlextResult["FlextApiConfig.MainConfig"].ok(main_config)
+    @staticmethod
+    def load_from_environment() -> FlextResult[FlextApiConfig.MainConfig]:
+        """Load configuration from environment variables."""
+        try:
+            env_config = FlextApiConfig.EnvConfig()
 
-    except Exception as e:
-        logger.exception("Failed to load config from environment", error=str(e))
-        return FlextResult["FlextApiConfig.MainConfig"].fail(
-            f"Failed to load config from environment: {e}"
-        )
+            server_result = env_config.to_server_config()
+            if not server_result.success:
+                return FlextResult[FlextApiConfig.MainConfig].fail(
+                    f"Server config from env failed: {server_result.error}"
+                )
+
+            client_result = env_config.to_client_config()
+            if not client_result.success:
+                return FlextResult[FlextApiConfig.MainConfig].fail(
+                    f"Client config from env failed: {client_result.error}"
+                )
+
+            security_result = env_config.to_security_config()
+            if not security_result.success:
+                return FlextResult[FlextApiConfig.MainConfig].fail(
+                    f"Security config from env failed: {security_result.error}"
+                )
+
+            return FlextResult[FlextApiConfig.MainConfig].ok(
+                FlextApiConfig.MainConfig(
+                    server=server_result.value,
+                    client=client_result.value,
+                    security=security_result.value,
+                )
+            )
+        except Exception as e:
+            logger.exception("Failed to load config from env", error=str(e))
+            return FlextResult[FlextApiConfig.MainConfig].fail(
+                f"Failed to load config from env: {e}"
+            )
 
 
-__all__ = ["FlextApiConfig"]
+__all__ = [
+    "FlextApiConfig",
+]

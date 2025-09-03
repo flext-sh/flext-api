@@ -5,14 +5,10 @@ from __future__ import annotations
 from flext_api import (
     URL,
     ApiRequest,
-    ApiResponse,
-    ClientStatus,
-    HttpStatus,
 )
 from flext_api.models import (
     MAX_PORT,
     MIN_PORT,
-    HttpMethod,
 )
 
 
@@ -21,7 +17,7 @@ class TestURL:
 
     def test_url_create_success(self) -> None:
         """Test successful URL creation."""
-        result = URL.create("https://api.example.com:8080/v1?param=value")
+        result = URL("https://api.example.com:8080/v1?param=value")
 
         assert result.success
         assert result.value is not None
@@ -35,7 +31,7 @@ class TestURL:
 
     def test_url_create_minimal(self) -> None:
         """Test URL creation with minimal URL."""
-        result = URL.create("https://example.com")
+        result = URL("https://example.com")
 
         assert result.success
         assert result.value is not None
@@ -48,7 +44,7 @@ class TestURL:
     def test_url_create_with_defaults(self) -> None:
         """Test URL creation that uses default scheme."""
         # Test with a minimal URL that would use defaults
-        result = URL.create("example.com/test")
+        result = URL("example.com/test")
 
         # Should succeed and use default scheme
         if result.success:
@@ -66,7 +62,7 @@ class TestURL:
         ]
 
         for test_url in test_urls:
-            result = URL.create(test_url)
+            result = URL(test_url)
             # Either it should fail gracefully or succeed with validation errors
             if result.success:
                 # If it succeeds, the validation should catch issues
@@ -80,7 +76,7 @@ class TestURL:
     def test_url_validation_business_rules(self) -> None:
         """Test URL validation with valid data."""
         # Create a URL that should pass all validation rules
-        result = URL.create("https://valid-host.com:443/api/v1?query=test#section")
+        result = URL("https://valid-host.com:443/api/v1?query=test#section")
 
         if result.success:
             url = result.value
@@ -207,7 +203,7 @@ class TestModelIntegration:
     def test_url_with_all_components(self) -> None:
         """Test URL creation with all possible components."""
         full_url = "https://user:pass@api.example.com:8443/v1/users?active=true&sort=name#results"
-        result = URL.create(full_url)
+        result = URL(full_url)
 
         if result.success:
             url = result.value
@@ -242,7 +238,7 @@ class TestModelIntegration:
         ]
 
         for url_string in urls:
-            result = URL.create(url_string)
+            result = URL(url_string)
             assert result.success, f"Failed to create URL: {url_string}"
 
             url = result.value
@@ -263,7 +259,7 @@ class TestErrorConditions:
         ]
 
         for url_string in edge_cases:
-            result = URL.create(url_string)
+            result = URL(url_string)
             # These should all succeed
             assert result.success, f"Edge case failed: {url_string}"
 

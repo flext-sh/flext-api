@@ -170,8 +170,8 @@ def service_operation(request: dict) -> FlextResult[dict]:
 | --------------- | ------------------------------- | ------------------------------- |
 | **Inheritance** | 🔴 Doesn't inherit FlextService | ✅ class FlextApi(FlextService) |
 | **Lifecycle**   | 🟡 async start/stop             | ✅ sync start/stop/health_check |
-| **Logging**     | 🔴 direct structlog             | ✅ FlextLogger(**name**)         |
-| **Container**   | 🔴 Manual DI                    | ✅ FlextContainer.get_global()        |
+| **Logging**     | 🔴 direct structlog             | ✅ FlextLogger(**name**)        |
+| **Container**   | 🔴 Manual DI                    | ✅ FlextContainer.get_global()  |
 
 #### **Target Implementation**
 

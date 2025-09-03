@@ -37,10 +37,17 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from enum import StrEnum
-from urllib.parse import ParseResult, urlparse
+from urllib.parse import urlparse
 
-from flext_core import FlextModels, FlextResult
-from pydantic import Field, RootModel, computed_field, field_validator
+from flext_core import (
+    FlextDomainService,
+    FlextHandlers,
+    FlextMixins,
+    FlextModels,
+    FlextResult,
+    FlextUtilities,
+)
+from pydantic import BaseModel, Field, RootModel, computed_field, field_validator
 
 from flext_api.constants import FlextApiConstants
 
@@ -160,28 +167,27 @@ class FlextApiModels(FlextModels):
         @field_validator("root")
         @classmethod
         def validate_url(cls, v: str) -> str:
-            if not v or not v.strip():
+            # Use REAL FlextUtilities for string validation
+            if not FlextUtilities.is_non_empty_string(v):
                 msg = "URL cannot be empty"
                 raise ValueError(msg)
-            v = v.strip()
 
+            # Clean using REAL FlextUtilities text processing
+            cleaned_url = FlextUtilities.clean_text(v)
+
+            # Parse and validate HTTP-specific requirements
             try:
-                parsed = urlparse(v)
-                cls._validate_url_parts(parsed)
-                return v
+                parsed = urlparse(cleaned_url)
+                if not parsed.scheme or not parsed.netloc:
+                    msg = "URL must include scheme and netloc"
+                    raise ValueError(msg)
+                if parsed.scheme not in {"http", "https"}:
+                    msg = "URL scheme must be http or https"
+                    raise ValueError(msg)
+                return cleaned_url
             except Exception as e:
-                msg = f"Invalid URL: {e}"
+                msg = f"Invalid URL format: {e}"
                 raise ValueError(msg) from e
-
-        @staticmethod
-        def _validate_url_parts(parsed: ParseResult) -> None:
-            """Validate URL components and raise appropriate errors."""
-            if not parsed.scheme or not parsed.netloc:
-                msg = "URL must include scheme and netloc"
-                raise ValueError(msg)
-            if parsed.scheme not in {"http", "https"}:
-                msg = "URL scheme must be http or https"
-                raise ValueError(msg)
 
     class StatusCode(RootModel[int]):
         """HTTP status code with validation."""
@@ -216,11 +222,24 @@ class FlextApiModels(FlextModels):
         is_active: bool = Field(default=True)
 
         def validate_business_rules(self) -> FlextResult[None]:
-            """Validate HTTP session business rules."""
-            if not self.base_url.strip():
+            """Validate HTTP session business rules using FlextUtilities."""
+            # Use REAL FlextUtilities for string validation
+            if not FlextUtilities.is_non_empty_string(self.base_url):
                 return FlextResult[None].fail("Session must have valid base URL")
-            if not self.session_id.strip():
+
+            if not FlextUtilities.is_non_empty_string(self.session_id):
                 return FlextResult[None].fail("Session must have valid ID")
+
+            # Parse and validate URL format
+            try:
+                parsed = urlparse(self.base_url)
+                if not parsed.scheme or not parsed.netloc:
+                    return FlextResult[None].fail("Invalid base URL format")
+                if parsed.scheme not in {"http", "https"}:
+                    return FlextResult[None].fail("Base URL must use HTTP/HTTPS")
+            except Exception as e:
+                return FlextResult[None].fail(f"URL parsing failed: {e}")
+
             return FlextResult[None].ok(None)
 
     class ApiEndpoint(FlextModels.Entity):
@@ -256,11 +275,21 @@ class FlextApiModels(FlextModels):
         @field_validator("url")
         @classmethod
         def validate_url(cls, v: str) -> str:
-            parsed = urlparse(v)
-            if not parsed.scheme or not parsed.netloc:
-                msg = "Invalid URL format"
+            # Use REAL FlextUtilities for string validation
+            if not FlextUtilities.is_non_empty_string(v):
+                msg = "URL cannot be empty"
                 raise ValueError(msg)
-            return v
+
+            # Parse and validate URL format
+            try:
+                parsed = urlparse(v)
+                if not parsed.scheme or not parsed.netloc:
+                    msg = "Invalid URL format"
+                    raise ValueError(msg)
+                return v
+            except Exception as e:
+                msg = f"URL validation failed: {e}"
+                raise ValueError(msg) from e
 
         def validate_business_rules(self) -> FlextResult[None]:
             """Validate HTTP request business rules."""
@@ -350,18 +379,48 @@ class FlextApiModels(FlextModels):
         @field_validator("base_url")
         @classmethod
         def validate_base_url(cls, v: str) -> str:
-            parsed = urlparse(v)
-            if not parsed.scheme or not parsed.netloc:
-                msg = "Invalid base URL"
+            # Use REAL FlextUtilities for string validation and cleaning
+            if not FlextUtilities.is_non_empty_string(v):
+                msg = "Base URL cannot be empty"
                 raise ValueError(msg)
-            return v.rstrip("/")
+
+            # Clean using REAL FlextUtilities text processing
+            cleaned_url = FlextUtilities.clean_text(v)
+
+            # Parse and validate URL format
+            try:
+                parsed = urlparse(cleaned_url)
+                if not parsed.scheme or not parsed.netloc:
+                    msg = "Invalid base URL format"
+                    raise ValueError(msg)
+                return cleaned_url.rstrip("/")
+            except Exception as e:
+                msg = f"Base URL validation failed: {e}"
+                raise ValueError(msg) from e
 
         def validate_business_rules(self) -> FlextResult[None]:
-            """Validate client configuration business rules."""
-            if self.timeout <= 0:
-                return FlextResult[None].fail("Timeout must be positive")
-            if self.max_retries < 0:
-                return FlextResult[None].fail("Max retries cannot be negative")
+            """Validate client configuration business rules using REAL FlextUtilities."""
+            # Use REAL FlextUtilities for safe conversions and range validation
+            safe_timeout = (
+                float(self.timeout) if isinstance(self.timeout, (int, float)) else -1.0
+            )
+            if (
+                safe_timeout <= 0
+                or safe_timeout > FlextApiConstants.Validation.MAX_TIMEOUT
+            ):
+                return FlextResult[None].fail(
+                    f"Timeout must be between {FlextApiConstants.Validation.MIN_TIMEOUT} and {FlextApiConstants.Validation.MAX_TIMEOUT} seconds, got: {safe_timeout}"
+                )
+
+            safe_retries = FlextUtilities.safe_int(self.max_retries, -1)
+            if (
+                safe_retries < 0
+                or safe_retries > FlextApiConstants.Validation.MAX_RETRIES
+            ):
+                return FlextResult[None].fail(
+                    f"Max retries must be between 0 and {FlextApiConstants.Validation.MAX_RETRIES}, got: {safe_retries}"
+                )
+
             return FlextResult[None].ok(None)
 
     class PluginConfig(FlextModels.Value):
@@ -372,9 +431,21 @@ class FlextApiModels(FlextModels):
         priority: int = Field(default=0)
 
         def validate_business_rules(self) -> FlextResult[None]:
-            """Validate plugin configuration business rules."""
-            if not self.name.strip():
+            """Validate plugin configuration business rules using FlextUtilities."""
+            # Use REAL FlextUtilities for string validation
+            if not FlextUtilities.is_non_empty_string(self.name):
                 return FlextResult[None].fail("Plugin name cannot be empty")
+
+            # Clean and validate name length
+            clean_name = FlextUtilities.clean_text(self.name)
+            if (
+                len(clean_name) < FlextApiConstants.Validation.MIN_NAME_LENGTH
+                or len(clean_name) > FlextApiConstants.Validation.MAX_NAME_LENGTH
+            ):
+                return FlextResult[None].fail(
+                    f"Plugin name length must be between {FlextApiConstants.Validation.MIN_NAME_LENGTH} and {FlextApiConstants.Validation.MAX_NAME_LENGTH} characters, got: {len(clean_name)}"
+                )
+
             return FlextResult[None].ok(None)
 
     class CacheConfig(PluginConfig):
@@ -567,23 +638,151 @@ class FlextApiModels(FlextModels):
                 f"Retry config creation failed: {e}"
             )
 
-    @classmethod
-    def validate_url(cls, url: str) -> FlextResult[str]:
-        """Validate URL using Url value object."""
-        try:
-            url_obj = cls.Url(root=url)
-            return FlextResult[str].ok(url_obj.root)
-        except Exception as e:
-            return FlextResult[str].fail(f"URL validation failed: {e}")
+    # Validation methods removed - use Pydantic field_validator directly in model classes
 
-    @classmethod
-    def validate_status_code(cls, status_code: int) -> FlextResult[int]:
-        """Validate HTTP status code using StatusCode value object."""
-        try:
-            status_obj = cls.StatusCode(root=status_code)
-            return FlextResult[int].ok(status_obj.root)
-        except Exception as e:
-            return FlextResult[int].fail(f"Status code validation failed: {e}")
+    # =============================================================================
+    # HTTP-SPECIFIC QUERY SYSTEM - Using flext-core CQRS patterns
+    # =============================================================================
+
+    class HttpQuery(FlextModels.BaseConfig):
+        """HTTP query using flext-core CQRS QueryHandler pattern."""
+
+        query_params: dict[str, str] = Field(default_factory=dict)
+        sort_fields: list[str] = Field(default_factory=list)
+        filter_conditions: dict[str, str] = Field(default_factory=dict)
+        page_number: int = Field(default=1, ge=1)
+        page_size: int = Field(default=20, ge=1, le=100)
+
+        def equals(self, field: str, value: str) -> FlextApiModels.HttpQuery:
+            """Add equals filter condition."""
+            self.filter_conditions[field] = value
+            return self
+
+        def sort_desc(self, field: str) -> FlextApiModels.HttpQuery:
+            """Add descending sort."""
+            self.sort_fields.append(f"-{field}")
+            return self
+
+        def sort_asc(self, field: str) -> FlextApiModels.HttpQuery:
+            """Add ascending sort."""
+            self.sort_fields.append(field)
+            return self
+
+        def page(self, page_number: int) -> FlextApiModels.HttpQuery:
+            """Set page number."""
+            self.page_number = page_number
+            return self
+
+        def set_page_size(self, size: int) -> FlextApiModels.HttpQuery:
+            """Set page size."""
+            self.page_size = size
+            return self
+
+        def build(self) -> dict[str, str]:
+            """Build final query parameters."""
+            params = self.query_params.copy()
+            params.update(self.filter_conditions)
+
+            if self.sort_fields:
+                params["sort"] = ",".join(self.sort_fields)
+
+            params["page"] = str(self.page_number)
+            params["page_size"] = str(self.page_size)
+
+            return params
+
+    # =============================================================================
+    # DIRECT FLEXT-CORE USAGE - No duplication, use what exists
+    # =============================================================================
+
+    # Use flext-core classes directly - no local copies
+    QueryBus = FlextHandlers.CQRS.QueryBus
+    QueryHandler = FlextHandlers.CQRS.QueryHandler
+
+    # Storage uses flext-core cache system
+    CacheBackend = FlextMixins.Cacheable
+
+    # State management from flext-core
+    StatefulService = FlextMixins.Stateful
+
+    class ApiBaseService(FlextDomainService):
+        """Concrete base service for HTTP API operations."""
+
+        service_name: str = Field(default="FlextApiBaseService")
+        service_version: str = Field(default="0.9.0")
+
+        def execute(self) -> FlextResult[dict[str, object]]:
+            """Execute base service operation."""
+            return FlextResult[dict[str, object]].ok(
+                {
+                    "service": self.service_name,
+                    "version": self.service_version,
+                    "status": "active",
+                }
+            )
+
+    # =========================================================================
+    # CONFIGURATION MODELS - Configuration management patterns
+    # =========================================================================
+
+    class StorageConfig(FlextModels.BaseConfig):
+        """Storage configuration for FlextApiStorage."""
+
+        namespace: str = Field(default="default", description="Storage namespace")
+        backend: type[FlextMixins.Cacheable] = Field(
+            default=FlextMixins.Cacheable, description="Storage backend class"
+        )
+
+    class PaginationConfig(FlextModels.BaseConfig):
+        """Pagination configuration."""
+
+        page: int = Field(default=1, description="Page number")
+        page_size: int = Field(default=20, description="Page size")
+        max_page_size: int = Field(default=100, description="Maximum page size")
+
+    # =========================================================================
+    # REQUEST MODELS - HTTP request handling patterns
+    # =========================================================================
+
+    class ApiRequest(BaseModel):
+        """API request model with proper Pydantic BaseModel inheritance."""
+
+        id: str = Field(description="Request ID")
+        method: str = Field(default="GET", description="HTTP method")
+        url: str = Field(description="Request URL")
+        headers: dict[str, str] | None = Field(
+            default=None, description="Request headers"
+        )
+
+        @field_validator("method")
+        @classmethod
+        def validate_method(cls, v: str) -> str:
+            """Validate HTTP method."""
+            valid_methods = {
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "HEAD",
+                "OPTIONS",
+                "TRACE",
+            }
+            if v.upper() not in valid_methods:
+                msg = f"Invalid HTTP method: {v}"
+                raise ValueError(msg)
+            return v.upper()
+
+        @field_validator("url")
+        @classmethod
+        def validate_url(cls, v: str) -> str:
+            """Validate URL format."""
+            if not FlextUtilities.is_non_empty_string(v):
+                msg = "URL cannot be empty"
+                raise ValueError(msg)
+            return FlextUtilities.clean_text(v)
 
 
-__all__ = ["FlextApiModels"]
+__all__ = [
+    "FlextApiModels",
+]

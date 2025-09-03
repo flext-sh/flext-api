@@ -12,7 +12,7 @@
   - Model instantiation and validation
   - Error handling with FlextResult
 
-### Advanced Features  
+### Advanced Features
 
 - **02_advanced.py** - Advanced usage patterns using REAL classes
   - Plugin system demonstration
@@ -37,6 +37,7 @@
 ### No Aliases or Helpers
 
 All examples use REAL classes directly from their modules:
+
 ```python
 from flext_api import FlextApi, FlextApiClient, FlextApiModels
 # NOT helpers, NOT aliases, ONLY real functionality
@@ -45,7 +46,7 @@ from flext_api import FlextApi, FlextApiClient, FlextApiModels
 ## Running Examples
 
 ```bash
-# Run basic usage example  
+# Run basic usage example
 python examples/01_basic_usage.py
 
 # Run advanced features example
@@ -107,7 +108,7 @@ request = FlextApiModels.ApiRequest(
     url="https://api.example.com/data"
 )
 
-# Use REAL nested storage classes  
+# Use REAL nested storage classes
 storage = FlextApiStorage.MemoryBackend()
 result = storage.set("key", {"data": "value"})
 ```

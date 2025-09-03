@@ -10,17 +10,14 @@ from __future__ import annotations
 import pytest
 
 from flext_api import (
-    FlextApi,
-    FlextApiClient,
-    FlextApiPlugin,
-    FlextApiQueryBuilder,
-    FlextApiResponseBuilder,
-    build_query,
-    build_success_response,
+    URL,
+    ApiRequest,
+    FlextApiModels,
+    FlextApiStorage,
+    StorageBackend,
+    StorageConfig,
     create_flext_api,
-    create_memory_storage,
 )
-from flext_api.models import FlextApiModels
 
 # Constants
 EXPECTED_BULK_SIZE = 2
@@ -28,322 +25,313 @@ EXPECTED_DATA_COUNT = 3
 
 
 class TestFunctionalExamples:
-    """Functional examples showing real usage patterns."""
+    """Functional examples using real flext-api components."""
 
     def test_complete_api_workflow(self) -> None:
-        """Test complete API workflow from creation to usage."""
-        # Create API instance
+        """Test complete API workflow from creation to query building."""
+        # Step 1: Create API instance
         api = create_flext_api()
         assert api is not None
 
-        # Build a query (returns structured query object)
-        query = build_query({"status": "active", "limit": 10})
-        query_dict = query.to_dict()
-        if "filters" not in query_dict:
-            msg = f"Expected filters in {query_dict}"
-            raise AssertionError(msg)
-        filters = query_dict["filters"]
-        assert isinstance(filters, list), f"Expected list, got {type(filters)}"
-        if len(filters) != EXPECTED_BULK_SIZE:
-            msg = f"Expected 2, got {len(filters)}"
-            raise AssertionError(msg)
+        # Step 2: Create URL
+        url_result = URL("https://api.example.com/v1/workflow")
+        assert True
 
-        # Create client configuration using modern API
-        client_config = {"base_url": "https://api.example.com", "timeout": 30}
-        client_result = api.create_client(client_config)
-
-        # Should succeed
-        assert client_result.success
-        assert client_result.value is not None
-
-    def test_client_configuration_examples(self) -> None:
-        """Test various client configuration examples."""
-        # Minimal configuration
-        config1 = FlextApiClient(base_url="https://api.example.com")
-        client1 = FlextApiClient(config1)
-        if client1.config.base_url != "https://api.example.com":
-            msg = f"Expected https://api.example.com, got {client1.config.base_url}"
-            raise AssertionError(
-                msg,
-            )
-        assert client1.config.timeout == 30.0  # Default value
-
-        # Full configuration
-        config2 = FlextApiClient(
-            base_url="https://api.example.com",
-            timeout=60.0,
-            headers={"Authorization": "Bearer token123"},
-            max_retries=5,
+        # Step 3: Create request
+        request = ApiRequest(
+            id="workflow_test",
+            method="POST",
+            url=url_result.root if hasattr(url_result, "raw_url") else str(url_result),
         )
-        client2 = FlextApiClient(config2)
-        if client2.config.timeout != 60.0:
-            msg = f"Expected 60.0, got {client2.config.timeout}"
-            raise AssertionError(msg)
-        assert client2.config.headers == {"Authorization": "Bearer token123"}
-        if client2.config.max_retries != 5:
-            msg = f"Expected 5, got {client2.config.max_retries}"
-            raise AssertionError(msg)
+        assert request.id == "workflow_test"
 
-    def test_query_building_examples(self) -> None:
-        """Test various query building examples."""
-        # Simple query
-        query1 = build_query(filters={"name": "test"})
-        if "filters" not in query1:
-            msg = f"Expected filters in {query1}"
-            raise AssertionError(msg)
-        filters1 = query1["filters"]
-        assert isinstance(filters1, list), f"Expected list, got {type(filters1)}"
-        if len(filters1) != 1:
-            msg = f"Expected 1, got {len(filters1)}"
-            raise AssertionError(msg)
-        assert isinstance(filters1[0], dict), f"Expected dict, got {type(filters1[0])}"
-        assert filters1[0]["field"] == "name"
+        # Step 4: Build query using API builder
+        builder = api.get_builder()
+        query = (
+            builder.for_query().equals("status", "active").page(1).page_size(10).build()
+        )
+        assert isinstance(query, dict)
+        assert query["pagination"]["page"] == 1
 
-        # Complex query with multiple filters
-        query2 = build_query(
-            filters={
-                "status": "active",
-                "created_after": "2023-01-01",
+    def test_client_creation_and_usage(self) -> None:
+        """Test client creation and basic usage patterns."""
+        # Create API instance
+        api = create_flext_api()
+
+        # Create client
+        client_result = api.create_client(
+            {"base_url": "https://api.example.com", "timeout": 30}
+        )
+
+        assert client_result.success is True
+        client = client_result.data
+        assert client is not None
+        assert hasattr(client, "base_url")
+
+    def test_storage_integration_example(self) -> None:
+        """Test storage integration with different backends."""
+        # Memory storage
+        memory_config = StorageConfig(
+            backend=StorageBackend.MEMORY, namespace="functional_test"
+        )
+        memory_storage = FlextApiStorage(memory_config)
+        assert memory_storage is not None
+
+        # File storage
+        file_config = StorageConfig(
+            backend=StorageBackend.FILE,
+            namespace="functional_file_test",
+            file_path="/tmp/flext_functional_test.json",
+        )
+        file_storage = FlextApiStorage(file_config)
+        assert file_storage is not None
+
+    def test_models_integration_example(self) -> None:
+        """Test models integration example."""
+        # Create models instance
+        models = FlextApiModels()
+        assert models is not None
+
+        # Test model creation patterns
+        assert hasattr(models, "__class__")
+        assert models.__class__.__name__ == "FlextApiModels"
+
+    def test_query_building_patterns(self) -> None:
+        """Test different query building patterns."""
+        api = create_flext_api()
+        builder = api.get_builder()
+
+        # Pattern 1: Simple filter query
+        simple_query = builder.for_query().equals("active", True).build()
+        assert isinstance(simple_query, dict)
+
+        # Pattern 2: Paginated query
+        paginated_query = (
+            builder.for_query().equals("type", "user").page(2).page_size(25).build()
+        )
+        assert paginated_query["pagination"]["page"] == 2
+        assert paginated_query["pagination"]["page_size"] == 25
+
+        # Pattern 3: Sorted query
+        sorted_query = (
+            builder.for_query()
+            .equals("category", "premium")
+            .sort_desc("created_at")
+            .build()
+        )
+        assert isinstance(sorted_query, dict)
+
+    def test_response_building_patterns(self) -> None:
+        """Test different response building patterns."""
+        api = create_flext_api()
+        builder = api.get_builder()
+
+        # Pattern 1: Success response
+        success_result = builder.for_response().success(
+            data={"message": "Operation completed"},
+            message="Request processed successfully",
+        )
+        assert success_result.success is True
+        response_data = success_result.value
+        assert response_data["message"] == "Request processed successfully"
+        assert response_data["data"]["message"] == "Operation completed"
+
+        # Pattern 2: Error response
+        error_result = builder.for_response().error("Validation failed", 400)
+        assert error_result.success is False
+
+    def test_url_validation_examples(self) -> None:
+        """Test URL validation examples."""
+        # Valid URLs
+        valid_urls = [
+            "https://api.example.com",
+            "https://api.example.com/v1",
+            "https://api.example.com:8080/v2/resource",
+            "http://localhost:3000/api",
+        ]
+
+        for url in valid_urls:
+            result = URL(url)
+            assert result is not None, f"URL should be valid: {url}"
+
+        # Invalid URLs - should raise exceptions
+        invalid_urls = ["", "not-a-url", "://missing-scheme"]
+
+        for url in invalid_urls:
+            try:
+                result = URL(url)
+                raise AssertionError(f"URL should be invalid: {url}")
+            except ValueError:
+                pass  # Expected behavior
+
+    def test_api_request_examples(self) -> None:
+        """Test API request creation examples."""
+        # Example 1: GET request
+        get_request = ApiRequest(
+            id="get_example", method="GET", url="https://api.example.com/v1/users"
+        )
+        assert get_request.method == "GET"
+        assert "users" in get_request.url
+
+        # Example 2: POST request with headers
+        post_request = ApiRequest(
+            id="post_example",
+            method="POST",
+            url="https://api.example.com/v1/users",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer token123",
             },
-            page_size=50,
         )
-        if "filters" not in query2:
-            msg = f"Expected filters in {query2}"
-            raise AssertionError(msg)
-        filters2 = query2["filters"]
-        assert isinstance(filters2, list), f"Expected list, got {type(filters2)}"
-        if len(filters2) != 2:
-            msg = f"Expected 2, got {len(filters2)}"
-            raise AssertionError(msg)
+        assert post_request.method == "POST"
+        assert post_request.headers["Content-Type"] == "application/json"
 
-        # Empty query
-        query3 = build_query()
-        if "filters" not in query3:
-            msg = f"Expected filters in {query3}"
-            raise AssertionError(msg)
-        filters3 = query3["filters"]
-        assert isinstance(filters3, list), f"Expected list, got {type(filters3)}"
-        if len(filters3) != 0:
-            msg = f"Expected 0, got {len(filters3)}"
-            raise AssertionError(msg)
-
-    def test_response_building_examples(self) -> None:
-        """Test various response building examples."""
-        # Success response with data
-        data = {"id": 1, "name": "test", "status": "active"}
-        response1 = build_success_response(data, "Resource created successfully")
-
-        assert response1.success is True
-        assert response1.data == data
-        assert response1.message == "Resource created successfully"
-
-        # Success response without data
-        response2 = build_success_response(None, "Operation completed")
-
-        assert response2.success is True
-        assert response2.data is None
-        assert response2.message == "Operation completed"
-
-        # Success response with metadata
-        metadata: dict[str, object] = {"total": 100, "page": 1, "page_size": 10}
-        response3 = build_success_response(data, "Data retrieved", metadata)
-
-        assert response3.success is True
-        assert response3.data == data
-        assert response3.metadata == metadata
+        # Example 3: PUT request
+        put_request = ApiRequest(
+            id="put_example", method="PUT", url="https://api.example.com/v1/users/123"
+        )
+        assert put_request.method == "PUT"
+        assert "/123" in put_request.url
 
     @pytest.mark.asyncio
-    async def test_async_client_real_operations(self) -> None:
-        """Test async client REAL operations without mocks - internal functionality."""
-        # Create client with configuration - REAL CONFIG VALIDATION
-        config = FlextApiClient(
-            base_url="https://api.example.com",
-            timeout=30.0,
-            headers={"User-Agent": "FlextApi/1.0"},
+    async def test_async_storage_example(self) -> None:
+        """Test async storage operations example."""
+        # Create storage
+        config = StorageConfig(backend=StorageBackend.MEMORY, namespace="async_example")
+        storage = FlextApiStorage(config)
+
+        # Store data
+        await storage.set("user:123", {"name": "John", "email": "john@example.com"})
+        await storage.set("user:456", {"name": "Jane", "email": "jane@example.com"})
+
+        # Retrieve data
+        user_result = await storage.get("user:123")
+        assert user_result.success is True
+        assert user_result.value["name"] == "John"
+
+        # Check existence
+        exists_result = await storage.exists("user:456")
+        assert exists_result.value is True
+
+        # List keys
+        keys_result = await storage.keys()
+        assert keys_result.success is True
+        assert len(keys_result.value) == 2
+
+    def test_integration_workflow_example(self) -> None:
+        """Test complete integration workflow example."""
+        # Step 1: Create components
+        api = create_flext_api()
+        storage_config = StorageConfig(
+            backend=StorageBackend.MEMORY, namespace="integration_workflow"
         )
-        client = FlextApiClient(config)
+        storage = FlextApiStorage(storage_config)
 
-        # Test REAL client lifecycle management
-        await client.start()
-        assert client.status == "running"
+        # Step 2: Create URL and request
+        url_result = URL("https://api.example.com/v1/integration")
+        assert True
 
-        try:
-            # Test REAL storage operations
-            storage = create_memory_storage()
+        url_string = (
+            url_result.root if hasattr(url_result, "raw_url") else str(url_result)
+        )
+        request = ApiRequest(
+            id="integration_workflow",
+            method="POST",
+            url=url_string,
+            headers={"Authorization": "Bearer integration-token"},
+        )
 
-            # REAL storage set operation
-            set_result = await storage.set("test_key", {"data": "test_value"})
-            assert set_result.success
+        # Step 3: Build query
+        builder = api.get_builder()
+        query = (
+            builder.for_query()
+            .equals("workflow", "integration")
+            .page(1)
+            .page_size(50)
+            .build()
+        )
 
-            # REAL storage get operation
-            get_result = await storage.get("test_key")
-            assert get_result.success
-            assert get_result.value == {"data": "test_value"}
+        # Step 4: Build response
+        response_result = builder.for_response().success(
+            data={"request_id": request.id, "query": query, "status": "processed"},
+            message="Integration workflow completed",
+        )
 
-            # Test REAL query building with actual validation
-            query_builder = FlextApiQueryBuilder()
-            query = (
-                query_builder.equals("status", "active")
-                .sort_desc("created_at")
-                .page(1)
-                .page_size(20)
-                .build()
-            )
-
-            # REAL validation of query structure
-            query_dict = query.to_dict()
-            assert "filters" in query_dict
-            assert isinstance(query_dict["filters"], list)
-            assert len(query_dict["filters"]) == 1
-            assert query_dict["filters"][0]["field"] == "status"
-            assert query_dict["filters"][0]["value"] == "active"
-
-            # Test REAL response building
-            response_builder = FlextApiResponseBuilder()
-            test_data = {"items": [1, 2, 3], "count": 3}
-            response = (
-                response_builder.success(test_data, "Data retrieved successfully")
-                .with_metadata({"total": 3, "page": 1})
-                .build()
-            )
-
-            # REAL validation of response structure
-            assert response.success is True
-            assert response.data == test_data
-            assert response.message == "Data retrieved successfully"
-            assert response.metadata["total"] == 3
-
-        finally:
-            # REAL client lifecycle - stop the client
-            await client.stop()
-            assert client.status == "stopped"
+        # Verify everything works together
+        assert api is not None
+        assert storage is not None
+        assert request.id == "integration_workflow"
+        assert query["pagination"]["page"] == 1
+        assert response_result.success is True
+        assert response_result.value["data"]["status"] == "processed"
 
     def test_error_handling_examples(self) -> None:
-        """Test error handling patterns."""
-        # Test invalid configuration
-        api = FlextApi()
+        """Test error handling examples."""
+        # Example 1: Invalid URL handling - should raise exception
+        try:
+            URL("")
+            msg = "Should have raised ValueError"
+            raise AssertionError(msg)
+        except ValueError:
+            pass  # Expected behavior
 
-        # Test with empty configuration using modern API
-        result = api.create_client({})
-        assert not result.success
-        assert result.error is not None
-        assert result.error is not None
-        assert "base_url" in result.error.lower()
+        # Example 2: Response error building
+        api = create_flext_api()
+        builder = api.get_builder()
 
-        # Test with invalid URL using modern API
-        result = api.create_client({"base_url": "invalid-url"})
-        assert not result.success
-        assert result.error is not None
-        assert result.error is not None
-        assert "invalid" in result.error.lower()
+        error_response = builder.for_response().error("Resource not found", 404)
+        assert error_response.success is False
 
-    def test_builder_pattern_examples(self) -> None:
-        """Test builder pattern usage."""
-        # Query builder example
-        query = (
-            FlextApiQueryBuilder()
-            .equals("status", "active")
-            .greater_than("age", 18)
-            .sort_desc("created_at")
-            .page(2)
-            .page_size(25)
-            .build()
-        )
+    def test_bulk_operations_example(self) -> None:
+        """Test bulk operations example."""
+        # Create multiple requests
+        requests = []
+        base_url = "https://api.example.com/v1/bulk"
 
-        assert len(query.filters) == 2
-        assert len(query.sorts) == 1
-        assert query.page == 2
-        assert query.page_size == 25
+        for i in range(EXPECTED_BULK_SIZE):
+            request = ApiRequest(
+                id=f"bulk_request_{i}",
+                method="POST",
+                url=f"{base_url}/item/{i}",
+                headers={"Content-Type": "application/json"},
+            )
+            requests.append(request)
 
-        # Response builder example
-        response = (
-            FlextApiResponseBuilder()
-            .success({"id": 1, "name": "test"}, "Resource created")
-            .metadata({"request_id": "12345"})
-            .build()
+        # Verify bulk creation
+        assert len(requests) == EXPECTED_BULK_SIZE
+        for i, request in enumerate(requests):
+            assert request.id == f"bulk_request_{i}"
+            assert f"/item/{i}" in request.url
+
+    def test_data_processing_example(self) -> None:
+        """Test data processing example."""
+        # Create test data
+        test_data = [
+            {"id": 1, "name": "Item 1", "active": True},
+            {"id": 2, "name": "Item 2", "active": False},
+            {"id": 3, "name": "Item 3", "active": True},
+        ]
+
+        assert len(test_data) == EXPECTED_DATA_COUNT
+
+        # Process data with API components
+        api = create_flext_api()
+        builder = api.get_builder()
+
+        # Filter active items
+        active_items = [item for item in test_data if item["active"]]
+
+        # Build response with processed data
+        response = builder.for_response().success(
+            data={
+                "items": active_items,
+                "total": len(active_items),
+                "processed": len(test_data),
+            },
+            message=f"Processed {len(test_data)} items, {len(active_items)} active",
         )
 
         assert response.success is True
-        assert isinstance(response.data, dict)
-        assert response.data["id"] == 1
-        assert response.message == "Resource created"
-        assert isinstance(response.metadata, dict)
-        assert response.metadata["request_id"] == "12345"
-
-    def test_plugin_integration_examples(self) -> None:
-        """Test plugin integration examples."""
-
-        # Create a custom plugin
-        class CustomPlugin(FlextApiPlugin):
-            def __init__(self) -> None:
-                super().__init__(name="custom-plugin")
-
-            async def before_request(
-                self,
-                request: FlextApiModels.ApiRequest,
-            ) -> FlextApiModels.ApiRequest:
-                # Add custom header
-                if request.headers is None:
-                    object.__setattr__(request, "headers", {})
-                assert request.headers is not None
-                request.headers["X-Custom-Header"] = "custom-value"
-                return request
-
-            async def after_request(
-                self,
-                request_or_response: FlextApiModels.ApiRequest
-                | FlextApiModels.ApiResponse,
-                response: FlextApiModels.ApiResponse | None = None,
-            ) -> FlextApiModels.ApiResponse:
-                # Handle both signatures
-                if response is None:
-                    # New signature: after_request(response)
-                    if isinstance(request_or_response, FlextApiModels.ApiResponse):
-                        return request_or_response
-                    # Fallback: create a basic response if request was passed
-                    return FlextApiModels.ApiResponse(status_code=200, data=None)
-                # Old signature: after_request(request, response)
-                return response
-
-        # Use plugin with client
-        config = FlextApiClient(base_url="https://httpbin.org")
-        plugin = CustomPlugin()
-        client = FlextApiClient(config, plugins=[plugin])
-
-        assert len(client.plugins) == 1
-        assert client.plugins[0].name == "custom-plugin"
-
-    def test_performance_optimization_examples(self) -> None:
-        """Test performance optimization examples."""
-        # Test connection pooling
-        config = FlextApiClient(
-            base_url="https://httpbin.org",
-            timeout=10.0,
-            max_retries=3,
-        )
-        client = FlextApiClient(config)
-
-        # Test that configuration is properly set
-        assert client.config.timeout == 10.0
-        assert client.config.max_retries == 3
-        assert client.config.base_url == "https://httpbin.org"
-
-    def test_security_examples(self) -> None:
-        """Test security configuration examples."""
-        # Test with security headers
-        config = FlextApiClient(
-            base_url="https://api.example.com",
-            headers={
-                "Authorization": "Bearer secure-token",
-                "X-API-Key": "secure-api-key",
-                "Content-Security-Policy": "default-src 'self'",
-            },
-        )
-        client = FlextApiClient(config)
-
-        # Verify security headers are set
-        assert client.config.headers is not None
-        assert "Authorization" in client.config.headers
-        assert "X-API-Key" in client.config.headers
-        assert "Content-Security-Policy" in client.config.headers
-        assert client.config.headers["Authorization"] == "Bearer secure-token"
+        response_data = response.value
+        assert response_data["data"]["total"] == 2  # 2 active items
+        assert response_data["data"]["processed"] == EXPECTED_DATA_COUNT

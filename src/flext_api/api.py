@@ -11,12 +11,8 @@ from __future__ import annotations
 
 from typing import cast
 
-from flext_core import (
-    FlextContainer,
-    FlextLogger,
-    FlextModels,
-    FlextResult,
-)
+from flext_core import FlextContainer, FlextDomainService, FlextLogger, FlextResult
+from pydantic import Field
 
 from flext_api.client import FlextApiClient
 from flext_api.models import FlextApiModels
@@ -29,29 +25,30 @@ Result = dict[str, object]
 logger = FlextLogger(__name__)
 
 
-class FlextApi(FlextModels):
+class FlextApi(FlextDomainService):
     """Main API class providing HTTP client and builder functionality.
 
     Single class following FLEXT patterns with FlextResult for all operations.
     Provides HTTP client creation, builder patterns, and service lifecycle.
     """
 
-    service_name: str = "FlextApi"
-    service_version: str = "0.9.0"
-    default_base_url: str = "http://localhost:8000"
+    # Pydantic fields
+    service_name: str = Field(default="FlextApi", description="Service name")
+    service_version: str = Field(default="0.9.0", description="Service version")
+    default_base_url: str = Field(
+        default="http://localhost:8000", description="Default base URL"
+    )
 
-    def __init__(self, **data: object) -> None:
+    def __init__(self, **kwargs: object) -> None:
         """Initialize API with flext-core patterns."""
-        super().__init__(**data)
+        # Ensure service_name defaults to "FlextApi" for compatibility
+        kwargs.setdefault("service_name", "FlextApi")
+        super().__init__(**kwargs)
 
-        # Override defaults if provided
-        self.service_name = cast("str", data.get("service_name", self.service_name))
-        self.service_version = cast(
-            "str", data.get("service_version", self.service_version)
-        )
-        self.default_base_url = cast(
-            "str", data.get("default_base_url", self.default_base_url)
-        )
+        # Internal state
+        self._is_running = False
+        self._client: FlextApiClient | None = None
+        self._builder: FlextApiModels | None = None
 
         # Get global container - NO local containers ever
         self._container = FlextContainer.get_global()
@@ -59,12 +56,24 @@ class FlextApi(FlextModels):
         # Register self in global container
         self._container.register("flext_api", self)
 
-        # Internal state
-        self._is_running = False
-        self._client: FlextApiClient | None = None
-        self._builder: FlextApiModels | None = None
-
         logger.info("FlextApi initialized", version=self.service_version)
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute API service lifecycle."""
+        try:
+            service_info: dict[str, object] = {
+                "service_name": self.service_name,
+                "service_version": self.service_version,
+                "default_base_url": self.default_base_url,
+                "status": "active",
+            }
+            logger.info(
+                "FlextApi service executed successfully", service_info=service_info
+            )
+            return FlextResult[dict[str, object]].ok(service_info)
+        except Exception as e:
+            logger.exception("Failed to execute FlextApi service")
+            return FlextResult[dict[str, object]].fail(f"Service execution failed: {e}")
 
     def get_info(self) -> FlextResult[Result]:
         """Get API service information - returns FlextResult, never raises."""
@@ -136,7 +145,7 @@ class FlextApi(FlextModels):
         try:
             self._is_running = False
             if self._client:
-                await self._client.close()
+                await self._client.stop()
                 self._client = None
             logger.info("FlextApi stopped", service=self.service_name)
             return FlextResult[None].ok(None)
@@ -159,33 +168,34 @@ class FlextApi(FlextModels):
             logger.exception("Health check failed", error=str(e))
             return FlextResult[Result].fail(f"Health check failed: {e}")
 
+    # =========================================================================
+    # FACTORY METHODS - Following flext-core patterns
+    # =========================================================================
 
-# =============================================================================
-# FACTORY FUNCTIONS - Following flext-core patterns
-# =============================================================================
+    @staticmethod
+    def create_instance(
+        service_name: str | None = None,
+        service_version: str | None = None,
+        default_base_url: str | None = None,
+    ) -> FlextApi:
+        """Create FlextApi instance with optional configuration.
+
+        Args:
+            service_name: Optional service name
+            service_version: Optional service version
+            default_base_url: Optional default base URL
+
+        Returns:
+            Configured FlextApi instance
+
+        """
+        return FlextApi(
+            service_name=service_name or "FlextApi",
+            service_version=service_version or "0.9.0",
+            default_base_url=default_base_url or "http://localhost:8000",
+        )
 
 
-def create_flext_api(
-    service_name: str | None = None,
-    service_version: str | None = None,
-    default_base_url: str | None = None,
-) -> FlextApi:
-    """Create FlextApi instance with optional configuration.
-
-    Args:
-        service_name: Optional service name
-        service_version: Optional service version
-        default_base_url: Optional default base URL
-
-    Returns:
-        Configured FlextApi instance
-
-    """
-    return FlextApi(
-        service_name=service_name or "flext-api",
-        service_version=service_version or "0.9.0",
-        default_base_url=default_base_url or "http://localhost:8000",
-    )
-
-
-__all__ = ["FlextApi", "create_flext_api"]
+__all__ = [
+    "FlextApi",
+]
