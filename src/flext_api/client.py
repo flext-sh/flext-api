@@ -29,12 +29,20 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING, cast
 
 import httpx
 from flext_core import FlextDomainService, FlextLogger, FlextResult, FlextUtilities
+from pydantic import BaseModel, ConfigDict, Field
+
+if TYPE_CHECKING:
+    from flext_api.typings import FlextApiTypes
 
 from flext_api.constants import FlextApiConstants
-from flext_api.typings import FlextApiTypes
+
+if not TYPE_CHECKING:
+    from flext_api.typings import FlextApiTypes
 
 logger = FlextLogger(__name__)
 
@@ -51,7 +59,9 @@ class FlextApiClient(FlextDomainService[dict[str, object]]):
         self._base_url = str(base_url) if base_url is not None else ""
 
         timeout = data.get("timeout", 30.0)
-        self._timeout = float(timeout) if isinstance(timeout, (int, float, str)) else 30.0
+        self._timeout = (
+            float(timeout) if isinstance(timeout, (int, float, str)) else 30.0
+        )
 
         headers = data.get("headers", {})
         if isinstance(headers, dict):
@@ -60,7 +70,9 @@ class FlextApiClient(FlextDomainService[dict[str, object]]):
             self._headers = {}
 
         max_retries = data.get("max_retries", 3)
-        self._max_retries = int(max_retries) if isinstance(max_retries, (int, str)) else 3
+        self._max_retries = (
+            int(max_retries) if isinstance(max_retries, (int, str)) else 3
+        )
 
         # REAL httpx client - will be initialized in start()
         self._client: httpx.AsyncClient | None = None
@@ -220,170 +232,276 @@ class FlextApiClient(FlextDomainService[dict[str, object]]):
         data: bytes | None = None,
     ) -> FlextResult[FlextApiTypes.Response.JsonResponse]:
         """Make REAL HTTP request with proper error handling and retries."""
+        # Session validation
+        session_check = self._validate_session()
+        if not session_check.is_success:
+            return session_check
+
+        # Create request context
+        context = self._HttpRequestContext(
+            request_id=FlextUtilities.Generators.generate_request_id(),
+            method=method,
+            url=self._build_url(path),
+            params=params or {},
+            json_data=json_data,
+            data=data,
+            headers=self._headers,
+            timeout=self.timeout,
+        )
+
+        # Execute with retry strategy
+        return await self._retry_strategy.execute(context, self._execute_single_request)
+
+    def _validate_session(self) -> FlextResult[FlextApiTypes.Response.JsonResponse]:
+        """Validate HTTP session state."""
         if not self._session_started or self._client is None:
             return FlextResult[FlextApiTypes.Response.JsonResponse].fail(
                 "HTTP session not started. Call start() first."
             )
+        return FlextResult[FlextApiTypes.Response.JsonResponse].ok({})
 
-        # Generate request ID using FlextUtilities
-        request_id = FlextUtilities.Generators.generate_request_id()
-
-        # Join URL path properly
+    def _build_url(self, path: str) -> str:
+        """Build complete URL from base URL and path."""
         base = self.base_url.rstrip("/")
         clean_path = path.lstrip("/")
-        url = f"{base}/{clean_path}" if clean_path else base
+        return f"{base}/{clean_path}" if clean_path else base
 
-        # Prepare request parameters with proper typing for httpx
-        request_kwargs: dict[str, object] = {
-            "method": method,
-            "url": url,
-            "params": params or {},
-            "headers": self._headers,
-            "timeout": self.timeout,
-        }
+    class _HttpRequestContext(BaseModel):
+        """Request context using Pydantic V2 for zero-parameter constructor."""
 
-        if json_data is not None:
-            request_kwargs["json"] = json_data
-        elif data is not None:
-            request_kwargs["content"] = data
+        # Use Pydantic V2 advanced configuration
+        model_config = ConfigDict(
+            validate_assignment=True,
+            frozen=False,  # Mutable for internal context
+            arbitrary_types_allowed=True,
+        )
 
-        # Execute request with retries
-        last_error: Exception | None = None
+        request_id: str = Field(..., description="Unique request identifier")
+        method: str = Field(..., description="HTTP method")
+        url: str = Field(..., description="Request URL")
+        params: dict[str, object] | None = Field(None, description="Query parameters")
+        json_data: dict[str, object] | None = Field(None, description="JSON payload")
+        data: bytes | None = Field(None, description="Raw data payload")
+        headers: dict[str, str] = Field(
+            default_factory=dict, description="HTTP headers"
+        )
+        timeout: float = Field(30.0, description="Request timeout")
 
-        for attempt in range(self.max_retries + 1):
-            try:
-                logger.debug(
-                    "Making HTTP request",
-                    request_id=request_id,
-                    method=method,
-                    url=url,
-                    attempt=attempt + 1,
-                )
+        def to_httpx_kwargs(self) -> dict[str, object]:
+            """Convert to httpx request parameters with proper typing."""
+            # Create type-safe dictionary for httpx
+            kwargs: dict[str, object] = {}
 
-                # Make httpx request - using type ignore for httpx specific parameter types
-                from typing import cast
-                response = await self._client.request(
-                    method=cast(str, request_kwargs["method"]),
-                    url=cast(str, request_kwargs["url"]),
-                    params=request_kwargs.get("params"),  # type: ignore[arg-type]
-                    headers=request_kwargs.get("headers"),  # type: ignore[arg-type]
-                    timeout=cast(float, request_kwargs.get("timeout", 30.0)),
-                    json=request_kwargs.get("json"),
-                    content=request_kwargs.get("content"),  # type: ignore[arg-type]
-                    data=request_kwargs.get("data"),  # type: ignore[arg-type]
-                )
+            # Required parameters
+            kwargs["method"] = self.method
+            kwargs["url"] = self.url
+            kwargs["timeout"] = self.timeout
 
-                # Parse response
+            # Optional parameters with proper type conversion
+            if self.params:
+                kwargs["params"] = dict(self.params)
+            if self.headers:
+                kwargs["headers"] = dict(self.headers)
+            if self.json_data is not None:
+                kwargs["json"] = self.json_data
+            elif self.data is not None:
+                kwargs["content"] = self.data
+
+            return kwargs
+
+    class _RetryStrategy:
+        """Retry strategy using exponential backoff."""
+
+        def __init__(self, max_retries: int) -> None:
+            self.max_retries = max_retries
+
+        async def execute(
+            self,
+            context: FlextApiClient._HttpRequestContext,
+            execute_fn: Callable[
+                [FlextApiClient._HttpRequestContext, int],
+                Awaitable[FlextResult[FlextApiTypes.Response.JsonResponse]],
+            ],
+        ) -> FlextResult[FlextApiTypes.Response.JsonResponse]:
+            """Execute request with retry logic."""
+            last_error: Exception | None = None
+
+            for attempt in range(self.max_retries + 1):
                 try:
-                    if response.headers.get("content-type", "").startswith(
-                        "application/json"
-                    ):
-                        response_data = response.json()
-                    else:
-                        response_data = {
-                            "content": response.text,
-                            "status_code": response.status_code,
-                        }
-                except Exception:
-                    response_data = {
-                        "content": response.text,
-                        "status_code": response.status_code,
-                    }
+                    result = await execute_fn(context, attempt)
+                    if result.is_success:
+                        return result
 
-                # Check for HTTP errors
-                if (
-                    response.status_code
-                    >= FlextApiConstants.ApiValidation.CLIENT_ERROR_MIN
-                ):
-                    error_msg = f"HTTP {response.status_code}: {response.text}"
-                    logger.warning(
-                        "HTTP request failed",
-                        request_id=request_id,
-                        status_code=response.status_code,
-                        error=error_msg,
-                    )
+                    # Handle server errors (retry) vs client errors (don't retry)
+                    if not self._should_retry(result, attempt):
+                        return result
 
-                    # Don't retry client errors (4xx), only server errors (5xx)
-                    if (
-                        response.status_code
-                        < FlextApiConstants.ApiValidation.SERVER_ERROR_MIN
-                        or attempt == self.max_retries
-                    ):
-                        return FlextResult[FlextApiTypes.Response.JsonResponse].fail(
-                            error_msg
-                        )
-
-                    # Wait before retry for server errors
                     await asyncio.sleep(2**attempt)
-                    continue
 
-                # Success
-                logger.debug(
-                    "HTTP request successful",
-                    request_id=request_id,
-                    status_code=response.status_code,
-                )
+                except (httpx.TimeoutException, httpx.RequestError) as e:
+                    last_error = e
+                    self._log_retry_error(context, e, attempt)
 
-                return FlextResult[FlextApiTypes.Response.JsonResponse].ok(
-                    response_data
-                )
+                    if attempt == self.max_retries:
+                        break
+                    await asyncio.sleep(2**attempt)
 
-            except httpx.TimeoutException as e:
-                last_error = e
+                except Exception as e:
+                    last_error = e
+                    logger.exception(
+                        "Unexpected HTTP request error",
+                        request_id=context.request_id,
+                        attempt=attempt + 1,
+                        error=str(e),
+                    )
+                    if attempt == self.max_retries:
+                        break
+                    await asyncio.sleep(2**attempt)
+
+            # All retries exhausted
+            return self._create_retry_exhausted_result(context, last_error)
+
+        def _should_retry(
+            self, result: FlextResult[FlextApiTypes.Response.JsonResponse], attempt: int
+        ) -> bool:
+            """Determine if request should be retried based on result."""
+            # Don't retry if max retries reached
+            if attempt >= self.max_retries:
+                return False
+
+            # Retry only on failed requests (network/timeout errors)
+            return not result.success
+
+        def _log_retry_error(
+            self,
+            context: FlextApiClient._HttpRequestContext,
+            error: Exception,
+            attempt: int,
+        ) -> None:
+            """Log retry error with appropriate level."""
+            if isinstance(error, httpx.TimeoutException):
                 logger.warning(
                     "HTTP request timeout",
-                    request_id=request_id,
+                    request_id=context.request_id,
                     attempt=attempt + 1,
-                    timeout=self.timeout,
+                    timeout=context.timeout,
                 )
-
-                if attempt == self.max_retries:
-                    break
-
-                # Exponential backoff for timeouts
-                await asyncio.sleep(2**attempt)
-
-            except httpx.RequestError as e:
-                last_error = e
+            else:
                 logger.warning(
                     "HTTP request error",
-                    request_id=request_id,
+                    request_id=context.request_id,
                     attempt=attempt + 1,
-                    error=str(e),
+                    error=str(error),
                 )
 
-                if attempt == self.max_retries:
-                    break
+        def _create_retry_exhausted_result(
+            self,
+            context: FlextApiClient._HttpRequestContext,
+            last_error: Exception | None,
+        ) -> FlextResult[FlextApiTypes.Response.JsonResponse]:
+            """Create result for retry exhaustion."""
+            error_msg = f"HTTP request failed after {self.max_retries + 1} attempts: {last_error}"
+            logger.error(
+                "HTTP request retries exhausted",
+                request_id=context.request_id,
+                max_retries=self.max_retries,
+                final_error=str(last_error),
+            )
+            return FlextResult[FlextApiTypes.Response.JsonResponse].fail(error_msg)
 
-                # Exponential backoff for network errors
-                await asyncio.sleep(2**attempt)
+    @property
+    def _retry_strategy(self) -> _RetryStrategy:
+        """Get retry strategy instance."""
+        if not hasattr(self, "_retry_strategy_instance"):
+            self._retry_strategy_instance = self._RetryStrategy(self.max_retries)
+        return self._retry_strategy_instance
 
-            except Exception as e:
-                last_error = e
-                logger.exception(
-                    "Unexpected HTTP request error",
-                    request_id=request_id,
-                    attempt=attempt + 1,
-                    error=str(e),
-                )
-
-                if attempt == self.max_retries:
-                    break
-
-                await asyncio.sleep(2**attempt)
-
-        # All retries exhausted
-        error_msg = (
-            f"HTTP request failed after {self.max_retries + 1} attempts: {last_error}"
+    async def _execute_single_request(
+        self,
+        context: _HttpRequestContext,
+        attempt: int,
+    ) -> FlextResult[FlextApiTypes.Response.JsonResponse]:
+        """Execute single HTTP request attempt."""
+        logger.debug(
+            "Making HTTP request",
+            request_id=context.request_id,
+            method=context.method,
+            url=context.url,
+            attempt=attempt + 1,
         )
-        logger.error(
-            "HTTP request retries exhausted",
-            request_id=request_id,
-            max_retries=self.max_retries,
-            final_error=str(last_error),
+
+        # Execute httpx request
+        if self._client is None:
+            return FlextResult[FlextApiTypes.Response.JsonResponse].fail(
+                "HTTP client not initialized"
+            )
+        # Type-safe httpx request with proper casting
+        kwargs = context.to_httpx_kwargs()
+        response = await self._client.request(
+            method=cast("str", kwargs["method"]),
+            url=cast("str", kwargs["url"]),
+            params=kwargs.get("params"),  # type: ignore[arg-type]
+            headers=kwargs.get("headers"),  # type: ignore[arg-type]
+            json=kwargs.get("json"),
+            content=kwargs.get("content"),  # type: ignore[arg-type]
+            timeout=cast("float", kwargs["timeout"]),
         )
 
-        return FlextResult[FlextApiTypes.Response.JsonResponse].fail(error_msg)
+        # Parse response using strategy pattern
+        response_data = self._parse_response(response)
+
+        # Handle HTTP errors
+        error_result = self._check_http_errors(response, context)
+        if error_result:
+            return error_result
+
+        # Success case
+        logger.debug(
+            "HTTP request successful",
+            request_id=context.request_id,
+            status_code=response.status_code,
+        )
+
+        return FlextResult[FlextApiTypes.Response.JsonResponse].ok(response_data)
+
+    def _parse_response(self, response: httpx.Response) -> dict[str, object]:
+        """Parse HTTP response using strategy pattern."""
+        try:
+            if response.headers.get("content-type", "").startswith("application/json"):
+                json_data: dict[str, object] = response.json()
+                return json_data
+        except Exception as e:
+            # JSON parsing failed, log warning and fall back to text content
+            logger.warning("Failed to parse JSON response", error=str(e))
+
+        return {
+            "content": response.text,
+            "status_code": response.status_code,
+        }
+
+    def _check_http_errors(
+        self,
+        response: httpx.Response,
+        context: _HttpRequestContext,
+    ) -> FlextResult[FlextApiTypes.Response.JsonResponse] | None:
+        """Check for HTTP errors and return error result if applicable."""
+        if response.status_code >= FlextApiConstants.ApiValidation.CLIENT_ERROR_MIN:
+            error_msg = f"HTTP {response.status_code}: {response.text}"
+            logger.warning(
+                "HTTP request failed",
+                request_id=context.request_id,
+                status_code=response.status_code,
+                error=error_msg,
+            )
+
+            # Don't retry client errors (4xx), only server errors (5xx)
+            if response.status_code < FlextApiConstants.ApiValidation.SERVER_ERROR_MIN:
+                return FlextResult[FlextApiTypes.Response.JsonResponse].fail(error_msg)
+
+            # Return special result indicating retry should happen
+            return FlextResult[FlextApiTypes.Response.JsonResponse].fail(error_msg)
+
+        return None
 
 
 __all__ = ["FlextApiClient"]

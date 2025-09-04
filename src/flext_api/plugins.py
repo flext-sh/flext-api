@@ -31,14 +31,49 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
+import base64
+import time
 from abc import ABC
 
-from flext_core import FlextLogger, FlextModels, FlextResult, FlextUtilities
-from pydantic import Field
+from flext_core import FlextLogger, FlextModels, FlextResult
+from pydantic import BaseModel, Field
 
 from flext_api.constants import FlextApiConstants
 
 logger = FlextLogger(__name__)
+
+
+# Pydantic V2 Plugin Configuration Models
+class PluginConfig(BaseModel):
+    """Base plugin configuration using Pydantic V2."""
+
+    name: str = "base_plugin"
+    enabled: bool = True
+    priority: int = 0
+
+
+class CachingPluginConfig(PluginConfig):
+    """Caching plugin configuration using Pydantic V2."""
+
+    name: str = "caching_plugin"
+    ttl: int = FlextApiConstants.HttpCache.DEFAULT_TTL
+    max_size: int = FlextApiConstants.HttpCache.MAX_CACHE_SIZE
+
+
+class RateLimitPluginConfig(PluginConfig):
+    """Rate limit plugin configuration using Pydantic V2."""
+
+    name: str = "rate_limit_plugin"
+    calls_per_second: float = 10.0
+    burst_size: int = 20
+
+
+class CircuitBreakerPluginConfig(PluginConfig):
+    """Circuit breaker plugin configuration using Pydantic V2."""
+
+    name: str = "circuit_breaker_plugin"
+    failure_threshold: int = 5
+    recovery_timeout: float = 60.0
 
 
 class FlextApiPlugins(FlextModels):
@@ -126,18 +161,13 @@ class FlextApiPlugins(FlextModels):
             description="Maximum cache entries",
         )
 
-        def __init__(
-            self,
-            name: str = "caching_plugin",
-            *,
-            enabled: bool = True,
-            priority: int = 0,
-            ttl: int = FlextApiConstants.HttpCache.DEFAULT_TTL,
-            max_size: int = FlextApiConstants.HttpCache.MAX_CACHE_SIZE,
-        ) -> None:
-            super().__init__(name=name, enabled=enabled, priority=priority)
-            self.ttl = ttl
-            self.max_size = max_size
+        def __init__(self, config: CachingPluginConfig) -> None:
+            """Initialize caching plugin using Pydantic V2 configuration."""
+            super().__init__(
+                name=config.name, enabled=config.enabled, priority=config.priority
+            )
+            self.ttl = config.ttl
+            self.max_size = config.max_size
             self._cache: dict[
                 str, tuple[object, float]
             ] = {}  # url -> (data, timestamp)
@@ -156,12 +186,10 @@ class FlextApiPlugins(FlextModels):
 
         def _is_cache_valid(self, timestamp: float) -> bool:
             """Check if cache entry is still valid."""
-            import time
             return (time.time() - timestamp) < self.ttl
 
         def _cleanup_expired(self) -> None:
             """Remove expired cache entries."""
-            import time
             current_time = time.time()
             expired_keys = [
                 key
@@ -197,6 +225,14 @@ class FlextApiPlugins(FlextModels):
                 self._cleanup_expired()
 
             return FlextResult.ok((method, url, headers, params, body))
+
+        def validate_business_rules(self) -> FlextResult[None]:
+            """Validate caching plugin business rules."""
+            if self.ttl <= 0:
+                return FlextResult[None].fail("Cache TTL must be positive")
+            if self.max_size <= 0:
+                return FlextResult[None].fail("Cache max_size must be positive")
+            return FlextResult[None].ok(None)
 
         async def after_response(
             self, response_data: object, _headers: dict[str, str], _status_code: int
@@ -250,6 +286,14 @@ class FlextApiPlugins(FlextModels):
             # The actual retry logic would be implemented in the client
             return FlextResult.fail(f"Request failed after retries: {error}")
 
+        def validate_business_rules(self) -> FlextResult[None]:
+            """Validate retry plugin business rules."""
+            if self.max_retries < 0:
+                return FlextResult[None].fail("Max retries cannot be negative")
+            if self.backoff_factor <= 0:
+                return FlextResult[None].fail("Backoff factor must be positive")
+            return FlextResult[None].ok(None)
+
     class AuthPlugin(AsyncPlugin):
         """Authentication plugin for HTTP requests."""
 
@@ -273,12 +317,26 @@ class FlextApiPlugins(FlextModels):
             if self.auth_type == "bearer" and self.token:
                 auth_headers["Authorization"] = f"Bearer {self.token}"
             elif self.auth_type == "basic" and self.username and self.password:
-                import base64
+
                 credentials_str = f"{self.username}:{self.password}"
                 credentials = base64.b64encode(credentials_str.encode()).decode()
                 auth_headers["Authorization"] = f"Basic {credentials}"
 
             return FlextResult.ok((method, url, auth_headers, params, body))
+
+        def validate_business_rules(self) -> FlextResult[None]:
+            """Validate auth plugin business rules."""
+            if self.auth_type not in {"bearer", "basic"}:
+                return FlextResult[None].fail(
+                    "Invalid auth type, must be 'bearer' or 'basic'"
+                )
+            if self.auth_type == "bearer" and not self.token:
+                return FlextResult[None].fail("Bearer auth requires token")
+            if self.auth_type == "basic" and (not self.username or not self.password):
+                return FlextResult[None].fail(
+                    "Basic auth requires username and password"
+                )
+            return FlextResult[None].ok(None)
 
     class RateLimitPlugin(AsyncPlugin):
         """Rate limiting plugin to prevent API abuse."""
@@ -289,18 +347,13 @@ class FlextApiPlugins(FlextModels):
         )
         burst_size: int = Field(default=20, description="Burst capacity")
 
-        def __init__(
-            self,
-            name: str = "rate_limit_plugin",
-            *,
-            enabled: bool = True,
-            priority: int = 0,
-            calls_per_second: float = 10.0,
-            burst_size: int = 20,
-        ) -> None:
-            super().__init__(name=name, enabled=enabled, priority=priority)
-            self.calls_per_second = calls_per_second
-            self.burst_size = burst_size
+        def __init__(self, config: RateLimitPluginConfig) -> None:
+            """Initialize using Pydantic V2 configuration."""
+            super().__init__(
+                name=config.name, enabled=config.enabled, priority=config.priority
+            )
+            self.calls_per_second = config.calls_per_second
+            self.burst_size = config.burst_size
             self._last_call = 0.0
             self._tokens = float(self.burst_size)
 
@@ -313,7 +366,6 @@ class FlextApiPlugins(FlextModels):
             body: object = None,
         ) -> FlextResult[tuple[str, str, dict[str, str], dict[str, object], object]]:
             """Apply rate limiting before request."""
-            import time
             current_time = time.time()
 
             # Token bucket algorithm
@@ -334,6 +386,14 @@ class FlextApiPlugins(FlextModels):
             self._last_call = current_time
             return FlextResult.ok((method, url, headers, params, body))
 
+        def validate_business_rules(self) -> FlextResult[None]:
+            """Validate rate limit plugin business rules."""
+            if self.calls_per_second <= 0:
+                return FlextResult[None].fail("Calls per second must be positive")
+            if self.burst_size <= 0:
+                return FlextResult[None].fail("Burst size must be positive")
+            return FlextResult[None].ok(None)
+
     class CircuitBreakerPlugin(AsyncPlugin):
         """Circuit breaker plugin for fault tolerance."""
 
@@ -345,18 +405,13 @@ class FlextApiPlugins(FlextModels):
             default=60.0, description="Recovery timeout in seconds"
         )
 
-        def __init__(
-            self,
-            name: str = "circuit_breaker_plugin",
-            *,
-            enabled: bool = True,
-            priority: int = 0,
-            failure_threshold: int = 5,
-            recovery_timeout: float = 60.0,
-        ) -> None:
-            super().__init__(name=name, enabled=enabled, priority=priority)
-            self.failure_threshold = failure_threshold
-            self.recovery_timeout = recovery_timeout
+        def __init__(self, config: CircuitBreakerPluginConfig) -> None:
+            """Initialize using Pydantic V2 configuration."""
+            super().__init__(
+                name=config.name, enabled=config.enabled, priority=config.priority
+            )
+            self.failure_threshold = config.failure_threshold
+            self.recovery_timeout = config.recovery_timeout
             self._failure_count = 0
             self._last_failure_time = 0.0
             self._state = "closed"  # closed, open, half-open
@@ -370,7 +425,6 @@ class FlextApiPlugins(FlextModels):
             body: object = None,
         ) -> FlextResult[tuple[str, str, dict[str, str], dict[str, object], object]]:
             """Check circuit breaker state before request."""
-            import time
             current_time = time.time()
 
             if self._state == "open":
@@ -399,7 +453,7 @@ class FlextApiPlugins(FlextModels):
             else:
                 # Failure - increment count
                 self._failure_count += 1
-                import time
+
                 self._last_failure_time = time.time()
 
                 if self._failure_count >= self.failure_threshold:
@@ -409,6 +463,14 @@ class FlextApiPlugins(FlextModels):
                     )
 
             return FlextResult.ok(response_data)
+
+        def validate_business_rules(self) -> FlextResult[None]:
+            """Validate circuit breaker plugin business rules."""
+            if self.failure_threshold <= 0:
+                return FlextResult[None].fail("Failure threshold must be positive")
+            if self.recovery_timeout <= 0:
+                return FlextResult[None].fail("Recovery timeout must be positive")
+            return FlextResult[None].ok(None)
 
     class LoggingPlugin(AsyncPlugin):
         """Request/response logging plugin for debugging."""
@@ -473,6 +535,11 @@ class FlextApiPlugins(FlextModels):
                 )
 
             return FlextResult.fail(f"Request failed: {error}")
+
+        def validate_business_rules(self) -> FlextResult[None]:
+            """Validate logging plugin business rules."""
+            # LoggingPlugin has no required business rules, all flags are optional
+            return FlextResult[None].ok(None)
 
 
 # Export compatibility classes for tests

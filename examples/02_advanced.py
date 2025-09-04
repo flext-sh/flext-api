@@ -50,73 +50,104 @@ def example_api_creation() -> None:
     print(f"   Headers: {client_config.headers}")
 
 
-def example_storage_system() -> None:
-    """Demonstrate storage system using refactored FlextApiStorage."""
-    print("\n=== Storage System Example ===")
+class _StorageSystemDemo:
+    """Storage system demonstration using Command Pattern."""
 
-    # Create storage using the refactored FlextApiStorage class
-    storage = FlextApiStorage()
+    def __init__(self) -> None:
+        self.storage = FlextApiStorage()
+        self.test_key = "user:123"
+        self.test_value: dict[str, object] = {
+            "name": "John Doe",
+            "role": "admin",
+            "created": "2025-01-01",
+        }
 
-    # Test storage operations
-    key = "user:123"
-    value: dict[str, object] = {
-        "name": "John Doe",
-        "role": "admin",
-        "created": "2025-01-01",
-    }
+    def run_demo(self) -> None:
+        """Execute complete storage demonstration."""
+        print("\n=== Storage System Example ===")
+        print("✅ Storage created with hierarchical structure")
 
-    print("✅ Storage created with hierarchical structure")
+        # Execute demo steps using Chain of Responsibility pattern
+        demo_steps = [
+            self._demo_basic_operations,
+            self._demo_cache_info,
+            self._demo_json_serialization,
+        ]
 
-    # Set value using FlextResult pattern
-    set_result = storage.set(key, value, ttl=300)
-    if set_result.success:
-        print(f"✅ Value stored: {key}")
+        for step in demo_steps:
+            step()
 
-        # Get value using FlextResult pattern
-        get_result = storage.get(key)
-        if get_result.success:
-            retrieved = get_result.value
-            print(f"✅ Value retrieved: {retrieved}")
-            if isinstance(retrieved, dict):
-                print(f"   User name: {retrieved.get('name', 'N/A')}")
-                print(f"   User role: {retrieved.get('role', 'N/A')}")
+    def _demo_basic_operations(self) -> None:
+        """Demonstrate basic storage operations."""
+        # Set operation
+        set_result = self.storage.set(self.test_key, self.test_value, ttl=300)
+        if not set_result.success:
+            print(f"❌ Set failed: {set_result.error}")
+            return
 
-            # Get cache size using FlextResult pattern
-            size_result = storage.size()
+        print(f"✅ Value stored: {self.test_key}")
+
+        # Get operation
+        get_result = self.storage.get(self.test_key)
+        if not get_result.success:
+            print(f"❌ Get failed: {get_result.error}")
+            return
+
+        self._display_retrieved_data(get_result.value)
+
+        # Delete operation
+        delete_result = self.storage.delete(self.test_key)
+        if delete_result.success:
+            print(f"✅ Value deleted: {self.test_key}")
+
+    def _display_retrieved_data(self, retrieved: object) -> None:
+        """Display retrieved data with proper formatting."""
+        print(f"✅ Value retrieved: {retrieved}")
+        if isinstance(retrieved, dict):
+            print(f"   User name: {retrieved.get('name', 'N/A')}")
+            print(f"   User role: {retrieved.get('role', 'N/A')}")
+
+    def _demo_cache_info(self) -> None:
+        """Demonstrate cache information retrieval."""
+        # Cache size - only if method exists
+        if hasattr(self.storage, "size"):
+            size_result = self.storage.size()
             if size_result.success:
                 print(f"✅ Cache size: {size_result.value} items")
 
-            # Get cache keys using FlextResult pattern
-            keys_result = storage.keys()
+        # Cache keys - only if method exists
+        if hasattr(self.storage, "keys"):
+            keys_result = self.storage.keys()
             if keys_result.success:
-                keys_list = keys_result.value
-                print(f"✅ Cache keys: {keys_list}")
+                print(f"✅ Cache keys: {keys_result.value}")
 
-            # Delete value using FlextResult pattern
-            delete_result = storage.delete(key)
-            if delete_result.success:
-                print(f"✅ Value deleted: {key}")
-        else:
-            print(f"❌ Get failed: {get_result.error}")
-    else:
-        print(f"❌ Set failed: {set_result.error}")
+    def _demo_json_serialization(self) -> None:
+        """Demonstrate JSON serialization capabilities."""
+        # Check if JsonStorage nested class exists
+        if not hasattr(self.storage, "JsonStorage"):
+            print("⚠️  JsonStorage not available, skipping serialization demo")
+            return
 
-    # Test nested class usage - JsonStorage for serialization
-    json_storage = storage.JsonStorage()
-    test_data: dict[str, object] = {
-        "message": "Hello, World!",
-        "timestamp": "2025-01-01T00:00:00Z",
-    }
+        json_storage = self.storage.JsonStorage()
+        test_data: dict[str, object] = {
+            "message": "Hello, World!",
+            "timestamp": "2025-01-01T00:00:00Z",
+        }
 
-    try:
-        json_str = json_storage.serialize(test_data)
-        print(f"✅ Data serialized using nested JsonStorage: {len(json_str)} chars")
+        try:
+            json_str = json_storage.serialize(test_data)
+            print(f"✅ Data serialized using nested JsonStorage: {len(json_str)} chars")
 
-        # Test deserialization
-        deserialized = json_storage.deserialize(json_str)
-        print(f"✅ Data deserialized: {deserialized}")
-    except Exception as e:
-        print(f"❌ Serialization failed: {e}")
+            deserialized = json_storage.deserialize(json_str)
+            print(f"✅ Data deserialized: {deserialized}")
+        except Exception as e:
+            print(f"❌ Serialization failed: {e}")
+
+
+def example_storage_system() -> None:
+    """Demonstrate storage system using refactored FlextApiStorage."""
+    demo = _StorageSystemDemo()
+    demo.run_demo()
 
 
 def example_utilities_usage() -> None:

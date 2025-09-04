@@ -24,13 +24,63 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from urllib.parse import urlparse
+from collections.abc import Callable
+from typing import Annotated, Literal
+from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextLogger, FlextResult, FlextUtilities
+from pydantic import BaseModel, Field
 
 from flext_api.constants import FlextApiConstants
 
 logger = FlextLogger(__name__)
+
+
+# Python 3.13 Discriminated Union for Configuration Types with Pydantic V2
+class HttpRequestConfig(BaseModel):
+    """HTTP Request configuration using Pydantic V2."""
+
+    config_type: Literal["http_request"] = "http_request"
+    method: str = "GET"
+    url: str
+    headers: dict[str, str] = Field(default_factory=dict)
+    params: dict[str, object] = Field(default_factory=dict)
+    timeout: float = 30.0
+
+
+class HttpErrorConfig(BaseModel):
+    """HTTP Error configuration using Pydantic V2."""
+
+    config_type: Literal["http_error"] = "http_error"
+    message: str
+    status_code: int = 500
+    url: str | None = None
+    method: str | None = None
+    headers: dict[str, str] | None = None
+    context: dict[str, object] = Field(default_factory=dict)
+
+
+class ValidationConfig(BaseModel):
+    """Validation configuration using Pydantic V2."""
+
+    config_type: Literal["validation"] = "validation"
+    message: str = "Validation error"
+    field: str | None = None
+    value: object = None
+    url: str | None = None
+    method: str | None = None
+    headers: dict[str, str] | None = None
+    context: dict[str, object] = Field(default_factory=dict)
+
+
+# Python 3.13 Advanced Union Types with Discriminated Pattern Matching
+type ConfigType = HttpRequestConfig | HttpErrorConfig | ValidationConfig
+type ApiUtilityConfig = Annotated[ConfigType, Field(discriminator="config_type")]
+
+# Python 3.13 Generic Type Aliases for Advanced Patterns
+type ResponseData[T] = dict[str, T] | list[T] | str | bytes | None
+type ValidationResult[T] = FlextResult[T]
+type UtilityFunction[T, U] = Callable[[T], FlextResult[U]]
 
 
 class FlextApiUtilities(FlextUtilities):
@@ -41,112 +91,137 @@ class FlextApiUtilities(FlextUtilities):
     Follows single-class-per-module pattern rigorously.
     """
 
-    @staticmethod
-    def validate_client_config(
-        config: object,
+    @classmethod
+    def validate_config(
+        cls, config: ApiUtilityConfig
     ) -> FlextResult[dict[str, object]]:
-        """Validate client configuration using FlextUtilities."""
-        try:
-            if not isinstance(config, dict):
-                return FlextResult[dict[str, object]].fail(
-                    "Config must be a dictionary"
-                )
+        """Validate configuration using Python 3.13 + Advanced Pydantic V2 patterns."""
+        # Python 3.13 match/case with type narrowing for configuration types
+        match config:
+            case HttpRequestConfig() as http_config:
+                return cls._validate_http_request_config(http_config)
+            case HttpErrorConfig() as error_config:
+                return cls._validate_http_error_config(error_config)
+            case ValidationConfig() as validation_config:
+                return cls._validate_validation_config(validation_config)
 
-            # Validate timeout
-            if "timeout" in config:
-                timeout = config["timeout"]
-                if not isinstance(timeout, (int, float)) or timeout <= 0:
-                    return FlextResult[dict[str, object]].fail(
-                        "timeout must be a positive number"
-                    )
+    @classmethod
+    def _validate_http_request_config(
+        cls, config: HttpRequestConfig
+    ) -> FlextResult[dict[str, object]]:
+        """Validate HTTP request configuration using FlextUtilities."""
+        return (
+            cls.HttpValidator.validate_url(config.url)
+            .bind(lambda _: cls.HttpValidator.validate_http_method(config.method))
+            .map(lambda _: config.model_dump())
+        )
 
-            # Validate base_url
-            if "base_url" in config:
-                base_url = config["base_url"]
-                if not isinstance(base_url, str) or not base_url:
-                    return FlextResult[dict[str, object]].fail(
-                        "base_url must be a string"
-                    )
+    @classmethod
+    def _validate_http_error_config(
+        cls, config: HttpErrorConfig
+    ) -> FlextResult[dict[str, object]]:
+        """Validate HTTP error configuration using FlextUtilities."""
+        return cls.HttpValidator.validate_status_code(config.status_code).map(
+            lambda _: config.model_dump()
+        )
 
-            # Validate max_retries
-            if "max_retries" in config:
-                retries = config["max_retries"]
-                if not isinstance(retries, int) or retries < 0:
-                    return FlextResult[dict[str, object]].fail(
-                        "max_retries must be a non-negative integer"
-                    )
+    @classmethod
+    def _validate_validation_config(
+        cls, config: ValidationConfig
+    ) -> FlextResult[dict[str, object]]:
+        """Validate validation configuration - direct passthrough."""
+        return FlextResult[dict[str, object]].ok(config.model_dump())
 
-            return FlextResult[dict[str, object]].ok(config)
-        except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"Config validation failed: {e}")
-
-    @staticmethod
-    def parse_response_data_safely(data: object) -> object:
-        """Parse response data safely using FlextUtilities with unified logic."""
-        try:
-            if data is None:
-                return None
-
-            # Handle lists - filter out None elements using FlextUtilities patterns
-            if isinstance(data, list):
-                return [item for item in data if item is not None]
-
-            # Handle strings - use FlextUtilities for safe JSON parsing
-            if isinstance(data, str):
-                # Use REAL FlextUtilities for safe JSON parsing
-                parsed = FlextUtilities.safe_json_parse(data)
-
-                # If parsing succeeded (not default empty dict fallback)
-                if parsed != {} or data.strip() == "{}":
-                    # Apply list filtering for list data
-                    return parsed
-                # Fallback to cleaned text using FlextUtilities
-                return FlextUtilities.clean_text(data)
-
-            # Return other types as-is
-            return data
-        except Exception:
-            return data  # Fallback to original data
-
-    @staticmethod
-    async def read_response_data_safely(data: object) -> object:
-        """Safely read response data using unified FlextUtilities parsing."""
-        try:
-            # Use unified parsing method instead of multiple strategies
-            return FlextApiUtilities.parse_response_data_safely(data)
-        except Exception:
-            return data
+    # REMOVED: parse_response_data_safely - use FlextUtilities.safe_json_parse directly
+    # REMOVED: read_response_data_safely - use FlextUtilities.clean_text directly
 
     class HttpValidator:
         """HTTP-specific validation using FlextUtilities.TypeGuards and Validators."""
 
         @staticmethod
         def validate_url(url: str) -> FlextResult[str]:
-            """Validate URL using FlextUtilities.TypeGuards functionality."""
-            # Use REAL FlextUtilities methods
-            if not FlextUtilities.is_non_empty_string(url):
-                return FlextResult[str].fail("URL must be a non-empty string")
+            """Validate URL using Python 3.13 + Railway Pattern + FlextUtilities."""
+            # Railway Pattern chaining for clean flow
+            return (
+                FlextApiUtilities.HttpValidator._validate_string(url)
+                .bind(FlextApiUtilities.HttpValidator._clean_url)
+                .bind(FlextApiUtilities.HttpValidator._validate_parsed_url)
+            )
 
-            # Clean the URL using REAL FlextUtilities
-            cleaned_url = FlextUtilities.clean_text(url)
-            if not cleaned_url:
-                return FlextResult[str].fail("URL cannot be empty after cleaning")
+        @staticmethod
+        def _validate_string(url: str) -> FlextResult[str]:
+            """Validate input string using FlextUtilities + Python 3.13 patterns."""
+            return (
+                FlextResult[str].ok(url)
+                if FlextUtilities.is_non_empty_string(url)
+                else FlextResult[str].fail("URL must be a non-empty string")
+            )
 
+        @staticmethod
+        def _clean_url(url: str) -> FlextResult[str]:
+            """Clean URL using FlextUtilities + advanced validation."""
+            cleaned = FlextUtilities.clean_text(url)
+            return (
+                FlextResult[str].ok(cleaned)
+                if cleaned
+                else FlextResult[str].fail("URL cannot be empty after cleaning")
+            )
+
+        @staticmethod
+        def _validate_parsed_url(cleaned_url: str) -> FlextResult[str]:
+            """Validate URL structure using Python 3.13 advanced match/case patterns."""
             try:
                 parsed = urlparse(cleaned_url)
 
-                # Validate URL structure
+                # Python 3.13 Advanced Structural Pattern Matching
+                # Type-safe pattern matching without union types
                 if not parsed.scheme:
                     return FlextResult[str].fail("URL must include scheme (http/https)")
+
                 if parsed.scheme not in {"http", "https"}:
-                    return FlextResult[str].fail("URL scheme must be http or https")
+                    return FlextResult[str].fail(
+                        f"URL scheme '{parsed.scheme}' not supported, use http/https"
+                    )
+
                 if not parsed.netloc:
                     return FlextResult[str].fail("URL must include hostname")
 
-                return FlextResult[str].ok(cleaned_url)
+                # Valid URL - proceed to component validation
+                return FlextApiUtilities.HttpValidator._validate_url_components(
+                    parsed, cleaned_url
+                )
 
             except Exception as e:
-                return FlextResult[str].fail(f"URL validation failed: {e}")
+                return FlextResult[str].fail(f"URL parsing failed: {e}")
+
+        @staticmethod
+        def _validate_url_components(parsed: ParseResult, url: str) -> FlextResult[str]:
+            """Advanced URL component validation using Python 3.13 pattern matching."""
+            # Python 3.13 Advanced Pattern Matching for URL components
+            max_hostname = FlextApiConstants.HttpValidation.MAX_HOSTNAME_LENGTH
+            min_port = FlextApiConstants.HttpValidation.MIN_PORT_NUMBER
+            max_port = FlextApiConstants.HttpValidation.MAX_PORT_NUMBER
+            max_url = FlextApiConstants.HttpValidation.MAX_URL_LENGTH
+
+            match parsed:
+                case ParseResult(hostname=hostname) if (
+                    hostname and len(hostname) > max_hostname
+                ):
+                    return FlextResult[str].fail(
+                        f"Hostname too long (max {max_hostname} characters)"
+                    )
+                case ParseResult(port=port) if port is not None and not (
+                    min_port <= port <= max_port
+                ):
+                    return FlextResult[str].fail(
+                        f"Invalid port {port}, must be {min_port}-{max_port}"
+                    )
+                case _ if len(url) > max_url:
+                    return FlextResult[str].fail(
+                        f"URL too long (max {max_url} characters)"
+                    )
+                case _:
+                    return FlextResult[str].ok(url)
 
         @staticmethod
         def normalize_url(url: str) -> FlextResult[str]:
@@ -168,96 +243,102 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def validate_http_method(method: str) -> FlextResult[str]:
-            """Validate HTTP method using REAL FlextUtilities."""
+            """Validate HTTP method using Python 3.13 advanced patterns + FlextUtilities."""
             if not FlextUtilities.is_non_empty_string(method):
                 return FlextResult[str].fail("HTTP method must be a non-empty string")
 
             # Clean method using REAL FlextUtilities
             cleaned_method = FlextUtilities.clean_text(method.upper())
 
-            valid_methods = {
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "PATCH",
-                "HEAD",
-                "OPTIONS",
-                "TRACE",
-                "CONNECT",
-            }
+            # Python 3.13 Advanced Pattern Matching for HTTP Methods
+            match cleaned_method:
+                # Common methods - optimized path
+                case "GET" | "POST" | "PUT" | "DELETE":
+                    return FlextResult[str].ok(cleaned_method)
 
-            if cleaned_method not in valid_methods:
-                return FlextResult[str].fail(
-                    f"Invalid HTTP method: {cleaned_method}. "
-                    f"Valid methods: {', '.join(sorted(valid_methods))}"
-                )
+                # Extended methods - standard HTTP
+                case "PATCH" | "HEAD" | "OPTIONS":
+                    return FlextResult[str].ok(cleaned_method)
 
-            return FlextResult[str].ok(cleaned_method)
+                # Rare but valid methods
+                case "TRACE" | "CONNECT":
+                    return FlextResult[str].ok(cleaned_method)
+
+                # Custom/WebDAV methods pattern
+                case method_name if method_name.startswith(
+                    ("PROP", "COPY", "MOVE", "LOCK")
+                ):
+                    return FlextResult[str].ok(cleaned_method)  # Allow WebDAV methods
+
+                # Invalid method - comprehensive error
+                case invalid_method:
+                    return FlextResult[str].fail(
+                        f"Invalid HTTP method: '{invalid_method}'. Valid methods: "
+                        f"GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE, CONNECT"
+                    )
 
         @staticmethod
         def validate_status_code(status_code: int) -> FlextResult[int]:
-            """Validate HTTP status code using REAL FlextUtilities."""
+            """Validate HTTP status code using Python 3.13 + FlextUtilities."""
             # Use REAL FlextUtilities for safe int conversion
             safe_status = FlextUtilities.safe_int(status_code, -1)
 
             if safe_status == -1:
                 return FlextResult[int].fail("Status code must be a valid integer")
 
-            # HTTP status code range validation (RFC 7231)
-            from flext_api.constants import FlextApiConstants
-            if not (FlextApiConstants.HttpStatus.CONTINUE <= safe_status <= FlextApiConstants.HttpStatus.NETWORK_CONNECT_TIMEOUT_ERROR):
-                return FlextResult[int].fail(
-                    f"Status code must be between {FlextApiConstants.HttpStatus.CONTINUE} and {FlextApiConstants.HttpStatus.NETWORK_CONNECT_TIMEOUT_ERROR}, got: {safe_status}"
-                )
+            # Python 3.13 Advanced Pattern Matching for HTTP Status Codes using constants
+            status_ranges = FlextApiConstants.HttpStatus
 
-            return FlextResult[int].ok(safe_status)
+            match safe_status:
+                # 1xx Informational
+                case code if (
+                    status_ranges.INFORMATIONAL_MIN
+                    <= code
+                    <= status_ranges.INFORMATIONAL_MAX
+                ):
+                    return FlextResult[int].ok(safe_status)
 
-    class DataTransformer:
-        """Data transformation using FlextUtilities.ProcessingUtils functionality."""
+                # 2xx Success
+                case code if (
+                    status_ranges.SUCCESS_MIN <= code <= status_ranges.SUCCESS_MAX
+                ):
+                    return FlextResult[int].ok(safe_status)
 
-        @staticmethod
-        def serialize_json(data: object) -> FlextResult[str]:
-            """Serialize data to JSON using REAL FlextUtilities."""
-            # Use REAL FlextUtilities for safe JSON stringification
-            json_string = FlextUtilities.safe_json_stringify(data)
+                # 3xx Redirection
+                case code if (
+                    status_ranges.REDIRECTION_MIN
+                    <= code
+                    <= status_ranges.REDIRECTION_MAX
+                ):
+                    return FlextResult[int].ok(safe_status)
 
-            if json_string == "{}":  # Default fallback value from FlextUtilities
-                return FlextResult[str].fail("JSON serialization failed")
+                # 4xx Client Error
+                case code if (
+                    status_ranges.CLIENT_ERROR_MIN
+                    <= code
+                    <= status_ranges.CLIENT_ERROR_MAX
+                ):
+                    return FlextResult[int].ok(safe_status)
 
-            return FlextResult[str].ok(json_string)
+                # 5xx Server Error
+                case code if (
+                    status_ranges.SERVER_ERROR_MIN
+                    <= code
+                    <= status_ranges.SERVER_ERROR_MAX
+                ):
+                    return FlextResult[int].ok(safe_status)
 
-        @staticmethod
-        def deserialize_json(json_str: str) -> FlextResult[object]:
-            """Deserialize JSON string using REAL FlextUtilities."""
-            # Use REAL FlextUtilities for validation
-            if not FlextUtilities.is_non_empty_string(json_str):
-                return FlextResult[object].fail("JSON string cannot be empty")
+                # Invalid status code
+                case invalid_code:
+                    return FlextResult[int].fail(
+                        f"Invalid HTTP status code: {invalid_code}. "
+                        f"Valid range: {status_ranges.INFORMATIONAL_MIN}-{status_ranges.SERVER_ERROR_MAX} (RFC 7231)"
+                    )
 
-            # Use REAL FlextUtilities for safe JSON parsing
-            data = FlextUtilities.safe_json_parse(json_str)
-
-            # Check if parsing actually succeeded (not default empty dict)
-            if data == {} and json_str.strip() != "{}":
-                return FlextResult[object].fail("JSON deserialization failed")
-
-            return FlextResult[object].ok(data)
-
-        @staticmethod
-        def extract_model_data(obj: object) -> FlextResult[dict[str, object]]:
-            """Extract model data using REAL FlextUtilities."""
-            try:
-                # Use REAL FlextUtilities for model data extraction
-                if isinstance(obj, str):
-                    data = FlextUtilities.safe_json_parse(obj)
-                    return FlextResult[dict[str, object]].ok(data)
-                if isinstance(obj, dict):
-                    return FlextResult[dict[str, object]].ok(obj)
-                return FlextResult[dict[str, object]].ok({})
-            except Exception as e:
-                return FlextResult[dict[str, object]].fail(
-                    f"Model data extraction failed: {e}"
-                )
+    # REMOVED: DataTransformer class - use FlextUtilities directly:
+    # - serialize_json → FlextUtilities.safe_json_stringify(data)
+    # - deserialize_json → FlextUtilities.safe_json_parse(json_str)
+    # - extract_model_data → isinstance/dict checks with FlextUtilities.safe_json_parse
 
     class ResponseBuilder:
         """HTTP response building using FlextUtilities.Generators functionality."""

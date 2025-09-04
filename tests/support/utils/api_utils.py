@@ -47,14 +47,18 @@ def create_test_request(
     params: dict[str, object] | None = None,
     timeout: float = 30.0,
 ) -> FlextApiModels.ApiRequest:
-    """Create test request with sensible defaults."""
-    return FlextApiModels.ApiRequest(
-        method=FlextApiModels.HttpMethod(method) if isinstance(method, str) else method,
-        url=url,
-        headers=headers or {},
-        params=params or {},
-        timeout=timeout,
-    )
+    """Create test request - MODERN Builder Pattern using flext-core patterns."""
+    # Use the modern Builder Pattern to eliminate parameter complexity
+    from tests.support.factories.api_factories import ApiRequest
+
+    builder = ApiRequest().with_method(method).with_url(url).with_timeout(timeout)
+
+    if headers is not None:
+        builder = builder.with_headers(headers)
+    if params is not None:
+        builder = builder.with_params(params)
+
+    return builder.build()
 
 
 def create_test_response(
@@ -66,12 +70,22 @@ def create_test_response(
     *,
     from_cache: bool = False,
 ) -> FlextApiModels.ApiResponse:
-    """Create test response with sensible defaults."""
-    return FlextApiModels.ApiResponse(
-        status_code=status_code,
-        data=data or {"message": "success"},
-        headers=headers or {"content-type": "application/json"},
-        elapsed_time=elapsed_time,
-        request_id=request_id or "test-request",
-        from_cache=from_cache,
+    """Create test response - MODERN Builder Pattern using flext-core patterns."""
+    # Use the modern Builder Pattern to eliminate parameter complexity
+    from tests.support.factories.api_factories import ApiResponse
+
+    builder = (
+        ApiResponse()
+        .with_status_code(status_code)
+        .with_elapsed_time(elapsed_time)
+        .with_cache(from_cache)
     )
+
+    if headers is not None:
+        builder = builder.with_headers(headers)
+    if data is not None:
+        builder = builder.with_data(data)
+    if request_id is not None:
+        builder = builder.with_request_id(request_id)
+
+    return builder.build()

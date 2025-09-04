@@ -141,6 +141,18 @@ class FlextApiConstants(FlextConstants):
         # Maximum valid HTTP status code
         MAX_STATUS_CODE: Final[int] = 600
 
+        # Status code ranges (RFC 7231)
+        INFORMATIONAL_MIN: Final[int] = 100
+        INFORMATIONAL_MAX: Final[int] = 199
+        SUCCESS_MIN: Final[int] = 200
+        SUCCESS_MAX: Final[int] = 299
+        REDIRECTION_MIN: Final[int] = 300
+        REDIRECTION_MAX: Final[int] = 399
+        CLIENT_ERROR_MIN: Final[int] = 400
+        CLIENT_ERROR_MAX: Final[int] = 499
+        SERVER_ERROR_MIN: Final[int] = 500
+        SERVER_ERROR_MAX: Final[int] = 599
+
     class ApiValidation:
         """Validation and limit constants."""
 
@@ -175,6 +187,9 @@ class FlextApiConstants(FlextConstants):
         """Request/response validation constants."""
 
         MAX_URL_LENGTH: Final[int] = 2048
+        MAX_HOSTNAME_LENGTH: Final[int] = 253  # RFC 1035 limit
+        MAX_PORT_NUMBER: Final[int] = 65535
+        MIN_PORT_NUMBER: Final[int] = 1
         MAX_HEADER_SIZE: Final[int] = 8192
         MAX_BODY_SIZE: Final[int] = 10485760  # 10MB
         MIN_TIMEOUT: Final[float] = 0.1

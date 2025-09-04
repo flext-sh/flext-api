@@ -37,13 +37,11 @@ class DummyAuthService(FlextApiBaseService):
         """Authenticate user with credentials."""
         username = credentials.get("username")
         if username == "valid_user":
-            return FlextResult[dict[str, object]].ok(
-                {
-                    "token": "auth_token_123",
-                    "user_id": "user_123",
-                    "expires_in": 3600,
-                }
-            )
+            return FlextResult[dict[str, object]].ok({
+                "token": "auth_token_123",
+                "user_id": "user_123",
+                "expires_in": 3600,
+            })
         return FlextResult[dict[str, object]].fail("Invalid credentials")
 
 
@@ -86,8 +84,8 @@ class DummyRepositoryService(FlextApiBaseService):
         """Delete entity by ID."""
         if entity_id in self._data:
             del self._data[entity_id]
-            return FlextResult[bool].ok(True)
-        return FlextResult[bool].ok(False)
+            return FlextResult[bool].ok(data=True)
+        return FlextResult[bool].ok(data=False)
 
 
 class DummyStreamingService(FlextApiBaseService):
@@ -125,9 +123,10 @@ async def test_auth_service_authentication() -> None:
     await auth_service.start_async()
 
     # Test valid authentication
-    valid_result = await auth_service.authenticate(
-        {"username": "valid_user", "password": "test"}
-    )
+    valid_result = await auth_service.authenticate({
+        "username": "valid_user",
+        "password": "test",
+    })
     assert valid_result.success
     assert valid_result.value is not None
     assert valid_result.value["token"] == "auth_token_123"

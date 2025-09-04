@@ -114,6 +114,7 @@ def test_storage_backends() -> None:
 
     # Test file backend
     import tempfile
+
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
         file_config = StorageConfig(
             backend=StorageBackend.FILE,

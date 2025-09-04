@@ -36,7 +36,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import sys
 from enum import StrEnum
+from typing import Annotated, Literal, Self
 from urllib.parse import urlparse
 
 from flext_core import (
@@ -47,9 +49,102 @@ from flext_core import (
     FlextResult,
     FlextUtilities,
 )
-from pydantic import BaseModel, Field, RootModel, computed_field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    RootModel,
+    computed_field,
+    field_validator,
+)
 
 from flext_api.constants import FlextApiConstants
+
+
+# Python 3.13 Configuration Models with Pydantic V2 Advanced Features
+class HttpResponseConfig(BaseModel):
+    """HTTP Response configuration using Pydantic V2 with advanced features."""
+
+    # Pydantic V2 Advanced Configuration
+    model_config = ConfigDict(
+        # Performance optimizations
+        validate_assignment=True,
+        validate_default=True,
+        use_enum_values=True,
+        populate_by_name=True,
+        # JSON Schema generation
+        json_schema_extra={
+            "examples": [
+                {
+                    "config_type": "http_response",
+                    "status_code": 200,
+                    "url": "https://api.example.com/data",
+                    "method": "GET",
+                    "headers": {"content-type": "application/json"},
+                    "body": {"message": "success"},
+                    "elapsed_time": 0.125,
+                }
+            ]
+        },
+        # Serialization options
+        ser_json_bytes="base64",
+        hide_input_in_errors=True,
+    )
+
+    config_type: Literal["http_response"] = "http_response"
+    status_code: int = Field(ge=100, le=599, description="HTTP status code")
+    url: str = Field(min_length=1, description="Request URL")
+    method: str = Field(min_length=1, description="HTTP method")
+    headers: dict[str, str] = Field(
+        default_factory=dict, description="Response headers"
+    )
+    body: str | bytes | dict[str, object] | None = Field(
+        None, description="Response body"
+    )
+    elapsed_time: float = Field(ge=0.0, description="Request duration in seconds")
+
+
+class ClientConfig(BaseModel):
+    """Client configuration using Pydantic V2."""
+
+    config_type: Literal["client"] = "client"
+    base_url: str
+    timeout: float = 30.0
+    max_retries: int = 3
+    headers: dict[str, str] = Field(default_factory=dict)
+    enable_ssl_verify: bool = True
+    follow_redirects: bool = True
+    proxy: dict[str, str] | None = None
+
+
+class CacheConfig(BaseModel):
+    """Cache configuration using Pydantic V2."""
+
+    config_type: Literal["cache"] = "cache"
+    ttl: int = 300
+    max_size: int = 1000
+    enabled: bool = True
+    strategy: str = "lru"
+    persistent: bool = False
+
+
+class RetryConfig(BaseModel):
+    """Retry configuration using Pydantic V2."""
+
+    config_type: Literal["retry"] = "retry"
+    max_retries: int = 3
+    backoff_factor: float = 2.0
+    retry_on_status: list[int] = Field(default_factory=lambda: [500, 502, 503, 504])
+    max_delay: float = 60.0
+    jitter: bool = True
+    exponential: bool = True
+
+
+# Python 3.13 Discriminated Union for API Configuration Types with Pydantic V2
+ApiConfigType = Annotated[
+    HttpResponseConfig | ClientConfig | CacheConfig | RetryConfig,
+    Field(discriminator="config_type"),
+]
 
 
 class FlextApiModels(FlextModels):
@@ -121,7 +216,7 @@ class FlextApiModels(FlextModels):
         - Uses FlextModels and FlextModels as base classes
         - Implements FlextResult[T] for all fallible operations
         - Follows FlextConstants for HTTP-specific constants
-        - Uses get_logger() from flext-core for consistent logging
+        - Uses FlextLogger() from flext-core for consistent logging
         - Extends FlextTypes for HTTP-specific type definitions
 
     Note:
@@ -228,25 +323,46 @@ class FlextApiModels(FlextModels):
         is_active: bool = Field(default=True)
 
         def validate_business_rules(self) -> FlextResult[None]:
-            """Validate HTTP session business rules using FlextUtilities."""
-            # Use REAL FlextUtilities for string validation
-            if not FlextUtilities.is_non_empty_string(self.base_url):
-                return FlextResult[None].fail("Session must have valid base URL")
+            """Validate HTTP session business rules using Python 3.13 + Railway Pattern."""
+            # Use Railway Pattern to chain validations
+            return (
+                self._validate_base_url()
+                .bind(lambda _: self._validate_session_id())
+                .bind(lambda _: self._validate_url_format())
+            )
 
-            if not FlextUtilities.is_non_empty_string(self.session_id):
-                return FlextResult[None].fail("Session must have valid ID")
+        def _validate_base_url(self) -> FlextResult[None]:
+            """Validate base URL using FlextUtilities."""
+            return (
+                FlextResult[None].ok(None)
+                if FlextUtilities.is_non_empty_string(self.base_url)
+                else FlextResult[None].fail("Session must have valid base URL")
+            )
 
-            # Parse and validate URL format
+        def _validate_session_id(self) -> FlextResult[None]:
+            """Validate session ID using FlextUtilities."""
+            return (
+                FlextResult[None].ok(None)
+                if FlextUtilities.is_non_empty_string(self.session_id)
+                else FlextResult[None].fail("Session must have valid ID")
+            )
+
+        def _validate_url_format(self) -> FlextResult[None]:
+            """Validate URL format using Python 3.13 match/case."""
             try:
                 parsed = urlparse(self.base_url)
-                if not parsed.scheme or not parsed.netloc:
-                    return FlextResult[None].fail("Invalid base URL format")
-                if parsed.scheme not in {"http", "https"}:
-                    return FlextResult[None].fail("Base URL must use HTTP/HTTPS")
+
+                # Use Python 3.13 pattern matching for validation
+                match (parsed.scheme, parsed.netloc):
+                    case (scheme, netloc) if not scheme or not netloc:
+                        return FlextResult[None].fail("Invalid base URL format")
+                    case (scheme, _) if scheme not in {"http", "https"}:
+                        return FlextResult[None].fail("Base URL must use HTTP/HTTPS")
+                    case _:
+                        return FlextResult[None].ok(None)
+
             except Exception as e:
                 return FlextResult[None].fail(f"URL parsing failed: {e}")
-
-            return FlextResult[None].ok(None)
 
     class ApiEndpoint(FlextModels.Entity):
         """API endpoint entity with configuration."""
@@ -270,7 +386,7 @@ class FlextApiModels(FlextModels):
     # =============================================================================
 
     class HttpRequest(FlextModels.Value):
-        """Immutable HTTP request value object."""
+        """Immutable HTTP request value object with Pydantic V2 advanced features."""
 
         method: str = Field(..., description="HTTP method")
         url: str = Field(..., description="Request URL")
@@ -278,27 +394,64 @@ class FlextApiModels(FlextModels):
         body: str | bytes | dict[str, object] | None = Field(default=None)
         timeout: float = Field(default=30.0)
 
+        @computed_field
+        def is_get_request(self) -> bool:
+            """Computed field: Check if this is a GET request."""
+            return self.method.upper() == "GET"
+
+        @computed_field
+        def has_body(self) -> bool:
+            """Computed field: Check if request has a body."""
+            return self.body is not None
+
+        @computed_field
+        def content_type(self) -> str | None:
+            """Computed field: Extract content-type from headers."""
+            return self.headers.get("content-type") or self.headers.get("Content-Type")
+
         @field_validator("url")
         @classmethod
         def validate_url(cls, v: str) -> str:
-            def _raise_invalid_url_error() -> None:
-                msg = "Invalid URL format"
-                raise ValueError(msg)
-
+            """Advanced Pydantic V2 validator using Python 3.13 + FlextUtilities."""
             # Use REAL FlextUtilities for string validation
             if not FlextUtilities.is_non_empty_string(v):
                 msg = "URL cannot be empty"
                 raise ValueError(msg)
 
-            # Parse and validate URL format
+            # Parse and validate using Python 3.13 match/case
             try:
                 parsed = urlparse(v)
-                if not parsed.scheme or not parsed.netloc:
-                    _raise_invalid_url_error()
-                return v
+
+                # String literal validation messages - EM101/102 compliance
+                no_scheme_msg = "URL must include scheme (http/https)"
+                no_hostname_msg = "URL must include hostname"
+
+                # Abstract raise to inner functions as per TRY301
+                def raise_url_error(message: str) -> None:
+                    raise ValueError(message)  # noqa: TRY301
+
+                # Python 3.13 pattern matching for elegant validation
+                match (parsed.scheme, parsed.netloc):
+                    case ("", _):
+                        raise_url_error(no_scheme_msg)
+                    case (scheme, "") if scheme:
+                        raise_url_error(no_hostname_msg)
+                    case (scheme, _) if scheme not in {"http", "https"}:
+                        invalid_scheme_msg = (
+                            f"Unsupported scheme '{scheme}', use http/https"
+                        )
+                        raise_url_error(invalid_scheme_msg)
+                    case _:
+                        return v
+
+            except ValueError:
+                raise  # Re-raise our validation errors
             except Exception as e:
                 msg = f"URL validation failed: {e}"
                 raise ValueError(msg) from e
+
+            # This should never be reached due to match/case, but satisfy MyPy
+            return v
 
         def validate_business_rules(self) -> FlextResult[None]:
             """Validate HTTP request business rules."""
@@ -487,55 +640,49 @@ class FlextApiModels(FlextModels):
     # FACTORY METHODS (following flext-core FlextModels pattern EXACTLY)
     # =============================================================================
 
+    # Universal Builder Pattern - eliminates ALL parameter overload
+    class Builder:
+        """Universal builder eliminating ALL methods with many parameters."""
+
+        @classmethod
+        def create(cls, model_name: str, **kwargs: object) -> FlextResult[object]:
+            """Universal creation method using reflection and Pydantic validation."""
+            try:
+                # Get model class dynamically from current module
+                current_module = sys.modules[cls.__module__]
+                parent_class_name = cls.__qualname__.split(".")[0]  # FlextApiModels
+                parent_class = getattr(current_module, parent_class_name)
+                model_class = getattr(parent_class, model_name)
+
+                # Use Pydantic's built-in validation
+                instance = model_class(**kwargs)
+
+                # Business validation if available
+                if hasattr(instance, "validate_business_rules"):
+                    validation_result = instance.validate_business_rules()
+                    if validation_result.is_failure:
+                        return FlextResult.fail(
+                            f"Validation failed: {validation_result.error}"
+                        )
+
+                return FlextResult.ok(instance)
+            except Exception as e:
+                return FlextResult.fail(f"Model creation failed: {e}")
+
+    # Convenience methods using the universal builder
     @classmethod
-    def create_http_request(
-        cls,
-        method: str,
-        url: str,
-        headers: dict[str, str] | None = None,
-        body: str | bytes | dict[str, object] | None = None,
-        timeout: float = 30.0,
-    ) -> FlextResult[HttpRequest]:
-        """Create HTTP request with validation."""
-        try:
-            request = cls.HttpRequest(
-                method=method,
-                url=url,
-                headers=headers or {},
-                body=body,
-                timeout=timeout,
-            )
-            validation_result = request.validate_business_rules()
-            if validation_result.is_failure:
-                return FlextResult["FlextApiModels.HttpRequest"].fail(
-                    f"HTTP request validation failed: {validation_result.error}"
-                )
-            return FlextResult["FlextApiModels.HttpRequest"].ok(request)
-        except Exception as e:
-            return FlextResult["FlextApiModels.HttpRequest"].fail(
-                f"HTTP request creation failed: {e}"
-            )
+    def create_http_request(cls, **kwargs: object) -> FlextResult[object]:
+        """Create HTTP request using universal builder."""
+        return cls.Builder.create("HttpRequest", **kwargs)
 
     @classmethod
     def create_http_response(
-        cls,
-        status_code: int,
-        url: str,
-        method: str,
-        headers: dict[str, str] | None = None,
-        body: str | bytes | dict[str, object] | None = None,
-        elapsed_time: float = 0.0,
+        cls, config: HttpResponseConfig
     ) -> FlextResult[HttpResponse]:
-        """Create HTTP response with validation."""
+        """Create HTTP response using Builder Pattern with Pydantic V2."""
         try:
-            response = cls.HttpResponse(
-                status_code=status_code,
-                url=url,
-                method=method,
-                headers=headers or {},
-                body=body,
-                elapsed_time=elapsed_time,
-            )
+            # Pydantic V2 handles validation automatically
+            response = cls.HttpResponse(**config.model_dump())
             validation_result = response.validate_business_rules()
             if validation_result.is_failure:
                 return FlextResult["FlextApiModels.HttpResponse"].fail(
@@ -549,28 +696,15 @@ class FlextApiModels(FlextModels):
 
     @classmethod
     def create_client_config(
-        cls,
-        base_url: str,
-        timeout: float = 30.0,
-        max_retries: int = 3,
-        headers: dict[str, str] | None = None,
-        *,
-        verify_ssl: bool = True,
-        allow_redirects: bool = True,
-    ) -> FlextResult[ClientConfig]:
-        """Create client configuration with validation."""
+        cls, config: ClientConfig
+    ) -> FlextResult[FlextApiModels.ClientConfig]:
+        """Create client configuration using Pydantic V2 validation."""
         try:
-            config = cls.ClientConfig(
-                base_url=base_url,
-                timeout=timeout,
-                max_retries=max_retries,
-                headers=headers or {},
-                verify_ssl=verify_ssl,
-                allow_redirects=allow_redirects,
-            )
-            return FlextResult["FlextApiModels.ClientConfig"].ok(config)
+            # Pydantic V2 handles all validation automatically
+            validated_config = cls.ClientConfig(**config.model_dump())
+            return FlextResult[FlextApiModels.ClientConfig].ok(validated_config)
         except Exception as e:
-            return FlextResult["FlextApiModels.ClientConfig"].fail(
+            return FlextResult[FlextApiModels.ClientConfig].fail(
                 f"Client config creation failed: {e}"
             )
 
@@ -604,49 +738,29 @@ class FlextApiModels(FlextModels):
 
     @classmethod
     def create_cache_config(
-        cls,
-        ttl: int = 300,
-        max_size: int = 1000,
-        *,
-        enabled: bool = True,
-        priority: int = 0,
-    ) -> FlextResult[CacheConfig]:
-        """Create cache configuration with validation."""
+        cls, config: CacheConfig
+    ) -> FlextResult[FlextApiModels.CacheConfig]:
+        """Create cache configuration using Pydantic V2 validation."""
         try:
-            config = cls.CacheConfig(
-                ttl=ttl,
-                max_size=max_size,
-                enabled=enabled,
-                priority=priority,
-            )
-            return FlextResult["FlextApiModels.CacheConfig"].ok(config)
+            # Pydantic V2 handles all validation automatically
+            validated_config = cls.CacheConfig(**config.model_dump())
+            return FlextResult[FlextApiModels.CacheConfig].ok(validated_config)
         except Exception as e:
-            return FlextResult["FlextApiModels.CacheConfig"].fail(
+            return FlextResult[FlextApiModels.CacheConfig].fail(
                 f"Cache config creation failed: {e}"
             )
 
     @classmethod
     def create_retry_config(
-        cls,
-        max_retries: int = 3,
-        backoff_factor: float = 2.0,
-        retry_on_status: list[int] | None = None,
-        *,
-        enabled: bool = True,
-        priority: int = 0,
-    ) -> FlextResult[RetryConfig]:
-        """Create retry configuration with validation."""
+        cls, config: RetryConfig
+    ) -> FlextResult[FlextApiModels.RetryConfig]:
+        """Create retry configuration using Pydantic V2 validation."""
         try:
-            config = cls.RetryConfig(
-                max_retries=max_retries,
-                backoff_factor=backoff_factor,
-                retry_on_status=retry_on_status or [500, 502, 503, 504],
-                enabled=enabled,
-                priority=priority,
-            )
-            return FlextResult["FlextApiModels.RetryConfig"].ok(config)
+            # Pydantic V2 handles all validation automatically
+            validated_config = cls.RetryConfig(**config.model_dump())
+            return FlextResult[FlextApiModels.RetryConfig].ok(validated_config)
         except Exception as e:
-            return FlextResult["FlextApiModels.RetryConfig"].fail(
+            return FlextResult[FlextApiModels.RetryConfig].fail(
                 f"Retry config creation failed: {e}"
             )
 
@@ -665,27 +779,27 @@ class FlextApiModels(FlextModels):
         page_number: int = Field(default=1, ge=1)
         page_size: int = Field(default=20, ge=1, le=100)
 
-        def equals(self, field: str, value: str) -> FlextApiModels.HttpQuery:
+        def equals(self, field: str, value: str) -> Self:
             """Add equals filter condition."""
             self.filter_conditions[field] = value
             return self
 
-        def sort_desc(self, field: str) -> FlextApiModels.HttpQuery:
+        def sort_desc(self, field: str) -> Self:
             """Add descending sort."""
             self.sort_fields.append(f"-{field}")
             return self
 
-        def sort_asc(self, field: str) -> FlextApiModels.HttpQuery:
+        def sort_asc(self, field: str) -> Self:
             """Add ascending sort."""
             self.sort_fields.append(field)
             return self
 
-        def page(self, page_number: int) -> FlextApiModels.HttpQuery:
+        def page(self, page_number: int) -> Self:
             """Set page number."""
             self.page_number = page_number
             return self
 
-        def set_page_size(self, size: int) -> FlextApiModels.HttpQuery:
+        def set_page_size(self, size: int) -> Self:
             """Set page size."""
             self.page_size = size
             return self

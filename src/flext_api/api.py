@@ -37,13 +37,21 @@ class FlextApi(FlextDomainService[dict[str, object]]):
 
         # Set field values from kwargs using private attributes with type safety
         service_name = kwargs.get("service_name", "FlextApi")
-        self._service_name = str(service_name) if service_name is not None else "FlextApi"
+        self._service_name = (
+            str(service_name) if service_name is not None else "FlextApi"
+        )
 
         service_version = kwargs.get("service_version", "0.9.0")
-        self._service_version = str(service_version) if service_version is not None else "0.9.0"
+        self._service_version = (
+            str(service_version) if service_version is not None else "0.9.0"
+        )
 
         default_base_url = kwargs.get("default_base_url", "http://localhost:8000")
-        self._default_base_url = str(default_base_url) if default_base_url is not None else "http://localhost:8000"
+        self._default_base_url = (
+            str(default_base_url)
+            if default_base_url is not None
+            else "http://localhost:8000"
+        )
 
         # Internal state
         self._is_running = False
