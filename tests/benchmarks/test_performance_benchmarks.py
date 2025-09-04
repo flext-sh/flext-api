@@ -13,8 +13,8 @@ from typing import TypeVar
 from flext_api import (
     FlextApi,
     FlextApiClient,
+    FlextApiModels,
     FlextApiQueryBuilder,
-    QueryBuilder,
     create_flext_api,
 )
 
@@ -37,11 +37,13 @@ class TestAPIPerformanceBenchmarks:
 
     def test_query_building_benchmark(
         self,
-        benchmark: Callable[[Callable[[], QueryBuilder]], QueryBuilder],
+        benchmark: Callable[
+            [Callable[[], FlextApiModels.HttpQuery]], FlextApiModels.HttpQuery
+        ],
     ) -> None:
         """Benchmark query building operations."""
 
-        def build_complex_query() -> QueryBuilder:
+        def build_complex_query() -> FlextApiModels.HttpQuery:
             builder = FlextApiQueryBuilder()
             # Add filters using proper API
             return (
@@ -76,13 +78,13 @@ class TestAPIPerformanceBenchmarks:
     def test_builder_pattern_benchmark(
         self,
         benchmark: Callable[
-            [Callable[[], tuple[QueryBuilder, object]]],
-            tuple[QueryBuilder, object],
+            [Callable[[], tuple[FlextApiModels.HttpQuery, object]]],
+            tuple[FlextApiModels.HttpQuery, object],
         ],
     ) -> None:
         """Benchmark builder pattern operations."""
 
-        def complex_builder_operations() -> tuple[QueryBuilder, object]:
+        def complex_builder_operations() -> tuple[FlextApiModels.HttpQuery, object]:
             builder = FlextApiQueryBuilder()
 
             # Query building
@@ -135,13 +137,13 @@ class TestAPIPerformanceBenchmarks:
     def test_multiple_queries_benchmark(
         self,
         benchmark: Callable[
-            [Callable[[], list[QueryBuilder]]],
-            list[QueryBuilder],
+            [Callable[[], list[FlextApiModels.HttpQuery]]],
+            list[FlextApiModels.HttpQuery],
         ],
     ) -> None:
         """Benchmark multiple query operations."""
 
-        def build_multiple_queries() -> list[QueryBuilder]:
+        def build_multiple_queries() -> list[FlextApiModels.HttpQuery]:
             queries = []
             builder = FlextApiQueryBuilder()
 

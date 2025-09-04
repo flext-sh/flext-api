@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from flext_api.storage import StorageBackend, StorageConfig
+from flext_api.storage import StorageConfig
 
 
 def create_file_storage_config(
@@ -18,7 +18,7 @@ def create_file_storage_config(
 ) -> StorageConfig:
     """Create file storage configuration for testing."""
     return StorageConfig(
-        backend=StorageBackend.FILE,
+        backend="file",
         file_path=file_path or str(Path.cwd() / "test_storage.json"),
         namespace=namespace,
         enable_caching=enable_caching,
@@ -33,7 +33,7 @@ def create_memory_storage_config(
 ) -> StorageConfig:
     """Create memory storage configuration for testing."""
     return StorageConfig(
-        backend=StorageBackend.MEMORY,
+        backend="memory",
         namespace=namespace,
         enable_caching=enable_caching,
         cache_ttl_seconds=cache_ttl_seconds,

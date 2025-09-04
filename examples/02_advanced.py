@@ -80,7 +80,9 @@ class _StorageSystemDemo:
     def _demo_basic_operations(self) -> None:
         """Demonstrate basic storage operations."""
         # Set operation
-        set_result = self.storage.set(self.test_key, self.test_value, ttl=300)
+        # CacheValue é tuple[object, dict[str, str], int]
+        cache_value = (self.test_value, {}, 200)
+        set_result = self.storage.set(self.test_key, cache_value, ttl=300)
         if not set_result.success:
             print(f"❌ Set failed: {set_result.error}")
             return
@@ -155,7 +157,7 @@ def example_utilities_usage() -> None:
     print("\n=== Utilities Example ===")
 
     # URL validation using the refactored nested class
-    url_result = FlextApiUtilities.UrlValidator.validate_url(
+    url_result = FlextApiUtilities.HttpValidator.validate_url(
         "https://api.example.com/v1/users"
     )
 
@@ -185,7 +187,7 @@ def example_utilities_usage() -> None:
 
     # Error response building
     error_response_result = FlextApiUtilities.ResponseBuilder.build_error_response(
-        "Invalid request parameters", 400, {"field": "email", "issue": "format"}
+        "Invalid request parameters", 400, error_code="VALIDATION_ERROR", details={"field": "email", "issue": "format"}
     )
 
     if error_response_result.success:

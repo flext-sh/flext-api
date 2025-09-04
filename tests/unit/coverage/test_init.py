@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import tempfile
+
 import flext_api
 from flext_api import (
     URL,
@@ -113,7 +115,6 @@ def test_storage_backends() -> None:
     assert memory_storage is not None
 
     # Test file backend
-    import tempfile
 
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
         file_config = StorageConfig(

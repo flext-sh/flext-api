@@ -80,7 +80,8 @@ class TestBaseServiceMissingCoverage:
 
         # Should fail with specific error
         assert not result.success
-        assert "Service execution failed" in result.error
+        assert result.error is not None
+        assert "Service execution failed" in str(result.error)
 
     def test_service_successful_execution(self) -> None:
         """Test successful service execution."""

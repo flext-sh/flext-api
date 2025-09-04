@@ -192,8 +192,8 @@ class TestFlextApiExceptions:
     def test_errors_type_validation(self) -> None:
         """Test errors are proper types."""
         # Main class
-        assert FlextErrors is not None
-        assert type(FlextErrors).__name__ == "type"
+        assert FlextApiExceptions is not None
+        assert type(FlextApiExceptions).__name__ == "type"
 
         # Error classes
         error = FlextApiExceptions.FlextApiError("test")

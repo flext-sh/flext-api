@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import datetime
+
 import pytest
 
 from flext_api import FlextUtils
@@ -87,8 +89,6 @@ class TestFlextUtils:
     def test_format_timestamp_method(self) -> None:
         """Test timestamp formatting method if available."""
         if hasattr(FlextUtils, "format_timestamp"):
-            import datetime
-
             now = datetime.datetime.now(datetime.UTC)
             formatted = FlextUtils.format_timestamp(now)
 

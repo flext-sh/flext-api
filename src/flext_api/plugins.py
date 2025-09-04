@@ -542,16 +542,6 @@ class FlextApiPlugins(FlextModels):
             return FlextResult[None].ok(None)
 
 
-# Export compatibility classes for tests
-FlextApiPlugin = FlextApiPlugins.BasePlugin  # Base plugin class
-FlextApiCachingPlugin = FlextApiPlugins.CachingPlugin
-FlextApiRetryPlugin = FlextApiPlugins.RetryPlugin
-FlextApiCircuitBreakerPlugin = FlextApiPlugins.CircuitBreakerPlugin
-
 __all__ = [
-    "FlextApiCachingPlugin",
-    "FlextApiCircuitBreakerPlugin",
-    "FlextApiPlugin",
     "FlextApiPlugins",
-    "FlextApiRetryPlugin",
 ]

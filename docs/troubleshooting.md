@@ -62,42 +62,6 @@ poetry lock --no-update
 poetry install
 ```
 
-#### **flext-core Dependency Issues**
-
-**Symptoms**:
-
-```python
-ImportError: No module named 'flext_core'
-AttributeError: module 'flext_core' has no attribute 'FlextResult'
-```
-
-**Diagnosis**:
-
-```bash
-# Check flext-core installation
-python -c "import flext_core; print(flext_core.__version__)"
-
-# Verify FLEXT workspace structure
-ls -la ../flext-core/  # Should exist in workspace
-
-# Check Poetry dependency resolution
-poetry show flext-core
-```
-
-**Solutions**:
-
-```bash
-# Install from workspace (development)
-cd ../flext-core && poetry install
-cd ../flext-api && poetry install
-
-# Or install specific version
-poetry add flext-core@^0.9.0
-
-# Verify installation
-python -c "from flext_core import FlextResult, FlextLogger; print('✅ OK')"
-```
-
 ### **Development Server Issues**
 
 #### **FastAPI Server Won't Start**
@@ -171,46 +135,6 @@ find . -name "__pycache__" -type d -exec rm -rf {} +
 ## 🧪 Testing Issues
 
 ### **Test Execution Failures**
-
-#### **Import Errors in Tests**
-
-**Symptoms**:
-
-```bash
-ModuleNotFoundError: No module named 'flext_api'
-ImportError: attempted relative import with no known parent package
-```
-
-**Diagnosis**:
-
-```bash
-# Check Python path in test environment
-python -c "import sys; print('\n'.join(sys.path))"
-
-# Verify test configuration
-cat pyproject.toml | grep -A 10 "\[tool.pytest\]"
-
-# Test import manually
-python -c "from flext_api import create_flext_api; print('✅ OK')"
-```
-
-**Solutions**:
-
-```bash
-# Install in development mode
-poetry install -e .
-
-# Set PYTHONPATH explicitly
-PYTHONPATH=src pytest tests/
-
-# Use pytest with src layout
-pytest --import-mode=importlib tests/
-
-# Fix pyproject.toml configuration
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-testpaths = ["tests"]
-```
 
 #### **Async Test Issues**
 

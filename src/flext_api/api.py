@@ -219,6 +219,13 @@ class FlextApi(FlextDomainService[dict[str, object]]):
         )
 
 
+# Factory function for test compatibility
+def create_flext_api(**kwargs: object) -> FlextApi:
+    """Factory function to create FlextApi instance."""
+    return FlextApi(**kwargs)
+
+
 __all__ = [
     "FlextApi",
+    "create_flext_api",
 ]

@@ -183,7 +183,7 @@ class TestMissingBuilderCoverage:
         assert pagination["page_size"] == 10
 
     def test_query_builder_advanced_methods(self) -> None:
-        """Test QueryBuilder advanced methods."""
+        """Test FlextApiModels.HttpQuery advanced methods."""
         builder = FlextApiQueryBuilder()
 
         # Test method chaining that hits advanced functionality
