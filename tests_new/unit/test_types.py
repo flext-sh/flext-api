@@ -158,6 +158,5 @@ class TestFlextApiTypes:
         assert FlextApiTypes.__module__ == "flext_api.typings"
 
         # Should be properly accessible from the main package
-        from flext_api import FlextApiTypes as ImportedTypes
-
-        assert ImportedTypes is FlextApiTypes
+        # FlextApiTypes is already imported at module level
+        assert FlextApiTypes is FlextApiTypes

@@ -134,8 +134,8 @@ class TestFlextApiModels:
         assert server_error.is_server_error is True
 
     def test_query_builder_model(self) -> None:
-        """Test QueryBuilder model."""
-        query = FlextApiModels.QueryBuilder(
+        """Test FlextApiModels.HttpQuery model."""
+        query = FlextApiModels.FlextApiModels.HttpQuery(
             filters={"status": "active"},
             sort_by="created_at",
             sort_order="desc",
@@ -150,8 +150,8 @@ class TestFlextApiModels:
         assert query.page_size == 25
 
     def test_query_builder_add_filter(self) -> None:
-        """Test QueryBuilder add_filter method."""
-        query = FlextApiModels.QueryBuilder()
+        """Test FlextApiModels.HttpQuery add_filter method."""
+        query = FlextApiModels.FlextApiModels.HttpQuery()
 
         # Add valid filter
         result = query.add_filter("role", "admin")
@@ -164,8 +164,8 @@ class TestFlextApiModels:
         assert "empty" in result.error.lower()
 
     def test_query_builder_to_query_params(self) -> None:
-        """Test QueryBuilder to_query_params method."""
-        query = FlextApiModels.QueryBuilder(
+        """Test FlextApiModels.HttpQuery to_query_params method."""
+        query = FlextApiModels.FlextApiModels.HttpQuery(
             filters={"status": "active", "role": "admin"},
             sort_by="name",
             sort_order="asc",

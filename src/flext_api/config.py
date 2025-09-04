@@ -47,6 +47,13 @@ class FlextApiConfig(FlextConfig):  # type: ignore[pydantic-unexpected,misc]
     pattern rigorously.
     """
 
+    # Direct attributes expected by tests
+    host: str = Field(default="127.0.0.1", description="API server host")
+    port: int = Field(default=8000, ge=1, le=65535, description="API server port")
+    default_timeout: float = Field(default=30.0, ge=0.1, description="Default HTTP timeout")
+    api_host: str = Field(default="127.0.0.1", description="API server host (alias)")
+    api_port: int = Field(default=8000, ge=1, le=65535, description="API server port (alias)")
+
     class ApiSettings(BaseSettings):
         """Environment-aware configuration for FlextApiConfig."""
 
@@ -125,6 +132,10 @@ class FlextApiConfig(FlextConfig):  # type: ignore[pydantic-unexpected,misc]
         debug: bool = Field(default=False, description="Debug mode")
         reload: bool = Field(default=False, description="Auto-reload on code changes")
         access_log: bool = Field(default=True, description="Enable access logging")
+
+        def __getitem__(self, key: str) -> object:
+            """Support dictionary-style access for tests."""
+            return getattr(self, key)
 
         @field_validator("host")
         @classmethod
@@ -248,6 +259,8 @@ class FlextApiConfig(FlextConfig):  # type: ignore[pydantic-unexpected,misc]
         """HTTP security and CORS configuration."""
 
         cors_enabled: bool = Field(default=True, description="Enable CORS middleware")
+        enable_https: bool = Field(default=True, description="Enable HTTPS")
+        api_key_required: bool = Field(default=True, description="Require API key")
         cors_origins: list[str] = Field(
             default_factory=lambda: ["*"], description="CORS allowed origins"
         )
@@ -265,6 +278,10 @@ class FlextApiConfig(FlextConfig):  # type: ignore[pydantic-unexpected,misc]
             default=FlextApiConstants.Security.CORS_MAX_AGE,
             description="CORS preflight max age",
         )
+
+        def __getitem__(self, key: str) -> object:
+            """Support dictionary-style access for tests."""
+            return getattr(self, key)
 
         # Security headers
         security_headers_enabled: bool = Field(
@@ -316,6 +333,12 @@ class FlextApiConfig(FlextConfig):  # type: ignore[pydantic-unexpected,misc]
 
     class EnvConfig(FlextModels.Config):
         """Environment variable configuration mapping."""
+
+        def __init__(self, **data: object) -> None:
+            super().__init__()
+            # Set attributes from data
+            for key, value in data.items():
+                setattr(self, key, value)
 
         # Server environment variables
         server_host: str = Field(

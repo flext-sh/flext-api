@@ -18,7 +18,7 @@ class TestFlextApiBuilderCore:
     def test_query_builder_creation(self) -> None:
         """Test query builder creation."""
         models = FlextApiModels()
-        builder = models.QueryBuilder()
+        builder = models.HttpQuery()
 
         assert builder.page == 1
         assert builder.page_size == 50
@@ -28,7 +28,7 @@ class TestFlextApiBuilderCore:
     def test_query_builder_add_filters(self) -> None:
         """Test adding filters to query builder."""
         models = FlextApiModels()
-        builder = models.QueryBuilder()
+        builder = models.HttpQuery()
 
         # Add filters
         filter_result = builder.add_filter("status", "active")
@@ -41,7 +41,7 @@ class TestFlextApiBuilderCore:
     def test_response_builder_success(self) -> None:
         """Test response builder success response."""
         models = FlextApiModels()
-        builder = models.ResponseBuilder()
+        builder = models.HttpQuery()
 
         response_result = builder.success(data={"items": [1, 2, 3]}, message="Success")
 
@@ -54,7 +54,7 @@ class TestFlextApiBuilderCore:
     def test_response_builder_error(self) -> None:
         """Test response builder error response."""
         models = FlextApiModels()
-        builder = models.ResponseBuilder()
+        builder = models.HttpQuery()
 
         response_result = builder.error("Not found", 404)
 
@@ -67,7 +67,7 @@ class TestFlextApiBuilderCore:
     def test_query_builder_pagination(self) -> None:
         """Test query builder pagination settings."""
         models = FlextApiModels()
-        builder = models.QueryBuilder()
+        builder = models.HttpQuery()
 
         builder.page = 2
         builder.page_size = 25
@@ -78,7 +78,7 @@ class TestFlextApiBuilderCore:
     def test_query_builder_sorting(self) -> None:
         """Test query builder sorting."""
         models = FlextApiModels()
-        builder = models.QueryBuilder()
+        builder = models.HttpQuery()
 
         builder.sort_by = "created_at"
         builder.sort_order = "desc"
@@ -89,7 +89,7 @@ class TestFlextApiBuilderCore:
     def test_query_params_conversion(self) -> None:
         """Test converting query builder to params."""
         models = FlextApiModels()
-        builder = models.QueryBuilder()
+        builder = models.HttpQuery()
 
         builder.add_filter("status", "active")
         builder.page = 2

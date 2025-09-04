@@ -73,7 +73,9 @@ def example_storage_usage() -> None:
     storage = FlextApiStorage()
 
     # Set data using FlextResult pattern
-    set_result = storage.set("example_key", {"message": "Hello FlextAPI!"}, ttl=300)
+    # CacheValue é tuple[object, dict[str, str], int]
+    cache_value = ({"message": "Hello FlextAPI!"}, {}, 200)
+    set_result = storage.set("example_key", cache_value, ttl=300)
 
     if set_result.success:
         print("✅ Data stored successfully")

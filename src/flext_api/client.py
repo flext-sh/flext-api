@@ -50,9 +50,13 @@ logger = FlextLogger(__name__)
 class FlextApiClient(FlextDomainService[dict[str, object]]):
     """REAL HTTP client using httpx with comprehensive FLEXT patterns integration."""
 
-    def __init__(self, **data: object) -> None:
+    def __init__(self, config: dict[str, object] | None = None, **data: object) -> None:
         """Initialize REAL HTTP client with httpx and flext-core patterns."""
         super().__init__()
+
+        # Merge positional config argument with keyword data
+        if config is not None:
+            data = {**config, **data}
 
         # Set field values from data using private attributes with type safety
         base_url = data.get("base_url", "")
@@ -180,6 +184,26 @@ class FlextApiClient(FlextDomainService[dict[str, object]]):
                 "HTTP session stop failed", client_id=self._client_id, error=str(e)
             )
             return FlextResult[None].fail(f"HTTP session stop failed: {e}")
+
+    @property
+    def config(self) -> object:
+        """Get client configuration object for test compatibility."""
+        # Create a simple namespace object to hold config values
+        class Config:
+            def __init__(self, client: FlextApiClient) -> None:
+                self.base_url = client.base_url
+                self.headers = client.headers
+                self.timeout = client.timeout
+                self.max_retries = client.max_retries
+
+        return Config(self)
+
+    async def close(self) -> None:
+        """Close HTTP client connection (alias for stop for test compatibility)."""
+        result = await self.stop()
+        if not result.success:
+            error_msg = f"Failed to close client: {result.error}"
+            raise RuntimeError(error_msg)
 
     def health_check(self) -> dict[str, object]:
         """Get REAL HTTP client health status."""

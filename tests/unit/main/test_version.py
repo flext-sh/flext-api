@@ -71,12 +71,8 @@ class TestVersionModule:
         assert VERSION_CONSTANT != ""
 
         # Should be a valid version string for packaging
-        try:
-            parsed_version = Version(VERSION_CONSTANT)
-            assert parsed_version is not None
-        except ImportError:
-            # packaging module not available, skip this test
-            pass
+        parsed_version = Version(VERSION_CONSTANT)
+        assert parsed_version is not None
 
     def test_version_metadata(self) -> None:
         """Test additional version metadata if available."""

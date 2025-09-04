@@ -22,10 +22,10 @@ def temp_storage_path(tmp_path: Path) -> Path:
 @pytest.fixture
 async def file_storage_backend(
     temp_storage_path: Path,
-) -> AsyncGenerator[FileStorageBackend[object]]:
+) -> AsyncGenerator[FileStorageBackend]:
     """Provide configured file storage backend for testing."""
     # FileBackend aceita string como parâmetro, não Config
-    backend = FileStorageBackend[object](str(temp_storage_path))
+    backend = FileStorageBackend(str(temp_storage_path))
     try:
         yield backend
     finally:
@@ -34,10 +34,10 @@ async def file_storage_backend(
 
 
 @pytest.fixture
-async def memory_storage_backend() -> AsyncGenerator[MemoryStorageBackend[object]]:
+async def memory_storage_backend() -> AsyncGenerator[MemoryStorageBackend]:
     """Provide memory storage backend for testing."""
     # MemoryBackend não aceita parâmetros no __init__
-    backend = MemoryStorageBackend[object]()
+    backend = MemoryStorageBackend()
     try:
         yield backend
     finally:

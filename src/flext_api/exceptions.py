@@ -110,26 +110,55 @@ class FlextApiExceptions(FlextExceptions):
 
             def __init__(  # noqa: N807
                 self: FlextApiExceptions.HttpError,
-                config: HttpErrorConfig | None = None,
+                message_or_config: str | HttpErrorConfig | None = None,
+                url: str | None = None,
+                method: str | None = None,
+                headers: dict[str, str] | None = None,
+                context: dict[str, object] | None = None,
                 **deprecated_kwargs: object,
             ) -> None:
-                """Initialize using Pydantic V2 configuration - ZERO parameter complexity."""
-                # Handle backward compatibility with deprecated parameters
-                if config is None:
-                    # Extract from deprecated kwargs with defaults
+                """Initialize using legacy string or Pydantic configuration."""
+                if isinstance(message_or_config, str):
+                    # Legacy API: first parameter is message string
+                    final_context: dict[str, object] = context or {}
+
+                    # Add additional context from remaining kwargs
+                    final_context.update(
+                        {
+                            key: value
+                            for key, value in deprecated_kwargs.items()
+                            if value is not None
+                        }
+                    )
+
+                    config = HttpErrorConfig(
+                        message=message_or_config,
+                        status_code=status_code,
+                        url=url,
+                        method=method,
+                        headers=headers,
+                        context=final_context,
+                    )
+                elif isinstance(message_or_config, HttpErrorConfig):
+                    # New API: first parameter is config object
+                    config = message_or_config
+                else:
+                    # Default case: construct from kwargs or defaults
                     message = str(deprecated_kwargs.get("message", default_message))
-                    url = deprecated_kwargs.get("url")
-                    method = deprecated_kwargs.get("method")
-                    headers = deprecated_kwargs.get("headers")
-                    context = deprecated_kwargs.get("context", {})
+                    url_from_kwargs = deprecated_kwargs.get("url")
+                    method_from_kwargs = deprecated_kwargs.get("method")
+                    url_final = str(url_from_kwargs) if url_from_kwargs else url
+                    method_final = str(method_from_kwargs) if method_from_kwargs else method
+                    headers_from_kwargs = deprecated_kwargs.get("headers")
+                    context_from_kwargs = deprecated_kwargs.get("context", {})
 
                     # Build context from remaining kwargs with type safety
-                    final_context: dict[str, object] = {}
-                    if context and isinstance(context, dict):
-                        final_context.update(context)
+                    fallback_context: dict[str, object] = context or {}
+                    if context_from_kwargs and isinstance(context_from_kwargs, dict):
+                        fallback_context.update(context_from_kwargs)
 
                     # Dictionary comprehension for better performance
-                    final_context.update(
+                    fallback_context.update(
                         {
                             key: value
                             for key, value in deprecated_kwargs.items()
@@ -140,17 +169,17 @@ class FlextApiExceptions(FlextExceptions):
                     )
 
                     # Type-safe header conversion
-                    safe_headers: dict[str, str] | None = None
-                    if headers and isinstance(headers, dict):
-                        safe_headers = {str(k): str(v) for k, v in headers.items()}
+                    safe_headers = headers
+                    if headers_from_kwargs and isinstance(headers_from_kwargs, dict):
+                        safe_headers = {str(k): str(v) for k, v in headers_from_kwargs.items()}
 
                     config = HttpErrorConfig(
                         message=message,
                         status_code=status_code,
-                        url=str(url) if url else None,
-                        method=str(method) if method else None,
+                        url=url_final,
+                        method=method_final,
                         headers=safe_headers,
-                        context=final_context,
+                        context=fallback_context,
                     )
 
                 base_class.__init__(self, config)
@@ -292,29 +321,64 @@ class FlextApiExceptions(FlextExceptions):
     class ValidationError(FlextApiError):
         """Request/response validation error."""
 
-        def __init__(self, config: ValidationConfig) -> None:
-            """Initialize from Pydantic ValidationConfig - zero parameter complexity."""
-            validation_context = config.context.copy()
-            if config.field:
-                validation_context["field"] = config.field
-            if config.value is not None:
-                validation_context["value"] = config.value
-            if config.url:
-                validation_context["url"] = config.url
-            if config.method:
-                validation_context["method"] = config.method
-            if config.headers:
-                validation_context["headers"] = config.headers
+        def __init__(
+            self,
+            config_or_message: ValidationConfig | str,
+            field: str | None = None,
+            value: object = None,
+            url: str | None = None,
+            method: str | None = None,
+            headers: dict[str, str] | None = None,
+            context: dict[str, object] | None = None,
+        ) -> None:
+            """Initialize from Pydantic ValidationConfig or legacy string message."""
+            if isinstance(config_or_message, str):
+                # Legacy API support - build config from parameters
+                validation_context: dict[str, object] = context or {}
+                if field:
+                    validation_context["field"] = field
+                if value is not None:
+                    validation_context["value"] = value
+                if url:
+                    validation_context["url"] = url
+                if method:
+                    validation_context["method"] = method
+                if headers:
+                    validation_context["headers"] = headers
 
-            super().__init__(
-                config.message,
-                status_code=FlextApiConstants.HttpStatus.BAD_REQUEST,
-                error_code=FlextApiConstants.HttpErrors.VALIDATION_ERROR,
-                context=validation_context,
-            )
+                super().__init__(
+                    config_or_message,
+                    status_code=FlextApiConstants.HttpStatus.BAD_REQUEST,
+                    error_code=FlextApiConstants.HttpErrors.VALIDATION_ERROR,
+                    context=validation_context,
+                )
+            else:
+                # New config-based API
+                config = config_or_message
+                validation_context = config.context.copy()
+                if config.field:
+                    validation_context["field"] = config.field
+                if config.value is not None:
+                    validation_context["value"] = config.value
+                if config.url:
+                    validation_context["url"] = config.url
+                if config.method:
+                    validation_context["method"] = config.method
+                if config.headers:
+                    validation_context["headers"] = config.headers
+
+                super().__init__(
+                    config.message,
+                    status_code=FlextApiConstants.HttpStatus.BAD_REQUEST,
+                    error_code=FlextApiConstants.HttpErrors.VALIDATION_ERROR,
+                    context=validation_context,
+                )
 
 
 # Generate exceptions when module loads
 FlextApiExceptions._generate_http_exceptions()
+
+# Backward compatibility aliases - add after generation
+FlextApiExceptions.AuthenticationError = FlextApiExceptions.UnauthorizedError  # type: ignore[attr-defined]
 
 __all__ = ["FlextApiExceptions"]

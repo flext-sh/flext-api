@@ -196,6 +196,7 @@ class FlextApiTypes(FlextTypes):
         JsonResponse = (
             dict[str, object] | list[object] | str | int | float | bool | None
         )
+        ApiResponse = dict[str, object]  # Alias for tests
         TextResponse = str
         BinaryContent = bytes
 

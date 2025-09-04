@@ -13,6 +13,7 @@ from flext_core import FlextResult
 from flext_api import (
     FlextApiModels,
 )
+from tests.support.factories.api_factories import ApiRequest, ApiResponse
 
 # Type variable for generic FlextResult operations
 T = TypeVar("T")
@@ -49,7 +50,6 @@ def create_test_request(
 ) -> FlextApiModels.ApiRequest:
     """Create test request - MODERN Builder Pattern using flext-core patterns."""
     # Use the modern Builder Pattern to eliminate parameter complexity
-    from tests.support.factories.api_factories import ApiRequest
 
     builder = ApiRequest().with_method(method).with_url(url).with_timeout(timeout)
 
@@ -69,10 +69,9 @@ def create_test_response(
     request_id: str | None = None,
     *,
     from_cache: bool = False,
-) -> FlextApiModels.ApiResponse:
+) -> FlextApiModels.HttpResponse:
     """Create test response - MODERN Builder Pattern using flext-core patterns."""
     # Use the modern Builder Pattern to eliminate parameter complexity
-    from tests.support.factories.api_factories import ApiResponse
 
     builder = (
         ApiResponse()
