@@ -79,6 +79,7 @@ class TestFunctionalExamples:
 
         # File storage
         import tempfile
+
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
             file_config = StorageConfig(
                 backend=StorageBackend.FILE,

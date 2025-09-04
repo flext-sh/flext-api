@@ -222,9 +222,7 @@ class FlextApiFactory:
 
         try:
             if not config.get("base_url"):
-                return FlextResult[FlextApiClientProtocol].fail(
-                    "base_url is required"
-                )
+                return FlextResult[FlextApiClientProtocol].fail("base_url is required")
 
             # Extract timeout value safely
             timeout_val = config.get("timeout", 30.0)
@@ -268,9 +266,7 @@ class FlextApiFactory:
             FlextResult containing configured API manager
 
         """
-        from typing import cast
-
-        from flext_api.api import FlextApi
+        from flext_api.api import FlextApi  # noqa: PLC0415
 
         try:
             manager = FlextApi(

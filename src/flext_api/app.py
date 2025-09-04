@@ -194,7 +194,8 @@ class FlextApiApp(FlextModels):
         app_instance = FlextApiApp(
             app_name=title or "FlextApi",
             app_version=version or "0.9.0",
-            app_description=description or "HTTP Foundation Library for FLEXT ecosystem",
+            app_description=description
+            or "HTTP Foundation Library for FLEXT ecosystem",
         )
 
         app_result = app_instance.create_app()

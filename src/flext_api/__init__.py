@@ -26,10 +26,12 @@ Core Components:
 Examples:
     HTTP client with plugins:
     >>> api = FlextApi()
-    >>> client_result = api.flext_api_create_client({
-    ...     "base_url": "https://api.example.com",
-    ...     "timeout": 30,
-    ... })
+    >>> client_result = api.flext_api_create_client(
+    ...     {
+    ...         "base_url": "https://api.example.com",
+    ...         "timeout": 30,
+    ...     }
+    ... )
     >>> if client_result.success:
     ...     client = client_result.value
     ...     response = await client.get("/data")
@@ -71,58 +73,57 @@ from flext_api.app import FlextApiApp
 # MODULE AGGREGATION - Following flext-core pattern
 # =============================================================================
 
-# Import all from each module with proper type handling
-from flext_api.constants import *
-from flext_api.typings import *
-from flext_api.exceptions import *
-from flext_api.models import *
-from flext_api.config import *
-from flext_api.api import *
-from flext_api.client import *
-from flext_api.plugins import *
-from flext_api.protocols import *
-from flext_api.storage import *
-from flext_api.utilities import *
-from flext_api.app import *
+# Import all from each module with proper type handling - FLEXT pattern
+from flext_api.constants import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.typings import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.exceptions import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.models import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.config import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.api import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.client import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.plugins import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.protocols import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.storage import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.utilities import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
+from flext_api.app import *  # type: ignore[unused-ignore,reportWildcardImport,assignment] # noqa: F403
 
-# Manually aggregated __all__ from all modules - star imports are intentional FLEXT pattern
-__all__ = [
-    # From constants
-    "FlextApiConstants",
-    # From typings
-    "FlextApiTypes",
-    # From exceptions
-    "FlextApiExceptions",
-    # From models
-    "FlextApiModels",
-    # From config
-    "FlextApiConfig",
-    # From api
-    "FlextApi",
-    # From client
-    "FlextApiClient",
-    # From plugins
-    "FlextApiCachingPlugin",
-    "FlextApiCircuitBreakerPlugin",
-    "FlextApiPlugin",
-    "FlextApiPlugins",
-    "FlextApiRetryPlugin",
-    # From protocols
-    "FlextApiAuthentication",
-    "FlextApiClientProtocol",
-    "FlextApiDiscovery",
-    "FlextApiFactory",
-    "FlextApiManagerProtocol",
-    "FlextApiService",
-    # From storage
-    "FlextApiStorage",
-    # From utilities
-    "FlextApiUtilities",
-    # From app
-    "FlextApiApp",
-    "create_flext_api",
-    "create_flext_api_app",
-]
+# Combine all __all__ from all modules - FLEXT ecosystem standard pattern
+import flext_api.constants as _constants
+import flext_api.typings as _typings
+import flext_api.exceptions as _exceptions
+import flext_api.models as _models
+import flext_api.config as _config
+import flext_api.api as _api
+import flext_api.client as _client
+import flext_api.plugins as _plugins
+import flext_api.protocols as _protocols
+import flext_api.storage as _storage
+import flext_api.utilities as _utilities
+import flext_api.app as _app
+
+__all__ = []
+for module in [
+    _constants,
+    _typings,
+    _exceptions,
+    _models,
+    _config,
+    _api,
+    _client,
+    _plugins,
+    _protocols,
+    _storage,
+    _utilities,
+    _app,
+]:
+    if hasattr(module, "__all__"):
+        __all__ += module.__all__
+
+# Add factory functions - ONLY real functions, no aliases
+__all__ += ["create_flext_api", "create_flext_api_app"]
+
+# Remove duplicates and sort (PLE0605: __all__ must be tuple or list)
+__all__ = list(sorted(set(__all__)))  # noqa: C413
 
 
 # Factory functions

@@ -39,7 +39,7 @@ from flext_api.constants import FlextApiConstants
 logger = FlextLogger(__name__)
 
 
-class FlextApiConfig(FlextConfig):  # type: ignore[misc]
+class FlextApiConfig(FlextConfig):  # type: ignore[pydantic-unexpected,misc]
     """Single consolidated class containing ALL HTTP API configuration management.
 
     This is the ONLY configuration class in this module, containing all HTTP API

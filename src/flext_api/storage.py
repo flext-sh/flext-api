@@ -29,7 +29,6 @@ from pathlib import Path
 from flext_core import (
     FlextDomainService,
     FlextLogger,
-    FlextMixins,
     FlextResult,
 )
 
@@ -44,9 +43,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
     class MemoryCache(FlextDomainService[dict[str, object]]):
         """REAL in-memory caching using FlextMixins.Cacheable."""
 
-        def __init__(
-            self, max_size: int = 10000, default_ttl: int = 3600
-        ) -> None:
+        def __init__(self, max_size: int = 10000, default_ttl: int = 3600) -> None:
             # Initialize parent class properly
             super().__init__()
             # Set instance attributes directly
@@ -94,7 +91,11 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 if cached_value is not None:
                     logger.debug("Cache hit", key=key)
                     # Type cast for proper FlextResult typing
-                    cache_result: FlextApiTypes.Cache.CacheValue = (cached_value, {}, 200)
+                    cache_result: FlextApiTypes.Cache.CacheValue = (
+                        cached_value,
+                        {},
+                        200,
+                    )
                     return FlextResult[FlextApiTypes.Cache.CacheValue].ok(cache_result)
 
                 logger.debug("Cache miss", key=key)
@@ -291,7 +292,7 @@ class FlextApiStorage(FlextDomainService[dict[str, object]]):
                 )
 
     # Main FlextApiStorage methods
-    def __init__(self, **data: object) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self._cache = self.MemoryCache()
         self._storage = self.PersistentStorage()
