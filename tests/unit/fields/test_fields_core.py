@@ -27,7 +27,7 @@ class TestFlextApiFieldType:
 
         # Test that it has expected attributes
         assert hasattr(field_type, "__class__")
-        assert field_type.__class__.__name__ == "FlextApiFieldType"
+        assert field_type.__class__.__name__ == "FieldTypes"
 
 
 class TestFlextApiFieldTypeUsage:

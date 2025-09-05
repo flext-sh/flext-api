@@ -285,6 +285,13 @@ markers = [
     "security: Security-related tests",
     "mock: Tests using mocks heavily",
     "real: Tests using real external services",
+    "concurrency: Concurrency and async tests",
+    "race_condition: Race condition and thread safety tests",
+    "performance: Performance and load tests",
+    "memory: Memory usage and leak tests",
+    "timeout: Tests with timeout constraints",
+    "skip: Tests that should be skipped",
+    "xfail: Tests expected to fail",
 ]
 
 # Filtros de warnings otimizados

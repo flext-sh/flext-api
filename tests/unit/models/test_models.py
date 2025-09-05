@@ -15,22 +15,22 @@ class TestFlextApiModelsReal:
 
     def test_http_url_creation(self) -> None:
         """Test HttpUrl creation with real validation."""
-        # Valid URL creation
+        # Valid creation
         valid_url = FlextApiModels.HttpUrl("https://api.example.com")
         assert valid_url.root == "https://api.example.com"
 
-        # URL validation works with urlparse
+        # validation works with urlparse
         parsed = urlparse(valid_url.root)
         assert parsed.scheme == "https"
         assert parsed.hostname == "api.example.com"
 
     def test_api_request_creation(self) -> None:
-        """Test ApiRequest creation with real functionality."""
+        """Test creation with real functionality."""
         request = FlextApiModels.ApiRequest(
             id="req_123",
             method="GET",
             url="https://api.example.com/data",
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
 
         assert request.id == "req_123"
@@ -45,7 +45,7 @@ class TestFlextApiModelsReal:
             body={"message": "success"},
             url="https://api.example.com/data",
             method="GET",
-            elapsed_time=0.123
+            elapsed_time=0.123,
         )
 
         assert response.status_code == 200
@@ -56,9 +56,7 @@ class TestFlextApiModelsReal:
     def test_client_config_creation(self) -> None:
         """Test ClientConfig creation with validation."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com",
-            timeout=30.0,
-            max_retries=3
+            base_url="https://api.example.com", timeout=30.0, max_retries=3
         )
 
         assert config.base_url == "https://api.example.com"
@@ -70,7 +68,7 @@ class TestFlextApiModelsReal:
         session = FlextApiModels.HttpSession(
             session_id="session_abc",
             base_url="https://api.example.com",
-            headers={"Authorization": "Bearer token"}
+            headers={"Authorization": "Bearer token"},
         )
 
         assert session.session_id == "session_abc"
@@ -81,7 +79,7 @@ class TestFlextApiModelsReal:
         endpoint = FlextApiModels.ApiEndpoint(
             endpoint_path="/api/v1/users",
             method="GET",
-            base_url="https://api.example.com"
+            base_url="https://api.example.com",
         )
 
         assert endpoint.endpoint_path == "/api/v1/users"
@@ -120,20 +118,14 @@ class TestFlextApiModelsReal:
 
     def test_cache_config_creation(self) -> None:
         """Test CacheConfig creation."""
-        cache_config = FlextApiModels.CacheConfig(
-            ttl=300,
-            max_size=1000
-        )
+        cache_config = FlextApiModels.CacheConfig(ttl=300, max_size=1000)
 
         assert cache_config.ttl == 300
         assert cache_config.max_size == 1000
 
     def test_retry_config_creation(self) -> None:
         """Test RetryConfig creation."""
-        retry_config = FlextApiModels.RetryConfig(
-            max_retries=3,
-            backoff_factor=2.0
-        )
+        retry_config = FlextApiModels.RetryConfig(max_retries=3, backoff_factor=2.0)
 
         assert retry_config.max_retries == 3
         assert retry_config.backoff_factor == 2.0

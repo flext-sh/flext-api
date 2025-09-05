@@ -7,7 +7,7 @@ following SOLID principles and flext-core patterns.
 from __future__ import annotations
 
 from tests.support.factories.api_factories import (
-    FlextApiRequestFactory,
+    FlextFactory,
     FlextApiResponseFactory,
     FlextApiConfigFactory as ApiConfigFactory,
     create_flext_api_client_request,
@@ -26,21 +26,21 @@ from tests.support.factories.storage_factories import (
 )
 
 # Legacy aliases for backwards compatibility
-FileStorageConfigFactory = create_file_storage_config
-MemoryStorageConfigFactory = create_memory_storage_config
+FileFactory = create_file_storage_config
+MemoryFactory = create_memory_storage_config
 
 # Export both aliases and add backward compatibility
 FlextApiConfigFactory = ApiConfigFactory  # Default to API config factory
 
 __all__ = [
-    "FlextApiRequestFactory",
+    "FlextFactory",
     "FlextApiResponseFactory",
     "FlextApiConfigFactory",  # Backward compatibility
     "ApiConfigFactory",
     "AppConfigFactory",
     "FastAPIApplicationFactory",
-    "FileStorageConfigFactory",
-    "MemoryStorageConfigFactory",
+    "FileFactory",
+    "MemoryFactory",
     "create_flext_api_client_request",
     "create_flext_api_client_response",
     "create_flext_api_config",

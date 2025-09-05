@@ -2,25 +2,25 @@
 
 from __future__ import annotations
 
-import pytest
-
-from flext_api import FlextApiStorage, StorageBackend, StorageConfig
+from flext_api import FlextApiStorage
 
 
-@pytest.mark.asyncio
-async def test_keys_pattern_and_unknown_operation_commit() -> None:
-    """Wildcard key pattern works and unknown tx op triggers failure on commit."""
-    storage = FlextApiStorage(
-        StorageConfig(namespace="ns", backend=StorageBackend.MEMORY),
-    )
-    await storage.set("a", 1)
-    await storage.set("alpha", 2)
+def test_keys_pattern_and_unknown_operation_commit() -> None:
+    """Wildcard key pattern works and unknown tx op triggers failure on commit (simplified test)."""
+    storage = FlextApiStorage({"backend": "memory"})
+
+    # Test set operations
+    set_result1 = storage.set("a", 1)
+    set_result2 = storage.set("alpha", 2)
+    assert set_result1.success
+    assert set_result2.success
 
     # Get all keys (no pattern matching available)
-    keys = await storage.keys()
-    assert keys.success
-    assert set(keys.value or []) >= {"a", "alpha"}
+    keys_result = storage.keys()
+    assert keys_result.success
+    assert set(keys_result.value or []) >= {"a", "alpha"}
 
-    # Test simple storage operations work
-    result = await storage.exists("a")
-    assert result.success
+    # Test simple storage operations work by getting the value
+    get_result = storage.get("a")
+    assert get_result.success
+    assert get_result.value == 1

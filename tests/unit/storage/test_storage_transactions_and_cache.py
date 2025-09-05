@@ -10,7 +10,7 @@ import asyncio
 
 import pytest
 
-from flext_api import FlextApiStorage, StorageBackend, StorageConfig
+from flext_api import FlextApiStorage
 
 # All tests marked as skip due to missing transaction API
 pytestmark = pytest.mark.skip(reason="Transaction APIs not implemented")
@@ -20,11 +20,11 @@ pytestmark = pytest.mark.skip(reason="Transaction APIs not implemented")
 async def test_transaction_commit_set_and_delete_and_cache() -> None:
     """Transaction commit persists set/delete and populates cache."""
     storage = FlextApiStorage(
-        StorageConfig(
-            namespace="txn",
-            backend=StorageBackend.MEMORY,
-            enable_caching=True,
-        ),
+        {
+            "namespace": "txn",
+            "backend": "memory",
+            "enable_caching": True,
+        }
     )
     tx = storage.begin_transaction()
     assert (await storage.set("a", 1, transaction_id=tx)).success
@@ -46,11 +46,11 @@ async def test_transaction_commit_set_and_delete_and_cache() -> None:
 async def test_transaction_rollback_and_clear_cache_and_close() -> None:
     """Rollback clears changes; clear() empties cache; close() succeeds."""
     storage = FlextApiStorage(
-        StorageConfig(
-            namespace="rb",
-            backend=StorageBackend.MEMORY,
-            enable_caching=True,
-        ),
+        {
+            "namespace": "rb",
+            "backend": "memory",
+            "enable_caching": True,
+        }
     )
     tx = storage.begin_transaction()
     await storage.set("x", 99, transaction_id=tx)
@@ -71,12 +71,12 @@ async def test_cache_ttl_expiration_with_real_time() -> None:
     """TTL expiration is respected using REAL time delay - NO MOCKS."""
     # Use very short TTL for fast test execution
     storage = FlextApiStorage(
-        StorageConfig(
-            namespace="ttl_real",
-            backend=StorageBackend.MEMORY,
-            enable_caching=True,
-            cache_ttl_seconds=10,
-        ),
+        {
+            "namespace": "ttl_real",
+            "backend": "memory",
+            "enable_caching": True,
+            "cache_ttl_seconds": 10,
+        }
     )
 
     # Set value with short TTL for real-time test

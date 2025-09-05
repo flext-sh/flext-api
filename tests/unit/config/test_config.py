@@ -25,9 +25,7 @@ class TestFlextApiConfigReal:
     def test_client_config_creation(self) -> None:
         """Test ClientConfig creation."""
         client_config = FlextApiConfig.ClientConfig(
-            base_url="https://api.example.com",
-            timeout=30.0,
-            max_retries=3
+            base_url="https://api.example.com", timeout=30.0, max_retries=3
         )
 
         assert client_config.base_url == "https://api.example.com"
@@ -37,9 +35,7 @@ class TestFlextApiConfigReal:
     def test_server_config_creation(self) -> None:
         """Test ServerConfig creation."""
         server_config = FlextApiConfig.ServerConfig(
-            host="127.0.0.1",
-            port=8080,
-            workers=4
+            host="127.0.0.1", port=8080, workers=4
         )
 
         assert server_config.host == "127.0.0.1"
@@ -52,7 +48,7 @@ class TestFlextApiConfigReal:
         main_config = FlextApiConfig.MainConfig(
             server={"host": "127.0.0.1", "port": 8080},
             client={"base_url": "https://api.example.com"},
-            security={"enable_https": True, "api_key_required": True}
+            security={"enable_https": True, "api_key_required": True},
         )
 
         assert main_config.security["enable_https"] is True
@@ -63,7 +59,7 @@ class TestFlextApiConfigReal:
         env_config = FlextApiConfig.EnvConfig(
             server_host="127.0.0.1",
             server_port=8080,
-            base_url="https://api.example.com"
+            base_url="https://api.example.com",
         )
 
         assert env_config.server_host == "127.0.0.1"
@@ -75,7 +71,7 @@ class TestFlextApiConfigReal:
         main_config = FlextApiConfig.MainConfig(
             server={"host": "127.0.0.1", "port": 8080},
             client={"base_url": "https://api.example.com"},
-            security={"enable_ssl": True}
+            security={"enable_https": True},
         )
 
         assert main_config.server["host"] == "127.0.0.1"
@@ -94,8 +90,7 @@ class TestFlextApiConfigReal:
     def test_config_serialization(self) -> None:
         """Test config serialization capabilities."""
         client_config = FlextApiConfig.ClientConfig(
-            base_url="https://test.example.com",
-            timeout=45.0
+            base_url="https://test.example.com", timeout=45.0
         )
 
         # Should be serializable as dict
@@ -110,15 +105,13 @@ class TestFlextApiConfigReal:
         with pytest.raises((ValueError, TypeError)):
             FlextApiConfig.ClientConfig(
                 base_url="not-a-valid-url",
-                timeout=-1.0  # Invalid negative timeout
+                timeout=-1.0,  # Invalid negative timeout
             )
 
     def test_config_defaults(self) -> None:
         """Test config default values."""
         # Create config with minimal required fields
-        client_config = FlextApiConfig.ClientConfig(
-            base_url="https://api.example.com"
-        )
+        client_config = FlextApiConfig.ClientConfig(base_url="https://api.example.com")
 
         # Should have sensible defaults
         assert client_config.base_url == "https://api.example.com"

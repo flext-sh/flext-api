@@ -327,11 +327,11 @@ class FlextApiConstants(FlextConstants):
 
         SUCCESS_RESPONSE: Final[dict[str, str]] = {
             "status": "success",
-            "message": "Request completed successfully"
+            "message": "Request completed successfully",
         }
         ERROR_RESPONSE: Final[dict[str, str]] = {
             "status": "error",
-            "message": "Request failed"
+            "message": "Request failed",
         }
 
     class HttpStatusRanges:
@@ -350,21 +350,23 @@ class FlextApiConstants(FlextConstants):
     RATE_LIMIT_WINDOW: Final[int] = 3600  # Expected by tests
     CLIENT_ERROR_CODES: Final[list[int]] = [400, 401, 403, 404, 405, 409, 429]
     SERVER_ERROR_CODES: Final[list[int]] = [500, 501, 502, 503, 504]
-    SUCCESS_RESPONSE: Final[dict[str, str | None]] = {  # Expected by tests with data and error fields
+    SUCCESS_RESPONSE: Final[
+        dict[str, str | None]
+    ] = {  # Expected by tests with data and error fields
         "status": "success",
         "message": "Request completed successfully",
         "data": None,
-        "error": None
+        "error": None,
     }
     ERROR_RESPONSE: Final[dict[str, str | None]] = {  # Expected by tests
         "status": "error",
         "message": "Request failed",
         "data": None,
-        "error": None  # Test expects error field to be None
+        "error": None,  # Test expects error field to be None
     }
     SUCCESS_RESPONSE_TEMPLATE: Final[dict[str, str]] = {
         "status": "success",
-        "message": "Request completed successfully"
+        "message": "Request completed successfully",
     }
 
 

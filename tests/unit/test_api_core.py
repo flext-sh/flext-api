@@ -42,9 +42,9 @@ class TestFlextApiCore:
         result = api.create_client(config)
 
         assert_flext_result_success(result)
-        assert result.data is not None
+        assert result.value is not None
 
-        client = result.data
+        client = result.value
         assert client.base_url == "https://httpbin.org"
         assert client.timeout == 30.0
         assert client.max_retries == 3
@@ -75,7 +75,7 @@ class TestFlextApiCore:
         info_result = api.get_info()
         assert_flext_result_success(info_result)
 
-        info_data = info_result.data
+        info_data = info_result.value
         assert isinstance(info_data, dict)
         assert info_data["service"] == "FlextApi"
         assert info_data["name"] == "FlextApi"
@@ -129,7 +129,7 @@ class TestFlextApiCore:
         health_result = await api.health_check_async()
         assert_flext_result_success(health_result)
 
-        health_data = health_result.data
+        health_data = health_result.value
         assert isinstance(health_data, dict)
         assert "status" in health_data
 
@@ -209,7 +209,7 @@ class TestFlextApiCore:
         result = api.create_client(config)
         assert_flext_result_success(result)
 
-        client = result.data
+        client = result.value
         assert client.base_url == "https://minimal.example.com"
         # Should have default values for other properties
         assert client.timeout is not None

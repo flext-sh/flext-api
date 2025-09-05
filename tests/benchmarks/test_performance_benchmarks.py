@@ -14,7 +14,6 @@ from flext_api import (
     FlextApi,
     FlextApiClient,
     FlextApiModels,
-    FlextApiQueryBuilder,
     create_flext_api,
 )
 
@@ -44,15 +43,12 @@ class TestAPIPerformanceBenchmarks:
         """Benchmark query building operations."""
 
         def build_complex_query() -> FlextApiModels.HttpQuery:
-            builder = FlextApiQueryBuilder()
+            builder = FlextApiModels.for_query()
             # Add filters using proper API
             return (
-                builder.for_query()
-                .equals("status", "active")
+                builder.equals("status", "active")
                 .equals("category", "premium")
                 .equals("created_at", "2024-01-01")
-                .limit(50)
-                .build()
             )
 
         result = benchmark(build_complex_query)
@@ -64,7 +60,7 @@ class TestAPIPerformanceBenchmarks:
         """Benchmark response building operations."""
 
         def build_complex_response() -> object:
-            builder = FlextApiQueryBuilder()
+            builder = FlextApiModels.for_query()
             response_result = builder.for_response().success(
                 data={"items": list(range(100)), "total": 100},
                 message="Data retrieved successfully",
@@ -85,17 +81,15 @@ class TestAPIPerformanceBenchmarks:
         """Benchmark builder pattern operations."""
 
         def complex_builder_operations() -> tuple[FlextApiModels.HttpQuery, object]:
-            builder = FlextApiQueryBuilder()
+            builder = FlextApiModels.for_query()
 
             # Query building
             query = (
-                builder.for_query()
-                .equals("status", "published")
+                builder.equals("status", "published")
                 .equals("created_at", "2024-01-01")
                 .sort_desc("updated_at")
                 .page(2)
                 .page_size(25)
-                .build()
             )
 
             # Response building
@@ -125,7 +119,7 @@ class TestAPIPerformanceBenchmarks:
                 }
             )
             return (
-                client_result.data
+                client_result.value
                 if client_result.success
                 else FlextApiClient(base_url="https://fallback.com")
             )
@@ -145,15 +139,13 @@ class TestAPIPerformanceBenchmarks:
 
         def build_multiple_queries() -> list[FlextApiModels.HttpQuery]:
             queries = []
-            builder = FlextApiQueryBuilder()
 
             for i in range(100):
+                builder = FlextApiModels.for_query()
                 query = (
-                    builder.for_query()
-                    .equals("id", i)
+                    builder.equals("id", str(i))
                     .equals("status", "active" if i % 2 == 0 else "inactive")
                     .equals("priority", "high" if i % 3 == 0 else "normal")
-                    .build()
                 )
                 queries.append(query)
             return queries
@@ -177,7 +169,7 @@ class TestAPIPerformanceBenchmarks:
                 "total": 1000,
             }
 
-            builder = FlextApiQueryBuilder()
+            builder = FlextApiModels.for_query()
             response_result = builder.for_response().success(
                 data=large_data, message="Large dataset retrieved"
             )
@@ -197,9 +189,9 @@ class TestAPIPerformanceBenchmarks:
 
         def build_paginated_responses() -> list[object]:
             responses = []
-            builder = FlextApiQueryBuilder()
 
             for page in range(1, 11):  # 10 pages
+                builder = FlextApiModels.for_query()
                 response_result = builder.for_response().success(
                     data={"items": list(range((page - 1) * 20, page * 20))},
                     message=f"Page {page} of 10",

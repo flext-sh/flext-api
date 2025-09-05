@@ -13,7 +13,7 @@ from flext_core import FlextResult
 from flext_api import (
     FlextApiModels,
 )
-from tests.support.factories.api_factories import ApiRequest, ApiResponse
+from tests.support.factories.api_factories import ApiResponse
 
 # Type variable for generic FlextResult operations
 T = TypeVar("T")
@@ -29,8 +29,8 @@ def assert_flext_result_success(
         pytest.fail(f"Expected value {expected_value} but got {result.value}")
 
 
-def assert_flext_result_failure[T](
-    result: FlextResult[T], expected_error: str | None = None
+def assert_flext_result_failure(
+    result: FlextResult, expected_error: str | None = None
 ) -> None:
     """Assert FlextResult is failure with optional error message check."""
     if result.success:
@@ -51,7 +51,7 @@ def create_test_request(
     """Create test request - MODERN Builder Pattern using flext-core patterns."""
     # Use the modern Builder Pattern to eliminate parameter complexity
 
-    builder = ApiRequest().with_method(method).with_url(url).with_timeout(timeout)
+    builder = ().with_method(method).with_url(url).with_timeout(timeout)
 
     if headers is not None:
         builder = builder.with_headers(headers)

@@ -17,8 +17,8 @@ from flext_api.config import FlextApiConfig
 # =============================================================================
 
 
-class ApiRequestBuilder(BaseModel):
-    """Advanced Pydantic V2 builder for ApiRequest - eliminates ALL parameters."""
+class Builder(BaseModel):
+    """Advanced Pydantic V2 builder for - eliminates ALL parameters."""
 
     model_config = ConfigDict(
         validate_assignment=True,
@@ -27,7 +27,7 @@ class ApiRequestBuilder(BaseModel):
     )
 
     method: str = Field(default="GET", description="HTTP method")
-    url: str = Field(default="https://httpbin.org/get", description="Request URL")
+    url: str = Field(default="https://httpbin.org/get", description="Request ")
     headers: dict[str, str] = Field(default_factory=dict, description="HTTP headers")
     params: dict[str, object] = Field(
         default_factory=dict, description="Query parameters"
@@ -35,7 +35,7 @@ class ApiRequestBuilder(BaseModel):
     timeout: float = Field(default=30.0, description="Request timeout")
 
     def build(self) -> FlextApiModels.ApiRequest:
-        """Build ApiRequest using current configuration."""
+        """Build using current configuration."""
         return FlextApiModels.ApiRequest(
             method=FlextApiModels.HttpMethod(self.method)
             if isinstance(self.method, str)
@@ -47,23 +47,23 @@ class ApiRequestBuilder(BaseModel):
         )
 
     # Fluent interface methods for chaining
-    def with_method(self, method: str) -> ApiRequestBuilder:
+    def with_method(self, method: str) -> Builder:
         self.method = method
         return self
 
-    def with_url(self, url: str) -> ApiRequestBuilder:
+    def with_url(self, url: str) -> Builder:
         self.url = url
         return self
 
-    def with_headers(self, headers: dict[str, str]) -> ApiRequestBuilder:
+    def with_headers(self, headers: dict[str, str]) -> Builder:
         self.headers = headers
         return self
 
-    def with_params(self, params: dict[str, object]) -> ApiRequestBuilder:
+    def with_params(self, params: dict[str, object]) -> Builder:
         self.params = params
         return self
 
-    def with_timeout(self, timeout: float) -> ApiRequestBuilder:
+    def with_timeout(self, timeout: float) -> Builder:
         self.timeout = timeout
         return self
 
@@ -75,9 +75,9 @@ def create_flext_api_client_request(
     params: dict[str, object] | None = None,
     timeout: float = 30.0,
 ) -> FlextApiModels.ApiRequest:
-    """Create FlextApiModels.ApiRequest for testing - BACKWARD COMPATIBILITY."""
+    """Create FlextApiModels.for testing - BACKWARD COMPATIBILITY."""
     return (
-        ApiRequestBuilder()
+        Builder()
         .with_method(method)
         .with_url(url)
         .with_headers(headers or {})
@@ -134,7 +134,7 @@ class ApiResponseBuilder(BaseModel):
     def with_data(
         self, data: dict[str, object] | list[object] | str | bytes | None
     ) -> ApiResponseBuilder:
-        self.data = data
+        self.value = data
         return self
 
     def with_elapsed_time(self, elapsed_time: float) -> ApiResponseBuilder:
@@ -257,27 +257,26 @@ def create_flext_api_config(
 # =============================================================================
 
 # Modern builder factories - PREFERRED usage
-ApiRequest = ApiRequestBuilder  # Use: ApiRequest().with_method("POST").build()
+ApiRequest = Builder  # Use: ApiRequest().with_method("POST").build()
 ApiResponse = ApiResponseBuilder  # Use: ApiResponse().with_status_code(201).build()
 ApiConfig = ApiConfigBuilder  # Use: ApiConfig().with_host("api.example.com").build()
 
 # Legacy function aliases for backward compatibility
 FlextApiConfigFactory = create_flext_api_config
-FlextApiRequestFactory = create_flext_api_client_request
+FlextFactory = create_flext_api_client_request
 FlextApiResponseFactory = create_flext_api_client_response
 
 # Export all modern builders
 __all__ = [
     "ApiConfig",  # Alias for ApiConfigBuilder
     "ApiConfigBuilder",
-    "ApiRequest",  # Alias for ApiRequestBuilder
-    # Modern Builder Pattern (PREFERRED)
-    "ApiRequestBuilder",
     "ApiResponse",  # Alias for ApiResponseBuilder
     "ApiResponseBuilder",
+    # Modern Builder Pattern (PREFERRED)
+    "Builder",
     "FlextApiConfigFactory",
-    "FlextApiRequestFactory",
     "FlextApiResponseFactory",
+    "FlextFactory",
     # Legacy compatibility functions
     "create_flext_api_client_request",
     "create_flext_api_client_response",

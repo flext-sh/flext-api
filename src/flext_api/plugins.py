@@ -102,25 +102,44 @@ class FlextApiPlugins(FlextModels):
             return FlextResult.ok((method, url, headers, params, body))
 
         async def after_response(
-            self, response_data: object, _headers: dict[str, str], _status_code: int
+            self,
+            response_data: object,
+            _headers: dict[str, str],
+            _status_code: int,
         ) -> FlextResult[object]:
             """Hook called after response received."""
             return FlextResult.ok(response_data)
 
         async def on_error(
-            self, error: Exception, _method: str, _url: str
+            self,
+            error: Exception,
+            _method: str,
+            _url: str,
         ) -> FlextResult[object]:
             """Hook called when request fails."""
             return FlextResult.fail(f"Request failed: {error}")
+
+        def validate_business_rules(self) -> FlextResult[None]:
+            """Validate plugin business rules - base implementation."""
+            if not isinstance(self.name, str) or not self.name.strip():
+                return FlextResult[None].fail("Plugin name must be non-empty string")
+            return FlextResult[None].ok(None)
 
     class AsyncPlugin(BasePlugin):
         """Base class for asynchronous plugins with lifecycle management."""
 
         def __init__(
-            self, name: str = "AsyncPlugin", *, enabled: bool = True, priority: int = 0
+            self,
+            name: str = "AsyncPlugin",
+            *,
+            enabled: bool = True,
+            priority: int = 0,
         ) -> None:
             super().__init__(
-                id=f"plugin_{name}", name=name, enabled=enabled, priority=priority
+                id=f"plugin_{name}",
+                name=name,
+                enabled=enabled,
+                priority=priority,
             )
             self._started = False
             self._lock = asyncio.Lock()
@@ -164,16 +183,22 @@ class FlextApiPlugins(FlextModels):
         def __init__(self, config: CachingPluginConfig) -> None:
             """Initialize caching plugin using Pydantic V2 configuration."""
             super().__init__(
-                name=config.name, enabled=config.enabled, priority=config.priority
+                name=config.name,
+                enabled=config.enabled,
+                priority=config.priority,
             )
             self.ttl = config.ttl
             self.max_size = config.max_size
             self._cache: dict[
-                str, tuple[object, float]
+                str,
+                tuple[object, float],
             ] = {}  # url -> (data, timestamp)
 
         def _generate_cache_key(
-            self, method: str, url: str, params: dict[str, object]
+            self,
+            method: str,
+            url: str,
+            params: dict[str, object],
         ) -> str:
             """Generate cache key from request parameters."""
             # Only cache GET requests
@@ -235,7 +260,10 @@ class FlextApiPlugins(FlextModels):
             return FlextResult[None].ok(None)
 
         async def after_response(
-            self, response_data: object, _headers: dict[str, str], _status_code: int
+            self,
+            response_data: object,
+            _headers: dict[str, str],
+            _status_code: int,
         ) -> FlextResult[object]:
             """Cache successful responses."""
             # Only cache successful GET responses
@@ -279,7 +307,10 @@ class FlextApiPlugins(FlextModels):
             return min(self.backoff_factor**attempt, 60.0)  # Max 60 seconds
 
         async def on_error(
-            self, error: Exception, _method: str, _url: str
+            self,
+            error: Exception,
+            _method: str,
+            _url: str,
         ) -> FlextResult[object]:
             """Handle retry logic on error."""
             logger.warning(f"Request failed, error: {error}")
@@ -317,7 +348,6 @@ class FlextApiPlugins(FlextModels):
             if self.auth_type == "bearer" and self.token:
                 auth_headers["Authorization"] = f"Bearer {self.token}"
             elif self.auth_type == "basic" and self.username and self.password:
-
                 credentials_str = f"{self.username}:{self.password}"
                 credentials = base64.b64encode(credentials_str.encode()).decode()
                 auth_headers["Authorization"] = f"Basic {credentials}"
@@ -328,13 +358,13 @@ class FlextApiPlugins(FlextModels):
             """Validate auth plugin business rules."""
             if self.auth_type not in {"bearer", "basic"}:
                 return FlextResult[None].fail(
-                    "Invalid auth type, must be 'bearer' or 'basic'"
+                    "Invalid auth type, must be 'bearer' or 'basic'",
                 )
             if self.auth_type == "bearer" and not self.token:
                 return FlextResult[None].fail("Bearer auth requires token")
             if self.auth_type == "basic" and (not self.username or not self.password):
                 return FlextResult[None].fail(
-                    "Basic auth requires username and password"
+                    "Basic auth requires username and password",
                 )
             return FlextResult[None].ok(None)
 
@@ -343,14 +373,17 @@ class FlextApiPlugins(FlextModels):
 
         name: str = "rate_limit_plugin"
         calls_per_second: float = Field(
-            default=10.0, description="Calls per second limit"
+            default=10.0,
+            description="Calls per second limit",
         )
         burst_size: int = Field(default=20, description="Burst capacity")
 
         def __init__(self, config: RateLimitPluginConfig) -> None:
             """Initialize using Pydantic V2 configuration."""
             super().__init__(
-                name=config.name, enabled=config.enabled, priority=config.priority
+                name=config.name,
+                enabled=config.enabled,
+                priority=config.priority,
             )
             self.calls_per_second = config.calls_per_second
             self.burst_size = config.burst_size
@@ -372,7 +405,8 @@ class FlextApiPlugins(FlextModels):
             if self._last_call > 0:
                 elapsed = current_time - self._last_call
                 self._tokens = min(
-                    self.burst_size, self._tokens + elapsed * self.calls_per_second
+                    self.burst_size,
+                    self._tokens + elapsed * self.calls_per_second,
                 )
 
             if self._tokens < 1:
@@ -399,16 +433,20 @@ class FlextApiPlugins(FlextModels):
 
         name: str = "circuit_breaker_plugin"
         failure_threshold: int = Field(
-            default=5, description="Failures before opening circuit"
+            default=5,
+            description="Failures before opening circuit",
         )
         recovery_timeout: float = Field(
-            default=60.0, description="Recovery timeout in seconds"
+            default=60.0,
+            description="Recovery timeout in seconds",
         )
 
         def __init__(self, config: CircuitBreakerPluginConfig) -> None:
             """Initialize using Pydantic V2 configuration."""
             super().__init__(
-                name=config.name, enabled=config.enabled, priority=config.priority
+                name=config.name,
+                enabled=config.enabled,
+                priority=config.priority,
             )
             self.failure_threshold = config.failure_threshold
             self.recovery_timeout = config.recovery_timeout
@@ -437,7 +475,10 @@ class FlextApiPlugins(FlextModels):
             return FlextResult.ok((method, url, headers, params, body))
 
         async def after_response(
-            self, response_data: object, _headers: dict[str, str], _status_code: int
+            self,
+            response_data: object,
+            _headers: dict[str, str],
+            _status_code: int,
         ) -> FlextResult[object]:
             """Update circuit breaker state after response."""
             if (
@@ -459,7 +500,7 @@ class FlextApiPlugins(FlextModels):
                 if self._failure_count >= self.failure_threshold:
                     self._state = "open"
                     logger.warning(
-                        f"Circuit breaker opened after {self._failure_count} failures"
+                        f"Circuit breaker opened after {self._failure_count} failures",
                     )
 
             return FlextResult.ok(response_data)
@@ -504,7 +545,10 @@ class FlextApiPlugins(FlextModels):
             return FlextResult.ok((method, url, headers, params, body))
 
         async def after_response(
-            self, response_data: object, _headers: dict[str, str], _status_code: int
+            self,
+            response_data: object,
+            _headers: dict[str, str],
+            _status_code: int,
         ) -> FlextResult[object]:
             """Log response details."""
             if self.log_responses:
@@ -520,7 +564,10 @@ class FlextApiPlugins(FlextModels):
             return FlextResult.ok(response_data)
 
         async def on_error(
-            self, error: Exception, _method: str, _url: str
+            self,
+            error: Exception,
+            _method: str,
+            _url: str,
         ) -> FlextResult[object]:
             """Log error details."""
             if self.log_errors:

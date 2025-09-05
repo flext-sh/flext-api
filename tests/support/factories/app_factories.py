@@ -87,9 +87,9 @@ class FastApiAppBuilder(BaseModel):
     )
     version: str = Field(default="0.1.0", description="Application version")
     debug: bool = Field(default=True, description="Debug mode")
-    docs_url: str = Field(default="/docs", description="Documentation URL")
-    redoc_url: str = Field(default="/redoc", description="ReDoc URL")
-    openapi_url: str = Field(default="/openapi.json", description="OpenAPI JSON URL")
+    docs_url: str = Field(default="/docs", description="Documentation ")
+    redoc_url: str = Field(default="/redoc", description="ReDoc ")
+    openapi_url: str = Field(default="/openapi.json", description="OpenAPI JSON ")
 
     def build(self) -> FastAPI:
         """Build FastAPI application using current configuration."""

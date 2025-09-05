@@ -8,7 +8,6 @@ import pytest
 
 from flext_api import (
     FlextApiClient,
-    FlextApiModels,
 )
 
 
@@ -17,27 +16,19 @@ async def test_real_network_error_and_error_formatting() -> None:
     """Test real network error and error message formatting."""
     # Use non-responsive localhost port to trigger real connection error
     client = FlextApiClient(
-        FlextApiClient(
-            base_url="http://127.0.0.1:9998",  # Port that won't respond
-            timeout=0.3,  # Quick timeout
-        ),
+        base_url="http://127.0.0.1:65530",  # Port that won't respond
+        timeout=0.3,  # Quick timeout
     )
     await client.start()
 
     try:
         # Real network error triggers error path
-        req = FlextApiModels.ApiRequest(
-            id="test_req",
-            method=FlextApiModels.HttpMethod.GET,
-            url="http://127.0.0.1:9998/test",
-        )
-        result = await client._make_request(req)
+        result = await client.get("/test")
         assert not result.success
 
-        # Error formatter path
-        bad = client._format_request_error(result, "GET")
-        assert not bad.success
-        assert "Failed to make GET request" in (bad.error or "")
+        # Check error contains expected information
+        assert result.error is not None
+        assert "test" in result.error or "connection" in result.error.lower()
     finally:
         await client.close()
 

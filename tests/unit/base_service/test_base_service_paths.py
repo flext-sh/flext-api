@@ -5,13 +5,14 @@ from __future__ import annotations
 import pytest
 from flext_core import FlextResult
 
-from flext_api import FlextApiBaseService
+from flext_api import FlextApiModels
 
 
-class OkService(FlextApiBaseService):
+class OkService(FlextApiModels.ApiBaseService):
     """A simple service used for testing."""
 
-    service_name: str = "ok"
+    def __init__(self) -> None:
+        super().__init__(service_name="ok")
 
     async def _do_start(self) -> FlextResult[None]:
         return FlextResult[None].ok(None)

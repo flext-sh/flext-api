@@ -51,7 +51,7 @@ class TestApiWorkflowE2E:
         )
         assert client_result.success
 
-        client = client_result.data
+        client = client_result.value
 
         try:
             # 5. Perform HTTP operations - simplified for testing
@@ -70,16 +70,16 @@ class TestApiWorkflowE2E:
         api = create_flext_api()
 
         # Test client creation with invalid config using modern API
-        # Note: Current implementation accepts invalid URLs - this is a test of actual behavior
+        # Note: Current implementation accepts invalid s - this is a test of actual behavior
         invalid_result = api.create_client(
             {
                 "base_url": "invalid-url-format",
             },
         )
-        # Current behavior: accepts the URL, validation would happen at request time
+        # Current behavior: accepts the validation would happen at request time
         assert invalid_result.success
 
-        # Test with valid config but unreachable URL using modern API
+        # Test with valid config but unreachable using modern API
         client_result = api.create_client(
             {
                 "base_url": "https://nonexistent-domain-12345.com",
@@ -88,7 +88,7 @@ class TestApiWorkflowE2E:
         )
         assert client_result.success
 
-        client = client_result.data
+        client = client_result.value
 
         try:
             # For E2E test, we just verify the client is properly configured
@@ -152,7 +152,7 @@ class TestApiWorkflowE2E:
         )
         assert client_result.success
 
-        client = client_result.data
+        client = client_result.value
 
         try:
             # Test that plugins infrastructure is working

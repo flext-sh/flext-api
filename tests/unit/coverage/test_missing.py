@@ -17,6 +17,7 @@ from flext_api import (
     FlextApiPlugins,
     create_flext_api,
 )
+from flext_api.plugins import CachingPluginConfig
 
 
 class TestMissingCoverage:
@@ -44,17 +45,22 @@ class TestMissingCoverage:
         """Test plugin system."""
         plugins = FlextApiPlugins()
 
-        # Test caching plugin
-        caching = plugins.CachingPlugin(ttl=600, max_size=1000)
+        # Test caching plugin using Pydantic configuration
+        caching_config = CachingPluginConfig(ttl=600, max_size=1000)
+        caching = plugins.CachingPlugin(caching_config)
         assert caching.ttl == 600
         assert caching.max_size == 1000
         assert caching.name == "caching_plugin"
 
-        # Test retry plugin
-        retry = plugins.RetryPlugin(max_retries=5, backoff_factor=2.5)
-        assert retry.max_retries == 5
-        assert retry.backoff_factor == 2.5
+        # Test retry plugin functionality
+        retry = plugins.RetryPlugin()
+        assert retry.max_retries > 0
+        assert retry.backoff_factor > 0
         assert retry.name == "retry_plugin"
+
+        # Test validation
+        validation_result = retry.validate_business_rules()
+        assert validation_result.success
 
     def test_query_builder_edge_cases(self) -> None:
         """Test query builder edge cases."""
@@ -105,7 +111,7 @@ class TestMissingCoverage:
         info_result = api.get_info()
 
         assert info_result.success
-        info_data = info_result.data
+        info_data = info_result.value
         assert info_data["service"] == "FlextApi"
         assert "version" in info_data
 

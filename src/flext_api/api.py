@@ -1,7 +1,7 @@
-"""FlextApi - Main API class following FLEXT patterns.
+"""FLEXT API - Main API class implementation.
 
-Single API class that orchestrates HTTP operations and provides factory methods
-for client creation. Uses flext-core patterns with FlextResult.
+Real API functionality with FlextResult patterns.
+Factory functions and main API class.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -9,223 +9,75 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
-
-from flext_core import FlextContainer, FlextDomainService, FlextLogger, FlextResult
+from flext_core import FlextResult, flext_logger
 
 from flext_api.client import FlextApiClient
 from flext_api.models import FlextApiModels
-from flext_api.typings import FlextApiTypes
+from flext_api.storage import FlextApiStorage
 
-# Type aliases for cleaner code
-ClientConfigDict = FlextApiTypes.Client.ClientConfigDict
-Result = dict[str, object]
-
-logger = FlextLogger(__name__)
+logger = flext_logger(__name__)
 
 
-class FlextApi(FlextDomainService[dict[str, object]]):
-    """Main API class providing HTTP client and builder functionality.
+class FlextApi:
+    """Main FLEXT API class."""
 
-    Single class following FLEXT patterns with FlextResult for all operations.
-    Provides HTTP client creation, builder patterns, and service lifecycle.
-    """
-
-    def __init__(self, **kwargs: object) -> None:
-        """Initialize API with flext-core patterns."""
-        super().__init__()
-
-        # Set field values from kwargs using private attributes with type safety
-        service_name = kwargs.get("service_name", "FlextApi")
-        self._service_name = (
-            str(service_name) if service_name is not None else "FlextApi"
-        )
-
-        service_version = kwargs.get("service_version", "0.9.0")
-        self._service_version = (
-            str(service_version) if service_version is not None else "0.9.0"
-        )
-
-        default_base_url = kwargs.get("default_base_url", "http://localhost:8000")
-        self._default_base_url = (
-            str(default_base_url)
-            if default_base_url is not None
-            else "http://localhost:8000"
-        )
-
-        # Internal state
-        self._is_running = False
-        self._client: FlextApiClient | None = None
-        self._builder: FlextApiModels | None = None
-
-        # Get global container - NO local containers ever
-        self._container = FlextContainer.get_global()
-
-        # Register self in global container
-        self._container.register("flext_api", self)
-
-        logger.info("FlextApi initialized", version=self._service_version)
-
-    @property
-    def service_name(self) -> str:
-        """Service name."""
-        return self._service_name
+    def __init__(self) -> None:
+        """Initialize FLEXT API."""
+        self._clients: dict[str, FlextApiClient] = {}
+        self._storages: dict[str, FlextApiStorage] = {}
+        self._current_client: FlextApiClient | None = None
+        self._current_builder: FlextApiModels.Builder | None = None
 
     @property
     def service_version(self) -> str:
-        """Service version."""
-        return self._service_version
+        """Get service version."""
+        return "0.9.0"
 
     @property
     def default_base_url(self) -> str:
-        """Default base URL."""
-        return self._default_base_url
+        """Get default base URL."""
+        return "https://api.flext.io"
 
-    def execute(self) -> FlextResult[dict[str, object]]:
-        """Execute API service lifecycle."""
+    def create_client(self, config: dict[str, object]) -> FlextResult[FlextApiClient]:
+        """Create HTTP client with configuration."""
         try:
-            service_info: dict[str, object] = {
-                "service_name": self.service_name,
-                "service_version": self.service_version,
-                "default_base_url": self.default_base_url,
-                "status": "active",
-            }
-            logger.info(
-                "FlextApi service executed successfully", service_info=service_info
-            )
-            return FlextResult[dict[str, object]].ok(service_info)
+            client_config = FlextApiModels.ClientConfig(**config)
+            client = FlextApiClient(client_config)
+            self._current_client = client
+            return FlextResult.ok(client)
         except Exception as e:
-            logger.exception("Failed to execute FlextApi service")
-            return FlextResult[dict[str, object]].fail(f"Service execution failed: {e}")
-
-    def get_info(self) -> FlextResult[Result]:
-        """Get API service information - returns FlextResult, never raises."""
-        try:
-            info_data = {
-                "service": "FlextApi",
-                "name": self.service_name,
-                "version": self.service_version,
-                "base_url": self.default_base_url,
-                "running": self._is_running,
-                "has_client": self._client is not None,
-            }
-            return FlextResult[Result].ok(info_data)
-        except Exception as e:
-            logger.exception("Failed to get API info", error=str(e))
-            return FlextResult[Result].fail(f"Failed to get info: {e}")
+            logger.exception("Failed to create client", config=config, error=str(e))
+            return FlextResult.fail(f"Failed to create client: {e}")
 
     def get_client(self) -> FlextApiClient | None:
-        """Get current HTTP client instance."""
-        return self._client
+        """Get current client instance."""
+        return self._current_client
 
-    def get_builder(self) -> FlextApiModels:
-        """Get builder instance for queries and responses."""
-        if self._builder is None:
-            self._builder = FlextApiModels()
-        return self._builder
+    def get_builder(self) -> FlextApiModels.Builder:
+        """Get current builder instance."""
+        if self._current_builder is None:
+            self._current_builder = FlextApiModels.Builder()
+        return self._current_builder
 
-    def create_client(
-        self, config: ClientConfigDict | None = None
-    ) -> FlextResult[FlextApiClient]:
-        """Create HTTP client with configuration - returns FlextResult, never raises."""
+    def create_storage(self, config: dict[str, object]) -> FlextResult[FlextApiStorage]:
+        """Create storage backend with configuration."""
         try:
-            # Validate config
-            if config is None:
-                return FlextResult[FlextApiClient].fail("base_url is required")
-
-            if not config.get("base_url"):
-                return FlextResult[FlextApiClient].fail("base_url is required")
-
-            # Type-safe client initialization with proper field types
-            self._client = FlextApiClient(
-                base_url=cast("str", config["base_url"]),
-                timeout=cast("float", config.get("timeout", 30.0)),
-                headers=cast("dict[str, str]", config.get("headers", {})),
-                max_retries=cast("int", config.get("max_retries", 3)),
-            )
-
-            logger.info("HTTP client created", base_url=self._client.base_url)
-            return FlextResult[FlextApiClient].ok(self._client)
-
+            storage = FlextApiStorage(config)
+            return FlextResult.ok(storage)
         except Exception as e:
-            logger.exception("Failed to create HTTP client", error=str(e))
-            return FlextResult[FlextApiClient].fail(
-                f"Failed to create HTTP client: {e}"
-            )
-
-    async def start_async(self) -> FlextResult[None]:
-        """Start the API service asynchronously."""
-        try:
-            self._is_running = True
-            logger.info("FlextApi started", service=self.service_name)
-            return FlextResult[None].ok(None)
-        except Exception as e:
-            logger.exception("Failed to start API", error=str(e))
-            return FlextResult[None].fail(f"Failed to start: {e}")
-
-    async def stop_async(self) -> FlextResult[None]:
-        """Stop the API service asynchronously."""
-        try:
-            self._is_running = False
-            if self._client:
-                await self._client.stop()
-                self._client = None
-            logger.info("FlextApi stopped", service=self.service_name)
-            return FlextResult[None].ok(None)
-        except Exception as e:
-            logger.exception("Failed to stop API", error=str(e))
-            return FlextResult[None].fail(f"Failed to stop: {e}")
-
-    async def health_check_async(self) -> FlextResult[Result]:
-        """Perform async health check."""
-        try:
-            health_data: dict[str, object] = {
-                "status": "healthy" if self._is_running else "stopped",
-                "service": self.service_name,
-                "version": self.service_version,
-                "has_client": self._client is not None,
-                "default_base_url": self.default_base_url,
-            }
-            return FlextResult[Result].ok(health_data)
-        except Exception as e:
-            logger.exception("Health check failed", error=str(e))
-            return FlextResult[Result].fail(f"Health check failed: {e}")
-
-    # =========================================================================
-    # FACTORY METHODS - Following flext-core patterns
-    # =========================================================================
-
-    @staticmethod
-    def create_instance(
-        service_name: str | None = None,
-        service_version: str | None = None,
-        default_base_url: str | None = None,
-    ) -> FlextApi:
-        """Create FlextApi instance with optional configuration.
-
-        Args:
-            service_name: Optional service name
-            service_version: Optional service version
-            default_base_url: Optional default base URL
-
-        Returns:
-            Configured FlextApi instance
-
-        """
-        return FlextApi(
-            service_name=service_name or "FlextApi",
-            service_version=service_version or "0.9.0",
-            default_base_url=default_base_url or "http://localhost:8000",
-        )
+            logger.exception("Failed to create storage", config=config, error=str(e))
+            return FlextResult.fail(f"Failed to create storage: {e}")
 
 
-# Factory function for test compatibility
-def create_flext_api(**kwargs: object) -> FlextApi:
-    """Factory function to create FlextApi instance."""
-    return FlextApi(**kwargs)
+def create_flext_api() -> FlextApi:
+    """Factory function to create FLEXT API instance."""
+    return FlextApi()
 
 
-__all__ = [
-    "FlextApi",
-    "create_flext_api",
-]
+def create_client(config: dict[str, object]) -> FlextResult[FlextApiClient]:
+    """Factory function to create HTTP client directly."""
+    api = create_flext_api()
+    return api.create_client(config)
+
+
+__all__ = ["FlextApi", "create_flext_api", "create_client"]

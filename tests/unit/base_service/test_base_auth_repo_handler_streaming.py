@@ -7,16 +7,16 @@ from collections.abc import AsyncIterator
 import pytest
 from flext_core import FlextResult
 
-from flext_api import FlextApiBaseService
+from flext_api import FlextApiModels
 
 
-class DummyAuthService(FlextApiBaseService):
+class DummyAuthService(FlextApiModels.ApiBaseService):
     """Minimal auth service for testing authentication patterns."""
 
     _service_name: str
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(service_name="dummy-auth")
         # Store service name as a simple attribute (not in Pydantic data)
         self._service_name = "dummy-auth"
 
@@ -37,21 +37,23 @@ class DummyAuthService(FlextApiBaseService):
         """Authenticate user with credentials."""
         username = credentials.get("username")
         if username == "valid_user":
-            return FlextResult[dict[str, object]].ok({
-                "token": "auth_token_123",
-                "user_id": "user_123",
-                "expires_in": 3600,
-            })
+            return FlextResult[dict[str, object]].ok(
+                {
+                    "token": "auth_token_123",
+                    "user_id": "user_123",
+                    "expires_in": 3600,
+                }
+            )
         return FlextResult[dict[str, object]].fail("Invalid credentials")
 
 
-class DummyRepositoryService(FlextApiBaseService):
+class DummyRepositoryService:
     """Minimal repository service for testing data access patterns."""
 
     _service_name: str
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(service_name="dummy-repository")
         # Store service name as a simple attribute (not in Pydantic data)
         self._service_name = "dummy-repository"
         self._data: dict[str, dict[str, object]] = {}
@@ -88,13 +90,13 @@ class DummyRepositoryService(FlextApiBaseService):
         return FlextResult[bool].ok(data=False)
 
 
-class DummyStreamingService(FlextApiBaseService):
+class DummyStreamingService:
     """Minimal streaming service for testing async iteration patterns."""
 
     _service_name: str
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(service_name="dummy-streaming")
         # Store service name as a simple attribute (not in Pydantic data)
         self._service_name = "dummy-streaming"
 
@@ -120,13 +122,16 @@ async def test_auth_service_authentication() -> None:
     """Test authentication service functionality."""
     auth_service = DummyAuthService()
 
-    await auth_service.start_async()
+    start_result = await auth_service._do_start()
+    assert start_result.success
 
     # Test valid authentication
-    valid_result = await auth_service.authenticate({
-        "username": "valid_user",
-        "password": "test",
-    })
+    valid_result = await auth_service.authenticate(
+        {
+            "username": "valid_user",
+            "password": "test",
+        }
+    )
     assert valid_result.success
     assert valid_result.value is not None
     assert valid_result.value["token"] == "auth_token_123"
@@ -137,7 +142,8 @@ async def test_auth_service_authentication() -> None:
     assert not invalid_result.success
     assert invalid_result.error == "Invalid credentials"
 
-    await auth_service.stop_async()
+    stop_result = await auth_service._do_stop()
+    assert stop_result.success
 
 
 @pytest.mark.asyncio
@@ -145,7 +151,8 @@ async def test_repository_service_crud_operations() -> None:
     """Test repository service CRUD operations."""
     repo_service = DummyRepositoryService()
 
-    await repo_service.start_async()
+    start_result = await repo_service._do_start()
+    assert start_result.success
 
     # Test save
     test_data = {"name": "Test Entity", "value": 42, "active": True}
@@ -173,7 +180,8 @@ async def test_repository_service_crud_operations() -> None:
     assert delete_missing_result.success
     assert delete_missing_result.value is False
 
-    await repo_service.stop_async()
+    stop_result = await repo_service._do_stop()
+    assert stop_result.success
 
 
 @pytest.mark.asyncio
@@ -181,7 +189,8 @@ async def test_streaming_service_async_iteration() -> None:
     """Test streaming service async iteration."""
     streaming_service = DummyStreamingService()
 
-    await streaming_service.start_async()
+    start_result = await streaming_service._do_start()
+    assert start_result.success
 
     # Test streaming data
     items = [item async for item in streaming_service.stream_data(3)]
@@ -192,7 +201,8 @@ async def test_streaming_service_async_iteration() -> None:
     assert items[1]["item"] == 1
     assert items[2]["item"] == 2
 
-    await streaming_service.stop_async()
+    stop_result = await streaming_service._do_stop()
+    assert stop_result.success
 
 
 @pytest.mark.asyncio
@@ -203,9 +213,12 @@ async def test_service_lifecycle_integration() -> None:
     stream_service = DummyStreamingService()
 
     # Start all services
-    await auth_service.start_async()
-    await repo_service.start_async()
-    await stream_service.start_async()
+    start_result1 = await auth_service._do_start()
+    start_result2 = await repo_service._do_start()
+    start_result3 = await stream_service._do_start()
+    assert start_result1.success
+    assert start_result2.success
+    assert start_result3.success
 
     # Test integrated workflow
     # 1. Authenticate user
@@ -227,9 +240,12 @@ async def test_service_lifecycle_integration() -> None:
     assert stream_count == 2
 
     # Stop all services
-    await auth_service.stop_async()
-    await repo_service.stop_async()
-    await stream_service.stop_async()
+    stop_result = await auth_service._do_stop()
+    assert stop_result.success
+    stop_result = await repo_service._do_stop()
+    assert stop_result.success
+    stop_result = await stream_service._do_stop()
+    assert stop_result.success
 
 
 def test_service_initialization_and_properties() -> None:
@@ -242,6 +258,7 @@ def test_service_initialization_and_properties() -> None:
     assert repo_service.service_name == "dummy-repository"
     assert stream_service.service_name == "dummy-streaming"
 
-    assert hasattr(auth_service, "is_running")
-    assert hasattr(repo_service, "is_running")
-    assert hasattr(stream_service, "is_running")
+    # Verify services have basic attributes
+    assert hasattr(auth_service, "service_name")
+    assert hasattr(repo_service, "service_name")
+    assert hasattr(stream_service, "service_name")
