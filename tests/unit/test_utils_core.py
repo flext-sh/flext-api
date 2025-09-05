@@ -1,31 +1,29 @@
 """Tests for flext_api.utils module - REAL classes only.
 
 Tests using only REAL classes:
-- FlextUtils
-
-Copyright (c) 2025 Flext. All rights reserved.
+- Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-from flext_api import FlextUtils
+from flext_api import FlextApiUtilities
 from tests.conftest import assert_flext_result_failure, assert_flext_result_success
 
 
-class TestFlextUtils:
-    """Test FlextUtils REAL class functionality."""
+class TestFlextApiUtilities:
+    """Test REAL FlextApiUtilities class functionality."""
 
     def test_utils_class_exists(self) -> None:
-        """Test FlextUtils class exists and is accessible."""
-        assert FlextUtils is not None
-        assert hasattr(FlextUtils, "build_error_response")
-        assert hasattr(FlextUtils, "build_paginated_response")
-        assert hasattr(FlextUtils, "validate_url")
+        """Test class exists and is accessible."""
+        assert FlextApiUtilities is not None
+        assert hasattr(FlextApiUtilities, "build_error_response")
+        assert hasattr(FlextApiUtilities, "build_paginated_response")
+        assert hasattr(FlextApiUtilities, "validate_url")
 
     def test_build_error_response_basic(self) -> None:
         """Test basic error response building."""
-        response = FlextUtils.build_error_response("Something went wrong")
+        response = FlextApiUtilities.build_error_response("Something went wrong")
 
         assert isinstance(response, dict)
         assert response["success"] is False
@@ -35,7 +33,7 @@ class TestFlextUtils:
 
     def test_build_error_response_custom_status(self) -> None:
         """Test error response with custom status code."""
-        response = FlextUtils.build_error_response("Validation failed", 400)
+        response = FlextApiUtilities.build_error_response("Validation failed", 400)
 
         assert isinstance(response, dict)
         assert response["success"] is False
@@ -45,7 +43,7 @@ class TestFlextUtils:
 
     def test_build_error_response_empty_error(self) -> None:
         """Test error response with empty error message."""
-        response = FlextUtils.build_error_response("")
+        response = FlextApiUtilities.build_error_response("")
 
         assert isinstance(response, dict)
         assert response["success"] is False
@@ -57,7 +55,7 @@ class TestFlextUtils:
         """Test basic paginated response building."""
         data = [{"id": 1, "name": "item1"}, {"id": 2, "name": "item2"}]
 
-        response = FlextUtils.build_paginated_response(data, total=100)
+        response = FlextApiUtilities.build_paginated_response(data, total=100)
 
         assert isinstance(response, dict)
         assert response["success"] is True
@@ -75,7 +73,7 @@ class TestFlextUtils:
         """Test paginated response with custom pagination."""
         data = [{"id": 1}, {"id": 2}, {"id": 3}]
 
-        response = FlextUtils.build_paginated_response(
+        response = FlextApiUtilities.build_paginated_response(
             data=data, total=25, page=3, page_size=10
         )
 
@@ -91,7 +89,7 @@ class TestFlextUtils:
 
     def test_build_paginated_response_empty_data(self) -> None:
         """Test paginated response with empty data."""
-        response = FlextUtils.build_paginated_response([], total=0)
+        response = FlextApiUtilities.build_paginated_response([], total=0)
 
         assert isinstance(response, dict)
         assert response["success"] is True
@@ -107,7 +105,9 @@ class TestFlextUtils:
         """Test paginated response with single page."""
         data = [{"id": 1}, {"id": 2}]
 
-        response = FlextUtils.build_paginated_response(data, total=2, page_size=10)
+        response = FlextApiUtilities.build_paginated_response(
+            data, total=2, page_size=10
+        )
 
         pagination = response["pagination"]
         assert pagination["total"] == 2
@@ -119,7 +119,7 @@ class TestFlextUtils:
         """Test paginated response with large dataset."""
         data = [{"id": i} for i in range(20)]
 
-        response = FlextUtils.build_paginated_response(
+        response = FlextApiUtilities.build_paginated_response(
             data=data, total=1000, page=5, page_size=20
         )
 
@@ -130,7 +130,7 @@ class TestFlextUtils:
         assert pagination["pages"] == 50  # 1000/20 = 50
 
     def test_validate_url_success_http(self) -> None:
-        """Test URL validation success with HTTP."""
+        """Test validation success with HTTP."""
         urls = [
             "http://localhost",
             "http://localhost:8000",
@@ -139,12 +139,12 @@ class TestFlextUtils:
         ]
 
         for url in urls:
-            result = FlextUtils.validate_url(url)
+            result = FlextApiUtilities.validate_url(url)
             assert_flext_result_success(result)
-            assert result.data == url
+            assert result.value == url
 
     def test_validate_url_success_https(self) -> None:
-        """Test URL validation success with HTTPS."""
+        """Test validation success with HTTPS."""
         urls = [
             "https://localhost",
             "https://localhost:8443",
@@ -154,30 +154,30 @@ class TestFlextUtils:
         ]
 
         for url in urls:
-            result = FlextUtils.validate_url(url)
+            result = FlextApiUtilities.validate_url(url)
             assert_flext_result_success(result)
-            assert result.data == url
+            assert result.value == url
 
     def test_validate_url_empty_string_failure(self) -> None:
-        """Test URL validation failure with empty string."""
-        result = FlextUtils.validate_url("")
-        assert_flext_result_failure(result, "Invalid URL format")
+        """Test validation failure with empty string."""
+        result = FlextApiUtilities.validate_url("")
+        assert_flext_result_failure(result, "Invalid format")
 
     def test_validate_url_none_failure(self) -> None:
-        """Test URL validation failure with None."""
-        result = FlextUtils.validate_url(None)
-        assert_flext_result_failure(result, "Invalid URL format")
+        """Test validation failure with None."""
+        result = FlextApiUtilities.validate_url(None)
+        assert_flext_result_failure(result, "Invalid format")
 
     def test_validate_url_non_string_failure(self) -> None:
-        """Test URL validation failure with non-string input."""
+        """Test validation failure with non-string input."""
         invalid_inputs = [123, [], {}, True]
 
         for invalid_input in invalid_inputs:
-            result = FlextUtils.validate_url(invalid_input)
-            assert_flext_result_failure(result, "Invalid URL format")
+            result = FlextApiUtilities.validate_url(invalid_input)
+            assert_flext_result_failure(result, "Invalid format")
 
     def test_validate_url_invalid_scheme_failure(self) -> None:
-        """Test URL validation failure with invalid schemes."""
+        """Test validation failure with invalid schemes."""
         invalid_urls = [
             "ftp://example.com",
             "file:///path/to/file",
@@ -188,13 +188,11 @@ class TestFlextUtils:
         ]
 
         for url in invalid_urls:
-            result = FlextUtils.validate_url(url)
-            assert_flext_result_failure(
-                result, "URL must start with http:// or https://"
-            )
+            result = FlextApiUtilities.validate_url(url)
+            assert_flext_result_failure(result, "must start with http:// or https://")
 
     def test_validate_url_whitespace_failure(self) -> None:
-        """Test URL validation failure with whitespace."""
+        """Test validation failure with whitespace."""
         # These should fail because they don't start with http/https or are just whitespace
         failing_urls = [
             "   ",  # just spaces
@@ -205,76 +203,84 @@ class TestFlextUtils:
         ]
 
         for url in failing_urls:
-            result = FlextUtils.validate_url(url)
+            result = FlextApiUtilities.validate_url(url)
             assert not result.success, f"Expected {url!r} to fail validation"
 
         # This one actually passes because it does start with http://
-        result = FlextUtils.validate_url("http://example.com ")
+        result = FlextApiUtilities.validate_url("http://example.com ")
         assert result.success  # Trailing space is allowed by current implementation
 
     def test_utils_static_methods(self) -> None:
         """Test that utility methods are static."""
         # Should be able to call without instance
-        response = FlextUtils.build_error_response("test")
+        response = FlextApiUtilities.build_error_response("test")
         assert isinstance(response, dict)
 
-        paginated = FlextUtils.build_paginated_response([], 0)
+        paginated = FlextApiUtilities.build_paginated_response([], 0)
         assert isinstance(paginated, dict)
 
-        url_result = FlextUtils.validate_url("http://example.com")
+        url_result = FlextApiUtilities.validate_url("http://example.com")
         assert url_result.success
 
     def test_utils_type_validation(self) -> None:
         """Test utils is proper type."""
-        assert FlextUtils is not None
-        assert type(FlextUtils).__name__ == "type"
+        assert FlextApiUtilities is not None
+        assert type(FlextApiUtilities).__name__ == "type"
 
         # Should be a class, not an instance
-        assert hasattr(FlextUtils, "__name__")
-        assert FlextUtils.__name__ == "FlextUtils"
+        assert hasattr(FlextApiUtilities, "__name__")
+        assert FlextApiUtilities.__name__ == "FlextApiUtilities"
 
     def test_build_error_response_different_error_types(self) -> None:
         """Test error response with different error message types."""
         # String error
-        response1 = FlextUtils.build_error_response("String error")
+        response1 = FlextApiUtilities.build_error_response("String error")
         assert response1["error"] == "String error"
 
         # Should handle conversion to string for other types
         # Note: method signature expects str, so we test normal usage
-        response2 = FlextUtils.build_error_response("123")
+        response2 = FlextApiUtilities.build_error_response("123")
         assert response2["error"] == "123"
 
     def test_pagination_edge_cases(self) -> None:
         """Test pagination calculation edge cases."""
         # Exact division
-        response1 = FlextUtils.build_paginated_response([], total=100, page_size=50)
+        response1 = FlextApiUtilities.build_paginated_response(
+            [], total=100, page_size=50
+        )
         assert response1["pagination"]["pages"] == 2
 
         # Division with remainder
-        response2 = FlextUtils.build_paginated_response([], total=101, page_size=50)
+        response2 = FlextApiUtilities.build_paginated_response(
+            [], total=101, page_size=50
+        )
         assert response2["pagination"]["pages"] == 3
 
         # Single item
-        response3 = FlextUtils.build_paginated_response([], total=1, page_size=50)
+        response3 = FlextApiUtilities.build_paginated_response(
+            [], total=1, page_size=50
+        )
         assert response3["pagination"]["pages"] == 1
 
         # Page size = total
-        response4 = FlextUtils.build_paginated_response([], total=25, page_size=25)
+        response4 = FlextApiUtilities.build_paginated_response(
+            [], total=25, page_size=25
+        )
         assert response4["pagination"]["pages"] == 1
 
     def test_utils_consistency(self) -> None:
         """Test utilities produce consistent results."""
         # Multiple calls should produce same result
-        error1 = FlextUtils.build_error_response("test", 400)
-        error2 = FlextUtils.build_error_response("test", 400)
+        error1 = FlextApiUtilities.build_error_response("test", 400)
+        error2 = FlextApiUtilities.build_error_response("test", 400)
 
         assert error1 == error2
         assert error1 is not error2  # Different objects
 
         # Pagination consistency
         data = [1, 2, 3]
-        page1 = FlextUtils.build_paginated_response(data, 100, 1, 10)
-        page2 = FlextUtils.build_paginated_response(data, 100, 1, 10)
+        page1 = FlextApiUtilities.build_paginated_response(data, 100, 1, 10)
+        page2 = FlextApiUtilities.build_paginated_response(data, 100, 1, 10)
 
         assert page1 == page2
         assert page1 is not page2  # Different objects

@@ -128,7 +128,7 @@ class FlextApiExceptions(FlextExceptions):
                             key: value
                             for key, value in deprecated_kwargs.items()
                             if value is not None
-                        }
+                        },
                     )
 
                     config = HttpErrorConfig(
@@ -148,7 +148,9 @@ class FlextApiExceptions(FlextExceptions):
                     url_from_kwargs = deprecated_kwargs.get("url")
                     method_from_kwargs = deprecated_kwargs.get("method")
                     url_final = str(url_from_kwargs) if url_from_kwargs else url
-                    method_final = str(method_from_kwargs) if method_from_kwargs else method
+                    method_final = (
+                        str(method_from_kwargs) if method_from_kwargs else method
+                    )
                     headers_from_kwargs = deprecated_kwargs.get("headers")
                     context_from_kwargs = deprecated_kwargs.get("context", {})
 
@@ -165,13 +167,15 @@ class FlextApiExceptions(FlextExceptions):
                             if key
                             not in {"message", "url", "method", "headers", "context"}
                             and value is not None
-                        }
+                        },
                     )
 
                     # Type-safe header conversion
                     safe_headers = headers
                     if headers_from_kwargs and isinstance(headers_from_kwargs, dict):
-                        safe_headers = {str(k): str(v) for k, v in headers_from_kwargs.items()}
+                        safe_headers = {
+                            str(k): str(v) for k, v in headers_from_kwargs.items()
+                        }
 
                     config = HttpErrorConfig(
                         message=message,
@@ -272,7 +276,11 @@ class FlextApiExceptions(FlextExceptions):
         for spec in cls._HTTP_EXCEPTION_SPECS:
             name, base_class, status_code, default_message, docstring = spec
             exception_class = cls._HttpExceptionFactory.create_exception_class(
-                name, base_class, status_code, default_message, docstring
+                name,
+                base_class,
+                status_code,
+                default_message,
+                docstring,
             )
             setattr(cls, name, exception_class)
 
@@ -379,6 +387,11 @@ class FlextApiExceptions(FlextExceptions):
 FlextApiExceptions._generate_http_exceptions()
 
 # Backward compatibility aliases - add after generation
-FlextApiExceptions.AuthenticationError = FlextApiExceptions.UnauthorizedError  # type: ignore[attr-defined]
+FlextApiExceptions.AuthenticationError = getattr(
+    FlextApiExceptions, "UnauthorizedError"
+)
 
-__all__ = ["FlextApiExceptions"]
+# Main FlextErrors alias
+FlextErrors = FlextApiExceptions
+
+__all__ = ["FlextApiExceptions", "FlextErrors"]

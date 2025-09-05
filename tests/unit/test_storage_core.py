@@ -43,7 +43,7 @@ class TestFlextAPIStorage:
         result = storage.execute()
         assert_flext_result_success(result)
 
-        data = result.data
+        data = result.value
         assert isinstance(data, dict)
         assert data["service"] == "FlextApiStorage"
         assert data["max_size"] == 100
@@ -62,7 +62,7 @@ class TestFlextAPIStorage:
         get_result = storage.get("test_key")
         assert_flext_result_success(get_result)
 
-        assert get_result.data == {"data": "test_value"}
+        assert get_result.value == {"data": "test_value"}
 
     def test_set_empty_key_failure(self) -> None:
         """Test set with empty key fails."""
@@ -129,7 +129,7 @@ class TestFlextAPIStorage:
         # Verify cache is empty
         size_result = storage.size()
         assert_flext_result_success(size_result)
-        assert size_result.data == 0
+        assert size_result.value == 0
 
     def test_keys_operation(self) -> None:
         """Test getting all keys."""
@@ -138,7 +138,7 @@ class TestFlextAPIStorage:
         # Initially empty
         keys_result = storage.keys()
         assert_flext_result_success(keys_result)
-        assert keys_result.data == []
+        assert keys_result.value == []
 
         # Add some values
         storage.set("key1", "value1")
@@ -148,7 +148,7 @@ class TestFlextAPIStorage:
         keys_result = storage.keys()
         assert_flext_result_success(keys_result)
 
-        keys = keys_result.data
+        keys = keys_result.value
         assert isinstance(keys, list)
         assert len(keys) == 2
         assert "key1" in keys
@@ -161,7 +161,7 @@ class TestFlextAPIStorage:
         # Initially empty
         size_result = storage.size()
         assert_flext_result_success(size_result)
-        assert size_result.data == 0
+        assert size_result.value == 0
 
         # Add values
         storage.set("key1", "value1")
@@ -170,7 +170,7 @@ class TestFlextAPIStorage:
         # Check size
         size_result = storage.size()
         assert_flext_result_success(size_result)
-        assert size_result.data == 2
+        assert size_result.value == 2
 
     def test_ttl_functionality(self) -> None:
         """Test TTL (time-to-live) functionality."""
@@ -212,7 +212,7 @@ class TestFlextAPIStorage:
         result = storage.serialize_data(test_data)
         assert_flext_result_success(result)
 
-        json_str = result.data
+        json_str = result.value
         assert isinstance(json_str, str)
         assert '"name":"test"' in json_str
         assert '"value":123' in json_str
@@ -227,7 +227,7 @@ class TestFlextAPIStorage:
         result = storage.deserialize_data(json_str)
         assert_flext_result_success(result)
 
-        data = result.data
+        data = result.value
         assert isinstance(data, dict)
         assert data["name"] == "test"
         assert data["value"] == 123

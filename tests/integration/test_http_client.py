@@ -33,7 +33,7 @@ class TestHttpClientIntegration:
             }
         )
         assert client_result.success
-        client = client_result.data
+        client = client_result.value
 
         try:
             # For integration test, verify client configuration
@@ -49,8 +49,12 @@ class TestHttpClientIntegration:
         """Test client with caching and retry plugins."""
         # Create plugins using real plugin system
         plugins_class = FlextApiPlugins()
-        caching_plugin = plugins_class.CachingPlugin(ttl=60, max_size=100)
-        retry_plugin = plugins_class.RetryPlugin(max_retries=2, backoff_factor=1.0)
+        caching_plugin = plugins_class.CachingPlugin.model_validate(
+            {"ttl": 60, "max_size": 100}
+        )
+        retry_plugin = plugins_class.RetryPlugin.model_validate(
+            {"max_retries": 2, "backoff_factor": 1.0}
+        )
 
         # Create client using modern API
         api = create_flext_api()
@@ -58,7 +62,7 @@ class TestHttpClientIntegration:
             {"base_url": "https://httpbin.org", "timeout": 10.0}
         )
         assert client_result.success
-        client = client_result.data
+        client = client_result.value
 
         try:
             # Test plugins are properly configured
@@ -86,7 +90,7 @@ class TestHttpClientIntegration:
             }
         )
         assert client_result.success
-        client = client_result.data
+        client = client_result.value
 
         try:
             # Verify client configuration for POST requests
@@ -109,7 +113,7 @@ class TestHttpClientIntegration:
             }
         )
         assert client_result.success
-        client = client_result.data
+        client = client_result.value
 
         # Test basic client operations
         try:

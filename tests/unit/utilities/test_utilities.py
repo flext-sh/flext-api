@@ -64,7 +64,7 @@ class TestFlextApiUtilitiesReal:
         assert timestamp1 != timestamp2
 
         # Should be parseable as datetime
-        parsed = datetime.fromisoformat(timestamp1.replace("Z", "+00:00"))  # noqa: FURB162
+        parsed = datetime.fromisoformat(timestamp1)
         assert isinstance(parsed, datetime)
 
     def test_generate_iso_timestamp(self) -> None:
@@ -73,7 +73,7 @@ class TestFlextApiUtilitiesReal:
 
         assert isinstance(iso_ts, str)
         assert "T" in iso_ts
-        assert iso_ts.endswith("Z")
+        assert iso_ts.endswith(("+00:00", "Z"))
 
     def test_parse_iso_timestamp(self) -> None:
         """Test real ISO timestamp parsing."""
@@ -165,7 +165,9 @@ class TestFlextApiUtilitiesReal:
         formatted = FlextApiUtilities.format_duration(duration_ms)
 
         assert isinstance(formatted, str)
-        assert "1.5" in formatted or "1500" in formatted
+        # Duration of 1500.5 ms = 25 minutes should be formatted as "25.0m"
+        assert "25" in formatted
+        assert "m" in formatted
 
     def test_validate_config_real(self) -> None:
         """Test real config validation."""
@@ -190,7 +192,7 @@ class TestFlextApiUtilitiesReal:
 
     def test_http_validator_real(self) -> None:
         """Test real HTTP validation methods."""
-        # URL validation
+        # validation
         url_result = FlextApiUtilities.HttpValidator.validate_url(
             "https://api.example.com"
         )

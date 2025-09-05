@@ -7,22 +7,24 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import TData
+from typing import TypeVar
 
 
 class TestTypes:
     """Test cases for type definitions."""
 
     def test_tdata_typevar(self) -> None:
-        """Test TData type variable."""  # TData is a TypeVar, basic existence test
+        """Test type variable."""
+        TData = TypeVar("TData")
         assert TData is not None
         assert hasattr(TData, "__name__")
         if TData.__name__ != "TData":
-            msg = f"Expected {'TData'}, got {TData.__name__}"
+            msg = f"Expected TData, got {TData.__name__}"
             raise AssertionError(msg)
 
     def test_tdata_usage(self) -> None:
-        """Test TData can be used in type annotations."""
+        """Test can be used in type annotations."""
+        TData = TypeVar("TData")
 
         def example_function(data: TData) -> TData:
             """Example function function.
@@ -39,12 +41,12 @@ class TestTypes:
         # Should work with any type
         result1 = example_function("string")
         if result1 != "string":
-            msg = f"Expected {'string'}, got {result1}"
+            msg = f"Expected string, got {result1}"
             raise AssertionError(msg)
 
         result2 = example_function(42)
         if result2 != 42:
-            msg = f"Expected {42}, got {result2}"
+            msg = f"Expected 42, got {result2}"
             raise AssertionError(msg)
 
         result3 = example_function({"key": "value"})

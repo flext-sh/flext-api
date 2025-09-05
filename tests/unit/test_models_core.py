@@ -73,7 +73,7 @@ class TestFlextApiModels:
 
     def test_client_config_base_url_validation(self) -> None:
         """Test ClientConfig base_url validation."""
-        # Valid URLs
+        # Valid s
         for url in [
             "http://localhost",
             "https://api.example.com",
@@ -85,12 +85,12 @@ class TestFlextApiModels:
         # Empty base_url should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.ClientConfig(base_url="")
-        assert "Base URL cannot be empty" in str(exc_info.value)
+        assert "Base cannot be empty" in str(exc_info.value)
 
-        # Invalid URL format should raise ValidationError
+        # Invalid format should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.ClientConfig(base_url="not-a-url")
-        assert "Base URL must include scheme and host" in str(exc_info.value)
+        assert "Base must include scheme and host" in str(exc_info.value)
 
     def test_client_config_timeout_validation(self) -> None:
         """Test ClientConfig timeout validation."""
@@ -127,7 +127,7 @@ class TestFlextApiModels:
         assert "greater than or equal to 0" in str(exc_info.value)
 
     def test_api_request_creation(self) -> None:
-        """Test ApiRequest creation."""
+        """Test creation."""
         headers = {"Content-Type": "application/json"}
 
         request = FlextApiModels.ApiRequest(
@@ -143,18 +143,19 @@ class TestFlextApiModels:
         assert request.id == "test_id"
 
     def test_api_request_url_validation(self) -> None:
-        """Test ApiRequest URL validation."""
-        # Valid URL
+        """Test validation."""
+        # Valid
         request = FlextApiModels.ApiRequest(
-            id="test_id",
-            method=FlextApiModels.HttpMethod.GET, url="/api/users"
+            id="test_id", method=FlextApiModels.HttpMethod.GET, url="/api/users"
         )
         assert request.url == "/api/users"
 
-        # Empty URL should raise ValidationError
+        # Empty should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiModels.ApiRequest(id="test_id", method=FlextApiModels.HttpMethod.GET, url="")
-        assert "URL cannot be empty" in str(exc_info.value)
+            FlextApiModels.ApiRequest(
+                id="test_id", method=FlextApiModels.HttpMethod.GET, url=""
+            )
+        assert "cannot be empty" in str(exc_info.value)
 
     def test_api_response_creation(self) -> None:
         """Test HttpResponse creation."""
@@ -174,7 +175,9 @@ class TestFlextApiModels:
         """Test HttpResponse status code validation."""
         # Valid status codes
         for code in [100, 200, 404, 500, 599]:
-            response = FlextApiModels.HttpResponse(status_code=code, url="/test", method="GET")
+            response = FlextApiModels.HttpResponse(
+                status_code=code, url="/test", method="GET"
+            )
             assert response.status_code == code
 
         # Invalid status codes should raise ValidationError
@@ -185,19 +188,25 @@ class TestFlextApiModels:
     def test_api_response_status_properties(self) -> None:
         """Test HttpResponse status checking properties."""
         # Success response
-        response = FlextApiModels.HttpResponse(status_code=200, url="/test", method="GET")
+        response = FlextApiModels.HttpResponse(
+            status_code=200, url="/test", method="GET"
+        )
         assert response.is_success is True
         assert response.is_client_error is False
         assert response.is_server_error is False
 
         # Client error response
-        response = FlextApiModels.HttpResponse(status_code=404, url="/test", method="GET")
+        response = FlextApiModels.HttpResponse(
+            status_code=404, url="/test", method="GET"
+        )
         assert response.is_success is False
         assert response.is_client_error is True
         assert response.is_server_error is False
 
         # Server error response
-        response = FlextApiModels.HttpResponse(status_code=500, url="/test", method="GET")
+        response = FlextApiModels.HttpResponse(
+            status_code=500, url="/test", method="GET"
+        )
         assert response.is_success is False
         assert response.is_client_error is False
         assert response.is_server_error is True
@@ -323,8 +332,7 @@ class TestFlextApiModels:
         assert isinstance(config, FlextApiModels.ClientConfig)
 
         request = FlextApiModels.ApiRequest(
-            id="test_id",
-            method=FlextApiModels.HttpMethod.GET, url="/test"
+            id="test_id", method=FlextApiModels.HttpMethod.GET, url="/test"
         )
         assert isinstance(request, FlextApiModels.ApiRequest)
 

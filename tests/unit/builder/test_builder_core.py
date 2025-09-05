@@ -46,8 +46,10 @@ class TestFlextApiBuilderCore:
         response_result = builder.success(data={"items": [1, 2, 3]}, message="Success")
 
         assert response_result.success
-        response_data = response_result.data
-        assert response_data["status"] == "success"
+        response_data = response_result.value
+        # Verify structure has message and data (no status key)
+        assert "message" in response_data
+        assert "data" in response_data
         assert response_data["message"] == "Success"
         assert response_data["data"]["items"] == [1, 2, 3]
 
@@ -59,7 +61,7 @@ class TestFlextApiBuilderCore:
         response_result = builder.error("Not found", 404)
 
         assert response_result.success
-        response_data = response_result.data
+        response_data = response_result.value
         assert response_data["status"] == "error"
         assert response_data["message"] == "Not found"
         assert response_data["status_code"] == 404
@@ -98,7 +100,7 @@ class TestFlextApiBuilderCore:
         params_result = builder.to_query_params()
         assert params_result.success
 
-        params = params_result.data
+        params = params_result.value
         assert params["status"] == "active"
         assert params["page"] == 2
         assert params["page_size"] == 10

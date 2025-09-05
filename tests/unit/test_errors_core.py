@@ -50,7 +50,9 @@ class TestFlextApiExceptions:
 
     def test_flext_api_error_custom_code(self) -> None:
         """Test FlextApiError with custom code."""
-        error = FlextApiExceptions.FlextApiError("Custom error", error_code="CUSTOM_ERROR")
+        error = FlextApiExceptions.FlextApiError(
+            "Custom error", error_code="CUSTOM_ERROR"
+        )
 
         assert "Custom error" in str(error)
         assert error.status_code == 500  # default
@@ -60,7 +62,10 @@ class TestFlextApiExceptions:
         context = {"user_id": 123, "action": "create"}
 
         error = FlextApiExceptions.FlextApiError(
-            "Action failed", status_code=422, error_code="ACTION_FAILED", context=context
+            "Action failed",
+            status_code=422,
+            error_code="ACTION_FAILED",
+            context=context,
         )
 
         assert "Action failed" in str(error)

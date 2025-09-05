@@ -157,7 +157,7 @@ def test_client_response_structure() -> None:
 
     assert response.status_code == 200
     assert response.headers["Content-Type"] == "application/json"
-    assert response.data == {"message": "success"}
+    assert response.value == {"message": "success"}
     assert response.elapsed_time == 0.5
 
 

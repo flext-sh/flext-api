@@ -187,7 +187,10 @@ def example_utilities_usage() -> None:
 
     # Error response building
     error_response_result = FlextApiUtilities.ResponseBuilder.build_error_response(
-        "Invalid request parameters", 400, error_code="VALIDATION_ERROR", details={"field": "email", "issue": "format"}
+        "Invalid request parameters",
+        400,
+        error_code="VALIDATION_ERROR",
+        details={"field": "email", "issue": "format"},
     )
 
     if error_response_result.success:

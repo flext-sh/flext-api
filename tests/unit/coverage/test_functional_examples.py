@@ -14,7 +14,7 @@ import pytest
 from flext_api import (
     FlextApiModels,
     FlextApiStorage,
-    FlextApiURL,
+    FlextApiUtilities,
     StorageBackend,
     StorageConfig,
     create_flext_api,
@@ -34,15 +34,15 @@ class TestFunctionalExamples:
         api = create_flext_api()
         assert api is not None
 
-        # Step 2: Create URL
-        url_result = FlextApiURL("https://api.example.com/v1/workflow")
-        assert True
+        # Step 2: Create URL for API endpoint
+        url = "https://api.example.com/v1/workflow"
+        assert url is not None
 
         # Step 3: Create request
-        request = FlextApiModels.FlextApiModels.ApiRequest(
+        request = FlextApiModels.ApiRequest(
             id="workflow_test",
-            method="POST",
-            url=url_result.root if hasattr(url_result, "raw_url") else str(url_result),
+            method=FlextApiModels.HttpMethod.POST,
+            url=url,
         )
         assert request.id == "workflow_test"
 
@@ -65,7 +65,7 @@ class TestFunctionalExamples:
         )
 
         assert client_result.success is True
-        client = client_result.data
+        client = client_result.value
         assert client is not None
         assert hasattr(client, "base_url")
 
@@ -144,8 +144,8 @@ class TestFunctionalExamples:
         assert error_result.success is False
 
     def test_url_validation_examples(self) -> None:
-        """Test URL validation examples."""
-        # Valid URLs
+        """Test validation examples."""
+        # Valid s
         valid_urls = [
             "https://api.example.com",
             "https://api.example.com/v1",
@@ -154,30 +154,27 @@ class TestFunctionalExamples:
         ]
 
         for url in valid_urls:
-            result = FlextApiURL(url)
-            assert result is not None, f"URL should be valid: {url}"
+            result = FlextApiUtilities.validate_url(url)
+            assert result.success, f"should be valid: {url}"
 
-        # Invalid URLs - should raise exceptions
+        # Invalid s - should raise exceptions
         invalid_urls = ["", "not-a-url", "://missing-scheme"]
 
         for url in invalid_urls:
-            try:
-                result = FlextApiURL(url)
-                raise AssertionError(f"URL should be invalid: {url}")
-            except ValueError:
-                pass  # Expected behavior
+            result = FlextApiUtilities.validate_url(url)
+            assert not result.success, f"should be invalid: {url}"
 
     def test_api_request_examples(self) -> None:
         """Test API request creation examples."""
         # Example 1: GET request
-        get_request = FlextApiModels.ApiRequest(
+        get_request = FlextApiModels.FlextApiModels(
             id="get_example", method="GET", url="https://api.example.com/v1/users"
         )
         assert get_request.method == "GET"
         assert "users" in get_request.url
 
         # Example 2: POST request with headers
-        post_request = FlextApiModels.ApiRequest(
+        post_request = FlextApiModels.FlextApiModels(
             id="post_example",
             method="POST",
             url="https://api.example.com/v1/users",
@@ -190,7 +187,7 @@ class TestFunctionalExamples:
         assert post_request.headers["Content-Type"] == "application/json"
 
         # Example 3: PUT request
-        put_request = FlextApiModels.ApiRequest(
+        put_request = FlextApiModels.FlextApiModels(
             id="put_example", method="PUT", url="https://api.example.com/v1/users/123"
         )
         assert put_request.method == "PUT"
@@ -230,14 +227,12 @@ class TestFunctionalExamples:
         )
         storage = FlextApiStorage(storage_config)
 
-        # Step 2: Create URL and request
-        url_result = FlextApiURL("https://api.example.com/v1/integration")
-        assert True
+        # Step 2: Create and request
+        url_result = FlextApiUtilities.validate_url("https://api.example.com/v1/integration")
+        assert url_result.success, "Should be valid integration URL"
 
-        url_string = (
-            url_result.root if hasattr(url_result, "raw_url") else str(url_result)
-        )
-        request = FlextApiModels.ApiRequest(
+        url_string = "https://api.example.com/v1/integration"
+        request = FlextApiModels.FlextApiModels(
             id="integration_workflow",
             method="POST",
             url=url_string,
@@ -270,13 +265,9 @@ class TestFunctionalExamples:
 
     def test_error_handling_examples(self) -> None:
         """Test error handling examples."""
-        # Example 1: Invalid URL handling - should raise exception
-        try:
-            FlextApiURL("")
-            msg = "Should have raised ValueError"
-            raise AssertionError(msg)
-        except ValueError:
-            pass  # Expected behavior
+        # Example 1: Invalid URL validation - should return failed result
+        url_result = FlextApiUtilities.validate_url("")
+        assert not url_result.success, "Empty URL should be invalid"
 
         # Example 2: Response error building
         api = create_flext_api()
@@ -292,7 +283,7 @@ class TestFunctionalExamples:
         base_url = "https://api.example.com/v1/bulk"
 
         for i in range(EXPECTED_BULK_SIZE):
-            request = FlextApiModels.ApiRequest(
+            request = FlextApiModels.FlextApiModels(
                 id=f"bulk_request_{i}",
                 method="POST",
                 url=f"{base_url}/item/{i}",

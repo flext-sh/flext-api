@@ -34,7 +34,9 @@ class FlextApiClientProtocol(Protocol):
 
     @abstractmethod
     async def get(
-        self, path: str, params: dict[str, object] | None = None
+        self,
+        path: str,
+        params: dict[str, object] | None = None,
     ) -> FlextResult[object]:
         """Execute HTTP GET request with type-safe response."""
         ...
@@ -61,7 +63,9 @@ class FlextApiClientProtocol(Protocol):
 
     @abstractmethod
     async def delete(
-        self, path: str, params: dict[str, object] | None = None
+        self,
+        path: str,
+        params: dict[str, object] | None = None,
     ) -> FlextResult[object]:
         """Execute HTTP DELETE request with type-safe response."""
         ...
@@ -92,7 +96,8 @@ class FlextApiManagerProtocol(Protocol):
 
     @abstractmethod
     def create_client(
-        self, config: dict[str, object]
+        self,
+        config: dict[str, object],
     ) -> FlextResult[FlextApiClientProtocol]:
         """Create HTTP client with configuration."""
         ...
@@ -152,14 +157,17 @@ class FlextApiDiscovery(Protocol):
 
     @abstractmethod
     async def get_entity_schema(
-        self, entity_name: str
+        self,
+        entity_name: str,
     ) -> FlextResult[dict[str, object]]:
         """Get schema for a specific entity."""
         ...
 
     @abstractmethod
     async def get_entity_data(
-        self, entity_name: str, **kwargs: object
+        self,
+        entity_name: str,
+        **kwargs: object,
     ) -> FlextResult[dict[str, object] | list[dict[str, object]]]:
         """Get data for a specific entity with query parameters."""
         ...
@@ -241,12 +249,12 @@ class FlextApiFactory:
                 max_retries=max_retries,
             )
             return FlextResult[FlextApiClientProtocol].ok(
-                cast("FlextApiClientProtocol", client)
+                cast("FlextApiClientProtocol", client),
             )
 
         except Exception as e:
             return FlextResult[FlextApiClientProtocol].fail(
-                f"Failed to create client: {e}"
+                f"Failed to create client: {e}",
             )
 
     @staticmethod
@@ -275,12 +283,12 @@ class FlextApiFactory:
                 default_base_url=default_base_url or "http://localhost:8000",
             )
             return FlextResult[FlextApiManagerProtocol].ok(
-                cast("FlextApiManagerProtocol", manager)
+                cast("FlextApiManagerProtocol", manager),
             )
 
         except Exception as e:
             return FlextResult[FlextApiManagerProtocol].fail(
-                f"Failed to create manager: {e}"
+                f"Failed to create manager: {e}",
             )
 
 

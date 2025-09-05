@@ -67,9 +67,9 @@ def test_models_functionality() -> None:
 
 
 def test_url_value_object() -> None:
-    """Test URL value object functionality."""
-    # Test URL creation
-    result = URL("https://api.example.com/v1/test")
+    """Test value object functionality."""
+    # Test creation
+    result = "https://api.example.com/v1/test"
     assert result.success is True
     assert result.value is not None
 
@@ -175,7 +175,7 @@ def test_client_creation_integration() -> None:
     )
 
     assert client_result.success is True
-    client = client_result.data
+    client = client_result.value
     assert client is not None
     assert hasattr(client, "base_url")
 

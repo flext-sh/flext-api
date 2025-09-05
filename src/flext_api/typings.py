@@ -264,11 +264,13 @@ class FlextApiTypes(FlextTypes):
         ]
 
         AfterResponseCallback = Callable[
-            [object, dict[str, str], int], Awaitable[FlextResult[object]]
+            [object, dict[str, str], int],
+            Awaitable[FlextResult[object]],
         ]
 
         ErrorHandlerCallback = Callable[
-            [Exception, str, str], Awaitable[FlextResult[object]]
+            [Exception, str, str],
+            Awaitable[FlextResult[object]],
         ]
 
         # Direct plugin management

@@ -128,7 +128,7 @@ class TestFlextApiConfig:
 
     def test_config_base_url_validation(self) -> None:
         """Test base_url validation."""
-        # Valid URLs
+        # Valid s
         for url in [
             "http://localhost:8000",
             "https://api.example.com",
@@ -140,12 +140,12 @@ class TestFlextApiConfig:
         # Empty base_url should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
             FlextApiConfig(base_url="")
-        assert "Base URL cannot be empty" in str(exc_info.value)
+        assert "Base cannot be empty" in str(exc_info.value)
 
         # Invalid protocol should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
             FlextApiConfig(base_url="ftp://example.com")
-        assert "Base URL must start with http:// or https://" in str(exc_info.value)
+        assert "Base must start with http:// or https://" in str(exc_info.value)
 
     def test_get_server_config(self) -> None:
         """Test getting server configuration."""
@@ -154,7 +154,7 @@ class TestFlextApiConfig:
         result = config.get_server_config()
         assert_flext_result_success(result)
 
-        server_config = result.data
+        server_config = result.value
         assert isinstance(server_config, dict)
         assert server_config["host"] == "0.0.0.0"
         assert server_config["port"] == 8080
@@ -170,7 +170,7 @@ class TestFlextApiConfig:
         result = config.get_client_config()
         assert_flext_result_success(result)
 
-        client_config = result.data
+        client_config = result.value
         assert isinstance(client_config, dict)
         assert client_config["base_url"] == "https://api.test.com"
         assert client_config["timeout"] == 45.0
@@ -187,7 +187,7 @@ class TestFlextApiConfig:
         result = config.get_cors_config()
         assert_flext_result_success(result)
 
-        cors_config = result.data
+        cors_config = result.value
         assert isinstance(cors_config, dict)
         assert cors_config["allow_origins"] == [
             "https://example.com",

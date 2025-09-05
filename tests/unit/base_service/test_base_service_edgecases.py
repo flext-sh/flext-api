@@ -1,16 +1,17 @@
-"""Edge case tests for `FlextApiBaseService` lifecycle and health check."""
+"""Edge case tests for `` lifecycle and health check."""
 
 from __future__ import annotations
 
 from flext_core import FlextResult
 
-from flext_api import FlextApiBaseService
+from flext_api import FlextApiModels
 
 
-class BrokenStartService(FlextApiBaseService):
+class BrokenStartService(FlextApiModels.ApiBaseService):
     """Service whose start fails to exercise error path."""
 
-    service_name: str = "broken"
+    def __init__(self) -> None:
+        super().__init__(service_name="broken")
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Required execute method for FlextDomainService."""
@@ -25,7 +26,7 @@ class BrokenStartService(FlextApiBaseService):
         return FlextResult[None].ok(None)
 
 
-class BrokenStopService(FlextApiBaseService):
+class BrokenStopService:
     """Service whose stop fails to exercise warning path."""
 
     service_name: str = "broken-stop"
@@ -71,7 +72,7 @@ def test_stop_warning_path() -> None:
 def test_health_check_failure() -> None:
     """Test service information and operation handling."""
 
-    class BrokenHealth(FlextApiBaseService):
+    class BrokenHealth:
         service_name: str = "broken-health"
 
         def execute(self) -> FlextResult[dict[str, object]]:
