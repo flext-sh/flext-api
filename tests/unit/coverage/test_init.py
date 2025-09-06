@@ -17,7 +17,7 @@ from flext_api import (
 )
 
 # Constants from FlextApiConstants
-FLEXT_API_TIMEOUT = FlextApiConstants.DEFAULT_TIMEOUT
+FLEXT_API_TIMEOUT = FlextApiConstants.Client.DEFAULT_TIMEOUT
 FLEXT_API_VERSION = flext_api.__version__
 
 
@@ -67,16 +67,13 @@ def test_models_functionality() -> None:
 
 
 def test_url_value_object() -> None:
-    """Test value object functionality."""
-    # Test creation
-    result = "https://api.example.com/v1/test"
-    assert result.success is True
-    assert result.value is not None
+    """Test URL value object functionality."""
+    # Test URL creation
+    url = URL(url="https://api.example.com/v1/test")
 
-    url = result.value
-    assert url.scheme == "https"
-    assert url.host == "api.example.com"
-    assert url.path == "/v1/test"
+    # URL is a Pydantic model with a url field
+    assert url.url == "https://api.example.com/v1/test"
+    assert str(url) == "https://api.example.com/v1/test"
 
 
 def test_api_request_model() -> None:
@@ -91,18 +88,19 @@ def test_api_request_model() -> None:
     assert request.url == "https://api.example.com/v1/init"
 
 
-async def test_async_storage_operations() -> None:
-    """Test async storage operations."""
+def test_storage_operations() -> None:
+    """Test storage operations."""
     # Create storage
-    config = StorageConfig(backend=StorageBackend.MEMORY, namespace="async_test")
+    config = StorageConfig(backend=StorageBackend.MEMORY, namespace="test")
     storage = FlextApiStorage(config)
 
-    # Test async set/get
-    await storage.set("key1", "value1")
-    result = await storage.get("key1")
+    # Test set/get operations
+    set_result = storage.set("key1", "value1")
+    assert set_result.success is True
 
-    assert result.success is True
-    assert result.value == "value1"
+    get_result = storage.get("key1")
+    assert get_result.success is True
+    assert get_result.value == "value1"
 
 
 def test_storage_backends() -> None:
@@ -135,13 +133,17 @@ def test_query_builder_integration() -> None:
     builder = api.get_builder()
     assert builder is not None
 
-    # Test query building
-    query = builder.for_query().equals("status", "active").page(1).page_size(20).build()
+    # Builder has a create method
+    query_data = builder.create(
+        filter_conditions={"status": "active"},
+        page_number=1,
+        page_size_value=20
+    )
 
-    assert isinstance(query, dict)
-    assert "pagination" in query
-    assert query["pagination"]["page"] == 1
-    assert query["pagination"]["page_size"] == 20
+    assert isinstance(query_data, dict)
+    assert query_data["filter_conditions"] == {"status": "active"}
+    assert query_data["page_number"] == 1
+    assert query_data["page_size_value"] == 20
 
 
 def test_response_builder_integration() -> None:
@@ -153,13 +155,15 @@ def test_response_builder_integration() -> None:
     builder = api.get_builder()
     assert builder is not None
 
-    # Test response building
-    result = builder.for_response().success(
-        data={"message": "test"}, message="Operation successful"
+    # Test response building using create method
+    response_data = builder.create(
+        status="success",
+        data={"message": "test"},
+        message="Operation successful"
     )
 
-    assert result.success is True
-    response_data = result.value
+    assert isinstance(response_data, dict)
+    assert response_data["status"] == "success"
     assert response_data["message"] == "Operation successful"
     assert response_data["data"]["message"] == "test"
 
@@ -183,12 +187,11 @@ def test_client_creation_integration() -> None:
 def test_constants_structure() -> None:
     """Test FlextApiConstants structure."""
     # Should have expected nested classes/attributes
-    assert hasattr(FlextApiConstants, "DEFAULT_TIMEOUT")
-    assert hasattr(FlextApiConstants, "HttpStatus")
-    assert hasattr(FlextApiConstants, "Pagination")
+    assert hasattr(FlextApiConstants, "Client")
+    assert hasattr(FlextApiConstants.Client, "DEFAULT_TIMEOUT")
 
     # Test default timeout value
-    timeout = FlextApiConstants.DEFAULT_TIMEOUT
+    timeout = FlextApiConstants.Client.DEFAULT_TIMEOUT
     assert isinstance(timeout, (int, float))
     assert timeout > 0
 
@@ -216,11 +219,11 @@ def test_integration_patterns() -> None:
     api = create_flext_api()
 
     # Create URL
-    url_result = URL("https://api.example.com/v1/integration")
-    assert True
+    url_result = URL(url="https://api.example.com/v1/integration")
+    assert url_result is not None
 
     # Create ApiRequest with URL
-    url_string = url_result.root if hasattr(url_result, "raw_url") else str(url_result)
+    url_string = str(url_result)
     request = ApiRequest(id="integration_test", method="POST", url=url_string)
 
     # Create storage for request

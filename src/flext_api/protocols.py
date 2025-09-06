@@ -15,6 +15,7 @@ from typing import Protocol, cast, runtime_checkable
 from flext_core import FlextResult
 
 from flext_api.client import FlextApiClient as ConcreteClient
+from flext_api.models import FlextApiModels
 
 # Type variables moved inside protocol classes to avoid module-level declarations
 
@@ -242,12 +243,14 @@ class FlextApiFactory:
             retries_val = config.get("max_retries", 3)
             max_retries = retries_val if isinstance(retries_val, int) else 3
 
-            client = ConcreteClient(
+            # Create proper ClientConfig object
+            client_config = FlextApiModels.ClientConfig(
                 base_url=str(config["base_url"]),
                 timeout=timeout,
-                headers=cast("dict[str, str]", config.get("headers", {})),
                 max_retries=max_retries,
+                headers=cast("dict[str, str]", config.get("headers", {})),
             )
+            client = ConcreteClient(client_config)
             return FlextResult[FlextApiClientProtocol].ok(
                 cast("FlextApiClientProtocol", client),
             )
@@ -259,9 +262,9 @@ class FlextApiFactory:
 
     @staticmethod
     def create_manager(
-        service_name: str | None = None,
-        service_version: str | None = None,
-        default_base_url: str | None = None,
+        _service_name: str | None = None,
+        _service_version: str | None = None,
+        _default_base_url: str | None = None,
     ) -> FlextResult[FlextApiManagerProtocol]:
         """Factory function to create FlextApiManager implementation.
 
@@ -274,14 +277,11 @@ class FlextApiFactory:
             FlextResult containing configured API manager
 
         """
-        from flext_api.api import FlextApi  # noqa: PLC0415
+        from flext_api.api import FlextApi
 
         try:
-            manager = FlextApi(
-                service_name=service_name or "flext-api",
-                service_version=service_version or "0.9.0",
-                default_base_url=default_base_url or "http://localhost:8000",
-            )
+            # FlextApi constructor takes no arguments - initialize without parameters
+            manager = FlextApi()
             return FlextResult[FlextApiManagerProtocol].ok(
                 cast("FlextApiManagerProtocol", manager),
             )

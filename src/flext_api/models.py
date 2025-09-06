@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from enum import StrEnum
+from typing import ClassVar
 
 from flext_core import FlextModels, flext_logger
 from pydantic import BaseModel, Field, field_validator
@@ -42,7 +43,7 @@ class FlextApiModels(FlextModels):
     class ClientConfig(BaseModel):
         """HTTP client configuration model."""
 
-        base_url: str = Field(..., description="Base URL for HTTP requests")
+        base_url: str = Field(default="", description="Base URL for HTTP requests")
         timeout: float = Field(default=30.0, description="Request timeout in seconds")
         max_retries: int = Field(default=3, description="Maximum retry attempts")
         headers: dict[str, str] = Field(
@@ -53,11 +54,8 @@ class FlextApiModels(FlextModels):
         @classmethod
         def validate_base_url(cls, v: str) -> str:
             """Validate base URL format."""
-            if not v:
-                msg = "Base cannot be empty"
-                raise ValueError(msg)
-            if not (v.startswith(("http://", "https://"))):
-                msg = "Base must include scheme and host"
+            if v and not (v.startswith(("http://", "https://"))):
+                msg = "Base must include scheme and host if provided"
                 raise ValueError(msg)
             return v
 
@@ -118,25 +116,33 @@ class FlextApiModels(FlextModels):
         @classmethod
         def validate_status_code(cls, v: int) -> int:
             """Validate HTTP status code range."""
-            if v < 100 or v >= 600:
-                msg = "Status code must be between 100 and 599"
+            min_code = 100
+            max_code = 600
+            if v < min_code or v >= max_code:
+                msg = f"Status code must be between {min_code} and {max_code - 1}"
                 raise ValueError(msg)
             return v
 
         @property
         def is_success(self) -> bool:
             """Check if response indicates success (2xx)."""
-            return 200 <= self.status_code < 300
+            success_min = 200
+            success_max = 300
+            return success_min <= self.status_code < success_max
 
         @property
         def is_client_error(self) -> bool:
             """Check if response indicates client error (4xx)."""
-            return 400 <= self.status_code < 500
+            client_error_min = 400
+            client_error_max = 500
+            return client_error_min <= self.status_code < client_error_max
 
         @property
         def is_server_error(self) -> bool:
             """Check if response indicates server error (5xx)."""
-            return 500 <= self.status_code < 600
+            server_error_min = 500
+            server_error_max = 600
+            return server_error_min <= self.status_code < server_error_max
 
     class HttpQuery(BaseModel):
         """HTTP query builder model."""
@@ -161,8 +167,10 @@ class FlextApiModels(FlextModels):
         @classmethod
         def validate_page_size(cls, v: int) -> int:
             """Validate page size is within bounds."""
-            if v < 1 or v > 1000:
-                msg = "Page size must be between 1 and 1000"
+            min_size = 1
+            max_size = 1000
+            if v < min_size or v > max_size:
+                msg = f"Page size must be between {min_size} and {max_size}"
                 raise ValueError(msg)
             return v
 
@@ -177,9 +185,19 @@ class FlextApiModels(FlextModels):
         """Storage configuration model."""
 
         backend: str = Field(default="memory", description="Storage backend type")
+        namespace: str = Field(default="default", description="Storage namespace")
         host: str = Field(default="localhost", description="Storage host")
         port: int = Field(default=6379, description="Storage port")
         db: int = Field(default=0, description="Database number")
+        file_path: str | None = Field(
+            default=None, description="File path for FILE backend"
+        )
+        redis_url: str | None = Field(
+            default=None, description="Redis URL for REDIS backend"
+        )
+        database_url: str | None = Field(
+            default=None, description="Database URL for DATABASE backend"
+        )
         options: dict[str, object] = Field(
             default_factory=dict, description="Additional options"
         )
@@ -187,11 +205,33 @@ class FlextApiModels(FlextModels):
     class ApiBaseService:
         """Base service class for API services."""
 
-        def __init__(
-            self, service_name: str = "default-service", **kwargs: object
-        ) -> None:
+        def __init__(self, service_name: str = "default-service") -> None:
             """Initialize base service."""
             self._service_name = service_name
+
+    class ApiResponse(BaseModel):
+        """API response model."""
+
+        status_code: int = Field(..., description="HTTP status code")
+        data: dict[str, object] | None = Field(
+            default=None, description="Response data"
+        )
+        message: str | None = Field(default=None, description="Response message")
+        headers: dict[str, str] = Field(
+            default_factory=dict, description="Response headers"
+        )
+        success: bool = Field(..., description="Success flag")
+
+        @field_validator("status_code")
+        @classmethod
+        def validate_status_code(cls, v: int) -> int:
+            """Validate HTTP status code range."""
+            min_code = 100
+            max_code = 599
+            if not min_code <= v <= max_code:
+                msg = f"Status code must be between {min_code}-{max_code}"
+                raise ValueError(msg)
+            return v
 
     @classmethod
     def for_query(cls) -> FlextApiModels.HttpQuery:
@@ -210,10 +250,10 @@ class FlextApiConstants:
         DEFAULT_TIMEOUT = 30
         MAX_RETRIES = 3
         RETRY_BACKOFF_FACTOR = 0.5
-    
+
     class Network:
         """Network constants."""
-        
+
         MAX_PORT = 65535
         MIN_PORT = 1
 
@@ -228,16 +268,24 @@ class FlextApiConstants:
         SERVER_ERROR_MAX = 599
 
     # Error code lists
-    CLIENT_ERROR_CODES = [400, 401, 403, 404, 409, 422, 429]
-    SERVER_ERROR_CODES = [500, 502, 503, 504]
+    CLIENT_ERROR_CODES: ClassVar[list[int]] = [400, 401, 403, 404, 409, 422, 429]
+    SERVER_ERROR_CODES: ClassVar[list[int]] = [500, 502, 503, 504]
 
     # Rate limiting
-    RATE_LIMIT_REQUESTS = 1000
-    RATE_LIMIT_WINDOW = 3600
+    RATE_LIMIT_REQUESTS: ClassVar[int] = 1000
+    RATE_LIMIT_WINDOW: ClassVar[int] = 3600
 
     # Response templates
-    SUCCESS_RESPONSE = {"status": "success", "data": None, "error": None}
-    ERROR_RESPONSE = {"status": "error", "data": None, "error": None}
+    SUCCESS_RESPONSE: ClassVar[dict[str, object]] = {
+        "status": "success",
+        "data": None,
+        "error": None,
+    }
+    ERROR_RESPONSE: ClassVar[dict[str, object]] = {
+        "status": "error",
+        "data": None,
+        "error": None,
+    }
 
 
 class FlextApiEndpoints:
@@ -294,28 +342,21 @@ class FlextApiFieldType:
 
 class StorageBackend:
     """Storage backend types for FlextApiStorage."""
-    
+
     MEMORY = "memory"
     FILE = "file"
     REDIS = "redis"
     DATABASE = "database"
 
 
-class StorageConfig(BaseModel):
-    """Storage configuration for FlextApiStorage."""
-    
-    backend: str = Field(default=StorageBackend.MEMORY, description="Storage backend type")
-    namespace: str = Field(default="default", description="Storage namespace")
-    file_path: str | None = Field(default=None, description="File path for FILE backend")
-    redis_url: str | None = Field(default=None, description="Redis URL for REDIS backend") 
-    database_url: str | None = Field(default=None, description="Database URL for DATABASE backend")
+# Removed duplicate - use FlextApiModels.StorageConfig instead
 
 
 class URL(BaseModel):
     """URL value object for FlextAPI."""
-    
+
     url: str = Field(..., description="URL string", min_length=1)
-    
+
     def __str__(self) -> str:
         """Return URL as string."""
         return self.url
@@ -358,27 +399,24 @@ class FlextApiStatus:
 MAX_PORT = FlextApiConstants.Network.MAX_PORT
 MIN_PORT = FlextApiConstants.Network.MIN_PORT
 
-# Add direct access aliases for FlextApiConstants
-FlextApiConstants.DEFAULT_TIMEOUT = FlextApiConstants.Client.DEFAULT_TIMEOUT
-FlextApiConstants.MAX_RETRIES = FlextApiConstants.Client.MAX_RETRIES
-
 # Backward compatibility aliases for models
 ApiRequest = FlextApiModels.ApiRequest
 HttpResponse = FlextApiModels.HttpResponse
 ClientConfig = FlextApiModels.ClientConfig
+StorageConfig = FlextApiModels.StorageConfig
 
 __all__ = [
+    "MAX_PORT",
+    "MIN_PORT",
+    "URL",
+    "ApiRequest",
+    "ClientConfig",
     "FlextApiConstants",
     "FlextApiEndpoints",
     "FlextApiFieldType",
     "FlextApiModels",
     "FlextApiStatus",
+    "HttpResponse",
     "StorageBackend",
     "StorageConfig",
-    "URL",
-    "MAX_PORT",
-    "MIN_PORT",
-    "ApiRequest",
-    "HttpResponse",
-    "ClientConfig",
 ]
