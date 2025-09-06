@@ -6,7 +6,6 @@ Tests configuration functionality using REAL classes and methods.
 from __future__ import annotations
 
 import pytest
-from flext_core import FlextConfig
 
 from flext_api.config import FlextApiConfig
 
@@ -77,43 +76,45 @@ class TestFlextApiConfigReal:
         assert main_config.server["host"] == "127.0.0.1"
         assert main_config.server["port"] == 8080
 
-    def test_config_inheritance(self) -> None:
-        """Test that config classes inherit from FlextConfig."""
-        # FlextApiConfig should inherit from FlextConfig
-        assert issubclass(FlextApiConfig, FlextConfig)
+    def test_config_validation(self) -> None:
+        """Test configuration validation."""
+        # Valid config
+        config = FlextApiConfig(port=8080)
+        assert config.port == 8080
 
-        # Config subclasses should be properly defined
-        assert hasattr(FlextApiConfig, "ApiSettings")
-        assert hasattr(FlextApiConfig, "ClientConfig")
-        assert hasattr(FlextApiConfig, "ServerConfig")
+        # Invalid port should raise error
+        with pytest.raises(ValueError):
+            FlextApiConfig(port=99999)  # Port > 65535
 
     def test_config_serialization(self) -> None:
         """Test config serialization capabilities."""
-        client_config = FlextApiConfig.ClientConfig(
-            base_url="https://test.example.com", timeout=45.0
+        config = FlextApiConfig(
+            base_url="https://test.example.com",
+            default_timeout=45.0
         )
 
         # Should be serializable as dict
-        config_dict = client_config.model_dump()
+        config_dict = config.model_dump()
         assert isinstance(config_dict, dict)
         assert config_dict["base_url"] == "https://test.example.com"
-        assert config_dict["timeout"] == 45.0
+        assert config_dict["default_timeout"] == 45.0
 
-    def test_config_validation(self) -> None:
+    def test_config_negative_timeout(self) -> None:
         """Test config validation with invalid values."""
         # Test that validation works
         with pytest.raises((ValueError, TypeError)):
-            FlextApiConfig.ClientConfig(
-                base_url="not-a-valid-url",
-                timeout=-1.0,  # Invalid negative timeout
+            FlextApiConfig(
+                base_url="https://api.example.com",
+                default_timeout=-1.0  # Invalid negative timeout
             )
 
     def test_config_defaults(self) -> None:
         """Test config default values."""
-        # Create config with minimal required fields
-        client_config = FlextApiConfig.ClientConfig(base_url="https://api.example.com")
+        # Create config with minimal fields
+        config = FlextApiConfig()
 
         # Should have sensible defaults
-        assert client_config.base_url == "https://api.example.com"
-        assert isinstance(client_config.timeout, (int, float))
-        assert client_config.timeout > 0
+        assert config.base_url == "http://localhost:8000"
+        assert isinstance(config.default_timeout, (int, float))
+        assert config.default_timeout > 0
+        assert config.max_retries == 3

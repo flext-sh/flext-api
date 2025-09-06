@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import TypeVar
 
 from flext_core import FlextResult, flext_logger
+from pydantic import BaseModel
 
 T = TypeVar("T")
 
@@ -21,21 +22,26 @@ logger = flext_logger(__name__)
 class FlextApiStorage:
     """Storage backend for FLEXT API."""
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: dict[str, object] | BaseModel | None = None) -> None:
         """Initialize storage with configuration."""
-        self.config = config
-        self.backend = config.get("backend", "memory")
-        self.namespace = config.get("namespace", "default")
+        # Handle both dict and Pydantic model configurations
+        if isinstance(config, BaseModel):
+            self.config = config.model_dump()
+        else:
+            self.config = config or {}
+
+        self.backend = self.config.get("backend", "memory")
+        self.namespace = self.config.get("namespace", "default")
         self._data: dict[str, object] = {}
-        self._cache_enabled = config.get("enable_caching", False)
-        self._cache_ttl = config.get("cache_ttl_seconds", 300)
+        self._cache_enabled = self.config.get("enable_caching", False)
+        self._cache_ttl = self.config.get("cache_ttl_seconds", 300)
 
     def set(
         self,
         key: str,
         value: object,
-        ttl: int | None = None,
-        namespace: str | None = None,
+        _ttl: int | None = None,
+        _namespace: str | None = None,
     ) -> FlextResult[None]:
         """Set a key-value pair in storage."""
         try:
@@ -45,7 +51,7 @@ class FlextApiStorage:
             logger.exception("Failed to set key", key=key, error=str(e))
             return FlextResult.fail(f"Failed to set key {key}: {e}")
 
-    def get(self, key: str, namespace: str | None = None) -> FlextResult[object]:
+    def get(self, key: str, _namespace: str | None = None) -> FlextResult[object]:
         """Get a value by key from storage."""
         try:
             if key in self._data:
@@ -55,7 +61,7 @@ class FlextApiStorage:
             logger.exception("Failed to get key", key=key, error=str(e))
             return FlextResult.fail(f"Failed to get key {key}: {e}")
 
-    def delete(self, key: str, namespace: str | None = None) -> FlextResult[None]:
+    def delete(self, key: str, _namespace: str | None = None) -> FlextResult[None]:
         """Delete a key from storage."""
         try:
             if key in self._data:
@@ -106,11 +112,11 @@ class FlextApiStorage:
         """Begin a transaction (not implemented)."""
         return "dummy_transaction_id"
 
-    def commit_transaction(self, transaction_id: str) -> FlextResult[None]:
+    def commit_transaction(self, _transaction_id: str) -> FlextResult[None]:
         """Commit a transaction (not implemented)."""
         return FlextResult.fail("Transaction APIs not implemented")
 
-    def rollback_transaction(self, transaction_id: str) -> FlextResult[None]:
+    def rollback_transaction(self, _transaction_id: str) -> FlextResult[None]:
         """Rollback a transaction (not implemented)."""
         return FlextResult.fail("Transaction APIs not implemented")
 

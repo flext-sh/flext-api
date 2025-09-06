@@ -108,7 +108,7 @@ class FlextApiExceptions(FlextExceptions):
         ) -> type[FlextApiExceptions.HttpError]:
             """Create exception class using Factory Pattern and Template Method."""
 
-            def __init__(  # noqa: N807
+            def __init__(
                 self: FlextApiExceptions.HttpError,
                 message_or_config: str | HttpErrorConfig | None = None,
                 url: str | None = None,

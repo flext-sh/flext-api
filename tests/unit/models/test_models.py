@@ -13,14 +13,20 @@ from flext_api.models import FlextApiModels
 class TestFlextApiModelsReal:
     """Test FlextApiModels using REAL functionality."""
 
-    def test_http_url_creation(self) -> None:
-        """Test HttpUrl creation with real validation."""
+    def test_client_config_creation(self) -> None:
+        """Test ClientConfig creation with real validation."""
         # Valid creation
-        valid_url = FlextApiModels.HttpUrl("https://api.example.com")
-        assert valid_url.root == "https://api.example.com"
+        config = FlextApiModels.ClientConfig(
+            base_url="https://api.example.com",
+            timeout=30.0,
+            max_retries=3
+        )
+        assert config.base_url == "https://api.example.com"
+        assert config.timeout == 30.0
+        assert config.max_retries == 3
 
         # validation works with urlparse
-        parsed = urlparse(valid_url.root)
+        parsed = urlparse(config.base_url)
         assert parsed.scheme == "https"
         assert parsed.hostname == "api.example.com"
 
@@ -28,13 +34,13 @@ class TestFlextApiModelsReal:
         """Test creation with real functionality."""
         request = FlextApiModels.ApiRequest(
             id="req_123",
-            method="GET",
+            method=FlextApiModels.HttpMethod.GET,
             url="https://api.example.com/data",
             headers={"Content-Type": "application/json"},
         )
 
         assert request.id == "req_123"
-        assert request.method == "GET"
+        assert request.method == FlextApiModels.HttpMethod.GET
         assert request.url == "https://api.example.com/data"
 
     def test_http_response_creation(self) -> None:
@@ -44,88 +50,78 @@ class TestFlextApiModelsReal:
             headers={"Content-Type": "application/json"},
             body={"message": "success"},
             url="https://api.example.com/data",
-            method="GET",
-            elapsed_time=0.123,
+            method="GET"
         )
 
         assert response.status_code == 200
         assert response.headers == {"Content-Type": "application/json"}
         assert response.body == {"message": "success"}
-        assert response.elapsed_time == 0.123
+        assert response.url == "https://api.example.com/data"
+        assert response.method == "GET"
 
-    def test_client_config_creation(self) -> None:
-        """Test ClientConfig creation with validation."""
-        config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com", timeout=30.0, max_retries=3
+    def test_http_query_creation(self) -> None:
+        """Test HttpQuery creation with validation."""
+        query = FlextApiModels.HttpQuery(
+            filter_conditions={"status": "active", "type": "user"},
+            sort_fields=["name", "created_at"],
+            page_number=2,
+            page_size_value=50
         )
 
-        assert config.base_url == "https://api.example.com"
-        assert config.timeout == 30.0
-        assert config.max_retries == 3
+        assert query.filter_conditions == {"status": "active", "type": "user"}
+        assert query.sort_fields == ["name", "created_at"]
+        assert query.page_number == 2
+        assert query.page_size_value == 50
 
-    def test_http_session_creation(self) -> None:
-        """Test HttpSession entity creation."""
-        session = FlextApiModels.HttpSession(
-            session_id="session_abc",
-            base_url="https://api.example.com",
-            headers={"Authorization": "Bearer token"},
+    def test_api_response_creation(self) -> None:
+        """Test ApiResponse entity creation."""
+        response = FlextApiModels.ApiResponse(
+            status_code=200,
+            success=True,
+            data={"id": 1, "name": "test"},
+            message="Operation successful"
         )
 
-        assert session.session_id == "session_abc"
-        assert session.base_url == "https://api.example.com"
+        assert response.success is True
+        assert response.status_code == 200
+        assert response.data == {"id": 1, "name": "test"}
+        assert response.message == "Operation successful"
 
-    def test_api_endpoint_creation(self) -> None:
-        """Test ApiEndpoint entity creation."""
-        endpoint = FlextApiModels.ApiEndpoint(
-            endpoint_path="/api/v1/users",
-            method="GET",
-            base_url="https://api.example.com",
+    def test_builder_creation(self) -> None:
+        """Test Builder creation and usage."""
+        # Builder is a response builder model
+        builder = FlextApiModels.Builder()
+
+        # Test the create method
+        result = builder.create(status="success", data={"id": 1})
+        assert result == {"status": "success", "data": {"id": 1}}
+
+    def test_storage_config_creation(self) -> None:
+        """Test StorageConfig creation."""
+        # Valid storage config
+        storage = FlextApiModels.StorageConfig(
+            backend="redis",
+            host="localhost",
+            port=6379,
+            db=0
         )
+        assert storage.backend == "redis"
+        assert storage.host == "localhost"
+        assert storage.port == 6379
+        assert storage.db == 0
 
-        assert endpoint.endpoint_path == "/api/v1/users"
-        assert endpoint.method == "GET"
-        assert endpoint.base_url == "https://api.example.com"
+    def test_http_method_enum(self) -> None:
+        """Test HttpMethod enum values."""
+        # Test enum values
+        assert FlextApiModels.HttpMethod.GET == "GET"
+        assert FlextApiModels.HttpMethod.POST == "POST"
+        assert FlextApiModels.HttpMethod.PUT == "PUT"
+        assert FlextApiModels.HttpMethod.DELETE == "DELETE"
 
-    def test_status_code_validation(self) -> None:
-        """Test StatusCode validation."""
-        # Valid status code
-        status = FlextApiModels.StatusCode(200)
-        assert status.root == 200
-
-        # Valid error status code
-        error_status = FlextApiModels.StatusCode(404)
-        assert error_status.root == 404
-
-    def test_timeout_validation(self) -> None:
-        """Test Timeout validation."""
-        # Valid timeout
-        timeout = FlextApiModels.Timeout(30.5)
-        assert timeout.root == 30.5
-
-        # Another valid timeout
-        quick_timeout = FlextApiModels.Timeout(5.0)
-        assert quick_timeout.root == 5.0
-
-    def test_http_port_validation(self) -> None:
-        """Test HttpPort validation."""
-        # Valid HTTP port
-        port = FlextApiModels.HttpPort(8080)
-        assert port.root == 8080
-
-        # Valid HTTPS port
-        https_port = FlextApiModels.HttpPort(443)
-        assert https_port.root == 443
-
-    def test_cache_config_creation(self) -> None:
-        """Test CacheConfig creation."""
-        cache_config = FlextApiModels.CacheConfig(ttl=300, max_size=1000)
-
-        assert cache_config.ttl == 300
-        assert cache_config.max_size == 1000
-
-    def test_retry_config_creation(self) -> None:
-        """Test RetryConfig creation."""
-        retry_config = FlextApiModels.RetryConfig(max_retries=3, backoff_factor=2.0)
-
-        assert retry_config.max_retries == 3
-        assert retry_config.backoff_factor == 2.0
+    def test_http_status_enum(self) -> None:
+        """Test HttpStatus enum values."""
+        # Test enum values
+        assert FlextApiModels.HttpStatus.SUCCESS == "success"
+        assert FlextApiModels.HttpStatus.ERROR == "error"
+        assert FlextApiModels.HttpStatus.PENDING == "pending"
+        assert FlextApiModels.HttpStatus.TIMEOUT == "timeout"

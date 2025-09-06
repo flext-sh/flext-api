@@ -41,7 +41,18 @@ class FlextApi:
     def create_client(self, config: dict[str, object]) -> FlextResult[FlextApiClient]:
         """Create HTTP client with configuration."""
         try:
-            client_config = FlextApiModels.ClientConfig(**config)
+            # Manual construction to avoid type issues with unpacking
+            base_url_val = config.get("base_url", "https://api.flext.io")
+            timeout_val = config.get("timeout", 30.0)
+            retries_val = config.get("max_retries", 3)
+            headers_val = config.get("headers", {})
+
+            client_config = FlextApiModels.ClientConfig(
+                base_url=str(base_url_val),
+                timeout=float(timeout_val) if isinstance(timeout_val, (int, float, str)) else 30.0,
+                max_retries=int(retries_val) if isinstance(retries_val, (int, str)) else 3,
+                headers=dict(headers_val) if isinstance(headers_val, dict) else {}
+            )
             client = FlextApiClient(client_config)
             self._current_client = client
             return FlextResult.ok(client)
@@ -80,4 +91,4 @@ def create_client(config: dict[str, object]) -> FlextResult[FlextApiClient]:
     return api.create_client(config)
 
 
-__all__ = ["FlextApi", "create_flext_api", "create_client"]
+__all__ = ["FlextApi", "create_client", "create_flext_api"]
