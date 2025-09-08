@@ -564,7 +564,7 @@ class HttpUrl(FlextModels.Value):
 
 class HttpHeaders(FlextModels.Value):
     """HTTP headers value object"""
-    headers: dict[str, str]
+    headers: FlextTypes.Core.Headers
 
     def __post_init__(self):
         # Normalize header names to lowercase

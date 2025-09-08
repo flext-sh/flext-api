@@ -90,8 +90,8 @@ class ApiRequest(FlextModels.Entity):
 
     method: str
     url: str
-    headers: dict[str, str]
-    payload: dict[str, object] | None = None
+    headers: FlextTypes.Core.Headers
+    payload: FlextTypes.Core.Dict | None = None
     timeout: float = 30.0
     retry_count: int = 0
     max_retries: int = 3
@@ -215,7 +215,7 @@ class FlextApi(FlextService):
                 error_code="SERVICE_STOP_FAILED"
             )
 
-    def health_check(self) -> FlextResult[dict[str, object]]:
+    def health_check(self) -> FlextResult[FlextTypes.Core.Dict]:
         """✅ Health check returning FlextResult."""
         health_data = {
             "service": "FlextApi",

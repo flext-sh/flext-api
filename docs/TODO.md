@@ -85,7 +85,7 @@ class FlextApi(FlextService):
         """Stop service following FlextService contract."""
         return FlextResult[None].ok(None)
 
-    def health_check(self) -> FlextResult[dict[str, object]]:
+    def health_check(self) -> FlextResult[FlextTypes.Core.Dict]:
         """Health check following FlextService contract."""
         return FlextResult[None].ok({"status": "healthy"})
 ```
@@ -225,7 +225,7 @@ class ApiRequest(FlextModels.Entity):
     """Rich domain entity for API requests."""
     method: str
     url: str
-    headers: dict[str, str]
+    headers: FlextTypes.Core.Headers
     timeout: float = 30.0
 
     def validate_domain_rules(self) -> FlextResult[None]:

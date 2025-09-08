@@ -96,7 +96,7 @@ class FlextApiClient:
 class FlextApiClientConfig:
     base_url: str
     timeout: float = 30.0
-    headers: dict[str, str] = None
+    headers: FlextTypes.Core.Headers = None
     auth: tuple[str, str] = None
     verify_ssl: bool = True
     follow_redirects: bool = True
@@ -111,7 +111,7 @@ class FlextApiClientConfig:
 ```python
 class FlextApiClientResponse:
     status_code: int
-    headers: dict[str, str]
+    headers: FlextTypes.Core.Headers
     content: bytes
 
     def json(self) -> dict
@@ -126,8 +126,8 @@ class FlextApiClientResponse:
 class FlextApiClientRequest:
     method: FlextApiClientMethod
     url: str
-    headers: dict[str, str]
-    params: dict[str, object]
+    headers: FlextTypes.Core.Headers
+    params: FlextTypes.Core.Dict
     json: dict = None
     data: object = None
     timeout: float = None
@@ -188,7 +188,7 @@ class FlextApiCachingPlugin(FlextApiPlugin):
         self,
         ttl: int = 300,
         max_size: int = 1000,
-        include_headers: list[str] = None
+        include_headers: FlextTypes.Core.StringList = None
     )
 ```
 
@@ -283,7 +283,7 @@ class FlextApiQueryBuilder:
 
     # Utilitários
     def reset(self) -> FlextApiQueryBuilder
-    def build(self) -> dict[str, object]
+    def build(self) -> FlextTypes.Core.Dict
 ```
 
 ### FlextApiQueryOperator
@@ -341,7 +341,7 @@ class FlextApiResponseBuilder:
     def with_debug_info(self, info: dict) -> FlextApiResponseBuilder
 
     def reset(self) -> FlextApiResponseBuilder
-    def build(self) -> dict[str, object]
+    def build(self) -> FlextTypes.Core.Dict
 ```
 
 ## FastAPI Builder
@@ -363,9 +363,9 @@ class FlextApiBuilder:
 
     def with_cors(
         self,
-        origins: list[str] = None,
-        allow_methods: list[str] = None,
-        allow_headers: list[str] = None
+        origins: FlextTypes.Core.StringList = None,
+        allow_methods: FlextTypes.Core.StringList = None,
+        allow_headers: FlextTypes.Core.StringList = None
     ) -> FlextApiBuilder
 
     def with_rate_limiting(

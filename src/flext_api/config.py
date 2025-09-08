@@ -14,6 +14,8 @@ import os
 from flext_core import FlextResult, flext_logger
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from flext_api.typings import FlextApiTypes
+
 logger = flext_logger(__name__)
 
 
@@ -68,9 +70,15 @@ class FlextApiConfig(BaseModel):
     )
 
     # CORS configuration
-    cors_origins: list[str] = Field(default_factory=lambda: ["*"], description="Allowed CORS origins")
-    cors_methods: list[str] = Field(default_factory=lambda: ["*"], description="Allowed CORS methods")
-    cors_headers: list[str] = Field(default_factory=lambda: ["*"], description="Allowed CORS headers")
+    cors_origins: FlextApiTypes.Core.StringList = Field(
+        default_factory=lambda: ["*"], description="Allowed CORS origins"
+    )
+    cors_methods: FlextApiTypes.Core.StringList = Field(
+        default_factory=lambda: ["*"], description="Allowed CORS methods"
+    )
+    cors_headers: FlextApiTypes.Core.StringList = Field(
+        default_factory=lambda: ["*"], description="Allowed CORS headers"
+    )
 
     # Storage configuration
     default_backend: str = Field(
@@ -81,7 +89,6 @@ class FlextApiConfig(BaseModel):
     def from_env(cls) -> FlextResult[FlextApiConfig]:
         """Create configuration from environment variables."""
         try:
-
             config = cls(
                 host=os.getenv("FLEXT_API_HOST", "127.0.0.1"),
                 port=int(os.getenv("FLEXT_API_PORT", "8000")),
@@ -102,7 +109,12 @@ class FlextApiConfig(BaseModel):
 
     @classmethod
     def default(cls) -> FlextApiConfig:
-        """Create default configuration."""
+        """Create default configuration.
+
+        Returns:
+            FlextResult[FlextApiConfig]:: Description of return value.
+
+        """
         return cls()
 
     # ---------------------------
@@ -139,31 +151,31 @@ class FlextApiConfig(BaseModel):
     # Accessors that return FlextResult with dict payloads
     # ---------------------------
 
-    def get_server_config(self) -> FlextResult[dict[str, object]]:
-        data: dict[str, object] = {
+    def get_server_config(self) -> FlextResult[FlextApiTypes.Core.Dict]:
+        data: FlextApiTypes.Core.Dict = {
             "host": self.host,
             "port": self.port,
             "workers": self.workers,
             "debug": self.debug,
         }
-        return FlextResult[dict[str, object]].ok(data)
+        return FlextResult[FlextApiTypes.Core.Dict].ok(data)
 
-    def get_client_config(self) -> FlextResult[dict[str, object]]:
-        data: dict[str, object] = {
+    def get_client_config(self) -> FlextResult[FlextApiTypes.Core.Dict]:
+        data: FlextApiTypes.Core.Dict = {
             "base_url": self.base_url,
             "timeout": self.default_timeout,
             "max_retries": self.max_retries,
         }
-        return FlextResult[dict[str, object]].ok(data)
+        return FlextResult[FlextApiTypes.Core.Dict].ok(data)
 
-    def get_cors_config(self) -> FlextResult[dict[str, object]]:
-        data: dict[str, object] = {
+    def get_cors_config(self) -> FlextResult[FlextApiTypes.Core.Dict]:
+        data: FlextApiTypes.Core.Dict = {
             "allow_origins": list(self.cors_origins),
             "allow_methods": list(self.cors_methods),
             "allow_headers": list(self.cors_headers),
             "allow_credentials": True,
         }
-        return FlextResult[dict[str, object]].ok(data)
+        return FlextResult[FlextApiTypes.Core.Dict].ok(data)
 
 
 __all__ = ["FlextApiConfig"]
