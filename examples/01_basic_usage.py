@@ -9,10 +9,10 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+from flext_core import FlextTypes
 
 import asyncio
 
-# Import ONLY the refactored classes following flext-core patterns
 from flext_api import (
     FlextApi,
     FlextApiApp,
@@ -73,7 +73,7 @@ def example_storage_usage() -> None:
     storage = FlextApiStorage()
 
     # Set data using FlextResult pattern
-    # CacheValue é tuple[object, dict[str, str], int]
+    # CacheValue é tuple[object, FlextTypes.Core.Headers, int]
     cache_value = ({"message": "Hello FlextAPI!"}, {}, 200)
     set_result = storage.set("example_key", cache_value, ttl=300)
 

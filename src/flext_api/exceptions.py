@@ -3,47 +3,18 @@
 HTTP-specific exception system providing FlextApiExceptions class with structured
 error handling, HTTP status codes, and comprehensive error context for debugging.
 
-Module Role in Architecture:
-    FlextApiExceptions serves as the HTTP API exception system, providing hierarchical
-    exception classes with HTTP status codes, error context, and structured error
-    handling following FlextResult patterns.
-
-Classes and Methods:
-    FlextApiExceptions:                     # Hierarchical HTTP API exception system
-        # Base Exceptions:
-        FlextApiError(FlextError)           # Base HTTP API exception
-        HttpError(FlextApiError)            # HTTP protocol errors
-        ClientError(FlextApiError)          # HTTP client errors
-        ServerError(FlextApiError)          # HTTP server errors
-
-        # Specific HTTP Exceptions:
-        BadRequestError(ClientError)        # 400 Bad Request
-        UnauthorizedError(ClientError)      # 401 Unauthorized
-        ForbiddenError(ClientError)         # 403 Forbidden
-        NotFoundError(ClientError)          # 404 Not Found
-        TimeoutError(ClientError)           # Request timeout
-        RateLimitError(ClientError)         # 429 Too Many Requests
-
-        # Server Exceptions:
-        InternalServerError(ServerError)    # 500 Internal Server Error
-        BadGatewayError(ServerError)        # 502 Bad Gateway
-        ServiceUnavailableError(ServerError) # 503 Service Unavailable
-
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar, cast
+from typing import ClassVar, cast
 
-from flext_core import FlextExceptions
+from flext_core import FlextExceptions, FlextModels
 
 from flext_api.constants import FlextApiConstants
-from flext_api.utilities import HttpErrorConfig
-
-if TYPE_CHECKING:
-    from flext_api.utilities import ValidationConfig
+from flext_api.typings import FlextApiTypes
 
 
 class FlextApiExceptions(FlextExceptions):
@@ -61,7 +32,7 @@ class FlextApiExceptions(FlextExceptions):
             message: str,
             status_code: int = 500,
             error_code: str | None = None,
-            context: dict[str, object] | None = None,
+            context: FlextApiTypes.Core.Dict | None = None,
         ) -> None:
             super().__init__(message, code=error_code, context=context)
             self.status_code = status_code
@@ -71,7 +42,7 @@ class FlextApiExceptions(FlextExceptions):
     class HttpError(FlextApiError):
         """Base class for HTTP protocol errors."""
 
-        def __init__(self, config: HttpErrorConfig) -> None:
+        def __init__(self, config: FlextModels.Http.HttpErrorConfig) -> None:
             """Initialize from Pydantic configuration - zero parameter complexity."""
             error_context = config.context.copy()
             if config.url:
@@ -100,7 +71,7 @@ class FlextApiExceptions(FlextExceptions):
 
         @staticmethod
         def create_exception_class(
-            name: str,
+            _name: str,  # Renamed to indicate it's not used in current implementation
             base_class: type[FlextApiExceptions.HttpError],
             status_code: int,
             default_message: str,
@@ -108,19 +79,19 @@ class FlextApiExceptions(FlextExceptions):
         ) -> type[FlextApiExceptions.HttpError]:
             """Create exception class using Factory Pattern and Template Method."""
 
-            def __init__(
+            def _init_method(
                 self: FlextApiExceptions.HttpError,
-                message_or_config: str | HttpErrorConfig | None = None,
+                message_or_config: str | FlextModels.Http.HttpErrorConfig | None = None,
                 url: str | None = None,
                 method: str | None = None,
-                headers: dict[str, str] | None = None,
-                context: dict[str, object] | None = None,
+                headers: FlextApiTypes.HttpHeaders | None = None,
+                context: FlextApiTypes.Core.Dict | None = None,
                 **deprecated_kwargs: object,
             ) -> None:
                 """Initialize using legacy string or Pydantic configuration."""
                 if isinstance(message_or_config, str):
                     # Legacy API: first parameter is message string
-                    final_context: dict[str, object] = context or {}
+                    final_context: FlextApiTypes.Core.Dict = context or {}
 
                     # Add additional context from remaining kwargs
                     final_context.update(
@@ -131,7 +102,7 @@ class FlextApiExceptions(FlextExceptions):
                         },
                     )
 
-                    config = HttpErrorConfig(
+                    config = FlextModels.Http.HttpErrorConfig(
                         message=message_or_config,
                         status_code=status_code,
                         url=url,
@@ -139,7 +110,7 @@ class FlextApiExceptions(FlextExceptions):
                         headers=headers,
                         context=final_context,
                     )
-                elif isinstance(message_or_config, HttpErrorConfig):
+                elif isinstance(message_or_config, FlextModels.Http.HttpErrorConfig):
                     # New API: first parameter is config object
                     config = message_or_config
                 else:
@@ -155,7 +126,7 @@ class FlextApiExceptions(FlextExceptions):
                     context_from_kwargs = deprecated_kwargs.get("context", {})
 
                     # Build context from remaining kwargs with type safety
-                    fallback_context: dict[str, object] = context or {}
+                    fallback_context: FlextApiTypes.Core.Dict = context or {}
                     if context_from_kwargs and isinstance(context_from_kwargs, dict):
                         fallback_context.update(context_from_kwargs)
 
@@ -165,7 +136,13 @@ class FlextApiExceptions(FlextExceptions):
                             key: value
                             for key, value in deprecated_kwargs.items()
                             if key
-                            not in {"message", "url", "method", "headers", "context"}
+                            not in {
+                                "message",
+                                "url",
+                                "method",
+                                "headers",
+                                "context",
+                            }
                             and value is not None
                         },
                     )
@@ -177,7 +154,7 @@ class FlextApiExceptions(FlextExceptions):
                             str(k): str(v) for k, v in headers_from_kwargs.items()
                         }
 
-                    config = HttpErrorConfig(
+                    config = FlextModels.Http.HttpErrorConfig(
                         message=message,
                         status_code=status_code,
                         url=url_final,
@@ -188,17 +165,18 @@ class FlextApiExceptions(FlextExceptions):
 
                 base_class.__init__(self, config)
 
-            # Create dynamic class using type() with proper casting
-            dynamic_class = type(
-                name,
+            # Create class using type() for proper dynamic class creation
+            dynamic_http_error = type(
+                "DynamicHttpError",
                 (base_class,),
                 {
-                    "__init__": __init__,
+                    "__init__": _init_method,
                     "__doc__": docstring,
                     "__module__": __name__,
                 },
             )
-            return cast("type[FlextApiExceptions.HttpError]", dynamic_class)
+
+            return cast("type[FlextApiExceptions.HttpError]", dynamic_http_error)
 
     # HTTP Exception Specifications - using data-driven approach
     _HTTP_EXCEPTION_SPECS: ClassVar[list[tuple[str, type, int, str, str]]] = [
@@ -293,10 +271,10 @@ class FlextApiExceptions(FlextExceptions):
             message: str = "Network error",
             url: str | None = None,
             method: str | None = None,
-            headers: dict[str, str] | None = None,
-            context: dict[str, object] | None = None,
+            headers: FlextApiTypes.HttpHeaders | None = None,
+            context: FlextApiTypes.Core.Dict | None = None,
         ) -> None:
-            network_context: dict[str, object] = {}
+            network_context: FlextApiTypes.Core.Dict = {}
             if url:
                 network_context["url"] = url
             if method:
@@ -320,8 +298,8 @@ class FlextApiExceptions(FlextExceptions):
             message: str = "Connection error",
             url: str | None = None,
             method: str | None = None,
-            headers: dict[str, str] | None = None,
-            context: dict[str, object] | None = None,
+            headers: FlextApiTypes.HttpHeaders | None = None,
+            context: FlextApiTypes.Core.Dict | None = None,
         ) -> None:
             super().__init__(message, url, method, headers, context)
 
@@ -331,18 +309,18 @@ class FlextApiExceptions(FlextExceptions):
 
         def __init__(
             self,
-            config_or_message: ValidationConfig | str,
+            config_or_message: FlextModels.Http.ValidationConfig | str,
             field: str | None = None,
             value: object = None,
             url: str | None = None,
             method: str | None = None,
-            headers: dict[str, str] | None = None,
-            context: dict[str, object] | None = None,
+            headers: FlextApiTypes.HttpHeaders | None = None,
+            context: FlextApiTypes.Core.Dict | None = None,
         ) -> None:
             """Initialize from Pydantic ValidationConfig or legacy string message."""
             if isinstance(config_or_message, str):
                 # Legacy API support - build config from parameters
-                validation_context: dict[str, object] = context or {}
+                validation_context: FlextApiTypes.Core.Dict = context or {}
                 if field:
                     validation_context["field"] = field
                 if value is not None:
@@ -383,15 +361,4 @@ class FlextApiExceptions(FlextExceptions):
                 )
 
 
-# Generate exceptions when module loads
-FlextApiExceptions._generate_http_exceptions()
-
-# Backward compatibility aliases - add after generation
-FlextApiExceptions.AuthenticationError = getattr(
-    FlextApiExceptions, "UnauthorizedError"
-)
-
-# Main FlextErrors alias
-FlextErrors = FlextApiExceptions
-
-__all__ = ["FlextApiExceptions", "FlextErrors"]
+__all__ = ["FlextApiExceptions"]

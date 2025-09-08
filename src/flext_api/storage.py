@@ -9,20 +9,20 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TypeVar
-
-from flext_core import FlextResult, flext_logger
+from flext_core import FlextLogger, FlextResult
 from pydantic import BaseModel
 
-T = TypeVar("T")
+from flext_api.typings import FlextApiTypes
 
-logger = flext_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class FlextApiStorage:
     """Storage backend for FLEXT API."""
 
-    def __init__(self, config: dict[str, object] | BaseModel | None = None) -> None:
+    def __init__(
+        self, config: FlextApiTypes.Core.Dict | BaseModel | None = None
+    ) -> None:
         """Initialize storage with configuration."""
         # Handle both dict and Pydantic model configurations
         if isinstance(config, BaseModel):
@@ -32,7 +32,7 @@ class FlextApiStorage:
 
         self.backend = self.config.get("backend", "memory")
         self.namespace = self.config.get("namespace", "default")
-        self._data: dict[str, object] = {}
+        self._data: FlextApiTypes.Core.Dict = {}
         self._cache_enabled = self.config.get("enable_caching", False)
         self._cache_ttl = self.config.get("cache_ttl_seconds", 300)
 
@@ -81,7 +81,7 @@ class FlextApiStorage:
             logger.exception("Failed to check key existence", key=key, error=str(e))
             return FlextResult.fail(f"Failed to check key existence {key}: {e}")
 
-    def keys(self) -> FlextResult[list[str]]:
+    def keys(self) -> FlextResult[FlextApiTypes.Core.StringList]:
         """Get all keys from storage."""
         try:
             return FlextResult.ok(list(self._data.keys()))

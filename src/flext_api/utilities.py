@@ -3,114 +3,56 @@
 HTTP-specific utility extensions using ONLY flext-core FlextUtilities functionality,
 eliminating all custom implementations and following single class per module pattern.
 
-Module Role in Architecture:
-    FlextApiUtilities serves as HTTP API utility extensions, providing specialized
-    HTTP operations while delegating all core functionality to flext-core FlextUtilities.
-    No duplicate implementations - all functionality comes from flext-core.
-
-Classes and Methods:
-    FlextApiUtilities:                      # HTTP API utility extensions
-        # Direct Delegates to flext-core:
-        All FlextUtilities functionality     # Inherited from flext-core
-
-        # HTTP-Specific Extensions:
-        HttpValidator                       # HTTP validation using FlextUtilities.TypeGuards
-        ResponseBuilder                     # Response building using FlextUtilities.Generators
-        UrlUtilities                       # URL operations using FlextUtilities.TextProcessor
-
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Annotated, Literal
+from typing import Annotated
 from urllib.parse import ParseResult, urlparse
 
-from flext_core import FlextLogger, FlextResult, FlextUtilities
-from pydantic import BaseModel, Field
+from flext_core import FlextLogger, FlextModels, FlextResult, FlextUtilities
+from pydantic import Field
 
 from flext_api.constants import FlextApiConstants
+from flext_api.typings import FlextApiTypes
 
 logger = FlextLogger(__name__)
 
 
-# Python 3.13 Discriminated Union for Configuration Types with Pydantic V2
-class HttpRequestConfig(BaseModel):
-    """HTTP Request configuration using Pydantic V2."""
-
-    config_type: Literal["http_request"] = "http_request"
-    method: str = "GET"
-    url: str
-    headers: dict[str, str] = Field(default_factory=dict)
-    params: dict[str, object] = Field(default_factory=dict)
-    timeout: float = 30.0
-
-
-class HttpErrorConfig(BaseModel):
-    """HTTP Error configuration using Pydantic V2."""
-
-    config_type: Literal["http_error"] = "http_error"
-    message: str
-    status_code: int = 500
-    url: str | None = None
-    method: str | None = None
-    headers: dict[str, str] | None = None
-    context: dict[str, object] = Field(default_factory=dict)
-
-
-class ValidationConfig(BaseModel):
-    """Validation configuration using Pydantic V2."""
-
-    config_type: Literal["validation"] = "validation"
-    message: str = "Validation error"
-    field: str | None = None
-    value: object = None
-    url: str | None = None
-    method: str | None = None
-    headers: dict[str, str] | None = None
-    context: dict[str, object] = Field(default_factory=dict)
-
-
-# Python 3.13 Advanced Union Types with Discriminated Pattern Matching
-type ConfigType = HttpRequestConfig | HttpErrorConfig | ValidationConfig
-type ApiUtilityConfig = Annotated[ConfigType, Field(discriminator="config_type")]
-
-# Python 3.13 Generic Type Aliases for Advanced Patterns
-type ResponseData[T] = dict[str, T] | list[T] | str | bytes | None
-type ValidationResult[T] = FlextResult[T]
-type UtilityFunction[T, U] = Callable[[T], FlextResult[U]]
-
-
 class FlextApiUtilities(FlextUtilities):
-    """HTTP API utility extensions using REAL flext-core FlextUtilities functionality.
+    """HTTP API utilities usando diretamente FlextApiTypes sem aliases locais.
 
-    This class extends FlextUtilities to provide HTTP-specific functionality while
-    delegating ALL core operations to flext-core. No duplicate implementations.
-    Follows single-class-per-module pattern rigorously.
+    Decisão: remover classe 'Typings' para evitar shadowing/duplication. Todos os
+    tipos são referenciados diretamente de `FlextApiTypes` ou dos modelos.
     """
 
     @classmethod
     def validate_config(
         cls,
-        config: ApiUtilityConfig,
-    ) -> FlextResult[dict[str, object]]:
+        config: Annotated[
+            FlextModels.Http.HttpRequestConfig
+            | FlextModels.Http.HttpErrorConfig
+            | FlextModels.Http.ValidationConfig,
+            Field(discriminator="config_type"),
+        ],
+    ) -> FlextResult[FlextApiTypes.Core.Dict]:
         """Validate configuration using Python 3.13 + Advanced Pydantic V2 patterns."""
         # Python 3.13 match/case with type narrowing for configuration types
         match config:
-            case HttpRequestConfig() as http_config:
+            case FlextModels.Http.HttpRequestConfig() as http_config:
                 return cls._validate_http_request_config(http_config)
-            case HttpErrorConfig() as error_config:
+            case FlextModels.Http.HttpErrorConfig() as error_config:
                 return cls._validate_http_error_config(error_config)
-            case ValidationConfig() as validation_config:
+            case FlextModels.Http.ValidationConfig() as validation_config:
                 return cls._validate_validation_config(validation_config)
 
     @classmethod
     def _validate_http_request_config(
         cls,
-        config: HttpRequestConfig,
-    ) -> FlextResult[dict[str, object]]:
+        config: FlextModels.Http.HttpRequestConfig,
+    ) -> FlextResult[FlextApiTypes.Core.Dict]:
         """Validate HTTP request configuration using FlextUtilities."""
         return (
             cls.HttpValidator.validate_url(config.url)
@@ -121,8 +63,8 @@ class FlextApiUtilities(FlextUtilities):
     @classmethod
     def _validate_http_error_config(
         cls,
-        config: HttpErrorConfig,
-    ) -> FlextResult[dict[str, object]]:
+        config: FlextModels.Http.HttpErrorConfig,
+    ) -> FlextResult[FlextApiTypes.Core.Dict]:
         """Validate HTTP error configuration using FlextUtilities."""
         return cls.HttpValidator.validate_status_code(config.status_code).map(
             lambda _: config.model_dump(),
@@ -131,19 +73,16 @@ class FlextApiUtilities(FlextUtilities):
     @classmethod
     def _validate_validation_config(
         cls,
-        config: ValidationConfig,
-    ) -> FlextResult[dict[str, object]]:
+        config: FlextModels.Http.ValidationConfig,
+    ) -> FlextResult[FlextApiTypes.Core.Dict]:
         """Validate validation configuration - direct passthrough."""
-        return FlextResult[dict[str, object]].ok(config.model_dump())
-
-    # REMOVED: parse_response_data_safely - use FlextUtilities.safe_json_parse directly
-    # REMOVED: read_response_data_safely - use FlextUtilities.clean_text directly
+        return FlextResult[FlextApiTypes.Core.Dict].ok(config.model_dump())
 
     # Convenience methods for backward compatibility with tests
     @classmethod
     def build_error_response(
         cls, error: str, status_code: int = 500
-    ) -> dict[str, object]:
+    ) -> FlextApiTypes.Core.Dict:
         """Build error response using ResponseBuilder - convenience method."""
         result = cls.ResponseBuilder.build_error_response(
             error=error, status_code=status_code
@@ -166,11 +105,11 @@ class FlextApiUtilities(FlextUtilities):
     @classmethod
     def build_paginated_response(
         cls,
-        data: list[object],
+        data: FlextApiTypes.Core.List,
         total: int,
         page: int = 1,
         page_size: int = FlextApiConstants.Pagination.DEFAULT_PAGE_SIZE,
-    ) -> dict[str, object]:
+    ) -> FlextApiTypes.Core.Dict:
         """Build paginated response using PaginationBuilder - convenience method."""
         result = cls.PaginationBuilder.build_paginated_response(
             data=data, total=total, page=page, page_size=page_size
@@ -224,7 +163,12 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def _validate_string(url: str) -> FlextResult[str]:
-            """Validate input string using FlextUtilities + Python 3.13 patterns."""
+            """Validate input string using FlextUtilities + Python 3.13 patterns.
+
+            Returns:
+                FlextResult[str]: Validation result.
+
+            """
             return (
                 FlextResult[str].ok(url)
                 if FlextUtilities.is_non_empty_string(url)
@@ -410,11 +354,6 @@ class FlextApiUtilities(FlextUtilities):
                         f"Valid range: {status_ranges.INFORMATIONAL_MIN}-{status_ranges.SERVER_ERROR_MAX} (RFC 7231)",
                     )
 
-    # REMOVED: DataTransformer class - use FlextUtilities directly:
-    # - serialize_json → FlextUtilities.safe_json_stringify(data)
-    # - deserialize_json → FlextUtilities.safe_json_parse(json_str)
-    # - extract_model_data → isinstance/dict checks with FlextUtilities.safe_json_parse
-
     class ResponseBuilder:
         """HTTP response building using FlextUtilities.Generators functionality."""
 
@@ -423,7 +362,7 @@ class FlextApiUtilities(FlextUtilities):
             data: object = None,
             message: str = "Success",
             status_code: int = FlextApiConstants.HttpStatus.OK,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[FlextApiTypes.Core.Dict]:
             """Build standardized success response using FlextUtilities."""
             try:
                 # Generate timestamp using REAL FlextUtilities
@@ -437,9 +376,9 @@ class FlextApiUtilities(FlextUtilities):
                     "timestamp": timestamp,
                     "request_id": FlextUtilities.generate_correlation_id(),
                 }
-                return FlextResult[dict[str, object]].ok(response)
+                return FlextResult[FlextApiTypes.Core.Dict].ok(response)
             except Exception as e:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[FlextApiTypes.Core.Dict].fail(
                     f"Success response building failed: {e}",
                 )
 
@@ -449,7 +388,7 @@ class FlextApiUtilities(FlextUtilities):
             status_code: int = FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR,
             error_code: str | None = None,
             details: object = None,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[FlextApiTypes.Core.Dict]:
             """Build standardized error response using FlextUtilities."""
             try:
                 # Generate timestamp using REAL FlextUtilities
@@ -470,9 +409,9 @@ class FlextApiUtilities(FlextUtilities):
                 if details:
                     response["details"] = details
 
-                return FlextResult[dict[str, object]].ok(response)
+                return FlextResult[FlextApiTypes.Core.Dict].ok(response)
             except Exception as e:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[FlextApiTypes.Core.Dict].fail(
                     f"Error response building failed: {e}",
                 )
 
@@ -481,12 +420,12 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def build_paginated_response(
-            data: list[object],
+            data: FlextApiTypes.Core.List,
             total: int,
             page: int = 1,
             page_size: int = FlextApiConstants.Pagination.DEFAULT_PAGE_SIZE,
             message: str = "Success",
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[FlextApiTypes.Core.Dict]:
             """Build paginated response using FlextUtilities."""
             try:
                 # Use FlextUtilities for safe int conversions
@@ -499,13 +438,17 @@ class FlextApiUtilities(FlextUtilities):
 
                 # Validate pagination parameters
                 if safe_page < 1:
-                    return FlextResult[dict[str, object]].fail("Page must be >= 1")
+                    return FlextResult[FlextApiTypes.Core.Dict].fail(
+                        "Page must be >= 1"
+                    )
 
                 if safe_page_size < 1:
-                    return FlextResult[dict[str, object]].fail("Page size must be >= 1")
+                    return FlextResult[FlextApiTypes.Core.Dict].fail(
+                        "Page size must be >= 1"
+                    )
 
                 if safe_page_size > FlextApiConstants.Pagination.MAX_PAGE_SIZE:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[FlextApiTypes.Core.Dict].fail(
                         f"Page size cannot exceed {FlextApiConstants.Pagination.MAX_PAGE_SIZE}",
                     )
 
@@ -536,9 +479,9 @@ class FlextApiUtilities(FlextUtilities):
                     "request_id": FlextUtilities.Generators.generate_request_id(),
                 }
 
-                return FlextResult[dict[str, object]].ok(response)
+                return FlextResult[FlextApiTypes.Core.Dict].ok(response)
             except Exception as e:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[FlextApiTypes.Core.Dict].fail(
                     f"Paginated response building failed: {e}",
                 )
 

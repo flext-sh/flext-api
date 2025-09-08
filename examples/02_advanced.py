@@ -14,10 +14,9 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+from flext_core import FlextTypes
 
 import asyncio
-
-# Import ONLY the refactored classes following flext-core patterns
 from flext_api import (
     FlextApi,
     FlextApiApp,
@@ -56,7 +55,7 @@ class _StorageSystemDemo:
     def __init__(self) -> None:
         self.storage = FlextApiStorage()
         self.test_key = "user:123"
-        self.test_value: dict[str, object] = {
+        self.test_value: FlextTypes.Core.Dict = {
             "name": "John Doe",
             "role": "admin",
             "created": "2025-01-01",
@@ -80,7 +79,7 @@ class _StorageSystemDemo:
     def _demo_basic_operations(self) -> None:
         """Demonstrate basic storage operations."""
         # Set operation
-        # CacheValue é tuple[object, dict[str, str], int]
+        # CacheValue é tuple[object, FlextTypes.Core.Headers, int]
         cache_value = (self.test_value, {}, 200)
         set_result = self.storage.set(self.test_key, cache_value, ttl=300)
         if not set_result.success:
@@ -131,7 +130,7 @@ class _StorageSystemDemo:
             return
 
         json_storage = self.storage.JsonStorage()
-        test_data: dict[str, object] = {
+        test_data: FlextTypes.Core.Dict = {
             "message": "Hello, World!",
             "timestamp": "2025-01-01T00:00:00Z",
         }
@@ -204,7 +203,10 @@ def example_utilities_usage() -> None:
 
     # Data transformation using nested class
     transform_result = FlextApiUtilities.DataTransformer.to_json(
-        {"key": "value", "number": 42}
+        {
+            "key": "value",
+            "number": 42,
+        }
     )
     if transform_result.success:
         json_str = transform_result.value

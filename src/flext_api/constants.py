@@ -4,73 +4,6 @@ Single FlextApiConstants class extending FlextConstants with hierarchical HTTP-s
 constants organized by domain following Python 3.13+ type annotations and immutable
 Final values for type-safe constant access throughout the API system.
 
-Architecture Hierarchy:
-    FlextApiConstants(FlextConstants) - Single consolidated class containing:
-        - HTTP Protocol Constants: Timeouts, headers, user agents, content types
-        - Status Code Constants: Complete HTTP status code definitions
-        - Client Configuration: Retry policies, connection pools, default values
-        - Validation Constants: Size limits, format constraints, security settings
-        - Cache Configuration: TTL values, size limits, storage settings
-        - Plugin System Constants: Priority levels, timeout values, thresholds
-        - API Response Constants: Standard response formats and structures
-        - Error Code Constants: HTTP error codes and diagnostic information
-
-Python 3.13+ Features:
-    - Final type annotations for immutable constants
-    - Type-safe constant access with compile-time checking
-    - Hierarchical nested class organization
-    - Integration with discriminated union patterns
-    - Enhanced enum support with StrEnum base classes
-
-Integration with flext-core:
-    - Extends FlextConstants for unified constant system
-    - Uses FlextConstants base patterns and organization
-    - Follows hierarchical domain organization principles
-    - Maintains consistency with flext-core constant naming
-    - Supports flext-core configuration and validation patterns
-
-Design Principles:
-    - Single Point of Truth: All HTTP constants in one location
-    - Type Safety: Final annotations prevent modification
-    - Hierarchical Organization: Domain-based constant grouping
-    - No Magic Numbers: All values explicitly defined and documented
-    - Immutable Values: Constants cannot be changed at runtime
-    - Clear Naming: Self-documenting constant names and structure
-
-Usage Examples:
-    HTTP protocol constants:
-    >>> timeout = FlextApiConstants.Http.DEFAULT_TIMEOUT  # 30 seconds
-    >>> user_agent = FlextApiConstants.Http.USER_AGENT  # "FlextAPI/1.0"
-    >>> max_redirects = FlextApiConstants.Http.MAX_REDIRECTS  # 5
-
-    Status code constants:
-    >>> success = FlextApiConstants.HttpStatus.OK  # 200
-    >>> not_found = FlextApiConstants.HttpStatus.NOT_FOUND  # 404
-    >>> server_error = FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR  # 500
-
-    Client configuration constants:
-    >>> max_retries = FlextApiConstants.Client.DEFAULT_MAX_RETRIES  # 3
-    >>> backoff = FlextApiConstants.Client.RETRY_BACKOFF  # 2.0
-    >>> pool_size = FlextApiConstants.Client.CONNECTION_POOL_SIZE  # 100
-
-    Validation constants:
-    >>> max_url_len = FlextApiConstants.HttpValidation.MAX_URL_LENGTH  # 2048
-    >>> max_body_size = FlextApiConstants.HttpValidation.MAX_BODY_SIZE  # 10MB
-    >>> timeout_limit = FlextApiConstants.HttpValidation.MAX_TIMEOUT  # 300 seconds
-
-Integration:
-    Seamlessly integrates with flext-core foundation:
-    - Uses FlextConstants as base class for consistency
-    - Follows flext-core hierarchical organization patterns
-    - Maintains compatibility with flext-core configuration system
-    - Supports flext-core validation and type checking
-    - Extends flext-core constants without conflicts or duplication
-
-Note:
-    This is the ONLY constants class in this module following strict
-    single-class-per-module pattern. All HTTP-specific constants are
-    organized hierarchically within this unified class structure.
-
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
@@ -78,9 +11,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import Final
 
 from flext_core import FlextConstants
+
+from flext_api.typings import FlextApiTypes
 
 
 class FlextApiConstants(FlextConstants):
@@ -91,7 +27,11 @@ class FlextApiConstants(FlextConstants):
     """
 
     class Http:
-        """HTTP protocol constants and defaults."""
+        """HTTP protocol constants and defaults.
+
+        Retains simple string constants for backward compatibility while
+        StrEnum variants (UrlScheme / HttpMethods) provide type-safe usage.
+        """
 
         DEFAULT_TIMEOUT: Final[int] = 30
         MAX_REDIRECTS: Final[int] = 5
@@ -100,6 +40,30 @@ class FlextApiConstants(FlextConstants):
         CONTENT_TYPE_FORM: Final[str] = "application/x-www-form-urlencoded"
         CONTENT_TYPE_TEXT: Final[str] = "text/plain"
         DEFAULT_CHARSET: Final[str] = "utf-8"
+
+    class UrlScheme(StrEnum):
+        """StrEnum for URL schemes (Python 3.11+)."""
+
+        HTTP = "http"
+        HTTPS = "https"
+
+    class HttpMethods(StrEnum):
+        """StrEnum for HTTP methods (type-safe, still str-compatible)."""
+
+        GET = "GET"
+        POST = "POST"
+        PUT = "PUT"
+        DELETE = "DELETE"
+        PATCH = "PATCH"
+        HEAD = "HEAD"
+        OPTIONS = "OPTIONS"
+        TRACE = "TRACE"
+        CONNECT = "CONNECT"
+
+        @classmethod
+        def all(cls) -> tuple[FlextApiConstants.HttpMethods, ...]:  # type: ignore[name-defined]
+            """Return all enum members as a tuple (used in runtime contexts)."""
+            return tuple(cls)
 
     class HttpStatus:
         """HTTP status code constants."""
@@ -181,7 +145,7 @@ class FlextApiConstants(FlextConstants):
         CONNECTION_POOL_SIZE: Final[int] = 100
         DEFAULT_TIMEOUT: Final[int] = 30  # Expected by tests
         DEFAULT_USER_AGENT: Final[str] = "FlextAPI/0.9.0"  # Expected by tests
-        DEFAULT_HEADERS: Final[dict[str, str]] = {
+        DEFAULT_HEADERS: Final[FlextApiTypes.HttpHeaders] = {
             "User-Agent": "FlextAPI/0.9.0",
             "Accept": "application/json",
             "Content-Type": "application/json",
@@ -325,11 +289,11 @@ class FlextApiConstants(FlextConstants):
     class ResponseTemplates:
         """Standard response templates."""
 
-        SUCCESS_RESPONSE: Final[dict[str, str]] = {
+        SUCCESS_RESPONSE: Final[FlextApiTypes.Core.Dict] = {
             "status": "success",
             "message": "Request completed successfully",
         }
-        ERROR_RESPONSE: Final[dict[str, str]] = {
+        ERROR_RESPONSE: Final[FlextApiTypes.Core.Dict] = {
             "status": "error",
             "message": "Request failed",
         }
@@ -364,21 +328,12 @@ class FlextApiConstants(FlextConstants):
         "data": None,
         "error": None,  # Test expects error field to be None
     }
-    SUCCESS_RESPONSE_TEMPLATE: Final[dict[str, str]] = {
+    SUCCESS_RESPONSE_TEMPLATE: Final[FlextApiTypes.Core.Dict] = {
         "status": "success",
         "message": "Request completed successfully",
     }
 
 
-# Create aliases for backward compatibility with tests
-FlextApiEndpoints = FlextApiConstants.ApiEndpoints
-FlextApiStatus = FlextApiConstants.ApiStatus  # Use ApiStatus instead of HttpStatus
-FlextApiFieldType = FlextApiConstants.FieldTypes
-
-
 __all__ = [
     "FlextApiConstants",
-    "FlextApiEndpoints",
-    "FlextApiFieldType",
-    "FlextApiStatus",
 ]
