@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
-from flext_core import FlextModels, FlextResult, flext_logger
+from flext_core import FlextModels, FlextResult, FlextLogger
 from pydantic import BaseModel, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
@@ -361,25 +361,25 @@ class FlextApiModels(FlextModels):
         page_size: int = 20
 
         # Métodos fluent
-        def equals(self, field: str, value: object) -> FlextApiModels.QueryBuilder:  # type: ignore[name-defined]
+        def equals(self, field: str, value: object) -> FlextApiModels.QueryBuilder:
             self.filters[field] = value
             return self
 
-        def sort_desc(self, field: str) -> FlextApiModels.QueryBuilder:  # type: ignore[name-defined]
+        def sort_desc(self, field: str) -> FlextApiModels.QueryBuilder:
             self.sort.append(f"-{field}")
             return self
 
-        def set_page(self, value: int) -> FlextApiModels.QueryBuilder:  # type: ignore[name-defined]
+        def set_page(self, value: int) -> FlextApiModels.QueryBuilder:
             if value >= 1:
                 self.page = value
             return self
 
-        def set_page_size(self, value: int) -> FlextApiModels.QueryBuilder:  # type: ignore[name-defined]
+        def set_page_size(self, value: int) -> FlextApiModels.QueryBuilder:
             if value >= 1:
                 self.page_size = value
             return self
 
-        def for_response(self) -> FlextApiModels.ResponseBuilder:  # type: ignore[name-defined]
+        def for_response(self) -> FlextApiModels.ResponseBuilder:
             return FlextApiModels.ResponseBuilder()
 
         # Build final dict
@@ -395,7 +395,7 @@ class FlextApiModels(FlextModels):
 
     # ===================== Factory estática usada pelos testes =====================
     @classmethod
-    def for_query(cls) -> FlextApiModels.QueryBuilder:  # type: ignore[name-defined]
+    def for_query(cls) -> FlextApiModels.QueryBuilder:
         """Factory simples para obter um QueryBuilder (usado em testes)."""
         return cls.QueryBuilder()
 
@@ -446,7 +446,7 @@ class FlextApiModels(FlextModels):
 
     # Removidas classes internas de constantes/field/endpoints/status. Usar FlextApiConstants.
 
-    class URL(BaseModel):  # noqa: N801
+    class URL(BaseModel):
         """Value object de URL."""
 
         url: str = Field(..., description="URL string", min_length=1)

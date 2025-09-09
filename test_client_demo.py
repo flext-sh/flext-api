@@ -82,7 +82,7 @@ try:
             if self._error:
                 msg = f"Result has error: {self._error}"
                 raise ValueError(msg)
-            return self._value  # type: ignore
+            return self._value
 
         @property
         def error(self) -> str | None:

@@ -1,4 +1,7 @@
-"""Tests for flext_api.config module - REAL classes only.
+"""Tests for flext_api.config module using flext_tests EM ABSOLUTO - REAL classes only.
+
+MAXIMUM usage of flext_tests - ALL test utilities via flext_tests.
+Uses FlextTestsMatchers, FlextTestsDomains, FlextTestsUtilities.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -6,11 +9,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
+from flext_core import FlextResult
+
+# MAXIMUM usage of flext_tests - ACESSO DIRETO
+from flext_tests import FlextTestsDomains, FlextTestsMatchers
 from pydantic import ValidationError
 
 from flext_api import FlextApiConfig
-from tests.conftest import assert_flext_result_success
 
 
 class TestFlextApiConfig:
@@ -33,29 +41,37 @@ class TestFlextApiConfig:
         assert config.cors_headers == ["*"]
 
     def test_config_creation_custom_values(self) -> None:
-        """Test config creation with custom values."""
+        """Test config creation with custom values using FlextTestsDomains."""
+        # Use FlextTestsDomains for realistic test data
+        config_data = FlextTestsDomains.create_configuration()
+        service_data = FlextTestsDomains.create_service()
+
+        host = str(config_data.get("host", "0.0.0.0"))
+        port = cast("int", service_data.get("port", 8080))
+        base_url = str(config_data.get("base_url", "https://api.example.com"))
+
         config = FlextApiConfig(
-            host="0.0.0.0",
-            port=8080,
+            host=host,
+            port=port,
             api_port=9000,
             workers=4,
             debug=True,
             default_timeout=60.0,
             max_retries=5,
-            base_url="https://api.example.com",
+            base_url=base_url,
             cors_origins=["https://example.com"],
             cors_methods=["GET", "POST"],
             cors_headers=["Authorization", "Content-Type"],
         )
 
-        assert config.host == "0.0.0.0"
-        assert config.port == 8080
+        assert config.host == host
+        assert config.port == port
         assert config.api_port == 9000
         assert config.workers == 4
         assert config.debug is True
         assert config.default_timeout == 60.0
         assert config.max_retries == 5
-        assert config.base_url == "https://api.example.com"
+        assert config.base_url == base_url
         assert config.cors_origins == ["https://example.com"]
         assert config.cors_methods == ["GET", "POST"]
         assert config.cors_headers == ["Authorization", "Content-Type"]
@@ -149,7 +165,7 @@ class TestFlextApiConfig:
         config = FlextApiConfig(host="0.0.0.0", port=8080, workers=2, debug=True)
 
         result = config.get_server_config()
-        assert_flext_result_success(result)
+        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", result))
 
         server_config = result.value
         assert isinstance(server_config, dict)
@@ -165,7 +181,7 @@ class TestFlextApiConfig:
         )
 
         result = config.get_client_config()
-        assert_flext_result_success(result)
+        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", result))
 
         client_config = result.value
         assert isinstance(client_config, dict)
@@ -182,7 +198,7 @@ class TestFlextApiConfig:
         )
 
         result = config.get_cors_config()
-        assert_flext_result_success(result)
+        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", result))
 
         cors_config = result.value
         assert isinstance(cors_config, dict)
@@ -220,14 +236,19 @@ class TestFlextApiConfig:
 
     def test_config_from_dict(self) -> None:
         """Test creating config from dictionary."""
-        data = {
+        data: dict[str, str | int | bool | float] = {
             "host": "api.example.com",
             "port": 9000,
             "debug": True,
             "default_timeout": 120.0,
         }
 
-        config = FlextApiConfig(**data)
+        config = FlextApiConfig(
+            host=cast("str", data["host"]),
+            port=cast("int", data["port"]),
+            debug=cast("bool", data["debug"]),
+            default_timeout=cast("float", data["default_timeout"]),
+        )
         assert config.host == "api.example.com"
         assert config.port == 9000
         assert config.debug is True

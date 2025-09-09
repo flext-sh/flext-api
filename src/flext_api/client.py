@@ -27,11 +27,10 @@ from urllib.parse import urljoin
 import aiohttp
 import httpx
 from aiofiles import open as aio_open
-from flext_core import FlextResult, FlextTypes, flext_logger, get_flext_container
+from flext_core import FlextResult, FlextTypes, FlextLogger, FlextContainer
 
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
-from flext_api.protocols import FlextApiProtocols
 from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
 
@@ -39,7 +38,7 @@ from flext_api.utilities import FlextApiUtilities
 ResponseT = TypeVar("ResponseT", bound=FlextApiModels.HttpResponse)
 
 # Module logger using flext-core pattern
-logger = flext_logger(__name__)
+logger = FlextLogger(__name__)
 
 # Get dependency injection container
 container = get_flext_container()
@@ -121,7 +120,7 @@ class FlextApiClient:
     @classmethod
     def create(
         cls, config: FlextTypes.Core.Dict | FlextApiModels.ClientConfig
-    ) -> FlextResult[FlextApiProtocols.Client]:
+    ) -> FlextResult[FlextApiClient]:
         """Factory method using existing protocols and returning FlextResult."""
         try:
             cfg_model = (
@@ -134,14 +133,14 @@ class FlextApiClient:
             if cfg_model.base_url:
                 url_validation = FlextApiUtilities.validate_url(cfg_model.base_url)
                 if not url_validation.success:
-                    return FlextResult[FlextApiProtocols.Client].fail(
+                    return FlextResult[FlextApiClient].fail(
                         f"Invalid base URL: {url_validation.error}"
                     )
 
             client = cls(cfg_model)
-            return FlextResult[FlextApiProtocols.Client].ok(client)  # type: ignore[arg-type]
+            return FlextResult[FlextApiClient].ok(client)
         except Exception as e:
-            return FlextResult[FlextApiProtocols.Client].fail(
+            return FlextResult[FlextApiClient].fail(
                 f"Failed to create client: {e}"
             )
 
@@ -508,27 +507,41 @@ class FlextApiClient:
                 if params is not None:
                     norm: dict[str, str | int | float | bool | list[str]] = {}
                     for k, v in params.items():
-                        if isinstance(v, (str, int, float, bool)):
+                        if isinstance(v, (str, int, float, bool)) or (
+                            isinstance(v, list) and all(isinstance(i, str) for i in v)
+                        ):
                             norm[k] = v
-                        elif isinstance(v, list) and all(isinstance(i, str) for i in v):
-                            norm[k] = v  # type: ignore[assignment]
                         else:
                             norm[k] = str(v)
                     normalized_params = norm
 
-                request_kwargs: dict[str, object] = {
-                    "method": method,
-                    "url": url,
-                    "params": normalized_params,
-                    "headers": request_headers,
-                    "follow_redirects": True,
-                }
-                if data is not None:
-                    request_kwargs["content"] = data
+                # Create typed request parameters for httpx
                 if json_data is not None:
-                    request_kwargs["json"] = json_data
-
-                response = await self.httpx_client.request(**request_kwargs)  # type: ignore[arg-type]
+                    response = await self.httpx_client.request(
+                        method=method,
+                        url=url,
+                        params=normalized_params,
+                        headers=request_headers,
+                        json=json_data,
+                        follow_redirects=True,
+                    )
+                elif data is not None:
+                    response = await self.httpx_client.request(
+                        method=method,
+                        url=url,
+                        params=normalized_params,
+                        headers=request_headers,
+                        content=data,
+                        follow_redirects=True,
+                    )
+                else:
+                    response = await self.httpx_client.request(
+                        method=method,
+                        url=url,
+                        params=normalized_params,
+                        headers=request_headers,
+                        follow_redirects=True,
+                    )
 
             # Parse response body
             content_type = response.headers.get("content-type", "")
