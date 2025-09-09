@@ -1,9 +1,7 @@
-"""Tests for flext_api.models module - REAL classes only.
+"""Tests for flext_api.models module using flext_tests EM ABSOLUTO.
 
-Tests using only REAL classes:
-- FlextApiModels
-
-
+MAXIMUM usage of flext_tests - ALL test data via flext_tests.
+Uses FlextTestsMatchers, FlextTestsDomains, FlextTestsUtilities.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,7 +9,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
+
+# MAXIMUM flext_tests usage
+from flext_tests import FlextTestsDomains
 from pydantic import ValidationError
 
 from flext_api import FlextApiModels
@@ -51,38 +54,55 @@ class TestFlextApiModels:
         assert error_response["status"] == "error"
 
     def test_client_config_creation_basic(self) -> None:
-        """Test basic ClientConfig creation."""
-        config = FlextApiModels.ClientConfig(base_url="https://api.example.com")
+        """Test basic ClientConfig creation using flext_tests."""
+        # Use FlextTestsDomains for realistic configuration data
+        config_data = FlextTestsDomains.create_configuration()
+        base_url = str(config_data.get("base_url", "https://api.example.com"))
 
-        assert config.base_url == "https://api.example.com"
+        config = FlextApiModels.ClientConfig(base_url=base_url)
+
+        assert config.base_url == base_url
         assert config.timeout == 30.0  # default
         assert config.max_retries == 3  # default
         assert config.headers == {}  # default
 
     def test_client_config_creation_custom(self) -> None:
-        """Test ClientConfig creation with custom values."""
+        """Test ClientConfig creation with custom values using flext_tests."""
+        # Use FlextTestsDomains for service data
+        service_data = FlextTestsDomains.create_service()
+
         headers = {"Authorization": "Bearer token", "Accept": "application/json"}
+        base_url = f"https://{service_data.get('name', 'api')}.test.com"
+        timeout = 60.0  # Use fixed value for type safety
+        max_retries = 5  # Use fixed value for type safety
 
         config = FlextApiModels.ClientConfig(
-            base_url="https://api.test.com",
-            timeout=60.0,
-            max_retries=5,
+            base_url=base_url,
+            timeout=timeout,
+            max_retries=max_retries,
             headers=headers,
         )
 
-        assert config.base_url == "https://api.test.com"
-        assert config.timeout == 60.0
-        assert config.max_retries == 5
+        assert config.base_url == base_url
+        assert config.timeout == timeout
+        assert config.max_retries == max_retries
         assert config.headers == headers
 
     def test_client_config_base_url_validation(self) -> None:
-        """Test ClientConfig base_url validation."""
-        # Valid s
-        for url in [
+        """Test ClientConfig base_url validation using flext_tests."""
+        # Get realistic service data from FlextTestsDomains
+        service_data = FlextTestsDomains.create_service()
+        service_name = service_data.get("name", "api")
+        port = service_data.get("port", 8080)
+
+        # Valid URLs using flext_tests data
+        valid_urls = [
             "http://localhost",
-            "https://api.example.com",
-            "https://test.com:8080/api",
-        ]:
+            f"https://{service_name}.example.com",
+            f"https://test.com:{port}/api",
+        ]
+
+        for url in valid_urls:
             config = FlextApiModels.ClientConfig(base_url=url)
             assert config.base_url == url
 
@@ -167,7 +187,11 @@ class TestFlextApiModels:
         data = {"result": "success"}
 
         response = FlextApiModels.HttpResponse(
-            status_code=200, body=data, headers=headers, url="/api/test", method="GET"
+            status_code=200,
+            body=cast("dict[str, object]", data),
+            headers=headers,
+            url="/api/test",
+            method="GET",
         )
 
         assert response.status_code == 200
@@ -230,7 +254,7 @@ class TestFlextApiModels:
         sort_fields = ["created_at"]
 
         builder = FlextApiModels.HttpQuery(
-            filter_conditions=filter_conditions,
+            filter_conditions=cast("dict[str, object]", filter_conditions),
             sort_fields=sort_fields,
             page_number=2,
             page_size_value=25,

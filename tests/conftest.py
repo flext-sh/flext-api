@@ -1,9 +1,7 @@
-"""Pytest configuration for flext-api tests - REAL functionality only.
+"""Pytest configuration for flext-api tests using flext_tests EM ABSOLUTO.
 
-Focused on testing actual implementation, not mock objects or compatibility layers.
-Uses only REAL classes from flext_api with proper FlextResult patterns.
-
-
+Uses flext_tests library MAXIMALLY for all testing utilities.
+ZERO local implementations - everything via flext_tests.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -14,16 +12,21 @@ from __future__ import annotations
 import asyncio
 import os
 import tempfile
+import uuid
+from collections.abc import Generator
 from pathlib import Path
+from typing import cast
 
 import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from flext_core import FlextTypes
 from flext_core.typings import FlextTypes
 
-# Import REAL classes directly - no helpers, no aliases
+# MAXIMUM usage of flext_tests - use EM ABSOLUTO
+from flext_tests import FlextTestsDomains
+
+# DIRECT imports from flext_api - verified classes
 from flext_api import (
     FlextApiClient,
     FlextApiConfig,
@@ -38,7 +41,7 @@ Faker.seed(12345)
 os.environ.update(
     {
         "FLEXT_API_TESTING": "true",
-        "FLEXT_DISABLE_EXTERNAL_CALLS": "0",  # ENABLE external calls for real testing
+        "FLEXT_DISABLE_EXTERNAL_CALLS": "0",
         "ENVIRONMENT": "test",
         "LOG_LEVEL": "INFO",
     }
@@ -46,7 +49,7 @@ os.environ.update(
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Configure pytest with essential markers."""
+    """Configure pytest markers."""
     markers = [
         "unit: Fast isolated unit tests",
         "integration: Integration tests with external dependencies",
@@ -67,7 +70,7 @@ def pytest_configure(config: pytest.Config) -> None:
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     """Modify test items during collection."""
     for item in items:
-        # Add real_classes marker to all tests (since we only use REAL classes)
+        # Add real_classes marker to all tests
         item.add_marker(pytest.mark.real_classes)
 
         # Add unit marker by default
@@ -79,104 +82,168 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 
 
 # ============================================================================
-# CORE FIXTURES - REAL CLASSES ONLY
+# FLEXT-API FIXTURES using flext_tests EM ABSOLUTO
 # ============================================================================
-
-
-@pytest.fixture
-def flext_api() -> FlextApiClient:
-    """Provide real FlextApiClient instance for testing."""
-    return FlextApiClient()
-
-
-@pytest.fixture
-def flext_api_config() -> FlextApiConfig:
-    """Provide real FlextApiConfig instance for testing."""
-    return FlextApiConfig(
-        host="127.0.0.1",
-        port=8080,
-        default_timeout=30.0,
-        max_retries=3,
-        base_url="https://httpbin.org",
-    )
 
 
 @pytest.fixture
 def flext_api_client() -> FlextApiClient:
-    """Provide real FlextApiClient instance for testing."""
-    return FlextApiClient(base_url="https://httpbin.org", timeout=30.0, max_retries=3)
+    """Provide FlextApiClient using flext_tests configuration."""
+    # Use FlextTestsDomains for configuration data
+    config_data = FlextTestsDomains.create_configuration()
+
+    return FlextApiClient(
+        base_url=str(config_data.get("base_url", "https://httpbin.org")),
+        timeout=cast("float", config_data.get("timeout", 30.0)),
+        max_retries=cast("int", config_data.get("max_retries", 3))
+    )
 
 
 @pytest.fixture
-def flext_api_app() -> FastAPI:
-    """Provide real FastAPI app instance for testing."""
-    return FastAPI(title="FLEXT API Test", version="0.9.0")
+def flext_api_config() -> FlextApiConfig:
+    """Provide FlextApiConfig using flext_tests configuration."""
+    # Use FlextTestsDomains for realistic config values
+    config_data = FlextTestsDomains.create_configuration()
+
+    return FlextApiConfig(
+        host=str(config_data.get("host", "127.0.0.1")),
+        port=cast("int", config_data.get("port", 8080)),
+        default_timeout=cast("float", config_data.get("default_timeout", 30.0)),
+        max_retries=cast("int", config_data.get("max_retries", 3)),
+        base_url=str(config_data.get("base_url", "https://httpbin.org")),
+    )
 
 
 @pytest.fixture
 def flext_api_storage() -> FlextApiStorage:
-    """Provide real FlextApiStorage instance for testing."""
-    return FlextApiStorage(storage_name="TestStorage", max_size=100, default_ttl=300)
+    """Provide FlextApiStorage using flext_tests configuration."""
+    # Use FlextTestsDomains for storage configuration
+    storage_config = FlextTestsDomains.create_configuration()
+
+    return FlextApiStorage(
+        {
+            "backend": str(storage_config.get("storage_backend", "memory")),
+            "namespace": f"TestStorage_{storage_config.get('namespace', 'default')!s}",
+            "enable_caching": bool(storage_config.get("enable_caching", True)),
+            "cache_ttl_seconds": cast("int", storage_config.get("cache_ttl", 300)),
+        }
+    )
 
 
 @pytest.fixture
-def fastapi_app(flext_api_app: FastAPI) -> FastAPI:
-    """Provide real FastAPI app for testing."""
-    return flext_api_app
+def fastapi_app() -> FastAPI:
+    """Provide FastAPI app using flext_tests service data."""
+    service_data = FlextTestsDomains.create_service()
+
+    return FastAPI(
+        title=str(service_data.get("name", "FLEXT API Test")),
+        version=str(service_data.get("version", "0.9.0")),
+        description=str(service_data.get("description", "Test API"))
+    )
 
 
 @pytest.fixture
 def test_client(fastapi_app: FastAPI) -> TestClient:
-    """Provide real FastAPI test client."""
+    """Provide FastAPI test client."""
     return TestClient(fastapi_app)
 
 
 # ============================================================================
-# DATA FIXTURES
+# DATA FIXTURES using flext_tests EM ABSOLUTO
 # ============================================================================
 
 
 @pytest.fixture
 def sample_api_data() -> FlextTypes.Core.Dict:
-    """Provide sample API data for testing."""
-    return {
-        "id": 123,
-        "name": "Test User",
-        "email": "test@example.com",
-        "status": "active",
-    }
+    """Sample API data using FlextTestsDomains."""
+    return FlextTestsDomains.api_response_data()
 
 
 @pytest.fixture
 def sample_headers() -> FlextTypes.Core.Headers:
-    """Provide sample HTTP headers for testing."""
+    """Sample HTTP headers using flext_tests."""
+    service_data = FlextTestsDomains.create_service()
     return {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "User-Agent": "FlextAPI-Test/0.9.0",
+        "User-Agent": f"{service_data.get('name', 'FlextAPI')}-Test/{service_data.get('version', '0.9.0')}",
+        "X-Request-ID": str(uuid.uuid4()),
     }
 
 
 @pytest.fixture
 def sample_config_dict() -> FlextTypes.Core.Dict:
-    """Provide sample client config dictionary for testing."""
-    return {"base_url": "https://api.example.com", "timeout": 45.0, "max_retries": 5}
+    """Sample config dictionary using FlextTestsDomains."""
+    return FlextTestsDomains.create_configuration()
+
+
+@pytest.fixture
+def sample_user_data() -> FlextTypes.Core.Dict:
+    """Sample user data using FlextTestsDomains."""
+    return FlextTestsDomains.create_user()
+
+
+@pytest.fixture
+def sample_service_data() -> FlextTypes.Core.Dict:
+    """Sample service data using FlextTestsDomains."""
+    return FlextTestsDomains.create_service()
+
+
+@pytest.fixture
+def sample_payload_data() -> FlextTypes.Core.Dict:
+    """Sample payload data using FlextTestsDomains."""
+    return FlextTestsDomains.create_payload()
+
+
+@pytest.fixture
+def sample_configuration_data() -> FlextTypes.Core.Dict:
+    """Sample configuration data using FlextTestsDomains."""
+    return FlextTestsDomains.create_configuration()
 
 
 # ============================================================================
-# UTILITY FIXTURES
+# VALIDATION FIXTURES using flext_tests EM ABSOLUTO
 # ============================================================================
 
 
 @pytest.fixture
-def temp_dir() -> Path:
+def valid_email_cases() -> list[str]:
+    """Valid email cases from FlextTestsDomains."""
+    return FlextTestsDomains.valid_email_cases()
+
+
+@pytest.fixture
+def invalid_email_cases() -> list[str]:
+    """Invalid email cases from FlextTestsDomains."""
+    return FlextTestsDomains.invalid_email_cases()
+
+
+@pytest.fixture
+def valid_ages() -> list[int]:
+    """Valid age cases from FlextTestsDomains."""
+    return FlextTestsDomains.valid_ages()
+
+
+@pytest.fixture
+def invalid_ages() -> list[int]:
+    """Invalid age cases from FlextTestsDomains."""
+    return FlextTestsDomains.invalid_ages()
+
+
+# ============================================================================
+# UTILITY FIXTURES using flext_tests EM ABSOLUTO
+# ============================================================================
+
+
+@pytest.fixture
+def temp_dir() -> Generator[Path]:
     """Provide temporary directory for testing."""
     with tempfile.TemporaryDirectory() as temp_dir:
         yield Path(temp_dir)
 
 
 @pytest.fixture
-def event_loop() -> asyncio.AbstractEventLoop:
+def event_loop() -> Generator[asyncio.AbstractEventLoop]:
     """Provide event loop for async testing."""
     loop = asyncio.new_event_loop()
     yield loop
@@ -184,29 +251,11 @@ def event_loop() -> asyncio.AbstractEventLoop:
 
 
 # ============================================================================
-# REAL FUNCTIONALITY HELPERS
+# DIRECT ACCESS TO flext_tests - NO ALIASES
 # ============================================================================
 
-
-def assert_flext_result_success(result: object) -> None:
-    """Assert that a FlextResult is successful."""
-    assert hasattr(result, "success"), "Result should have success attribute"
-    assert result.success, (
-        f"Result should be successful, got error: {getattr(result, 'error', None)}"
-    )
-    assert hasattr(result, "data"), "Result should have data attribute"
-
-
-def assert_flext_result_failure(
-    result: object, expected_error: str | None = None
-) -> None:
-    """Assert that a FlextResult is a failure."""
-    assert hasattr(result, "success"), "Result should have success attribute"
-    assert not result.success, "Result should not be successful"
-    assert hasattr(result, "error"), "Result should have error attribute"
-    assert result.error is not None, "Error should not be None for failed result"
-
-    if expected_error:
-        assert expected_error.lower() in str(result.error).lower(), (
-            f"Expected '{expected_error}' in error message: {result.error}"
-        )
+# Tests should import directly:
+# from flext_tests import FlextTestsMatchers, FlextTestsDomains, FlextTestsUtilities
+# FlextTestsMatchers.assert_result_success(result)
+# FlextTestsDomains.create_user()
+# FlextTestsUtilities.create_test_result(success=True, data=data)

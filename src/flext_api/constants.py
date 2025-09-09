@@ -61,7 +61,7 @@ class FlextApiConstants(FlextConstants):
         CONNECT = "CONNECT"
 
         @classmethod
-        def all(cls) -> tuple[FlextApiConstants.HttpMethods, ...]:  # type: ignore[name-defined]
+        def all(cls) -> tuple[FlextApiConstants.HttpMethods, ...]:
             """Return all enum members as a tuple (used in runtime contexts)."""
             return tuple(cls)
 

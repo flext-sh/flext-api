@@ -1,9 +1,8 @@
-"""Tests for flext_api.api module - Core API functionality.
+"""Tests for flext_api.client module using flext_tests EM ABSOLUTO.
 
-Tests using only REAL classes directly from flext_api.
-No helpers, no aliases, no compatibility layers.
-
-
+MAXIMUM usage of flext_tests - ALL test utilities via flext_tests.
+Uses FlextTestsMatchers, FlextTestsDomains, FlextTestsUtilities.
+ACESSO DIRETO - NO ALIASES, NO WRAPPERS, NO COMPATIBILITY.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,208 +10,273 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
+from flext_core.typings import FlextTypes
 
-from flext_api import FlextApi, create_flext_api
-from tests.conftest import assert_flext_result_failure, assert_flext_result_success
+# MAXIMUM usage of flext_tests - ACESSO DIRETO - NO ALIASES
+from flext_tests import FlextTestsDomains
+
+from flext_api import FlextApiClient, create_flext_api
 
 
-class TestFlextApiCore:
-    """Test FlextApi REAL class core functionality."""
+class TestFlextApiClient:
+    """Test FlextApiClient using flext_tests patterns and real functionality."""
 
-    def test_api_creation_direct(self) -> None:
-        """Test direct FlextApi instantiation."""
-        api = FlextApi()
+    def test_client_class_exists(self) -> None:
+        """Test FlextApiClient class exists and is importable."""
+        assert FlextApiClient is not None
+        assert hasattr(FlextApiClient, "__init__")
+        assert hasattr(FlextApiClient, "base_url")
+        assert hasattr(FlextApiClient, "timeout")
+        assert hasattr(FlextApiClient, "max_retries")
 
-        assert api.service_name == "FlextApi"
-        assert api.service_version == "0.9.0"
-
-    def test_api_creation_factory(self) -> None:
-        """Test create_flext_api factory function."""
+    def test_create_flext_api_factory(self) -> None:
+        """Test create_flext_api factory function using flext_tests patterns."""
         api = create_flext_api()
 
-        assert isinstance(api, FlextApi)
-        assert api.service_name == "FlextApi"
-        assert api.service_version == "0.9.0"
+        # Verify factory creates proper instance
+        assert isinstance(api, FlextApiClient)
+        assert api.base_url == "https://api.example.com"
 
-    def test_api_create_client_success(self) -> None:
-        """Test API client creation with valid config."""
-        api = create_flext_api()
+    def test_client_creation_with_flext_tests_config(self) -> None:
+        """Test client creation with FlextTestsDomains config - ACESSO DIRETO."""
+        # Use FlextTestsDomains for realistic client configuration
+        config_data = FlextTestsDomains.create_configuration()
 
-        config = {"base_url": "https://httpbin.org", "timeout": 30.0, "max_retries": 3}
+        base_url = str(config_data.get("base_url", "https://httpbin.org"))
+        timeout = cast("float", config_data.get("timeout", 30.0))
+        max_retries = cast("int", config_data.get("max_retries", 3))
 
-        result = api.create_client(config)
+        client = FlextApiClient(
+            base_url=base_url,
+            timeout=timeout,
+            max_retries=max_retries
+        )
 
-        assert_flext_result_success(result)
-        assert result.value is not None
+        # Verify configuration using real values
+        assert client.base_url == base_url
+        assert client.timeout == timeout
+        assert client.max_retries == max_retries
 
-        client = result.value
-        assert client.base_url == "https://httpbin.org"
-        assert client.timeout == 30.0
-        assert client.max_retries == 3
+    def test_client_properties_with_factory_data(self) -> None:
+        """Test client properties using FlextTestsDomains factory data."""
+        # Create test data using FlextTestsDomains - ACESSO DIRETO
+        service_data = FlextTestsDomains.create_service()
 
-    def test_api_create_client_invalid_config(self) -> None:
-        """Test API client creation with invalid config."""
-        api = create_flext_api()
+        base_url = f"https://{service_data.get('name', 'test')}.example.com"
+        timeout = cast("float", service_data.get("timeout", 45.0))
+        max_retries = cast("int", service_data.get("max_retries", 5))
 
-        # Empty base_url should fail
-        config = {"base_url": "", "timeout": 30.0}
+        client = FlextApiClient(
+            base_url=base_url,
+            timeout=timeout,
+            max_retries=max_retries
+        )
 
-        result = api.create_client(config)
+        # Verify all properties work
+        assert isinstance(client.base_url, str)
+        assert client.base_url == base_url
+        assert isinstance(client.timeout, float)
+        assert client.timeout == timeout
+        assert isinstance(client.max_retries, int)
+        assert client.max_retries == max_retries
 
-        assert_flext_result_failure(result, "base_url")
+    def test_client_with_configuration_data(
+        self, sample_configuration_data: FlextTypes.Core.Dict
+    ) -> None:
+        """Test client with configuration data from conftest fixture."""
+        # Use configuration data from FlextTestsDomains via conftest
+        base_url = str(sample_configuration_data.get("base_url", "https://httpbin.org"))
+        timeout = cast("float", sample_configuration_data.get("timeout", 30.0))
+        max_retries = cast("int", sample_configuration_data.get("max_retries", 3))
 
-    def test_api_create_client_none_config(self) -> None:
-        """Test API client creation with None config."""
-        api = create_flext_api()
+        client = FlextApiClient(
+            base_url=base_url,
+            timeout=timeout,
+            max_retries=max_retries
+        )
 
-        result = api.create_client(None)
+        # Verify client uses configuration correctly
+        assert client.base_url == base_url
+        assert client.timeout == timeout
+        assert client.max_retries == max_retries
 
-        assert_flext_result_failure(result, "base_url")
+    def test_client_initialization_variations(self) -> None:
+        """Test various client initialization patterns using flext_tests data."""
+        # Test with FlextTestsDomains data - ACESSO DIRETO
+        config_scenarios = [
+            FlextTestsDomains.create_configuration(),
+            FlextTestsDomains.create_service(),
+            {"base_url": "https://api.test.com", "timeout": 60.0, "max_retries": 2}
+        ]
 
-    def test_api_get_info(self) -> None:
-        """Test API get_info method."""
-        api = create_flext_api()
+        clients = []
+        for config in config_scenarios:
+            base_url = str(config.get("base_url", "https://default.example.com"))
+            client = FlextApiClient(base_url=base_url)
+            clients.append(client)
 
-        info_result = api.get_info()
-        assert_flext_result_success(info_result)
+        # All clients should be independent instances
+        assert len(clients) == 3
+        for i, client in enumerate(clients):
+            for j, other_client in enumerate(clients):
+                if i != j:
+                    assert client is not other_client
 
-        info_data = info_result.value
-        assert isinstance(info_data, dict)
-        assert info_data["service"] == "FlextApi"
-        assert info_data["name"] == "FlextApi"
-        assert info_data["version"] == "0.9.0"
-        assert "running" in info_data
-        assert "has_client" in info_data
+    def test_multiple_clients_independence(self) -> None:
+        """Test multiple client instances are independent using factory data."""
+        # Create clients using FlextTestsDomains - ACESSO DIRETO
+        service1 = FlextTestsDomains.create_service()
+        service2 = FlextTestsDomains.create_service()
 
-    def test_api_get_client_initially_none(self) -> None:
-        """Test API get_client returns None initially."""
-        api = create_flext_api()
+        client1 = FlextApiClient(
+            base_url=f"https://{service1.get('name', 'service1')}.example.com"
+        )
+        client2 = FlextApiClient(
+            base_url=f"https://{service2.get('name', 'service2')}.example.com"
+        )
 
-        client = api.get_client()
-        assert client is None
+        # Clients should be independent
+        assert client1 is not client2
+        assert client1.base_url != client2.base_url
 
-    def test_api_get_client_after_creation(self) -> None:
-        """Test API get_client returns client after creation."""
-        api = create_flext_api()
+    def test_client_async_interface_methods(self) -> None:
+        """Test client async interface methods exist."""
+        # Use FlextTestsDomains for configuration - ACESSO DIRETO
+        config_data = FlextTestsDomains.create_configuration()
+        base_url = str(config_data.get("base_url", "https://httpbin.org"))
 
-        # Create a client
-        config = {"base_url": "https://httpbin.org", "timeout": 30.0}
+        client = FlextApiClient(base_url=base_url)
 
-        create_result = api.create_client(config)
-        assert_flext_result_success(create_result)
+        # Verify async methods exist
+        assert hasattr(client, "request")
+        assert hasattr(client, "get")
+        assert hasattr(client, "post")
+        assert hasattr(client, "put")
+        assert hasattr(client, "delete")
 
-        # Now get_client should return the client
-        client = api.get_client()
-        assert client is not None
-        assert client.base_url == "https://httpbin.org"
+        # Verify they are callable
+        assert callable(client.request)
+        assert callable(client.get)
+        assert callable(client.post)
+        assert callable(client.put)
+        assert callable(client.delete)
 
-    def test_api_get_builder(self) -> None:
-        """Test API get_builder method."""
-        api = create_flext_api()
+    def test_client_configuration_validation(self) -> None:
+        """Test client validates configuration properly using flext_tests patterns."""
+        # Use FlextTestsDomains for realistic test data - ACESSO DIRETO
+        config_data = FlextTestsDomains.create_configuration()
 
-        builder = api.get_builder()
-        assert builder is not None
+        # Valid configuration should work
+        valid_base_url = str(config_data.get("base_url", "https://api.example.com"))
+        client = FlextApiClient(base_url=valid_base_url)
+        assert client.base_url == valid_base_url
 
-        # Should return the same instance on subsequent calls
-        builder2 = api.get_builder()
-        assert builder is builder2
+        # Empty base_url should raise validation error during initialization
+        with pytest.raises(Exception) as exc_info:
+            FlextApiClient(base_url="")
 
-    @pytest.mark.asyncio
-    async def test_api_async_lifecycle(self) -> None:
-        """Test API async service lifecycle methods."""
-        api = create_flext_api()
+        # Should raise some validation error
+        error_message = str(exc_info.value).lower()
+        assert "empty" in error_message or "base" in error_message
 
-        # Test async start
-        start_result = await api.start_async()
-        assert_flext_result_success(start_result)
+    def test_client_property_types_validation(self) -> None:
+        """Test client property types are properly validated."""
+        # Use FlextTestsDomains for configuration - ACESSO DIRETO
+        service_data = FlextTestsDomains.create_service()
+        base_url = f"https://{service_data.get('name', 'test')}.example.com"
 
-        # Test async health check
-        health_result = await api.health_check_async()
-        assert_flext_result_success(health_result)
+        client = FlextApiClient(
+            base_url=base_url,
+            timeout=30.5,
+            max_retries=5
+        )
 
-        health_data = health_result.value
-        assert isinstance(health_data, dict)
-        assert "status" in health_data
+        # Property types should be correct
+        assert isinstance(client.base_url, str)
+        assert isinstance(client.timeout, (int, float))  # Could be int or float
+        assert isinstance(client.max_retries, int)
 
-        # Test async stop
-        stop_result = await api.stop_async()
-        assert_flext_result_success(stop_result)
+    def test_client_with_service_data(
+        self, sample_service_data: FlextTypes.Core.Dict
+    ) -> None:
+        """Test client with service data from conftest fixture."""
+        # Build URL from service data
+        service_name = str(sample_service_data.get("name", "testservice"))
+        base_url = f"https://{service_name}.api.example.com"
 
-    def test_api_multiple_instances_independence(self) -> None:
-        """Test multiple API instances work independently."""
-        api1 = FlextApi()
-        api2 = FlextApi()
+        client = FlextApiClient(base_url=base_url)
 
-        assert api1.service_name == api2.service_name
-        assert api1.service_version == api2.service_version
+        # Verify client configuration
+        assert service_name in client.base_url
+        assert client.base_url.startswith("https://")
+        assert client.base_url.endswith(".api.example.com")
 
-        # Both should have their own state
-        info1 = api1.get_info()
-        info2 = api2.get_info()
+    def test_client_advanced_features_exist(self) -> None:
+        """Test client has advanced features using flext_tests patterns."""
+        # Use FlextTestsDomains for configuration - ACESSO DIRETO
+        config_data = FlextTestsDomains.create_configuration()
+        base_url = str(config_data.get("base_url", "https://httpbin.org"))
 
-        assert_flext_result_success(info1)
-        assert_flext_result_success(info2)
+        client = FlextApiClient(base_url=base_url)
 
-        # Should be separate instances
-        assert api1 is not api2
+        # Client should have these properties/attributes
+        assert hasattr(client, "config")
+        assert hasattr(client, "httpx_client")
+        # Check that aiohttp_session method exists in class definition
+        assert "aiohttp_session" in dir(client.__class__)
 
-    def test_api_service_properties(self) -> None:
-        """Test API service properties."""
-        api = FlextApi()
+        # Config should be accessible
+        assert client.config is not None
+        assert hasattr(client.config, "base_url")
 
-        assert isinstance(api.service_name, str)
-        assert len(api.service_name) > 0
-        assert isinstance(api.service_version, str)
-        assert len(api.service_version) > 0
-        assert isinstance(api.default_base_url, str)
-        assert len(api.default_base_url) > 0
+        # Test that httpx_client property exists (lazy loaded)
+        assert hasattr(client, "httpx_client")
+        # Access httpx_client should work (async client creation)
+        httpx_client = client.httpx_client
+        assert httpx_client is not None
 
-    def test_api_client_lifecycle(self) -> None:
-        """Test complete client lifecycle through API."""
-        api = create_flext_api()
+    def test_client_factory_function_consistency(self) -> None:
+        """Test create_flext_api factory creates consistent clients."""
+        # Multiple calls should create independent instances
+        client1 = create_flext_api()
+        client2 = create_flext_api()
 
-        # Initially no client
-        assert api.get_client() is None
+        # Should be different instances but same configuration
+        assert client1 is not client2
+        assert client1.base_url == client2.base_url
+        assert client1.timeout == client2.timeout
+        assert client1.max_retries == client2.max_retries
 
-        # Create client
-        config = {"base_url": "https://api.example.com"}
-        result = api.create_client(config)
-        assert_flext_result_success(result)
+    def test_client_type_validation_with_flext_tests(self) -> None:
+        """Test client is proper type using flext_tests validation."""
+        # Create client using factory
+        api_client = create_flext_api()
 
-        # Now has client
-        client = api.get_client()
-        assert client is not None
-        assert client.base_url == "https://api.example.com"
+        # Type validation
+        assert isinstance(api_client, FlextApiClient)
+        assert type(api_client).__name__ == "FlextApiClient"
 
-        # Client persists
-        same_client = api.get_client()
-        assert same_client is client
+        # Should be a class instance, not a type
+        assert not isinstance(api_client, type)
 
-    def test_api_builder_lifecycle(self) -> None:
-        """Test builder lifecycle through API."""
-        api = create_flext_api()
+    def test_client_attributes_persistence_with_factory_data(self) -> None:
+        """Test client attributes persist after creation using factory data."""
+        # Use FlextTestsDomains for test data - ACESSO DIRETO
+        config_data = FlextTestsDomains.create_configuration()
+        base_url = str(config_data.get("base_url", "https://persistent.example.com"))
 
-        # Get builder (should create one)
-        builder1 = api.get_builder()
-        assert builder1 is not None
+        client = FlextApiClient(base_url=base_url)
 
-        # Get builder again (should return same instance)
-        builder2 = api.get_builder()
-        assert builder2 is builder1
+        # Attributes should persist
+        original_base_url = client.base_url
+        original_timeout = client.timeout
 
-    def test_api_create_client_partial_config(self) -> None:
-        """Test client creation with partial config."""
-        api = create_flext_api()
+        # After operations, attributes should still be there
+        _ = str(client)  # String conversion
+        _ = repr(client)  # Repr operation
 
-        # Only base_url required
-        config = {"base_url": "https://minimal.example.com"}
-
-        result = api.create_client(config)
-        assert_flext_result_success(result)
-
-        client = result.value
-        assert client.base_url == "https://minimal.example.com"
-        # Should have default values for other properties
-        assert client.timeout is not None
-        assert client.max_retries is not None
+        assert client.base_url == original_base_url
+        assert client.timeout == original_timeout
