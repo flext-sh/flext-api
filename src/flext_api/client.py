@@ -27,7 +27,7 @@ from urllib.parse import urljoin
 import aiohttp
 import httpx
 from aiofiles import open as aio_open
-from flext_core import FlextResult, FlextTypes, FlextLogger, FlextContainer
+from flext_core import FlextContainer, FlextLogger, FlextResult, FlextTypes
 
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
@@ -41,7 +41,7 @@ ResponseT = TypeVar("ResponseT", bound=FlextApiModels.HttpResponse)
 logger = FlextLogger(__name__)
 
 # Get dependency injection container
-container = get_flext_container()
+container = FlextContainer.get_global()
 
 
 class FlextApiClient:

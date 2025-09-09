@@ -131,7 +131,7 @@ class TestFlextApiModelsReal:
     def test_client_config_with_factory(self) -> None:
         """Test client config creation using factory."""
         # Use FlextTestsDomains for client test data
-        client_data = FlextTestsDomains.create_service()
+        FlextTestsDomains.create_service()
         client = FlextApiModels.ClientConfig(
             base_url="https://test.example.com", timeout=60.0, max_retries=2
         )

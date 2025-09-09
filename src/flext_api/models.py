@@ -9,13 +9,13 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
-from flext_core import FlextModels, FlextResult, FlextLogger
+from flext_core import FlextLogger, FlextModels, FlextResult
 from pydantic import BaseModel, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
 
-logger = flext_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class FlextApiModels(FlextModels):

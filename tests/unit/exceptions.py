@@ -75,10 +75,12 @@ class TestFlextErrorsComprehensive:
     def test_error_exception_behavior(self) -> None:
         """Test errors behave as proper exceptions using flext_tests."""
         with pytest.raises(FlextApiExceptions.FlextApiError):
-            raise FlextApiExceptions.FlextApiError("Exception test 1")
+            msg = "Exception test 1"
+            raise FlextApiExceptions.FlextApiError(msg)
 
         with pytest.raises(FlextApiExceptions.ValidationError):
-            raise FlextApiExceptions.ValidationError("Exception test 2")
+            msg = "Exception test 2"
+            raise FlextApiExceptions.ValidationError(msg)
 
     def test_multiple_error_instances(self) -> None:
         """Test multiple error instances are independent using flext_tests."""
