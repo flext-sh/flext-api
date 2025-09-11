@@ -129,9 +129,7 @@ class TestFlextApiConfigReal:
         assert config.default_timeout > 0
         assert config.max_retries == 3
 
-    def test_config_with_factory_data(
-        self, sample_configuration_data: dict[str, object]
-    ) -> None:
+    def test_config_with_factory_data(self) -> None:
         """Test FlextApiConfig creation with factory data."""
         # Use configuration data from FlextTestsDomains
         config_data = FlextTestsDomains.create_configuration()

@@ -9,11 +9,12 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
-from flext_core import FlextLogger, FlextModels, FlextResult
+from flext_core import FlextLogger, FlextModels
 from pydantic import BaseModel, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
+from flext_api.utilities import FlextApiUtilities
 
 logger = FlextLogger(__name__)
 
@@ -88,7 +89,7 @@ class FlextApiModels(FlextModels):
         @field_validator("base_url")
         @classmethod
         def validate_base_url(cls, v: str) -> str:
-            """Validate base URL format.
+            """Validate base URL format using FlextApiUtilities.
 
             Returns:
                 str: Validated base URL.
@@ -97,13 +98,10 @@ class FlextApiModels(FlextModels):
                 ValueError: If URL format is invalid.
 
             """
-            if not v.strip():
-                msg = "Base cannot be empty"
-                raise ValueError(msg)
-            if not v.startswith(("http://", "https://")):
-                msg = "Base must include scheme and host"
-                raise ValueError(msg)
-            return v
+            validation_result = FlextApiUtilities.HttpValidator.validate_url(v)
+            if not validation_result.success:
+                raise ValueError(validation_result.error or "Invalid URL format")
+            return validation_result.value
 
         @field_validator("timeout")
         @classmethod
@@ -148,6 +146,18 @@ class FlextApiModels(FlextModels):
         )
         @classmethod
         def validate_positive_int(cls, v: int) -> int:
+            """Validate that integer value is non-negative.
+
+            Args:
+                v: Integer value to validate.
+
+            Returns:
+                int: Validated integer value.
+
+            Raises:
+                ValueError: If value is negative.
+
+            """
             if v < 0:
                 msg = "Value must be non-negative"
                 raise ValueError(msg)
@@ -161,6 +171,18 @@ class FlextApiModels(FlextModels):
         )
         @classmethod
         def validate_positive_float(cls, v: float) -> float:
+            """Validate that float value is greater than zero.
+
+            Args:
+                v: Float value to validate.
+
+            Returns:
+                float: Validated float value.
+
+            Raises:
+                ValueError: If value is not greater than zero.
+
+            """
             if v <= 0:
                 msg = "Value must be greater than zero"
                 raise ValueError(msg)
@@ -328,29 +350,7 @@ class FlextApiModels(FlextModels):
         page: int = Field(ge=1)
         page_size: int = Field(ge=1)
 
-    # ===================== Query / Response Builder (interface mínima) =====================
-    class ResponseBuilder(BaseModel):
-        """Builder de respostas simples retornando FlextResult para testes."""
-
-        def success(
-            self,
-            data: object,
-            message: str = "Success",
-            status_code: int = 200,
-        ) -> FlextResult[dict[str, object]]:
-            response = {
-                "success": True,
-                "message": message,
-                "status_code": status_code,
-                "data": data,
-            }
-            return FlextResult[dict[str, object]].ok(response)
-
-        def error(
-            self,
-            message: str,
-        ) -> FlextResult[dict[str, object]]:
-            return FlextResult[dict[str, object]].fail(message)
+    # ===================== Query Builder (ResponseBuilder moved to utilities.py) =====================
 
     class QueryBuilder(BaseModel):
         """Query builder mínima para cobrir testes (equals, sort_desc, paginação)."""
@@ -362,28 +362,77 @@ class FlextApiModels(FlextModels):
 
         # Métodos fluent
         def equals(self, field: str, value: object) -> FlextApiModels.QueryBuilder:
+            """Add equality filter condition.
+
+            Args:
+                field: Field name.
+                value: Field value.
+
+            Returns:
+                FlextApiModels.QueryBuilder: Self for chaining.
+
+            """
             self.filters[field] = value
             return self
 
         def sort_desc(self, field: str) -> FlextApiModels.QueryBuilder:
+            """Add descending sort field.
+
+            Args:
+                field: Field name to sort by.
+
+            Returns:
+                FlextApiModels.QueryBuilder: Self for chaining.
+
+            """
             self.sort.append(f"-{field}")
             return self
 
         def set_page(self, value: int) -> FlextApiModels.QueryBuilder:
+            """Set page number.
+
+            Args:
+                value: Page number (must be >= 1).
+
+            Returns:
+                FlextApiModels.QueryBuilder: Self for chaining.
+
+            """
             if value >= 1:
                 self.page = value
             return self
 
         def set_page_size(self, value: int) -> FlextApiModels.QueryBuilder:
+            """Set page size.
+
+            Args:
+                value: Page size (must be >= 1).
+
+            Returns:
+                FlextApiModels.QueryBuilder: Self for chaining.
+
+            """
             if value >= 1:
                 self.page_size = value
             return self
 
-        def for_response(self) -> FlextApiModels.ResponseBuilder:
-            return FlextApiModels.ResponseBuilder()
+        def for_response(self) -> FlextApiUtilities.ResponseBuilder:
+            """Get response builder for this query.
+
+            Returns:
+                FlextApiUtilities.ResponseBuilder: New response builder instance.
+
+            """
+            return FlextApiUtilities.ResponseBuilder()
 
         # Build final dict
         def build(self) -> dict[str, object]:
+            """Build final query dictionary.
+
+            Returns:
+                dict[str, object]: Query parameters dictionary.
+
+            """
             return {
                 "filters": self.filters,
                 "sort": self.sort,
@@ -396,7 +445,7 @@ class FlextApiModels(FlextModels):
     # ===================== Factory estática usada pelos testes =====================
     @classmethod
     def for_query(cls) -> FlextApiModels.QueryBuilder:
-        """Factory simples para obter um QueryBuilder (usado em testes)."""
+        """Create QueryBuilder instance for tests."""
         return cls.QueryBuilder()
 
     class StorageConfig(BaseModel):
@@ -436,7 +485,7 @@ class FlextApiModels(FlextModels):
 
         @classmethod
         def create_query_builder(cls) -> FlextApiModels.HttpQuery:
-            """Factory method for creating query builders.
+            """Create query builder instance.
 
             Returns:
                 FlextApiModels.HttpQuery: New query builder instance.
@@ -457,24 +506,54 @@ class FlextApiModels(FlextModels):
 
         @property
         def scheme(self) -> str:
+            """Get URL scheme (http/https).
+
+            Returns:
+                str: URL scheme.
+
+            """
             return urlparse(self.url).scheme
 
         @property
         def host(self) -> str:
+            """Get URL host.
+
+            Returns:
+                str: URL host.
+
+            """
             parsed = urlparse(self.url)
             return parsed.netloc.split(":")[0] if parsed.netloc else ""
 
         @property
         def port(self) -> int | None:
+            """Get URL port.
+
+            Returns:
+                int | None: URL port or None if not specified.
+
+            """
             return urlparse(self.url).port
 
         @property
         def path(self) -> str:
+            """Get URL path.
+
+            Returns:
+                str: URL path.
+
+            """
             parsed = urlparse(self.url)
             return parsed.path or "/"
 
         @property
         def query(self) -> str:
+            """Get URL query string.
+
+            Returns:
+                str: URL query string.
+
+            """
             return urlparse(self.url).query
 
 

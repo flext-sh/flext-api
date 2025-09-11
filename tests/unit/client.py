@@ -558,7 +558,7 @@ class TestFlextApiClient:
         call_count = 0
 
         async def mock_execute_fn(
-            ctx: FlextApiClient._HttpRequestContext, attempt: int
+            _ctx: FlextApiClient._HttpRequestContext, _attempt: int
         ) -> FlextResult[FlextTypes.Core.Dict]:
             nonlocal call_count
             call_count += 1
@@ -585,7 +585,7 @@ class TestFlextApiClient:
 
         # Mock execute function that always fails
         async def always_fail_execute_fn(
-            ctx: FlextApiClient._HttpRequestContext, attempt: int
+            _ctx: FlextApiClient._HttpRequestContext, _attempt: int
         ) -> FlextResult[FlextTypes.Core.Dict]:
             return FlextResult[FlextTypes.Core.Dict].fail("Always fails")
 
@@ -607,7 +607,7 @@ class TestFlextApiClient:
         call_count = 0
 
         async def exception_execute_fn(
-            ctx: FlextApiClient._HttpRequestContext, attempt: int
+            _ctx: FlextApiClient._HttpRequestContext, _attempt: int
         ) -> FlextTypes.Core.Dict:
             nonlocal call_count
             call_count += 1
@@ -636,7 +636,7 @@ class TestFlextApiClient:
 
         # Mock execute function that raises unexpected exception
         async def unexpected_exception_execute_fn(
-            ctx: FlextApiClient._HttpRequestContext, attempt: int
+            _ctx: FlextApiClient._HttpRequestContext, _attempt: int
         ) -> Never:
             msg = "Unexpected error"
             raise ValueError(msg)

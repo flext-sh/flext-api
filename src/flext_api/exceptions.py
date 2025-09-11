@@ -34,6 +34,15 @@ class FlextApiExceptions(FlextExceptions):
             error_code: str | None = None,
             context: FlextApiTypes.Core.Dict | None = None,
         ) -> None:
+            """Initialize base API error.
+
+            Args:
+                message: Error message.
+                status_code: HTTP status code.
+                error_code: Optional error code.
+                context: Optional error context.
+
+            """
             super().__init__(message, code=error_code, context=context)
             self.status_code = status_code
             self.context = context or {}
@@ -273,6 +282,16 @@ class FlextApiExceptions(FlextExceptions):
             headers: FlextApiTypes.HttpHeaders | None = None,
             context: FlextApiTypes.Core.Dict | None = None,
         ) -> None:
+            """Initialize network error.
+
+            Args:
+                message: Error message.
+                url: Request URL.
+                method: HTTP method.
+                headers: Request headers.
+                context: Error context.
+
+            """
             network_context: FlextApiTypes.Core.Dict = {}
             if url:
                 network_context["url"] = url
@@ -300,6 +319,16 @@ class FlextApiExceptions(FlextExceptions):
             headers: FlextApiTypes.HttpHeaders | None = None,
             context: FlextApiTypes.Core.Dict | None = None,
         ) -> None:
+            """Initialize connection error.
+
+            Args:
+                message: Error message.
+                url: Request URL.
+                method: HTTP method.
+                headers: Request headers.
+                context: Error context.
+
+            """
             super().__init__(message, url, method, headers, context)
 
     # Validation Errors

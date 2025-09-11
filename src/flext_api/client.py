@@ -13,6 +13,9 @@ from __future__ import annotations
 
 import asyncio
 import base64
+
+# Check if HTTP/2 is available (requires h2 package)
+import importlib.util
 import json
 import ssl
 import time
@@ -34,13 +37,7 @@ from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
 
-# Check if HTTP/2 is available (requires h2 package)
-try:
-    import h2
-
-    HTTP2_AVAILABLE = True
-except ImportError:
-    HTTP2_AVAILABLE = False
+HTTP2_AVAILABLE = importlib.util.find_spec("h2") is not None
 
 # Type variables for generic functionality
 ResponseT = TypeVar("ResponseT", bound=FlextApiModels.HttpResponse)
@@ -129,7 +126,7 @@ class FlextApiClient:
     def create(
         cls, config: FlextTypes.Core.Dict | FlextApiModels.ClientConfig
     ) -> FlextResult[FlextApiClient]:
-        """Factory method using existing protocols and returning FlextResult."""
+        """Create client instance using existing protocols and returning FlextResult."""
         try:
             cfg_model = (
                 config

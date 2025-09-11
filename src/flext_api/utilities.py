@@ -78,68 +78,7 @@ class FlextApiUtilities(FlextUtilities):
         """Validate validation configuration - direct passthrough."""
         return FlextResult[FlextApiTypes.Core.Dict].ok(config.model_dump())
 
-    # Convenience methods for backward compatibility with tests
-    @classmethod
-    def build_error_response(
-        cls, error: str, status_code: int = 500
-    ) -> FlextApiTypes.Core.Dict:
-        """Build error response using ResponseBuilder - convenience method."""
-        result = cls.ResponseBuilder.build_error_response(
-            error=error, status_code=status_code
-        )
-        if result.success:
-            # Convert the ResponseBuilder format to match test expectations
-            response_data = result.value.copy()
-            # Map 'message' to 'error' for backward compatibility with tests
-            if "message" in response_data:
-                response_data["error"] = response_data.pop("message")
-            return response_data
-        # Fallback for any error in building response
-        return {
-            "error": error,
-            "status_code": status_code,
-            "success": False,
-            "data": None,
-        }
-
-    @classmethod
-    def build_paginated_response(
-        cls,
-        data: FlextApiTypes.Core.List,
-        total: int,
-        page: int = 1,
-        page_size: int = FlextApiConstants.Pagination.DEFAULT_PAGE_SIZE,
-    ) -> FlextApiTypes.Core.Dict:
-        """Build paginated response using PaginationBuilder - convenience method."""
-        result = cls.PaginationBuilder.build_paginated_response(
-            data=data, total=total, page=page, page_size=page_size
-        )
-        if result.success:
-            # Convert the PaginationBuilder format to match test expectations
-            response_data = result.value
-            if isinstance(response_data, dict) and "pagination" in response_data:
-                pagination_data = response_data.get("pagination")
-                if (
-                    isinstance(pagination_data, dict)
-                    and "total_pages" in pagination_data
-                ):
-                    # Map 'total_pages' to 'pages' for backward compatibility with tests
-                    pagination = pagination_data.copy()
-                    pagination["pages"] = pagination.pop("total_pages")
-                    response_data = response_data.copy()
-                    response_data["pagination"] = pagination
-            return response_data
-        # Fallback for any error in building response
-        return {
-            "data": data,
-            "pagination": {
-                "total": total,
-                "page": page,
-                "page_size": page_size,
-                "pages": max(1, (total + page_size - 1) // page_size),
-            },
-            "success": True,
-        }
+    # Convenience methods removed - use ResponseBuilder and PaginationBuilder directly
 
     @classmethod
     def validate_url(cls, url: object) -> FlextResult[str]:
@@ -194,12 +133,10 @@ class FlextApiUtilities(FlextUtilities):
                 # Python 3.13 Advanced Structural Pattern Matching
 
                 if not parsed.scheme:
-                    return FlextResult[str].fail("URL must include scheme (http/https)")
+                    return FlextResult[str].fail("Invalid URL format")
 
                 if parsed.scheme not in {"http", "https"}:
-                    return FlextResult[str].fail(
-                        f"URL scheme '{parsed.scheme}' not supported, use http/https",
-                    )
+                    return FlextResult[str].fail("Invalid URL format")
 
                 if not parsed.netloc:
                     return FlextResult[str].fail("URL must include hostname")

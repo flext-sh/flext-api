@@ -14,9 +14,11 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
-from flext_core import FlextTypes
 
 import asyncio
+
+from flext_core import FlextTypes
+
 from flext_api import (
     FlextApi,
     FlextApiApp,

@@ -153,12 +153,12 @@ class TestFlextApiConfig:
         # Empty base_url should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
             FlextApiConfig(base_url="")
-        assert "Base cannot be empty" in str(exc_info.value)
+        assert "URL must be a non-empty string" in str(exc_info.value)
 
         # Invalid protocol should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
             FlextApiConfig(base_url="ftp://example.com")
-        assert "Base must start with http:// or https://" in str(exc_info.value)
+        assert "Invalid URL format" in str(exc_info.value)
 
     def test_get_server_config(self) -> None:
         """Test getting server configuration."""
