@@ -109,12 +109,12 @@ class TestFlextApiModels:
         # Empty base_url should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.ClientConfig(base_url="")
-        assert "Base cannot be empty" in str(exc_info.value)
+        assert "URL must be a non-empty string" in str(exc_info.value)
 
         # Invalid format should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.ClientConfig(base_url="not-a-url")
-        assert "Base must include scheme and host" in str(exc_info.value)
+        assert "Invalid URL format" in str(exc_info.value)
 
     def test_client_config_timeout_validation(self) -> None:
         """Test ClientConfig timeout validation."""

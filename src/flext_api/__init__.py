@@ -51,8 +51,8 @@ def create_flext_api() -> FlextApiClient:
 
 # Explicit __all__ definition
 __all__ = [
-    # Version
-    "__version__",
+    "URL",
+    "ApiRequest",
     # Main classes from modules
     "FlextApiClient",
     "FlextApiConfig",
@@ -66,7 +66,7 @@ __all__ = [
     # Additional exports
     "StorageBackend",
     "StorageConfig",
-    "URL",
-    "ApiRequest",
+    # Version
+    "__version__",
     "create_flext_api",
 ]

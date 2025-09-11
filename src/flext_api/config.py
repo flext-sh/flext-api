@@ -15,6 +15,7 @@ from flext_core import FlextLogger, FlextResult
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from flext_api.typings import FlextApiTypes
+from flext_api.utilities import FlextApiUtilities
 
 logger = FlextLogger(__name__)
 
@@ -132,13 +133,11 @@ class FlextApiConfig(BaseModel):
     @field_validator("base_url")
     @classmethod
     def _validate_base_url(cls, v: str) -> str:
-        if not v or not v.strip():
-            msg = "Base cannot be empty"
-            raise ValueError(msg)
-        if not v.startswith(("http://", "https://")):
-            msg = "Base must start with http:// or https://"
-            raise ValueError(msg)
-        return v
+        """Validate base URL using FlextApiUtilities."""
+        validation_result = FlextApiUtilities.HttpValidator.validate_url(v)
+        if not validation_result.success:
+            raise ValueError(validation_result.error or "Invalid URL format")
+        return validation_result.value
 
     @model_validator(mode="after")
     def _finalize(self) -> FlextApiConfig:
@@ -152,6 +151,12 @@ class FlextApiConfig(BaseModel):
     # ---------------------------
 
     def get_server_config(self) -> FlextResult[FlextApiTypes.Core.Dict]:
+        """Get server configuration as dictionary.
+
+        Returns:
+            FlextResult[FlextApiTypes.Core.Dict]: Server configuration data.
+
+        """
         data: FlextApiTypes.Core.Dict = {
             "host": self.host,
             "port": self.port,
@@ -161,6 +166,12 @@ class FlextApiConfig(BaseModel):
         return FlextResult[FlextApiTypes.Core.Dict].ok(data)
 
     def get_client_config(self) -> FlextResult[FlextApiTypes.Core.Dict]:
+        """Get client configuration as dictionary.
+
+        Returns:
+            FlextResult[FlextApiTypes.Core.Dict]: Client configuration data.
+
+        """
         data: FlextApiTypes.Core.Dict = {
             "base_url": self.base_url,
             "timeout": self.default_timeout,
@@ -169,6 +180,12 @@ class FlextApiConfig(BaseModel):
         return FlextResult[FlextApiTypes.Core.Dict].ok(data)
 
     def get_cors_config(self) -> FlextResult[FlextApiTypes.Core.Dict]:
+        """Get CORS configuration as dictionary.
+
+        Returns:
+            FlextResult[FlextApiTypes.Core.Dict]: CORS configuration data.
+
+        """
         data: FlextApiTypes.Core.Dict = {
             "allow_origins": list(self.cors_origins),
             "allow_methods": list(self.cors_methods),

@@ -284,27 +284,116 @@ class FlextApiTypes(FlextTypes):
     class HttpRequestProtocol(Protocol):
         """Protocol for HTTP request objects with type safety."""
 
-        def get_method(self) -> str: ...
-        def get_url(self) -> str: ...
-        def get_headers(self) -> FlextTypes.Core.Headers: ...
-        def get_body(self) -> str | bytes | FlextTypes.Core.Dict | None: ...
+        def get_method(self) -> str:
+            """Get HTTP method.
+
+            Returns:
+                str: HTTP method.
+
+            """
+            ...
+
+        def get_url(self) -> str:
+            """Get request URL.
+
+            Returns:
+                str: Request URL.
+
+            """
+            ...
+
+        def get_headers(self) -> FlextTypes.Core.Headers:
+            """Get request headers.
+
+            Returns:
+                FlextTypes.Core.Headers: Request headers.
+
+            """
+            ...
+
+        def get_body(self) -> str | bytes | FlextTypes.Core.Dict | None:
+            """Get request body.
+
+            Returns:
+                str | bytes | FlextTypes.Core.Dict | None: Request body.
+
+            """
+            ...
 
     @runtime_checkable
     class HttpResponseProtocol(Protocol):
         """Protocol for HTTP response objects with type safety."""
 
-        def get_status_code(self) -> int: ...
-        def get_headers(self) -> FlextTypes.Core.Headers: ...
-        def get_data(self) -> object: ...
-        def get_json(self) -> FlextTypes.Core.Dict | FlextTypes.Core.List: ...
+        def get_status_code(self) -> int:
+            """Get HTTP status code.
+
+            Returns:
+                int: HTTP status code.
+
+            """
+            ...
+
+        def get_headers(self) -> FlextTypes.Core.Headers:
+            """Get response headers.
+
+            Returns:
+                FlextTypes.Core.Headers: Response headers.
+
+            """
+            ...
+
+        def get_data(self) -> object:
+            """Get response data.
+
+            Returns:
+                object: Response data.
+
+            """
+            ...
+
+        def get_json(self) -> FlextTypes.Core.Dict | FlextTypes.Core.List:
+            """Get response as JSON.
+
+            Returns:
+                FlextTypes.Core.Dict | FlextTypes.Core.List: Parsed JSON data.
+
+            """
+            ...
 
     @runtime_checkable
     class HttpClientConfigProtocol(Protocol):
         """Protocol for HTTP client configuration with type safety."""
 
-        def get(self, key: str, default: object = None) -> object: ...
-        def items(self) -> object: ...
-        def keys(self) -> object: ...
+        def get(self, key: str, default: object = None) -> object:
+            """Get configuration value.
+
+            Args:
+                key: Configuration key.
+                default: Default value if key not found.
+
+            Returns:
+                object: Configuration value.
+
+            """
+            ...
+
+        def items(self) -> object:
+            """Get configuration items.
+
+            Returns:
+                object: Configuration items.
+
+            """
+            ...
+
+        def keys(self) -> object:
+            """Get configuration keys.
+
+            Returns:
+                object: Configuration keys.
+
+            """
+            ...
 
 
 __all__: FlextTypes.Core.StringList = [
