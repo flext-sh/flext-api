@@ -39,7 +39,9 @@ class FlextApiFactories:
             "base_url": str(base_config.get("base_url", "https://httpbin.org")),
             "timeout": cast("float", base_config.get("timeout", 30.0)),
             "max_retries": cast("int", base_config.get("max_retries", 3)),
-            "headers": base_config.get("headers", {"User-Agent": "FlextAPI-Test/0.9.0"}),
+            "headers": base_config.get(
+                "headers", {"User-Agent": "FlextAPI-Test/0.9.0"}
+            ),
         }
         client_config.update(overrides)
         return client_config
@@ -80,7 +82,7 @@ class FlextApiFactories:
             port=cast("int", defaults["port"]),
             base_url=cast("str", defaults["base_url"]),
             default_timeout=cast("float", defaults["default_timeout"]),
-            max_retries=cast("int", defaults["max_retries"])
+            max_retries=cast("int", defaults["max_retries"]),
         )
 
     @staticmethod
@@ -113,7 +115,9 @@ class FlextApiFactories:
         base_request = {
             "method": str(payload_data.get("method", "GET")),
             "url": str(payload_data.get("url", "https://httpbin.org/get")),
-            "headers": payload_data.get("headers", {"Content-Type": "application/json"}),
+            "headers": payload_data.get(
+                "headers", {"Content-Type": "application/json"}
+            ),
             "params": payload_data.get("params", {}),
             "timeout": cast("float", payload_data.get("timeout", 30.0)),
             "request_id": str(uuid.uuid4()),
@@ -130,7 +134,9 @@ class FlextApiFactories:
         response_data = {
             "status_code": 200,
             "data": api_response.get("data", {}),
-            "headers": api_response.get("headers", {"Content-Type": "application/json"}),
+            "headers": api_response.get(
+                "headers", {"Content-Type": "application/json"}
+            ),
             "elapsed_time": cast("float", api_response.get("elapsed_time", 0.5)),
             "request_id": str(api_response.get("request_id", str(uuid.uuid4()))),
             "from_cache": bool(api_response.get("from_cache", False)),
@@ -152,16 +158,26 @@ class FlextApiFactories:
         return user_data
 
     @staticmethod
-    def create_error_result(error_message: str = "Test error") -> FlextResult[FlextTypes.Core.Dict]:
+    def create_error_result(
+        error_message: str = "Test error",
+    ) -> FlextResult[FlextTypes.Core.Dict]:
         """Create error FlextResult using FlextTestsUtilities - ABSOLUTE."""
-        return cast("FlextResult[FlextTypes.Core.Dict]", FlextTestsUtilities.create_test_result(success=False, error=error_message))
+        return cast(
+            "FlextResult[FlextTypes.Core.Dict]",
+            FlextTestsUtilities.create_test_result(success=False, error=error_message),
+        )
 
     @staticmethod
-    def create_success_result(data: FlextTypes.Core.Dict | None = None) -> FlextResult[FlextTypes.Core.Dict]:
+    def create_success_result(
+        data: FlextTypes.Core.Dict | None = None,
+    ) -> FlextResult[FlextTypes.Core.Dict]:
         """Create success FlextResult using FlextTestsUtilities - ABSOLUTE."""
         if data is None:
             data = {"success": True, "message": "Test operation successful"}
-        return cast("FlextResult[FlextTypes.Core.Dict]", FlextTestsUtilities.create_test_result(success=True, data=data))
+        return cast(
+            "FlextResult[FlextTypes.Core.Dict]",
+            FlextTestsUtilities.create_test_result(success=True, data=data),
+        )
 
     @staticmethod
     def batch_request_data(count: int = 5) -> list[FlextTypes.Core.Dict]:
@@ -220,17 +236,23 @@ class FlextApiFactories:
         return FlextTestsDomains.invalid_ages()
 
     @staticmethod
-    def create_test_data(count: int = 10, prefix: str = "flext_api") -> list[FlextTypes.Core.Dict]:
+    def create_test_data(
+        count: int = 10, prefix: str = "flext_api"
+    ) -> list[FlextTypes.Core.Dict]:
         """Create test data using FlextTestsUtilities - ABSOLUTE."""
         return FlextTestsUtilities.create_test_data(size=count, prefix=prefix)
 
     @staticmethod
-    def create_functional_service(service_type: str = "api", **config: object) -> object:
+    def create_functional_service(
+        service_type: str = "api", **config: object
+    ) -> object:
         """Create functional service using FlextTestsUtilities - ABSOLUTE."""
         return FlextTestsUtilities.functional_service(service_type, **config)
 
     @staticmethod
-    def create_api_response(*, success: bool = True, data: object = None) -> FlextTypes.Core.Dict:
+    def create_api_response(
+        *, success: bool = True, data: object = None
+    ) -> FlextTypes.Core.Dict:
         """Create API response using FlextTestsUtilities - ABSOLUTE."""
         return FlextTestsUtilities.create_api_response(success=success, data=data)
 

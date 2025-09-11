@@ -22,7 +22,7 @@ class FlextApiTypes(FlextTypes):
     """HTTP API type system extending flext-core FlextTypes with hierarchical organization."""
 
     # =========================================================================
-    # TYPE VARIABLES - Generic type variables for HTTP components
+
     # =========================================================================
     class HttpTypeVars:
         """Generic type variables for HTTP components."""
@@ -115,7 +115,7 @@ class FlextApiTypes(FlextTypes):
             | bool
             | None
         )
-        ApiResponse = FlextTypes.Core.Dict  # Alias for tests
+        ApiResponse = FlextTypes.Core.Dict
         TextResponse = str
         BinaryContent = bytes
 

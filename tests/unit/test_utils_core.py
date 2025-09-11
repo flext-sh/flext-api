@@ -167,13 +167,19 @@ class TestFlextApiUtilities:
         """Test validation failure with empty string."""
         result = FlextApiUtilities.validate_url("")
         FlextTestsMatchers.assert_result_failure(result)
-        assert "URL must be a non-empty string" in result.error or "Invalid URL format" in result.error
+        assert (
+            "URL must be a non-empty string" in result.error
+            or "Invalid URL format" in result.error
+        )
 
     def test_validate_url_none_failure(self) -> None:
         """Test validation failure with None."""
         result = FlextApiUtilities.validate_url(None)
         FlextTestsMatchers.assert_result_failure(result)
-        assert "URL must be a non-empty string" in result.error or "Invalid URL format" in result.error
+        assert (
+            "URL must be a non-empty string" in result.error
+            or "Invalid URL format" in result.error
+        )
 
     def test_validate_url_non_string_failure(self) -> None:
         """Test validation failure with non-string input."""
@@ -182,7 +188,10 @@ class TestFlextApiUtilities:
         for invalid_input in invalid_inputs:
             result = FlextApiUtilities.validate_url(invalid_input)
             FlextTestsMatchers.assert_result_failure(result)
-        assert "URL must be a non-empty string" in result.error or "Invalid URL format" in result.error
+        assert (
+            "URL must be a non-empty string" in result.error
+            or "Invalid URL format" in result.error
+        )
 
     def test_validate_url_invalid_scheme_failure(self) -> None:
         """Test validation failure with invalid schemes."""
@@ -198,7 +207,10 @@ class TestFlextApiUtilities:
         for url in invalid_urls:
             result = FlextApiUtilities.validate_url(url)
             FlextTestsMatchers.assert_result_failure(result)
-        assert "URL must include scheme" in result.error or "must start with http:// or https://" in result.error
+        assert (
+            "URL must include scheme" in result.error
+            or "must start with http:// or https://" in result.error
+        )
 
     def test_validate_url_whitespace_failure(self) -> None:
         """Test validation failure with whitespace."""

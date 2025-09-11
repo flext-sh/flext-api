@@ -169,7 +169,7 @@ def get_request_examples():
 
     client = client_result.data
 
-    # Simple GET request
+  
     logger.info("Testing simple GET request")
     response = client.get("/json")
     if response.success:
@@ -345,7 +345,7 @@ def query_builder_examples():
     api = create_flext_api()
     builder = api.get_builder()
 
-    # Simple query building
+  
     logger.info("Building simple query")
     query = (
         builder.for_query()

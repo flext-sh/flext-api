@@ -50,9 +50,7 @@ class TestFlextApiClient:
         max_retries = cast("int", config_data.get("max_retries", 3))
 
         client = FlextApiClient(
-            base_url=base_url,
-            timeout=timeout,
-            max_retries=max_retries
+            base_url=base_url, timeout=timeout, max_retries=max_retries
         )
 
         # Verify configuration using real values
@@ -70,9 +68,7 @@ class TestFlextApiClient:
         max_retries = cast("int", service_data.get("max_retries", 5))
 
         client = FlextApiClient(
-            base_url=base_url,
-            timeout=timeout,
-            max_retries=max_retries
+            base_url=base_url, timeout=timeout, max_retries=max_retries
         )
 
         # Verify all properties work
@@ -93,9 +89,7 @@ class TestFlextApiClient:
         max_retries = cast("int", sample_configuration_data.get("max_retries", 3))
 
         client = FlextApiClient(
-            base_url=base_url,
-            timeout=timeout,
-            max_retries=max_retries
+            base_url=base_url, timeout=timeout, max_retries=max_retries
         )
 
         # Verify client uses configuration correctly
@@ -109,7 +103,7 @@ class TestFlextApiClient:
         config_scenarios = [
             FlextTestsDomains.create_configuration(),
             FlextTestsDomains.create_service(),
-            {"base_url": "https://api.test.com", "timeout": 60.0, "max_retries": 2}
+            {"base_url": "https://api.test.com", "timeout": 60.0, "max_retries": 2},
         ]
 
         clients = []
@@ -188,11 +182,7 @@ class TestFlextApiClient:
         service_data = FlextTestsDomains.create_service()
         base_url = f"https://{service_data.get('name', 'test')}.example.com"
 
-        client = FlextApiClient(
-            base_url=base_url,
-            timeout=30.5,
-            max_retries=5
-        )
+        client = FlextApiClient(base_url=base_url, timeout=30.5, max_retries=5)
 
         # Property types should be correct
         assert isinstance(client.base_url, str)
@@ -255,7 +245,6 @@ class TestFlextApiClient:
         # Create client using factory
         api_client = create_flext_api()
 
-        # Type validation
         assert isinstance(api_client, FlextApiClient)
         assert type(api_client).__name__ == "FlextApiClient"
 

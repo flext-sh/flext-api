@@ -544,7 +544,7 @@ make check            # Quick quality check
 # Antes de commit
 make validate         # Complete validation
 make format           # Auto-format code
-make type-check       # Type safety check
+make type-check
 
 # Debug e diagnóstico
 make diagnose         # Project health check

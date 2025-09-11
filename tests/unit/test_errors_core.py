@@ -43,7 +43,9 @@ class TestFlextApiExceptions:
 
     def test_flext_api_error_basic(self) -> None:
         """Test basic FlextApiError creation using flext_tests patterns."""
-        error_data = FlextTestsUtilities.create_test_result(success=False, error="API operation failed")
+        error_data = FlextTestsUtilities.create_test_result(
+            success=False, error="API operation failed"
+        )
         error = FlextApiExceptions.FlextApiError("API error")
 
         # Verify error properties
@@ -56,7 +58,9 @@ class TestFlextApiExceptions:
     def test_flext_api_error_custom_message(self) -> None:
         """Test FlextApiError with custom message using factory data."""
         test_message = "Custom operation failed"
-        error_result = FlextTestsUtilities.create_test_result(success=False, error=test_message)
+        error_result = FlextTestsUtilities.create_test_result(
+            success=False, error=test_message
+        )
         error = FlextApiExceptions.FlextApiError(test_message)
 
         assert test_message in str(error)
@@ -145,7 +149,9 @@ class TestFlextApiExceptions:
 
         # Should have created 3 distinct errors
         assert len(validation_errors) == 3
-        assert all(isinstance(e, FlextApiExceptions.ValidationError) for e in validation_errors)
+        assert all(
+            isinstance(e, FlextApiExceptions.ValidationError) for e in validation_errors
+        )
 
     def test_base_error_hierarchy(self) -> None:
         """Test base error hierarchy using flext_tests patterns."""
@@ -196,9 +202,15 @@ class TestFlextApiExceptions:
         """Test error validation using FlextTestsMatchers patterns."""
         # Create error results and validate them
         error_cases = [
-            FlextTestsUtilities.create_test_result(success=False, error="API validation failed"),
-            FlextTestsUtilities.create_test_result(success=False, error="Authentication error"),
-            FlextTestsUtilities.create_test_result(success=False, error="Resource not found"),
+            FlextTestsUtilities.create_test_result(
+                success=False, error="API validation failed"
+            ),
+            FlextTestsUtilities.create_test_result(
+                success=False, error="Authentication error"
+            ),
+            FlextTestsUtilities.create_test_result(
+                success=False, error="Resource not found"
+            ),
         ]
 
         for error_result in error_cases:
@@ -215,13 +227,17 @@ class TestFlextApiExceptions:
 
         # Test specific error instances - these come from flext-core
         validation_error = FlextApiExceptions.ValidationError("Validation failed")
-        assert isinstance(validation_error, Exception)  # May not inherit from FlextApiError
+        assert isinstance(
+            validation_error, Exception
+        )  # May not inherit from FlextApiError
 
         auth_error = FlextApiExceptions.AuthenticationError("Auth failed")
         assert isinstance(auth_error, Exception)  # May not inherit from FlextApiError
 
         not_found_error = FlextApiExceptions.NotFoundError("Not found")
-        assert isinstance(not_found_error, Exception)  # May not inherit from FlextApiError
+        assert isinstance(
+            not_found_error, Exception
+        )  # May not inherit from FlextApiError
 
     def test_error_exception_behavior_with_flext_tests(self) -> None:
         """Test errors behave as proper exceptions using flext_tests patterns."""
@@ -305,7 +321,9 @@ class TestFlextApiExceptions:
 
         # Create errors with factory data
         config_data = FlextTestsDomains.create_configuration()
-        test_message = f"Configuration error: {config_data.get('database_url', 'unknown')}"
+        test_message = (
+            f"Configuration error: {config_data.get('database_url', 'unknown')}"
+        )
 
         error = FlextApiExceptions.FlextApiError(test_message)
         assert isinstance(error, FlextApiExceptions.FlextApiError)

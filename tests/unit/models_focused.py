@@ -19,7 +19,9 @@ from flext_api.models import (
 
 HttpMethod = FlextApiModels.HttpMethod
 HttpStatus = FlextApiConstants.HttpStatus  # Use numeric HTTP status codes
-ApiResponse = FlextApiModels.ApiResponse  # Use the actual model class, not the type alias
+ApiResponse = (
+    FlextApiModels.ApiResponse
+)  # Use the actual model class, not the type alias
 ClientStatus = FlextApiModels.HttpStatus  # Use HttpStatus for client status as well
 
 
@@ -28,7 +30,9 @@ class Test:
 
     def test_url_create_success(self) -> None:
         """Test successful creation."""
-        result = FlextApiModels.create_url("https://api.example.com:8080/v1?param=value")
+        result = FlextApiModels.create_url(
+            "https://api.example.com:8080/v1?param=value"
+        )
 
         assert result.success
         assert result.value is not None

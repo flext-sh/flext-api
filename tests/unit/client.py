@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
+import os
 from typing import Never
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -21,7 +22,7 @@ from flext_core import FlextResult
 from flext_core.typings import FlextTypes
 from flext_tests import FlextTestsMatchers
 
-from flext_api import FlextApiClient
+from flext_api import FlextApiClient, FlextApiModels, create_client
 
 
 @pytest.mark.asyncio
@@ -754,16 +755,6 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-from __future__ import annotations
-
-import os
-
-import pytest
-
-from flext_api import (
-    create_client,
-)
-
 
 @pytest.fixture(autouse=True)
 def enable_external_calls() -> None:
@@ -888,14 +879,6 @@ def test_client_configuration_validation() -> None:
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
-
-from __future__ import annotations
-
-import pytest
-
-from flext_api import (
-    FlextApiModels,
-)
 
 
 @pytest.mark.asyncio
@@ -1106,10 +1089,6 @@ def test_client_configuration_inheritance() -> None:
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
-
-from __future__ import annotations
-
-import pytest
 
 
 @pytest.mark.asyncio

@@ -147,7 +147,6 @@ class FlextApiExceptions(FlextExceptions):
                         },
                     )
 
-                    # Type-safe header conversion
                     safe_headers = headers
                     if headers_from_kwargs and isinstance(headers_from_kwargs, dict):
                         safe_headers = {
