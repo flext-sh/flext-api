@@ -216,7 +216,7 @@ diagnose: ## Project diagnostics
 doctor: diagnose check ## Health check
 
 # =============================================================================
-# ALIASES (SINGLE LETTER SHORTCUTS)
+
 # =============================================================================
 
 .PHONY: t l f tc c i v d s

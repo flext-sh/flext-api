@@ -68,7 +68,7 @@ make test           # Run all tests with 90% coverage requirement
 make security-scan  # Security vulnerability analysis
 
 # Individual quality checks
-make lint           # Ruff linting (zero errors tolerance)
+make lint
 make type-check     # MyPy strict mode type checking
 make format         # Auto-format code with ruff
 make test-unit      # Fast unit tests with mocks
@@ -80,7 +80,7 @@ make test-unit      # Fast unit tests with mocks
 # Development server options
 make dev            # FastAPI on localhost:8000 (recommended)
 make dev-reload     # Aggressive reload mode for rapid development
-make serve          # Alias for dev
+make serve
 
 # Health and status checks
 curl http://localhost:8000/health       # Basic health check

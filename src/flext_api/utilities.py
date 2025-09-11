@@ -192,7 +192,7 @@ class FlextApiUtilities(FlextUtilities):
                 parsed = urlparse(cleaned_url)
 
                 # Python 3.13 Advanced Structural Pattern Matching
-                # Type-safe pattern matching without union types
+
                 if not parsed.scheme:
                     return FlextResult[str].fail("URL must include scheme (http/https)")
 

@@ -95,7 +95,7 @@ def flext_api_client() -> FlextApiClient:
     return FlextApiClient(
         base_url=str(config_data.get("base_url", "https://httpbin.org")),
         timeout=cast("float", config_data.get("timeout", 30.0)),
-        max_retries=cast("int", config_data.get("max_retries", 3))
+        max_retries=cast("int", config_data.get("max_retries", 3)),
     )
 
 
@@ -138,7 +138,7 @@ def fastapi_app() -> FastAPI:
     return FastAPI(
         title=str(service_data.get("name", "FLEXT API Test")),
         version=str(service_data.get("version", "0.9.0")),
-        description=str(service_data.get("description", "Test API"))
+        description=str(service_data.get("description", "Test API")),
     )
 
 

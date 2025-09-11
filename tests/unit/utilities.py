@@ -13,7 +13,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-from flext_core import FlextResult
+from flext_core import FlextModels, FlextResult
 from flext_tests import FlextTestsMatchers
 
 # Add tests directory to path for imports
@@ -183,8 +183,6 @@ class TestFlextApiUtilitiesReal:
     def test_validate_config_real(self) -> None:
         """Test real config validation using CORRECT CLASS DIRECT."""
         # Use CORRECT FlextModels.Http.HttpRequestConfig directly from source
-        from flext_core import FlextModels
-
         valid_config = FlextModels.Http.HttpRequestConfig(
             config_type="http_request",
             url="https://api.example.com",

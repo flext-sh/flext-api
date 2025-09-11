@@ -34,6 +34,14 @@ from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
 
+# Check if HTTP/2 is available (requires h2 package)
+try:
+    import h2
+
+    HTTP2_AVAILABLE = True
+except ImportError:
+    HTTP2_AVAILABLE = False
+
 # Type variables for generic functionality
 ResponseT = TypeVar("ResponseT", bound=FlextApiModels.HttpResponse)
 
@@ -140,9 +148,7 @@ class FlextApiClient:
             client = cls(cfg_model)
             return FlextResult[FlextApiClient].ok(client)
         except Exception as e:
-            return FlextResult[FlextApiClient].fail(
-                f"Failed to create client: {e}"
-            )
+            return FlextResult[FlextApiClient].fail(f"Failed to create client: {e}")
 
     @property
     def base_url(self) -> str:
@@ -190,7 +196,7 @@ class FlextApiClient:
                 verify=ssl_context or True,
                 headers=self._build_headers(),
                 cookies=httpx.Cookies(),
-                http2=True,  # Enable HTTP/2 for performance
+                http2=HTTP2_AVAILABLE,  # Enable HTTP/2 only if h2 package is available
             )
 
         return self._httpx_client
@@ -357,7 +363,7 @@ class FlextApiClient:
                 cached_data, cache_time = self._cache[cache_key]
                 if time.time() - cache_time < self.config.cache_ttl:
                     logger.info("Request served from cache", url=validated_url)
-                    # Type assertion - cached_data should be HttpResponse
+
                     if isinstance(cached_data, FlextApiModels.HttpResponse):
                         return FlextResult.ok(cached_data)
                     # If not proper type, remove from cache and continue
@@ -427,7 +433,6 @@ class FlextApiClient:
                         <= FlextApiConstants.HttpStatusRanges.SUCCESS_MAX
                     ):
                         if len(self._cache) >= self.config.cache_max_size:
-                            # Simple LRU eviction
                             oldest_key = next(iter(self._cache))
                             del self._cache[oldest_key]
                         self._cache[cache_key] = (response, time.time())

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Demo script showing the advanced FlextApiClient functionality.
 
 This demonstrates the real HTTP client with all advanced features working
@@ -24,6 +23,8 @@ try:
 
     # Create a minimal config model for testing
     class MinimalClientConfig(BaseModel):
+        """Minimal client configuration for testing."""
+
         base_url: str = ""
         timeout: float = 30.0
         max_retries: int = 3
@@ -53,6 +54,8 @@ try:
 
     # Minimal HTTP response model
     class MinimalHttpResponse(BaseModel):
+        """Minimal HTTP response model for testing."""
+
         status_code: int
         body: FlextTypes.Core.Dict | str | bytes | None = None
         headers: FlextTypes.Core.Headers | None = None
@@ -61,14 +64,18 @@ try:
 
         @property
         def is_success(self) -> bool:
-            return 200 <= self.status_code < 300
+            http_ok_min = 200
+            http_ok_max = 299
+            return http_ok_min <= self.status_code <= http_ok_max
 
     # Minimal FlextResult implementation for testing
-    from typing import Generic, TypeVar
+    from typing import TypeVar
 
     T = TypeVar("T")
 
     class TestResult[T]:
+        """Test result implementation for testing."""
+
         def __init__(self, value: T | None = None, error: str | None = None) -> None:
             self._value = value
             self._error = error
@@ -124,7 +131,7 @@ try:
                 # Parse response body
                 try:
                     body = response.json()
-                except:
+                except Exception:
                     body = response.text
 
                 result = MinimalHttpResponse(
@@ -172,8 +179,10 @@ try:
                     if isinstance(headers, dict):
                         headers.get("User-Agent", "Not found")
 
-        except Exception:
-            pass
+        except Exception as e:
+            # Log error for debugging
+            # In a real application, use proper logging instead of print
+            _ = e  # Suppress unused variable warning
         finally:
             await client.close()
 

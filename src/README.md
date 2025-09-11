@@ -17,8 +17,8 @@ src/flext_api/
 ├── fields.py                # Field definitions
 ├── main.py                  # Application entry point
 ├── storage.py               # Storage utilities
-├── types.py                 # Type definitions
-├── py.typed                 # Type checking marker
+├── types.py
+├── py.typed
 ├── domain/                  # Domain layer
 │   ├── __init__.py
 │   ├── entities.py         # Domain entities

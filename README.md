@@ -112,12 +112,12 @@ app = create_flext_api_app()
 # Development workflow
 make test              # Run test suite (684 tests)
 make lint              # Code quality checks
-make type-check        # Type safety validation
+make type-check
 make validate          # Complete quality pipeline
 
 # Development server
 make dev               # Start server with hot reload
-make serve             # Alias for dev
+make serve
 
 # Testing variants
 make test-unit         # Unit tests only (fast)

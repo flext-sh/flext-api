@@ -22,10 +22,6 @@ Qualquer lógica de criação permanece em `FlextApiClient.create` ou em camadas
 de aplicação. Este módulo não deve depender de implementações concretas.
 """
 
-# =============================================================================
-# FLEXT API PROTOCOLS - Modern HTTP API abstraction patterns
-# =============================================================================
-
 
 class FlextApiProtocols:
     """Single aggregation namespace with nested protocol definitions (flext-core pattern)."""

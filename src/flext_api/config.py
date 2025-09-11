@@ -11,12 +11,12 @@ from __future__ import annotations
 
 import os
 
-from flext_core import FlextResult, flext_logger
+from flext_core import FlextLogger, FlextResult
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from flext_api.typings import FlextApiTypes
 
-logger = flext_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class FlextApiConfig(BaseModel):

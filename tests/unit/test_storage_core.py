@@ -67,14 +67,20 @@ class TestFlextApiStorage:
 
         # Set a value using FlextTestsDomains data
         set_result = storage.set("test_key", test_data)
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", set_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", set_result)
+        )
 
         # Get the value
         get_result = storage.get("test_key")
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", get_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", get_result)
+        )
 
         # Verify data integrity using FlextTestsMatchers - ACESSO DIRETO
-        assert FlextTestsMatchers.is_successful_result(cast("FlextResult[object]", get_result))
+        assert FlextTestsMatchers.is_successful_result(
+            cast("FlextResult[object]", get_result)
+        )
         assert get_result.value == test_data
 
     def test_set_empty_key_failure(self) -> None:
@@ -86,11 +92,15 @@ class TestFlextApiStorage:
         # FlextApiStorage implementation allows empty keys, so this should succeed
         result = storage.set("", test_data)
         FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", result))
-        assert FlextTestsMatchers.is_successful_result(cast("FlextResult[object]", result))
+        assert FlextTestsMatchers.is_successful_result(
+            cast("FlextResult[object]", result)
+        )
 
         # Should be able to retrieve with empty key too
         get_result = storage.get("")
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", get_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", get_result)
+        )
         assert get_result.value == test_data
 
     def test_get_empty_key_failure(self) -> None:
@@ -121,13 +131,21 @@ class TestFlextApiStorage:
 
         # Delete it
         delete_result = storage.delete("delete_key")
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", delete_result))
-        assert FlextTestsMatchers.is_successful_result(cast("FlextResult[object]", delete_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", delete_result)
+        )
+        assert FlextTestsMatchers.is_successful_result(
+            cast("FlextResult[object]", delete_result)
+        )
 
         # Verify it's gone
         get_result = storage.get("delete_key")
-        FlextTestsMatchers.assert_result_failure(cast("FlextResult[object]", get_result))
-        assert FlextTestsMatchers.is_failed_result(cast("FlextResult[object]", get_result))
+        FlextTestsMatchers.assert_result_failure(
+            cast("FlextResult[object]", get_result)
+        )
+        assert FlextTestsMatchers.is_failed_result(
+            cast("FlextResult[object]", get_result)
+        )
 
     def test_delete_empty_key_failure(self) -> None:
         """Test delete with empty key fails using flext_tests validation."""
@@ -157,14 +175,22 @@ class TestFlextApiStorage:
 
         # Clear cache
         clear_result = storage.clear()
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", clear_result))
-        assert FlextTestsMatchers.is_successful_result(cast("FlextResult[object]", clear_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", clear_result)
+        )
+        assert FlextTestsMatchers.is_successful_result(
+            cast("FlextResult[object]", clear_result)
+        )
 
         # Verify cache is empty - both keys should fail to retrieve
         get_result1 = storage.get("key1")
         get_result2 = storage.get("key2")
-        FlextTestsMatchers.assert_result_failure(cast("FlextResult[object]", get_result1))
-        FlextTestsMatchers.assert_result_failure(cast("FlextResult[object]", get_result2))
+        FlextTestsMatchers.assert_result_failure(
+            cast("FlextResult[object]", get_result1)
+        )
+        FlextTestsMatchers.assert_result_failure(
+            cast("FlextResult[object]", get_result2)
+        )
 
     def test_keys_operation(self) -> None:
         """Test getting all keys using flext_tests patterns."""
@@ -172,8 +198,12 @@ class TestFlextApiStorage:
 
         # Initially should have no keys
         keys_result = storage.keys()
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", keys_result))
-        assert FlextTestsMatchers.is_successful_result(cast("FlextResult[object]", keys_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", keys_result)
+        )
+        assert FlextTestsMatchers.is_successful_result(
+            cast("FlextResult[object]", keys_result)
+        )
         assert isinstance(keys_result.value, list)
         assert len(keys_result.value) == 0
 
@@ -184,7 +214,9 @@ class TestFlextApiStorage:
 
         # Get keys
         keys_result = storage.keys()
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", keys_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", keys_result)
+        )
 
         keys = keys_result.value
         assert isinstance(keys, list)
@@ -199,7 +231,9 @@ class TestFlextApiStorage:
 
         # Key should not exist initially
         exists_result = storage.exists("test_user")
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", exists_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", exists_result)
+        )
         assert exists_result.value is False
 
         # Add user data
@@ -207,7 +241,9 @@ class TestFlextApiStorage:
 
         # Key should exist now
         exists_result = storage.exists("test_user")
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", exists_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", exists_result)
+        )
         assert exists_result.value is True
 
     def test_storage_with_configuration_data(
@@ -226,11 +262,15 @@ class TestFlextApiStorage:
 
         # Store configuration data
         set_result = storage.set("config", sample_configuration_data)
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", set_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", set_result)
+        )
 
         # Retrieve and validate
         get_result = storage.get("config")
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", get_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", get_result)
+        )
 
         # Verify data structure - sample_configuration_data has different fields
         retrieved_config = get_result.value
@@ -249,14 +289,20 @@ class TestFlextApiStorage:
         for i, request_data in enumerate(batch_requests):
             key = f"request_{i}"
             set_result = storage.set(key, request_data)
-            FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", set_result))
+            FlextTestsMatchers.assert_result_success(
+                cast("FlextResult[object]", set_result)
+            )
 
         # Verify all can be retrieved
         for i in range(3):
             key = f"request_{i}"
             get_result = storage.get(key)
-            FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", get_result))
-            assert FlextTestsMatchers.is_successful_result(cast("FlextResult[object]", get_result))
+            FlextTestsMatchers.assert_result_success(
+                cast("FlextResult[object]", get_result)
+            )
+            assert FlextTestsMatchers.is_successful_result(
+                cast("FlextResult[object]", get_result)
+            )
 
     def test_storage_with_user_data(
         self, sample_user_data: FlextTypes.Core.Dict
@@ -266,11 +312,15 @@ class TestFlextApiStorage:
 
         # Store user data from fixture
         set_result = storage.set("sample_user", sample_user_data)
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", set_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", set_result)
+        )
 
         # Retrieve and validate structure
         get_result = storage.get("sample_user")
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", get_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", get_result)
+        )
 
         user = get_result.value
         assert isinstance(user, dict)
@@ -287,16 +337,22 @@ class TestFlextApiStorage:
 
         # Store service data from fixture
         set_result = storage.set("sample_service", sample_service_data)
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", set_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", set_result)
+        )
 
         # Check existence
         exists_result = storage.exists("sample_service")
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", exists_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", exists_result)
+        )
         assert exists_result.value is True
 
         # Retrieve and validate
         get_result = storage.get("sample_service")
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", get_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", get_result)
+        )
 
         service = get_result.value
         assert isinstance(service, dict)
@@ -308,10 +364,14 @@ class TestFlextApiStorage:
 
         # Test with None values
         set_result = storage.set("none_key", None)
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", set_result))  # Should be allowed to store None)
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", set_result)
+        )  # Should be allowed to store None)
 
         get_result = storage.get("none_key")
-        FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", get_result))
+        FlextTestsMatchers.assert_result_success(
+            cast("FlextResult[object]", get_result)
+        )
         assert get_result.value is None
 
     def test_storage_performance_with_batch_data(self) -> None:
@@ -326,14 +386,20 @@ class TestFlextApiStorage:
         for i, data in enumerate(batch_data):
             key = f"perf_key_{i}"
             set_result = storage.set(key, data)
-            FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", set_result))
+            FlextTestsMatchers.assert_result_success(
+                cast("FlextResult[object]", set_result)
+            )
             stored_keys.append(key)
 
         # Verify all data can be retrieved correctly
         for i, key in enumerate(stored_keys):
             get_result = storage.get(key)
-            FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", get_result))
-            assert FlextTestsMatchers.is_successful_result(cast("FlextResult[object]", get_result))
+            FlextTestsMatchers.assert_result_success(
+                cast("FlextResult[object]", get_result)
+            )
+            assert FlextTestsMatchers.is_successful_result(
+                cast("FlextResult[object]", get_result)
+            )
             assert get_result.value == batch_data[i]
 
     def test_storage_close_operation(self) -> None:
@@ -348,8 +414,12 @@ class TestFlextApiStorage:
 
             # Close should succeed
             close_result = await storage.close()
-            FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", close_result))
-            assert FlextTestsMatchers.is_successful_result(cast("FlextResult[object]", close_result))
+            FlextTestsMatchers.assert_result_success(
+                cast("FlextResult[object]", close_result)
+            )
+            assert FlextTestsMatchers.is_successful_result(
+                cast("FlextResult[object]", close_result)
+            )
 
         # Run async test
         asyncio.run(test_close())
@@ -397,11 +467,15 @@ class TestFlextApiStorage:
 
             # Store data
             set_result = storage.set(key, test_data)
-            FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", set_result))
+            FlextTestsMatchers.assert_result_success(
+                cast("FlextResult[object]", set_result)
+            )
 
             # Retrieve and verify exact match
             get_result = storage.get(key)
-            FlextTestsMatchers.assert_result_success(cast("FlextResult[object]", get_result))
+            FlextTestsMatchers.assert_result_success(
+                cast("FlextResult[object]", get_result)
+            )
 
             # Use FlextTestsMatchers for deep equality check
             retrieved_data = get_result.value

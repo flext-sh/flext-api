@@ -139,9 +139,9 @@ class FlextApiConstants(FlextConstants):
         """HTTP client configuration constants."""
 
         DEFAULT_MAX_RETRIES: Final[int] = 3
-        MAX_RETRIES: Final[int] = 3  # Alias expected by tests
+        MAX_RETRIES: Final[int] = 3
         RETRY_BACKOFF: Final[float] = 2.0
-        RETRY_BACKOFF_FACTOR: Final[float] = 2.0  # Alias expected by tests
+        RETRY_BACKOFF_FACTOR: Final[float] = 2.0
         CONNECTION_POOL_SIZE: Final[int] = 100
         DEFAULT_TIMEOUT: Final[int] = 30  # Expected by tests
         DEFAULT_USER_AGENT: Final[str] = "FlextAPI/0.9.0"  # Expected by tests
