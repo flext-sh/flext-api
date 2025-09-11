@@ -229,7 +229,7 @@ async def health_check(api = Depends(create_flext_api)):
 # Mandatory quality gates
 make validate        # Complete validation (lint + type + test)
 make test            # Tests with 90%+ coverage
-make type-check      # MyPy strict mode
+make type-check    
 
 # Specific testing
 pytest -m unit -v        # Unit tests only

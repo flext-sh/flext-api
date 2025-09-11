@@ -54,7 +54,7 @@ repos:
         require_serial: true
         args: [--check-only, --diff, --profile=ruff, --line-length=88]
 
-      # MyPy type checking (API-specific dependencies)
+    
       - id: mypy
         name: "🛡️ MyPy Strict"
         entry: poetry run mypy
@@ -209,6 +209,3 @@ ci:
     poetry-lock
   ]
   submodules: false
-
-# API-specific settings
-fail_fast: false
