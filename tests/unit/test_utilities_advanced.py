@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from urllib.parse import ParseResult
+
 from flext_core import FlextModels
 from flext_tests import FlextTestsMatchers
 
@@ -21,8 +23,7 @@ class TestFlextApiUtilitiesAdvanced:
     def test_validate_config_http_request(self) -> None:
         """Test validate_config with HttpRequestConfig."""
         config = FlextModels.Http.HttpRequestConfig(
-            url="https://test.example.com/api",
-            method="GET"
+            url="https://test.example.com/api", method="GET"
         )
 
         result = FlextApiUtilities.validate_config(config)
@@ -32,8 +33,7 @@ class TestFlextApiUtilitiesAdvanced:
     def test_validate_config_http_error(self) -> None:
         """Test validate_config with HttpErrorConfig."""
         config = FlextModels.Http.HttpErrorConfig(
-            status_code=404,
-            error_message="Not found"
+            status_code=404, error_message="Not found"
         )
 
         result = FlextApiUtilities.validate_config(config)
@@ -42,10 +42,7 @@ class TestFlextApiUtilitiesAdvanced:
 
     def test_validate_config_validation(self) -> None:
         """Test validate_config with ValidationConfig."""
-        config = FlextModels.Http.ValidationConfig(
-            validate_ssl=True,
-            timeout=30.0
-        )
+        config = FlextModels.Http.ValidationConfig(validate_ssl=True, timeout=30.0)
 
         result = FlextApiUtilities.validate_config(config)
         FlextTestsMatchers.assert_result_success(result)
@@ -98,7 +95,9 @@ class TestFlextApiUtilitiesAdvanced:
 
     def test_http_validator_validate_parsed_url_invalid_scheme(self) -> None:
         """Test HttpValidator._validate_parsed_url with invalid scheme."""
-        result = FlextApiUtilities.HttpValidator._validate_parsed_url("ftp://example.com")
+        result = FlextApiUtilities.HttpValidator._validate_parsed_url(
+            "ftp://example.com"
+        )
         FlextTestsMatchers.assert_result_failure(result)
         assert "Invalid URL format" in result.error
 
@@ -110,8 +109,6 @@ class TestFlextApiUtilitiesAdvanced:
 
     def test_http_validator_validate_url_components_long_hostname(self) -> None:
         """Test HttpValidator._validate_url_components with long hostname."""
-        from urllib.parse import ParseResult
-
         # Create a ParseResult with a very long hostname
         parsed = ParseResult(
             scheme="http",
@@ -119,17 +116,17 @@ class TestFlextApiUtilitiesAdvanced:
             path="/",
             params="",
             query="",
-            fragment=""
+            fragment="",
         )
 
-        result = FlextApiUtilities.HttpValidator._validate_url_components(parsed, "http://" + "a" * 300 + "/")
+        result = FlextApiUtilities.HttpValidator._validate_url_components(
+            parsed, "http://" + "a" * 300 + "/"
+        )
         FlextTestsMatchers.assert_result_failure(result)
         assert "Hostname too long" in result.error
 
     def test_http_validator_validate_url_components_invalid_port(self) -> None:
         """Test HttpValidator._validate_url_components with invalid port."""
-        from urllib.parse import ParseResult
-
         # Create a ParseResult with invalid port
         parsed = ParseResult(
             scheme="http",
@@ -137,17 +134,17 @@ class TestFlextApiUtilitiesAdvanced:
             path="/",
             params="",
             query="",
-            fragment=""
+            fragment="",
         )
 
-        result = FlextApiUtilities.HttpValidator._validate_url_components(parsed, "http://example.com:99999/")
+        result = FlextApiUtilities.HttpValidator._validate_url_components(
+            parsed, "http://example.com:99999/"
+        )
         FlextTestsMatchers.assert_result_failure(result)
         assert "Invalid port" in result.error
 
     def test_http_validator_validate_url_components_long_url(self) -> None:
         """Test HttpValidator._validate_url_components with long URL."""
-        from urllib.parse import ParseResult
-
         # Create a ParseResult with a very long URL
         long_path = "/" + "a" * 10000
         parsed = ParseResult(
@@ -156,17 +153,21 @@ class TestFlextApiUtilitiesAdvanced:
             path=long_path,
             params="",
             query="",
-            fragment=""
+            fragment="",
         )
 
         long_url = "http://example.com" + long_path
-        result = FlextApiUtilities.HttpValidator._validate_url_components(parsed, long_url)
+        result = FlextApiUtilities.HttpValidator._validate_url_components(
+            parsed, long_url
+        )
         FlextTestsMatchers.assert_result_failure(result)
         assert "URL too long" in result.error
 
     def test_http_validator_normalize_url(self) -> None:
         """Test HttpValidator.normalize_url method."""
-        result = FlextApiUtilities.HttpValidator.normalize_url("https://example.com/path/")
+        result = FlextApiUtilities.HttpValidator.normalize_url(
+            "https://example.com/path/"
+        )
         FlextTestsMatchers.assert_result_success(result)
         assert result.value == "https://example.com/path"
 
@@ -223,7 +224,7 @@ class TestFlextApiUtilitiesAdvanced:
             (500, "5xx Server Error"),
         ]
 
-        for code, description in status_codes:
+        for code, _description in status_codes:
             result = FlextApiUtilities.HttpValidator.validate_status_code(code)
             FlextTestsMatchers.assert_result_success(result)
             assert result.value == code
@@ -238,9 +239,7 @@ class TestFlextApiUtilitiesAdvanced:
         """Test ResponseBuilder.build_success_response with data."""
         data = {"key": "value", "number": 42}
         result = FlextApiUtilities.ResponseBuilder.build_success_response(
-            data=data,
-            message="Success with data",
-            status_code=200
+            data=data, message="Success with data", status_code=200
         )
 
         FlextTestsMatchers.assert_result_success(result)
@@ -259,7 +258,7 @@ class TestFlextApiUtilitiesAdvanced:
             error="Validation failed",
             status_code=422,
             error_code="VALIDATION_ERROR",
-            details=details
+            details=details,
         )
 
         FlextTestsMatchers.assert_result_success(result)
@@ -298,9 +297,7 @@ class TestFlextApiUtilitiesAdvanced:
         """Test PaginationBuilder with custom message."""
         data = [{"id": 1}, {"id": 2}]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=data,
-            total=50,
-            message="Custom success message"
+            data=data, total=50, message="Custom success message"
         )
 
         FlextTestsMatchers.assert_result_success(result)

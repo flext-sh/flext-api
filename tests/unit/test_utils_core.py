@@ -28,7 +28,9 @@ class TestFlextApiUtilities:
 
     def test_build_error_response_basic(self) -> None:
         """Test basic error response building."""
-        result = FlextApiUtilities.ResponseBuilder.build_error_response("Something went wrong")
+        result = FlextApiUtilities.ResponseBuilder.build_error_response(
+            "Something went wrong"
+        )
 
         assert result.success
         response = result.value
@@ -44,7 +46,9 @@ class TestFlextApiUtilities:
 
     def test_build_error_response_custom_status(self) -> None:
         """Test error response with custom status code."""
-        result = FlextApiUtilities.ResponseBuilder.build_error_response("Validation failed", 400)
+        result = FlextApiUtilities.ResponseBuilder.build_error_response(
+            "Validation failed", 400
+        )
         response = result.value
 
         assert result.success
@@ -73,7 +77,9 @@ class TestFlextApiUtilities:
         """Test basic paginated response building."""
         data = [{"id": 1, "name": "item1"}, {"id": 2, "name": "item2"}]
 
-        result = FlextApiUtilities.PaginationBuilder.build_paginated_response(data, total=100)
+        result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
+            data, total=100
+        )
 
         assert result.success
         response = result.value
@@ -111,7 +117,9 @@ class TestFlextApiUtilities:
 
     def test_build_paginated_response_empty_data(self) -> None:
         """Test paginated response with empty data."""
-        result = FlextApiUtilities.PaginationBuilder.build_paginated_response([], total=0)
+        result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
+            [], total=0
+        )
 
         assert result.success
         response = result.value
@@ -268,7 +276,9 @@ class TestFlextApiUtilities:
         response = result.value
         assert isinstance(response, dict)
 
-        paginated_result = FlextApiUtilities.PaginationBuilder.build_paginated_response([], 0)
+        paginated_result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
+            [], 0
+        )
         assert paginated_result.success
         paginated = paginated_result.value
         assert isinstance(paginated, dict)
@@ -353,8 +363,12 @@ class TestFlextApiUtilities:
 
         # Pagination structure consistency (timestamps may differ)
         data = [1, 2, 3]
-        page_result1 = FlextApiUtilities.PaginationBuilder.build_paginated_response(data, 100, 1, 10)
-        page_result2 = FlextApiUtilities.PaginationBuilder.build_paginated_response(data, 100, 1, 10)
+        page_result1 = FlextApiUtilities.PaginationBuilder.build_paginated_response(
+            data, 100, 1, 10
+        )
+        page_result2 = FlextApiUtilities.PaginationBuilder.build_paginated_response(
+            data, 100, 1, 10
+        )
 
         assert page_result1.success
         assert page_result2.success
