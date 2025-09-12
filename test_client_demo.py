@@ -14,7 +14,6 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 # Test minimal imports to bypass circular reference issues
 try:
     # Import only what we absolutely need, bypassing full flext-core
-    import aiohttp
     import httpx
 
     # Import FlextTypes for type annotations
@@ -64,6 +63,7 @@ try:
 
         @property
         def is_success(self) -> bool:
+            """Check if response status indicates success."""
             http_ok_min = 200
             http_ok_max = 299
             return http_ok_min <= self.status_code <= http_ok_max
@@ -77,15 +77,18 @@ try:
         """Test result implementation for testing."""
 
         def __init__(self, value: T | None = None, error: str | None = None) -> None:
+            """Initialize test result with value or error."""
             self._value = value
             self._error = error
 
         @property
         def success(self) -> bool:
+            """Check if result is successful."""
             return self._error is None
 
         @property
         def value(self) -> T:
+            """Get the result value."""
             if self._error:
                 msg = f"Result has error: {self._error}"
                 raise ValueError(msg)
@@ -93,14 +96,17 @@ try:
 
         @property
         def error(self) -> str | None:
+            """Get the error message if any."""
             return self._error
 
         @classmethod
         def ok(cls, value: T) -> "TestResult[T]":
+            """Create successful result."""
             return cls(value=value)
 
         @classmethod
         def fail(cls, error: str) -> "TestResult[T]":
+            """Create failed result."""
             return cls(error=error)
 
     # Simplified version of the advanced client for testing
@@ -108,12 +114,14 @@ try:
         """Test version of FlextApiClient with real functionality."""
 
         def __init__(self, config: MinimalClientConfig) -> None:
+            """Initialize test client with configuration."""
             self.config = config
             self._httpx_client: httpx.AsyncClient | None = None
             self._cache: dict[str, tuple[object, float]] = {}
 
         @property
         def httpx_client(self) -> httpx.AsyncClient:
+            """Get or create httpx client."""
             if self._httpx_client is None:
                 self._httpx_client = httpx.AsyncClient(
                     base_url=self.config.base_url,
@@ -148,6 +156,7 @@ try:
                 return TestResult.fail(str(e))
 
         async def close(self) -> None:
+            """Close the HTTP client."""
             if self._httpx_client:
                 await self._httpx_client.aclose()
 

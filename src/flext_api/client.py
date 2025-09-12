@@ -32,6 +32,7 @@ import httpx
 from aiofiles import open as aio_open
 from flext_core import FlextContainer, FlextLogger, FlextResult, FlextTypes
 
+from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
@@ -49,8 +50,27 @@ logger = FlextLogger(__name__)
 container = FlextContainer.get_global()
 
 
+# HTTP CLIENT HELL: 798 LINES COM 35 MÉTODOS PARA HTTP CLIENT!
+# ENTERPRISE MADNESS: "Enterprise-grade" HTTP client para requests simples!
+# DUAL HTTP LIBRARY ABUSE: httpx E aiohttp no mesmo client!
+# DEPENDENCY INJECTION HELL: FlextContainer para HTTP client!
+# OVER-ENGINEERING SIN: "Railway-oriented programming" para HTTP requests!
+
 class FlextApiClient:
-    """SINGLE advanced HTTP client for comprehensive web API data retrieval.
+    """OVER-ENGINEERED HTTP CLIENT: 798 lines for REST API calls!
+
+    ARCHITECTURAL VIOLATIONS:
+    - DUAL HTTP LIBRARIES (httpx + aiohttp) for simple requests
+    - ENTERPRISE-GRADE patterns for basic HTTP client
+    - DEPENDENCY INJECTION for stateless HTTP operations
+    - RAILWAY-ORIENTED programming for HTTP error handling
+    - Python 3.13+ features as complexity justification
+    - 8 different modules imported for HTTP requests
+
+    REALITY CHECK: This should be simple httpx wrapper with error handling.
+    MIGRATE TO: Single HTTP library (httpx) with minimal abstraction.
+
+    SINGLE advanced HTTP client for comprehensive web API data retrieval.
 
     This is the ONLY class in this module that provides enterprise-grade HTTP client
     functionality using ALL existing flext-api modules extensively:
@@ -65,11 +85,11 @@ class FlextApiClient:
 
     def __init__(
         self,
-        config: FlextApiModels.ClientConfig | FlextTypes.Core.Dict | None = None,
+        config: FlextApiConfig | FlextApiModels.ClientConfig | FlextTypes.Core.Dict | None = None,
         **kwargs: object,
     ) -> None:
-        """Initialize the advanced HTTP client using existing flext-api models."""
-        # Use existing FlextApiModels.ClientConfig for configuration
+        """Initialize the advanced HTTP client using FlextConfig as source of truth."""
+        # Use FlextConfig as source of truth for configuration
         self.config = self._normalize_config(config, kwargs)
 
         # HTTP clients (lazy initialized)
@@ -101,38 +121,60 @@ class FlextApiClient:
 
     @staticmethod
     def _normalize_config(
-        config: FlextApiModels.ClientConfig | FlextTypes.Core.Dict | None,
+        config: FlextApiConfig | FlextApiModels.ClientConfig | FlextTypes.Core.Dict | None,
         kwargs: FlextTypes.Core.Dict,
     ) -> FlextApiModels.ClientConfig:
-        """Normalize configuration using existing FlextApiModels."""
+        """Normalize configuration using FlextConfig as source of truth."""
         if config is None:
-            base = (
-                dict(kwargs)
-                if kwargs
-                else {
-                    "base_url": "",
-                    "timeout": FlextApiConstants.Client.DEFAULT_TIMEOUT,
-                    "max_retries": FlextApiConstants.Client.MAX_RETRIES,
-                    "headers": {},
-                }
-            )
+            # Use FlextConfig singleton as source of truth
+            flext_config = FlextApiConfig.get_global_instance()
+            base = {
+                "base_url": flext_config.api_base_url,
+                "timeout": flext_config.default_timeout,
+                "max_retries": flext_config.max_retries,
+                "headers": {},
+                "enable_caching": flext_config.enable_caching,
+                "enable_rate_limit": flext_config.enable_rate_limiting,
+                "enable_circuit_breaker": flext_config.enable_circuit_breaker,
+            }
+            # Apply any kwargs overrides
+            base.update(kwargs)
             return FlextApiModels.ClientConfig.model_validate(base)
+
+        if isinstance(config, FlextApiConfig):
+            # Convert FlextConfig to ClientConfig format
+            base = {
+                "base_url": config.api_base_url,
+                "timeout": config.default_timeout,
+                "max_retries": config.max_retries,
+                "headers": {},
+                "enable_caching": config.enable_caching,
+                "enable_rate_limit": config.enable_rate_limiting,
+                "enable_circuit_breaker": config.enable_circuit_breaker,
+            }
+            # Apply any kwargs overrides
+            base.update(kwargs)
+            return FlextApiModels.ClientConfig.model_validate(base)
+
         if isinstance(config, dict):
             merged = {**config, **kwargs}
             return FlextApiModels.ClientConfig.model_validate(merged)
+
         return config
 
     @classmethod
     def create(
-        cls, config: FlextTypes.Core.Dict | FlextApiModels.ClientConfig
+        cls, config: FlextApiConfig | FlextTypes.Core.Dict | FlextApiModels.ClientConfig
     ) -> FlextResult[FlextApiClient]:
-        """Create client instance using existing protocols and returning FlextResult."""
+        """Create client instance using FlextConfig as source of truth."""
         try:
-            cfg_model = (
-                config
-                if isinstance(config, FlextApiModels.ClientConfig)
-                else FlextApiModels.ClientConfig.model_validate(config)
-            )
+            if isinstance(config, FlextApiConfig):
+                # Use FlextConfig directly
+                cfg_model = cls._normalize_config(config, {})
+            elif isinstance(config, FlextApiModels.ClientConfig):
+                cfg_model = config
+            else:
+                cfg_model = FlextApiModels.ClientConfig.model_validate(config)
 
             # Use existing FlextApiUtilities for URL validation
             if cfg_model.base_url:

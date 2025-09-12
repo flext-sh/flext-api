@@ -33,9 +33,7 @@ class TestFlextApiClientAdvanced:
     def test_client_create_with_model_config(self) -> None:
         """Test FlextApiClient.create() with FlextApiModels.ClientConfig."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://model.example.com",
-            timeout=20.0,
-            max_retries=5
+            base_url="https://model.example.com", timeout=20.0, max_retries=5
         )
 
         result = FlextApiClient.create(config)
@@ -57,7 +55,9 @@ class TestFlextApiClientAdvanced:
 
     def test_client_properties(self) -> None:
         """Test client property accessors."""
-        client = FlextApiClient(base_url="https://props.example.com", timeout=25.0, max_retries=7)
+        client = FlextApiClient(
+            base_url="https://props.example.com", timeout=25.0, max_retries=7
+        )
 
         assert client.base_url == "https://props.example.com"
         assert client.timeout == 25.0
@@ -85,8 +85,7 @@ class TestFlextApiClientAdvanced:
     def test_client_build_headers(self) -> None:
         """Test _build_headers method."""
         client = FlextApiClient(
-            base_url="https://headers.example.com",
-            api_key="test-key-123"
+            base_url="https://headers.example.com", api_key="test-key-123"
         )
 
         headers = client._build_headers()
@@ -99,7 +98,7 @@ class TestFlextApiClientAdvanced:
         client = FlextApiClient(
             base_url="https://auth.example.com",
             auth_type="bearer",
-            auth_token="secret-key-456"
+            auth_token="secret-key-456",
         )
 
         headers = client._build_headers()
@@ -133,8 +132,7 @@ class TestFlextApiClientAdvanced:
     def test_client_record_circuit_success(self) -> None:
         """Test _record_circuit_success method."""
         client = FlextApiClient(
-            base_url="https://circuit.example.com",
-            enable_circuit_breaker=True
+            base_url="https://circuit.example.com", enable_circuit_breaker=True
         )
 
         # Should not raise any exceptions
@@ -143,8 +141,7 @@ class TestFlextApiClientAdvanced:
     def test_client_record_circuit_failure(self) -> None:
         """Test _record_circuit_failure method."""
         client = FlextApiClient(
-            base_url="https://circuit.example.com",
-            enable_circuit_breaker=True
+            base_url="https://circuit.example.com", enable_circuit_breaker=True
         )
 
         # Should not raise any exceptions

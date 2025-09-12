@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import math
+
 from flext_tests import FlextTestsMatchers
 from pydantic import BaseModel
 
@@ -33,7 +35,7 @@ class TestFlextApiStorageAdvanced:
             "backend": "memory",
             "namespace": "test_namespace",
             "enable_caching": True,
-            "cache_ttl_seconds": 300
+            "cache_ttl_seconds": 300,
         }
 
         storage = FlextApiStorage(config)
@@ -48,7 +50,7 @@ class TestFlextApiStorageAdvanced:
             backend="file",
             namespace="model_namespace",
             enable_caching=False,
-            cache_ttl_seconds=900
+            cache_ttl_seconds=900,
         )
 
         storage = FlextApiStorage(config)
@@ -83,7 +85,7 @@ class TestFlextApiStorageAdvanced:
         test_data = [
             ("string", "hello world"),
             ("number", 42),
-            ("float", 3.14),
+            ("float", math.pi),
             ("boolean", True),
             ("list", [1, 2, 3]),
             ("dict", {"nested": "value"}),
@@ -281,7 +283,7 @@ class TestFlextApiStorageAdvanced:
             "backend": "redis",
             "namespace": "production",
             "enable_caching": True,
-            "cache_ttl_seconds": 1200
+            "cache_ttl_seconds": 1200,
         }
 
         storage = FlextApiStorage(config)

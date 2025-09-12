@@ -47,6 +47,8 @@ class FlextApiUtilities(FlextUtilities):
                 return cls._validate_http_error_config(error_config)
             case FlextModels.Http.ValidationConfig() as validation_config:
                 return cls._validate_validation_config(validation_config)
+            case _:
+                return FlextResult[FlextApiTypes.Core.Dict].fail("Unknown configuration type")
 
     @classmethod
     def _validate_http_request_config(
@@ -110,14 +112,14 @@ class FlextApiUtilities(FlextUtilities):
             """
             return (
                 FlextResult[str].ok(url)
-                if FlextUtilities.is_non_empty_string(url)
+                if FlextUtilities.TypeGuards.is_string_non_empty(url)
                 else FlextResult[str].fail("URL must be a non-empty string")
             )
 
         @staticmethod
         def _clean_url(url: str) -> FlextResult[str]:
             """Clean URL using FlextUtilities + advanced validation."""
-            cleaned = FlextUtilities.clean_text(url)
+            cleaned = FlextUtilities.TextProcessor.clean_text(url)
             return (
                 FlextResult[str].ok(cleaned)
                 if cleaned
@@ -187,7 +189,7 @@ class FlextApiUtilities(FlextUtilities):
                 return validation_result
 
             # Use REAL FlextUtilities for text cleaning
-            cleaned_url = FlextUtilities.clean_text(validation_result.value)
+            cleaned_url = FlextUtilities.TextProcessor.clean_text(validation_result.value)
 
             # Remove trailing slash unless it's the root path
             normalized = (
@@ -200,11 +202,11 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def validate_http_method(method: str) -> FlextResult[str]:
             """Validate HTTP method using Python 3.13 advanced patterns + FlextUtilities."""
-            if not FlextUtilities.is_non_empty_string(method):
+            if not FlextUtilities.TypeGuards.is_string_non_empty(method):
                 return FlextResult[str].fail("HTTP method must be a non-empty string")
 
             # Clean method using REAL FlextUtilities
-            cleaned_method = FlextUtilities.clean_text(method.upper())
+            cleaned_method = FlextUtilities.TextProcessor.clean_text(method.upper())
 
             # Python 3.13 Advanced Pattern Matching for HTTP Methods
             match cleaned_method:
