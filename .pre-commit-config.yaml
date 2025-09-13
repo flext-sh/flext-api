@@ -21,7 +21,6 @@ repos:
   # Poetry-managed tools via local repo (most reliable)
   - repo: local
     hooks:
-
       - id: ruff-format
         name: "⚡ Ruff Format (PEP8 Strict - 79 chars)"
         entry: poetry run ruff format
@@ -36,14 +35,30 @@ repos:
         language: system
         types: [python]
         require_serial: true
-        args: [
-          --fix,
-          --exit-non-zero-on-fix,
-          --line-length=88,
-          --target-version=py313,
-          --select=ALL,
-          --ignore=COM812,ISC001,D203,D213,TD003,FIX002,ERA001,PLR0912,PLR0913,PLR0915,PLR2004,C901,BLE001,TRY003,EM101,EM102
-        ]
+        args:
+          [
+            --fix,
+            --exit-non-zero-on-fix,
+            --line-length=88,
+            --target-version=py313,
+            --select=ALL,
+            --ignore=COM812,
+            ISC001,
+            D203,
+            D213,
+            TD003,
+            FIX002,
+            ERA001,
+            PLR0912,
+            PLR0913,
+            PLR0915,
+            PLR2004,
+            C901,
+            BLE001,
+            TRY003,
+            EM101,
+            EM102,
+          ]
 
       # isort import sorting
       - id: isort
@@ -54,7 +69,6 @@ repos:
         require_serial: true
         args: [--check-only, --diff, --profile=ruff, --line-length=88]
 
-    
       - id: mypy
         name: "🛡️ MyPy Strict"
         entry: poetry run mypy
@@ -62,20 +76,21 @@ repos:
         types: [python]
         require_serial: true
         pass_filenames: false
-        args: [
-          src/,
-          tests/,
-          --config-file=pyproject.toml,
-          --strict,
-          --warn-unreachable,
-          --warn-unused-ignores,
-          --no-implicit-reexport,
-          --ignore-missing-imports,
-          --show-error-codes,
-          --show-column-numbers,
-          --pretty,
-          --python-version=3.13
-        ]
+        args:
+          [
+            src/,
+            tests/,
+            --config-file=pyproject.toml,
+            --strict,
+            --warn-unreachable,
+            --warn-unused-ignores,
+            --no-implicit-reexport,
+            --ignore-missing-imports,
+            --show-error-codes,
+            --show-column-numbers,
+            --pretty,
+            --python-version=3.13,
+          ]
 
       # Bandit security
       - id: bandit
@@ -169,12 +184,13 @@ repos:
     hooks:
       - id: autoflake
         name: "🧹 Remove Unused Imports"
-        args: [
-          --remove-all-unused-imports,
-          --remove-unused-variables,
-          --in-place,
-          --recursive
-        ]
+        args:
+          [
+            --remove-all-unused-imports,
+            --remove-unused-variables,
+            --in-place,
+            --recursive,
+          ]
 
   # Spell checking
   - repo: https://github.com/codespell-project/codespell
@@ -182,10 +198,11 @@ repos:
     hooks:
       - id: codespell
         name: "📝 Spell Check"
-        args: [
-          "--skip=*.json,*.lock,*.toml,*.yaml,*.yml,poetry.lock",
-          "--ignore-words-list=flext,api,fastapi,configs,repo,repos,pydantic"
-        ]
+        args:
+          [
+            "--skip=*.json,*.lock,*.toml,*.yaml,*.yml,poetry.lock",
+            "--ignore-words-list=flext,api,fastapi,configs,repo,repos,pydantic",
+          ]
 
   # Validate pyproject.toml
   - repo: https://github.com/abravalheri/validate-pyproject
@@ -196,16 +213,16 @@ repos:
 
 # CI configuration (Poetry tools disabled in CI)
 ci:
-  autofix_prs: false  # No automatic fixes - must be intentional
+  autofix_prs: false # No automatic fixes - must be intentional
   autoupdate_schedule: weekly
   skip: [
-    # Local Poetry hooks don't work in CI
-    ruff-format,
-    ruff-lint,
-    isort,
-    mypy,
-    bandit,
-    poetry-check,
-    poetry-lock
-  ]
+      # Local Poetry hooks don't work in CI
+      ruff-format,
+      ruff-lint,
+      isort,
+      mypy,
+      bandit,
+      poetry-check,
+      poetry-lock,
+    ]
   submodules: false

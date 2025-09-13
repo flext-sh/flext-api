@@ -9,384 +9,181 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, cast
-
-from flext_core import FlextExceptions, FlextModels
+from flext_core import FlextExceptions
 
 from flext_api.constants import FlextApiConstants
-from flext_api.typings import FlextApiTypes
 
 
-class FlextApiExceptions(FlextExceptions):
-    """Single hierarchical exception class for all FLEXT API exceptions.
+class FlextApiExceptions:
+    """HTTP API exceptions using flext-core extensively - ZERO DUPLICATION."""
 
-    Organized by domain with HTTP status codes and comprehensive error context
-    for debugging and structured error handling.
-    """
+    # =============================================================================
+    # Direct re-export of flext-core exceptions - NO DUPLICATION
+    # =============================================================================
 
-    class FlextApiError(FlextExceptions.BaseError):
-        """Base exception for all FLEXT API errors."""
+    # Base exceptions from flext-core
+    BaseError = FlextExceptions.BaseError
+    ValidationError = FlextExceptions.ValidationError
+    ConfigurationError = FlextExceptions.ConfigurationError
+    ProcessingError = FlextExceptions.ProcessingError
+    ConnectionError = FlextExceptions.ConnectionError
+    TimeoutError = FlextExceptions.TimeoutError
+    AuthenticationError = FlextExceptions.AuthenticationError
+    PermissionError = FlextExceptions.PermissionError
+    NotFoundError = FlextExceptions.NotFoundError
 
-        def __init__(
-            self,
-            message: str,
-            status_code: int = 500,
-            error_code: str | None = None,
-            context: FlextApiTypes.Core.Dict | None = None,
-        ) -> None:
-            """Initialize base API error.
+    # =============================================================================
+    # HTTP-specific simple aliases - Use existing flext-core patterns
 
-            Args:
-                message: Error message.
-                status_code: HTTP status code.
-                error_code: Optional error code.
-                context: Optional error context.
-
-            """
-            super().__init__(message, code=error_code, context=context)
-            self.status_code = status_code
-            self.context = context or {}
-            # error_code is handled by parent class
-
-    class HttpError(FlextApiError):
-        """Base class for HTTP protocol errors."""
-
-        def __init__(self, config: FlextModels.Http.HttpErrorConfig) -> None:
-            """Initialize from Pydantic configuration - zero parameter complexity."""
-            error_context = config.context.copy()
-            if config.url:
-                error_context["url"] = config.url
-            if config.method:
-                error_context["method"] = config.method
-            if config.headers:
-                error_context["headers"] = config.headers
-
-            super().__init__(
-                config.message,
-                config.status_code,
-                FlextApiConstants.HttpErrors.HTTP_ERROR,
-                error_context,
-            )
-
-    class ClientError(HttpError):
-        """Base class for HTTP client errors (4xx status codes)."""
-
-    class ServerError(HttpError):
-        """Base class for HTTP server errors (5xx status codes)."""
-
-    # Exception factory using Template Method Pattern - eliminates ALL duplication
-    class _HttpExceptionFactory:
-        """Factory for creating HTTP exception classes using advanced patterns."""
-
-        @staticmethod
-        def create_exception_class(
-            _name: str,  # Renamed to indicate it's not used in current implementation
-            base_class: type[FlextApiExceptions.HttpError],
-            status_code: int,
-            default_message: str,
-            docstring: str,
-        ) -> type[FlextApiExceptions.HttpError]:
-            """Create exception class using Factory Pattern and Template Method."""
-
-            def _init_method(
-                self: FlextApiExceptions.HttpError,
-                message_or_config: str | FlextModels.Http.HttpErrorConfig | None = None,
-                url: str | None = None,
-                method: str | None = None,
-                headers: FlextApiTypes.HttpHeaders | None = None,
-                context: FlextApiTypes.Core.Dict | None = None,
-                **deprecated_kwargs: object,
-            ) -> None:
-                """Initialize using legacy string or Pydantic configuration."""
-                if isinstance(message_or_config, str):
-                    # Legacy API: first parameter is message string
-                    final_context: FlextApiTypes.Core.Dict = context or {}
-
-                    # Add additional context from remaining kwargs
-                    final_context.update(
-                        {
-                            key: value
-                            for key, value in deprecated_kwargs.items()
-                            if value is not None
-                        },
-                    )
-
-                    config = FlextModels.Http.HttpErrorConfig(
-                        message=message_or_config,
-                        status_code=status_code,
-                        url=url,
-                        method=method,
-                        headers=headers,
-                        context=final_context,
-                    )
-                elif isinstance(message_or_config, FlextModels.Http.HttpErrorConfig):
-                    # New API: first parameter is config object
-                    config = message_or_config
-                else:
-                    # Default case: construct from kwargs or defaults
-                    message = str(deprecated_kwargs.get("message", default_message))
-                    url_from_kwargs = deprecated_kwargs.get("url")
-                    method_from_kwargs = deprecated_kwargs.get("method")
-                    url_final = str(url_from_kwargs) if url_from_kwargs else url
-                    method_final = (
-                        str(method_from_kwargs) if method_from_kwargs else method
-                    )
-                    headers_from_kwargs = deprecated_kwargs.get("headers")
-                    context_from_kwargs = deprecated_kwargs.get("context", {})
-
-                    # Build context from remaining kwargs with type safety
-                    fallback_context: FlextApiTypes.Core.Dict = context or {}
-                    if context_from_kwargs and isinstance(context_from_kwargs, dict):
-                        fallback_context.update(context_from_kwargs)
-
-                    # Dictionary comprehension for better performance
-                    fallback_context.update(
-                        {
-                            key: value
-                            for key, value in deprecated_kwargs.items()
-                            if key
-                            not in {
-                                "message",
-                                "url",
-                                "method",
-                                "headers",
-                                "context",
-                            }
-                            and value is not None
-                        },
-                    )
-
-                    safe_headers = headers
-                    if headers_from_kwargs and isinstance(headers_from_kwargs, dict):
-                        safe_headers = {
-                            str(k): str(v) for k, v in headers_from_kwargs.items()
-                        }
-
-                    config = FlextModels.Http.HttpErrorConfig(
-                        message=message,
-                        status_code=status_code,
-                        url=url_final,
-                        method=method_final,
-                        headers=safe_headers,
-                        context=fallback_context,
-                    )
-
-                base_class.__init__(self, config)
-
-            # Create class using type() for proper dynamic class creation
-            dynamic_http_error = type(
-                "DynamicHttpError",
-                (base_class,),
-                {
-                    "__init__": _init_method,
-                    "__doc__": docstring,
-                    "__module__": __name__,
-                },
-            )
-
-            return cast("type[FlextApiExceptions.HttpError]", dynamic_http_error)
-
-    # HTTP Exception Specifications - using data-driven approach
-    _HTTP_EXCEPTION_SPECS: ClassVar[list[tuple[str, type, int, str, str]]] = [
-        # Client Errors (4xx)
-        (
-            "BadRequestError",
-            ClientError,
-            FlextApiConstants.HttpStatus.BAD_REQUEST,
-            "Bad Request",
-            "400 Bad Request error.",
-        ),
-        (
-            "UnauthorizedError",
-            ClientError,
-            FlextApiConstants.HttpStatus.UNAUTHORIZED,
-            "Unauthorized",
-            "401 Unauthorized error.",
-        ),
-        (
-            "ForbiddenError",
-            ClientError,
-            FlextApiConstants.HttpStatus.FORBIDDEN,
-            "Forbidden",
-            "403 Forbidden error.",
-        ),
-        (
-            "NotFoundError",
-            ClientError,
-            FlextApiConstants.HttpStatus.NOT_FOUND,
-            "Not Found",
-            "404 Not Found error.",
-        ),
-        (
-            "RequestTimeoutError",
-            ClientError,
-            FlextApiConstants.HttpStatus.GATEWAY_TIMEOUT,
-            "Request timeout",
-            "Request timeout error.",
-        ),
-        (
-            "RateLimitError",
-            ClientError,
-            FlextApiConstants.HttpStatus.TOO_MANY_REQUESTS,
-            "Rate limit exceeded",
-            "429 Too Many Requests error.",
-        ),
-        # Server Errors (5xx)
-        (
-            "InternalServerError",
-            ServerError,
-            FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR,
-            "Internal Server Error",
-            "500 Internal Server Error.",
-        ),
-        (
-            "BadGatewayError",
-            ServerError,
-            FlextApiConstants.HttpStatus.BAD_GATEWAY,
-            "Bad Gateway",
-            "502 Bad Gateway error.",
-        ),
-        (
-            "ServiceUnavailableError",
-            ServerError,
-            FlextApiConstants.HttpStatus.SERVICE_UNAVAILABLE,
-            "Service Unavailable",
-            "503 Service Unavailable error.",
-        ),
-    ]
-
-    # Generate exception classes dynamically - ZERO duplication
-    @classmethod
-    def _generate_http_exceptions(cls) -> None:
-        """Generate HTTP exception classes using Factory Pattern."""
-        for spec in cls._HTTP_EXCEPTION_SPECS:
-            name, base_class, status_code, default_message, docstring = spec
-            exception_class = cls._HttpExceptionFactory.create_exception_class(
-                name,
-                base_class,
-                status_code,
-                default_message,
-                docstring,
-            )
-            setattr(cls, name, exception_class)
-
-    # Network-specific Errors
-    class NetworkError(FlextApiError):
-        """Network connectivity error."""
+    # HTTP Error - Main HTTP exception class with status_code
+    class HttpError(FlextExceptions._ConnectionError):
+        """HTTP error with status code attribute."""
 
         def __init__(
-            self,
-            message: str = "Network error",
-            url: str | None = None,
-            method: str | None = None,
-            headers: FlextApiTypes.HttpHeaders | None = None,
-            context: FlextApiTypes.Core.Dict | None = None,
+            self, message: str, status_code: int = 500, **kwargs: object
         ) -> None:
-            """Initialize network error.
-
-            Args:
-                message: Error message.
-                url: Request URL.
-                method: HTTP method.
-                headers: Request headers.
-                context: Error context.
-
-            """
-            network_context: FlextApiTypes.Core.Dict = {}
-            if url:
-                network_context["url"] = url
-            if method:
-                network_context["method"] = method
-            if headers:
-                network_context["headers"] = headers
-            if context:
-                network_context.update(context)
+            """Initialize HTTP error with status code."""
+            # Extract only the parameters the parent class accepts
+            parent_kwargs = {}
+            if "service" in kwargs:
+                parent_kwargs["service"] = kwargs["service"]
+            if "endpoint" in kwargs:
+                parent_kwargs["endpoint"] = kwargs["endpoint"]
+            service_value = parent_kwargs.get("service")
+            endpoint_value = parent_kwargs.get("endpoint")
             super().__init__(
                 message,
-                status_code=0,  # No HTTP status for network errors
-                error_code=FlextApiConstants.HttpErrors.NETWORK_ERROR,
-                context=network_context,
+                service=str(service_value) if service_value is not None else None,
+                endpoint=str(endpoint_value) if endpoint_value is not None else None,
             )
+            self.status_code = status_code
 
-    class RequestConnectionError(NetworkError):
-        """Connection establishment error."""
+    @classmethod
+    def http_error_class(cls) -> type[HttpError]:
+        """Get HTTP error class."""
+        return cls.HttpError
 
-        def __init__(
-            self,
-            message: str = "Connection error",
-            url: str | None = None,
-            method: str | None = None,
-            headers: FlextApiTypes.HttpHeaders | None = None,
-            context: FlextApiTypes.Core.Dict | None = None,
-        ) -> None:
-            """Initialize connection error.
+    # =============================================================================
 
-            Args:
-                message: Error message.
-                url: Request URL.
-                method: HTTP method.
-                headers: Request headers.
-                context: Error context.
+    # HTTP errors using flext-core ConnectionError with HTTP-specific parameters
+    @classmethod
+    def http_error(
+        cls,
+        message: str,
+        *,
+        status_code: int = 500,
+        url: str | None = None,
+        method: str | None = None,
+        **kwargs: object,
+    ) -> FlextApiExceptions.HttpError:
+        """Create HTTP error with status code."""
+        enhanced_message = f"{message} (HTTP {status_code})"
+        return cls.HttpError(
+            message=enhanced_message,
+            status_code=status_code,
+            service="http_api",
+            endpoint=f"{method} {url}" if method and url else url or "unknown",
+            **kwargs,  # Pass through additional kwargs
+        )
 
-            """
-            super().__init__(message, url, method, headers, context)
+    @classmethod
+    def timeout_error(
+        cls, message: str = "HTTP request timeout", *, url: str | None = None
+    ) -> FlextExceptions.BaseError:
+        """Create HTTP timeout error using flext-core TimeoutError."""
+        enhanced_message = f"{message} for {url}" if url else message
+        return FlextExceptions.TimeoutError(message=enhanced_message)
 
-    # Validation Errors
-    class ValidationError(FlextApiError):
-        """Request/response validation error."""
+    @classmethod
+    def validation_error(
+        cls, message: str, *, field: str | None = None
+    ) -> FlextExceptions.BaseError:
+        """Create HTTP validation error using flext-core ValidationError."""
+        enhanced_message = f"{message} (field: {field})" if field else message
+        return FlextExceptions.ValidationError(message=enhanced_message)
 
-        def __init__(
-            self,
-            config_or_message: FlextModels.Http.ValidationConfig | str,
-            field: str | None = None,
-            value: object = None,
-            url: str | None = None,
-            method: str | None = None,
-            headers: FlextApiTypes.HttpHeaders | None = None,
-            context: FlextApiTypes.Core.Dict | None = None,
-        ) -> None:
-            """Initialize from Pydantic ValidationConfig or legacy string message."""
-            if isinstance(config_or_message, str):
-                # Legacy API support - build config from parameters
-                validation_context: FlextApiTypes.Core.Dict = context or {}
-                if field:
-                    validation_context["field"] = field
-                if value is not None:
-                    validation_context["value"] = value
-                if url:
-                    validation_context["url"] = url
-                if method:
-                    validation_context["method"] = method
-                if headers:
-                    validation_context["headers"] = headers
+    @classmethod
+    def auth_error(
+        cls, message: str = "Authentication failed"
+    ) -> FlextExceptions.BaseError:
+        """Create HTTP auth error using flext-core AuthenticationError."""
+        return FlextExceptions.AuthenticationError(message=message)
 
-                super().__init__(
-                    config_or_message,
-                    status_code=FlextApiConstants.HttpStatus.BAD_REQUEST,
-                    error_code=FlextApiConstants.HttpErrors.VALIDATION_ERROR,
-                    context=validation_context,
-                )
-            else:
-                # New config-based API
-                config = config_or_message
-                validation_context = config.context.copy()
-                if config.field:
-                    validation_context["field"] = config.field
-                if config.value is not None:
-                    validation_context["value"] = config.value
-                if config.url:
-                    validation_context["url"] = config.url
-                if config.method:
-                    validation_context["method"] = config.method
-                if config.headers:
-                    validation_context["headers"] = config.headers
+    # =============================================================================
+    # HTTP Status Code Factory Methods - Streamlined for reduced bloat
+    # =============================================================================
 
-                super().__init__(
-                    config.message,
-                    status_code=FlextApiConstants.HttpStatus.BAD_REQUEST,
-                    error_code=FlextApiConstants.HttpErrors.VALIDATION_ERROR,
-                    context=validation_context,
-                )
+    @classmethod
+    def bad_request(cls, message: str = "Bad Request") -> FlextExceptions.BaseError:
+        """Create HTTP 400 Bad Request error."""
+        return cls.http_error(message, status_code=400)
+
+    @classmethod
+    def unauthorized(cls, message: str = "Unauthorized") -> FlextExceptions.BaseError:
+        """Create HTTP 401 Unauthorized error."""
+        return cls.http_error(message, status_code=401)
+
+    @classmethod
+    def forbidden(cls, message: str = "Forbidden") -> FlextExceptions.BaseError:
+        """Create HTTP 403 Forbidden error."""
+        return cls.http_error(message, status_code=403)
+
+    @classmethod
+    def not_found(cls, message: str = "Not Found") -> FlextExceptions.BaseError:
+        """Create HTTP 404 Not Found error."""
+        return cls.http_error(message, status_code=404)
+
+    @classmethod
+    def request_timeout(
+        cls, message: str = "Request Timeout"
+    ) -> FlextExceptions.BaseError:
+        """Create HTTP 408 Request Timeout error."""
+        return cls.http_error(message, status_code=408)
+
+    @classmethod
+    def too_many_requests(
+        cls, message: str = "Too Many Requests"
+    ) -> FlextExceptions.BaseError:
+        """Create HTTP 429 Too Many Requests error."""
+        return cls.http_error(message, status_code=429)
+
+    @classmethod
+    def internal_server_error(
+        cls, message: str = "Internal Server Error"
+    ) -> FlextExceptions.BaseError:
+        """Create HTTP 500 Internal Server Error."""
+        return cls.http_error(message, status_code=500)
+
+    # =============================================================================
+    # Simple HTTP status code helpers - Use flext-core constants
+    # =============================================================================
+
+    @staticmethod
+    def is_client_error(status_code: int) -> bool:
+        """Check if status code is client error (4xx)."""
+        return (
+            FlextApiConstants.CLIENT_ERROR_START
+            <= status_code
+            < FlextApiConstants.SERVER_ERROR_START
+        )
+
+    @staticmethod
+    def is_server_error(status_code: int) -> bool:
+        """Check if status code is server error (5xx)."""
+        return (
+            FlextApiConstants.SERVER_ERROR_START
+            <= status_code
+            < FlextApiConstants.SERVER_ERROR_END
+        )
+
+    @staticmethod
+    def is_success(status_code: int) -> bool:
+        """Check if status code indicates success (2xx)."""
+        return (
+            FlextApiConstants.SUCCESS_STATUS_START
+            <= status_code
+            < FlextApiConstants.SUCCESS_STATUS_END
+        )
 
 
 __all__ = ["FlextApiExceptions"]

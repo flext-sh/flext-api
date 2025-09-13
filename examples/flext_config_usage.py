@@ -42,7 +42,7 @@ async def main() -> None:
     print("-" * 40)
 
     # Set environment variables to override configuration
-    os.environ["FLEXT_API_HOST"] = "0.0.0.0"
+    os.environ["FLEXT_API_HOST"] = "127.0.0.1"
     os.environ["FLEXT_API_PORT"] = "9000"
     os.environ["FLEXT_API_WORKERS"] = "8"
     os.environ["FLEXT_API_DEBUG"] = "true"
@@ -70,7 +70,7 @@ async def main() -> None:
         api_port=443,
         workers=16,
         api_debug=False,
-        environment="production"
+        environment="production",
     )
 
     if production_config_result.is_success:
@@ -88,7 +88,7 @@ async def main() -> None:
         api_port=8000,
         workers=2,
         api_debug=True,
-        environment="development"
+        environment="development",
     )
 
     if dev_config_result.is_success:
@@ -120,7 +120,7 @@ async def main() -> None:
     client3 = FlextApiClient(
         config=dev_config_result.value if dev_config_result.is_success else None,
         timeout=60.0,  # Override timeout
-        max_retries=5   # Override retries
+        max_retries=5,  # Override retries
     )
     print(f"Client 3 (dev config + overrides): {client3.base_url}")
     print(f"  Timeout: {client3.timeout}")
@@ -138,7 +138,9 @@ async def main() -> None:
         if validation_result.is_success:
             print("✅ Production configuration is valid")
         else:
-            print(f"❌ Production configuration validation failed: {validation_result.error}")
+            print(
+                f"❌ Production configuration validation failed: {validation_result.error}"
+            )
 
     # Validate development configuration
     if dev_config_result.is_success:
@@ -146,7 +148,9 @@ async def main() -> None:
         if validation_result.is_success:
             print("✅ Development configuration is valid")
         else:
-            print(f"❌ Development configuration validation failed: {validation_result.error}")
+            print(
+                f"❌ Development configuration validation failed: {validation_result.error}"
+            )
 
     # =========================================================================
     # 6. CONFIGURATION EXPORT AND SERIALIZATION

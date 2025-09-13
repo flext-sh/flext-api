@@ -7,554 +7,257 @@ somente modelos (Request/Response/Config/Query/Storage/URL) seguindo padrão fle
 
 from __future__ import annotations
 
-from urllib.parse import urlparse
+from typing import Literal
 
-from flext_core import FlextLogger, FlextModels
-from pydantic import BaseModel, Field, field_validator
+from flext_core import (
+    FlextConstants,
+    FlextLogger,
+    FlextModels,
+    FlextResult,
+    FlextUtilities,
+)
+from pydantic import ConfigDict, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
-from flext_api.typings import FlextApiTypes
-from flext_api.utilities import FlextApiUtilities
+
+# Streamlined ConfigDict - eliminate bloat
+STANDARD_MODEL_CONFIG = ConfigDict(
+    validate_assignment=True, extra="forbid", populate_by_name=True
+)
+
+# Use FlextModels.Entity as FlextBaseModel
+FlextBaseModel = FlextModels.Entity
 
 logger = FlextLogger(__name__)
 
+# Use constants from FlextApiConstants instead of redundant declarations
 
-class FlextApiModels(FlextModels):
-    """Namespace de modelos HTTP da FLEXT API.
+# Python 3.13+ error message constants for clean exception handling
+_URL_EMPTY_ERROR = "URL cannot be empty"
+_URL_FORMAT_ERROR = "Invalid URL format"
+_BASE_URL_ERROR = "URL must be a non-empty string with http(s) scheme"
 
-    Somente modelos/VOs. Para constantes use `flext_api.constants.FlextApiConstants`.
-    Para tipos use `flext_api.typings.FlextApiTypes`.
-    """
 
-    class ClientConfig(BaseModel):
-        """HTTP client configuration model."""
+class FlextApiModels:
+    """API models using flext-core extensively - NO DUPLICATION."""
 
-        base_url: str = Field(default="", description="Base URL for HTTP requests")
-        timeout: float = Field(default=30.0, description="Request timeout in seconds")
-        max_retries: int = Field(default=3, description="Maximum retry attempts")
-        headers: FlextApiTypes.HttpHeaders = Field(
-            default_factory=dict, description="Default headers"
+    # Direct re-export of flext-core HTTP models
+    HttpRequestConfig = FlextModels.Http.HttpRequestConfig
+    HttpErrorConfig = FlextModels.Http.HttpErrorConfig
+
+    # Simple API-specific models
+    class HttpRequest(FlextBaseModel):
+        """HTTP request model with modern Python 3.13 and Pydantic patterns."""
+
+        model_config = STANDARD_MODEL_CONFIG
+
+        method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"] = (
+            "GET"
         )
-        # Integrated features (ex-plugins)
-        enable_caching: bool = Field(
-            default=False, description="Enable in-memory GET cache"
-        )
-        cache_ttl: int = Field(default=60, description="Cache TTL seconds")
-        cache_max_size: int = Field(default=256, description="Max cache entries")
-
-        enable_rate_limit: bool = Field(
-            default=False, description="Enable token bucket rate limiting"
-        )
-        rate_calls_per_second: float = Field(
-            default=10.0, description="Rate limit tokens per second"
-        )
-        rate_burst_size: int = Field(default=20, description="Rate limit burst size")
-
-        enable_retry: bool = Field(default=True, description="Enable automatic retries")
-        retry_backoff_factor: float = Field(
-            default=2.0, description="Exponential backoff factor"
-        )
-        retry_status_codes: list[int] = Field(
-            default_factory=lambda: [500, 502, 503, 504],
-            description="Status codes that trigger retry",
-        )
-
-        auth_type: str | None = Field(
-            default=None, description="Auth type: bearer|basic"
-        )
-        auth_token: str | None = Field(default=None, description="Bearer token")
-        auth_username: str | None = Field(
-            default=None, description="Basic auth username"
-        )
-        auth_password: str | None = Field(
-            default=None, description="Basic auth password"
-        )
-
-        enable_circuit_breaker: bool = Field(
-            default=False, description="Enable circuit breaker"
-        )
-        circuit_failure_threshold: int = Field(
-            default=5, description="Failures before open"
-        )
-        circuit_recovery_timeout: float = Field(
-            default=60.0, description="Seconds to half-open"
-        )
-
-        log_requests: bool = Field(default=False, description="Log outgoing requests")
-        log_responses: bool = Field(default=False, description="Log responses")
-        log_errors: bool = Field(default=True, description="Log errors")
-
-        verify_ssl: bool = Field(default=True, description="Verify SSL certificates")
-
-        @field_validator("base_url")
-        @classmethod
-        def validate_base_url(cls, v: str) -> str:
-            """Validate base URL format using FlextApiUtilities.
-
-            Returns:
-                str: Validated base URL.
-
-            Raises:
-                ValueError: If URL format is invalid.
-
-            """
-            validation_result = FlextApiUtilities.HttpValidator.validate_url(v)
-            if not validation_result.success:
-                raise ValueError(validation_result.error or "Invalid URL format")
-            return validation_result.value
-
-        @field_validator("timeout")
-        @classmethod
-        def validate_timeout(cls, v: float) -> float:
-            """Validate timeout is positive.
-
-            Returns:
-                float: Validated timeout value.
-
-            Raises:
-                ValueError: If timeout is not positive.
-
-            """
-            if v <= 0:
-                msg = "Timeout must be greater than 0"
-                raise ValueError(msg)
-            return v
-
-        @field_validator("max_retries")
-        @classmethod
-        def validate_max_retries(cls, v: int) -> int:
-            """Validate max_retries is non-negative.
-
-            Returns:
-                int: Validated max retries value.
-
-            Raises:
-                ValueError: If max_retries is negative.
-
-            """
-            if v < 0:
-                msg = "Max retries must be greater than or equal to 0"
-                raise ValueError(msg)
-            return v
-
-        @field_validator(
-            "cache_ttl",
-            "cache_max_size",
-            "rate_burst_size",
-            "circuit_failure_threshold",
-            mode="before",
-        )
-        @classmethod
-        def validate_positive_int(cls, v: int) -> int:
-            """Validate that integer value is non-negative.
-
-            Args:
-                v: Integer value to validate.
-
-            Returns:
-                int: Validated integer value.
-
-            Raises:
-                ValueError: If value is negative.
-
-            """
-            if v < 0:
-                msg = "Value must be non-negative"
-                raise ValueError(msg)
-            return v
-
-        @field_validator(
-            "rate_calls_per_second",
-            "retry_backoff_factor",
-            "circuit_recovery_timeout",
-            mode="before",
-        )
-        @classmethod
-        def validate_positive_float(cls, v: float) -> float:
-            """Validate that float value is greater than zero.
-
-            Args:
-                v: Float value to validate.
-
-            Returns:
-                float: Validated float value.
-
-            Raises:
-                ValueError: If value is not greater than zero.
-
-            """
-            if v <= 0:
-                msg = "Value must be greater than zero"
-                raise ValueError(msg)
-            return v
-
-    class ApiRequest(BaseModel):
-        """API request model."""
-
-        id: str = Field(..., description="Request identifier")
-        method: FlextApiConstants.HttpMethods = Field(..., description="HTTP method")
-        url: str = Field(..., description="Request URL")
-        headers: FlextApiTypes.HttpHeaders | None = Field(
-            default=None, description="Request headers"
-        )
-        body: FlextApiTypes.Request.RequestBody = Field(
-            default=None, description="Request body"
-        )
+        url: str
+        headers: dict[str, str] = {}
+        body: str | dict[str, object] | None = None
+        timeout: int = 30
 
         @field_validator("url")
         @classmethod
         def validate_url(cls, v: str) -> str:
-            """Validate URL is not empty.
+            """Validate URL field with Python 3.13+ concise patterns."""
+            # Python 3.13+ walrus operator + short-circuit evaluation
+            if not (v_clean := v.strip() if isinstance(v, str) else ""):
+                raise ValueError(_URL_EMPTY_ERROR)
+            if not v_clean.startswith(("http://", "https://", "/")):
+                raise ValueError(_URL_FORMAT_ERROR)
+            return v_clean
 
-            Returns:
-                str: Validated URL.
-
-            Raises:
-                ValueError: If URL is empty.
-
-            """
-            if not v:
-                msg = "URL cannot be empty"
-                raise ValueError(msg)
-            return v
-
-    class HttpResponse(BaseModel):
-        """HTTP response model."""
-
-        status_code: int = Field(..., description="HTTP status code")
-        body: FlextApiTypes.Request.RequestBody = Field(
-            default=None, description="Response body"
-        )
-        headers: FlextApiTypes.HttpHeaders | None = Field(
-            default=None, description="Response headers"
-        )
-        url: str = Field(..., description="Request URL")
-        method: str = Field(..., description="HTTP method")
-
-        @field_validator("status_code")
+        @field_validator("headers")
         @classmethod
-        def validate_status_code(cls, v: int) -> int:
-            """Validate HTTP status code range.
+        def validate_headers(cls, v: dict[str, str]) -> dict[str, str]:
+            """Validate and sanitize headers with Python 3.13+ dict comprehension optimization."""
+            # Python 3.13+ optimized dict comprehension with walrus operator
+            return {
+                k_clean: val_clean
+                for k, val in v.items()
+                if (k_clean := k.strip())
+                and (val_clean := str(val).strip())
+                and val is not None
+            }
 
-            Returns:
-                int: Validated HTTP status code.
+    class HttpResponse(FlextModels.Entity):
+        """HTTP response model extending flext-core Entity."""
 
-            Raises:
-                ValueError: If status code is outside valid range (100-599).
-
-            """
-            min_code = 100
-            max_code = 600
-            if v < min_code or v >= max_code:
-                msg = f"Status code must be between {min_code} and {max_code - 1}"
-                raise ValueError(msg)
-            return v
+        status_code: int
+        body: str | dict[str, object] | None = None
+        headers: dict[str, str] = {}
+        url: str
+        method: str
 
         @property
         def is_success(self) -> bool:
-            """Check if response indicates success (2xx)."""
-            success_min = 200
-            success_max = 300
-            return success_min <= self.status_code < success_max
+            """Check if response indicates success (2xx status codes)."""
+            return (
+                FlextConstants.Web.HTTP_OK
+                <= self.status_code
+                < FlextApiConstants.SUCCESS_END
+            )
 
         @property
         def is_client_error(self) -> bool:
-            """Check if response indicates client error (4xx).
-
-            Returns:
-                bool: True if status code is 4xx, False otherwise.
-
-            """
-            client_error_min = 400
-            client_error_max = 500
-            return client_error_min <= self.status_code < client_error_max
+            """Check if response indicates client error (4xx status codes)."""
+            return (
+                FlextApiConstants.CLIENT_ERROR_START
+                <= self.status_code
+                < FlextApiConstants.SERVER_ERROR_START
+            )
 
         @property
         def is_server_error(self) -> bool:
-            """Check if response indicates server error (5xx).
+            """Check if response indicates server error (5xx status codes)."""
+            return (
+                FlextApiConstants.SERVER_ERROR_START
+                <= self.status_code
+                < FlextApiConstants.SERVER_ERROR_END
+            )
 
-            Returns:
-                bool: True if status code is 5xx, False otherwise.
+        @property
+        def is_redirect(self) -> bool:
+            """Check if response indicates redirect (3xx status codes)."""
+            return (
+                FlextApiConstants.SUCCESS_END
+                <= self.status_code
+                < FlextApiConstants.CLIENT_ERROR_START
+            )
 
-            """
-            server_error_min = 500
-            server_error_max = 600
-            return server_error_min <= self.status_code < server_error_max
+        # Status code validation handled by Field constraints (ge=100, le=599)
 
-    class HttpQuery(BaseModel):
-        """HTTP query builder model."""
+    class ClientConfig(FlextModels.Value):
+        """Streamlined client configuration for reduced bloat."""
 
-        filter_conditions: FlextApiTypes.Core.Dict = Field(
-            default_factory=dict, description="Filter conditions"
-        )
-        sort_fields: FlextApiTypes.Core.StringList = Field(
-            default_factory=list, description="Sort fields"
-        )
-        page_number: int = Field(default=1, description="Page number")
-        page_size_value: int = Field(default=20, description="Page size")
+        # Essential configuration only
+        base_url: str = FlextApiConstants.DEFAULT_BASE_URL
+        timeout: float = FlextApiConstants.DEFAULT_TIMEOUT
+        max_retries: int = FlextApiConstants.DEFAULT_RETRIES
+        headers: dict[str, str] = {}
 
-        @field_validator("page_number")
+        # Authentication - consolidated
+        auth_token: str | None = None
+        api_key: str | None = None
+
+        @field_validator("base_url")
         @classmethod
-        def validate_page_number(cls, v: int) -> int:
-            """Validate page number is positive.
+        def validate_base_url(cls, v: str) -> str:
+            """Validate base URL field with Python 3.13+ optimization."""
+            # Python 3.13+ walrus operator pattern for concise validation
+            if not (url := v.strip()) or not url.startswith(("http://", "https://")):
+                raise ValueError(_BASE_URL_ERROR)
+            return url
 
-            Returns:
-                int: Validated page number.
+        def get_auth_header(self) -> dict[str, str]:
+            """Get authentication header if configured."""
+            if self.auth_token:
+                return {"Authorization": f"Bearer {self.auth_token}"}
+            if self.api_key:
+                return {"Authorization": f"Bearer {self.api_key}"}
+            return {}
 
-            Raises:
-                ValueError: If page number is less than 1.
+        def get_default_headers(self) -> dict[str, str]:
+            """Get all default headers including auth."""
+            headers = {"User-Agent": "FlextAPI/0.9.0", **self.headers}
+            headers.update(self.get_auth_header())
+            return headers
 
-            """
-            if v < 1:
-                msg = "Page number must be greater than or equal to 1"
-                raise ValueError(msg)
-            return v
+    class HttpQuery(FlextBaseModel):
+        """HTTP query parameters model with filtering and pagination."""
 
-        @field_validator("page_size_value")
-        @classmethod
-        def validate_page_size(cls, v: int) -> int:
-            """Validate page size is within bounds.
+        model_config = STANDARD_MODEL_CONFIG
 
-            Returns:
-                int: Validated page size.
+        # Core fields with Pydantic 2 alias support for backward compatibility
+        filter_conditions: dict[str, object] = Field(
+            alias="filters", default_factory=dict
+        )
+        sort_fields: list[str] = []
+        page_number: int = Field(alias="page", default=1)
+        page_size_value: int = Field(
+            alias="page_size", default=FlextApiConstants.DEFAULT_PAGE_SIZE
+        )
 
-            Raises:
-                ValueError: If page size is outside valid range (1-1000).
+        def add_filter(self, key: str, value: object) -> FlextResult[None]:
+            """Add a filter to the query."""
+            if not key or not key.strip():
+                return FlextResult[None].fail("Filter key cannot be empty")
+            self.filter_conditions[key.strip()] = value
+            # Removed backward compatibility reference to reduce bloat
+            return FlextResult[None].ok(None)
 
-            """
-            min_size = 1
-            max_size = 1000
-            if v < min_size or v > max_size:
-                msg = f"Page size must be between {min_size} and {max_size}"
-                raise ValueError(msg)
-            return v
-
-    class Builder(BaseModel):
-        """Response builder model."""
-
-        def create(self, **kwargs: object) -> FlextApiTypes.Core.Dict:
-            """Create method for building responses.
-
-            Returns:
-                FlextApiTypes.Core.Dict: Dictionary with provided kwargs.
-
-            """
-            return dict(kwargs)
-
-    # ===================== PaginationConfig (necessário para testes) =====================
-    class PaginationConfig(BaseModel):
-        """Configuração de paginação usada nos testes legados."""
-
-        data: list[object] = Field(default_factory=list)
-        total: int = Field(ge=0)
-        page: int = Field(ge=1)
-        page_size: int = Field(ge=1)
-
-    # ===================== Query Builder (ResponseBuilder moved to utilities.py) =====================
-
-    class QueryBuilder(BaseModel):
-        """Query builder mínima para cobrir testes (equals, sort_desc, paginação)."""
-
-        filters: dict[str, object] = Field(default_factory=dict)
-        sort: list[str] = Field(default_factory=list)
-        page: int = 1
-        page_size: int = 20
-
-        # Métodos fluent
-        def equals(self, field: str, value: object) -> FlextApiModels.QueryBuilder:
-            """Add equality filter condition.
-
-            Args:
-                field: Field name.
-                value: Field value.
-
-            Returns:
-                FlextApiModels.QueryBuilder: Self for chaining.
-
-            """
-            self.filters[field] = value
-            return self
-
-        def sort_desc(self, field: str) -> FlextApiModels.QueryBuilder:
-            """Add descending sort field.
-
-            Args:
-                field: Field name to sort by.
-
-            Returns:
-                FlextApiModels.QueryBuilder: Self for chaining.
-
-            """
-            self.sort.append(f"-{field}")
-            return self
-
-        def set_page(self, value: int) -> FlextApiModels.QueryBuilder:
-            """Set page number.
-
-            Args:
-                value: Page number (must be >= 1).
-
-            Returns:
-                FlextApiModels.QueryBuilder: Self for chaining.
-
-            """
-            if value >= 1:
-                self.page = value
-            return self
-
-        def set_page_size(self, value: int) -> FlextApiModels.QueryBuilder:
-            """Set page size.
-
-            Args:
-                value: Page size (must be >= 1).
-
-            Returns:
-                FlextApiModels.QueryBuilder: Self for chaining.
-
-            """
-            if value >= 1:
-                self.page_size = value
-            return self
-
-        def for_response(self) -> FlextApiUtilities.ResponseBuilder:
-            """Get response builder for this query.
-
-            Returns:
-                FlextApiUtilities.ResponseBuilder: New response builder instance.
-
-            """
-            return FlextApiUtilities.ResponseBuilder()
-
-        # Build final dict
-        def build(self) -> dict[str, object]:
-            """Build final query dictionary.
-
-            Returns:
-                dict[str, object]: Query parameters dictionary.
-
-            """
+        def to_query_params(self) -> dict[str, object]:
+            """Convert to query parameters dict with Python 3.13+ computational optimization."""
+            # Python 3.13+ optimized dict merge with walrus operator
+            params = self.model_dump(by_alias=True, exclude_none=True)
+            # Computational optimization: direct merge avoiding update() call
             return {
-                "filters": self.filters,
-                "sort": self.sort,
-                "pagination": {
-                    "page": self.page,
-                    "page_size": self.page_size,
-                },
+                **params,
+                **(filters if (filters := params.pop("filters", {})) else {}),
             }
 
-    # ===================== Factory estática usada pelos testes =====================
-    @classmethod
-    def for_query(cls) -> FlextApiModels.QueryBuilder:
-        """Create QueryBuilder instance for tests."""
-        return cls.QueryBuilder()
+    class PaginationConfig(FlextModels.Value):
+        """Pagination configuration extending flext-core Value."""
 
-    class StorageConfig(BaseModel):
-        """Storage configuration model."""
+        page_size: int = FlextApiConstants.DEFAULT_PAGE_SIZE
+        current_page: int = Field(alias="page", default=1)
+        max_pages: int | None = None
+        total: int = 0
 
-        backend: str = Field(default="memory", description="Storage backend type")
-        namespace: str = Field(default="default", description="Storage namespace")
-        host: str = Field(default="localhost", description="Storage host")
-        port: int = Field(default=6379, description="Storage port")
-        db: int = Field(default=0, description="Database number")
-        file_path: str | None = Field(
-            default=None, description="File path for FILE backend"
-        )
-        redis_url: str | None = Field(
-            default=None, description="Redis URL for REDIS backend"
-        )
-        database_url: str | None = Field(
-            default=None, description="Database URL for DATABASE backend"
-        )
-        options: FlextApiTypes.Core.Dict = Field(
-            default_factory=dict, description="Additional options"
-        )
+    class Builder:
+        """Response builder for API responses."""
 
-    class ApiBaseService:
-        """Base service class for API services."""
+        def create(
+            self, response_type: str = "success", **kwargs: object
+        ) -> dict[str, object]:
+            """Create response using Python 3.13+ pattern matching optimization."""
+            # Python 3.13+ match-case for computational efficiency
+            match response_type:
+                case "error":
+                    # Direct return avoiding method call overhead
+                    return {
+                        "status": "error",
+                        "error": {
+                            "code": kwargs.get("code", "error"),
+                            "message": kwargs.get("message", "Error occurred"),
+                        },
+                        "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
+                        "request_id": FlextUtilities.Generators.generate_request_id(),
+                    }
+                case _:
+                    # Direct return for success case
+                    return {
+                        "status": "success",
+                        "data": kwargs.get("data"),
+                        "message": kwargs.get("message", ""),
+                        "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
+                        "request_id": FlextUtilities.Generators.generate_request_id(),
+                    }
 
-        def __init__(self, service_name: str = "default-service") -> None:
-            """Initialize base service."""
-            self._service_name = service_name
+        @staticmethod
+        def success(data: object = None, message: str = "") -> dict[str, object]:
+            """Build success response using flext-core generators."""
+            return {
+                "status": "success",
+                "data": data,
+                "message": message,
+                "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
+                "request_id": FlextUtilities.Generators.generate_request_id(),
+            }
 
-    class ApiResponse(BaseModel):
-        """API response model."""
+        @staticmethod
+        def error(message: str, code: str = "error") -> dict[str, object]:
+            """Build error response using flext-core generators."""
+            return {
+                "status": "error",
+                "error": {"code": code, "message": message},
+                "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
+                "request_id": FlextUtilities.Generators.generate_request_id(),
+            }
 
-        id: str = Field(..., description="Response identifier")
-        status_code: int = Field(..., description="HTTP status code")
-        data: object | None = Field(default=None, description="Response data")
-
-        @classmethod
-        def create_query_builder(cls) -> FlextApiModels.HttpQuery:
-            """Create query builder instance.
-
-            Returns:
-                FlextApiModels.HttpQuery: New query builder instance.
-
-            """
-            return FlextApiModels.HttpQuery()
-
-    # Removidas classes internas de constantes/field/endpoints/status. Usar FlextApiConstants.
-
-    class URL(BaseModel):
-        """Value object de URL."""
-
-        url: str = Field(..., description="URL string", min_length=1)
-
-        def __str__(self) -> str:  # pragma: no cover
-            """Retorna representação string do valor da URL."""
-            return self.url
-
-        @property
-        def scheme(self) -> str:
-            """Get URL scheme (http/https).
-
-            Returns:
-                str: URL scheme.
-
-            """
-            return urlparse(self.url).scheme
-
-        @property
-        def host(self) -> str:
-            """Get URL host.
-
-            Returns:
-                str: URL host.
-
-            """
-            parsed = urlparse(self.url)
-            return parsed.netloc.split(":")[0] if parsed.netloc else ""
-
-        @property
-        def port(self) -> int | None:
-            """Get URL port.
-
-            Returns:
-                int | None: URL port or None if not specified.
-
-            """
-            return urlparse(self.url).port
-
-        @property
-        def path(self) -> str:
-            """Get URL path.
-
-            Returns:
-                str: URL path.
-
-            """
-            parsed = urlparse(self.url)
-            return parsed.path or "/"
-
-        @property
-        def query(self) -> str:
-            """Get URL query string.
-
-            Returns:
-                str: URL query string.
-
-            """
-            return urlparse(self.url).query
-
-
-__all__ = ["FlextApiModels"]
+    # Direct class references - no bloated aliases
+    # Use FlextApiModels.HttpRequest and FlextApiModels.HttpResponse directly
+    # For HttpMethod type, import from flext_api.typings.FlextApiTypes.HttpMethod

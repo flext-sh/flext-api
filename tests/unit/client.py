@@ -18,11 +18,10 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import pytest
-from flext_core import FlextResult
-from flext_core.typings import FlextTypes
+from flext_core import FlextResult, FlextTypes
 from flext_tests import FlextTestsMatchers
 
-from flext_api import FlextApiClient, FlextApiModels, create_client
+from flext_api import FlextApiClient, FlextApiModels, create_flext_api
 
 
 @pytest.mark.asyncio
@@ -831,7 +830,7 @@ async def test_real_http_headers_and_user_agent() -> None:
 @pytest.mark.asyncio
 async def test_real_client_factory_function() -> None:
     """Test real HTTP using client factory function."""
-    client = create_client(
+    client = create_flext_api(
         {
             "base_url": "https://httpbin.org",
             "timeout": 10.0,
@@ -870,7 +869,7 @@ def test_client_configuration_validation() -> None:
     client = FlextApiClient(config)
     assert client is not None
     assert client.config.base_url == "https://api.example.com"
-    assert client.config.timeout == 30.0
+    assert client.config.api_timeout == 30.0
     assert client.config.max_retries == 3
 
 
@@ -952,8 +951,8 @@ async def test_client_session_management() -> None:
     assert hasattr(client, "_session")
 
 
-def test_create_client_factory_function() -> None:
-    """Test create_client factory function."""
+def test_create_flext_api_factory_function() -> None:
+    """Test create_flext_api factory function."""
     config_dict = {
         "base_url": "https://api.example.com",
         "timeout": 30.0,
@@ -961,22 +960,22 @@ def test_create_client_factory_function() -> None:
         "headers": {"Authorization": "Bearer token"},
     }
 
-    client = create_client(config_dict)
+    client = create_flext_api(config_dict)
 
     assert client is not None
     assert isinstance(client, FlextApiClient)
     assert client.config.base_url == "https://api.example.com"
-    assert client.config.timeout == 30.0
+    assert client.config.api_timeout == 30.0
 
 
-def test_create_client_validation_error() -> None:
-    """Test create_client with validation errors."""
+def test_create_flext_api_validation_error() -> None:
+    """Test create_flext_api with validation errors."""
     # Invalid config without base_url should raise exception or return valid client with defaults
     invalid_config = {"timeout": 30.0}
 
     # The function may throw an exception or return a client - test it doesn't crash
     try:
-        client = create_client(invalid_config)
+        client = create_flext_api(invalid_config)
         # If it returns a client, it should be valid
         assert client is not None
         assert isinstance(client, FlextApiClient)
@@ -1067,7 +1066,7 @@ def test_client_configuration_inheritance() -> None:
     client = FlextApiClient(minimal_config)
 
     assert client.config.base_url == "https://api.example.com"
-    assert client.config.timeout == 30.0  # Default value
+    assert client.config.api_timeout == 30.0  # Default value
     assert client.config.max_retries == 3  # Default value
 
     # Test full config

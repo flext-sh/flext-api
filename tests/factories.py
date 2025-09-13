@@ -1,12 +1,3 @@
-"""Test factories for flext-api using flext_tests EM ABSOLUTO.
-
-Uses flext_tests library MAXIMALLY - NO local implementations.
-Everything via FlextTestsDomains, FlextTestsUtilities, FlextTestsFactories.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 from __future__ import annotations
 
 import uuid
@@ -14,11 +5,12 @@ from typing import cast
 
 from faker import Faker
 from flext_core import FlextResult, FlextTypes
-
-# MAXIMUM usage of flext_tests - use EM ABSOLUTO
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
+
+# MAXIMUM usage of flext_tests - use EM ABSOLUTO
+
 
 # Configure Faker for consistent test data
 fake = Faker()

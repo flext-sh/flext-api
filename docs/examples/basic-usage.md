@@ -169,7 +169,7 @@ def get_request_examples():
 
     client = client_result.data
 
-  
+
     logger.info("Testing simple GET request")
     response = client.get("/json")
     if response.success:
@@ -345,7 +345,7 @@ def query_builder_examples():
     api = create_flext_api()
     builder = api.get_builder()
 
-  
+
     logger.info("Building simple query")
     query = (
         builder.for_query()
@@ -664,7 +664,7 @@ This example creates a simple CLI tool for making HTTP requests.
 
 import sys
 import json
-from typing import Optional, Dict, object
+from typing import Optional, Dict
 from flext_api import create_flext_api
 from flext_core import FlextLogger, FlextResult
 

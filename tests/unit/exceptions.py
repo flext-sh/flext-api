@@ -1,9 +1,5 @@
 """Tests for flext_api.exceptions module using flext_tests EM ABSOLUTO.
 
-MAXIMUM usage of flext_tests - ALL test utilities via flext_tests.
-Uses FlextTestsMatchers, FlextTestsDomains, FlextTestsUtilities.
-ACESSO DIRETO - NO ALIASES, NO WRAPPERS, NO COMPATIBILITY.
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
@@ -12,7 +8,6 @@ from __future__ import annotations
 
 import pytest
 
-# MAXIMUM usage of flext_tests - ACESSO DIRETO - NO ALIASES
 from flext_api import FlextApiExceptions
 
 
