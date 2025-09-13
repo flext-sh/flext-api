@@ -72,7 +72,7 @@ FLEXT_AUTH_SERVICE_URL=""              # Authentication service endpoint
 from flext_api import FlextApiClientConfig
 from flext_core import FlextConfig
 from pydantic import Field
-from typing import Optional, Dict, object
+from typing import Optional, Dict
 
 class FlextApiClientConfig(FlextConfig):
     """HTTP client configuration with validation."""

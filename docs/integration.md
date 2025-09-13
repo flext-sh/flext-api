@@ -90,7 +90,7 @@ FLEXT Service acts as the data platform service with Python bridge integration.
 ```python
 from flext_api import create_flext_api
 from flext_core import FlextLogger, FlextResult
-from typing import Dict, object
+from typing import Dict
 
 logger = FlextLogger(__name__)
 
@@ -218,7 +218,7 @@ class AuthenticatedApiClient:
 ```python
 from flext_api import FlextApiPlugin
 from flext_core import FlextResult
-from typing import Dict, object
+from typing import Dict
 
 class FlextApiAuthPlugin(FlextApiPlugin):
     """Authentication plugin for HTTP clients."""
@@ -254,7 +254,7 @@ Integration with the observability stack for metrics, tracing, and health monito
 from flext_api import create_flext_api
 from flext_observability import FlextMetrics, FlextTracer
 from flext_core import FlextLogger, FlextResult
-from typing import Dict, object
+from typing import Dict
 
 logger = FlextLogger(__name__)
 metrics = FlextMetrics()
@@ -405,7 +405,7 @@ Integration with flext-ldap for directory services.
 from flext_api import create_flext_api
 from flext_ldap import FlextLDAPClient
 from flext_core import FlextLogger, FlextResult
-from typing import Dict, object
+from typing import Dict
 
 logger = FlextLogger(__name__)
 
@@ -474,7 +474,7 @@ Integration with flext-meltano for Singer tap and target orchestration.
 from flext_api import create_flext_api
 from flext_meltano import FlextMeltanoClient
 from flext_core import FlextLogger, FlextResult
-from typing import Dict, object
+from typing import Dict
 
 logger = FlextLogger(__name__)
 
@@ -607,7 +607,7 @@ Integration with the web interface for dashboard and UI functionality.
 ```python
 from flext_api import create_flext_api
 from flext_core import FlextLogger, FlextResult
-from typing import Dict, object
+from typing import Dict
 
 logger = FlextLogger(__name__)
 
@@ -799,7 +799,7 @@ class FlextServiceDiscovery:
 ```python
 from flext_api import FlextApiCircuitBreakerPlugin
 from flext_core import FlextLogger, FlextResult
-from typing import Dict, object
+from typing import Dict
 import time
 
 logger = FlextLogger(__name__)

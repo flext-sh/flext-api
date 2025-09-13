@@ -9,9 +9,9 @@ from __future__ import annotations
 from flext_api import (
     FlextApiModels,
 )
+from flext_api.constants import FlextApiConstants
 
 # Import enums and response types
-from flext_api.constants import FlextApiConstants
 from flext_api.models import (
     MAX_PORT,
     MIN_PORT,
@@ -22,10 +22,10 @@ HttpStatus = FlextApiConstants.HttpStatus  # Use numeric HTTP status codes
 ApiResponse = (
     FlextApiModels.ApiResponse
 )  # Use the actual model class, not the type alias
-ClientStatus = FlextApiModels.HttpStatus  # Use HttpStatus for client status as well
+ClientStatus = FlextApiConstants.HttpStatus  # Use HttpStatus for client status as well
 
 
-class Test:
+class TestFlextApiModelsFocused:
     """Test model creation and validation."""
 
     def test_url_create_success(self) -> None:
@@ -59,7 +59,7 @@ class Test:
     def test_url_create_with_defaults(self) -> None:
         """Test creation that uses default scheme."""
         # Test with a minimal that would use defaults
-        result = "example.com/test"
+        result = FlextApiModels.create_url("example.com/test")
 
         # Should succeed and use default scheme
         if result.success:
@@ -69,19 +69,20 @@ class Test:
 
     def test_url_create_error_handling(self) -> None:
         """Test creation error handling."""
-        # Test with various potentially problematic s
+        # Test with various potentially problematic URLs
         test_urls = [
-            "",  # Empty "not-a-url",  # Invalid format
+            "",  # Empty
+            "not-a-url",  # Invalid format
             "://missing-scheme",  # Missing scheme
         ]
 
         for test_url in test_urls:
-            result = test_url
+            result = FlextApiModels.create_url(test_url)
             # Either it should fail gracefully or succeed with validation errors
             if result.success:
                 # If it succeeds, the validation should catch issues
                 validation_result = result.value.validate_business_rules()
-                # The validation might fail, which is expected for invalid s
+                # The validation might fail, which is expected for invalid URLs
                 assert validation_result.success or validation_result.error is not None
             else:
                 # If creation fails, that's also acceptable
@@ -89,8 +90,10 @@ class Test:
 
     def test_url_validation_business_rules(self) -> None:
         """Test validation with valid data."""
-        # Create a that should pass all validation rules
-        result = "https://valid-host.com:443/api/v1?query=test#section"
+        # Create a URL that should pass all validation rules
+        result = FlextApiModels.create_url(
+            "https://valid-host.com:443/api/v1?query=test#section"
+        )
 
         if result.success:
             url = result.value
@@ -219,7 +222,7 @@ class TestModelIntegration:
     def test_url_with_all_components(self) -> None:
         """Test creation with all possible components."""
         full_url = "https://user:pass@api.example.com:8443/v1/users?active=true&sort=name#results"
-        result = full_url
+        result = FlextApiModels.create_url(full_url)
 
         if result.success:
             url = result.value
@@ -256,12 +259,12 @@ class TestModelIntegration:
         ]
 
         for url_string in urls:
-            result = url_string
-            assert result.success, f"Failed to create : {url_string}"
+            result = FlextApiModels.create_url(url_string)
+            assert result.success, f"Failed to create URL: {url_string}"
 
             url = result.value
             validation_result = url.validate_business_rules()
-            assert validation_result.success, f"Validation failed for : {url_string}"
+            assert validation_result.success, f"Validation failed for URL: {url_string}"
 
 
 class TestErrorConditions:
@@ -277,7 +280,7 @@ class TestErrorConditions:
         ]
 
         for url_string in edge_cases:
-            result = url_string
+            result = FlextApiModels.create_url(url_string)
             # These should all succeed
             assert result.success, f"Edge case failed: {url_string}"
 

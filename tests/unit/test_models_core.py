@@ -1,19 +1,9 @@
-"""Tests for flext_api.models module using flext_tests EM ABSOLUTO.
-
-MAXIMUM usage of flext_tests - ALL test data via flext_tests.
-Uses FlextTestsMatchers, FlextTestsDomains, FlextTestsUtilities.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 from __future__ import annotations
 
+# MAXIMUM flext_tests usage
 from typing import cast
 
 import pytest
-
-# MAXIMUM flext_tests usage
 from flext_tests import FlextTestsDomains
 from pydantic import ValidationError
 
@@ -170,9 +160,11 @@ class TestFlextApiModels:
         """Test validation."""
         # Valid
         request = FlextApiModels.ApiRequest(
-            id="test_id", method=FlextApiConstants.HttpMethods.GET, url="/api/users"
+            id="test_id",
+            method=FlextApiConstants.HttpMethods.GET,
+            url="https://api.example.com/users",
         )
-        assert request.url == "/api/users"
+        assert request.url == "https://api.example.com/users"
 
         # Empty should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
@@ -360,7 +352,9 @@ class TestFlextApiModels:
         assert isinstance(config, FlextApiModels.ClientConfig)
 
         request = FlextApiModels.ApiRequest(
-            id="test_id", method=FlextApiConstants.HttpMethods.GET, url="/test"
+            id="test_id",
+            method=FlextApiConstants.HttpMethods.GET,
+            url="https://api.example.com/test",
         )
         assert isinstance(request, FlextApiModels.ApiRequest)
 

@@ -454,7 +454,7 @@ def get_query_builder() -> FlextResult[FlextApiQueryBuilder]:
 
 ```python
 from flext_core import FlextResult, FlextLogger
-from typing import Dict, object
+from typing import Dict
 
 logger = FlextLogger(__name__)
 
@@ -521,7 +521,7 @@ class FlextApiError:
 ```python
 from flext_core import FlextConfig, FlextResult, get_flext_container
 from pydantic import Field, field_validator
-from typing import Dict, object
+from typing import Dict
 
 class FlextApiConfig(FlextConfig):
     """✅ Configuration seguindo padrões flext-core."""
@@ -806,13 +806,11 @@ class TestFlextResultPatterns:
 #### **Fase 1: Core Infrastructure (Semana 1)**
 
 1. **Logging Standardization**
-
    - Substituir todas as instâncias de `structlog.FlextLogger()`
    - Implementar `FlextLogger(__name__)` consistentemente
    - Adicionar correlation IDs e contexto estruturado
 
 2. **Error Handling Refactoring**
-
    - Converter todas as exceptions para FlextResult[None].fail()
    - Implementar error codes estruturados
    - Adicionar error context com metadata
@@ -825,7 +823,6 @@ class TestFlextResultPatterns:
 #### **Fase 2: Domain & Application (Semana 2)**
 
 1. **Domain Modeling Implementation**
-
    - Implementar rich entities em domain/entities.py
    - Criar value objects em domain/value_objects.py
    - Mover business logic para domain layer
@@ -838,7 +835,6 @@ class TestFlextResultPatterns:
 #### **Fase 3: Quality & Observability (Semana 3)**
 
 1. **Testing Enablement**
-
    - Habilitar todos os \*.disabled tests
    - Implementar comprehensive test coverage
    - Adicionar performance benchmarks

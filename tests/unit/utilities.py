@@ -9,17 +9,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import sys
 from datetime import UTC, datetime
-from pathlib import Path
 
 from flext_core import FlextModels, FlextResult
 from flext_tests import FlextTestsMatchers
-
-# Add tests directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-# NO ALIASES - import factories and helpers directly
 
 from flext_api import FlextApiUtilities
 

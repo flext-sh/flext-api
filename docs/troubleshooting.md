@@ -844,7 +844,7 @@ error: "None" has no attribute "data"
 **Solutions**:
 
 ```python
-from typing import Optional, Dict, object
+from typing import Optional, Dict
 from flext_core import FlextResult
 
 # ✅ Add proper type annotations

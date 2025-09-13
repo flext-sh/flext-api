@@ -1,14 +1,3 @@
-"""Comprehensive tests for FlextApiStorage with real functionality validation.
-
-Tests all storage functionality using flext_tests library without mocks.
-Achieves 100% coverage for storage.py module.
-
-
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 from __future__ import annotations
 
 import json

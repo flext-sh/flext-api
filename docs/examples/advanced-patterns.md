@@ -166,7 +166,7 @@ plugin_result = advanced_plugin_example()
 ```python
 from flext_api import FlextApiPlugin, create_flext_api
 from flext_core import FlextLogger, FlextResult
-from typing import Dict, object
+from typing import Dict
 import time
 from enum import Enum
 
@@ -327,7 +327,7 @@ circuit_result = circuit_breaker_example()
 
 ```python
 import asyncio
-from typing import List, Dict, object
+from typing import List, Dict
 from flext_api import create_flext_api
 from flext_core import FlextLogger, FlextResult
 
@@ -659,7 +659,7 @@ async def batch_processing_example():
 ```python
 import random
 import time
-from typing import List, Callable, object
+from typing import List, Callable
 from flext_api import create_flext_api, FlextApiPlugin
 from flext_core import FlextLogger, FlextResult
 

@@ -1,9 +1,4 @@
-"""Comprehensive tests for FlextApiUtilities to achieve 100% coverage.
-
-Focus on all uncovered lines and advanced patterns.
-Uses flext_tests library for real functionality validation.
-
-
+"""Comprehensive utilities tests for FLEXT API.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,8 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextModels, FlextUtilities
-from flext_core.typings import FlextTypes
+from flext_core import FlextModels, FlextTypes, FlextUtilities
 from flext_tests import FlextTestsMatchers
 
 from flext_api.constants import FlextApiConstants

@@ -1,7 +1,4 @@
-"""FLEXT API Utilities - REAL utility functions using flext-core FlextUtilities.
-
-HTTP-specific utility extensions using ONLY flext-core FlextUtilities functionality,
-eliminating all custom implementations and following single class per module pattern.
+"""FLEXT API Utilities - HTTP utilities extending flext-core.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -9,420 +6,206 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Annotated
-from urllib.parse import ParseResult, urlparse
+from flext_core import (
+    FlextResult,
+    FlextTypeAdapters,
+    FlextTypes,
+    FlextUtilities,
+    FlextValidations,
+)
 
-from flext_core import FlextLogger, FlextModels, FlextResult, FlextUtilities
-from pydantic import Field
-
-from flext_api.constants import FlextApiConstants
-from flext_api.typings import FlextApiTypes
-
-logger = FlextLogger(__name__)
+from flext_api.constants import FlextApiConstants, HttpMethods
 
 
-class FlextApiUtilities(FlextUtilities):
-    """HTTP API utilities usando diretamente FlextApiTypes sem aliases locais.
+class FlextApiUtilities:
+    """HTTP API utilities extending flext-core - ZERO DUPLICATION using existing functionality."""
 
-    Decisão: remover classe 'Typings' para evitar shadowing/duplication. Todos os
-    tipos são referenciados diretamente de `FlextApiTypes` ou dos modelos.
-    """
+    # =============================================================================
+    # DIRECT RE-EXPORT of flext-core utilities - STOP DUPLICATING!
+    # =============================================================================
 
-    @classmethod
-    def validate_config(
-        cls,
-        config: Annotated[
-            FlextModels.Http.HttpRequestConfig
-            | FlextModels.Http.HttpErrorConfig
-            | FlextModels.Http.ValidationConfig,
-            Field(discriminator="config_type"),
-        ],
-    ) -> FlextResult[FlextApiTypes.Core.Dict]:
-        """Validate configuration using Python 3.13 + Advanced Pydantic V2 patterns."""
-        # Python 3.13 match/case with type narrowing for configuration types
-        match config:
-            case FlextModels.Http.HttpRequestConfig() as http_config:
-                return cls._validate_http_request_config(http_config)
-            case FlextModels.Http.HttpErrorConfig() as error_config:
-                return cls._validate_http_error_config(error_config)
-            case FlextModels.Http.ValidationConfig() as validation_config:
-                return cls._validate_validation_config(validation_config)
-            case _:
-                return FlextResult[FlextApiTypes.Core.Dict].fail("Unknown configuration type")
+    # Use existing FlextUtilities instead of duplicating
+    TextProcessor = FlextUtilities.TextProcessor
+    Validation = FlextUtilities.Validation
+    Generators = FlextUtilities.Generators
+    Conversions = FlextUtilities.Conversions
+    TypeGuards = FlextUtilities.TypeGuards
 
-    @classmethod
-    def _validate_http_request_config(
-        cls,
-        config: FlextModels.Http.HttpRequestConfig,
-    ) -> FlextResult[FlextApiTypes.Core.Dict]:
-        """Validate HTTP request configuration using FlextUtilities."""
-        return (
-            cls.HttpValidator.validate_url(config.url)
-            .bind(lambda _: cls.HttpValidator.validate_http_method(config.method))
-            .map(lambda _: config.model_dump())
-        )
-
-    @classmethod
-    def _validate_http_error_config(
-        cls,
-        config: FlextModels.Http.HttpErrorConfig,
-    ) -> FlextResult[FlextApiTypes.Core.Dict]:
-        """Validate HTTP error configuration using FlextUtilities."""
-        return cls.HttpValidator.validate_status_code(config.status_code).map(
-            lambda _: config.model_dump(),
-        )
-
-    @classmethod
-    def _validate_validation_config(
-        cls,
-        config: FlextModels.Http.ValidationConfig,
-    ) -> FlextResult[FlextApiTypes.Core.Dict]:
-        """Validate validation configuration - direct passthrough."""
-        return FlextResult[FlextApiTypes.Core.Dict].ok(config.model_dump())
-
-    # Convenience methods removed - use ResponseBuilder and PaginationBuilder directly
-
-    @classmethod
-    def validate_url(cls, url: object) -> FlextResult[str]:
-        """Validate URL with type checking - convenience method."""
-        if not isinstance(url, str):
-            return FlextResult[str].fail("Invalid URL format")
-        return cls.HttpValidator.validate_url(url)
-
-    class HttpValidator:
-        """HTTP-specific validation using FlextUtilities.TypeGuards and Validators."""
-
-        @staticmethod
-        def validate_url(url: str) -> FlextResult[str]:
-            """Validate URL using Python 3.13 + Railway Pattern + FlextUtilities."""
-            # Railway Pattern chaining for clean flow
-            return (
-                FlextApiUtilities.HttpValidator._validate_string(url)
-                .bind(FlextApiUtilities.HttpValidator._clean_url)
-                .bind(FlextApiUtilities.HttpValidator._validate_parsed_url)
-            )
-
-        @staticmethod
-        def _validate_string(url: str) -> FlextResult[str]:
-            """Validate input string using FlextUtilities + Python 3.13 patterns.
-
-            Returns:
-                FlextResult[str]: Validation result.
-
-            """
-            return (
-                FlextResult[str].ok(url)
-                if FlextUtilities.TypeGuards.is_string_non_empty(url)
-                else FlextResult[str].fail("URL must be a non-empty string")
-            )
-
-        @staticmethod
-        def _clean_url(url: str) -> FlextResult[str]:
-            """Clean URL using FlextUtilities + advanced validation."""
-            cleaned = FlextUtilities.TextProcessor.clean_text(url)
-            return (
-                FlextResult[str].ok(cleaned)
-                if cleaned
-                else FlextResult[str].fail("URL cannot be empty after cleaning")
-            )
-
-        @staticmethod
-        def _validate_parsed_url(cleaned_url: str) -> FlextResult[str]:
-            """Validate URL structure using Python 3.13 advanced match/case patterns."""
-            try:
-                parsed = urlparse(cleaned_url)
-
-                # Python 3.13 Advanced Structural Pattern Matching
-
-                if not parsed.scheme:
-                    return FlextResult[str].fail("Invalid URL format")
-
-                if parsed.scheme not in {"http", "https"}:
-                    return FlextResult[str].fail("Invalid URL format")
-
-                if not parsed.netloc:
-                    return FlextResult[str].fail("URL must include hostname")
-
-                # Valid URL - proceed to component validation
-                return FlextApiUtilities.HttpValidator._validate_url_components(
-                    parsed,
-                    cleaned_url,
-                )
-
-            except Exception as e:
-                return FlextResult[str].fail(f"URL parsing failed: {e}")
-
-        @staticmethod
-        def _validate_url_components(parsed: ParseResult, url: str) -> FlextResult[str]:
-            """Advanced URL component validation using Python 3.13 pattern matching."""
-            # Python 3.13 Advanced Pattern Matching for URL components
-            max_hostname = FlextApiConstants.HttpValidation.MAX_HOSTNAME_LENGTH
-            min_port = FlextApiConstants.HttpValidation.MIN_PORT_NUMBER
-            max_port = FlextApiConstants.HttpValidation.MAX_PORT_NUMBER
-            max_url = FlextApiConstants.HttpValidation.MAX_URL_LENGTH
-
-            match parsed:
-                case ParseResult(hostname=hostname) if (
-                    hostname and len(hostname) > max_hostname
-                ):
-                    return FlextResult[str].fail(
-                        f"Hostname too long (max {max_hostname} characters)",
-                    )
-                case ParseResult(port=port) if port is not None and not (
-                    min_port <= port <= max_port
-                ):
-                    return FlextResult[str].fail(
-                        f"Invalid port {port}, must be {min_port}-{max_port}",
-                    )
-                case _ if len(url) > max_url:
-                    return FlextResult[str].fail(
-                        f"URL too long (max {max_url} characters)",
-                    )
-                case _:
-                    return FlextResult[str].ok(url)
-
-        @staticmethod
-        def normalize_url(url: str) -> FlextResult[str]:
-            """Normalize URL using FlextUtilities.TextProcessor functionality."""
-            validation_result = FlextApiUtilities.HttpValidator.validate_url(url)
-            if not validation_result.success:
-                return validation_result
-
-            # Use REAL FlextUtilities for text cleaning
-            cleaned_url = FlextUtilities.TextProcessor.clean_text(validation_result.value)
-
-            # Remove trailing slash unless it's the root path
-            normalized = (
-                cleaned_url.rstrip("/")
-                if not cleaned_url.endswith("://")
-                else cleaned_url
-            )
-            return FlextResult[str].ok(normalized)
-
-        @staticmethod
-        def validate_http_method(method: str) -> FlextResult[str]:
-            """Validate HTTP method using Python 3.13 advanced patterns + FlextUtilities."""
-            if not FlextUtilities.TypeGuards.is_string_non_empty(method):
-                return FlextResult[str].fail("HTTP method must be a non-empty string")
-
-            # Clean method using REAL FlextUtilities
-            cleaned_method = FlextUtilities.TextProcessor.clean_text(method.upper())
-
-            # Python 3.13 Advanced Pattern Matching for HTTP Methods
-            match cleaned_method:
-                # Common methods - optimized path
-                case "GET" | "POST" | "PUT" | "DELETE":
-                    return FlextResult[str].ok(cleaned_method)
-
-                # Extended methods - standard HTTP
-                case "PATCH" | "HEAD" | "OPTIONS":
-                    return FlextResult[str].ok(cleaned_method)
-
-                # Rare but valid methods
-                case "TRACE" | "CONNECT":
-                    return FlextResult[str].ok(cleaned_method)
-
-                # Custom/WebDAV methods pattern
-                case method_name if method_name.startswith(
-                    ("PROP", "COPY", "MOVE", "LOCK"),
-                ):
-                    return FlextResult[str].ok(cleaned_method)  # Allow WebDAV methods
-
-                # Invalid method - comprehensive error
-                case invalid_method:
-                    return FlextResult[str].fail(
-                        f"Invalid HTTP method: '{invalid_method}'. Valid methods: "
-                        f"GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE, CONNECT",
-                    )
-
-        @staticmethod
-        def validate_status_code(status_code: int) -> FlextResult[int]:
-            """Validate HTTP status code using Python 3.13 + FlextUtilities."""
-            # Use REAL FlextUtilities for safe int conversion
-            safe_status = FlextUtilities.safe_int(status_code, -1)
-
-            if safe_status == -1:
-                return FlextResult[int].fail("Status code must be a valid integer")
-
-            # Python 3.13 Advanced Pattern Matching for HTTP Status Codes using constants
-            status_ranges = FlextApiConstants.HttpStatus
-
-            match safe_status:
-                # 1xx Informational
-                case code if (
-                    status_ranges.INFORMATIONAL_MIN
-                    <= code
-                    <= status_ranges.INFORMATIONAL_MAX
-                ):
-                    return FlextResult[int].ok(safe_status)
-
-                # 2xx Success
-                case code if (
-                    status_ranges.SUCCESS_MIN <= code <= status_ranges.SUCCESS_MAX
-                ):
-                    return FlextResult[int].ok(safe_status)
-
-                # 3xx Redirection
-                case code if (
-                    status_ranges.REDIRECTION_MIN
-                    <= code
-                    <= status_ranges.REDIRECTION_MAX
-                ):
-                    return FlextResult[int].ok(safe_status)
-
-                # 4xx Client Error
-                case code if (
-                    status_ranges.CLIENT_ERROR_MIN
-                    <= code
-                    <= status_ranges.CLIENT_ERROR_MAX
-                ):
-                    return FlextResult[int].ok(safe_status)
-
-                # 5xx Server Error
-                case code if (
-                    status_ranges.SERVER_ERROR_MIN
-                    <= code
-                    <= status_ranges.SERVER_ERROR_MAX
-                ):
-                    return FlextResult[int].ok(safe_status)
-
-                # Invalid status code
-                case invalid_code:
-                    return FlextResult[int].fail(
-                        f"Invalid HTTP status code: {invalid_code}. "
-                        f"Valid range: {status_ranges.INFORMATIONAL_MIN}-{status_ranges.SERVER_ERROR_MAX} (RFC 7231)",
-                    )
+    # =============================================================================
+    # HTTP-SPECIFIC BUILDER CLASSES - Using flext-core foundation
+    # =============================================================================
 
     class ResponseBuilder:
-        """HTTP response building using FlextUtilities.Generators functionality."""
-
-        @staticmethod
-        def build_success_response(
-            data: object = None,
-            message: str = "Success",
-            status_code: int = FlextApiConstants.HttpStatus.OK,
-        ) -> FlextResult[FlextApiTypes.Core.Dict]:
-            """Build standardized success response using FlextUtilities."""
-            try:
-                # Generate timestamp using REAL FlextUtilities
-                timestamp = FlextUtilities.generate_iso_timestamp()
-
-                response = {
-                    "success": True,
-                    "message": message,
-                    "status_code": status_code,
-                    "data": data,
-                    "timestamp": timestamp,
-                    "request_id": FlextUtilities.generate_correlation_id(),
-                }
-                return FlextResult[FlextApiTypes.Core.Dict].ok(response)
-            except Exception as e:
-                return FlextResult[FlextApiTypes.Core.Dict].fail(
-                    f"Success response building failed: {e}",
-                )
+        """HTTP response builder using flext-core patterns."""
 
         @staticmethod
         def build_error_response(
-            error: str,
-            status_code: int = FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR,
+            message: str | None = None,
+            *,  # Python 3.13+ keyword-only parameters for clarity
+            status_code: int = 500,
+            data: object | None = None,
+            error: str | None = None,
             error_code: str | None = None,
-            details: object = None,
-        ) -> FlextResult[FlextApiTypes.Core.Dict]:
-            """Build standardized error response using FlextUtilities."""
+            details: object | None = None,
+        ) -> FlextResult[FlextTypes.Core.Dict]:
+            """Build error response using flext-core patterns."""
             try:
-                # Generate timestamp using REAL FlextUtilities
-                timestamp = FlextUtilities.generate_iso_timestamp()
-
+                final_message = (
+                    message if message is not None else (error or "Unknown error")
+                )
                 response = {
                     "success": False,
-                    "message": error,
+                    "message": final_message,
                     "status_code": status_code,
-                    "data": None,
-                    "timestamp": timestamp,
-                    "request_id": FlextUtilities.generate_correlation_id(),
+                    "data": data,
                 }
-
+                if error and error != final_message:
+                    response["error"] = error
                 if error_code:
                     response["error_code"] = error_code
-
                 if details:
                     response["details"] = details
-
-                return FlextResult[FlextApiTypes.Core.Dict].ok(response)
+                return FlextResult[FlextTypes.Core.Dict].ok(response)
             except Exception as e:
-                return FlextResult[FlextApiTypes.Core.Dict].fail(
-                    f"Error response building failed: {e}",
-                )
-
-    class PaginationBuilder:
-        """Pagination utilities using FlextUtilities functionality."""
+                return FlextResult[FlextTypes.Core.Dict].fail(str(e))
 
         @staticmethod
-        def build_paginated_response(
-            data: FlextApiTypes.Core.List,
-            total: int,
-            page: int = 1,
-            page_size: int = FlextApiConstants.Pagination.DEFAULT_PAGE_SIZE,
-            message: str = "Success",
-        ) -> FlextResult[FlextApiTypes.Core.Dict]:
-            """Build paginated response using FlextUtilities."""
+        def build_success_response(
+            data: object = None, message: str = "Success", status_code: int = 200
+        ) -> FlextResult[FlextTypes.Core.Dict]:
+            """Build success response using flext-core patterns."""
             try:
-                # Use FlextUtilities for safe int conversions
-                safe_page = FlextUtilities.Conversions.safe_int(page, 1)
-                safe_page_size = FlextUtilities.Conversions.safe_int(
-                    page_size,
-                    FlextApiConstants.Pagination.DEFAULT_PAGE_SIZE,
-                )
-                safe_total = FlextUtilities.Conversions.safe_int(total, 0)
-
-                # Validate pagination parameters
-                if safe_page < 1:
-                    return FlextResult[FlextApiTypes.Core.Dict].fail(
-                        "Page must be >= 1"
-                    )
-
-                if safe_page_size < 1:
-                    return FlextResult[FlextApiTypes.Core.Dict].fail(
-                        "Page size must be >= 1"
-                    )
-
-                if safe_page_size > FlextApiConstants.Pagination.MAX_PAGE_SIZE:
-                    return FlextResult[FlextApiTypes.Core.Dict].fail(
-                        f"Page size cannot exceed {FlextApiConstants.Pagination.MAX_PAGE_SIZE}",
-                    )
-
-                # Calculate pagination metadata
-                total_pages = max(
-                    1,
-                    (safe_total + safe_page_size - 1) // safe_page_size,
-                )
-                has_next = safe_page < total_pages
-                has_prev = safe_page > 1
-
-                # Generate timestamp using FlextUtilities
-                timestamp = FlextUtilities.Generators.generate_iso_timestamp()
-
                 response = {
                     "success": True,
                     "message": message,
+                    "status_code": status_code,
                     "data": data,
-                    "pagination": {
-                        "total": safe_total,
-                        "page": safe_page,
-                        "page_size": safe_page_size,
-                        "total_pages": total_pages,
-                        "has_next": has_next,
-                        "has_previous": has_prev,
-                    },
-                    "timestamp": timestamp,
+                    "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
                     "request_id": FlextUtilities.Generators.generate_request_id(),
                 }
-
-                return FlextResult[FlextApiTypes.Core.Dict].ok(response)
+                return FlextResult[FlextTypes.Core.Dict].ok(response)
             except Exception as e:
-                return FlextResult[FlextApiTypes.Core.Dict].fail(
-                    f"Paginated response building failed: {e}",
+                return FlextResult[FlextTypes.Core.Dict].fail(str(e))
+
+    class PaginationBuilder:
+        """HTTP pagination builder using flext-core patterns."""
+
+        @staticmethod
+        def build_paginated_response(
+            data: list[object] | None,
+            *,  # Python 3.13+ keyword-only for better API design
+            page: int = 1,
+            page_size: int = FlextApiConstants.DEFAULT_PAGE_SIZE,  # Use consistent defaults
+            total: int | None = None,
+            message: str | None = None,
+        ) -> FlextResult[FlextTypes.Core.Dict]:
+            """Build paginated response using flext-core patterns."""
+            try:
+                if page < 1:
+                    return FlextResult[FlextTypes.Core.Dict].fail("Page must be >= 1")
+                if page_size < 1:
+                    return FlextResult[FlextTypes.Core.Dict].fail(
+                        "Page size must be >= 1"
+                    )
+                if page_size > FlextApiConstants.Limits.MAX_PAGE_SIZE:
+                    return FlextResult[FlextTypes.Core.Dict].fail(
+                        f"Page size cannot exceed {FlextApiConstants.Limits.MAX_PAGE_SIZE}"
+                    )
+
+                if data is None or not isinstance(data, list):
+                    data = []
+                if total is None:
+                    total = len(data)
+
+                total_pages = (
+                    max(1, (total + page_size - 1) // page_size) if total > 0 else 1
                 )
+                response = {
+                    "success": True,
+                    "data": data,
+                    "pagination": {
+                        "page": page,
+                        "page_size": page_size,
+                        "total": total,
+                        "total_pages": total_pages,
+                        "has_next": page < total_pages,
+                        "has_previous": page > 1,
+                    },
+                }
+                if message:
+                    response["message"] = message
+                return FlextResult[FlextTypes.Core.Dict].ok(response)
+            except Exception as e:
+                return FlextResult[FlextTypes.Core.Dict].fail(str(e))
+
+    # =============================================================================
+    # HTTP-SPECIFIC ALIASES - Direct use of flext-core functionality (NO DUPLICATIONS)
+    # =============================================================================
+
+    # Use flext-core validation directly - ZERO DUPLICATION
+    class HttpValidator:
+        """HTTP-specific validation using flext-core patterns."""
+
+        # Use flext-core validators directly
+        validate_url = FlextValidations.FieldValidators.validate_url
+
+        @staticmethod
+        def validate_http_method(method: str) -> FlextResult[str]:
+            """Validate HTTP method using FlextCore patterns and Python 3.13+ StrEnum."""
+            if not method or not isinstance(method, str):
+                return FlextResult[str].fail("HTTP method must be a non-empty string")
+
+            method_upper = method.upper()
+            # Use Python 3.13+ StrEnum for validation - maximum FlextCore integration
+            try:
+                validated_method = HttpMethods(method_upper)
+                return FlextResult[str].ok(validated_method.value)
+            except ValueError:
+                valid_methods = ", ".join(HttpMethods)
+                return FlextResult[str].fail(
+                    f"Invalid HTTP method. Valid methods: {valid_methods}"
+                )
+
+        @staticmethod
+        def validate_status_code(code: int | str) -> FlextResult[int]:
+            """Validate HTTP status code."""
+            try:
+                code_int = int(code)
+                if (
+                    code_int < FlextApiConstants.MIN_HTTP_STATUS
+                    or code_int > FlextApiConstants.HttpStatus.MAX_HTTP_STATUS
+                ):
+                    return FlextResult[int].fail("Status code out of valid range")
+                return FlextResult[int].ok(code_int)
+            except (ValueError, TypeError):
+                return FlextResult[int].fail("Status code must be a valid integer")
+
+        @staticmethod
+        def normalize_url(url: str) -> FlextResult[str]:
+            """Normalize URL using flext-core text processing."""
+            cleaned = FlextUtilities.TextProcessor.clean_text(url)
+            normalized = cleaned.rstrip("/") if not cleaned.endswith("://") else cleaned
+            return FlextResult[str].ok(normalized)
+
+        # Removed complex lambda-based validators - using class methods instead
+
+    # =============================================================================
+    # STREAMLINED CONVENIENCE METHODS - Direct flext-core usage
+    # =============================================================================
+
+    @staticmethod
+    def validate_url(url: str) -> FlextResult[str]:
+        """Validate URL using flext-core validation."""
+        return FlextValidations.FieldValidators.validate_url(url)
+
+    @staticmethod
+    def validate_config(config: object) -> FlextResult[FlextTypes.Core.Dict]:
+        """Validate configuration using flext-core type adapters."""
+        try:
+            result_dict = FlextTypeAdapters.adapt_to_dict(config)
+            return FlextResult[FlextTypes.Core.Dict].ok(result_dict)
+        except Exception as e:
+            return FlextResult[FlextTypes.Core.Dict].fail(str(e))
 
 
 __all__ = [

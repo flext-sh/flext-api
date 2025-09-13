@@ -1,12 +1,3 @@
-"""API testing utilities for flext-api using flext_tests EM ABSOLUTO.
-
-MAXIMUM usage of flext_tests - ALL utilities via flext_tests.
-ZERO local implementations - everything via FlextTestsUtilities.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -22,9 +13,9 @@ from typing import TypeVar, cast
 
 import pytest
 from flext_core import FlextResult, FlextTypes
+from flext_tests import FlextTestsDomains, FlextTestsMatchers, FlextTestsUtilities
 
 # MAXIMUM usage of flext_tests - use EM ABSOLUTO
-from flext_tests import FlextTestsDomains, FlextTestsMatchers, FlextTestsUtilities
 
 # Type variable for generic FlextResult operations
 T = TypeVar("T")

@@ -1,8 +1,4 @@
-"""Tests for flext_api.client module using flext_tests EM ABSOLUTO.
-
-MAXIMUM usage of flext_tests - ALL test utilities via flext_tests.
-Uses FlextTestsMatchers, FlextTestsDomains, FlextTestsUtilities.
-ACESSO DIRETO - NO ALIASES, NO WRAPPERS, NO COMPATIBILITY.
+"""Test FLEXT API Core Components - Comprehensive testing with flext_tests integration.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -10,12 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+# MAXIMUM usage of flext_tests - ACESSO DIRETO - NO ALIASES
 from typing import cast
 
 import pytest
-from flext_core.typings import FlextTypes
-
-# MAXIMUM usage of flext_tests - ACESSO DIRETO - NO ALIASES
+from flext_core import FlextTypes
 from flext_tests import FlextTestsDomains
 
 from flext_api import FlextApiClient, create_flext_api
@@ -214,19 +209,21 @@ class TestFlextApiClient:
 
         # Client should have these properties/attributes
         assert hasattr(client, "config")
-        assert hasattr(client, "httpx_client")
-        # Check that aiohttp_session method exists in class definition
-        assert "aiohttp_session" in dir(client.__class__)
+        assert hasattr(client, "_connection_manager")
+        # Check that essential HTTP methods exist
+        assert hasattr(client, "get")
+        assert hasattr(client, "post")
+        assert hasattr(client, "put")
+        assert hasattr(client, "delete")
+        assert hasattr(client, "request")
 
         # Config should be accessible
         assert client.config is not None
         assert hasattr(client.config, "base_url")
 
-        # Test that httpx_client property exists (lazy loaded)
-        assert hasattr(client, "httpx_client")
-        # Access httpx_client should work (async client creation)
-        httpx_client = client.httpx_client
-        assert httpx_client is not None
+        # Test connection manager functionality
+        assert client._connection_manager is not None
+        assert client._connection_manager.client is None  # Not created yet
 
     def test_client_factory_function_consistency(self) -> None:
         """Test create_flext_api factory creates consistent clients."""

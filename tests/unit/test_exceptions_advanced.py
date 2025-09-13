@@ -1,4 +1,4 @@
-"""Test Storage Core - Comprehensive testing with flext_tests integration.
+"""Test Exceptions Advanced - Comprehensive testing with flext_tests integration.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,8 +11,8 @@ from flext_tests import FlextTestsMatchers, FlextTestsUtilities
 from flext_api import FlextApiClient, FlextApiModels
 
 
-class TestFlextApiStorageCore:
-    """Test class for storage core functionality."""
+class TestFlextApiExceptionsAdvanced:
+    """Test class for exceptions advanced functionality."""
 
     def test_basic_functionality(self) -> None:
         """Test basic functionality works."""

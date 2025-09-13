@@ -1,12 +1,3 @@
-"""Pytest configuration for flext-api tests using flext_tests EM ABSOLUTO.
-
-Uses flext_tests library MAXIMALLY for all testing utilities.
-ZERO local implementations - everything via flext_tests.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -15,15 +6,12 @@ import tempfile
 import uuid
 from collections.abc import Generator
 from pathlib import Path
-from typing import cast
 
 import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from flext_core.typings import FlextTypes
-
-# MAXIMUM usage of flext_tests - use EM ABSOLUTO
+from flext_core import FlextTypes
 from flext_tests import FlextTestsDomains
 
 # DIRECT imports from flext_api - verified classes
@@ -87,47 +75,33 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 
 
 @pytest.fixture
+def flext_api_storage() -> FlextApiStorage:
+    """Provide FlextApiStorage using flext_tests configuration."""
+    # Use FlextTestsDomains for configuration data
+    config_data = FlextTestsDomains.create_configuration()
+    config_data["namespace"] = "TestStorage"
+    config_data["enable_caching"] = True
+
+    return FlextApiStorage(config_data)
+
+
+@pytest.fixture
 def flext_api_client() -> FlextApiClient:
     """Provide FlextApiClient using flext_tests configuration."""
-    # Use FlextTestsDomains for configuration data
+    # Use FlextTestsDomains for realistic config values
     config_data = FlextTestsDomains.create_configuration()
 
     return FlextApiClient(
-        base_url=str(config_data.get("base_url", "https://httpbin.org")),
-        timeout=cast("float", config_data.get("timeout", 30.0)),
-        max_retries=cast("int", config_data.get("max_retries", 3)),
+        base_url=str(config_data.get("base_url", "http://localhost:8000")),
+        timeout=float(config_data.get("timeout", 30.0)),
+        max_retries=int(config_data.get("max_retries", 3)),
     )
 
 
 @pytest.fixture
 def flext_api_config() -> FlextApiConfig:
     """Provide FlextApiConfig using flext_tests configuration."""
-    # Use FlextTestsDomains for realistic config values
-    config_data = FlextTestsDomains.create_configuration()
-
-    return FlextApiConfig(
-        host=str(config_data.get("host", "127.0.0.1")),
-        port=cast("int", config_data.get("port", 8080)),
-        default_timeout=cast("float", config_data.get("default_timeout", 30.0)),
-        max_retries=cast("int", config_data.get("max_retries", 3)),
-        base_url=str(config_data.get("base_url", "https://httpbin.org")),
-    )
-
-
-@pytest.fixture
-def flext_api_storage() -> FlextApiStorage:
-    """Provide FlextApiStorage using flext_tests configuration."""
-    # Use FlextTestsDomains for storage configuration
-    storage_config = FlextTestsDomains.create_configuration()
-
-    return FlextApiStorage(
-        {
-            "backend": str(storage_config.get("storage_backend", "memory")),
-            "namespace": f"TestStorage_{storage_config.get('namespace', 'default')!s}",
-            "enable_caching": bool(storage_config.get("enable_caching", True)),
-            "cache_ttl_seconds": cast("int", storage_config.get("cache_ttl", 300)),
-        }
-    )
+    return FlextApiConfig()
 
 
 @pytest.fixture

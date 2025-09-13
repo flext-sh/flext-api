@@ -132,7 +132,7 @@ if __name__ == "__main__":
 ```python
 from flext_api import create_flext_api, FlextApiQueryBuilder
 from flext_core import FlextResult, FlextLogger
-from typing import Dict, List, object
+from typing import Dict, List
 
 logger = FlextLogger(__name__)
 
@@ -303,7 +303,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from flext_api import flext_api_create_app, create_flext_api
 from flext_core import FlextResult, FlextLogger
 from pydantic import BaseModel
-from typing import Dict, object
+from typing import Dict
 
 # ✅ Logger seguindo padrão flext-core
 logger = FlextLogger(__name__)

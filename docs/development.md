@@ -69,7 +69,7 @@ make security-scan  # Security vulnerability analysis
 
 # Individual quality checks
 make lint
-make type-check   
+make type-check
 make format         # Auto-format code with ruff
 make test-unit      # Fast unit tests with mocks
 ```
