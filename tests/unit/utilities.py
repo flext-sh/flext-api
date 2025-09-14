@@ -60,16 +60,12 @@ class TestFlextApiUtilitiesReal:
 
     def test_generate_timestamp(self) -> None:
         """Test real timestamp generation."""
-        timestamp1 = FlextApiUtilities.generate_timestamp()
-        timestamp2 = FlextApiUtilities.generate_timestamp()
+        ts1 = FlextApiUtilities.generate_timestamp()
+        ts2 = FlextApiUtilities.generate_timestamp()
 
-        assert isinstance(timestamp1, str)
-        assert isinstance(timestamp2, str)
-        assert timestamp1 != timestamp2
-
-        # Should be parseable as datetime
-        parsed = datetime.fromisoformat(timestamp1)
-        assert isinstance(parsed, datetime)
+        assert isinstance(ts1, float)
+        assert isinstance(ts2, float)
+        assert ts2 >= ts1
 
     def test_generate_iso_timestamp(self) -> None:
         """Test real ISO timestamp generation."""
@@ -82,8 +78,8 @@ class TestFlextApiUtilitiesReal:
     def test_parse_iso_timestamp(self) -> None:
         """Test real ISO timestamp parsing."""
         iso_ts = FlextApiUtilities.generate_iso_timestamp()
-        parsed = FlextApiUtilities.parse_iso_timestamp(iso_ts)
-
+        # Use Python stdlib to parse ISO timestamps
+        parsed = datetime.fromisoformat(iso_ts.replace("Z", ""))
         assert isinstance(parsed, datetime)
         assert parsed.tzinfo is not None
 

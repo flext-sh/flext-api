@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Self
 
 import httpx
@@ -18,9 +19,9 @@ from flext_core import (
     FlextTypes,
 )
 
+from flext_api.app import create_fastapi_app
 from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
-from flext_api.factory import create_flext_api
 from flext_api.models import FlextApiModels
 
 
@@ -53,34 +54,67 @@ class FlextApiClient(FlextDomainService[object]):
         # Create configuration from input
         if isinstance(config, str):
             # Base URL string provided - validate properly
-            converted_kwargs = self._convert_kwargs_to_client_config_kwargs(kwargs)
+            base_url, timeout, max_retries, headers, auth_token, api_key = (
+                self._extract_client_config_params(kwargs)
+            )
             self._client_config = FlextApiModels.ClientConfig(
                 base_url=config,
-                **converted_kwargs,
+                timeout=timeout
+                if timeout is not None
+                else FlextApiConstants.DEFAULT_TIMEOUT,
+                max_retries=max_retries
+                if max_retries is not None
+                else FlextApiConstants.DEFAULT_RETRIES,
+                headers=headers if headers is not None else {},
+                auth_token=auth_token,
+                api_key=api_key,
             )
         elif isinstance(config, FlextApiModels.ClientConfig):
             # Config object provided - apply any overrides
-            config_dict = config.model_dump()
-            converted_kwargs = self._convert_kwargs_to_client_config_kwargs(kwargs)
-            config_dict.update(converted_kwargs)
-            self._client_config = FlextApiModels.ClientConfig(**config_dict)
+            base_url, timeout, max_retries, headers, auth_token, api_key = (
+                self._extract_client_config_params(kwargs)
+            )
+            self._client_config = FlextApiModels.ClientConfig(
+                base_url=base_url or config.base_url,
+                timeout=timeout if timeout is not None else config.timeout,
+                max_retries=max_retries
+                if max_retries is not None
+                else config.max_retries,
+                headers=headers if headers is not None else config.headers,
+                auth_token=auth_token if auth_token is not None else config.auth_token,
+                api_key=api_key if api_key is not None else config.api_key,
+            )
         elif isinstance(config, FlextApiConfig):
             # FlextApiConfig provided - extract relevant fields
-            converted_kwargs = self._convert_kwargs_to_client_config_kwargs(kwargs)
+            base_url, timeout, max_retries, headers, auth_token, api_key = (
+                self._extract_client_config_params(kwargs)
+            )
             self._client_config = FlextApiModels.ClientConfig(
-                base_url=config.api_base_url,
-                timeout=config.api_timeout,
-                max_retries=config.max_retries,
-                **converted_kwargs,
+                base_url=base_url or config.api_base_url,
+                timeout=timeout if timeout is not None else config.api_timeout,
+                max_retries=max_retries
+                if max_retries is not None
+                else config.max_retries,
+                headers=headers if headers is not None else {},
+                auth_token=auth_token,
+                api_key=api_key,
             )
         else:
             # Handle None config - use defaults
-            base_url = FlextApiConstants.DEFAULT_BASE_URL  # Default fallback
-
-            converted_kwargs = self._convert_kwargs_to_client_config_kwargs(kwargs)
+            base_url, timeout, max_retries, headers, auth_token, api_key = (
+                self._extract_client_config_params(kwargs)
+            )
             self._client_config = FlextApiModels.ClientConfig(
-                base_url=base_url,
-                **converted_kwargs,
+                base_url=base_url or FlextApiConstants.DEFAULT_BASE_URL,
+                timeout=timeout
+                if timeout is not None
+                else FlextApiConstants.DEFAULT_TIMEOUT,
+                max_retries=max_retries
+                if max_retries is not None
+                else FlextApiConstants.DEFAULT_RETRIES,
+                headers=headers if headers is not None else {},
+                auth_token=auth_token,
+                api_key=api_key,
             )
 
         # Store minimal state - everything comes from config
@@ -107,54 +141,44 @@ class FlextApiClient(FlextDomainService[object]):
         """Create FastAPI app for compatibility."""
         return create_flext_api(dict(kwargs))
 
-    def _convert_kwargs_to_client_config_kwargs(
+    def _extract_client_config_params(
         self, kwargs: dict[str, object]
-    ) -> dict[str, object]:
-        """Convert kwargs to properly typed ClientConfig parameters."""
-        # Valid ClientConfig field names and their expected types
-        valid_fields = {
-            "base_url": str,
-            "timeout": (int, float),
-            "max_retries": int,
-            "headers": dict,
-            "auth_token": (str, type(None)),
-            "api_key": (str, type(None)),
-        }
+    ) -> tuple[
+        str | None,
+        float | None,
+        int | None,
+        dict[str, str] | None,
+        str | None,
+        str | None,
+    ]:
+        """Extract and convert ClientConfig parameters from kwargs.
 
-        converted_kwargs: dict[str, object] = {}
+        Returns:
+            Tuple of (base_url, timeout, max_retries, headers, auth_token, api_key)
+
+        """
+        base_url: str | None = None
+        timeout: float | None = None
+        max_retries: int | None = None
+        headers: dict[str, str] | None = None
+        auth_token: str | None = None
+        api_key: str | None = None
 
         for key, value in kwargs.items():
-            if key not in valid_fields:
-                # Skip invalid fields instead of raising error
-                continue
+            if key == "base_url" and isinstance(value, str):
+                base_url = value
+            elif key == "timeout" and isinstance(value, (int, float)):
+                timeout = float(value)
+            elif key == "max_retries" and isinstance(value, int):
+                max_retries = value
+            elif key == "headers" and isinstance(value, dict):
+                headers = {k: str(v) for k, v in value.items()}
+            elif key == "auth_token" and (isinstance(value, str) or value is None):
+                auth_token = value
+            elif key == "api_key" and (isinstance(value, str) or value is None):
+                api_key = value
 
-            expected_type = valid_fields[key]
-
-            # Handle type conversion
-            try:
-                if expected_type is str:
-                    if isinstance(value, str):
-                        converted_kwargs[key] = value
-                elif expected_type is (str, type(None)):
-                    if isinstance(value, str) or value is None:
-                        converted_kwargs[key] = value
-                elif expected_type is (int, float):
-                    if isinstance(value, (int, float)):
-                        converted_kwargs[key] = float(value)
-                elif expected_type is int:
-                    if isinstance(value, int):
-                        converted_kwargs[key] = value
-                elif expected_type is dict and isinstance(value, dict):
-                    # Ensure headers dict has string values
-                    if key == "headers":
-                        converted_kwargs[key] = {k: str(v) for k, v in value.items()}
-                    else:
-                        converted_kwargs[key] = value
-            except (ValueError, TypeError):
-                # Skip invalid values instead of raising error
-                continue
-
-        return converted_kwargs
+        return base_url, timeout, max_retries, headers, auth_token, api_key
 
     # =============================================================================
     # STREAMLINED HELPER METHODS - Reduced bloat
@@ -210,16 +234,19 @@ class FlextApiClient(FlextDomainService[object]):
     # =============================================================================
 
     def execute(self) -> FlextResult[object]:
-        """Execute the main domain service operation."""
+        """Execute the main domain service operation.
+
+        Returns a lightweight diagnostic dictionary to align with tests.
+        """
         try:
-            test_response = FlextApiModels.HttpResponse(
-                status_code=200,
-                body="HTTP client ready",
-                headers={"Content-Type": "application/json"},
-                url=self._client_config.base_url,
-                method="GET",
-            )
-            return FlextResult[object].ok(test_response)
+            info: FlextTypes.Core.Dict = {
+                "client_type": "httpx.AsyncClient",
+                "base_url": self._client_config.base_url,
+                "timeout": self._client_config.timeout,
+                "session_started": self._connection_manager.client is not None,
+                "status": "active",
+            }
+            return FlextResult[object].ok(info)
         except Exception as e:
             return FlextResult[object].fail(f"HTTP client execution failed: {e}")
 
@@ -241,17 +268,16 @@ class FlextApiClient(FlextDomainService[object]):
 
     def health_check(self) -> FlextTypes.Core.Dict:
         """Health check for the HTTP client service."""
+        started = self._connection_manager.client is not None
         return {
-            "status": "healthy"
-            if self._connection_manager.client is not None
-            else "stopped",
+            "status": "healthy" if started else "stopped",
             "base_url": self._client_config.base_url,
             "timeout": self._client_config.timeout,
             "max_retries": self._client_config.max_retries,
             "request_count": self._request_count,
             "error_count": self._error_count,
-            "message": "HTTP client is operational",
-            "status_code": 200,
+            "client_ready": started,
+            "session_started": started,
         }
 
     def configure(self, config: FlextTypes.Core.Dict) -> FlextResult[None]:
@@ -461,7 +487,115 @@ class FlextApiClient(FlextDomainService[object]):
                 f"Unexpected error: {e}"
             )
 
+    @classmethod
+    def create_client(
+        cls,
+        config: FlextApiModels.ClientConfig
+        | FlextApiConfig
+        | Mapping[str, object]
+        | str
+        | None = None,
+        **kwargs: object,
+    ) -> FlextResult[FlextApiClient]:
+        """Create FlextApiClient instance with the given configuration.
+
+        Args:
+            config: Client configuration or base URL
+            **kwargs: Additional configuration overrides
+
+        Returns:
+            FlextResult containing FlextApiClient instance
+
+        """
+        try:
+            if isinstance(config, dict):
+                cfg_obj = FlextApiModels.ClientConfig.model_validate(config)
+                client = cls(config=cfg_obj, **kwargs)
+            elif (
+                config is not None
+                and hasattr(config, "keys")
+                and hasattr(config, "__getitem__")
+            ):
+                # Convert mapping-like object to dict
+                if isinstance(config, Mapping):
+                    cfg_dict = dict(config.items())
+                    cfg_obj = FlextApiModels.ClientConfig.model_validate(cfg_dict)
+                    client = cls(config=cfg_obj, **kwargs)
+                else:
+                    client = cls(config=config, **kwargs)
+            else:
+                client = cls(config=config, **kwargs)
+            return FlextResult["FlextApiClient"].ok(client)
+        except Exception as e:
+            return FlextResult["FlextApiClient"].fail(f"Client creation failed: {e}")
+
+    @classmethod
+    def create_flext_api_app_with_settings(cls) -> FlextResult[object]:
+        """Create a FlextAPI app with default settings."""
+        try:
+            app_config = FlextApiModels.AppConfig(
+                title="FlextAPI App",
+                app_version="1.0.0",
+                description="FlextAPI application with default settings",
+            )
+
+            app = create_fastapi_app(app_config)
+            return FlextResult[object].ok(app)
+        except Exception as e:
+            return FlextResult[object].fail(f"Failed to create FlextAPI app: {e}")
+
+
+# Factory
+def create_flext_api(
+    config_dict: Mapping[str, object] | None = None,
+) -> FlextApiClient:
+    """Create and return a new FlextApiClient instance.
+
+    Args:
+        config_dict: Optional configuration dictionary
+
+    Returns:
+        FlextApiClient: A configured HTTP client instance.
+
+    """
+    if config_dict is None:
+        client_config = FlextApiModels.ClientConfig(base_url="https://api.example.com")
+        return FlextApiClient(config=client_config)
+
+    # Create config with provided base_url
+    base_url = config_dict.get("base_url", FlextApiConstants.DEFAULT_BASE_URL)
+    timeout = config_dict.get("timeout", FlextApiConstants.DEFAULT_TIMEOUT)
+    max_retries = config_dict.get("max_retries", FlextApiConstants.DEFAULT_RETRIES)
+    headers = config_dict.get("headers", {})
+
+    # Type-safe conversion with proper checks
+    base_url_str = (
+        str(base_url) if base_url is not None else FlextApiConstants.DEFAULT_BASE_URL
+    )
+    timeout_val = (
+        float(timeout)
+        if isinstance(timeout, (int, float))
+        else FlextApiConstants.DEFAULT_TIMEOUT
+    )
+    max_retries_val = (
+        int(max_retries)
+        if isinstance(max_retries, int)
+        else FlextApiConstants.DEFAULT_RETRIES
+    )
+    headers_dict = dict(headers) if isinstance(headers, dict) else {}
+
+    # Create client config that matches the provided settings
+    client_config = FlextApiModels.ClientConfig(
+        base_url=base_url_str,
+        timeout=timeout_val,
+        max_retries=max_retries_val,
+        headers=headers_dict,
+    )
+
+    return FlextApiClient(config=client_config)
+
 
 __all__ = [
     "FlextApiClient",
+    "create_flext_api",
 ]

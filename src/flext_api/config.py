@@ -163,6 +163,24 @@ class FlextApiConfig(FlextConfig):
             "Content-Type": "application/json",
         }
 
+    @classmethod
+    def create_with_overrides(cls, **overrides: object) -> FlextResult[FlextApiConfig]:
+        """Create configuration with parameter overrides."""
+        try:
+            # Create a new instance with default values first
+            config = cls()
+
+            # Apply overrides by updating the instance attributes
+            for key, value in overrides.items():
+                if hasattr(config, key):
+                    setattr(config, key, value)
+
+            return FlextResult["FlextApiConfig"].ok(config)
+        except Exception as e:
+            return FlextResult["FlextApiConfig"].fail(
+                f"Configuration creation failed: {e}"
+            )
+
 
 __all__ = [
     "FlextApiConfig",

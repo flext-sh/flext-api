@@ -5,7 +5,6 @@ and performance scenarios to achieve 100% coverage using standardized patterns.
 """
 
 import math
-from typing import Any
 
 from flext_core import FlextContainer
 from flext_tests import FlextTestsMatchers
@@ -309,7 +308,7 @@ class TestFlextContainerComprehensiveCoverage:
         container.register("logger", logger_service)
 
         # Create composite service that depends on others
-        def create_composite_service() -> dict[str, Any]:
+        def create_composite_service() -> dict[str, object]:
             db_result = container.get("database")
             logger_result = container.get("logger")
 

@@ -7,9 +7,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api import (
-    _DEFAULT_MAX_RETRIES,
-    _DEFAULT_TIMEOUT,
     FlextApiClient,
+    FlextApiConstants,
     __all__,
     create_flext_api,
 )
@@ -200,8 +199,8 @@ class TestFlextApiFactoryFocused:
     def test_create_flext_api_constants_usage(self) -> None:
         """Test that create_flext_api uses the defined constants."""
         # Verify the constants are being used
-        assert _DEFAULT_TIMEOUT == 30.0
-        assert _DEFAULT_MAX_RETRIES == 3
+        assert FlextApiConstants.DEFAULT_TIMEOUT == 30.0
+        assert FlextApiConstants.DEFAULT_RETRIES == 3
 
         # Create client and verify constants are accessible
         client = create_flext_api()

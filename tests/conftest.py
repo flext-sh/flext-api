@@ -96,10 +96,20 @@ def flext_api_client() -> FlextApiClient:
     # Use FlextTestsDomains for realistic config values
     config_data = FlextTestsDomains.create_configuration()
 
+    base_url_val = config_data.get("base_url", "http://localhost:8000")
+    timeout_val = config_data.get("timeout", 30.0)
+    retries_val = config_data.get("max_retries", 3)
+
+    base_url = (
+        str(base_url_val) if base_url_val is not None else "http://localhost:8000"
+    )
+    timeout = float(timeout_val) if isinstance(timeout_val, (int, float, str)) else 30.0
+    max_retries = int(retries_val) if isinstance(retries_val, (int, str)) else 3
+
     return FlextApiClient(
-        base_url=str(config_data.get("base_url", "http://localhost:8000")),
-        timeout=float(config_data.get("timeout", 30.0)),
-        max_retries=int(config_data.get("max_retries", 3)),
+        base_url=base_url,
+        timeout=timeout,
+        max_retries=max_retries,
     )
 
 

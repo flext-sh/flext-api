@@ -18,7 +18,7 @@ from flext_core import (
 )
 from pydantic import ConfigDict, Field, field_validator
 
-from flext_api.constants import FlextApiConstants
+from flext_api.constants import FlextApiConstants, HttpMethods
 
 logger = FlextLogger(__name__)
 
@@ -39,6 +39,9 @@ class FlextApiModels:
     # Direct re-export of flext-core HTTP models
     HttpRequestConfig = FlextModels.Http.HttpRequestConfig
     HttpErrorConfig = FlextModels.Http.HttpErrorConfig
+
+    # Re-export HTTP methods and status codes
+    HttpMethod = HttpMethods
 
     # Simple API-specific models
     class HttpRequest(FlextModels.Entity):
@@ -203,6 +206,53 @@ class FlextApiModels:
         max_pages: int | None = None
         total: int = 0
 
+    class StorageConfig(FlextModels.Value):
+        """Storage configuration extending flext-core Value."""
+
+        backend: str = "memory"
+        namespace: str = "flext_api"
+        max_size: int | None = None
+        default_ttl: int | None = None
+
+    class ApiRequest(FlextModels.Entity):
+        """API request model."""
+
+        model_config = STANDARD_MODEL_CONFIG
+
+        method: str
+        url: str
+        headers: dict[str, str] = Field(default_factory=dict)
+        body: str | dict[str, object] | None = None
+
+    class ApiResponse(FlextModels.Entity):
+        """API response model."""
+
+        model_config = STANDARD_MODEL_CONFIG
+
+        id: str
+        status_code: int
+        body: str | dict[str, object] | None = None
+        headers: dict[str, str] = Field(default_factory=dict)
+
+    class UrlModel(FlextModels.Entity):
+        """URL model for parsing and validation."""
+
+        model_config = STANDARD_MODEL_CONFIG
+
+        raw_url: str
+        scheme: str | None = None
+        host: str | None = None
+        port: int | None = None
+        path: str | None = None
+        query: str | None = None
+        fragment: str | None = None
+
+        def validate_business_rules(self) -> FlextResult[None]:
+            """Validate URL business rules."""
+            if not self.raw_url:
+                return FlextResult[None].fail("URL cannot be empty")
+            return FlextResult[None].ok(None)
+
     class Builder:
         """Response builder for API responses."""
 
@@ -253,6 +303,100 @@ class FlextApiModels:
                 "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
                 "request_id": FlextUtilities.Generators.generate_request_id(),
             }
+
+    @staticmethod
+    def create_url(url_string: str) -> FlextResult[FlextApiModels.UrlModel]:
+        """Create URL model from string."""
+        try:
+            # Simple URL parsing - in a real implementation, you'd use urllib.parse
+            if not url_string or not url_string.strip():
+                return FlextResult["FlextApiModels.UrlModel"].fail(
+                    "URL cannot be empty"
+                )
+
+            url_str = url_string.strip()
+
+            # Basic URL parsing
+            scheme = None
+            host = None
+            port = None
+            path = None
+            query = None
+            fragment = None
+
+            # Parse scheme
+            if "://" in url_str:
+                scheme, rest = url_str.split("://", 1)
+            else:
+                rest = url_str
+                scheme = "https"  # Default scheme
+
+            # Parse fragment
+            if "#" in rest:
+                rest, fragment = rest.split("#", 1)
+
+            # Parse query
+            if "?" in rest:
+                rest, query = rest.split("?", 1)
+
+            # Parse host and port
+            if "/" in rest:
+                host_port, path = rest.split("/", 1)
+                path = "/" + path
+            else:
+                host_port = rest
+                path = "/"
+
+            # Parse port
+            if ":" in host_port:
+                host, port_str = host_port.split(":", 1)
+                try:
+                    port = int(port_str)
+                except ValueError:
+                    port = None
+            else:
+                host = host_port
+
+            # Create URL model
+            url_model = FlextApiModels.UrlModel(
+                raw_url=url_str,
+                scheme=scheme,
+                host=host,
+                port=port,
+                path=path,
+                query=query,
+                fragment=fragment,
+            )
+            return FlextResult["FlextApiModels.UrlModel"].ok(url_model)
+        except Exception as e:
+            return FlextResult["FlextApiModels.UrlModel"].fail(
+                f"Failed to create URL: {e}"
+            )
+
+    class AppConfig(FlextModels.Entity):
+        """FastAPI application configuration model."""
+
+        model_config = STANDARD_MODEL_CONFIG
+
+        title: str = Field(..., min_length=1, description="Application title")
+        app_version: str = Field(..., min_length=1, description="Application version")
+        description: str = Field(
+            default="FlextAPI Application", description="Application description"
+        )
+        docs_url: str = Field(default="/docs", description="Swagger docs URL")
+        redoc_url: str = Field(default="/redoc", description="ReDoc URL")
+        openapi_url: str = Field(
+            default="/openapi.json", description="OpenAPI schema URL"
+        )
+
+        @field_validator("title", "app_version")
+        @classmethod
+        def validate_required_fields(cls, v: str) -> str:
+            """Validate required string fields."""
+            if not v or not v.strip():
+                error_message = "Field cannot be empty"
+                raise ValueError(error_message)
+            return v.strip()
 
 
 __all__ = [

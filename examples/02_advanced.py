@@ -81,7 +81,7 @@ class _StorageSystemDemo:
         """Demonstrate basic storage operations."""
         # Set operation
         # CacheValue é tuple[object, FlextTypes.Core.Headers, int]
-        cache_value = (self.test_value, {}, 200)
+        cache_value: tuple[object, dict[str, str], int] = (self.test_value, {}, 200)
         set_result = self.storage.set(self.test_key, cache_value, ttl=300)
         if not set_result.success:
             print(f"❌ Set failed: {set_result.error}")
@@ -137,11 +137,21 @@ class _StorageSystemDemo:
         }
 
         try:
-            json_str = json_storage.serialize(test_data)
-            print(f"✅ Data serialized using nested JsonStorage: {len(json_str)} chars")
+            json_str_result = json_storage.serialize(test_data)
+            if json_str_result.success:
+                json_str = json_str_result.value
+                print(
+                    f"✅ Data serialized using nested JsonStorage: {len(json_str)} chars"
+                )
 
-            deserialized = json_storage.deserialize(json_str)
-            print(f"✅ Data deserialized: {deserialized}")
+                deserialized_result = json_storage.deserialize(json_str)
+                if deserialized_result.success:
+                    deserialized = deserialized_result.value
+                    print(f"✅ Data deserialized: {deserialized}")
+                else:
+                    print(f"❌ Deserialization failed: {deserialized_result.error}")
+            else:
+                print(f"❌ Serialization failed: {json_str_result.error}")
         except Exception as e:
             print(f"❌ Serialization failed: {e}")
 
@@ -187,8 +197,8 @@ def example_utilities_usage() -> None:
 
     # Error response building
     error_response_result = FlextApiUtilities.ResponseBuilder.build_error_response(
-        "Invalid request parameters",
-        400,
+        message="Invalid request parameters",
+        status_code=400,
         error_code="VALIDATION_ERROR",
         details={"field": "email", "issue": "format"},
     )

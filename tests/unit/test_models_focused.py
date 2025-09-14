@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Literal
+
 import pytest
 from pydantic import ValidationError
 
@@ -57,9 +59,9 @@ class TestFlextApiModelsFocused:
 
     def test_http_request_url_validation_none(self) -> None:
         """Test HttpRequest URL validation with None URL."""
+        # Test with invalid URL type
+        invalid_url: str | None = None
         with pytest.raises(ValidationError) as exc_info:
-            # Test with invalid URL type
-            invalid_url: str | None = None
             FlextApiModels.HttpRequest(url=invalid_url)  # type: ignore[arg-type]
 
         # Pydantic validates type first, so None fails string type validation
@@ -106,14 +108,12 @@ class TestFlextApiModelsFocused:
 
     def test_http_request_method_literals(self) -> None:
         """Test HttpRequest accepts all valid HTTP methods."""
-        valid_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
+        valid_methods: list[
+            Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
+        ] = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
 
         for method in valid_methods:
-            # Cast to proper type for testing
-            method_literal = method  # type: ignore[assignment]
-            request = FlextApiModels.HttpRequest(
-                method=method_literal, url="https://test.com"
-            )  # type: ignore[arg-type]
+            request = FlextApiModels.HttpRequest(method=method, url="https://test.com")
             assert request.method == method
 
     # =============================================================================
@@ -266,14 +266,13 @@ class TestFlextApiModelsFocused:
     def test_http_response_status_code_validation_non_integer(self) -> None:
         """Test HttpResponse status code validation with non-integer."""
         # Pydantic 2 automatically converts "200" to 200, so let's test with a truly invalid type
+        # Test with invalid status code type
+        invalid_status: str = "invalid"
         with pytest.raises(ValidationError) as exc_info:
-            # Test with invalid status code type
-            invalid_status: str = "invalid"
             FlextApiModels.HttpResponse(
-                status_code=invalid_status,  # type: ignore[arg-type]
-                url="https://test.com",
-                method="GET",
-            )
+                status_code=invalid_status, url="https://test.com", method="GET"
+            )  # type: ignore[arg-type]
+
         # Pydantic should fail on type conversion
         assert "Input should be a valid integer" in str(
             exc_info.value
@@ -430,10 +429,10 @@ class TestFlextApiModelsFocused:
         """Test HttpQuery with default values."""
         query = FlextApiModels.HttpQuery()
 
-        assert query.filters == {}
-        assert query.sort == []
-        assert query.page == 1
-        assert query.page_size == 20
+        assert query.filter_conditions == {}
+        assert query.sort_fields == []
+        assert query.page_number == 1
+        assert query.page_size_value == 20
 
     def test_http_query_with_parameters(self) -> None:
         """Test HttpQuery with all parameters."""
@@ -442,15 +441,15 @@ class TestFlextApiModelsFocused:
 
         query = FlextApiModels.HttpQuery(
             filters=filter_conditions,
-            sort=sort_fields,
+            sort_fields=sort_fields,
             page=2,
             page_size=50,
         )
 
-        assert query.filters == filter_conditions
-        assert query.sort == sort_fields
-        assert query.page == 2
-        assert query.page_size == 50
+        assert query.filter_conditions == filter_conditions
+        assert query.sort_fields == sort_fields
+        assert query.page_number == 2
+        assert query.page_size_value == 50
 
     def test_http_query_backward_compatibility_init(self) -> None:
         """Test HttpQuery backward compatibility in __init__."""
@@ -459,7 +458,7 @@ class TestFlextApiModelsFocused:
             filters={"status": "active"}, page=3, page_size=100
         )
 
-        assert query.filters == {"status": "active"}
+        assert query.filter_conditions == {"status": "active"}
         assert query.page_number == 3
         assert query.page_size_value == 100
 
@@ -470,7 +469,7 @@ class TestFlextApiModelsFocused:
         assert query.page_number == 1
 
         query_large = FlextApiModels.HttpQuery(page=100)
-        assert query_large.page == 100
+        assert query_large.page_number == 100
 
         # Invalid page numbers
         with pytest.raises(ValidationError):
@@ -483,10 +482,10 @@ class TestFlextApiModelsFocused:
         """Test HttpQuery page_size validation."""
         # Valid page sizes
         query = FlextApiModels.HttpQuery(page_size=1)
-        assert query.page_size == 1
+        assert query.page_size_value == 1
 
         query_max = FlextApiModels.HttpQuery(page_size=1000)
-        assert query_max.page_size == 1000
+        assert query_max.page_size_value == 1000
 
         # Invalid page sizes
         with pytest.raises(ValidationError):
@@ -544,7 +543,7 @@ class TestFlextApiModelsFocused:
 
         assert params["page"] == 3
         assert params["page_size"] == 25
-        assert params["filter_conditions"] == filter_conditions
+        assert params["filters"] == filter_conditions
         assert params["status"] == "active"  # Flattened filter
         assert params["type"] == "user"  # Flattened filter
 
@@ -583,7 +582,7 @@ class TestFlextApiModelsFocused:
         """Test PaginationConfig.page property alias."""
         config = FlextApiModels.PaginationConfig(page=7)
 
-        assert config.page == 7
+        assert config.current_page == 7
         assert config.current_page == 7
 
     def test_pagination_config_validation_page_size(self) -> None:
