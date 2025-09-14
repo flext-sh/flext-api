@@ -7,14 +7,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api import (
-    FlextApiModels,
-)
-from flext_api.constants import FlextApiConstants
-
-# Import enums and response types
-from flext_api.models import (
     MAX_PORT,
     MIN_PORT,
+    FlextApiConstants,
+    FlextApiModels,
 )
 
 HttpMethod = FlextApiModels.HttpMethod

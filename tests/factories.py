@@ -1,3 +1,8 @@
+"""Test factories for flext-api tests.
+
+This module provides factory functions for creating test data and objects.
+"""
+
 from __future__ import annotations
 
 import uuid

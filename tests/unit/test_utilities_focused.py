@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.utilities import FlextApiUtilities
+from flext_api import FlextApiUtilities
 
 
 class TestFlextApiUtilitiesFocused:
@@ -26,6 +26,7 @@ class TestFlextApiUtilitiesFocused:
 
         assert result.is_success
         response = result.value
+        assert isinstance(response, dict)
         assert response["success"] is False
         assert response["message"] == "Custom error message"
         assert response["status_code"] == 400
@@ -42,6 +43,7 @@ class TestFlextApiUtilitiesFocused:
 
         assert result.is_success
         response = result.value
+        assert isinstance(response, dict)
         assert response["message"] == "Fallback error message"
 
     def test_response_builder_build_error_response_default_fallback(self) -> None:
@@ -50,6 +52,7 @@ class TestFlextApiUtilitiesFocused:
 
         assert result.is_success
         response = result.value
+        assert isinstance(response, dict)
         assert response["message"] == "Unknown error"
 
     def test_response_builder_build_success_response(self) -> None:
@@ -61,6 +64,7 @@ class TestFlextApiUtilitiesFocused:
 
         assert result.is_success
         response = result.value
+        assert isinstance(response, dict)
         assert response["success"] is True
         assert response["message"] == "User created successfully"
         assert response["status_code"] == 201
@@ -70,17 +74,19 @@ class TestFlextApiUtilitiesFocused:
 
     def test_pagination_builder_build_paginated_response_basic(self) -> None:
         """Test PaginationBuilder basic functionality."""
-        test_data = [{"id": 1}, {"id": 2}, {"id": 3}]
+        test_data: list[object] = [{"id": 1}, {"id": 2}, {"id": 3}]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
             data=test_data, page=1, page_size=20, total=100
         )
 
         assert result.is_success
         response = result.value
+        assert isinstance(response, dict)
         assert response["success"] is True
         assert response["data"] == test_data
 
         pagination = response["pagination"]
+        assert isinstance(pagination, dict)
         assert pagination["page"] == 1
         assert pagination["page_size"] == 20
         assert pagination["total"] == 100
@@ -96,6 +102,7 @@ class TestFlextApiUtilitiesFocused:
 
         assert result.is_success
         response = result.value
+        assert isinstance(response, dict)
         assert response["message"] == "Custom pagination message"
 
     def test_pagination_builder_validation_errors(self) -> None:
@@ -105,6 +112,7 @@ class TestFlextApiUtilitiesFocused:
             data=[], page=0
         )
         assert not result.is_success
+        assert result.error is not None
         assert "Page must be >= 1" in result.error
 
         # Page size must be >= 1
@@ -112,6 +120,7 @@ class TestFlextApiUtilitiesFocused:
             data=[], page_size=0
         )
         assert not result.is_success
+        assert result.error is not None
         assert "Page size must be >= 1" in result.error
 
         # Page size cannot exceed max
@@ -120,6 +129,7 @@ class TestFlextApiUtilitiesFocused:
             page_size=2000,  # Assuming MAX_PAGE_SIZE is 1000
         )
         assert not result.is_success
+        assert result.error is not None
         assert "Page size cannot exceed" in result.error
 
     def test_pagination_builder_none_data_handling(self) -> None:
@@ -130,18 +140,22 @@ class TestFlextApiUtilitiesFocused:
 
         assert result.is_success
         response = result.value
+        assert isinstance(response, dict)
         assert response["data"] == []  # None converted to empty list
+        assert isinstance(response["pagination"], dict)
         assert response["pagination"]["total"] == 50
 
     def test_pagination_builder_no_total_uses_data_length(self) -> None:
         """Test PaginationBuilder uses data length when total is None."""
-        test_data = [1, 2, 3, 4, 5]
+        test_data: list[object] = [1, 2, 3, 4, 5]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
             data=test_data, total=None
         )
 
         assert result.is_success
         response = result.value
+        assert isinstance(response, dict)
+        assert isinstance(response["pagination"], dict)
         assert response["pagination"]["total"] == 5  # Length of test_data
 
     def test_http_validator_validate_http_method(self) -> None:
@@ -163,16 +177,20 @@ class TestFlextApiUtilitiesFocused:
         # Empty method
         result = FlextApiUtilities.HttpValidator.validate_http_method("")
         assert not result.is_success
+        assert result.error is not None
         assert "HTTP method must be a non-empty string" in result.error
 
         # None method
-        result = FlextApiUtilities.HttpValidator.validate_http_method(None)
+        none_method: str | None = None
+        result = FlextApiUtilities.HttpValidator.validate_http_method(none_method)
         assert not result.is_success
+        assert result.error is not None
         assert "HTTP method must be a non-empty string" in result.error
 
         # Invalid method
         result = FlextApiUtilities.HttpValidator.validate_http_method("INVALID")
         assert not result.is_success
+        assert result.error is not None
         assert "Invalid HTTP method" in result.error
 
     def test_http_validator_validate_status_code(self) -> None:
@@ -196,11 +214,13 @@ class TestFlextApiUtilitiesFocused:
         for code in invalid_codes:
             result = FlextApiUtilities.HttpValidator.validate_status_code(code)
             assert not result.is_success
+            assert result.error is not None
             assert "Status code out of valid range" in result.error
 
         # Invalid string
         result = FlextApiUtilities.HttpValidator.validate_status_code("invalid")
         assert not result.is_success
+        assert result.error is not None
         assert "Status code must be a valid integer" in result.error
 
     def test_http_validator_normalize_url(self) -> None:
@@ -242,7 +262,7 @@ class TestFlextApiUtilitiesFocused:
 
         # Test with object that has model_dump
         class MockConfig:
-            def model_dump(self):
+            def model_dump(self) -> dict[str, object]:
                 return {"base_url": "https://test.com", "timeout": 60}
 
         mock_config = MockConfig()

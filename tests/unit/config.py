@@ -10,11 +10,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-
-# MAXIMUM usage of flext_tests - ACESSO DIRETO - NO ALIASES
 from flext_tests import FlextTestsDomains
 
-from flext_api.config import FlextApiConfig
+from flext_api import FlextApiConfig
 
 
 class TestFlextApiConfigReal:

@@ -31,10 +31,8 @@ async def test_client_build_and_error_formatting_on_invalid_url() -> None:
 async def test_client_headers_merge_and_prepare_params() -> None:
     """Client merges headers and serializes params correctly."""
     client = FlextApiClient(
-        FlextApiClient(
-            base_url="https://httpbin.org",
-            headers={"A": "1"},
-        ),
+        config="https://httpbin.org",
+        headers={"A": "1"},
     )
     await client.start()
     result = await client.post("/post", json_data={"x": 1}, headers={"B": "2"})

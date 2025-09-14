@@ -59,13 +59,13 @@ logger = FlextLogger(__name__)
 **Location**: `src/flext_api/api.py:136`
 
 **Problem Analysis**:
-FlextApi class does not inherit from FlextService and uses async methods instead of the required sync interface, breaking service lifecycle contracts.
+FlextApiClient class does not inherit from FlextService and uses async methods instead of the required sync interface, breaking service lifecycle contracts.
 
 **Current Implementation**:
 
 ```python
 # ❌ INCORRECT - Current pattern
-class FlextApi:
+class FlextApiClient:
     async def start(self) -> FlextResult[None]: ...
     async def stop(self) -> FlextResult[None]: ...
 ```
@@ -76,7 +76,7 @@ class FlextApi:
 # ✅ CORRECT - FLEXT-Core compliance
 from flext_core import FlextService
 
-class FlextApi(FlextService):
+class FlextApiClient(FlextService):
     def start(self) -> FlextResult[None]:
         """Start service following FlextService contract."""
         return FlextResult[None].ok(None)
@@ -92,13 +92,13 @@ class FlextApi(FlextService):
 
 **Implementation Tasks**:
 
-- [ ] Modify FlextApi to inherit from FlextService
+- [ ] Modify FlextApiClient to inherit from FlextService
 - [ ] Convert async methods to sync (per FlextService interface)
 - [ ] Implement required interface methods
 - [ ] Remove unnecessary adapter patterns
 - [ ] Update tests to reflect sync interface
 
-**Success Criteria**: FlextApi fully compliant with FlextService interface
+**Success Criteria**: FlextApiClient fully compliant with FlextService interface
 
 ---
 
@@ -481,7 +481,7 @@ class FlextApiConfig(FlextConfig):
 
 - [ ] Zero instances of `structlog.FlextLogger()` usage
 - [ ] Zero direct exception raising - all operations return FlextResult<T>
-- [ ] FlextApi inherits from FlextService correctly
+- [ ] FlextApiClient inherits from FlextService correctly
 - [ ] Global container used instead of local instances
 - [ ] Domain entities implemented with FlextModels.Entity
 - [ ] Type hints specific - zero generic `object` types

@@ -1,4 +1,4 @@
-"""FlextApi Protocols - Modern API abstraction protocols for FLEXT ecosystem.
+"""FlextApiClient Protocols - Modern API abstraction protocols for FLEXT ecosystem.
 
 Provides abstract contracts for HTTP client operations, API management,
 and service lifecycle patterns that other projects can implement.

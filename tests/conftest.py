@@ -1,3 +1,8 @@
+"""Test configuration and fixtures for flext-api tests.
+
+This module provides shared fixtures and configuration for all flext-api tests.
+"""
+
 from __future__ import annotations
 
 import asyncio

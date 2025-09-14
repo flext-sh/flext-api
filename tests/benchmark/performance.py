@@ -6,11 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TypeVar
-
 from flext_api import FlextApiClient, FlextApiModels, create_flext_api
-
-T = TypeVar("T")
 
 
 class TestAPIPerformanceBenchmarks:

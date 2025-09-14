@@ -4,12 +4,12 @@ Referência completa da API da FLEXT API.
 
 ## Core Classes
 
-### FlextApi
+### FlextApiClient
 
 **Classe principal que unifica todas as funcionalidades.**
 
 ```python
-class FlextApi:
+class FlextApiClient:
     def __init__(self) -> None
 
     def flext_api_create_client(
@@ -386,7 +386,7 @@ class FlextApiBuilder:
 ### create_flext_api
 
 ```python
-def create_flext_api() -> FlextApi
+def create_flext_api() -> FlextApiClient
 ```
 
 ### create_client
@@ -517,10 +517,10 @@ ParamsDict = Dict[str, object]
 ### Basic Usage
 
 ```python
-from flext_api import FlextApi, FlextApiQueryBuilder, FlextApiResponseBuilder
+from flext_api import FlextApiClient, FlextApiQueryBuilder, FlextApiResponseBuilder
 
 # API instance
-api = FlextApi()
+api = FlextApiClient()
 
 # Query building
 qb = FlextApiQueryBuilder()

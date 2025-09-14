@@ -7,7 +7,7 @@
 ```
 src/flext_api/
 ├── __init__.py              # Public API exports
-├── api.py                   # Main FlextApi service class
+├── api.py                   # Main FlextApiClient service class
 ├── app.py                   # FastAPI application factory
 ├── builder.py               # Query/response builders
 ├── client.py                # HTTP client with plugins
