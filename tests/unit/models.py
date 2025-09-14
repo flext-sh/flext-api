@@ -1,4 +1,6 @@
-"""Copyright (c) 2025 FLEXT Team. All rights reserved.
+"""Unit tests for flext-api models.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT.
 """
 
@@ -6,10 +8,9 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
-# MAXIMUM usage of flext_tests - ACESSO DIRETO - NO ALIASES
 from flext_tests import FlextTestsDomains
 
-from flext_api.models import FlextApiModels
+from flext_api import FlextApiModels
 
 
 class TestFlextApiModelsReal:

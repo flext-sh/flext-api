@@ -25,7 +25,7 @@
 
 ### Component Integration
 
-- FlextApi service with HTTP client
+- FlextApiClient service with HTTP client
 - Builder integration with API service
 - Configuration management across components
 - FastAPI application with service layer

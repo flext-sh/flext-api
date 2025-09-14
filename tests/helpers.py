@@ -1,3 +1,8 @@
+"""Test helpers for flext-api tests.
+
+This module provides helper functions and utilities for testing.
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -9,16 +14,11 @@ import uuid
 from collections.abc import Awaitable, Callable
 from datetime import datetime
 from pathlib import Path
-from typing import TypeVar, cast
+from typing import cast
 
 import pytest
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult, FlextTypes, T
 from flext_tests import FlextTestsDomains, FlextTestsMatchers, FlextTestsUtilities
-
-# MAXIMUM usage of flext_tests - use EM ABSOLUTO
-
-# Type variable for generic FlextResult operations
-T = TypeVar("T")
 
 
 def create_test_storage_config(**overrides: object) -> FlextTypes.Core.Dict:

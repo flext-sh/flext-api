@@ -328,7 +328,7 @@ class QueryResponse(BaseModel):
 app = flext_api_create_app()
 
 def get_flext_api():
-    """Dependency injection para FlextApi."""
+    """Dependency injection para FlextApiClient."""
     return create_flext_api()
 
 @app.get("/health", response_model=HealthResponse)
@@ -444,7 +444,7 @@ class TestFlextApiGettingStarted:
         health_data = health_result.data
         assert isinstance(health_data, dict)
         assert "service" in health_data
-        assert health_data["service"] == "FlextApi"
+        assert health_data["service"] == "FlextApiClient"
 
     def test_client_creation_error_handling(self):
         """✅ Test: Client creation error handling com FlextResult."""

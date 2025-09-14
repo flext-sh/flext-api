@@ -21,7 +21,13 @@ logger = FlextLogger(__name__)
 class FlextApiStorage(FlextModels.Entity):
     """HTTP-specific storage backend using flext-core Registry directly - ZERO DUPLICATION."""
 
-    def __init__(self, config: FlextTypes.Core.Dict | object | None = None) -> None:
+    def __init__(
+        self,
+        config: FlextTypes.Core.Dict | object | None = None,
+        max_size: int | None = None,
+        default_ttl: int | None = None,
+        **_kwargs: object,
+    ) -> None:
         """Initialize HTTP storage using flext-core patterns."""
         super().__init__(id=FlextUtilities.Generators.generate_entity_id())
         self._logger = FlextLogger(__name__)
@@ -29,6 +35,10 @@ class FlextApiStorage(FlextModels.Entity):
         # Simplified config using flext-core patterns
         config_dict = FlextTypeAdapters.adapt_to_dict(config or {})
         self._namespace = str(config_dict.get("namespace", "flext_api"))
+
+        # Store configuration parameters
+        self._max_size = max_size or config_dict.get("max_size")
+        self._default_ttl = default_ttl or config_dict.get("default_ttl")
 
         # Use simple dict for storage since Registry is not available
         self._storage: dict[str, object] = {}
@@ -47,12 +57,13 @@ class FlextApiStorage(FlextModels.Entity):
     # Essential HTTP Storage API - Using Registry directly
     # =============================================================================
 
-    def set(self, key: str, value: object) -> FlextResult[None]:
+    def set(self, key: str, value: object, ttl: int | None = None) -> FlextResult[None]:
         """Store HTTP data using flext-core Registry."""
         storage_key = self._make_key(key)
         data = {
             "value": value,
             "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
+            "ttl": ttl,
         }
 
         # Update both internal data and registry

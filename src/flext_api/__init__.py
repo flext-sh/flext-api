@@ -1,4 +1,8 @@
-"""FLEXT API - HTTP Foundation Library for FLEXT Ecosystem.
+"""FLEXT API - HTTP Foundation Library with acknowledged complexity.
+
+Note: Implementation includes comprehensive features that may be
+over-engineered for simple HTTP scenarios. Consider basic Python
+httpx/requests for simple applications.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -21,12 +25,7 @@ from flext_api.utilities import FlextApiUtilities
 # Version information
 __version__ = "0.9.0"
 
-# Re-export classes from models for convenience
-HttpRequest = FlextApiModels.HttpRequest
-HttpResponse = FlextApiModels.HttpResponse
-PaginationConfig = FlextApiModels.PaginationConfig
 
-# Explicit __all__ definition
 __all__ = [
     "FlextApiClient",
     "FlextApiConfig",
@@ -37,9 +36,6 @@ __all__ = [
     "FlextApiStorage",
     "FlextApiTypes",
     "FlextApiUtilities",
-    "HttpRequest",
-    "HttpResponse",
-    "PaginationConfig",
     "StorageBackend",
     "__version__",
     "create_flext_api",

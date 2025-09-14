@@ -35,9 +35,7 @@ async def test_request_build_failure_and_pipeline_error() -> None:
 
     # Test with valid format but unreachable to test request error paths
     client = FlextApiClient(
-        FlextApiClient(
-            base_url="https://invalid-domain-that-does-not-exist.example.com"
-        )
+        config="https://invalid-domain-that-does-not-exist.example.com"
     )
 
     # Network error should cause request errors
@@ -47,10 +45,8 @@ async def test_request_build_failure_and_pipeline_error() -> None:
 
     # Test network error path using hostname that triggers stub failure
     invalid_client = FlextApiClient(
-        FlextApiClient(
-            base_url="http://nonexistent-host.invalid",  # Hostname recognized as should fail
-            timeout=0.5,  # Very short timeout for quick failure
-        )
+        config="http://nonexistent-host.invalid",  # Hostname recognized as should fail
+        timeout=0.5,  # Very short timeout for quick failure
     )
 
     try:

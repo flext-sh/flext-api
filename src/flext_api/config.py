@@ -14,14 +14,18 @@ from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 
 from flext_api.constants import FlextApiConstants
-
-# Use FlextApiConstants.MAX_PORT instead of duplicate MAX_PORT_NUMBER
+from flext_api.models import FlextApiModels
 
 logger = FlextLogger(__name__)
 
 
 class FlextApiConfig(FlextConfig):
     """Simple API configuration extending flext-core FlextConfig."""
+
+    # Nested class references for API compatibility
+    ClientConfig: ClassVar[type[FlextApiModels.ClientConfig]] = (
+        FlextApiModels.ClientConfig
+    )
 
     # Singleton pattern for global instance
 
@@ -158,3 +162,8 @@ class FlextApiConfig(FlextConfig):
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
+
+
+__all__ = [
+    "FlextApiConfig",
+]

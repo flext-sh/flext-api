@@ -6,7 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# MAXIMUM usage of flext_tests - ACESSO DIRETO - NO ALIASES
 from typing import cast
 
 import pytest

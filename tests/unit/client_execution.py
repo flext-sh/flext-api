@@ -12,7 +12,8 @@ import pytest
 
 from flext_api import (
     FlextApiClient,
-    create_client,
+    FlextApiConfig,
+    create_flext_api as create_client,
 )
 
 
@@ -40,9 +41,9 @@ async def test_real_http_get_request() -> None:
         if response.success:
             # If response has data, validate structure
             if (
-                response.value
+                response.data
                 and isinstance(response.data, dict)
-                and "args" in response.value
+                and "args" in response.data
             ):
                 # For httpbin.org/get endpoint, response structure is:
                 # {"args": {"test_param": "test_value"}, "headers": {...}, ...}
@@ -58,10 +59,9 @@ async def test_real_http_get_request() -> None:
 @pytest.mark.asyncio
 async def test_real_http_headers_and_user_agent() -> None:
     """Test real HTTP request with custom headers."""
-    config = FlextApiClient(
-        base_url="https://httpbin.org", headers={"X-FLEXT-API": "test-version-0.9.0"}
+    client = FlextApiClient(
+        config="https://httpbin.org", headers={"X-FLEXT-API": "test-version-0.9.0"}
     )
-    client = FlextApiClient(config)
 
     try:
         # Test with headers endpoint
@@ -69,8 +69,7 @@ async def test_real_http_headers_and_user_agent() -> None:
 
         assert response is not None
         # Basic success validation
-        if hasattr(response, "status_code"):
-            assert response.status_code == 200
+        # Note: status_code is not available on FlextResult
 
         # If response has data, validate headers were sent
         if (
@@ -105,8 +104,7 @@ async def test_real_client_factory_function() -> None:
 
         assert response is not None
         # Basic success validation
-        if hasattr(response, "status_code"):
-            assert response.status_code == 200
+        # Note: status_code is not available on FlextResult
 
         # Verify factory-created client has correct config
         assert client.config.base_url == "https://httpbin.org"
@@ -119,7 +117,7 @@ async def test_real_client_factory_function() -> None:
 def test_client_configuration_validation() -> None:
     """Test client configuration validation."""
     # Test valid configuration
-    config = FlextApiClient(
+    config = FlextApiConfig(
         base_url="https://api.example.com",
         timeout=30.0,
         max_retries=3,
@@ -127,7 +125,7 @@ def test_client_configuration_validation() -> None:
     )
 
     # Should not raise any validation errors
-    client = FlextApiClient(config)
+    client = FlextApiClient(config=config)
     assert client is not None
     assert client.config.base_url == "https://api.example.com"
     assert client.config.timeout == 30.0

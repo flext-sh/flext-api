@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import threading
+from collections.abc import Callable
 from typing import Any, cast
 from unittest.mock import Mock
 
@@ -23,24 +24,28 @@ class TestFlextContainer100PercentCoverage:
     def test_service_key_creation_and_validation(self) -> None:
         """Test FlextContainer.ServiceKey creation and validation."""
         # Test valid service key
-        valid_key = FlextContainer.ServiceKey("valid_service")
+        valid_key: FlextContainer.ServiceKey = FlextContainer.ServiceKey(
+            "valid_service"
+        )
         FlextTestsMatchers.assert_result_success(
             FlextResult[FlextContainer.ServiceKey].ok(valid_key)
         )
         assert valid_key.name == "valid_service"
 
         # Test empty service key validation
-        empty_key = FlextContainer.ServiceKey("")
+        empty_key: FlextContainer.ServiceKey = FlextContainer.ServiceKey("")
         assert empty_key.name == ""
 
         # Test service key with special characters
-        special_key = FlextContainer.ServiceKey("service.with.dots")
+        special_key: FlextContainer.ServiceKey = FlextContainer.ServiceKey(
+            "service.with.dots"
+        )
         assert special_key.name == "service.with.dots"
 
         # Test service key equality
-        key1 = FlextContainer.ServiceKey("test")
-        key2 = FlextContainer.ServiceKey("test")
-        key3 = FlextContainer.ServiceKey("different")
+        key1: FlextContainer.ServiceKey = FlextContainer.ServiceKey("test")
+        key2: FlextContainer.ServiceKey = FlextContainer.ServiceKey("test")
+        key3: FlextContainer.ServiceKey = FlextContainer.ServiceKey("different")
 
         assert key1 == key2
         assert key1 != key3
@@ -223,8 +228,8 @@ class TestFlextContainer100PercentCoverage:
         assert factory_output["created"] is True
 
         # Test factory with parameters (closure)
-        def create_parametric_factory(param: str) -> Any:
-            def factory() -> dict[str, Any]:
+        def create_parametric_factory(param: str) -> Callable[[], dict[str, object]]:
+            def factory() -> dict[str, object]:
                 return {"type": "parametric", "param": param}
 
             return factory
@@ -268,10 +273,9 @@ class TestFlextContainer100PercentCoverage:
         # Test module utilities creation (if method exists)
         try:
             module_result = FlextContainer.create_module_utilities("test_module")
-            FlextTestsMatchers.assert_result_success(module_result)
-
-            utilities = module_result.value
-            assert utilities is not None
+            # module_result is a Dict, not a FlextResult
+            assert module_result is not None
+            assert isinstance(module_result, dict)
         except AttributeError:
             # Method doesn't exist, skip this part
             pass

@@ -44,10 +44,8 @@ async def test_client_build_and_error_formatting_on_invalid_url() -> None:
 async def test_client_headers_merge_and_prepare_params() -> None:
     """Client merges headers and serializes params correctly."""
     client = FlextApiClient(
-        FlextApiClient(
-            base_url="https://httpbin.org",
-            headers={"A": "1"},
-        ),
+        config="https://httpbin.org",
+        headers={"A": "1"},
     )
     await client.start()
     result = await client.post("/post", json_data={"x": 1}, headers={"B": "2"})
@@ -64,23 +62,23 @@ class TestFlextApiClient:
         """Test client initialization with various configurations."""
         # Basic initialization
         client = FlextApiClient()
-        assert client.base_url == ""
-        assert client.timeout == 30.0
-        assert isinstance(client.headers, dict)
-        assert client.max_retries == 3
+        assert client.config.base_url == ""
+        assert client.config.timeout == 30.0
+        assert isinstance(client.config.headers, dict)
+        assert client.config.max_retries == 3
 
         # Configuration via dict
-        config = {
+        config: dict[str, object] = {
             "base_url": "https://api.example.com",
             "timeout": 60.0,
             "headers": {"Authorization": "Bearer token"},
             "max_retries": 5,
         }
-        client_with_config = FlextApiClient(config)
-        assert client_with_config.base_url == "https://api.example.com"
-        assert client_with_config.timeout == 60.0
-        assert client_with_config.headers["Authorization"] == "Bearer token"
-        assert client_with_config.max_retries == 5
+        client_with_config = FlextApiClient(config=config)
+        assert client_with_config.config.base_url == "https://api.example.com"
+        assert client_with_config.config.timeout == 60.0
+        assert client_with_config.config.headers["Authorization"] == "Bearer token"
+        assert client_with_config.config.max_retries == 5
 
         # Configuration via kwargs
         client_kwargs = FlextApiClient(
@@ -89,38 +87,38 @@ class TestFlextApiClient:
             headers={"User-Agent": "test"},
             max_retries=2,
         )
-        assert client_kwargs.base_url == "https://test.example.com"
-        assert client_kwargs.timeout == 45.0
-        assert client_kwargs.max_retries == 2
+        assert client_kwargs.config.base_url == "https://test.example.com"
+        assert client_kwargs.config.timeout == 45.0
+        assert client_kwargs.config.max_retries == 2
 
     def test_client_initialization_type_safety(self) -> None:
         """Test client initialization with type conversion."""
         # Test timeout conversion
         client1 = FlextApiClient(timeout="45")  # String to float
-        assert client1.timeout == 45.0
+        assert client1.config.timeout == 45.0
 
         client2 = FlextApiClient(timeout=30)  # Int to float
-        assert client2.timeout == 30.0
+        assert client2.config.timeout == 30.0
 
         # Test invalid timeout fallback
         client3 = FlextApiClient(timeout={"invalid": "type"})
-        assert client3.timeout == 30.0  # Default fallback
+        assert client3.config.timeout == 30.0  # Default fallback
 
         # Test max_retries conversion
         client4 = FlextApiClient(max_retries="3")  # String to int
-        assert client4.max_retries == 3
+        assert client4.config.max_retries == 3
 
         # Test invalid max_retries fallback
         client5 = FlextApiClient(max_retries={"invalid": "type"})
-        assert client5.max_retries == 3  # Default fallback
+        assert client5.config.max_retries == 3  # Default fallback
 
         # Test headers type safety
         client6 = FlextApiClient(headers="invalid")  # Non-dict to empty dict
-        assert client6.headers == {}
+        assert client6.config.headers == {}
 
         # Test base_url None handling
         client7 = FlextApiClient(base_url=None)
-        assert client7.base_url == ""
+        assert client7.config.base_url == ""
 
     def test_client_properties(self) -> None:
         """Test client property access."""
@@ -131,10 +129,10 @@ class TestFlextApiClient:
             max_retries=2,
         )
 
-        assert client.base_url == "https://api.example.com"
-        assert client.timeout == 45.0
-        assert client.headers == {"Custom": "Value"}
-        assert client.max_retries == 2
+        assert client.config.base_url == "https://api.example.com"
+        assert client.config.timeout == 45.0
+        assert client.config.headers == {"Custom": "Value"}
+        assert client.config.max_retries == 2
 
     def test_client_execute(self) -> None:
         """Test client execution (domain service pattern)."""
@@ -144,6 +142,7 @@ class TestFlextApiClient:
         assert result.success
         data = result.value
         assert data["client_type"] == "httpx.AsyncClient"
+        assert isinstance(data, dict)
         assert data["base_url"] == "https://test.com"
         assert data["timeout"] == 30.0
         assert data["session_started"] is False
@@ -159,6 +158,7 @@ class TestFlextApiClient:
         with patch.object(client, "_client_id", side_effect=Exception("Test error")):
             result = client.execute()
             FlextTestsMatchers.assert_result_failure(result)
+            assert result.error is not None
             assert "HTTP client execution failed" in result.error
 
     def test_config_property(self) -> None:
@@ -250,7 +250,8 @@ class TestFlextApiClient:
         with patch("httpx.AsyncClient", side_effect=Exception("Connection failed")):
             client = FlextApiClient()
             result = await client.start()
-            FlextTestsMatchers.assert_result_failure(result)
+            assert result.is_failure
+            assert result.error is not None
             assert "HTTP session start failed" in result.error
 
     @pytest.mark.asyncio
@@ -265,7 +266,8 @@ class TestFlextApiClient:
         client._session_started = True
 
         result = await client.stop()
-        FlextTestsMatchers.assert_result_failure(result)
+        assert result.is_failure
+        assert result.error is not None
         assert "HTTP session stop failed" in result.error
 
     @pytest.mark.asyncio
@@ -886,7 +888,7 @@ async def test_client_request_pipeline_success() -> None:
     config = FlextApiClient(
         base_url="https://httpbin.org",
         timeout=10.0,
-        headers={"User-Agent": "FlextApi-Test/1.0"},
+        headers={"User-Agent": "FlextApiClient-Test/1.0"},
     )
     client = FlextApiClient(config)
 

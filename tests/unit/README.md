@@ -6,7 +6,7 @@
 
 ### Core Component Tests
 
-- **test_api_core.py** - FlextApi service functionality
+- **test_api_core.py** - FlextApiClient service functionality
 - **test_app_core.py** - FastAPI application factory
 - **test_builder_core.py** - Query/response builders
 - **test_client_core.py** - HTTP client operations

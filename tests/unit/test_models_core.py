@@ -1,14 +1,17 @@
+"""Core model tests for flext-api.
+
+This module provides tests for core model functionality.
+"""
+
 from __future__ import annotations
 
-# MAXIMUM flext_tests usage
 from typing import cast
 
 import pytest
 from flext_tests import FlextTestsDomains
 from pydantic import ValidationError
 
-from flext_api import FlextApiModels
-from flext_api.constants import FlextApiConstants
+from flext_api import FlextApiConstants, FlextApiModels
 
 
 class TestFlextApiModels:

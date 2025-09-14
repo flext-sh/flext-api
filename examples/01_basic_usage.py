@@ -13,8 +13,7 @@ from __future__ import annotations
 import asyncio
 
 from flext_api import (
-    FlextApi,
-    FlextApiApp,
+    FlextApiClient,
     FlextApiConfig,
     FlextApiModels,
     FlextApiStorage,
@@ -26,8 +25,8 @@ def example_api_creation() -> None:
     """Demonstrate basic API instance creation using refactored classes."""
     print("=== API Creation Example ===")
 
-    # Create API instance using ONLY the refactored FlextApi class
-    api = FlextApi()
+    # Create API instance using ONLY the refactored FlextApiClient class
+    api = FlextApiClient()
     print(f"✅ API created: {api.service_name} v{api.service_version}")
 
 
@@ -36,7 +35,7 @@ def example_client_creation() -> None:
     print("\n=== Client Creation Example ===")
 
     # Create API instance
-    FlextApi()
+    FlextApiClient()
 
     # Create client config using the refactored nested class
     client_config = FlextApiConfig.ClientConfig(
@@ -121,8 +120,8 @@ def example_app_creation() -> None:
     """Demonstrate FastAPI app creation using refactored classes."""
     print("\n=== App Creation Example ===")
 
-    # Create app using the refactored FlextApiApp class methods
-    app = FlextApiApp.create_flext_api_app()
+    # Create app using the refactored FlextApiClient class methods
+    app = FlextApiClient.create_flext_api_app()
 
     print(f"✅ App created: {type(app).__name__}")
     print("✅ App includes CORS, error handlers, and middleware")

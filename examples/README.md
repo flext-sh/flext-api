@@ -7,7 +7,7 @@
 ### Basic Usage
 
 - **01_basic_usage.py** - Basic API usage patterns using REAL classes
-  - FlextApi creation and configuration
+  - FlextApiClient creation and configuration
   - HTTP client creation and setup
   - Model instantiation and validation
   - Error handling with FlextResult
@@ -26,7 +26,7 @@
 
 ### REAL Classes Usage
 
-- **FlextApi** - Core API service class
+- **FlextApiClient** - Core API service class
 - **FlextApiClient** - HTTP client with async support
 - **FlextApiModels** - Domain models and data structures
 - **FlextApiStorage** - Storage backends (Memory, File)
@@ -39,7 +39,7 @@
 All examples use REAL classes directly from their modules:
 
 ```python
-from flext_api import FlextApi, FlextApiClient, FlextApiModels
+from flext_api import FlextApiClient, FlextApiClient, FlextApiModels
 # NOT helpers, NOT aliases, ONLY real functionality
 ```
 
@@ -77,7 +77,7 @@ else:
 
 ```python
 # CORRECT: Import REAL classes directly
-from flext_api import FlextApi, FlextApiClient, FlextApiModels
+from flext_api import FlextApiClient, FlextApiClient, FlextApiModels
 
 # INCORRECT: Don't use aliases or helpers
 # from flext_api import create_client  # This is a helper, not a REAL class
@@ -87,7 +87,7 @@ from flext_api import FlextApi, FlextApiClient, FlextApiModels
 
 ```python
 # Create API using REAL class
-api = FlextApi()
+api = FlextApiClient()
 
 # Create client using REAL method that returns FlextResult
 client_result = api.create_client({"base_url": "https://api.example.com"})

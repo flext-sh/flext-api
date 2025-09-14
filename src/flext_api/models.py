@@ -20,19 +20,14 @@ from pydantic import ConfigDict, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
 
+logger = FlextLogger(__name__)
+
 # Streamlined ConfigDict - eliminate bloat
 STANDARD_MODEL_CONFIG = ConfigDict(
     validate_assignment=True, extra="forbid", populate_by_name=True
 )
 
-# Use FlextModels.Entity as FlextBaseModel
-FlextBaseModel = FlextModels.Entity
-
-logger = FlextLogger(__name__)
-
 # Use constants from FlextApiConstants instead of redundant declarations
-
-# Python 3.13+ error message constants for clean exception handling
 _URL_EMPTY_ERROR = "URL cannot be empty"
 _URL_FORMAT_ERROR = "Invalid URL format"
 _BASE_URL_ERROR = "URL must be a non-empty string with http(s) scheme"
@@ -46,7 +41,7 @@ class FlextApiModels:
     HttpErrorConfig = FlextModels.Http.HttpErrorConfig
 
     # Simple API-specific models
-    class HttpRequest(FlextBaseModel):
+    class HttpRequest(FlextModels.Entity):
         """HTTP request model with modern Python 3.13 and Pydantic patterns."""
 
         model_config = STANDARD_MODEL_CONFIG
@@ -55,9 +50,9 @@ class FlextApiModels:
             "GET"
         )
         url: str
-        headers: dict[str, str] = {}
+        headers: dict[str, str] = Field(default_factory=dict)
         body: str | dict[str, object] | None = None
-        timeout: int = 30
+        timeout: int | float = 30
 
         @field_validator("url")
         @classmethod
@@ -88,9 +83,10 @@ class FlextApiModels:
 
         status_code: int
         body: str | dict[str, object] | None = None
-        headers: dict[str, str] = {}
+        headers: dict[str, str] = Field(default_factory=dict)
         url: str
         method: str
+        elapsed_time: float | None = None
 
         @property
         def is_success(self) -> bool:
@@ -137,7 +133,7 @@ class FlextApiModels:
         base_url: str = FlextApiConstants.DEFAULT_BASE_URL
         timeout: float = FlextApiConstants.DEFAULT_TIMEOUT
         max_retries: int = FlextApiConstants.DEFAULT_RETRIES
-        headers: dict[str, str] = {}
+        headers: dict[str, str] = Field(default_factory=dict)
 
         # Authentication - consolidated
         auth_token: str | None = None
@@ -166,7 +162,7 @@ class FlextApiModels:
             headers.update(self.get_auth_header())
             return headers
 
-    class HttpQuery(FlextBaseModel):
+    class HttpQuery(FlextModels.Entity):
         """HTTP query parameters model with filtering and pagination."""
 
         model_config = STANDARD_MODEL_CONFIG
@@ -175,7 +171,7 @@ class FlextApiModels:
         filter_conditions: dict[str, object] = Field(
             alias="filters", default_factory=dict
         )
-        sort_fields: list[str] = []
+        sort_fields: list[str] = Field(default_factory=list)
         page_number: int = Field(alias="page", default=1)
         page_size_value: int = Field(
             alias="page_size", default=FlextApiConstants.DEFAULT_PAGE_SIZE
@@ -258,6 +254,7 @@ class FlextApiModels:
                 "request_id": FlextUtilities.Generators.generate_request_id(),
             }
 
-    # Direct class references - no bloated aliases
-    # Use FlextApiModels.HttpRequest and FlextApiModels.HttpResponse directly
-    # For HttpMethod type, import from flext_api.typings.FlextApiTypes.HttpMethod
+
+__all__ = [
+    "FlextApiModels",
+]

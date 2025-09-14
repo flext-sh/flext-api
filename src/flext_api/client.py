@@ -18,8 +18,10 @@ from flext_core import (
     FlextTypes,
 )
 
-from .constants import FlextApiConstants
-from .models import FlextApiModels
+from flext_api.config import FlextApiConfig
+from flext_api.constants import FlextApiConstants
+from flext_api.factory import create_flext_api
+from flext_api.models import FlextApiModels
 
 
 class FlextApiClient(FlextDomainService[object]):
@@ -32,13 +34,13 @@ class FlextApiClient(FlextDomainService[object]):
 
     def __init__(
         self,
-        config: FlextApiModels.ClientConfig | str | None = None,
+        config: FlextApiModels.ClientConfig | FlextApiConfig | str | None = None,
         **kwargs: object,
     ) -> None:
         """Initialize HTTP client with streamlined configuration.
 
         Args:
-            config: ClientConfig object or base_url string
+            config: ClientConfig object, FlextApiConfig object, or base_url string
             **kwargs: Override config values (base_url, timeout, max_retries, etc.)
 
         """
@@ -54,7 +56,7 @@ class FlextApiClient(FlextDomainService[object]):
             converted_kwargs = self._convert_kwargs_to_client_config_kwargs(kwargs)
             self._client_config = FlextApiModels.ClientConfig(
                 base_url=config,
-                **converted_kwargs,  # type: ignore[misc]
+                **converted_kwargs,
             )
         elif isinstance(config, FlextApiModels.ClientConfig):
             # Config object provided - apply any overrides
@@ -62,6 +64,15 @@ class FlextApiClient(FlextDomainService[object]):
             converted_kwargs = self._convert_kwargs_to_client_config_kwargs(kwargs)
             config_dict.update(converted_kwargs)
             self._client_config = FlextApiModels.ClientConfig(**config_dict)
+        elif isinstance(config, FlextApiConfig):
+            # FlextApiConfig provided - extract relevant fields
+            converted_kwargs = self._convert_kwargs_to_client_config_kwargs(kwargs)
+            self._client_config = FlextApiModels.ClientConfig(
+                base_url=config.api_base_url,
+                timeout=config.api_timeout,
+                max_retries=config.max_retries,
+                **converted_kwargs,
+            )
         else:
             # Handle None config - use defaults
             base_url = FlextApiConstants.DEFAULT_BASE_URL  # Default fallback
@@ -69,7 +80,7 @@ class FlextApiClient(FlextDomainService[object]):
             converted_kwargs = self._convert_kwargs_to_client_config_kwargs(kwargs)
             self._client_config = FlextApiModels.ClientConfig(
                 base_url=base_url,
-                **converted_kwargs,  # type: ignore[misc]
+                **converted_kwargs,
             )
 
         # Store minimal state - everything comes from config
@@ -81,9 +92,24 @@ class FlextApiClient(FlextDomainService[object]):
         self._request_count = 0
         self._error_count = 0
 
+    @property
+    def service_name(self) -> str:
+        """Get service name for compatibility."""
+        return "flext-api"
+
+    @property
+    def service_version(self) -> str:
+        """Get service version for compatibility."""
+        return "0.9.0"
+
+    @staticmethod
+    def create_flext_api_app(**kwargs: object) -> object:
+        """Create FastAPI app for compatibility."""
+        return create_flext_api(dict(kwargs))
+
     def _convert_kwargs_to_client_config_kwargs(
         self, kwargs: dict[str, object]
-    ) -> dict[str, str | int | float | dict[str, str] | None]:
+    ) -> dict[str, object]:
         """Convert kwargs to properly typed ClientConfig parameters."""
         # Valid ClientConfig field names and their expected types
         valid_fields = {
@@ -95,7 +121,7 @@ class FlextApiClient(FlextDomainService[object]):
             "api_key": (str, type(None)),
         }
 
-        converted_kwargs: dict[str, str | int | float | dict[str, str] | None] = {}
+        converted_kwargs: dict[str, object] = {}
 
         for key, value in kwargs.items():
             if key not in valid_fields:
@@ -434,3 +460,8 @@ class FlextApiClient(FlextDomainService[object]):
             return FlextResult[FlextApiModels.HttpResponse].fail(
                 f"Unexpected error: {e}"
             )
+
+
+__all__ = [
+    "FlextApiClient",
+]

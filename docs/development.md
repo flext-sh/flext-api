@@ -8,7 +8,7 @@
 
 ## 🎯 Development Overview
 
-FLEXT API follows **Clean Architecture** principles with **Domain-Driven Design (DDD)** patterns, emphasizing **FLEXT-Core compliance** and **enterprise-grade quality standards**. All development must align with the broader FLEXT ecosystem patterns.
+FLEXT API follows **Clean Architecture** principles with **Domain-Driven Design (DDD)** patterns, emphasizing **FLEXT-Core compliance** and **quality standards**. All development must align with the broader FLEXT ecosystem patterns.
 
 ### **Development Philosophy**
 
@@ -183,7 +183,7 @@ make deps-audit     # Security audit of dependencies
 
 ```
 src/flext_api/
-├── api.py              # Application Layer - FlextApi service composition
+├── api.py              # Application Layer - FlextApiClient service composition
 ├── client.py           # Application Layer - HTTP client operations
 ├── builder.py          # Application Layer - Query/response building
 ├── config.py           # Infrastructure Layer - Configuration management
@@ -363,7 +363,7 @@ from flext_core import FlextLogger
 logger = FlextLogger(__name__)
 
 class TestFlextApiCore:
-    """Unit tests for FlextApi core functionality."""
+    """Unit tests for FlextApiClient core functionality."""
 
     def test_api_creation_success(self):
         """Test successful API instance creation."""

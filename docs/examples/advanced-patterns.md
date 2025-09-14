@@ -8,7 +8,7 @@
 
 ## 🎯 Advanced Patterns Overview
 
-This guide covers sophisticated FLEXT API usage patterns for enterprise applications, including plugin systems, advanced error handling, performance optimization, and complex integration scenarios.
+This guide covers FLEXT API usage patterns for business applications, including plugin systems, advanced error handling, performance optimization, and complex integration scenarios.
 
 ### **Prerequisites**
 

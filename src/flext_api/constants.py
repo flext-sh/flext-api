@@ -133,12 +133,14 @@ def validate_configuration(**config: object) -> list[str]:
 
     if "timeout" in config:
         timeout = config["timeout"]
-        if isinstance(timeout, (int, float)) and not (0.1 <= float(timeout) <= 300.0):
+        if isinstance(timeout, (int, float)) and not (
+            MIN_TIMEOUT <= float(timeout) <= MAX_TIMEOUT
+        ):
             errors.append(f"Invalid timeout: {timeout}")
 
     if "max_retries" in config:
         retries = config["max_retries"]
-        if isinstance(retries, int) and not (0 <= retries <= 10):
+        if isinstance(retries, int) and not (MIN_RETRIES <= retries <= MAX_RETRIES):
             errors.append(f"Invalid max_retries: {retries}")
 
     return errors

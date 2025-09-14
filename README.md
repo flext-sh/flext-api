@@ -45,7 +45,7 @@ make test      # Run test suite with coverage
 
 ### HTTP Client System
 
-- **Modern Async Client**: Built on httpx/aiohttp with comprehensive error handling
+- **Modern Async Client**: Built on httpx/aiohttp with error handling
 - **Plugin Architecture**: Extensible with caching, retry, circuit breaker, and custom plugins
 - **FlextResult Integration**: Type-safe error handling throughout HTTP operations
 - **Request/Response Pipeline**: Configurable pre/post processing with middleware support
@@ -68,7 +68,7 @@ make test      # Run test suite with coverage
 ### Design Patterns
 
 - **Clean Architecture**: Clear separation between domain, application, and infrastructure layers
-- **Railway-Oriented Programming**: FlextResult pattern for comprehensive error handling
+- **Railway-Oriented Programming**: FlextResult pattern for error handling
 - **Composition over Inheritance**: Modular design with clear component boundaries
 - **Plugin System**: Extensible architecture for custom functionality
 
@@ -101,7 +101,7 @@ app = create_flext_api_app()
 
 ### Quality Standards
 
-- **Test Coverage**: Minimum 85% with comprehensive unit and integration tests
+- **Test Coverage**: Minimum 85% with unit and integration tests
 - **Type Safety**: Full MyPy strict mode compliance with discriminated unions
 - **Code Quality**: Ruff linting with zero tolerance for errors
 - **Security**: Bandit scanning for security vulnerabilities
@@ -130,7 +130,7 @@ make coverage-html     # Generate HTML coverage report
 
 ```
 src/flext_api/
-├── api.py                   # Main FlextApi class with composition patterns
+├── api.py                   # Main FlextApiClient class with composition patterns
 ├── api_app.py               # FastAPI application factory and configuration
 ├── api_client.py            # HTTP client system with plugins
 ├── api_config.py            # Configuration management
@@ -194,7 +194,7 @@ See [FLEXT Architecture Documentation](../docs/architecture/) for detailed integ
 
 1. **Setup**: `poetry install --with dev,test`
 2. **Quality Gates**: Run `make validate` before committing
-3. **Testing**: Add comprehensive tests for new features
+3. **Testing**: Add tests for new features
 4. **Documentation**: Update docstrings and examples
 
 ## License

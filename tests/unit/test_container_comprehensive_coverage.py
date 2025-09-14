@@ -26,11 +26,11 @@ class TestFlextContainerComprehensiveCoverage:
 
         # Test registration with empty string name
         result = container.register("", "service")
-        FlextTestsMatchers.assert_result_failure(result)
+        assert result.is_failure
 
         # Test registration with whitespace-only name
         result = container.register("   ", "service")
-        FlextTestsMatchers.assert_result_failure(result)
+        assert result.is_failure
 
     def test_service_retrieval_edge_cases(
         self, clean_container: FlextContainer
@@ -40,11 +40,11 @@ class TestFlextContainerComprehensiveCoverage:
 
         # Test getting non-existent service
         result = container.get("non_existent")
-        FlextTestsMatchers.assert_result_failure(result)
+        assert result.is_failure
 
         # Test getting with empty string name
         result = container.get("")
-        FlextTestsMatchers.assert_result_failure(result)
+        assert result.is_failure
 
         # Register and retrieve valid service
         container.register("valid_service", {"data": "test"})
@@ -68,6 +68,7 @@ class TestFlextContainerComprehensiveCoverage:
         # Test factory execution
         service_result = container.get("factory_service")
         FlextTestsMatchers.assert_result_success(service_result)
+        assert isinstance(service_result.value, dict)
         assert service_result.value["type"] == "factory_created"
 
         # Test factory with exception
@@ -80,7 +81,7 @@ class TestFlextContainerComprehensiveCoverage:
 
         # Getting from failing factory should handle exception
         failed_result = container.get("failing_factory")
-        FlextTestsMatchers.assert_result_failure(failed_result)
+        assert failed_result.is_failure
 
     def test_service_unregistration_comprehensive(
         self, clean_container: FlextContainer
@@ -90,7 +91,7 @@ class TestFlextContainerComprehensiveCoverage:
 
         # Test unregistering non-existent service
         result = container.unregister("non_existent")
-        FlextTestsMatchers.assert_result_failure(result)
+        assert result.is_failure
 
         # Test unregistering existing service
         container.register("temp_service", {"temp": "data"})
@@ -120,7 +121,7 @@ class TestFlextContainerComprehensiveCoverage:
         assert container.get_service_count() == 0
         for i in range(5):
             result = container.get(f"service_{i}")
-            FlextTestsMatchers.assert_result_failure(result)
+            assert result.is_failure
 
     def test_service_listing_comprehensive(
         self, clean_container: FlextContainer
@@ -186,7 +187,7 @@ class TestFlextContainerComprehensiveCoverage:
         invalid_names = ["", "   ", "\t", "\n"]
         for invalid_name in invalid_names:
             result = container.register(invalid_name, "data")
-            FlextTestsMatchers.assert_result_failure(result)
+            assert result.is_failure
 
             get_result = container.get(invalid_name)
             FlextTestsMatchers.assert_result_failure(get_result)
@@ -212,6 +213,7 @@ class TestFlextContainerComprehensiveCoverage:
         # Verify retrieval
         get_result = container.get("large_service")
         FlextTestsMatchers.assert_result_success(get_result)
+        assert isinstance(get_result.value, dict)
         assert len(get_result.value["data"]) == 10000
 
         # Unregister to test cleanup
@@ -219,7 +221,7 @@ class TestFlextContainerComprehensiveCoverage:
 
         # Verify cleanup
         result = container.get("large_service")
-        FlextTestsMatchers.assert_result_failure(result)
+        assert result.is_failure
 
     def test_container_type_safety_comprehensive(
         self, clean_container: FlextContainer
@@ -283,6 +285,7 @@ class TestFlextContainerComprehensiveCoverage:
         for i in range(50):
             result = container.get(f"perf_service_{i}")
             FlextTestsMatchers.assert_result_success(result)
+            assert isinstance(result.value, dict)
             assert result.value["index"] == i
 
         # Test rapid unregistration
@@ -330,7 +333,10 @@ class TestFlextContainerComprehensiveCoverage:
         FlextTestsMatchers.assert_result_success(composite_result)
 
         composite_data = composite_result.value
+        assert isinstance(composite_data, dict)
         assert composite_data["type"] == "composite"
         assert composite_data["initialized"] is True
+        assert isinstance(composite_data["database"], dict)
         assert composite_data["database"]["type"] == "database"
+        assert isinstance(composite_data["logger"], dict)
         assert composite_data["logger"]["type"] == "logger"

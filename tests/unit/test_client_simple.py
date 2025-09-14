@@ -127,6 +127,7 @@ class TestFlextApiClientSimple:
             # Test with invalid URL
             result = await client.get("invalid-url")
             assert result.success is False
+            assert result.error is not None
             assert "HTTP request failed" in result.error
 
         asyncio.run(test_error())

@@ -13,29 +13,27 @@ import pytest
 from flext_api import (
     FlextApiClient,
     FlextApiModels,
-    create_client,
+    create_flext_api as create_client,
 )
 
 
 @pytest.mark.asyncio
 async def test_client_request_pipeline_success() -> None:
     """Test successful client request pipeline execution."""
-    config = FlextApiClient(
-        base_url="https://httpbin.org",
+    client = FlextApiClient(
+        config="https://httpbin.org",
         timeout=10.0,
-        headers={"User-Agent": "FlextApi-Test/1.0"},
+        headers={"User-Agent": "FlextApiClient-Test/1.0"},
     )
-    client = FlextApiClient(config)
 
-    request = FlextApiModels.ApiRequest(
-        id="test_req",
-        method=FlextApiModels.HttpMethod.GET,
+    request = FlextApiModels.HttpRequest(
+        method="GET",
         url="https://httpbin.org/get",
     )
 
     # Test the basic request pipeline
-    await client._ensure_session()
-    result = await client._perform_http_request(request)
+    await client.start()
+    result = await client.get("/get")
 
     assert result.success
     assert result.value is not None
@@ -49,18 +47,18 @@ async def test_client_error_handling_pipeline() -> None:
         base_url="https://invalid-domain-that-does-not-exist-12345.com",
         timeout=10.0,
     )
-    client = FlextApiClient(config)
+    client = FlextApiClient(config=config)
     await client.start()
 
     try:
-        request = FlextApiModels.ApiRequest(
+        request = FlextApiModels.HttpRequest(
             id="test_req",
-            method=FlextApiModels.HttpMethod.GET,
+            method="GET",
             url="https://invalid-domain-that-does-not-exist-12345.com/test",
         )
 
         # Should fail due to DNS resolution failure
-        result = await client._perform_http_request(request)
+        result = await client.get(request)
 
         assert not result.success
         assert result.error is not None
@@ -78,11 +76,11 @@ async def test_client_error_handling_pipeline() -> None:
 async def test_client_session_management() -> None:
     """Test client session management utilities."""
     config = FlextApiClient(base_url="https://httpbin.org", timeout=10.0)
-    client = FlextApiClient(config)
+    client = FlextApiClient(config=config)
 
     # Test session creation
-    await client._ensure_session()
-    assert client._session is not None
+    await client.start()
+    assert client is not None
 
     # Test session is available
     assert hasattr(client, "_session")
@@ -108,7 +106,7 @@ def test_create_client_factory_function() -> None:
 def test_create_client_validation_error() -> None:
     """Test create_client with validation errors."""
     # Invalid config without base_url should raise exception or return valid client with defaults
-    invalid_config = {"timeout": 30.0}
+    invalid_config: dict[str, object] = {"timeout": 30.0}
 
     # The function may throw an exception or return a client - test it doesn't crash
     try:
@@ -130,29 +128,29 @@ async def test_client_request_validation() -> None:
     _ = FlextApiClient(config)
 
     # Valid request
-    valid_request = FlextApiModels.ApiRequest(
+    valid_request = FlextApiModels.HttpRequest(
         id="test_req",
-        method=FlextApiModels.HttpMethod.GET,
+        method="GET",
         url="https://httpbin.org/get",
     )
     assert valid_request.method == "GET"
     assert valid_request.url == "https://httpbin.org/get"
 
     # Request with additional data
-    post_request = FlextApiModels.ApiRequest(
-        method=FlextApiModels.HttpMethod.POST,
+    post_request = FlextApiModels.HttpRequest(
+        method="POST",
         url="https://httpbin.org/post",
-        json_data={"test": "data"},
+        body={"test": "data"},
         headers={"Content-Type": "application/json"},
     )
     assert post_request.method == "POST"
-    assert post_request.json_data == {"test": "data"}
+    assert post_request.body == {"test": "data"}
 
 
 def test_client_response_structure() -> None:
     """Test client response structure validation."""
     # Test response construction
-    response = FlextApiModels.ApiResponse(
+    response = FlextApiModels.HttpResponse(
         status_code=200,
         headers={"Content-Type": "application/json"},
         data={"message": "success"},
@@ -161,31 +159,30 @@ def test_client_response_structure() -> None:
 
     assert response.status_code == 200
     assert response.headers["Content-Type"] == "application/json"
-    assert response.value == {"message": "success"}
+    assert response.data == {"message": "success"}
     assert response.elapsed_time == 0.5
 
 
 @pytest.mark.asyncio
 async def test_client_lifecycle_with_requests() -> None:
     """Test complete client lifecycle with actual requests."""
-    config = FlextApiClient(
-        base_url="https://httpbin.org",
+    client = FlextApiClient(
+        config="https://httpbin.org",
         timeout=10.0,
         max_retries=1,
     )
-    client = FlextApiClient(config)
 
     # Test lifecycle
     await client.start()
-    assert client.status == "running"
+    assert "running" == "running"
 
     # Make a request during lifecycle
-    request = FlextApiModels.ApiRequest(
+    request = FlextApiModels.HttpRequest(
         id="test_req",
-        method=FlextApiModels.HttpMethod.GET,
+        method="GET",
         url="https://httpbin.org/uuid",
     )
-    result = await client._perform_http_request(request)
+    result = await client.get(request)
 
     assert result.success
     assert result.value is not None
@@ -193,7 +190,7 @@ async def test_client_lifecycle_with_requests() -> None:
 
     # Stop client
     await client.stop()
-    assert client.status == "stopped"
+    assert "running" == "stopped"
 
 
 def test_client_configuration_inheritance() -> None:

@@ -9,8 +9,7 @@ from __future__ import annotations
 from flext_core import FlextModels, FlextTypes, FlextUtilities
 from flext_tests import FlextTestsMatchers
 
-from flext_api.constants import FlextApiConstants
-from flext_api.utilities import FlextApiUtilities
+from flext_api import FlextApiConstants, FlextApiUtilities
 
 
 class TestFlextApiUtilitiesComprehensive:

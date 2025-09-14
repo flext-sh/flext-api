@@ -23,7 +23,7 @@ graph TB
     end
 
     subgraph "flext-api (THIS LIBRARY)"
-        API[FlextApi Service]
+        API[FlextApiClient Service]
         CLIENT[HTTP Client + Plugins]
         BUILDER[Query/Response Builders]
         APP[FastAPI Integration]
@@ -159,7 +159,7 @@ def service_operation(request: dict) -> FlextResult[dict]:
 
 ## 🔧 Core Components
 
-### **1. FlextApi Service**
+### **1. FlextApiClient Service**
 
 **Location**: `src/flext_api/api.py`  
 **Responsibility**: Facade pattern for all library functionality
@@ -168,7 +168,7 @@ def service_operation(request: dict) -> FlextResult[dict]:
 
 | Aspect          | Current                         | FLEXT-Core Target               |
 | --------------- | ------------------------------- | ------------------------------- |
-| **Inheritance** | 🔴 Doesn't inherit FlextService | ✅ class FlextApi(FlextService) |
+| **Inheritance** | 🔴 Doesn't inherit FlextService | ✅ class FlextApiClient(FlextService) |
 | **Lifecycle**   | 🟡 async start/stop             | ✅ sync start/stop/health_check |
 | **Logging**     | 🔴 direct structlog             | ✅ FlextLogger(**name**)        |
 | **Container**   | 🔴 Manual DI                    | ✅ FlextContainer.get_global()  |
@@ -178,7 +178,7 @@ def service_operation(request: dict) -> FlextResult[dict]:
 ```python
 from flext_core import FlextService, FlextResult, FlextLogger, get_flext_container
 
-class FlextApi(FlextService):
+class FlextApiClient(FlextService):
     """✅ Service compliant with flext-core patterns."""
 
     def __init__(self) -> None:
@@ -192,7 +192,7 @@ class FlextApi(FlextService):
         try:
             # Initialize components
             self._builder = self.container.get_typed("api_builder", FlextApiBuilder)
-            self.logger.info("FlextApi service started")
+            self.logger.info("FlextApiClient service started")
             return FlextResult[None].ok(None)
         except Exception as e:
             self.logger.exception("Service start failed")
@@ -207,7 +207,7 @@ class FlextApi(FlextService):
             if self._client:
                 # Cleanup client resources
                 pass
-            self.logger.info("FlextApi service stopped")
+            self.logger.info("FlextApiClient service stopped")
             return FlextResult[None].ok(None)
         except Exception as e:
             return FlextResult[None].fail(
@@ -218,7 +218,7 @@ class FlextApi(FlextService):
     def health_check(self) -> FlextResult[FlextTypes.Core.Dict]:
         """✅ Health check returning FlextResult."""
         health_data = {
-            "service": "FlextApi",
+            "service": "FlextApiClient",
             "status": "healthy",
             "client_configured": self._client is not None,
             "builder_available": self._builder is not None
@@ -743,7 +743,7 @@ class TestFlextResultPatterns:
         health_data = health_result.data
         assert isinstance(health_data, dict)
         assert "service" in health_data
-        assert health_data["service"] == "FlextApi"
+        assert health_data["service"] == "FlextApiClient"
 
     def test_failure_result_patterns(self):
         """Test failure path com FlextResult."""
@@ -816,7 +816,7 @@ class TestFlextResultPatterns:
    - Adicionar error context com metadata
 
 3. **Service Architecture Compliance**
-   - Fazer FlextApi herdar de FlextService
+   - Fazer FlextApiClient herdar de FlextService
    - Converter métodos async para sync
    - Implementar lifecycle methods corretamente
 
@@ -850,7 +850,7 @@ class TestFlextResultPatterns:
 
 | Component            | Current | Target | Gap | Priority |
 | -------------------- | ------- | ------ | --- | -------- |
-| **FlextApi Service** | 40%     | 95%    | 55% | CRITICAL |
+| **FlextApiClient Service** | 40%     | 95%    | 55% | CRITICAL |
 | **HTTP Client**      | 60%     | 95%    | 35% | HIGH     |
 | **Builders**         | 70%     | 95%    | 25% | MEDIUM   |
 | **Configuration**    | 75%     | 95%    | 20% | MEDIUM   |

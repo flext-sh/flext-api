@@ -20,8 +20,7 @@ import asyncio
 from flext_core import FlextTypes
 
 from flext_api import (
-    FlextApi,
-    FlextApiApp,
+    FlextApiClient,
     FlextApiConfig,
     FlextApiModels,
     FlextApiStorage,
@@ -33,8 +32,8 @@ def example_api_creation() -> None:
     """Demonstrate API instance creation using refactored classes."""
     print("=== API Creation Example ===")
 
-    # Create API instance using the refactored FlextApi class
-    api = FlextApi()
+    # Create API instance using the refactored FlextApiClient class
+    api = FlextApiClient()
     print(f"✅ API created: {api.service_name} v{api.service_version}")
 
     # Create client configuration using the refactored nested class
@@ -283,14 +282,14 @@ def example_app_creation() -> None:
     """Demonstrate FastAPI app creation using refactored classes."""
     print("\n=== App Creation Example ===")
 
-    # Create app using the refactored FlextApiApp class methods
-    app = FlextApiApp.create_flext_api_app()
+    # Create app using the refactored FlextApiClient class methods
+    app = FlextApiClient.create_flext_api_app()
 
     print(f"✅ App created: {type(app).__name__}")
     print("✅ App includes CORS, error handlers, and middleware")
 
     # Create app with settings
-    app_with_settings = FlextApiApp.create_flext_api_app_with_settings()
+    app_with_settings = FlextApiClient.create_flext_api_app_with_settings()
 
     print(f"✅ App with settings created: {type(app_with_settings).__name__}")
     print("✅ App configured with:")

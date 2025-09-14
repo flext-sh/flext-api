@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.storage import FlextApiStorage
+from flext_api import FlextApiStorage
 
 
 class TestFlextApiStorageFocused:
@@ -114,6 +114,7 @@ class TestFlextApiStorageFocused:
         result = storage.delete("nonexistent_key")
 
         assert not result.is_success
+        assert result.error is not None
         assert "Key not found" in result.error
 
     def test_storage_exists_operation(self) -> None:

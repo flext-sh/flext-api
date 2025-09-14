@@ -12,8 +12,7 @@ import httpx
 import pytest
 from flext_core import FlextResult
 
-from flext_api.client import FlextApiClient
-from flext_api.models import FlextApiModels
+from flext_api import FlextApiClient, FlextApiModels
 
 
 class TestFlextApiClientFocused:
@@ -119,7 +118,7 @@ class TestFlextApiClientFocused:
         client = FlextApiClient()
 
         # Test type conversion scenarios
-        kwargs = {
+        kwargs: dict[str, object] = {
             "timeout": 30,  # int to float
             "auth_token": None,  # None value allowed
             "headers": "not_a_dict",  # Invalid type should be skipped
@@ -262,6 +261,7 @@ class TestFlextApiClientFocused:
             result = await client.start()
 
             assert result.is_failure
+            assert result.error is not None
             assert "Failed to start HTTP client" in result.error
 
     @pytest.mark.asyncio
@@ -288,6 +288,7 @@ class TestFlextApiClientFocused:
             result = await client.stop()
 
             assert result.is_failure
+            assert result.error is not None
             assert "Failed to stop HTTP client" in result.error
 
     def test_health_check_stopped(self) -> None:
@@ -340,6 +341,7 @@ class TestFlextApiClientFocused:
         result = client.configure(invalid_config)
 
         assert result.is_failure
+        assert result.error is not None
         assert "Configuration failed" in result.error
 
     def test_get_config_method(self) -> None:
@@ -507,6 +509,7 @@ class TestFlextApiClientFocused:
             result = await client.close()
 
             assert result.is_failure
+            assert result.error is not None
             assert "Failed to close HTTP client" in result.error
 
     def test_create_factory_with_dict(self) -> None:
@@ -546,6 +549,7 @@ class TestFlextApiClientFocused:
         result = FlextApiClient.create(invalid_config)
 
         assert result.is_failure
+        assert result.error is not None
         assert "Failed to create client" in result.error
 
     def test_build_url_with_full_url(self) -> None:
@@ -636,6 +640,7 @@ class TestFlextApiClientFocused:
             result = await client._request("GET", "/get")
 
             assert result.is_failure
+            assert result.error is not None
             assert "HTTP request failed" in result.error
 
     @pytest.mark.asyncio
@@ -649,6 +654,7 @@ class TestFlextApiClientFocused:
             result = await client._request("GET", "/get")
 
             assert result.is_failure
+            assert result.error is not None
             assert "Unexpected error" in result.error
 
     @pytest.mark.asyncio

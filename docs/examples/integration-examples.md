@@ -265,7 +265,7 @@ class AuthToken:
         return max(0, int(self.expires_at - time.time()))
 
 class AuthenticatedApiClient:
-    """API client with comprehensive authentication integration."""
+    """API client with authentication integration."""
 
     def __init__(self, auth_service_url: str = "http://localhost:8082"):
         self.auth_service_url = auth_service_url
@@ -990,7 +990,7 @@ Complete observability integration with metrics, tracing, and health monitoring.
 #!/usr/bin/env python3
 """
 Observability Integration Example
-Demonstrates comprehensive monitoring, metrics, and tracing integration.
+Demonstrates monitoring, metrics, and tracing integration.
 """
 
 import time

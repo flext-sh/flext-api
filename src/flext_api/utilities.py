@@ -31,6 +31,9 @@ class FlextApiUtilities:
     Conversions = FlextUtilities.Conversions
     TypeGuards = FlextUtilities.TypeGuards
 
+    # URL validation - using flext-core validation patterns
+    UrlValidator = FlextValidations.Validators
+
     # =============================================================================
     # HTTP-SPECIFIC BUILDER CLASSES - Using flext-core foundation
     # =============================================================================

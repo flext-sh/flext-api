@@ -11,7 +11,7 @@ FLEXT API implements a **layered module architecture** following Clean Architect
 ### **Core Design Principles**
 
 1. **HTTP Foundation**: Unified HTTP interface for all ecosystem projects
-2. **Composition over Inheritance**: FlextApi class composes functionality from builders and clients
+2. **Composition over Inheritance**: FlextApiClient class composes functionality from builders and clients
 3. **Type-Safe Everything**: Comprehensive type hints with MyPy strict compliance
 4. **Railway-Oriented**: FlextResult[T] threading through all HTTP operations
 5. **Plugin Architecture**: Extensible HTTP client with caching, retry, and circuit breaker patterns
@@ -27,7 +27,7 @@ FLEXT API implements a **layered module architecture** following Clean Architect
 # Main entry point - used by all ecosystem projects
 src/flext_api/
 ├── __init__.py              # 🎯 Public API gateway for HTTP foundation
-├── api.py                   # 🎯 FlextApi main service class
+├── api.py                   # 🎯 FlextApiClient main service class
 ├── main.py                  # 🎯 FastAPI application entry point
 └── py.typed                 # 🎯 Type information marker
 ```
@@ -145,11 +145,11 @@ class HttpUrl(FlextModels.Value):
 
 ### **Public API Naming (FlextApiXxx)**
 
-All public exports use the `FlextApi` prefix for clear namespace separation:
+All public exports use the `FlextApiClient` prefix for clear namespace separation:
 
 ```python
 # Core HTTP patterns
-FlextApi                     # Main HTTP service facade
+FlextApiClient                     # Main HTTP service facade
 FlextApiClient              # HTTP client with plugins
 FlextApiBuilder             # Query/response builder facade
 FlextApiQueryBuilder        # Query construction builder
@@ -182,7 +182,7 @@ FlextApiClientProtocol      # HTTP protocol enum
 
 ```python
 # Module names are HTTP-focused and descriptive
-api.py                      # Contains FlextApi main service
+api.py                      # Contains FlextApiClient main service
 client.py                   # Contains FlextApiClient and HTTP client patterns
 builder.py                  # Contains FlextApiBuilder and construction patterns
 config.py                   # Contains FlextApiConfig and configuration
@@ -224,7 +224,7 @@ from flext_api import create_flext_api, FlextApiClient, FlextApiBuilder
 from flext_core import FlextResult, FlextLogger
 
 # Use patterns directly for HTTP operations
-def setup_http_service() -> FlextResult[FlextApi]:
+def setup_http_service() -> FlextResult[FlextApiClient]:
     api = create_flext_api()
     return FlextResult[None].ok(api)
 ```
@@ -307,7 +307,7 @@ client = FlextApiClient(config)  # Should return FlextResult
 │     FastAPI Application Layer       │  # main.py, app.py
 │    (Web Framework, HTTP Endpoints)  │
 ├─────────────────────────────────────┤
-│       HTTP Service Layer            │  # api.py (FlextApi facade)
+│       HTTP Service Layer            │  # api.py (FlextApiClient facade)
 │   (HTTP Business Logic, Validation) │
 ├─────────────────────────────────────┤
 │         HTTP Domain Layer           │  # domain/entities.py, domain/value_objects.py
@@ -928,13 +928,13 @@ class TestHttpFlextResultPatterns:
         """Test successful HTTP API creation"""
         api_result = create_flext_api()
 
-        assert isinstance(api_result, FlextApi)
+        assert isinstance(api_result, FlextApiClient)
         # API creation always succeeds, but operations may fail
 
         health_result = api_result.health_check()
         assert isinstance(health_result, FlextResult)
         assert health_result.success
-        assert health_result.data["service"] == "FlextApi"
+        assert health_result.data["service"] == "FlextApiClient"
 
     def test_client_creation_success(self):
         """Test successful HTTP client creation"""
@@ -1362,7 +1362,7 @@ class LdapSearchRequest(FlextModels.Entity):
 
 ### **HTTP Module Creation Checklist**
 
-- [ ] **Naming**: Uses HTTP-focused, descriptive name following FlextApi conventions
+- [ ] **Naming**: Uses HTTP-focused, descriptive name following FlextApiClient conventions
 - [ ] **Location**: Placed in appropriate HTTP architectural layer
 - [ ] **Imports**: Only imports from same or lower layers, flext-core, and HTTP dependencies
 - [ ] **Types**: Complete HTTP type annotations with MyPy compliance
