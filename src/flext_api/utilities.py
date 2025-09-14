@@ -271,13 +271,13 @@ class FlextApiUtilities:
             try:
                 if isinstance(data, dict):
                     return FlextResult[dict[str, object]].ok(data)
-                if hasattr(data, "model_dump"):
+                if hasattr(data, "model_dump") and callable(getattr(data, "model_dump")):
                     # Type-safe call to model_dump
-                    model_data = data.model_dump()
+                    model_data = getattr(data, "model_dump")()
                     return FlextResult[dict[str, object]].ok(model_data)
-                if hasattr(data, "dict"):
+                if hasattr(data, "dict") and callable(getattr(data, "dict")):
                     # Type-safe call to dict method
-                    dict_data = data.dict()
+                    dict_data = getattr(data, "dict")()
                     return FlextResult[dict[str, object]].ok(dict_data)
                 return FlextResult[dict[str, object]].fail(
                     f"Cannot convert {type(data)} to dict"
@@ -385,6 +385,22 @@ class FlextApiUtilities:
             batch = items[i : i + batch_size]
             batches.append(batch)
         return batches
+
+    @staticmethod
+    def safe_int_conversion(value: str) -> int | None:
+        """Safely convert string to integer."""
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return None
+
+    @staticmethod
+    def safe_int_conversion_with_default(value: str, default: int = 0) -> int:
+        """Safely convert string to integer with default value."""
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return default
 
     # Port constants for network validation
     MIN_PORT: int = 1

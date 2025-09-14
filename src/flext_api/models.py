@@ -229,7 +229,7 @@ class FlextApiModels:
 
         model_config = STANDARD_MODEL_CONFIG
 
-        id: str
+        id: str = Field(default_factory=lambda: "")
         status_code: int
         body: str | dict[str, object] | None = None
         headers: dict[str, str] = Field(default_factory=dict)

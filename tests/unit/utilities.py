@@ -9,9 +9,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+import time
+from datetime import datetime
 
-from flext_core import FlextModels, FlextResult
+from flext_core import FlextModels
 from flext_tests import FlextTestsMatchers
 
 from flext_api import FlextApiUtilities
@@ -176,7 +177,7 @@ class TestFlextApiUtilitiesReal:
             config_type="http_request",
             url="https://api.example.com",
             method="GET",
-            timeout=30.0,
+            timeout=30,
         )
 
         result = FlextApiUtilities.validate_config(valid_config)
@@ -185,13 +186,13 @@ class TestFlextApiUtilitiesReal:
 
     def test_performance_tracking(self) -> None:
         """Test real performance tracking."""
-        # Start tracking with current time
-        start_time = datetime.now(UTC)
+        # Start tracking with current time (as float timestamp)
+        start_time = time.time()
         elapsed = FlextApiUtilities.get_elapsed_time(start_time)
         assert isinstance(elapsed, float)
 
         # Get performance metrics
-        metrics = FlextApiUtilities.get_performance_metrics()
+        metrics = FlextApiUtilities.get_performance_metrics(start_time)
         assert isinstance(metrics, dict)
 
     def test_http_validator_real(self) -> None:
@@ -229,14 +230,13 @@ class TestFlextApiUtilitiesReal:
         # Test if batch_process method exists
         assert hasattr(FlextApiUtilities, "batch_process")
 
-        def process_item(item: int) -> FlextResult[int]:
-            return FlextResult[int].ok(item * 2)
-
         items = [1, 2, 3, 4, 5]
 
-        # Try to call the method
-        results = FlextApiUtilities.batch_process(items, process_item)
+        # Try to call the method (batch_process returns list of batches, not processed items)
+        results = FlextApiUtilities.batch_process(items, batch_size=2)
         assert results is not None
+        assert isinstance(results, list)
+        assert len(results) == 3  # [1,2], [3,4], [5]
 
     def test_constants_integration(self) -> None:
         """Test real constants are available."""
