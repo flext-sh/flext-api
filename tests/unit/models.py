@@ -8,8 +8,6 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
-from flext_tests import FlextTestsDomains
-
 from flext_api import FlextApiModels
 
 
@@ -77,38 +75,38 @@ class TestFlextApiModelsReal:
         assert response_500.status_code == 500
         assert response_500.is_success is False
 
-    def test_api_response_class_exists(self) -> None:
-        """Test ApiResponse class exists and can be referenced."""
+    def test_builder_class_exists(self) -> None:
+        """Test Builder class exists and can be referenced."""
         # Just test that the class exists and can be accessed
-        assert FlextApiModels.ApiResponse is not None
-        assert hasattr(FlextApiModels, "ApiResponse")
+        assert FlextApiModels.Builder is not None
+        assert hasattr(FlextApiModels, "Builder")
 
     def test_response_builder_real(self) -> None:
-        """Test ResponseBuilder with real functionality."""
-        builder = FlextApiModels.ResponseBuilder()
+        """Test Builder with real functionality."""
+        builder = FlextApiModels.Builder()
 
         # Test that builder exists and can be instantiated
         assert builder is not None
-        assert isinstance(builder, FlextApiModels.ResponseBuilder)
+        assert isinstance(builder, FlextApiModels.Builder)
 
-    def test_query_builder_real(self) -> None:
-        """Test QueryBuilder with real functionality."""
-        builder = FlextApiModels.QueryBuilder()
+    def test_http_query_real(self) -> None:
+        """Test HttpQuery with real functionality."""
+        query = FlextApiModels.HttpQuery()
 
-        # Test that builder exists and can be instantiated
-        assert builder is not None
-        assert isinstance(builder, FlextApiModels.QueryBuilder)
+        # Test that query exists and can be instantiated
+        assert query is not None
+        assert isinstance(query, FlextApiModels.HttpQuery)
 
     def test_model_validation_with_factories(self) -> None:
         """Test model validation using factory data."""
-        # Use factory to create valid config data
-        config_data = FlextTestsDomains.create_configuration(
-            base_url="https://httpbin.org", default_timeout=45.0
+        # Create ClientConfig directly with valid data
+        config_data = FlextApiModels.ClientConfig(
+            base_url="https://httpbin.org", timeout=45.0
         )
 
         # Verify config works correctly
         assert config_data.base_url == "https://httpbin.org"
-        assert config_data.default_timeout == 45.0
+        assert config_data.timeout == 45.0
 
         # Test URL validation
         parsed = urlparse(config_data.base_url)
@@ -126,8 +124,7 @@ class TestFlextApiModelsReal:
 
     def test_client_config_with_factory(self) -> None:
         """Test client config creation using factory."""
-        # Use FlextTestsDomains for client test data
-        FlextTestsDomains.create_service()
+        # Create client config directly
         client = FlextApiModels.ClientConfig(
             base_url="https://test.example.com", timeout=60.0, max_retries=2
         )

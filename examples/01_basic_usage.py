@@ -72,7 +72,11 @@ def example_storage_usage() -> None:
 
     # Set data using FlextResult pattern
     # CacheValue é tuple[object, FlextTypes.Core.Headers, int]
-    cache_value = ({"message": "Hello FlextAPI!"}, {}, 200)
+    cache_value: tuple[object, dict[str, str], int] = (
+        {"message": "Hello FlextAPI!"},
+        {},
+        200,
+    )
     set_result = storage.set("example_key", cache_value, ttl=300)
 
     if set_result.success:

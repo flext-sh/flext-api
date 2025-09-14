@@ -6,6 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import json
+import time
+
 from flext_core import (
     FlextResult,
     FlextTypeAdapters,
@@ -37,6 +40,37 @@ class FlextApiUtilities:
     # =============================================================================
     # HTTP-SPECIFIC BUILDER CLASSES - Using flext-core foundation
     # =============================================================================
+
+    # Simple generator forwards for test compatibility
+    @classmethod
+    def generate_uuid(cls) -> str:
+        """Generate a UUID string via flext-core Generators."""
+        return FlextUtilities.Generators.generate_uuid()
+
+    @classmethod
+    def generate_id(cls) -> str:
+        """Generate a short ID via flext-core Generators."""
+        return FlextUtilities.Generators.generate_id()
+
+    @classmethod
+    def generate_entity_id(cls) -> str:
+        """Generate an entity ID via flext-core Generators."""
+        return FlextUtilities.Generators.generate_entity_id()
+
+    @classmethod
+    def generate_correlation_id(cls) -> str:
+        """Generate a correlation ID via flext-core Generators."""
+        return FlextUtilities.Generators.generate_correlation_id()
+
+    @classmethod
+    def generate_timestamp(cls) -> float:
+        """Generate a UNIX timestamp via standard time module."""
+        return time.time()
+
+    @classmethod
+    def generate_iso_timestamp(cls) -> str:
+        """Generate an ISO 8601 timestamp via flext-core Generators."""
+        return FlextUtilities.Generators.generate_iso_timestamp()
 
     class ResponseBuilder:
         """HTTP response builder using flext-core patterns."""
@@ -209,6 +243,152 @@ class FlextApiUtilities:
             return FlextResult[FlextTypes.Core.Dict].ok(result_dict)
         except Exception as e:
             return FlextResult[FlextTypes.Core.Dict].fail(str(e))
+
+    class DataTransformer:
+        """Data transformation utilities using flext-core patterns."""
+
+        @staticmethod
+        def to_json(data: object) -> FlextResult[str]:
+            """Convert data to JSON string."""
+            try:
+                json_str = json.dumps(data, default=str)
+                return FlextResult[str].ok(json_str)
+            except Exception as e:
+                return FlextResult[str].fail(f"JSON conversion failed: {e}")
+
+        @staticmethod
+        def from_json(json_str: str) -> FlextResult[object]:
+            """Parse JSON string to object."""
+            try:
+                data = json.loads(json_str)
+                return FlextResult[object].ok(data)
+            except Exception as e:
+                return FlextResult[object].fail(f"JSON parsing failed: {e}")
+
+        @staticmethod
+        def to_dict(data: object) -> FlextResult[dict[str, object]]:
+            """Convert data to dictionary."""
+            try:
+                if isinstance(data, dict):
+                    return FlextResult[dict[str, object]].ok(data)
+                if hasattr(data, "model_dump"):
+                    # Type-safe call to model_dump
+                    model_data = data.model_dump()
+                    return FlextResult[dict[str, object]].ok(model_data)
+                if hasattr(data, "dict"):
+                    # Type-safe call to dict method
+                    dict_data = data.dict()
+                    return FlextResult[dict[str, object]].ok(dict_data)
+                return FlextResult[dict[str, object]].fail(
+                    f"Cannot convert {type(data)} to dict"
+                )
+            except Exception as e:
+                return FlextResult[dict[str, object]].fail(
+                    f"Dict conversion failed: {e}"
+                )
+
+    # =============================================================================
+    # Missing Utility Methods - Adding for API compatibility
+    # =============================================================================
+
+    @staticmethod
+    def safe_bool_conversion(value: object) -> bool:
+        """Safely convert value to boolean."""
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.lower() in ("true", "1", "yes", "on")
+        return bool(value)
+
+    @staticmethod
+    def safe_json_parse(json_str: str) -> FlextResult[dict[str, object]]:
+        """Safely parse JSON string."""
+        try:
+            result = json.loads(json_str)
+            if isinstance(result, dict):
+                return FlextResult[dict[str, object]].ok(result)
+            return FlextResult[dict[str, object]].fail(
+                "JSON result is not a dictionary"
+            )
+        except json.JSONDecodeError as e:
+            return FlextResult[dict[str, object]].fail(f"JSON parse error: {e}")
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"Unexpected error: {e}")
+
+    @staticmethod
+    def safe_json_stringify(data: object) -> FlextResult[str]:
+        """Safely stringify object to JSON."""
+        try:
+            result = json.dumps(data, default=str, ensure_ascii=False)
+            return FlextResult[str].ok(result)
+        except Exception as e:
+            return FlextResult[str].fail(f"JSON stringify error: {e}")
+
+    @staticmethod
+    def is_non_empty_string(value: object) -> bool:
+        """Check if value is a non-empty string."""
+        return isinstance(value, str) and len(value.strip()) > 0
+
+    @staticmethod
+    def clean_text(text: str) -> str:
+        """Clean text by removing extra whitespace."""
+        return " ".join(text.split()) if text else ""
+
+    @staticmethod
+    def truncate(text: str, max_length: int = 100) -> str:
+        """Truncate text to maximum length."""
+        if len(text) <= max_length:
+            return text
+        return text[: max_length - 3] + "..."
+
+    @staticmethod
+    def format_duration(seconds: float) -> str:
+        """Format duration in seconds to human readable string."""
+        seconds_per_minute = 60
+
+        if seconds < 1:
+            return f"{seconds * 1000:.1f}ms"
+        if seconds < seconds_per_minute:
+            return f"{seconds:.1f}s"
+        minutes = int(seconds // seconds_per_minute)
+        remaining_seconds = seconds % seconds_per_minute
+        return f"{minutes}m {remaining_seconds:.1f}s"
+
+    @staticmethod
+    def get_elapsed_time(start_time: float, current_time: float | None = None) -> float:
+        """Get elapsed time between two timestamps."""
+        if current_time is None:
+            current_time = time.time()
+        return current_time - start_time
+
+    @staticmethod
+    def get_performance_metrics(start_time: float) -> dict[str, object]:
+        """Get performance metrics for a timed operation."""
+        current_time = time.time()
+        elapsed = current_time - start_time
+        return {
+            "elapsed_time": elapsed,
+            "elapsed_ms": elapsed * 1000,
+            "start_time": start_time,
+            "end_time": current_time,
+            "formatted_duration": FlextApiUtilities.format_duration(elapsed),
+        }
+
+    @staticmethod
+    def batch_process(items: list[object], batch_size: int = 100) -> list[list[object]]:
+        """Process items in batches."""
+        if batch_size <= 0:
+            batch_size = 100
+
+        batches = []
+        for i in range(0, len(items), batch_size):
+            batch = items[i : i + batch_size]
+            batches.append(batch)
+        return batches
+
+    # Port constants for network validation
+    MIN_PORT: int = 1
+    MAX_PORT: int = 65535
 
 
 __all__ = [

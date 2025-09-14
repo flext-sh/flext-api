@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from collections.abc import Mapping
 
 from flext_api import FlextApiClient, FlextApiConfig
 
@@ -65,22 +66,25 @@ async def main() -> None:
     print("-" * 45)
 
     # Create configuration with specific parameter overrides
-    production_config_result = FlextApiConfig.create_with_overrides(
+    prod_config_result = FlextApiConfig.create_with_overrides(
         api_host="prod-api.example.com",
         api_port=443,
         workers=16,
         api_debug=False,
-        environment="production",
     )
 
-    if production_config_result.is_success:
-        prod_config = production_config_result.value
-        print("Production config created:")
-        print(f"  API Host: {prod_config.api_host}")
-        print(f"  API Port: {prod_config.api_port}")
-        print(f"  Workers: {prod_config.workers}")
-        print(f"  Debug Mode: {prod_config.api_debug}")
-        print(f"  Environment: {prod_config.environment}")
+    if prod_config_result.success:
+        prod_config = prod_config_result.value
+    else:
+        print(f"❌ Configuration creation failed: {prod_config_result.error}")
+        return
+
+    print("Production config created:")
+    print(f"  API Host: {prod_config.api_host}")
+    print(f"  API Port: {prod_config.api_port}")
+    print(f"  Workers: {prod_config.workers}")
+    print(f"  Debug Mode: {prod_config.api_debug}")
+    print("  Environment: production")
 
     # Create development configuration with different parameters
     dev_config_result = FlextApiConfig.create_with_overrides(
@@ -88,17 +92,22 @@ async def main() -> None:
         api_port=8000,
         workers=2,
         api_debug=True,
-        environment="development",
     )
 
-    if dev_config_result.is_success:
+    if dev_config_result.success:
         dev_config = dev_config_result.value
-        print("\nDevelopment config created:")
-        print(f"  API Host: {dev_config.api_host}")
-        print(f"  API Port: {dev_config.api_port}")
-        print(f"  Workers: {dev_config.workers}")
-        print(f"  Debug Mode: {dev_config.api_debug}")
-        print(f"  Environment: {dev_config.environment}")
+    else:
+        print(
+            f"❌ Development configuration creation failed: {dev_config_result.error}"
+        )
+        return
+
+    print("\nDevelopment config created:")
+    print(f"  API Host: {dev_config.api_host}")
+    print(f"  API Port: {dev_config.api_port}")
+    print(f"  Workers: {dev_config.workers}")
+    print(f"  Debug Mode: {dev_config.api_debug}")
+    print("  Environment: development")
 
     # =========================================================================
     # 4. USING CONFIG IN SERVICES - FlextConfig as source of truth
@@ -112,13 +121,12 @@ async def main() -> None:
     print(f"Client 1 (global config): {client1.base_url}")
 
     # Method 2: Use specific configuration
-    if production_config_result.is_success:
-        client2 = FlextApiClient(config=production_config_result.value)
-        print(f"Client 2 (production config): {client2.base_url}")
+    client2 = FlextApiClient(config=prod_config)
+    print(f"Client 2 (production config): {client2.base_url}")
 
     # Method 3: Use configuration with additional overrides
     client3 = FlextApiClient(
-        config=dev_config_result.value if dev_config_result.is_success else None,
+        config=dev_config,
         timeout=60.0,  # Override timeout
         max_retries=5,  # Override retries
     )
@@ -133,24 +141,22 @@ async def main() -> None:
     print("-" * 35)
 
     # Validate production configuration
-    if production_config_result.is_success:
-        validation_result = production_config_result.value.validate_business_rules()
-        if validation_result.is_success:
-            print("✅ Production configuration is valid")
-        else:
-            print(
-                f"❌ Production configuration validation failed: {validation_result.error}"
-            )
+    validation_result = prod_config.validate_business_rules()
+    if validation_result.is_success:
+        print("✅ Production configuration is valid")
+    else:
+        print(
+            f"❌ Production configuration validation failed: {validation_result.error}"
+        )
 
     # Validate development configuration
-    if dev_config_result.is_success:
-        validation_result = dev_config_result.value.validate_business_rules()
-        if validation_result.is_success:
-            print("✅ Development configuration is valid")
-        else:
-            print(
-                f"❌ Development configuration validation failed: {validation_result.error}"
-            )
+    validation_result = dev_config.validate_business_rules()
+    if validation_result.is_success:
+        print("✅ Development configuration is valid")
+    else:
+        print(
+            f"❌ Development configuration validation failed: {validation_result.error}"
+        )
 
     # =========================================================================
     # 6. CONFIGURATION EXPORT AND SERIALIZATION
@@ -158,29 +164,28 @@ async def main() -> None:
     print("\n📤 6. Configuration Export")
     print("-" * 30)
 
-    if production_config_result.is_success:
-        prod_config = production_config_result.value
+    # Export server configuration
+    server_config_result = prod_config.get_server_config()
+    if server_config_result.is_success:
+        print("Server Configuration:")
+        for key, value in server_config_result.value.items():
+            print(f"  {key}: {value}")
 
-        # Export server configuration
-        server_config_result = prod_config.get_server_config()
-        if server_config_result.is_success:
-            print("Server Configuration:")
-            for key, value in server_config_result.value.items():
-                print(f"  {key}: {value}")
+    # Export client configuration
+    client_config_result = prod_config.get_client_config()
+    if client_config_result.is_success:
+        print("\nClient Configuration:")
+        client_config_dict: Mapping[str, object] = client_config_result.value
+        for key, value in client_config_dict.items():
+            print(f"  {key}: {value}")
 
-        # Export client configuration
-        client_config_result = prod_config.get_client_config()
-        if client_config_result.is_success:
-            print("\nClient Configuration:")
-            for key, value in client_config_result.value.items():
-                print(f"  {key}: {value}")
-
-        # Export CORS configuration
-        cors_config_result = prod_config.get_cors_config()
-        if cors_config_result.is_success:
-            print("\nCORS Configuration:")
-            for key, value in cors_config_result.value.items():
-                print(f"  {key}: {value}")
+    # Export CORS configuration
+    cors_config_result = prod_config.get_cors_config()
+    if cors_config_result.is_success:
+        print("\nCORS Configuration:")
+        cors_config_dict: Mapping[str, object] = cors_config_result.value
+        for key, value in cors_config_dict.items():
+            print(f"  {key}: {value}")
 
     # =========================================================================
     # 7. GLOBAL INSTANCE MANAGEMENT
@@ -189,14 +194,13 @@ async def main() -> None:
     print("-" * 40)
 
     # Set a specific configuration as global
-    if dev_config_result.is_success:
-        FlextApiConfig.set_global_instance(dev_config_result.value)
-        print("✅ Development configuration set as global instance")
+    FlextApiConfig.set_global_instance(dev_config)
+    print("✅ Development configuration set as global instance")
 
-        # Verify global instance
-        global_config = FlextApiConfig.get_global_instance()
-        print(f"Global instance API Host: {global_config.api_host}")
-        print(f"Global instance Debug Mode: {global_config.api_debug}")
+    # Verify global instance
+    global_config = FlextApiConfig.get_global_instance()
+    print(f"Global instance API Host: {global_config.api_host}")
+    print(f"Global instance Debug Mode: {global_config.api_debug}")
 
     # Clear global instance
     FlextApiConfig.clear_global_instance()

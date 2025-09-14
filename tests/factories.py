@@ -62,10 +62,10 @@ class FlextApiFactories:
 
         # Build with type-safe defaults
         defaults = {
-            "host": str(config_data.get("host", "127.0.0.1")),
-            "port": cast("int", config_data.get("port", 8080)),
-            "base_url": str(config_data.get("base_url", "https://httpbin.org")),
-            "default_timeout": cast("float", config_data.get("default_timeout", 30.0)),
+            "api_host": str(config_data.get("host", "127.0.0.1")),
+            "api_port": cast("int", config_data.get("port", 8000)),
+            "api_base_url": str(config_data.get("base_url", "https://httpbin.org")),
+            "api_timeout": cast("float", config_data.get("default_timeout", 30.0)),
             "max_retries": cast("int", config_data.get("max_retries", 3)),
         }
 
@@ -75,10 +75,10 @@ class FlextApiFactories:
                 defaults[key] = value
 
         return FlextApiConfig(
-            host=cast("str", defaults["host"]),
-            port=cast("int", defaults["port"]),
-            base_url=cast("str", defaults["base_url"]),
-            default_timeout=cast("float", defaults["default_timeout"]),
+            api_host=cast("str", defaults["api_host"]),
+            api_port=cast("int", defaults["api_port"]),
+            api_base_url=cast("str", defaults["api_base_url"]),
+            api_timeout=cast("float", defaults["api_timeout"]),
             max_retries=cast("int", defaults["max_retries"]),
         )
 

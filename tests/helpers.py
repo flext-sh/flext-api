@@ -18,7 +18,7 @@ from typing import cast
 
 import pytest
 from flext_core import FlextResult, FlextTypes, T
-from flext_tests import FlextTestsDomains, FlextTestsMatchers, FlextTestsUtilities
+from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 
 def create_test_storage_config(**overrides: object) -> FlextTypes.Core.Dict:
@@ -40,9 +40,9 @@ def assert_flext_result_success(
     result: FlextResult[T], expected_value: T | None = None
 ) -> None:
     """Assert FlextResult success using FlextTestsMatchers - ABSOLUTE."""
-    # Use FlextTestsMatchers directly - NO local implementation
-    result_obj: FlextResult[object] = result
-    FlextTestsMatchers.assert_result_success(result_obj)
+    # Direct assertion to avoid type variance issues in matchers
+    if not result.success:
+        pytest.fail(f"Expected success but got error: {result.error}")
     if expected_value is not None and result.value != expected_value:
         pytest.fail(f"Expected value {expected_value} but got {result.value}")
 
@@ -51,9 +51,9 @@ def assert_flext_result_failure[T](
     result: FlextResult[T], expected_error: str | None = None
 ) -> None:
     """Assert FlextResult failure using FlextTestsMatchers - ABSOLUTE."""
-    # Use FlextTestsMatchers directly - NO local implementation
-    result_obj: FlextResult[object] = result
-    FlextTestsMatchers.assert_result_failure(result_obj)
+    # Direct assertion to avoid type variance issues in matchers
+    if result.success:
+        pytest.fail(f"Expected failure but got data: {result.value}")
     if expected_error is not None and expected_error not in str(result.error):
         pytest.fail(
             f"Expected error containing '{expected_error}' but got: {result.error}"

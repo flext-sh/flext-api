@@ -1,408 +1,595 @@
-# Configuration Management
+# Configuration Guide - flext-api
 
-**FLEXT API configuration patterns and environment management**
+**Environment and Settings Management for FLEXT HTTP Foundation**
 
-> **Navigation**: [FLEXT Hub](../../docs/NAVIGATION.md) > [flext-api](../README.md) > Configuration
+This guide covers all configuration options, environment variables, and settings management for flext-api HTTP client and FastAPI applications.
 
 ---
 
 ## 🎯 Configuration Overview
 
-FLEXT API uses **FlextConfig** patterns from flext-core for type-safe configuration management across all HTTP client operations, FastAPI applications, and plugin systems.
+flext-api provides flexible configuration management through:
 
-### **Configuration Sources**
-
-1. **Environment Variables** - Runtime configuration (development/production)
-2. **YAML Configuration Files** - Complex structured settings
-3. **Python Settings Classes** - Type-safe configuration with validation
-4. **Plugin Configuration** - Extensible plugin-specific settings
+- **Environment Variables**: Standard environment-based configuration
+- **Configuration Classes**: Type-safe Pydantic configuration models
+- **Runtime Configuration**: Dynamic configuration updates
+- **FLEXT Integration**: Integration with flext-core configuration patterns
 
 ---
 
-## 🔧 Environment Variables
+## 🌍 Environment Variables
 
-### **Core Service Configuration**
+### **HTTP Client Configuration**
 
-```bash
-# HTTP Client Configuration
-FLEXT_API_CLIENT_TIMEOUT=30              # Default client timeout in seconds
-FLEXT_API_CLIENT_MAX_RETRIES=3          # Default retry attempts
-FLEXT_API_CLIENT_BASE_URL=""            # Default base URL (optional)
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `HTTP_BASE_URL` | string | `https://api.example.com` | Default base URL for HTTP requests |
+| `HTTP_TIMEOUT` | float | `30.0` | Request timeout in seconds |
+| `HTTP_MAX_RETRIES` | int | `3` | Maximum retry attempts (configured, not implemented) |
+| `HTTP_MAX_CONNECTIONS` | int | `100` | Maximum connections in pool |
+| `HTTP_KEEPALIVE_CONNECTIONS` | int | `20` | Keep-alive connections |
 
-# FastAPI Application Configuration
-FLEXT_API_HOST="0.0.0.0"               # Server bind address
-FLEXT_API_PORT=8000                    # Server port
-FLEXT_API_WORKERS=1                    # Number of worker processes
+### **Authentication Configuration**
 
-# Logging Configuration
-FLEXT_LOG_LEVEL="INFO"                 # Logging level (DEBUG, INFO, WARNING, ERROR)
-FLEXT_LOG_FORMAT="json"                # Log format (json, text)
-FLEXT_LOG_CORRELATION_ID=true          # Enable correlation ID tracking
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `HTTP_AUTH_TOKEN` | string | `null` | Bearer token for authentication |
+| `HTTP_API_KEY` | string | `null` | API key for authentication |
+| `HTTP_AUTH_HEADER` | string | `Authorization` | Authentication header name |
 
-# Plugin System Configuration
-FLEXT_API_PLUGINS_ENABLED=true         # Enable plugin system
-FLEXT_API_CACHING_TTL=300              # Default cache TTL in seconds
-FLEXT_API_RETRY_BACKOFF_FACTOR=2.0     # Exponential backoff multiplier
-```
+### **FastAPI Application Configuration**
 
-### **Integration Configuration**
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `FASTAPI_HOST` | string | `0.0.0.0` | Host address to bind |
+| `FASTAPI_PORT` | int | `8000` | Port number to bind |
+| `FASTAPI_WORKERS` | int | `1` | Number of worker processes |
+| `FASTAPI_RELOAD` | boolean | `false` | Enable auto-reload in development |
+| `FASTAPI_LOG_LEVEL` | string | `info` | Logging level |
 
-```bash
-# FLEXT-Core Integration
-FLEXT_CONTAINER_MODE="global"          # Use global DI container
-FLEXT_RESULT_STRICT_MODE=true          # Enforce FlextResult usage
+### **Security Configuration**
 
-# Observability Integration
-FLEXT_METRICS_ENABLED=true             # Enable metrics collection
-FLEXT_TRACING_ENABLED=true             # Enable distributed tracing
-FLEXT_HEALTH_CHECK_INTERVAL=30         # Health check frequency
-
-# Authentication Integration
-FLEXT_AUTH_ENABLED=false               # Enable authentication middleware
-FLEXT_AUTH_SERVICE_URL=""              # Authentication service endpoint
-```
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `HTTPS_ONLY` | boolean | `true` | Enforce HTTPS for all requests |
+| `SSL_VERIFY` | boolean | `true` | Verify SSL certificates |
+| `MAX_REQUEST_SIZE` | int | `10485760` | Maximum request size (10MB) |
 
 ---
 
 ## ⚙️ Configuration Classes
 
-### **HTTP Client Configuration**
+### **FlextApiConfig**
+
+Main configuration class for HTTP client settings.
 
 ```python
-from flext_api import FlextApiClientConfig
-from flext_core import FlextConfig
-from pydantic import Field
-from typing import Optional, Dict
+from flext_api.config import FlextApiConfig
 
-class FlextApiClientConfig(FlextConfig):
-    """HTTP client configuration with validation."""
+# Default configuration
+config = FlextApiConfig()
 
-    base_url: str = Field(..., description="Base URL for HTTP requests")
-    timeout: float = Field(default=30.0, gt=0, description="Request timeout in seconds")
-    max_retries: int = Field(default=3, ge=0, le=10, description="Maximum retry attempts")
-    headers: Dict[str, str] = Field(default_factory=dict, description="Default headers")
-
-    # Plugin configuration
-    enable_caching: bool = Field(default=True, description="Enable response caching")
-    cache_ttl: int = Field(default=300, gt=0, description="Cache TTL in seconds")
-
-    # SSL and security
-    verify_ssl: bool = Field(default=True, description="Verify SSL certificates")
-    ssl_context: Optional[object] = Field(default=None, description="Custom SSL context")
-
-    class Config:
-        env_prefix = "FLEXT_API_CLIENT_"
-        case_sensitive = False
+# Custom configuration
+config = FlextApiConfig(
+    base_url="https://api.enterprise.com",
+    timeout=60,
+    max_retries=5,
+    headers={
+        "User-Agent": "enterprise-service/1.0.0",
+        "Accept": "application/json"
+    }
+)
 ```
 
-### **FastAPI Application Configuration**
+**Available Properties:**
 
 ```python
-from flext_core import FlextConfig
-from pydantic import Field
-from typing import List, Optional
+class FlextApiConfig:
+    base_url: str = "https://api.example.com"
+    timeout: float = 30.0
+    max_retries: int = 3
+    headers: dict[str, str] = Field(default_factory=dict)
 
-class FlextApiAppConfig(FlextConfig):
-    """FastAPI application configuration."""
+    # Authentication
+    auth_token: str | None = None
+    api_key: str | None = None
 
-    # Server configuration
-    host: str = Field(default="0.0.0.0", description="Server bind address")
-    port: int = Field(default=8000, ge=1, le=65535, description="Server port")
-    workers: int = Field(default=1, ge=1, description="Number of worker processes")
+    # Connection settings
+    max_connections: int = 100
+    keepalive_connections: int = 20
+    ssl_verify: bool = True
+```
 
-    # Application settings
-    debug: bool = Field(default=False, description="Enable debug mode")
-    reload: bool = Field(default=False, description="Enable auto-reload")
-    access_log: bool = Field(default=True, description="Enable access logging")
+### **ClientConfig**
 
-    # CORS configuration
-    cors_origins: List[str] = Field(default=["*"], description="Allowed CORS origins")
-    cors_methods: List[str] = Field(default=["*"], description="Allowed CORS methods")
-    cors_headers: List[str] = Field(default=["*"], description="Allowed CORS headers")
+Detailed HTTP client configuration with advanced options.
 
-    # Health check configuration
-    health_check_path: str = Field(default="/health", description="Health check endpoint")
-    ready_check_path: str = Field(default="/ready", description="Readiness check endpoint")
+```python
+from flext_api.models import FlextApiModels
 
-    class Config:
-        env_prefix = "FLEXT_API_"
-        case_sensitive = False
+config = FlextApiModels.ClientConfig(
+    base_url="https://api.enterprise.com",
+    timeout=30.0,
+    max_retries=3,
+    headers={
+        "User-Agent": "my-service/1.0.0",
+        "Accept": "application/json"
+    },
+    auth_token="your-bearer-token",
+    api_key="your-api-key"
+)
+
+# Get authentication headers
+auth_headers = config.get_auth_header()
+all_headers = config.get_default_headers()
+```
+
+### **AppConfig**
+
+FastAPI application configuration.
+
+```python
+from flext_api.models import FlextApiModels
+
+app_config = FlextApiModels.AppConfig(
+    title="Enterprise API Service",
+    app_version="1.0.0",
+    description="Production API using flext-api foundation",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json"
+)
 ```
 
 ---
 
-## 🔌 Plugin Configuration
+## 🔧 Configuration Examples
 
-### **Caching Plugin Configuration**
-
-```python
-from flext_api import FlextApiCachingPlugin
-from flext_core import FlextConfig
-from pydantic import Field
-from typing import Optional
-
-class CachingPluginConfig(FlextConfig):
-    """Caching plugin configuration."""
-
-    enabled: bool = Field(default=True, description="Enable caching plugin")
-    ttl: int = Field(default=300, gt=0, description="Default cache TTL in seconds")
-    max_size: int = Field(default=1000, gt=0, description="Maximum cache entries")
-
-    # Cache key configuration
-    include_headers: bool = Field(default=False, description="Include headers in cache key")
-    include_query_params: bool = Field(default=True, description="Include query params in cache key")
-
-    # Redis configuration (optional)
-    redis_url: Optional[str] = Field(default=None, description="Redis connection URL")
-    redis_key_prefix: str = Field(default="flext_api:", description="Redis key prefix")
-
-    class Config:
-        env_prefix = "FLEXT_API_CACHING_"
-```
-
-### **Retry Plugin Configuration**
+### **Basic HTTP Client Configuration**
 
 ```python
-from flext_api import FlextApiRetryPlugin
-from flext_core import FlextConfig
-from pydantic import Field
-from typing import List
+import asyncio
+from flext_api import FlextApiClient
+from flext_api.config import FlextApiConfig
 
-class RetryPluginConfig(FlextConfig):
-    """Retry plugin configuration."""
+async def basic_client_config():
+    """Basic HTTP client with configuration."""
 
-    enabled: bool = Field(default=True, description="Enable retry plugin")
-    max_retries: int = Field(default=3, ge=0, le=10, description="Maximum retry attempts")
-    backoff_factor: float = Field(default=2.0, gt=1.0, description="Exponential backoff multiplier")
-
-    # Retry conditions
-    retry_status_codes: List[int] = Field(
-        default=[408, 429, 500, 502, 503, 504],
-        description="HTTP status codes to retry"
-    )
-    retry_exceptions: List[str] = Field(
-        default=["TimeoutError", "ConnectionError"],
-        description="Exception types to retry"
+    # Create configuration
+    config = FlextApiConfig(
+        base_url="https://jsonplaceholder.typicode.com",
+        timeout=30,
+        headers={
+            "User-Agent": "flext-api-example/1.0.0",
+            "Accept": "application/json"
+        }
     )
 
-    # Timing configuration
-    initial_delay: float = Field(default=1.0, gt=0, description="Initial retry delay in seconds")
-    max_delay: float = Field(default=60.0, gt=0, description="Maximum retry delay in seconds")
+    # Create client with configuration
+    client = FlextApiClient(config=config)
 
-    class Config:
-        env_prefix = "FLEXT_API_RETRY_"
+    try:
+        # Use configured client
+        result = await client.get("/posts/1")
+        if result.is_success:
+            response = result.unwrap()
+            print(f"Post: {response.body}")
+    finally:
+        await client.close()
+
+# Run example
+asyncio.run(basic_client_config())
 ```
 
----
-
-## 📁 Configuration Files
-
-### **YAML Configuration Example**
-
-```yaml
-# config/flext-api.yaml
-flext_api:
-  client:
-    base_url: "https://api.example.com"
-    timeout: 30.0
-    max_retries: 3
-    headers:
-      User-Agent: "FLEXT-API/0.9.0"
-      Accept: "application/json"
-
-  plugins:
-    caching:
-      enabled: true
-      ttl: 300
-      max_size: 1000
-
-    retry:
-      enabled: true
-      max_retries: 3
-      backoff_factor: 2.0
-      retry_status_codes: [408, 429, 500, 502, 503, 504]
-
-  server:
-    host: "0.0.0.0"
-    port: 8000
-    workers: 1
-    debug: false
-
-  observability:
-    metrics_enabled: true
-    tracing_enabled: true
-    health_check_interval: 30
-```
-
-### **Loading Configuration**
+### **Environment-Based Configuration**
 
 ```python
-from flext_api import create_flext_api
-from flext_core import FlextLogger
-import yaml
+import os
+from flext_api.config import FlextApiConfig
 
-logger = FlextLogger(__name__)
+# Set environment variables
+os.environ['HTTP_BASE_URL'] = 'https://api.production.com'
+os.environ['HTTP_TIMEOUT'] = '60'
+os.environ['HTTP_AUTH_TOKEN'] = 'prod-token-123'
 
-def load_configuration(config_path: str = "config/flext-api.yaml"):
-    """Load configuration from YAML file with environment override."""
+# Load configuration from environment
+config = FlextApiConfig()
+config.load_from_environment()
 
-    # Load base configuration from file
-    with open(config_path, 'r') as f:
-        config_data = yaml.safe_load(f)
+print(f"Base URL: {config.base_url}")
+print(f"Timeout: {config.timeout}")
+print(f"Has Auth: {config.auth_token is not None}")
+```
 
-    # Create API with configuration
-    api = create_flext_api(config=config_data['flext_api'])
+### **Production FastAPI Configuration**
 
-    logger.info("Configuration loaded successfully", config_path=config_path)
-    return api
+```python
+from flext_api.app import create_fastapi_app
+from flext_api.models import FlextApiModels
+
+def create_production_api():
+    """Create production FastAPI application."""
+
+    # Production configuration
+    config = FlextApiModels.AppConfig(
+        title="Enterprise Data API",
+        app_version="1.2.0",
+        description="Production API for enterprise data integration",
+        docs_url="/docs",  # Available in production
+        redoc_url="/redoc",
+        openapi_url="/openapi.json"
+    )
+
+    # Create FastAPI app
+    app = create_fastapi_app(config)
+
+    # Add production middleware
+    @app.middleware("http")
+    async def add_security_headers(request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        return response
+
+    return app
+
+app = create_production_api()
 ```
 
 ---
 
-## 🔒 Security Configuration
+## 🔐 Security Configuration
+
+### **Authentication Setup**
+
+```python
+from flext_api import FlextApiClient
+from flext_api.models import FlextApiModels
+
+# Bearer Token Authentication
+config = FlextApiModels.ClientConfig(
+    base_url="https://secure-api.com",
+    auth_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    ssl_verify=True,  # Always verify SSL in production
+    headers={
+        "User-Agent": "secure-client/1.0.0"
+    }
+)
+
+client = FlextApiClient(config=config)
+
+# API Key Authentication
+api_config = FlextApiModels.ClientConfig(
+    base_url="https://api-key-service.com",
+    api_key="ak_live_1234567890abcdef",
+    headers={
+        "X-API-Version": "2025-09-17"
+    }
+)
+
+api_client = FlextApiClient(config=api_config)
+```
 
 ### **SSL/TLS Configuration**
 
 ```python
-import ssl
-from flext_api import FlextApiClientConfig
+from flext_api import FlextApiClient
 
-# Create custom SSL context
-ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-ssl_context.check_hostname = False  # Only for development
-ssl_context.verify_mode = ssl.CERT_NONE  # Only for development
+# Secure HTTPS configuration
+secure_client = FlextApiClient(
+    base_url="https://secure-api.enterprise.com",
+    ssl_verify=True,  # Verify SSL certificates (default: True)
+    timeout=30,
+    headers={
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
+    }
+)
 
-# Configure client with SSL
-config = FlextApiClientConfig(
-    base_url="https://internal-api.company.com",
-    verify_ssl=True,
-    ssl_context=ssl_context
+# Development configuration (less secure)
+dev_client = FlextApiClient(
+    base_url="http://localhost:8000",  # HTTP allowed for local dev
+    ssl_verify=False,  # Only for development
+    timeout=10
 )
 ```
 
-### **Authentication Configuration**
+---
+
+## 🚀 Performance Configuration
+
+### **Connection Pool Settings**
 
 ```python
-from flext_api import create_flext_api
-from flext_core import FlextLogger
+from flext_api import FlextApiClient
 
-logger = FlextLogger(__name__)
+# High-performance configuration
+performance_client = FlextApiClient(
+    base_url="https://high-volume-api.com",
+    timeout=30,
+    max_connections=100,     # Total connection pool size
+    keepalive_connections=20, # Keep-alive connections
+    http2=True,              # Enable HTTP/2 (if supported)
+    headers={
+        "Connection": "keep-alive",
+        "Keep-Alive": "timeout=60, max=100"
+    }
+)
+```
 
-def configure_authentication():
-    """Configure API client with authentication."""
+### **Timeout Configuration**
 
-    api = create_flext_api()
+```python
+from flext_api import FlextApiClient
+from flext_api.models import FlextApiModels
 
-    # Create client with authentication headers
-    client_result = api.flext_api_create_client({
-        "base_url": "https://api.example.com",
-        "headers": {
-            "Authorization": "Bearer your-jwt-token",
-            "X-API-Key": "your-api-key"
-        }
-    })
+# Different timeout strategies
+quick_client = FlextApiClient(
+    base_url="https://fast-api.com",
+    timeout=5  # Quick timeout for fast APIs
+)
 
-    if client_result.success:
-        logger.info("Authenticated client created successfully")
-        return client_result.data
-    else:
-        logger.error("Authentication configuration failed", error=client_result.error)
-        return None
+slow_client = FlextApiClient(
+    base_url="https://slow-processing-api.com",
+    timeout=300  # 5 minutes for long-running operations
+)
+
+# Per-request timeout override
+request = FlextApiModels.HttpRequest(
+    method="POST",
+    url="/long-process",
+    timeout=600,  # 10 minutes for this specific request
+    json={"data": "large dataset"}
+)
 ```
 
 ---
 
 ## 🔧 Development Configuration
 
-### **Development Settings**
+### **Development Environment Setup**
 
 ```python
-# config/development.py
-from flext_api import FlextApiClientConfig, FlextApiAppConfig
+import os
+from flext_api.config import FlextApiConfig
+from flext_api.app import create_fastapi_app
+from flext_api.models import FlextApiModels
 
-# Development HTTP client configuration
-CLIENT_CONFIG = FlextApiClientConfig(
-    base_url="http://localhost:3000",
-    timeout=10.0,
-    max_retries=1,
-    verify_ssl=False
-)
+def setup_development_environment():
+    """Configure for development environment."""
 
-# Development server configuration
-APP_CONFIG = FlextApiAppConfig(
-    host="127.0.0.1",
-    port=8000,
-    debug=True,
-    reload=True,
-    workers=1
-)
+    # Development environment variables
+    os.environ['HTTP_BASE_URL'] = 'http://localhost:8000'
+    os.environ['HTTP_TIMEOUT'] = '10'
+    os.environ['FASTAPI_HOST'] = '127.0.0.1'
+    os.environ['FASTAPI_PORT'] = '8000'
+    os.environ['FASTAPI_RELOAD'] = 'true'
+    os.environ['FASTAPI_LOG_LEVEL'] = 'debug'
+
+    # HTTP client configuration
+    http_config = FlextApiConfig(
+        base_url="http://localhost:8000",
+        timeout=10,
+        ssl_verify=False,  # Development only
+        headers={
+            "X-Development": "true",
+            "User-Agent": "flext-api-dev/0.9.0"
+        }
+    )
+
+    # FastAPI configuration
+    app_config = FlextApiModels.AppConfig(
+        title="Development API",
+        app_version="0.9.0-dev",
+        description="Development API with debug features",
+        docs_url="/docs",
+        redoc_url="/redoc"
+    )
+
+    return http_config, app_config
+
+# Use in development
+http_config, app_config = setup_development_environment()
 ```
 
-### **Production Settings**
+### **Testing Configuration**
 
 ```python
-# config/production.py
-from flext_api import FlextApiClientConfig, FlextApiAppConfig
+from flext_api import FlextApiClient
+from flext_api.models import FlextApiModels
 
-# Production HTTP client configuration
-CLIENT_CONFIG = FlextApiClientConfig(
-    base_url="https://api.production.com",
-    timeout=30.0,
-    max_retries=5,
-    verify_ssl=True,
+# Test configuration with mock server
+test_client = FlextApiClient(
+    base_url="https://httpbin.org",  # Public testing API
+    timeout=5,
     headers={
-        "User-Agent": "FLEXT-API-Production/0.9.0"
+        "X-Test-Mode": "true",
+        "User-Agent": "flext-api-test/0.9.0"
     }
 )
 
-# Production server configuration
-APP_CONFIG = FlextApiAppConfig(
-    host="0.0.0.0",
-    port=8000,
-    debug=False,
-    reload=False,
-    workers=4,
-    access_log=True
+# Configuration for unit tests
+unit_test_config = FlextApiModels.ClientConfig(
+    base_url="http://mock-server:8080",
+    timeout=1,  # Quick timeout for unit tests
+    max_retries=1,
+    ssl_verify=False
 )
 ```
 
 ---
 
-## 🧪 Testing Configuration
+## 🏭 Production Configuration
 
-### **Test Environment Configuration**
+### **Production HTTP Client**
 
 ```python
-# tests/conftest.py
-import pytest
-from flext_api import create_flext_api, FlextApiClientConfig
+import os
+from flext_api import FlextApiClient
+from flext_api.config import FlextApiConfig
 
-@pytest.fixture
-def test_api_config():
-    """Test configuration for FLEXT API."""
-    return FlextApiClientConfig(
-        base_url="http://httpbin.org",  # Reliable test endpoint
-        timeout=5.0,
-        max_retries=1,
-        verify_ssl=True
+def create_production_client():
+    """Create production-ready HTTP client."""
+
+    # Load from environment variables
+    config = FlextApiConfig(
+        base_url=os.getenv('PRODUCTION_API_URL'),
+        timeout=float(os.getenv('HTTP_TIMEOUT', '30')),
+        max_retries=int(os.getenv('HTTP_MAX_RETRIES', '3')),
+        auth_token=os.getenv('PRODUCTION_API_TOKEN'),
+        ssl_verify=True,  # Always verify SSL in production
+        headers={
+            "User-Agent": f"enterprise-service/{os.getenv('SERVICE_VERSION', '1.0.0')}",
+            "Accept": "application/json",
+            "X-Service-Name": os.getenv('SERVICE_NAME', 'flext-api-client')
+        }
     )
 
-@pytest.fixture
-def test_api(test_api_config):
-    """Create test API instance."""
-    return create_flext_api(client_config=test_api_config)
+    return FlextApiClient(config=config)
+
+# Production client instance
+production_client = create_production_client()
+```
+
+### **Production FastAPI Application**
+
+```bash
+# Production environment variables
+export FASTAPI_HOST=0.0.0.0
+export FASTAPI_PORT=8000
+export FASTAPI_WORKERS=4
+export FASTAPI_LOG_LEVEL=info
+export HTTPS_ONLY=true
+export SSL_VERIFY=true
+export MAX_REQUEST_SIZE=10485760  # 10MB
+```
+
+```python
+def create_production_fastapi():
+    """Create production FastAPI application."""
+
+    config = FlextApiModels.AppConfig(
+        title="Enterprise Production API",
+        app_version=os.getenv('SERVICE_VERSION', '1.0.0'),
+        description="Production API for enterprise data integration",
+        docs_url=None,  # Disable docs in production for security
+        redoc_url=None,
+        openapi_url=None
+    )
+
+    app = create_fastapi_app(config)
+
+    # Production security middleware
+    @app.middleware("http")
+    async def security_middleware(request, call_next):
+        # Add security headers
+        response = await call_next(request)
+        response.headers.update({
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "X-XSS-Protection": "1; mode=block",
+            "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
+        })
+        return response
+
+    return app
 ```
 
 ---
 
-## 📚 Related Documentation
+## 🔍 Configuration Validation
 
-- **[Getting Started](getting-started.md)** - Basic setup and installation
-- **[Architecture](architecture.md)** - System design and patterns
-- **[Integration](integration.md)** - Ecosystem integration patterns
-- **[Development](development.md)** - Development workflows
-- **[Troubleshooting](troubleshooting.md)** - Common configuration issues
+### **Environment Validation**
+
+```python
+from flext_api.config import FlextApiConfig
+from flext_core import FlextResult
+
+def validate_production_config() -> FlextResult[FlextApiConfig]:
+    """Validate production configuration."""
+
+    try:
+        config = FlextApiConfig()
+
+        # Validate required settings
+        if not config.base_url.startswith('https://'):
+            return FlextResult[FlextApiConfig].fail(
+                "Production requires HTTPS base URL"
+            )
+
+        if config.timeout < 30:
+            return FlextResult[FlextApiConfig].fail(
+                "Production timeout must be at least 30 seconds"
+            )
+
+        if not config.ssl_verify:
+            return FlextResult[FlextApiConfig].fail(
+                "SSL verification required in production"
+            )
+
+        return FlextResult[FlextApiConfig].ok(config)
+
+    except Exception as e:
+        return FlextResult[FlextApiConfig].fail(
+            f"Configuration validation failed: {e}"
+        )
+```
+
+### **Configuration Health Check**
+
+```python
+async def config_health_check():
+    """Check configuration health."""
+
+    config = FlextApiConfig()
+    client = FlextApiClient(config=config)
+
+    try:
+        # Test basic connectivity
+        result = await client.get("/health")
+
+        if result.is_success:
+            print("✅ Configuration healthy")
+            return True
+        else:
+            print(f"❌ Configuration issue: {result.error}")
+            return False
+
+    except Exception as e:
+        print(f"❌ Configuration failed: {e}")
+        return False
+    finally:
+        await client.close()
+```
 
 ---
 
-**Configuration Management v0.9.0** - Type-safe settings and environment management for FLEXT API HTTP foundation library.
+## 📊 Configuration Best Practices
+
+### **Security Best Practices**
+
+1. **Never hardcode secrets** in configuration files
+2. **Use environment variables** for sensitive data
+3. **Always enable SSL verification** in production
+4. **Rotate authentication tokens** regularly
+5. **Use minimal permissions** for API keys
+
+### **Performance Best Practices**
+
+1. **Reuse HTTP clients** instead of creating new instances
+2. **Configure appropriate timeouts** based on API characteristics
+3. **Use connection pooling** for high-volume applications
+4. **Enable HTTP/2** when supported by target APIs
+5. **Monitor connection usage** and adjust pool sizes
+
+### **Development Best Practices**
+
+1. **Use different configurations** for dev/test/prod environments
+2. **Validate configuration** at startup
+3. **Log configuration issues** clearly
+4. **Test with realistic configurations** in staging
+5. **Document configuration requirements** for deployment
+
+---
+
+**Configuration Summary**: flext-api provides comprehensive configuration management through environment variables, type-safe configuration classes, and flexible runtime configuration. All configurations integrate seamlessly with FLEXT ecosystem patterns and support both development and production environments.

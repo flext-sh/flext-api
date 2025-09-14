@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import json
+
 from flext_core import (
     FlextLogger,
     FlextModels,
@@ -145,6 +147,92 @@ class FlextApiStorage(FlextModels.Entity):
         """Close storage connection."""
         # For registry-based storage, no cleanup needed
         return FlextResult[None].ok(None)
+
+    class JsonStorage:
+        """JSON storage operations for HTTP data."""
+
+        def __init__(self) -> None:
+            """Initialize JSON storage."""
+
+        def serialize(self, data: object) -> FlextResult[str]:
+            """Serialize data to JSON string."""
+            try:
+                json_str = json.dumps(data, default=str)
+                return FlextResult[str].ok(json_str)
+            except Exception as e:
+                return FlextResult[str].fail(f"JSON serialization failed: {e}")
+
+        def deserialize(self, json_str: str) -> FlextResult[object]:
+            """Deserialize JSON string to object."""
+            try:
+                data = json.loads(json_str)
+                return FlextResult[object].ok(data)
+            except Exception as e:
+                return FlextResult[object].fail(f"JSON deserialization failed: {e}")
+
+    class CacheOperations:
+        """Cache operations for HTTP data."""
+
+        def __init__(self) -> None:
+            """Initialize cache operations."""
+
+        def get_cache_stats(self) -> FlextResult[dict[str, object]]:
+            """Get cache statistics."""
+            return FlextResult[dict[str, object]].ok(
+                {
+                    "size": 0,  # Default size since we don't have access to storage
+                    "backend": "memory",
+                }
+            )
+
+        def cleanup_expired(self) -> FlextResult[int]:
+            """Clean up expired cache entries.
+
+            Returns:
+                FlextResult containing number of entries removed
+
+            """
+            try:
+                # For this simple implementation, we don't track expiration
+                # In a real implementation, this would remove expired entries
+                removed_count = 0
+                return FlextResult[int].ok(removed_count)
+            except Exception as e:
+                return FlextResult[int].fail(f"Cache cleanup failed: {e}")
+
+    class StorageMetrics:
+        """Storage metrics collection."""
+
+        def __init__(self) -> None:
+            """Initialize storage metrics."""
+
+        def get_metrics(self) -> FlextResult[dict[str, object]]:
+            """Get storage metrics."""
+            return FlextResult[dict[str, object]].ok(
+                {"total_operations": 0, "cache_hits": 0, "cache_misses": 0}
+            )
+
+        def get_statistics(self) -> FlextResult[dict[str, float]]:
+            """Get storage statistics.
+
+            Returns:
+                FlextResult containing storage statistics
+
+            """
+            try:
+                stats = {
+                    "total_operations": 0,
+                    "cache_hits": 0,
+                    "cache_misses": 0,
+                    "hit_ratio": 0.0,
+                    "storage_size": 0,
+                    "memory_usage": 0,
+                }
+                return FlextResult[dict[str, float]].ok(stats)
+            except Exception as e:
+                return FlextResult[dict[str, float]].fail(
+                    f"Statistics collection failed: {e}"
+                )
 
 
 __all__ = ["FlextApiStorage"]

@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from enum import StrEnum
+from typing import ClassVar
 
 from flext_core import FlextConstants
 
@@ -35,7 +36,85 @@ class FlextApiConstants:
     DEFAULT_USER_AGENT = "FlextAPI/0.9.0"
     DEFAULT_PAGE_SIZE = 20
     MAX_PAGE_SIZE = 1000
+    MIN_PORT = 1
     MAX_PORT = 65535
+
+    # Rate limiting constants
+    RATE_LIMIT_REQUESTS = 1000
+    RATE_LIMIT_WINDOW = 3600
+
+    # Response templates
+    SUCCESS_RESPONSE: ClassVar[dict[str, object]] = {
+        "status": "success",
+        "data": None,
+        "error": None,
+    }
+    ERROR_RESPONSE: ClassVar[dict[str, object]] = {
+        "status": "error",
+        "data": None,
+        "error": None,
+    }
+
+    # Client error codes
+    CLIENT_ERROR_CODES: ClassVar[set[int]] = {
+        400,
+        401,
+        403,
+        404,
+        405,
+        406,
+        407,
+        408,
+        409,
+        410,
+        411,
+        412,
+        413,
+        414,
+        415,
+        416,
+        417,
+        418,
+        421,
+        422,
+        423,
+        424,
+        425,
+        426,
+        428,
+        429,
+        431,
+        451,
+    }
+
+    # Server error codes
+    SERVER_ERROR_CODES: ClassVar[set[int]] = {
+        500,
+        501,
+        502,
+        503,
+        504,
+        505,
+        506,
+        507,
+        508,
+        510,
+        511,
+    }
+
+    class Client:
+        """Client configuration constants."""
+
+        DEFAULT_USER_AGENT = "FlextAPI/0.9.0"
+        DEFAULT_TIMEOUT = 30.0
+        MAX_RETRIES = 3
+        RETRY_BACKOFF_FACTOR = 2.0
+
+    class HttpStatusRanges:
+        """HTTP status code ranges."""
+
+        SUCCESS_MIN = 200
+        SUCCESS_MAX = 299
 
     class Limits:
         """Pagination and request limits."""
@@ -50,6 +129,16 @@ class FlextApiConstants:
         MIN_HTTP_STATUS = 100
         MAX_HTTP_STATUS = 599
 
+        # Common HTTP status codes
+        OK = 200
+        CREATED = 201
+        NO_CONTENT = 204
+        BAD_REQUEST = 400
+        UNAUTHORIZED = 401
+        FORBIDDEN = 403
+        NOT_FOUND = 404
+        INTERNAL_SERVER_ERROR = 500
+
 
 class HttpMethods(StrEnum):
     """HTTP methods - using Python 3.13+ StrEnum."""
@@ -61,6 +150,14 @@ class HttpMethods(StrEnum):
     PATCH = "PATCH"
     HEAD = "HEAD"
     OPTIONS = "OPTIONS"
+
+
+class ClientStatus(StrEnum):
+    """Client status enum."""
+
+    IDLE = "idle"
+    ACTIVE = "active"
+    DISCONNECTED = "disconnected"
 
 
 # HTTP status codes - flattened, no nested classes
@@ -146,6 +243,85 @@ def validate_configuration(**config: object) -> list[str]:
     return errors
 
 
+class FlextApiEndpoints:
+    """API endpoint constants following FLEXT patterns."""
+
+    # Base paths
+    API_V1 = "/api/v1"
+    HEALTH = "/health"
+    METRICS = "/metrics"
+    DOCS = "/docs"
+
+    # Authentication endpoints
+    AUTH_LOGIN = "/api/v1/auth/login"
+    AUTH_LOGOUT = "/api/v1/auth/logout"
+    AUTH_REFRESH = "/api/v1/auth/refresh"
+    AUTH_VERIFY = "/api/v1/auth/verify"
+
+    # Pipeline endpoints
+    PIPELINES = "/api/v1/pipelines"
+    PIPELINE_RUN = "/api/v1/pipelines/{pipeline_id}/run"
+    PIPELINE_STATUS = "/api/v1/pipelines/{pipeline_id}/status"
+    PIPELINE_LOGS = "/api/v1/pipelines/{pipeline_id}/logs"
+
+    # Plugin endpoints
+    PLUGINS = "/api/v1/plugins"
+    PLUGIN_INSTALL = "/api/v1/plugins/install"
+    PLUGIN_UNINSTALL = "/api/v1/plugins/{plugin_id}/uninstall"
+    PLUGIN_CONFIG = "/api/v1/plugins/{plugin_id}/config"
+
+
+class FlextApiFieldType:
+    """API field type constants following FLEXT patterns."""
+
+    # Authentication fields
+    API_KEY = "api_key"
+    BEARER_TOKEN = "bearer_token"
+
+    # Configuration fields
+    PIPELINE_CONFIG = "pipeline_config"
+    PLUGIN_CONFIG = "plugin_config"
+
+    # User fields
+    USER_ROLE = "user_role"
+
+    # Request/Response fields
+    ENDPOINT_PATH = "endpoint_path"
+    HTTP_METHOD = "http_method"
+    RESPONSE_FORMAT = "response_format"
+    REQUEST_ID = "request_id"
+
+
+class FlextApiStatus:
+    """API status constants following FLEXT patterns."""
+
+    # Request status
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+    # Service status
+    HEALTHY = "healthy"
+    DEGRADED = "degraded"
+    UNHEALTHY = "unhealthy"
+    MAINTENANCE = "maintenance"
+
+    # Pipeline status
+    PIPELINE_IDLE = "idle"
+    PIPELINE_RUNNING = "running"
+    PIPELINE_SUCCESS = "success"
+    PIPELINE_ERROR = "error"
+    PIPELINE_TIMEOUT = "timeout"
+
+    # Plugin status
+    PLUGIN_LOADED = "loaded"
+    PLUGIN_ACTIVE = "active"
+    PLUGIN_INACTIVE = "inactive"
+    PLUGIN_ERROR = "error"
+
+
 __all__ = [
     "AUTHORIZATION_HEADER",
     "BAD_REQUEST",
@@ -158,7 +334,11 @@ __all__ = [
     "TEXT_TYPE",
     "UNAUTHORIZED",
     "USER_AGENT_HEADER",
+    "ClientStatus",
     "FlextApiConstants",
+    "FlextApiEndpoints",
+    "FlextApiFieldType",
+    "FlextApiStatus",
     "HttpMethods",
     "get_default_headers",
     "is_client_error_status",

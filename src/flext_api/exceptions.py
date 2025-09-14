@@ -44,13 +44,8 @@ class FlextApiExceptions:
         ) -> None:
             """Initialize HTTP error with status code."""
             # Extract only the parameters the parent class accepts
-            parent_kwargs = {}
-            if "service" in kwargs:
-                parent_kwargs["service"] = kwargs["service"]
-            if "endpoint" in kwargs:
-                parent_kwargs["endpoint"] = kwargs["endpoint"]
-            service_value = parent_kwargs.get("service")
-            endpoint_value = parent_kwargs.get("endpoint")
+            service_value = kwargs.get("service")
+            endpoint_value = kwargs.get("endpoint")
             super().__init__(
                 message,
                 service=str(service_value) if service_value is not None else None,

@@ -12,13 +12,13 @@ from flext_api import (
     FlextApiConstants,
     FlextApiModels,
 )
+from flext_api.constants import ClientStatus
 
 HttpMethod = FlextApiModels.HttpMethod
 HttpStatus = FlextApiConstants.HttpStatus  # Use numeric HTTP status codes
 ApiResponse = (
     FlextApiModels.ApiResponse
 )  # Use the actual model class, not the type alias
-ClientStatus = FlextApiConstants.HttpStatus  # Use HttpStatus for client status as well
 
 
 class TestFlextApiModelsFocused:
@@ -129,12 +129,9 @@ class TestEnums:
         assert len(status_values) > 0
 
         # Test common client states
-        if hasattr(ClientStatus, "IDLE"):
-            assert ClientStatus.IDLE
-        if hasattr(ClientStatus, "ACTIVE"):
-            assert ClientStatus.ACTIVE
-        if hasattr(ClientStatus, "DISCONNECTED"):
-            assert ClientStatus.DISCONNECTED
+        assert ClientStatus.IDLE == "idle"
+        assert ClientStatus.ACTIVE == "active"
+        assert ClientStatus.DISCONNECTED == "disconnected"
 
 
 class TestApiModels:
@@ -291,8 +288,15 @@ class TestErrorConditions:
             assert method in method_values, f"Missing HTTP method: {method}"
 
         # HttpStatus should have common status codes
-        http_statuses = list(HttpStatus)
-        status_codes = [status.value for status in http_statuses]
+        http_statuses = [
+            HttpStatus.OK,
+            HttpStatus.CREATED,
+            HttpStatus.BAD_REQUEST,
+            HttpStatus.UNAUTHORIZED,
+            HttpStatus.NOT_FOUND,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+        ]
+        status_codes = http_statuses
 
         required_codes = [200, 201, 400, 401, 404, 500]
         for code in required_codes:

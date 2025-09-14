@@ -1,22 +1,8 @@
-# Development Guide
+# Development Guide - flext-api
 
-**Development workflow and contribution guidelines for FLEXT API**
+**Development Workflow and Contribution Guidelines**
 
-> **Navigation**: [FLEXT Hub](../../docs/NAVIGATION.md) > [flext-api](../README.md) > Development
-
----
-
-## 🎯 Development Overview
-
-FLEXT API follows **Clean Architecture** principles with **Domain-Driven Design (DDD)** patterns, emphasizing **FLEXT-Core compliance** and **quality standards**. All development must align with the broader FLEXT ecosystem patterns.
-
-### **Development Philosophy**
-
-1. **Quality First** - Zero tolerance for lint/type/test failures
-2. **FLEXT-Core Compliance** - Railway-oriented programming with FlextResult[T]
-3. **Test-Driven Development** - 90% minimum test coverage requirement
-4. **Documentation-Driven** - All public APIs must be documented
-5. **Ecosystem Integration** - Seamless integration with all 33 FLEXT projects
+This guide covers the complete development workflow for contributing to flext-api, including setup, testing, quality gates, and contribution standards.
 
 ---
 
@@ -24,569 +10,530 @@ FLEXT API follows **Clean Architecture** principles with **Domain-Driven Design 
 
 ### **Prerequisites**
 
-```bash
-# Required tools
-- Python 3.13+
-- Poetry 1.8+
-- Make
-- Git
-- Docker (for integration tests)
+- **Python 3.13+**: Required for advanced type features
+- **Poetry**: Dependency management and virtual environment
+- **Git**: Version control and contribution workflow
+- **Make**: Build automation (optional but recommended)
 
-# Verify installations
-python --version    # Should show 3.13+
-poetry --version    # Should show 1.8+
-make --version      # object recent version
-```
-
-### **Initial Setup**
+### **Setup Steps**
 
 ```bash
-# Clone FLEXT ecosystem workspace
-git clone https://github.com/flext-sh/flext.git
-cd flext/flext-api
+# 1. Clone the repository (if not already in FLEXT workspace)
+git clone https://github.com/flext-sh/flext-api.git
+cd flext-api
 
-# Complete development setup
-make setup          # Install tools, dependencies, pre-commit hooks
-make dev           # Start development server
+# 2. Install dependencies with development tools
+poetry install --with dev,test,typings,security
 
-# Verify setup
-make check         # Should pass all quality gates
-curl http://localhost:8000/health  # Should return {"status": "healthy"}
+# 3. Set up pre-commit hooks (optional)
+poetry run pre-commit install
+
+# 4. Verify installation
+make validate
 ```
 
 ---
 
-## 🔧 Development Commands
+## 🔧 Development Environment
 
-### **Essential Quality Gates (Mandatory)**
+### **Essential Commands**
 
-```bash
-# Pre-commit validation (must pass before commits)
-make validate       # Complete validation pipeline (lint + type + security + test)
-make check          # Quick validation (lint + type check)
-make test           # Run all tests with 90% coverage requirement
-make security-scan  # Security vulnerability analysis
-
-# Individual quality checks
-make lint
-make type-check
-make format         # Auto-format code with ruff
-make test-unit      # Fast unit tests with mocks
-```
+| Command | Purpose | Description |
+|---------|---------|-------------|
+| `make setup` | Initial setup | Complete development environment setup |
+| `make dev` | Development server | Start FastAPI development server |
+| `make test` | Run tests | Execute complete test suite |
+| `make lint` | Code linting | Run Ruff linting checks |
+| `make type-check` | Type checking | Run MyPy type validation |
+| `make format` | Code formatting | Auto-format with Black and isort |
+| `make security` | Security scan | Run Bandit security analysis |
+| `make validate` | Quality gates | Complete validation pipeline |
+| `make clean` | Cleanup | Remove build artifacts |
 
 ### **Development Server**
 
 ```bash
-# Development server options
-make dev            # FastAPI on localhost:8000 (recommended)
-make dev-reload     # Aggressive reload mode for rapid development
-make serve
+# Start development server with auto-reload
+make dev
 
-# Health and status checks
-curl http://localhost:8000/health       # Basic health check
-curl http://localhost:8000/docs         # Interactive API documentation
-curl http://localhost:8000/redoc        # Alternative API documentation
+# Or manually with uvicorn
+poetry run uvicorn flext_api.app:app --reload --host 0.0.0.0 --port 8000
+
+# Server will be available at:
+# - API: http://localhost:8000
+# - Docs: http://localhost:8000/docs
+# - Health: http://localhost:8000/health
 ```
 
-### **Testing Commands**
+### **Code Quality Tools**
 
 ```bash
-# Test execution
-make test                    # All tests with coverage reporting
-make test-unit              # Unit tests with parallel execution
-make test-integration       # Integration tests with external services
-make test-e2e              # End-to-end workflow validation
-make test-benchmark        # Performance benchmarks
+# Linting with Ruff
+make lint
+# Or: poetry run ruff check src/ tests/
 
-# Test categories and markers
-pytest -m unit -v           # Unit tests only
-pytest -m integration -v   # Integration tests only
-pytest -m "not slow" -v    # Fast tests for quick feedback
-pytest -m benchmark -v     # Performance tests
+# Type checking with MyPy
+make type-check
+# Or: poetry run mypy src/
 
-# Advanced testing
-make test-watch            # Continuous testing (if available)
-pytest --lf -v            # Re-run last failed tests
-pytest --co               # Show test collection
-make coverage-html         # Generate HTML coverage report
-```
+# Code formatting
+make format
+# Or: poetry run black src/ tests/ && poetry run isort src/ tests/
 
-### **Build and Maintenance**
-
-```bash
-# Build operations
-make build          # Build distribution packages
-make clean          # Clean build artifacts and cache
-make clean-all      # Deep clean including virtual environment
-make reset          # Reset project to clean state
-
-# Dependency management
-make install        # Install project dependencies
-make install-dev    # Install development dependencies
-make deps-update    # Update all dependencies
-make deps-audit     # Security audit of dependencies
+# Security scanning
+make security
+# Or: poetry run bandit -r src/
 ```
 
 ---
 
-## 🏗️ Architecture and Patterns
+## 🧪 Testing Strategy
 
-### **FLEXT-Core Compliance Requirements**
-
-**Current Status: 35% → Target: 95%**
-
-#### **Mandatory Patterns**
-
-1. **FlextResult[T] Pattern** (Currently 70% compliant)
-
-   ```python
-   from flext_core import FlextResult, FlextLogger
-
-   logger = FlextLogger(__name__)
-
-   def service_operation() -> FlextResult[DataType]:
-       try:
-           result = perform_operation()
-           return FlextResult[None].ok(result)
-       except Exception as e:
-           logger.exception("Operation failed", operation="service_operation")
-           return FlextResult[None].fail(f"Operation failed: {e}")
-   ```
-
-2. **Structured Logging** (Currently 25% compliant)
-
-   ```python
-   from flext_core import FlextLogger
-
-   # ✅ Correct pattern
-   logger = FlextLogger(__name__)
-   logger.info("Operation completed", user_id=123, operation="create_client")
-
-   # ❌ Avoid - structlog direct usage
-   import structlog  # Use FlextLogger() instead
-   ```
-
-3. **Dependency Injection** (Currently 40% compliant)
-
-   ```python
-   from flext_core import get_flext_container
-
-   # ✅ Use global container
-   container = FlextContainer.get_global()
-   service = container.get(SomeService)
-
-   # ❌ Avoid - local containers
-   local_container = SomeLocalContainer()  # Use global instead
-   ```
-
-### **Clean Architecture Boundaries**
-
-```
-src/flext_api/
-├── api.py              # Application Layer - FlextApiClient service composition
-├── client.py           # Application Layer - HTTP client operations
-├── builder.py          # Application Layer - Query/response building
-├── config.py           # Infrastructure Layer - Configuration management
-├── constants.py        # Domain Layer - Domain constants and enums
-├── exceptions.py       # Domain Layer - Business exceptions
-├── fields.py           # Domain Layer - Domain field definitions
-└── main.py            # Interface Layer - FastAPI application entry
-```
-
-### **Domain-Driven Design Implementation**
-
-**Current Gap: Domain entities and value objects are minimal (10% compliance)**
-
-```python
-# Required domain entity pattern
-from flext_core import FlextModels.Entity
-from pydantic import Field
-from typing import Optional
-
-class HttpRequest(FlextModels.Entity):
-    """Domain entity representing an HTTP request."""
-
-    method: str = Field(..., description="HTTP method")
-    url: str = Field(..., description="Request URL")
-    headers: dict = Field(default_factory=dict, description="Request headers")
-    body: Optional[str] = Field(default=None, description="Request body")
-
-    def is_valid(self) -> bool:
-        """Business rule validation."""
-        return self.method in ["GET", "POST", "PUT", "DELETE", "PATCH"]
-```
-
----
-
-## 📋 Development Workflow
-
-### **Git Workflow**
-
-```bash
-# Feature development workflow
-git checkout main
-git pull origin main
-git checkout -b feature/enhance-plugin-system
-
-# Make changes following patterns
-# ... implement feature ...
-
-# Quality validation before commit
-make validate       # Must pass completely
-
-# Commit with conventional commits
-git add .
-git commit -m "feat: enhance plugin system with circuit breaker support
-
-- Add FlextApiCircuitBreakerPlugin with configurable thresholds
-- Implement failure tracking with exponential backoff
-- Add comprehensive tests for failure scenarios
-- Update documentation with usage examples
-
-Resolves: #123"
-
-# Push and create pull request
-git push origin feature/enhance-plugin-system
-```
-
-### **Code Review Checklist**
-
-#### **FLEXT-Core Compliance**
-
-- [ ] All operations return `FlextResult[T]`
-- [ ] Uses `FlextLogger(__name__)` for logging
-- [ ] Uses global dependency injection container
-- [ ] Follows Clean Architecture boundaries
-- [ ] Domain entities implement business rules
-
-#### **Quality Standards**
-
-- [ ] 90%+ test coverage with meaningful tests
-- [ ] Zero lint errors (ruff)
-- [ ] Zero type errors (mypy strict mode)
-- [ ] All public APIs documented
-- [ ] Security scan passes (bandit, pip-audit)
-
-#### **Integration Requirements**
-
-- [ ] Integrates properly with flext-core patterns
-- [ ] Compatible with existing ecosystem projects
-- [ ] Plugin system properly implemented
-- [ ] Configuration follows ecosystem standards
-
-### **Pull Request Template**
-
-```markdown
-## Description
-
-Brief description of changes and their purpose.
-
-## FLEXT-Core Compliance
-
-- [ ] FlextResult pattern implemented
-- [ ] Structured logging with FlextLogger()
-- [ ] Global dependency injection used
-- [ ] Clean Architecture boundaries respected
-
-## Type of Change
-
-- [ ] Bug fix (non-breaking change fixing an issue)
-- [ ] New feature (non-breaking change adding functionality)
-- [ ] Breaking change (fix or feature causing existing functionality to not work as expected)
-- [ ] Documentation update
-
-## Testing
-
-- [ ] Unit tests added/updated
-- [ ] Integration tests added/updated
-- [ ] All tests pass (`make test`)
-- [ ] Coverage requirement met (90%+)
-
-## Quality Gates
-
-- [ ] `make validate` passes completely
-- [ ] No lint errors (`make lint`)
-- [ ] No type errors (`make type-check`)
-- [ ] Security scan passes (`make security-scan`)
-
-## Documentation
-
-- [ ] Code comments updated
-- [ ] API documentation updated
-- [ ] README updated if needed
-- [ ] CHANGELOG updated
-```
-
----
-
-## 🧪 Testing Standards
-
-### **Testing Philosophy**
-
-1. **Test-Driven Development** - Write tests before implementation
-2. **Test Pyramid** - Many unit tests, fewer integration tests, minimal e2e tests
-3. **Test Isolation** - Each test should be independent and repeatable
-4. **Test Coverage** - 90% minimum with meaningful assertions
-5. **Test Performance** - Unit tests <100ms, integration tests <5s
-
-### **Test Organization**
+### **Test Structure**
 
 ```
 tests/
-├── unit/              # Fast tests with mocks (45+ active tests)
-│   ├── test_api_core.py
-│   ├── test_client_core.py
-│   ├── test_builder_core.py
-│   └── test_*_coverage.py
-├── integration/       # Tests with real external services
-│   ├── test_http_client_integration.py
-│   └── test_plugin_integration.py
-├── e2e/              # Complete workflow tests
-│   └── test_api_workflow_e2e.py
-├── benchmarks/       # Performance tests
-│   └── test_performance_benchmarks.py
-└── fixtures/         # Shared test data
-    ├── sample_responses.json
-    └── test_configurations.yaml
+├── unit/                    # Unit tests for individual modules
+│   ├── test_client.py       # HTTP client tests
+│   ├── test_models.py       # Data model tests
+│   ├── test_config.py       # Configuration tests
+│   └── test_utilities.py    # Utility function tests
+├── integration/             # Integration tests with real HTTP
+│   ├── test_http_server.py  # FastAPI server integration
+│   ├── test_client_auth.py  # Authentication integration
+│   └── test_storage.py      # Storage backend tests
+├── e2e/                     # End-to-end workflow tests
+│   └── test_api_workflows.py
+└── conftest.py              # Test configuration and fixtures
 ```
+
+### **Running Tests**
+
+```bash
+# Run all tests
+make test
+
+# Run specific test categories
+pytest -m unit               # Unit tests only
+pytest -m integration        # Integration tests only
+pytest -m e2e                # End-to-end tests only
+
+# Run with coverage
+pytest --cov=src/flext_api --cov-report=html
+
+# Run specific test file
+pytest tests/unit/test_client.py -v
+
+# Run with debugging
+pytest tests/unit/test_client.py::test_http_request -v -s
+```
+
+### **Test Coverage Goals**
+
+- **Current Coverage**: 73% (target: 95%+)
+- **Test Pass Rate**: 78% (261/334 tests passing)
+- **Priority Modules**: client.py, models.py, app.py
+- **Coverage Target**: 100% for critical HTTP operations
 
 ### **Writing Tests**
 
-#### **Unit Test Pattern**
-
 ```python
 import pytest
-from unittest.mock import Mock, patch
-from flext_api import create_flext_api, FlextResult
-from flext_core import FlextLogger
+import asyncio
+from flext_api import FlextApiClient, FlextApiModels
+from flext_core import FlextResult
 
-logger = FlextLogger(__name__)
+class TestFlextApiClient:
+    """Test HTTP client functionality."""
 
-class TestFlextApiCore:
-    """Unit tests for FlextApiClient core functionality."""
+    @pytest.mark.asyncio
+    async def test_basic_http_request(self):
+        """Test basic HTTP request functionality."""
 
-    def test_api_creation_success(self):
-        """Test successful API instance creation."""
-        # Arrange
-        # Act
-        api = create_flext_api()
+        client = FlextApiClient(base_url="https://httpbin.org")
 
-        # Assert
-        assert api is not None
-        assert hasattr(api, 'flext_api_create_client')
-        assert hasattr(api, 'get_builder')
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="/get",
+            headers={"Accept": "application/json"}
+        )
 
-    def test_client_creation_with_valid_config(self):
-        """Test HTTP client creation with valid configuration."""
-        # Arrange
-        api = create_flext_api()
-        config = {"base_url": "https://api.example.com", "timeout": 30}
+        try:
+            result = await client.request(request)
 
-        # Act
-        result = api.flext_api_create_client(config)
+            assert result.is_success, f"Request failed: {result.error}"
 
-        # Assert
-        assert result.success
-        assert result.data is not None
-        logger.info("Client creation test passed")
+            response = result.unwrap()
+            assert response.status_code == 200
+            assert isinstance(response.body, (dict, str))
 
-    @patch('flext_api.client.httpx.Client')
-    def test_http_request_with_mock(self, mock_client):
-        """Test HTTP request with mocked client."""
-        # Arrange
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"status": "ok"}
-        mock_client.return_value.get.return_value = mock_response
+        finally:
+            await client.close()
 
-        api = create_flext_api()
-        client_result = api.flext_api_create_client({"base_url": "https://test.com"})
+    def test_http_request_model_validation(self):
+        """Test HTTP request model validation."""
 
-        # Act
-        assert client_result.success
-        client = client_result.data
-        response = client.get("/test")
+        # Valid request
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="/test",
+            headers={"User-Agent": "test"}
+        )
+        assert request.method == "GET"
+        assert request.url == "/test"
 
-        # Assert
-        assert response.success
-        assert response.data["status"] == "ok"
-```
-
-#### **Integration Test Pattern**
-
-```python
-import pytest
-from flext_api import create_flext_api
-from flext_core import FlextLogger
-
-logger = FlextLogger(__name__)
-
-class TestHttpClientIntegration:
-    """Integration tests with real HTTP services."""
-
-    @pytest.mark.integration
-    def test_real_http_request(self):
-        """Test HTTP request to real service (httpbin.org)."""
-        # Arrange
-        api = create_flext_api()
-        client_result = api.flext_api_create_client({
-            "base_url": "https://httpbin.org",
-            "timeout": 10
-        })
-
-        assert client_result.success
-        client = client_result.data
-
-        # Act
-        response = client.get("/json")
-
-        # Assert
-        assert response.success
-        data = response.data
-        assert "slideshow" in data
-        logger.info("Integration test completed successfully")
-
-    @pytest.mark.integration
-    def test_timeout_handling(self):
-        """Test client timeout with slow endpoint."""
-        # Arrange
-        api = create_flext_api()
-        client_result = api.flext_api_create_client({
-            "base_url": "https://httpbin.org",
-            "timeout": 1  # Very short timeout
-        })
-
-        assert client_result.success
-        client = client_result.data
-
-        # Act
-        response = client.get("/delay/5")  # 5 second delay
-
-        # Assert
-        assert response.is_failure
-        assert "timeout" in response.error.lower()
+        # Invalid method should raise validation error
+        with pytest.raises(ValueError):
+            FlextApiModels.HttpRequest(
+                method="INVALID",
+                url="/test"
+            )
 ```
 
 ---
 
-## 🔍 Debugging and Troubleshooting
+## 🏗️ Architecture Guidelines
 
-### **Development Debugging**
+### **FLEXT Integration Requirements**
 
-```bash
-# Enable debug logging
-export LOG_LEVEL=DEBUG
-make dev
+All code MUST follow FLEXT ecosystem patterns:
 
-# Run with Python debugger
-python -m pdb src/flext_api/main.py
+```python
+# ✅ CORRECT: Use FlextResult for error handling
+from flext_core import FlextResult, FlextDomainService
 
-# Profile performance
-python -m cProfile -o profile.prof src/flext_api/main.py
-python -m pstats profile.prof
+class MyHttpService(FlextDomainService):
+    async def process_request(self, data: dict) -> FlextResult[dict]:
+        if not data:
+            return FlextResult[dict].fail("Data cannot be empty")
 
-# Memory profiling
-pip install memory-profiler
-python -m memory_profiler src/flext_api/main.py
+        # Process data...
+        return FlextResult[dict].ok(processed_data)
+
+# ❌ INCORRECT: Don't use try/except fallbacks
+def bad_function(data):
+    try:
+        return process_data(data)
+    except Exception:
+        return None  # NEVER do this
 ```
 
-### **Test Debugging**
+### **Code Organization**
+
+```python
+# ✅ CORRECT: Single unified class per module
+class FlextApiClient(FlextDomainService):
+    """Single responsibility class with nested helpers."""
+
+    class _RequestHelper:
+        """Nested helper class - no loose functions."""
+        @staticmethod
+        def validate_request(request: HttpRequest) -> FlextResult[None]:
+            pass
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        self._logger = FlextLogger(__name__)
+
+    async def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
+        # Use nested helper
+        validation_result = self._RequestHelper.validate_request(request)
+        if validation_result.is_failure:
+            return FlextResult[HttpResponse].fail(validation_result.error)
+
+        # Main logic here
+        pass
+
+# ❌ INCORRECT: Multiple classes or loose functions
+class HttpClient:  # Don't split into multiple classes
+    pass
+
+class RequestHelper:  # Don't create separate helper classes
+    pass
+
+def validate_request():  # Don't create loose functions
+    pass
+```
+
+### **Import Standards**
+
+```python
+# ✅ CORRECT: Root-level imports only
+from flext_core import FlextResult, FlextLogger, FlextDomainService
+from flext_api.models import FlextApiModels
+from flext_api.config import FlextApiConfig
+
+# ❌ INCORRECT: Internal imports
+from flext_core.result import FlextResult  # Don't use internal imports
+from flext_api.models.http import HttpRequest  # Don't access internal modules
+```
+
+---
+
+## 🔍 Code Review Guidelines
+
+### **Pre-Submission Checklist**
+
+Before submitting code:
+
+- [ ] All tests pass (`make test`)
+- [ ] Code passes linting (`make lint`)
+- [ ] Type checking passes (`make type-check`)
+- [ ] Security scan passes (`make security`)
+- [ ] Code coverage maintained or improved
+- [ ] Documentation updated for new features
+- [ ] FLEXT patterns followed consistently
+
+### **Code Review Standards**
+
+**Must Have**:
+- FlextResult error handling for all operations
+- Proper type annotations with Python 3.13+ features
+- Single unified class per module
+- Comprehensive test coverage
+- Clear, descriptive docstrings
+
+**Must Not Have**:
+- Try/except fallback mechanisms
+- Multiple classes per module
+- Loose helper functions outside classes
+- Direct imports from internal modules
+- Hardcoded configuration values
+
+### **Review Process**
+
+1. **Automated Checks**: All quality gates must pass
+2. **Architecture Review**: Verify FLEXT pattern compliance
+3. **Security Review**: Check for security vulnerabilities
+4. **Performance Review**: Ensure efficient HTTP operations
+5. **Documentation Review**: Verify documentation accuracy
+
+---
+
+## 🚀 Release Process
+
+### **Version Management**
+
+flext-api follows semantic versioning:
+
+- **Major (1.0.0)**: Breaking changes
+- **Minor (0.9.0)**: New features, backward compatible
+- **Patch (0.9.1)**: Bug fixes, no new features
+
+### **Release Checklist**
+
+- [ ] All tests pass with 100% success rate
+- [ ] Documentation updated and accurate
+- [ ] CHANGELOG.md updated with changes
+- [ ] Version numbers updated in:
+  - `pyproject.toml`
+  - `src/flext_api/__version__.py`
+  - Documentation files
+- [ ] Security scan passes
+- [ ] Performance benchmarks maintained
+- [ ] Integration tests with FLEXT ecosystem pass
+
+### **Release Commands**
 
 ```bash
-# Run tests with debugging
-pytest tests/unit/test_api_core.py -v -s --pdb
+# 1. Update version
+poetry version minor  # or major/patch
 
-# Show test output
-pytest tests/unit/test_api_core.py -v -s --capture=no
+# 2. Run complete validation
+make validate
 
-# Run specific test with debugging
-pytest tests/unit/test_client_core.py::TestFlextApiClient::test_creation -vvv --pdb
+# 3. Update documentation
+# Update README.md, docs/, and CHANGELOG.md
+
+# 4. Commit and tag
+git add .
+git commit -m "Release v0.9.0"
+git tag v0.9.0
+
+# 5. Push release
+git push origin main --tags
 ```
+
+---
+
+## 🐛 Debugging and Troubleshooting
 
 ### **Common Development Issues**
 
-1. **Import Errors**
+#### **Import Errors**
 
-   ```bash
-   # Check Python path
-   python -c "import sys; print('\n'.join(sys.path))"
+```python
+# Problem: ModuleNotFoundError
+# Solution: Install in development mode
+poetry install --with dev
 
-   # Verify flext-core installation
-   python -c "from flext_core import FlextResult; print('✅ flext-core OK')"
+# Problem: Circular imports
+# Solution: Use TYPE_CHECKING pattern
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from flext_api.models import HttpRequest
+```
 
-   # Reinstall dependencies
-   poetry install --with dev,test
-   ```
+#### **Test Failures**
 
-2. **Type Checking Errors**
+```bash
+# Problem: Field name mismatches in tests
+# Current issue: Tests expect .page but model has current_page with alias
 
-   ```bash
-   # Run mypy with detailed output
-   poetry run mypy src/flext_api --show-error-codes --show-traceback
+# Debug specific test
+pytest tests/unit/test_models.py::test_pagination -v -s
 
-   # Check specific file
-   poetry run mypy src/flext_api/api.py -v
-   ```
+# Check model definition
+python -c "from flext_api.models import FlextApiModels; print(FlextApiModels.PaginationConfig.model_fields)"
+```
 
-3. **Test Failures**
+#### **Type Checking Issues**
 
-   ```bash
-   # Run failed tests only
-   pytest --lf -v
+```bash
+# Problem: MyPy errors
+# Run with verbose output
+poetry run mypy src/ --show-error-codes --no-error-summary
 
-   # Show test durations
-   pytest --durations=10
+# Problem: Missing stubs
+# Install type stubs
+poetry add --group typings types-requests
+```
 
-   # Run with coverage to identify untested code
-   pytest --cov=flext_api --cov-report=html
-   ```
+### **Development Tools**
+
+#### **Interactive Development**
+
+```python
+# Use IPython for interactive development
+poetry run ipython
+
+# Test HTTP client interactively
+from flext_api import FlextApiClient
+client = FlextApiClient(base_url="https://httpbin.org")
+
+# Use async in IPython
+import asyncio
+result = await client.get("/json")
+print(result.unwrap().body if result.is_success else result.error)
+```
+
+#### **Debugging HTTP Requests**
+
+```python
+# Enable HTTP logging
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Use httpx logging
+import httpx
+httpx.logger.setLevel(logging.DEBUG)
+
+# Debug specific request
+from flext_api import FlextApiClient
+client = FlextApiClient(base_url="https://httpbin.org")
+result = await client.get("/get")
+```
+
+### **Performance Profiling**
+
+```bash
+# Profile test execution
+poetry run pytest tests/ --profile
+
+# Memory profiling
+poetry run python -m memory_profiler scripts/profile_client.py
+
+# HTTP performance testing
+poetry run python -m pytest tests/performance/ -v
+```
 
 ---
 
-## 📚 Development Resources
+## 📚 Contributing Guidelines
 
-### **Code Examples**
+### **Getting Started with Contributions**
 
-- **[examples/](../examples/)** - Working code examples
-- **[docs/examples/](examples/)** - Documentation examples
-- **[tests/](../tests/)** - Test examples for all patterns
+1. **Fork the repository** on GitHub
+2. **Create a feature branch**: `git checkout -b feature/new-feature`
+3. **Make changes** following coding standards
+4. **Add tests** for new functionality
+5. **Update documentation** as needed
+6. **Submit a pull request**
 
-### **Documentation**
+### **Commit Message Standards**
 
-- **[Architecture](architecture.md)** - System design and patterns
-- **[API Reference](api-reference.md)** - Complete API documentation
-- **[Configuration](configuration.md)** - Settings and environment management
-- **[Integration](integration.md)** - Ecosystem integration patterns
+```bash
+# Good commit messages
+git commit -m "feat: add retry logic to HTTP client"
+git commit -m "fix: resolve field name mismatch in pagination model"
+git commit -m "docs: update API reference with new methods"
+git commit -m "test: add integration tests for authentication"
 
-### **External Resources**
+# Commit types: feat, fix, docs, test, refactor, perf, chore
+```
 
-- **[Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)** - Architectural principles
-- **[Domain-Driven Design](https://martinfowler.com/bliki/DomainDrivenDesign.html)** - DDD patterns
-- **[FastAPI Documentation](https://fastapi.tiangolo.com/)** - Web framework reference
-- **[Pydantic Documentation](https://docs.pydantic.dev/)** - Data validation patterns
+### **Pull Request Process**
 
----
+1. **Quality Gates**: All automated checks must pass
+2. **Review**: Code review from maintainers
+3. **Testing**: Integration tests with FLEXT ecosystem
+4. **Documentation**: Updated documentation if needed
+5. **Merge**: Squash merge to main branch
 
-## 🤝 Contributing Guidelines
+### **Community Guidelines**
 
-### **Contribution Process**
-
-1. **Fork & Clone** - Fork repository and clone locally
-2. **Create Feature Branch** - Use descriptive branch names
-3. **Implement Changes** - Follow FLEXT-Core patterns
-4. **Run Quality Gates** - `make validate` must pass
-5. **Write Tests** - Achieve 90%+ coverage
-6. **Update Documentation** - Keep docs current
-7. **Submit Pull Request** - Use provided template
-
-### **Community Standards**
-
-- **Be Respectful** - Professional and inclusive communication
-- **Follow Patterns** - Adhere to established architectural patterns
-- **Quality First** - No shortcuts on quality standards
-- **Document Everything** - Code should be self-documenting
-- **Test Thoroughly** - Comprehensive test coverage required
+- **Be respectful** in all interactions
+- **Follow coding standards** consistently
+- **Write clear documentation** for new features
+- **Provide comprehensive tests** for changes
+- **Respond to feedback** constructively
 
 ---
 
-**Development Guide v0.9.0** - Comprehensive development workflow for FLEXT API HTTP foundation library.
+## 🎯 Development Roadmap
+
+### **Current Development Focus (v0.9.0)**
+
+1. **Fix Test Suite**: Resolve 59 failing tests
+2. **Improve Coverage**: Increase from 73% to 95%+
+3. **Field Alignment**: Fix model/test field name mismatches
+4. **HTTP Methods**: Ensure consistent HttpMethods enum usage
+
+### **Next Version (v1.0.0) - Production Features**
+
+1. **Retry Logic**: Implement actual retry functionality
+2. **Connection Pooling**: Optimize httpx client configuration
+3. **Plugin System**: Implement authentication and logging plugins
+4. **Circuit Breaker**: Add fault tolerance patterns
+5. **HTTP/2 Support**: Enable HTTP/2 by default
+6. **Performance Optimization**: Connection pool tuning
+
+### **Future Versions (v1.1.0+)**
+
+1. **Advanced Authentication**: OAuth, JWT, session handling
+2. **Streaming Responses**: Large response handling
+3. **Metrics Integration**: Advanced monitoring and tracing
+4. **Load Balancing**: Client-side load balancing
+5. **Advanced Security**: Rate limiting, security headers
+
+---
+
+## 🆘 Getting Help
+
+### **Development Support**
+
+- **Documentation**: [docs/](.) - Complete development guides
+- **Issues**: [GitHub Issues](https://github.com/flext-sh/flext-api/issues) - Report bugs or request features
+- **Discussions**: GitHub Discussions - Ask questions or share ideas
+- **FLEXT Workspace**: Integration with broader FLEXT ecosystem
+
+### **Quick Reference Links**
+
+- [Getting Started](getting-started.md) - Installation and basic usage
+- [Architecture](architecture.md) - Design patterns and structure
+- [API Reference](api-reference.md) - Complete API documentation
+- [Configuration](configuration.md) - Settings and environment management
+
+---
+
+**Development Summary**: flext-api follows strict quality standards with comprehensive testing, type safety, and FLEXT ecosystem integration. All contributions must maintain these standards while advancing the HTTP foundation for the entire FLEXT platform.
