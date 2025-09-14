@@ -23,14 +23,33 @@ class FlextApiExceptions:
 
     # Base exceptions from flext-core
     BaseError = FlextExceptions.BaseError
-    ValidationError = FlextExceptions.ValidationError
     ConfigurationError = FlextExceptions.ConfigurationError
     ProcessingError = FlextExceptions.ProcessingError
     ConnectionError = FlextExceptions.ConnectionError
     TimeoutError = FlextExceptions.TimeoutError
-    AuthenticationError = FlextExceptions.AuthenticationError
     PermissionError = FlextExceptions.PermissionError
-    NotFoundError = FlextExceptions.NotFoundError
+
+    # HTTP-specific exception classes with status_code property
+    class ValidationError(FlextExceptions._ValidationError):
+        """Validation error with HTTP status code."""
+
+        def __init__(self, message: str, **_kwargs: object) -> None:  # noqa: ARG002
+            super().__init__(message)
+            self.status_code = 400
+
+    class AuthenticationError(FlextExceptions._AuthenticationError):
+        """Authentication error with HTTP status code."""
+
+        def __init__(self, message: str, **_kwargs: object) -> None:  # noqa: ARG002
+            super().__init__(message)
+            self.status_code = 401
+
+    class NotFoundError(FlextExceptions._NotFoundError):
+        """Not found error with HTTP status code."""
+
+        def __init__(self, message: str, **_kwargs: object) -> None:  # noqa: ARG002
+            super().__init__(message)
+            self.status_code = 404
 
     # =============================================================================
     # HTTP-specific simple aliases - Use existing flext-core patterns
@@ -52,6 +71,9 @@ class FlextApiExceptions:
                 endpoint=str(endpoint_value) if endpoint_value is not None else None,
             )
             self.status_code = status_code
+
+    # Alias for backward compatibility with tests
+    FlextApiError = HttpError
 
     @classmethod
     def http_error_class(cls) -> type[HttpError]:
