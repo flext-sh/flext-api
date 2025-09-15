@@ -11,6 +11,7 @@ from typing import cast
 import pytest
 from flext_core import FlextTypes
 from flext_tests import FlextTestsDomains
+from pydantic import ValidationError
 
 from flext_api import FlextApiClient, create_flext_api
 
@@ -163,12 +164,12 @@ class TestFlextApiClient:
         assert client.base_url == valid_base_url
 
         # Empty base_url should raise validation error during initialization
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             FlextApiClient(base_url="")
 
-        # Should raise some validation error
+        # Should raise validation error for base_url
         error_message = str(exc_info.value).lower()
-        assert "empty" in error_message or "base" in error_message
+        assert "base_url" in error_message
 
     def test_client_property_types_validation(self) -> None:
         """Test client property types are properly validated."""

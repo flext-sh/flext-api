@@ -16,7 +16,7 @@ import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from flext_core import FlextTypes
+from flext_core import FlextContainer, FlextTypes
 from flext_tests import FlextTestsDomains
 
 # DIRECT imports from flext_api - verified classes
@@ -117,6 +117,15 @@ def flext_api_client() -> FlextApiClient:
 def flext_api_config() -> FlextApiConfig:
     """Provide FlextApiConfig using flext_tests configuration."""
     return FlextApiConfig()
+
+
+@pytest.fixture
+def clean_container() -> FlextContainer:
+    """Provide clean FlextContainer instance for testing."""
+    # Create a separate container instance for testing (not the global one)
+    container = FlextContainer()
+    container.clear()  # Clear any existing registrations
+    return container
 
 
 @pytest.fixture

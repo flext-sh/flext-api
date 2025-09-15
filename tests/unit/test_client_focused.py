@@ -103,7 +103,7 @@ class TestFlextApiClientFocused:
             "invalid_field": "should_be_ignored",  # Invalid field
         }
 
-        converted = client._convert_kwargs_to_client_config_kwargs(kwargs)
+        converted = client._extract_client_config_params(kwargs)
 
         assert converted["base_url"] == "https://test.com"
         assert converted["timeout"] == 45.0
@@ -124,7 +124,7 @@ class TestFlextApiClientFocused:
             "headers": "not_a_dict",  # Invalid type should be skipped
         }
 
-        converted = client._convert_kwargs_to_client_config_kwargs(kwargs)
+        converted = client._extract_client_config_params(kwargs)
 
         assert converted["timeout"] == 30.0
         assert converted["auth_token"] is None
@@ -223,7 +223,7 @@ class TestFlextApiClientFocused:
             result = await client.request("GET", "/get", params={"test": "value"})
 
             mock_request.assert_called_once_with(
-                client, "GET", "/get", params={"test": "value"}
+                "GET", "/get", params={"test": "value"}
             )
             assert result.is_success
 
@@ -235,7 +235,10 @@ class TestFlextApiClientFocused:
 
         assert result.is_success
         response = result.unwrap()
-        assert hasattr(response, "status_code")
+        assert isinstance(response, dict)
+        assert "client_type" in response
+        assert "base_url" in response
+        assert response["base_url"] == "https://test.com"
 
     @pytest.mark.asyncio
     async def test_start_method(self) -> None:
@@ -576,15 +579,19 @@ class TestFlextApiClientFocused:
 
         assert url == "https://base.com"
 
-    def test_build_url_no_base_url(self) -> None:
-        """Test _build_url with no base URL."""
+    def test_build_url_absolute_endpoint(self) -> None:
+        """Test _build_url with absolute URL endpoint."""
         client = FlextApiClient("https://test.com")
 
-        # Test the case where base_url is empty in the logic
-        # The _build_url method checks if base_url is falsy
-        with patch.object(client._client_config, "base_url", ""):
-            url = client._build_url("/endpoint")
-            assert url == "/endpoint"
+        # Test that absolute URLs are returned as-is (not combined with base_url)
+        absolute_url = "https://other-service.com/api/data"
+        url = client._build_url(absolute_url)
+        assert url == absolute_url
+
+        # Test with http as well
+        http_url = "http://localhost:8080/api"
+        url = client._build_url(http_url)
+        assert url == http_url
 
     @pytest.mark.asyncio
     async def test_request_internal_with_all_parameters(self) -> None:

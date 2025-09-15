@@ -2,7 +2,9 @@
 
 **Development Workflow and Contribution Guidelines**
 
-This guide covers the complete development workflow for contributing to flext-api, including setup, testing, quality gates, and contribution standards.
+**Version**: 0.9.0 | **Updated**: September 17, 2025
+
+This guide covers the complete development workflow for contributing to flext-api, including setup, testing, quality gates, and contribution standards based on the actual implementation.
 
 ---
 

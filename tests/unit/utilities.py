@@ -120,21 +120,22 @@ class TestFlextApiUtilitiesReal:
         """Test real JSON parsing."""
         # Valid JSON
         valid_result = FlextApiUtilities.safe_json_parse('{"key": "value"}')
-        assert isinstance(valid_result, dict)
-        assert valid_result == {"key": "value"}
+        assert valid_result.is_success
+        assert valid_result.unwrap() == {"key": "value"}
 
-        # Invalid JSON - returns default dict
-        invalid_result = FlextApiUtilities.safe_json_parse('{"invalid": json}', {})
-        assert isinstance(invalid_result, dict)
+        # Invalid JSON - should return failure
+        invalid_result = FlextApiUtilities.safe_json_parse('{"invalid": json}')
+        assert invalid_result.is_failure
 
     def test_safe_json_stringify(self) -> None:
         """Test real JSON stringification."""
         test_data = {"key": "value", "number": 42}
 
         result = FlextApiUtilities.safe_json_stringify(test_data)
-        assert isinstance(result, str)
-        assert "key" in result
-        assert "value" in result
+        assert result.is_success
+        json_str = result.unwrap()
+        assert "key" in json_str
+        assert "value" in json_str
 
     def test_is_non_empty_string(self) -> None:
         """Test real string validation."""

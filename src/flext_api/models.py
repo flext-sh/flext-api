@@ -84,7 +84,7 @@ class FlextApiModels:
     class HttpResponse(FlextModels.Entity):
         """HTTP response model extending flext-core Entity."""
 
-        status_code: int
+        status_code: int = Field(ge=100, le=599)
         body: str | dict[str, object] | None = None
         headers: dict[str, str] = Field(default_factory=dict)
         url: str
@@ -134,8 +134,8 @@ class FlextApiModels:
 
         # Essential configuration only
         base_url: str = FlextApiConstants.DEFAULT_BASE_URL
-        timeout: float = FlextApiConstants.DEFAULT_TIMEOUT
-        max_retries: int = FlextApiConstants.DEFAULT_RETRIES
+        timeout: float = Field(default=FlextApiConstants.DEFAULT_TIMEOUT, gt=0)
+        max_retries: int = Field(default=FlextApiConstants.DEFAULT_RETRIES, ge=0)
         headers: dict[str, str] = Field(default_factory=dict)
 
         # Authentication - consolidated
@@ -175,9 +175,9 @@ class FlextApiModels:
             alias="filters", default_factory=dict
         )
         sort_fields: list[str] = Field(default_factory=list)
-        page_number: int = Field(alias="page", default=1)
+        page_number: int = Field(alias="page", default=1, ge=1)
         page_size_value: int = Field(
-            alias="page_size", default=FlextApiConstants.DEFAULT_PAGE_SIZE
+            alias="page_size", default=FlextApiConstants.DEFAULT_PAGE_SIZE, ge=1, le=1000
         )
 
         def add_filter(self, key: str, value: object) -> FlextResult[None]:
@@ -201,8 +201,8 @@ class FlextApiModels:
     class PaginationConfig(FlextModels.Value):
         """Pagination configuration extending flext-core Value."""
 
-        page_size: int = FlextApiConstants.DEFAULT_PAGE_SIZE
-        current_page: int = Field(alias="page", default=1)
+        page_size: int = Field(default=FlextApiConstants.DEFAULT_PAGE_SIZE, gt=0)
+        current_page: int = Field(alias="page", default=1, ge=1)
         max_pages: int | None = None
         total: int = 0
 

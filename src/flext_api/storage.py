@@ -35,7 +35,16 @@ class FlextApiStorage(FlextModels.Entity):
         self._logger = FlextLogger(__name__)
 
         # Simplified config using flext-core patterns
-        config_dict = FlextTypeAdapters.adapt_to_dict(config or {})
+        config_dict: dict[str, object]
+        if isinstance(config, dict):
+            config_dict = config
+        elif config is not None:
+            adapted = FlextTypeAdapters.adapt_to_dict(config)
+            value = adapted.get("value", adapted)
+            config_dict = value if isinstance(value, dict) else {}
+        else:
+            config_dict = {}
+
         self._namespace = str(config_dict.get("namespace", "flext_api"))
 
         # Store configuration parameters

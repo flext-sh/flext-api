@@ -38,41 +38,41 @@ class TestFlextApiStorage:
         storage = FlextApiStorage()
 
         # Test set operation
-        result = storage.set("key1", "value1")
-        assert result.success
-        assert result.data is None
+        set_result = storage.set("key1", "value1")
+        assert set_result.success
+        assert set_result.data is None
 
         # Test get operation
-        result = storage.get("key1")
-        assert result.success
-        assert result.data == "value1"
+        get_result = storage.get("key1")
+        assert get_result.success
+        assert get_result.data == "value1"
 
         # Test exists operation
-        result = storage.exists("key1")
-        assert result.success
-        assert result.data is True
+        exists_result = storage.exists("key1")
+        assert exists_result.success
+        assert exists_result.data is True
 
         # Test delete operation
-        result = storage.delete("key1")
-        assert result.success
+        delete_result = storage.delete("key1")
+        assert delete_result.success
 
         # Test get after delete
-        result = storage.get("key1")
-        assert result.success
-        assert result.data is None
+        get_after_delete_result = storage.get("key1")
+        assert get_after_delete_result.success
+        assert get_after_delete_result.data is None
 
     def test_storage_with_ttl(self) -> None:
         """Test storage with TTL functionality."""
         storage = FlextApiStorage()
 
         # Store with TTL
-        result = storage.set("key1", "value1", ttl=1)
-        assert result.success
+        set_result = storage.set("key1", "value1", ttl=1)
+        assert set_result.success
 
         # Verify it exists
-        result = storage.exists("key1")
-        assert result.success
-        assert result.data is True
+        exists_result = storage.exists("key1")
+        assert exists_result.success
+        assert exists_result.data is True
 
         # Wait for expiration
         time.sleep(1.1)
