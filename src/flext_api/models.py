@@ -177,7 +177,10 @@ class FlextApiModels:
         sort_fields: list[str] = Field(default_factory=list)
         page_number: int = Field(alias="page", default=1, ge=1)
         page_size_value: int = Field(
-            alias="page_size", default=FlextApiConstants.DEFAULT_PAGE_SIZE, ge=1, le=1000
+            alias="page_size",
+            default=FlextApiConstants.DEFAULT_PAGE_SIZE,
+            ge=1,
+            le=1000,
         )
 
         def add_filter(self, key: str, value: object) -> FlextResult[None]:

@@ -13,7 +13,7 @@ This guide covers all configuration options, environment variables, and settings
 flext-api provides configuration management through:
 
 - **FlextApiConfig**: Main configuration class extending flext-core FlextConfig
-- **Environment Variables**: FLEXT_API_ prefixed environment variables
+- **Environment Variables**: FLEXT*API* prefixed environment variables
 - **ClientConfig Models**: Type-safe Pydantic configuration models for HTTP clients
 - **AppConfig Models**: FastAPI application configuration through models
 
@@ -25,27 +25,27 @@ All environment variables use the `FLEXT_API_` prefix and are defined in `FlextA
 
 ### **Server Configuration**
 
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `FLEXT_API_API_HOST` | string | `127.0.0.1` | Host address to bind |
-| `FLEXT_API_API_PORT` | int | `8000` | Port number to bind |
-| `FLEXT_API_WORKERS` | int | `4` | Number of worker processes |
-| `FLEXT_API_API_DEBUG` | boolean | `false` | Enable debug mode |
+| Variable              | Type    | Default     | Description                |
+| --------------------- | ------- | ----------- | -------------------------- |
+| `FLEXT_API_API_HOST`  | string  | `127.0.0.1` | Host address to bind       |
+| `FLEXT_API_API_PORT`  | int     | `8000`      | Port number to bind        |
+| `FLEXT_API_WORKERS`   | int     | `4`         | Number of worker processes |
+| `FLEXT_API_API_DEBUG` | boolean | `false`     | Enable debug mode          |
 
 ### **API Configuration**
 
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `FLEXT_API_API_TITLE` | string | `FLEXT API` | API title |
-| `FLEXT_API_API_VERSION` | string | `0.9.0` | API version |
+| Variable                 | Type   | Default                   | Description      |
+| ------------------------ | ------ | ------------------------- | ---------------- |
+| `FLEXT_API_API_TITLE`    | string | `FLEXT API`               | API title        |
+| `FLEXT_API_API_VERSION`  | string | `0.9.0`                   | API version      |
 | `FLEXT_API_API_BASE_URL` | string | `https://api.example.com` | Default base URL |
 
 ### **Client Configuration**
 
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `FLEXT_API_API_TIMEOUT` | float | `30.0` | Request timeout in seconds |
-| `FLEXT_API_MAX_RETRIES` | int | `3` | Maximum retry attempts |
+| Variable                | Type  | Default | Description                |
+| ----------------------- | ----- | ------- | -------------------------- |
+| `FLEXT_API_API_TIMEOUT` | float | `30.0`  | Request timeout in seconds |
+| `FLEXT_API_MAX_RETRIES` | int   | `3`     | Maximum retry attempts     |
 
 ---
 

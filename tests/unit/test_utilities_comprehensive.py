@@ -447,7 +447,7 @@ class TestFlextApiUtilitiesComprehensive:
 
         # Test pagination with converted int inputs
         safe_total = 25  # Direct int value
-        safe_page = 2    # Direct int value
+        safe_page = 2  # Direct int value
         safe_page_size = 10  # Direct int value
         pagination_result = (
             FlextApiUtilities.PaginationBuilder.build_paginated_response(

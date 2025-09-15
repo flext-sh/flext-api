@@ -86,6 +86,7 @@ class FlextApiClient(FlextDomainService):
 ```
 
 **Current Implementation**:
+
 - Basic httpx.AsyncClient wrapper
 - Timeout configuration support
 - FlextResult integration for error handling
@@ -131,12 +132,12 @@ class FlextApiConfig(FlextModels.Value):
 
 ### **FLEXT-Core Pattern Usage**
 
-| Pattern | Status | Implementation | Lines |
-|---------|--------|----------------|--------|
-| **FlextResult[T]** | 🟢 90% | Comprehensive error handling throughout | ~200 |
-| **FlextDomainService** | 🟢 85% | FlextApiClient extends FlextDomainService | ~100 |
-| **FlextModels** | 🟢 80% | HTTP models use Entity/Value patterns | ~300 |
-| **FlextContainer** | 🟡 60% | Basic dependency injection usage | ~50 |
+| Pattern                | Status | Implementation                            | Lines |
+| ---------------------- | ------ | ----------------------------------------- | ----- |
+| **FlextResult[T]**     | 🟢 90% | Comprehensive error handling throughout   | ~200  |
+| **FlextDomainService** | 🟢 85% | FlextApiClient extends FlextDomainService | ~100  |
+| **FlextModels**        | 🟢 80% | HTTP models use Entity/Value patterns     | ~300  |
+| **FlextContainer**     | 🟡 60% | Basic dependency injection usage          | ~50   |
 
 ### **Integration Points**
 
@@ -199,6 +200,7 @@ def create_fastapi_app(config: AppConfig) -> FastAPI:
 ```
 
 **Current Capabilities**:
+
 - Basic FastAPI app creation
 - Health endpoint configuration
 - Title/version/description setup
@@ -264,6 +266,7 @@ class FlextApiStorage(FlextModels.Entity):
 ```
 
 **Current Implementation**:
+
 - Simple dictionary-based storage
 - FlextResult integration
 - Basic CRUD operations
@@ -348,6 +351,7 @@ tests/
 ### **Test Quality Issues**
 
 Main testing challenges identified:
+
 - Field name mismatches (tests expect `.page`, model has `current_page` with alias)
 - Missing HttpMethods enum usage in some tests
 - Integration tests need real HTTP server setup

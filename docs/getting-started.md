@@ -356,7 +356,7 @@ Before proceeding to advanced usage:
 - [ ] Basic HTTP client example works
 - [ ] FastAPI application starts correctly
 - [ ] Test suite runs without errors
-- [ ] Development server accessible at http://localhost:8000
+- [ ] Development server accessible at <http://localhost:8000>
 
 ---
 

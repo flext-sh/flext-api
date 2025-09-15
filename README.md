@@ -15,6 +15,7 @@ flext-api serves as the HTTP foundation for FLEXT's enterprise data integration 
 ### **Current Implementation** (September 2025)
 
 **Source Code**: 2,927 lines across 14 modules
+
 1. **HTTP Client Foundation** - `client.py` (605 lines) - AsyncClient wrapper with FlextResult patterns
 2. **Domain Models** - `models.py` (409 lines) - Pydantic v2 validation and business logic
 3. **HTTP Utilities** - `utilities.py` (414 lines) - Helper functions and transformations
@@ -34,12 +35,12 @@ flext-api serves as the HTTP foundation for FLEXT's enterprise data integration 
 
 ### **FLEXT-Core Integration Status**
 
-| Pattern             | Status | Implementation |
-| ------------------- | ------ | -------------- |
-| **FlextResult[T]**  | 🟢 90% | Comprehensive error handling throughout |
+| Pattern                | Status | Implementation                            |
+| ---------------------- | ------ | ----------------------------------------- |
+| **FlextResult[T]**     | 🟢 90% | Comprehensive error handling throughout   |
 | **FlextDomainService** | 🟢 85% | FlextApiClient extends FlextDomainService |
-| **FlextModels**     | 🟢 80% | HTTP models use Entity/Value patterns |
-| **FlextContainer**  | 🟡 60% | Basic dependency injection usage |
+| **FlextModels**        | 🟢 80% | HTTP models use Entity/Value patterns     |
+| **FlextContainer**     | 🟡 60% | Basic dependency injection usage          |
 
 > **Status**: 🟢 Complete | 🟡 Partial | 🔴 Needs Work
 
@@ -188,6 +189,7 @@ def create_api():
 **Based on 2025 HTTP/API best practices research** (httpx, FastAPI, enterprise patterns):
 
 #### **Retry and Resilience Patterns**
+
 ```python
 # Target implementation with urllib3.Retry patterns
 from urllib3.util.retry import Retry
@@ -202,6 +204,7 @@ async def request_with_retry(self, request):
 ```
 
 #### **Connection Pooling and Performance**
+
 ```python
 # Target httpx configuration
 import httpx
@@ -220,6 +223,7 @@ client = httpx.AsyncClient(
 ```
 
 #### **Circuit Breaker Pattern**
+
 ```python
 # Target implementation using circuit breaker patterns
 from circuitbreaker import circuit
@@ -230,6 +234,7 @@ async def protected_request(self, request):
 ```
 
 #### **Middleware Plugin System**
+
 ```python
 # Target middleware architecture
 class RetryPlugin:
@@ -244,16 +249,16 @@ class AuthenticationPlugin:
 
 ### **Production Features Roadmap**
 
-| Feature | Current | Target v1.0.0 | Implementation |
-|---------|---------|---------------|----------------|
-| Retry Logic | Configuration only | Exponential backoff | urllib3.Retry + tenacity |
-| Connection Pools | Basic client | Optimized pools | httpx.Limits configuration |
-| HTTP/2 | Available but unused | Enabled by default | httpx http2=True |
-| Streaming | Missing | Large response support | httpx streaming methods |
-| Circuit Breaker | Missing | Fault tolerance | circuitbreaker library |
-| Middleware | Empty directory | Plugin system | AsyncMiddleware protocol |
-| Authentication | Basic token | OAuth/JWT/Sessions | Comprehensive auth patterns |
-| Monitoring | Basic logging | Metrics/tracing | Integration with flext-observability |
+| Feature          | Current              | Target v1.0.0          | Implementation                       |
+| ---------------- | -------------------- | ---------------------- | ------------------------------------ |
+| Retry Logic      | Configuration only   | Exponential backoff    | urllib3.Retry + tenacity             |
+| Connection Pools | Basic client         | Optimized pools        | httpx.Limits configuration           |
+| HTTP/2           | Available but unused | Enabled by default     | httpx http2=True                     |
+| Streaming        | Missing              | Large response support | httpx streaming methods              |
+| Circuit Breaker  | Missing              | Fault tolerance        | circuitbreaker library               |
+| Middleware       | Empty directory      | Plugin system          | AsyncMiddleware protocol             |
+| Authentication   | Basic token          | OAuth/JWT/Sessions     | Comprehensive auth patterns          |
+| Monitoring       | Basic logging        | Metrics/tracing        | Integration with flext-observability |
 
 ---
 
@@ -347,6 +352,7 @@ Based on 2025 HTTP client best practices:
 ### **Common Issues**
 
 **Test Failures (59 failing)**
+
 ```bash
 # Main issue: Field name mismatches
 # Tests expect .page but model has current_page with alias
@@ -354,12 +360,14 @@ make test  # See specific failures
 ```
 
 **Import Issues**
+
 ```bash
 # Ensure proper installation
 poetry install --with dev,test,typings,security
 ```
 
 **Type Checking**
+
 ```bash
 # Source code passes MyPy strict mode
 make type-check
