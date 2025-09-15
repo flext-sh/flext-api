@@ -176,16 +176,18 @@ async def main() -> None:
     if client_config_result.is_success:
         print("\nClient Configuration:")
         client_config_dict: Mapping[str, object] = client_config_result.value
-        for key, value in client_config_dict.items():
-            print(f"  {key}: {value}")
+        for key in client_config_dict:
+            config_value: object = client_config_dict[key]
+            print(f"  {key}: {config_value}")
 
     # Export CORS configuration
     cors_config_result = prod_config.get_cors_config()
     if cors_config_result.is_success:
         print("\nCORS Configuration:")
         cors_config_dict: Mapping[str, object] = cors_config_result.value
-        for key, value in cors_config_dict.items():
-            print(f"  {key}: {value}")
+        for key in cors_config_dict:
+            cors_value: object = cors_config_dict[key]
+            print(f"  {key}: {cors_value}")
 
     # =========================================================================
     # 7. GLOBAL INSTANCE MANAGEMENT

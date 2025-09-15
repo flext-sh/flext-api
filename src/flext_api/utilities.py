@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import time
 from typing import TypeVar
+from urllib.parse import urlparse
 
 from flext_core import (
     FlextResult,
@@ -18,13 +19,14 @@ from flext_core import (
     FlextValidations,
 )
 
-from flext_api.constants import FlextApiConstants, HttpMethods
-
-T = TypeVar("T")
+from flext_api.constants import FlextApiConstants
 
 
 class FlextApiUtilities:
     """HTTP API utilities extending flext-core - ZERO DUPLICATION using existing functionality."""
+
+    # Move TypeVar inside the unified class - FLEXT compliance
+    T = TypeVar("T")
 
     # =============================================================================
     # DIRECT RE-EXPORT of flext-core utilities - STOP DUPLICATING!
@@ -186,8 +188,32 @@ class FlextApiUtilities:
     class HttpValidator:
         """HTTP-specific validation using flext-core patterns."""
 
-        # Use flext-core validators directly
-        validate_url = FlextValidations.FieldValidators.validate_url
+        @staticmethod
+        def validate_url(url: str) -> FlextResult[str]:
+            """Validate URL with additional port range checking."""
+            # First use flext-core validation
+            base_result = FlextValidations.FieldValidators.validate_url(url)
+            if base_result.is_failure:
+                return base_result
+
+            # Additional port validation
+            try:
+                parsed = urlparse(url)
+                if parsed.port is not None:
+                    port = parsed.port
+                    if port == 0:
+                        return FlextResult[str].fail("Invalid port 0")
+                    if port > FlextApiConstants.HttpValidation.MAX_PORT:
+                        return FlextResult[str].fail(f"Invalid port {port}")
+
+                # Check URL length
+                if len(url) > FlextApiConstants.HttpValidation.MAX_URL_LENGTH:
+                    return FlextResult[str].fail("URL is too long")
+
+            except Exception as e:
+                return FlextResult[str].fail(f"URL parsing failed: {e}")
+
+            return base_result
 
         @staticmethod
         def validate_http_method(method: str | None) -> FlextResult[str]:
@@ -198,10 +224,10 @@ class FlextApiUtilities:
             method_upper = method.upper()
             # Use Python 3.13+ StrEnum for validation - maximum FlextCore integration
             try:
-                validated_method = HttpMethods(method_upper)
+                validated_method = FlextApiConstants.HttpMethods(method_upper)
                 return FlextResult[str].ok(validated_method.value)
             except ValueError:
-                valid_methods = ", ".join(HttpMethods)
+                valid_methods = ", ".join(FlextApiConstants.HttpMethods)
                 return FlextResult[str].fail(
                     f"Invalid HTTP method. Valid methods: {valid_methods}"
                 )
@@ -215,7 +241,7 @@ class FlextApiUtilities:
                     code_int < FlextApiConstants.MIN_HTTP_STATUS
                     or code_int > FlextApiConstants.HttpStatus.MAX_HTTP_STATUS
                 ):
-                    return FlextResult[int].fail("Status code out of valid range")
+                    return FlextResult[int].fail("Invalid HTTP status code")
                 return FlextResult[int].ok(code_int)
             except (ValueError, TypeError):
                 return FlextResult[int].fail("Status code must be a valid integer")
@@ -242,9 +268,21 @@ class FlextApiUtilities:
 
     @staticmethod
     def validate_config(config: object) -> FlextResult[FlextTypes.Core.Dict]:
-        """Validate configuration using flext-core type adapters."""
+        """Validate configuration using flext-core type adapters with business rules."""
         try:
             result_dict = FlextTypeAdapters.adapt_to_dict(config)
+
+            # Additional business rule validations
+            if hasattr(config, "method"):
+                method = getattr(config, "method", "")
+                if method == "":
+                    return FlextResult[FlextTypes.Core.Dict].fail("HTTP method must be a non-empty string")
+
+            if hasattr(config, "status_code"):
+                status_code = getattr(config, "status_code", None)
+                if status_code is not None and (status_code < FlextApiConstants.MIN_HTTP_STATUS or status_code > FlextApiConstants.HttpStatus.MAX_HTTP_STATUS):
+                    return FlextResult[FlextTypes.Core.Dict].fail("Invalid HTTP status code")
+
             return FlextResult[FlextTypes.Core.Dict].ok(result_dict)
         except Exception as e:
             return FlextResult[FlextTypes.Core.Dict].fail(str(e))
@@ -382,7 +420,7 @@ class FlextApiUtilities:
         }
 
     @staticmethod
-    def batch_process(items: list[T], batch_size: int = 100) -> list[list[T]]:
+    def batch_process(items: list[FlextApiUtilities.T], batch_size: int = 100) -> list[list[FlextApiUtilities.T]]:
         """Process items in batches."""
         if batch_size <= 0:
             batch_size = 100

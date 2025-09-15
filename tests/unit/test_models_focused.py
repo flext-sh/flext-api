@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, cast
 
 import pytest
 from pydantic import ValidationError
@@ -60,9 +60,8 @@ class TestFlextApiModelsFocused:
     def test_http_request_url_validation_none(self) -> None:
         """Test HttpRequest URL validation with None URL."""
         # Test with invalid URL type
-        invalid_url: str | None = None
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiModels.HttpRequest(url=invalid_url)  # type: ignore[arg-type]
+            FlextApiModels.HttpRequest(url=cast("str", None))  # Intentionally testing None type
 
         # Pydantic validates type first, so None fails string type validation
         assert "Input should be a valid string" in str(exc_info.value)
@@ -270,9 +269,9 @@ class TestFlextApiModelsFocused:
         invalid_status: str = "invalid"
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.HttpResponse(
-                status_code=invalid_status,  # type: ignore[arg-type]
+                status_code=cast("int", invalid_status),  # Intentionally testing invalid type
                 url="https://test.com",
-                method="GET"
+                method="GET",
             )
 
         # Pydantic should fail on type conversion
@@ -334,7 +333,7 @@ class TestFlextApiModelsFocused:
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.ClientConfig(base_url="invalid-url")
 
-        assert "Invalid URL format" in str(exc_info.value)
+        assert "URL must be a non-empty string" in str(exc_info.value)
 
     def test_client_config_base_url_validation_strips_whitespace(self) -> None:
         """Test ClientConfig base_url validation strips whitespace."""

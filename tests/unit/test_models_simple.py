@@ -34,7 +34,7 @@ class TestFlextApiModelsSimple:
         assert config.base_url == "https://api.example.com"
 
         # Invalid URL
-        with pytest.raises(ValueError, match="Invalid URL format"):
+        with pytest.raises(ValueError, match="URL must be a non-empty string"):
             FlextApiModels.ClientConfig(base_url="invalid-url")
 
     def test_client_config_validation_timeout(self) -> None:

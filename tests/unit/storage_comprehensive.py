@@ -96,13 +96,13 @@ class TestFlextApiStorage:
         assert result.data == 2
 
         # Clear all
-        result = storage.clear()
-        assert result.success
+        clear_result = storage.clear()
+        assert clear_result.success
 
         # Check size after clear
-        result = storage.size()
-        assert result.success
-        assert result.data == 0
+        size_result = storage.size()
+        assert size_result.success
+        assert size_result.data == 0
 
     def test_storage_keys_items_values(self) -> None:
         """Test getting keys, items, and values."""
@@ -119,18 +119,18 @@ class TestFlextApiStorage:
         assert set(result.data) == {"key1", "key2"}
 
         # Test items
-        result = storage.items()
-        assert result.success
-        assert result.data is not None
-        items = dict(result.data)
+        items_result = storage.items()
+        assert items_result.success
+        assert items_result.data is not None
+        items: dict[str, object] = dict(items_result.data)
         assert items["key1"] == "value1"
         assert items["key2"] == "value2"
 
         # Test values
-        result = storage.values()
-        assert result.success
-        assert result.data is not None
-        assert set(result.data) == {"value1", "value2"}
+        values_result = storage.values()
+        assert values_result.success
+        assert values_result.data is not None
+        assert set(values_result.data) == {"value1", "value2"}
 
     def test_storage_error_handling(self) -> None:
         """Test storage error handling."""
@@ -167,18 +167,18 @@ class TestFlextApiStorage:
         result = storage.set("complex", complex_data)
         assert result.success
 
-        result = storage.get("complex")
-        assert result.success
-        assert result.data == complex_data
+        get_result = storage.get("complex")
+        assert get_result.success
+        assert get_result.data == complex_data
 
         # Test with list
         list_data = [1, 2, 3, {"nested": True}]
         result = storage.set("list", list_data)
         assert result.success
 
-        result = storage.get("list")
-        assert result.success
-        assert result.data == list_data
+        get_list_result = storage.get("list")
+        assert get_list_result.success
+        assert get_list_result.data == list_data
 
     def test_storage_namespace_isolation(self) -> None:
         """Test that different namespaces are isolated."""
@@ -235,9 +235,9 @@ class TestIntegratedStorageOperations:
         assert result.success
 
         # Retrieve session
-        result = storage.get("session:12345")
-        assert result.success
-        assert result.data == session_data
+        get_result = storage.get("session:12345")
+        assert get_result.success
+        assert get_result.data == session_data
 
         # Update session
         session_data["last_activity"] = "2025-01-01T01:00:00Z"
@@ -245,20 +245,20 @@ class TestIntegratedStorageOperations:
         assert result.success
 
         # Verify update
-        result = storage.get("session:12345")
-        assert result.success
-        assert result.data is not None
-        assert isinstance(result.data, dict)
-        assert "last_activity" in result.data
+        updated_result = storage.get("session:12345")
+        assert updated_result.success
+        assert updated_result.data is not None
+        assert isinstance(updated_result.data, dict)
+        assert "last_activity" in updated_result.data
 
         # Clean up session
         result = storage.delete("session:12345")
         assert result.success
 
         # Verify cleanup
-        result = storage.exists("session:12345")
-        assert result.success
-        assert result.data is False
+        exists_result = storage.exists("session:12345")
+        assert exists_result.success
+        assert exists_result.data is False
 
     def test_batch_operations_scenario(self) -> None:
         """Test batch operations scenario."""
@@ -276,15 +276,15 @@ class TestIntegratedStorageOperations:
             assert result.success
 
         # Verify all items stored
-        result = storage.size()
-        assert result.success
-        assert result.data == 3
+        size_result = storage.size()
+        assert size_result.success
+        assert size_result.data == 3
 
         # Batch retrieve
         for key, expected_value in items.items():
-            result = storage.get(key)
-            assert result.success
-            assert result.data == expected_value
+            get_result = storage.get(key)
+            assert get_result.success
+            assert get_result.data == expected_value
 
         # Batch delete
         for key in items:
@@ -292,9 +292,9 @@ class TestIntegratedStorageOperations:
             assert result.success
 
         # Verify all deleted
-        result = storage.size()
-        assert result.success
-        assert result.data == 0
+        final_size_result = storage.size()
+        assert final_size_result.success
+        assert final_size_result.data == 0
 
     def test_error_recovery_scenario(self) -> None:
         """Test error recovery scenarios."""
@@ -310,9 +310,9 @@ class TestIntegratedStorageOperations:
         result = storage.set("recovery_key", "recovery_value")
         assert result.success
 
-        result = storage.get("recovery_key")
-        assert result.success
-        assert result.data == "recovery_value"
+        recovery_result = storage.get("recovery_key")
+        assert recovery_result.success
+        assert recovery_result.data == "recovery_value"
 
     def test_performance_scenario(self) -> None:
         """Test performance with many operations."""
@@ -324,21 +324,21 @@ class TestIntegratedStorageOperations:
             assert result.success
 
         # Verify all stored
-        result = storage.size()
-        assert result.success
-        assert result.data == 100
+        perf_size_result = storage.size()
+        assert perf_size_result.success
+        assert perf_size_result.data == 100
 
         # Retrieve all items
         for i in range(100):
-            result = storage.get(f"perf_key_{i}")
-            assert result.success
-            assert result.data == f"perf_value_{i}"
+            perf_get_result = storage.get(f"perf_key_{i}")
+            assert perf_get_result.success
+            assert perf_get_result.data == f"perf_value_{i}"
 
         # Clear all
         result = storage.clear()
         assert result.success
 
         # Verify cleared
-        result = storage.size()
-        assert result.success
-        assert result.data == 0
+        cleared_size_result = storage.size()
+        assert cleared_size_result.success
+        assert cleared_size_result.data == 0

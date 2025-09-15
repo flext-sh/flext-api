@@ -9,14 +9,12 @@ from __future__ import annotations
 from typing import ClassVar
 from urllib.parse import urlparse
 
-from flext_core import FlextConfig, FlextLogger, FlextResult
+from flext_core import FlextConfig, FlextResult
 from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
-
-logger = FlextLogger(__name__)
 
 
 class FlextApiConfig(FlextConfig):

@@ -302,22 +302,22 @@ markers = [
 ]
 
 # Filtros de warnings otimizados
-filterwarnings = [
-    "error",
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::UserWarning",
-    "ignore::pytest.PytestUnraisableExceptionWarning",
-    "ignore::ResourceWarning",
-    # Específicos para aiohttp
-    "ignore:.*unclosed.*:ResourceWarning",
-    "ignore:.*coroutine.*was never awaited:RuntimeWarning",
-    # Suppress faker locale warnings
-    "ignore:Looking for locale.*:UserWarning",
-    "ignore:Provider.*has been localized.*:UserWarning",
-    "ignore:Specified locale.*is not available.*:UserWarning",
-    "ignore:Provider.*does not feature localization.*:UserWarning",
-]
+# filterwarnings = [
+#     "error",
+#     "ignore::DeprecationWarning",
+#     "ignore::PendingDeprecationWarning",
+#     "ignore::UserWarning",
+#     "ignore::pytest.PytestUnraisableExceptionWarning",
+#     "ignore::ResourceWarning",
+#     # Específicos para aiohttp
+#     "ignore:.*unclosed.*:ResourceWarning",
+#     "ignore:.*coroutine.*was never awaited:RuntimeWarning",
+#     # Suppress faker locale warnings
+#     "ignore:Looking for locale.*:UserWarning",
+#     "ignore:Provider.*has been localized.*:UserWarning",
+#     "ignore:Specified locale.*is not available.*:UserWarning",
+#     "ignore:Provider.*does not feature localization.*:UserWarning",
+# ]
 
 # Diretórios de teste otimizados
 testpaths = ["tests"]

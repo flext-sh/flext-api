@@ -27,11 +27,10 @@ class TestFlextApiStorageFocused:
         config = {"namespace": "test_namespace", "backend": "redis"}
         storage = FlextApiStorage(config=config)
 
-        # Note: Due to FlextTypeAdapters.adapt_to_dict() behavior,
-        # the config falls back to defaults
-        assert storage.namespace == "flext_api"  # Falls back to default
-        assert storage.backend == "memory"  # Falls back to default
-        assert storage.config["namespace"] == "flext_api"
+        # Configuration should be applied correctly
+        assert storage.namespace == "test_namespace"  # Uses provided config
+        assert storage.backend == "redis"  # Uses provided config
+        assert storage.config["namespace"] == "test_namespace"
 
     def test_storage_initialization_with_object_config(self) -> None:
         """Test FlextApiStorage initialization with object config."""
@@ -244,10 +243,10 @@ class TestFlextApiStorageFocused:
         key = storage._make_key("test")
         assert key == "flext_api:test"
 
-        # Test with config (but it still falls back to default due to adapt_to_dict behavior)
+        # Test with custom config (should use provided namespace)
         storage_custom = FlextApiStorage(config={"namespace": "custom"})
         key = storage_custom._make_key("test")
-        assert key == "flext_api:test"  # Still uses default namespace
+        assert key == "custom:test"  # Uses provided namespace
 
     def test_storage_complex_data_types(self) -> None:
         """Test storage with complex data types."""

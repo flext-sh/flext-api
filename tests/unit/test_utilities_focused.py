@@ -215,7 +215,7 @@ class TestFlextApiUtilitiesFocused:
             result = FlextApiUtilities.HttpValidator.validate_status_code(code)
             assert not result.is_success
             assert result.error is not None
-            assert "Status code out of valid range" in result.error
+            assert "Invalid HTTP status code" in result.error
 
         # Invalid string
         result = FlextApiUtilities.HttpValidator.validate_status_code("invalid")

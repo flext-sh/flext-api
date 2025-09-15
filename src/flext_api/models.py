@@ -18,30 +18,38 @@ from flext_core import (
 )
 from pydantic import ConfigDict, Field, field_validator
 
-from flext_api.constants import FlextApiConstants, HttpMethods
+from flext_api.constants import FlextApiConstants
 
-logger = FlextLogger(__name__)
-
-# Streamlined ConfigDict - eliminate bloat
+# Module-level constants for nested class access
 STANDARD_MODEL_CONFIG = ConfigDict(
     validate_assignment=True, extra="forbid", populate_by_name=True
 )
-
-# Use constants from FlextApiConstants instead of redundant declarations
 _URL_EMPTY_ERROR = "URL cannot be empty"
 _URL_FORMAT_ERROR = "Invalid URL format"
-_BASE_URL_ERROR = "URL must be a non-empty string with http(s) scheme"
-
+_BASE_URL_ERROR = "URL must be a non-empty string"
 
 class FlextApiModels:
     """API models using flext-core extensively - NO DUPLICATION."""
+
+    # Move loose variables inside the unified class - FLEXT compliance
+    _logger = FlextLogger(__name__)
+
+    # Streamlined ConfigDict - eliminate bloat
+    STANDARD_MODEL_CONFIG = ConfigDict(
+        validate_assignment=True, extra="forbid", populate_by_name=True
+    )
+
+    # Use constants from FlextApiConstants instead of redundant declarations
+    _URL_EMPTY_ERROR = "URL cannot be empty"
+    _URL_FORMAT_ERROR = "Invalid URL format"
+    _BASE_URL_ERROR = "URL must be a non-empty string"
 
     # Direct re-export of flext-core HTTP models
     HttpRequestConfig = FlextModels.Http.HttpRequestConfig
     HttpErrorConfig = FlextModels.Http.HttpErrorConfig
 
     # Re-export HTTP methods and status codes
-    HttpMethod = HttpMethods
+    HttpMethod = FlextApiConstants.HttpMethods
 
     # Simple API-specific models
     class HttpRequest(FlextModels.Entity):
@@ -149,7 +157,7 @@ class FlextApiModels:
             # Python 3.13+ walrus operator pattern for concise validation
             if not (url := v.strip()) or not url.startswith(("http://", "https://")):
                 raise ValueError(_BASE_URL_ERROR)
-            return url
+            return url.strip()
 
         def get_auth_header(self) -> dict[str, str]:
             """Get authentication header if configured."""
@@ -204,10 +212,10 @@ class FlextApiModels:
     class PaginationConfig(FlextModels.Value):
         """Pagination configuration extending flext-core Value."""
 
-        page_size: int = Field(default=FlextApiConstants.DEFAULT_PAGE_SIZE, gt=0)
+        page_size: int = Field(default=FlextApiConstants.DEFAULT_PAGE_SIZE, gt=0, le=1000)
         current_page: int = Field(alias="page", default=1, ge=1)
-        max_pages: int | None = None
-        total: int = 0
+        max_pages: int | None = Field(default=None, ge=1)
+        total: int = Field(default=0, ge=0)
 
         @property
         def page(self) -> int:
@@ -406,6 +414,12 @@ class FlextApiModels:
                 raise ValueError(error_message)
             return v.strip()
 
+
+# Module-level aliases for nested class access
+STANDARD_MODEL_CONFIG = FlextApiModels.STANDARD_MODEL_CONFIG
+_URL_EMPTY_ERROR = FlextApiModels._URL_EMPTY_ERROR
+_URL_FORMAT_ERROR = FlextApiModels._URL_FORMAT_ERROR
+_BASE_URL_ERROR = FlextApiModels._BASE_URL_ERROR
 
 __all__ = [
     "FlextApiModels",

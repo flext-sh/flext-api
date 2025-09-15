@@ -269,9 +269,9 @@ class TestFlextApiStorageFocused:
 
         # Retrieve and verify all test data
         for key, expected_value in test_data:
-            result: FlextResult[object] = storage.get(key)
-            assert result.is_success
-            assert result.unwrap() == expected_value
+            get_result: FlextResult[object] = storage.get(key)
+            assert get_result.is_success
+            assert get_result.unwrap() == expected_value
 
     def test_storage_data_consistency_after_operations(self) -> None:
         """Test storage data consistency after multiple operations."""
