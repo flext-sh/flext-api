@@ -55,6 +55,20 @@ class FlextApiConstants:
         "error": None,
     }
 
+    class ResponseTemplates:
+        """Response template constants."""
+
+        SUCCESS: ClassVar[dict[str, object]] = {
+            "status": "success",
+            "data": None,
+            "error": None,
+        }
+        ERROR: ClassVar[dict[str, object]] = {
+            "status": "error",
+            "data": None,
+            "error": None,
+        }
+
     # Client error codes
     CLIENT_ERROR_CODES: ClassVar[set[int]] = {
         400,
@@ -150,6 +164,13 @@ class HttpMethods(StrEnum):
     PATCH = "PATCH"
     HEAD = "HEAD"
     OPTIONS = "OPTIONS"
+    TRACE = "TRACE"
+    CONNECT = "CONNECT"
+    # WebDAV methods
+    PROPFIND = "PROPFIND"
+    COPY = "COPY"
+    MOVE = "MOVE"
+    LOCK = "LOCK"
 
 
 class ClientStatus(StrEnum):
@@ -347,3 +368,6 @@ __all__ = [
     "is_valid_http_status",
     "validate_configuration",
 ]
+
+# Set HttpMethods reference after class definition
+FlextApiConstants.HttpMethods = HttpMethods

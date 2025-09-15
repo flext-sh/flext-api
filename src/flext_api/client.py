@@ -35,7 +35,11 @@ class FlextApiClient(FlextDomainService[object]):
 
     def __init__(
         self,
-        config: FlextApiModels.ClientConfig | FlextApiConfig | str | None = None,
+        config: FlextApiModels.ClientConfig
+        | FlextApiConfig
+        | Mapping[str, object]
+        | str
+        | None = None,
         **kwargs: object,
     ) -> None:
         """Initialize HTTP client with streamlined configuration.

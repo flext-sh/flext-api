@@ -62,7 +62,7 @@ class TestFlextApiModelsFocused:
         # Test with invalid URL type
         invalid_url: str | None = None
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiModels.HttpRequest(url=invalid_url)  # type: ignore[arg-type]
+            FlextApiModels.HttpRequest(url=invalid_url)
 
         # Pydantic validates type first, so None fails string type validation
         assert "Input should be a valid string" in str(exc_info.value)
@@ -271,7 +271,7 @@ class TestFlextApiModelsFocused:
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.HttpResponse(
                 status_code=invalid_status, url="https://test.com", method="GET"
-            )  # type: ignore[arg-type]
+            )
 
         # Pydantic should fail on type conversion
         assert "Input should be a valid integer" in str(

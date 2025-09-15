@@ -206,6 +206,11 @@ class FlextApiModels:
         max_pages: int | None = None
         total: int = 0
 
+        @property
+        def page(self) -> int:
+            """Alias for current_page for backward compatibility."""
+            return self.current_page
+
     class StorageConfig(FlextModels.Value):
         """Storage configuration extending flext-core Value."""
 

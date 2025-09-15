@@ -271,7 +271,9 @@ class FlextApiUtilities:
             try:
                 if isinstance(data, dict):
                     return FlextResult[dict[str, object]].ok(data)
-                if hasattr(data, "model_dump") and callable(getattr(data, "model_dump")):
+                if hasattr(data, "model_dump") and callable(
+                    getattr(data, "model_dump")
+                ):
                     # Type-safe call to model_dump
                     model_data = getattr(data, "model_dump")()
                     return FlextResult[dict[str, object]].ok(model_data)
@@ -297,7 +299,7 @@ class FlextApiUtilities:
         if isinstance(value, bool):
             return value
         if isinstance(value, str):
-            return value.lower() in ("true", "1", "yes", "on")
+            return value.lower() in {"true", "1", "yes", "on"}
         return bool(value)
 
     @staticmethod
