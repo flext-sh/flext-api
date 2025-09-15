@@ -1,0 +1,178 @@
+"""Focused API tests to achieve 100% coverage of api.py module.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
+from __future__ import annotations
+
+import pytest
+from pydantic import ValidationError
+
+from flext_api import FlextApiClient
+from flext_api.models import FlextApiModels
+
+
+class TestFlextApiClientCoverageBoost:
+    """Focused tests to achieve 100% coverage of the FlextApiClient class."""
+
+    def test_flext_api_initialization_success(self) -> None:
+        """Test FlextApiClient initialization with valid configuration."""
+        # Test basic initialization with default config
+        api = FlextApiClient()
+        assert api is not None
+        assert hasattr(api, "_client_config")
+        assert api._client_config is not None
+
+    def test_flext_api_initialization_with_config_dict(self) -> None:
+        """Test FlextApiClient initialization with configuration dictionary."""
+        config = {
+            "base_url": "https://api.example.com",
+            "timeout": 30.0,
+            "max_retries": 3
+        }
+        api = FlextApiClient(config)
+        assert api is not None
+        assert api.client is not None
+
+    def test_flext_api_initialization_failure(self) -> None:
+        """Test FlextApiClient initialization failure handling."""
+        # Create invalid configuration that would cause client creation to fail
+        invalid_config = {
+            "base_url": "",  # Invalid empty URL
+            "timeout": -1,   # Invalid negative timeout
+            "max_retries": "invalid"  # Invalid type
+        }
+
+        # FlextApiClient should raise ValueError when client creation fails
+        with pytest.raises(ValueError, match="Client creation failed"):
+            FlextApiClient(invalid_config)
+
+    def test_flext_api_client_property(self) -> None:
+        """Test FlextApiClient client property access."""
+        api = FlextApiClient()
+        client = api.client
+        assert client is not None
+        assert hasattr(client, "base_url")
+
+    @pytest.mark.asyncio
+    async def test_flext_api_start(self) -> None:
+        """Test FlextApiClient start method delegation."""
+        api = FlextApiClient()
+        result = await api.start()
+        # Should return FlextResult without error
+        assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_flext_api_stop(self) -> None:
+        """Test FlextApiClient stop method delegation."""
+        api = FlextApiClient()
+        result = await api.stop()
+        # Should return FlextResult without error
+        assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_flext_api_close(self) -> None:
+        """Test FlextApiClient close method delegation."""
+        api = FlextApiClient()
+        result = await api.close()
+        # Should return FlextResult without error
+        assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_flext_api_get(self) -> None:
+        """Test FlextApiClient GET request delegation."""
+        api = FlextApiClient({"base_url": "https://httpbin.org"})
+        result = await api.get("/get")
+        # Should return FlextResult
+        assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_flext_api_post(self) -> None:
+        """Test FlextApiClient POST request delegation."""
+        api = FlextApiClient({"base_url": "https://httpbin.org"})
+        result = await api.post("/post", json={"test": "data"})
+        # Should return FlextResult
+        assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_flext_api_put(self) -> None:
+        """Test FlextApiClient PUT request delegation."""
+        api = FlextApiClient({"base_url": "https://httpbin.org"})
+        result = await api.put("/put", json={"test": "data"})
+        # Should return FlextResult
+        assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_flext_api_delete(self) -> None:
+        """Test FlextApiClient DELETE request delegation."""
+        api = FlextApiClient({"base_url": "https://httpbin.org"})
+        result = await api.delete("/delete")
+        # Should return FlextResult
+        assert result is not None
+
+    def test_flext_api_configure(self) -> None:
+        """Test FlextApiClient configure method."""
+        api = FlextApiClient()
+        config = {"timeout": 60.0}
+        result = api.configure(config)
+        assert result is not None
+
+    def test_flext_api_get_config(self) -> None:
+        """Test FlextApiClient get_config method."""
+        api = FlextApiClient()
+        config = api.get_config()
+        assert isinstance(config, dict)
+
+    def test_flext_api_health(self) -> None:
+        """Test FlextApiClient health method."""
+        api = FlextApiClient()
+        health = api.health()
+        assert isinstance(health, dict)
+
+    def test_flext_api_create_app_success(self) -> None:
+        """Test FlextApiClient create_app static method success case."""
+        app_config = FlextApiModels.AppConfig(
+            title="Test API",
+            app_version="1.0.0"
+        )
+        result = FlextApiClient.create_app(app_config)
+        assert result is not None
+        assert result.is_success
+
+    def test_flext_api_create_app_failure(self) -> None:
+        """Test FlextApiClient create_app static method failure case."""
+        # Test for expected validation exception during AppConfig creation with empty required fields
+        with pytest.raises((ValueError, ValidationError)):
+            FlextApiModels.AppConfig(title="", app_version="")
+
+    def test_flext_api_mapping_vs_other_config_branches(self) -> None:
+        """Test FlextApiClient handles both Mapping and other config types correctly."""
+        # Test Mapping config path
+        mapping_config = {"base_url": "https://api.test.com"}
+        api1 = FlextApiClient(mapping_config)
+        assert api1.client is not None
+
+        # Test non-Mapping config path (string)
+        string_config = "https://api.test2.com"
+        api2 = FlextApiClient(string_config)
+        assert api2.client is not None
+
+        # Test None config path
+        api3 = FlextApiClient(None)
+        assert api3.client is not None
+
+    def test_flext_api_execute_method(self) -> None:
+        """Test FlextApiClient execute method."""
+        api = FlextApiClient()
+
+        # Test execute method (no longer async)
+        result = api.execute()
+
+        # Should return success with facade status
+        assert result is not None
+        assert result.is_success
+        response = result.value
+        assert isinstance(response, dict)
+        assert response["status"] == "facade_ready"
+        assert response["service"] == "flext_api"

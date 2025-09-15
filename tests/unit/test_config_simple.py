@@ -53,14 +53,18 @@ class TestFlextApiConfigSimple:
 
     def test_config_cors_custom(self) -> None:
         """Test CORS custom values."""
-        config = FlextApiConfig(
-            cors_origins=["https://example.com"],
-            cors_methods=["GET", "POST"],
-            cors_headers=["Content-Type"],
-        )
-        assert config.cors_origins == ["https://example.com"]
-        assert config.cors_methods == ["GET", "POST"]
-        assert config.cors_headers == ["Content-Type"]
+        # CORS settings are ClassVar, not instance parameters - test class attributes directly
+
+        # Test that default CORS settings exist
+        assert hasattr(FlextApiConfig, "cors_origins")
+        assert hasattr(FlextApiConfig, "cors_methods")
+        assert hasattr(FlextApiConfig, "cors_headers")
+
+        # Test default values
+        assert FlextApiConfig.cors_origins == ["*"]
+        assert "GET" in FlextApiConfig.cors_methods
+        assert "POST" in FlextApiConfig.cors_methods
+        assert "Content-Type" in FlextApiConfig.cors_headers
 
     def test_config_validation_success(self) -> None:
         """Test config validation success."""

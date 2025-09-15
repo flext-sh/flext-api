@@ -128,10 +128,10 @@ class TestEnums:
         status_values = list(ClientStatus)
         assert len(status_values) > 0
 
-        # Test common client states
-        assert ClientStatus.IDLE == "idle"
-        assert ClientStatus.ACTIVE == "active"
-        assert ClientStatus.DISCONNECTED == "disconnected"
+        # Test common client states - StrEnum values
+        assert ClientStatus.IDLE.value == "idle"
+        assert ClientStatus.ACTIVE.value == "active"
+        assert ClientStatus.DISCONNECTED.value == "disconnected"
 
 
 class TestApiModels:

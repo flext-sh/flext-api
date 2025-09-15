@@ -17,8 +17,6 @@ from flext_core import (
     FlextUtilities,
 )
 
-logger = FlextLogger(__name__)
-
 
 class FlextApiStorage(FlextModels.Entity):
     """HTTP-specific storage backend using flext-core Registry directly - ZERO DUPLICATION."""
@@ -32,6 +30,7 @@ class FlextApiStorage(FlextModels.Entity):
     ) -> None:
         """Initialize HTTP storage using flext-core patterns."""
         super().__init__(id=FlextUtilities.Generators.generate_entity_id())
+        # Move logger inside the unified class - FLEXT compliance
         self._logger = FlextLogger(__name__)
 
         # Simplified config using flext-core patterns

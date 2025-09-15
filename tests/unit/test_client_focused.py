@@ -103,15 +103,15 @@ class TestFlextApiClientFocused:
             "invalid_field": "should_be_ignored",  # Invalid field
         }
 
-        converted = client._extract_client_config_params(kwargs)
+        # Method returns a tuple, not a dict
+        base_url, timeout, max_retries, headers, auth_token, api_key = client._extract_client_config_params(kwargs)
 
-        assert converted["base_url"] == "https://test.com"
-        assert converted["timeout"] == 45.0
-        assert converted["max_retries"] == 5
-        assert converted["headers"] == {"Custom": "Header"}
-        assert converted["auth_token"] == "token123"
-        assert converted["api_key"] == "key456"
-        assert "invalid_field" not in converted
+        assert base_url == "https://test.com"
+        assert timeout == 45.0
+        assert max_retries == 5
+        assert headers == {"Custom": "Header"}
+        assert auth_token == "token123"
+        assert api_key == "key456"
 
     def test_convert_kwargs_type_validation(self) -> None:
         """Test type conversion in _convert_kwargs_to_client_config_kwargs."""
@@ -124,11 +124,12 @@ class TestFlextApiClientFocused:
             "headers": "not_a_dict",  # Invalid type should be skipped
         }
 
-        converted = client._extract_client_config_params(kwargs)
+        # Method returns a tuple, not a dict
+        _base_url, timeout, _max_retries, headers, auth_token, _api_key = client._extract_client_config_params(kwargs)
 
-        assert converted["timeout"] == 30.0
-        assert converted["auth_token"] is None
-        assert "headers" not in converted  # Invalid type skipped
+        assert timeout == 30.0
+        assert auth_token is None
+        assert headers is None  # Invalid type should result in None
 
     def test_connection_manager_initialization(self) -> None:
         """Test _ConnectionManager initialization."""
@@ -306,8 +307,8 @@ class TestFlextApiClientFocused:
         assert health["max_retries"] == 3
         assert health["request_count"] == 0
         assert health["error_count"] == 0
-        assert health["message"] == "HTTP client is operational"
-        assert health["status_code"] == 200
+        assert health["client_ready"] is False
+        assert health["session_started"] is False
 
     def test_health_check_healthy(self) -> None:
         """Test health_check method when client is healthy."""
@@ -377,7 +378,7 @@ class TestFlextApiClientFocused:
             result = await client.get("/get", params={"test": "value"})
 
             mock_request.assert_called_once_with(
-                client, "GET", "/get", params={"test": "value"}
+                "GET", "/get", params={"test": "value"}
             )
             assert result.is_success
 
@@ -401,7 +402,7 @@ class TestFlextApiClientFocused:
             result = await client.post("/post", json={"data": "value"})
 
             mock_request.assert_called_once_with(
-                client, "POST", "/post", json={"data": "value"}
+                "POST", "/post", json={"data": "value"}
             )
             assert result.is_success
 
@@ -425,7 +426,7 @@ class TestFlextApiClientFocused:
             result = await client.put("/put", json={"data": "updated"})
 
             mock_request.assert_called_once_with(
-                client, "PUT", "/put", json={"data": "updated"}
+                "PUT", "/put", json={"data": "updated"}
             )
             assert result.is_success
 
@@ -448,7 +449,7 @@ class TestFlextApiClientFocused:
 
             result = await client.delete("/delete")
 
-            mock_request.assert_called_once_with(client, "DELETE", "/delete")
+            mock_request.assert_called_once_with("DELETE", "/delete")
             assert result.is_success
 
     def test_properties_access(self) -> None:

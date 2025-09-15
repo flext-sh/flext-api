@@ -11,31 +11,38 @@ from fastapi import FastAPI
 from flext_api.models import FlextApiModels
 
 
-def create_fastapi_app(config: FlextApiModels.AppConfig) -> object:
-    """Create a FastAPI application with the given configuration.
+class FlextApiApp:
+    """FLEXT API Application Factory - FastAPI application creation following FLEXT architecture."""
 
-    Args:
-        config: Application configuration
+    @staticmethod
+    def create_fastapi_app(config: FlextApiModels.AppConfig) -> FastAPI:
+        """Create a FastAPI application with the given configuration.
 
-    Returns:
-        FastAPI application instance
+        Args:
+            config: Application configuration
 
-    """
-    app = FastAPI(
-        title=config.title,
-        version=config.app_version,
-        description=getattr(config, "description", "FlextAPI Application"),
-        docs_url=getattr(config, "docs_url", "/docs"),
-        redoc_url=getattr(config, "redoc_url", "/redoc"),
-        openapi_url=getattr(config, "openapi_url", "/openapi.json"),
-    )
+        Returns:
+            FastAPI application instance
 
-    # Add health endpoint
-    @app.get("/health")
-    async def health_check() -> dict[str, str]:
-        return {"status": "healthy", "service": "flext-api"}
+        """
+        app = FastAPI(
+            title=config.title,
+            version=config.app_version,
+            description=getattr(config, "description", "FlextAPI Application"),
+            docs_url=getattr(config, "docs_url", "/docs"),
+            redoc_url=getattr(config, "redoc_url", "/redoc"),
+            openapi_url=getattr(config, "openapi_url", "/openapi.json"),
+        )
 
-    return app
+        # Add health endpoint
+        @app.get("/health")
+        async def health_check() -> dict[str, str]:
+            return {"status": "healthy", "service": "flext-api"}
+
+        return app
 
 
-__all__ = ["create_fastapi_app"]
+# Backward compatibility alias
+create_fastapi_app = FlextApiApp.create_fastapi_app
+
+__all__ = ["FlextApiApp", "create_fastapi_app"]
