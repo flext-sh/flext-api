@@ -33,21 +33,24 @@ class FlextApiExceptions:
     class ValidationError(FlextExceptions._ValidationError):
         """Validation error with HTTP status code."""
 
-        def __init__(self, message: str, **_kwargs: object) -> None:  # noqa: ARG002
+        def __init__(self, message: str, **_kwargs: object) -> None:
+            """Initialize validation error with HTTP status code."""
             super().__init__(message)
             self.status_code = 400
 
     class AuthenticationError(FlextExceptions._AuthenticationError):
         """Authentication error with HTTP status code."""
 
-        def __init__(self, message: str, **_kwargs: object) -> None:  # noqa: ARG002
+        def __init__(self, message: str, **_kwargs: object) -> None:
+            """Initialize authentication error with HTTP status code."""
             super().__init__(message)
             self.status_code = 401
 
     class NotFoundError(FlextExceptions._NotFoundError):
         """Not found error with HTTP status code."""
 
-        def __init__(self, message: str, **_kwargs: object) -> None:  # noqa: ARG002
+        def __init__(self, message: str, **_kwargs: object) -> None:
+            """Initialize not found error with HTTP status code."""
             super().__init__(message)
             self.status_code = 404
 
