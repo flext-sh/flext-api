@@ -117,7 +117,13 @@ class FlextApiClient(FlextDomainService[object]):
                 config_base_url = getattr(config, "base_url")
 
             self._client_config = FlextApiModels.ClientConfig(
-                base_url=base_url if base_url is not None else (config_base_url if config_base_url is not None else FlextApiConstants.DEFAULT_BASE_URL),
+                base_url=base_url
+                if base_url is not None
+                else (
+                    config_base_url
+                    if config_base_url is not None
+                    else FlextApiConstants.DEFAULT_BASE_URL
+                ),
                 timeout=timeout
                 if timeout is not None
                 else FlextApiConstants.DEFAULT_TIMEOUT,

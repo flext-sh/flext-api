@@ -40,17 +40,17 @@ make validate
 
 ### **Essential Commands**
 
-| Command | Purpose | Description |
-|---------|---------|-------------|
-| `make setup` | Initial setup | Complete development environment setup |
-| `make dev` | Development server | Start FastAPI development server |
-| `make test` | Run tests | Execute complete test suite |
-| `make lint` | Code linting | Run Ruff linting checks |
-| `make type-check` | Type checking | Run MyPy type validation |
-| `make format` | Code formatting | Auto-format with Black and isort |
-| `make security` | Security scan | Run Bandit security analysis |
-| `make validate` | Quality gates | Complete validation pipeline |
-| `make clean` | Cleanup | Remove build artifacts |
+| Command           | Purpose            | Description                            |
+| ----------------- | ------------------ | -------------------------------------- |
+| `make setup`      | Initial setup      | Complete development environment setup |
+| `make dev`        | Development server | Start FastAPI development server       |
+| `make test`       | Run tests          | Execute complete test suite            |
+| `make lint`       | Code linting       | Run Ruff linting checks                |
+| `make type-check` | Type checking      | Run MyPy type validation               |
+| `make format`     | Code formatting    | Auto-format with Black and isort       |
+| `make security`   | Security scan      | Run Bandit security analysis           |
+| `make validate`   | Quality gates      | Complete validation pipeline           |
+| `make clean`      | Cleanup            | Remove build artifacts                 |
 
 ### **Development Server**
 
@@ -289,6 +289,7 @@ Before submitting code:
 ### **Code Review Standards**
 
 **Must Have**:
+
 - FlextResult error handling for all operations
 - Proper type annotations with Python 3.13+ features
 - Single unified class per module
@@ -296,6 +297,7 @@ Before submitting code:
 - Clear, descriptive docstrings
 
 **Must Not Have**:
+
 - Try/except fallback mechanisms
 - Multiple classes per module
 - Loose helper functions outside classes

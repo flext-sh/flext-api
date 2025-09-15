@@ -8,15 +8,15 @@ This reference documents all public APIs, classes, and methods provided by flext
 
 ## 📋 Module Overview
 
-| Module | Purpose | Key Classes |
-|--------|---------|-------------|
-| **flext_api.client** | HTTP client implementation | FlextApiClient |
-| **flext_api.models** | Domain models and data structures | FlextApiModels |
-| **flext_api.config** | Configuration management | FlextApiConfig |
-| **flext_api.app** | FastAPI application factory | create_fastapi_app |
-| **flext_api.utilities** | HTTP utilities and helpers | FlextApiUtilities |
-| **flext_api.exceptions** | HTTP-specific exceptions | FlextApiException |
-| **flext_api.storage** | HTTP storage and caching | FlextApiStorage |
+| Module                   | Purpose                           | Key Classes        |
+| ------------------------ | --------------------------------- | ------------------ |
+| **flext_api.client**     | HTTP client implementation        | FlextApiClient     |
+| **flext_api.models**     | Domain models and data structures | FlextApiModels     |
+| **flext_api.config**     | Configuration management          | FlextApiConfig     |
+| **flext_api.app**        | FastAPI application factory       | create_fastapi_app |
+| **flext_api.utilities**  | HTTP utilities and helpers        | FlextApiUtilities  |
+| **flext_api.exceptions** | HTTP-specific exceptions          | FlextApiException  |
+| **flext_api.storage**    | HTTP storage and caching          | FlextApiStorage    |
 
 ---
 
@@ -45,6 +45,7 @@ def __init__(
 ```
 
 **Parameters:**
+
 - `base_url` (str, optional): Base URL for all requests
 - `timeout` (float): Request timeout in seconds (default: 30.0)
 - `max_retries` (int): Maximum retry attempts (default: 3, not implemented)
@@ -52,6 +53,7 @@ def __init__(
 - `**kwargs`: Additional configuration options
 
 **Example:**
+
 ```python
 client = FlextApiClient(
     base_url="https://api.example.com",
@@ -74,12 +76,15 @@ async def request(
 ```
 
 **Parameters:**
+
 - `request` (HttpRequest): HTTP request model with method, URL, headers, body
 
 **Returns:**
+
 - `FlextResult[HttpResponse]`: Result containing HTTP response or error
 
 **Example:**
+
 ```python
 request = FlextApiModels.HttpRequest(
     method="GET",
@@ -130,6 +135,7 @@ async def close(self) -> None:
 ```
 
 **Example:**
+
 ```python
 try:
     # Use client for requests
@@ -164,6 +170,7 @@ class HttpRequest(FlextModels.Entity):
 ```
 
 **Example:**
+
 ```python
 request = FlextApiModels.HttpRequest(
     method="POST",
@@ -191,6 +198,7 @@ class HttpResponse(FlextModels.Entity):
 ```
 
 **Properties:**
+
 ```python
 @property
 def is_success(self) -> bool:
@@ -220,6 +228,7 @@ class ClientConfig(FlextModels.Value):
 ```
 
 **Methods:**
+
 ```python
 def get_auth_header(self) -> dict[str, str]:
     """Get authentication header if configured."""
@@ -283,6 +292,7 @@ def load_from_env(self) -> FlextResult[None]:
 ```
 
 **Environment Variables:**
+
 - `HTTP_BASE_URL`: Default base URL
 - `HTTP_TIMEOUT`: Request timeout in seconds
 - `HTTP_MAX_RETRIES`: Maximum retry attempts
@@ -306,12 +316,15 @@ def create_fastapi_app(
 ```
 
 **Parameters:**
+
 - `config` (AppConfig): Application configuration with title, version, description
 
 **Returns:**
+
 - `FastAPI`: Configured FastAPI application instance
 
 **Example:**
+
 ```python
 config = FlextApiModels.AppConfig(
     title="My API Service",
@@ -336,6 +349,7 @@ async def get_status():
 ```
 
 **Built-in Endpoints:**
+
 - `GET /health` - Health check endpoint returning `{"status": "healthy"}`
 
 ---
@@ -370,6 +384,7 @@ class ResponseBuilder:
 ```
 
 **Example:**
+
 ```python
 # Build success response
 success_result = FlextApiUtilities.ResponseBuilder.build_success_response(
