@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import FlextResult
+
 from flext_api import FlextApiStorage
 
 
@@ -267,7 +269,7 @@ class TestFlextApiStorageFocused:
 
         # Retrieve and verify all test data
         for key, expected_value in test_data:
-            result = storage.get(key)
+            result: FlextResult[object] = storage.get(key)
             assert result.is_success
             assert result.unwrap() == expected_value
 
