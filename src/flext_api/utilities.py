@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import time
+from typing import TypeVar
 
 from flext_core import (
     FlextResult,
@@ -18,6 +19,8 @@ from flext_core import (
 )
 
 from flext_api.constants import FlextApiConstants, HttpMethods
+
+T = TypeVar("T")
 
 
 class FlextApiUtilities:
@@ -187,7 +190,7 @@ class FlextApiUtilities:
         validate_url = FlextValidations.FieldValidators.validate_url
 
         @staticmethod
-        def validate_http_method(method: str) -> FlextResult[str]:
+        def validate_http_method(method: str | None) -> FlextResult[str]:
             """Validate HTTP method using FlextCore patterns and Python 3.13+ StrEnum."""
             if not method or not isinstance(method, str):
                 return FlextResult[str].fail("HTTP method must be a non-empty string")
@@ -221,6 +224,8 @@ class FlextApiUtilities:
         def normalize_url(url: str) -> FlextResult[str]:
             """Normalize URL using flext-core text processing."""
             cleaned = FlextUtilities.TextProcessor.clean_text(url)
+            if not cleaned:
+                return FlextResult[str].fail("URL cannot be empty")
             normalized = cleaned.rstrip("/") if not cleaned.endswith("://") else cleaned
             return FlextResult[str].ok(normalized)
 
@@ -377,7 +382,7 @@ class FlextApiUtilities:
         }
 
     @staticmethod
-    def batch_process(items: list[object], batch_size: int = 100) -> list[list[object]]:
+    def batch_process(items: list[T], batch_size: int = 100) -> list[list[T]]:
         """Process items in batches."""
         if batch_size <= 0:
             batch_size = 100

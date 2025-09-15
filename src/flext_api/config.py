@@ -10,7 +10,7 @@ from typing import ClassVar
 from urllib.parse import urlparse
 
 from flext_core import FlextConfig, FlextLogger, FlextResult
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from flext_api.constants import FlextApiConstants
@@ -35,8 +35,8 @@ class FlextApiConfig(FlextConfig):
 
     # Server configuration - consolidated to remove duplication
     api_host: str = "127.0.0.1"
-    api_port: int = 8000
-    workers: int = 4
+    api_port: int = Field(default=8000, ge=1, le=65535)
+    workers: int = Field(default=4, ge=1)
     api_debug: bool = False
 
     # API configuration - consolidated base URLs

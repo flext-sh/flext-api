@@ -20,6 +20,9 @@ class FlextApiConstants:
     MIN_HTTP_STATUS = 100
     MAX_HTTP_STATUS = 599
 
+    # HttpMethods reference - defined properly as class variable
+    HttpMethods: type[HttpMethods]
+
     # HTTP status ranges - simplified
     SUCCESS_START = 200
     SUCCESS_END = 300
@@ -152,6 +155,21 @@ class FlextApiConstants:
         FORBIDDEN = 403
         NOT_FOUND = 404
         INTERNAL_SERVER_ERROR = 500
+
+    class HttpValidation:
+        """HTTP validation constants."""
+
+        MAX_HOSTNAME_LENGTH = 253
+        MAX_URL_LENGTH = 2048
+        MIN_PORT = 1
+        MAX_PORT = 65535
+
+    class Pagination:
+        """Pagination constants."""
+
+        DEFAULT_PAGE_SIZE = 20
+        MAX_PAGE_SIZE = 1000
+        MIN_PAGE_SIZE = 1
 
 
 class HttpMethods(StrEnum):

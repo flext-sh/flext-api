@@ -2,7 +2,9 @@
 
 **HTTP and FastAPI Foundation for the FLEXT Ecosystem**
 
-This guide will help you get started with flext-api, the enterprise HTTP client and FastAPI application foundation for the FLEXT data integration platform.
+**Version**: 0.9.0 | **Last Updated**: September 17, 2025
+
+This guide will help you get started with flext-api, the HTTP client and FastAPI application foundation for the FLEXT enterprise data integration platform.
 
 ---
 

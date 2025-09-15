@@ -104,12 +104,20 @@ class FlextApiClient(FlextDomainService[object]):
                 api_key=api_key,
             )
         else:
-            # Handle None config - use defaults
+            # Handle arbitrary config objects or None
             base_url, timeout, max_retries, headers, auth_token, api_key = (
                 self._extract_client_config_params(kwargs)
             )
+
+            # Try to extract api_base_url from config object if it exists
+            config_base_url = None
+            if config is not None and hasattr(config, "api_base_url"):
+                config_base_url = getattr(config, "api_base_url")
+            elif config is not None and hasattr(config, "base_url"):
+                config_base_url = getattr(config, "base_url")
+
             self._client_config = FlextApiModels.ClientConfig(
-                base_url=base_url or FlextApiConstants.DEFAULT_BASE_URL,
+                base_url=base_url if base_url is not None else (config_base_url if config_base_url is not None else FlextApiConstants.DEFAULT_BASE_URL),
                 timeout=timeout
                 if timeout is not None
                 else FlextApiConstants.DEFAULT_TIMEOUT,

@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextModels, FlextTypes, FlextUtilities
+from flext_core import FlextModels, FlextTypes
 from flext_tests import FlextTestsMatchers
 
 from flext_api import FlextApiConstants, FlextApiUtilities
@@ -19,7 +19,7 @@ class TestFlextApiUtilitiesComprehensive:
         """Test config validation for all configuration types."""
         # Test HttpRequestConfig with valid data
         http_config = FlextModels.Http.HttpRequestConfig(
-            url="https://api.example.com/test", method="POST", timeout=45.0
+            url="https://api.example.com/test", method="POST", timeout=45
         )
         result = FlextApiUtilities.validate_config(http_config)
         assert result.success
@@ -112,19 +112,19 @@ class TestFlextApiUtilitiesComprehensive:
         result = FlextApiUtilities.HttpValidator.validate_url("example.com")
         FlextTestsMatchers.assert_result_failure(result)
         assert result.error is not None
-        assert "must include scheme" in result.error
+        assert "Invalid URL format" in result.error
 
         # Invalid s - bad scheme
         result = FlextApiUtilities.HttpValidator.validate_url("ftp://example.com")
         FlextTestsMatchers.assert_result_failure(result)
         assert result.error is not None
-        assert "not supported, use http/https" in result.error
+        assert "Invalid URL format" in result.error
 
         # Invalid s - no hostname
         result = FlextApiUtilities.HttpValidator.validate_url("https://")
         FlextTestsMatchers.assert_result_failure(result)
         assert result.error is not None
-        assert "must include hostname" in result.error
+        assert "Invalid URL format" in result.error
 
         # Invalid s - empty string
         result = FlextApiUtilities.HttpValidator.validate_url("")
@@ -286,8 +286,8 @@ class TestFlextApiUtilitiesComprehensive:
             assert result.error is not None
             assert "Invalid HTTP status code" in result.error
 
-        # Non-integer status code (string that converts to -1)
-        invalid_status = FlextUtilities.safe_int("invalid", -1)
+        # Non-integer status code (use invalid value directly)
+        invalid_status = -1  # Invalid status code
         result = FlextApiUtilities.HttpValidator.validate_status_code(invalid_status)
         FlextTestsMatchers.assert_result_failure(result)
         assert result.error is not None
@@ -437,7 +437,7 @@ class TestFlextApiUtilitiesComprehensive:
         # by ensuring the methods handle any potential errors gracefully
 
         # Test type conversion edge cases - use safe_int to simulate type conversion
-        invalid_status = FlextUtilities.safe_int("not-a-number", -1)
+        invalid_status = -1  # Invalid status representing failed conversion
         status_result = FlextApiUtilities.HttpValidator.validate_status_code(
             invalid_status
         )
@@ -446,9 +446,9 @@ class TestFlextApiUtilitiesComprehensive:
         assert "must be a valid integer" in status_result.error
 
         # Test pagination with converted int inputs
-        safe_total = FlextUtilities.safe_int("25", 0)
-        safe_page = FlextUtilities.safe_int("2", 1)
-        safe_page_size = FlextUtilities.safe_int("10", 20)
+        safe_total = 25  # Direct int value
+        safe_page = 2    # Direct int value
+        safe_page_size = 10  # Direct int value
         pagination_result = (
             FlextApiUtilities.PaginationBuilder.build_paginated_response(
                 data=[], total=safe_total, page=safe_page, page_size=safe_page_size

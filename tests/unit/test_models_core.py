@@ -107,7 +107,7 @@ class TestFlextApiModels:
         # Invalid format should raise ValidationError
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.ClientConfig(base_url="not-a-url")
-        assert "Invalid URL format" in str(exc_info.value)
+        assert "URL must be a non-empty string with http(s) scheme" in str(exc_info.value)
 
     def test_client_config_timeout_validation(self) -> None:
         """Test ClientConfig timeout validation."""

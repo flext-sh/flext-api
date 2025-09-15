@@ -2,58 +2,50 @@
 
 **Environment and Settings Management for FLEXT HTTP Foundation**
 
-This guide covers all configuration options, environment variables, and settings management for flext-api HTTP client and FastAPI applications.
+**Version**: 0.9.0 | **Updated**: September 17, 2025
+
+This guide covers all configuration options, environment variables, and settings management for flext-api HTTP client and FastAPI applications based on the actual implementation.
 
 ---
 
 ## 🎯 Configuration Overview
 
-flext-api provides flexible configuration management through:
+flext-api provides configuration management through:
 
-- **Environment Variables**: Standard environment-based configuration
-- **Configuration Classes**: Type-safe Pydantic configuration models
-- **Runtime Configuration**: Dynamic configuration updates
-- **FLEXT Integration**: Integration with flext-core configuration patterns
+- **FlextApiConfig**: Main configuration class extending flext-core FlextConfig
+- **Environment Variables**: FLEXT_API_ prefixed environment variables
+- **ClientConfig Models**: Type-safe Pydantic configuration models for HTTP clients
+- **AppConfig Models**: FastAPI application configuration through models
 
 ---
 
 ## 🌍 Environment Variables
 
-### **HTTP Client Configuration**
+All environment variables use the `FLEXT_API_` prefix and are defined in `FlextApiConfig`.
+
+### **Server Configuration**
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `HTTP_BASE_URL` | string | `https://api.example.com` | Default base URL for HTTP requests |
-| `HTTP_TIMEOUT` | float | `30.0` | Request timeout in seconds |
-| `HTTP_MAX_RETRIES` | int | `3` | Maximum retry attempts (configured, not implemented) |
-| `HTTP_MAX_CONNECTIONS` | int | `100` | Maximum connections in pool |
-| `HTTP_KEEPALIVE_CONNECTIONS` | int | `20` | Keep-alive connections |
+| `FLEXT_API_API_HOST` | string | `127.0.0.1` | Host address to bind |
+| `FLEXT_API_API_PORT` | int | `8000` | Port number to bind |
+| `FLEXT_API_WORKERS` | int | `4` | Number of worker processes |
+| `FLEXT_API_API_DEBUG` | boolean | `false` | Enable debug mode |
 
-### **Authentication Configuration**
-
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `HTTP_AUTH_TOKEN` | string | `null` | Bearer token for authentication |
-| `HTTP_API_KEY` | string | `null` | API key for authentication |
-| `HTTP_AUTH_HEADER` | string | `Authorization` | Authentication header name |
-
-### **FastAPI Application Configuration**
+### **API Configuration**
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `FASTAPI_HOST` | string | `0.0.0.0` | Host address to bind |
-| `FASTAPI_PORT` | int | `8000` | Port number to bind |
-| `FASTAPI_WORKERS` | int | `1` | Number of worker processes |
-| `FASTAPI_RELOAD` | boolean | `false` | Enable auto-reload in development |
-| `FASTAPI_LOG_LEVEL` | string | `info` | Logging level |
+| `FLEXT_API_API_TITLE` | string | `FLEXT API` | API title |
+| `FLEXT_API_API_VERSION` | string | `0.9.0` | API version |
+| `FLEXT_API_API_BASE_URL` | string | `https://api.example.com` | Default base URL |
 
-### **Security Configuration**
+### **Client Configuration**
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `HTTPS_ONLY` | boolean | `true` | Enforce HTTPS for all requests |
-| `SSL_VERIFY` | boolean | `true` | Verify SSL certificates |
-| `MAX_REQUEST_SIZE` | int | `10485760` | Maximum request size (10MB) |
+| `FLEXT_API_API_TIMEOUT` | float | `30.0` | Request timeout in seconds |
+| `FLEXT_API_MAX_RETRIES` | int | `3` | Maximum retry attempts |
 
 ---
 
@@ -61,7 +53,7 @@ flext-api provides flexible configuration management through:
 
 ### **FlextApiConfig**
 
-Main configuration class for HTTP client settings.
+Main configuration class extending flext-core FlextConfig.
 
 ```python
 from flext_api.config import FlextApiConfig
@@ -69,40 +61,35 @@ from flext_api.config import FlextApiConfig
 # Default configuration
 config = FlextApiConfig()
 
-# Custom configuration
-config = FlextApiConfig(
-    base_url="https://api.enterprise.com",
-    timeout=60,
-    max_retries=5,
-    headers={
-        "User-Agent": "enterprise-service/1.0.0",
-        "Accept": "application/json"
-    }
-)
+# Access configuration values
+print(f"API Host: {config.api_host}")
+print(f"API Port: {config.api_port}")
+print(f"Timeout: {config.api_timeout}")
 ```
 
 **Available Properties:**
 
 ```python
-class FlextApiConfig:
-    base_url: str = "https://api.example.com"
-    timeout: float = 30.0
+class FlextApiConfig(FlextConfig):
+    # Server configuration
+    api_host: str = "127.0.0.1"
+    api_port: int = 8000
+    workers: int = 4
+    api_debug: bool = False
+
+    # API configuration
+    api_title: str = "FLEXT API"
+    api_version: str = "0.9.0"
+    api_base_url: str = "https://api.example.com"
+
+    # Client configuration
+    api_timeout: float = 30.0
     max_retries: int = 3
-    headers: dict[str, str] = Field(default_factory=dict)
-
-    # Authentication
-    auth_token: str | None = None
-    api_key: str | None = None
-
-    # Connection settings
-    max_connections: int = 100
-    keepalive_connections: int = 20
-    ssl_verify: bool = True
 ```
 
-### **ClientConfig**
+### **ClientConfig Model**
 
-Detailed HTTP client configuration with advanced options.
+HTTP client configuration model from FlextApiModels.
 
 ```python
 from flext_api.models import FlextApiModels
@@ -124,9 +111,9 @@ auth_headers = config.get_auth_header()
 all_headers = config.get_default_headers()
 ```
 
-### **AppConfig**
+### **AppConfig Model**
 
-FastAPI application configuration.
+FastAPI application configuration model from FlextApiModels.
 
 ```python
 from flext_api.models import FlextApiModels
@@ -135,9 +122,9 @@ app_config = FlextApiModels.AppConfig(
     title="Enterprise API Service",
     app_version="1.0.0",
     description="Production API using flext-api foundation",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json"
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
 )
 ```
 

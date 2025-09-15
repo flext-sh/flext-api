@@ -265,14 +265,14 @@ class TestFlextApiStorageFocused:
 
         # Store all test data
         for key, value in test_data:
-            result = storage.set(key, value)
-            assert result.is_success
+            set_result = storage.set(key, value)
+            assert set_result.is_success
 
         # Retrieve and verify all test data
         for key, expected_value in test_data:
-            result = storage.get(key)
-            assert result.is_success
-            assert result.unwrap() == expected_value
+            get_result = storage.get(key)
+            assert get_result.is_success
+            assert get_result.unwrap() == expected_value
 
     def test_storage_data_consistency_after_operations(self) -> None:
         """Test storage data consistency after multiple operations."""
@@ -317,13 +317,13 @@ class TestFlextApiStorageFocused:
         assert result1.unwrap() == "value1"
         assert result2.unwrap() == "value2"
 
-        # Both use the same namespace key format due to adapt_to_dict behavior
+        # Each storage uses its own namespace for key generation
         key1 = storage1._make_key("shared_key")
         key2 = storage2._make_key("shared_key")
 
-        assert key1 == "flext_api:shared_key"
-        assert key2 == "flext_api:shared_key"
-        assert key1 == key2  # Same key format, but different storage instances
+        assert key1 == "namespace1:shared_key"
+        assert key2 == "namespace2:shared_key"
+        assert key1 != key2  # Different namespace prefixes for isolation
 
     def test_storage_get_with_structured_data(self) -> None:
         """Test storage get operation with structured data in storage."""
