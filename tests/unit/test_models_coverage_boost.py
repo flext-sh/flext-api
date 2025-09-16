@@ -63,7 +63,7 @@ class TestFlextApiModelsCoverageBoost:
         # We need to test this by creating a dict and seeing how it's processed
         request = FlextApiModels.HttpRequest(
             url="https://example.com",
-            headers={"Authorization": "Bearer token", "  Whitespace  ": "  value  "}
+            headers={"Authorization": "Bearer token", "  Whitespace  ": "  value  "},
         )
         # Whitespace should be trimmed
         assert "Whitespace" in request.headers
@@ -73,7 +73,7 @@ class TestFlextApiModelsCoverageBoost:
         """Test HttpRequest headers validation with empty keys."""
         request = FlextApiModels.HttpRequest(
             url="https://example.com",
-            headers={"": "value", "  ": "value2", "Valid": "valid_value"}
+            headers={"": "value", "  ": "value2", "Valid": "valid_value"},
         )
         # Empty keys should be filtered out
         assert "" not in request.headers
@@ -89,7 +89,7 @@ class TestFlextApiModelsCoverageBoost:
                 "  Authorization  ": "  Bearer token  ",
                 "Empty-Value": "",
                 "Whitespace-Value": "   ",
-            }
+            },
         )
 
         # Valid headers should be present and trimmed
@@ -99,9 +99,7 @@ class TestFlextApiModelsCoverageBoost:
     def test_http_response_properties_success(self) -> None:
         """Test HttpResponse success properties."""
         response = FlextApiModels.HttpResponse(
-            status_code=200,
-            url="https://example.com",
-            method="GET"
+            status_code=200, url="https://example.com", method="GET"
         )
         assert response.is_success is True
         assert response.is_client_error is False
@@ -111,9 +109,7 @@ class TestFlextApiModelsCoverageBoost:
     def test_http_response_properties_client_error(self) -> None:
         """Test HttpResponse client error properties."""
         response = FlextApiModels.HttpResponse(
-            status_code=404,
-            url="https://example.com",
-            method="GET"
+            status_code=404, url="https://example.com", method="GET"
         )
         assert response.is_success is False
         assert response.is_client_error is True
@@ -123,9 +119,7 @@ class TestFlextApiModelsCoverageBoost:
     def test_http_response_properties_server_error(self) -> None:
         """Test HttpResponse server error properties."""
         response = FlextApiModels.HttpResponse(
-            status_code=500,
-            url="https://example.com",
-            method="GET"
+            status_code=500, url="https://example.com", method="GET"
         )
         assert response.is_success is False
         assert response.is_client_error is False
@@ -135,9 +129,7 @@ class TestFlextApiModelsCoverageBoost:
     def test_http_response_properties_redirect(self) -> None:
         """Test HttpResponse redirect properties."""
         response = FlextApiModels.HttpResponse(
-            status_code=301,
-            url="https://example.com",
-            method="GET"
+            status_code=301, url="https://example.com", method="GET"
         )
         assert response.is_success is False
         assert response.is_client_error is False
@@ -175,8 +167,7 @@ class TestFlextApiModelsCoverageBoost:
     def test_client_config_get_auth_header_with_token(self) -> None:
         """Test ClientConfig get_auth_header with auth_token."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com",
-            auth_token="secret-token"
+            base_url="https://api.example.com", auth_token="secret-token"
         )
         auth_header = config.get_auth_header()
         assert auth_header == {"Authorization": "Bearer secret-token"}
@@ -184,8 +175,7 @@ class TestFlextApiModelsCoverageBoost:
     def test_client_config_get_auth_header_with_api_key(self) -> None:
         """Test ClientConfig get_auth_header with api_key."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com",
-            api_key="api-key-123"
+            base_url="https://api.example.com", api_key="api-key-123"
         )
         auth_header = config.get_auth_header()
         assert auth_header == {"Authorization": "Bearer api-key-123"}
@@ -201,7 +191,7 @@ class TestFlextApiModelsCoverageBoost:
         config = FlextApiModels.ClientConfig(
             base_url="https://api.example.com",
             auth_token="secret-token",
-            headers={"Custom-Header": "custom-value"}
+            headers={"Custom-Header": "custom-value"},
         )
         default_headers = config.get_default_headers()
 
@@ -247,9 +237,7 @@ class TestFlextApiModelsCoverageBoost:
     def test_http_query_to_query_params(self) -> None:
         """Test HttpQuery to_query_params method."""
         query = FlextApiModels.HttpQuery(
-            page=2,
-            page_size=50,
-            sort_fields=["created_at", "name"]
+            page=2, page_size=50, sort_fields=["created_at", "name"]
         )
         query.add_filter("status", "active")
 
@@ -275,7 +263,7 @@ class TestFlextApiModelsCoverageBoost:
     def test_pagination_config_page_property(self) -> None:
         """Test PaginationConfig page property."""
         config = FlextApiModels.PaginationConfig(page=5)
-        assert config.page == 5
+        assert config.current_page == 5
 
     def test_url_model_validate_business_rules_empty_url(self) -> None:
         """Test UrlModel validate_business_rules with empty URL."""
@@ -296,7 +284,9 @@ class TestFlextApiModelsCoverageBoost:
     def test_builder_create_success_response(self) -> None:
         """Test Builder create success response."""
         builder = FlextApiModels.Builder()
-        response = builder.create(response_type="success", data={"key": "value"}, message="Success message")
+        response = builder.create(
+            response_type="success", data={"key": "value"}, message="Success message"
+        )
 
         assert response["status"] == "success"
         assert response["data"] == {"key": "value"}
@@ -308,9 +298,7 @@ class TestFlextApiModelsCoverageBoost:
         """Test Builder create error response."""
         builder = FlextApiModels.Builder()
         response = builder.create(
-            response_type="error",
-            code="ERR_001",
-            message="Error occurred"
+            response_type="error", code="ERR_001", message="Error occurred"
         )
 
         assert response["status"] == "error"
@@ -330,7 +318,9 @@ class TestFlextApiModelsCoverageBoost:
 
     def test_builder_static_success(self) -> None:
         """Test Builder static success method."""
-        response = FlextApiModels.Builder.success(data={"test": "data"}, message="Operation successful")
+        response = FlextApiModels.Builder.success(
+            data={"test": "data"}, message="Operation successful"
+        )
 
         assert response["status"] == "success"
         assert response["data"] == {"test": "data"}
@@ -340,7 +330,9 @@ class TestFlextApiModelsCoverageBoost:
 
     def test_builder_static_error(self) -> None:
         """Test Builder static error method."""
-        response = FlextApiModels.Builder.error(message="Something went wrong", code="ERR_500")
+        response = FlextApiModels.Builder.error(
+            message="Something went wrong", code="ERR_500"
+        )
 
         assert response["status"] == "error"
         assert response["error"]["message"] == "Something went wrong"
@@ -350,7 +342,9 @@ class TestFlextApiModelsCoverageBoost:
 
     def test_create_url_success(self) -> None:
         """Test create_url static method success case."""
-        result = FlextApiModels.create_url("https://example.com/path?query=value#fragment")
+        result = FlextApiModels.create_url(
+            "https://example.com/path?query=value#fragment"
+        )
 
         assert result.is_success
         url_model = result.unwrap()
@@ -438,7 +432,7 @@ class TestFlextApiModelsCoverageBoost:
         config = FlextApiModels.AppConfig(
             title="  Test API  ",  # Should be trimmed
             app_version="  1.0.0  ",  # Should be trimmed
-            description="API Description"
+            description="API Description",
         )
 
         assert config.title == "Test API"
@@ -451,7 +445,7 @@ class TestFlextApiModelsCoverageBoost:
             method="POST",
             url="/api/endpoint",
             headers={"Content-Type": "application/json"},
-            body={"key": "value"}
+            body={"key": "value"},
         )
 
         assert request.method == "POST"
@@ -464,7 +458,7 @@ class TestFlextApiModelsCoverageBoost:
         response = FlextApiModels.ApiResponse(
             status_code=200,
             body={"result": "success"},
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
 
         assert response.status_code == 200
@@ -474,10 +468,7 @@ class TestFlextApiModelsCoverageBoost:
     def test_storage_config_creation(self) -> None:
         """Test StorageConfig model creation."""
         config = FlextApiModels.StorageConfig(
-            backend="redis",
-            namespace="test_api",
-            max_size=1000,
-            default_ttl=3600
+            backend="redis", namespace="test_api", max_size=1000, default_ttl=3600
         )
 
         assert config.backend == "redis"
@@ -510,7 +501,9 @@ class TestFlextApiModelsCoverageBoost:
     def test_model_inheritance(self) -> None:
         """Test that models properly inherit from FlextModels.Entity."""
         request = FlextApiModels.HttpRequest(url="https://example.com")
-        response = FlextApiModels.HttpResponse(status_code=200, url="https://example.com", method="GET")
+        response = FlextApiModels.HttpResponse(
+            status_code=200, url="https://example.com", method="GET"
+        )
 
         # These should have Entity methods
         assert hasattr(request, "model_dump")
@@ -528,7 +521,7 @@ class TestFlextApiModelsCoverageBoost:
             base_url="https://api.example.com",
             auth_token="secret-token",
             timeout=30.0,
-            max_retries=3
+            max_retries=3,
         )
 
         # Create an HTTP request
@@ -536,7 +529,7 @@ class TestFlextApiModelsCoverageBoost:
             method="POST",
             url="/api/users",
             headers=client_config.get_default_headers(),
-            body={"name": "John Doe", "email": "john@example.com"}
+            body={"name": "John Doe", "email": "john@example.com"},
         )
 
         # Create an HTTP response
@@ -545,7 +538,7 @@ class TestFlextApiModelsCoverageBoost:
             url=request.url,
             method=request.method,
             body={"id": 123, "name": "John Doe", "email": "john@example.com"},
-            elapsed_time=0.25
+            elapsed_time=0.25,
         )
 
         # Create a paginated query

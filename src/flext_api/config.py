@@ -20,11 +20,6 @@ from flext_api.models import FlextApiModels
 class FlextApiConfig(FlextConfig):
     """Simple API configuration extending flext-core FlextConfig."""
 
-    # Nested class references for API compatibility
-    ClientConfig: ClassVar[type[FlextApiModels.ClientConfig]] = (
-        FlextApiModels.ClientConfig
-    )
-
     # Singleton pattern for global instance
 
     model_config = SettingsConfigDict(
@@ -179,6 +174,20 @@ class FlextApiConfig(FlextConfig):
                 f"Configuration creation failed: {e}"
             )
 
+    class _BackwardCompatibility:
+        """Nested backward compatibility class for FLEXT compliance - no loose functions."""
+
+        @staticmethod
+        def get_client_config() -> type:
+            """Get client config class."""
+            return FlextApiModels.ClientConfig
+
+    # Backward compatibility alias - add after class definition
+
+
+# Backward compatibility exports - FLEXT unified class pattern
+# Simple alias following venv_consistency.py pattern
+setattr(FlextApiConfig, "ClientConfig", FlextApiModels.ClientConfig)
 
 __all__ = [
     "FlextApiConfig",

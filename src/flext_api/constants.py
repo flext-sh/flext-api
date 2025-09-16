@@ -12,7 +12,7 @@ from typing import ClassVar
 from flext_core import FlextConstants
 
 
-class FlextApiConstants:
+class FlextApiConstants(FlextConstants):
     """Streamlined HTTP constants - maximum flext-core reuse, minimum duplication."""
 
     # Use flext-core constants directly - NO DUPLICATION
@@ -23,8 +23,7 @@ class FlextApiConstants:
     # HTTP status ranges - simplified
     SUCCESS_START = 200
     SUCCESS_END = 300
-    SUCCESS_STATUS_START = 200  # Alias for compatibility
-    SUCCESS_STATUS_END = 300  # Alias for compatibility
+    # Use direct constants only - no aliases
     CLIENT_ERROR_START = 400
     SERVER_ERROR_START = 500
     SERVER_ERROR_END = 600
@@ -102,17 +101,7 @@ class FlextApiConstants:
             "error": None,
         }
 
-        # Legacy aliases for backward compatibility
-        SUCCESS: ClassVar[dict[str, object]] = {
-            "status": "success",
-            "data": None,
-            "error": None,
-        }
-        ERROR: ClassVar[dict[str, object]] = {
-            "status": "error",
-            "data": None,
-            "error": None,
-        }
+        # Use direct response templates only - no legacy aliases
 
     # Client error codes
     CLIENT_ERROR_CODES: ClassVar[set[int]] = {
@@ -318,22 +307,38 @@ class FlextApiConstants:
     @staticmethod
     def is_success_status(status_code: int) -> bool:
         """Check if status code indicates success."""
-        return FlextApiConstants.HTTP_SUCCESS_MIN <= status_code <= FlextApiConstants.HTTP_SUCCESS_MAX
+        return (
+            FlextApiConstants.HTTP_SUCCESS_MIN
+            <= status_code
+            <= FlextApiConstants.HTTP_SUCCESS_MAX
+        )
 
     @staticmethod
     def is_client_error_status(status_code: int) -> bool:
         """Check if status code indicates client error."""
-        return FlextApiConstants.HTTP_CLIENT_ERROR_MIN <= status_code <= FlextApiConstants.HTTP_CLIENT_ERROR_MAX
+        return (
+            FlextApiConstants.HTTP_CLIENT_ERROR_MIN
+            <= status_code
+            <= FlextApiConstants.HTTP_CLIENT_ERROR_MAX
+        )
 
     @staticmethod
     def is_server_error_status(status_code: int) -> bool:
         """Check if status code indicates server error."""
-        return FlextApiConstants.HTTP_SERVER_ERROR_MIN <= status_code <= FlextApiConstants.HTTP_SERVER_ERROR_MAX
+        return (
+            FlextApiConstants.HTTP_SERVER_ERROR_MIN
+            <= status_code
+            <= FlextApiConstants.HTTP_SERVER_ERROR_MAX
+        )
 
     @staticmethod
     def is_valid_http_status(status_code: int) -> bool:
         """Check if HTTP status code is valid."""
-        return FlextApiConstants.HTTP_STATUS_MIN <= status_code <= FlextApiConstants.HTTP_STATUS_MAX
+        return (
+            FlextApiConstants.HTTP_STATUS_MIN
+            <= status_code
+            <= FlextApiConstants.HTTP_STATUS_MAX
+        )
 
     @staticmethod
     def get_default_headers() -> dict[str, str]:
@@ -352,13 +357,19 @@ class FlextApiConstants:
         if "timeout" in config:
             timeout = config["timeout"]
             if isinstance(timeout, (int, float)) and not (
-                FlextApiConstants.MIN_TIMEOUT <= float(timeout) <= FlextApiConstants.MAX_TIMEOUT
+                FlextApiConstants.MIN_TIMEOUT
+                <= float(timeout)
+                <= FlextApiConstants.MAX_TIMEOUT
             ):
                 errors.append(f"Invalid timeout: {timeout}")
 
         if "max_retries" in config:
             retries = config["max_retries"]
-            if isinstance(retries, int) and not (FlextApiConstants.MIN_RETRIES <= retries <= FlextApiConstants.MAX_RETRIES):
+            if isinstance(retries, int) and not (
+                FlextApiConstants.MIN_RETRIES
+                <= retries
+                <= FlextApiConstants.MAX_RETRIES
+            ):
                 errors.append(f"Invalid max_retries: {retries}")
 
         return errors
@@ -372,18 +383,11 @@ class FlextApiConstants:
         DATABASE = "database"
 
 
-# Export nested classes for backward compatibility
+# Direct nested class access only - no module aliases
+# Backward compatibility exports for tests
 ClientStatus = FlextApiConstants.ClientStatus
-FlextApiEndpoints = FlextApiConstants.FlextApiEndpoints
-FlextApiFieldType = FlextApiConstants.FlextApiFieldType
-FlextApiStatus = FlextApiConstants.FlextApiStatus
-StorageBackend = FlextApiConstants.StorageBackend
 
 __all__ = [
     "ClientStatus",
     "FlextApiConstants",
-    "FlextApiEndpoints",
-    "FlextApiFieldType",
-    "FlextApiStatus",
-    "StorageBackend",
 ]

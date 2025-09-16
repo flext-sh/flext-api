@@ -17,7 +17,7 @@ class TestFlextErrorsComprehensive:
     def test_flext_api_error_basic(self) -> None:
         """Test basic FlextApiError creation using flext_tests."""
         error_message = "Test API error message"
-        error = FlextApiExceptions.FlextApiError(error_message)
+        error = FlextApiExceptions.HttpError(error_message)
         assert error_message in str(error)
         assert error.status_code == 500
 
@@ -45,18 +45,18 @@ class TestFlextErrorsComprehensive:
     def test_error_inheritance(self) -> None:
         """Test error inheritance hierarchy using flext_tests."""
         validation_error = FlextApiExceptions.ValidationError("Validation test")
-        assert isinstance(validation_error, FlextApiExceptions.FlextApiError)
+        assert isinstance(validation_error, FlextApiExceptions.HttpError)
 
         auth_error = FlextApiExceptions.AuthenticationError("Auth test")
-        assert isinstance(auth_error, FlextApiExceptions.FlextApiError)
+        assert isinstance(auth_error, FlextApiExceptions.HttpError)
 
         not_found_error = FlextApiExceptions.NotFoundError("NotFound test")
-        assert isinstance(not_found_error, FlextApiExceptions.FlextApiError)
+        assert isinstance(not_found_error, FlextApiExceptions.HttpError)
 
     def test_error_with_custom_status_code(self) -> None:
         """Test error with custom status code using flext_tests."""
         error_message = "Custom status test"
-        error = FlextApiExceptions.FlextApiError(error_message, status_code=422)
+        error = FlextApiExceptions.HttpError(error_message, status_code=422)
         assert error.status_code == 422
         assert error_message in str(error)
 
@@ -70,8 +70,8 @@ class TestFlextErrorsComprehensive:
     def test_error_exception_behavior(self) -> None:
         """Test errors behave as proper exceptions using flext_tests."""
         msg1 = "Exception test 1"
-        with pytest.raises(FlextApiExceptions.FlextApiError):
-            raise FlextApiExceptions.FlextApiError(msg1)
+        with pytest.raises(FlextApiExceptions.HttpError):
+            raise FlextApiExceptions.HttpError(msg1)
 
         msg2 = "Exception test 2"
         with pytest.raises(FlextApiExceptions.ValidationError):
@@ -90,7 +90,7 @@ class TestFlextErrorsComprehensive:
         """Test each error has correct status code using flext_tests."""
         test_msg = "Status test"
 
-        assert FlextApiExceptions.FlextApiError(test_msg).status_code == 500
+        assert FlextApiExceptions.HttpError(test_msg).status_code == 500
         assert FlextApiExceptions.ValidationError(test_msg).status_code == 400
         assert FlextApiExceptions.AuthenticationError(test_msg).status_code == 401
         assert FlextApiExceptions.NotFoundError(test_msg).status_code == 404

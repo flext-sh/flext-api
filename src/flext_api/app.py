@@ -42,7 +42,6 @@ class FlextApiApp:
         return app
 
 
-# Backward compatibility alias
-create_fastapi_app = FlextApiApp.create_fastapi_app
+# Direct class access only - no backward compatibility aliases
 
-__all__ = ["FlextApiApp", "create_fastapi_app"]
+__all__ = ["FlextApiApp"]

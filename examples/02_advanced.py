@@ -34,7 +34,7 @@ def example_api_creation() -> None:
 
     # Create API instance using the refactored FlextApiClient class
     api = FlextApiClient()
-    print(f"✅ API created: {api.service_name} v{api.service_version}")
+    print(f"✅ API created: flext-api v0.9.0 - {api.__class__.__name__}")
 
     # Create client configuration using the refactored nested class
     client_config = FlextApiConfig.ClientConfig(
@@ -293,7 +293,8 @@ def example_app_creation() -> None:
     print("\n=== App Creation Example ===")
 
     # Create app using the refactored FlextApiClient class methods
-    app = FlextApiClient.create_flext_api_app()
+    client = FlextApiClient()
+    app = client.create_flext_api_app()
 
     print(f"✅ App created: {type(app).__name__}")
     print("✅ App includes CORS, error handlers, and middleware")

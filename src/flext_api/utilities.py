@@ -6,14 +6,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import json
-import time
-from typing import TypeVar
 from urllib.parse import urlparse
 
 from flext_core import (
     FlextResult,
-    FlextTypeAdapters,
     FlextTypes,
     FlextUtilities,
     FlextValidations,
@@ -23,60 +19,15 @@ from flext_api.constants import FlextApiConstants
 
 
 class FlextApiUtilities:
-    """HTTP API utilities extending flext-core - ZERO DUPLICATION using existing functionality."""
+    """HTTP API utilities - ZERO TOLERANCE: NO wrappers, delegation, or duplication.
 
-    # Move TypeVar inside the unified class - FLEXT compliance
-    T = TypeVar("T")
+    MANDATORY: Use flext-core directly:
+    - FlextUtilities.Generators.generate_uuid() instead of wrapper methods
+    - FlextValidations.FieldValidators.validate_url() instead of delegation
+    - FlextUtilities.TextProcessor.clean_text() instead of wrapper methods.
+    """
 
-    # =============================================================================
-    # DIRECT RE-EXPORT of flext-core utilities - STOP DUPLICATING!
-    # =============================================================================
-
-    # Use existing FlextUtilities instead of duplicating
-    TextProcessor = FlextUtilities.TextProcessor
-    Validation = FlextUtilities.Validation
-    Generators = FlextUtilities.Generators
-    Conversions = FlextUtilities.Conversions
-    TypeGuards = FlextUtilities.TypeGuards
-
-    # URL validation - using flext-core validation patterns
-    UrlValidator = FlextValidations.Validators
-
-    # =============================================================================
-    # HTTP-SPECIFIC BUILDER CLASSES - Using flext-core foundation
-    # =============================================================================
-
-    # Simple generator forwards for test compatibility
-    @classmethod
-    def generate_uuid(cls) -> str:
-        """Generate a UUID string via flext-core Generators."""
-        return FlextUtilities.Generators.generate_uuid()
-
-    @classmethod
-    def generate_id(cls) -> str:
-        """Generate a short ID via flext-core Generators."""
-        return FlextUtilities.Generators.generate_id()
-
-    @classmethod
-    def generate_entity_id(cls) -> str:
-        """Generate an entity ID via flext-core Generators."""
-        return FlextUtilities.Generators.generate_entity_id()
-
-    @classmethod
-    def generate_correlation_id(cls) -> str:
-        """Generate a correlation ID via flext-core Generators."""
-        return FlextUtilities.Generators.generate_correlation_id()
-
-    @classmethod
-    def generate_timestamp(cls) -> float:
-        """Generate a UNIX timestamp via standard time module."""
-        return time.time()
-
-    @classmethod
-    def generate_iso_timestamp(cls) -> str:
-        """Generate an ISO 8601 timestamp via flext-core Generators."""
-        return FlextUtilities.Generators.generate_iso_timestamp()
-
+    # HTTP-SPECIFIC BUILDER CLASSES ONLY - NO delegation methods
     class ResponseBuilder:
         """HTTP response builder using flext-core patterns."""
 
@@ -137,7 +88,7 @@ class FlextApiUtilities:
             data: list[object] | None,
             *,  # Python 3.13+ keyword-only for better API design
             page: int = 1,
-            page_size: int = FlextApiConstants.DEFAULT_PAGE_SIZE,  # Use consistent defaults
+            page_size: int = FlextApiConstants.DEFAULT_PAGE_SIZE,
             total: int | None = None,
             message: str | None = None,
         ) -> FlextResult[FlextTypes.Core.Dict]:
@@ -180,11 +131,6 @@ class FlextApiUtilities:
             except Exception as e:
                 return FlextResult[FlextTypes.Core.Dict].fail(str(e))
 
-    # =============================================================================
-    # HTTP-SPECIFIC ALIASES - Direct use of flext-core functionality (NO DUPLICATIONS)
-    # =============================================================================
-
-    # Use flext-core validation directly - ZERO DUPLICATION
     class HttpValidator:
         """HTTP-specific validation using flext-core patterns."""
 
@@ -255,201 +201,70 @@ class FlextApiUtilities:
             normalized = cleaned.rstrip("/") if not cleaned.endswith("://") else cleaned
             return FlextResult[str].ok(normalized)
 
-        # Removed complex lambda-based validators - using class methods instead
-
-    # =============================================================================
-    # STREAMLINED CONVENIENCE METHODS - Direct flext-core usage
-    # =============================================================================
-
+    # Backward compatibility delegation methods for ecosystem integration
     @staticmethod
     def validate_url(url: str) -> FlextResult[str]:
-        """Validate URL using flext-core validation."""
-        return FlextValidations.FieldValidators.validate_url(url)
+        """Delegate to HttpValidator.validate_url() for ecosystem compatibility."""
+        return FlextApiUtilities.HttpValidator.validate_url(url)
 
     @staticmethod
     def validate_config(config: object) -> FlextResult[FlextTypes.Core.Dict]:
-        """Validate configuration using flext-core type adapters with business rules."""
+        """Validate configuration object and return config details."""
         try:
-            result_dict = FlextTypeAdapters.adapt_to_dict(config)
+            if config is None:
+                return FlextResult[FlextTypes.Core.Dict].fail(
+                    "Configuration cannot be None"
+                )
 
-            # Additional business rule validations
-            if hasattr(config, "method"):
-                method = getattr(config, "method", "")
-                if method == "":
-                    return FlextResult[FlextTypes.Core.Dict].fail("HTTP method must be a non-empty string")
+            # Extract config data
+            if hasattr(config, "__dict__"):
+                config_dict = config.__dict__
+            elif isinstance(config, dict):
+                config_dict = config
+            else:
+                return FlextResult[FlextTypes.Core.Dict].fail(
+                    "Configuration must be dict-like or have attributes"
+                )
 
-            if hasattr(config, "status_code"):
-                status_code = getattr(config, "status_code", None)
-                if status_code is not None and (status_code < FlextApiConstants.MIN_HTTP_STATUS or status_code > FlextApiConstants.HttpStatus.MAX_HTTP_STATUS):
-                    return FlextResult[FlextTypes.Core.Dict].fail("Invalid HTTP status code")
+            # Determine config type based on attributes
+            config_type = "generic"
+            if "url" in config_dict and "method" in config_dict:
+                config_type = "http_request"
+            elif "error_code" in config_dict or "retry_count" in config_dict:
+                config_type = "http_error"
+            elif "rules" in config_dict or "validators" in config_dict:
+                config_type = "validation"
 
-            return FlextResult[FlextTypes.Core.Dict].ok(result_dict)
+            # Validate common HTTP configuration fields
+            if "method" in config_dict:
+                method_result = FlextApiUtilities.HttpValidator.validate_http_method(
+                    config_dict["method"]
+                )
+                if method_result.is_failure:
+                    return FlextResult[FlextTypes.Core.Dict].fail(
+                        f"Invalid method: {method_result.error}"
+                    )
+
+            if "status_code" in config_dict:
+                status_result = FlextApiUtilities.HttpValidator.validate_status_code(
+                    config_dict["status_code"]
+                )
+                if status_result.is_failure:
+                    return FlextResult[FlextTypes.Core.Dict].fail(
+                        f"Invalid status code: {status_result.error}"
+                    )
+
+            # Return validation result with config details
+            result_data = {
+                "config_type": config_type,
+                **config_dict,  # Include all original config data
+            }
+
+            return FlextResult[FlextTypes.Core.Dict].ok(result_data)
         except Exception as e:
-            return FlextResult[FlextTypes.Core.Dict].fail(str(e))
-
-    class DataTransformer:
-        """Data transformation utilities using flext-core patterns."""
-
-        @staticmethod
-        def to_json(data: object) -> FlextResult[str]:
-            """Convert data to JSON string."""
-            try:
-                json_str = json.dumps(data, default=str)
-                return FlextResult[str].ok(json_str)
-            except Exception as e:
-                return FlextResult[str].fail(f"JSON conversion failed: {e}")
-
-        @staticmethod
-        def from_json(json_str: str) -> FlextResult[object]:
-            """Parse JSON string to object."""
-            try:
-                data = json.loads(json_str)
-                return FlextResult[object].ok(data)
-            except Exception as e:
-                return FlextResult[object].fail(f"JSON parsing failed: {e}")
-
-        @staticmethod
-        def to_dict(data: object) -> FlextResult[dict[str, object]]:
-            """Convert data to dictionary."""
-            try:
-                if isinstance(data, dict):
-                    return FlextResult[dict[str, object]].ok(data)
-                if hasattr(data, "model_dump") and callable(
-                    getattr(data, "model_dump")
-                ):
-                    # Type-safe call to model_dump
-                    model_data = getattr(data, "model_dump")()
-                    return FlextResult[dict[str, object]].ok(model_data)
-                if hasattr(data, "dict") and callable(getattr(data, "dict")):
-                    # Type-safe call to dict method
-                    dict_data = getattr(data, "dict")()
-                    return FlextResult[dict[str, object]].ok(dict_data)
-                return FlextResult[dict[str, object]].fail(
-                    f"Cannot convert {type(data)} to dict"
-                )
-            except Exception as e:
-                return FlextResult[dict[str, object]].fail(
-                    f"Dict conversion failed: {e}"
-                )
-
-    # =============================================================================
-    # Missing Utility Methods - Adding for API compatibility
-    # =============================================================================
-
-    @staticmethod
-    def safe_bool_conversion(value: object) -> bool:
-        """Safely convert value to boolean."""
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, str):
-            return value.lower() in {"true", "1", "yes", "on"}
-        return bool(value)
-
-    @staticmethod
-    def safe_json_parse(json_str: str) -> FlextResult[dict[str, object]]:
-        """Safely parse JSON string."""
-        try:
-            result = json.loads(json_str)
-            if isinstance(result, dict):
-                return FlextResult[dict[str, object]].ok(result)
-            return FlextResult[dict[str, object]].fail(
-                "JSON result is not a dictionary"
+            return FlextResult[FlextTypes.Core.Dict].fail(
+                f"Configuration validation failed: {e}"
             )
-        except json.JSONDecodeError as e:
-            return FlextResult[dict[str, object]].fail(f"JSON parse error: {e}")
-        except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"Unexpected error: {e}")
-
-    @staticmethod
-    def safe_json_stringify(data: object) -> FlextResult[str]:
-        """Safely stringify object to JSON."""
-        try:
-            result = json.dumps(data, default=str, ensure_ascii=False)
-            return FlextResult[str].ok(result)
-        except Exception as e:
-            return FlextResult[str].fail(f"JSON stringify error: {e}")
-
-    @staticmethod
-    def is_non_empty_string(value: object) -> bool:
-        """Check if value is a non-empty string."""
-        return isinstance(value, str) and len(value.strip()) > 0
-
-    @staticmethod
-    def clean_text(text: str) -> str:
-        """Clean text by removing extra whitespace."""
-        return " ".join(text.split()) if text else ""
-
-    @staticmethod
-    def truncate(text: str, max_length: int = 100) -> str:
-        """Truncate text to maximum length."""
-        if len(text) <= max_length:
-            return text
-        return text[: max_length - 3] + "..."
-
-    @staticmethod
-    def format_duration(seconds: float) -> str:
-        """Format duration in seconds to human readable string."""
-        seconds_per_minute = 60
-
-        if seconds < 1:
-            return f"{seconds * 1000:.1f}ms"
-        if seconds < seconds_per_minute:
-            return f"{seconds:.1f}s"
-        minutes = int(seconds // seconds_per_minute)
-        remaining_seconds = seconds % seconds_per_minute
-        return f"{minutes}m {remaining_seconds:.1f}s"
-
-    @staticmethod
-    def get_elapsed_time(start_time: float, current_time: float | None = None) -> float:
-        """Get elapsed time between two timestamps."""
-        if current_time is None:
-            current_time = time.time()
-        return current_time - start_time
-
-    @staticmethod
-    def get_performance_metrics(start_time: float) -> dict[str, object]:
-        """Get performance metrics for a timed operation."""
-        current_time = time.time()
-        elapsed = current_time - start_time
-        return {
-            "elapsed_time": elapsed,
-            "elapsed_ms": elapsed * 1000,
-            "start_time": start_time,
-            "end_time": current_time,
-            "formatted_duration": FlextApiUtilities.format_duration(elapsed),
-        }
-
-    @staticmethod
-    def batch_process(items: list[FlextApiUtilities.T], batch_size: int = 100) -> list[list[FlextApiUtilities.T]]:
-        """Process items in batches."""
-        if batch_size <= 0:
-            batch_size = 100
-
-        batches = []
-        for i in range(0, len(items), batch_size):
-            batch = items[i : i + batch_size]
-            batches.append(batch)
-        return batches
-
-    @staticmethod
-    def safe_int_conversion(value: str) -> int | None:
-        """Safely convert string to integer."""
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            return None
-
-    @staticmethod
-    def safe_int_conversion_with_default(value: str, default: int = 0) -> int:
-        """Safely convert string to integer with default value."""
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            return default
-
-    # Port constants for network validation
-    MIN_PORT: int = 1
-    MAX_PORT: int = 65535
 
 
 __all__ = [

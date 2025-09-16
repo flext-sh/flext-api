@@ -144,7 +144,7 @@ class TestFlextApiModelsSimple:
     def test_pagination_config_creation_default(self) -> None:
         """Test PaginationConfig creation with default values."""
         config = FlextApiModels.PaginationConfig()
-        assert config.page == 1
+        assert config.current_page == 1
         assert config.page_size == 20
         assert config.total == 0
 
@@ -155,7 +155,7 @@ class TestFlextApiModelsSimple:
             page_size=50,
             total=100,
         )
-        assert config.page == 2
+        assert config.current_page == 2
         assert config.page_size == 50
         assert config.total == 100
 
@@ -163,7 +163,7 @@ class TestFlextApiModelsSimple:
         """Test PaginationConfig page validation."""
         # Valid page
         config = FlextApiModels.PaginationConfig(page=5)
-        assert config.page == 5
+        assert config.current_page == 5
 
         # Invalid page - Pydantic validation
         with pytest.raises(ValidationError, match="greater than or equal to 1"):

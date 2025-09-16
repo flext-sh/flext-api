@@ -61,7 +61,9 @@ class TestFlextApiModelsFocused:
         """Test HttpRequest URL validation with None URL."""
         # Test with invalid URL type
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiModels.HttpRequest(url=cast("str", None))  # Intentionally testing None type
+            FlextApiModels.HttpRequest(
+                url=cast("str", None)
+            )  # Intentionally testing None type
 
         # Pydantic validates type first, so None fails string type validation
         assert "Input should be a valid string" in str(exc_info.value)
@@ -269,7 +271,9 @@ class TestFlextApiModelsFocused:
         invalid_status: str = "invalid"
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.HttpResponse(
-                status_code=cast("int", invalid_status),  # Intentionally testing invalid type
+                status_code=cast(
+                    "int", invalid_status
+                ),  # Intentionally testing invalid type
                 url="https://test.com",
                 method="GET",
             )
@@ -580,7 +584,7 @@ class TestFlextApiModelsFocused:
         assert config.total == 100
 
     def test_pagination_config_page_property(self) -> None:
-        """Test PaginationConfig.page property alias."""
+        """Test PaginationConfig.current_page property."""
         config = FlextApiModels.PaginationConfig(page=7)
 
         assert config.current_page == 7

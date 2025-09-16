@@ -27,7 +27,7 @@ def example_api_creation() -> None:
 
     # Create API instance using ONLY the refactored FlextApiClient class
     api = FlextApiClient()
-    print(f"✅ API created: {api.service_name} v{api.service_version}")
+    print(f"✅ API created: flext-api v0.9.0 - {api.__class__.__name__}")
 
 
 def example_client_creation() -> None:
@@ -38,13 +38,13 @@ def example_client_creation() -> None:
     FlextApiClient()
 
     # Create client config using the refactored nested class
-    client_config = FlextApiConfig.ClientConfig(
-        base_url="https://httpbin.org",
-        timeout=30.0,
+    client_config = FlextApiConfig(
+        api_base_url="https://httpbin.org",
+        api_timeout=30.0,
     )
 
-    print(f"✅ Client config created: {client_config.base_url}")
-    print(f"   Timeout: {client_config.timeout}s")
+    print(f"✅ Client config created: {client_config.api_base_url}")
+    print(f"   Timeout: {client_config.api_timeout}s")
     print(f"   Max retries: {client_config.max_retries}")
 
 
@@ -53,14 +53,14 @@ def example_direct_client() -> None:
     print("\n=== Direct Client Example ===")
 
     # Create client configuration using refactored classes
-    config = FlextApiConfig.ClientConfig(
-        base_url="https://httpbin.org",
-        timeout=30.0,
-        headers={"User-Agent": "FlextAPI/0.9.0"},
+    config = FlextApiConfig(
+        api_base_url="https://httpbin.org",
+        api_timeout=30.0,
     )
 
-    print(f"✅ Client config: {config.base_url}")
-    print(f"   Headers: {config.headers}")
+    print(f"✅ Client config: {config.api_base_url}")
+    print(f"   Timeout: {config.api_timeout}")
+    print(f"   Default headers: {config.get_default_headers()}")
 
 
 def example_storage_usage() -> None:
@@ -97,7 +97,7 @@ def example_utilities_usage() -> None:
     print("\n=== Utilities Example ===")
 
     # URL validation using the refactored nested class
-    url_result = FlextApiUtilities.UrlValidator.validate_url(
+    url_result = FlextApiUtilities.HttpValidator.validate_url(
         "https://example.com/api/v1"
     )
 
@@ -125,7 +125,8 @@ def example_app_creation() -> None:
     print("\n=== App Creation Example ===")
 
     # Create app using the refactored FlextApiClient class methods
-    app = FlextApiClient.create_flext_api_app()
+    client = FlextApiClient()
+    app = client.create_flext_api_app()
 
     print(f"✅ App created: {type(app).__name__}")
     print("✅ App includes CORS, error handlers, and middleware")
