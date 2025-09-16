@@ -9,26 +9,20 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.client import FlextApiClient
+from flext_api.client import FlextApiClient, create_flext_api
 from flext_api.config import FlextApiConfig
-from flext_api.constants import (
-    FlextApiConstants,
-    FlextApiEndpoints,
-    FlextApiFieldType,
-    FlextApiStatus,
-    StorageBackend,
-)
+from flext_api.constants import FlextApiConstants
 from flext_api.exceptions import FlextApiExceptions
 from flext_api.models import FlextApiModels
 from flext_api.storage import FlextApiStorage
 from flext_api.utilities import FlextApiUtilities
 
-# Commonly used constants for backward compatibility
+# Backward compatibility exports for ecosystem integration
 MIN_PORT = FlextApiConstants.MIN_PORT
 MAX_PORT = FlextApiConstants.MAX_PORT
-
-# Factory function for backward compatibility
-create_flext_api = FlextApiClient.create_flext_api
+FlextApiEndpoints = FlextApiConstants.FlextApiEndpoints
+FlextApiFieldType = FlextApiConstants.FlextApiFieldType
+FlextApiStatus = FlextApiConstants.FlextApiStatus
 
 # Version information
 __version__ = "0.9.0"
@@ -46,7 +40,6 @@ __all__ = [
     "FlextApiStatus",
     "FlextApiStorage",
     "FlextApiUtilities",
-    "StorageBackend",
     "__version__",
     "create_flext_api",
 ]

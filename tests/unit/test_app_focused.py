@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api.app import create_fastapi_app
+from flext_api.app import FlextApiApp
 from flext_api.models import FlextApiModels
 
 
@@ -17,12 +17,9 @@ class TestFlextApiAppFocused:
 
     def test_create_fastapi_app_basic(self) -> None:
         """Test create_fastapi_app with basic configuration."""
-        config = FlextApiModels.AppConfig(
-            title="Test API",
-            app_version="1.0.0"
-        )
+        config = FlextApiModels.AppConfig(title="Test API", app_version="1.0.0")
 
-        app = create_fastapi_app(config)
+        app = FlextApiApp.create_fastapi_app(config)
 
         # Verify app is created and has expected attributes
         assert app is not None
@@ -41,10 +38,10 @@ class TestFlextApiAppFocused:
             description="Full configuration test API",
             docs_url="/api/docs",
             redoc_url="/api/redoc",
-            openapi_url="/api/openapi.json"
+            openapi_url="/api/openapi.json",
         )
 
-        app = create_fastapi_app(config)
+        app = FlextApiApp.create_fastapi_app(config)
 
         assert app is not None
         assert app.title == "Full Config API"
@@ -55,11 +52,11 @@ class TestFlextApiAppFocused:
         """Test create_fastapi_app uses default values for optional config."""
         config = FlextApiModels.AppConfig(
             title="Default Test API",
-            app_version="3.0.0"
+            app_version="3.0.0",
             # No description, docs_url, redoc_url, or openapi_url provided
         )
 
-        app = create_fastapi_app(config)
+        app = FlextApiApp.create_fastapi_app(config)
 
         assert app is not None
         assert app.title == "Default Test API"
@@ -68,12 +65,9 @@ class TestFlextApiAppFocused:
 
     def test_create_fastapi_app_health_endpoint_structure(self) -> None:
         """Test that health endpoint is properly added to FastAPI app."""
-        config = FlextApiModels.AppConfig(
-            title="Health Test API",
-            app_version="1.0.0"
-        )
+        config = FlextApiModels.AppConfig(title="Health Test API", app_version="1.0.0")
 
-        app = create_fastapi_app(config)
+        app = FlextApiApp.create_fastapi_app(config)
 
         # Verify app structure includes the health endpoint
         assert app is not None
@@ -86,12 +80,9 @@ class TestFlextApiAppFocused:
     def test_create_fastapi_app_config_attributes_access(self) -> None:
         """Test getattr usage for optional configuration attributes."""
         # This tests the getattr calls for description, docs_url, redoc_url, openapi_url
-        config = FlextApiModels.AppConfig(
-            title="Attr Test API",
-            app_version="1.0.0"
-        )
+        config = FlextApiModels.AppConfig(title="Attr Test API", app_version="1.0.0")
 
-        app = create_fastapi_app(config)
+        app = FlextApiApp.create_fastapi_app(config)
 
         # The function uses getattr with defaults, should not raise errors
         assert app is not None
@@ -101,11 +92,10 @@ class TestFlextApiAppFocused:
     async def test_create_fastapi_app_health_endpoint_functionality(self) -> None:
         """Test that health endpoint actually works and returns expected response."""
         config = FlextApiModels.AppConfig(
-            title="Health Function Test API",
-            app_version="1.0.0"
+            title="Health Function Test API", app_version="1.0.0"
         )
 
-        app = create_fastapi_app(config)
+        app = FlextApiApp.create_fastapi_app(config)
 
         # Access the health endpoint handler through app routes
         # The health_check function is nested inside create_fastapi_app

@@ -18,16 +18,9 @@ class FlextApiExceptions:
     """HTTP API exceptions using flext-core extensively - ZERO DUPLICATION."""
 
     # =============================================================================
-    # Direct re-export of flext-core exceptions - NO DUPLICATION
+    # HTTP-SPECIFIC EXCEPTIONS ONLY - ZERO TOLERANCE for re-exports
+    # MANDATORY: Use FlextExceptions.BaseError directly instead of aliases
     # =============================================================================
-
-    # Base exceptions from flext-core
-    BaseError = FlextExceptions.BaseError
-    ConfigurationError = FlextExceptions.ConfigurationError
-    ProcessingError = FlextExceptions.ProcessingError
-    ConnectionError = FlextExceptions.ConnectionError
-    TimeoutError = FlextExceptions.TimeoutError
-    PermissionError = FlextExceptions.PermissionError
 
     # HTTP-specific exception classes with status_code property
     class ValidationError(FlextExceptions._ValidationError):
@@ -75,8 +68,7 @@ class FlextApiExceptions:
             )
             self.status_code = status_code
 
-    # Alias for backward compatibility with tests
-    FlextApiError = HttpError
+    # Compatibility alias removed - use HttpError directly
 
     @classmethod
     def http_error_class(cls) -> type[HttpError]:
@@ -200,9 +192,9 @@ class FlextApiExceptions:
     def is_success(status_code: int) -> bool:
         """Check if status code indicates success (2xx)."""
         return (
-            FlextApiConstants.SUCCESS_STATUS_START
+            FlextApiConstants.SUCCESS_START
             <= status_code
-            < FlextApiConstants.SUCCESS_STATUS_END
+            < FlextApiConstants.SUCCESS_END
         )
 
 

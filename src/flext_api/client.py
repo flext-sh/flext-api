@@ -25,7 +25,7 @@ from tenacity import (
     wait_exponential,
 )
 
-from flext_api.app import FlextApiApp, create_fastapi_app
+from flext_api.app import FlextApiApp
 from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
@@ -152,15 +152,7 @@ class FlextApiClient(FlextDomainService[object]):
         self._request_count = 0
         self._error_count = 0
 
-    @property
-    def service_name(self) -> str:
-        """Get service name for compatibility."""
-        return "flext-api"
-
-    @property
-    def service_version(self) -> str:
-        """Get service version for compatibility."""
-        return "0.9.0"
+    # Compatibility properties removed - use direct values
 
     def create_flext_api_app(self, **kwargs: object) -> object:
         """Create FastAPI application with configuration - consolidated from factory.py."""
@@ -268,11 +260,7 @@ class FlextApiClient(FlextDomainService[object]):
             headers.update(additional)
         return headers
 
-    async def request(
-        self, method: str, url: str, **kwargs: object
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
-        """Make HTTP request - alias for _request."""
-        return await self._request(method, url, **kwargs)
+    # Alias removed - use _request directly or use convenience methods (get, post, etc.)
 
     # =============================================================================
     # FlextDomainService Implementation
@@ -469,8 +457,10 @@ class FlextApiClient(FlextDomainService[object]):
             return AsyncRetrying(
                 stop=stop_after_attempt(max_retries),
                 wait=wait_exponential(multiplier=1, min=1, max=10),
-                retry=retry_if_exception_type((httpx.HTTPError, httpx.TimeoutException, httpx.ConnectError)),
-                reraise=True
+                retry=retry_if_exception_type(
+                    (httpx.HTTPError, httpx.TimeoutException, httpx.ConnectError)
+                ),
+                reraise=True,
             )
 
     async def _request(
@@ -517,7 +507,9 @@ class FlextApiClient(FlextDomainService[object]):
             # Execute HTTP request with retry logic if configured
             response: httpx.Response | None = None
             if self._client_config.max_retries > 0:
-                retry_config = self._RetryHelper.create_retry_config(self._client_config.max_retries)
+                retry_config = self._RetryHelper.create_retry_config(
+                    self._client_config.max_retries
+                )
                 async for attempt in retry_config:
                     with attempt:
                         response = await client.request(
@@ -627,23 +619,43 @@ class FlextApiClient(FlextDomainService[object]):
 
         """
         if config_dict is None:
+            # Create with default configuration
             return cls()
 
-        # Extract configuration values
-        base_url = config_dict.get("base_url", "http://127.0.0.1:8000")
-        timeout = config_dict.get("timeout", 30.0)
-        max_retries = config_dict.get("max_retries", 3)
+        # Create a config dict with proper defaults and type conversion
+        processed_config: dict[str, object] = {}
 
-        # Ensure proper types
-        base_url_str = base_url if isinstance(base_url, str) else str(base_url)
-        timeout_float = float(timeout) if isinstance(timeout, (int, float)) else 30.0
-        max_retries_int = max_retries if isinstance(max_retries, int) else 3
+        # Handle base_url
+        base_url = config_dict.get("base_url")
+        if base_url is not None:
+            if isinstance(base_url, str):
+                processed_config["base_url"] = base_url
+            else:
+                processed_config["base_url"] = str(base_url)
 
-        return cls(
-            base_url=base_url_str,
-            timeout=timeout_float,
-            max_retries=max_retries_int,
-        )
+        # Handle timeout with type conversion
+        timeout = config_dict.get("timeout")
+        if timeout is not None and isinstance(timeout, (int, float)):
+            processed_config["timeout"] = float(timeout)
+        # Invalid timeout types are ignored, will use defaults
+
+        # Handle max_retries with type conversion
+        max_retries = config_dict.get("max_retries")
+        if max_retries is not None:
+            if isinstance(max_retries, int):
+                processed_config["max_retries"] = max_retries
+            elif isinstance(max_retries, float):
+                processed_config["max_retries"] = int(max_retries)
+            # Invalid max_retries types are ignored, will use defaults
+
+        # Handle headers
+        headers = config_dict.get("headers")
+        if headers is not None and isinstance(headers, dict):
+            processed_config["headers"] = headers
+            # Invalid headers types are ignored, will use defaults
+
+        # Pass the processed config dict directly to constructor
+        return cls(config=processed_config)
 
     @classmethod
     def create_flext_api_app_with_settings(cls) -> FlextResult[object]:
@@ -655,14 +667,35 @@ class FlextApiClient(FlextDomainService[object]):
                 description="FlextAPI application with default settings",
             )
 
-            app = create_fastapi_app(app_config)
+            app = FlextApiApp.create_fastapi_app(app_config)
             return FlextResult[object].ok(app)
         except Exception as e:
             return FlextResult[object].fail(f"Failed to create FlextAPI app: {e}")
 
+    class _Factory:
+        """Nested factory class for FLEXT compliance - no loose functions."""
 
+        @staticmethod
+        def create_flext_api(
+            config_dict: Mapping[str, object] | None = None,
+        ) -> FlextApiClient:
+            """Factory function for creating FlextApiClient instances.
+
+            Args:
+                config_dict: Optional configuration dictionary
+
+            Returns:
+                FlextApiClient instance
+
+            """
+            return FlextApiClient.create_flext_api(config_dict)
+
+
+# Backward compatibility export - FLEXT unified class pattern
+create_flext_api = FlextApiClient._Factory.create_flext_api
 
 
 __all__ = [
     "FlextApiClient",
+    "create_flext_api",
 ]

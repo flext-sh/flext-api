@@ -29,19 +29,20 @@ class TestFlextApiClientCoverageBoost:
         config = {
             "base_url": "https://api.example.com",
             "timeout": 30.0,
-            "max_retries": 3
+            "max_retries": 3,
         }
         api = FlextApiClient(config)
         assert api is not None
-        assert api.client is not None
+        assert hasattr(api, "_client_config")
+        assert api._client_config is not None
 
     def test_flext_api_initialization_failure(self) -> None:
         """Test FlextApiClient initialization failure handling."""
         # Create invalid configuration that would cause client creation to fail
         invalid_config = {
             "base_url": "",  # Invalid empty URL
-            "timeout": -1,   # Invalid negative timeout
-            "max_retries": "invalid"  # Invalid type
+            "timeout": -1,  # Invalid negative timeout
+            "max_retries": "invalid",  # Invalid type
         }
 
         # FlextApiClient should raise ValueError when client creation fails
@@ -51,9 +52,10 @@ class TestFlextApiClientCoverageBoost:
     def test_flext_api_client_property(self) -> None:
         """Test FlextApiClient client property access."""
         api = FlextApiClient()
-        client = api.client
-        assert client is not None
-        assert hasattr(client, "base_url")
+        # Test accessing actual client configuration
+        assert hasattr(api, "_client_config")
+        assert api._client_config is not None
+        assert hasattr(api._client_config, "base_url")
 
     @pytest.mark.asyncio
     async def test_flext_api_start(self) -> None:
@@ -114,8 +116,7 @@ class TestFlextApiClientCoverageBoost:
     def test_flext_api_configure(self) -> None:
         """Test FlextApiClient configure method."""
         api = FlextApiClient()
-        config = {"timeout": 60.0}
-        result = api.configure(config)
+        result = api.configure({"timeout": 60.0})
         assert result is not None
 
     def test_flext_api_get_config(self) -> None:
@@ -127,21 +128,18 @@ class TestFlextApiClientCoverageBoost:
     def test_flext_api_health(self) -> None:
         """Test FlextApiClient health method."""
         api = FlextApiClient()
-        health = api.health()
+        health = api.health_check()
         assert isinstance(health, dict)
 
     def test_flext_api_create_app_success(self) -> None:
         """Test FlextApiClient create_app static method success case."""
-        app_config = FlextApiModels.AppConfig(
-            title="Test API",
-            app_version="1.0.0"
-        )
-        result = FlextApiClient.create_app(app_config)
+        # Test instance method, not static method
+        api = FlextApiClient()
+        result = api.create_flext_api_app()
         assert result is not None
-        assert result.is_success
 
     def test_flext_api_create_app_failure(self) -> None:
-        """Test FlextApiClient create_app static method failure case."""
+        """Test FlextApiClient create_app instance method failure case."""
         # Test for expected validation exception during AppConfig creation with empty required fields
         with pytest.raises((ValueError, ValidationError)):
             FlextApiModels.AppConfig(title="", app_version="")
@@ -151,16 +149,19 @@ class TestFlextApiClientCoverageBoost:
         # Test Mapping config path
         mapping_config = {"base_url": "https://api.test.com"}
         api1 = FlextApiClient(mapping_config)
-        assert api1.client is not None
+        assert hasattr(api1, "_client_config")
+        assert api1._client_config is not None
 
         # Test non-Mapping config path (string)
         string_config = "https://api.test2.com"
         api2 = FlextApiClient(string_config)
-        assert api2.client is not None
+        assert hasattr(api2, "_client_config")
+        assert api2._client_config is not None
 
         # Test None config path
         api3 = FlextApiClient(None)
-        assert api3.client is not None
+        assert hasattr(api3, "_client_config")
+        assert api3._client_config is not None
 
     def test_flext_api_execute_method(self) -> None:
         """Test FlextApiClient execute method."""

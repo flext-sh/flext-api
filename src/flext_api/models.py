@@ -28,6 +28,7 @@ _URL_EMPTY_ERROR = "URL cannot be empty"
 _URL_FORMAT_ERROR = "Invalid URL format"
 _BASE_URL_ERROR = "URL must be a non-empty string"
 
+
 class FlextApiModels:
     """API models using flext-core extensively - NO DUPLICATION."""
 
@@ -43,13 +44,6 @@ class FlextApiModels:
     _URL_EMPTY_ERROR = "URL cannot be empty"
     _URL_FORMAT_ERROR = "Invalid URL format"
     _BASE_URL_ERROR = "URL must be a non-empty string"
-
-    # Direct re-export of flext-core HTTP models
-    HttpRequestConfig = FlextModels.Http.HttpRequestConfig
-    HttpErrorConfig = FlextModels.Http.HttpErrorConfig
-
-    # Re-export HTTP methods and status codes
-    HttpMethod = FlextApiConstants.HttpMethods
 
     # Simple API-specific models
     class HttpRequest(FlextModels.Entity):
@@ -212,15 +206,14 @@ class FlextApiModels:
     class PaginationConfig(FlextModels.Value):
         """Pagination configuration extending flext-core Value."""
 
-        page_size: int = Field(default=FlextApiConstants.DEFAULT_PAGE_SIZE, gt=0, le=1000)
+        page_size: int = Field(
+            default=FlextApiConstants.DEFAULT_PAGE_SIZE, gt=0, le=1000
+        )
         current_page: int = Field(alias="page", default=1, ge=1)
         max_pages: int | None = Field(default=None, ge=1)
         total: int = Field(default=0, ge=0)
 
-        @property
-        def page(self) -> int:
-            """Alias for current_page for backward compatibility."""
-            return self.current_page
+        # Compatibility alias removed - use current_page directly
 
     class StorageConfig(FlextModels.Value):
         """Storage configuration extending flext-core Value."""
@@ -414,12 +407,11 @@ class FlextApiModels:
                 raise ValueError(error_message)
             return v.strip()
 
+    # Backward compatibility aliases for ecosystem integration
+    HttpMethod = FlextApiConstants.HttpMethods
 
-# Module-level aliases for nested class access
-STANDARD_MODEL_CONFIG = FlextApiModels.STANDARD_MODEL_CONFIG
-_URL_EMPTY_ERROR = FlextApiModels._URL_EMPTY_ERROR
-_URL_FORMAT_ERROR = FlextApiModels._URL_FORMAT_ERROR
-_BASE_URL_ERROR = FlextApiModels._BASE_URL_ERROR
+
+# Direct nested class access only - no module aliases
 
 __all__ = [
     "FlextApiModels",

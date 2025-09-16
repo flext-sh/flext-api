@@ -104,7 +104,9 @@ class TestFlextApiClientFocused:
         }
 
         # Method returns a tuple, not a dict
-        base_url, timeout, max_retries, headers, auth_token, api_key = client._extract_client_config_params(kwargs)
+        base_url, timeout, max_retries, headers, auth_token, api_key = (
+            client._extract_client_config_params(kwargs)
+        )
 
         assert base_url == "https://test.com"
         assert timeout == 45.0
@@ -125,7 +127,9 @@ class TestFlextApiClientFocused:
         }
 
         # Method returns a tuple, not a dict
-        _base_url, timeout, _max_retries, headers, auth_token, _api_key = client._extract_client_config_params(kwargs)
+        _base_url, timeout, _max_retries, headers, auth_token, _api_key = (
+            client._extract_client_config_params(kwargs)
+        )
 
         assert timeout == 30.0
         assert auth_token is None

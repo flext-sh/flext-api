@@ -45,9 +45,7 @@ class TestFlextApiUtilitiesComprehensive:
 
         # Test ValidationConfig with valid data
         validation_config = FlextModels.Http.ValidationConfig(
-            field="email",
-            value="invalid-email",
-            url="https://api.example.com/validate"
+            field="email", value="invalid-email", url="https://api.example.com/validate"
         )
         result = FlextApiUtilities.validate_config(validation_config)
         assert result.success

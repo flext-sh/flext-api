@@ -13,7 +13,7 @@ from flext_core import FlextTypes
 from flext_tests import FlextTestsDomains
 from pydantic import ValidationError
 
-from flext_api import FlextApiClient, create_flext_api
+from flext_api import FlextApiClient
 
 
 class TestFlextApiClient:
@@ -28,10 +28,10 @@ class TestFlextApiClient:
         assert hasattr(FlextApiClient, "max_retries")
 
     def test_create_flext_api_factory(self) -> None:
-        """Test create_flext_api factory function using flext_tests patterns."""
-        api = create_flext_api()
+        """Test FlextApiClient constructor using flext_tests patterns."""
+        api = FlextApiClient("https://api.example.com")
 
-        # Verify factory creates proper instance
+        # Verify constructor creates proper instance
         assert isinstance(api, FlextApiClient)
         assert api.base_url == "https://api.example.com"
 
@@ -226,10 +226,10 @@ class TestFlextApiClient:
         assert client._connection_manager.client is None  # Not created yet
 
     def test_client_factory_function_consistency(self) -> None:
-        """Test create_flext_api factory creates consistent clients."""
+        """Test FlextApiClient constructor creates consistent clients."""
         # Multiple calls should create independent instances
-        client1 = create_flext_api()
-        client2 = create_flext_api()
+        client1 = FlextApiClient("https://api.example.com")
+        client2 = FlextApiClient("https://api.example.com")
 
         # Should be different instances but same configuration
         assert client1 is not client2
@@ -240,7 +240,7 @@ class TestFlextApiClient:
     def test_client_type_validation_with_flext_tests(self) -> None:
         """Test client is proper type using flext_tests validation."""
         # Create client using factory
-        api_client = create_flext_api()
+        api_client = FlextApiClient.create_flext_api()
 
         assert isinstance(api_client, FlextApiClient)
         assert type(api_client).__name__ == "FlextApiClient"
