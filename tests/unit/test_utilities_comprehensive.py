@@ -6,11 +6,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextModels, FlextTypes
 from flext_tests import FlextTestsMatchers
 from pydantic import ValidationError
 
 from flext_api import FlextApiConstants, FlextApiUtilities
+from flext_api.models import FlextApiModels
+from flext_core import FlextTypes
 
 
 class TestFlextApiUtilitiesComprehensive:
@@ -19,7 +20,7 @@ class TestFlextApiUtilitiesComprehensive:
     def test_validate_config_all_types(self) -> None:
         """Test config validation for all configuration types."""
         # Test HttpRequestConfig with valid data
-        http_config = FlextModels.Http.HttpRequestConfig(
+        http_config = FlextApiModels.Http.HttpRequestConfig(
             url="https://api.example.com/test", method="POST", timeout=45
         )
         result = FlextApiUtilities.validate_config(http_config)
@@ -30,7 +31,7 @@ class TestFlextApiUtilitiesComprehensive:
         assert config_data["method"] == "POST"
 
         # Test HttpErrorConfig with valid data
-        error_config = FlextModels.Http.HttpErrorConfig(
+        error_config = FlextApiModels.Http.HttpErrorConfig(
             message="Internal Server Error",
             status_code=500,
             url="https://api.example.com/error",
@@ -44,7 +45,7 @@ class TestFlextApiUtilitiesComprehensive:
         assert config_data["message"] == "Internal Server Error"
 
         # Test ValidationConfig with valid data
-        validation_config = FlextModels.Http.ValidationConfig(
+        validation_config = FlextApiModels.Http.ValidationConfig(
             field="email", value="invalid-email", url="https://api.example.com/validate"
         )
         result = FlextApiUtilities.validate_config(validation_config)
@@ -57,7 +58,7 @@ class TestFlextApiUtilitiesComprehensive:
     def test_validate_http_request_config_failures(self) -> None:
         """Test HTTP request config validation failures."""
         try:
-            invalid_config = FlextModels.Http.HttpRequestConfig(url="", method="GET")
+            invalid_config = FlextApiModels.Http.HttpRequestConfig(url="", method="GET")
             # If model creation succeeds, test the validation
             result = FlextApiUtilities.validate_config(invalid_config)
             FlextTestsMatchers.assert_result_failure(result)
@@ -67,7 +68,7 @@ class TestFlextApiUtilitiesComprehensive:
             pass
 
         # Invalid HTTP method
-        invalid_method_config = FlextModels.Http.HttpRequestConfig(
+        invalid_method_config = FlextApiModels.Http.HttpRequestConfig(
             url="https://api.example.com", method=""
         )
         result = FlextApiUtilities.validate_config(invalid_method_config)
@@ -79,7 +80,7 @@ class TestFlextApiUtilitiesComprehensive:
         """Test HTTP error config validation failures."""
         # Invalid status code - too low (should fail at model creation)
         try:
-            invalid_config = FlextModels.Http.HttpErrorConfig(
+            invalid_config = FlextApiModels.Http.HttpErrorConfig(
                 message="Error", status_code=50
             )
             # If model creation succeeds, test the validation
@@ -92,7 +93,7 @@ class TestFlextApiUtilitiesComprehensive:
 
         # Invalid status code - too high
         try:
-            invalid_high_config = FlextModels.Http.HttpErrorConfig(
+            invalid_high_config = FlextApiModels.Http.HttpErrorConfig(
                 message="Error", status_code=700
             )
             # If model creation succeeds, test the validation

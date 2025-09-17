@@ -7,14 +7,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from typing import ClassVar
-from urllib.parse import urlparse
 
-from flext_core import FlextConfig, FlextResult
 from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
+from flext_core import FlextConfig, FlextModels, FlextResult
 
 
 class FlextApiConfig(FlextConfig):
@@ -50,37 +49,26 @@ class FlextApiConfig(FlextConfig):
     @field_validator("api_base_url")
     @classmethod
     def validate_api_base_url(cls, v: str) -> str:
-        """Validate API base URL format."""
-        try:
-            parsed = urlparse(v.strip())
-            if not parsed.scheme or not parsed.netloc:
-                msg = "API base URL must include scheme and hostname"
-                raise ValueError(msg)
-            return v.strip()
-        except Exception as e:
-            msg = f"Invalid API base URL format: {e}"
-            raise ValueError(msg) from e
+        """Validate API base URL using centralized FlextModels validation."""
+        # Use centralized FlextModels validation instead of duplicate logic
+        validation_result = FlextModels.create_validated_http_url(v.strip())
+        if validation_result.is_failure:
+            error_msg = f"Invalid API base URL: {validation_result.error}"
+            raise ValueError(error_msg)
+        return validation_result.unwrap()
 
     @field_validator("base_url")
     @classmethod
     def validate_base_url(cls, value: str) -> str:
-        """Validate base URL format."""
-        empty_url_msg = "URL must be a non-empty string"
-        invalid_format_msg = "Invalid URL format"
-
-        if not value or not value.strip():
-            raise ValueError(empty_url_msg)
-        try:
-            parsed = urlparse(value.strip())
-            if not parsed.scheme or not parsed.netloc:
-                raise ValueError(invalid_format_msg)
-            if parsed.scheme not in {"http", "https"}:
-                raise ValueError(invalid_format_msg)
-            return value.strip()
-        except ValueError:
-            raise
-        except Exception as e:
-            raise ValueError(invalid_format_msg) from e
+        """Validate base URL using centralized FlextModels validation."""
+        # Use centralized FlextModels validation instead of duplicate logic
+        validation_result = FlextModels.create_validated_http_url(
+            value.strip() if value else ""
+        )
+        if validation_result.is_failure:
+            error_msg = f"Invalid base URL: {validation_result.error}"
+            raise ValueError(error_msg)
+        return validation_result.unwrap()
 
     @classmethod
     def get_global_instance(cls) -> FlextApiConfig:

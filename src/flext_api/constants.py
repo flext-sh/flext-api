@@ -15,8 +15,8 @@ from flext_core import FlextConstants
 class FlextApiConstants(FlextConstants):
     """Streamlined HTTP constants - maximum flext-core reuse, minimum duplication."""
 
-    # Use flext-core constants directly - NO DUPLICATION
-    HTTP_OK = FlextConstants.Web.HTTP_OK  # 200
+    # Use flext-core constants directly
+    HTTP_OK = 200  # Standard HTTP OK status
     MIN_HTTP_STATUS = 100
     MAX_HTTP_STATUS = 599
 

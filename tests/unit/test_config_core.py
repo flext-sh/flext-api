@@ -1,9 +1,9 @@
 """Core functionality tests for FlextConfig to increase coverage."""
 
 import pytest
-from flext_core import FlextConfig
 
 from flext_api import FlextApiConfig
+from flext_core import FlextConfig
 
 
 class TestFlextApiConfig:

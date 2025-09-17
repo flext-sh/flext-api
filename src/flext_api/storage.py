@@ -12,7 +12,6 @@ from flext_core import (
     FlextLogger,
     FlextModels,
     FlextResult,
-    FlextTypeAdapters,
     FlextTypes,
     FlextUtilities,
 )
@@ -38,9 +37,15 @@ class FlextApiStorage(FlextModels.Entity):
         if isinstance(config, dict):
             config_dict = config
         elif config is not None:
-            adapted = FlextTypeAdapters.adapt_to_dict(config)
-            value = adapted.get("value", adapted)
-            config_dict = value if isinstance(value, dict) else {}
+            if hasattr(config, "model_dump") and callable(
+                getattr(config, "model_dump")
+            ):
+                adapted = getattr(config, "model_dump")()
+                config_dict = (
+                    adapted if isinstance(adapted, dict) else {"value": adapted}
+                )
+            else:
+                config_dict = {"value": config}
         else:
             config_dict = {}
 

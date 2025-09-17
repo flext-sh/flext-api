@@ -14,8 +14,9 @@ from collections.abc import Callable
 from typing import cast
 from unittest.mock import Mock
 
-from flext_core import FlextContainer, FlextResult
 from flext_tests import FlextTestsMatchers
+
+from flext_core import FlextContainer, FlextResult
 
 
 class TestFlextContainer100PercentCoverage:

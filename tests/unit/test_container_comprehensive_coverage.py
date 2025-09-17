@@ -6,8 +6,9 @@ and performance scenarios to achieve 100% coverage using standardized patterns.
 
 import math
 
-from flext_core import FlextContainer
 from flext_tests import FlextTestsMatchers
+
+from flext_core import FlextContainer
 
 
 class TestFlextContainerComprehensiveCoverage:

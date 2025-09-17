@@ -17,8 +17,9 @@ from pathlib import Path
 from typing import cast
 
 import pytest
-from flext_core import FlextResult, FlextTypes, T
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
+
+from flext_core import FlextResult, FlextTypes, T
 
 
 def create_test_storage_config(**overrides: object) -> FlextTypes.Core.Dict:

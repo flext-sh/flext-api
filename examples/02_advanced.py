@@ -17,8 +17,6 @@ from __future__ import annotations
 
 import asyncio
 
-from flext_core import FlextTypes
-
 from flext_api import (
     FlextApiClient,
     FlextApiConfig,
@@ -26,6 +24,7 @@ from flext_api import (
     FlextApiStorage,
     FlextApiUtilities,
 )
+from flext_core import FlextTypes
 
 
 def example_api_creation() -> None:
