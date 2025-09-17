@@ -6,16 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from urllib.parse import urlparse
-
+from flext_api.constants import FlextApiConstants
 from flext_core import (
+    FlextModels,
     FlextResult,
     FlextTypes,
     FlextUtilities,
-    FlextValidations,
 )
-
-from flext_api.constants import FlextApiConstants
 
 
 class FlextApiUtilities:
@@ -23,7 +20,7 @@ class FlextApiUtilities:
 
     MANDATORY: Use flext-core directly:
     - FlextUtilities.Generators.generate_uuid() instead of wrapper methods
-    - FlextValidations.FieldValidators.validate_url() instead of delegation
+    - FlextModels.create_validated_url() instead of delegation
     - FlextUtilities.TextProcessor.clean_text() instead of wrapper methods.
     """
 
@@ -132,80 +129,52 @@ class FlextApiUtilities:
                 return FlextResult[FlextTypes.Core.Dict].fail(str(e))
 
     class HttpValidator:
-        """HTTP-specific validation using flext-core patterns."""
+        """HTTP-specific validation using centralized flext-core FlextModels."""
 
         @staticmethod
         def validate_url(url: str) -> FlextResult[str]:
-            """Validate URL with additional port range checking."""
-            # First use flext-core validation
-            base_result = FlextValidations.FieldValidators.validate_url(url)
-            if base_result.is_failure:
-                return base_result
-
-            # Additional port validation
-            try:
-                parsed = urlparse(url)
-                if parsed.port is not None:
-                    port = parsed.port
-                    if port == 0:
-                        return FlextResult[str].fail("Invalid port 0")
-                    if port > FlextApiConstants.HttpValidation.MAX_PORT:
-                        return FlextResult[str].fail(f"Invalid port {port}")
-
-                # Check URL length
-                if len(url) > FlextApiConstants.HttpValidation.MAX_URL_LENGTH:
-                    return FlextResult[str].fail("URL is too long")
-
-            except Exception as e:
-                return FlextResult[str].fail(f"URL parsing failed: {e}")
-
-            return base_result
+            """Validate URL using centralized FlextModels.create_validated_http_url()."""
+            # Use FlextModels centralized validation with HTTP-specific rules
+            return FlextModels.create_validated_http_url(
+                url,
+                max_length=FlextApiConstants.HttpValidation.MAX_URL_LENGTH,
+                max_port=FlextApiConstants.HttpValidation.MAX_PORT,
+            )
 
         @staticmethod
         def validate_http_method(method: str | None) -> FlextResult[str]:
-            """Validate HTTP method using FlextCore patterns and Python 3.13+ StrEnum."""
-            if not method or not isinstance(method, str):
-                return FlextResult[str].fail("HTTP method must be a non-empty string")
-
-            method_upper = method.upper()
-            # Use Python 3.13+ StrEnum for validation - maximum FlextCore integration
-            try:
-                validated_method = FlextApiConstants.HttpMethods(method_upper)
-                return FlextResult[str].ok(validated_method.value)
-            except ValueError:
-                valid_methods = ", ".join(FlextApiConstants.HttpMethods)
-                return FlextResult[str].fail(
-                    f"Invalid HTTP method. Valid methods: {valid_methods}"
-                )
+            """Validate HTTP method using centralized FlextModels validation."""
+            return FlextModels.create_validated_http_method(method)
 
         @staticmethod
         def validate_status_code(code: int | str) -> FlextResult[int]:
-            """Validate HTTP status code."""
-            try:
-                code_int = int(code)
-                if (
-                    code_int < FlextApiConstants.MIN_HTTP_STATUS
-                    or code_int > FlextApiConstants.HttpStatus.MAX_HTTP_STATUS
-                ):
-                    return FlextResult[int].fail("Invalid HTTP status code")
-                return FlextResult[int].ok(code_int)
-            except (ValueError, TypeError):
-                return FlextResult[int].fail("Status code must be a valid integer")
+            """Validate HTTP status code using centralized FlextModels validation."""
+            return FlextModels.create_validated_http_status(code)
 
         @staticmethod
         def normalize_url(url: str) -> FlextResult[str]:
-            """Normalize URL using flext-core text processing."""
-            cleaned = FlextUtilities.TextProcessor.clean_text(url)
-            if not cleaned:
-                return FlextResult[str].fail("URL cannot be empty")
-            normalized = cleaned.rstrip("/") if not cleaned.endswith("://") else cleaned
-            return FlextResult[str].ok(normalized)
+            """Normalize URL using centralized FlextModels.Url.normalize()."""
+            # First create URL object then normalize
+            url_result = FlextModels.Url.create(url)
+            if url_result.is_failure:
+                return FlextResult[str].fail(url_result.error or "Invalid URL")
+
+            normalized_result = url_result.unwrap().normalize()
+            if normalized_result.is_success:
+                return FlextResult[str].ok(normalized_result.unwrap().value)
+            return FlextResult[str].fail(
+                normalized_result.error or "URL normalization failed"
+            )
 
     # Backward compatibility delegation methods for ecosystem integration
     @staticmethod
     def validate_url(url: str) -> FlextResult[str]:
-        """Delegate to HttpValidator.validate_url() for ecosystem compatibility."""
-        return FlextApiUtilities.HttpValidator.validate_url(url)
+        """Delegate to centralized FlextModels HTTP URL validation."""
+        return FlextModels.create_validated_http_url(
+            url,
+            max_length=FlextApiConstants.HttpValidation.MAX_URL_LENGTH,
+            max_port=FlextApiConstants.HttpValidation.MAX_PORT,
+        )
 
     @staticmethod
     def validate_config(config: object) -> FlextResult[FlextTypes.Core.Dict]:

@@ -10,14 +10,6 @@ from collections.abc import Mapping
 from typing import Self
 
 import httpx
-from flext_core import (
-    FlextContainer,
-    FlextDomainService,
-    FlextLogger,
-    FlextModels,
-    FlextResult,
-    FlextTypes,
-)
 from tenacity import (
     AsyncRetrying,
     retry_if_exception_type,
@@ -29,6 +21,13 @@ from flext_api.app import FlextApiApp
 from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
+from flext_core import (
+    FlextContainer,
+    FlextDomainService,
+    FlextLogger,
+    FlextResult,
+    FlextTypes,
+)
 
 # Avoiding circular import - import inside method when needed
 
@@ -472,8 +471,8 @@ class FlextApiClient(FlextDomainService[object]):
             headers_obj = kwargs.get("headers")
             additional_headers = headers_obj if isinstance(headers_obj, dict) else None
 
-            # Use flext-core HttpRequestConfig with streamlined config
-            request_config = FlextModels.Http.HttpRequestConfig(
+            # Use flext-api HttpRequestConfig with streamlined config
+            request_config = FlextApiModels.Http.HttpRequestConfig(
                 url=self._build_url(url),
                 method=method,
                 timeout=int(self._client_config.timeout),

@@ -10,9 +10,9 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import pytest
-from flext_core import FlextResult
 
 from flext_api import FlextApiClient, FlextApiModels
+from flext_core import FlextResult
 
 
 class TestFlextApiClientFocused:

@@ -16,7 +16,6 @@ import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from flext_core import FlextContainer, FlextTypes
 from flext_tests import FlextTestsDomains
 
 # DIRECT imports from flext_api - verified classes
@@ -25,6 +24,7 @@ from flext_api import (
     FlextApiConfig,
     FlextApiStorage,
 )
+from flext_core import FlextContainer, FlextTypes
 
 # Configure Faker for deterministic test data
 fake = Faker()

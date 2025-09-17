@@ -9,16 +9,15 @@ from __future__ import annotations
 
 from typing import Literal
 
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from flext_api.constants import FlextApiConstants
 from flext_core import (
-    FlextConstants,
     FlextLogger,
     FlextModels,
     FlextResult,
     FlextUtilities,
 )
-from pydantic import ConfigDict, Field, field_validator
-
-from flext_api.constants import FlextApiConstants
 
 # Module-level constants for nested class access
 STANDARD_MODEL_CONFIG = ConfigDict(
@@ -30,7 +29,7 @@ _BASE_URL_ERROR = "URL must be a non-empty string"
 
 
 class FlextApiModels:
-    """API models using flext-core extensively - NO DUPLICATION."""
+    """API models using flext-core extensively."""
 
     # Move loose variables inside the unified class - FLEXT compliance
     _logger = FlextLogger(__name__)
@@ -62,13 +61,19 @@ class FlextApiModels:
         @field_validator("url")
         @classmethod
         def validate_url(cls, v: str) -> str:
-            """Validate URL field with Python 3.13+ concise patterns."""
-            # Python 3.13+ walrus operator + short-circuit evaluation
-            if not (v_clean := v.strip() if isinstance(v, str) else ""):
-                raise ValueError(_URL_EMPTY_ERROR)
-            if not v_clean.startswith(("http://", "https://", "/")):
-                raise ValueError(_URL_FORMAT_ERROR)
-            return v_clean
+            """Validate URL using centralized FlextModels validation."""
+            # Handle relative URLs (starting with /) separately since they're valid for API requests
+            if isinstance(v, str) and v.strip().startswith("/"):
+                return v.strip()
+
+            # Use centralized FlextModels validation for absolute URLs
+            validation_result = FlextModels.create_validated_http_url(
+                v.strip() if isinstance(v, str) else ""
+            )
+            if validation_result.is_failure:
+                error_msg = f"Invalid URL: {validation_result.error}"
+                raise ValueError(error_msg)
+            return validation_result.unwrap()
 
         @field_validator("headers")
         @classmethod
@@ -97,7 +102,7 @@ class FlextApiModels:
         def is_success(self) -> bool:
             """Check if response indicates success (2xx status codes)."""
             return (
-                FlextConstants.Web.HTTP_OK
+                FlextApiConstants.HTTP_OK
                 <= self.status_code
                 < FlextApiConstants.SUCCESS_END
             )
@@ -147,11 +152,15 @@ class FlextApiModels:
         @field_validator("base_url")
         @classmethod
         def validate_base_url(cls, v: str) -> str:
-            """Validate base URL field with Python 3.13+ optimization."""
-            # Python 3.13+ walrus operator pattern for concise validation
-            if not (url := v.strip()) or not url.startswith(("http://", "https://")):
-                raise ValueError(_BASE_URL_ERROR)
-            return url.strip()
+            """Validate base URL using centralized FlextModels validation."""
+            # Use centralized FlextModels validation instead of duplicate logic
+            validation_result = FlextModels.create_validated_http_url(
+                v.strip() if isinstance(v, str) else ""
+            )
+            if validation_result.is_failure:
+                error_msg = f"Invalid base URL: {validation_result.error}"
+                raise ValueError(error_msg)
+            return validation_result.unwrap()
 
         def get_auth_header(self) -> dict[str, str]:
             """Get authentication header if configured."""
@@ -408,6 +417,58 @@ class FlextApiModels:
             return v.strip()
 
     # Backward compatibility aliases for ecosystem integration
+    # =========================================================================
+    # HTTP CONFIGURATION CLASSES - Moved from flext-core
+    # =========================================================================
+
+    class Http:
+        """HTTP-related models for API configuration.
+
+        # Usage count: 1 (flext-api/client.py)
+        """
+
+        class HttpRequestConfig(BaseModel):
+            """Configuration for HTTP requests.
+
+            # Usage count: 1 (flext-api/client.py)
+            """
+
+            config_type: str = Field(default="http_request")
+            url: str = Field(min_length=1)
+            method: str = Field(default="GET")
+            timeout: int = Field(default=30)
+            retries: int = Field(default=3)
+            headers: dict[str, str] = Field(default_factory=dict)
+
+        class HttpErrorConfig(BaseModel):
+            """Configuration for HTTP error handling.
+
+            # Usage count: 0 (tests only)
+            """
+
+            config_type: str = Field(default="http_error")
+            status_code: int = Field(ge=100, le=599)
+            message: str = Field(min_length=1)
+            url: str | None = Field(default=None)
+            method: str | None = Field(default=None)
+            headers: dict[str, str] | None = Field(default=None)
+            context: dict[str, object] = Field(default_factory=dict)
+            details: dict[str, object] = Field(default_factory=dict)
+
+        class ValidationConfig(BaseModel):
+            """Configuration for validation.
+
+            # Usage count: 0 (tests only)
+            """
+
+            config_type: str = Field(default="validation")
+            strict_mode: bool = Field(default=False)
+            validate_schema: bool = Field(default=True)
+            custom_validators: list[str] = Field(default_factory=list)
+            field: str | None = Field(default=None)
+            value: object | None = Field(default=None)
+            url: str | None = Field(default=None)
+
     HttpMethod = FlextApiConstants.HttpMethods
 
 
