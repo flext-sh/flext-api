@@ -59,7 +59,7 @@ class TestFlextApiClient:
         """Test client initialization with various configurations."""
         # Basic initialization
         client = FlextApiClient()
-        assert client.config.base_url == ""
+        assert not client.config.base_url
         assert client.config.timeout == 30.0
         assert isinstance(client.config.headers, dict)
         assert client.config.max_retries == 3
@@ -115,7 +115,7 @@ class TestFlextApiClient:
 
         # Test base_url None handling
         client7 = FlextApiClient(base_url=None)
-        assert client7.config.base_url == ""
+        assert not client7.config.base_url
 
     def test_client_properties(self) -> None:
         """Test client property access."""
@@ -864,8 +864,7 @@ def test_create_flext_api_validation_error() -> None:
             raise  # Re-raise in debug mode for investigation
 
 
-@pytest.mark.asyncio
-async def test_client_request_validation() -> None:
+def test_client_request_validation() -> None:
     """Test client request validation."""
     config_client = FlextApiClient(base_url="https://httpbin.org", timeout=10.0)
     # Client created for context but not used in this validation test

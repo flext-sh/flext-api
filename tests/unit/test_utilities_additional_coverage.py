@@ -236,7 +236,7 @@ class TestFlextUtilitiesAdditionalCoverage:
     def test_clean_text_with_none(self) -> None:
         """Test clean_text with None input."""
         result = FlextApiUtilities.clean_text(None)
-        assert result == ""
+        assert not result
 
     def test_truncate_edge_case_exact_length(self) -> None:
         """Test truncate with text exactly at max_length."""

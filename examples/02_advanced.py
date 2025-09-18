@@ -15,8 +15,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio
-
 from flext_api import (
     FlextApiClient,
     FlextApiConfig,
@@ -309,7 +307,7 @@ def example_app_creation() -> None:
     print("   - Health check endpoints")
 
 
-async def example_async_operations() -> None:
+def example_async_operations() -> None:
     """Demonstrate async operations with refactored classes."""
     print("\n=== Async Operations Example ===")
 
@@ -374,7 +372,7 @@ def main() -> None:
 
     # Async example using refactored classes
     print("\n=== Running Async Examples ===")
-    asyncio.run(example_async_operations())
+    example_async_operations()
 
     print("\n🎉 All advanced examples completed successfully using refactored classes!")
     print("✅ FlextResult pattern used throughout")

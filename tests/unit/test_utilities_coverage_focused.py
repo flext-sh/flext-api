@@ -138,8 +138,13 @@ class TestFlextUtilitiesCoverageFocused:
         """Test DataTransformer.to_json exception handling."""
 
         # Create an object that cannot be JSON serialized
+        from dataclasses import dataclass, field
+
+        @dataclass
         class NonSerializable:
-            def __init__(self) -> None:
+            circular_ref: object = field(default_factory=lambda: None)
+
+            def __post_init__(self) -> None:
                 self.circular_ref = self
 
         result = FlextApiUtilities.DataTransformer.to_json(NonSerializable())
@@ -233,8 +238,13 @@ class TestFlextUtilitiesCoverageFocused:
         """Test safe_json_stringify exception handling."""
 
         # Create an object that could cause JSON stringify issues
+        from dataclasses import dataclass, field
+
+        @dataclass
         class CircularRef:
-            def __init__(self) -> None:
+            ref: object = field(default_factory=lambda: None)
+
+            def __post_init__(self) -> None:
                 self.ref = self
 
         result = FlextApiUtilities.safe_json_stringify(CircularRef())
@@ -252,9 +262,9 @@ class TestFlextUtilitiesCoverageFocused:
 
     def test_clean_text_edge_cases(self) -> None:
         """Test clean_text with edge cases."""
-        assert FlextApiUtilities.clean_text("") == ""
+        assert not FlextApiUtilities.clean_text("")
         assert FlextApiUtilities.clean_text("  hello   world  ") == "hello world"
-        assert FlextApiUtilities.clean_text("   ") == ""
+        assert not FlextApiUtilities.clean_text("   ")
 
     def test_truncate_cases(self) -> None:
         """Test truncate with various cases."""

@@ -117,8 +117,7 @@ def test_create_client_validation_error() -> None:
             raise  # Re-raise in debug mode for investigation
 
 
-@pytest.mark.asyncio
-async def test_client_request_validation() -> None:
+def test_client_request_validation() -> None:
     """Test client request validation."""
     client_config = FlextApiModels.ClientConfig(
         base_url="https://httpbin.org", timeout=10.0

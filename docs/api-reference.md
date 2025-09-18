@@ -641,4 +641,4 @@ client = FlextApiClient(
 
 ---
 
-**API Reference Complete**: This documentation covers all public APIs available in flext-api v0.9.0. For implementation examples and advanced usage patterns, see the [Getting Started Guide](getting-started.md) and [Architecture Documentation](architecture.md).
+**API Reference Complete**: This documentation covers all public APIs available in flext-api v0.9.9. For implementation examples and advanced usage patterns, see the [Getting Started Guide](getting-started.md) and [Architecture Documentation](architecture.md).

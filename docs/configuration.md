@@ -2,7 +2,7 @@
 
 **Environment and Settings Management for FLEXT HTTP Foundation**
 
-**Version**: 0.9.0 | **Updated**: September 17, 2025
+**Version**: 0.9.9 RC | **Updated**: September 17, 2025
 
 This guide covers all configuration options, environment variables, and settings management for flext-api HTTP client and FastAPI applications based on the actual implementation.
 
@@ -37,7 +37,7 @@ All environment variables use the `FLEXT_API_` prefix and are defined in `FlextA
 | Variable                 | Type   | Default                   | Description      |
 | ------------------------ | ------ | ------------------------- | ---------------- |
 | `FLEXT_API_API_TITLE`    | string | `FLEXT API`               | API title        |
-| `FLEXT_API_API_VERSION`  | string | `0.9.0`                   | API version      |
+| `FLEXT_API_API_VERSION`  | string | `0.9.9`                   | API version      |
 | `FLEXT_API_API_BASE_URL` | string | `https://api.example.com` | Default base URL |
 
 ### **Client Configuration**
@@ -79,7 +79,7 @@ class FlextApiConfig(FlextConfig):
 
     # API configuration
     api_title: str = "FLEXT API"
-    api_version: str = "0.9.0"
+    api_version: str = "0.9.9"
     api_base_url: str = "https://api.example.com"
 
     # Client configuration
@@ -360,14 +360,14 @@ def setup_development_environment():
         ssl_verify=False,  # Development only
         headers={
             "X-Development": "true",
-            "User-Agent": "flext-api-dev/0.9.0"
+            "User-Agent": "flext-api-dev/0.9.9"
         }
     )
 
     # FastAPI configuration
     app_config = FlextApiModels.AppConfig(
         title="Development API",
-        app_version="0.9.0-dev",
+        app_version="0.9.9 RC",
         description="Development API with debug features",
         docs_url="/docs",
         redoc_url="/redoc"
@@ -391,7 +391,7 @@ test_client = FlextApiClient(
     timeout=5,
     headers={
         "X-Test-Mode": "true",
-        "User-Agent": "flext-api-test/0.9.0"
+        "User-Agent": "flext-api-test/0.9.9"
     }
 )
 
