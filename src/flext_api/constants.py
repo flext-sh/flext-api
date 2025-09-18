@@ -164,7 +164,7 @@ class FlextApiConstants(FlextConstants):
         SUCCESS_MIN = 200
         SUCCESS_MAX = 299
 
-    class Limits:
+    class ApiLimits:
         """Pagination and request limits."""
 
         MAX_PAGE_SIZE = 1000

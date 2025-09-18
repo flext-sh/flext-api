@@ -476,9 +476,8 @@ class TestFlextApiClientFocused:
         with patch.object(client._connection_manager, "ensure_client") as mock_ensure:
             mock_ensure.return_value = AsyncMock()
 
-            result = await client.__aenter__()
-
-            assert result is client
+            async with client as ctx_result:
+                assert ctx_result is client
             mock_ensure.assert_called_once()
 
     @pytest.mark.asyncio

@@ -696,7 +696,7 @@ class TestFlextApiModelsFocused:
 
         assert response["status"] == "success"
         assert response["data"] == {"test": "value"}
-        assert response["message"] == ""
+        assert not response["message"]
 
     def test_builder_success_static_method(self) -> None:
         """Test Builder.success static method."""
@@ -716,7 +716,7 @@ class TestFlextApiModelsFocused:
 
         assert response["status"] == "success"
         assert response["data"] is None
-        assert response["message"] == ""
+        assert not response["message"]
         assert "timestamp" in response
         assert "request_id" in response
 

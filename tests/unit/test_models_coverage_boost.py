@@ -314,7 +314,7 @@ class TestFlextApiModelsCoverageBoost:
 
         assert response["status"] == "success"
         assert response["data"] is None
-        assert response["message"] == ""
+        assert not response["message"]
 
     def test_builder_static_success(self) -> None:
         """Test Builder static success method."""

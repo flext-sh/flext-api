@@ -2,7 +2,7 @@
 
 **Development Workflow and Contribution Guidelines**
 
-**Version**: 0.9.0 | **Updated**: September 17, 2025
+**Version**: 0.9.9 RC | **Updated**: September 17, 2025
 
 This guide covers the complete development workflow for contributing to flext-api, including setup, testing, quality gates, and contribution standards based on the actual implementation.
 
@@ -321,7 +321,7 @@ Before submitting code:
 flext-api follows semantic versioning:
 
 - **Major (1.0.0)**: Breaking changes
-- **Minor (0.9.0)**: New features, backward compatible
+- **Minor (0.9.9)**: New features, backward compatible
 - **Patch (0.9.1)**: Bug fixes, no new features
 
 ### **Release Checklist**
@@ -351,8 +351,8 @@ make validate
 
 # 4. Commit and tag
 git add .
-git commit -m "Release v0.9.0"
-git tag v0.9.0
+git commit -m "Release v0.9.9"
+git tag v0.9.9
 
 # 5. Push release
 git push origin main --tags
@@ -496,7 +496,7 @@ git commit -m "test: add integration tests for authentication"
 
 ## 🎯 Development Roadmap
 
-### **Current Development Focus (v0.9.0)**
+### **Current Development Focus (v0.9.9)**
 
 1. **Fix Test Suite**: Resolve 59 failing tests
 2. **Improve Coverage**: Increase from 73% to 95%+

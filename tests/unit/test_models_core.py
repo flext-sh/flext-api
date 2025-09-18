@@ -173,7 +173,7 @@ class TestFlextApiModels:
         empty_request = FlextApiModels.ApiRequest(
             id="test_id", method=FlextApiConstants.HttpMethods.GET, url=""
         )
-        assert empty_request.url == ""
+        assert not empty_request.url
 
     def test_api_response_creation(self) -> None:
         """Test HttpResponse creation."""

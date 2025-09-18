@@ -10,14 +10,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio
 import os
 from collections.abc import Mapping
 
 from flext_api import FlextApiClient, FlextApiConfig
 
 
-async def main() -> None:
+def main() -> None:
     """Demonstrate FlextConfig usage in flext-api."""
     print("🚀 FLEXT API - FlextConfig Singleton Usage Example")
     print("=" * 60)
@@ -213,4 +212,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

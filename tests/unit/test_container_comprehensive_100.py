@@ -35,7 +35,7 @@ class TestFlextContainer100PercentCoverage:
 
         # Test empty service key validation
         empty_key: FlextContainer.ServiceKey[str] = FlextContainer.ServiceKey("")
-        assert empty_key.name == ""
+        assert not empty_key.name
 
         # Test service key with special characters
         special_key: FlextContainer.ServiceKey[str] = FlextContainer.ServiceKey(
@@ -57,7 +57,7 @@ class TestFlextContainer100PercentCoverage:
         """Test FlextContainer.Commands.RegisterService creation."""
         # Test default creation
         cmd = FlextContainer.Commands.RegisterService()
-        assert cmd.service_name == ""
+        assert not cmd.service_name
         assert cmd.service_instance is None
 
         # Test create class method
@@ -74,7 +74,7 @@ class TestFlextContainer100PercentCoverage:
         """Test FlextContainer.Commands.RegisterFactory creation."""
         # Test default creation
         cmd = FlextContainer.Commands.RegisterFactory()
-        assert cmd.service_name == ""
+        assert not cmd.service_name
         assert cmd.factory is None
 
         # Test with factory function

@@ -2,7 +2,7 @@
 
 **Enterprise HTTP Foundation Architecture**
 
-**Version**: 0.9.0 | **Last Updated**: September 17, 2025 | **Source**: 2,927 lines across 14 modules
+**Version**: 0.9.9 RC | **Last Updated**: September 17, 2025 | **Source**: 2,927 lines across 14 modules
 
 This document provides a comprehensive overview of flext-api's architecture, design patterns, and integration within the FLEXT ecosystem.
 

@@ -2,7 +2,7 @@
 
 **HTTP and FastAPI Foundation for the FLEXT Ecosystem**
 
-**Version**: 0.9.0 | **Last Updated**: September 17, 2025
+**Version**: 0.9.9 RC | **Last Updated**: September 17, 2025
 
 This guide will help you get started with flext-api, the HTTP client and FastAPI application foundation for the FLEXT enterprise data integration platform.
 
@@ -102,7 +102,7 @@ async def basic_http_example():
         url="/get",
         headers={
             "Accept": "application/json",
-            "User-Agent": "flext-api/0.9.0"
+            "User-Agent": "flext-api/0.9.9"
         }
     )
 
