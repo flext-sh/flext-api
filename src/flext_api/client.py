@@ -195,7 +195,8 @@ class FlextApiClient(FlextDomainService[object]):
 
         # Store minimal state - everything comes from config
         self._connection_manager = self._ConnectionManager(
-            self._client_config.base_url, self._client_config.timeout,
+            self._client_config.base_url,
+            self._client_config.timeout,
         )
 
         # Simple metrics tracking
@@ -248,7 +249,8 @@ class FlextApiClient(FlextDomainService[object]):
         return FlextApiApp.create_fastapi_app(app_config)
 
     def _extract_client_config_params(
-        self, kwargs: Mapping[str, str | int | float | bool | dict[str, str] | None],
+        self,
+        kwargs: Mapping[str, str | int | float | bool | dict[str, str] | None],
     ) -> tuple[
         str | None,
         float | None,
@@ -333,7 +335,8 @@ class FlextApiClient(FlextDomainService[object]):
             """
             if self._client is None:
                 self._client = httpx.AsyncClient(
-                    base_url=self._base_url, timeout=self._timeout,
+                    base_url=self._base_url,
+                    timeout=self._timeout,
                 )
             return self._client
 
@@ -547,7 +550,8 @@ class FlextApiClient(FlextDomainService[object]):
 
             # Recreate connection manager with new config
             self._connection_manager = self._ConnectionManager(
-                self._client_config.base_url, self._client_config.timeout,
+                self._client_config.base_url,
+                self._client_config.timeout,
             )
             return FlextResult[None].ok(None)
         except Exception as e:
@@ -574,7 +578,9 @@ class FlextApiClient(FlextDomainService[object]):
     # =============================================================================
 
     async def get(
-        self, url: str, **kwargs: str | float | bool | dict[str, str] | None,
+        self,
+        url: str,
+        **kwargs: str | float | bool | dict[str, str] | None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Make GET request to specified URL.
 
@@ -602,7 +608,9 @@ class FlextApiClient(FlextDomainService[object]):
         return await self._request("GET", url, **kwargs)
 
     async def post(
-        self, url: str, **kwargs: str | float | bool | dict[str, str] | None,
+        self,
+        url: str,
+        **kwargs: str | float | bool | dict[str, str] | None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Make POST request to specified URL.
 
@@ -630,7 +638,9 @@ class FlextApiClient(FlextDomainService[object]):
         return await self._request("POST", url, **kwargs)
 
     async def put(
-        self, url: str, **kwargs: str | float | bool | dict[str, str] | None,
+        self,
+        url: str,
+        **kwargs: str | float | bool | dict[str, str] | None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Make PUT request to specified URL.
 
@@ -658,7 +668,9 @@ class FlextApiClient(FlextDomainService[object]):
         return await self._request("PUT", url, **kwargs)
 
     async def delete(
-        self, url: str, **kwargs: str | float | bool | dict[str, str] | None,
+        self,
+        url: str,
+        **kwargs: str | float | bool | dict[str, str] | None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Make DELETE request to specified URL.
 
@@ -744,7 +756,10 @@ class FlextApiClient(FlextDomainService[object]):
         return self
 
     async def __aexit__(
-        self, exc_type: object, exc_val: object, exc_tb: object,
+        self,
+        exc_type: object,
+        exc_val: object,
+        exc_tb: object,
     ) -> None:
         """Async context manager exit.
 
@@ -1101,7 +1116,8 @@ class FlextApiClient(FlextDomainService[object]):
 
         # Create a config dict with proper defaults and type conversion
         processed_config: dict[
-            str, str | int | float | bool | dict[str, str] | None,
+            str,
+            str | int | float | bool | dict[str, str] | None,
         ] = {}
 
         # Handle base_url
@@ -1192,7 +1208,7 @@ class FlextApiClient(FlextDomainService[object]):
 
 
 # Backward compatibility export - FLEXT unified class pattern
-create_flext_api = FlextApiClient._Factory.create_flext_api
+create_flext_api = FlextApiClient.create_flext_api
 
 
 __all__ = [

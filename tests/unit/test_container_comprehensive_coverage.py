@@ -15,7 +15,8 @@ class TestFlextContainerComprehensiveCoverage:
     """Comprehensive coverage tests for FlextContainer using flext_tests patterns."""
 
     def test_service_registration_edge_cases(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test service registration edge cases for coverage."""
         container = clean_container
@@ -33,7 +34,8 @@ class TestFlextContainerComprehensiveCoverage:
         assert result.is_failure
 
     def test_service_retrieval_edge_cases(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test service retrieval edge cases for coverage."""
         container = clean_container
@@ -53,7 +55,8 @@ class TestFlextContainerComprehensiveCoverage:
         assert result.value == {"data": "test"}
 
     def test_factory_registration_comprehensive(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test factory registration with comprehensive scenarios."""
         container = clean_container
@@ -84,7 +87,8 @@ class TestFlextContainerComprehensiveCoverage:
         assert failed_result.is_failure
 
     def test_service_unregistration_comprehensive(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test service unregistration edge cases."""
         container = clean_container
@@ -103,7 +107,8 @@ class TestFlextContainerComprehensiveCoverage:
         FlextTestsMatchers.assert_result_failure(get_result)
 
     def test_container_clear_comprehensive(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test container clear functionality."""
         container = clean_container
@@ -124,7 +129,8 @@ class TestFlextContainerComprehensiveCoverage:
             assert result.is_failure
 
     def test_service_listing_comprehensive(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test service listing functionality."""
         container = clean_container
@@ -145,7 +151,8 @@ class TestFlextContainerComprehensiveCoverage:
         assert all(name in names for name in services)
 
     def test_container_has_method_comprehensive(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test container has() method comprehensively."""
         container = clean_container
@@ -162,7 +169,8 @@ class TestFlextContainerComprehensiveCoverage:
         assert not container.has("existing_service")
 
     def test_singleton_registration_comprehensive(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test singleton patterns and global container management."""
         container = clean_container
@@ -178,7 +186,8 @@ class TestFlextContainerComprehensiveCoverage:
         assert get_result.value == test_service
 
     def test_container_error_handling_comprehensive(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test comprehensive error handling scenarios."""
         container = clean_container
@@ -224,7 +233,8 @@ class TestFlextContainerComprehensiveCoverage:
         assert result.is_failure
 
     def test_container_type_safety_comprehensive(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test container type safety and value preservation."""
         container = clean_container
@@ -253,7 +263,8 @@ class TestFlextContainerComprehensiveCoverage:
             assert isinstance(get_result.value, type(value))
 
     def test_container_global_instance_management(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test global container instance management."""
         # Test global container access
@@ -268,7 +279,8 @@ class TestFlextContainerComprehensiveCoverage:
         assert clean_container is not global_container
 
     def test_container_performance_edge_cases(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test container performance with edge cases."""
         container = clean_container
@@ -296,7 +308,8 @@ class TestFlextContainerComprehensiveCoverage:
         assert container.get_service_count() == 50
 
     def test_container_dependency_injection_patterns(
-        self, clean_container: FlextContainer,
+        self,
+        clean_container: FlextContainer,
     ) -> None:
         """Test dependency injection patterns and service composition."""
         container = clean_container

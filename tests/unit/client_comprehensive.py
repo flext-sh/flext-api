@@ -23,7 +23,8 @@ class TestFlextApiClientReal:
     def test_client_initialization_with_factory(self) -> None:
         """Test client initialization using FlextApiFactories."""
         client = FlextApiFactories.create_client(
-            base_url="https://httpbin.org", timeout=30.0,
+            base_url="https://httpbin.org",
+            timeout=30.0,
         )
 
         assert client.base_url == "https://httpbin.org"
@@ -108,7 +109,8 @@ class TestFlextApiClientReal:
         """Test error handling using factory-created client."""
         # Use non-responsive endpoint to trigger error
         client = FlextApiFactories.create_client(
-            base_url="http://127.0.0.1:65530", timeout=0.3,
+            base_url="http://127.0.0.1:65530",
+            timeout=0.3,
         )
         await client.start()
 
@@ -185,7 +187,9 @@ class TestFlextApiClientReal:
         """Test retry behavior on server errors."""
         # Use client with retry configuration
         client = FlextApiFactories.create_client(
-            base_url="https://httpbin.org", max_retries=2, timeout=5.0,
+            base_url="https://httpbin.org",
+            max_retries=2,
+            timeout=5.0,
         )
         await client.start()
 
@@ -238,7 +242,9 @@ class TestFlextApiClientReal:
         """Test client configuration validation."""
         # Valid configuration should work
         client = FlextApiFactories.create_client(
-            base_url="https://httpbin.org", timeout=60.0, max_retries=5,
+            base_url="https://httpbin.org",
+            timeout=60.0,
+            max_retries=5,
         )
 
         assert client.base_url == "https://httpbin.org"

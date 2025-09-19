@@ -15,7 +15,8 @@ class TestFlextApiUtilitiesReal:
     def test_response_builder_error(self) -> None:
         """Test ResponseBuilder error response."""
         result = FlextApiUtilities.ResponseBuilder.build_error_response(
-            message="Test error", status_code=400,
+            message="Test error",
+            status_code=400,
         )
 
         assert result.is_success
@@ -27,7 +28,9 @@ class TestFlextApiUtilitiesReal:
     def test_response_builder_success(self) -> None:
         """Test ResponseBuilder success response."""
         result = FlextApiUtilities.ResponseBuilder.build_success_response(
-            data={"test": "data"}, message="Success", status_code=200,
+            data={"test": "data"},
+            message="Success",
+            status_code=200,
         )
 
         assert result.is_success
@@ -40,7 +43,10 @@ class TestFlextApiUtilitiesReal:
     def test_pagination_builder(self) -> None:
         """Test PaginationBuilder functionality."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[1, 2, 3], page=1, page_size=10, total=3,
+            data=[1, 2, 3],
+            page=1,
+            page_size=10,
+            total=3,
         )
 
         assert result.is_success
@@ -54,7 +60,9 @@ class TestFlextApiUtilitiesReal:
     def test_pagination_builder_invalid_page(self) -> None:
         """Test PaginationBuilder with invalid page."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[1, 2, 3], page=0, page_size=10,
+            data=[1, 2, 3],
+            page=0,
+            page_size=10,
         )
 
         assert result.is_failure
@@ -64,7 +72,9 @@ class TestFlextApiUtilitiesReal:
     def test_pagination_builder_invalid_page_size(self) -> None:
         """Test PaginationBuilder with invalid page size."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[1, 2, 3], page=1, page_size=0,
+            data=[1, 2, 3],
+            page=1,
+            page_size=0,
         )
 
         assert result.is_failure

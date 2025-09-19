@@ -70,7 +70,9 @@ class FlextApiUtilities:
 
         @staticmethod
         def build_success_response(
-            data: object = None, message: str = "Success", status_code: int = 200,
+            data: object = None,
+            message: str = "Success",
+            status_code: int = 200,
         ) -> FlextResult[FlextTypes.Core.Dict]:
             """Build success response using flext-core patterns."""
             try:

@@ -64,7 +64,8 @@ class TestFlextContainer100PercentCoverage:
         service_data = {"name": "test_service", "port": 8080}
 
         cmd_created = FlextContainer.Commands.RegisterService.create(
-            service_name="test_service", service_instance=service_data,
+            service_name="test_service",
+            service_instance=service_data,
         )
 
         assert cmd_created.service_name == "test_service"
@@ -82,7 +83,8 @@ class TestFlextContainer100PercentCoverage:
             return {"name": "factory_service", "created": True}
 
         cmd_with_factory = FlextContainer.Commands.RegisterFactory.create(
-            service_name="factory_service", factory=test_factory,
+            service_name="factory_service",
+            factory=test_factory,
         )
 
         assert cmd_with_factory.service_name == "factory_service"
@@ -317,7 +319,8 @@ class TestFlextContainer100PercentCoverage:
                     "thread": threading.current_thread().ident,
                 }
                 result = container.register(
-                    f"thread_service_{service_id}", service_data,
+                    f"thread_service_{service_id}",
+                    service_data,
                 )
                 results.append(result)
             except Exception as e:

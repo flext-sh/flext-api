@@ -57,7 +57,9 @@ class FlextApiConfig(FlextConfig):
     # Singleton pattern for global instance
 
     model_config = SettingsConfigDict(
-        env_prefix="FLEXT_API_", env_file=".env", extra="ignore",
+        env_prefix="FLEXT_API_",
+        env_file=".env",
+        extra="ignore",
     )
 
     # Server configuration - consolidated to remove duplication
@@ -153,7 +155,8 @@ class FlextApiConfig(FlextConfig):
 
         """
         if cls._global_instance is None or not isinstance(
-            cls._global_instance, FlextApiConfig,
+            cls._global_instance,
+            FlextApiConfig,
         ):
             cls._global_instance = cls()
         return cls._global_instance

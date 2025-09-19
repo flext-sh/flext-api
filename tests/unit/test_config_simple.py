@@ -75,14 +75,16 @@ class TestFlextApiConfigSimple:
     def test_config_validation_pydantic_workers_error(self) -> None:
         """Test Pydantic validation with invalid workers."""
         with pytest.raises(
-            Exception, match="Input should be greater than or equal to 1",
+            Exception,
+            match="Input should be greater than or equal to 1",
         ):
             FlextApiConfig(workers=0)
 
     def test_config_validation_pydantic_port_error(self) -> None:
         """Test Pydantic validation with invalid port."""
         with pytest.raises(
-            Exception, match="Input should be less than or equal to 65535",
+            Exception,
+            match="Input should be less than or equal to 65535",
         ):
             FlextApiConfig(api_port=70000)
 
@@ -94,7 +96,8 @@ class TestFlextApiConfigSimple:
     def test_config_base_url_validation_error(self) -> None:
         """Test base URL validation error."""
         with pytest.raises(
-            ValueError, match="API base URL must include scheme and hostname",
+            ValueError,
+            match="API base URL must include scheme and hostname",
         ):
             FlextApiConfig(api_base_url="invalid-url")
 

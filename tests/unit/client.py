@@ -258,7 +258,9 @@ class TestFlextApiClient:
 
         # Mock the connection manager to throw on close
         with patch.object(
-            client._connection_manager, "close", side_effect=Exception("Close failed"),
+            client._connection_manager,
+            "close",
+            side_effect=Exception("Close failed"),
         ):
             result = await client.stop()
             assert result.is_failure
@@ -293,7 +295,9 @@ class TestFlextApiClient:
 
         # Mock the connection manager to throw on close
         with patch.object(
-            client._connection_manager, "close", side_effect=Exception("Close failed"),
+            client._connection_manager,
+            "close",
+            side_effect=Exception("Close failed"),
         ):
             result = await client.close()
             assert result.is_failure
@@ -489,7 +493,9 @@ class TestFlextApiClient:
         """Test config and kwargs merge behavior."""
         # Config dict takes precedence over kwargs
         base_cfg = FlextApiModels.ClientConfig(
-            base_url="https://config.com", timeout=60.0, max_retries=3,
+            base_url="https://config.com",
+            timeout=60.0,
+            max_retries=3,
         )
         client = FlextApiClient(base_cfg, base_url="https://kwargs.com", timeout=45.0)
 
@@ -688,7 +694,8 @@ async def test_real_http_get_request() -> None:
 async def test_real_http_headers_and_user_agent() -> None:
     """Test real HTTP request with custom headers."""
     config = FlextApiClient(
-        base_url="https://httpbin.org", headers={"X-FLEXT-API": "test-version-0.9.0"},
+        base_url="https://httpbin.org",
+        headers={"X-FLEXT-API": "test-version-0.9.0"},
     )
     client = config
 
