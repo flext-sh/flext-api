@@ -54,7 +54,7 @@ class FlextApiExceptions:
         """HTTP error with status code attribute."""
 
         def __init__(
-            self, message: str, status_code: int = 500, **kwargs: object
+            self, message: str, status_code: int = 500, **kwargs: object,
         ) -> None:
             """Initialize HTTP error with status code."""
             # Extract only the parameters the parent class accepts
@@ -99,7 +99,7 @@ class FlextApiExceptions:
 
     @classmethod
     def timeout_error(
-        cls, message: str = "HTTP request timeout", *, url: str | None = None
+        cls, message: str = "HTTP request timeout", *, url: str | None = None,
     ) -> FlextExceptions.BaseError:
         """Create HTTP timeout error using flext-core TimeoutError."""
         enhanced_message = f"{message} for {url}" if url else message
@@ -107,7 +107,7 @@ class FlextApiExceptions:
 
     @classmethod
     def validation_error(
-        cls, message: str, *, field: str | None = None
+        cls, message: str, *, field: str | None = None,
     ) -> FlextExceptions.BaseError:
         """Create HTTP validation error using flext-core ValidationError."""
         enhanced_message = f"{message} (field: {field})" if field else message
@@ -115,7 +115,7 @@ class FlextApiExceptions:
 
     @classmethod
     def auth_error(
-        cls, message: str = "Authentication failed"
+        cls, message: str = "Authentication failed",
     ) -> FlextExceptions.BaseError:
         """Create HTTP auth error using flext-core AuthenticationError."""
         return FlextExceptions.AuthenticationError(message=message)
@@ -146,21 +146,21 @@ class FlextApiExceptions:
 
     @classmethod
     def request_timeout(
-        cls, message: str = "Request Timeout"
+        cls, message: str = "Request Timeout",
     ) -> FlextExceptions.BaseError:
         """Create HTTP 408 Request Timeout error."""
         return cls.http_error(message, status_code=408)
 
     @classmethod
     def too_many_requests(
-        cls, message: str = "Too Many Requests"
+        cls, message: str = "Too Many Requests",
     ) -> FlextExceptions.BaseError:
         """Create HTTP 429 Too Many Requests error."""
         return cls.http_error(message, status_code=429)
 
     @classmethod
     def internal_server_error(
-        cls, message: str = "Internal Server Error"
+        cls, message: str = "Internal Server Error",
     ) -> FlextExceptions.BaseError:
         """Create HTTP 500 Internal Server Error."""
         return cls.http_error(message, status_code=500)

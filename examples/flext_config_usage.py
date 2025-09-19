@@ -97,7 +97,7 @@ def main() -> None:
         dev_config = dev_config_result.value
     else:
         print(
-            f"❌ Development configuration creation failed: {dev_config_result.error}"
+            f"❌ Development configuration creation failed: {dev_config_result.error}",
         )
         return
 
@@ -145,7 +145,7 @@ def main() -> None:
         print("✅ Production configuration is valid")
     else:
         print(
-            f"❌ Production configuration validation failed: {validation_result.error}"
+            f"❌ Production configuration validation failed: {validation_result.error}",
         )
 
     # Validate development configuration
@@ -154,7 +154,7 @@ def main() -> None:
         print("✅ Development configuration is valid")
     else:
         print(
-            f"❌ Development configuration validation failed: {validation_result.error}"
+            f"❌ Development configuration validation failed: {validation_result.error}",
         )
 
     # =========================================================================

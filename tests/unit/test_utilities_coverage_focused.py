@@ -59,7 +59,7 @@ class TestFlextUtilitiesCoverageFocused:
         # Test with very large dictionary that could cause memory issues
         large_details = {"x" * 1000000: "y" * 1000000}  # Very large data
         result = FlextApiUtilities.ResponseBuilder.build_error_response(
-            message="Test error", status_code=500, details=large_details
+            message="Test error", status_code=500, details=large_details,
         )
         # Even if it succeeds or fails, test the result structure
         assert result.is_success or result.is_failure
@@ -69,7 +69,7 @@ class TestFlextUtilitiesCoverageFocused:
         # Test with very large dictionary
         large_data = {"x" * 1000000: "y" * 1000000}
         result = FlextApiUtilities.ResponseBuilder.build_success_response(
-            data=large_data, message="Test success"
+            data=large_data, message="Test success",
         )
         # Even if it succeeds or fails, test the result structure
         assert result.is_success or result.is_failure
@@ -79,7 +79,7 @@ class TestFlextUtilitiesCoverageFocused:
         # Create very large data scenario
         very_large_data = [{"x" * 100000: "y" * 100000} for _ in range(1000)]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=very_large_data, page=1, page_size=50
+            data=very_large_data, page=1, page_size=50,
         )
         # Even if it succeeds or fails, test the result structure
         assert result.is_success or result.is_failure
@@ -87,7 +87,7 @@ class TestFlextUtilitiesCoverageFocused:
     def test_http_validator_validate_url_with_port_zero(self) -> None:
         """Test HttpValidator.validate_url with invalid port 0."""
         result = FlextApiUtilities.HttpValidator.validate_url(
-            "https://example.com:0/path"
+            "https://example.com:0/path",
         )
         assert result.is_failure
         assert result.error is not None
@@ -388,7 +388,7 @@ class TestFlextUtilitiesCoverageFocused:
         """Test PaginationBuilder with edge cases."""
         # Page < 1
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[], page=0
+            data=[], page=0,
         )
         assert result.is_failure
         assert result.error is not None
@@ -396,7 +396,7 @@ class TestFlextUtilitiesCoverageFocused:
 
         # Page size < 1
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[], page_size=0
+            data=[], page_size=0,
         )
         assert result.is_failure
         assert result.error is not None
@@ -414,7 +414,7 @@ class TestFlextUtilitiesCoverageFocused:
     def test_pagination_builder_none_data(self) -> None:
         """Test PaginationBuilder with None data."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=None, page=1, page_size=10
+            data=None, page=1, page_size=10,
         )
         assert result.is_success
         response = result.unwrap()

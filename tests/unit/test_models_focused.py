@@ -62,7 +62,7 @@ class TestFlextApiModelsFocused:
         # Test with invalid URL type
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.HttpRequest(
-                url=cast("str", None)
+                url=cast("str", None),
             )  # Intentionally testing None type
 
         # Pydantic validates type first, so None fails string type validation
@@ -161,7 +161,7 @@ class TestFlextApiModelsFocused:
 
         for code in success_codes:
             response = FlextApiModels.HttpResponse(
-                status_code=code, url="https://test.com", method="GET"
+                status_code=code, url="https://test.com", method="GET",
             )
             assert response.is_success is True
 
@@ -171,7 +171,7 @@ class TestFlextApiModelsFocused:
 
         for code in non_success_codes:
             response = FlextApiModels.HttpResponse(
-                status_code=code, url="https://test.com", method="GET"
+                status_code=code, url="https://test.com", method="GET",
             )
             assert response.is_success is False
 
@@ -181,7 +181,7 @@ class TestFlextApiModelsFocused:
 
         for code in client_error_codes:
             response = FlextApiModels.HttpResponse(
-                status_code=code, url="https://test.com", method="GET"
+                status_code=code, url="https://test.com", method="GET",
             )
             assert response.is_client_error is True
 
@@ -191,7 +191,7 @@ class TestFlextApiModelsFocused:
 
         for code in non_client_error_codes:
             response = FlextApiModels.HttpResponse(
-                status_code=code, url="https://test.com", method="GET"
+                status_code=code, url="https://test.com", method="GET",
             )
             assert response.is_client_error is False
 
@@ -201,7 +201,7 @@ class TestFlextApiModelsFocused:
 
         for code in server_error_codes:
             response = FlextApiModels.HttpResponse(
-                status_code=code, url="https://test.com", method="GET"
+                status_code=code, url="https://test.com", method="GET",
             )
             assert response.is_server_error is True
 
@@ -211,7 +211,7 @@ class TestFlextApiModelsFocused:
 
         for code in non_server_error_codes:
             response = FlextApiModels.HttpResponse(
-                status_code=code, url="https://test.com", method="GET"
+                status_code=code, url="https://test.com", method="GET",
             )
             assert response.is_server_error is False
 
@@ -221,7 +221,7 @@ class TestFlextApiModelsFocused:
 
         for code in redirect_codes:
             response = FlextApiModels.HttpResponse(
-                status_code=code, url="https://test.com", method="GET"
+                status_code=code, url="https://test.com", method="GET",
             )
             assert response.is_redirect is True
 
@@ -231,7 +231,7 @@ class TestFlextApiModelsFocused:
 
         for code in non_redirect_codes:
             response = FlextApiModels.HttpResponse(
-                status_code=code, url="https://test.com", method="GET"
+                status_code=code, url="https://test.com", method="GET",
             )
             assert response.is_redirect is False
 
@@ -241,7 +241,7 @@ class TestFlextApiModelsFocused:
 
         for code in valid_codes:
             response = FlextApiModels.HttpResponse(
-                status_code=code, url="https://test.com", method="GET"
+                status_code=code, url="https://test.com", method="GET",
             )
             assert response.status_code == code
 
@@ -252,7 +252,7 @@ class TestFlextApiModelsFocused:
         for code in invalid_codes:
             with pytest.raises(ValidationError) as exc_info:
                 FlextApiModels.HttpResponse(
-                    status_code=code, url="https://test.com", method="GET"
+                    status_code=code, url="https://test.com", method="GET",
                 )
             # Pydantic field validation happens first with ge/le constraints
             assert (
@@ -272,7 +272,7 @@ class TestFlextApiModelsFocused:
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.HttpResponse(
                 status_code=cast(
-                    "int", invalid_status
+                    "int", invalid_status,
                 ),  # Intentionally testing invalid type
                 url="https://test.com",
                 method="GET",
@@ -280,7 +280,7 @@ class TestFlextApiModelsFocused:
 
         # Pydantic should fail on type conversion
         assert "Input should be a valid integer" in str(
-            exc_info.value
+            exc_info.value,
         ) or "invalid literal for int()" in str(exc_info.value)
 
     # =============================================================================
@@ -389,7 +389,7 @@ class TestFlextApiModelsFocused:
     def test_client_config_get_auth_header_token_priority(self) -> None:
         """Test ClientConfig.get_auth_header auth_token takes priority over api_key."""
         config = FlextApiModels.ClientConfig(
-            auth_token="token_priority", api_key="api_key_fallback"
+            auth_token="token_priority", api_key="api_key_fallback",
         )
 
         auth_header = config.get_auth_header()
@@ -408,7 +408,7 @@ class TestFlextApiModelsFocused:
         """Test ClientConfig.get_default_headers method."""
         custom_headers = {"Custom-Header": "custom_value"}
         config = FlextApiModels.ClientConfig(
-            headers=custom_headers, auth_token="test_token"
+            headers=custom_headers, auth_token="test_token",
         )
 
         default_headers = config.get_default_headers()
@@ -460,7 +460,7 @@ class TestFlextApiModelsFocused:
         """Test HttpQuery backward compatibility in __init__."""
         # Test old field names map to new ones
         query = FlextApiModels.HttpQuery(
-            filters={"status": "active"}, page=3, page_size=100
+            filters={"status": "active"}, page=3, page_size=100,
         )
 
         assert query.filter_conditions == {"status": "active"}
@@ -541,7 +541,7 @@ class TestFlextApiModelsFocused:
         """Test HttpQuery.to_query_params method."""
         filter_conditions: dict[str, object] = {"status": "active", "type": "user"}
         query = FlextApiModels.HttpQuery(
-            filters=filter_conditions, page=3, page_size=25
+            filters=filter_conditions, page=3, page_size=25,
         )
 
         params = query.to_query_params()
@@ -568,7 +568,7 @@ class TestFlextApiModelsFocused:
     def test_pagination_config_with_parameters(self) -> None:
         """Test PaginationConfig with all parameters."""
         config = FlextApiModels.PaginationConfig(
-            page_size=50, page=3, max_pages=10, total=500
+            page_size=50, page=3, max_pages=10, total=500,
         )
 
         assert config.page_size == 50
@@ -663,7 +663,7 @@ class TestFlextApiModelsFocused:
         builder = FlextApiModels.Builder()
 
         response = builder.create(
-            response_type="success", data={"user": "john"}, message="User retrieved"
+            response_type="success", data={"user": "john"}, message="User retrieved",
         )
 
         assert response["status"] == "success"
@@ -677,7 +677,7 @@ class TestFlextApiModelsFocused:
         builder = FlextApiModels.Builder()
 
         response = builder.create(
-            response_type="error", message="Validation failed", code="VALIDATION_ERROR"
+            response_type="error", message="Validation failed", code="VALIDATION_ERROR",
         )
 
         assert isinstance(response, dict)
@@ -701,7 +701,7 @@ class TestFlextApiModelsFocused:
     def test_builder_success_static_method(self) -> None:
         """Test Builder.success static method."""
         response = FlextApiModels.Builder.success(
-            data={"result": "ok"}, message="Operation completed"
+            data={"result": "ok"}, message="Operation completed",
         )
 
         assert response["status"] == "success"
@@ -723,7 +723,7 @@ class TestFlextApiModelsFocused:
     def test_builder_error_static_method(self) -> None:
         """Test Builder.error static method."""
         response = FlextApiModels.Builder.error(
-            message="Something went wrong", code="INTERNAL_ERROR"
+            message="Something went wrong", code="INTERNAL_ERROR",
         )
 
         assert isinstance(response, dict)
@@ -769,10 +769,10 @@ class TestFlextApiModelsFocused:
         assert request.url == api_request.url
 
         response = FlextApiModels.HttpResponse(
-            status_code=200, url="https://test.com", method="GET"
+            status_code=200, url="https://test.com", method="GET",
         )
         api_response = FlextApiModels.HttpResponse(
-            status_code=200, url="https://test.com", method="GET"
+            status_code=200, url="https://test.com", method="GET",
         )
 
         assert isinstance(response, FlextApiModels.HttpResponse)

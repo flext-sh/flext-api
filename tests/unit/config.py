@@ -31,7 +31,7 @@ class TestFlextApiConfigReal:
     def test_client_config_creation(self) -> None:
         """Test FlextApiConfig creation with custom client values."""
         config = FlextApiConfig(
-            api_base_url="https://api.example.com", api_timeout=30.0, max_retries=3
+            api_base_url="https://api.example.com", api_timeout=30.0, max_retries=3,
         )
 
         assert config.api_base_url == "https://api.example.com"
@@ -98,7 +98,7 @@ class TestFlextApiConfigReal:
     def test_config_serialization(self) -> None:
         """Test config serialization capabilities."""
         config = FlextApiConfig(
-            api_base_url="https://test.example.com", api_timeout=45.0
+            api_base_url="https://test.example.com", api_timeout=45.0,
         )
 
         # Should be serializable as dict

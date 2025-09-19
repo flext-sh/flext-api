@@ -96,7 +96,7 @@ def example_utilities_usage() -> None:
 
     # URL validation using the refactored nested class
     url_result = FlextApiUtilities.HttpValidator.validate_url(
-        "https://example.com/api/v1"
+        "https://example.com/api/v1",
     )
 
     if url_result.success:

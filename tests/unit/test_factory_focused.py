@@ -187,7 +187,7 @@ class TestFlextApiFactoryFocused:
     def test_create_flext_api_with_partial_config(self) -> None:
         """Test create_flext_api with only some configuration options."""
         config: dict[str, object] = {
-            "base_url": "https://partial.example.com"
+            "base_url": "https://partial.example.com",
             # Missing timeout, max_retries, headers - should use defaults
         }
 

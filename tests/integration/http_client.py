@@ -26,7 +26,7 @@ class TestHttpClientIntegration:
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10.0,
-            }
+            },
         )
         assert client_result.success
         client = client_result.value
@@ -48,7 +48,7 @@ class TestHttpClientIntegration:
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10.0,
-            }
+            },
         )
         assert client_result.success
         client = client_result.value
@@ -67,7 +67,7 @@ class TestHttpClientIntegration:
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10.0,
-            }
+            },
         )
         assert client_result.success
         client = client_result.value
@@ -90,7 +90,7 @@ class TestHttpClientIntegration:
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10.0,
-            }
+            },
         )
         assert client_result.success
         client = client_result.value

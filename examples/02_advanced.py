@@ -138,7 +138,7 @@ class _StorageSystemDemo:
             if json_str_result.success:
                 json_str = json_str_result.value
                 print(
-                    f"✅ Data serialized using nested JsonStorage: {len(json_str)} chars"
+                    f"✅ Data serialized using nested JsonStorage: {len(json_str)} chars",
                 )
 
                 deserialized_result = json_storage.deserialize(json_str)
@@ -165,7 +165,7 @@ def example_utilities_usage() -> None:
 
     # URL validation using the refactored nested class
     url_result = FlextApiUtilities.HttpValidator.validate_url(
-        "https://api.example.com/v1/users"
+        "https://api.example.com/v1/users",
     )
 
     if url_result.success:
@@ -214,7 +214,7 @@ def example_utilities_usage() -> None:
         {
             "key": "value",
             "number": 42,
-        }
+        },
     )
     if transform_result.success:
         json_str = transform_result.value

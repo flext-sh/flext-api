@@ -70,7 +70,7 @@ class FlextApiUtilities:
 
         @staticmethod
         def build_success_response(
-            data: object = None, message: str = "Success", status_code: int = 200
+            data: object = None, message: str = "Success", status_code: int = 200,
         ) -> FlextResult[FlextTypes.Core.Dict]:
             """Build success response using flext-core patterns."""
             try:
@@ -104,11 +104,11 @@ class FlextApiUtilities:
                     return FlextResult[FlextTypes.Core.Dict].fail("Page must be >= 1")
                 if page_size < 1:
                     return FlextResult[FlextTypes.Core.Dict].fail(
-                        "Page size must be >= 1"
+                        "Page size must be >= 1",
                     )
                 if page_size > FlextApiConstants.ApiLimits.MAX_PAGE_SIZE:
                     return FlextResult[FlextTypes.Core.Dict].fail(
-                        f"Page size cannot exceed {FlextApiConstants.ApiLimits.MAX_PAGE_SIZE}"
+                        f"Page size cannot exceed {FlextApiConstants.ApiLimits.MAX_PAGE_SIZE}",
                     )
 
                 if data is None or not isinstance(data, list):
@@ -187,7 +187,7 @@ class FlextApiUtilities:
             if method_upper not in valid_methods:
                 valid_methods_str = ", ".join(sorted(valid_methods))
                 return FlextResult[str].fail(
-                    f"Invalid HTTP method. Valid methods: {valid_methods_str}"
+                    f"Invalid HTTP method. Valid methods: {valid_methods_str}",
                 )
 
             return FlextResult[str].ok(method_upper)
@@ -209,7 +209,7 @@ class FlextApiUtilities:
             if normalized_result.is_success:
                 return FlextResult[str].ok(normalized_result.unwrap().value)
             return FlextResult[str].fail(
-                normalized_result.error or "URL normalization failed"
+                normalized_result.error or "URL normalization failed",
             )
 
     # Backward compatibility delegation methods for ecosystem integration
@@ -228,7 +228,7 @@ class FlextApiUtilities:
         try:
             if config is None:
                 return FlextResult[FlextTypes.Core.Dict].fail(
-                    "Configuration cannot be None"
+                    "Configuration cannot be None",
                 )
 
             # Extract config data
@@ -238,7 +238,7 @@ class FlextApiUtilities:
                 config_dict = config
             else:
                 return FlextResult[FlextTypes.Core.Dict].fail(
-                    "Configuration must be dict-like or have attributes"
+                    "Configuration must be dict-like or have attributes",
                 )
 
             # Determine config type based on attributes
@@ -255,20 +255,20 @@ class FlextApiUtilities:
             # Validate common HTTP configuration fields
             if "method" in config_dict:
                 method_result = FlextApiUtilities.HttpValidator.validate_http_method(
-                    config_dict["method"]
+                    config_dict["method"],
                 )
                 if method_result.is_failure:
                     return FlextResult[FlextTypes.Core.Dict].fail(
-                        f"Invalid method: {method_result.error}"
+                        f"Invalid method: {method_result.error}",
                     )
 
             if "status_code" in config_dict:
                 status_result = FlextApiUtilities.HttpValidator.validate_status_code(
-                    config_dict["status_code"]
+                    config_dict["status_code"],
                 )
                 if status_result.is_failure:
                     return FlextResult[FlextTypes.Core.Dict].fail(
-                        f"Invalid status code: {status_result.error}"
+                        f"Invalid status code: {status_result.error}",
                     )
 
             # Return validation result with config details
@@ -280,7 +280,7 @@ class FlextApiUtilities:
             return FlextResult[FlextTypes.Core.Dict].ok(result_data)
         except Exception as e:
             return FlextResult[FlextTypes.Core.Dict].fail(
-                f"Configuration validation failed: {e}"
+                f"Configuration validation failed: {e}",
             )
 
     # =============================================================================
@@ -429,7 +429,7 @@ class FlextApiUtilities:
                     return data
                 if hasattr(data, "model_dump"):
                     # Type guard for Pydantic models
-                    result = getattr(data, "model_dump")()
+                    result = data.model_dump()
                     return result if isinstance(result, dict) else None
                 if hasattr(data, "__dict__"):
                     return data.__dict__

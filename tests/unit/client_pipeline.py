@@ -71,7 +71,7 @@ async def test_client_error_handling_pipeline() -> None:
 async def test_client_session_management() -> None:
     """Test client session management utilities."""
     client_config = FlextApiModels.ClientConfig(
-        base_url="https://httpbin.org", timeout=10.0
+        base_url="https://httpbin.org", timeout=10.0,
     )
     client = FlextApiClient(config=client_config)
 
@@ -120,7 +120,7 @@ def test_create_client_validation_error() -> None:
 def test_client_request_validation() -> None:
     """Test client request validation."""
     client_config = FlextApiModels.ClientConfig(
-        base_url="https://httpbin.org", timeout=10.0
+        base_url="https://httpbin.org", timeout=10.0,
     )
     # Client created for context but not used in this validation test
     _ = FlextApiClient(client_config)
