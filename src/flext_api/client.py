@@ -66,10 +66,10 @@ class FlextApiClient(FlextDomainService[object]):
         self,
         config: FlextApiModels.ClientConfig
         | FlextApiConfig
-        | Mapping[str, str | int | float | bool | None]
+        | Mapping[str, str | int | float | bool | dict[str, str] | None]
         | str
         | None = None,
-        **kwargs: str | float | bool | None,
+        **kwargs: str | float | bool | dict[str, str] | None,
     ) -> None:
         """Initialize HTTP client with streamlined configuration.
 
@@ -204,7 +204,7 @@ class FlextApiClient(FlextDomainService[object]):
 
     # Compatibility properties removed - use direct values
 
-    def create_flext_api_app(self, **kwargs: str) -> object:
+    def create_flext_api_app(self, **kwargs: object) -> object:
         """Create FastAPI application with configuration.
 
         Creates a FastAPI application instance using the provided configuration
@@ -248,7 +248,7 @@ class FlextApiClient(FlextDomainService[object]):
         return FlextApiApp.create_fastapi_app(app_config)
 
     def _extract_client_config_params(
-        self, kwargs: dict[str, str | int | float | bool | None]
+        self, kwargs: Mapping[str, str | int | float | bool | dict[str, str] | None]
     ) -> tuple[
         str | None,
         float | None,
@@ -1066,7 +1066,8 @@ class FlextApiClient(FlextDomainService[object]):
     @classmethod
     def create_flext_api(
         cls,
-        config_dict: Mapping[str, str | int | float | bool | None] | None = None,
+        config_dict: Mapping[str, str | int | float | bool | dict[str, str] | None]
+        | None = None,
     ) -> FlextApiClient:
         """Create FlextApiClient instances.
 
@@ -1099,7 +1100,9 @@ class FlextApiClient(FlextDomainService[object]):
             return cls()
 
         # Create a config dict with proper defaults and type conversion
-        processed_config: dict[str, str | int | float | bool | None] = {}
+        processed_config: dict[
+            str, str | int | float | bool | dict[str, str] | None
+        ] = {}
 
         # Handle base_url
         base_url = config_dict.get("base_url")

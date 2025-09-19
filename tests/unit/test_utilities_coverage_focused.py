@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
+from dataclasses import dataclass, field
 
 from flext_api.utilities import FlextApiUtilities
 
@@ -138,8 +139,6 @@ class TestFlextUtilitiesCoverageFocused:
         """Test DataTransformer.to_json exception handling."""
 
         # Create an object that cannot be JSON serialized
-        from dataclasses import dataclass, field
-
         @dataclass
         class NonSerializable:
             circular_ref: object = field(default_factory=lambda: None)
@@ -238,8 +237,6 @@ class TestFlextUtilitiesCoverageFocused:
         """Test safe_json_stringify exception handling."""
 
         # Create an object that could cause JSON stringify issues
-        from dataclasses import dataclass, field
-
         @dataclass
         class CircularRef:
             ref: object = field(default_factory=lambda: None)
