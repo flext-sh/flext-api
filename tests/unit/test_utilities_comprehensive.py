@@ -21,7 +21,9 @@ class TestFlextApiUtilitiesComprehensive:
         """Test config validation for all configuration types."""
         # Test HttpRequestConfig with valid data
         http_config = FlextApiModels.Http.HttpRequestConfig(
-            url="https://api.example.com/test", method="POST", timeout=45,
+            url="https://api.example.com/test",
+            method="POST",
+            timeout=45,
         )
         result = FlextApiUtilities.validate_config(http_config)
         assert result.success
@@ -46,7 +48,9 @@ class TestFlextApiUtilitiesComprehensive:
 
         # Test ValidationConfig with valid data
         validation_config = FlextApiModels.Http.ValidationConfig(
-            field="email", value="invalid-email", url="https://api.example.com/validate",
+            field="email",
+            value="invalid-email",
+            url="https://api.example.com/validate",
         )
         result = FlextApiUtilities.validate_config(validation_config)
         assert result.success
@@ -69,7 +73,8 @@ class TestFlextApiUtilitiesComprehensive:
 
         # Invalid HTTP method
         invalid_method_config = FlextApiModels.Http.HttpRequestConfig(
-            url="https://api.example.com", method="",
+            url="https://api.example.com",
+            method="",
         )
         result = FlextApiUtilities.validate_config(invalid_method_config)
         FlextTestsMatchers.assert_result_failure(result)
@@ -81,7 +86,8 @@ class TestFlextApiUtilitiesComprehensive:
         # Invalid status code - too low (should fail at model creation)
         try:
             invalid_config = FlextApiModels.Http.HttpErrorConfig(
-                message="Error", status_code=50,
+                message="Error",
+                status_code=50,
             )
             # If model creation succeeds, test the validation
             result = FlextApiUtilities.validate_config(invalid_config)
@@ -94,7 +100,8 @@ class TestFlextApiUtilitiesComprehensive:
         # Invalid status code - too high
         try:
             invalid_high_config = FlextApiModels.Http.HttpErrorConfig(
-                message="Error", status_code=700,
+                message="Error",
+                status_code=700,
             )
             # If model creation succeeds, test the validation
             result = FlextApiUtilities.validate_config(invalid_high_config)
@@ -318,7 +325,9 @@ class TestFlextApiUtilitiesComprehensive:
         # Success response with data
         test_data = {"user_id": 123, "name": "Test User"}
         result = FlextApiUtilities.ResponseBuilder.build_success_response(
-            data=test_data, message="User created", status_code=201,
+            data=test_data,
+            message="User created",
+            status_code=201,
         )
         assert result.success
         response = result.value
@@ -361,7 +370,8 @@ class TestFlextApiUtilitiesComprehensive:
         # Basic pagination
         test_data: FlextTypes.Core.List = [{"id": 1}, {"id": 2}, {"id": 3}]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=test_data, total=100,
+            data=test_data,
+            total=100,
         )
         assert result.success
         response = result.value
@@ -379,7 +389,11 @@ class TestFlextApiUtilitiesComprehensive:
 
         # Custom pagination parameters
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=test_data, total=25, page=2, page_size=10, message="Data retrieved",
+            data=test_data,
+            total=25,
+            page=2,
+            page_size=10,
+            message="Data retrieved",
         )
         assert result.success
         response2 = result.value
@@ -394,7 +408,10 @@ class TestFlextApiUtilitiesComprehensive:
 
         # Last page
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=test_data, total=25, page=3, page_size=10,
+            data=test_data,
+            total=25,
+            page=3,
+            page_size=10,
         )
         assert result.success
         response3 = result.value
@@ -407,7 +424,9 @@ class TestFlextApiUtilitiesComprehensive:
         # Validation errors
         # Invalid page
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=test_data, total=100, page=0,
+            data=test_data,
+            total=100,
+            page=0,
         )
         FlextTestsMatchers.assert_result_failure(result)
         assert result.error is not None
@@ -415,7 +434,9 @@ class TestFlextApiUtilitiesComprehensive:
 
         # Invalid page size
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=test_data, total=100, page_size=0,
+            data=test_data,
+            total=100,
+            page_size=0,
         )
         FlextTestsMatchers.assert_result_failure(result)
         assert result.error is not None
@@ -458,7 +479,10 @@ class TestFlextApiUtilitiesComprehensive:
         safe_page_size = 10  # Direct int value
         pagination_result = (
             FlextApiUtilities.PaginationBuilder.build_paginated_response(
-                data=[], total=safe_total, page=safe_page, page_size=safe_page_size,
+                data=[],
+                total=safe_total,
+                page=safe_page,
+                page_size=safe_page_size,
             )
         )
         assert pagination_result.success

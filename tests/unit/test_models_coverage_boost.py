@@ -99,7 +99,9 @@ class TestFlextApiModelsCoverageBoost:
     def test_http_response_properties_success(self) -> None:
         """Test HttpResponse success properties."""
         response = FlextApiModels.HttpResponse(
-            status_code=200, url="https://example.com", method="GET",
+            status_code=200,
+            url="https://example.com",
+            method="GET",
         )
         assert response.is_success is True
         assert response.is_client_error is False
@@ -109,7 +111,9 @@ class TestFlextApiModelsCoverageBoost:
     def test_http_response_properties_client_error(self) -> None:
         """Test HttpResponse client error properties."""
         response = FlextApiModels.HttpResponse(
-            status_code=404, url="https://example.com", method="GET",
+            status_code=404,
+            url="https://example.com",
+            method="GET",
         )
         assert response.is_success is False
         assert response.is_client_error is True
@@ -119,7 +123,9 @@ class TestFlextApiModelsCoverageBoost:
     def test_http_response_properties_server_error(self) -> None:
         """Test HttpResponse server error properties."""
         response = FlextApiModels.HttpResponse(
-            status_code=500, url="https://example.com", method="GET",
+            status_code=500,
+            url="https://example.com",
+            method="GET",
         )
         assert response.is_success is False
         assert response.is_client_error is False
@@ -129,7 +135,9 @@ class TestFlextApiModelsCoverageBoost:
     def test_http_response_properties_redirect(self) -> None:
         """Test HttpResponse redirect properties."""
         response = FlextApiModels.HttpResponse(
-            status_code=301, url="https://example.com", method="GET",
+            status_code=301,
+            url="https://example.com",
+            method="GET",
         )
         assert response.is_success is False
         assert response.is_client_error is False
@@ -167,7 +175,8 @@ class TestFlextApiModelsCoverageBoost:
     def test_client_config_get_auth_header_with_token(self) -> None:
         """Test ClientConfig get_auth_header with auth_token."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com", auth_token="secret-token",
+            base_url="https://api.example.com",
+            auth_token="secret-token",
         )
         auth_header = config.get_auth_header()
         assert auth_header == {"Authorization": "Bearer secret-token"}
@@ -175,7 +184,8 @@ class TestFlextApiModelsCoverageBoost:
     def test_client_config_get_auth_header_with_api_key(self) -> None:
         """Test ClientConfig get_auth_header with api_key."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com", api_key="api-key-123",
+            base_url="https://api.example.com",
+            api_key="api-key-123",
         )
         auth_header = config.get_auth_header()
         assert auth_header == {"Authorization": "Bearer api-key-123"}
@@ -237,7 +247,9 @@ class TestFlextApiModelsCoverageBoost:
     def test_http_query_to_query_params(self) -> None:
         """Test HttpQuery to_query_params method."""
         query = FlextApiModels.HttpQuery(
-            page=2, page_size=50, sort_fields=["created_at", "name"],
+            page=2,
+            page_size=50,
+            sort_fields=["created_at", "name"],
         )
         query.add_filter("status", "active")
 
@@ -285,7 +297,9 @@ class TestFlextApiModelsCoverageBoost:
         """Test Builder create success response."""
         builder = FlextApiModels.Builder()
         response = builder.create(
-            response_type="success", data={"key": "value"}, message="Success message",
+            response_type="success",
+            data={"key": "value"},
+            message="Success message",
         )
 
         assert response["status"] == "success"
@@ -298,7 +312,9 @@ class TestFlextApiModelsCoverageBoost:
         """Test Builder create error response."""
         builder = FlextApiModels.Builder()
         response = builder.create(
-            response_type="error", code="ERR_001", message="Error occurred",
+            response_type="error",
+            code="ERR_001",
+            message="Error occurred",
         )
 
         assert response["status"] == "error"
@@ -319,7 +335,8 @@ class TestFlextApiModelsCoverageBoost:
     def test_builder_static_success(self) -> None:
         """Test Builder static success method."""
         response = FlextApiModels.Builder.success(
-            data={"test": "data"}, message="Operation successful",
+            data={"test": "data"},
+            message="Operation successful",
         )
 
         assert response["status"] == "success"
@@ -331,7 +348,8 @@ class TestFlextApiModelsCoverageBoost:
     def test_builder_static_error(self) -> None:
         """Test Builder static error method."""
         response = FlextApiModels.Builder.error(
-            message="Something went wrong", code="ERR_500",
+            message="Something went wrong",
+            code="ERR_500",
         )
 
         assert response["status"] == "error"
@@ -468,7 +486,10 @@ class TestFlextApiModelsCoverageBoost:
     def test_storage_config_creation(self) -> None:
         """Test StorageConfig model creation."""
         config = FlextApiModels.StorageConfig(
-            backend="redis", namespace="test_api", max_size=1000, default_ttl=3600,
+            backend="redis",
+            namespace="test_api",
+            max_size=1000,
+            default_ttl=3600,
         )
 
         assert config.backend == "redis"
@@ -502,7 +523,9 @@ class TestFlextApiModelsCoverageBoost:
         """Test that models properly inherit from FlextModels.Entity."""
         request = FlextApiModels.HttpRequest(url="https://example.com")
         response = FlextApiModels.HttpResponse(
-            status_code=200, url="https://example.com", method="GET",
+            status_code=200,
+            url="https://example.com",
+            method="GET",
         )
 
         # These should have Entity methods

@@ -49,7 +49,9 @@ class TestFlextUtilitiesAdditionalCoverage:
         with patch("flext_api.utilities.FlextApiConstants") as mock_constants:
             mock_constants.Limits.MAX_PAGE_SIZE = None  # This could cause an exception
             result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-                data=[1, 2, 3], page=1, page_size=100,
+                data=[1, 2, 3],
+                page=1,
+                page_size=100,
             )
             # The result depends on implementation, but we're testing exception handling
             assert result.is_success or result.is_failure
@@ -300,7 +302,10 @@ class TestFlextUtilitiesAdditionalCoverage:
     def test_pagination_builder_with_message(self) -> None:
         """Test PaginationBuilder with message parameter."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[1, 2, 3], page=1, page_size=10, message="Custom message",
+            data=[1, 2, 3],
+            page=1,
+            page_size=10,
+            message="Custom message",
         )
         assert result.is_success
         response = result.unwrap()
@@ -309,7 +314,10 @@ class TestFlextUtilitiesAdditionalCoverage:
     def test_pagination_builder_total_zero_edge_case(self) -> None:
         """Test PaginationBuilder with total=0."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[], page=1, page_size=10, total=0,
+            data=[],
+            page=1,
+            page_size=10,
+            total=0,
         )
         assert result.is_success
         response = result.unwrap()

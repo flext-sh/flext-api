@@ -47,7 +47,8 @@ async def test_real_http_get_request() -> None:
 async def test_real_http_headers_and_user_agent() -> None:
     """Test real HTTP request with custom headers."""
     client = FlextApiClient(
-        config="https://httpbin.org", headers={"X-FLEXT-API": "test-version-0.9.0"},
+        config="https://httpbin.org",
+        headers={"X-FLEXT-API": "test-version-0.9.0"},
     )
 
     try:

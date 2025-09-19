@@ -141,7 +141,9 @@ class TestApiModels:
         """Test model creation."""
         # Test with minimal required fields (id, method, url are required by FlextModels)
         request = FlextApiModels.ApiRequest(
-            id="req_123", method=HttpMethod.GET, url="/api/users",
+            id="req_123",
+            method=HttpMethod.GET,
+            url="/api/users",
         )
 
         assert request.method == "GET"
@@ -175,7 +177,9 @@ class TestApiModels:
         """Test ApiResponse with data field."""
         # Test with optional body field
         response = ApiResponse(
-            id="resp_456", status_code=201, body={"id": 1, "name": "Test User"},
+            id="resp_456",
+            status_code=201,
+            body={"id": 1, "name": "Test User"},
         )
 
         assert response.status_code == 201
@@ -230,7 +234,9 @@ class TestModelIntegration:
         """Test API models using HTTP enums."""
         # Create request using enum values (with required fields)
         request = FlextApiModels.ApiRequest(
-            id="req_789", method=HttpMethod.POST, url="/api/resources",
+            id="req_789",
+            method=HttpMethod.POST,
+            url="/api/resources",
         )
 
         assert request.method == HttpMethod.POST

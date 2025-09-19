@@ -21,7 +21,9 @@ from flext_core import (
 
 # Module-level constants for nested class access
 STANDARD_MODEL_CONFIG = ConfigDict(
-    validate_assignment=True, extra="forbid", populate_by_name=True,
+    validate_assignment=True,
+    extra="forbid",
+    populate_by_name=True,
 )
 _URL_EMPTY_ERROR = "URL cannot be empty"
 _URL_FORMAT_ERROR = "Invalid URL format"
@@ -36,7 +38,9 @@ class FlextApiModels:
 
     # Streamlined ConfigDict - eliminate bloat
     STANDARD_MODEL_CONFIG = ConfigDict(
-        validate_assignment=True, extra="forbid", populate_by_name=True,
+        validate_assignment=True,
+        extra="forbid",
+        populate_by_name=True,
     )
 
     # Use constants from FlextApiConstants instead of redundant declarations
@@ -199,7 +203,8 @@ class FlextApiModels:
 
         # Core fields with Pydantic 2 alias support for backward compatibility
         filter_conditions: dict[str, object] = Field(
-            alias="filters", default_factory=dict,
+            alias="filters",
+            default_factory=dict,
         )
         sort_fields: list[str] = Field(default_factory=list)
         page_number: int = Field(alias="page", default=1, ge=1)
@@ -232,7 +237,9 @@ class FlextApiModels:
         """Pagination configuration extending flext-core Value."""
 
         page_size: int = Field(
-            default=FlextApiConstants.DEFAULT_PAGE_SIZE, gt=0, le=1000,
+            default=FlextApiConstants.DEFAULT_PAGE_SIZE,
+            gt=0,
+            le=1000,
         )
         current_page: int = Field(alias="page", default=1, ge=1)
         max_pages: int | None = Field(default=None, ge=1)
@@ -426,12 +433,14 @@ class FlextApiModels:
         title: str = Field(..., description="Application title")
         app_version: str = Field(..., description="Application version")
         description: str = Field(
-            default="FlextAPI Application", description="Application description",
+            default="FlextAPI Application",
+            description="Application description",
         )
         docs_url: str = Field(default="/docs", description="Swagger docs URL")
         redoc_url: str = Field(default="/redoc", description="ReDoc URL")
         openapi_url: str = Field(
-            default="/openapi.json", description="OpenAPI schema URL",
+            default="/openapi.json",
+            description="OpenAPI schema URL",
         )
 
         @field_validator("title", "app_version")

@@ -30,7 +30,9 @@ class TestFlextApiClientFocused:
     def test_client_initialization_with_config_object(self) -> None:
         """Test FlextApiClient initialization with ClientConfig object."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://config.example.com", timeout=60.0, max_retries=5,
+            base_url="https://config.example.com",
+            timeout=60.0,
+            max_retries=5,
         )
         client = FlextApiClient(config)
 
@@ -41,7 +43,8 @@ class TestFlextApiClientFocused:
     def test_client_initialization_with_config_and_kwargs(self) -> None:
         """Test FlextApiClient with ClientConfig and kwargs override."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://config.example.com", timeout=30.0,
+            base_url="https://config.example.com",
+            timeout=30.0,
         )
         client = FlextApiClient(config, timeout=45.0, max_retries=7)
 
@@ -159,7 +162,8 @@ class TestFlextApiClientFocused:
 
             assert result is mock_instance
             mock_client.assert_called_once_with(
-                base_url="https://test.com", timeout=30.0,
+                base_url="https://test.com",
+                timeout=30.0,
             )
 
     @pytest.mark.asyncio
@@ -228,7 +232,9 @@ class TestFlextApiClientFocused:
             result = await client.request("GET", "/get", params={"test": "value"})
 
             mock_request.assert_called_once_with(
-                "GET", "/get", params={"test": "value"},
+                "GET",
+                "/get",
+                params={"test": "value"},
             )
             assert result.is_success
 
@@ -382,7 +388,9 @@ class TestFlextApiClientFocused:
             result = await client.get("/get", params={"test": "value"})
 
             mock_request.assert_called_once_with(
-                "GET", "/get", params={"test": "value"},
+                "GET",
+                "/get",
+                params={"test": "value"},
             )
             assert result.is_success
 
@@ -406,7 +414,9 @@ class TestFlextApiClientFocused:
             result = await client.post("/post", json={"data": "value"})
 
             mock_request.assert_called_once_with(
-                "POST", "/post", json={"data": "value"},
+                "POST",
+                "/post",
+                json={"data": "value"},
             )
             assert result.is_success
 
@@ -430,7 +440,9 @@ class TestFlextApiClientFocused:
             result = await client.put("/put", json={"data": "updated"})
 
             mock_request.assert_called_once_with(
-                "PUT", "/put", json={"data": "updated"},
+                "PUT",
+                "/put",
+                json={"data": "updated"},
             )
             assert result.is_success
 
@@ -459,7 +471,9 @@ class TestFlextApiClientFocused:
     def test_properties_access(self) -> None:
         """Test all property accessors."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://props.example.com", timeout=90.0, max_retries=8,
+            base_url="https://props.example.com",
+            timeout=90.0,
+            max_retries=8,
         )
         client = FlextApiClient(config)
 
@@ -538,7 +552,8 @@ class TestFlextApiClientFocused:
     def test_create_factory_with_config_object(self) -> None:
         """Test create factory method with ClientConfig object."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://factory-config.example.com", timeout=75.0,
+            base_url="https://factory-config.example.com",
+            timeout=75.0,
         )
 
         result = FlextApiClient.create(config)
