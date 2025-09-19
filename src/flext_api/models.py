@@ -21,7 +21,7 @@ from flext_core import (
 
 # Module-level constants for nested class access
 STANDARD_MODEL_CONFIG = ConfigDict(
-    validate_assignment=True, extra="forbid", populate_by_name=True
+    validate_assignment=True, extra="forbid", populate_by_name=True,
 )
 _URL_EMPTY_ERROR = "URL cannot be empty"
 _URL_FORMAT_ERROR = "Invalid URL format"
@@ -36,7 +36,7 @@ class FlextApiModels:
 
     # Streamlined ConfigDict - eliminate bloat
     STANDARD_MODEL_CONFIG = ConfigDict(
-        validate_assignment=True, extra="forbid", populate_by_name=True
+        validate_assignment=True, extra="forbid", populate_by_name=True,
     )
 
     # Use constants from FlextApiConstants instead of redundant declarations
@@ -68,7 +68,7 @@ class FlextApiModels:
 
             # Use centralized FlextModels validation for absolute URLs
             validation_result = FlextModels.create_validated_http_url(
-                v.strip() if isinstance(v, str) else ""
+                v.strip() if isinstance(v, str) else "",
             )
             if validation_result.is_failure:
                 # Map flext-core error messages to expected test messages
@@ -163,7 +163,7 @@ class FlextApiModels:
             """Validate base URL using centralized FlextModels validation."""
             # Use centralized FlextModels validation instead of duplicate logic
             validation_result = FlextModels.create_validated_http_url(
-                v.strip() if isinstance(v, str) else ""
+                v.strip() if isinstance(v, str) else "",
             )
             if validation_result.is_failure:
                 # Map flext-core error messages to expected test messages
@@ -199,7 +199,7 @@ class FlextApiModels:
 
         # Core fields with Pydantic 2 alias support for backward compatibility
         filter_conditions: dict[str, object] = Field(
-            alias="filters", default_factory=dict
+            alias="filters", default_factory=dict,
         )
         sort_fields: list[str] = Field(default_factory=list)
         page_number: int = Field(alias="page", default=1, ge=1)
@@ -232,7 +232,7 @@ class FlextApiModels:
         """Pagination configuration extending flext-core Value."""
 
         page_size: int = Field(
-            default=FlextApiConstants.DEFAULT_PAGE_SIZE, gt=0, le=1000
+            default=FlextApiConstants.DEFAULT_PAGE_SIZE, gt=0, le=1000,
         )
         current_page: int = Field(alias="page", default=1, ge=1)
         max_pages: int | None = Field(default=None, ge=1)
@@ -347,7 +347,7 @@ class FlextApiModels:
             # Simple URL parsing - in a real implementation, you'd use urllib.parse
             if not url_string or not url_string.strip():
                 return FlextResult["FlextApiModels.UrlModel"].fail(
-                    "URL cannot be empty"
+                    "URL cannot be empty",
                 )
 
             url_str = url_string.strip()
@@ -399,7 +399,7 @@ class FlextApiModels:
                 ipv6_part = host[host.find("[") + 1 : host.find("]")]
                 if "invalid" in ipv6_part.lower():
                     return FlextResult["FlextApiModels.UrlModel"].fail(
-                        "Failed to create URL: Invalid IPv6 address format"
+                        "Failed to create URL: Invalid IPv6 address format",
                     )
 
             # Create URL model
@@ -415,7 +415,7 @@ class FlextApiModels:
             return FlextResult["FlextApiModels.UrlModel"].ok(url_model)
         except Exception as e:
             return FlextResult["FlextApiModels.UrlModel"].fail(
-                f"Failed to create URL: {e}"
+                f"Failed to create URL: {e}",
             )
 
     class AppConfig(FlextModels.Entity):
@@ -426,12 +426,12 @@ class FlextApiModels:
         title: str = Field(..., description="Application title")
         app_version: str = Field(..., description="Application version")
         description: str = Field(
-            default="FlextAPI Application", description="Application description"
+            default="FlextAPI Application", description="Application description",
         )
         docs_url: str = Field(default="/docs", description="Swagger docs URL")
         redoc_url: str = Field(default="/redoc", description="ReDoc URL")
         openapi_url: str = Field(
-            default="/openapi.json", description="OpenAPI schema URL"
+            default="/openapi.json", description="OpenAPI schema URL",
         )
 
         @field_validator("title", "app_version")

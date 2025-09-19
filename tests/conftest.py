@@ -37,7 +37,7 @@ os.environ.update(
         "FLEXT_DISABLE_EXTERNAL_CALLS": "0",
         "ENVIRONMENT": "test",
         "LOG_LEVEL": "INFO",
-    }
+    },
 )
 
 

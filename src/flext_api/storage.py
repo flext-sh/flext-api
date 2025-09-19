@@ -38,9 +38,9 @@ class FlextApiStorage(FlextModels.Entity):
             config_dict = config
         elif config is not None:
             if hasattr(config, "model_dump") and callable(
-                getattr(config, "model_dump")
+                config.model_dump,
             ):
-                adapted = getattr(config, "model_dump")()
+                adapted = config.model_dump()
                 config_dict = (
                     adapted if isinstance(adapted, dict) else {"value": adapted}
                 )
@@ -195,7 +195,7 @@ class FlextApiStorage(FlextModels.Entity):
                 {
                     "size": 0,  # Default size since we don't have access to storage
                     "backend": "memory",
-                }
+                },
             )
 
         def cleanup_expired(self) -> FlextResult[int]:
@@ -222,7 +222,7 @@ class FlextApiStorage(FlextModels.Entity):
         def get_metrics(self) -> FlextResult[dict[str, object]]:
             """Get storage metrics."""
             return FlextResult[dict[str, object]].ok(
-                {"total_operations": 0, "cache_hits": 0, "cache_misses": 0}
+                {"total_operations": 0, "cache_hits": 0, "cache_misses": 0},
             )
 
         def get_statistics(self) -> FlextResult[dict[str, float]]:
@@ -244,7 +244,7 @@ class FlextApiStorage(FlextModels.Entity):
                 return FlextResult[dict[str, float]].ok(stats)
             except Exception as e:
                 return FlextResult[dict[str, float]].fail(
-                    f"Statistics collection failed: {e}"
+                    f"Statistics collection failed: {e}",
                 )
 
 

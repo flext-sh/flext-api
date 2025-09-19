@@ -35,7 +35,7 @@ async def test_request_build_failure_and_pipeline_error() -> None:
 
     # Test with valid format but unreachable to test request error paths
     client = FlextApiClient(
-        config="https://invalid-domain-that-does-not-exist.example.com"
+        config="https://invalid-domain-that-does-not-exist.example.com",
     )
 
     # Network error should cause request errors

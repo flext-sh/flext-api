@@ -45,7 +45,7 @@ class TestFlextApiClient:
         max_retries = cast("int", config_data.get("max_retries", 3))
 
         client = FlextApiClient(
-            base_url=base_url, timeout=timeout, max_retries=max_retries
+            base_url=base_url, timeout=timeout, max_retries=max_retries,
         )
 
         # Verify configuration using real values
@@ -63,7 +63,7 @@ class TestFlextApiClient:
         max_retries = cast("int", service_data.get("max_retries", 5))
 
         client = FlextApiClient(
-            base_url=base_url, timeout=timeout, max_retries=max_retries
+            base_url=base_url, timeout=timeout, max_retries=max_retries,
         )
 
         # Verify all properties work
@@ -75,7 +75,7 @@ class TestFlextApiClient:
         assert client.max_retries == max_retries
 
     def test_client_with_configuration_data(
-        self, sample_configuration_data: FlextTypes.Core.Dict
+        self, sample_configuration_data: FlextTypes.Core.Dict,
     ) -> None:
         """Test client with configuration data from conftest fixture."""
         # Use configuration data from FlextTestsDomains via conftest
@@ -84,7 +84,7 @@ class TestFlextApiClient:
         max_retries = cast("int", sample_configuration_data.get("max_retries", 3))
 
         client = FlextApiClient(
-            base_url=base_url, timeout=timeout, max_retries=max_retries
+            base_url=base_url, timeout=timeout, max_retries=max_retries,
         )
 
         # Verify client uses configuration correctly
@@ -121,10 +121,10 @@ class TestFlextApiClient:
         service2 = FlextTestsDomains.create_service()
 
         client1 = FlextApiClient(
-            base_url=f"https://{service1.get('name', 'service1')}.example.com"
+            base_url=f"https://{service1.get('name', 'service1')}.example.com",
         )
         client2 = FlextApiClient(
-            base_url=f"https://{service2.get('name', 'service2')}.example.com"
+            base_url=f"https://{service2.get('name', 'service2')}.example.com",
         )
 
         # Clients should be independent
@@ -185,7 +185,7 @@ class TestFlextApiClient:
         assert isinstance(client.max_retries, int)
 
     def test_client_with_service_data(
-        self, sample_service_data: FlextTypes.Core.Dict
+        self, sample_service_data: FlextTypes.Core.Dict,
     ) -> None:
         """Test client with service data from conftest fixture."""
         # Build URL from service data

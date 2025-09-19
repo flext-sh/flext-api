@@ -57,7 +57,7 @@ class FlextApiConfig(FlextConfig):
     # Singleton pattern for global instance
 
     model_config = SettingsConfigDict(
-        env_prefix="FLEXT_API_", env_file=".env", extra="ignore"
+        env_prefix="FLEXT_API_", env_file=".env", extra="ignore",
     )
 
     # Server configuration - consolidated to remove duplication
@@ -130,7 +130,7 @@ class FlextApiConfig(FlextConfig):
         """
         # Use centralized FlextModels validation instead of duplicate logic
         validation_result = FlextModels.create_validated_http_url(
-            value.strip() if value else ""
+            value.strip() if value else "",
         )
         if validation_result.is_failure:
             error_msg = f"Invalid base URL: {validation_result.error}"
@@ -153,7 +153,7 @@ class FlextApiConfig(FlextConfig):
 
         """
         if cls._global_instance is None or not isinstance(
-            cls._global_instance, FlextApiConfig
+            cls._global_instance, FlextApiConfig,
         ):
             cls._global_instance = cls()
         return cls._global_instance
@@ -204,7 +204,7 @@ class FlextApiConfig(FlextConfig):
 
         if self.api_port <= 0 or self.api_port > FlextApiConstants.MAX_PORT:
             return FlextResult[None].fail(
-                f"API port must be between 1 and {FlextApiConstants.MAX_PORT}"
+                f"API port must be between 1 and {FlextApiConstants.MAX_PORT}",
             )
 
         return FlextResult[None].ok(None)
@@ -237,7 +237,7 @@ class FlextApiConfig(FlextConfig):
                 "port": self.api_port,
                 "workers": self.workers,
                 "debug": self.api_debug,
-            }
+            },
         )
 
     def get_client_config(self) -> FlextResult[dict[str, str | float | int]]:
@@ -264,7 +264,7 @@ class FlextApiConfig(FlextConfig):
                 "base_url": self.api_base_url,
                 "timeout": self.api_timeout,
                 "max_retries": self.max_retries,
-            }
+            },
         )
 
     def get_cors_config(self) -> FlextResult[dict[str, list[str] | bool]]:
@@ -293,7 +293,7 @@ class FlextApiConfig(FlextConfig):
                 "allow_methods": self.cors_methods,
                 "allow_headers": self.cors_headers,
                 "allow_credentials": self.cors_allow_credentials,
-            }
+            },
         )
 
     # Removed unnecessary getter methods - direct attribute access preferred
@@ -355,7 +355,7 @@ class FlextApiConfig(FlextConfig):
             return FlextResult["FlextApiConfig"].ok(config)
         except Exception as e:
             return FlextResult["FlextApiConfig"].fail(
-                f"Configuration creation failed: {e}"
+                f"Configuration creation failed: {e}",
             )
 
     class _BackwardCompatibility:

@@ -19,11 +19,11 @@ class TestFlextUtilitiesAdditionalCoverage:
         """Test ResponseBuilder.build_error_response exception handling."""
         # Mock the time/generators to force an exception
         with patch(
-            "flext_api.utilities.FlextUtilities.Generators.generate_iso_timestamp"
+            "flext_api.utilities.FlextUtilities.Generators.generate_iso_timestamp",
         ) as mock_gen:
             mock_gen.side_effect = Exception("Generator failed")
             result = FlextApiUtilities.ResponseBuilder.build_error_response(
-                message="Test error"
+                message="Test error",
             )
             assert result.is_failure
             assert result.error is not None
@@ -33,11 +33,11 @@ class TestFlextUtilitiesAdditionalCoverage:
         """Test ResponseBuilder.build_success_response exception handling."""
         # Mock to force an exception during response building
         with patch(
-            "flext_api.utilities.FlextUtilities.Generators.generate_iso_timestamp"
+            "flext_api.utilities.FlextUtilities.Generators.generate_iso_timestamp",
         ) as mock_gen:
             mock_gen.side_effect = Exception("Timestamp generation failed")
             result = FlextApiUtilities.ResponseBuilder.build_success_response(
-                data={"test": "data"}
+                data={"test": "data"},
             )
             assert result.is_failure
             assert result.error is not None
@@ -49,7 +49,7 @@ class TestFlextUtilitiesAdditionalCoverage:
         with patch("flext_api.utilities.FlextApiConstants") as mock_constants:
             mock_constants.Limits.MAX_PAGE_SIZE = None  # This could cause an exception
             result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-                data=[1, 2, 3], page=1, page_size=100
+                data=[1, 2, 3], page=1, page_size=100,
             )
             # The result depends on implementation, but we're testing exception handling
             assert result.is_success or result.is_failure
@@ -95,7 +95,7 @@ class TestFlextUtilitiesAdditionalCoverage:
     def test_http_validator_normalize_url_with_trailing_slash(self) -> None:
         """Test HttpValidator.normalize_url with trailing slash."""
         result = FlextApiUtilities.HttpValidator.normalize_url(
-            "https://example.com/path/"
+            "https://example.com/path/",
         )
         assert result.is_success
         assert result.unwrap() == "https://example.com/path"
@@ -300,7 +300,7 @@ class TestFlextUtilitiesAdditionalCoverage:
     def test_pagination_builder_with_message(self) -> None:
         """Test PaginationBuilder with message parameter."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[1, 2, 3], page=1, page_size=10, message="Custom message"
+            data=[1, 2, 3], page=1, page_size=10, message="Custom message",
         )
         assert result.is_success
         response = result.unwrap()
@@ -309,7 +309,7 @@ class TestFlextUtilitiesAdditionalCoverage:
     def test_pagination_builder_total_zero_edge_case(self) -> None:
         """Test PaginationBuilder with total=0."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[], page=1, page_size=10, total=0
+            data=[], page=1, page_size=10, total=0,
         )
         assert result.is_success
         response = result.unwrap()

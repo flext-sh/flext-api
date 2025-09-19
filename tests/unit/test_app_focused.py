@@ -92,7 +92,7 @@ class TestFlextApiAppFocused:
     async def test_create_fastapi_app_health_endpoint_functionality(self) -> None:
         """Test that health endpoint actually works and returns expected response."""
         config = FlextApiModels.AppConfig(
-            title="Health Function Test API", app_version="1.0.0"
+            title="Health Function Test API", app_version="1.0.0",
         )
 
         app = FlextApiApp.create_fastapi_app(config)

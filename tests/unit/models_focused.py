@@ -27,7 +27,7 @@ class TestFlextApiModelsFocused:
     def test_url_create_success(self) -> None:
         """Test successful creation."""
         result = FlextApiModels.create_url(
-            "https://api.example.com:8080/v1?param=value"
+            "https://api.example.com:8080/v1?param=value",
         )
 
         assert result.success
@@ -88,7 +88,7 @@ class TestFlextApiModelsFocused:
         """Test validation with valid data."""
         # Create a URL that should pass all validation rules
         result = FlextApiModels.create_url(
-            "https://valid-host.com:443/api/v1?query=test#section"
+            "https://valid-host.com:443/api/v1?query=test#section",
         )
 
         if result.success:
@@ -141,7 +141,7 @@ class TestApiModels:
         """Test model creation."""
         # Test with minimal required fields (id, method, url are required by FlextModels)
         request = FlextApiModels.ApiRequest(
-            id="req_123", method=HttpMethod.GET, url="/api/users"
+            id="req_123", method=HttpMethod.GET, url="/api/users",
         )
 
         assert request.method == "GET"
@@ -175,7 +175,7 @@ class TestApiModels:
         """Test ApiResponse with data field."""
         # Test with optional body field
         response = ApiResponse(
-            id="resp_456", status_code=201, body={"id": 1, "name": "Test User"}
+            id="resp_456", status_code=201, body={"id": 1, "name": "Test User"},
         )
 
         assert response.status_code == 201
@@ -230,7 +230,7 @@ class TestModelIntegration:
         """Test API models using HTTP enums."""
         # Create request using enum values (with required fields)
         request = FlextApiModels.ApiRequest(
-            id="req_789", method=HttpMethod.POST, url="/api/resources"
+            id="req_789", method=HttpMethod.POST, url="/api/resources",
         )
 
         assert request.method == HttpMethod.POST

@@ -38,7 +38,7 @@ def create_test_storage_config(**overrides: object) -> FlextTypes.Core.Dict:
 
 
 def assert_flext_result_success(
-    result: FlextResult[T], expected_value: T | None = None
+    result: FlextResult[T], expected_value: T | None = None,
 ) -> None:
     """Assert FlextResult success using FlextTestsMatchers - ABSOLUTE."""
     # Direct assertion to avoid type variance issues in matchers
@@ -49,7 +49,7 @@ def assert_flext_result_success(
 
 
 def assert_flext_result_failure[T](
-    result: FlextResult[T], expected_error: str | None = None
+    result: FlextResult[T], expected_error: str | None = None,
 ) -> None:
     """Assert FlextResult failure using FlextTestsMatchers - ABSOLUTE."""
     # Direct assertion to avoid type variance issues in matchers
@@ -57,7 +57,7 @@ def assert_flext_result_failure[T](
         pytest.fail(f"Expected failure but got data: {result.value}")
     if expected_error is not None and expected_error not in str(result.error):
         pytest.fail(
-            f"Expected error containing '{expected_error}' but got: {result.error}"
+            f"Expected error containing '{expected_error}' but got: {result.error}",
         )
 
 
@@ -165,14 +165,14 @@ def restore_file_permissions(path: Path) -> None:
 
 
 def assert_http_status(
-    response: FlextTypes.Core.Dict, expected_status: int = 200
+    response: FlextTypes.Core.Dict, expected_status: int = 200,
 ) -> None:
     """Assert HTTP status using FlextTestsMatchers patterns."""
     actual_status = response.get("status_code")
     if actual_status != expected_status:
         pytest.fail(
             f"Expected status {expected_status} but got {actual_status} "
-            f"in response: {response}"
+            f"in response: {response}",
         )
 
 
@@ -199,7 +199,7 @@ def assert_success_response(response: FlextTypes.Core.Dict) -> None:
 
 
 def assert_error_response(
-    response: FlextTypes.Core.Dict, expected_status: int = 400
+    response: FlextTypes.Core.Dict, expected_status: int = 400,
 ) -> None:
     """Assert error response using FlextTestsMatchers patterns."""
     assert_response_structure(response)
@@ -292,14 +292,14 @@ def create_test_result_failure(error: str = "Test error") -> FlextResult[object]
 
 
 def create_functional_test_service(
-    service_type: str = "api", **config: object
+    service_type: str = "api", **config: object,
 ) -> object:
     """Create functional service using FlextTestsUtilities - ABSOLUTE."""
     return FlextTestsUtilities.functional_service(service_type=service_type, **config)
 
 
 def create_test_context(
-    target: object, attribute: str, new_value: object = None, **options: object
+    target: object, attribute: str, new_value: object = None, **options: object,
 ) -> object:
     """Create test context using FlextTestsUtilities - ABSOLUTE."""
     return FlextTestsUtilities.test_context(target, attribute, new_value, **options)

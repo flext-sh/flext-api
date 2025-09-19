@@ -26,10 +26,10 @@ class TestFlextContainer100PercentCoverage:
         """Test FlextContainer.ServiceKey creation and validation."""
         # Test valid service key
         valid_key: FlextContainer.ServiceKey[str] = FlextContainer.ServiceKey(
-            "valid_service"
+            "valid_service",
         )
         FlextTestsMatchers.assert_result_success(
-            FlextResult[FlextContainer.ServiceKey[str]].ok(valid_key)
+            FlextResult[FlextContainer.ServiceKey[str]].ok(valid_key),
         )
         assert valid_key.name == "valid_service"
 
@@ -39,7 +39,7 @@ class TestFlextContainer100PercentCoverage:
 
         # Test service key with special characters
         special_key: FlextContainer.ServiceKey[str] = FlextContainer.ServiceKey(
-            "service.with.dots"
+            "service.with.dots",
         )
         assert special_key.name == "service.with.dots"
 
@@ -64,7 +64,7 @@ class TestFlextContainer100PercentCoverage:
         service_data = {"name": "test_service", "port": 8080}
 
         cmd_created = FlextContainer.Commands.RegisterService.create(
-            service_name="test_service", service_instance=service_data
+            service_name="test_service", service_instance=service_data,
         )
 
         assert cmd_created.service_name == "test_service"
@@ -82,7 +82,7 @@ class TestFlextContainer100PercentCoverage:
             return {"name": "factory_service", "created": True}
 
         cmd_with_factory = FlextContainer.Commands.RegisterFactory.create(
-            service_name="factory_service", factory=test_factory
+            service_name="factory_service", factory=test_factory,
         )
 
         assert cmd_with_factory.service_name == "factory_service"
@@ -96,7 +96,7 @@ class TestFlextContainer100PercentCoverage:
 
         # Test create class method
         query_created = FlextContainer.Queries.GetService.create(
-            service_name="test_query"
+            service_name="test_query",
         )
 
         assert query_created.service_name == "test_query"
@@ -109,7 +109,7 @@ class TestFlextContainer100PercentCoverage:
 
         # Test create class method
         query_created = FlextContainer.Queries.ListServices.create(
-            include_factories=False
+            include_factories=False,
         )
 
         assert query_created.include_factories is False
@@ -191,7 +191,7 @@ class TestFlextContainer100PercentCoverage:
         # Test registration with empty service name
         empty_name_result = container.register("", {"data": "test"})
         FlextTestsMatchers.assert_result_failure(
-            cast("FlextResult[object]", empty_name_result)
+            cast("FlextResult[object]", empty_name_result),
         )
 
         # Test getting non-existent service
@@ -201,13 +201,13 @@ class TestFlextContainer100PercentCoverage:
         # Test info for non-existent service
         missing_info_result = container.get_info("nonexistent_service")
         FlextTestsMatchers.assert_result_failure(
-            cast("FlextResult[object]", missing_info_result)
+            cast("FlextResult[object]", missing_info_result),
         )
 
         # Test unregistering non-existent service
         missing_unregister_result = container.unregister("nonexistent_service")
         FlextTestsMatchers.assert_result_failure(
-            cast("FlextResult[object]", missing_unregister_result)
+            cast("FlextResult[object]", missing_unregister_result),
         )
 
     def test_factory_registration_and_execution(self) -> None:
@@ -286,7 +286,7 @@ class TestFlextContainer100PercentCoverage:
         try:
             empty_module_result = FlextContainer.create_module_utilities("")
             FlextTestsMatchers.assert_result_failure(
-                cast("FlextResult[object]", empty_module_result)
+                cast("FlextResult[object]", empty_module_result),
             )
         except AttributeError:
             # Method doesn't exist, skip this part
@@ -317,7 +317,7 @@ class TestFlextContainer100PercentCoverage:
                     "thread": threading.current_thread().ident,
                 }
                 result = container.register(
-                    f"thread_service_{service_id}", service_data
+                    f"thread_service_{service_id}", service_data,
                 )
                 results.append(result)
             except Exception as e:
@@ -491,5 +491,5 @@ class TestFlextContainer100PercentCoverage:
 
         empty_name_result = container.register_factory("", valid_factory)
         FlextTestsMatchers.assert_result_failure(
-            cast("FlextResult[object]", empty_name_result)
+            cast("FlextResult[object]", empty_name_result),
         )

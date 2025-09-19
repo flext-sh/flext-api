@@ -17,7 +17,7 @@ class TestFlextApiModelsReal:
     def test_client_config_creation_basic(self) -> None:
         """Test ClientConfig creation with basic functionality."""
         config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com", timeout=30.0, max_retries=3
+            base_url="https://api.example.com", timeout=30.0, max_retries=3,
         )
 
         assert config.base_url == "https://api.example.com"
@@ -101,7 +101,7 @@ class TestFlextApiModelsReal:
         """Test model validation using factory data."""
         # Create ClientConfig directly with valid data
         config_data = FlextApiModels.ClientConfig(
-            base_url="https://httpbin.org", timeout=45.0
+            base_url="https://httpbin.org", timeout=45.0,
         )
 
         # Verify config works correctly
@@ -116,7 +116,7 @@ class TestFlextApiModelsReal:
     def test_storage_config_creation(self) -> None:
         """Test StorageConfig creation with real validation."""
         storage_config = FlextApiModels.StorageConfig(
-            backend="memory", namespace="test_namespace"
+            backend="memory", namespace="test_namespace",
         )
 
         assert storage_config.backend == "memory"
@@ -126,7 +126,7 @@ class TestFlextApiModelsReal:
         """Test client config creation using factory."""
         # Create client config directly
         client = FlextApiModels.ClientConfig(
-            base_url="https://test.example.com", timeout=60.0, max_retries=2
+            base_url="https://test.example.com", timeout=60.0, max_retries=2,
         )
 
         # Verify the client was created with correct config

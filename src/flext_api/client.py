@@ -170,9 +170,9 @@ class FlextApiClient(FlextDomainService[object]):
             # Try to extract api_base_url from config object if it exists
             config_base_url = None
             if config is not None and hasattr(config, "api_base_url"):
-                config_base_url = getattr(config, "api_base_url")
+                config_base_url = config.api_base_url
             elif config is not None and hasattr(config, "base_url"):
-                config_base_url = getattr(config, "base_url")
+                config_base_url = config.base_url
 
             self._client_config = FlextApiModels.ClientConfig(
                 base_url=base_url
@@ -195,7 +195,7 @@ class FlextApiClient(FlextDomainService[object]):
 
         # Store minimal state - everything comes from config
         self._connection_manager = self._ConnectionManager(
-            self._client_config.base_url, self._client_config.timeout
+            self._client_config.base_url, self._client_config.timeout,
         )
 
         # Simple metrics tracking
@@ -248,7 +248,7 @@ class FlextApiClient(FlextDomainService[object]):
         return FlextApiApp.create_fastapi_app(app_config)
 
     def _extract_client_config_params(
-        self, kwargs: Mapping[str, str | int | float | bool | dict[str, str] | None]
+        self, kwargs: Mapping[str, str | int | float | bool | dict[str, str] | None],
     ) -> tuple[
         str | None,
         float | None,
@@ -333,7 +333,7 @@ class FlextApiClient(FlextDomainService[object]):
             """
             if self._client is None:
                 self._client = httpx.AsyncClient(
-                    base_url=self._base_url, timeout=self._timeout
+                    base_url=self._base_url, timeout=self._timeout,
                 )
             return self._client
 
@@ -547,7 +547,7 @@ class FlextApiClient(FlextDomainService[object]):
 
             # Recreate connection manager with new config
             self._connection_manager = self._ConnectionManager(
-                self._client_config.base_url, self._client_config.timeout
+                self._client_config.base_url, self._client_config.timeout,
             )
             return FlextResult[None].ok(None)
         except Exception as e:
@@ -574,7 +574,7 @@ class FlextApiClient(FlextDomainService[object]):
     # =============================================================================
 
     async def get(
-        self, url: str, **kwargs: str | float | bool | dict[str, str] | None
+        self, url: str, **kwargs: str | float | bool | dict[str, str] | None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Make GET request to specified URL.
 
@@ -602,7 +602,7 @@ class FlextApiClient(FlextDomainService[object]):
         return await self._request("GET", url, **kwargs)
 
     async def post(
-        self, url: str, **kwargs: str | float | bool | dict[str, str] | None
+        self, url: str, **kwargs: str | float | bool | dict[str, str] | None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Make POST request to specified URL.
 
@@ -630,7 +630,7 @@ class FlextApiClient(FlextDomainService[object]):
         return await self._request("POST", url, **kwargs)
 
     async def put(
-        self, url: str, **kwargs: str | float | bool | dict[str, str] | None
+        self, url: str, **kwargs: str | float | bool | dict[str, str] | None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Make PUT request to specified URL.
 
@@ -658,7 +658,7 @@ class FlextApiClient(FlextDomainService[object]):
         return await self._request("PUT", url, **kwargs)
 
     async def delete(
-        self, url: str, **kwargs: str | float | bool | dict[str, str] | None
+        self, url: str, **kwargs: str | float | bool | dict[str, str] | None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Make DELETE request to specified URL.
 
@@ -744,7 +744,7 @@ class FlextApiClient(FlextDomainService[object]):
         return self
 
     async def __aexit__(
-        self, exc_type: object, exc_val: object, exc_tb: object
+        self, exc_type: object, exc_val: object, exc_tb: object,
     ) -> None:
         """Async context manager exit.
 
@@ -881,7 +881,7 @@ class FlextApiClient(FlextDomainService[object]):
                 stop=stop_after_attempt(max_retries),
                 wait=wait_exponential(multiplier=1, min=1, max=10),
                 retry=retry_if_exception_type(
-                    (httpx.HTTPError, httpx.TimeoutException, httpx.ConnectError)
+                    (httpx.HTTPError, httpx.TimeoutException, httpx.ConnectError),
                 ),
                 reraise=True,
             )
@@ -953,7 +953,7 @@ class FlextApiClient(FlextDomainService[object]):
             response: httpx.Response | None = None
             if self._client_config.max_retries > 0:
                 retry_config = self._RetryHelper.create_retry_config(
-                    self._client_config.max_retries
+                    self._client_config.max_retries,
                 )
                 async for attempt in retry_config:
                     with attempt:
@@ -984,7 +984,7 @@ class FlextApiClient(FlextDomainService[object]):
             # Ensure response was obtained
             if response is None:
                 return FlextResult[FlextApiModels.HttpResponse].fail(
-                    "Failed to get response after retry attempts"
+                    "Failed to get response after retry attempts",
                 )
 
             # Simple response processing
@@ -1000,11 +1000,11 @@ class FlextApiClient(FlextDomainService[object]):
 
         except httpx.HTTPError as e:
             return FlextResult[FlextApiModels.HttpResponse].fail(
-                f"HTTP request failed: {e}"
+                f"HTTP request failed: {e}",
             )
         except Exception as e:
             return FlextResult[FlextApiModels.HttpResponse].fail(
-                f"Unexpected error: {e}"
+                f"Unexpected error: {e}",
             )
 
     @classmethod
@@ -1101,7 +1101,7 @@ class FlextApiClient(FlextDomainService[object]):
 
         # Create a config dict with proper defaults and type conversion
         processed_config: dict[
-            str, str | int | float | bool | dict[str, str] | None
+            str, str | int | float | bool | dict[str, str] | None,
         ] = {}
 
         # Handle base_url

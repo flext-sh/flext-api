@@ -38,7 +38,7 @@ class TestFlextApiUtilitiesFocused:
     def test_response_builder_build_error_response_with_error_fallback(self) -> None:
         """Test error response when message is None but error is provided."""
         result = FlextApiUtilities.ResponseBuilder.build_error_response(
-            message=None, error="Fallback error message"
+            message=None, error="Fallback error message",
         )
 
         assert result.is_success
@@ -59,7 +59,7 @@ class TestFlextApiUtilitiesFocused:
         """Test ResponseBuilder.build_success_response with custom parameters."""
         test_data = {"user_id": 123, "name": "Test User"}
         result = FlextApiUtilities.ResponseBuilder.build_success_response(
-            data=test_data, message="User created successfully", status_code=201
+            data=test_data, message="User created successfully", status_code=201,
         )
 
         assert result.is_success
@@ -76,7 +76,7 @@ class TestFlextApiUtilitiesFocused:
         """Test PaginationBuilder basic functionality."""
         test_data: list[object] = [{"id": 1}, {"id": 2}, {"id": 3}]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=test_data, page=1, page_size=20, total=100
+            data=test_data, page=1, page_size=20, total=100,
         )
 
         assert result.is_success
@@ -97,7 +97,7 @@ class TestFlextApiUtilitiesFocused:
     def test_pagination_builder_with_message(self) -> None:
         """Test PaginationBuilder with custom message."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[], message="Custom pagination message"
+            data=[], message="Custom pagination message",
         )
 
         assert result.is_success
@@ -109,7 +109,7 @@ class TestFlextApiUtilitiesFocused:
         """Test PaginationBuilder validation error paths."""
         # Page must be >= 1
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[], page=0
+            data=[], page=0,
         )
         assert not result.is_success
         assert result.error is not None
@@ -117,7 +117,7 @@ class TestFlextApiUtilitiesFocused:
 
         # Page size must be >= 1
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=[], page_size=0
+            data=[], page_size=0,
         )
         assert not result.is_success
         assert result.error is not None
@@ -135,7 +135,7 @@ class TestFlextApiUtilitiesFocused:
     def test_pagination_builder_none_data_handling(self) -> None:
         """Test PaginationBuilder with None data."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=None, total=50
+            data=None, total=50,
         )
 
         assert result.is_success
@@ -149,7 +149,7 @@ class TestFlextApiUtilitiesFocused:
         """Test PaginationBuilder uses data length when total is None."""
         test_data: list[object] = [1, 2, 3, 4, 5]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=test_data, total=None
+            data=test_data, total=None,
         )
 
         assert result.is_success
@@ -227,14 +227,14 @@ class TestFlextApiUtilitiesFocused:
         """Test HttpValidator.normalize_url."""
         # Normal URL without trailing slash
         result = FlextApiUtilities.HttpValidator.normalize_url(
-            "https://api.example.com/data"
+            "https://api.example.com/data",
         )
         assert result.is_success
         assert result.value == "https://api.example.com/data"
 
         # URL with trailing slash (should be removed)
         result = FlextApiUtilities.HttpValidator.normalize_url(
-            "https://api.example.com/data/"
+            "https://api.example.com/data/",
         )
         assert result.is_success
         assert result.value == "https://api.example.com/data"

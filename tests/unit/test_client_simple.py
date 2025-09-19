@@ -84,7 +84,7 @@ class TestFlextApiClientSimple:
         async def test_post() -> None:
             # This will fail because we don't have a real server
             result = await client.post(
-                "https://httpbin.org/post", json={"test": "data"}
+                "https://httpbin.org/post", json={"test": "data"},
             )
             assert result.success is True
             assert result.value is not None
