@@ -162,26 +162,45 @@ class FlextApiClient(FlextDomainService[object]):
                 api_key=api_key,
             )
         else:
-            # Handle arbitrary config objects or None
+            # Handle arbitrary config objects or None (including Mapping types)
             base_url, timeout, max_retries, headers, auth_token, api_key = (
                 self._extract_client_config_params(kwargs)
             )
 
-            # Try to extract api_base_url from config object if it exists
-            config_base_url = None
-            if config is not None and hasattr(config, "api_base_url"):
-                config_base_url = config.api_base_url
-            elif config is not None and hasattr(config, "base_url"):
-                config_base_url = config.base_url
+            # Safe extraction from config - unified approach for all config types
+            config_base_url: str | None = None
+            if config is not None:
+                # Try dictionary-like access first (for Mapping types)
+                try:
+                    if hasattr(config, "get"):
+                        raw_base_url = config.get("api_base_url") or config.get("base_url")
+                        if raw_base_url is not None:
+                            config_base_url = str(raw_base_url)
+                except (AttributeError, TypeError):
+                    pass
+
+                # If no dictionary access, try attribute access (for object types)
+                if config_base_url is None:
+                    if hasattr(config, "api_base_url"):
+                        raw_attr = getattr(config, "api_base_url", None)
+                        if raw_attr is not None:
+                            config_base_url = str(raw_attr)
+                    elif hasattr(config, "base_url"):
+                        raw_attr = getattr(config, "base_url", None)
+                        if raw_attr is not None:
+                            config_base_url = str(raw_attr)
+
+            # Ensure base_url is a string for ClientConfig - explicit type conversion
+            final_base_url: str
+            if base_url is not None and isinstance(base_url, str):
+                final_base_url = base_url
+            elif config_base_url is not None:
+                final_base_url = config_base_url
+            else:
+                final_base_url = FlextApiConstants.DEFAULT_BASE_URL
 
             self._client_config = FlextApiModels.ClientConfig(
-                base_url=base_url
-                if base_url is not None
-                else (
-                    config_base_url
-                    if config_base_url is not None
-                    else FlextApiConstants.DEFAULT_BASE_URL
-                ),
+                base_url=final_base_url,
                 timeout=timeout
                 if timeout is not None
                 else FlextApiConstants.DEFAULT_TIMEOUT,

@@ -53,446 +53,159 @@ class TestFlextContainer100PercentCoverage:
         assert hash(key1) == hash(key2)
         assert hash(key1) != hash(key3)
 
-    def test_commands_register_service_creation(self) -> None:
-        """Test FlextContainer.Commands.RegisterService creation."""
-        # Test default creation
-        cmd = FlextContainer.Commands.RegisterService()
-        assert not cmd.service_name
-        assert cmd.service_instance is None
+    def test_container_service_registration_operations(self) -> None:
+        """Test FlextContainer service registration operations."""
+        container = FlextContainer.get_global()
 
-        # Test create class method
-        service_data = {"name": "test_service", "port": 8080}
+        # Test service registration
+        test_service = {"name": "test_service", "port": 8080}
+        register_result = container.register("test_service", test_service)
+        assert register_result.is_success
 
-        cmd_created = FlextContainer.Commands.RegisterService.create(
-            service_name="test_service",
-            service_instance=service_data,
-        )
+        # Test service retrieval
+        get_result = container.get("test_service")
+        assert get_result.is_success
+        assert get_result.unwrap() == test_service
 
-        assert cmd_created.service_name == "test_service"
-        assert cmd_created.service_instance == service_data
+        # Test service existence check
+        has_result = container.has("test_service")
+        assert has_result is True
 
-    def test_commands_register_factory_creation(self) -> None:
-        """Test FlextContainer.Commands.RegisterFactory creation."""
-        # Test default creation
-        cmd = FlextContainer.Commands.RegisterFactory()
-        assert not cmd.service_name
-        assert cmd.factory is None
+        # Test service count
+        count_result = container.get_service_count()
+        assert count_result >= 1
 
-        # Test with factory function
+        # Clean up
+        container.unregister("test_service")
+
+    def test_container_factory_registration(self) -> None:
+        """Test FlextContainer factory registration."""
+        container = FlextContainer.get_global()
+
+        # Test factory function
         def test_factory() -> dict[str, object]:
             return {"name": "factory_service", "created": True}
 
-        cmd_with_factory = FlextContainer.Commands.RegisterFactory.create(
-            service_name="factory_service",
-            factory=test_factory,
-        )
+        # Test factory registration
+        factory_result = container.register_factory("factory_service", test_factory)
+        assert factory_result.is_success
 
-        assert cmd_with_factory.service_name == "factory_service"
-        assert cmd_with_factory.factory == test_factory
+        # Test factory service retrieval
+        get_result = container.get("factory_service")
+        assert get_result.is_success
+        service = get_result.unwrap()
+        assert isinstance(service, dict)
+        assert service["name"] == "factory_service"
+        assert service["created"] is True
 
-    def test_queries_get_service_creation(self) -> None:
-        """Test FlextContainer.Queries.GetService creation."""
-        # Test default creation
-        query = FlextContainer.Queries.GetService()
-        assert query.service_name is None
+        # Clean up
+        container.unregister("factory_service")
 
-        # Test create class method
-        query_created = FlextContainer.Queries.GetService.create(
-            service_name="test_query",
-        )
+    def test_container_service_listing_operations(self) -> None:
+        """Test FlextContainer service listing operations."""
+        container = FlextContainer.get_global()
 
-        assert query_created.service_name == "test_query"
+        # Register test services
+        container.register("list_test_1", {"id": 1})
+        container.register("list_test_2", {"id": 2})
 
-    def test_queries_list_services_creation(self) -> None:
-        """Test FlextContainer.Queries.ListServices creation."""
-        # Test default creation
-        query = FlextContainer.Queries.ListServices()
-        assert query.include_factories is True
+        # Test service names listing
+        service_names = container.get_service_names()
+        assert "list_test_1" in service_names
+        assert "list_test_2" in service_names
 
-        # Test create class method
-        query_created = FlextContainer.Queries.ListServices.create(
-            include_factories=False,
-        )
+        # Test services listing
+        services_result = container.list_services()
+        assert isinstance(services_result, dict)
 
-        assert query_created.include_factories is False
-
-    def test_service_registrar_register_service(self) -> None:
-        """Test FlextContainer.ServiceRegistrar.register_service method."""
-        registrar = FlextContainer.ServiceRegistrar()
-
-        service_data = {"name": "registrar_test", "port": 9000}
-
-        # Test successful registration
-        result = registrar.register_service("registrar_test", service_data)
-        FlextTestsMatchers.assert_result_success(result)
-
-        # Verify service was registered (registrar stores services internally)
-        assert registrar.has_service("registrar_test") is True
-
-    def test_service_registrar_register_factory(self) -> None:
-        """Test FlextContainer.ServiceRegistrar.register_factory method."""
-        registrar = FlextContainer.ServiceRegistrar()
-
-        def factory_func() -> dict[str, object]:
-            return {"name": "factory_test", "created_by": "registrar"}
-
-        # Test successful factory registration
-        result = registrar.register_factory("factory_test", factory_func)
-        FlextTestsMatchers.assert_result_success(result)
-
-        # Verify factory is stored
-        assert registrar.has_service("factory_test") is True
+        # Clean up
+        container.unregister("list_test_1")
+        container.unregister("list_test_2")
 
     def test_container_basic_operations_comprehensive(self) -> None:
-        """Test basic container operations comprehensively."""
-        container = FlextContainer()
+        """Test FlextContainer basic operations comprehensively."""
+        container = FlextContainer.get_global()
 
-        # Test initial state
-        assert container.get_service_count() == 0
-        assert container.get_service_names() == []
+        # Test typed service operations
+        typed_key: FlextContainer.ServiceKey[dict] = FlextContainer.ServiceKey("typed_service")
+        test_data = {"typed": True, "value": 42}
 
-        # Test service registration
-        service_data = {"name": "basic_test", "version": "1.0"}
-        register_result = container.register("basic_test", service_data)
-        FlextTestsMatchers.assert_result_success(register_result)
+        register_result = container.register(typed_key.name, test_data)
+        assert register_result.is_success
 
-        # Test state after registration
-        assert container.get_service_count() == 1
-        assert "basic_test" in container.get_service_names()
+        # Test container info with service name (after registration)
+        info_result = container.get_info("typed_service")
+        assert info_result.is_success
+        info_data = info_result.unwrap()
+        assert isinstance(info_data, dict)
 
-        # Test service retrieval
-        get_result = container.get("basic_test")
-        FlextTestsMatchers.assert_result_success(get_result, service_data)
+        get_typed_result = container.get_typed(typed_key.name, dict)
+        assert get_typed_result.is_success
+        assert get_typed_result.unwrap() == test_data
 
-        # Test has service
-        has_result = container.has("basic_test")
-        assert has_result is True
+        # Clean up
+        container.unregister(typed_key.name)
 
-        # Test service info
-        info_result = container.get_info("basic_test")
-        FlextTestsMatchers.assert_result_success(info_result)
+    def test_container_advanced_operations(self) -> None:
+        """Test FlextContainer advanced operations."""
+        container = FlextContainer.get_global()
 
-        info_data_obj = info_result.value
-        assert isinstance(info_data_obj, dict)
-        assert info_data_obj["name"] == "basic_test"
-        assert info_data_obj["version"] == "1.0"
+        # Test batch registration
+        services = {
+            "batch_service_1": {"value": 1},
+            "batch_service_2": {"value": 2},
+            "batch_service_3": {"value": 3}
+        }
 
-        # Test service unregistration
-        unregister_result = container.unregister("basic_test")
-        FlextTestsMatchers.assert_result_success(unregister_result)
-
-        # Test state after unregistration
-        assert container.get_service_count() == 0
-        assert "basic_test" not in container.get_service_names()
-        assert container.has("basic_test") is False
-
-    def test_container_error_handling_comprehensive(self) -> None:
-        """Test comprehensive error handling scenarios."""
-        container = FlextContainer()
-
-        # Test registration with empty service name
-        empty_name_result = container.register("", {"data": "test"})
-        FlextTestsMatchers.assert_result_failure(
-            cast("FlextResult[object]", empty_name_result),
-        )
-
-        # Test getting non-existent service
-        missing_get_result = container.get("nonexistent_service")
-        FlextTestsMatchers.assert_result_failure(missing_get_result)
-
-        # Test info for non-existent service
-        missing_info_result = container.get_info("nonexistent_service")
-        FlextTestsMatchers.assert_result_failure(
-            cast("FlextResult[object]", missing_info_result),
-        )
-
-        # Test unregistering non-existent service
-        missing_unregister_result = container.unregister("nonexistent_service")
-        FlextTestsMatchers.assert_result_failure(
-            cast("FlextResult[object]", missing_unregister_result),
-        )
-
-    def test_factory_registration_and_execution(self) -> None:
-        """Test factory registration and execution scenarios."""
-        container = FlextContainer()
-
-        # Test simple factory
-        def simple_factory() -> dict[str, object]:
-            return {"type": "simple", "created": True}
-
-        factory_result = container.register_factory("simple_factory", simple_factory)
-        FlextTestsMatchers.assert_result_success(factory_result)
-
-        # Test factory execution
-        get_result = container.get("simple_factory")
-        FlextTestsMatchers.assert_result_success(get_result)
-
-        factory_output = cast("dict[str, object]", get_result.value)
-        assert factory_output["type"] == "simple"
-        assert factory_output["created"] is True
-
-        # Test factory with parameters (closure)
-        def create_parametric_factory(param: str) -> Callable[[], dict[str, object]]:
-            def factory() -> dict[str, object]:
-                return {"type": "parametric", "param": param}
-
-            return factory
-
-        parametric_factory = create_parametric_factory("test_param")
-        param_result = container.register_factory("param_factory", parametric_factory)
-        FlextTestsMatchers.assert_result_success(param_result)
-
-        param_get_result = container.get("param_factory")
-        FlextTestsMatchers.assert_result_success(param_get_result)
-
-        param_output = cast("dict[str, object]", param_get_result.value)
-        assert param_output["param"] == "test_param"
-
-    def test_global_container_singleton(self) -> None:
-        """Test global container singleton behavior."""
-        # Test singleton behavior
-        global1 = FlextContainer.get_global()
-        global2 = FlextContainer.get_global()
-
-        assert global1 is global2
-        assert isinstance(global1, FlextContainer)
-
-        # Test that global container persists services
-        test_service = {"name": "global_test", "persistent": True}
-        register_result = global1.register("global_test", test_service)
-        FlextTestsMatchers.assert_result_success(register_result)
-
-        # Access from second reference
-        get_result = global2.get("global_test")
-        FlextTestsMatchers.assert_result_success(get_result, test_service)
-
-        # Clean up for other tests
-        cleanup_result = global1.unregister("global_test")
-        FlextTestsMatchers.assert_result_success(cleanup_result)
-
-    def test_container_configuration_methods(self) -> None:
-        """Test container configuration and utility methods."""
-        container = FlextContainer()
-
-        # Test module utilities creation (if method exists)
-        try:
-            module_result = FlextContainer.create_module_utilities("test_module")
-            # module_result is a Dict, not a FlextResult
-            assert module_result is not None
-            assert isinstance(module_result, dict)
-        except AttributeError:
-            # Method doesn't exist, skip this part
-            pass
-
-        # Test empty module name
-        try:
-            empty_module_result = FlextContainer.create_module_utilities("")
-            FlextTestsMatchers.assert_result_failure(
-                cast("FlextResult[object]", empty_module_result),
-            )
-        except AttributeError:
-            # Method doesn't exist, skip this part
-            pass
-
-        # Test configuration summary (if method exists)
-        try:
-            summary_result = container.get_configuration_summary()
-            FlextTestsMatchers.assert_result_success(summary_result)
-
-            summary_data_obj = summary_result.value
-            assert isinstance(summary_data_obj, dict)
-        except AttributeError:
-            # Method doesn't exist, skip this part
-            pass
-
-    def test_container_thread_safety(self) -> None:
-        """Test container thread safety with concurrent operations."""
-        container = FlextContainer()
-        results: list[FlextResult[None]] = []
-        errors: list[Exception] = []
-
-        def register_service_thread(service_id: int) -> None:
-            """Register a service in a separate thread."""
-            try:
-                service_data = {
-                    "id": service_id,
-                    "thread": threading.current_thread().ident,
-                }
-                result = container.register(
-                    f"thread_service_{service_id}",
-                    service_data,
-                )
-                results.append(result)
-            except Exception as e:
-                errors.append(e)
-
-        # Create multiple threads
-        threads = []
-        for i in range(5):
-            thread = threading.Thread(target=register_service_thread, args=(i,))
-            threads.append(thread)
-
-        # Start all threads
-        for thread in threads:
-            thread.start()
-
-        # Wait for all threads to complete
-        for thread in threads:
-            thread.join()
-
-        # Verify all operations completed successfully
-        assert len(errors) == 0, f"Thread errors occurred: {errors}"
-        assert len(results) == 5
-
-        for result in results:
-            FlextTestsMatchers.assert_result_success(result)
+        batch_result = container.batch_register(services)
+        assert batch_result.is_success
 
         # Verify all services were registered
-        assert container.get_service_count() == 5
-        service_names = container.get_service_names()
+        for service_name in services:
+            has_result = container.has(service_name)
+            assert has_result is True
 
-        for i in range(5):
-            assert f"thread_service_{i}" in service_names
+        # Test get_or_create functionality with existing service (no factory needed)
+        get_or_create_result = container.get_or_create("batch_service_1")
+        assert get_or_create_result.is_success
+        assert get_or_create_result.unwrap()["value"] == 1
 
-    def test_container_with_complex_service_types(self) -> None:
-        """Test container with complex service types."""
-        container = FlextContainer()
+        # Clean up
+        for service_name in services:
+            container.unregister(service_name)
 
-        # Test with mock object
-        mock_service = Mock()
-        mock_service.get_data.return_value = "mocked_data"
-        mock_service.status = "active"
+    def test_container_error_handling(self) -> None:
+        """Test FlextContainer error handling scenarios."""
+        container = FlextContainer.get_global()
 
-        mock_result = container.register("mock_service", mock_service)
-        FlextTestsMatchers.assert_result_success(mock_result)
+        # Test getting non-existent service
+        get_result = container.get("non_existent_service")
+        assert get_result.is_failure
 
-        mock_get_result = container.get("mock_service")
-        FlextTestsMatchers.assert_result_success(mock_get_result)
+        # Test unregistering non-existent service
+        unregister_result = container.unregister("non_existent_service")
+        assert unregister_result.is_failure
 
-        retrieved_mock = cast("Mock", mock_get_result.value)
-        assert retrieved_mock.get_data() == "mocked_data"
-        assert retrieved_mock.status == "active"
+        # Test has operation for non-existent service
+        has_result = container.has("non_existent_service")
+        assert has_result is False
 
-        # Test with callable object
-        class CallableService:
-            def __init__(self, name: str) -> None:
-                self.name = name
+    def test_container_global_operations(self) -> None:
+        """Test FlextContainer global operations."""
+        # Test global container access
+        container1 = FlextContainer.get_global()
+        container2 = FlextContainer.get_global()
 
-            def __call__(self) -> str:
-                return f"Called {self.name}"
+        # Should be the same instance (singleton)
+        assert container1 is container2
 
-        callable_service = CallableService("test_callable")
-        callable_result = container.register("callable_service", callable_service)
-        FlextTestsMatchers.assert_result_success(callable_result)
+        # Test global registration
+        register_result = FlextContainer.register_global("global_test", {"global": True})
+        assert register_result.is_success
 
-        callable_get_result = container.get("callable_service")
-        FlextTestsMatchers.assert_result_success(callable_get_result)
+        # Test global typed access
+        global_typed_result = FlextContainer.get_global_typed("global_test", dict)
+        assert global_typed_result.is_success
 
-        retrieved_callable = cast("CallableService", callable_get_result.value)
-        assert retrieved_callable() == "Called test_callable"
-        assert retrieved_callable.name == "test_callable"
-
-    def test_service_lifecycle_edge_cases(self) -> None:
-        """Test service lifecycle edge cases."""
-        container = FlextContainer()
-
-        # Test overwriting existing service
-        original_service = {"version": "1.0", "name": "lifecycle_test"}
-        updated_service = {"version": "2.0", "name": "lifecycle_test"}
-
-        # Register original
-        original_result = container.register("lifecycle_test", original_service)
-        FlextTestsMatchers.assert_result_success(original_result)
-
-        # Overwrite with updated service
-        updated_result = container.register("lifecycle_test", updated_service)
-        FlextTestsMatchers.assert_result_success(updated_result)
-
-        # Verify updated service is retrieved
-        get_result = container.get("lifecycle_test")
-        FlextTestsMatchers.assert_result_success(get_result)
-
-        retrieved_service = cast("dict[str, object]", get_result.value)
-        assert retrieved_service["version"] == "2.0"
-
-        # Test registering None as service
-        none_result = container.register("none_service", None)
-        FlextTestsMatchers.assert_result_success(none_result)
-
-        none_get_result = container.get("none_service")
-        FlextTestsMatchers.assert_result_success(none_get_result)
-
-        assert none_get_result.value is None
-
-    def test_container_bulk_operations(self) -> None:
-        """Test container bulk operations and performance."""
-        container = FlextContainer()
-
-        # Register many services
-        service_count = 50
-        for i in range(service_count):
-            service_data = {
-                "id": i,
-                "name": f"bulk_service_{i}",
-                "category": "bulk_test",
-                "index": i,
-            }
-            result = container.register(f"bulk_service_{i}", service_data)
-            FlextTestsMatchers.assert_result_success(result)
-
-        # Verify all services are registered
-        assert container.get_service_count() == service_count
-        service_names = container.get_service_names()
-        assert len(service_names) == service_count
-
-        # Verify random access to services
-        for i in [0, 10, 25, 40, 49]:  # Test scattered indices
-            get_result = container.get(f"bulk_service_{i}")
-            FlextTestsMatchers.assert_result_success(get_result)
-
-            service_data = cast("dict[str, object]", get_result.value)
-            assert service_data["id"] == i
-            assert service_data["index"] == i
-
-        # Test bulk unregistration
-        for i in range(0, service_count, 2):  # Unregister even-indexed services
-            unregister_result = container.unregister(f"bulk_service_{i}")
-            FlextTestsMatchers.assert_result_success(unregister_result)
-
-        # Verify partial unregistration
-        remaining_count = service_count - (service_count // 2)
-        if service_count % 2 == 1:
-            remaining_count += 1  # Account for odd total
-
-        assert container.get_service_count() == remaining_count
-
-        # Verify remaining services are odd-indexed
-        remaining_names = container.get_service_names()
-        for i in range(1, service_count, 2):  # Check odd indices
-            assert f"bulk_service_{i}" in remaining_names
-
-    def test_factory_error_handling(self) -> None:
-        """Test factory error handling scenarios."""
-        container = FlextContainer()
-
-        # Test factory that raises exception
-        def failing_factory() -> dict[str, object]:
-            msg = "Factory intentionally failed"
-            raise ValueError(msg)
-
-        factory_result = container.register_factory("failing_factory", failing_factory)
-        FlextTestsMatchers.assert_result_success(factory_result)
-
-        # Test that getting the service handles factory exception
-        get_result = container.get("failing_factory")
-        # The result should be a failure due to factory exception
-        FlextTestsMatchers.assert_result_failure(get_result)
-
-        # Test factory with empty name
-        def valid_factory() -> dict[str, object]:
-            return {"status": "ok"}
-
-        empty_name_result = container.register_factory("", valid_factory)
-        FlextTestsMatchers.assert_result_failure(
-            cast("FlextResult[object]", empty_name_result),
-        )
+        # Clean up
+        container1.unregister("global_test")

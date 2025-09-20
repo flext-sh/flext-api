@@ -265,16 +265,6 @@ addopts = [
     "--color=yes",
 ]
 
-# Environment variables (requires pytest-env plugin)
-# env = [
-#     "ENVIRONMENT=test",
-#     "LOG_LEVEL=DEBUG", 
-#     "TESTING=true",
-#     "FLEXT_API_TEST_MODE=true",
-#     "DATABASE_URL=sqlite:///:memory:",
-#     "FAKER_LOCALE=en_US",
-# ]
-
 # Marcadores específicos do projeto
 markers = [
     "unit: Fast unit tests with mocks",

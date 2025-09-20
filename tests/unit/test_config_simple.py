@@ -1,4 +1,8 @@
-"""Tests for simplified FlextApiConfig following SOLID principles."""
+"""Tests for simplified FlextApiConfig following SOLID principles.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 import pytest
 

@@ -135,7 +135,9 @@ class FlextApiExceptions:
         return cls.http_error(message, status_code=400)
 
     @classmethod
-    def unauthorized(cls, message: str = "Unauthorized") -> FlextApiExceptions.HttpError:
+    def unauthorized(
+        cls, message: str = "Unauthorized"
+    ) -> FlextApiExceptions.HttpError:
         """Create HTTP 401 Unauthorized error."""
         return cls.http_error(message, status_code=401)
 

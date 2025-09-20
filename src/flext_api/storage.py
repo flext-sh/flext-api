@@ -37,13 +37,15 @@ class FlextApiStorage(FlextModels.Entity):
         if isinstance(config, dict):
             config_dict = config
         elif config is not None:
-            if hasattr(config, "model_dump") and callable(
-                config.model_dump,
-            ):
-                adapted = config.model_dump()
-                config_dict = (
-                    adapted if isinstance(adapted, dict) else {"value": adapted}
-                )
+            # Safe attribute access with proper type checking
+            if hasattr(config, "model_dump") and callable(getattr(config, "model_dump", None)):
+                try:
+                    adapted = getattr(config, "model_dump")()
+                    config_dict = (
+                        adapted if isinstance(adapted, dict) else {"value": adapted}
+                    )
+                except (AttributeError, TypeError):
+                    config_dict = {"value": config}
             else:
                 config_dict = {"value": config}
         else:
