@@ -30,7 +30,7 @@ class FlextApiExceptions:
             super().__init__(message)
             self.status_code = 400
 
-    class AuthenticationError(FlextExceptions.AuthenticationError):
+    class AuthenticationError(Exception):
         """Authentication error with HTTP status code."""
 
         def __init__(self, message: str, **_kwargs: object) -> None:
@@ -38,7 +38,7 @@ class FlextApiExceptions:
             super().__init__(message)
             self.status_code = 401
 
-    class NotFoundError(FlextExceptions.NotFoundError):
+    class NotFoundError(Exception):
         """Not found error with HTTP status code."""
 
         def __init__(self, message: str, **_kwargs: object) -> None:
@@ -50,7 +50,7 @@ class FlextApiExceptions:
     # HTTP-specific simple aliases - Use existing flext-core patterns
 
     # HTTP Error - Main HTTP exception class with status_code
-    class HttpError(FlextExceptions.ConnectionError):
+    class HttpError(Exception):
         """HTTP error with status code attribute."""
 
         def __init__(
@@ -60,15 +60,10 @@ class FlextApiExceptions:
             **kwargs: object,
         ) -> None:
             """Initialize HTTP error with status code."""
-            # Extract only the parameters the parent class accepts
-            service_value = kwargs.get("service")
-            endpoint_value = kwargs.get("endpoint")
-            super().__init__(
-                message,
-                service=str(service_value) if service_value is not None else None,
-                endpoint=str(endpoint_value) if endpoint_value is not None else None,
-            )
+            super().__init__(message)
             self.status_code = status_code
+            self.service = kwargs.get("service")
+            self.endpoint = kwargs.get("endpoint")
 
     # Compatibility alias removed - use HttpError directly
 
@@ -135,22 +130,22 @@ class FlextApiExceptions:
     # =============================================================================
 
     @classmethod
-    def bad_request(cls, message: str = "Bad Request") -> FlextExceptions.BaseError:
+    def bad_request(cls, message: str = "Bad Request") -> FlextApiExceptions.HttpError:
         """Create HTTP 400 Bad Request error."""
         return cls.http_error(message, status_code=400)
 
     @classmethod
-    def unauthorized(cls, message: str = "Unauthorized") -> FlextExceptions.BaseError:
+    def unauthorized(cls, message: str = "Unauthorized") -> FlextApiExceptions.HttpError:
         """Create HTTP 401 Unauthorized error."""
         return cls.http_error(message, status_code=401)
 
     @classmethod
-    def forbidden(cls, message: str = "Forbidden") -> FlextExceptions.BaseError:
+    def forbidden(cls, message: str = "Forbidden") -> FlextApiExceptions.HttpError:
         """Create HTTP 403 Forbidden error."""
         return cls.http_error(message, status_code=403)
 
     @classmethod
-    def not_found(cls, message: str = "Not Found") -> FlextExceptions.BaseError:
+    def not_found(cls, message: str = "Not Found") -> FlextApiExceptions.HttpError:
         """Create HTTP 404 Not Found error."""
         return cls.http_error(message, status_code=404)
 
@@ -158,7 +153,7 @@ class FlextApiExceptions:
     def request_timeout(
         cls,
         message: str = "Request Timeout",
-    ) -> FlextExceptions.BaseError:
+    ) -> FlextApiExceptions.HttpError:
         """Create HTTP 408 Request Timeout error."""
         return cls.http_error(message, status_code=408)
 
@@ -166,7 +161,7 @@ class FlextApiExceptions:
     def too_many_requests(
         cls,
         message: str = "Too Many Requests",
-    ) -> FlextExceptions.BaseError:
+    ) -> FlextApiExceptions.HttpError:
         """Create HTTP 429 Too Many Requests error."""
         return cls.http_error(message, status_code=429)
 
@@ -174,7 +169,7 @@ class FlextApiExceptions:
     def internal_server_error(
         cls,
         message: str = "Internal Server Error",
-    ) -> FlextExceptions.BaseError:
+    ) -> FlextApiExceptions.HttpError:
         """Create HTTP 500 Internal Server Error."""
         return cls.http_error(message, status_code=500)
 
