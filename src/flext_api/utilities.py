@@ -82,7 +82,7 @@ class FlextApiUtilities:
                     "status_code": status_code,
                     "data": data,
                     "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
-                    "request_id": FlextUtilities.Generators.generate_request_id(),
+                    "request_id": FlextUtilities.Generators.generate_entity_id(),
                 }
                 return FlextResult[FlextTypes.Core.Dict].ok(response)
             except Exception as e:
@@ -149,7 +149,6 @@ class FlextApiUtilities:
             result = FlextModels.create_validated_http_url(
                 url,
                 max_length=FlextApiConstants.HttpValidation.MAX_URL_LENGTH,
-                max_port=FlextApiConstants.HttpValidation.MAX_PORT,
             )
             # Map flext-core error messages to expected test messages
             if result.is_failure:
@@ -159,6 +158,8 @@ class FlextApiUtilities:
                     or "URL must have a valid hostname" in error_msg
                 ):
                     error_msg = "Invalid URL format"
+                elif "URL must be at most" in error_msg and "characters" in error_msg:
+                    error_msg = "URL is too long"
                 return FlextResult[str].fail(error_msg)
             return result
 
@@ -197,7 +198,15 @@ class FlextApiUtilities:
         @staticmethod
         def validate_status_code(code: int | str) -> FlextResult[int]:
             """Validate HTTP status code using centralized FlextModels validation."""
-            return FlextModels.create_validated_http_status(code)
+            # Convert string to int if needed since FlextModels.create_validated_http_status expects int
+            if isinstance(code, str):
+                try:
+                    int_code = int(code)
+                except ValueError:
+                    return FlextResult[int].fail(f"Invalid status code format: {code}")
+            else:
+                int_code = code
+            return FlextModels.create_validated_http_status(int_code)
 
         @staticmethod
         def normalize_url(url: str) -> FlextResult[str]:
@@ -221,7 +230,6 @@ class FlextApiUtilities:
         return FlextModels.create_validated_http_url(
             url,
             max_length=FlextApiConstants.HttpValidation.MAX_URL_LENGTH,
-            max_port=FlextApiConstants.HttpValidation.MAX_PORT,
         )
 
     @staticmethod
@@ -315,7 +323,7 @@ class FlextApiUtilities:
         return " ".join(text.strip().split())
 
     @staticmethod
-    def safe_bool_conversion(*, value: str | bool | int) -> bool:
+    def safe_bool_conversion(value: str | bool | int) -> bool:
         """Safely convert string to boolean."""
         if isinstance(value, bool):
             return value
@@ -424,20 +432,32 @@ class FlextApiUtilities:
         """Data transformation utilities."""
 
         @staticmethod
-        def to_dict(data: object) -> dict[str, object] | None:
+        def to_dict(data: object) -> FlextResult[dict[str, object]]:
             """Convert data to dictionary."""
             try:
                 if isinstance(data, dict):
-                    return data
-                if hasattr(data, "model_dump"):
-                    # Type guard for Pydantic models
-                    result = data.model_dump()
-                    return result if isinstance(result, dict) else None
+                    return FlextResult[dict[str, object]].ok(data)
+                if hasattr(data, "dict") and callable(getattr(data, "dict", None)):
+                    # Handle objects with dict() method - safe attribute access
+                    try:
+                        result = getattr(data, "dict")()
+                        if isinstance(result, dict):
+                            return FlextResult[dict[str, object]].ok(result)
+                    except (AttributeError, TypeError):
+                        pass
+                if hasattr(data, "model_dump") and callable(getattr(data, "model_dump", None)):
+                    # Type guard for Pydantic models - safe attribute access
+                    try:
+                        result = getattr(data, "model_dump")()
+                        if isinstance(result, dict):
+                            return FlextResult[dict[str, object]].ok(result)
+                    except (AttributeError, TypeError):
+                        pass
                 if hasattr(data, "__dict__"):
-                    return data.__dict__
-                return None
-            except Exception:
-                return None
+                    return FlextResult[dict[str, object]].ok(data.__dict__)
+                return FlextResult[dict[str, object]].fail("Cannot convert object to dictionary")
+            except Exception as e:
+                return FlextResult[dict[str, object]].fail(f"Failed to convert to dict: {e}")
 
         @staticmethod
         def from_json(json_str: str) -> dict[str, object] | None:

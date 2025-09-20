@@ -36,7 +36,7 @@ class FlextApiApp:
 
         # Add health endpoint
         @app.get("/health")
-        async def health_check() -> dict[str, str]:
+        async def health_check() -> dict[str, str]:  # pyright: ignore[reportUnusedFunction]
             return {"status": "healthy", "service": "flext-api"}
 
         return app

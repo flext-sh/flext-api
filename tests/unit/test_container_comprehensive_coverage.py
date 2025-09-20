@@ -2,6 +2,9 @@
 
 Tests critical FlextContainer functionality with edge cases, error handling,
 and performance scenarios to achieve 100% coverage using standardized patterns.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 import math

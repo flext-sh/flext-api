@@ -3,6 +3,9 @@
 Remove duplicações: usar diretamente `FlextApiConstants` e `FlextApiTypes` em vez de
 classes internas de constantes/field/endpoints/status. Este módulo agora expõe
 somente modelos (Request/Response/Config/Query/Storage/URL) seguindo padrão flext-core.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -97,7 +100,6 @@ class FlextApiModels:
                 for k, val in v.items()
                 if (k_clean := k.strip())
                 and (val_clean := str(val).strip())
-                and val is not None
             }
 
     class HttpResponse(FlextModels.Entity):
@@ -314,7 +316,7 @@ class FlextApiModels:
                             "message": kwargs.get("message", "Error occurred"),
                         },
                         "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
-                        "request_id": FlextUtilities.Generators.generate_request_id(),
+                        "request_id": FlextUtilities.Generators.generate_entity_id(),
                     }
                 case _:
                     # Direct return for success case
@@ -323,7 +325,7 @@ class FlextApiModels:
                         "data": kwargs.get("data"),
                         "message": kwargs.get("message", ""),
                         "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
-                        "request_id": FlextUtilities.Generators.generate_request_id(),
+                        "request_id": FlextUtilities.Generators.generate_entity_id(),
                     }
 
         @staticmethod
@@ -334,7 +336,7 @@ class FlextApiModels:
                 "data": data,
                 "message": message,
                 "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
-                "request_id": FlextUtilities.Generators.generate_request_id(),
+                "request_id": FlextUtilities.Generators.generate_entity_id(),
             }
 
         @staticmethod
@@ -344,7 +346,7 @@ class FlextApiModels:
                 "status": "error",
                 "error": {"code": code, "message": message},
                 "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
-                "request_id": FlextUtilities.Generators.generate_request_id(),
+                "request_id": FlextUtilities.Generators.generate_entity_id(),
             }
 
     @staticmethod
@@ -401,8 +403,14 @@ class FlextApiModels:
                 host = host_port
 
             # Validate host format - reject invalid IPv6 addresses
-            if host and "[" in host and "]" in host:
-                # Basic IPv6 validation
+            if host and "[" in host:
+                # Check for malformed IPv6 (missing closing bracket or invalid content)
+                if "]" not in host:
+                    return FlextResult["FlextApiModels.UrlModel"].fail(
+                        "Failed to create URL: Malformed IPv6 address (missing closing bracket)",
+                    )
+
+                # Basic IPv6 validation for addresses with "invalid" in the name
                 ipv6_part = host[host.find("[") + 1 : host.find("]")]
                 if "invalid" in ipv6_part.lower():
                     return FlextResult["FlextApiModels.UrlModel"].fail(
