@@ -22,7 +22,7 @@ class FlextApiExceptions:
     # =============================================================================
 
     # HTTP-specific exception classes with status_code property
-    class ValidationError(FlextExceptions.ValidationError):
+    class ValidationError(Exception):
         """Validation error with HTTP status code."""
 
         def __init__(self, message: str, **_kwargs: object) -> None:
