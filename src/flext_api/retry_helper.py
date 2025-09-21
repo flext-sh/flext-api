@@ -43,7 +43,7 @@ class FlextApiRetryHelper:
         self.backoff_factor = backoff_factor
         self._logger = logger or FlextLogger(__name__)
 
-    async def execute_with_retry(  # type: ignore[explicit-any]
+    async def execute_with_retry(
         self,
         operation: Callable[..., Awaitable[FlextResult[object]]],
         *args: object,
