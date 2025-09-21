@@ -68,7 +68,13 @@ class TestFlextErrorsComprehensive:
         assert error_message in str(error)
 
     def test_error_exception_behavior(self) -> None:
-        """Test errors behave as proper exceptions using flext_tests."""
+        """Test errors behave as proper exceptions using flext_tests.
+
+        Raises:
+            HttpError: For testing HTTP error behavior.
+            ValidationError: For testing validation error behavior.
+
+        """
         msg1 = "Exception test 1"
         with pytest.raises(FlextApiExceptions.HttpError):
             raise FlextApiExceptions.HttpError(msg1)

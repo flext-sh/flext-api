@@ -17,8 +17,14 @@ from pydantic import ValidationError
 from flext_api import FlextApiConstants, FlextApiModels
 
 
-class TestFlextApiModels:
-    """Test FlextApiModels REAL class functionality."""
+class TestFlextApiModels:  # noqa: PLR0904
+    """Test FlextApiModels REAL class functionality.
+
+    This test class has many public methods by design as it provides comprehensive
+    test coverage for the core models. Each test method validates a specific
+    aspect of the model behavior, which is a legitimate use case for having
+    many methods in a test class.
+    """
 
     def test_models_class_exists(self) -> None:
         """Test FlextApiModels class exists and is accessible."""

@@ -12,8 +12,14 @@ from pydantic import ValidationError
 from flext_api.models import FlextApiModels
 
 
-class TestFlextApiModelsCoverageBoost:
-    """Comprehensive tests to boost coverage of FlextApiModels class."""
+class TestFlextApiModelsCoverageBoost:  # noqa: PLR0904
+    """Comprehensive tests to boost coverage of FlextApiModels class.
+
+    This test class has many public methods by design as it provides comprehensive
+    test coverage to boost code coverage. Each test method validates a specific
+    aspect of the model behavior, which is a legitimate use case for having
+    many methods in a test class.
+    """
 
     def test_http_request_url_validation_empty(self) -> None:
         """Test HttpRequest URL validation with empty URL."""

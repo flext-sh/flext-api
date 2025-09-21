@@ -26,7 +26,12 @@ from flext_core import FlextResult, FlextTypes, T
 
 
 def create_test_storage_config(**overrides: object) -> FlextTypes.Core.Dict:
-    """Create storage config using FlextTestsDomains - ABSOLUTE usage."""
+    """Create storage config using FlextTestsDomains - ABSOLUTE usage.
+
+    Returns:
+        Storage configuration dictionary.
+
+    """
     # Use FlextTestsDomains instead of local implementation
     base_config = FlextTestsDomains.create_configuration()
 
@@ -73,7 +78,12 @@ def create_test_request(
     params: FlextTypes.Core.Dict | None = None,
     timeout: float = 30.0,
 ) -> FlextTypes.Core.Dict:
-    """Create test request using FlextTestsDomains - ABSOLUTE usage."""
+    """Create test request using FlextTestsDomains - ABSOLUTE usage.
+
+    Returns:
+        Test request dictionary.
+
+    """
     # Use FlextTestsDomains for payload structure - NO local implementation
     payload_data = FlextTestsDomains.create_payload()
 
@@ -96,7 +106,12 @@ def create_test_response(
     *,
     from_cache: bool = False,
 ) -> FlextTypes.Core.Dict:
-    """Create test response using FlextTestsDomains - ABSOLUTE usage."""
+    """Create test response using FlextTestsDomains - ABSOLUTE usage.
+
+    Returns:
+        Test response dictionary.
+
+    """
     # Use FlextTestsDomains for API response structure - NO local implementation
     api_response = FlextTestsDomains.api_response_data()
 
@@ -117,7 +132,15 @@ def create_test_response(
 
 
 async def run_async_test[T](coro: Awaitable[T]) -> T:
-    """Run async test using FlextTestsUtilities patterns."""
+    """Run async test using FlextTestsUtilities patterns.
+
+    Returns:
+        Result of the async coroutine.
+
+    Raises:
+        AssertionError: If the async test fails.
+
+    """
     try:
         return await coro
     except Exception as e:
@@ -130,7 +153,12 @@ async def wait_for_condition(
     timeout_seconds: float = 5.0,
     interval: float = 0.1,
 ) -> bool:
-    """Wait for condition using FlextTestsUtilities patterns."""
+    """Wait for condition using FlextTestsUtilities patterns.
+
+    Returns:
+        True if condition is met within timeout, False otherwise.
+
+    """
     elapsed = 0.0
     while elapsed < timeout_seconds:
         if condition():
@@ -146,13 +174,23 @@ async def wait_for_condition(
 
 
 def create_temp_json_file(path: Path, data: FlextTypes.Core.Dict) -> Path:
-    """Create temp JSON file using FlextTestsUtilities patterns."""
+    """Create temp JSON file using FlextTestsUtilities patterns.
+
+    Returns:
+        Path to the created JSON file.
+
+    """
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     return path
 
 
 def create_readonly_file(path: Path, content: str = "{}") -> Path:
-    """Create readonly file using FlextTestsUtilities patterns."""
+    """Create readonly file using FlextTestsUtilities patterns.
+
+    Returns:
+        Path to the created readonly file.
+
+    """
     path.write_text(content, encoding="utf-8")
     path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
     return path
@@ -221,7 +259,12 @@ def create_mock_response(
     status_code: int = 200,
     data: FlextTypes.Core.Dict | None = None,
 ) -> FlextTypes.Core.Dict:
-    """Create mock response using FlextTestsDomains - ABSOLUTE."""
+    """Create mock response using FlextTestsDomains - ABSOLUTE.
+
+    Returns:
+        Mock response dictionary.
+
+    """
     # Use FlextTestsDomains for API response data - NO local implementation
     api_data = FlextTestsDomains.api_response_data().get("data", {})
     response_data = data or (api_data if isinstance(api_data, dict) else {})
@@ -232,7 +275,12 @@ def create_mock_response(
 
 
 def validate_email_format(email: str) -> bool:
-    """Validate email using FlextTestsDomains - ABSOLUTE."""
+    """Validate email using FlextTestsDomains - ABSOLUTE.
+
+    Returns:
+        True if email is valid, False otherwise.
+
+    """
     # Use FlextTestsDomains validation cases - NO local implementation
     valid_cases = FlextTestsDomains.valid_email_cases()
     return email in valid_cases or ("@" in email and "." in email)
@@ -242,7 +290,12 @@ def create_test_headers(
     content_type: str = "application/json",
     **additional_headers: str,
 ) -> FlextTypes.Core.Headers:
-    """Create headers using FlextTestsDomains service data."""
+    """Create headers using FlextTestsDomains service data.
+
+    Returns:
+        Headers dictionary.
+
+    """
     # Use FlextTestsDomains for service information
     service_data = FlextTestsDomains.create_service()
 
@@ -289,12 +342,22 @@ def assert_url_format(url: str) -> None:
 
 
 def create_test_result_success(data: object = None) -> FlextResult[object]:
-    """Create success result using FlextTestsUtilities - ABSOLUTE."""
+    """Create success result using FlextTestsUtilities - ABSOLUTE.
+
+    Returns:
+        Successful FlextResult object.
+
+    """
     return FlextTestsUtilities.create_test_result(success=True, data=data)
 
 
 def create_test_result_failure(error: str = "Test error") -> FlextResult[object]:
-    """Create failure result using FlextTestsUtilities - ABSOLUTE."""
+    """Create failure result using FlextTestsUtilities - ABSOLUTE.
+
+    Returns:
+        Failed FlextResult object.
+
+    """
     return FlextTestsUtilities.create_test_result(success=False, error=error)
 
 
@@ -302,7 +365,12 @@ def create_functional_test_service(
     service_type: str = "api",
     **config: object,
 ) -> object:
-    """Create functional service using FlextTestsUtilities - ABSOLUTE."""
+    """Create functional service using FlextTestsUtilities - ABSOLUTE.
+
+    Returns:
+        Functional service object.
+
+    """
     return FlextTestsUtilities.functional_service(service_type=service_type, **config)
 
 
@@ -312,17 +380,32 @@ def create_test_context(
     new_value: object = None,
     **options: object,
 ) -> object:
-    """Create test context using FlextTestsUtilities - ABSOLUTE."""
+    """Create test context using FlextTestsUtilities - ABSOLUTE.
+
+    Returns:
+        Test context object.
+
+    """
     return FlextTestsUtilities.test_context(target, attribute, new_value, **options)
 
 
 def assert_result_with_utilities[T](result: FlextResult[T]) -> T:
-    """Assert result success using FlextTestsUtilities - ABSOLUTE."""
+    """Assert result success using FlextTestsUtilities - ABSOLUTE.
+
+    Returns:
+        The unwrapped result data.
+
+    """
     return FlextTestsUtilities.TestUtilities.assert_result_success(result)
 
 
 def assert_failure_with_utilities[T](result: FlextResult[T]) -> str:
-    """Assert result failure using FlextTestsUtilities - ABSOLUTE."""
+    """Assert result failure using FlextTestsUtilities - ABSOLUTE.
+
+    Returns:
+        The error message from the failed result.
+
+    """
     return FlextTestsUtilities.TestUtilities.assert_result_failure(result)
 
 
