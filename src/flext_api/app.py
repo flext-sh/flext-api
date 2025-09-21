@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 # Internal abstraction - FastAPI is imported at runtime only
-def _create_fastapi_instance(**kwargs: object) -> FastAPI:
+def _create_fastapi_instance(**kwargs: object) -> object:
     """Internal FastAPI instance creation with runtime import.
 
     Args:
@@ -32,7 +32,7 @@ def _create_fastapi_instance(**kwargs: object) -> FastAPI:
     try:
         from fastapi import FastAPI
 
-        return FastAPI(**kwargs)
+        return FastAPI(**kwargs)  # type: ignore[arg-type]
     except ImportError as e:
         error_msg = "FastAPI is required for FlextAPI application creation"
         raise ImportError(error_msg) from e
@@ -62,11 +62,12 @@ class FlextApiApp:
         )
 
         # Add health endpoint
-        @app.get("/health")
-        def health_check() -> dict[str, str]:  # pyright: ignore[reportUnusedFunction]
-            return {"status": "healthy", "service": "flext-api"}
+        if hasattr(app, 'get'):
+            @app.get("/health")  # type: ignore[attr-defined]
+            def health_check() -> dict[str, str]:  # pyright: ignore[reportUnusedFunction]
+                return {"status": "healthy", "service": "flext-api"}
 
-        return app
+        return app  # type: ignore[return-value]
 
 
 # Direct class access only - no backward compatibility aliases

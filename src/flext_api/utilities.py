@@ -174,7 +174,8 @@ class FlextApiUtilities:
                 elif "URL must be at most" in error_msg and "characters" in error_msg:
                     error_msg = "URL is too long"
                 return FlextResult[str].fail(error_msg)
-            return result
+            url_obj = result.unwrap()
+            return FlextResult[str].ok(str(url_obj))
 
         @staticmethod
         def validate_http_method(method: str | None) -> FlextResult[str]:
@@ -265,10 +266,11 @@ class FlextApiUtilities:
             FlextResult containing validated URL or error message.
 
         """
-        return FlextModels.create_validated_http_url(
-            url,
-            max_length=FlextApiConstants.HttpValidation.MAX_URL_LENGTH,
-        )
+        result = FlextModels.create_validated_http_url(url)
+        if result.is_failure:
+            return FlextResult[str].fail(result.error or "Validation failed")
+        url_obj = result.unwrap()
+        return FlextResult[str].ok(str(url_obj))
 
     @staticmethod
     def validate_config(config: object) -> FlextResult[FlextTypes.Core.Dict]:

@@ -12,10 +12,10 @@ import uuid
 from typing import cast
 
 from faker import Faker
-from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
 from flext_core import FlextResult, FlextTypes
+from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 # MAXIMUM usage of flext_tests - use EM ABSOLUTO
 

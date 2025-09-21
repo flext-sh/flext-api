@@ -9,9 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsMatchers
-
 from flext_core import FlextContainer, FlextResult
+from flext_tests import FlextTestsMatchers
 
 
 class TestFlextContainer100PercentCoverage:

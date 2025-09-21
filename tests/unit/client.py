@@ -16,9 +16,9 @@ import os
 from unittest.mock import patch
 
 import pytest
-from flext_tests import FlextTestsMatchers
 
 from flext_api import FlextApiClient, FlextApiModels, create_flext_api
+from flext_tests import FlextTestsMatchers
 
 
 @pytest.mark.asyncio

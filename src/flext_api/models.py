@@ -97,7 +97,8 @@ class FlextApiModels:
                     error_msg = "Invalid URL format"
                 msg = f"Invalid URL: {error_msg}"
                 raise ValueError(msg)
-            return validation_result.unwrap()
+            url_obj = validation_result.unwrap()
+            return str(url_obj)
 
         @field_validator("headers")
         @classmethod
@@ -203,7 +204,7 @@ class FlextApiModels:
                     error_msg = "URL must be a non-empty string"
                 msg = f"Invalid base URL: {error_msg}"
                 raise ValueError(msg)
-            return validation_result.unwrap()
+            return str(validation_result.unwrap())
 
         def get_auth_header(self) -> dict[str, str]:
             """Get authentication header if configured.

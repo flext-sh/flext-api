@@ -154,14 +154,14 @@ class FlextApiConstants(FlextConstants):
         """Client configuration constants."""
 
         DEFAULT_USER_AGENT = "FlextAPI/0.9.0"
-        DEFAULT_TIMEOUT = 30.0
-        MAX_RETRIES = 3
+        DEFAULT_TIMEOUT = float(FlextConstants.Defaults.TIMEOUT)
+        MAX_RETRIES = FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
         RETRY_BACKOFF_FACTOR = 2.0
 
     class HttpStatusRanges:
         """HTTP status code ranges."""
 
-        SUCCESS_MIN = 200
+        SUCCESS_MIN = FlextConstants.Platform.HTTP_STATUS_OK
         SUCCESS_MAX = 299
 
     class ApiLimits:

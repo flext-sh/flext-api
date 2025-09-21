@@ -576,7 +576,7 @@ class FlextApiClient(FlextDomainService[None]):
             )
 
             # Create retry helper using modular class
-            retry_helper = FlextApiRetryHelper(
+            retry_helper: FlextApiRetryHelper = FlextApiRetryHelper(
                 max_retries=self._client_config.max_retries, backoff_factor=1.0
             )
 

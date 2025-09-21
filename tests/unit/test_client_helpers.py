@@ -6,9 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsMatchers, FlextTestsUtilities
-
 from flext_api import FlextApiClient, FlextApiModels
+from flext_tests import FlextTestsMatchers, FlextTestsUtilities
 
 
 class TestFlextApiClientHelpers:

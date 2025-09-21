@@ -12,9 +12,9 @@ from __future__ import annotations
 import json
 
 import pytest
-from flext_tests import FlextTestsMatchers
 
 from flext_api import FlextApiClient
+from flext_tests import FlextTestsMatchers
 
 
 @pytest.mark.asyncio
