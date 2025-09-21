@@ -25,7 +25,7 @@ fake = Faker()
 Faker.seed(12345)
 
 
-class FlextApiFactories:  # noqa: PLR0904
+class FlextApiFactories:
     """Factory methods using flext_tests EM ABSOLUTO - NO local implementations.
 
     This class has many public methods by design as it serves as a comprehensive

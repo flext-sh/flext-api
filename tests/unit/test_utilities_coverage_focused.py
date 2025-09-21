@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from flext_api.utilities import FlextApiUtilities
 
 
-class TestFlextUtilitiesCoverageFocused:  # noqa: PLR0904
+class TestFlextUtilitiesCoverageFocused:
     """Focused tests to achieve 100% coverage of the FlextApiUtilities class.
 
     This test class has many public methods by design as it provides focused

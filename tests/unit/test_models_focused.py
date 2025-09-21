@@ -14,7 +14,7 @@ from pydantic import ValidationError
 from flext_api import FlextApiModels
 
 
-class TestFlextApiModelsFocused:  # noqa: PLR0904
+class TestFlextApiModelsFocused:
     """Focused tests to improve models.py coverage from 58% to 80%+.
 
     This test class has many public methods by design as it provides focused

@@ -162,10 +162,7 @@ class FlextApiUtilities:
 
             """
             # Use FlextModels centralized validation with HTTP-specific rules
-            result = FlextModels.create_validated_http_url(
-                url,
-                max_length=FlextApiConstants.HttpValidation.MAX_URL_LENGTH,
-            )
+            result = FlextModels.create_validated_http_url(url)
             # Map flext-core error messages to expected test messages
             if result.is_failure:
                 error_msg = result.error or "Invalid URL"

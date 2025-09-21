@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from flext_api.models import FlextApiModels
 
 
-class TestFlextApiModelsCoverageBoost:  # noqa: PLR0904
+class TestFlextApiModelsCoverageBoost:
     """Comprehensive tests to boost coverage of FlextApiModels class.
 
     This test class has many public methods by design as it provides comprehensive
