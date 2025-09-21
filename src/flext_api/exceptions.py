@@ -69,7 +69,12 @@ class FlextApiExceptions:
 
     @classmethod
     def http_error_class(cls) -> type[HttpError]:
-        """Get HTTP error class."""
+        """Get HTTP error class.
+
+        Returns:
+            The HttpError class type.
+
+        """
         return cls.HttpError
 
     # =============================================================================
@@ -85,7 +90,12 @@ class FlextApiExceptions:
         method: str | None = None,
         **kwargs: object,
     ) -> FlextApiExceptions.HttpError:
-        """Create HTTP error with status code."""
+        """Create HTTP error with status code.
+
+        Returns:
+            HttpError instance with the specified message and status code.
+
+        """
         enhanced_message = f"{message} (HTTP {status_code})"
         return cls.HttpError(
             message=enhanced_message,
@@ -102,7 +112,12 @@ class FlextApiExceptions:
         *,
         url: str | None = None,
     ) -> FlextExceptions.BaseError:
-        """Create HTTP timeout error using flext-core TimeoutError."""
+        """Create HTTP timeout error using flext-core TimeoutError.
+
+        Returns:
+            FlextExceptions.BaseError: Timeout error instance.
+
+        """
         enhanced_message = f"{message} for {url}" if url else message
         return FlextExceptions.TimeoutError(message=enhanced_message)
 
@@ -113,7 +128,12 @@ class FlextApiExceptions:
         *,
         field: str | None = None,
     ) -> FlextExceptions.BaseError:
-        """Create HTTP validation error using flext-core ValidationError."""
+        """Create HTTP validation error using flext-core ValidationError.
+
+        Returns:
+            FlextExceptions.BaseError: Validation error instance.
+
+        """
         enhanced_message = f"{message} (field: {field})" if field else message
         return FlextExceptions.ValidationError(message=enhanced_message)
 
@@ -122,7 +142,12 @@ class FlextApiExceptions:
         cls,
         message: str = "Authentication failed",
     ) -> FlextExceptions.BaseError:
-        """Create HTTP auth error using flext-core AuthenticationError."""
+        """Create HTTP auth error using flext-core AuthenticationError.
+
+        Returns:
+            FlextExceptions.BaseError: Authentication error instance.
+
+        """
         return FlextExceptions.AuthenticationError(message=message)
 
     # =============================================================================
@@ -131,24 +156,44 @@ class FlextApiExceptions:
 
     @classmethod
     def bad_request(cls, message: str = "Bad Request") -> FlextApiExceptions.HttpError:
-        """Create HTTP 400 Bad Request error."""
+        """Create HTTP 400 Bad Request error.
+
+        Returns:
+            FlextApiExceptions.HttpError: HTTP 400 error instance.
+
+        """
         return cls.http_error(message, status_code=400)
 
     @classmethod
     def unauthorized(
         cls, message: str = "Unauthorized"
     ) -> FlextApiExceptions.HttpError:
-        """Create HTTP 401 Unauthorized error."""
+        """Create HTTP 401 Unauthorized error.
+
+        Returns:
+            FlextApiExceptions.HttpError: HTTP 401 error instance.
+
+        """
         return cls.http_error(message, status_code=401)
 
     @classmethod
     def forbidden(cls, message: str = "Forbidden") -> FlextApiExceptions.HttpError:
-        """Create HTTP 403 Forbidden error."""
+        """Create HTTP 403 Forbidden error.
+
+        Returns:
+            FlextApiExceptions.HttpError: HTTP 403 error instance.
+
+        """
         return cls.http_error(message, status_code=403)
 
     @classmethod
     def not_found(cls, message: str = "Not Found") -> FlextApiExceptions.HttpError:
-        """Create HTTP 404 Not Found error."""
+        """Create HTTP 404 Not Found error.
+
+        Returns:
+            FlextApiExceptions.HttpError: HTTP 404 error instance.
+
+        """
         return cls.http_error(message, status_code=404)
 
     @classmethod
@@ -156,7 +201,12 @@ class FlextApiExceptions:
         cls,
         message: str = "Request Timeout",
     ) -> FlextApiExceptions.HttpError:
-        """Create HTTP 408 Request Timeout error."""
+        """Create HTTP 408 Request Timeout error.
+
+        Returns:
+            FlextApiExceptions.HttpError: HTTP 408 error instance.
+
+        """
         return cls.http_error(message, status_code=408)
 
     @classmethod
@@ -164,7 +214,12 @@ class FlextApiExceptions:
         cls,
         message: str = "Too Many Requests",
     ) -> FlextApiExceptions.HttpError:
-        """Create HTTP 429 Too Many Requests error."""
+        """Create HTTP 429 Too Many Requests error.
+
+        Returns:
+            FlextApiExceptions.HttpError: HTTP 429 error instance.
+
+        """
         return cls.http_error(message, status_code=429)
 
     @classmethod
@@ -172,7 +227,12 @@ class FlextApiExceptions:
         cls,
         message: str = "Internal Server Error",
     ) -> FlextApiExceptions.HttpError:
-        """Create HTTP 500 Internal Server Error."""
+        """Create HTTP 500 Internal Server Error.
+
+        Returns:
+            FlextApiExceptions.HttpError: HTTP 500 error instance.
+
+        """
         return cls.http_error(message, status_code=500)
 
     # =============================================================================
@@ -181,7 +241,12 @@ class FlextApiExceptions:
 
     @staticmethod
     def is_client_error(status_code: int) -> bool:
-        """Check if status code is client error (4xx)."""
+        """Check if status code is client error (4xx).
+
+        Returns:
+            bool: True if status code is 4xx client error.
+
+        """
         return (
             FlextApiConstants.CLIENT_ERROR_START
             <= status_code
@@ -190,7 +255,12 @@ class FlextApiExceptions:
 
     @staticmethod
     def is_server_error(status_code: int) -> bool:
-        """Check if status code is server error (5xx)."""
+        """Check if status code is server error (5xx).
+
+        Returns:
+            bool: True if status code is 5xx server error.
+
+        """
         return (
             FlextApiConstants.SERVER_ERROR_START
             <= status_code
@@ -199,7 +269,12 @@ class FlextApiExceptions:
 
     @staticmethod
     def is_success(status_code: int) -> bool:
-        """Check if status code indicates success (2xx)."""
+        """Check if status code indicates success (2xx).
+
+        Returns:
+            bool: True if status code is 2xx success.
+
+        """
         return (
             FlextApiConstants.SUCCESS_START
             <= status_code

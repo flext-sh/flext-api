@@ -52,8 +52,14 @@ async def test_client_headers_merge_and_prepare_params() -> None:
     await client.stop()
 
 
-class TestFlextApiClient:
-    """Comprehensive HTTP client tests."""
+class TestFlextApiClient:  # noqa: PLR0904
+    """Comprehensive HTTP client tests.
+
+    This test class has many public methods by design as it provides comprehensive
+    test coverage for the HTTP client functionality. Each test method validates
+    a specific aspect of the client behavior, which is a legitimate use case
+    for having many methods in a test class.
+    """
 
     def test_client_initialization(self) -> None:
         """Test client initialization with various configurations."""

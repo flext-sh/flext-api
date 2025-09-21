@@ -12,8 +12,14 @@ from dataclasses import dataclass, field
 from flext_api.utilities import FlextApiUtilities
 
 
-class TestFlextUtilitiesCoverageFocused:
-    """Focused tests to achieve 100% coverage of the FlextApiUtilities class."""
+class TestFlextUtilitiesCoverageFocused:  # noqa: PLR0904
+    """Focused tests to achieve 100% coverage of the FlextApiUtilities class.
+
+    This test class has many public methods by design as it provides focused
+    test coverage to achieve 100% coverage. Each test method validates a specific
+    aspect of the utility behavior, which is a legitimate use case for having
+    many methods in a test class.
+    """
 
     def test_generate_uuid(self) -> None:
         """Test generate_uuid method."""

@@ -12,8 +12,14 @@ from unittest.mock import patch
 from flext_api.utilities import FlextApiUtilities
 
 
-class TestFlextUtilitiesAdditionalCoverage:
-    """Additional tests to cover remaining uncovered lines in utilities.py."""
+class TestFlextUtilitiesAdditionalCoverage:  # noqa: PLR0904
+    """Additional tests to cover remaining uncovered lines in utilities.py.
+
+    This test class has many public methods by design as it provides additional
+    test coverage for utilities. Each test method validates a specific
+    aspect of the utility behavior, which is a legitimate use case for having
+    many methods in a test class.
+    """
 
     def test_response_builder_error_exception_path(self) -> None:
         """Test ResponseBuilder.build_error_response exception handling."""

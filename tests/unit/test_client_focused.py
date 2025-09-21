@@ -15,8 +15,14 @@ from flext_api import FlextApiClient, FlextApiModels
 from flext_core import FlextResult
 
 
-class TestFlextApiClientFocused:
-    """Focused tests to improve client.py coverage from 28% to 80%+."""
+class TestFlextApiClientFocused:  # noqa: PLR0904
+    """Focused tests to improve client.py coverage from 28% to 80%+.
+
+    This test class has many public methods by design as it provides focused
+    test coverage to improve code coverage. Each test method validates
+    a specific aspect of the client behavior, which is a legitimate use case
+    for having many methods in a test class.
+    """
 
     def test_client_initialization_with_string_config(self) -> None:
         """Test FlextApiClient initialization with base_url string."""

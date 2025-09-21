@@ -9,11 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import threading
-from collections.abc import Callable
-from typing import cast
-from unittest.mock import Mock
-
 from flext_tests import FlextTestsMatchers
 
 from flext_core import FlextContainer, FlextResult
@@ -127,7 +122,9 @@ class TestFlextContainer100PercentCoverage:
         container = FlextContainer.get_global()
 
         # Test typed service operations
-        typed_key: FlextContainer.ServiceKey[dict] = FlextContainer.ServiceKey("typed_service")
+        typed_key: FlextContainer.ServiceKey[dict] = FlextContainer.ServiceKey(
+            "typed_service"
+        )
         test_data = {"typed": True, "value": 42}
 
         register_result = container.register(typed_key.name, test_data)
@@ -154,7 +151,7 @@ class TestFlextContainer100PercentCoverage:
         services = {
             "batch_service_1": {"value": 1},
             "batch_service_2": {"value": 2},
-            "batch_service_3": {"value": 3}
+            "batch_service_3": {"value": 3},
         }
 
         batch_result = container.batch_register(services)
@@ -200,7 +197,9 @@ class TestFlextContainer100PercentCoverage:
         assert container1 is container2
 
         # Test global registration
-        register_result = FlextContainer.register_global("global_test", {"global": True})
+        register_result = FlextContainer.register_global(
+            "global_test", {"global": True}
+        )
         assert register_result.is_success
 
         # Test global typed access

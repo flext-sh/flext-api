@@ -68,7 +68,15 @@ class FlextApiModels:
         @field_validator("url")
         @classmethod
         def validate_url(cls, v: str) -> str:
-            """Validate URL using centralized FlextModels validation."""
+            """Validate URL using centralized FlextModels validation.
+
+            Returns:
+                str: Validated URL string.
+
+            Raises:
+                ValueError: If URL validation fails.
+
+            """
             # Handle relative URLs (starting with /) separately since they're valid for API requests
             if isinstance(v, str) and v.strip().startswith("/"):
                 return v.strip()
@@ -93,13 +101,17 @@ class FlextApiModels:
         @field_validator("headers")
         @classmethod
         def validate_headers(cls, v: dict[str, str]) -> dict[str, str]:
-            """Validate and sanitize headers with Python 3.13+ dict comprehension optimization."""
+            """Validate and sanitize headers with Python 3.13+ dict comprehension optimization.
+
+            Returns:
+                dict[str, str]: Sanitized headers dictionary.
+
+            """
             # Python 3.13+ optimized dict comprehension with walrus operator
             return {
                 k_clean: val_clean
                 for k, val in v.items()
-                if (k_clean := k.strip())
-                and (val_clean := str(val).strip())
+                if (k_clean := k.strip()) and (val_clean := str(val).strip())
             }
 
     class HttpResponse(FlextModels.Entity):
@@ -166,7 +178,15 @@ class FlextApiModels:
         @field_validator("base_url")
         @classmethod
         def validate_base_url(cls, v: str) -> str:
-            """Validate base URL using centralized FlextModels validation."""
+            """Validate base URL using centralized FlextModels validation.
+
+            Returns:
+                str: Validated base URL string.
+
+            Raises:
+                ValueError: If base URL validation fails.
+
+            """
             # Use centralized FlextModels validation instead of duplicate logic
             validation_result = FlextModels.create_validated_http_url(
                 v.strip() if isinstance(v, str) else "",
@@ -185,7 +205,12 @@ class FlextApiModels:
             return validation_result.unwrap()
 
         def get_auth_header(self) -> dict[str, str]:
-            """Get authentication header if configured."""
+            """Get authentication header if configured.
+
+            Returns:
+                dict[str, str]: Authentication header dictionary.
+
+            """
             if self.auth_token:
                 return {"Authorization": f"Bearer {self.auth_token}"}
             if self.api_key:
@@ -193,7 +218,12 @@ class FlextApiModels:
             return {}
 
         def get_default_headers(self) -> dict[str, str]:
-            """Get all default headers including auth."""
+            """Get all default headers including auth.
+
+            Returns:
+                dict[str, str]: Complete headers dictionary with auth.
+
+            """
             headers = {"User-Agent": "FlextAPI/0.9.0", **self.headers}
             headers.update(self.get_auth_header())
             return headers
@@ -218,7 +248,12 @@ class FlextApiModels:
         )
 
         def add_filter(self, key: str, value: object) -> FlextResult[None]:
-            """Add a filter to the query."""
+            """Add a filter to the query.
+
+            Returns:
+                FlextResult[None]: Success or failure result.
+
+            """
             if not key or not key.strip():
                 return FlextResult[None].fail("Filter key cannot be empty")
             self.filter_conditions[key.strip()] = value
@@ -226,7 +261,12 @@ class FlextApiModels:
             return FlextResult[None].ok(None)
 
         def to_query_params(self) -> dict[str, object]:
-            """Convert to query parameters dict with Python 3.13+ computational optimization."""
+            """Convert to query parameters dict with Python 3.13+ computational optimization.
+
+            Returns:
+                dict[str, object]: Query parameters dictionary.
+
+            """
             # Python 3.13+ optimized dict merge with walrus operator
             params = self.model_dump(by_alias=True, exclude_none=True)
             # Computational optimization: direct merge avoiding update() call
@@ -291,7 +331,12 @@ class FlextApiModels:
         fragment: str | None = None
 
         def validate_business_rules(self) -> FlextResult[None]:
-            """Validate URL business rules."""
+            """Validate URL business rules.
+
+            Returns:
+                FlextResult[None]: Success or failure result.
+
+            """
             if not self.raw_url:
                 return FlextResult[None].fail("URL cannot be empty")
             return FlextResult[None].ok(None)
@@ -304,7 +349,12 @@ class FlextApiModels:
             response_type: str = "success",
             **kwargs: str | float | bool | None,
         ) -> dict[str, object]:
-            """Create response using Python 3.13+ pattern matching optimization."""
+            """Create response using Python 3.13+ pattern matching optimization.
+
+            Returns:
+                dict[str, object]: Response dictionary.
+
+            """
             # Python 3.13+ match-case for computational efficiency
             match response_type:
                 case "error":
@@ -330,7 +380,12 @@ class FlextApiModels:
 
         @staticmethod
         def success(data: object = None, message: str = "") -> dict[str, object]:
-            """Build success response using flext-core generators."""
+            """Build success response using flext-core generators.
+
+            Returns:
+                dict[str, object]: Success response dictionary.
+
+            """
             return {
                 "status": "success",
                 "data": data,
@@ -341,7 +396,12 @@ class FlextApiModels:
 
         @staticmethod
         def error(message: str, code: str = "error") -> dict[str, object]:
-            """Build error response using flext-core generators."""
+            """Build error response using flext-core generators.
+
+            Returns:
+                dict[str, object]: Error response dictionary.
+
+            """
             return {
                 "status": "error",
                 "error": {"code": code, "message": message},
@@ -351,7 +411,12 @@ class FlextApiModels:
 
     @staticmethod
     def create_url(url_string: str) -> FlextResult[FlextApiModels.UrlModel]:
-        """Create URL model from string."""
+        """Create URL model from string.
+
+        Returns:
+            FlextResult[FlextApiModels.UrlModel]: Success or failure result with URL model.
+
+        """
         try:
             # Simple URL parsing - in a real implementation, you'd use urllib.parse
             if not url_string or not url_string.strip():
@@ -454,7 +519,15 @@ class FlextApiModels:
         @field_validator("title", "app_version")
         @classmethod
         def validate_required_fields(cls, v: str) -> str:
-            """Validate required string fields."""
+            """Validate required string fields.
+
+            Returns:
+                str: Validated string field.
+
+            Raises:
+                ValueError: If field is empty or invalid.
+
+            """
             if not v or not v.strip():
                 error_message = "Field cannot be empty"
                 raise ValueError(error_message)

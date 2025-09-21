@@ -66,7 +66,12 @@ class TestFlextApiConstants:
         assert not (success_min <= not_found_code < success_max)
 
     def test_client_error_codes(self) -> None:
-        """Test client error codes using http.HTTPStatus constants."""
+        """Test client error codes using http.HTTPStatus constants.
+
+        Raises:
+            AssertionError: If client error codes are not properly configured.
+
+        """
         bad_request_code = http.HTTPStatus.BAD_REQUEST.value
         not_found_code = http.HTTPStatus.NOT_FOUND.value
         ok_code = http.HTTPStatus.OK.value
@@ -86,7 +91,12 @@ class TestFlextApiConstants:
             )
 
     def test_server_error_codes(self) -> None:
-        """Test server error codes using http.HTTPStatus constants."""
+        """Test server error codes using http.HTTPStatus constants.
+
+        Raises:
+            AssertionError: If server error codes are not properly configured.
+
+        """
         internal_error_code = http.HTTPStatus.INTERNAL_SERVER_ERROR.value
         bad_gateway_code = http.HTTPStatus.BAD_GATEWAY.value
         ok_code = http.HTTPStatus.OK.value
@@ -104,7 +114,12 @@ class TestFlextApiConstants:
             )
 
     def test_rate_limit_constants(self) -> None:
-        """Test rate limit constants."""
+        """Test rate limit constants.
+
+        Raises:
+            AssertionError: If rate limit constants are not properly configured.
+
+        """
         if FlextApiConstants.RATE_LIMIT_REQUESTS != 1000:
             msg = f"Expected 1000, got {FlextApiConstants.RATE_LIMIT_REQUESTS}"
             raise AssertionError(
@@ -113,7 +128,12 @@ class TestFlextApiConstants:
         assert FlextApiConstants.RATE_LIMIT_WINDOW == 3600
 
     def test_response_templates(self) -> None:
-        """Test response templates."""
+        """Test response templates.
+
+        Raises:
+            AssertionError: If response templates are not properly configured.
+
+        """
         success_response = FlextApiConstants.SUCCESS_RESPONSE
         if success_response["status"] != "success":
             msg = f"Expected success, got {success_response['status']}"

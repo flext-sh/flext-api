@@ -16,18 +16,11 @@ from collections.abc import Mapping
 from flext_api import FlextApiClient, FlextApiConfig
 
 
-def main() -> None:
-    """Demonstrate FlextConfig usage in flext-api."""
-    print("🚀 FLEXT API - FlextConfig Singleton Usage Example")
-    print("=" * 60)
-
-    # =========================================================================
-    # 1. BASIC SINGLETON USAGE - Get global instance
-    # =========================================================================
+def _demonstrate_basic_singleton() -> None:
+    """Demonstrate basic singleton usage."""
     print("\n📋 1. Basic Singleton Usage")
     print("-" * 30)
 
-    # Get the global singleton instance (source of truth)
     config = FlextApiConfig.get_global_instance()
     print(f"Global config instance: {config}")
     print(f"API Host: {config.api_host}")
@@ -35,9 +28,9 @@ def main() -> None:
     print(f"Workers: {config.workers}")
     print(f"Debug Mode: {config.api_debug}")
 
-    # =========================================================================
-    # 2. ENVIRONMENT VARIABLE OVERRIDES
-    # =========================================================================
+
+def _demonstrate_environment_overrides() -> None:
+    """Demonstrate environment variable overrides."""
     print("\n🌍 2. Environment Variable Overrides")
     print("-" * 40)
 
@@ -58,9 +51,17 @@ def main() -> None:
     print(f"  Workers: {env_config.workers}")
     print(f"  Debug Mode: {env_config.api_debug}")
 
-    # =========================================================================
-    # 3. PARAMETER OVERRIDES - Change behavior with parameters
-    # =========================================================================
+
+def _create_configurations() -> tuple[FlextApiConfig, FlextApiConfig]:
+    """Create production and development configurations.
+
+    Returns:
+        Tuple of (production_config, development_config).
+
+    Raises:
+        RuntimeError: If configuration creation fails.
+
+    """
     print("\n⚙️ 3. Parameter Overrides - Change Behavior")
     print("-" * 45)
 
@@ -72,12 +73,12 @@ def main() -> None:
         api_debug=False,
     )
 
-    if prod_config_result.success:
-        prod_config = prod_config_result.value
-    else:
+    if not prod_config_result.success:
         print(f"❌ Configuration creation failed: {prod_config_result.error}")
-        return
+        msg = "Failed to create production config"
+        raise RuntimeError(msg)
 
+    prod_config = prod_config_result.value
     print("Production config created:")
     print(f"  API Host: {prod_config.api_host}")
     print(f"  API Port: {prod_config.api_port}")
@@ -93,14 +94,14 @@ def main() -> None:
         api_debug=True,
     )
 
-    if dev_config_result.success:
-        dev_config = dev_config_result.value
-    else:
+    if not dev_config_result.success:
         print(
-            f"❌ Development configuration creation failed: {dev_config_result.error}",
+            f"❌ Development configuration creation failed: {dev_config_result.error}"
         )
-        return
+        msg = "Failed to create development config"
+        raise RuntimeError(msg)
 
+    dev_config = dev_config_result.value
     print("\nDevelopment config created:")
     print(f"  API Host: {dev_config.api_host}")
     print(f"  API Port: {dev_config.api_port}")
@@ -108,9 +109,13 @@ def main() -> None:
     print(f"  Debug Mode: {dev_config.api_debug}")
     print("  Environment: development")
 
-    # =========================================================================
-    # 4. USING CONFIG IN SERVICES - FlextConfig as source of truth
-    # =========================================================================
+    return prod_config, dev_config
+
+
+def _demonstrate_service_usage(
+    prod_config: FlextApiConfig, dev_config: FlextApiConfig
+) -> None:
+    """Demonstrate using config in services."""
     print("\n🔧 4. Using Config in Services")
     print("-" * 35)
 
@@ -133,9 +138,11 @@ def main() -> None:
     print(f"  Timeout: {client3.timeout}")
     print(f"  Max Retries: {client3.max_retries}")
 
-    # =========================================================================
-    # 5. CONFIGURATION VALIDATION
-    # =========================================================================
+
+def _demonstrate_validation(
+    prod_config: FlextApiConfig, dev_config: FlextApiConfig
+) -> None:
+    """Demonstrate configuration validation."""
     print("\n✅ 5. Configuration Validation")
     print("-" * 35)
 
@@ -145,7 +152,7 @@ def main() -> None:
         print("✅ Production configuration is valid")
     else:
         print(
-            f"❌ Production configuration validation failed: {validation_result.error}",
+            f"❌ Production configuration validation failed: {validation_result.error}"
         )
 
     # Validate development configuration
@@ -154,12 +161,12 @@ def main() -> None:
         print("✅ Development configuration is valid")
     else:
         print(
-            f"❌ Development configuration validation failed: {validation_result.error}",
+            f"❌ Development configuration validation failed: {validation_result.error}"
         )
 
-    # =========================================================================
-    # 6. CONFIGURATION EXPORT AND SERIALIZATION
-    # =========================================================================
+
+def _demonstrate_export(prod_config: FlextApiConfig) -> None:
+    """Demonstrate configuration export."""
     print("\n📤 6. Configuration Export")
     print("-" * 30)
 
@@ -188,9 +195,9 @@ def main() -> None:
             cors_value: object = cors_config_dict[key]
             print(f"  {key}: {cors_value}")
 
-    # =========================================================================
-    # 7. GLOBAL INSTANCE MANAGEMENT
-    # =========================================================================
+
+def _demonstrate_global_management(dev_config: FlextApiConfig) -> None:
+    """Demonstrate global instance management."""
     print("\n🌐 7. Global Instance Management")
     print("-" * 40)
 
@@ -207,8 +214,26 @@ def main() -> None:
     FlextApiConfig.clear_global_instance()
     print("✅ Global instance cleared")
 
-    print("\n🎉 FlextConfig usage example completed!")
+
+def main() -> None:
+    """Demonstrate FlextConfig usage in flext-api."""
+    print("🚀 FLEXT API - FlextConfig Singleton Usage Example")
     print("=" * 60)
+
+    try:
+        _demonstrate_basic_singleton()
+        _demonstrate_environment_overrides()
+        prod_config, dev_config = _create_configurations()
+        _demonstrate_service_usage(prod_config, dev_config)
+        _demonstrate_validation(prod_config, dev_config)
+        _demonstrate_export(prod_config)
+        _demonstrate_global_management(dev_config)
+
+        print("\n🎉 FlextConfig usage example completed!")
+        print("=" * 60)
+    except RuntimeError as e:
+        print(f"❌ Example failed: {e}")
+        return
 
 
 if __name__ == "__main__":

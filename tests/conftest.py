@@ -84,7 +84,12 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 
 @pytest.fixture
 def flext_api_storage() -> FlextApiStorage:
-    """Provide FlextApiStorage using flext_tests configuration."""
+    """Provide FlextApiStorage using flext_tests configuration.
+
+    Returns:
+        FlextApiStorage: Configured storage instance.
+
+    """
     # Use FlextTestsDomains for configuration data
     config_data = FlextTestsDomains.create_configuration()
     config_data["namespace"] = "TestStorage"
@@ -95,7 +100,12 @@ def flext_api_storage() -> FlextApiStorage:
 
 @pytest.fixture
 def flext_api_client() -> FlextApiClient:
-    """Provide FlextApiClient using flext_tests configuration."""
+    """Provide FlextApiClient using flext_tests configuration.
+
+    Returns:
+        FlextApiClient: Configured client instance.
+
+    """
     # Use FlextTestsDomains for realistic config values
     config_data = FlextTestsDomains.create_configuration()
 
@@ -118,13 +128,23 @@ def flext_api_client() -> FlextApiClient:
 
 @pytest.fixture
 def flext_api_config() -> FlextApiConfig:
-    """Provide FlextApiConfig using flext_tests configuration."""
+    """Provide FlextApiConfig using flext_tests configuration.
+
+    Returns:
+        FlextApiConfig: Configuration instance.
+
+    """
     return FlextApiConfig()
 
 
 @pytest.fixture
 def clean_container() -> FlextContainer:
-    """Provide clean FlextContainer instance for testing."""
+    """Provide clean FlextContainer instance for testing.
+
+    Returns:
+        FlextContainer: Clean container instance.
+
+    """
     # Create a separate container instance for testing (not the global one)
     container = FlextContainer()
     container.clear()  # Clear any existing registrations
@@ -133,7 +153,12 @@ def clean_container() -> FlextContainer:
 
 @pytest.fixture
 def fastapi_app() -> FastAPI:
-    """Provide FastAPI app using flext_tests service data."""
+    """Provide FastAPI app using flext_tests service data.
+
+    Returns:
+        FastAPI: Configured FastAPI application.
+
+    """
     service_data = FlextTestsDomains.create_service()
 
     return FastAPI(
@@ -145,7 +170,12 @@ def fastapi_app() -> FastAPI:
 
 @pytest.fixture
 def test_client(fastapi_app: FastAPI) -> TestClient:
-    """Provide FastAPI test client."""
+    """Provide FastAPI test client.
+
+    Returns:
+        TestClient: Configured test client.
+
+    """
     return TestClient(fastapi_app)
 
 
@@ -156,13 +186,23 @@ def test_client(fastapi_app: FastAPI) -> TestClient:
 
 @pytest.fixture
 def sample_api_data() -> FlextTypes.Core.Dict:
-    """Sample API data using FlextTestsDomains."""
+    """Sample API data using FlextTestsDomains.
+
+    Returns:
+        FlextTypes.Core.Dict: Sample API data.
+
+    """
     return FlextTestsDomains.api_response_data()
 
 
 @pytest.fixture
 def sample_headers() -> FlextTypes.Core.Headers:
-    """Sample HTTP headers using flext_tests."""
+    """Sample HTTP headers using flext_tests.
+
+    Returns:
+        FlextTypes.Core.Headers: Sample HTTP headers.
+
+    """
     service_data = FlextTestsDomains.create_service()
     return {
         "Content-Type": "application/json",
@@ -174,31 +214,56 @@ def sample_headers() -> FlextTypes.Core.Headers:
 
 @pytest.fixture
 def sample_config_dict() -> FlextTypes.Core.Dict:
-    """Sample config dictionary using FlextTestsDomains."""
+    """Sample config dictionary using FlextTestsDomains.
+
+    Returns:
+        FlextTypes.Core.Dict: Sample configuration data.
+
+    """
     return FlextTestsDomains.create_configuration()
 
 
 @pytest.fixture
 def sample_user_data() -> FlextTypes.Core.Dict:
-    """Sample user data using FlextTestsDomains."""
+    """Sample user data using FlextTestsDomains.
+
+    Returns:
+        FlextTypes.Core.Dict: Sample user data.
+
+    """
     return FlextTestsDomains.create_user()
 
 
 @pytest.fixture
 def sample_service_data() -> FlextTypes.Core.Dict:
-    """Sample service data using FlextTestsDomains."""
+    """Sample service data using FlextTestsDomains.
+
+    Returns:
+        FlextTypes.Core.Dict: Sample service data.
+
+    """
     return FlextTestsDomains.create_service()
 
 
 @pytest.fixture
 def sample_payload_data() -> FlextTypes.Core.Dict:
-    """Sample payload data using FlextTestsDomains."""
+    """Sample payload data using FlextTestsDomains.
+
+    Returns:
+        FlextTypes.Core.Dict: Sample payload data.
+
+    """
     return FlextTestsDomains.create_payload()
 
 
 @pytest.fixture
 def sample_configuration_data() -> FlextTypes.Core.Dict:
-    """Sample configuration data using FlextTestsDomains."""
+    """Sample configuration data using FlextTestsDomains.
+
+    Returns:
+        FlextTypes.Core.Dict: Sample configuration data.
+
+    """
     return FlextTestsDomains.create_configuration()
 
 
@@ -209,25 +274,45 @@ def sample_configuration_data() -> FlextTypes.Core.Dict:
 
 @pytest.fixture
 def valid_email_cases() -> list[str]:
-    """Valid email cases from FlextTestsDomains."""
+    """Valid email cases from FlextTestsDomains.
+
+    Returns:
+        list[str]: List of valid email addresses.
+
+    """
     return FlextTestsDomains.valid_email_cases()
 
 
 @pytest.fixture
 def invalid_email_cases() -> list[str]:
-    """Invalid email cases from FlextTestsDomains."""
+    """Invalid email cases from FlextTestsDomains.
+
+    Returns:
+        list[str]: List of invalid email addresses.
+
+    """
     return FlextTestsDomains.invalid_email_cases()
 
 
 @pytest.fixture
 def valid_ages() -> list[int]:
-    """Valid age cases from FlextTestsDomains."""
+    """Valid age cases from FlextTestsDomains.
+
+    Returns:
+        list[int]: List of valid ages.
+
+    """
     return FlextTestsDomains.valid_ages()
 
 
 @pytest.fixture
 def invalid_ages() -> list[int]:
-    """Invalid age cases from FlextTestsDomains."""
+    """Invalid age cases from FlextTestsDomains.
+
+    Returns:
+        list[int]: List of invalid ages.
+
+    """
     return FlextTestsDomains.invalid_ages()
 
 
@@ -238,14 +323,24 @@ def invalid_ages() -> list[int]:
 
 @pytest.fixture
 def temp_dir() -> Generator[Path]:
-    """Provide temporary directory for testing."""
+    """Provide temporary directory for testing.
+
+    Yields:
+        Path: Temporary directory path.
+
+    """
     with tempfile.TemporaryDirectory() as temp_dir:
         yield Path(temp_dir)
 
 
 @pytest.fixture
 def event_loop() -> Generator[asyncio.AbstractEventLoop]:
-    """Provide event loop for async testing."""
+    """Provide event loop for async testing.
+
+    Yields:
+        asyncio.AbstractEventLoop: Event loop for testing.
+
+    """
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()

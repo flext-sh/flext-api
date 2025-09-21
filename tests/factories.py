@@ -25,12 +25,22 @@ fake = Faker()
 Faker.seed(12345)
 
 
-class FlextApiFactories:
-    """Factory methods using flext_tests EM ABSOLUTO - NO local implementations."""
+class FlextApiFactories:  # noqa: PLR0904
+    """Factory methods using flext_tests EM ABSOLUTO - NO local implementations.
+
+    This class has many public methods by design as it serves as a comprehensive
+    factory for creating test objects. Each method creates a specific type of
+    test data or object, which is a legitimate use case for having many methods.
+    """
 
     @staticmethod
     def create_client_config(**overrides: object) -> FlextTypes.Core.Dict:
-        """Create client config using FlextTestsDomains - ABSOLUTE usage."""
+        """Create client config using FlextTestsDomains - ABSOLUTE usage.
+
+        Returns:
+            FlextTypes.Core.Dict: Client configuration dictionary.
+
+        """
         # Use FlextTestsDomains for base configuration
         base_config = FlextTestsDomains.create_configuration()
 
@@ -49,7 +59,12 @@ class FlextApiFactories:
 
     @staticmethod
     def create_client(**overrides: object) -> FlextApiClient:
-        """Create FlextApiClient using FlextTestsDomains config."""
+        """Create FlextApiClient using FlextTestsDomains config.
+
+        Returns:
+            FlextApiClient: Configured client instance.
+
+        """
         config = FlextApiFactories.create_client_config(**overrides)
         return FlextApiClient(
             base_url=str(config["base_url"]),
@@ -60,7 +75,12 @@ class FlextApiFactories:
 
     @staticmethod
     def create_api_config(**overrides: object) -> FlextApiConfig:
-        """Create FlextApiConfig using FlextTestsDomains - ABSOLUTE usage."""
+        """Create FlextApiConfig using FlextTestsDomains - ABSOLUTE usage.
+
+        Returns:
+            FlextApiConfig: Configured API config instance.
+
+        """
         # Use FlextTestsDomains for realistic configuration
         config_data = FlextTestsDomains.create_configuration()
 
@@ -88,7 +108,12 @@ class FlextApiFactories:
 
     @staticmethod
     def create_storage_config(**overrides: object) -> FlextTypes.Core.Dict:
-        """Create storage config using FlextTestsDomains."""
+        """Create storage config using FlextTestsDomains.
+
+        Returns:
+            FlextTypes.Core.Dict: Storage configuration dictionary.
+
+        """
         # Use FlextTestsDomains for storage configuration
         base_config = FlextTestsDomains.create_configuration()
 
@@ -103,13 +128,23 @@ class FlextApiFactories:
 
     @staticmethod
     def create_storage(**overrides: object) -> FlextApiStorage:
-        """Create FlextApiStorage using FlextTestsDomains config."""
+        """Create FlextApiStorage using FlextTestsDomains config.
+
+        Returns:
+            FlextApiStorage: Configured storage instance.
+
+        """
         config = FlextApiFactories.create_storage_config(**overrides)
         return FlextApiStorage(config)
 
     @staticmethod
     def create_request_data(**overrides: object) -> FlextTypes.Core.Dict:
-        """Create HTTP request data using FlextTestsDomains - ABSOLUTE."""
+        """Create HTTP request data using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            FlextTypes.Core.Dict: Request data dictionary.
+
+        """
         # Use FlextTestsDomains for payload structure
         payload_data = FlextTestsDomains.create_payload()
 
@@ -129,7 +164,12 @@ class FlextApiFactories:
 
     @staticmethod
     def create_response_data(**overrides: object) -> FlextTypes.Core.Dict:
-        """Create HTTP response data using FlextTestsDomains - ABSOLUTE."""
+        """Create HTTP response data using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            FlextTypes.Core.Dict: Response data dictionary.
+
+        """
         # Use FlextTestsDomains for API response structure
         api_response = FlextTestsDomains.api_response_data()
 
@@ -155,7 +195,12 @@ class FlextApiFactories:
 
     @staticmethod
     def create_user_data(**overrides: object) -> FlextTypes.Core.Dict:
-        """Create user data using FlextTestsDomains - ABSOLUTE."""
+        """Create user data using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            FlextTypes.Core.Dict: User data dictionary.
+
+        """
         user_data = FlextTestsDomains.create_user()
         user_data.update(overrides)
         return user_data
@@ -164,7 +209,12 @@ class FlextApiFactories:
     def create_error_result(
         error_message: str = "Test error",
     ) -> FlextResult[FlextTypes.Core.Dict]:
-        """Create error FlextResult using FlextTestsUtilities - ABSOLUTE."""
+        """Create error FlextResult using FlextTestsUtilities - ABSOLUTE.
+
+        Returns:
+            FlextResult[FlextTypes.Core.Dict]: Error result instance.
+
+        """
         return cast(
             "FlextResult[FlextTypes.Core.Dict]",
             FlextTestsUtilities.create_test_result(success=False, error=error_message),
@@ -174,7 +224,12 @@ class FlextApiFactories:
     def create_success_result(
         data: FlextTypes.Core.Dict | None = None,
     ) -> FlextResult[FlextTypes.Core.Dict]:
-        """Create success FlextResult using FlextTestsUtilities - ABSOLUTE."""
+        """Create success FlextResult using FlextTestsUtilities - ABSOLUTE.
+
+        Returns:
+            FlextResult[FlextTypes.Core.Dict]: Success result instance.
+
+        """
         if data is None:
             data = {"success": True, "message": "Test operation successful"}
         return cast(
@@ -184,58 +239,108 @@ class FlextApiFactories:
 
     @staticmethod
     def batch_request_data(count: int = 5) -> list[FlextTypes.Core.Dict]:
-        """Create batch requests using FlextTestsUtilities - ABSOLUTE."""
+        """Create batch requests using FlextTestsUtilities - ABSOLUTE.
+
+        Returns:
+            list[FlextTypes.Core.Dict]: List of request data dictionaries.
+
+        """
         return [FlextApiFactories.create_request_data() for _ in range(count)]
 
     @staticmethod
     def batch_response_data(count: int = 5) -> list[FlextTypes.Core.Dict]:
-        """Create batch responses using FlextTestsUtilities - ABSOLUTE."""
+        """Create batch responses using FlextTestsUtilities - ABSOLUTE.
+
+        Returns:
+            list[FlextTypes.Core.Dict]: List of response data dictionaries.
+
+        """
         return [FlextApiFactories.create_response_data() for _ in range(count)]
 
     @staticmethod
     def create_service_data(**overrides: object) -> FlextTypes.Core.Dict:
-        """Create service data using FlextTestsDomains - ABSOLUTE."""
+        """Create service data using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            FlextTypes.Core.Dict: Service data dictionary.
+
+        """
         service_data = FlextTestsDomains.create_service()
         service_data.update(overrides)
         return service_data
 
     @staticmethod
     def create_payload_data(**overrides: object) -> FlextTypes.Core.Dict:
-        """Create payload data using FlextTestsDomains - ABSOLUTE."""
+        """Create payload data using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            FlextTypes.Core.Dict: Payload data dictionary.
+
+        """
         payload_data = FlextTestsDomains.create_payload()
         payload_data.update(overrides)
         return payload_data
 
     @staticmethod
     def create_configuration_data(**overrides: object) -> FlextTypes.Core.Dict:
-        """Create configuration data using FlextTestsDomains - ABSOLUTE."""
+        """Create configuration data using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            FlextTypes.Core.Dict: Configuration data dictionary.
+
+        """
         config_data = FlextTestsDomains.create_configuration()
         config_data.update(overrides)
         return config_data
 
     @staticmethod
     def batch_users(count: int = 5) -> list[FlextTypes.Core.Dict]:
-        """Create batch users using FlextTestsDomains - ABSOLUTE."""
+        """Create batch users using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            List of user dictionaries.
+
+        """
         return FlextTestsDomains.batch_users(count)
 
     @staticmethod
     def get_valid_email_cases() -> list[str]:
-        """Get valid emails using FlextTestsDomains - ABSOLUTE."""
+        """Get valid emails using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            List of valid email strings.
+
+        """
         return FlextTestsDomains.valid_email_cases()
 
     @staticmethod
     def get_invalid_email_cases() -> list[str]:
-        """Get invalid emails using FlextTestsDomains - ABSOLUTE."""
+        """Get invalid emails using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            List of invalid email strings.
+
+        """
         return FlextTestsDomains.invalid_email_cases()
 
     @staticmethod
     def get_valid_ages() -> list[int]:
-        """Get valid ages using FlextTestsDomains - ABSOLUTE."""
+        """Get valid ages using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            List of valid age integers.
+
+        """
         return FlextTestsDomains.valid_ages()
 
     @staticmethod
     def get_invalid_ages() -> list[int]:
-        """Get invalid ages using FlextTestsDomains - ABSOLUTE."""
+        """Get invalid ages using FlextTestsDomains - ABSOLUTE.
+
+        Returns:
+            List of invalid age integers.
+
+        """
         return FlextTestsDomains.invalid_ages()
 
     @staticmethod
@@ -243,7 +348,12 @@ class FlextApiFactories:
         count: int = 10,
         prefix: str = "flext_api",
     ) -> list[FlextTypes.Core.Dict]:
-        """Create test data using FlextTestsUtilities - ABSOLUTE."""
+        """Create test data using FlextTestsUtilities - ABSOLUTE.
+
+        Returns:
+            List of test data dictionaries.
+
+        """
         return FlextTestsUtilities.create_test_data(size=count, prefix=prefix)
 
     @staticmethod
@@ -251,7 +361,12 @@ class FlextApiFactories:
         service_type: str = "api",
         **config: object,
     ) -> object:
-        """Create functional service using FlextTestsUtilities - ABSOLUTE."""
+        """Create functional service using FlextTestsUtilities - ABSOLUTE.
+
+        Returns:
+            Functional service object.
+
+        """
         return FlextTestsUtilities.functional_service(service_type, **config)
 
     @staticmethod
@@ -260,7 +375,12 @@ class FlextApiFactories:
         success: bool = True,
         data: object = None,
     ) -> FlextTypes.Core.Dict:
-        """Create API response using FlextTestsUtilities - ABSOLUTE."""
+        """Create API response using FlextTestsUtilities - ABSOLUTE.
+
+        Returns:
+            API response dictionary.
+
+        """
         return FlextTestsUtilities.create_api_response(success=success, data=data)
 
 

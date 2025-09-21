@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.client import FlextApiClient, create_flext_api
+from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
 from flext_api.exceptions import FlextApiExceptions
@@ -41,5 +41,4 @@ __all__ = [
     "FlextApiStorage",
     "FlextApiUtilities",
     "__version__",
-    "create_flext_api",
 ]

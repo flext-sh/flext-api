@@ -306,7 +306,12 @@ class FlextApiConstants(FlextConstants):
     # Static methods - moved from loose functions
     @staticmethod
     def is_success_status(status_code: int) -> bool:
-        """Check if status code indicates success."""
+        """Check if status code indicates success.
+
+        Returns:
+            True if status code is in success range (200-299), False otherwise.
+
+        """
         return (
             FlextApiConstants.HTTP_SUCCESS_MIN
             <= status_code
@@ -315,7 +320,12 @@ class FlextApiConstants(FlextConstants):
 
     @staticmethod
     def is_client_error_status(status_code: int) -> bool:
-        """Check if status code indicates client error."""
+        """Check if status code indicates client error.
+
+        Returns:
+            True if status code is in client error range (400-499), False otherwise.
+
+        """
         return (
             FlextApiConstants.HTTP_CLIENT_ERROR_MIN
             <= status_code
@@ -324,7 +334,12 @@ class FlextApiConstants(FlextConstants):
 
     @staticmethod
     def is_server_error_status(status_code: int) -> bool:
-        """Check if status code indicates server error."""
+        """Check if status code indicates server error.
+
+        Returns:
+            True if status code is in server error range (500-599), False otherwise.
+
+        """
         return (
             FlextApiConstants.HTTP_SERVER_ERROR_MIN
             <= status_code
@@ -333,7 +348,12 @@ class FlextApiConstants(FlextConstants):
 
     @staticmethod
     def is_valid_http_status(status_code: int) -> bool:
-        """Check if HTTP status code is valid."""
+        """Check if HTTP status code is valid.
+
+        Returns:
+            True if status code is in valid range (100-599), False otherwise.
+
+        """
         return (
             FlextApiConstants.HTTP_STATUS_MIN
             <= status_code
@@ -342,7 +362,12 @@ class FlextApiConstants(FlextConstants):
 
     @staticmethod
     def get_default_headers() -> dict[str, str]:
-        """Get default HTTP headers."""
+        """Get default HTTP headers.
+
+        Returns:
+            Dictionary containing default HTTP headers for API requests.
+
+        """
         return {
             FlextApiConstants.USER_AGENT_HEADER: "FlextAPI/0.9.0",
             FlextApiConstants.CONTENT_TYPE_HEADER: FlextApiConstants.JSON_TYPE,
@@ -351,7 +376,12 @@ class FlextApiConstants(FlextConstants):
 
     @staticmethod
     def validate_configuration(**config: object) -> list[str]:
-        """Validate configuration parameters and return error messages."""
+        """Validate configuration parameters and return error messages.
+
+        Returns:
+            List of error messages for invalid configuration parameters.
+
+        """
         errors = []
 
         if "timeout" in config:
