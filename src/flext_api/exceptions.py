@@ -56,7 +56,7 @@ class FlextApiExceptions:
         def __init__(
             self,
             message: str,
-                status_code: int = FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
+            status_code: int = FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
             **kwargs: object,
         ) -> None:
             """Initialize HTTP error with status code."""
@@ -85,7 +85,7 @@ class FlextApiExceptions:
         cls,
         message: str,
         *,
-                status_code: int = FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
+        status_code: int = FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
         url: str | None = None,
         method: str | None = None,
         **kwargs: object,

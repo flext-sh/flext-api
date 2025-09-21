@@ -32,7 +32,7 @@ def _create_fastapi_instance(**kwargs: object) -> object:
     try:
         from fastapi import FastAPI
 
-        return FastAPI(**kwargs)  # type: ignore[arg-type]
+        return FastAPI(**kwargs)
     except ImportError as e:
         error_msg = "FastAPI is required for FlextAPI application creation"
         raise ImportError(error_msg) from e
@@ -62,12 +62,13 @@ class FlextApiApp:
         )
 
         # Add health endpoint
-        if hasattr(app, 'get'):
-            @app.get("/health")  # type: ignore[attr-defined]
+        if hasattr(app, "get"):
+
+            @app.get("/health")
             def health_check() -> dict[str, str]:  # pyright: ignore[reportUnusedFunction]
                 return {"status": "healthy", "service": "flext-api"}
 
-        return app  # type: ignore[return-value]
+        return app
 
 
 # Direct class access only - no backward compatibility aliases
