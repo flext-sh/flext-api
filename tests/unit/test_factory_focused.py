@@ -23,9 +23,9 @@ class TestFlextApiFactoryFocused:
         assert isinstance(client, FlextApiClient)
         assert client is not None
 
-        # Verify default configuration is used
-        # The client should be created with default base_url
-        assert hasattr(client, "_base_url")
+        # Verify default configuration is used - use public property
+        assert hasattr(client, "base_url")
+        assert client.base_url is not None
 
     def test_create_flext_api_without_config(self) -> None:
         """Test FlextApiClient without any config parameter."""
@@ -34,8 +34,9 @@ class TestFlextApiFactoryFocused:
         assert isinstance(client, FlextApiClient)
         assert client is not None
 
-        # Should use default configuration
-        assert hasattr(client, "_base_url")
+        # Should use default configuration - use public property
+        assert hasattr(client, "base_url")
+        assert client.base_url is not None
 
     def test_create_flext_api_with_base_url(self) -> None:
         """Test FlextApiClient with base_url in config."""
@@ -43,7 +44,8 @@ class TestFlextApiFactoryFocused:
 
         assert isinstance(client, FlextApiClient)
         assert client is not None
-        assert hasattr(client, "_base_url")
+        assert hasattr(client, "base_url")
+        assert client.base_url == "https://test.example.com"
 
     def test_create_flext_api_with_timeout(self) -> None:
         """Test FlextApiClient with timeout in config."""
@@ -184,7 +186,8 @@ class TestFlextApiFactoryFocused:
 
     def test_factory_module_exports(self) -> None:
         """Test that factory module exports are correct."""
-        assert "create_flext_api" in __all__
+        # FlextApiClient should be in __all__ since create_flext_api was removed
+        assert "FlextApiClient" in __all__
         assert isinstance(__all__, list)
 
     def test_create_flext_api_with_mixed_valid_invalid_config(self) -> None:
