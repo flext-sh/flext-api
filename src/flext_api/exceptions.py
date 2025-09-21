@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api.constants import FlextApiConstants
-from flext_core import FlextExceptions
+from flext_core import FlextConstants, FlextExceptions
 
 
 class FlextApiExceptions:
@@ -44,7 +44,7 @@ class FlextApiExceptions:
         def __init__(self, message: str, **_kwargs: object) -> None:
             """Initialize not found error with HTTP status code."""
             super().__init__(message)
-            self.status_code = 404
+            self.status_code = FlextConstants.Platform.HTTP_STATUS_NOT_FOUND
 
     # =============================================================================
     # HTTP-specific simple aliases - Use existing flext-core patterns
@@ -56,7 +56,7 @@ class FlextApiExceptions:
         def __init__(
             self,
             message: str,
-            status_code: int = 500,
+                status_code: int = FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
             **kwargs: object,
         ) -> None:
             """Initialize HTTP error with status code."""
@@ -85,7 +85,7 @@ class FlextApiExceptions:
         cls,
         message: str,
         *,
-        status_code: int = 500,
+                status_code: int = FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
         url: str | None = None,
         method: str | None = None,
         **kwargs: object,

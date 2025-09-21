@@ -10,9 +10,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext_tests import FlextTestsDomains
 
 from flext_api import FlextApiConfig
+from flext_tests import FlextTestsDomains
 
 
 class TestFlextApiConfigReal:

@@ -12,8 +12,8 @@ from __future__ import annotations
 import json
 
 import pytest
-from flext_tests import FlextTestsMatchers
 
+from flext_tests import FlextTestsMatchers
 from tests.factories import FlextApiFactories
 
 

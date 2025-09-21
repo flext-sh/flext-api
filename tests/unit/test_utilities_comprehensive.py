@@ -6,12 +6,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsMatchers
 from pydantic import ValidationError
 
 from flext_api import FlextApiConstants, FlextApiUtilities
 from flext_api.models import FlextApiModels
 from flext_core import FlextTypes
+from flext_tests import FlextTestsMatchers
 
 
 class TestFlextApiUtilitiesComprehensive:

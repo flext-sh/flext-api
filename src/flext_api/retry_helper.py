@@ -43,12 +43,12 @@ class FlextApiRetryHelper:
         self.backoff_factor = backoff_factor
         self._logger = logger or FlextLogger(__name__)
 
-    async def execute_with_retry(
+    async def execute_with_retry(  # type: ignore[explicit-any]
         self,
-        operation: Callable[..., Awaitable[FlextResult[T]]],
+        operation: Callable[..., Awaitable[FlextResult[object]]],
         *args: object,
         **kwargs: object,
-    ) -> FlextResult[T]:
+    ) -> FlextResult[object]:
         """Execute operation with retry logic and exponential backoff.
 
         Args:
@@ -101,7 +101,7 @@ class FlextApiRetryHelper:
             f"Operation failed after {self.max_retries + 1} attempts: {last_error}"
         )
         self._logger.error(error_msg)
-        return FlextResult[T].fail(error_msg)
+        return FlextResult[object].fail(error_msg)
 
     async def execute_simple_retry(
         self,

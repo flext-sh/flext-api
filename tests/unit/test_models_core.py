@@ -11,10 +11,10 @@ from __future__ import annotations
 from typing import cast
 
 import pytest
-from flext_tests import FlextTestsDomains
 from pydantic import ValidationError
 
 from flext_api import FlextApiConstants, FlextApiModels
+from flext_tests import FlextTestsDomains
 
 
 class TestFlextApiModels:
