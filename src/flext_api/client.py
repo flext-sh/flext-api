@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Self
 
 from pydantic import ConfigDict
 
@@ -46,9 +47,7 @@ class FlextApiClient(FlextDomainService[None]):
 
         # Create HTTP client
         client = FlextApiClient(
-            base_url="https://api.example.com",
-            timeout=30,
-            max_retries=3
+            base_url="https://api.example.com", timeout=30, max_retries=3
         )
 
         # Execute HTTP request
@@ -114,7 +113,7 @@ class FlextApiClient(FlextDomainService[None]):
                 base_url="https://api.example.com",
                 timeout=30,
                 max_retries=3,
-                headers={"Authorization": "Bearer token"}
+                headers={"Authorization": "Bearer token"},
             )
 
             # Client with FlextApiConfig
@@ -141,9 +140,17 @@ class FlextApiClient(FlextDomainService[None]):
         )
 
         # Initialize nested operation classes - these are set as object attributes, not Pydantic fields
-        object.__setattr__(self, "http", self._HttpOperations(self._client_config, self._logger))
-        object.__setattr__(self, "lifecycle", self._LifecycleManager(self._client_config, self._logger))
-        object.__setattr__(self, "client_config", self._ConfigurationManager(self._client_config, self._logger))
+        object.__setattr__(
+            self, "http", self._HttpOperations(self._client_config, self._logger)
+        )
+        object.__setattr__(
+            self, "lifecycle", self._LifecycleManager(self._client_config, self._logger)
+        )
+        object.__setattr__(
+            self,
+            "client_config",
+            self._ConfigurationManager(self._client_config, self._logger),
+        )
 
         # Initialize connection manager for HTTP operations
         self._connection_manager = self._ConnectionManager(
@@ -177,10 +184,16 @@ class FlextApiClient(FlextDomainService[None]):
             self._logger = logger
 
         async def get(
-            self, url: str, params: dict[str, str] | None = None, headers: dict[str, str] | None = None, **kwargs: str | int | dict[str, str]
+            self,
+            url: str,
+            params: dict[str, str] | None = None,
+            headers: dict[str, str] | None = None,
+            **kwargs: str | int | dict[str, str],
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP GET request with error handling."""
-            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(**kwargs)
+            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(
+                **kwargs
+            )
             if params is not None:
                 request_kwargs["params"] = params
             if headers is not None:
@@ -197,12 +210,14 @@ class FlextApiClient(FlextDomainService[None]):
             **kwargs: str | int | dict[str, str],
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP POST request with error handling.
-            
+
             Returns:
                 FlextResult containing HttpResponse or error details.
 
             """
-            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(**kwargs)
+            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(
+                **kwargs
+            )
             if data is not None:
                 request_kwargs["data"] = data
             if json is not None:
@@ -223,7 +238,9 @@ class FlextApiClient(FlextDomainService[None]):
             **kwargs: str | int | dict[str, str],
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP PUT request with error handling."""
-            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(**kwargs)
+            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(
+                **kwargs
+            )
             if data is not None:
                 request_kwargs["data"] = data
             if json is not None:
@@ -235,15 +252,20 @@ class FlextApiClient(FlextDomainService[None]):
             return await self._execute_request("PUT", url, **request_kwargs)
 
         async def delete(
-            self, url: str, headers: dict[str, str] | None = None, **kwargs: str | int | dict[str, str]
+            self,
+            url: str,
+            headers: dict[str, str] | None = None,
+            **kwargs: str | int | dict[str, str],
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP DELETE request with error handling.
-            
+
             Returns:
                 FlextResult containing HttpResponse or error details.
 
             """
-            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(**kwargs)
+            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(
+                **kwargs
+            )
             if headers is not None:
                 request_kwargs["headers"] = headers
             return await self._execute_request("DELETE", url, **request_kwargs)
@@ -282,7 +304,7 @@ class FlextApiClient(FlextDomainService[None]):
 
             except Exception as e:
                 error_msg = f"{method} request failed: {e}"
-                self._logger.error(error_msg, extra={"url": url, "error": str(e)})
+                self._logger.exception(error_msg, extra={"url": url, "error": str(e)})
                 return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
 
     class _LifecycleManager:
@@ -297,7 +319,7 @@ class FlextApiClient(FlextDomainService[None]):
 
         async def start_client(self) -> FlextResult[None]:
             """Start the HTTP client with resource initialization.
-            
+
             Returns:
                 FlextResult indicating success or failure.
 
@@ -337,7 +359,7 @@ class FlextApiClient(FlextDomainService[None]):
             self, updates: dict[str, str | int]
         ) -> FlextResult[None]:
             """Update client configuration.
-            
+
             Returns:
                 FlextResult indicating success or failure.
 
@@ -364,7 +386,7 @@ class FlextApiClient(FlextDomainService[None]):
 
         def validate_configuration(self) -> FlextResult[None]:
             """Validate current configuration.
-            
+
             Returns:
                 FlextResult indicating success or failure.
 
@@ -430,7 +452,7 @@ class FlextApiClient(FlextDomainService[None]):
                 "FastAPI application created successfully",
                 extra={
                     "title": final_config["title"],
-                    "version": final_config["app_version"]
+                    "version": final_config["app_version"],
                 },
             )
 
@@ -438,12 +460,16 @@ class FlextApiClient(FlextDomainService[None]):
 
         except Exception as e:
             error_msg = f"FastAPI app creation failed: {e}"
-            self._logger.error(error_msg)
+            self._logger.exception(error_msg)
             return FlextResult[object].fail(error_msg)
 
     def _extract_client_config_params(
         self,
-        config: FlextApiModels.ClientConfig | FlextApiConfig | Mapping[str, str | int | float | bool | dict[str, str] | None] | str | None = None,
+        config: FlextApiModels.ClientConfig
+        | FlextApiConfig
+        | Mapping[str, str | int | float | bool | dict[str, str] | None]
+        | str
+        | None = None,
         base_url: str | None = None,
         timeout: int | None = None,
         max_retries: int | None = None,
@@ -473,7 +499,9 @@ class FlextApiClient(FlextDomainService[None]):
             base_url_value = config.api_base_url
             timeout_value = config.api_timeout
             max_retries_value = config.max_retries  # Correct attribute name
-            headers_value = config.get_default_headers()  # Use method instead of non-existent attribute
+            headers_value = (
+                config.get_default_headers()
+            )  # Use method instead of non-existent attribute
         elif isinstance(config, Mapping):
             for key, value in config.items():
                 if value is not None:
@@ -501,7 +529,10 @@ class FlextApiClient(FlextDomainService[None]):
             if value is not None:
                 if key == "timeout" and isinstance(value, (str, int, float)):
                     # Type conversion for timeout - only convert strings that represent numbers
-                    if (isinstance(value, str) and value.replace(".", "").replace("-", "").isdigit()) or isinstance(value, (int, float)):
+                    if (
+                        isinstance(value, str)
+                        and value.replace(".", "").replace("-", "").isdigit()
+                    ) or isinstance(value, (int, float)):
                         timeout_value = float(value)
                 elif key == "max_retries" and isinstance(value, (str, int)):
                     # Type conversion for max_retries - only convert strings that represent integers
@@ -530,14 +561,17 @@ class FlextApiClient(FlextDomainService[None]):
 
         async def get_connection(self) -> FlextResult[object]:
             """Get or create HTTP connection.
-            
+
             Returns:
                 FlextResult containing connection object or error details.
 
             """
             try:
                 if self._connection_pool is None:
-                    self._connection_pool = {"active": True, "url": self._config.base_url}
+                    self._connection_pool = {
+                        "active": True,
+                        "url": self._config.base_url,
+                    }
 
                 return FlextResult[object].ok(self._connection_pool)
             except Exception as e:
@@ -589,32 +623,28 @@ class FlextApiClient(FlextDomainService[None]):
                 return await self.http.get(request.url, headers=request.headers)
             if request.method == "POST":
                 return await self.http.post(
-                    request.url,
-                    headers=request.headers,
-                    body=request.body
+                    request.url, headers=request.headers, body=request.body
                 )
             if request.method == "PUT":
                 return await self.http.put(
-                    request.url,
-                    headers=request.headers,
-                    body=request.body
+                    request.url, headers=request.headers, body=request.body
                 )
             if request.method == "DELETE":
                 return await self.http.delete(request.url, headers=request.headers)
             return FlextResult[FlextApiModels.HttpResponse].fail(
                 f"Unsupported HTTP method: {request.method}",
-                error_code=FlextConstants.Errors.VALIDATION_ERROR
+                error_code=FlextConstants.Errors.VALIDATION_ERROR,
             )
 
         except Exception as e:
-            self._logger.error(f"Request execution failed: {e}")
+            self._logger.exception(f"Request execution failed: {e}")
             return FlextResult[FlextApiModels.HttpResponse].fail(
                 f"Request execution failed: {e}",
-                error_code=FlextConstants.Errors.OPERATION_ERROR
+                error_code=FlextConstants.Errors.OPERATION_ERROR,
             )
 
     # Async context manager support
-    async def __aenter__(self) -> FlextApiClient:
+    async def __aenter__(self) -> Self:
         """Async context manager entry."""
         start_result = await self.lifecycle.start_client()
         if start_result.is_failure:
@@ -653,7 +683,7 @@ class FlextApiClient(FlextDomainService[None]):
 
         except Exception as e:
             error_msg = f"Client close failed: {e}"
-            self._logger.error(error_msg)
+            self._logger.exception(error_msg)
             return FlextResult[None].fail(error_msg)
 
     # Factory methods for different creation patterns
@@ -681,7 +711,7 @@ class FlextApiClient(FlextDomainService[None]):
             client_result = await FlextApiClient.create(
                 base_url="https://api.example.com",
                 timeout=30,
-                headers={"Authorization": "Bearer token"}
+                headers={"Authorization": "Bearer token"},
             )
             if client_result.is_success:
                 client = client_result.unwrap()
@@ -737,7 +767,9 @@ class FlextApiClient(FlextDomainService[None]):
             for attempt in range(self.max_retries + 1):
                 try:
                     # Simulate operation execution
-                    return FlextResult[object].ok(f"Operation successful on attempt {attempt + 1}")
+                    return FlextResult[object].ok(
+                        f"Operation successful on attempt {attempt + 1}"
+                    )
 
                 except Exception as e:
                     last_error = e
@@ -747,7 +779,9 @@ class FlextApiClient(FlextDomainService[None]):
                         # In real implementation, would await asyncio.sleep(delay)
                         continue
 
-            return FlextResult[object].fail(f"Operation failed after {self.max_retries + 1} attempts: {last_error}")
+            return FlextResult[object].fail(
+                f"Operation failed after {self.max_retries + 1} attempts: {last_error}"
+            )
 
     # Advanced HTTP methods with retry support
     async def _request(
@@ -829,7 +863,9 @@ class FlextApiClient(FlextDomainService[None]):
 
             # Ensure proper types for HttpResponse constructor
             response = FlextApiModels.HttpResponse(
-                status_code=int(status_code_raw) if isinstance(status_code_raw, (int, str)) else 200,
+                status_code=int(status_code_raw)
+                if isinstance(status_code_raw, (int, str))
+                else 200,
                 headers=dict(headers_raw) if isinstance(headers_raw, dict) else {},
                 body=str(response_data["body"]),
                 url=str(response_data["url"]),
@@ -851,7 +887,7 @@ class FlextApiClient(FlextDomainService[None]):
             # Increment error counter
             self._error_count += 1
             error_msg = f"Request failed: {e}"
-            self._logger.error(
+            self._logger.exception(
                 error_msg,
                 extra={
                     "url": full_url if "full_url" in locals() else url,
@@ -886,14 +922,12 @@ class FlextApiClient(FlextDomainService[None]):
             # From dictionary
             client_result = await FlextApiClient.create_client({
                 "base_url": "https://api.example.com",
-                "timeout": 30
+                "timeout": 30,
             })
 
             # From base URL with overrides
             client_result = await FlextApiClient.create_client(
-                "https://api.example.com",
-                timeout=30,
-                max_retries=5
+                "https://api.example.com", timeout=30, max_retries=5
             )
             ```
 
@@ -909,13 +943,25 @@ class FlextApiClient(FlextDomainService[None]):
                 if key == "base_url" and isinstance(value, str):
                     base_url_override = value
                 elif key == "timeout" and isinstance(value, (str, int)):
-                    timeout_override = int(value) if isinstance(value, str) and value.isdigit() else value if isinstance(value, int) else None
+                    timeout_override = (
+                        int(value)
+                        if isinstance(value, str) and value.isdigit()
+                        else value
+                        if isinstance(value, int)
+                        else None
+                    )
                 elif key == "max_retries" and isinstance(value, (str, int)):
-                    max_retries_override = int(value) if isinstance(value, str) and value.isdigit() else value if isinstance(value, int) else None
+                    max_retries_override = (
+                        int(value)
+                        if isinstance(value, str) and value.isdigit()
+                        else value
+                        if isinstance(value, int)
+                        else None
+                    )
                 elif key == "verify_ssl" and isinstance(value, (str, int)):
                     # Convert string/int to bool for verify_ssl
                     if isinstance(value, str):
-                        verify_ssl_override = value.lower() in ("true", "1", "yes")
+                        verify_ssl_override = value.lower() in {"true", "1", "yes"}
                     else:
                         verify_ssl_override = bool(value)
 
@@ -925,7 +971,7 @@ class FlextApiClient(FlextDomainService[None]):
                 base_url=base_url_override,
                 timeout=timeout_override,
                 max_retries=max_retries_override,
-                verify_ssl=verify_ssl_override
+                verify_ssl=verify_ssl_override,
             )
             return FlextResult["FlextApiClient"].ok(client)
 
@@ -949,7 +995,7 @@ class FlextApiClient(FlextDomainService[None]):
             api_result = await FlextApiClient.create_flext_api({
                 "base_url": "https://api.example.com",
                 "title": "My API",
-                "version": "1.0.0"
+                "version": "1.0.0",
             })
             ```
 
@@ -974,8 +1020,16 @@ class FlextApiClient(FlextDomainService[None]):
             max_retries_value = final_config["max_retries"]
 
             # Convert to proper types
-            timeout_int = int(timeout_value) if isinstance(timeout_value, (str, int, float)) else FlextConstants.Defaults.TIMEOUT
-            max_retries_int = int(max_retries_value) if isinstance(max_retries_value, (str, int)) else FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+            timeout_int = (
+                int(timeout_value)
+                if isinstance(timeout_value, (str, int, float))
+                else FlextConstants.Defaults.TIMEOUT
+            )
+            max_retries_int = (
+                int(max_retries_value)
+                if isinstance(max_retries_value, (str, int))
+                else FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+            )
 
             # Create HTTP client with validated types
             client = cls(
@@ -992,7 +1046,9 @@ class FlextApiClient(FlextDomainService[None]):
             })
 
             if app_result.is_failure:
-                return FlextResult[object].fail(f"API app creation failed: {app_result.error}")
+                return FlextResult[object].fail(
+                    f"API app creation failed: {app_result.error}"
+                )
 
             # Return complete API setup
             api_setup = {
@@ -1032,7 +1088,9 @@ class FlextApiClient(FlextDomainService[None]):
         """Factory class for creating various FlextApiClient configurations."""
 
         @staticmethod
-        async def create_production_client(base_url: str) -> FlextResult[FlextApiClient]:
+        async def create_production_client(
+            base_url: str,
+        ) -> FlextResult[FlextApiClient]:
             """Create production-ready HTTP client."""
             return await FlextApiClient.create(
                 base_url=base_url,
@@ -1045,7 +1103,9 @@ class FlextApiClient(FlextDomainService[None]):
             )
 
         @staticmethod
-        async def create_development_client(base_url: str) -> FlextResult[FlextApiClient]:
+        async def create_development_client(
+            base_url: str,
+        ) -> FlextResult[FlextApiClient]:
             """Create development HTTP client with extended timeouts."""
             return await FlextApiClient.create(
                 base_url=base_url,
