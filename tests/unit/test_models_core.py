@@ -17,7 +17,7 @@ from pydantic import ValidationError
 from flext_api import FlextApiConstants, FlextApiModels
 
 
-class TestFlextApiModels:  # noqa: PLR0904
+class TestFlextApiModels:
     """Test FlextApiModels REAL class functionality.
 
     This test class has many public methods by design as it provides comprehensive

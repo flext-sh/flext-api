@@ -12,7 +12,7 @@ from unittest.mock import patch
 from flext_api.utilities import FlextApiUtilities
 
 
-class TestFlextUtilitiesAdditionalCoverage:  # noqa: PLR0904
+class TestFlextUtilitiesAdditionalCoverage:
     """Additional tests to cover remaining uncovered lines in utilities.py.
 
     This test class has many public methods by design as it provides additional

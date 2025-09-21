@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
 from flext_core import (
+    FlextConstants,
     FlextLogger,
     FlextModels,
     FlextResult,
@@ -63,7 +64,7 @@ class FlextApiModels:
         url: str
         headers: dict[str, str] = Field(default_factory=dict)
         body: str | dict[str, object] | None = None
-        timeout: int | float = 30
+        timeout: int | float = FlextConstants.Performance.DEFAULT_REQUEST_TIMEOUT
 
         @field_validator("url")
         @classmethod
@@ -379,7 +380,7 @@ class FlextApiModels:
                     }
 
         @staticmethod
-        def success(data: object = None, message: str = "") -> dict[str, object]:
+        def success(*, data: object = None, message: str = "") -> dict[str, object]:
             """Build success response using flext-core generators.
 
             Returns:

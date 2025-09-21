@@ -6,9 +6,36 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from fastapi import FastAPI
+from typing import TYPE_CHECKING, object
 
 from flext_api.models import FlextApiModels
+
+if TYPE_CHECKING:
+    from fastapi import FastAPI
+
+
+# Internal abstraction - FastAPI is imported at runtime only
+def _create_fastapi_instance(**kwargs: object) -> FastAPI:
+    """Internal FastAPI instance creation with runtime import.
+
+    Args:
+        **kwargs: Keyword arguments passed to FastAPI constructor.
+
+    Returns:
+        FastAPI application instance.
+
+    Raises:
+        ImportError: If FastAPI is not installed.
+
+    """
+    # Import FastAPI only at runtime to avoid direct import exposure
+    try:
+        from fastapi import FastAPI
+
+        return FastAPI(**kwargs)
+    except ImportError as e:
+        error_msg = "FastAPI is required for FlextAPI application creation"
+        raise ImportError(error_msg) from e
 
 
 class FlextApiApp:
@@ -25,7 +52,7 @@ class FlextApiApp:
             FastAPI application instance
 
         """
-        app = FastAPI(
+        app = _create_fastapi_instance(
             title=config.title,
             version=config.app_version,
             description=getattr(config, "description", "FlextAPI Application"),
@@ -36,7 +63,7 @@ class FlextApiApp:
 
         # Add health endpoint
         @app.get("/health")
-        async def health_check() -> dict[str, str]:  # pyright: ignore[reportUnusedFunction]
+        def health_check() -> dict[str, str]:  # pyright: ignore[reportUnusedFunction]
             return {"status": "healthy", "service": "flext-api"}
 
         return app

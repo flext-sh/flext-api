@@ -52,7 +52,7 @@ async def test_client_headers_merge_and_prepare_params() -> None:
     await client.stop()
 
 
-class TestFlextApiClient:  # noqa: PLR0904
+class TestFlextApiClient:
     """Comprehensive HTTP client tests.
 
     This test class has many public methods by design as it provides comprehensive

@@ -7,12 +7,20 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
+from types import TracebackType
 from typing import Self
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, PrivateAttr
 
+# Import modular classes for type annotations
+from flext_api.app import FlextApiApp
 from flext_api.config import FlextApiConfig
+from flext_api.configuration_manager import FlextApiConfigurationManager
+from flext_api.connection_manager import FlextApiConnectionManager
+from flext_api.http_operations import FlextApiHttpOperations
+from flext_api.lifecycle_manager import FlextApiLifecycleManager
 from flext_api.models import FlextApiModels
+from flext_api.retry_helper import FlextApiRetryHelper
 from flext_core import (
     FlextConstants,
     FlextContainer,
@@ -20,8 +28,6 @@ from flext_core import (
     FlextLogger,
     FlextResult,
 )
-
-# Avoiding circular import - import inside method when needed
 
 
 class FlextApiClient(FlextDomainService[None]):
@@ -73,10 +79,10 @@ class FlextApiClient(FlextDomainService[None]):
         arbitrary_types_allowed=True,
     )
 
-    # Type annotations for attributes set via object.__setattr__
-    http: FlextApiClient._HttpOperations
-    lifecycle: FlextApiClient._LifecycleManager
-    client_config: FlextApiClient._ConfigurationManager
+    # Private attributes for modular services - not validated by Pydantic
+    _http: FlextApiHttpOperations = PrivateAttr()
+    _lifecycle: FlextApiLifecycleManager = PrivateAttr()
+    _client_config_manager: FlextApiConfigurationManager = PrivateAttr()
 
     def __init__(
         self,
@@ -85,6 +91,7 @@ class FlextApiClient(FlextDomainService[None]):
         | Mapping[str, str | int | float | bool | dict[str, str] | None]
         | str
         | None = None,
+        *,
         base_url: str | None = None,
         timeout: int | None = None,
         max_retries: int | None = None,
@@ -139,21 +146,15 @@ class FlextApiClient(FlextDomainService[None]):
             **kwargs,
         )
 
-        # Initialize nested operation classes - these are set as object attributes, not Pydantic fields
-        object.__setattr__(
-            self, "http", self._HttpOperations(self._client_config, self._logger)
-        )
-        object.__setattr__(
-            self, "lifecycle", self._LifecycleManager(self._client_config, self._logger)
-        )
-        object.__setattr__(
-            self,
-            "client_config",
-            self._ConfigurationManager(self._client_config, self._logger),
+        # Initialize modular services as private attributes
+        self._http = FlextApiHttpOperations(self._client_config, self._logger)
+        self._lifecycle = FlextApiLifecycleManager(self._client_config, self._logger)
+        self._client_config_manager = FlextApiConfigurationManager(
+            self._client_config, self._logger
         )
 
         # Initialize connection manager for HTTP operations
-        self._connection_manager = self._ConnectionManager(
+        self._connection_manager = FlextApiConnectionManager(
             config=self._client_config, logger=self._logger
         )
 
@@ -170,237 +171,21 @@ class FlextApiClient(FlextDomainService[None]):
             },
         )
 
-    class _HttpOperations:
-        """Nested class for HTTP operations with enterprise patterns.
+    # Public property interfaces for modular services
+    @property
+    def http(self) -> FlextApiHttpOperations:
+        """HTTP operations service."""
+        return self._http
 
-        Provides core HTTP operations (GET, POST, PUT, DELETE) with proper error handling,
-        request preparation, and response processing through the FlextResult pattern.
-        """
+    @property
+    def lifecycle(self) -> FlextApiLifecycleManager:
+        """Lifecycle management service."""
+        return self._lifecycle
 
-        def __init__(
-            self, config: FlextApiModels.ClientConfig, logger: FlextLogger
-        ) -> None:
-            self._config = config
-            self._logger = logger
-
-        async def get(
-            self,
-            url: str,
-            params: dict[str, str] | None = None,
-            headers: dict[str, str] | None = None,
-            **kwargs: str | int | dict[str, str],
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
-            """Execute HTTP GET request with error handling."""
-            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(
-                **kwargs
-            )
-            if params is not None:
-                request_kwargs["params"] = params
-            if headers is not None:
-                request_kwargs["headers"] = headers
-            return await self._execute_request("GET", url, **request_kwargs)
-
-        async def post(
-            self,
-            url: str,
-            data: dict[str, str] | None = None,
-            json: dict[str, str] | None = None,
-            body: str | dict[str, object] | None = None,
-            headers: dict[str, str] | None = None,
-            **kwargs: str | int | dict[str, str],
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
-            """Execute HTTP POST request with error handling.
-
-            Returns:
-                FlextResult containing HttpResponse or error details.
-
-            """
-            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(
-                **kwargs
-            )
-            if data is not None:
-                request_kwargs["data"] = data
-            if json is not None:
-                request_kwargs["json"] = json
-            if body is not None:
-                request_kwargs["body"] = body
-            if headers is not None:
-                request_kwargs["headers"] = headers
-            return await self._execute_request("POST", url, **request_kwargs)
-
-        async def put(
-            self,
-            url: str,
-            data: dict[str, str] | None = None,
-            json: dict[str, str] | None = None,
-            body: str | dict[str, object] | None = None,
-            headers: dict[str, str] | None = None,
-            **kwargs: str | int | dict[str, str],
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
-            """Execute HTTP PUT request with error handling."""
-            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(
-                **kwargs
-            )
-            if data is not None:
-                request_kwargs["data"] = data
-            if json is not None:
-                request_kwargs["json"] = json
-            if body is not None:
-                request_kwargs["body"] = body
-            if headers is not None:
-                request_kwargs["headers"] = headers
-            return await self._execute_request("PUT", url, **request_kwargs)
-
-        async def delete(
-            self,
-            url: str,
-            headers: dict[str, str] | None = None,
-            **kwargs: str | int | dict[str, str],
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
-            """Execute HTTP DELETE request with error handling.
-
-            Returns:
-                FlextResult containing HttpResponse or error details.
-
-            """
-            request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(
-                **kwargs
-            )
-            if headers is not None:
-                request_kwargs["headers"] = headers
-            return await self._execute_request("DELETE", url, **request_kwargs)
-
-        async def _execute_request(
-            self, method: str, url: str, **kwargs: str | int | dict[str, str] | object
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
-            """Execute HTTP request with comprehensive error handling."""
-            try:
-                # Build full URL
-                full_url = f"{self._config.base_url.rstrip('/')}/{url.lstrip('/')}"
-
-                # Prepare request headers
-                headers = dict(self._config.headers or {})
-                if "headers" in kwargs:
-                    extra_headers = kwargs.pop("headers")
-                    if isinstance(extra_headers, dict):
-                        headers.update(extra_headers)
-
-                # Log request
-                self._logger.info(
-                    f"Executing {method} request",
-                    extra={"url": full_url, "method": method},
-                )
-
-                # Create response model (simplified for demonstration)
-                response = FlextApiModels.HttpResponse(
-                    status_code=200,
-                    headers=headers,
-                    body='{"status": "success"}',
-                    url=full_url,
-                    method=method,
-                )
-
-                return FlextResult[FlextApiModels.HttpResponse].ok(response)
-
-            except Exception as e:
-                error_msg = f"{method} request failed: {e}"
-                self._logger.exception(error_msg, extra={"url": url, "error": str(e)})
-                return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
-
-    class _LifecycleManager:
-        """Nested class for client lifecycle management."""
-
-        def __init__(
-            self, config: FlextApiModels.ClientConfig, logger: FlextLogger
-        ) -> None:
-            self._config = config
-            self._logger = logger
-            self._is_started = False
-
-        async def start_client(self) -> FlextResult[None]:
-            """Start the HTTP client with resource initialization.
-
-            Returns:
-                FlextResult indicating success or failure.
-
-            """
-            if self._is_started:
-                return FlextResult[None].fail("Client already started")
-
-            try:
-                self._logger.info("Starting HTTP client")
-                self._is_started = True
-                return FlextResult[None].ok(None)
-            except Exception as e:
-                return FlextResult[None].fail(f"Failed to start client: {e}")
-
-        async def stop_client(self) -> FlextResult[None]:
-            """Stop the HTTP client and cleanup resources."""
-            if not self._is_started:
-                return FlextResult[None].fail("Client not started")
-
-            try:
-                self._logger.info("Stopping HTTP client")
-                self._is_started = False
-                return FlextResult[None].ok(None)
-            except Exception as e:
-                return FlextResult[None].fail(f"Failed to stop client: {e}")
-
-    class _ConfigurationManager:
-        """Nested class for configuration management."""
-
-        def __init__(
-            self, config: FlextApiModels.ClientConfig, logger: FlextLogger
-        ) -> None:
-            self._config = config
-            self._logger = logger
-
-        def update_configuration(
-            self, updates: dict[str, str | int]
-        ) -> FlextResult[None]:
-            """Update client configuration.
-
-            Returns:
-                FlextResult indicating success or failure.
-
-            """
-            try:
-                for key, value in updates.items():
-                    if hasattr(self._config, key):
-                        setattr(self._config, key, value)
-                    else:
-                        return FlextResult[None].fail(f"Invalid config key: {key}")
-
-                self._logger.info("Configuration updated", extra={"updates": updates})
-                return FlextResult[None].ok(None)
-            except Exception as e:
-                return FlextResult[None].fail(f"Configuration update failed: {e}")
-
-        def get_configuration_dict(self) -> dict[str, str | int | float]:
-            """Get configuration as dictionary."""
-            return {
-                "base_url": self._config.base_url,
-                "timeout": self._config.timeout,
-                "max_retries": self._config.max_retries,
-            }
-
-        def validate_configuration(self) -> FlextResult[None]:
-            """Validate current configuration.
-
-            Returns:
-                FlextResult indicating success or failure.
-
-            """
-            if not self._config.base_url:
-                return FlextResult[None].fail("Base URL is required")
-
-            if self._config.timeout <= 0:
-                return FlextResult[None].fail("Timeout must be positive")
-
-            if self._config.max_retries < 0:
-                return FlextResult[None].fail("Max retries cannot be negative")
-
-            return FlextResult[None].ok(None)
+    @property
+    def client_config(self) -> FlextApiConfigurationManager:
+        """Configuration management service."""
+        return self._client_config_manager
 
     async def create_flext_api_app(
         self, app_config: dict[str, str] | None = None
@@ -415,9 +200,6 @@ class FlextApiClient(FlextDomainService[None]):
 
         """
         try:
-            from flext_api.app import FlextApiApp
-            from flext_api.models import FlextApiModels
-
             # Default app configuration with proper field names
             default_config = {
                 "title": "FLEXT API Service",
@@ -476,7 +258,12 @@ class FlextApiClient(FlextDomainService[None]):
         headers: Mapping[str, str] | None = None,
         **kwargs: str | float | bool | dict[str, str] | None,
     ) -> FlextApiModels.ClientConfig:
-        """Extract client configuration parameters with proper type handling."""
+        """Extract client configuration parameters with proper type handling.
+
+        Returns:
+            FlextApiModels.ClientConfig: Validated client configuration object.
+
+        """
         # Default configuration values with proper types
         default_base_url = "https://localhost:8000"
         default_timeout = float(FlextConstants.Defaults.TIMEOUT)
@@ -549,45 +336,6 @@ class FlextApiClient(FlextDomainService[None]):
             headers=headers_value,
         )
 
-    class _ConnectionManager:
-        """Connection management for HTTP client operations."""
-
-        def __init__(
-            self, config: FlextApiModels.ClientConfig, logger: FlextLogger
-        ) -> None:
-            self._config = config
-            self._logger = logger
-            self._connection_pool: dict[str, object] | None = None
-
-        async def get_connection(self) -> FlextResult[object]:
-            """Get or create HTTP connection.
-
-            Returns:
-                FlextResult containing connection object or error details.
-
-            """
-            try:
-                if self._connection_pool is None:
-                    self._connection_pool = {
-                        "active": True,
-                        "url": self._config.base_url,
-                    }
-
-                return FlextResult[object].ok(self._connection_pool)
-            except Exception as e:
-                return FlextResult[object].fail(f"Connection creation failed: {e}")
-
-        async def close_connection(self) -> FlextResult[None]:
-            """Close HTTP connection and cleanup."""
-            try:
-                if self._connection_pool:
-                    self._connection_pool = None
-                    self._logger.info("HTTP connection closed")
-
-                return FlextResult[None].ok(None)
-            except Exception as e:
-                return FlextResult[None].fail(f"Connection cleanup failed: {e}")
-
     def _get_headers(
         self, additional_headers: dict[str, str] | None = None
     ) -> dict[str, str]:
@@ -637,7 +385,7 @@ class FlextApiClient(FlextDomainService[None]):
             )
 
         except Exception as e:
-            self._logger.exception(f"Request execution failed: {e}")
+            self._logger.exception("Request execution failed")
             return FlextResult[FlextApiModels.HttpResponse].fail(
                 f"Request execution failed: {e}",
                 error_code=FlextConstants.Errors.OPERATION_ERROR,
@@ -645,7 +393,15 @@ class FlextApiClient(FlextDomainService[None]):
 
     # Async context manager support
     async def __aenter__(self) -> Self:
-        """Async context manager entry."""
+        """Async context manager entry.
+
+        Returns:
+            Self: The initialized client instance.
+
+        Raises:
+            RuntimeError: If client initialization fails.
+
+        """
         start_result = await self.lifecycle.start_client()
         if start_result.is_failure:
             msg = f"Failed to start client: {start_result.error}"
@@ -657,7 +413,7 @@ class FlextApiClient(FlextDomainService[None]):
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: object | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         """Async context manager exit."""
         stop_result = await self.lifecycle.stop_client()
@@ -666,7 +422,12 @@ class FlextApiClient(FlextDomainService[None]):
 
     # Connection lifecycle methods for backward compatibility
     async def close(self) -> FlextResult[None]:
-        """Close client connection and cleanup resources."""
+        """Close client connection and cleanup resources.
+
+        Returns:
+            FlextResult[None]: Success or failure result of cleanup operation.
+
+        """
         try:
             # Close connection manager
             close_result = await self._connection_manager.close_connection()
@@ -691,7 +452,7 @@ class FlextApiClient(FlextDomainService[None]):
     async def create(
         cls,
         base_url: str,
-        timeout: int = FlextConstants.Defaults.TIMEOUT,
+        request_timeout: int = FlextConstants.Defaults.TIMEOUT,
         max_retries: int = FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
         headers: dict[str, str] | None = None,
     ) -> FlextResult[FlextApiClient]:
@@ -699,7 +460,7 @@ class FlextApiClient(FlextDomainService[None]):
 
         Args:
             base_url: Base URL for HTTP requests
-            timeout: Request timeout in seconds
+            request_timeout: Request timeout in seconds
             max_retries: Maximum retry attempts
             headers: Default request headers
 
@@ -710,7 +471,7 @@ class FlextApiClient(FlextDomainService[None]):
             ```python
             client_result = await FlextApiClient.create(
                 base_url="https://api.example.com",
-                timeout=30,
+                request_timeout=30,
                 headers={"Authorization": "Bearer token"},
             )
             if client_result.is_success:
@@ -721,7 +482,7 @@ class FlextApiClient(FlextDomainService[None]):
         try:
             client = cls(
                 base_url=base_url,
-                timeout=timeout,
+                timeout=request_timeout,
                 max_retries=max_retries,
                 headers=headers,
             )
@@ -751,48 +512,17 @@ class FlextApiClient(FlextDomainService[None]):
         endpoint_clean = endpoint.lstrip("/")
         return f"{base}/{endpoint_clean}" if endpoint_clean else base
 
-    class _RetryHelper:
-        """Helper class for request retry logic with exponential backoff."""
-
-        def __init__(self, max_retries: int, backoff_factor: float = 1.0) -> None:
-            self.max_retries = max_retries
-            self.backoff_factor = backoff_factor
-
-        async def execute_with_retry(
-            self, operation: object, *args: str, **kwargs: str
-        ) -> FlextResult[object]:
-            """Execute operation with retry logic."""
-            last_error = None
-
-            for attempt in range(self.max_retries + 1):
-                try:
-                    # Simulate operation execution
-                    return FlextResult[object].ok(
-                        f"Operation successful on attempt {attempt + 1}"
-                    )
-
-                except Exception as e:
-                    last_error = e
-                    if attempt < self.max_retries:
-                        # Calculate backoff delay
-                        # delay = self.backoff_factor * (2**attempt)
-                        # In real implementation, would await asyncio.sleep(delay)
-                        continue
-
-            return FlextResult[object].fail(
-                f"Operation failed after {self.max_retries + 1} attempts: {last_error}"
-            )
-
     # Advanced HTTP methods with retry support
     async def _request(
         self,
         method: str,
         url: str,
+        *,
         params: dict[str, str] | None = None,
         data: dict[str, str] | None = None,
         json: dict[str, str] | None = None,
         headers: dict[str, str] | None = None,
-        timeout: int | None = None,
+        request_timeout: int | None = None,
         **kwargs: str | int,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Low-level HTTP request method with comprehensive error handling.
@@ -804,13 +534,16 @@ class FlextApiClient(FlextDomainService[None]):
             data: Form data
             json: JSON data
             headers: Additional headers
-            timeout: Request timeout override
+            request_timeout: Request timeout override
             **kwargs: Additional request parameters
 
         Returns:
             FlextResult containing HTTP response or error message
 
         """
+        # Initialize full_url for error handling
+        full_url = url
+
         try:
             # Increment request counter
             self._request_count += 1
@@ -829,7 +562,7 @@ class FlextApiClient(FlextDomainService[None]):
                 request_headers.update({str(k): str(v) for k, v in headers.items()})
 
             # Use configured timeout or override
-            request_timeout = timeout or self._client_config.timeout
+            effective_timeout = request_timeout or self._client_config.timeout
 
             # Log request details
             self._logger.info(
@@ -837,13 +570,13 @@ class FlextApiClient(FlextDomainService[None]):
                 extra={
                     "url": full_url,
                     "method": method,
-                    "timeout": request_timeout,
+                    "timeout": effective_timeout,
                     "request_id": self._request_count,
                 },
             )
 
-            # Create retry helper
-            retry_helper = self._RetryHelper(
+            # Create retry helper using modular class
+            retry_helper = FlextApiRetryHelper(
                 max_retries=self._client_config.max_retries, backoff_factor=1.0
             )
 
@@ -1084,36 +817,6 @@ class FlextApiClient(FlextDomainService[None]):
                 f"FastAPI app creation with settings failed: {e}"
             )
 
-    class _Factory:
-        """Factory class for creating various FlextApiClient configurations."""
-
-        @staticmethod
-        async def create_production_client(
-            base_url: str,
-        ) -> FlextResult[FlextApiClient]:
-            """Create production-ready HTTP client."""
-            return await FlextApiClient.create(
-                base_url=base_url,
-                timeout=30,
-                max_retries=3,
-                headers={
-                    "User-Agent": "FlextApiClient-Production/1.0.0",
-                    "Accept": "application/json",
-                },
-            )
-
-        @staticmethod
-        async def create_development_client(
-            base_url: str,
-        ) -> FlextResult[FlextApiClient]:
-            """Create development HTTP client with extended timeouts."""
-            return await FlextApiClient.create(
-                base_url=base_url,
-                timeout=60,
-                max_retries=1,
-                headers={"User-Agent": "FlextApiClient-Dev/1.0.0"},
-            )
-
     def perform_health_check(self) -> FlextResult[dict[str, str]]:
         """Perform client health check and return status information.
 
@@ -1143,6 +846,72 @@ class FlextApiClient(FlextDomainService[None]):
 
         except Exception as e:
             return FlextResult[dict[str, str]].fail(f"Health check failed: {e}")
+
+    def execute(self) -> FlextResult[None]:
+        """Execute the main domain service operation.
+
+        This method implements the abstract execute method from FlextDomainService.
+        For the HTTP client service, this performs initialization validation
+        and readiness checks.
+
+        Returns:
+            FlextResult[None]: Success if the client is ready for operations,
+                              failure if there are configuration or connectivity issues.
+
+        Example:
+            ```python
+            client = FlextApiClient(base_url="https://api.example.com")
+            execution_result = client.execute()
+            if execution_result.is_success:
+                print("HTTP client is ready for operations")
+            else:
+                print(f"Client not ready: {execution_result.error}")
+            ```
+
+        """
+        try:
+            # Validate client configuration
+            if not self._client_config.base_url:
+                return FlextResult[None].fail("Base URL not configured")
+
+            if self._client_config.timeout <= 0:
+                return FlextResult[None].fail("Invalid timeout configuration")
+
+            if self._client_config.max_retries < 0:
+                return FlextResult[None].fail("Invalid retry configuration")
+
+            # Verify essential components are initialized
+            if not hasattr(self, "http") or self.http is None:
+                return FlextResult[None].fail(
+                    "HTTP operations component not initialized"
+                )
+
+            if not hasattr(self, "lifecycle") or self.lifecycle is None:
+                return FlextResult[None].fail(
+                    "Lifecycle manager component not initialized"
+                )
+
+            if not hasattr(self, "client_config") or self.client_config is None:
+                return FlextResult[None].fail(
+                    "Configuration manager component not initialized"
+                )
+
+            # Log successful execution
+            self._logger.info(
+                "FlextApiClient domain service execution completed successfully",
+                extra={
+                    "base_url": self._client_config.base_url,
+                    "timeout": self._client_config.timeout,
+                    "max_retries": self._client_config.max_retries,
+                },
+            )
+
+            return FlextResult[None].ok(None)
+
+        except Exception as e:
+            error_msg = f"Domain service execution failed: {e}"
+            self._logger.exception(error_msg)
+            return FlextResult[None].fail(error_msg)
 
     @property
     def base_url(self) -> str:
