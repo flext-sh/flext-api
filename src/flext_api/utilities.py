@@ -101,12 +101,12 @@ class FlextApiUtilities:
         @staticmethod
         def build_paginated_response(
             data: list[object] | None,
-            *,  # Python 3.13+ keyword-only for better API design
+            *,
             page: int = 1,
             page_size: int = FlextApiConstants.DEFAULT_PAGE_SIZE,
             total: int | None = None,
             message: str | None = None,
-        ) -> FlextResult[FlextTypes.Core.Dict]:
+        ) -> FlextResult[dict[str, object]]:
             """Build paginated response using flext-core patterns.
 
             Returns:
@@ -115,14 +115,14 @@ class FlextApiUtilities:
             """
             try:
                 if page < 1:
-                    return FlextResult[FlextTypes.Core.Dict].fail("Page must be >= 1")
+                    return FlextResult[dict[str, object]].fail("Page must be >= 1")
                 if page_size < 1:
-                    return FlextResult[FlextTypes.Core.Dict].fail(
+                    return FlextResult[dict[str, object]].fail(
                         "Page size must be >= 1",
                     )
-                if page_size > FlextApiConstants.ApiLimits.MAX_PAGE_SIZE:
-                    return FlextResult[FlextTypes.Core.Dict].fail(
-                        f"Page size cannot exceed {FlextApiConstants.ApiLimits.MAX_PAGE_SIZE}",
+                if page_size > FlextApiConstants.MAX_PAGE_SIZE:
+                    return FlextResult[dict[str, object]].fail(
+                        f"Page size cannot exceed {FlextApiConstants.MAX_PAGE_SIZE}",
                     )
 
                 if data is None or not isinstance(data, list):
@@ -133,7 +133,7 @@ class FlextApiUtilities:
                 total_pages = (
                     max(1, (total + page_size - 1) // page_size) if total > 0 else 1
                 )
-                response = {
+                response: dict[str, object] = {
                     "success": True,
                     "data": data,
                     "pagination": {
@@ -147,9 +147,9 @@ class FlextApiUtilities:
                 }
                 if message:
                     response["message"] = message
-                return FlextResult[FlextTypes.Core.Dict].ok(response)
+                return FlextResult[dict[str, object]].ok(response)
             except Exception as e:
-                return FlextResult[FlextTypes.Core.Dict].fail(str(e))
+                return FlextResult[dict[str, object]].fail(str(e))
 
     class HttpValidator:
         """HTTP-specific validation using centralized flext-core FlextModels."""
@@ -217,13 +217,12 @@ class FlextApiUtilities:
 
         @staticmethod
         def validate_status_code(code: int | str) -> FlextResult[int]:
-            """Validate HTTP status code using centralized FlextModels validation.
+            """Validate HTTP status code.
 
             Returns:
                 FlextResult containing validated status code integer or error message.
 
             """
-            # Convert string to int if needed since FlextModels.create_validated_http_status expects int
             if isinstance(code, str):
                 try:
                     int_code = int(code)
@@ -231,7 +230,18 @@ class FlextApiUtilities:
                     return FlextResult[int].fail(f"Invalid status code format: {code}")
             else:
                 int_code = code
-            return FlextModels.create_validated_http_status(int_code)
+
+            # int_code is guaranteed to be int at this point
+
+            if (
+                int_code < FlextConstants.Platform.MIN_HTTP_STATUS_RANGE
+                or int_code > FlextConstants.Platform.MAX_HTTP_STATUS_RANGE
+            ):
+                return FlextResult[int].fail(
+                    f"Invalid HTTP status code: {int_code}. Must be between {FlextConstants.Platform.MIN_HTTP_STATUS_RANGE} and {FlextConstants.Platform.MAX_HTTP_STATUS_RANGE}."
+                )
+
+            return FlextResult[int].ok(int_code)
 
         @staticmethod
         def normalize_url(url: str) -> FlextResult[str]:
@@ -634,10 +644,6 @@ class FlextApiUtilities:
                 return FlextResult[dict[str, object]].fail(
                     f"Data conversion failed: {e}"
                 )
-
-    # Constants for backward compatibility
-    MIN_PORT: int = 1
-    MAX_PORT: int = 65535
 
 
 __all__ = [

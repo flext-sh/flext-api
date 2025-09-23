@@ -5,14 +5,17 @@ and provides a comprehensive facade for all flext-api functionality.
 Following FLEXT standards: single class per module, uses flext-core exclusively.
 """
 
-from flext_core import FlextDomainService, FlextResult, get_logger
+from flext_core import FlextLogger, FlextResult, FlextService
 
 from .constants import FlextApiConstants
 from .exceptions import FlextApiExceptions
-from .typings import HttpStatusCode, JsonObject
+from .typings import FlextApiTypings
+
+HttpStatusCode = FlextApiTypings.HttpStatusCode
+JsonObject = FlextApiTypings.JsonObject
 
 
-class FlextApiModule(FlextDomainService):
+class FlextApiModule(FlextService[FlextResult[object]]):
     """Unified facade for all flext-api domain functionality.
 
     Single responsibility class providing all HTTP/API operations
@@ -22,9 +25,9 @@ class FlextApiModule(FlextDomainService):
     def __init__(self) -> None:
         """Initialize FlextApiModule with flext-core integration."""
         super().__init__()
-        self._logger = get_logger(__name__)
+        self._logger = FlextLogger(__name__)
 
-    class _ValidationHelper:
+    class _HttpValidationHelper:
         """HTTP validation utilities nested helper class."""
 
         @staticmethod
@@ -74,7 +77,7 @@ class FlextApiModule(FlextDomainService):
             message: str, error_code: str | None = None
         ) -> JsonObject:
             """Create standardized error response."""
-            response = {
+            response: JsonObject = {
                 "status": "error",
                 "data": None,
                 "message": message,
@@ -119,15 +122,15 @@ class FlextApiModule(FlextDomainService):
 
     def is_success_status(self, status_code: HttpStatusCode) -> bool:
         """Check if HTTP status code indicates success."""
-        return self._ValidationHelper.is_success_status(status_code)
+        return self._HttpValidationHelper.is_success_status(status_code)
 
     def is_client_error_status(self, status_code: HttpStatusCode) -> bool:
         """Check if HTTP status code indicates client error."""
-        return self._ValidationHelper.is_client_error_status(status_code)
+        return self._HttpValidationHelper.is_client_error_status(status_code)
 
     def is_server_error_status(self, status_code: HttpStatusCode) -> bool:
         """Check if HTTP status code indicates server error."""
-        return self._ValidationHelper.is_server_error_status(status_code)
+        return self._HttpValidationHelper.is_server_error_status(status_code)
 
     def create_success_response(
         self, data: object = None, message: str = "Success"
@@ -167,19 +170,16 @@ class FlextApiModule(FlextDomainService):
         self, status_code: HttpStatusCode
     ) -> FlextResult[HttpStatusCode]:
         """Validate HTTP status code range."""
-        if not isinstance(status_code, int):
-            return FlextResult[HttpStatusCode].fail("Status code must be an integer")
-
-        if not (
+        if (
             FlextApiConstants.HTTP_STATUS_MIN
             <= status_code
             <= FlextApiConstants.HTTP_STATUS_MAX
         ):
-            return FlextResult[HttpStatusCode].fail(
-                f"Status code must be between {FlextApiConstants.HTTP_STATUS_MIN} and {FlextApiConstants.HTTP_STATUS_MAX}"
-            )
+            return FlextResult[HttpStatusCode].ok(status_code)
 
-        return FlextResult[HttpStatusCode].ok(status_code)
+        return FlextResult[HttpStatusCode].fail(
+            f"Status code must be between {FlextApiConstants.HTTP_STATUS_MIN} and {FlextApiConstants.HTTP_STATUS_MAX}"
+        )
 
     def get_status_category(self, status_code: HttpStatusCode) -> str:
         """Get HTTP status code category."""

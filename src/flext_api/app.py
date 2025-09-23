@@ -75,16 +75,16 @@ class FlextApiApp:
             openapi_url=getattr(config, "openapi_url", "/openapi.json"),
         )
 
-        # Add health endpoint
-        if hasattr(app, "get"):
+        if hasattr(app, "get") and hasattr(app, "add_api_route"):
 
-            @app.get("/health")
-            def health_check() -> dict[str, str]:  # pyright: ignore[reportUnusedFunction]
+            def health_check() -> dict[str, str]:
                 return {"status": "healthy", "service": "flext-api"}
+
+            # Use add_api_route instead of decorator to avoid type issues
+            add_route = getattr(app, "add_api_route")
+            add_route("/health", health_check, methods=["GET"])
 
         return app
 
-
-# Direct class access only - no backward compatibility aliases
 
 __all__ = ["FlextApiApp"]

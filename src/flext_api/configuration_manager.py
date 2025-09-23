@@ -130,5 +130,4 @@ class FlextApiConfigurationManager:
             return FlextResult[None].fail(error_msg)
 
 
-# Direct class access only - no backward compatibility aliases
 __all__ = ["FlextApiConfigurationManager"]

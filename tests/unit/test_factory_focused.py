@@ -192,28 +192,42 @@ class TestFlextApiFactoryFocused:
 
     def test_create_flext_api_with_mixed_valid_invalid_config(self) -> None:
         """Test create_flext_api with mix of valid and invalid config values."""
+        import asyncio
+
         config: dict[str, object] = {
-            "base_url": "https://mixed.example.com",  # Valid
-            "timeout": "invalid",  # Invalid - should use default
-            "max_retries": 4,  # Valid
-            "headers": ["invalid", "list"],  # Invalid - should use empty dict
+            "base_url": "https://mixed.example.com",
+            "timeout": "invalid",
+            "max_retries": 4,
+            "headers": ["invalid", "list"],
         }
 
-        client = FlextApiClient.create_flext_api(config_dict=config)
+        async def test_async() -> None:
+            result = await FlextApiClient.create_flext_api(config=config)
+            assert result.is_success is True
+            api_setup = result.unwrap()
+            assert api_setup is not None
+            assert "client" in api_setup
+            assert isinstance(api_setup["client"], FlextApiClient)
 
-        assert isinstance(client, FlextApiClient)
-        assert client is not None
+        asyncio.run(test_async())
 
     def test_create_flext_api_type_conversion_edge_cases(self) -> None:
         """Test edge cases in type conversion."""
+        import asyncio
+
         config: dict[str, object] = {
-            "base_url": "https://edge.example.com",  # Valid URL
-            "timeout": 1.0,  # Valid timeout that converts to float
-            "max_retries": 0.5,  # Float retries - should be converted to int (0)
-            "headers": {},  # Empty dict - valid
+            "base_url": "https://edge.example.com",
+            "timeout": 1.0,
+            "max_retries": 0.5,
+            "headers": {},
         }
 
-        client = FlextApiClient.create_flext_api(config_dict=config)
+        async def test_async() -> None:
+            result = await FlextApiClient.create_flext_api(config=config)
+            assert result.is_success is True
+            api_setup = result.unwrap()
+            assert api_setup is not None
+            assert "client" in api_setup
+            assert isinstance(api_setup["client"], FlextApiClient)
 
-        assert isinstance(client, FlextApiClient)
-        assert client is not None
+        asyncio.run(test_async())

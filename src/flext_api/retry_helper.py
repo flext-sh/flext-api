@@ -8,11 +8,9 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
-from typing import Protocol, TypeVar
+from typing import Protocol
 
 from flext_core import FlextLogger, FlextResult
-
-T = TypeVar("T")
 
 
 class RetryOperation(Protocol):
@@ -189,5 +187,4 @@ class FlextApiRetryHelper:
         }
 
 
-# Direct class access only - no backward compatibility aliases
 __all__ = ["FlextApiRetryHelper"]

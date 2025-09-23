@@ -122,5 +122,4 @@ class FlextApiLifecycleManager:
         return FlextResult[None].ok(None)
 
 
-# Direct class access only - no backward compatibility aliases
 __all__ = ["FlextApiLifecycleManager"]

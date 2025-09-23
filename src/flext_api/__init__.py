@@ -36,14 +36,16 @@ class FlextApi:
 
     # Domain-specific functionality shortcuts
     @classmethod
-    def create_client(cls, base_url: str = "", **kwargs: object) -> FlextApiClient:
+    def create_client(
+        cls, base_url: str = "", **kwargs: object
+    ) -> FlextApiClient:
         """Create HTTP client with default configuration."""
-        return cls.Client(base_url=base_url, **kwargs)
+        return cls.Client(config=None, base_url=base_url, **kwargs)  # type: ignore[arg-type]
 
     @classmethod
     def create_config(cls, **kwargs: object) -> FlextApiConfig:
         """Create API configuration."""
-        return cls.Config(**kwargs)
+        return cls.Config(**kwargs)  # type: ignore[arg-type]
 
     @classmethod
     def get_constants(cls) -> type[FlextApiConstants]:
@@ -61,33 +63,16 @@ class FlextApi:
         return cls.Exceptions
 
 
-# Backward compatibility exports for ecosystem integration
-MIN_PORT = FlextApiConstants.MIN_PORT
-MAX_PORT = FlextApiConstants.MAX_PORT
-FlextApiEndpoints = FlextApiConstants.FlextApiEndpoints
-FlextApiFieldType = FlextApiConstants.FlextApiFieldType
-FlextApiStatus = FlextApiConstants.FlextApiStatus
-
-# Version information
 __version__ = "0.9.0"
 
 __all__ = [
-    "MAX_PORT",
-    "MIN_PORT",
-    # Main API entry point
     "FlextApi",
-    # Individual domain modules
     "FlextApiClient",
     "FlextApiConfig",
     "FlextApiConstants",
-    # Backward compatibility
-    "FlextApiEndpoints",
     "FlextApiExceptions",
-    "FlextApiFieldType",
     "FlextApiModels",
-    "FlextApiStatus",
     "FlextApiStorage",
     "FlextApiUtilities",
-    # Version
     "__version__",
 ]

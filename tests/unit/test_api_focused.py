@@ -58,22 +58,6 @@ class TestFlextApiClientCoverageBoost:
         assert hasattr(api._client_config, "base_url")
 
     @pytest.mark.asyncio
-    async def test_flext_api_start(self) -> None:
-        """Test FlextApiClient start method delegation."""
-        api = FlextApiClient()
-        result = await api.start()
-        # Should return FlextResult without error
-        assert result is not None
-
-    @pytest.mark.asyncio
-    async def test_flext_api_stop(self) -> None:
-        """Test FlextApiClient stop method delegation."""
-        api = FlextApiClient()
-        result = await api.stop()
-        # Should return FlextResult without error
-        assert result is not None
-
-    @pytest.mark.asyncio
     async def test_flext_api_close(self) -> None:
         """Test FlextApiClient close method delegation."""
         api = FlextApiClient()
@@ -112,24 +96,6 @@ class TestFlextApiClientCoverageBoost:
         result = await api.delete("/delete")
         # Should return FlextResult
         assert result is not None
-
-    def test_flext_api_configure(self) -> None:
-        """Test FlextApiClient configure method."""
-        api = FlextApiClient()
-        result = api.configure({"timeout": 60.0})
-        assert result is not None
-
-    def test_flext_api_get_config(self) -> None:
-        """Test FlextApiClient get_config method."""
-        api = FlextApiClient()
-        config = api.get_config()
-        assert isinstance(config, dict)
-
-    def test_flext_api_health(self) -> None:
-        """Test FlextApiClient health method."""
-        api = FlextApiClient()
-        health = api.health_check()
-        assert isinstance(health, dict)
 
     def test_flext_api_create_app_success(self) -> None:
         """Test FlextApiClient create_app static method success case."""

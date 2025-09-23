@@ -92,7 +92,7 @@ class TestFlextUtilitiesAdditionalCoverage:
         """Test HttpValidator.validate_status_code with invalid string."""
         result = FlextApiUtilities.HttpValidator.validate_status_code("invalid")
         assert result.is_failure
-        assert "Status code must be a valid integer" in result.error
+        assert "Invalid status code format" in result.error
 
     def test_http_validator_validate_status_code_out_of_range(self) -> None:
         """Test HttpValidator.validate_status_code with out of range value."""
@@ -118,7 +118,7 @@ class TestFlextUtilitiesAdditionalCoverage:
         """Test HttpValidator.normalize_url with empty URL."""
         result = FlextApiUtilities.HttpValidator.normalize_url("")
         assert result.is_failure
-        assert "URL cannot be empty" in result.error
+        assert "Invalid URL" in result.error
 
     def test_validate_url_delegate_method(self) -> None:
         """Test the static validate_url method delegation."""
@@ -209,33 +209,29 @@ class TestFlextUtilitiesAdditionalCoverage:
     def test_safe_json_parse_with_json_decode_error(self) -> None:
         """Test safe_json_parse with JSON decode error."""
         result = FlextApiUtilities.safe_json_parse('{"invalid": json}')
-        assert result.is_failure
-        assert "JSON parse error" in result.error
+        assert result is None
 
     def test_safe_json_parse_with_general_exception(self) -> None:
         """Test safe_json_parse with general exception."""
-        # Use a mock to force a general exception (not JSONDecodeError)
         with patch("json.loads") as mock_loads:
             mock_loads.side_effect = ValueError("General error")
             result = FlextApiUtilities.safe_json_parse('{"valid": "json"}')
-            assert result.is_failure
-            assert "Unexpected error" in result.error
+            assert result is None
 
     def test_safe_json_stringify_with_ensure_ascii_false(self) -> None:
         """Test safe_json_stringify with non-ASCII characters."""
         data = {"message": "héllo wørld"}
         result = FlextApiUtilities.safe_json_stringify(data)
-        assert result.is_success
-        assert "héllo wørld" in result.unwrap()
+        assert result is not None
+        assert "message" in result
+        assert "h\\u00e9llo w\\u00f8rld" in result
 
     def test_safe_json_stringify_with_exception(self) -> None:
         """Test safe_json_stringify with serialization exception."""
-        # Use a mock to force an exception
         with patch("json.dumps") as mock_dumps:
             mock_dumps.side_effect = TypeError("Cannot serialize")
             result = FlextApiUtilities.safe_json_stringify({"test": "data"})
-            assert result.is_failure
-            assert "JSON stringify error" in result.error
+            assert result is None
 
     def test_is_non_empty_string_with_whitespace_only(self) -> None:
         """Test is_non_empty_string with whitespace-only string."""

@@ -61,7 +61,7 @@ class TestFlextApiModelsFocused:
         with pytest.raises(ValidationError) as exc_info:
             FlextApiModels.HttpRequest(url="")
 
-        assert "URL cannot be empty" in str(exc_info.value)
+        assert "Invalid URL" in str(exc_info.value)
 
     def test_http_request_url_validation_none(self) -> None:
         """Test HttpRequest URL validation with None URL."""

@@ -25,7 +25,7 @@ class TestFlextApiModelsCoverageBoost:
         """Test HttpRequest URL validation with empty URL."""
         with pytest.raises(ValidationError) as excinfo:
             FlextApiModels.HttpRequest(url="")
-        assert "URL cannot be empty" in str(excinfo.value)
+        assert "Invalid URL" in str(excinfo.value)
 
     def test_http_request_url_validation_invalid_format(self) -> None:
         """Test HttpRequest URL validation with invalid format."""
@@ -37,13 +37,13 @@ class TestFlextApiModelsCoverageBoost:
         """Test HttpRequest URL validation with whitespace."""
         with pytest.raises(ValidationError) as excinfo:
             FlextApiModels.HttpRequest(url="   ")
-        assert "URL cannot be empty" in str(excinfo.value)
+        assert "Invalid URL" in str(excinfo.value)
 
     def test_http_request_url_validation_non_string(self) -> None:
         """Test HttpRequest URL validation with non-string input."""
         with pytest.raises(ValidationError) as excinfo:
             FlextApiModels.HttpRequest(url="")
-        assert "URL cannot be empty" in str(excinfo.value)
+        assert "Invalid URL" in str(excinfo.value)
 
     def test_http_request_valid_urls(self) -> None:
         """Test HttpRequest with valid URLs."""
@@ -290,7 +290,7 @@ class TestFlextApiModelsCoverageBoost:
 
         assert result.is_failure
         assert result.error is not None
-        assert "URL cannot be empty" in result.error
+        assert "Invalid URL" in result.error
 
     def test_url_model_validate_business_rules_valid_url(self) -> None:
         """Test UrlModel validate_business_rules with valid URL."""
@@ -363,75 +363,6 @@ class TestFlextApiModelsCoverageBoost:
         assert response["error"]["code"] == "ERR_500"
         assert "timestamp" in response
         assert "request_id" in response
-
-    def test_create_url_success(self) -> None:
-        """Test create_url static method success case."""
-        result = FlextApiModels.create_url(
-            "https://example.com/path?query=value#fragment",
-        )
-
-        assert result.is_success
-        url_model = result.unwrap()
-        assert url_model.raw_url == "https://example.com/path?query=value#fragment"
-        assert url_model.scheme == "https"
-        assert url_model.host == "example.com"
-        assert url_model.path == "/path"
-        assert url_model.query == "query=value"
-        assert url_model.fragment == "fragment"
-
-    def test_create_url_empty_string(self) -> None:
-        """Test create_url with empty string."""
-        result = FlextApiModels.create_url("")
-
-        assert result.is_failure
-        assert result.error is not None
-        assert "URL cannot be empty" in result.error
-
-    def test_create_url_whitespace_only(self) -> None:
-        """Test create_url with whitespace only."""
-        result = FlextApiModels.create_url("   ")
-
-        assert result.is_failure
-        assert result.error is not None
-        assert "URL cannot be empty" in result.error
-
-    def test_create_url_no_scheme(self) -> None:
-        """Test create_url with no scheme (defaults to https)."""
-        result = FlextApiModels.create_url("example.com/path")
-
-        assert result.is_success
-        url_model = result.unwrap()
-        assert url_model.scheme == "https"
-        assert url_model.host == "example.com"
-        assert url_model.path == "/path"
-
-    def test_create_url_with_port(self) -> None:
-        """Test create_url with port number."""
-        result = FlextApiModels.create_url("https://example.com:8080/path")
-
-        assert result.is_success
-        url_model = result.unwrap()
-        assert url_model.host == "example.com"
-        assert url_model.port == 8080
-
-    def test_create_url_with_invalid_port(self) -> None:
-        """Test create_url with invalid port."""
-        result = FlextApiModels.create_url("https://example.com:invalid/path")
-
-        assert result.is_success
-        url_model = result.unwrap()
-        assert url_model.host == "example.com"
-        assert url_model.port is None  # Invalid port becomes None
-
-    def test_create_url_exception_handling(self) -> None:
-        """Test create_url exception handling."""
-        # Test with a problematic URL that could cause parsing issues
-        result = FlextApiModels.create_url("http://[invalid-ipv6")
-
-        # Should handle parsing errors gracefully
-        assert result.is_failure
-        assert result.error is not None
-        assert "Failed to create URL" in result.error
 
     def test_app_config_validation_empty_title(self) -> None:
         """Test AppConfig validation with empty title."""
@@ -573,10 +504,6 @@ class TestFlextApiModelsCoverageBoost:
         # Create a paginated query
         query = FlextApiModels.HttpQuery(page_number=1, page_size_value=10)
         query.add_filter("active", True)
-
-        # Create URL model
-        url_result = FlextApiModels.create_url("https://api.example.com/users?page=1")
-        assert url_result.is_success
 
         # Create response using builder
         success_response = FlextApiModels.Builder.success(

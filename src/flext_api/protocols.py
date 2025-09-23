@@ -8,19 +8,19 @@ from typing import Protocol, runtime_checkable
 
 from flext_core import FlextResult
 
-from .typings import (
-    HttpData,
-    HttpHeaders,
-    HttpMethod,
-    HttpParams,
-    HttpStatusCode,
-    JsonObject,
-    RequestData,
-    ResponseData,
-    StorageKey,
-    StorageValue,
-    TimeoutSeconds,
-)
+from .typings import FlextApiTypings
+
+HttpData = FlextApiTypings.HttpData
+HttpHeaders = FlextApiTypings.HttpHeaders
+HttpMethod = FlextApiTypings.HttpMethod
+HttpParams = FlextApiTypings.HttpParams
+HttpStatusCode = FlextApiTypings.HttpStatusCode
+JsonObject = FlextApiTypings.JsonObject
+RequestData = FlextApiTypings.RequestData
+ResponseData = FlextApiTypings.ResponseData
+StorageKey = FlextApiTypings.StorageKey
+StorageValue = FlextApiTypings.StorageValue
+TimeoutSeconds = FlextApiTypings.TimeoutSeconds
 
 
 @runtime_checkable

@@ -14,18 +14,13 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from flext_core import (
     FlextConstants,
-    FlextLogger,
     FlextModels,
     FlextResult,
     FlextUtilities,
 )
 
 from .constants import FlextApiConstants
-from .typings import (
-    Headers,
-    RequestBody,
-    Timeout,
-)
+from .typings import FlextApiTypings
 
 # Standard model configuration for all API models
 STANDARD_MODEL_CONFIG = ConfigDict(
@@ -38,9 +33,6 @@ STANDARD_MODEL_CONFIG = ConfigDict(
 class FlextApiModels:
     """API models using flext-core extensively - Pydantic models only."""
 
-    # Private logger for the models class
-    _logger = FlextLogger(__name__)
-
     # Simple API-specific models
     class HttpRequest(BaseModel):
         """HTTP request model with modern Python 3.13 and Pydantic patterns."""
@@ -49,9 +41,9 @@ class FlextApiModels:
 
         method: str = "GET"
         url: str
-        headers: Headers = Field(default_factory=dict)
-        body: RequestBody = None
-        timeout: Timeout = FlextConstants.Performance.DEFAULT_REQUEST_TIMEOUT
+        headers: FlextApiTypings.Headers = Field(default_factory=dict)
+        body: FlextApiTypings.RequestBody = None
+        timeout: FlextApiTypings.Timeout = FlextConstants.Performance.DEFAULT_REQUEST_TIMEOUT
 
         @field_validator("url")
         @classmethod
@@ -65,16 +57,13 @@ class FlextApiModels:
                 ValueError: If URL validation fails.
 
             """
-            # Handle relative URLs (starting with /) separately since they're valid for API requests
             if isinstance(v, str) and v.strip().startswith("/"):
                 return v.strip()
 
-            # Use centralized FlextModels validation for absolute URLs
             validation_result = FlextModels.create_validated_http_url(
                 v.strip() if isinstance(v, str) else "",
             )
             if validation_result.is_failure:
-                # Map flext-core error messages to expected test messages
                 error_msg = validation_result.error or "Invalid URL"
                 if "URL must start with http:// or https://" in error_msg:
                     error_msg = "Invalid URL format"
@@ -85,15 +74,15 @@ class FlextApiModels:
                 msg = f"Invalid URL: {error_msg}"
                 raise ValueError(msg)
             url_obj = validation_result.unwrap()
-            return str(url_obj)
+            return str(url_obj.url) if hasattr(url_obj, "url") else str(url_obj)
 
         @field_validator("headers")
         @classmethod
-        def validate_headers(cls, v: Headers) -> Headers:
+        def validate_headers(cls, v: FlextApiTypings.Headers) -> FlextApiTypings.Headers:
             """Validate and sanitize headers with Python 3.13+ dict comprehension optimization.
 
             Returns:
-                Headers: Sanitized headers dictionary.
+                FlextApiTypings.Headers: Sanitized headers dictionary.
 
             """
             # Python 3.13+ optimized dict comprehension with walrus operator
@@ -180,12 +169,10 @@ class FlextApiModels:
                 ValueError: If base URL validation fails.
 
             """
-            # Use centralized FlextModels validation instead of duplicate logic
             validation_result = FlextModels.create_validated_http_url(
                 v.strip() if isinstance(v, str) else "",
             )
             if validation_result.is_failure:
-                # Map flext-core error messages to expected test messages
                 error_msg = validation_result.error or "Invalid base URL"
                 if (
                     "URL must start with http:// or https://" in error_msg
@@ -195,7 +182,9 @@ class FlextApiModels:
                     error_msg = "URL must be a non-empty string"
                 msg = f"Invalid base URL: {error_msg}"
                 raise ValueError(msg)
-            return str(validation_result.unwrap())
+
+            url_obj = validation_result.unwrap()
+            return str(url_obj.url) if hasattr(url_obj, "url") else str(url_obj)
 
         def get_auth_header(self) -> dict[str, str]:
             """Get authentication header if configured.
@@ -406,95 +395,6 @@ class FlextApiModels:
                 "request_id": FlextUtilities.Generators.generate_entity_id(),
             }
 
-    @staticmethod
-    def create_url(url_string: str) -> FlextResult[FlextApiModels.UrlModel]:
-        """Create URL model from string.
-
-        Returns:
-            FlextResult[FlextApiModels.UrlModel]: Success or failure result with URL model.
-
-        """
-        try:
-            # Simple URL parsing - in a real implementation, you'd use urllib.parse
-            if not url_string or not url_string.strip():
-                return FlextResult["FlextApiModels.UrlModel"].fail(
-                    "URL cannot be empty",
-                )
-
-            url_str = url_string.strip()
-
-            # Basic URL parsing
-            scheme = None
-            host = None
-            port = None
-            path = None
-            query = None
-            fragment = None
-
-            # Parse scheme
-            if "://" in url_str:
-                scheme, rest = url_str.split("://", 1)
-            else:
-                rest = url_str
-                scheme = "https"  # Default scheme
-
-            # Parse fragment
-            if "#" in rest:
-                rest, fragment = rest.split("#", 1)
-
-            # Parse query
-            if "?" in rest:
-                rest, query = rest.split("?", 1)
-
-            # Parse host and port
-            if "/" in rest:
-                host_port, path = rest.split("/", 1)
-                path = "/" + path
-            else:
-                host_port = rest
-                path = "/"
-
-            # Parse port
-            if ":" in host_port:
-                host, port_str = host_port.split(":", 1)
-                try:
-                    port = int(port_str)
-                except ValueError:
-                    port = None
-            else:
-                host = host_port
-
-            # Validate host format - reject invalid IPv6 addresses
-            if host and "[" in host:
-                # Check for malformed IPv6 (missing closing bracket or invalid content)
-                if "]" not in host:
-                    return FlextResult["FlextApiModels.UrlModel"].fail(
-                        "Failed to create URL: Malformed IPv6 address (missing closing bracket)",
-                    )
-
-                # Basic IPv6 validation for addresses with "invalid" in the name
-                ipv6_part = host[host.find("[") + 1 : host.find("]")]
-                if "invalid" in ipv6_part.lower():
-                    return FlextResult["FlextApiModels.UrlModel"].fail(
-                        "Failed to create URL: Invalid IPv6 address format",
-                    )
-
-            # Create URL model
-            url_model = FlextApiModels.UrlModel(
-                raw_url=url_str,
-                scheme=scheme,
-                host=host,
-                port=port,
-                path=path,
-                query=query,
-                fragment=fragment,
-            )
-            return FlextResult["FlextApiModels.UrlModel"].ok(url_model)
-        except Exception as e:
-            return FlextResult["FlextApiModels.UrlModel"].fail(
-                f"Failed to create URL: {e}",
-            )
-
     class AppConfig(BaseModel):
         """FastAPI application configuration model."""
 
@@ -593,8 +493,6 @@ class FlextApiModels:
     HttpRequestConfig = Http.HttpRequestConfig
     HttpErrorConfig = Http.HttpErrorConfig
 
-
-# Direct nested class access only - no module aliases
 
 __all__ = [
     "FlextApiModels",
