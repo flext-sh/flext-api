@@ -73,9 +73,8 @@ class TestFlextApiModels:
         service_data = FlextTestsDomains.create_service()
 
         headers = {"Authorization": "Bearer token", "Accept": "application/json"}
-        base_url = (
-            f"https://{service_data.get('name', 'api').replace('_', '-')}.test.com"
-        )
+        service_name = str(service_data.get('name', 'api'))
+        base_url = f"https://{service_name.replace('_', '-')}.test.com"
         timeout = 60.0  # Use fixed value for type safety
         max_retries = 5  # Use fixed value for type safety
 
@@ -95,7 +94,7 @@ class TestFlextApiModels:
         """Test ClientConfig base_url validation using flext_tests."""
         # Get realistic service data from FlextTestsDomains
         service_data = FlextTestsDomains.create_service()
-        service_name = service_data.get("name", "api").replace("_", "-")
+        service_name = str(service_data.get("name", "api")).replace("_", "-")
         port = service_data.get("port", 8080)
 
         # Valid URLs using flext_tests data

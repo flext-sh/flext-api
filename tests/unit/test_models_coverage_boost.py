@@ -290,7 +290,7 @@ class TestFlextApiModelsCoverageBoost:
 
         assert result.is_failure
         assert result.error is not None
-        assert "Invalid URL" in result.error
+        assert "URL cannot be empty" in result.error
 
     def test_url_model_validate_business_rules_valid_url(self) -> None:
         """Test UrlModel validate_business_rules with valid URL."""
@@ -317,15 +317,17 @@ class TestFlextApiModelsCoverageBoost:
     def test_builder_create_error_response(self) -> None:
         """Test Builder create error response."""
         builder = FlextApiModels.Builder()
-        response = builder.create(
+        response: dict[str, object] = builder.create(
             response_type="error",
             code="ERR_001",
             message="Error occurred",
         )
 
         assert response["status"] == "error"
-        assert response["error"]["code"] == "ERR_001"
-        assert response["error"]["message"] == "Error occurred"
+        error_data = response["error"]
+        assert isinstance(error_data, dict)
+        assert error_data["code"] == "ERR_001"
+        assert error_data["message"] == "Error occurred"
         assert "timestamp" in response
         assert "request_id" in response
 
@@ -353,14 +355,16 @@ class TestFlextApiModelsCoverageBoost:
 
     def test_builder_static_error(self) -> None:
         """Test Builder static error method."""
-        response = FlextApiModels.Builder.error(
+        response: dict[str, object] = FlextApiModels.Builder.error(
             message="Something went wrong",
             code="ERR_500",
         )
 
         assert response["status"] == "error"
-        assert response["error"]["message"] == "Something went wrong"
-        assert response["error"]["code"] == "ERR_500"
+        error_data = response["error"]
+        assert isinstance(error_data, dict)
+        assert error_data["message"] == "Something went wrong"
+        assert error_data["code"] == "ERR_500"
         assert "timestamp" in response
         assert "request_id" in response
 

@@ -40,7 +40,7 @@ async def test_request_build_failure_and_pipeline_error() -> None:
 
     # Network error should cause request errors
     res = await client.get("/json")
-    assert not res.success
+    assert not res.is_success
     assert res.error is not None
 
     # Test network error path using hostname that triggers stub failure
@@ -52,7 +52,7 @@ async def test_request_build_failure_and_pipeline_error() -> None:
     try:
         # Use the public API method instead of non-existent private methods
         result = await invalid_client.get("/test")
-        assert not result.success
+        assert not result.is_success
         # Should have connection-related error
         error_msg = result.error or ""
         assert any(

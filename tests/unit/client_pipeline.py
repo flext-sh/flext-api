@@ -30,7 +30,7 @@ async def test_client_request_pipeline_success() -> None:
     await client.start()
     result = await client.get("/get")
 
-    assert result.success
+    assert result.is_success
     assert result.value is not None
     assert result.value.status_code == 200
 
@@ -55,7 +55,7 @@ async def test_client_error_handling_pipeline() -> None:
         # Should fail due to DNS resolution failure
         result = await client.get(request.url)
 
-        assert not result.success
+        assert not result.is_success
         assert result.error is not None
         # Check for common connection error messages
         error_lower = result.error.lower()
@@ -186,7 +186,7 @@ async def test_client_lifecycle_with_requests() -> None:
     )
     result = await client.get(request.url)
 
-    assert result.success
+    assert result.is_success
     assert result.value is not None
     assert result.value.status_code == 200
 

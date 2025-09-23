@@ -51,7 +51,7 @@ def assert_flext_result_success(
 ) -> None:
     """Assert FlextResult success using FlextTestsMatchers - ABSOLUTE."""
     # Direct assertion to avoid type variance issues in matchers
-    if not result.success:
+    if not result.is_success:
         pytest.fail(f"Expected success but got error: {result.error}")
     if expected_value is not None and result.value != expected_value:
         pytest.fail(f"Expected value {expected_value} but got {result.value}")
@@ -63,7 +63,7 @@ def assert_flext_result_failure[T](
 ) -> None:
     """Assert FlextResult failure using FlextTestsMatchers - ABSOLUTE."""
     # Direct assertion to avoid type variance issues in matchers
-    if result.success:
+    if result.is_success:
         pytest.fail(f"Expected failure but got data: {result.value}")
     if expected_error is not None and expected_error not in str(result.error):
         pytest.fail(

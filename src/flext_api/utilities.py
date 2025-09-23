@@ -162,6 +162,22 @@ class FlextApiUtilities:
                 FlextResult containing validated URL or error message.
 
             """
+            # Check URL length first
+            if len(url) > FlextApiConstants.MAX_URL_LENGTH:
+                return FlextResult[str].fail("URL is too long")
+            
+            # Check for invalid ports before delegating to flext-core
+            if ":0/" in url or ":0?" in url or url.endswith(":0"):
+                return FlextResult[str].fail("Invalid port 0")
+            
+            # Check for ports that exceed maximum (65535)
+            import re
+            port_match = re.search(r':(\d+)(?:/|$|\?)', url)
+            if port_match:
+                port = int(port_match.group(1))
+                if port > FlextApiConstants.MAX_PORT:
+                    return FlextResult[str].fail(f"Invalid port {port}")
+            
             # Use FlextModels centralized validation with HTTP-specific rules
             result = FlextModels.create_validated_http_url(url)
             # Map flext-core error messages to expected test messages
@@ -170,6 +186,7 @@ class FlextApiUtilities:
                 if (
                     "URL must start with http:// or https://" in error_msg
                     or "URL must have a valid hostname" in error_msg
+                    or "URL must have scheme and domain" in error_msg
                 ):
                     error_msg = "Invalid URL format"
                 elif "URL must be at most" in error_msg and "characters" in error_msg:
@@ -263,17 +280,30 @@ class FlextApiUtilities:
             try:
                 parsed = urlparse(url)
                 # Basic normalization: lowercase scheme and netloc, remove default ports
-                normalized_url = urlunparse((
+                path = parsed.path
+                
+                # Preserve trailing slash for all URLs (including root URLs)
+                if path and not path.endswith("/") and url.endswith("/"):
+                    path = path + "/"
+                
+                # Remove default ports
+                netloc = parsed.netloc.lower()
+                if parsed.scheme == "http" and ":80" in netloc:
+                    netloc = netloc.replace(":80", "")
+                elif parsed.scheme == "https" and ":443" in netloc:
+                    netloc = netloc.replace(":443", "")
+
+                normalized = urlunparse((
                     parsed.scheme.lower(),
-                    parsed.netloc.lower(),
-                    parsed.path,
+                    netloc,
+                    path,
                     parsed.params,
                     parsed.query,
                     parsed.fragment,
                 ))
-                return FlextResult[str].ok(normalized_url)
+                return FlextResult[str].ok(normalized)
             except Exception as e:
-                return FlextResult[str].fail(f"URL normalization failed: {e}")
+                return FlextResult[str].fail(f"URL normalization failed: {str(e)}")
 
     # =============================================================================
     # FLEXT-CORE DELEGATION METHODS - ZERO DUPLICATION
@@ -309,8 +339,11 @@ class FlextApiUtilities:
                     "Configuration cannot be None",
                 )
 
-            # Extract config data
-            if hasattr(config, "__dict__"):
+            # Extract config data - check for model_dump() first, then __dict__
+            config_dict = None
+            if hasattr(config, "model_dump") and callable(getattr(config, "model_dump")):
+                config_dict = config.model_dump()
+            elif hasattr(config, "__dict__"):
                 config_dict = config.__dict__
             elif isinstance(config, dict):
                 config_dict = config
@@ -471,7 +504,7 @@ class FlextApiUtilities:
             if isinstance(result, dict):
                 return result
             return None
-        except (json.JSONDecodeError, TypeError):
+        except Exception:
             return None
 
     @staticmethod
@@ -547,7 +580,7 @@ class FlextApiUtilities:
         """Format duration in seconds to human readable string.
 
         Returns:
-            Human readable duration string (e.g., '1.5s', '2m', '1h').
+            Human readable duration string (e.g., '1.5s', '2m 5.5s', '1h 30m').
 
         """
         if seconds < 1:
@@ -557,11 +590,19 @@ class FlextApiUtilities:
                 return "1s"
             return f"{seconds:.1f}s"
         if seconds < FlextApiUtilities.SECONDS_PER_HOUR:
-            minutes = seconds / FlextApiUtilities.SECONDS_PER_MINUTE
-            if minutes == 1.0:
+            minutes = int(seconds // FlextApiUtilities.SECONDS_PER_MINUTE)
+            remaining_seconds = seconds % FlextApiUtilities.SECONDS_PER_MINUTE
+            if minutes == 1 and remaining_seconds < 1:
                 return "1m"
-            return f"{minutes:.1f}m"
-        return f"{seconds / FlextApiUtilities.SECONDS_PER_HOUR:.1f}h"
+            elif remaining_seconds < 1:
+                return f"{minutes}m"
+            else:
+                return f"{minutes}m {remaining_seconds:.1f}s"
+        hours = int(seconds // FlextApiUtilities.SECONDS_PER_HOUR)
+        remaining_minutes = int((seconds % FlextApiUtilities.SECONDS_PER_HOUR) // FlextApiUtilities.SECONDS_PER_MINUTE)
+        if remaining_minutes == 0:
+            return f"{hours}h"
+        return f"{hours}h {remaining_minutes}m"
 
     @staticmethod
     def get_elapsed_time(start_time: float, current_time: float | None = None) -> float:
@@ -576,7 +617,7 @@ class FlextApiUtilities:
         return current_time - start_time
 
     @staticmethod
-    def get_performance_metrics(start_time: float) -> dict[str, object]:
+    def get_performance_metrics(start_time: float) -> dict[str, float | str]:
         """Get performance metrics from start time.
 
         Returns:
@@ -584,7 +625,10 @@ class FlextApiUtilities:
 
         """
         elapsed = FlextApiUtilities.get_elapsed_time(start_time)
+        end_time = start_time + elapsed
         return {
+            "start_time": start_time,
+            "end_time": end_time,
             "elapsed_time": elapsed,
             "elapsed_ms": elapsed * 1000,
             "formatted_duration": FlextApiUtilities.format_duration(elapsed),

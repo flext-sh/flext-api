@@ -333,7 +333,7 @@ class FlextApiModels:
         def create(
             self,
             response_type: str = "success",
-            **kwargs: str | float | bool | None,
+            **kwargs: object,
         ) -> dict[str, object]:
             """Create response using Python 3.13+ pattern matching optimization.
 
@@ -492,6 +492,7 @@ class FlextApiModels:
     # Re-export nested classes for backward compatibility
     HttpRequestConfig = Http.HttpRequestConfig
     HttpErrorConfig = Http.HttpErrorConfig
+    HttpMethod = FlextApiConstants.HttpMethod
 
 
 __all__ = [

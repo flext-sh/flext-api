@@ -28,7 +28,7 @@ class TestHttpClientIntegration:
                 "timeout": 10.0,
             },
         )
-        assert client_result.success
+        assert client_result.is_success
         client = client_result.value
 
         try:
@@ -50,7 +50,7 @@ class TestHttpClientIntegration:
                 "timeout": 10.0,
             },
         )
-        assert client_result.success
+        assert client_result.is_success
         client = client_result.value
         try:
             assert client.base_url == "https://httpbin.org"
@@ -69,7 +69,7 @@ class TestHttpClientIntegration:
                 "timeout": 10.0,
             },
         )
-        assert client_result.success
+        assert client_result.is_success
         client = client_result.value
 
         try:
@@ -92,7 +92,7 @@ class TestHttpClientIntegration:
                 "timeout": 10.0,
             },
         )
-        assert client_result.success
+        assert client_result.is_success
         client = client_result.value
 
         # Test basic client operations

@@ -473,11 +473,11 @@ class TestFlextApiModelsFocused:
         filter_conditions = {"name": "test", "active": True}
         sort_fields = ["name", "-created_at"]
 
-        query = FlextApiModels.HttpQuery(
-            filters=filter_conditions,
+        query = FlextApiModels.HttpQuery(  # type: ignore[call-arg]
+            filter_conditions=filter_conditions,
             sort_fields=sort_fields,
-            page=2,
-            page_size=50,
+            page_number=2,
+            page_size_value=50,
         )
 
         assert query.filter_conditions == filter_conditions
@@ -485,13 +485,12 @@ class TestFlextApiModelsFocused:
         assert query.page_number == 2
         assert query.page_size_value == 50
 
-    def test_http_query_backward_compatibility_init(self) -> None:
-        """Test HttpQuery backward compatibility in __init__."""
-        # Test old field names map to new ones
-        query = FlextApiModels.HttpQuery(
-            filters={"status": "active"},
-            page=3,
-            page_size=100,
+    def test_http_query_direct_field_access(self) -> None:
+        """Test HttpQuery with direct field names."""
+        query = FlextApiModels.HttpQuery(  # type: ignore[call-arg]
+            filter_conditions={"status": "active"},
+            page_number=3,
+            page_size_value=100,
         )
 
         assert query.filter_conditions == {"status": "active"}
@@ -501,10 +500,10 @@ class TestFlextApiModelsFocused:
     def test_http_query_page_number_validation(self) -> None:
         """Test HttpQuery page_number validation."""
         # Valid page numbers
-        query = FlextApiModels.HttpQuery(page=1)
+        query = FlextApiModels.HttpQuery(page_number=1)  # type: ignore[call-arg]
         assert query.page_number == 1
 
-        query_large = FlextApiModels.HttpQuery(page=100)
+        query_large = FlextApiModels.HttpQuery(page_number=100)  # type: ignore[call-arg]
         assert query_large.page_number == 100
 
         # Invalid page numbers

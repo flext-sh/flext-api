@@ -34,7 +34,7 @@ async def test_real_http_get_request() -> None:
 
     try:
         res = await client.get("/get?test_param=test_value")
-        assert res.success
+        assert res.is_success
         response = res.value
         assert response.status_code in {200, 400, 404}
         assert isinstance(response.headers, dict)
@@ -54,7 +54,7 @@ async def test_real_http_headers_and_user_agent() -> None:
     try:
         # Test with headers endpoint
         res = await client.get("/headers")
-        assert res.success
+        assert res.is_success
         response = res.value
         assert isinstance(response.headers, dict)
         assert len(response.headers) >= 0

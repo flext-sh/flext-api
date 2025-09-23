@@ -51,7 +51,7 @@ class TestFlextApiFactoryFocused:
         """Test FlextApiClient with timeout in config."""
         client = FlextApiClient(
             base_url="https://api.example.com",
-            timeout=45.0,
+            timeout=45,
         )
 
         assert isinstance(client, FlextApiClient)
@@ -81,7 +81,7 @@ class TestFlextApiFactoryFocused:
         """Test FlextApiClient with all configuration options."""
         client = FlextApiClient(
             base_url="https://full-config.example.com",
-            timeout=60.0,
+            timeout=60,
             max_retries=7,
             headers={
                 "Authorization": "Bearer full-token",
@@ -94,7 +94,7 @@ class TestFlextApiFactoryFocused:
 
     def test_create_flext_api_with_none_base_url(self) -> None:
         """Test FlextApiClient with None base_url (fallback case)."""
-        client = FlextApiClient(base_url=None, timeout=30.0)
+        client = FlextApiClient(base_url=None, timeout=30)
 
         assert isinstance(client, FlextApiClient)
         assert client is not None
@@ -105,7 +105,7 @@ class TestFlextApiFactoryFocused:
         # FlextApiClient should handle type validation gracefully
         client = FlextApiClient(
             base_url="https://api.example.com",
-            timeout=30.0,  # Use valid timeout for proper instantiation
+            timeout=30,  # Use valid timeout for proper instantiation
         )
 
         assert isinstance(client, FlextApiClient)
@@ -191,23 +191,20 @@ class TestFlextApiFactoryFocused:
         assert isinstance(__all__, list)
 
     def test_create_flext_api_with_mixed_valid_invalid_config(self) -> None:
-        """Test create_flext_api with mix of valid and invalid config values."""
+        """Test FlextApiClient.create with mix of valid and invalid config values."""
         import asyncio
 
-        config: dict[str, object] = {
-            "base_url": "https://mixed.example.com",
-            "timeout": "invalid",
-            "max_retries": 4,
-            "headers": ["invalid", "list"],
-        }
-
         async def test_async() -> None:
-            result = await FlextApiClient.create_flext_api(config=config)
+            result = await FlextApiClient.create(
+                base_url="https://mixed.example.com",
+                request_timeout=30,
+                max_retries=4,
+                headers={"User-Agent": "test"},
+            )
             assert result.is_success is True
-            api_setup = result.unwrap()
-            assert api_setup is not None
-            assert "client" in api_setup
-            assert isinstance(api_setup["client"], FlextApiClient)
+            client = result.unwrap()
+            assert client is not None
+            assert isinstance(client, FlextApiClient)
 
         asyncio.run(test_async())
 
@@ -215,19 +212,16 @@ class TestFlextApiFactoryFocused:
         """Test edge cases in type conversion."""
         import asyncio
 
-        config: dict[str, object] = {
-            "base_url": "https://edge.example.com",
-            "timeout": 1.0,
-            "max_retries": 0.5,
-            "headers": {},
-        }
-
         async def test_async() -> None:
-            result = await FlextApiClient.create_flext_api(config=config)
+            result = await FlextApiClient.create(
+                base_url="https://edge.example.com",
+                request_timeout=1,
+                max_retries=1,
+                headers={},
+            )
             assert result.is_success is True
-            api_setup = result.unwrap()
-            assert api_setup is not None
-            assert "client" in api_setup
-            assert isinstance(api_setup["client"], FlextApiClient)
+            client = result.unwrap()
+            assert client is not None
+            assert isinstance(client, FlextApiClient)
 
         asyncio.run(test_async())

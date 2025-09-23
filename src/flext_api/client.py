@@ -147,15 +147,18 @@ class FlextApiClient(FlextService[None]):
         self._logger = FlextLogger(__name__)
 
         # Extract and validate client configuration
-        self._client_config = self._extract_client_config_params(
-            config=config,
-            base_url=base_url,
-            timeout=timeout,
-            max_retries=max_retries,
-            headers=headers,
-            verify_ssl=verify_ssl,
-            **kwargs,
-        )
+        try:
+            self._client_config = self._extract_client_config_params(
+                config=config,
+                base_url=base_url,
+                timeout=timeout,
+                max_retries=max_retries,
+                headers=headers,
+                verify_ssl=verify_ssl,
+                **kwargs,
+            )
+        except Exception as e:
+            raise ValueError("Client creation failed") from e
 
         # Initialize modular services as private attributes
         self._http = FlextApiHttpOperations(self._client_config, self._logger)
@@ -313,6 +316,10 @@ class FlextApiClient(FlextService[None]):
                 attr_value = getattr(config, "api_base_url")
                 if isinstance(attr_value, str):
                     base_url_value = attr_value
+            elif hasattr(config, "base_url"):
+                attr_value = getattr(config, "base_url")
+                if isinstance(attr_value, str):
+                    base_url_value = attr_value
             if hasattr(config, "api_timeout"):
                 attr_value = getattr(config, "api_timeout")
                 if isinstance(attr_value, (int, float)):
@@ -446,7 +453,7 @@ class FlextApiClient(FlextService[None]):
         if stop_result.is_failure:
             self._logger.warning(f"Client stop warning: {stop_result.error}")
 
-    # Connection lifecycle methods for backward compatibility
+    # Connection lifecycle methods
     async def close(self) -> FlextResult[None]:
         """Close client connection and cleanup resources.
 
@@ -522,7 +529,7 @@ class FlextApiClient(FlextService[None]):
         """Build complete URL from base URL and endpoint.
 
         Args:
-            endpoint: API endpoint path
+            endpoint: API endpoint path or absolute URL
 
         Returns:
             Complete URL string
@@ -531,9 +538,16 @@ class FlextApiClient(FlextService[None]):
             ```python
             url = client._build_url("/users/123")
             # Returns: "https://api.example.com/users/123"
+
+            url = client._build_url("https://other.com/api")
+            # Returns: "https://other.com/api" (absolute URLs unchanged)
             ```
 
         """
+        # If endpoint is already an absolute URL, return it as-is
+        if endpoint.startswith(("http://", "https://")):
+            return endpoint
+
         base = self._client_config.base_url.rstrip("/")
         endpoint_clean = endpoint.lstrip("/")
         return f"{base}/{endpoint_clean}" if endpoint_clean else base
