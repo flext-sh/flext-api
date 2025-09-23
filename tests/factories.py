@@ -66,11 +66,13 @@ class FlextApiFactories:
 
         """
         config = FlextApiFactories.create_client_config(**overrides)
+        timeout_val = config["timeout"]
+        headers_val = config.get("headers", {})
         return FlextApiClient(
             base_url=str(config["base_url"]),
-            timeout=cast("float", config["timeout"]),
+            timeout=int(timeout_val) if isinstance(timeout_val, (int, float)) else 30,
             max_retries=cast("int", config["max_retries"]),
-            headers=config.get("headers", {}),
+            headers=dict(headers_val) if isinstance(headers_val, dict) else {},
         )
 
     @staticmethod

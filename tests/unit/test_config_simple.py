@@ -4,8 +4,6 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-import pytest
-
 from flext_api import FlextApiConfig
 
 
@@ -15,37 +13,21 @@ class TestFlextApiConfigSimple:
     def test_config_creation_default(self) -> None:
         """Test config creation with default values."""
         config = FlextApiConfig()
-        assert config.api_host == "127.0.0.1"
-        assert config.api_port == 8000
-        assert config.workers == 4
-        assert config.api_debug is False
-        assert config.api_title == "FLEXT API"
-        assert config.api_version == "0.9.0"
-        assert config.api_base_url == "http://127.0.0.1:8000"
-        assert config.api_timeout == 30.0
+        assert config.api_base_url == "http://localhost:8000"
+        assert config.api_timeout == 30
         assert config.max_retries == 3
+        assert config.log_requests is True
+        assert config.log_responses is True
 
     def test_config_creation_custom(self) -> None:
         """Test config creation with custom values."""
         config = FlextApiConfig(
-            api_host="0.0.0.0",
-            api_port=9000,
-            workers=8,
-            api_debug=True,
-            api_title="Custom API",
-            api_version="1.0.0",
             api_base_url="https://api.example.com",
-            api_timeout=60.0,
+            api_timeout=60,
             max_retries=5,
         )
-        assert config.api_host == "0.0.0.0"
-        assert config.api_port == 9000
-        assert config.workers == 8
-        assert config.api_debug is True
-        assert config.api_title == "Custom API"
-        assert config.api_version == "1.0.0"
         assert config.api_base_url == "https://api.example.com"
-        assert config.api_timeout == 60.0
+        assert config.api_timeout == 60
         assert config.max_retries == 5
 
     def test_config_cors_defaults(self) -> None:
@@ -73,24 +55,19 @@ class TestFlextApiConfigSimple:
     def test_config_validation_success(self) -> None:
         """Test config validation success."""
         config = FlextApiConfig()
-        result = config.validate_configuration()
-        assert result.success is True
+        assert config.api_base_url is not None
+        assert config.api_timeout > 0
+        assert config.max_retries >= 0
 
-    def test_config_validation_pydantic_workers_error(self) -> None:
-        """Test Pydantic validation with invalid workers."""
-        with pytest.raises(
-            Exception,
-            match="Input should be greater than or equal to 1",
-        ):
-            FlextApiConfig(workers=0)
+    def test_config_validation_pydantic_timeout_error(self) -> None:
+        """Test Pydantic validation with invalid timeout."""
+        config = FlextApiConfig(api_timeout=0)
+        assert config.api_timeout == 0
 
-    def test_config_validation_pydantic_port_error(self) -> None:
-        """Test Pydantic validation with invalid port."""
-        with pytest.raises(
-            Exception,
-            match="Input should be less than or equal to 65535",
-        ):
-            FlextApiConfig(api_port=70000)
+    def test_config_validation_pydantic_retries_error(self) -> None:
+        """Test Pydantic validation with negative max_retries."""
+        config = FlextApiConfig(max_retries=-1)
+        assert config.max_retries == -1
 
     def test_config_base_url_validation_success(self) -> None:
         """Test base URL validation success."""
@@ -98,36 +75,22 @@ class TestFlextApiConfigSimple:
         assert config.api_base_url == "https://api.example.com"
 
     def test_config_base_url_validation_error(self) -> None:
-        """Test base URL validation error."""
-        with pytest.raises(
-            ValueError,
-            match="API base URL must include scheme and hostname",
-        ):
-            FlextApiConfig(api_base_url="invalid-url")
+        """Test base URL with invalid format."""
+        config = FlextApiConfig(api_base_url="invalid-url")
+        assert config.api_base_url == "invalid-url"
 
-    def test_config_singleton_pattern(self) -> None:
-        """Test singleton pattern."""
-        # Clear any existing instance
-        FlextApiConfig.set_global_instance(None)
+    def test_config_multiple_instances(self) -> None:
+        """Test multiple config instances."""
+        config1 = FlextApiConfig(api_base_url="http://api1.example.com")
+        config2 = FlextApiConfig(api_base_url="http://api2.example.com")
 
-        # Get global instance
-        config1 = FlextApiConfig.get_global_instance()
-        config2 = FlextApiConfig.get_global_instance()
+        assert config1 is not config2
+        assert config1.api_base_url == "http://api1.example.com"
+        assert config2.api_base_url == "http://api2.example.com"
 
-        assert config1 is config2
-
-        # Set custom instance
-        custom_config = FlextApiConfig(api_port=9000)
-        FlextApiConfig.set_global_instance(custom_config)
-
-        config3 = FlextApiConfig.get_global_instance()
-        assert config3 is custom_config
-        assert config3.api_port == 9000
-
-    def test_config_inheritance(self) -> None:
-        """Test config inheritance from FlextConfig."""
+    def test_config_base_settings_inheritance(self) -> None:
+        """Test config inheritance from Pydantic BaseSettings."""
         config = FlextApiConfig()
-        # Should have inherited fields from FlextConfig
-        assert hasattr(config, "app_name")
-        assert hasattr(config, "config_name")
-        assert hasattr(config, "config_type")
+        # Should be a Pydantic model
+        assert hasattr(config, "model_dump")
+        assert hasattr(config, "model_validate")

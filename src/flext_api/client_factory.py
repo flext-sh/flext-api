@@ -6,15 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from flext_core import FlextResult
-
-if TYPE_CHECKING:
-    from flext_api.client import FlextApiClient
-
-# Import at module level to satisfy MyPy
 from flext_api import client as _client_module
+from flext_api.client import FlextApiClient
+from flext_core import FlextResult
 
 
 class FlextApiClientFactory:
@@ -161,5 +155,4 @@ class FlextApiClientFactory:
         )
 
 
-# Direct class access only - no backward compatibility aliases
 __all__ = ["FlextApiClientFactory"]

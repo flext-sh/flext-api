@@ -50,10 +50,14 @@ class TestFlextApiUtilitiesReal:
         )
 
         assert result.is_success
-        response = result.unwrap()
+        response_obj = result.unwrap()
+        assert isinstance(response_obj, dict)
+        response: dict[str, object] = response_obj
         assert response["success"] is True
         assert response["data"] == [1, 2, 3]
-        pagination = response["pagination"]
+        pagination_obj = response["pagination"]
+        assert isinstance(pagination_obj, dict)
+        pagination: dict[str, object] = pagination_obj
         assert pagination["page"] == 1
         assert pagination["total"] == 3
 
@@ -151,4 +155,4 @@ class TestFlextApiUtilitiesReal:
         result = FlextApiUtilities.HttpValidator.normalize_url("")
         assert result.is_failure
         assert result.error is not None
-        assert "URL cannot be empty" in result.error
+        assert "Invalid URL" in result.error

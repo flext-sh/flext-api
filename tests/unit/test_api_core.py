@@ -56,13 +56,10 @@ class TestFlextApiClient:
         assert client.max_retries == max_retries
 
     def test_client_properties_with_factory_data(self) -> None:
-        """Test client properties using FlextTestsDomains factory data."""
-        # Create test data using FlextTestsDomains - ACESSO DIRETO
-        service_data = FlextTestsDomains.create_service()
-
-        base_url = f"https://{service_data.get('name', 'test')}.example.com"
-        timeout = cast("float", service_data.get("timeout", 45.0))
-        max_retries = cast("int", service_data.get("max_retries", 5))
+        """Test client properties with test configuration data."""
+        base_url = "https://api-service.example.com"
+        timeout = 45.0
+        max_retries = 5
 
         client = FlextApiClient(
             base_url=base_url,
@@ -70,7 +67,6 @@ class TestFlextApiClient:
             max_retries=max_retries,
         )
 
-        # Verify all properties work
         assert isinstance(client.base_url, str)
         assert client.base_url == base_url
         assert isinstance(client.timeout, float)
@@ -110,7 +106,9 @@ class TestFlextApiClient:
 
         clients = []
         for config in config_scenarios:
-            base_url = str(config.get("base_url", "https://default.example.com"))
+            base_url = str(
+                config.get("base_url", "https://default.example.com")
+            ).replace("_", "-")
             client = FlextApiClient(base_url=base_url)
             clients.append(client)
 
@@ -128,10 +126,10 @@ class TestFlextApiClient:
         service2 = FlextTestsDomains.create_service()
 
         client1 = FlextApiClient(
-            base_url=f"https://{service1.get('name', 'service1')}.example.com",
+            base_url=f"https://{service1.get('name', 'service1').replace('_', '-')}.example.com",
         )
         client2 = FlextApiClient(
-            base_url=f"https://{service2.get('name', 'service2')}.example.com",
+            base_url=f"https://{service2.get('name', 'service2').replace('_', '-')}.example.com",
         )
 
         # Clients should be independent
@@ -180,15 +178,12 @@ class TestFlextApiClient:
 
     def test_client_property_types_validation(self) -> None:
         """Test client property types are properly validated."""
-        # Use FlextTestsDomains for configuration - ACESSO DIRETO
-        service_data = FlextTestsDomains.create_service()
-        base_url = f"https://{service_data.get('name', 'test')}.example.com"
+        base_url = "https://test-service.example.com"
 
         client = FlextApiClient(base_url=base_url, timeout=30.5, max_retries=5)
 
-        # Property types should be correct
         assert isinstance(client.base_url, str)
-        assert isinstance(client.timeout, (int, float))  # Could be int or float
+        assert isinstance(client.timeout, (int, float))
         assert isinstance(client.max_retries, int)
 
     def test_client_with_service_data(

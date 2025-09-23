@@ -138,5 +138,4 @@ class FlextApiConnectionManager:
         return {"connected": False, "url": None, "timeout": None, "max_retries": None}
 
 
-# Direct class access only - no backward compatibility aliases
 __all__ = ["FlextApiConnectionManager"]

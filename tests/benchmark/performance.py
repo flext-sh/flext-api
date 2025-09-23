@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import FlextApiClient, FlextApiModels, create_flext_api
+from flext_api import FlextApi, FlextApiClient, FlextApiModels
 
 
 class TestAPIPerformanceBenchmarks:
@@ -15,7 +15,7 @@ class TestAPIPerformanceBenchmarks:
     def test_api_creation_benchmark(self) -> None:
         """Benchmark API creation performance."""
         # Simple benchmark for API creation
-        api_instance = create_flext_api()
+        api_instance = FlextApi.create_client(base_url="https://httpbin.org")
         assert api_instance is not None
 
     def test_client_creation_benchmark(self) -> None:

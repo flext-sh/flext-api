@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 from flext_api import FlextApiConstants, FlextApiUtilities
 from flext_api.models import FlextApiModels
-from flext_core import FlextTypes
+from flext_core import FlextConstants, FlextTypes
 from flext_tests import FlextTestsMatchers
 
 
@@ -319,7 +319,7 @@ class TestFlextApiUtilitiesComprehensive:
         response = result.value
         assert response["success"] is True
         assert response["message"] == "Success"
-        assert response["status_code"] == FlextApiConstants.HttpStatus.OK
+        assert response["status_code"] == FlextConstants.Platform.HTTP_STATUS_OK
         assert response["data"] is None
 
         # Success response with data
@@ -346,7 +346,7 @@ class TestFlextApiUtilitiesComprehensive:
         assert response["message"] == "Server error"
         assert (
             response["status_code"]
-            == FlextApiConstants.HttpStatus.INTERNAL_SERVER_ERROR
+            == FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR
         )
         assert response["data"] is None
 

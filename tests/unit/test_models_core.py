@@ -29,9 +29,10 @@ class TestFlextApiModels:
     def test_models_class_exists(self) -> None:
         """Test FlextApiModels class exists and is accessible."""
         assert FlextApiModels is not None
-        # HttpMethod and HttpStatus moved to FlextApiConstants
-        assert hasattr(FlextApiConstants, "HttpMethods")
-        assert hasattr(FlextApiConstants, "ResponseTemplates")
+        # Verify constants exist
+        assert hasattr(FlextApiConstants, "HTTP_OK")
+        assert hasattr(FlextApiConstants, "SUCCESS_RESPONSE_TEMPLATE")
+        # Verify models exist
         assert hasattr(FlextApiModels, "ClientConfig")
         assert hasattr(FlextApiModels, "ApiRequest")
         assert hasattr(FlextApiModels, "HttpResponse")
@@ -40,18 +41,16 @@ class TestFlextApiModels:
 
     def test_http_method_enum(self) -> None:
         """Test HttpMethod enum values."""
-        assert FlextApiConstants.HttpMethods.GET == "GET"
-        assert FlextApiConstants.HttpMethods.POST == "POST"
-        assert FlextApiConstants.HttpMethods.PUT == "PUT"
-        assert FlextApiConstants.HttpMethods.DELETE == "DELETE"
-        assert FlextApiConstants.HttpMethods.PATCH == "PATCH"
-        assert FlextApiConstants.HttpMethods.HEAD == "HEAD"
-        assert FlextApiConstants.HttpMethods.OPTIONS == "OPTIONS"
+        assert FlextApiConstants.HTTP_OK == 200
+        assert FlextApiConstants.HTTP_CREATED == 201
+        assert FlextApiConstants.HTTP_BAD_REQUEST == 400
+        assert FlextApiConstants.HTTP_NOT_FOUND == 404
+        assert FlextApiConstants.HTTP_INTERNAL_SERVER_ERROR == 500
 
     def test_http_status_enum(self) -> None:
         """Test ResponseTemplates values."""
-        success_response = FlextApiConstants.ResponseTemplates.SUCCESS_RESPONSE
-        error_response = FlextApiConstants.ResponseTemplates.ERROR_RESPONSE
+        success_response = FlextApiConstants.SUCCESS_RESPONSE_TEMPLATE
+        error_response = FlextApiConstants.ERROR_RESPONSE_TEMPLATE
         assert success_response["status"] == "success"
         assert error_response["status"] == "error"
 
@@ -74,7 +73,9 @@ class TestFlextApiModels:
         service_data = FlextTestsDomains.create_service()
 
         headers = {"Authorization": "Bearer token", "Accept": "application/json"}
-        base_url = f"https://{service_data.get('name', 'api')}.test.com"
+        base_url = (
+            f"https://{service_data.get('name', 'api').replace('_', '-')}.test.com"
+        )
         timeout = 60.0  # Use fixed value for type safety
         max_retries = 5  # Use fixed value for type safety
 
@@ -94,7 +95,7 @@ class TestFlextApiModels:
         """Test ClientConfig base_url validation using flext_tests."""
         # Get realistic service data from FlextTestsDomains
         service_data = FlextTestsDomains.create_service()
-        service_name = service_data.get("name", "api")
+        service_name = service_data.get("name", "api").replace("_", "-")
         port = service_data.get("port", 8080)
 
         # Valid URLs using flext_tests data
@@ -161,31 +162,27 @@ class TestFlextApiModels:
         headers = {"Content-Type": "application/json"}
 
         request = FlextApiModels.ApiRequest(
-            id="test_id",
-            method=FlextApiConstants.HttpMethods.POST,
+            method="POST",
             url="/api/test",
             headers=headers,
         )
 
-        assert request.method == FlextApiConstants.HttpMethods.POST
+        assert request.method == "POST"
         assert request.url == "/api/test"
         assert request.headers == headers
-        assert request.id == "test_id"
 
     def test_api_request_url_validation(self) -> None:
         """Test validation."""
         # Valid
         request = FlextApiModels.ApiRequest(
-            id="test_id",
-            method=FlextApiConstants.HttpMethods.GET,
+            method="GET",
             url="https://api.example.com/users",
         )
         assert request.url == "https://api.example.com/users"
 
         # Empty URL is allowed
         empty_request = FlextApiModels.ApiRequest(
-            id="test_id",
-            method=FlextApiConstants.HttpMethods.GET,
+            method="GET",
             url="",
         )
         assert not empty_request.url
@@ -382,8 +379,7 @@ class TestFlextApiModels:
         assert isinstance(config, FlextApiModels.ClientConfig)
 
         request = FlextApiModels.ApiRequest(
-            id="test_id",
-            method=FlextApiConstants.HttpMethods.GET,
+            method="GET",
             url="https://api.example.com/test",
         )
         assert isinstance(request, FlextApiModels.ApiRequest)

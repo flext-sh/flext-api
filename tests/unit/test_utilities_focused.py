@@ -232,7 +232,7 @@ class TestFlextApiUtilitiesFocused:
         result = FlextApiUtilities.HttpValidator.validate_status_code("invalid")
         assert not result.is_success
         assert result.error is not None
-        assert "Status code must be a valid integer" in result.error
+        assert "Invalid status code format" in result.error
 
     def test_http_validator_normalize_url(self) -> None:
         """Test HttpValidator.normalize_url."""

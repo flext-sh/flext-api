@@ -38,7 +38,7 @@ def example_client_creation() -> None:
     # Create client config using the refactored nested class
     client_config = FlextApiConfig(
         api_base_url="https://httpbin.org",
-        api_timeout=30.0,
+        api_timeout=30,
     )
 
     print(f"✅ Client config created: {client_config.api_base_url}")
@@ -53,7 +53,7 @@ def example_direct_client() -> None:
     # Create client configuration using refactored classes
     config = FlextApiConfig(
         api_base_url="https://httpbin.org",
-        api_timeout=30.0,
+        api_timeout=30,
     )
 
     print(f"✅ Client config: {config.api_base_url}")
