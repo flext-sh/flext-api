@@ -10,7 +10,7 @@ from collections.abc import Mapping
 from types import TracebackType
 from typing import Self, cast
 
-from pydantic import ConfigDict, PrivateAttr
+from pydantic import ConfigDict, PrivateAttr, ValidationError
 from typing_extensions import TypedDict
 
 from flext_api.app import FlextApiApp
@@ -157,8 +157,13 @@ class FlextApiClient(FlextService[None]):
                 verify_ssl=verify_ssl,
                 **kwargs,
             )
+        except (ValidationError, ValueError, TypeError):
+            # Re-raise validation and type errors as-is for proper error handling
+            raise
         except Exception as e:
-            raise ValueError("Client creation failed") from e
+            # Convert unexpected exceptions to ValueError
+            error_msg = "Client creation failed"
+            raise ValueError(error_msg) from e
 
         # Initialize modular services as private attributes
         self._http = FlextApiHttpOperations(self._client_config, self._logger)

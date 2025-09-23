@@ -45,8 +45,8 @@ class TestFlextApiClientCoverageBoost:
             "max_retries": "invalid",  # Invalid type
         }
 
-        # FlextApiClient should raise ValueError when client creation fails
-        with pytest.raises(ValueError, match="Client creation failed"):
+        # FlextApiClient should raise ValidationError when client creation fails
+        with pytest.raises(ValidationError):
             FlextApiClient(invalid_config)
 
     def test_flext_api_client_property(self) -> None:

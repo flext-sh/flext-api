@@ -165,19 +165,20 @@ class FlextApiUtilities:
             # Check URL length first
             if len(url) > FlextApiConstants.MAX_URL_LENGTH:
                 return FlextResult[str].fail("URL is too long")
-            
+
             # Check for invalid ports before delegating to flext-core
             if ":0/" in url or ":0?" in url or url.endswith(":0"):
                 return FlextResult[str].fail("Invalid port 0")
-            
+
             # Check for ports that exceed maximum (65535)
             import re
-            port_match = re.search(r':(\d+)(?:/|$|\?)', url)
+
+            port_match = re.search(r":(\d+)(?:/|$|\?)", url)
             if port_match:
                 port = int(port_match.group(1))
                 if port > FlextApiConstants.MAX_PORT:
                     return FlextResult[str].fail(f"Invalid port {port}")
-            
+
             # Use FlextModels centralized validation with HTTP-specific rules
             result = FlextModels.create_validated_http_url(url)
             # Map flext-core error messages to expected test messages
@@ -281,11 +282,11 @@ class FlextApiUtilities:
                 parsed = urlparse(url)
                 # Basic normalization: lowercase scheme and netloc, remove default ports
                 path = parsed.path
-                
+
                 # Preserve trailing slash for all URLs (including root URLs)
                 if path and not path.endswith("/") and url.endswith("/"):
-                    path = path + "/"
-                
+                    path += "/"
+
                 # Remove default ports
                 netloc = parsed.netloc.lower()
                 if parsed.scheme == "http" and ":80" in netloc:
@@ -303,7 +304,7 @@ class FlextApiUtilities:
                 ))
                 return FlextResult[str].ok(normalized)
             except Exception as e:
-                return FlextResult[str].fail(f"URL normalization failed: {str(e)}")
+                return FlextResult[str].fail(f"URL normalization failed: {e!s}")
 
     # =============================================================================
     # FLEXT-CORE DELEGATION METHODS - ZERO DUPLICATION
@@ -341,7 +342,9 @@ class FlextApiUtilities:
 
             # Extract config data - check for model_dump() first, then __dict__
             config_dict = None
-            if hasattr(config, "model_dump") and callable(getattr(config, "model_dump")):
+            if hasattr(config, "model_dump") and callable(
+                getattr(config, "model_dump")
+            ):
                 config_dict = config.model_dump()
             elif hasattr(config, "__dict__"):
                 config_dict = config.__dict__
@@ -594,12 +597,14 @@ class FlextApiUtilities:
             remaining_seconds = seconds % FlextApiUtilities.SECONDS_PER_MINUTE
             if minutes == 1 and remaining_seconds < 1:
                 return "1m"
-            elif remaining_seconds < 1:
+            if remaining_seconds < 1:
                 return f"{minutes}m"
-            else:
-                return f"{minutes}m {remaining_seconds:.1f}s"
+            return f"{minutes}m {remaining_seconds:.1f}s"
         hours = int(seconds // FlextApiUtilities.SECONDS_PER_HOUR)
-        remaining_minutes = int((seconds % FlextApiUtilities.SECONDS_PER_HOUR) // FlextApiUtilities.SECONDS_PER_MINUTE)
+        remaining_minutes = int(
+            (seconds % FlextApiUtilities.SECONDS_PER_HOUR)
+            // FlextApiUtilities.SECONDS_PER_MINUTE
+        )
         if remaining_minutes == 0:
             return f"{hours}h"
         return f"{hours}h {remaining_minutes}m"

@@ -302,12 +302,18 @@ class FlextApiConstants(FlextConstants):
         RESPONSE_SENT = (
             "API response sent: {status_code} {method} {endpoint} in {duration}ms"
         )
-        REQUEST_COMPLETED = "API request completed: {request_id} {status_code} {duration}ms"
+        REQUEST_COMPLETED = (
+            "API request completed: {request_id} {status_code} {duration}ms"
+        )
 
         REQUEST_ERROR = "API request error: {error} for {method} {endpoint}"
         VALIDATION_ERROR = "API validation error: {error} for {method} {endpoint}"
-        BUSINESS_LOGIC_ERROR = "API business logic error: {error} for {method} {endpoint}"
-        EXTERNAL_SERVICE_ERROR = "External service error: {error} for {method} {endpoint}"
+        BUSINESS_LOGIC_ERROR = (
+            "API business logic error: {error} for {method} {endpoint}"
+        )
+        EXTERNAL_SERVICE_ERROR = (
+            "External service error: {error} for {method} {endpoint}"
+        )
 
         SLOW_REQUEST = "Slow API request: {method} {endpoint} took {duration}ms"
         LARGE_RESPONSE = "Large API response: {method} {endpoint} {size} bytes"
@@ -319,10 +325,14 @@ class FlextApiConstants(FlextConstants):
             "Unauthorized API access attempt: {method} {endpoint} from {client_ip}"
         )
         RATE_LIMIT_EXCEEDED = "Rate limit exceeded: {client_ip} for {method} {endpoint}"
-        SUSPICIOUS_REQUEST = "Suspicious API request: {method} {endpoint} from {client_ip}"
+        SUSPICIOUS_REQUEST = (
+            "Suspicious API request: {method} {endpoint} from {client_ip}"
+        )
 
         AUTH_REQUIRED = "Authentication required for API request: {method} {endpoint}"
-        AUTH_SUCCESS = "API authentication successful: {user_id} for {method} {endpoint}"
+        AUTH_SUCCESS = (
+            "API authentication successful: {user_id} for {method} {endpoint}"
+        )
         AUTH_FAILED = "API authentication failed: {reason} for {method} {endpoint}"
 
         SERVICE_STARTED = "API service started on {host}:{port}"
@@ -333,8 +343,9 @@ class FlextApiConstants(FlextConstants):
         MIDDLEWARE_PROCESSING = (
             "Middleware processing: {middleware} for {method} {endpoint}"
         )
-        MIDDLEWARE_ERROR = "Middleware error: {middleware} {error} for {method} {endpoint}"
+        MIDDLEWARE_ERROR = (
+            "Middleware error: {middleware} {error} for {method} {endpoint}"
+        )
 
 
-__all__ = [
-]
+__all__ = []

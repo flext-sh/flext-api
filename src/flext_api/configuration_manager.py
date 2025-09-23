@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api.models import FlextApiModels
+from flext_api.utilities import FlextApiUtilities
 from flext_core import FlextLogger, FlextResult
 
 
@@ -60,7 +61,7 @@ class FlextApiConfigurationManager:
             return FlextResult[None].ok(None)
         except Exception as e:
             error_msg = f"Configuration update failed: {e}"
-            self._logger.error(error_msg)
+            self._logger.exception(error_msg)
             return FlextResult[None].fail(error_msg)
 
     def get_configuration_dict(self) -> dict[str, object]:
@@ -85,10 +86,10 @@ class FlextApiConfigurationManager:
 
         """
         try:
-            # Validate base URL
-            url_result = config.validate_base_url()
+            # Validate base URL using FlextApiUtilities
+            url_result = FlextApiUtilities.HttpValidator.validate_url(config.base_url)
             if url_result.is_failure:
-                return url_result
+                return FlextResult[None].fail(f"Invalid base URL: {url_result.error}")
 
             # Additional validation logic can be added here
             self._logger.debug("Configuration validation successful")
@@ -96,7 +97,7 @@ class FlextApiConfigurationManager:
 
         except Exception as e:
             error_msg = f"Configuration validation failed: {e}"
-            self._logger.error(error_msg)
+            self._logger.exception(error_msg)
             return FlextResult[None].fail(error_msg)
 
     def reset_to_defaults(self) -> FlextResult[None]:
@@ -115,7 +116,7 @@ class FlextApiConfigurationManager:
             return FlextResult[None].ok(None)
         except Exception as e:
             error_msg = f"Configuration reset failed: {e}"
-            self._logger.error(error_msg)
+            self._logger.exception(error_msg)
             return FlextResult[None].fail(error_msg)
 
 
