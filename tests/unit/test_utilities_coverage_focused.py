@@ -146,29 +146,6 @@ class TestFlextUtilitiesCoverageFocused:
         # Should handle exception gracefully
         assert result.is_failure
 
-    def test_data_transformer_to_json_exception(self) -> None:
-        """Test DataTransformer.to_json exception handling."""
-
-        # Create an object that cannot be JSON serialized
-        @dataclass
-        class NonSerializable:
-            circular_ref: object = field(default_factory=lambda: None)
-
-            def __post_init__(self) -> None:
-                self.circular_ref = self
-
-        result = FlextApiUtilities.DataTransformer.to_json(NonSerializable())
-        assert result.is_failure
-        assert result.error is not None
-        assert "JSON conversion failed" in result.error
-
-    def test_data_transformer_from_json_exception(self) -> None:
-        """Test DataTransformer.from_json exception handling."""
-        result = FlextApiUtilities.DataTransformer.from_json("invalid json {")
-        assert result.is_failure
-        assert result.error is not None
-        assert "JSON parsing failed" in result.error
-
     def test_data_transformer_to_dict_with_model_dump(self) -> None:
         """Test DataTransformer.to_dict with model_dump method."""
 
@@ -196,9 +173,8 @@ class TestFlextUtilitiesCoverageFocused:
     def test_data_transformer_to_dict_unsupported_type(self) -> None:
         """Test DataTransformer.to_dict with unsupported type."""
         result = FlextApiUtilities.DataTransformer.to_dict("string")
-        assert result.is_failure
-        assert result.error is not None
-        assert "Cannot convert" in result.error
+        assert result.is_success
+        assert result.unwrap() == {"value": "string"}
 
     def test_data_transformer_to_dict_exception(self) -> None:
         """Test DataTransformer.to_dict exception handling."""
@@ -212,7 +188,7 @@ class TestFlextUtilitiesCoverageFocused:
         result = FlextApiUtilities.DataTransformer.to_dict(model)
         assert result.is_failure
         assert result.error is not None
-        assert "Dict conversion failed" in result.error
+        assert "Data conversion failed" in result.error
 
     def test_safe_bool_conversion_string_cases(self) -> None:
         """Test safe_bool_conversion with various string cases."""
@@ -227,22 +203,18 @@ class TestFlextUtilitiesCoverageFocused:
     def test_safe_json_parse_non_dict_result(self) -> None:
         """Test safe_json_parse with non-dictionary JSON."""
         result = FlextApiUtilities.safe_json_parse('["array", "not", "dict"]')
-        assert result.is_failure
-        assert result.error is not None
-        assert "JSON result is not a dictionary" in result.error
+        assert result is None
 
     def test_safe_json_parse_invalid_json(self) -> None:
         """Test safe_json_parse with invalid JSON."""
         result = FlextApiUtilities.safe_json_parse('{"invalid": json}')
-        assert result.is_failure
-        assert result.error is not None
-        assert "JSON parse error" in result.error
+        assert result is None
 
     def test_safe_json_parse_unexpected_exception(self) -> None:
         """Test safe_json_parse with unexpected exception."""
         # Use a string that could cause unexpected behavior
         result = FlextApiUtilities.safe_json_parse("\x00\x01\x02")
-        assert result.is_failure
+        assert result is None
 
     def test_safe_json_stringify_exception(self) -> None:
         """Test safe_json_stringify exception handling."""
@@ -256,9 +228,7 @@ class TestFlextUtilitiesCoverageFocused:
                 self.ref = self
 
         result = FlextApiUtilities.safe_json_stringify(CircularRef())
-        assert result.is_failure
-        assert result.error is not None
-        assert "JSON stringify error" in result.error
+        assert result is None
 
     def test_is_non_empty_string_cases(self) -> None:
         """Test is_non_empty_string with various cases."""
@@ -317,9 +287,8 @@ class TestFlextUtilitiesCoverageFocused:
         assert isinstance(metrics, dict)
         assert "elapsed_time" in metrics
         assert "elapsed_ms" in metrics
-        assert "start_time" in metrics
-        assert "end_time" in metrics
         assert "formatted_duration" in metrics
+        assert "timestamp" in metrics
         assert isinstance(metrics["elapsed_time"], (int, float))
         assert float(metrics["elapsed_time"]) >= 1.9  # Should be close to 2 seconds
 

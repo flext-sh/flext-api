@@ -16,15 +16,15 @@ def test_keys_pattern_and_unknown_operation_commit() -> None:
     # Test set operations
     set_result1 = storage.set("a", 1)
     set_result2 = storage.set("alpha", 2)
-    assert set_result1.success
-    assert set_result2.success
+    assert set_result1.is_success
+    assert set_result2.is_success
 
     # Get all keys (no pattern matching available)
     keys_result = storage.keys()
-    assert keys_result.success
+    assert keys_result.is_success
     assert set(keys_result.value or []) >= {"a", "alpha"}
 
     # Test simple storage operations work by getting the value
     get_result = storage.get("a")
-    assert get_result.success
+    assert get_result.is_success
     assert get_result.value == 1

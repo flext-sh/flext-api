@@ -20,7 +20,7 @@ async def test_client_build_and_error_formatting_on_invalid_url() -> None:
         # REAL HTTP request - httpbin.org/status/400 returns HTTP 400
         res = await client.get("/status/400")
         # Should succeed (request was made) but with 400 status code
-        assert res.success
+        assert res.is_success
         assert res.value is not None
         assert res.value.status_code == 400
     finally:
@@ -36,7 +36,7 @@ async def test_client_headers_merge_and_prepare_params() -> None:
     )
     await client.start()
     result = await client.post("/post", json_data={"x": 1}, headers={"B": "2"})
-    assert result.success
+    assert result.is_success
     assert result.value is not None
     # echo path ensures headers were passed through into stub response
     await client.stop()

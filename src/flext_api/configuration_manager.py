@@ -11,13 +11,10 @@ from flext_core import FlextLogger, FlextResult
 
 
 class FlextApiConfigurationManager:
-    """Configuration management service for FLEXT API client.
+    """Configuration manager for FlextApiClient.
 
-    Handles client configuration updates, validation, and retrieval with proper
-    error handling through the FlextResult pattern.
-
-    This class was extracted from the monolithic FlextApiClient to follow
-    FLEXT "one class per module" architectural principle.
+    Manages client configuration, validation, and updates.
+    Follows FLEXT "one class per module" architectural principle.
     """
 
     def __init__(
@@ -33,100 +30,92 @@ class FlextApiConfigurationManager:
         self._config = config
         self._logger = logger
 
-    def update_configuration(self, updates: dict[str, str | int]) -> FlextResult[None]:
-        """Update client configuration with new values.
+    @property
+    def headers(self) -> dict[str, str]:
+        """Get headers from the underlying configuration."""
+        return self._config.headers
+
+    def update_configuration(
+        self, new_config: FlextApiModels.ClientConfig
+    ) -> FlextResult[None]:
+        """Update configuration with new values.
 
         Args:
-            updates: Dictionary of configuration keys and new values
+            new_config: New configuration to apply
 
         Returns:
-            FlextResult indicating success or failure of configuration update.
+            FlextResult indicating success or failure
 
         """
         try:
-            for key, value in updates.items():
-                if hasattr(self._config, key):
-                    setattr(self._config, key, value)
-                else:
-                    return FlextResult[None].fail(f"Invalid config key: {key}")
+            # Validate new configuration
+            validation_result = self.validate_configuration(new_config)
+            if validation_result.is_failure:
+                return validation_result
 
-            self._logger.info("Configuration updated", extra={"updates": updates})
+            # Update configuration
+            self._config = new_config
+            self._logger.info("Configuration updated successfully")
+
             return FlextResult[None].ok(None)
         except Exception as e:
             error_msg = f"Configuration update failed: {e}"
-            self._logger.exception(error_msg, extra={"updates": updates})
+            self._logger.error(error_msg)
             return FlextResult[None].fail(error_msg)
 
-    def get_configuration_dict(self) -> dict[str, str | int | float]:
-        """Get configuration as dictionary for inspection.
+    def get_configuration_dict(self) -> dict[str, object]:
+        """Get current configuration as dictionary.
 
         Returns:
-            Dictionary containing current configuration values.
+            Dictionary representation of current configuration
 
         """
-        return {
-            "base_url": self._config.base_url,
-            "timeout": self._config.timeout,
-            "max_retries": self._config.max_retries,
-        }
+        return self._config.model_dump()
 
-    def validate_configuration(self) -> FlextResult[None]:
-        """Validate current configuration for correctness.
+    def validate_configuration(
+        self, config: FlextApiModels.ClientConfig
+    ) -> FlextResult[None]:
+        """Validate configuration object.
 
-        Checks that all required configuration values are present
-        and have valid values.
+        Args:
+            config: Configuration to validate
 
         Returns:
-            FlextResult indicating success or failure of configuration validation.
+            FlextResult indicating validation success or failure
 
         """
-        if not self._config.base_url:
-            return FlextResult[None].fail("Base URL is required")
+        try:
+            # Validate base URL
+            url_result = config.validate_base_url()
+            if url_result.is_failure:
+                return url_result
 
-        if self._config.timeout <= 0:
-            return FlextResult[None].fail("Timeout must be positive")
+            # Additional validation logic can be added here
+            self._logger.debug("Configuration validation successful")
+            return FlextResult[None].ok(None)
 
-        if self._config.max_retries < 0:
-            return FlextResult[None].fail("Max retries cannot be negative")
-
-        # Additional validation for URL format
-        if not self._config.base_url.startswith(("http://", "https://")):
-            return FlextResult[None].fail("Base URL must be a valid HTTP/HTTPS URL")
-
-        self._logger.debug(
-            "Configuration validation passed",
-            extra={
-                "base_url": self._config.base_url,
-                "timeout": self._config.timeout,
-                "max_retries": self._config.max_retries,
-            },
-        )
-
-        return FlextResult[None].ok(None)
+        except Exception as e:
+            error_msg = f"Configuration validation failed: {e}"
+            self._logger.error(error_msg)
+            return FlextResult[None].fail(error_msg)
 
     def reset_to_defaults(self) -> FlextResult[None]:
         """Reset configuration to default values.
 
         Returns:
-            FlextResult indicating success or failure of configuration reset.
+            FlextResult indicating success or failure
 
         """
         try:
-            # Create new configuration with default values
-            from flext_api.models import FlextApiModels
-
-            self._config = FlextApiModels.ClientConfig(
-                base_url="https://api.example.com",
-                timeout=30,
-                max_retries=3,
-                headers={},
-            )
-
+            # Create default configuration
+            default_config = FlextApiModels.ClientConfig()
+            self._config = default_config
             self._logger.info("Configuration reset to defaults")
+
             return FlextResult[None].ok(None)
         except Exception as e:
             error_msg = f"Configuration reset failed: {e}"
-            self._logger.exception(error_msg)
+            self._logger.error(error_msg)
             return FlextResult[None].fail(error_msg)
 
 

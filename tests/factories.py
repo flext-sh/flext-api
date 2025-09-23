@@ -101,10 +101,8 @@ class FlextApiFactories:
                 defaults[key] = value
 
         return FlextApiConfig(
-            api_host=cast("str", defaults["api_host"]),
-            api_port=cast("int", defaults["api_port"]),
             api_base_url=cast("str", defaults["api_base_url"]),
-            api_timeout=cast("float", defaults["api_timeout"]),
+            api_timeout=cast("int", defaults["api_timeout"]),
             max_retries=cast("int", defaults["max_retries"]),
         )
 

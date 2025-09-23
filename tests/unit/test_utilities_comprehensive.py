@@ -26,7 +26,7 @@ class TestFlextApiUtilitiesComprehensive:
             timeout=45,
         )
         result = FlextApiUtilities.validate_config(http_config)
-        assert result.success
+        assert result.is_success
         config_data = result.value
         assert config_data["config_type"] == "http_request"
         assert config_data["url"] == "https://api.example.com/test"
@@ -40,7 +40,7 @@ class TestFlextApiUtilitiesComprehensive:
             method="GET",
         )
         result = FlextApiUtilities.validate_config(error_config)
-        assert result.success
+        assert result.is_success
         config_data = result.value
         assert config_data["config_type"] == "http_error"
         assert config_data["status_code"] == 500
@@ -53,7 +53,7 @@ class TestFlextApiUtilitiesComprehensive:
             url="https://api.example.com/validate",
         )
         result = FlextApiUtilities.validate_config(validation_config)
-        assert result.success
+        assert result.is_success
         config_data = result.value
         assert config_data["config_type"] == "validation"
         assert config_data["field"] == "email"
@@ -124,7 +124,7 @@ class TestFlextApiUtilitiesComprehensive:
 
         for url in valid_urls:
             result = FlextApiUtilities.HttpValidator.validate_url(url)
-            assert result.success, f"{url} should be valid"
+            assert result.is_success, f"{url} should be valid"
 
         # Invalid s - no scheme
         result = FlextApiUtilities.HttpValidator.validate_url("example.com")
@@ -160,13 +160,13 @@ class TestFlextApiUtilitiesComprehensive:
 
     def test_url_component_validation(self) -> None:
         """Test component validation edge cases."""
-        # Very long hostname (currently accepted by validator)
-        long_hostname = "a" * (FlextApiConstants.HttpValidation.MAX_HOSTNAME_LENGTH + 1)
+        # Very long hostname (should be rejected)
+        long_hostname = "a" * (FlextApiConstants.MAX_HOSTNAME_LENGTH + 1)
         long_url = f"https://{long_hostname}.com"
         result = FlextApiUtilities.HttpValidator.validate_url(long_url)
-        # Note: Current implementation doesn't validate hostname length
-        FlextTestsMatchers.assert_result_success(result)
-        assert result.value is not None
+        # Hostname exceeds maximum length - should fail
+        FlextTestsMatchers.assert_result_failure(result)
+        assert result.error is not None
 
         # Invalid port - too low
         result = FlextApiUtilities.HttpValidator.validate_url("https://example.com:0")
@@ -183,7 +183,7 @@ class TestFlextApiUtilitiesComprehensive:
         assert "parsing failed" in result.error or "Invalid port 70000" in result.error
 
         # too long
-        long_path = "a" * FlextApiConstants.HttpValidation.MAX_URL_LENGTH
+        long_path = "a" * FlextApiConstants.MAX_URL_LENGTH
         long_url = f"https://example.com/{long_path}"
         result = FlextApiUtilities.HttpValidator.validate_url(long_url)
         FlextTestsMatchers.assert_result_failure(result)
@@ -196,24 +196,24 @@ class TestFlextApiUtilitiesComprehensive:
         result = FlextApiUtilities.HttpValidator.normalize_url(
             "https://api.example.com/data",
         )
-        assert result.success
+        assert result.is_success
         assert result.value == "https://api.example.com/data"
 
-        # with trailing slash (should be removed)
+        # with trailing slash (preserved)
         result = FlextApiUtilities.HttpValidator.normalize_url(
             "https://api.example.com/data/",
         )
-        assert result.success
-        assert result.value == "https://api.example.com/data"
+        assert result.is_success
+        assert result.value == "https://api.example.com/data/"
 
-        # Root with trailing slash (should be kept)
+        # Root with trailing slash (preserved)
         result = FlextApiUtilities.HttpValidator.normalize_url("https://example.com/")
-        assert result.success
-        assert result.value == "https://example.com"
+        assert result.is_success
+        assert result.value == "https://example.com/"
 
         # with scheme only (should keep trailing slash)
         result = FlextApiUtilities.HttpValidator.normalize_url("https://example.com")
-        assert result.success
+        assert result.is_success
         assert result.value == "https://example.com"
 
         # Invalid normalization should fail
@@ -226,33 +226,33 @@ class TestFlextApiUtilitiesComprehensive:
         common_methods = ["GET", "POST", "PUT", "DELETE"]
         for method in common_methods:
             result = FlextApiUtilities.HttpValidator.validate_http_method(method)
-            assert result.success
+            assert result.is_success
             assert result.value == method
 
         # Extended methods
         extended_methods = ["PATCH", "HEAD", "OPTIONS"]
         for method in extended_methods:
             result = FlextApiUtilities.HttpValidator.validate_http_method(method)
-            assert result.success
+            assert result.is_success
             assert result.value == method
 
         # Rare but valid methods
         rare_methods = ["TRACE", "CONNECT"]
         for method in rare_methods:
             result = FlextApiUtilities.HttpValidator.validate_http_method(method)
-            assert result.success
+            assert result.is_success
             assert result.value == method
 
         # WebDAV methods
         webdav_methods = ["PROPFIND", "COPY", "MOVE", "LOCK"]
         for method in webdav_methods:
             result = FlextApiUtilities.HttpValidator.validate_http_method(method)
-            assert result.success
+            assert result.is_success
             assert result.value == method
 
         # Case insensitive - lowercase
         result = FlextApiUtilities.HttpValidator.validate_http_method("get")
-        assert result.success
+        assert result.is_success
         assert result.value == "GET"
 
         # Invalid methods (non-empty)
@@ -283,17 +283,17 @@ class TestFlextApiUtilitiesComprehensive:
         for start, end in status_ranges:
             # Test range boundaries
             result = FlextApiUtilities.HttpValidator.validate_status_code(start)
-            assert result.success
+            assert result.is_success
             assert result.value == start
 
             result = FlextApiUtilities.HttpValidator.validate_status_code(end)
-            assert result.success
+            assert result.is_success
             assert result.value == end
 
             # Test middle values
             middle = (start + end) // 2
             result = FlextApiUtilities.HttpValidator.validate_status_code(middle)
-            assert result.success
+            assert result.is_success
             assert result.value == middle
 
         # Invalid status codes
@@ -315,7 +315,7 @@ class TestFlextApiUtilitiesComprehensive:
         """Test comprehensive success response building."""
         # Basic success response
         result = FlextApiUtilities.ResponseBuilder.build_success_response()
-        assert result.success
+        assert result.is_success
         response = result.value
         assert response["success"] is True
         assert response["message"] == "Success"
@@ -329,7 +329,7 @@ class TestFlextApiUtilitiesComprehensive:
             message="User created",
             status_code=201,
         )
-        assert result.success
+        assert result.is_success
         response = result.value
         assert response["success"] is True
         assert response["message"] == "User created"
@@ -340,7 +340,7 @@ class TestFlextApiUtilitiesComprehensive:
         """Test comprehensive error response building."""
         # Basic error response
         result = FlextApiUtilities.ResponseBuilder.build_error_response("Server error")
-        assert result.success
+        assert result.is_success
         response = result.value
         assert response["success"] is False
         assert response["message"] == "Server error"
@@ -357,7 +357,7 @@ class TestFlextApiUtilitiesComprehensive:
             error_code="VALIDATION_ERROR",
             details={"field": "email", "reason": "Invalid format"},
         )
-        assert result.success
+        assert result.is_success
         response = result.value
         assert response["success"] is False
         assert response["message"] == "Validation failed"
@@ -373,7 +373,7 @@ class TestFlextApiUtilitiesComprehensive:
             data=test_data,
             total=100,
         )
-        assert result.success
+        assert result.is_success
         response = result.value
         assert isinstance(response, dict)
         assert response["success"] is True
@@ -382,7 +382,7 @@ class TestFlextApiUtilitiesComprehensive:
         assert isinstance(pagination, dict)
         assert pagination["total"] == 100
         assert pagination["page"] == 1
-        assert pagination["page_size"] == FlextApiConstants.Pagination.DEFAULT_PAGE_SIZE
+        assert pagination["page_size"] == FlextApiConstants.DEFAULT_PAGE_SIZE
         assert pagination["total_pages"] > 0
         assert pagination["has_next"] is True
         assert pagination["has_previous"] is False
@@ -395,7 +395,7 @@ class TestFlextApiUtilitiesComprehensive:
             page_size=10,
             message="Data retrieved",
         )
-        assert result.success
+        assert result.is_success
         response2 = result.value
         assert isinstance(response2, dict)
         pagination2 = response2["pagination"]
@@ -413,7 +413,7 @@ class TestFlextApiUtilitiesComprehensive:
             page=3,
             page_size=10,
         )
-        assert result.success
+        assert result.is_success
         response3 = result.value
         assert isinstance(response3, dict)
         pagination3 = response3["pagination"]
@@ -446,7 +446,7 @@ class TestFlextApiUtilitiesComprehensive:
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
             data=test_data,
             total=100,
-            page_size=FlextApiConstants.Pagination.MAX_PAGE_SIZE + 1,
+            page_size=FlextApiConstants.MAX_PAGE_SIZE + 1,
         )
         FlextTestsMatchers.assert_result_failure(result)
         assert result.error is not None
@@ -485,7 +485,7 @@ class TestFlextApiUtilitiesComprehensive:
                 page_size=safe_page_size,
             )
         )
-        assert pagination_result.success
+        assert pagination_result.is_success
         response = pagination_result.value
         assert isinstance(response, dict)
         pagination_info = response["pagination"]

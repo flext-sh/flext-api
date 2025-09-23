@@ -139,7 +139,9 @@ class TestFlextContainerComprehensiveCoverage:
 
         # Test empty container
         assert container.get_service_count() == 0
-        assert container.get_service_names() == []
+        service_names_result = container.get_service_names()
+        assert service_names_result.is_success
+        assert service_names_result.unwrap() == []
 
         # Register services
         services = {"service_a": "data_a", "service_b": "data_b", "service_c": "data_c"}
@@ -148,7 +150,9 @@ class TestFlextContainerComprehensiveCoverage:
 
         # Test service count and names
         assert container.get_service_count() == 3
-        names = container.get_service_names()
+        names_result = container.get_service_names()
+        assert names_result.is_success
+        names = names_result.unwrap()
         assert len(names) == 3
         assert all(name in names for name in services)
 
@@ -208,7 +212,7 @@ class TestFlextContainerComprehensiveCoverage:
         for edge_name in edge_names:
             result = container.register(edge_name, f"data_{edge_name}")
             # Some names might be valid, test both outcomes
-            if result.success:
+            if result.is_success:
                 get_result = container.get(edge_name)
                 FlextTestsMatchers.assert_result_success(get_result)
 
@@ -328,7 +332,7 @@ class TestFlextContainerComprehensiveCoverage:
             db_result = container.get("database")
             logger_result = container.get("logger")
 
-            if not db_result.success or not logger_result.success:
+            if not db_result.is_success or not logger_result.is_success:
                 error_msg = "Dependencies not available"
                 raise ValueError(error_msg)
 

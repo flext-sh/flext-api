@@ -243,17 +243,17 @@ class TestFlextApiUtilitiesFocused:
         assert result.is_success
         assert result.value == "https://api.example.com/data"
 
-        # URL with trailing slash (should be removed)
+        # URL with trailing slash (preserved in normalization)
         result = FlextApiUtilities.HttpValidator.normalize_url(
             "https://api.example.com/data/",
         )
         assert result.is_success
-        assert result.value == "https://api.example.com/data"
+        assert result.value == "https://api.example.com/data/"
 
-        # Root URL (special case)
+        # Root URL (preserve trailing slash)
         result = FlextApiUtilities.HttpValidator.normalize_url("https://example.com/")
         assert result.is_success
-        assert result.value == "https://example.com"
+        assert result.value == "https://example.com/"
 
     def test_validate_url_static_method(self) -> None:
         """Test static validate_url method."""

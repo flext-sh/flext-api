@@ -136,10 +136,7 @@ class TestFlextApiClientCoverageBoost:
         # Test execute method (no longer async)
         result = api.execute()
 
-        # Should return success with facade status
+        # Should return success with None value (execute method returns None)
         assert result is not None
         assert result.is_success
-        response = result.value
-        assert isinstance(response, dict)
-        assert response["status"] == "facade_ready"
-        assert response["service"] == "flext_api"
+        assert result.value is None

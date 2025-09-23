@@ -76,7 +76,7 @@ class TestFlextApiClientSimple:
         async def test_get() -> None:
             # This will fail because we don't have a real server
             result = await client.get("https://httpbin.org/get")
-            assert result.success is True
+            assert result.is_success is True
             assert result.value is not None
             assert isinstance(result.value, FlextApiModels.HttpResponse)
             assert result.value.method == "GET"
@@ -93,7 +93,7 @@ class TestFlextApiClientSimple:
                 "https://httpbin.org/post",
                 json={"test": "data"},
             )
-            assert result.success is True
+            assert result.is_success is True
             assert result.value is not None
             assert isinstance(result.value, FlextApiModels.HttpResponse)
             assert result.value.method == "POST"
@@ -106,7 +106,7 @@ class TestFlextApiClientSimple:
 
         async def test_put() -> None:
             result = await client.put("https://httpbin.org/put", json={"test": "data"})
-            assert result.success is True
+            assert result.is_success is True
             assert result.value is not None
             assert isinstance(result.value, FlextApiModels.HttpResponse)
             assert result.value.method == "PUT"
@@ -119,7 +119,7 @@ class TestFlextApiClientSimple:
 
         async def test_delete() -> None:
             result = await client.delete("https://httpbin.org/delete")
-            assert result.success is True
+            assert result.is_success is True
             assert result.value is not None
             assert isinstance(result.value, FlextApiModels.HttpResponse)
             assert result.value.method == "DELETE"
