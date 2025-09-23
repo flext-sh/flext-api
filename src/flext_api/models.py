@@ -43,7 +43,9 @@ class FlextApiModels:
         url: str
         headers: FlextApiTypings.Headers = Field(default_factory=dict)
         body: FlextApiTypings.RequestBody = None
-        timeout: FlextApiTypings.Timeout = FlextConstants.Performance.DEFAULT_REQUEST_TIMEOUT
+        timeout: FlextApiTypings.Timeout = (
+            FlextConstants.Performance.DEFAULT_REQUEST_TIMEOUT
+        )
 
         @field_validator("url")
         @classmethod
@@ -78,7 +80,9 @@ class FlextApiModels:
 
         @field_validator("headers")
         @classmethod
-        def validate_headers(cls, v: FlextApiTypings.Headers) -> FlextApiTypings.Headers:
+        def validate_headers(
+            cls, v: FlextApiTypings.Headers
+        ) -> FlextApiTypings.Headers:
             """Validate and sanitize headers with Python 3.13+ dict comprehension optimization.
 
             Returns:

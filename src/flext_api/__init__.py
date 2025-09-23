@@ -36,9 +36,7 @@ class FlextApi:
 
     # Domain-specific functionality shortcuts
     @classmethod
-    def create_client(
-        cls, base_url: str = "", **kwargs: object
-    ) -> FlextApiClient:
+    def create_client(cls, base_url: str = "", **kwargs: object) -> FlextApiClient:
         """Create HTTP client with default configuration."""
         return cls.Client(config=None, base_url=base_url, **kwargs)  # type: ignore[arg-type]
 
