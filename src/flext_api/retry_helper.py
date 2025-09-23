@@ -8,11 +8,21 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
-from typing import TypeVar
+from typing import Protocol, TypeVar
 
 from flext_core import FlextLogger, FlextResult
 
 T = TypeVar("T")
+
+
+class RetryOperation(Protocol):
+    """Protocol for operations that can be retried."""
+
+    def __call__(
+        self, *args: object, **kwargs: object
+    ) -> Awaitable[FlextResult[object]]:
+        """Execute the operation with arguments."""
+        ...
 
 
 class FlextApiRetryHelper:
@@ -45,7 +55,7 @@ class FlextApiRetryHelper:
 
     async def execute_with_retry(
         self,
-        operation: Callable[..., Awaitable[FlextResult[object]]],
+        operation: RetryOperation,
         *args: object,
         **kwargs: object,
     ) -> FlextResult[object]:

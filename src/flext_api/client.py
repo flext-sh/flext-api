@@ -24,13 +24,13 @@ from flext_api.retry_helper import FlextApiRetryHelper
 from flext_core import (
     FlextConstants,
     FlextContainer,
-    FlextDomainService,
     FlextLogger,
     FlextResult,
+    FlextService,
 )
 
 
-class FlextApiClient(FlextDomainService[None]):
+class FlextApiClient(FlextService[None]):
     """Unified HTTP client orchestrator providing enterprise-grade HTTP operations.
 
     The FlextApiClient serves as the foundation HTTP client for the entire FLEXT ecosystem,
@@ -53,7 +53,9 @@ class FlextApiClient(FlextDomainService[None]):
 
         # Create HTTP client
         client = FlextApiClient(
-            base_url="https://api.example.com", timeout=30, max_retries=3
+            base_url="https://api.example.com",
+            timeout=FlextConstants.Defaults.TIMEOUT,
+            max_retries=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
         )
 
         # Execute HTTP request
@@ -118,8 +120,8 @@ class FlextApiClient(FlextDomainService[None]):
             # Client with full configuration
             client = FlextApiClient(
                 base_url="https://api.example.com",
-                timeout=30,
-                max_retries=3,
+                timeout=FlextConstants.Defaults.TIMEOUT,
+                max_retries=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
                 headers={"Authorization": "Bearer token"},
             )
 
@@ -471,7 +473,7 @@ class FlextApiClient(FlextDomainService[None]):
             ```python
             client_result = await FlextApiClient.create(
                 base_url="https://api.example.com",
-                request_timeout=30,
+                request_timeout=FlextConstants.Defaults.TIMEOUT,
                 headers={"Authorization": "Bearer token"},
             )
             if client_result.is_success:
@@ -660,7 +662,9 @@ class FlextApiClient(FlextDomainService[None]):
 
             # From base URL with overrides
             client_result = await FlextApiClient.create_client(
-                "https://api.example.com", timeout=30, max_retries=5
+                "https://api.example.com",
+                timeout=FlextConstants.Defaults.TIMEOUT,
+                max_retries=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
             )
             ```
 
@@ -850,7 +854,7 @@ class FlextApiClient(FlextDomainService[None]):
     def execute(self) -> FlextResult[None]:
         """Execute the main domain service operation.
 
-        This method implements the abstract execute method from FlextDomainService.
+        This method implements the abstract execute method from FlextService.
         For the HTTP client service, this performs initialization validation
         and readiness checks.
 
@@ -952,6 +956,118 @@ class FlextApiClient(FlextDomainService[None]):
 
         """
         return self._client_config
+
+    async def start(self) -> None:
+        """Start the HTTP client for async operations."""
+        # Client is automatically ready for use, no explicit start needed
+        # This method exists for API compatibility with tests
+
+    async def get(self, url: str, **kwargs: object) -> FlextApiModels.HttpResponse:
+        """Perform HTTP GET request.
+
+        Args:
+            url: The URL path or full URL to request
+            **kwargs: Additional request parameters
+
+        Returns:
+            FlextApiModels.HttpResponse: The HTTP response
+
+        """
+        return await self._request("GET", url, **kwargs)
+
+    async def post(self, url: str, **kwargs: object) -> FlextApiModels.HttpResponse:
+        """Perform HTTP POST request.
+
+        Args:
+            url: The URL path or full URL to request
+            **kwargs: Additional request parameters (json, data, etc.)
+
+        Returns:
+            FlextApiModels.HttpResponse: The HTTP response
+
+        """
+        return await self._request("POST", url, **kwargs)
+
+    async def put(self, url: str, **kwargs: object) -> FlextApiModels.HttpResponse:
+        """Perform HTTP PUT request.
+
+        Args:
+            url: The URL path or full URL to request
+            **kwargs: Additional request parameters (json, data, etc.)
+
+        Returns:
+            FlextApiModels.HttpResponse: The HTTP response
+
+        """
+        return await self._request("PUT", url, **kwargs)
+
+    async def delete(self, url: str, **kwargs: object) -> FlextApiModels.HttpResponse:
+        """Perform HTTP DELETE request.
+
+        Args:
+            url: The URL path or full URL to request
+            **kwargs: Additional request parameters
+
+        Returns:
+            FlextApiModels.HttpResponse: The HTTP response
+
+        """
+        return await self._request("DELETE", url, **kwargs)
+
+    async def patch(self, url: str, **kwargs: object) -> FlextApiModels.HttpResponse:
+        """Perform HTTP PATCH request.
+
+        Args:
+            url: The URL path or full URL to request
+            **kwargs: Additional request parameters (json, data, etc.)
+
+        Returns:
+            FlextApiModels.HttpResponse: The HTTP response
+
+        """
+        return await self._request("PATCH", url, **kwargs)
+
+    async def head(self, url: str, **kwargs: object) -> FlextApiModels.HttpResponse:
+        """Perform HTTP HEAD request.
+
+        Args:
+            url: The URL path or full URL to request
+            **kwargs: Additional request parameters
+
+        Returns:
+            FlextApiModels.HttpResponse: The HTTP response
+
+        """
+        return await self._request("HEAD", url, **kwargs)
+
+    async def options(self, url: str, **kwargs: object) -> FlextApiModels.HttpResponse:
+        """Perform HTTP OPTIONS request.
+
+        Args:
+            url: The URL path or full URL to request
+            **kwargs: Additional request parameters
+
+        Returns:
+            FlextApiModels.HttpResponse: The HTTP response
+
+        """
+        return await self._request("OPTIONS", url, **kwargs)
+
+    async def request(
+        self, method: str, url: str, **kwargs: object
+    ) -> FlextApiModels.HttpResponse:
+        """Perform HTTP request with specified method.
+
+        Args:
+            method: HTTP method (GET, POST, PUT, DELETE, etc.)
+            url: The URL path or full URL to request
+            **kwargs: Additional request parameters
+
+        Returns:
+            FlextApiModels.HttpResponse: The HTTP response
+
+        """
+        return await self._request(method, url, **kwargs)
 
 
 # Removed module-level function alias - use FlextApiClient.create_flext_api() directly

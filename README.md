@@ -24,7 +24,7 @@ flext-api serves as the HTTP foundation for FLEXT's enterprise data integration 
 
 ### **Integration Points**
 
-- **[flext-core](../flext-core/README.md)** → Foundation patterns (FlextResult, FlextDomainService, FlextModels)
+- **[flext-core](../flext-core/README.md)** → Foundation patterns (FlextResult, FlextService, FlextModels)
 - **FLEXT Data Platform** → HTTP operations for data pipeline orchestration
 - **33+ FLEXT Projects** → Unified HTTP client preventing duplicate implementations
 - **Enterprise APIs** → REST API patterns and FastAPI application hosting
@@ -38,7 +38,7 @@ flext-api serves as the HTTP foundation for FLEXT's enterprise data integration 
 | Pattern                | Status | Implementation                            |
 | ---------------------- | ------ | ----------------------------------------- |
 | **FlextResult[T]**     | 🟢 90% | Comprehensive error handling throughout   |
-| **FlextDomainService** | 🟢 85% | FlextApiClient extends FlextDomainService |
+| **FlextService** | 🟢 85% | FlextApiClient extends FlextService |
 | **FlextModels**        | 🟢 80% | HTTP models use Entity/Value patterns     |
 | **FlextContainer**     | 🟡 60% | Basic dependency injection usage          |
 

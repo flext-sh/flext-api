@@ -10,11 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Literal
-
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from flext_api.constants import FlextApiConstants
 from flext_core import (
     FlextConstants,
     FlextLogger,
@@ -23,48 +20,38 @@ from flext_core import (
     FlextUtilities,
 )
 
-# Module-level constants for nested class access
+from .constants import FlextApiConstants
+from .typings import (
+    Headers,
+    RequestBody,
+    Timeout,
+)
+
+# Standard model configuration for all API models
 STANDARD_MODEL_CONFIG = ConfigDict(
     validate_assignment=True,
     extra="forbid",
     populate_by_name=True,
 )
-_URL_EMPTY_ERROR = "URL cannot be empty"
-_URL_FORMAT_ERROR = "Invalid URL format"
-_BASE_URL_ERROR = "URL must be a non-empty string"
 
 
 class FlextApiModels:
-    """API models using flext-core extensively."""
+    """API models using flext-core extensively - Pydantic models only."""
 
-    # Move loose variables inside the unified class - FLEXT compliance
+    # Private logger for the models class
     _logger = FlextLogger(__name__)
 
-    # Streamlined ConfigDict - eliminate bloat
-    STANDARD_MODEL_CONFIG = ConfigDict(
-        validate_assignment=True,
-        extra="forbid",
-        populate_by_name=True,
-    )
-
-    # Use constants from FlextApiConstants instead of redundant declarations
-    _URL_EMPTY_ERROR = "URL cannot be empty"
-    _URL_FORMAT_ERROR = "Invalid URL format"
-    _BASE_URL_ERROR = "URL must be a non-empty string"
-
     # Simple API-specific models
-    class HttpRequest(FlextModels.Entity):
+    class HttpRequest(BaseModel):
         """HTTP request model with modern Python 3.13 and Pydantic patterns."""
 
         model_config = STANDARD_MODEL_CONFIG
 
-        method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"] = (
-            "GET"
-        )
+        method: str = "GET"
         url: str
-        headers: dict[str, str] = Field(default_factory=dict)
-        body: str | dict[str, object] | None = None
-        timeout: int | float = FlextConstants.Performance.DEFAULT_REQUEST_TIMEOUT
+        headers: Headers = Field(default_factory=dict)
+        body: RequestBody = None
+        timeout: Timeout = FlextConstants.Performance.DEFAULT_REQUEST_TIMEOUT
 
         @field_validator("url")
         @classmethod
@@ -102,11 +89,11 @@ class FlextApiModels:
 
         @field_validator("headers")
         @classmethod
-        def validate_headers(cls, v: dict[str, str]) -> dict[str, str]:
+        def validate_headers(cls, v: Headers) -> Headers:
             """Validate and sanitize headers with Python 3.13+ dict comprehension optimization.
 
             Returns:
-                dict[str, str]: Sanitized headers dictionary.
+                Headers: Sanitized headers dictionary.
 
             """
             # Python 3.13+ optimized dict comprehension with walrus operator
@@ -116,8 +103,10 @@ class FlextApiModels:
                 if (k_clean := k.strip()) and (val_clean := str(val).strip())
             }
 
-    class HttpResponse(FlextModels.Entity):
+    class HttpResponse(BaseModel):
         """HTTP response model extending flext-core Entity."""
+
+        model_config = STANDARD_MODEL_CONFIG
 
         status_code: int = Field(ge=100, le=599)
         body: str | dict[str, object] | None = None
@@ -130,42 +119,44 @@ class FlextApiModels:
         def is_success(self) -> bool:
             """Check if response indicates success (2xx status codes)."""
             return (
-                FlextApiConstants.HTTP_OK
+                FlextApiConstants.HTTP_SUCCESS_MIN
                 <= self.status_code
-                < FlextApiConstants.SUCCESS_END
+                <= FlextApiConstants.HTTP_SUCCESS_MAX
             )
 
         @property
         def is_client_error(self) -> bool:
             """Check if response indicates client error (4xx status codes)."""
             return (
-                FlextApiConstants.CLIENT_ERROR_START
+                FlextApiConstants.HTTP_CLIENT_ERROR_MIN
                 <= self.status_code
-                < FlextApiConstants.SERVER_ERROR_START
+                <= FlextApiConstants.HTTP_CLIENT_ERROR_MAX
             )
 
         @property
         def is_server_error(self) -> bool:
             """Check if response indicates server error (5xx status codes)."""
             return (
-                FlextApiConstants.SERVER_ERROR_START
+                FlextApiConstants.HTTP_SERVER_ERROR_MIN
                 <= self.status_code
-                < FlextApiConstants.SERVER_ERROR_END
+                <= FlextApiConstants.HTTP_SERVER_ERROR_MAX
             )
 
         @property
         def is_redirect(self) -> bool:
             """Check if response indicates redirect (3xx status codes)."""
             return (
-                FlextApiConstants.SUCCESS_END
+                FlextApiConstants.HTTP_REDIRECTION_MIN
                 <= self.status_code
-                < FlextApiConstants.CLIENT_ERROR_START
+                <= FlextApiConstants.HTTP_REDIRECTION_MAX
             )
 
         # Status code validation handled by Field constraints (ge=100, le=599)
 
-    class ClientConfig(FlextModels.Value):
+    class ClientConfig(BaseModel):
         """Streamlined client configuration for reduced bloat."""
+
+        model_config = STANDARD_MODEL_CONFIG
 
         # Essential configuration only
         base_url: str = FlextApiConstants.DEFAULT_BASE_URL
@@ -230,7 +221,7 @@ class FlextApiModels:
             headers.update(self.get_auth_header())
             return headers
 
-    class HttpQuery(FlextModels.Entity):
+    class HttpQuery(BaseModel):
         """HTTP query parameters model with filtering and pagination."""
 
         model_config = STANDARD_MODEL_CONFIG
@@ -277,8 +268,10 @@ class FlextApiModels:
                 **(filters if (filters := params.pop("filters", {})) else {}),
             }
 
-    class PaginationConfig(FlextModels.Value):
+    class PaginationConfig(BaseModel):
         """Pagination configuration extending flext-core Value."""
+
+        model_config = STANDARD_MODEL_CONFIG
 
         page_size: int = Field(
             default=FlextApiConstants.DEFAULT_PAGE_SIZE,
@@ -291,15 +284,17 @@ class FlextApiModels:
 
         # Compatibility alias removed - use current_page directly
 
-    class StorageConfig(FlextModels.Value):
+    class StorageConfig(BaseModel):
         """Storage configuration extending flext-core Value."""
+
+        model_config = STANDARD_MODEL_CONFIG
 
         backend: str = "memory"
         namespace: str = "flext_api"
         max_size: int | None = None
         default_ttl: int | None = None
 
-    class ApiRequest(FlextModels.Entity):
+    class ApiRequest(BaseModel):
         """API request model."""
 
         model_config = STANDARD_MODEL_CONFIG
@@ -309,7 +304,7 @@ class FlextApiModels:
         headers: dict[str, str] = Field(default_factory=dict)
         body: str | dict[str, object] | None = None
 
-    class ApiResponse(FlextModels.Entity):
+    class ApiResponse(BaseModel):
         """API response model."""
 
         model_config = STANDARD_MODEL_CONFIG
@@ -319,7 +314,7 @@ class FlextApiModels:
         body: str | dict[str, object] | None = None
         headers: dict[str, str] = Field(default_factory=dict)
 
-    class UrlModel(FlextModels.Entity):
+    class UrlModel(BaseModel):
         """URL model for parsing and validation."""
 
         model_config = STANDARD_MODEL_CONFIG
@@ -500,7 +495,7 @@ class FlextApiModels:
                 f"Failed to create URL: {e}",
             )
 
-    class AppConfig(FlextModels.Entity):
+    class AppConfig(BaseModel):
         """FastAPI application configuration model."""
 
         model_config = STANDARD_MODEL_CONFIG
@@ -552,6 +547,8 @@ class FlextApiModels:
             # Usage count: 1 (flext-api/client.py)
             """
 
+            model_config = STANDARD_MODEL_CONFIG
+
             config_type: str = Field(default="http_request")
             url: str = Field(min_length=1)
             method: str = Field(default="GET")
@@ -564,6 +561,8 @@ class FlextApiModels:
 
             # Usage count: 0 (tests only)
             """
+
+            model_config = STANDARD_MODEL_CONFIG
 
             config_type: str = Field(default="http_error")
             status_code: int = Field(ge=100, le=599)
@@ -580,6 +579,8 @@ class FlextApiModels:
             # Usage count: 0 (tests only)
             """
 
+            model_config = STANDARD_MODEL_CONFIG
+
             config_type: str = Field(default="validation")
             strict_mode: bool = Field(default=False)
             validate_schema: bool = Field(default=True)
@@ -587,8 +588,6 @@ class FlextApiModels:
             field: str | None = Field(default=None)
             value: object = Field(default=None)
             url: str | None = Field(default=None)
-
-    HttpMethod = FlextApiConstants.HttpMethods
 
     # Re-export nested classes for backward compatibility
     HttpRequestConfig = Http.HttpRequestConfig

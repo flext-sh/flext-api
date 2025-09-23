@@ -21,7 +21,7 @@ from typing import cast
 
 import pytest
 
-from flext_core import FlextResult, FlextTypes, T
+from flext_core import FlextConstants, FlextResult, FlextTypes, T
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 
@@ -303,7 +303,7 @@ def create_test_headers(
         "Content-Type": content_type,
         "Accept": content_type,
         "User-Agent": f"{service_data.get('name', 'FlextAPI')!s}-Test/{service_data.get('version', '0.9.0')!s}",
-        "X-Request-ID": str(uuid.uuid4()),
+        FlextConstants.Platform.HEADER_REQUEST_ID: str(uuid.uuid4()),
     }
     headers.update(additional_headers)
     return headers
