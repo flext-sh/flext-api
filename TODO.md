@@ -19,7 +19,7 @@
 ### Architecture Strengths Discovered ✅
 
 1. **Unified HTTP Architecture** - Single `FlextApiClient` handles all HTTP operations
-2. **Proper FLEXT Patterns** - Consistent use of `FlextResult`, `FlextDomainService`, `FlextLogger`
+2. **Proper FLEXT Patterns** - Consistent use of `FlextResult`, `FlextService`, `FlextLogger`
 3. **Domain Modeling** - Comprehensive Pydantic v2 models with validation
 4. **FastAPI Integration** - Application factory pattern for web services
 5. **FlextResult Error Handling** - Type-safe error handling throughout (90% coverage)
@@ -146,9 +146,9 @@ class PaginationConfig(FlextModels.Value):
 
 ```python
 from tenacity import AsyncRetrying, retry, wait_exponential, stop_after_attempt
-from flext_core import FlextDomainService, FlextResult
+from flext_core import FlextService, FlextResult
 
-class FlextApiRetryClient(FlextDomainService):
+class FlextApiRetryClient(FlextService):
     """Production HTTP client with tenacity async retry integration."""
 
     class _RetryConfiguration:
@@ -189,7 +189,7 @@ class FlextApiRetryClient(FlextDomainService):
 import httpx
 from flext_core import FlextResult
 
-class FlextApiConnectionPool(FlextDomainService):
+class FlextApiConnectionPool(FlextService):
     """Production-optimized HTTP connection pool with HTTP/2."""
 
     class _PoolConfiguration:
@@ -239,7 +239,7 @@ class FlextApiConnectionPool(FlextDomainService):
 from circuitbreaker import circuit
 from flext_core import FlextResult
 
-class FlextApiCircuitBreaker(FlextDomainService):
+class FlextApiCircuitBreaker(FlextService):
     """Circuit breaker implementation for HTTP fault tolerance."""
 
     class _CircuitConfiguration:
@@ -287,7 +287,7 @@ class MiddlewarePlugin(Protocol):
         """Process HTTP response in middleware pipeline."""
         ...
 
-class FlextApiMiddleware(FlextDomainService):
+class FlextApiMiddleware(FlextService):
     """Middleware pipeline for HTTP request/response processing."""
 
     class _AuthenticationMiddleware:

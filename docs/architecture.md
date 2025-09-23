@@ -71,7 +71,7 @@ src/flext_api/
 The main HTTP client orchestrator:
 
 ```python
-class FlextApiClient(FlextDomainService):
+class FlextApiClient(FlextService):
     """Enterprise HTTP client with flext-core integration."""
 
     def __init__(self, base_url: str = None, **kwargs):
@@ -135,13 +135,13 @@ class FlextApiConfig(FlextModels.Value):
 | Pattern                | Status | Implementation                            | Lines |
 | ---------------------- | ------ | ----------------------------------------- | ----- |
 | **FlextResult[T]**     | 🟢 90% | Comprehensive error handling throughout   | ~200  |
-| **FlextDomainService** | 🟢 85% | FlextApiClient extends FlextDomainService | ~100  |
+| **FlextService** | 🟢 85% | FlextApiClient extends FlextService | ~100  |
 | **FlextModels**        | 🟢 80% | HTTP models use Entity/Value patterns     | ~300  |
 | **FlextContainer**     | 🟡 60% | Basic dependency injection usage          | ~50   |
 
 ### **Integration Points**
 
-- **flext-core**: Foundation patterns (FlextResult, FlextDomainService, FlextModels)
+- **flext-core**: Foundation patterns (FlextResult, FlextService, FlextModels)
 - **flext-observability**: Logging and monitoring integration
 - **Enterprise Services**: HTTP foundation for 32+ FLEXT projects
 

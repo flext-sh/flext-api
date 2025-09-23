@@ -1,285 +1,223 @@
-"""FLEXT API Exceptions - Hierarchical exception system for HTTP API functionality.
+"""Exception definitions for flext-api domain.
 
-HTTP-specific exception system providing FlextApiExceptions class with structured
-error handling, HTTP status codes, and comprehensive error context for debugging.
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
+All exception classes are centralized here following FLEXT standards.
+Only exception class definitions - no factory methods or utility functions.
 """
 
-from __future__ import annotations
-
-from flext_api.constants import FlextApiConstants
-from flext_core import FlextConstants, FlextExceptions
+from .constants import FlextApiConstants
+from .typings import HttpStatusCode
 
 
 class FlextApiExceptions:
-    """HTTP API exceptions using flext-core extensively - ZERO DUPLICATION."""
+    """HTTP API exception classes extending flext-core exceptions."""
 
-    # =============================================================================
-    # HTTP-SPECIFIC EXCEPTIONS ONLY - ZERO TOLERANCE for re-exports
-    # MANDATORY: Use FlextExceptions.BaseError directly instead of aliases
-    # =============================================================================
-
-    # HTTP-specific exception classes with status_code property
     class ValidationError(Exception):
-        """Validation error with HTTP status code."""
+        """HTTP validation error with status code."""
 
-        def __init__(self, message: str, **_kwargs: object) -> None:
-            """Initialize validation error with HTTP status code."""
+        def __init__(
+            self, message: str, status_code: HttpStatusCode = 400, **kwargs: object
+        ) -> None:
+            """Initialize HTTP validation error."""
             super().__init__(message)
-            self.status_code = 400
+            self.status_code = status_code
 
     class AuthenticationError(Exception):
-        """Authentication error with HTTP status code."""
+        """HTTP authentication error with status code."""
 
-        def __init__(self, message: str, **_kwargs: object) -> None:
-            """Initialize authentication error with HTTP status code."""
+        def __init__(
+            self, message: str, status_code: HttpStatusCode = 401, **kwargs: object
+        ) -> None:
+            """Initialize HTTP authentication error."""
             super().__init__(message)
-            self.status_code = 401
+            self.status_code = status_code
+
+    class AuthorizationError(Exception):
+        """HTTP authorization error with status code."""
+
+        def __init__(
+            self, message: str, status_code: HttpStatusCode = 403, **kwargs: object
+        ) -> None:
+            """Initialize HTTP authorization error."""
+            super().__init__(message)
+            self.status_code = status_code
 
     class NotFoundError(Exception):
-        """Not found error with HTTP status code."""
+        """HTTP not found error with status code."""
 
-        def __init__(self, message: str, **_kwargs: object) -> None:
-            """Initialize not found error with HTTP status code."""
+        def __init__(
+            self, message: str, status_code: HttpStatusCode = 404, **kwargs: object
+        ) -> None:
+            """Initialize HTTP not found error."""
             super().__init__(message)
-            self.status_code = FlextConstants.Platform.HTTP_STATUS_NOT_FOUND
+            self.status_code = status_code
 
-    # =============================================================================
-    # HTTP-specific simple aliases - Use existing flext-core patterns
+    class ConflictError(Exception):
+        """HTTP conflict error with status code."""
 
-    # HTTP Error - Main HTTP exception class with status_code
+        def __init__(
+            self, message: str, status_code: HttpStatusCode = 409, **kwargs: object
+        ) -> None:
+            """Initialize HTTP conflict error."""
+            super().__init__(message)
+            self.status_code = status_code
+
+    class RateLimitError(Exception):
+        """HTTP rate limit error with status code."""
+
+        def __init__(
+            self, message: str, status_code: HttpStatusCode = 429, **kwargs: object
+        ) -> None:
+            """Initialize HTTP rate limit error."""
+            super().__init__(message)
+            self.status_code = status_code
+
     class HttpError(Exception):
-        """HTTP error with status code attribute."""
+        """General HTTP error with status code and request context."""
 
         def __init__(
             self,
             message: str,
-            status_code: int = FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
+            status_code: HttpStatusCode = 500,
+            url: str | None = None,
+            method: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize HTTP error with status code."""
+            """Initialize HTTP error with request context."""
             super().__init__(message)
             self.status_code = status_code
-            self.service = kwargs.get("service")
-            self.endpoint = kwargs.get("endpoint")
+            self.url = url
+            self.method = method
 
-    # Compatibility alias removed - use HttpError directly
+    class HttpTimeoutError(Exception):
+        """HTTP timeout error with status code."""
 
-    @classmethod
-    def http_error_class(cls) -> type[HttpError]:
-        """Get HTTP error class.
+        def __init__(
+            self,
+            message: str,
+            status_code: HttpStatusCode = 408,
+            url: str | None = None,
+            **kwargs: object,
+        ) -> None:
+            """Initialize HTTP timeout error."""
+            super().__init__(message)
+            self.status_code = status_code
+            self.url = url
 
-        Returns:
-            The HttpError class type.
+    class ClientError(HttpError):
+        """HTTP client error (4xx status codes)."""
 
-        """
-        return cls.HttpError
+        def __init__(
+            self,
+            message: str,
+            status_code: HttpStatusCode = 400,
+            **kwargs: object,
+        ) -> None:
+            """Initialize HTTP client error."""
+            if not (
+                FlextApiConstants.HTTP_CLIENT_ERROR_MIN
+                <= status_code
+                <= FlextApiConstants.HTTP_CLIENT_ERROR_MAX
+            ):
+                msg = f"Client error status code must be 4xx, got {status_code}"
+                raise ValueError(msg)
+            super().__init__(message, status_code=status_code)
 
-    # =============================================================================
+    class ServerError(HttpError):
+        """HTTP server error (5xx status codes)."""
 
-    # HTTP errors using flext-core ConnectionError with HTTP-specific parameters
-    @classmethod
-    def http_error(
-        cls,
-        message: str,
-        *,
-        status_code: int = FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
-        url: str | None = None,
-        method: str | None = None,
-        **kwargs: object,
-    ) -> FlextApiExceptions.HttpError:
-        """Create HTTP error with status code.
+        def __init__(
+            self,
+            message: str,
+            status_code: HttpStatusCode = 500,
+            **kwargs: object,
+        ) -> None:
+            """Initialize HTTP server error."""
+            if not (
+                FlextApiConstants.HTTP_SERVER_ERROR_MIN
+                <= status_code
+                <= FlextApiConstants.HTTP_SERVER_ERROR_MAX
+            ):
+                msg = f"Server error status code must be 5xx, got {status_code}"
+                raise ValueError(msg)
+            super().__init__(message, status_code=status_code)
 
-        Returns:
-            HttpError instance with the specified message and status code.
+    class BadRequestError(ClientError):
+        """HTTP 400 Bad Request error."""
 
-        """
-        enhanced_message = f"{message} (HTTP {status_code})"
-        return cls.HttpError(
-            message=enhanced_message,
-            status_code=status_code,
-            service="http_api",
-            endpoint=f"{method} {url}" if method and url else url or "unknown",
-            **kwargs,  # Pass through additional kwargs
-        )
+        def __init__(self, message: str = "Bad Request", **kwargs: object) -> None:
+            """Initialize HTTP 400 error."""
+            super().__init__(message, status_code=400, **kwargs)
 
-    @classmethod
-    def timeout_error(
-        cls,
-        message: str = "HTTP request timeout",
-        *,
-        url: str | None = None,
-    ) -> FlextExceptions.BaseError:
-        """Create HTTP timeout error using flext-core TimeoutError.
+    class UnauthorizedError(ClientError):
+        """HTTP 401 Unauthorized error."""
 
-        Returns:
-            FlextExceptions.BaseError: Timeout error instance.
+        def __init__(self, message: str = "Unauthorized", **kwargs: object) -> None:
+            """Initialize HTTP 401 error."""
+            super().__init__(message, status_code=401, **kwargs)
 
-        """
-        enhanced_message = f"{message} for {url}" if url else message
-        return FlextExceptions.TimeoutError(message=enhanced_message)
+    class ForbiddenError(ClientError):
+        """HTTP 403 Forbidden error."""
 
-    @classmethod
-    def validation_error(
-        cls,
-        message: str,
-        *,
-        field: str | None = None,
-    ) -> FlextExceptions.BaseError:
-        """Create HTTP validation error using flext-core ValidationError.
+        def __init__(self, message: str = "Forbidden", **kwargs: object) -> None:
+            """Initialize HTTP 403 error."""
+            super().__init__(message, status_code=403, **kwargs)
 
-        Returns:
-            FlextExceptions.BaseError: Validation error instance.
+    class MethodNotAllowedError(ClientError):
+        """HTTP 405 Method Not Allowed error."""
 
-        """
-        enhanced_message = f"{message} (field: {field})" if field else message
-        return FlextExceptions.ValidationError(message=enhanced_message)
+        def __init__(
+            self, message: str = "Method Not Allowed", **kwargs: object
+        ) -> None:
+            """Initialize HTTP 405 error."""
+            super().__init__(message, status_code=405, **kwargs)
 
-    @classmethod
-    def auth_error(
-        cls,
-        message: str = "Authentication failed",
-    ) -> FlextExceptions.BaseError:
-        """Create HTTP auth error using flext-core AuthenticationError.
+    class RequestTimeoutError(ClientError):
+        """HTTP 408 Request Timeout error."""
 
-        Returns:
-            FlextExceptions.BaseError: Authentication error instance.
+        def __init__(self, message: str = "Request Timeout", **kwargs: object) -> None:
+            """Initialize HTTP 408 error."""
+            super().__init__(message, status_code=408, **kwargs)
 
-        """
-        return FlextExceptions.AuthenticationError(message=message)
+    class TooManyRequestsError(ClientError):
+        """HTTP 429 Too Many Requests error."""
 
-    # =============================================================================
-    # HTTP Status Code Factory Methods - Streamlined for reduced bloat
-    # =============================================================================
+        def __init__(
+            self, message: str = "Too Many Requests", **kwargs: object
+        ) -> None:
+            """Initialize HTTP 429 error."""
+            super().__init__(message, status_code=429, **kwargs)
 
-    @classmethod
-    def bad_request(cls, message: str = "Bad Request") -> FlextApiExceptions.HttpError:
-        """Create HTTP 400 Bad Request error.
+    class InternalServerError(ServerError):
+        """HTTP 500 Internal Server Error."""
 
-        Returns:
-            FlextApiExceptions.HttpError: HTTP 400 error instance.
+        def __init__(
+            self, message: str = "Internal Server Error", **kwargs: object
+        ) -> None:
+            """Initialize HTTP 500 error."""
+            super().__init__(message, status_code=500, **kwargs)
 
-        """
-        return cls.http_error(message, status_code=400)
+    class BadGatewayError(ServerError):
+        """HTTP 502 Bad Gateway error."""
 
-    @classmethod
-    def unauthorized(
-        cls, message: str = "Unauthorized"
-    ) -> FlextApiExceptions.HttpError:
-        """Create HTTP 401 Unauthorized error.
+        def __init__(self, message: str = "Bad Gateway", **kwargs: object) -> None:
+            """Initialize HTTP 502 error."""
+            super().__init__(message, status_code=502, **kwargs)
 
-        Returns:
-            FlextApiExceptions.HttpError: HTTP 401 error instance.
+    class ServiceUnavailableError(ServerError):
+        """HTTP 503 Service Unavailable error."""
 
-        """
-        return cls.http_error(message, status_code=401)
+        def __init__(
+            self, message: str = "Service Unavailable", **kwargs: object
+        ) -> None:
+            """Initialize HTTP 503 error."""
+            super().__init__(message, status_code=503, **kwargs)
 
-    @classmethod
-    def forbidden(cls, message: str = "Forbidden") -> FlextApiExceptions.HttpError:
-        """Create HTTP 403 Forbidden error.
+    class GatewayTimeoutError(ServerError):
+        """HTTP 504 Gateway Timeout error."""
 
-        Returns:
-            FlextApiExceptions.HttpError: HTTP 403 error instance.
-
-        """
-        return cls.http_error(message, status_code=403)
-
-    @classmethod
-    def not_found(cls, message: str = "Not Found") -> FlextApiExceptions.HttpError:
-        """Create HTTP 404 Not Found error.
-
-        Returns:
-            FlextApiExceptions.HttpError: HTTP 404 error instance.
-
-        """
-        return cls.http_error(message, status_code=404)
-
-    @classmethod
-    def request_timeout(
-        cls,
-        message: str = "Request Timeout",
-    ) -> FlextApiExceptions.HttpError:
-        """Create HTTP 408 Request Timeout error.
-
-        Returns:
-            FlextApiExceptions.HttpError: HTTP 408 error instance.
-
-        """
-        return cls.http_error(message, status_code=408)
-
-    @classmethod
-    def too_many_requests(
-        cls,
-        message: str = "Too Many Requests",
-    ) -> FlextApiExceptions.HttpError:
-        """Create HTTP 429 Too Many Requests error.
-
-        Returns:
-            FlextApiExceptions.HttpError: HTTP 429 error instance.
-
-        """
-        return cls.http_error(message, status_code=429)
-
-    @classmethod
-    def internal_server_error(
-        cls,
-        message: str = "Internal Server Error",
-    ) -> FlextApiExceptions.HttpError:
-        """Create HTTP 500 Internal Server Error.
-
-        Returns:
-            FlextApiExceptions.HttpError: HTTP 500 error instance.
-
-        """
-        return cls.http_error(message, status_code=500)
-
-    # =============================================================================
-    # Simple HTTP status code helpers - Use flext-core constants
-    # =============================================================================
-
-    @staticmethod
-    def is_client_error(status_code: int) -> bool:
-        """Check if status code is client error (4xx).
-
-        Returns:
-            bool: True if status code is 4xx client error.
-
-        """
-        return (
-            FlextApiConstants.CLIENT_ERROR_START
-            <= status_code
-            < FlextApiConstants.SERVER_ERROR_START
-        )
-
-    @staticmethod
-    def is_server_error(status_code: int) -> bool:
-        """Check if status code is server error (5xx).
-
-        Returns:
-            bool: True if status code is 5xx server error.
-
-        """
-        return (
-            FlextApiConstants.SERVER_ERROR_START
-            <= status_code
-            < FlextApiConstants.SERVER_ERROR_END
-        )
-
-    @staticmethod
-    def is_success(status_code: int) -> bool:
-        """Check if status code indicates success (2xx).
-
-        Returns:
-            bool: True if status code is 2xx success.
-
-        """
-        return (
-            FlextApiConstants.SUCCESS_START
-            <= status_code
-            < FlextApiConstants.SUCCESS_END
-        )
+        def __init__(self, message: str = "Gateway Timeout", **kwargs: object) -> None:
+            """Initialize HTTP 504 error."""
+            super().__init__(message, status_code=504, **kwargs)
 
 
 __all__ = ["FlextApiExceptions"]

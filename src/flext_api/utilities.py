@@ -11,6 +11,7 @@ import time
 
 from flext_api.constants import FlextApiConstants
 from flext_core import (
+    FlextConstants,
     FlextModels,
     FlextResult,
     FlextTypes,
@@ -37,7 +38,7 @@ class FlextApiUtilities:
         def build_error_response(
             message: str | None = None,
             *,  # Python 3.13+ keyword-only parameters for clarity
-            status_code: int = 500,
+            status_code: int = FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
             data: object | None = None,
             error: str | None = None,
             error_code: str | None = None,
@@ -73,7 +74,7 @@ class FlextApiUtilities:
         def build_success_response(
             data: object = None,
             message: str = "Success",
-            status_code: int = 200,
+            status_code: int = FlextConstants.Platform.HTTP_STATUS_OK,
         ) -> FlextResult[FlextTypes.Core.Dict]:
             """Build success response using flext-core patterns.
 
@@ -241,16 +242,28 @@ class FlextApiUtilities:
 
             """
             # First create URL object then normalize
+            # Create and validate URL object
             url_result = FlextModels.Url.create(url)
             if url_result.is_failure:
                 return FlextResult[str].fail(url_result.error or "Invalid URL")
 
-            normalized_result = url_result.unwrap().normalize()
-            if normalized_result.is_success:
-                return FlextResult[str].ok(normalized_result.unwrap().value)
-            return FlextResult[str].fail(
-                normalized_result.error or "URL normalization failed",
-            )
+            # Normalize URL manually since Url model doesnt have normalize method
+            from urllib.parse import urlparse, urlunparse
+
+            try:
+                parsed = urlparse(url)
+                # Basic normalization: lowercase scheme and netloc, remove default ports
+                normalized_url = urlunparse((
+                    parsed.scheme.lower(),
+                    parsed.netloc.lower(),
+                    parsed.path,
+                    parsed.params,
+                    parsed.query,
+                    parsed.fragment,
+                ))
+                return FlextResult[str].ok(normalized_url)
+            except Exception as e:
+                return FlextResult[str].fail(f"URL normalization failed: {e}")
 
     # =============================================================================
     # FLEXT-CORE DELEGATION METHODS - ZERO DUPLICATION

@@ -245,7 +245,7 @@ class TestFlextApiClientFocused:
             assert result.is_success
 
     def test_execute_method(self) -> None:
-        """Test execute method from FlextDomainService."""
+        """Test execute method from FlextService."""
         client = FlextApiClient("https://test.com")
 
         result = client.execute()
@@ -259,7 +259,7 @@ class TestFlextApiClientFocused:
 
     @pytest.mark.asyncio
     async def test_start_method(self) -> None:
-        """Test start method from FlextDomainService."""
+        """Test start method from FlextService."""
         client = FlextApiClient("https://test.com")
 
         with patch.object(client._connection_manager, "ensure_client") as mock_ensure:
@@ -286,7 +286,7 @@ class TestFlextApiClientFocused:
 
     @pytest.mark.asyncio
     async def test_stop_method(self) -> None:
-        """Test stop method from FlextDomainService."""
+        """Test stop method from FlextService."""
         client = FlextApiClient("https://test.com")
 
         with patch.object(client._connection_manager, "close") as mock_close:

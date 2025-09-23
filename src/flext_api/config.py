@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import ClassVar
 
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from flext_core import FlextConstants
 
@@ -172,13 +173,21 @@ class FlextApiLoggingConstants:
         }
 
 
-class FlextApiConfig:
+class FlextApiConfig(BaseSettings):
     """FLEXT API Configuration class.
 
     Provides comprehensive configuration for FLEXT API operations including
     logging, performance tracking, security settings, and CORS configuration.
-    Uses Pydantic for validation and type safety.
+    Uses Pydantic BaseSettings for validation and environment variable support.
     """
+
+    model_config = SettingsConfigDict(
+        env_prefix="FLEXT_API_",
+        case_sensitive=False,
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # API configuration
     api_base_url: str = Field(

@@ -6,20 +6,27 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_api.models import FlextApiModels
-
-if TYPE_CHECKING:
-    from fastapi import FastAPI
 
 
 # Internal abstraction - FastAPI is imported at runtime only
-def _create_fastapi_instance(**kwargs: object) -> object:
+def _create_fastapi_instance(
+    title: str | None = None,
+    version: str | None = None,
+    description: str | None = None,
+    docs_url: str | None = None,
+    redoc_url: str | None = None,
+    openapi_url: str | None = None,
+) -> object:
     """Internal FastAPI instance creation with runtime import.
 
     Args:
-        **kwargs: Keyword arguments passed to FastAPI constructor.
+        title: Application title
+        version: Application version
+        description: Application description
+        docs_url: Documentation URL
+        redoc_url: ReDoc URL
+        openapi_url: OpenAPI JSON URL
 
     Returns:
         FastAPI application instance.
@@ -32,7 +39,14 @@ def _create_fastapi_instance(**kwargs: object) -> object:
     try:
         from fastapi import FastAPI
 
-        return FastAPI(**kwargs)
+        return FastAPI(
+            title=title or "FlextAPI",
+            version=version or "1.0.0",
+            description=description or "FlextAPI Application",
+            docs_url=docs_url or "/docs",
+            redoc_url=redoc_url or "/redoc",
+            openapi_url=openapi_url or "/openapi.json",
+        )
     except ImportError as e:
         error_msg = "FastAPI is required for FlextAPI application creation"
         raise ImportError(error_msg) from e
@@ -42,7 +56,7 @@ class FlextApiApp:
     """FLEXT API Application Factory - FastAPI application creation following FLEXT architecture."""
 
     @staticmethod
-    def create_fastapi_app(config: FlextApiModels.AppConfig) -> FastAPI:
+    def create_fastapi_app(config: FlextApiModels.AppConfig) -> object:
         """Create a FastAPI application with the given configuration.
 
         Args:

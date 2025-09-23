@@ -28,6 +28,7 @@ class FlextApiStorage(FlextModels.Entity):
         **_kwargs: object,
     ) -> None:
         """Initialize HTTP storage using flext-core patterns."""
+        # Initialize Entity with just the id - domain_events is not required
         super().__init__(id=FlextUtilities.Generators.generate_entity_id())
         # Move logger inside the unified class - FLEXT compliance
         self._logger = FlextLogger(__name__)

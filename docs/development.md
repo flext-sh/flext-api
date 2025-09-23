@@ -202,9 +202,9 @@ All code MUST follow FLEXT ecosystem patterns:
 
 ```python
 # ✅ CORRECT: Use FlextResult for error handling
-from flext_core import FlextResult, FlextDomainService
+from flext_core import FlextResult, FlextService
 
-class MyHttpService(FlextDomainService):
+class MyHttpService(FlextService):
     async def process_request(self, data: dict) -> FlextResult[dict]:
         if not data:
             return FlextResult[dict].fail("Data cannot be empty")
@@ -224,7 +224,7 @@ def bad_function(data):
 
 ```python
 # ✅ CORRECT: Single unified class per module
-class FlextApiClient(FlextDomainService):
+class FlextApiClient(FlextService):
     """Single responsibility class with nested helpers."""
 
     class _RequestHelper:
@@ -261,7 +261,7 @@ def validate_request():  # Don't create loose functions
 
 ```python
 # ✅ CORRECT: Root-level imports only
-from flext_core import FlextResult, FlextLogger, FlextDomainService
+from flext_core import FlextResult, FlextLogger, FlextService
 from flext_api.models import FlextApiModels
 from flext_api.config import FlextApiConfig
 
