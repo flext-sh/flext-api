@@ -41,7 +41,9 @@ async def test_client_headers_merge_and_prepare_params() -> None:
         config="https://httpbin.org",
         headers={"A": "1"},
     ) as client:
-        result: FlextResult[FlextApiModels.HttpResponse] = await client.post("/post", json_data={"x": 1}, headers={"B": "2"})
+        result: FlextResult[FlextApiModels.HttpResponse] = await client.post(
+            "/post", json_data={"x": 1}, headers={"B": "2"}
+        )
         assert result.is_success
         assert result.value is not None
         # echo path ensures headers were passed through into stub response
@@ -111,7 +113,9 @@ class TestFlextApiClient:
         assert client5.config_data.max_retries == 3  # Default fallback
 
         # Test headers type safety
-        client6: FlextApiClient = FlextApiClient(headers="invalid")  # Non-dict to empty dict
+        client6: FlextApiClient = FlextApiClient(
+            headers="invalid"
+        )  # Non-dict to empty dict
         assert client6.config_data.headers == {}
 
         # Test base_url None handling
@@ -236,7 +240,7 @@ class TestFlextApiClient:
     async def test_session_start_error_handling(self) -> None:
         """Test session start error handling."""
         with patch("httpx.AsyncClient", side_effect=Exception("Connection failed")):
-            client = FlextApiClient()
+            FlextApiClient()
             # Context manager handles start/stop automatically
             # result = await client.start()  # This would fail with the patch
             # assert result.is_failure
@@ -831,8 +835,7 @@ async def test_client_error_handling_pipeline() -> None:
         pass
 
 
-@pytest.mark.asyncio
-async def test_client_session_management() -> None:
+def test_client_session_management() -> None:
     """Test client session management utilities."""
     config = FlextApiClient(base_url="https://httpbin.org", timeout=10)
     client = config

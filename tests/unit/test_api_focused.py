@@ -28,10 +28,13 @@ class TestFlextApiClientCoverageBoost:
         """Test FlextApiClient initialization with configuration dictionary."""
         config = {
             "base_url": "https://api.example.com",
-            "timeout": 30.0,
+            "timeout": 30,
             "max_retries": 3,
         }
-        api = FlextApiClient(config)
+        from collections.abc import Mapping
+        from typing import cast
+        typed_config = cast("Mapping[str, str | int | float | bool | dict[str, str] | None]", config)
+        api = FlextApiClient(typed_config)
         assert api is not None
         assert hasattr(api, "_client_config")
         assert api._client_config is not None
@@ -47,7 +50,10 @@ class TestFlextApiClientCoverageBoost:
 
         # FlextApiClient should raise ValidationError when client creation fails
         with pytest.raises(ValidationError):
-            FlextApiClient(invalid_config)
+            from collections.abc import Mapping
+            from typing import cast
+            typed_invalid_config = cast("Mapping[str, str | int | float | bool | dict[str, str] | None]", invalid_config)
+            FlextApiClient(typed_invalid_config)
 
     def test_flext_api_client_property(self) -> None:
         """Test FlextApiClient client property access."""

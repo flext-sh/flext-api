@@ -197,11 +197,11 @@ class TestFlextApiStorage:
         # Check isolation
         result1 = storage1.get("key")
         assert result1.is_success
-        assert result1.data == "value1"
+        assert result1.value == "value1"
 
         result2 = storage2.get("key")
         assert result2.is_success
-        assert result2.data == "value2"
+        assert result2.value == "value2"
 
     def test_storage_default_value(self) -> None:
         """Test storage get with default value."""

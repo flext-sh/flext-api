@@ -38,11 +38,36 @@ class FlextApi:
     @classmethod
     def create_client(cls, base_url: str = "", **kwargs: object) -> FlextApiClient:
         """Create HTTP client with default configuration."""
-        return cls.Client(config=None, base_url=base_url, **kwargs)  # type: ignore[arg-type]
+        from collections.abc import Mapping
+        from typing import cast
+        
+        # Extract known parameters from kwargs with proper type casting
+        timeout = cast("int | None", kwargs.get("timeout")) if kwargs.get("timeout") is not None else None
+        max_retries = cast("int | None", kwargs.get("max_retries")) if kwargs.get("max_retries") is not None else None
+        headers = cast("Mapping[str, str] | None", kwargs.get("headers")) if kwargs.get("headers") is not None else None
+        verify_ssl = cast("bool", kwargs.get("verify_ssl", True))
+        
+        # Filter out known parameters from kwargs
+        remaining_kwargs = {k: v for k, v in kwargs.items()
+                          if k not in ("timeout", "max_retries", "headers", "verify_ssl")}
+        
+        # Cast remaining kwargs to the expected type
+        typed_remaining_kwargs = cast("dict[str, str | float | bool | dict[str, str] | None]", remaining_kwargs)
+        
+        return cls.Client(
+            config=None,
+            base_url=base_url,
+            timeout=timeout,
+            max_retries=max_retries,
+            headers=headers,
+            verify_ssl=verify_ssl,
+            **typed_remaining_kwargs
+        )
 
     @classmethod
     def create_config(cls, **kwargs: object) -> FlextApiConfig:
         """Create API configuration."""
+        # Pydantic BaseSettings accepts **kwargs, but MyPy can't infer this
         return cls.Config(**kwargs)  # type: ignore[arg-type]
 
     @classmethod

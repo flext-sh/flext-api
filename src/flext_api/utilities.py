@@ -19,9 +19,10 @@ from flext_core import (
 )
 
 
-class FlextApiUtilities:
+class FlextApiUtilities(FlextUtilities):
     """HTTP-specific utilities using flext-core FlextUtilities extensively - ZERO DUPLICATION.
 
+    Inherits from FlextUtilities to avoid duplication and ensure consistency.
     This class delegates to flext-core utilities wherever possible and only provides
     HTTP-specific functionality that's not available in the core library.
     Follows SOLID principles: Single Responsibility and Dependency Inversion.

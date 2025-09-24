@@ -150,7 +150,7 @@ class TestFlextApiFactoryFocused:
         """Test FlextApiClient with non-string base_url that needs conversion."""
         client = FlextApiClient(
             base_url="https://converted.example.com",  # Valid URL string
-            timeout=30.0,
+                timeout=30,
         )
 
         assert isinstance(client, FlextApiClient)
