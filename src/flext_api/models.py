@@ -30,8 +30,11 @@ STANDARD_MODEL_CONFIG = ConfigDict(
 )
 
 
-class FlextApiModels:
-    """API models using flext-core extensively - Pydantic models only."""
+class FlextApiModels(FlextModels):
+    """API models using flext-core extensively - Pydantic models only.
+
+    Inherits from FlextModels to avoid duplication and ensure consistency.
+    """
 
     # Simple API-specific models
     class HttpRequest(BaseModel):

@@ -41,7 +41,7 @@ class TestFlextApiClient:
         config_data = FlextTestsDomains.create_configuration()
 
         base_url = str(config_data.get("base_url", "https://httpbin.org"))
-        timeout = cast("float", config_data.get("timeout", 30.0))
+        timeout = cast("int", config_data.get("timeout", 30))
         max_retries = cast("int", config_data.get("max_retries", 3))
 
         client = FlextApiClient(
@@ -58,7 +58,7 @@ class TestFlextApiClient:
     def test_client_properties_with_factory_data(self) -> None:
         """Test client properties with test configuration data."""
         base_url = "https://api-service.example.com"
-        timeout = 45.0
+        timeout = 45
         max_retries = 5
 
         client = FlextApiClient(
@@ -81,7 +81,7 @@ class TestFlextApiClient:
         """Test client with configuration data from conftest fixture."""
         # Use configuration data from FlextTestsDomains via conftest
         base_url = str(sample_configuration_data.get("base_url", "https://httpbin.org"))
-        timeout = cast("float", sample_configuration_data.get("timeout", 30.0))
+        timeout = cast("int", sample_configuration_data.get("timeout", 30))
         max_retries = cast("int", sample_configuration_data.get("max_retries", 3))
 
         client = FlextApiClient(
@@ -126,10 +126,10 @@ class TestFlextApiClient:
         service2 = FlextTestsDomains.create_service()
 
         client1 = FlextApiClient(
-            base_url=f"https://{service1.get('name', 'service1').replace('_', '-')}.example.com",
+            base_url=f"https://{str(service1.get('name', 'service1')).replace('_', '-')}.example.com",
         )
         client2 = FlextApiClient(
-            base_url=f"https://{service2.get('name', 'service2').replace('_', '-')}.example.com",
+            base_url=f"https://{str(service2.get('name', 'service2')).replace('_', '-')}.example.com",
         )
 
         # Clients should be independent
@@ -180,7 +180,7 @@ class TestFlextApiClient:
         """Test client property types are properly validated."""
         base_url = "https://test-service.example.com"
 
-        client = FlextApiClient(base_url=base_url, timeout=30.5, max_retries=5)
+        client = FlextApiClient(base_url=base_url, timeout=30, max_retries=5)
 
         assert isinstance(client.base_url, str)
         assert isinstance(client.timeout, (int, float))
@@ -198,7 +198,7 @@ class TestFlextApiClient:
         # Service names with underscores are invalid in URLs, so expect validation error
         with pytest.raises(ValidationError) as exc_info:
             FlextApiClient(base_url=base_url)
-        
+
         # Should raise validation error for invalid URL
         error_message = str(exc_info.value).lower()
         assert "base_url" in error_message or "url" in error_message
@@ -249,7 +249,7 @@ class TestFlextApiClient:
         # Create client using factory
         result = await FlextApiClient.create_flext_api()
         assert result.is_success
-        
+
         api_client = result.value["client"]
 
         assert isinstance(api_client, FlextApiClient)

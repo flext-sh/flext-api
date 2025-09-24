@@ -104,7 +104,7 @@ class TestFlextApiClientFocused:
             max_retries=5,
             headers={"Custom": "Header"},
             auth_token="token123",
-            api_key="key456"
+            api_key="key456",
         )
 
         # Test that client was created with correct values
@@ -126,8 +126,8 @@ class TestFlextApiClientFocused:
         # Verify client was created successfully
         assert client is not None
         # Test that client can be used (basic functionality)
-        assert hasattr(client, 'get')
-        assert hasattr(client, 'post')
+        assert hasattr(client, "get")
+        assert hasattr(client, "post")
 
     def test_client_public_interface(self) -> None:
         """Test client public interface and services."""
@@ -148,8 +148,8 @@ class TestFlextApiClientFocused:
             assert client is not None
             assert client.base_url == "https://test.com"
             # Test that client can perform operations
-            assert hasattr(client, 'get')
-            assert hasattr(client, 'post')
+            assert hasattr(client, "get")
+            assert hasattr(client, "post")
 
     @pytest.mark.asyncio
     async def test_client_close_method(self) -> None:
@@ -180,13 +180,13 @@ class TestFlextApiClientFocused:
         config = client.client_config
         assert config is not None
         # Test that config has headers property
-        assert hasattr(config, 'headers')
+        assert hasattr(config, "headers")
 
     def test_client_with_custom_headers(self) -> None:
         """Test client with custom headers through constructor."""
         client = FlextApiClient(
             "https://test.com",
-            headers={"Authorization": "Bearer token", "Custom": "Value"}
+            headers={"Authorization": "Bearer token", "Custom": "Value"},
         )
 
         # Test that client was created successfully
@@ -200,7 +200,9 @@ class TestFlextApiClientFocused:
 
         # Use patch on the class instead of instance to avoid frozen model issues
         with patch.object(FlextApiClient, "_request") as mock_request:
-            mock_response: FlextResult[FlextApiModels.HttpResponse] = FlextResult[FlextApiModels.HttpResponse].ok(
+            mock_response: FlextResult[FlextApiModels.HttpResponse] = FlextResult[
+                FlextApiModels.HttpResponse
+            ].ok(
                 FlextApiModels.HttpResponse(
                     status_code=200,
                     body="test",
@@ -211,7 +213,9 @@ class TestFlextApiClientFocused:
             )
             mock_request.return_value = mock_response
 
-            result: FlextResult[FlextApiModels.HttpResponse] = await client.request("GET", "/get", params={"test": "value"})
+            result: FlextResult[FlextApiModels.HttpResponse] = await client.request(
+                "GET", "/get", params={"test": "value"}
+            )
 
             mock_request.assert_called_once_with(
                 "GET",
@@ -471,7 +475,7 @@ class TestFlextApiClientFocused:
 
         # Mock the internal _request method to avoid actual HTTP calls
         with patch.object(client, "_request") as mock_request:
-            mock_response = FlextResult[FlextApiModels.HttpResponse].ok(
+            mock_result = FlextResult[FlextApiModels.HttpResponse].ok(
                 FlextApiModels.HttpResponse(
                     status_code=201,
                     body='{"success": true}',
@@ -480,7 +484,7 @@ class TestFlextApiClientFocused:
                     method="POST",
                 )
             )
-            mock_request.return_value = mock_response
+            mock_request.return_value = mock_result
 
             result = await client.request(
                 "POST",

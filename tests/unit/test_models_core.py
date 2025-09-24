@@ -73,7 +73,7 @@ class TestFlextApiModels:
         service_data = FlextTestsDomains.create_service()
 
         headers = {"Authorization": "Bearer token", "Accept": "application/json"}
-        service_name = str(service_data.get('name', 'api'))
+        service_name = str(service_data.get("name", "api"))
         base_url = f"https://{service_name.replace('_', '-')}.test.com"
         timeout = 60.0  # Use fixed value for type safety
         max_retries = 5  # Use fixed value for type safety
