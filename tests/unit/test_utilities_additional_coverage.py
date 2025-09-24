@@ -9,8 +9,7 @@ from __future__ import annotations
 from typing import Never
 from unittest.mock import patch
 
-from flext_api.constants import FlextApiConstants
-from flext_api.utilities import FlextApiUtilities
+from flext_api import FlextApiConstants, FlextApiUtilities
 
 
 class TestFlextUtilitiesAdditionalCoverage:

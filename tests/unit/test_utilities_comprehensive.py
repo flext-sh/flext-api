@@ -8,8 +8,7 @@ from __future__ import annotations
 
 from pydantic import ValidationError
 
-from flext_api import FlextApiConstants, FlextApiUtilities
-from flext_api.models import FlextApiModels
+from flext_api import FlextApiConstants, FlextApiModels, FlextApiUtilities
 from flext_core import FlextConstants, FlextTypes
 from flext_tests import FlextTestsMatchers
 

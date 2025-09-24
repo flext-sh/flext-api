@@ -10,7 +10,6 @@ import pytest
 
 from flext_api import (
     FlextApiClient,
-    create_flext_api,
 )
 
 
@@ -22,7 +21,7 @@ class TestApiWorkflowE2E:
     async def test_complete_api_workflow(self) -> None:
         """Test complete workflow from API creation to HTTP operations."""
         # Simple e2e test
-        api_instance = create_flext_api()
+        api_instance = FlextApiClient()
         assert api_instance is not None
 
     @pytest.mark.asyncio

@@ -35,9 +35,8 @@ class FlextApiStorage(FlextModels.Entity):
         self._logger = FlextLogger(__name__)
 
         # Simplified config using flext-core patterns
-        config_dict: dict[str, object]
         if isinstance(config, dict):
-            config_dict = config
+            config_dict: dict[str, object] = config
         elif config is not None:
             # Explicit config extraction - FLEXT pattern with clear type handling
             if hasattr(config, "model_dump") and callable(
@@ -262,7 +261,7 @@ class FlextApiStorage(FlextModels.Entity):
 
             """
             try:
-                data = json.loads(json_str)
+                data: dict[str, object] = json.loads(json_str)
                 return FlextResult[object].ok(data)
             except Exception as e:
                 return FlextResult[object].fail(f"JSON deserialization failed: {e}")

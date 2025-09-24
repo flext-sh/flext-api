@@ -8,17 +8,14 @@ from __future__ import annotations
 
 from flext_api import client as _client_module
 from flext_api.client import FlextApiClient
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextService
 
 
-class FlextApiClientFactory:
-    """Factory service for creating FLEXT API client configurations.
+class FlextApiClientFactory(FlextService[FlextApiClient]):
+    """Single unified API client factory class following FLEXT standards.
 
-    Provides factory methods for creating API clients with common
-    configuration patterns for different environments.
-
-    This class was extracted from the monolithic FlextApiClient to follow
-    FLEXT "one class per module" architectural principle.
+    Contains all factory methods for creating API clients with different configurations.
+    Follows FLEXT pattern: one class per module with nested subclasses.
     """
 
     @staticmethod
@@ -116,7 +113,7 @@ class FlextApiClientFactory:
         )
 
     @classmethod
-    def get_supported_environments(cls) -> list[str]:
+    def get_supported_environments(cls: object) -> list[str]:
         """Get list of supported client environment configurations.
 
         Returns:

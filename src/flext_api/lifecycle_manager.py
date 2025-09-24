@@ -51,8 +51,8 @@ class FlextApiLifecycleManager:
             self._logger.info(
                 "Starting HTTP client",
                 extra={
-                    "base_url": self._config.base_url,
-                    "timeout": self._config.timeout,
+                    "base_url": getattr(self._config, "base_url", ""),
+                    "timeout": getattr(self._config, "timeout", 30),
                 },
             )
             self._is_started = True

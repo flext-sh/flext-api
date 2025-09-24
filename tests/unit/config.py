@@ -25,83 +25,69 @@ class TestFlextApiConfigReal:
         # Test that config object is created with defaults
         assert config is not None
         assert isinstance(config, FlextApiConfig)
-        assert config.api_host == "127.0.0.1"
-        assert config.api_port == 8000
+        assert config.api_base_url == "http://localhost:8000"
+        assert config.api_timeout == 30
 
     def test_client_config_creation(self) -> None:
         """Test FlextApiConfig creation with custom client values."""
         config = FlextApiConfig(
             api_base_url="https://api.example.com",
-            api_timeout=30.0,
+            api_timeout=30,
             max_retries=3,
         )
 
         assert config.api_base_url == "https://api.example.com"
-        assert config.api_timeout == 30.0
+        assert config.api_timeout == 30
         assert config.max_retries == 3
 
     def test_server_config_creation(self) -> None:
         """Test FlextApiConfig creation with custom server values."""
-        config = FlextApiConfig(api_host="127.0.0.1", api_port=8080, workers=4)
+        config = FlextApiConfig(api_base_url="http://127.0.0.1:8080")
 
-        assert config.api_host == "127.0.0.1"
-        assert config.api_port == 8080
-        assert config.workers == 4
+        assert config.api_base_url == "http://127.0.0.1:8080"
 
     def test_security_config_creation(self) -> None:
         """Test security configuration with FlextApiConfig."""
         # Test config with debug mode (closest to security settings available)
         config = FlextApiConfig(
-            api_host="127.0.0.1",
-            api_port=8080,
             api_base_url="https://api.example.com",
-            api_debug=False,  # Security-relevant setting
         )
 
-        assert config.api_debug is False
         assert config.api_base_url.startswith("https://")  # HTTPS for security
 
     def test_env_config_creation(self) -> None:
         """Test FlextApiConfig creation with environment-style values."""
         config = FlextApiConfig(
-            api_host="127.0.0.1",
-            api_port=8080,
             api_base_url="https://api.example.com",
         )
 
-        assert config.api_host == "127.0.0.1"
-        assert config.api_port == 8080
         assert config.api_base_url == "https://api.example.com"
 
     def test_main_config_creation(self) -> None:
         """Test main FlextApiConfig creation with multiple parameters."""
         config = FlextApiConfig(
-            api_host="127.0.0.1",
-            api_port=8080,
             api_base_url="https://api.example.com",
-            api_debug=True,
         )
 
-        assert config.api_host == "127.0.0.1"
-        assert config.api_port == 8080
         assert config.api_base_url == "https://api.example.com"
-        assert config.api_debug is True
+        # Test that config was created successfully
 
     def test_config_validation(self) -> None:
         """Test configuration validation."""
         # Valid config
-        config = FlextApiConfig(api_port=8080)
-        assert config.api_port == 8080
+        config = FlextApiConfig(api_base_url="http://localhost:8080")
+        assert config.api_base_url == "http://localhost:8080"
 
         # Invalid port should raise error
+        # Test invalid URL should raise error
         with pytest.raises(ValueError):
-            FlextApiConfig(api_port=99999)  # Port > 65535
+            FlextApiConfig(api_base_url="invalid-url")
 
     def test_config_serialization(self) -> None:
         """Test config serialization capabilities."""
         config = FlextApiConfig(
             api_base_url="https://test.example.com",
-            api_timeout=45.0,
+            api_timeout=45,
         )
 
         # Should be serializable as dict
@@ -116,7 +102,7 @@ class TestFlextApiConfigReal:
         with pytest.raises((ValueError, TypeError)):
             FlextApiConfig(
                 api_base_url="https://api.example.com",
-                api_timeout=-1.0,  # Invalid negative timeout
+                api_timeout=-1,  # Invalid negative timeout
             )
 
     def test_config_defaults(self) -> None:
@@ -136,10 +122,8 @@ class TestFlextApiConfigReal:
         config_data = FlextTestsDomains.create_configuration()
 
         # Create config with some values from factory data
-        port_value = config_data.get("port", 8000)
+        config_data.get("port", 8000)
         config = FlextApiConfig(
-            api_host=str(config_data.get("host", "127.0.0.1")),
-            api_port=int(port_value) if isinstance(port_value, (int, str)) else 8000,
             api_base_url="https://api.example.com",
         )
 

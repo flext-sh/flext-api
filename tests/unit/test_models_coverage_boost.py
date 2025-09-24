@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from flext_api.models import FlextApiModels
+from flext_api import FlextApiModels
 
 
 class TestFlextApiModelsCoverageBoost:

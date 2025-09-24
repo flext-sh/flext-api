@@ -6,9 +6,15 @@ Following FLEXT standards: types only, no logic or classes.
 
 from collections.abc import Awaitable, Callable
 
+from flext_core import FlextTypes
 
-class FlextApiTypings:
-    """Centralized type definitions for flext-api domain."""
+
+class FlextApiTypings(FlextTypes):
+    """Single unified API typings class following FLEXT standards.
+
+    Contains all type definitions for API domain operations.
+    Follows FLEXT pattern: one class per module with nested subclasses.
+    """
 
     type HttpMethod = str
     type HttpStatusCode = int

@@ -46,7 +46,7 @@ async def test_request_build_failure_and_pipeline_error() -> None:
     # Test network error path using hostname that triggers stub failure
     invalid_client = FlextApiClient(
         config="http://nonexistent-host.invalid",  # Hostname recognized as should fail
-        timeout=0.5,  # Very short timeout for quick failure
+        timeout=1,  # Very short timeout for quick failure
     )
 
     try:

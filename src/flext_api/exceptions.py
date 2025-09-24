@@ -4,13 +4,15 @@ All exception classes are centralized here following FLEXT standards.
 Only exception class definitions - no factory methods or utility functions.
 """
 
+from flext_core import FlextExceptions
+
 from .constants import FlextApiConstants
 from .typings import FlextApiTypings
 
 HttpStatusCode = FlextApiTypings.HttpStatusCode
 
 
-class FlextApiExceptions:
+class FlextApiExceptions(FlextExceptions):
     """HTTP API exception classes extending flext-core exceptions."""
 
     class ValidationError(Exception):
