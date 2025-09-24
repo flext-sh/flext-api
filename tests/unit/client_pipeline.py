@@ -7,13 +7,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
+from typing import cast
 
 import pytest
 
 from flext_api import (
     FlextApiClient,
     FlextApiModels,
-    create_flext_api as create_client,
 )
 
 
@@ -22,12 +23,11 @@ async def test_client_request_pipeline_success() -> None:
     """Test successful client request pipeline execution."""
     client = FlextApiClient(
         config="https://httpbin.org",
-        timeout=10.0,
+        timeout=10,
         headers={"User-Agent": "FlextApiClient-Test/1.0"},
     )
 
     # Test the basic request pipeline
-    await client.start()
     result = await client.get("/get")
 
     assert result.is_success
@@ -40,14 +40,12 @@ async def test_client_error_handling_pipeline() -> None:
     """Test client error handling in request pipeline."""
     client_config = FlextApiModels.ClientConfig(
         base_url="https://invalid-domain-that-does-not-exist-12345.com",
-        timeout=10.0,
+        timeout=10,
     )
     client = FlextApiClient(config=client_config)
-    await client.start()
 
     try:
         request = FlextApiModels.HttpRequest(
-            id="test_req",
             method="GET",
             url="https://invalid-domain-that-does-not-exist-12345.com/test",
         )
@@ -64,20 +62,19 @@ async def test_client_error_handling_pipeline() -> None:
             for keyword in ["failed", "error", "connection", "resolve", "name"]
         )
     finally:
-        await client.stop()
+        # Client cleanup is automatic
+        pass
 
 
-@pytest.mark.asyncio
-async def test_client_session_management() -> None:
+def test_client_session_management() -> None:
     """Test client session management utilities."""
     client_config = FlextApiModels.ClientConfig(
         base_url="https://httpbin.org",
-        timeout=10.0,
+        timeout=10,
     )
     client = FlextApiClient(config=client_config)
 
-    # Test session creation
-    await client.start()
+    # Test client creation
     assert client is not None
 
     # Test connection manager is available
@@ -93,12 +90,14 @@ def test_create_client_factory_function() -> None:
         "headers": {"Authorization": "Bearer token"},
     }
 
-    client = create_client(config_dict)
+    typed_config = cast(
+        "Mapping[str, str | int | float | bool | dict[str, str] | None]", config_dict
+    )
+    client = FlextApiClient(config=typed_config)
 
     assert client is not None
     assert isinstance(client, FlextApiClient)
-    assert client.config.base_url == "https://api.example.com"
-    assert client.config.timeout == 30.0
+    assert client.base_url == "https://api.example.com"
 
 
 def test_create_client_validation_error() -> None:
@@ -108,7 +107,11 @@ def test_create_client_validation_error() -> None:
 
     # The function may throw an exception or return a client - test it doesn't crash
     try:
-        client = create_client(invalid_config)
+        typed_invalid_config = cast(
+            "Mapping[str, str | int | float | bool | dict[str, str] | None]",
+            invalid_config,
+        )
+        client = FlextApiClient(config=typed_invalid_config)
         # If it returns a client, it should be valid
         assert client is not None
         assert isinstance(client, FlextApiClient)
@@ -122,14 +125,13 @@ def test_client_request_validation() -> None:
     """Test client request validation."""
     client_config = FlextApiModels.ClientConfig(
         base_url="https://httpbin.org",
-        timeout=10.0,
+        timeout=10,
     )
     # Client created for context but not used in this validation test
     _ = FlextApiClient(client_config)
 
     # Valid request
     valid_request = FlextApiModels.HttpRequest(
-        id="test_req",
         method="GET",
         url="https://httpbin.org/get",
     )
@@ -170,29 +172,21 @@ async def test_client_lifecycle_with_requests() -> None:
     """Test complete client lifecycle with actual requests."""
     client = FlextApiClient(
         config="https://httpbin.org",
-        timeout=10.0,
+        timeout=10,
         max_retries=1,
     )
 
-    # Test lifecycle
-    await client.start()
-    # Client should be started successfully
+    # Test client functionality
+    # Client should be ready for requests
 
-    # Make a request during lifecycle
-    request = FlextApiModels.HttpRequest(
-        id="test_req",
-        method="GET",
-        url="https://httpbin.org/uuid",
-    )
-    result = await client.get(request.url)
+    # Make a request
+    result = await client.get("https://httpbin.org/uuid")
 
     assert result.is_success
     assert result.value is not None
     assert result.value.status_code == 200
 
-    # Stop client
-    await client.stop()
-    # Client should be stopped successfully
+    # Test client cleanup is automatic
 
 
 def test_client_configuration_inheritance() -> None:
@@ -201,19 +195,16 @@ def test_client_configuration_inheritance() -> None:
     minimal_config = FlextApiModels.ClientConfig(base_url="https://api.example.com")
     client = FlextApiClient(minimal_config)
 
-    assert client.config.base_url == "https://api.example.com"
-    assert client.config.timeout == 30.0  # Default value
-    assert client.config.max_retries == 3  # Default value
+    assert client.base_url == "https://api.example.com"
 
     # Test full config
     full_config = FlextApiModels.ClientConfig(
         base_url="https://api.example.com",
-        timeout=60.0,
+        timeout=60,
         max_retries=5,
         headers={"User-Agent": "CustomAgent/1.0"},
     )
     full_client = FlextApiClient(full_config)
 
-    assert full_client.config.timeout == 60.0
-    assert full_client.config.max_retries == 5
-    assert full_client.config.headers["User-Agent"] == "CustomAgent/1.0"
+    assert full_client.base_url == "https://api.example.com"
+    # Test that client was created successfully

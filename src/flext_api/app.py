@@ -6,7 +6,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from fastapi import FastAPI
+
 from flext_api.models import FlextApiModels
+from flext_core import FlextService
 
 
 # Internal abstraction - FastAPI is imported at runtime only
@@ -35,10 +38,9 @@ def _create_fastapi_instance(
         ImportError: If FastAPI is not installed.
 
     """
-    # Import FastAPI only at runtime to avoid direct import exposure
-    try:
-        from fastapi import FastAPI
+    # FastAPI is already imported at module level
 
+    try:
         return FastAPI(
             title=title or "FlextAPI",
             version=version or "1.0.0",
@@ -52,8 +54,12 @@ def _create_fastapi_instance(
         raise ImportError(error_msg) from e
 
 
-class FlextApiApp:
-    """FLEXT API Application Factory - FastAPI application creation following FLEXT architecture."""
+class FlextApiApp(FlextService[object]):
+    """Single unified API app class following FLEXT standards.
+
+    Contains all FastAPI application creation and management functionality.
+    Follows FLEXT pattern: one class per module with nested subclasses.
+    """
 
     @staticmethod
     def create_fastapi_app(config: FlextApiModels.AppConfig) -> object:

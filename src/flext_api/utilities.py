@@ -7,7 +7,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
+import re
 import time
+from urllib.parse import urlparse, urlunparse
 
 from flext_api.constants import FlextApiConstants
 from flext_core import (
@@ -172,8 +174,6 @@ class FlextApiUtilities(FlextUtilities):
                 return FlextResult[str].fail("Invalid port 0")
 
             # Check for ports that exceed maximum (65535)
-            import re
-
             port_match = re.search(r":(\d+)(?:/|$|\?)", url)
             if port_match:
                 port = int(port_match.group(1))
@@ -272,13 +272,11 @@ class FlextApiUtilities(FlextUtilities):
             """
             # First create URL object then normalize
             # Create and validate URL object
-            url_result = FlextModels.Url.create(url)
+            url_result: FlextResult[object] = FlextModels.Url.create(url)
             if url_result.is_failure:
                 return FlextResult[str].fail(url_result.error or "Invalid URL")
 
             # Normalize URL manually since Url model doesnt have normalize method
-            from urllib.parse import urlparse, urlunparse
-
             try:
                 parsed = urlparse(url)
                 # Basic normalization: lowercase scheme and netloc, remove default ports
@@ -342,7 +340,7 @@ class FlextApiUtilities(FlextUtilities):
                 )
 
             # Extract config data - check for model_dump() first, then __dict__
-            config_dict = None
+            config_dict: dict[str, object] | None = None
             if hasattr(config, "model_dump") and callable(
                 getattr(config, "model_dump")
             ):
@@ -354,6 +352,12 @@ class FlextApiUtilities(FlextUtilities):
             else:
                 return FlextResult[FlextTypes.Core.Dict].fail(
                     "Configuration must be dict-like or have attributes",
+                )
+
+            # Ensure config_dict is not None
+            if config_dict is None:
+                return FlextResult[FlextTypes.Core.Dict].fail(
+                    "Failed to extract configuration data",
                 )
 
             # Determine config type based on attributes
@@ -370,7 +374,7 @@ class FlextApiUtilities(FlextUtilities):
             # Validate common HTTP configuration fields
             if "method" in config_dict:
                 method_result = FlextApiUtilities.HttpValidator.validate_http_method(
-                    config_dict["method"],
+                    str(config_dict["method"]),
                 )
                 if method_result.is_failure:
                     return FlextResult[FlextTypes.Core.Dict].fail(
@@ -379,7 +383,9 @@ class FlextApiUtilities(FlextUtilities):
 
             if "status_code" in config_dict:
                 status_result = FlextApiUtilities.HttpValidator.validate_status_code(
-                    config_dict["status_code"],
+                    int(config_dict["status_code"])
+                    if isinstance(config_dict["status_code"], (int, str))
+                    else 200,
                 )
                 if status_result.is_failure:
                     return FlextResult[FlextTypes.Core.Dict].fail(
@@ -392,7 +398,7 @@ class FlextApiUtilities(FlextUtilities):
                 **config_dict,  # Include all original config data
             }
 
-            return FlextResult[FlextTypes.Core.Dict].ok(result_data)
+            return FlextResult[dict[str, object]].ok(result_data)
         except Exception as e:
             return FlextResult[FlextTypes.Core.Dict].fail(
                 f"Configuration validation failed: {e}",
@@ -504,9 +510,9 @@ class FlextApiUtilities(FlextUtilities):
 
         """
         try:
-            result = json.loads(json_str)
-            if isinstance(result, dict):
-                return result
+            parsed_data = json.loads(json_str)
+            if isinstance(parsed_data, dict):
+                return parsed_data
             return None
         except Exception:
             return None
@@ -548,8 +554,14 @@ class FlextApiUtilities(FlextUtilities):
             Converted integer value or default if conversion fails.
 
         """
-        result = FlextApiUtilities.safe_int_conversion(value)
-        return result if result is not None else default
+        try:
+            if isinstance(value, int):
+                return value
+            if isinstance(value, str):
+                return int(value)
+        except (ValueError, TypeError):
+            pass
+        return default
 
     @staticmethod
     def is_non_empty_string(value: object) -> bool:

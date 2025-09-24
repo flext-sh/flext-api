@@ -6,11 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import cast
+
 import pytest
 from pydantic import ValidationError
 
-from flext_api import FlextApiClient
-from flext_api.models import FlextApiModels
+from flext_api import FlextApiClient, FlextApiModels
 
 
 class TestFlextApiClientCoverageBoost:
@@ -31,9 +33,10 @@ class TestFlextApiClientCoverageBoost:
             "timeout": 30,
             "max_retries": 3,
         }
-        from collections.abc import Mapping
-        from typing import cast
-        typed_config = cast("Mapping[str, str | int | float | bool | dict[str, str] | None]", config)
+
+        typed_config = cast(
+            "Mapping[str, str | int | float | bool | dict[str, str] | None]", config
+        )
         api = FlextApiClient(typed_config)
         assert api is not None
         assert hasattr(api, "_client_config")
@@ -49,10 +52,11 @@ class TestFlextApiClientCoverageBoost:
         }
 
         # FlextApiClient should raise ValidationError when client creation fails
+        typed_invalid_config = cast(
+            "Mapping[str, str | int | float | bool | dict[str, str] | None]",
+            invalid_config,
+        )
         with pytest.raises(ValidationError):
-            from collections.abc import Mapping
-            from typing import cast
-            typed_invalid_config = cast("Mapping[str, str | int | float | bool | dict[str, str] | None]", invalid_config)
             FlextApiClient(typed_invalid_config)
 
     def test_flext_api_client_property(self) -> None:

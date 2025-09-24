@@ -425,7 +425,6 @@ print(result.unwrap().body if result.is_success else result.error)
 
 ```python
 # Enable HTTP logging
-import logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Use httpx logging

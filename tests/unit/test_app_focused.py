@@ -8,8 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api.app import FlextApiApp
-from flext_api.models import FlextApiModels
+from flext_api import FlextApiApp, FlextApiModels
 
 
 class TestFlextApiAppFocused:

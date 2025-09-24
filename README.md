@@ -35,12 +35,12 @@ flext-api serves as the HTTP foundation for FLEXT's enterprise data integration 
 
 ### **FLEXT-Core Integration Status**
 
-| Pattern                | Status | Implementation                            |
-| ---------------------- | ------ | ----------------------------------------- |
-| **FlextResult[T]**     | 🟢 90% | Comprehensive error handling throughout   |
-| **FlextService** | 🟢 85% | FlextApiClient extends FlextService |
-| **FlextModels**        | 🟢 80% | HTTP models use Entity/Value patterns     |
-| **FlextContainer**     | 🟡 60% | Basic dependency injection usage          |
+| Pattern            | Status | Implementation                          |
+| ------------------ | ------ | --------------------------------------- |
+| **FlextResult[T]** | 🟢 90% | Comprehensive error handling throughout |
+| **FlextService**   | 🟢 85% | FlextApiClient extends FlextService     |
+| **FlextModels**    | 🟢 80% | HTTP models use Entity/Value patterns   |
+| **FlextContainer** | 🟡 60% | Basic dependency injection usage        |
 
 > **Status**: 🟢 Complete · 1.0.0 Release Preparation | 🟡 Partial | 🔴 Needs Work
 

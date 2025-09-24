@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from flext_api import create_flext_api
+from flext_api import FlextApiClient
 
 
 @pytest.mark.integration
@@ -21,7 +21,7 @@ class TestHttpClientIntegration:
     async def test_real_http_request_with_httpbin(self) -> None:
         """Test real HTTP request with httpbin.org."""
         # Create client using modern API
-        api = create_flext_api()
+        api = FlextApiClient()
         client_result = api.create_client(
             {
                 "base_url": "https://httpbin.org",
@@ -43,7 +43,7 @@ class TestHttpClientIntegration:
     @pytest.mark.asyncio
     async def test_basic_client_configuration(self) -> None:
         """Test client configuration without optional plugins."""
-        api = create_flext_api()
+        api = FlextApiClient()
         client_result = api.create_client(
             {
                 "base_url": "https://httpbin.org",
@@ -62,7 +62,7 @@ class TestHttpClientIntegration:
     async def test_post_request_with_json_data(self) -> None:
         """Test POST request with JSON data."""
         # Create client using modern API
-        api = create_flext_api()
+        api = FlextApiClient()
         client_result = api.create_client(
             {
                 "base_url": "https://httpbin.org",
@@ -85,7 +85,7 @@ class TestHttpClientIntegration:
     async def test_client_context_manager(self) -> None:
         """Test client as async context manager."""
         # Create client using modern API
-        api = create_flext_api()
+        api = FlextApiClient()
         client_result = api.create_client(
             {
                 "base_url": "https://httpbin.org",

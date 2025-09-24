@@ -23,9 +23,9 @@ async def test_real_network_error_and_error_formatting() -> None:
     # Use non-responsive localhost port to trigger real connection error
     client = FlextApiClient(
         base_url="http://127.0.0.1:65530",  # Port that won't respond
-        timeout=0.3,  # Quick timeout
+        timeout=1,  # Quick timeout
     )
-    await client.start()
+    # Note: FlextApiClient doesn't have a start() method
 
     try:
         # Real network error triggers error path
@@ -44,7 +44,7 @@ async def test_read_response_data_real_json_parsing() -> None:
     """Verify JSON parsing with real HTTP response using FlextTestsMatchers."""
     # Use real httpbin.org service for JSON response parsing
     client = FlextApiClient(base_url="https://httpbin.org")
-    await client.start()
+    # Note: FlextApiClient doesn't have a start() method
 
     try:
         # Real JSON endpoint that returns structured data

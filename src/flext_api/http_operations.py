@@ -165,10 +165,12 @@ class FlextApiHttpOperations:
         """
         try:
             # Build full URL
-            full_url = f"{self._config.base_url.rstrip('/')}/{url.lstrip('/')}"
+            base_url = getattr(self._config, "base_url", "")
+            full_url = f"{base_url.rstrip('/')}/{url.lstrip('/')}"
 
             # Prepare request headers
-            headers = dict(self._config.headers or {})
+            config_headers = getattr(self._config, "headers", {})
+            headers: dict[str, str] = dict(config_headers or {})
             if "headers" in kwargs:
                 extra_headers = kwargs.pop("headers")
                 if isinstance(extra_headers, dict):

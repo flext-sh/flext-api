@@ -77,7 +77,7 @@ class FlextApiRetryHelper:
                 )
 
                 # Execute the operation
-                result = await operation(*args, **kwargs)
+                result: FlextResult[object] = await operation(*args, **kwargs)
 
                 if result.is_success:
                     if attempt > 0:

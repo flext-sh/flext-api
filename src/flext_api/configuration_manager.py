@@ -52,7 +52,9 @@ class FlextApiConfigurationManager:
             # Validate new configuration
             validation_result = self.validate_configuration(new_config)
             if validation_result.is_failure:
-                return validation_result
+                return FlextResult[None].fail(
+                    validation_result.error or "Validation failed"
+                )
 
             # Update configuration
             self._config = new_config
@@ -71,7 +73,9 @@ class FlextApiConfigurationManager:
             Dictionary representation of current configuration
 
         """
-        return self._config.model_dump()
+        if hasattr(self._config, "model_dump"):
+            return self._config.model_dump()
+        return {}
 
     def validate_configuration(
         self, config: FlextApiModels.ClientConfig

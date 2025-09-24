@@ -132,12 +132,12 @@ class FlextApiConfig(FlextModels.Value):
 
 ### **FLEXT-Core Pattern Usage**
 
-| Pattern                | Status | Implementation                            | Lines |
-| ---------------------- | ------ | ----------------------------------------- | ----- |
-| **FlextResult[T]**     | 🟢 90% | Comprehensive error handling throughout   | ~200  |
-| **FlextService** | 🟢 85% | FlextApiClient extends FlextService | ~100  |
-| **FlextModels**        | 🟢 80% | HTTP models use Entity/Value patterns     | ~300  |
-| **FlextContainer**     | 🟡 60% | Basic dependency injection usage          | ~50   |
+| Pattern            | Status | Implementation                          | Lines |
+| ------------------ | ------ | --------------------------------------- | ----- |
+| **FlextResult[T]** | 🟢 90% | Comprehensive error handling throughout | ~200  |
+| **FlextService**   | 🟢 85% | FlextApiClient extends FlextService     | ~100  |
+| **FlextModels**    | 🟢 80% | HTTP models use Entity/Value patterns   | ~300  |
+| **FlextContainer** | 🟡 60% | Basic dependency injection usage        | ~50   |
 
 ### **Integration Points**
 
