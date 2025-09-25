@@ -35,7 +35,7 @@ class TestFlextApiClientCoverageBoost:
         }
 
         typed_config = cast(
-            "Mapping[str, str | int | float | bool | dict[str, str] | None]", config
+            "Mapping[str, str | int, float] | bool | dict[str, str] | None", config
         )
         api = FlextApiClient(typed_config)
         assert api is not None
@@ -53,7 +53,7 @@ class TestFlextApiClientCoverageBoost:
 
         # FlextApiClient should raise ValidationError when client creation fails
         typed_invalid_config = cast(
-            "Mapping[str, str | int | float | bool | dict[str, str] | None]",
+            "Mapping[str, str | int, float] | bool | dict[str, str] | None",
             invalid_config,
         )
         with pytest.raises(ValidationError):

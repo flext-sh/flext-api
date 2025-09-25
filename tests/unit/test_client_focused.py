@@ -415,7 +415,7 @@ class TestFlextApiClientFocused:
 
     def test_create_factory_with_dict(self) -> None:
         """Test create factory method with dict configuration."""
-        config_data: dict[str, str | int | float] = {
+        config_data: dict[str, str | int, float] = {
             "base_url": "https://factory.example.com",
             "timeout": 120,
             "max_retries": 6,

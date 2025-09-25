@@ -65,7 +65,7 @@ class FlextApiModule(FlextService[FlextResult[object]]):
             data: object = None, message: str = "Success"
         ) -> JsonObject:
             """Create standardized success response."""
-            return {
+            return {  # type: ignore[return-value]
                 "status": "success",
                 "data": data,
                 "message": message,

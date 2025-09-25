@@ -410,7 +410,7 @@ class TestFlextUtilitiesCoverageFocused:
     def test_pagination_builder_non_list_data(self) -> None:
         """Test PaginationBuilder with non-list data."""
         # Test that the function handles non-list data gracefully
-        # by passing an empty list instead, since the function signature expects list | None
+        # by passing an empty list instead, since the function signature expects Union[list, None]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
             data=[],  # Empty list to test pagination with no data
             page=1,

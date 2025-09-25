@@ -52,12 +52,12 @@ class FlextApiHttpOperations:
             FlextResult containing HttpResponse or error details.
 
         """
-        request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(**kwargs)
+        request_kwargs: dict[str, object] = dict(**kwargs)  # type: ignore[misc]
         if params is not None:
             request_kwargs["params"] = params
         if headers is not None:
             request_kwargs["headers"] = headers
-        return await self._execute_request("GET", url, **request_kwargs)
+        return await self._execute_request("GET", url, **request_kwargs)  # type: ignore[arg-type]
 
     async def post(
         self,
@@ -82,7 +82,7 @@ class FlextApiHttpOperations:
             FlextResult containing HttpResponse or error details.
 
         """
-        request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(**kwargs)
+        request_kwargs: dict[str, object] = dict(**kwargs)  # type: ignore[misc]
         if data is not None:
             request_kwargs["data"] = data
         if json is not None:
@@ -91,7 +91,7 @@ class FlextApiHttpOperations:
             request_kwargs["body"] = body
         if headers is not None:
             request_kwargs["headers"] = headers
-        return await self._execute_request("POST", url, **request_kwargs)
+        return await self._execute_request("POST", url, **request_kwargs)  # type: ignore[arg-type]
 
     async def put(
         self,
@@ -116,7 +116,7 @@ class FlextApiHttpOperations:
             FlextResult containing HttpResponse or error details.
 
         """
-        request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(**kwargs)
+        request_kwargs: dict[str, object] = dict(**kwargs)  # type: ignore[misc]
         if data is not None:
             request_kwargs["data"] = data
         if json is not None:
@@ -125,7 +125,7 @@ class FlextApiHttpOperations:
             request_kwargs["body"] = body
         if headers is not None:
             request_kwargs["headers"] = headers
-        return await self._execute_request("PUT", url, **request_kwargs)
+        return await self._execute_request("PUT", url, **request_kwargs)  # type: ignore[arg-type]
 
     async def delete(
         self,
@@ -144,10 +144,10 @@ class FlextApiHttpOperations:
             FlextResult containing HttpResponse or error details.
 
         """
-        request_kwargs: dict[str, str | int | dict[str, str] | object] = dict(**kwargs)
+        request_kwargs: dict[str, object] = dict(**kwargs)  # type: ignore[misc]
         if headers is not None:
             request_kwargs["headers"] = headers
-        return await self._execute_request("DELETE", url, **request_kwargs)
+        return await self._execute_request("DELETE", url, **request_kwargs)  # type: ignore[arg-type]
 
     async def _execute_request(
         self, method: str, url: str, **kwargs: str | int | dict[str, str] | object
@@ -189,6 +189,7 @@ class FlextApiHttpOperations:
                 body='{"status": "success"}',
                 url=full_url,
                 method=method,
+                domain_events=[],  # Add required domain_events parameter
             )
 
             return FlextResult[FlextApiModels.HttpResponse].ok(response)

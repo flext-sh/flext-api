@@ -882,7 +882,7 @@ def test_create_flext_api_factory_function() -> None:
 
     # Cast to proper type for MyPy
     typed_config = cast(
-        "Mapping[str, str | int | float | bool | dict[str, str] | None]", config_dict
+        "Mapping[str, str | int, float] | bool | dict[str, str] | None", config_dict
     )
     client = FlextApiClient(typed_config)
 
@@ -901,7 +901,7 @@ def test_create_flext_api_validation_error() -> None:
     try:
         # Cast to proper type for MyPy
         typed_config = cast(
-            "Mapping[str, str | int | float | bool | dict[str, str] | None]",
+            "Mapping[str, str | int, float] | bool | dict[str, str] | None",
             invalid_config,
         )
         client = FlextApiClient(typed_config)

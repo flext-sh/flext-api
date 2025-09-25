@@ -1,156 +1,182 @@
-"""Type definitions for flext-api domain.
+"""FLEXT API Types - Domain-specific API type definitions.
 
-All type aliases, type variables, and generic types are centralized here.
-Following FLEXT standards: types only, no logic or classes.
+This module provides API-specific type definitions extending FlextTypes.
+Follows FLEXT standards:
+- Domain-specific complex types only
+- No simple aliases to primitive types
+- Python 3.13+ syntax
+- Extends FlextTypes properly
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
-from collections.abc import Awaitable, Callable
+from __future__ import annotations
+
+from typing import TypeVar
 
 from flext_core import FlextTypes
 
+# =============================================================================
+# API-SPECIFIC TYPE VARIABLES - Domain-specific TypeVars for API operations
+# =============================================================================
+
+# API domain TypeVars
+THttpClient = TypeVar("THttpClient")
+THttpRequest = TypeVar("THttpRequest")
+THttpResponse = TypeVar("THttpResponse")
+TApiEndpoint = TypeVar("TApiEndpoint")
+TApiRouter = TypeVar("TApiRouter")
+TApiMiddleware = TypeVar("TApiMiddleware")
+TApiAuth = TypeVar("TApiAuth")
+TApiPlugin = TypeVar("TApiPlugin")
+
 
 class FlextApiTypings(FlextTypes):
-    """Single unified API typings class following FLEXT standards.
+    """API-specific type definitions extending FlextTypes.
 
-    Contains all type definitions for API domain operations.
-    Follows FLEXT pattern: one class per module with nested subclasses.
+    Domain-specific type system for HTTP/API operations.
+    Contains ONLY complex API-specific types, no simple aliases.
+    Uses Python 3.13+ type syntax and patterns.
     """
 
-    type HttpMethod = str
-    type HttpStatusCode = int
-    type HttpHeaders = dict[str, str]
-    type Headers = dict[str, str]
-    type HttpParams = dict[str, str | int | float | bool | None]
-    type HttpData = str | bytes | dict[str, object] | None
+    # =========================================================================
+    # COMMON API TYPES - Frequently used API types
+    # =========================================================================
 
-    type UrlPath = str
-    type BaseUrl = str
-    type FullUrl = str
-    type EndpointPath = str
-
-    type TimeoutSeconds = float
-    type RetryCount = int
-    type PageSize = int
-    type ApiVersion = str
-
-    type RequestData = dict[str, object]
-    type ResponseData = dict[str, object]
-    type ErrorData = dict[str, object]
-
-    type ApiKey = str
-    type BearerToken = str
-    type AuthHeader = str
-
-    type ClientId = str
-    type ConnectionStatus = str
-    type ClientStatus = str
-
-    type StorageKey = str
-    type StorageValue = object
-    type CacheTimeout = int
-
-    type PageNumber = int
-    type PageOffset = int
-    type TotalCount = int
-
-    type ValidationErrors = list[str]
-    type FieldName = str
-    type FieldValue = object
-
-    type LogLevel = str
-    type RequestId = str
-    type CorrelationId = str
-    type TraceId = str
-
-    type ResponseTimeMs = float
-    type ResponseSizeBytes = int
-    type ThroughputRps = float
-
-    type JsonObject = dict[str, object]
-    type JsonArray = list[object]
-    type JsonValue = str | int | float | bool | dict[str, object] | list[object] | None
-
-    type StatusCode = int
+    # Common HTTP types referenced throughout the codebase
+    type Headers = dict[str, str | list[str]]
+    type RequestBody = dict[str, FlextTypes.Core.JsonValue] | str | bytes
     type Timeout = int | float
-    type Retries = int
-    type PoolSize = int
-    type BackoffFactor = float
-    type Token = str
-    type Namespace = str
-    type TTL = int | None
 
-    type MiddlewareCallable = Callable[[object], Awaitable[object]]
-    type PluginConfig = dict[str, object]
-    type HandlerFunction = Callable[[object], object]
+    # HTTP-specific type aliases
+    type HttpStatusCode = int
+    type JsonObject = dict[str, FlextTypes.Core.JsonValue]
+    type HttpData = str | bytes | dict[str, FlextTypes.Core.JsonValue]
+    type HttpHeaders = dict[str, str | list[str]]
+    type HttpMethod = str  # GET, POST, PUT, DELETE, etc.
+    type HttpParams = dict[str, str | list[str]]
+    type RequestData = dict[str, FlextTypes.Core.JsonValue] | str | bytes
+    type ResponseData = dict[str, FlextTypes.Core.JsonValue] | str | bytes
+    type StorageKey = str
+    type StorageValue = FlextTypes.Core.JsonValue
+    type TimeoutSeconds = int | float
 
-    type AppTitle = str
-    type AppVersion = str
-    type AppDescription = str
-    type DocsUrl = str
-    type Host = str
-    type Port = int
-    type Workers = int
-    type ReloadEnabled = bool
+    # =========================================================================
+    # HTTP REQUEST TYPES - Complex request handling types
+    # =========================================================================
 
-    type Origin = str
-    type AllowedOrigins = list[str]
-    type AllowedMethods = list[str]
-    type AllowedHeaders = list[str]
-    type Hash = str
-    type Salt = str
-    type Signature = str
-    type Certificate = str
+    class Request:
+        """HTTP request complex types."""
 
-    type UserId = str
-    type Username = str
-    type UserRole = str
-    type Permissions = list[str]
-    type SessionId = str
-    type SessionData = dict[str, object]
-    type SessionExpiry = int
+        type RequestConfiguration = dict[
+            str, str | int | bool | list[str] | dict[str, object]
+        ]
+        type RequestHeaders = dict[str, str | list[str]]
+        type RequestParameters = dict[
+            str, FlextTypes.Core.JsonValue | list[FlextTypes.Core.JsonValue]
+        ]
+        type RequestBody = dict[str, FlextTypes.Core.JsonValue] | str | bytes
+        type RequestMiddleware = list[dict[str, FlextTypes.Core.JsonValue]]
+        type RequestValidation = dict[str, list[str] | dict[str, object]]
 
-    type IpAddress = str
-    type Hostname = str
-    type NetworkPort = int
-    type ConnectionString = str
-    type DatabaseName = str
-    type TableName = str
-    type CollectionName = str
+    # =========================================================================
+    # HTTP RESPONSE TYPES - Complex response handling types
+    # =========================================================================
 
-    type FilePath = str
-    type FileName = str
-    type FileExtension = str
-    type DirectoryPath = str
+    class Response:
+        """HTTP response complex types."""
 
-    type MetricName = str
-    type MetricValue = int | float
-    type MetricTags = dict[str, str]
-    type RateLimitRequests = int
-    type RateLimitWindow = int
+        type ResponseConfiguration = dict[
+            str, FlextTypes.Core.JsonValue | dict[str, object]
+        ]
+        type ResponseHeaders = dict[str, str | list[str]]
+        type ResponseBody = dict[str, FlextTypes.Core.JsonValue] | str | bytes
+        type ResponseMetadata = dict[str, int | float | str | dict[str, object]]
+        type ResponseTransformation = list[dict[str, FlextTypes.Core.JsonValue]]
+        type ResponseValidation = dict[str, bool | str | list[str]]
 
-    type CacheKey = str
-    type CacheValue = object
-    type CacheExpiry = int
+    # =========================================================================
+    # API ENDPOINT TYPES - Complex endpoint management types
+    # =========================================================================
 
-    type ErrorMessage = str
-    type ErrorCode = str
-    type LogMessage = str
-    type LogContext = dict[str, object]
-    type Success = bool
-    type Timestamp = str
+    class Endpoint:
+        """API endpoint complex types."""
 
-    type TotalItems = int
-    type HasNextPage = bool
+        type EndpointConfiguration = dict[
+            str, FlextTypes.Core.JsonValue | list[str] | dict[str, object]
+        ]
+        type EndpointMetadata = dict[
+            str, str | int | list[str] | dict[str, FlextTypes.Core.JsonValue]
+        ]
+        type EndpointValidation = dict[str, list[str] | dict[str, object] | bool]
+        type EndpointMiddleware = list[dict[str, FlextTypes.Core.JsonValue | object]]
+        type EndpointDocumentation = dict[
+            str, str | dict[str, FlextTypes.Core.JsonValue]
+        ]
+        type RouteConfiguration = dict[
+            str, str | list[str] | dict[str, FlextTypes.Core.JsonValue]
+        ]
 
-    type Url = str
-    type Endpoint = str
-    type PathParams = dict[str, str]
-    type QueryParams = dict[str, object]
-    type JsonData = dict[str, object]
-    type RequestBody = str | dict[str, object] | None
-    type ResponseBody = str | dict[str, object] | None
+    # =========================================================================
+    # API AUTHENTICATION TYPES - Complex authentication types
+    # =========================================================================
+
+    class Authentication:
+        """API authentication complex types."""
+
+        type AuthConfiguration = dict[
+            str, FlextTypes.Core.ConfigValue | dict[str, object]
+        ]
+        type AuthCredentials = dict[str, str | dict[str, FlextTypes.Core.JsonValue]]
+        type AuthTokenData = dict[str, FlextTypes.Core.JsonValue | int | bool]
+        type AuthProviderConfig = dict[str, FlextTypes.Core.ConfigDict]
+        type AuthMiddleware = list[dict[str, FlextTypes.Core.JsonValue]]
+        type SecurityConfiguration = dict[
+            str, bool | str | list[str] | dict[str, object]
+        ]
+
+    # =========================================================================
+    # API CLIENT TYPES - Complex HTTP client types
+    # =========================================================================
+
+    class Client:
+        """HTTP client complex types."""
+
+        type ClientConfiguration = dict[
+            str, FlextTypes.Core.ConfigValue | dict[str, object]
+        ]
+        type ConnectionPool = dict[str, int | bool | dict[str, object]]
+        type RetryConfiguration = dict[str, int | float | list[str] | bool]
+        type TimeoutConfiguration = dict[str, int | float | dict[str, object]]
+        type ClientMiddleware = list[dict[str, FlextTypes.Core.JsonValue]]
+        type SessionManagement = dict[
+            str, FlextTypes.Core.JsonValue | dict[str, object]
+        ]
 
 
-__all__ = [
+# =============================================================================
+# TYPE ALIASES - Convenience aliases for compatibility
+# =============================================================================
+
+# Legacy alias for compatibility
+FlextApiTypes = FlextApiTypings
+
+# =============================================================================
+# PUBLIC API EXPORTS - API TypeVars and types
+# =============================================================================
+
+__all__: list[str] = [
+    "FlextApiTypes",
+    # API Types class
     "FlextApiTypings",
+    # API-specific TypeVars
+    "TApiAuth",
+    "TApiEndpoint",
+    "TApiMiddleware",
+    "TApiPlugin",
+    "TApiRouter",
+    "THttpClient",
+    "THttpRequest",
+    "THttpResponse",
 ]

@@ -91,7 +91,7 @@ def test_create_client_factory_function() -> None:
     }
 
     typed_config = cast(
-        "Mapping[str, str | int | float | bool | dict[str, str] | None]", config_dict
+        "Mapping[str, str | int, float] | bool | dict[str, str] | None", config_dict
     )
     client = FlextApiClient(config=typed_config)
 
@@ -108,7 +108,7 @@ def test_create_client_validation_error() -> None:
     # The function may throw an exception or return a client - test it doesn't crash
     try:
         typed_invalid_config = cast(
-            "Mapping[str, str | int | float | bool | dict[str, str] | None]",
+            "Mapping[str, str | int, float] | bool | dict[str, str] | None",
             invalid_config,
         )
         client = FlextApiClient(config=typed_invalid_config)
