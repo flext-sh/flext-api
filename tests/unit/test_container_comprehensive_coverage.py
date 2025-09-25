@@ -216,7 +216,7 @@ class TestFlextContainerComprehensiveCoverage:
                 get_result = container.get(edge_name)
                 FlextTestsMatchers.assert_result_success(get_result)
 
-    def test_container_memory_management(self, clean_container: FlextContainer) -> None:
+    def test_self(self, clean_container: FlextContainer) -> None:
         """Test container memory management with large datasets."""
         container = clean_container
 

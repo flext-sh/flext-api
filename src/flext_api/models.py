@@ -16,7 +16,7 @@ from pydantic import ConfigDict, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
 from flext_api.http_method import FlextApiHttpMethod
-from flext_api.typings import FlextApiTypings
+from flext_api.typings import FlextApiTypes
 from flext_core import (
     FlextConstants,
     FlextModels,
@@ -80,15 +80,15 @@ class FlextApiModels(FlextModels):
     class HttpRequest(FlextModels.Command):
         """HTTP request model extending FlextModels.Command."""
 
-        url: str = Field(min_length=1, description="Request URL")
+        url: str = Field(description="Request URL")
         method: str = Field(default="GET", description="HTTP method")
-        headers: FlextApiTypings.Headers = Field(
+        headers: FlextApiTypes.Headers = Field(
             default_factory=dict, description="Request headers"
         )
-        body: FlextApiTypings.RequestBody = Field(
+        body: FlextApiTypes.RequestBody | None = Field(
             default=None, description="Request body"
         )
-        timeout: FlextApiTypings.Timeout = Field(
+        timeout: FlextApiTypes.Timeout = Field(
             default=FlextApiConstants.DEFAULT_TIMEOUT,
             ge=FlextApiConstants.MIN_TIMEOUT,
             le=FlextApiConstants.MAX_TIMEOUT,
@@ -99,6 +99,10 @@ class FlextApiModels(FlextModels):
         @classmethod
         def validate_url(cls, v: str) -> str:
             """Validate URL using centralized FlextModels validation."""
+            # Handle empty URL case first
+            if not v or not v.strip():
+                raise ValueError("Invalid URL: URL cannot be empty")
+
             if isinstance(v, str) and v.strip().startswith("/"):
                 return v.strip()
 
@@ -120,9 +124,7 @@ class FlextApiModels(FlextModels):
 
         @field_validator("headers")
         @classmethod
-        def validate_headers(
-            cls, v: FlextApiTypings.Headers
-        ) -> FlextApiTypings.Headers:
+        def validate_headers(cls, v: FlextApiTypes.Headers) -> FlextApiTypes.Headers:
             """Validate and sanitize headers with Python 3.13+ dict comprehension optimization."""
             # Python 3.13+ optimized dict comprehension with walrus operator
             return {
@@ -300,7 +302,7 @@ class FlextApiModels(FlextModels):
 
         page_size: int = Field(
             default=FlextApiConstants.DEFAULT_PAGE_SIZE,
-            gt=FlextApiConstants.MIN_PAGE_SIZE,
+            ge=FlextApiConstants.MIN_PAGE_SIZE,
             le=FlextApiConstants.MAX_PAGE_SIZE,
             description="Page size",
         )
@@ -324,7 +326,8 @@ class FlextApiModels(FlextModels):
     class ApiRequest(FlextModels.Command):
         """API request model extending FlextModels.Command."""
 
-        url: str = Field(min_length=1, description="Request URL")
+        url: str = Field(description="Request URL")
+        method: str = Field(default="GET", description="HTTP method")
         headers: dict[str, str] = Field(
             default_factory=dict, description="Request headers"
         )

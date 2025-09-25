@@ -112,9 +112,7 @@ class FlextApi:
         }
 
         # Cast remaining kwargs to the expected type
-        typed_remaining_kwargs = cast(
-            "dict[str, str | float | bool | dict[str, str] | None]", remaining_kwargs
-        )
+        typed_remaining_kwargs = cast("dict[str, object]", remaining_kwargs)  # type: ignore[misc]
 
         return cls.Client(
             config=None,
@@ -123,7 +121,7 @@ class FlextApi:
             max_retries=max_retries,
             headers=headers,
             verify_ssl=verify_ssl,
-            **typed_remaining_kwargs,
+            **typed_remaining_kwargs,  # type: ignore[arg-type]
         )
 
     @classmethod
@@ -133,17 +131,17 @@ class FlextApi:
         return cls.Config(**kwargs)
 
     @classmethod
-    def get_constants(cls: object) -> type[FlextApiConstants]:
+    def get_constants(cls) -> type[FlextApiConstants]:
         """Get API constants class."""
         return cls.Constants
 
     @classmethod
-    def get_models(cls: object) -> type[FlextApiModels]:
+    def get_models(cls) -> type[FlextApiModels]:
         """Get API models class."""
         return cls.Models
 
     @classmethod
-    def get_exceptions(cls: object) -> type[FlextApiExceptions]:
+    def get_exceptions(cls) -> type[FlextApiExceptions]:
         """Get API exceptions class."""
         return cls.Exceptions
 

@@ -99,9 +99,11 @@ class FlextApiClient(FlextService[None]):
         self,
         config: FlextApiModels.ClientConfig
         | FlextApiConfig
-        | Mapping[str, str | int | float | bool | dict[str, str] | None]
-        | str
-        | None = None,
+        | Mapping[str, str | int | float]
+        | bool
+        | dict[str, str]
+        | None
+        | str = None,
         *,
         base_url: str | None = None,
         timeout: int | None = None,
@@ -270,9 +272,11 @@ class FlextApiClient(FlextService[None]):
         self,
         config: FlextApiModels.ClientConfig
         | FlextApiConfig
-        | Mapping[str, str | int | float | bool | dict[str, str] | None]
-        | str
-        | None = None,
+        | Mapping[str, str | int | float]
+        | bool
+        | dict[str, str]
+        | None
+        | str = None,
         base_url: str | None = None,
         timeout: int | None = None,
         max_retries: int | None = None,
@@ -308,7 +312,7 @@ class FlextApiClient(FlextService[None]):
         elif isinstance(config, str):
             base_url_value = config
         elif isinstance(config, Mapping):
-            for key, value in config.items():
+            for key, value in config.items():  # type: ignore[misc]
                 if value is not None:
                     if key == "base_url" and isinstance(value, str):
                         base_url_value = value
@@ -408,17 +412,25 @@ class FlextApiClient(FlextService[None]):
         try:
             # Delegate to the appropriate HTTP method based on request method
             if request.method == "GET":
-                return await self.http.get(request.url, headers=request.headers)
+                return await self.http.get(
+                    request.url, headers=cast("dict[str, str] | None", request.headers)
+                )  # type: ignore[arg-type]
             if request.method == "POST":
                 return await self.http.post(
-                    request.url, headers=request.headers, body=request.body
+                    request.url,
+                    headers=cast("dict[str, str] | None", request.headers),
+                    body=cast("dict[str, object] | str | None", request.body),  # type: ignore[arg-type]
                 )
             if request.method == "PUT":
                 return await self.http.put(
-                    request.url, headers=request.headers, body=request.body
+                    request.url,
+                    headers=cast("dict[str, str] | None", request.headers),
+                    body=cast("dict[str, object] | str | None", request.body),  # type: ignore[arg-type]
                 )
             if request.method == "DELETE":
-                return await self.http.delete(request.url, headers=request.headers)
+                return await self.http.delete(
+                    request.url, headers=cast("dict[str, str] | None", request.headers)
+                )  # type: ignore[arg-type]
             return FlextResult[FlextApiModels.HttpResponse].fail(
                 f"Unsupported HTTP method: {request.method}",
                 error_code=FlextConstants.Errors.VALIDATION_ERROR,
@@ -539,10 +551,10 @@ class FlextApiClient(FlextService[None]):
                 headers=headers,
             )
 
-            return FlextResult["FlextApiClient"].ok(client)
+            return FlextResult[FlextApiClient].ok(client)
 
         except Exception as e:
-            return FlextResult["FlextApiClient"].fail(f"Client creation failed: {e}")
+            return FlextResult[FlextApiClient].fail(f"Client creation failed: {e}")
 
     def _build_url(self, endpoint: str) -> str:
         """Build complete URL from base URL and endpoint.
@@ -770,10 +782,10 @@ class FlextApiClient(FlextService[None]):
                 max_retries=max_retries_override,
                 verify_ssl=verify_ssl_override,
             )
-            return FlextResult["FlextApiClient"].ok(client)
+            return FlextResult[FlextApiClient].ok(client)
 
         except Exception as e:
-            return FlextResult["FlextApiClient"].fail(f"Client creation failed: {e}")
+            return FlextResult[FlextApiClient].fail(f"Client creation failed: {e}")
 
     @classmethod
     async def create_flext_api(

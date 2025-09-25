@@ -201,7 +201,7 @@ repos:
         args:
           [
             "--skip=*.json,*.lock,*.toml,*.yaml,*.yml,poetry.lock",
-            "--ignore-words-list=flext,api,fastapi,configs,repo,repos,pydantic",
+            "--ignore-words-list=Flext,api,fastapi,Config,repo,repos,pydantic",
           ]
 
   # Validate pyproject.toml

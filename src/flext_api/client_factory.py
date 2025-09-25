@@ -146,7 +146,7 @@ class FlextApiClientFactory(FlextService[FlextApiClient]):
             return await cls.create_testing_client(base_url)
         if environment == "monitoring":
             return await cls.create_monitoring_client(base_url)
-        return FlextResult["FlextApiClient"].fail(
+        return FlextResult[FlextApiClient].fail(
             f"Unsupported environment: {environment}. "
             f"Supported environments: {cls.get_supported_environments()}"
         )

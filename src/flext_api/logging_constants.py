@@ -9,8 +9,8 @@ from flext_core import FlextConstants
 class FlextApiLoggingConstants(FlextConstants):
     """Logging constants for API operations."""
 
-    class Logging:
-        """Logging configuration values."""
+    class ApiLogging:  # Renamed to avoid override conflict
+        """API-specific logging configuration values."""
 
         DEFAULT_LEVEL = "INFO"
         DEFAULT_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
