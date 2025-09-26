@@ -12,6 +12,7 @@ import pytest
 from pydantic import ValidationError
 
 from flext_api import FlextApiModels
+from flext_core import FlextConstants
 
 
 class TestFlextApiModelsFocused:
@@ -318,9 +319,12 @@ class TestFlextApiModelsFocused:
         """Test ClientConfig with default values."""
         config = FlextApiModels.ClientConfig()
 
-        assert config.base_url == "http://127.0.0.1:8000"
-        assert config.timeout == 30.0
-        assert config.max_retries == 3
+        assert (
+            config.base_url
+            == f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+        )
+        assert config.timeout == float(FlextConstants.Network.DEFAULT_TIMEOUT)
+        assert config.max_retries == FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
         assert config.headers == {}
         assert config.auth_token is None
         assert config.api_key is None

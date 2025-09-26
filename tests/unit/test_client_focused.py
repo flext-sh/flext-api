@@ -11,7 +11,7 @@ from unittest.mock import ANY, Mock, patch
 import pytest
 
 from flext_api import FlextApiClient, FlextApiModels
-from flext_core import FlextResult
+from flext_core import FlextConstants, FlextResult
 
 
 class TestFlextApiClientFocused:
@@ -61,9 +61,12 @@ class TestFlextApiClientFocused:
         """Test FlextApiClient initialization with None config."""
         client = FlextApiClient(None)
 
-        assert client.base_url == "https://localhost:8000"  # Default fallback
-        assert client.timeout == 30.0
-        assert client.max_retries == 3
+        assert (
+            client.base_url
+            == f"https://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+        )  # Default fallback
+        assert client.timeout == float(FlextConstants.Network.DEFAULT_TIMEOUT)
+        assert client.max_retries == FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
 
     def test_client_initialization_with_kwargs_only(self) -> None:
         """Test FlextApiClient initialization with kwargs only."""

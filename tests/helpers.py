@@ -25,7 +25,7 @@ from flext_core import FlextConstants, FlextResult, FlextTypes, T
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 
-def create_test_storage_config(**overrides: object) -> FlextTypes.Core.Dict:
+def create_test_storage_config(**overrides: object) -> dict[str, str | int | bool]:
     """Create storage config using FlextTestsDomains - ABSOLUTE usage.
 
     Returns:
@@ -41,7 +41,12 @@ def create_test_storage_config(**overrides: object) -> FlextTypes.Core.Dict:
         "enable_caching": bool(base_config.get("enable_caching", True)),
         "cache_ttl_seconds": cast("int", base_config.get("cache_ttl", 300)),
     }
-    storage_config.update(overrides)
+    # Apply overrides with type filtering
+    storage_config.update({
+        key: value
+        for key, value in overrides.items()
+        if isinstance(value, (str, int, bool))
+    })
     return storage_config
 
 

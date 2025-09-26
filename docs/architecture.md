@@ -422,7 +422,7 @@ class ProductionHttpClient:
         wait=wait_exponential(multiplier=1, min=1, max=10),
         stop=stop_after_attempt(3)
     )
-    @circuit(failure_threshold=5, recovery_timeout=30)
+    @circuit(failure_threshold=5, recovery_timeout=FlextApiConstants.DEFAULT_TIMEOUT)
     async def request_with_resilience(self, request: HttpRequest):
         # Production HTTP request with retry and circuit breaker
         pass

@@ -72,7 +72,7 @@ class FlextApiModels(FlextModels):
             validate_default=True,
             # Serialization features
             json_encoders={
-                Path: str,
+                Path: "str",
             },
         )
 
@@ -81,7 +81,9 @@ class FlextApiModels(FlextModels):
         """HTTP request model extending FlextModels.Command."""
 
         url: str = Field(description="Request URL")
-        method: str = Field(default="GET", description="HTTP method")
+        method: str = Field(
+            default=FlextApiHttpMethod.HttpMethod.GET, description="HTTP method"
+        )
         headers: FlextApiTypes.Headers = Field(
             default_factory=dict, description="Request headers"
         )
@@ -101,7 +103,8 @@ class FlextApiModels(FlextModels):
             """Validate URL using centralized FlextModels validation."""
             # Handle empty URL case first
             if not v or not v.strip():
-                raise ValueError("Invalid URL: URL cannot be empty")
+                msg = "Invalid URL: URL cannot be empty"
+                raise ValueError(msg)
 
             if isinstance(v, str) and v.strip().startswith("/"):
                 return v.strip()
@@ -327,7 +330,9 @@ class FlextApiModels(FlextModels):
         """API request model extending FlextModels.Command."""
 
         url: str = Field(description="Request URL")
-        method: str = Field(default="GET", description="HTTP method")
+        method: str = Field(
+            default=FlextApiHttpMethod.HttpMethod.GET, description="HTTP method"
+        )
         headers: dict[str, str] = Field(
             default_factory=dict, description="Request headers"
         )
@@ -454,7 +459,9 @@ class FlextApiModels(FlextModels):
                 default="http_request", description="Configuration type"
             )
             url: str = Field(min_length=1, description="Request URL")
-            method: str = Field(default="GET", description="HTTP method")
+            method: str = Field(
+                default=FlextApiHttpMethod.HttpMethod.GET, description="HTTP method"
+            )
             timeout: int = Field(
                 default=int(FlextApiConstants.DEFAULT_TIMEOUT),
                 ge=int(FlextApiConstants.MIN_TIMEOUT),

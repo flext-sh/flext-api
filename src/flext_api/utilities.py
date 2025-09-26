@@ -118,13 +118,13 @@ class FlextApiUtilities(FlextUtilities):
             """
             try:
                 if page < 1:
-                    return FlextResult[dict[str, object]].fail("Page must be >= 1")
+                    return FlextResult[dict["str", "object"]].fail("Page must be >= 1")
                 if page_size < 1:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict["str", "object"]].fail(
                         "Page size must be >= 1",
                     )
                 if page_size > FlextApiConstants.MAX_PAGE_SIZE:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict["str", "object"]].fail(
                         f"Page size cannot exceed {FlextApiConstants.MAX_PAGE_SIZE}",
                     )
 
@@ -137,22 +137,22 @@ class FlextApiUtilities(FlextUtilities):
                     max(1, (total + page_size - 1) // page_size) if total > 0 else 1
                 )
                 response: dict[str, object] = {
-                    "success": True,
-                    "data": data,
+                    "success": "True",
+                    "data": "data",
                     "pagination": {
-                        "page": page,
-                        "page_size": page_size,
-                        "total": total,
-                        "total_pages": total_pages,
+                        "page": "page",
+                        "page_size": "page_size",
+                        "total": "total",
+                        "total_pages": "total_pages",
                         "has_next": page < total_pages,
                         "has_previous": page > 1,
                     },
                 }
                 if message:
                     response["message"] = message
-                return FlextResult[dict[str, object]].ok(response)
+                return FlextResult[dict["str", "object"]].ok(response)
             except Exception as e:
-                return FlextResult[dict[str, object]].fail(str(e))
+                return FlextResult[dict["str", "object"]].fail(str(e))
 
     class HttpValidator:
         """HTTP-specific validation using centralized flext-core FlextModels."""
@@ -398,7 +398,7 @@ class FlextApiUtilities(FlextUtilities):
                 **config_dict,  # Include all original config data
             }
 
-            return FlextResult[dict[str, object]].ok(result_data)
+            return FlextResult[dict["str", "object"]].ok(result_data)
         except Exception as e:
             return FlextResult[FlextTypes.Core.Dict].fail(
                 f"Configuration validation failed: {e}",
@@ -680,13 +680,13 @@ class FlextApiUtilities(FlextUtilities):
             """
             try:
                 if isinstance(data, dict):
-                    return FlextResult[dict[str, object]].ok(data)
+                    return FlextResult[dict["str", "object"]].ok(data)
                 if hasattr(data, "dict") and callable(getattr(data, "dict", None)):
                     # Handle objects with dict() method - safe attribute access
                     dict_method = getattr(data, "dict")
                     result = dict_method()
                     if isinstance(result, dict):
-                        return FlextResult[dict[str, object]].ok(result)
+                        return FlextResult[dict["str", "object"]].ok(result)
                 if hasattr(data, "model_dump") and callable(
                     getattr(data, "model_dump", None)
                 ):
@@ -694,16 +694,16 @@ class FlextApiUtilities(FlextUtilities):
                     model_dump_method = getattr(data, "model_dump")
                     result = model_dump_method()
                     if isinstance(result, dict):
-                        return FlextResult[dict[str, object]].ok(result)
+                        return FlextResult[dict["str", "object"]].ok(result)
 
                 # If no conversion method available, create dict representation
                 if hasattr(data, "__dict__"):
-                    return FlextResult[dict[str, object]].ok(data.__dict__)
+                    return FlextResult[dict["str", "object"]].ok(data.__dict__)
 
                 # Last resort - convert to string representation
-                return FlextResult[dict[str, object]].ok({"value": str(data)})
+                return FlextResult[dict["str", "object"]].ok({"value": str(data)})
             except Exception as e:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict["str", "object"]].fail(
                     f"Data conversion failed: {e}"
                 )
 

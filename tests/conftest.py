@@ -26,7 +26,7 @@ from flext_api import (
     FlextApiConfig,
     FlextApiStorage,
 )
-from flext_core import FlextContainer, FlextTypes
+from flext_core import FlextConstants, FlextContainer, FlextTypes
 from flext_tests import FlextTestsDomains
 
 # Configure Faker for deterministic test data
@@ -109,15 +109,30 @@ def flext_api_client() -> FlextApiClient:
     # Use FlextTestsDomains for realistic config values
     config_data = FlextTestsDomains.create_configuration()
 
-    base_url_val = config_data.get("base_url", "http://localhost:8000")
-    timeout_val = config_data.get("timeout", 30)
-    retries_val = config_data.get("max_retries", 3)
+    base_url_val = config_data.get(
+        "base_url",
+        f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",
+    )
+    timeout_val = config_data.get("timeout", FlextConstants.Network.DEFAULT_TIMEOUT)
+    retries_val = config_data.get(
+        "max_retries", FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+    )
 
     base_url = (
-        str(base_url_val) if base_url_val is not None else "http://localhost:8000"
+        str(base_url_val)
+        if base_url_val is not None
+        else f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
     )
-    timeout = int(timeout_val) if isinstance(timeout_val, (int, float, str)) else 30
-    max_retries = int(retries_val) if isinstance(retries_val, (int, str)) else 3
+    timeout = (
+        int(timeout_val)
+        if isinstance(timeout_val, (int, float, str))
+        else FlextConstants.Network.DEFAULT_TIMEOUT
+    )
+    max_retries = (
+        int(retries_val)
+        if isinstance(retries_val, (int, str))
+        else FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+    )
 
     return FlextApiClient(
         base_url=base_url,

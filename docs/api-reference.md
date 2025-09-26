@@ -57,7 +57,7 @@ def __init__(
 ```python
 client = FlextApiClient(
     base_url="https://api.example.com",
-    timeout=30,
+    timeout=FlextApiConstants.DEFAULT_TIMEOUT,
     headers={"User-Agent": "my-service/1.0.0"}
 )
 ```

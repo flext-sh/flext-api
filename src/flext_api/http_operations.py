@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 from flext_api.models import FlextApiModels
 from flext_core import FlextLogger, FlextResult
 
@@ -20,6 +22,7 @@ class FlextApiHttpOperations:
     FLEXT "one class per module" architectural principle.
     """
 
+    @override
     def __init__(
         self, config: FlextApiModels.ClientConfig, logger: FlextLogger
     ) -> None:
@@ -52,12 +55,12 @@ class FlextApiHttpOperations:
             FlextResult containing HttpResponse or error details.
 
         """
-        request_kwargs: dict[str, object] = dict(**kwargs)  # type: ignore[misc]
+        request_kwargs: dict[str, object] = dict(**kwargs)
         if params is not None:
             request_kwargs["params"] = params
         if headers is not None:
             request_kwargs["headers"] = headers
-        return await self._execute_request("GET", url, **request_kwargs)  # type: ignore[arg-type]
+        return await self._execute_request("GET", url, **request_kwargs)
 
     async def post(
         self,
@@ -82,7 +85,7 @@ class FlextApiHttpOperations:
             FlextResult containing HttpResponse or error details.
 
         """
-        request_kwargs: dict[str, object] = dict(**kwargs)  # type: ignore[misc]
+        request_kwargs: dict[str, object] = dict(**kwargs)
         if data is not None:
             request_kwargs["data"] = data
         if json is not None:
@@ -91,7 +94,7 @@ class FlextApiHttpOperations:
             request_kwargs["body"] = body
         if headers is not None:
             request_kwargs["headers"] = headers
-        return await self._execute_request("POST", url, **request_kwargs)  # type: ignore[arg-type]
+        return await self._execute_request("POST", url, **request_kwargs)
 
     async def put(
         self,
@@ -116,7 +119,7 @@ class FlextApiHttpOperations:
             FlextResult containing HttpResponse or error details.
 
         """
-        request_kwargs: dict[str, object] = dict(**kwargs)  # type: ignore[misc]
+        request_kwargs: dict[str, object] = dict(**kwargs)
         if data is not None:
             request_kwargs["data"] = data
         if json is not None:
@@ -125,7 +128,7 @@ class FlextApiHttpOperations:
             request_kwargs["body"] = body
         if headers is not None:
             request_kwargs["headers"] = headers
-        return await self._execute_request("PUT", url, **request_kwargs)  # type: ignore[arg-type]
+        return await self._execute_request("PUT", url, **request_kwargs)
 
     async def delete(
         self,
@@ -144,10 +147,10 @@ class FlextApiHttpOperations:
             FlextResult containing HttpResponse or error details.
 
         """
-        request_kwargs: dict[str, object] = dict(**kwargs)  # type: ignore[misc]
+        request_kwargs: dict[str, object] = dict(**kwargs)
         if headers is not None:
             request_kwargs["headers"] = headers
-        return await self._execute_request("DELETE", url, **request_kwargs)  # type: ignore[arg-type]
+        return await self._execute_request("DELETE", url, **request_kwargs)
 
     async def _execute_request(
         self, method: str, url: str, **kwargs: str | int | dict[str, str] | object
@@ -179,7 +182,7 @@ class FlextApiHttpOperations:
             # Log request
             self._logger.info(
                 f"Executing {method} request",
-                extra={"url": full_url, "method": method},
+                extra={"url": "full_url", "method": "method"},
             )
 
             # Create response model (simplified for demonstration)
@@ -196,7 +199,7 @@ class FlextApiHttpOperations:
 
         except Exception as e:
             error_msg = f"{method} request failed: {e}"
-            self._logger.exception(error_msg, extra={"url": url, "error": str(e)})
+            self._logger.exception(error_msg, extra={"url": "url", "error": str(e)})
             return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
 
 

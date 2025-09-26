@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from types import TracebackType
-from typing import NotRequired, Self, cast
+from typing import NotRequired, Self, cast, override
 
 from pydantic import ConfigDict, PrivateAttr, ValidationError
 from typing_extensions import TypedDict
@@ -17,6 +17,7 @@ from flext_api.app import FlextApiApp
 from flext_api.config import FlextApiConfig
 from flext_api.configuration_manager import FlextApiConfigurationManager
 from flext_api.connection_manager import FlextApiConnectionManager
+from flext_api.constants import FlextApiConstants
 from flext_api.http_operations import FlextApiHttpOperations
 from flext_api.lifecycle_manager import FlextApiLifecycleManager
 from flext_api.models import FlextApiModels
@@ -70,7 +71,7 @@ class FlextApiClient(FlextService[None]):
         # Execute HTTP request
         response_result: FlextResult[object] = await client.get("/users")
         if response_result.is_success:
-            data: dict[str, object] = response_result.unwrap()
+            data: dict["str", "object"] = response_result.unwrap()
             print(f"Retrieved {len(data)} users")
         else:
             logger.error(f"Request failed: {response_result.error}")
@@ -95,16 +96,17 @@ class FlextApiClient(FlextService[None]):
     _lifecycle: FlextApiLifecycleManager = PrivateAttr()
     _client_config_manager: FlextApiConfigurationManager = PrivateAttr()
 
+    @override
     def __init__(
         self,
+        *,
         config: FlextApiModels.ClientConfig
         | FlextApiConfig
         | Mapping[str, str | int | float]
         | bool
         | dict[str, str]
-        | None
-        | str = None,
-        *,
+        | str
+        | None = None,
         base_url: str | None = None,
         timeout: int | None = None,
         max_retries: int | None = None,
@@ -133,11 +135,11 @@ class FlextApiClient(FlextService[None]):
                 base_url="https://api.example.com",
                 timeout=FlextConstants.Defaults.TIMEOUT,
                 max_retries=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
-                headers={"Authorization": "Bearer token"},
+                headers={"Authorization": Bearer token},
             )
 
             # Client with FlextApiConfig
-            config: dict[str, object] = FlextApiConfig(
+            config: dict["str", "object"] = FlextApiConfig(
                 base_url="https://api.example.com"
             )
             client = FlextApiClient(config=config)
@@ -270,13 +272,14 @@ class FlextApiClient(FlextService[None]):
 
     def _extract_client_config_params(
         self,
+        *,
         config: FlextApiModels.ClientConfig
         | FlextApiConfig
         | Mapping[str, str | int | float]
         | bool
         | dict[str, str]
-        | None
-        | str = None,
+        | str
+        | None = None,
         base_url: str | None = None,
         timeout: int | None = None,
         max_retries: int | None = None,
@@ -289,7 +292,7 @@ class FlextApiClient(FlextService[None]):
             FlextApiModels.ClientConfig: Validated client configuration object.
 
         """
-        default_base_url = "https://localhost:8000"
+        default_base_url = f"https://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
         default_timeout = float(FlextConstants.Defaults.TIMEOUT)
         default_max_retries = FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
         default_headers = {"User-Agent": "FlextApiClient/1.0.0"}
@@ -305,14 +308,21 @@ class FlextApiClient(FlextService[None]):
             max_retries_value = config.max_retries
             headers_value = config.headers
         elif isinstance(config, FlextApiConfig):
-            base_url_value = config.base_url
-            timeout_value = config.timeout
+            # Handle FlextApiConfig properly - use api_base_url if provided, otherwise base_url
+            if (
+                hasattr(config, "api_base_url")
+                and config.api_base_url != FlextApiConstants.DEFAULT_BASE_URL
+            ):
+                base_url_value = config.api_base_url
+            else:
+                base_url_value = config.base_url
+            timeout_value = getattr(config, "api_timeout", config.timeout)
             max_retries_value = config.max_retries
             headers_value = {}  # Default empty headers
         elif isinstance(config, str):
             base_url_value = config
         elif isinstance(config, Mapping):
-            for key, value in config.items():  # type: ignore[misc]
+            for key, value in config.items():
                 if value is not None:
                     if key == "base_url" and isinstance(value, str):
                         base_url_value = value
@@ -414,23 +424,23 @@ class FlextApiClient(FlextService[None]):
             if request.method == "GET":
                 return await self.http.get(
                     request.url, headers=cast("dict[str, str] | None", request.headers)
-                )  # type: ignore[arg-type]
+                )
             if request.method == "POST":
                 return await self.http.post(
                     request.url,
                     headers=cast("dict[str, str] | None", request.headers),
-                    body=cast("dict[str, object] | str | None", request.body),  # type: ignore[arg-type]
+                    body=cast("dict[str, object] | str | None", request.body),
                 )
             if request.method == "PUT":
                 return await self.http.put(
                     request.url,
                     headers=cast("dict[str, str] | None", request.headers),
-                    body=cast("dict[str, object] | str | None", request.body),  # type: ignore[arg-type]
+                    body=cast("dict[str, object] | str | None", request.body),
                 )
             if request.method == "DELETE":
                 return await self.http.delete(
                     request.url, headers=cast("dict[str, str] | None", request.headers)
-                )  # type: ignore[arg-type]
+                )
             return FlextResult[FlextApiModels.HttpResponse].fail(
                 f"Unsupported HTTP method: {request.method}",
                 error_code=FlextConstants.Errors.VALIDATION_ERROR,
@@ -536,7 +546,7 @@ class FlextApiClient(FlextService[None]):
             client_result = await FlextApiClient.create(
                 base_url="https://api.example.com",
                 request_timeout=FlextConstants.Defaults.TIMEOUT,
-                headers={"Authorization": "Bearer token"},
+                headers={"Authorization": Bearer token},
             )
             if client_result.is_success:
                 client = client_result.unwrap()
@@ -568,10 +578,10 @@ class FlextApiClient(FlextService[None]):
         Example:
             ```python
             url = client._build_url("/users/123")
-            # Returns: "https://api.example.com/users/123"
+            # Returns: https://api.example.com/users/123
 
             url = client._build_url("https://other.com/api")
-            # Returns: "https://other.com/api" (absolute URLs unchanged)
+            # Returns: https://other.com/api (absolute URLs unchanged)
             ```
 
         """
@@ -638,9 +648,9 @@ class FlextApiClient(FlextService[None]):
             self._logger.info(
                 f"Executing {method} request",
                 extra={
-                    "url": full_url,
-                    "method": method,
-                    "timeout": effective_timeout,
+                    "url": "full_url",
+                    "method": "method",
+                    "timeout": "effective_timeout",
                     "request_id": self._request_count,
                 },
             )
@@ -651,10 +661,10 @@ class FlextApiClient(FlextService[None]):
             # In real implementation, this would call actual HTTP library (httpx)
             response_data = {
                 "status_code": 200,
-                "headers": request_headers,
-                "body": '{"message": "success"}',  # Changed from "content" to "body"
-                "url": full_url,
-                "method": method,
+                "headers": "request_headers",
+                "body": {"message": "success"},  # Changed from "content" to "body"
+                "url": "full_url",
+                "method": "method",
             }
 
             # Create response model with proper field types and type safety
@@ -678,7 +688,7 @@ class FlextApiClient(FlextService[None]):
             self._logger.info(
                 "Request completed successfully",
                 extra={
-                    "url": full_url,
+                    "url": "full_url",
                     "status_code": response.status_code,
                     "request_id": self._request_count,
                 },
@@ -694,7 +704,7 @@ class FlextApiClient(FlextService[None]):
                 error_msg,
                 extra={
                     "url": full_url if "full_url" in locals() else url,
-                    "method": method,
+                    "method": "method",
                     "error": str(e),
                     "request_id": self._request_count,
                 },
@@ -719,7 +729,7 @@ class FlextApiClient(FlextService[None]):
         Example:
             ```python
             # From FlextApiConfig
-            config: dict[str, object] = FlextApiConfig(
+            config: dict["str", "object"] = FlextApiConfig(
                 base_url="https://api.example.com"
             )
             client_result: FlextResult[object] = await FlextApiClient.create_client(
@@ -803,8 +813,8 @@ class FlextApiClient(FlextService[None]):
             ```python
             api_result = await FlextApiClient.create_flext_api({
                 "base_url": "https://api.example.com",
-                "title": "My API",
-                "version": "1.0.0",
+                "title": My API,
+                "version": 1.0.0,
             })
             ```
 
@@ -812,7 +822,7 @@ class FlextApiClient(FlextService[None]):
         try:
             # Default configuration with proper types
             default_config: dict[str, str | int] = {
-                "base_url": "https://localhost:8000",
+                "base_url": f"https://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",
                 "title": "FLEXT API",
                 "description": "Enterprise API built on FLEXT foundation",
                 "version": "1.0.0",
@@ -865,9 +875,9 @@ class FlextApiClient(FlextService[None]):
 
             # Return complete API setup
             api_setup = {
-                "client": client,
+                "client": "client",
                 "app": app_result.unwrap(),
-                "config": final_config,
+                "config": "final_config",
             }
 
             return FlextResult[dict[str, object]].ok(api_setup)
@@ -929,6 +939,7 @@ class FlextApiClient(FlextService[None]):
         except Exception as e:
             return FlextResult[dict[str, str]].fail(f"Health check failed: {e}")
 
+    @override
     def execute(self) -> FlextResult[None]:
         """Execute the main domain service operation.
 

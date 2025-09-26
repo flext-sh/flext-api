@@ -1,115 +1,82 @@
 [build-system]
 build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.9.0"]
+requires = [ "poetry-core>=1.9.0",]
 
 [project]
-authors = [{ name = "FLEXT Team", email = "team@flext.sh" }]
 description = "FLEXT API - High-Performance REST API with FastAPI"
-license.text = "MIT"
-maintainers = [{ name = "FLEXT Team", email = "team@flext.sh" }]
 name = "flext-api"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 version = "0.9.0"
-urls.Homepage = "https://github.com/flext-sh/flext"
-urls.Repository = "https://github.com/flext-sh/flext"
-urls.Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Typing :: Typed",
-    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
-    "Framework :: FastAPI",
-]
-dependencies = [
-    "fastapi>=0.116.0",
-    "grpcio>=1.50.0",
-    "grpcio-health-checking>=0",
-    "psutil>=6.1.0",
-    "pydantic-settings>=2.10.1",
-    "pydantic>=2.10.0",
-    "pyjwt>=2.10.1",
-    "slowapi>=0.1.9",
-    "sqlalchemy[asyncio]>=2.0.0",
-    "uvicorn[standard]>=0.34.0",
-    "structlog>=25.4.0",
-    "packaging>=23.0",
-    "flext-observability @ file:///home/marlonsc/flext/flext-observability",
-    "flext-auth @ file:///home/marlonsc/flext/flext-auth",
-    "flext-plugin @ file:///home/marlonsc/flext/flext-plugin",
-    "flext-grpc @ file:///home/marlonsc/flext/flext-grpc",
-    "aiohttp>=3.12.14",
-    "httpx>=0.28.1",
-    "flext-core @ file:///home/marlonsc/flext/flext-core",
-    "attrs (>=25.3.0,<26.0.0)",
-    "execnet (>=2.1.1,<3.0.0)",
-    "fsspec (>=2025.9.0,<2026.0.0)",
-    "inflection (>=0.5.1,<0.6.0)",
-    "pluggy (>=1.6.0,<2.0.0)",
-    "referencing (>=0.36.2,<0.37.0)",
-    "pytest-mock (>=3.15.0,<4.0.0)",
-    "termcolor (>=3.1.0,<4.0.0)",
-]
-keywords = ["async", "enterprise", "fastapi", "flext", "http", "rest", "typed"]
+classifiers = [ "Development Status :: 5 - Production/Stable", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent", "Programming Language :: Python :: 3.13", "Programming Language :: Python :: 3 :: Only", "Topic :: Software Development :: Libraries :: Python Modules", "Typing :: Typed", "Topic :: Internet :: WWW/HTTP :: HTTP Servers", "Framework :: FastAPI",]
+dependencies = [ "fastapi>=0.116.0", "grpcio>=1.50.0", "grpcio-health-checking>=0", "psutil>=6.1.0", "pydantic-settings>=2.10.1", "pydantic>=2.10.0", "pyjwt>=2.10.1", "slowapi>=0.1.9", "sqlalchemy[asyncio]>=2.0.0", "uvicorn[standard]>=0.34.0", "structlog>=25.4.0", "packaging>=23.0", "flext-observability @ file:///home/marlonsc/flext/flext-observability", "flext-auth @ file:///home/marlonsc/flext/flext-auth", "flext-plugin @ file:///home/marlonsc/flext/flext-plugin", "flext-grpc @ file:///home/marlonsc/flext/flext-grpc", "aiohttp>=3.12.14", "httpx>=0.28.1", "flext-core @ file:///home/marlonsc/flext/flext-core", "attrs (>=25.3.0,<26.0.0)", "execnet (>=2.1.1,<3.0.0)", "fsspec (>=2025.9.0,<2026.0.0)", "inflection (>=0.5.1,<0.6.0)", "pluggy (>=1.6.0,<2.0.0)", "referencing (>=0.36.2,<0.37.0)", "pytest-mock (>=3.15.0,<4.0.0)", "termcolor (>=3.1.0,<4.0.0)",]
+keywords = [ "async", "enterprise", "fastapi", "flext", "http", "rest", "typed",]
+[[project.authors]]
+name = "FLEXT Team"
+email = "team@flext.sh"
+
+[[project.maintainers]]
+name = "FLEXT Team"
+email = "team@flext.sh"
+
+[project.license]
+text = "MIT"
+
+[project.urls]
+Homepage = "https://github.com/flext-sh/flext"
+Repository = "https://github.com/flext-sh/flext"
+Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
 
 [project.optional-dependencies]
-dev = [
-    "autoflake>=2.3.1",
-    "black>=25.1.0",
-    "codespell>=2.3.0",
-    "deptry>=0.23.0",
-    "isort>=6.0.1",
-    "mypy>=1.13.0",
-    "pre-commit>=4.0.1",
-    "pylint>=3.3.0",
-    "pyupgrade>=3.19.0",
-    "radon>=6.0.1",
-    "ruff>=0.12.3",
-    "vulture>=2.13",
-]
-test = [
-    "factory-boy>=3.3.1",
-    "faker>=37.4.0",
-    "hypothesis>=6.125.0",
-    "pytest>=8.4.0",
-    "pytest-benchmark>=5.1.0",
-    "pytest-clarity>=1.0.1",
-    "pytest-cov>=6.2.0",
-    "pytest-deadfixtures>=2.2.1",
-    "pytest-env>=1.1.5",
-    "pytest-httpx>=0.35.0",
-    "pytest-mock>=3.14.0",
-    "pytest-randomly>=3.16.0",
-    "pytest-sugar>=1.0.0",
-    "pytest-timeout>=2.4.0",
-    "pytest-xdist>=3.8.0",
-]
-typings = [
-    "django-stubs>=5.2.2",
-    "types-ldap3>=2.9.13.20250622",
-    "types-protobuf>=6.30.2.20250703",
-    "types-psutil>=7.0.0",
-    "types-psycopg2>=2.9.21.20250718",
-    "types-python-dateutil>=2.9.0",
-    "types-pyyaml>=6.0.12",
-    "types-redis>=4.6.0",
-    "types-requests>=2.32.4",
-    "types-setuptools>=80.9.0",
-    "types-toml>=0.10.8.20240310",
-]
-security = ["bandit>=1.8.0", "pip-audit>=2.7.3"]
+dev = [ "autoflake>=2.3.1", "black>=25.1.0", "codespell>=2.3.0", "deptry>=0.23.0", "isort>=6.0.1", "pre-commit>=4.0.1", "pylint>=3.3.0", "pyupgrade>=3.19.0", "radon>=6.0.1", "ruff>=0.12.3", "vulture>=2.13",]
+test = [ "factory-boy>=3.3.1", "faker>=37.4.0", "hypothesis>=6.125.0", "pytest>=8.4.0", "pytest-benchmark>=5.1.0", "pytest-clarity>=1.0.1", "pytest-cov>=6.2.0", "pytest-deadfixtures>=2.2.1", "pytest-env>=1.1.5", "pytest-httpx>=0.35.0", "pytest-mock>=3.14.0", "pytest-randomly>=3.16.0", "pytest-sugar>=1.0.0", "pytest-timeout>=2.4.0", "pytest-xdist>=3.8.0",]
+typings = [ "django-stubs>=5.2.2", "types-ldap3>=2.9.13.20250622", "types-protobuf>=6.30.2.20250703", "types-psutil>=7.0.0", "types-psycopg2>=2.9.21.20250718", "types-python-dateutil>=2.9.0", "types-pyyaml>=6.0.12", "types-redis>=4.6.0", "types-requests>=2.32.4", "types-setuptools>=80.9.0", "types-toml>=0.10.8.20240310",]
+security = [ "bandit>=1.8.0", "pip-audit>=2.7.3",]
 
 [project.scripts]
 flext-api = "flext_api.cli:main"
 flext-api-server = "flext_api.server:main"
 
 [tool.poetry]
-packages = [{ include = "flext_api", from = "src" }]
+[[tool.poetry.packages]]
+include = "flext_api"
+from = "src"
+
+[tool.bandit]
+extend = "../.bandit-shared.toml"
+skips = [ "B101", "B104", "B105", "B601",]
+
+[tool.coverage]
+extend = "../.coverage-shared.toml"
+
+[tool.deptry]
+exclude = [ "__pycache__", ".archive", ".git", ".meltano", ".mypy_cache", ".pyrefly_cache", ".pytest_cache", ".ruff_cache", ".venv", "build", "dist", "htmlcov", "vendor", "node_modules", "reports", "venv",]
+known_first_party = [ "flext_api",]
+pep621_dev_dependency_groups = [ "dev", "security", "test", "typings",]
+
+[tool.ruff]
+extend = "../ruff-shared.toml"
+
+[tool.vulture]
+extend = "../.vulture-shared.toml"
+
+[tool.pyrefly]
+python_version = "3.13"
+target_version = "3.13"
+show_error_codes = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+asyncio_mode = "auto"
+addopts = [ "--cov=src/flext_api", "--cov-context=test", "--cov-report=term-missing:skip-covered", "--cov-report=html:htmlcov", "--cov-report=xml:reports/coverage.xml", "--cov-branch", "--tb=short", "--strict-markers", "--strict-config", "-ra", "--color=yes",]
+markers = [ "unit: Fast unit tests with mocks", "integration: Integration tests (may require external services)", "e2e: End-to-end tests with real services", "slow: Slow running tests (>1s)", "benchmark: Performance benchmark tests", "api: FastAPI endpoint tests", "client: HTTP client tests", "builder: Builder pattern tests", "core: Core functionality tests", "architecture: Architectural pattern tests", "smoke: Quick smoke tests for CI", "regression: Regression tests for bug fixes", "security: Security-related tests", "mock: Tests using mocks heavily", "real: Tests using real external services", "concurrency: Concurrency and async tests", "race_condition: Race condition and thread safety tests", "performance: Performance and load tests", "memory: Memory usage and leak tests", "timeout: Tests with timeout constraints", "skip: Tests that should be skipped", "xfail: Tests expected to fail",]
+testpaths = [ "tests",]
+python_files = [ "test_*.py", "*_test.py",]
+python_classes = [ "Test*",]
+python_functions = [ "test_*",]
+
+[tool.ruff.lint.isort]
+known-first-party = [ "flext_api",]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
@@ -118,207 +85,4 @@ faker = "^37.5.3"
 pytest-asyncio = "^1.1.0"
 bandit = "^1.8.6"
 pip-audit = "^2.9.0"
-
-[tool.bandit]
-extend = "../.bandit-shared.toml"
-skips = ["B101", "B104", "B105", "B601"]
-
-[tool.coverage]
-extend = "../.coverage-shared.toml"
-
-[tool.deptry]
-exclude = [
-    "__pycache__",
-    ".archive",
-    ".git",
-    ".meltano",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".venv",
-    "build",
-    "dist",
-    "htmlcov",
-    "vendor",
-    "node_modules",
-    "reports",
-    "venv",
-]
-known_first_party = ["flext_api"]
-pep621_dev_dependency_groups = ["dev", "security", "test", "typings"]
-
-[tool.mypy]
-# Strict mode - enables all recommended checks
-strict = true
-
-# Additional strict checks beyond default strict mode
-check_untyped_defs = true
-disallow_any_decorated = false
-disallow_any_explicit = true
-disallow_any_expr = false           # Too restrictive for real-world usage
-disallow_any_generics = true
-disallow_any_unimported = true
-disallow_incomplete_defs = true
-disallow_subclassing_any = true
-disallow_untyped_calls = true
-disallow_untyped_decorators = false
-disallow_untyped_defs = true
-
-# Warning controls - maximum safety
-warn_no_return = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_configs = true
-warn_unused_ignores = false
-
-# Optional type checking
-no_implicit_optional = true
-strict_optional = true
-
-# Import handling
-ignore_missing_imports = false
-follow_imports = "normal"
-follow_imports_for_stubs = false
-
-# Error reporting
-show_error_codes = true
-show_error_context = true
-show_column_numbers = true
-show_traceback = true
-pretty = true
-color_output = true
-error_summary = true
-
-# Python version and execution
-python_version = "3.13"
-platform = "linux"
-
-# Package structure
-explicit_package_bases = true
-namespace_packages = true
-mypy_path = ["src"]
-files = ["src"]
-
-# Plugins
-plugins = ["pydantic.mypy"]
-
-# Cache
-# sqlite_cache = true
-cache_dir = ".mypy_cache"
-
-# Advanced checks
-strict_equality = true
-extra_checks = true
-local_partial_types = true
-no_implicit_reexport = true
-
-# Performance
-incremental = true
-warn_incomplete_stub = true
-
-exclude = [
-    "__pycache__/",
-    ".*/generate_config.py",
-    ".*/manage.py",
-    ".coverage.*",
-    ".git/",
-    ".mypy_cache/",
-    ".ruff_cache/",
-    ".pytest_cache/",
-    ".venv/",
-    "build/",
-    "dist/",
-    "node_modules/",
-    "vendor/",
-]
-
-[tool.pydantic-mypy]
-init_forbid_extra = true
-init_typed = true
-warn_required_dynamic_aliases = true
-warn_untyped_fields = true
-
-# Configuração pytest.ini otimizada - incorpora configuração compartilhada
-[tool.pytest.ini_options]
-# Configuração base (from shared config)
-minversion = "8.0"
-asyncio_mode = "auto"
-
-# Configurações específicas do flext-api para otimização
-addopts = [
-    # Cobertura otimizada
-    "--cov=src/flext_api",
-    "--cov-context=test",
-    "--cov-report=term-missing:skip-covered",
-    "--cov-report=html:htmlcov",
-    "--cov-report=xml:reports/coverage.xml",
-    "--cov-branch",
-    # NOTE: temporarily disabled for local iterative fixes
-    # "--cov-fail-under=90",
-
-    # Melhor output e debugging
-    "--tb=short",
-    "--strict-markers",
-    "--strict-config",
-    "-ra",              # Mostrar resumo de testes
-    "--color=yes",
-]
-
-# Marcadores específicos do projeto
-markers = [
-    "unit: Fast unit tests with mocks",
-    "integration: Integration tests (may require external services)",
-    "e2e: End-to-end tests with real services",
-    "slow: Slow running tests (>1s)",
-    "benchmark: Performance benchmark tests",
-    "api: FastAPI endpoint tests",
-    "client: HTTP client tests",
-    "builder: Builder pattern tests",
-    "core: Core functionality tests",
-    "architecture: Architectural pattern tests",
-    "smoke: Quick smoke tests for CI",
-    "regression: Regression tests for bug fixes",
-    "security: Security-related tests",
-    "mock: Tests using mocks heavily",
-    "real: Tests using real external services",
-    "concurrency: Concurrency and async tests",
-    "race_condition: Race condition and thread safety tests",
-    "performance: Performance and load tests",
-    "memory: Memory usage and leak tests",
-    "timeout: Tests with timeout constraints",
-    "skip: Tests that should be skipped",
-    "xfail: Tests expected to fail",
-]
-
-# Filtros de warnings otimizados
-# filterwarnings = [
-#     "error",
-#     "ignore::DeprecationWarning",
-#     "ignore::PendingDeprecationWarning",
-#     "ignore::UserWarning",
-#     "ignore::pytest.PytestUnraisableExceptionWarning",
-#     "ignore::ResourceWarning",
-#     # Específicos para aiohttp
-#     "ignore:.*unclosed.*:ResourceWarning",
-#     "ignore:.*coroutine.*was never awaited:RuntimeWarning",
-#     # Suppress faker locale warnings
-#     "ignore:Looking for locale.*:UserWarning",
-#     "ignore:Provider.*has been localized.*:UserWarning",
-#     "ignore:Specified locale.*is not available.*:UserWarning",
-#     "ignore:Provider.*does not feature localization.*:UserWarning",
-# ]
-
-# Diretórios de teste otimizados
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-
-
-[tool.ruff]
-extend = "../ruff-shared.toml"
-lint.isort.known-first-party = ["flext_api"]
-
-[tool.vulture]
-extend = "../.vulture-shared.toml"
+pyrefly = "^0.34.0"

@@ -38,11 +38,11 @@ RUN mkdir -p /app/logs \
 USER flext
 
 # Expose port
-EXPOSE 8000
+EXPOSE ${FlextConstants.Platform.FLEXT_API_PORT}
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+HEALTHCHECK --interval=${FlextApiConstants.DEFAULT_TIMEOUT}s --timeout=${FlextApiConstants.TESTING_TIMEOUT}s --start-period=5s --retries=3 \
+    CMD curl -f http://${FlextConstants.Platform.DEFAULT_HOST}:${FlextConstants.Platform.FLEXT_API_PORT}/health || exit 1
 
 # Start the application
-CMD ["uvicorn", "flext_api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "flext_api.app:app", "--host", "0.0.0.0", "--port", "${FlextConstants.Platform.FLEXT_API_PORT}"]

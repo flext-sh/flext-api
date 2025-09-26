@@ -95,9 +95,9 @@ class FlextApiFactories:
             "max_retries": cast("int", config_data.get("max_retries", 3)),
         }
 
-        # Apply overrides safely
+        # Apply overrides safely with type checking
         for key, value in overrides.items():
-            if key in defaults:
+            if key in defaults and isinstance(value, (str, int, float)):
                 defaults[key] = value
 
         return FlextApiConfig(
@@ -107,7 +107,7 @@ class FlextApiFactories:
         )
 
     @staticmethod
-    def create_storage_config(**overrides: object) -> FlextTypes.Core.Dict:
+    def create_storage_config(**overrides: object) -> dict[str, str | int | bool]:
         """Create storage config using FlextTestsDomains.
 
         Returns:
@@ -123,7 +123,12 @@ class FlextApiFactories:
             "enable_caching": bool(base_config.get("enable_caching", True)),
             "cache_ttl_seconds": cast("int", base_config.get("cache_ttl", 300)),
         }
-        storage_config.update(overrides)
+        # Apply overrides with type filtering
+        storage_config.update({
+            key: value
+            for key, value in overrides.items()
+            if isinstance(value, (str, int, bool))
+        })
         return storage_config
 
     @staticmethod

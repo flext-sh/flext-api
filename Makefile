@@ -12,8 +12,8 @@ SRC_DIR := src
 COV_DIR := flext_api
 TESTS_DIR := tests
 
-# Quality Standards
-MIN_COVERAGE := 90
+# Quality Standards (MANDATORY - 100% COVERAGE)
+MIN_COVERAGE := 100
 
 # FastAPI Configuration
 API_HOST := 0.0.0.0
@@ -38,7 +38,7 @@ info: ## Show project information
 	@echo "Project: $(PROJECT_NAME)"
 	@echo "Python: $(PYTHON_VERSION)+"
 	@echo "Poetry: $(POETRY)"
-	@echo "Coverage: $(MIN_COVERAGE)% minimum"
+	@echo "Coverage: $(MIN_COVERAGE)% minimum (MANDATORY)"
 	@echo "FastAPI: http://$(API_HOST):$(API_PORT)"
 	@echo "Architecture: Clean Architecture + FastAPI"
 
@@ -59,64 +59,64 @@ setup: install-dev ## Complete project setup
 	$(POETRY) run pre-commit install
 
 # =============================================================================
-# QUALITY GATES (MANDATORY)
+# QUALITY GATES (MANDATORY - ZERO TOLERANCE)
 # =============================================================================
 
 .PHONY: validate
-validate: lint type-check security test ## Run all quality gates
+validate: lint type-check security test ## Run all quality gates (MANDATORY ORDER)
 
 .PHONY: check
 check: lint type-check ## Quick health check
 
 .PHONY: lint
-lint: ## Run linting
-	$(POETRY) run ruff check $(SRC_DIR) $(TESTS_DIR)
+lint: ## Run linting (ZERO TOLERANCE)
+	$(POETRY) run ruff check .
 
 .PHONY: format
 format: ## Format code
-	$(POETRY) run ruff format $(SRC_DIR) $(TESTS_DIR)
+	$(POETRY) run ruff format .
 
 .PHONY: type-check
-type-check: ## Run type checking
-	PYTHONPATH=src $(POETRY) run mypy $(SRC_DIR) --strict
+type-check: ## Run type checking with Pyrefly (ZERO TOLERANCE)
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pyrefly check .
 
 .PHONY: security
 security: ## Run security scanning
-	$(POETRY) run bandit -r $(SRC_DIR) -c pyproject.toml
+	$(POETRY) run bandit -r $(SRC_DIR)
 	$(POETRY) run pip-audit
 
 .PHONY: fix
 fix: ## Auto-fix issues
-	$(POETRY) run ruff check $(SRC_DIR) $(TESTS_DIR) --fix
-	$(POETRY) run ruff format $(SRC_DIR) $(TESTS_DIR)
+	$(POETRY) run ruff check . --fix
+	$(POETRY) run ruff format .
 
 # =============================================================================
-# TESTING
+# TESTING (MANDATORY - 100% COVERAGE)
 # =============================================================================
 
 .PHONY: test
-test: ## Run tests with coverage
-	PYTHONPATH=src $(POETRY) run pytest --cov=$(COV_DIR) --cov-report=term-missing --cov-fail-under=$(MIN_COVERAGE)
+test: ## Run tests with 100% coverage (MANDATORY)
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest -q --maxfail=10000 --cov=$(COV_DIR) --cov-report=term-missing:skip-covered --cov-fail-under=$(MIN_COVERAGE)
 
 .PHONY: test-unit
 test-unit: ## Run unit tests
-	PYTHONPATH=src $(POETRY) run pytest -m unit -n auto --dist=loadfile --tb=short
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest -m unit -n auto --dist=loadfile --tb=short
 
 .PHONY: test-integration
-test-integration: ## Run integration tests
-	PYTHONPATH=src $(POETRY) run pytest -m integration --timeout=600 -v
+test-integration: ## Run integration tests with Docker
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest -m integration --timeout=600 -v
 
 .PHONY: test-api
 test-api: ## Run API endpoint tests
-	PYTHONPATH=src $(POETRY) run pytest -m api -v
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest -m api -v
 
 .PHONY: test-fast
 test-fast: ## Run tests without coverage
-	PYTHONPATH=src $(POETRY) run pytest --no-cov -q
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest --no-cov -q
 
 .PHONY: coverage-html
 coverage-html: ## Generate HTML coverage report
-	PYTHONPATH=src $(POETRY) run pytest --cov=$(COV_DIR) --cov-report=html
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run pytest --cov=$(COV_DIR) --cov-report=html
 
 # =============================================================================
 # FASTAPI DEVELOPMENT
@@ -178,7 +178,7 @@ deps-audit: ## Audit dependencies
 
 .PHONY: shell
 shell: ## Open Python shell
-	$(POETRY) run python
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run python
 
 .PHONY: pre-commit
 pre-commit: ## Run pre-commit hooks
@@ -190,7 +190,7 @@ pre-commit: ## Run pre-commit hooks
 
 .PHONY: clean
 clean: ## Clean build artifacts
-	rm -rf build/ dist/ *.egg-info/ .pytest_cache/ htmlcov/ .coverage .mypy_cache/ .ruff_cache/ openapi.json
+	rm -rf build/ dist/ *.egg-info/ .pytest_cache/ htmlcov/ .coverage .mypy_cache/ .pyrefly_cache/ .ruff_cache/ openapi.json
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
 

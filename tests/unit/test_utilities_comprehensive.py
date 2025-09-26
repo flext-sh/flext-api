@@ -37,6 +37,7 @@ class TestFlextApiUtilitiesComprehensive:
             status_code=500,
             url="https://api.example.com/error",
             method="GET",
+            domain_events=[],
         )
         result = FlextApiUtilities.validate_config(error_config)
         assert result.is_success
@@ -87,6 +88,7 @@ class TestFlextApiUtilitiesComprehensive:
             invalid_config = FlextApiModels.Http.HttpErrorConfig(
                 message="Error",
                 status_code=50,
+                domain_events=[],
             )
             # If model creation succeeds, test the validation
             result = FlextApiUtilities.validate_config(invalid_config)
@@ -101,6 +103,7 @@ class TestFlextApiUtilitiesComprehensive:
             invalid_high_config = FlextApiModels.Http.HttpErrorConfig(
                 message="Error",
                 status_code=700,
+                domain_events=[],
             )
             # If model creation succeeds, test the validation
             result = FlextApiUtilities.validate_config(invalid_high_config)

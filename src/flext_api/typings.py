@@ -13,7 +13,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TypeVar
+from typing import Literal
 
 from flext_core import FlextTypes
 
@@ -21,18 +21,9 @@ from flext_core import FlextTypes
 # API-SPECIFIC TYPE VARIABLES - Domain-specific TypeVars for API operations
 # =============================================================================
 
+
 # API domain TypeVars
-THttpClient = TypeVar("THttpClient")
-THttpRequest = TypeVar("THttpRequest")
-THttpResponse = TypeVar("THttpResponse")
-TApiEndpoint = TypeVar("TApiEndpoint")
-TApiRouter = TypeVar("TApiRouter")
-TApiMiddleware = TypeVar("TApiMiddleware")
-TApiAuth = TypeVar("TApiAuth")
-TApiPlugin = TypeVar("TApiPlugin")
-
-
-class FlextApiTypings(FlextTypes):
+class FlextApiTypes(FlextTypes):
     """API-specific type definitions extending FlextTypes.
 
     Domain-specific type system for HTTP/API operations.
@@ -154,29 +145,49 @@ class FlextApiTypings(FlextTypes):
             str, FlextTypes.Core.JsonValue | dict[str, object]
         ]
 
+    # =========================================================================
+    # API PROJECT TYPES - Domain-specific project types extending FlextTypes
+    # =========================================================================
+
+    class Project(FlextTypes.Project):
+        """API-specific project types extending FlextTypes.Project.
+
+        Adds API-specific project types while inheriting generic types from FlextTypes.
+        Follows domain separation principle: API domain owns API-specific types.
+        """
+
+        # API-specific project types extending the generic ones
+        type ProjectType = Literal[
+            # Generic types inherited from FlextTypes.Project
+            "library",
+            "application",
+            "service",
+            # API-specific types
+            "rest-api",
+            "graphql-api",
+            "microservice-api",
+            "webhook-api",
+            "api-gateway",
+            "api-client",
+            "api-server",
+            "api-wrapper",
+            "sdk",
+            "client-library",
+            "http-service",
+            "json-api",
+        ]
+
+        # API-specific project configurations
+        type ApiProjectConfig = dict[str, FlextTypes.Core.ConfigValue | object]
+        type RestApiConfig = dict[str, str | int | bool | list[str]]
+        type GraphqlApiConfig = dict[str, bool | str | dict[str, object]]
+        type MicroserviceConfig = dict[str, FlextTypes.Core.ConfigValue | object]
+
 
 # =============================================================================
-# TYPE ALIASES - Convenience aliases for compatibility
-# =============================================================================
-
-# Legacy alias for compatibility
-FlextApiTypes = FlextApiTypings
-
-# =============================================================================
-# PUBLIC API EXPORTS - API TypeVars and types
+# PUBLIC API EXPORTS - API types and classes
 # =============================================================================
 
 __all__: list[str] = [
     "FlextApiTypes",
-    # API Types class
-    "FlextApiTypings",
-    # API-specific TypeVars
-    "TApiAuth",
-    "TApiEndpoint",
-    "TApiMiddleware",
-    "TApiPlugin",
-    "TApiRouter",
-    "THttpClient",
-    "THttpRequest",
-    "THttpResponse",
 ]
