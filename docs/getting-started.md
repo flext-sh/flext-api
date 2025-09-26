@@ -93,7 +93,7 @@ async def basic_http_example():
     # Create HTTP client
     client = FlextApiClient(
         base_url="https://httpbin.org",
-        timeout=30
+        timeout=FlextApiConstants.DEFAULT_TIMEOUT
     )
 
     # Create HTTP request
@@ -192,8 +192,8 @@ from flext_api.config import FlextApiConfig
 # Development configuration
 config = FlextApiConfig(
     base_url="https://api.example.com",
-    timeout=30,
-    max_retries=3,
+    timeout=FlextApiConstants.DEFAULT_TIMEOUT,
+    max_retries=FlextApiConstants.DEFAULT_MAX_RETRIES,
     headers={
         "User-Agent": "my-service/1.0.0",
         "Accept": "application/json"
@@ -274,8 +274,8 @@ asyncio.run(test_http_client())
 make dev
 
 # Test in another terminal
-curl -f http://localhost:8000/health
-curl -f http://localhost:8000/docs
+curl -f http://${FlextConstants.Platform.DEFAULT_HOST}:${FlextConstants.Platform.FLEXT_API_PORT}/health
+curl -f http://${FlextConstants.Platform.DEFAULT_HOST}:${FlextConstants.Platform.FLEXT_API_PORT}/docs
 ```
 
 ---
@@ -336,10 +336,10 @@ from flext_api.app import create_fastapi_app
 
 ```bash
 # Check if port is available
-lsof -i :8000
+lsof -i :${FlextConstants.Platform.FLEXT_API_PORT}
 
 # Use different port
-make dev PORT=8080
+make dev PORT=${FlextConstants.Platform.FLEXT_API_PORT}
 
 # Check logs
 make dev --log-level debug
@@ -356,7 +356,7 @@ Before proceeding to advanced usage:
 - [ ] Basic HTTP client example works
 - [ ] FastAPI application starts correctly
 - [ ] Test suite runs without errors
-- [ ] Development server accessible at <http://localhost:8000>
+- [ ] Development server accessible at http://${FlextConstants.Platform.DEFAULT_HOST}:${FlextConstants.Platform.FLEXT_API_PORT}
 
 ---
 

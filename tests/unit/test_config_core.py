@@ -4,6 +4,9 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
+import pytest
+from pydantic import ValidationError
+
 from flext_api import FlextApiConfig
 from flext_core import FlextConfig
 
@@ -68,5 +71,8 @@ class TestFlextApiConfig:
     def test_config_validation_error_details(self) -> None:
         """Test validation error scenarios for comprehensive coverage."""
         # Test configuration validation with invalid values
-        config = FlextApiConfig(api_timeout=-1)
-        assert config.api_timeout == -1  # Pydantic allows this, just validates type
+        with pytest.raises(ValidationError) as exc_info:
+            FlextApiConfig(api_timeout=-1)
+
+        # Verify that the validation error contains appropriate message
+        assert "Input should be greater than or equal to 1" in str(exc_info.value)

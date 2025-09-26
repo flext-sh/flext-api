@@ -59,12 +59,12 @@ make validate
 make dev
 
 # Or manually with uvicorn
-poetry run uvicorn flext_api.app:app --reload --host 0.0.0.0 --port 8000
+poetry run uvicorn flext_api.app:app --reload --host 0.0.0.0 --port ${FlextConstants.Platform.FLEXT_API_PORT}
 
 # Server will be available at:
-# - API: http://localhost:8000
-# - Docs: http://localhost:8000/docs
-# - Health: http://localhost:8000/health
+# - API: http://${FlextConstants.Platform.DEFAULT_HOST}:${FlextConstants.Platform.FLEXT_API_PORT}
+# - Docs: http://${FlextConstants.Platform.DEFAULT_HOST}:${FlextConstants.Platform.FLEXT_API_PORT}/docs
+# - Health: http://${FlextConstants.Platform.DEFAULT_HOST}:${FlextConstants.Platform.FLEXT_API_PORT}/health
 ```
 
 ### **Code Quality Tools**

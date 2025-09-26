@@ -25,12 +25,12 @@ All environment variables use the `FLEXT_API_` prefix and are defined in `FlextA
 
 ### **Server Configuration**
 
-| Variable              | Type    | Default     | Description                |
-| --------------------- | ------- | ----------- | -------------------------- |
-| `FLEXT_API_API_HOST`  | string  | `127.0.0.1` | Host address to bind       |
-| `FLEXT_API_API_PORT`  | int     | `8000`      | Port number to bind        |
-| `FLEXT_API_WORKERS`   | int     | `4`         | Number of worker processes |
-| `FLEXT_API_API_DEBUG` | boolean | `false`     | Enable debug mode          |
+| Variable              | Type    | Default                                     | Description                |
+| --------------------- | ------- | ------------------------------------------- | -------------------------- |
+| `FLEXT_API_API_HOST`  | string  | `${FlextConstants.Platform.DEFAULT_HOST}`   | Host address to bind       |
+| `FLEXT_API_API_PORT`  | int     | `${FlextConstants.Platform.FLEXT_API_PORT}` | Port number to bind        |
+| `FLEXT_API_WORKERS`   | int     | `4`                                         | Number of worker processes |
+| `FLEXT_API_API_DEBUG` | boolean | `false`                                     | Enable debug mode          |
 
 ### **API Configuration**
 
@@ -42,10 +42,10 @@ All environment variables use the `FLEXT_API_` prefix and are defined in `FlextA
 
 ### **Client Configuration**
 
-| Variable                | Type  | Default | Description                |
-| ----------------------- | ----- | ------- | -------------------------- |
-| `FLEXT_API_API_TIMEOUT` | float | `30.0`  | Request timeout in seconds |
-| `FLEXT_API_MAX_RETRIES` | int   | `3`     | Maximum retry attempts     |
+| Variable                | Type  | Default                                    | Description                |
+| ----------------------- | ----- | ------------------------------------------ | -------------------------- |
+| `FLEXT_API_API_TIMEOUT` | float | `${FlextApiConstants.DEFAULT_TIMEOUT}`     | Request timeout in seconds |
+| `FLEXT_API_MAX_RETRIES` | int   | `${FlextApiConstants.DEFAULT_MAX_RETRIES}` | Maximum retry attempts     |
 
 ---
 
@@ -72,8 +72,8 @@ print(f"Timeout: {config.api_timeout}")
 ```python
 class FlextApiConfig(FlextConfig):
     # Server configuration
-    api_host: str = "127.0.0.1"
-    api_port: int = 8000
+    api_host: str = FlextConstants.Platform.DEFAULT_HOST
+    api_port: int = FlextConstants.Platform.FLEXT_API_PORT
     workers: int = 4
     api_debug: bool = False
 
@@ -83,8 +83,8 @@ class FlextApiConfig(FlextConfig):
     api_base_url: str = "https://api.example.com"
 
     # Client configuration
-    api_timeout: float = 30.0
-    max_retries: int = 3
+    api_timeout: float = FlextApiConstants.DEFAULT_TIMEOUT
+    max_retries: int = FlextApiConstants.DEFAULT_MAX_RETRIES
 ```
 
 ### **ClientConfig Model**
@@ -96,7 +96,7 @@ from flext_api.models import FlextApiModels
 
 config = FlextApiModels.ClientConfig(
     base_url="https://api.enterprise.com",
-    timeout=30.0,
+    timeout=FlextApiConstants.DEFAULT_TIMEOUT,
     max_retries=3,
     headers={
         "User-Agent": "my-service/1.0.0",
@@ -145,7 +145,7 @@ async def basic_client_config():
     # Create configuration
     config = FlextApiConfig(
         base_url="https://jsonplaceholder.typicode.com",
-        timeout=30,
+        timeout=FlextApiConstants.DEFAULT_TIMEOUT,
         headers={
             "User-Agent": "flext-api-example/1.0.0",
             "Accept": "application/json"
@@ -267,7 +267,7 @@ from flext_api import FlextApiClient
 secure_client = FlextApiClient(
     base_url="https://secure-api.enterprise.com",
     ssl_verify=True,  # Verify SSL certificates (default: True)
-    timeout=30,
+    timeout=FlextApiConstants.DEFAULT_TIMEOUT,
     headers={
         "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
     }
@@ -275,9 +275,9 @@ secure_client = FlextApiClient(
 
 # Development configuration (less secure)
 dev_client = FlextApiClient(
-    base_url="http://localhost:8000",  # HTTP allowed for local dev
+    base_url=f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",  # HTTP allowed for local dev
     ssl_verify=False,  # Only for development
-    timeout=10
+    timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT
 )
 ```
 
@@ -293,13 +293,13 @@ from flext_api import FlextApiClient
 # High-performance configuration
 performance_client = FlextApiClient(
     base_url="https://high-volume-api.com",
-    timeout=30,
+    timeout=FlextApiConstants.DEFAULT_TIMEOUT,
     max_connections=100,     # Total connection pool size
     keepalive_connections=20, # Keep-alive connections
     http2=True,              # Enable HTTP/2 (if supported)
     headers={
         "Connection": "keep-alive",
-        "Keep-Alive": "timeout=60, max=100"
+        "Keep-Alive": f"timeout={FlextApiConstants.DEFAULT_TIMEOUT * 2}, max=100"
     }
 )
 ```
@@ -313,19 +313,19 @@ from flext_api.models import FlextApiModels
 # Different timeout strategies
 quick_client = FlextApiClient(
     base_url="https://fast-api.com",
-    timeout=5  # Quick timeout for fast APIs
+    timeout=FlextApiConstants.MONITORING_TIMEOUT  # Quick timeout for fast APIs
 )
 
 slow_client = FlextApiClient(
     base_url="https://slow-processing-api.com",
-    timeout=300  # 5 minutes for long-running operations
+    timeout=FlextApiConstants.MAX_TIMEOUT  # 5 minutes for long-running operations
 )
 
 # Per-request timeout override
 request = FlextApiModels.HttpRequest(
     method="POST",
     url="/long-process",
-    timeout=600,  # 10 minutes for this specific request
+    timeout=FlextApiConstants.MAX_TIMEOUT * 2,  # 10 minutes for this specific request
     json={"data": "large dataset"}
 )
 ```
@@ -346,17 +346,17 @@ def setup_development_environment():
     """Configure for development environment."""
 
     # Development environment variables
-    os.environ['HTTP_BASE_URL'] = 'http://localhost:8000'
-    os.environ['HTTP_TIMEOUT'] = '10'
-    os.environ['FASTAPI_HOST'] = '127.0.0.1'
-    os.environ['FASTAPI_PORT'] = '8000'
+    os.environ['HTTP_BASE_URL'] = f'http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}'
+    os.environ['HTTP_TIMEOUT'] = str(FlextApiConstants.DEVELOPMENT_TIMEOUT)
+    os.environ['FASTAPI_HOST'] = FlextConstants.Platform.DEFAULT_HOST
+    os.environ['FASTAPI_PORT'] = str(FlextConstants.Platform.FLEXT_API_PORT)
     os.environ['FASTAPI_RELOAD'] = 'true'
     os.environ['FASTAPI_LOG_LEVEL'] = 'debug'
 
     # HTTP client configuration
     http_config = FlextApiConfig(
-        base_url="http://localhost:8000",
-        timeout=10,
+        base_url=f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",
+        timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT,
         ssl_verify=False,  # Development only
         headers={
             "X-Development": "true",
@@ -388,7 +388,7 @@ from flext_api.models import FlextApiModels
 # Test configuration with mock server
 test_client = FlextApiClient(
     base_url="https://httpbin.org",  # Public testing API
-    timeout=5,
+    timeout=FlextApiConstants.MONITORING_TIMEOUT,
     headers={
         "X-Test-Mode": "true",
         "User-Agent": "flext-api-test/0.9.9"
@@ -398,7 +398,7 @@ test_client = FlextApiClient(
 # Configuration for unit tests
 unit_test_config = FlextApiModels.ClientConfig(
     base_url="http://mock-server:8080",
-    timeout=1,  # Quick timeout for unit tests
+    timeout=FlextApiConstants.TESTING_TIMEOUT,  # Quick timeout for unit tests
     max_retries=1,
     ssl_verify=False
 )
@@ -443,7 +443,7 @@ production_client = create_production_client()
 ```bash
 # Production environment variables
 export FASTAPI_HOST=0.0.0.0
-export FASTAPI_PORT=8000
+export FASTAPI_PORT=${FlextConstants.Platform.FLEXT_API_PORT}
 export FASTAPI_WORKERS=4
 export FASTAPI_LOG_LEVEL=info
 export HTTPS_ONLY=true

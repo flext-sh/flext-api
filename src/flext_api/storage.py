@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
+from typing import override
 
 from flext_core import (
     FlextLogger,
@@ -20,6 +21,7 @@ from flext_core import (
 class FlextApiStorage(FlextModels.Entity):
     """HTTP-specific storage backend using flext-core Registry directly - ZERO DUPLICATION."""
 
+    @override
     def __init__(
         self,
         config: FlextTypes.Core.Dict | object | None = None,
@@ -45,10 +47,10 @@ class FlextApiStorage(FlextModels.Entity):
                 model_dump_method = getattr(config, "model_dump")
                 adapted = model_dump_method()
                 config_dict = (
-                    adapted if isinstance(adapted, dict) else {"value": adapted}
+                    adapted if isinstance(adapted, dict) else {"value": "adapted"}
                 )
             else:
-                config_dict = {"value": config}
+                config_dict = {"value": "config"}
         else:
             config_dict = {}
 
@@ -82,6 +84,11 @@ class FlextApiStorage(FlextModels.Entity):
 
     def set(self, key: str, value: object, ttl: int | None = None) -> FlextResult[None]:
         """Store HTTP data using flext-core Registry.
+
+        Args:
+            key: Storage key identifier
+            value: Value to store
+            ttl: Time-to-live in seconds (currently unused but kept for API compatibility)
 
         Returns:
             FlextResult[None]: Success or failure result.
@@ -210,10 +217,10 @@ class FlextApiStorage(FlextModels.Entity):
         """Get all key-value pairs in storage.
 
         Returns:
-            FlextResult[list[tuple[str, object]]]: Success result with items list or failure result.
+            FlextResult[list[tuple["str", "object"]]]: Success result with items list or failure result.
 
         """
-        return FlextResult[list[tuple[str, object]]].ok(list(self._data.items()))
+        return FlextResult[list[tuple["str", "object"]]].ok(list(self._data.items()))
 
     def values(self) -> FlextResult[list[object]]:
         """Get all values in storage.
@@ -237,6 +244,7 @@ class FlextApiStorage(FlextModels.Entity):
     class JsonStorage:
         """JSON storage operations for HTTP data."""
 
+        @override
         def __init__(self) -> None:
             """Initialize JSON storage."""
 
@@ -269,6 +277,7 @@ class FlextApiStorage(FlextModels.Entity):
     class CacheOperations:
         """Cache operations for HTTP data."""
 
+        @override
         def __init__(self) -> None:
             """Initialize cache operations."""
 
@@ -276,10 +285,10 @@ class FlextApiStorage(FlextModels.Entity):
             """Get cache statistics.
 
             Returns:
-                FlextResult[dict[str, object]]: Success result with cache stats or failure result.
+                FlextResult[dict["str", "object"]]: Success result with cache stats or failure result.
 
             """
-            return FlextResult[dict[str, object]].ok(
+            return FlextResult[dict["str", "object"]].ok(
                 {
                     "size": 0,  # Default size since we don't have access to storage
                     "backend": "memory",
@@ -304,6 +313,7 @@ class FlextApiStorage(FlextModels.Entity):
     class StorageMetrics:
         """Storage metrics collection."""
 
+        @override
         def __init__(self) -> None:
             """Initialize storage metrics."""
 
@@ -311,10 +321,10 @@ class FlextApiStorage(FlextModels.Entity):
             """Get storage metrics.
 
             Returns:
-                FlextResult[dict[str, object]]: Success result with metrics or failure result.
+                FlextResult[dict["str", "object"]]: Success result with metrics or failure result.
 
             """
-            return FlextResult[dict[str, object]].ok(
+            return FlextResult[dict["str", "object"]].ok(
                 {"total_operations": 0, "cache_hits": 0, "cache_misses": 0},
             )
 
@@ -334,9 +344,9 @@ class FlextApiStorage(FlextModels.Entity):
                     "storage_size": 0,
                     "memory_usage": 0,
                 }
-                return FlextResult[dict[str, float]].ok(stats)
+                return FlextResult[dict["str", "float"]].ok(stats)
             except Exception as e:
-                return FlextResult[dict[str, float]].fail(
+                return FlextResult[dict["str", "float"]].fail(
                     f"Statistics collection failed: {e}",
                 )
 

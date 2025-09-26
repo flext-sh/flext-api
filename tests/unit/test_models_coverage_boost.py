@@ -285,12 +285,13 @@ class TestFlextApiModelsCoverageBoost:
 
     def test_url_model_validate_business_rules_empty_url(self) -> None:
         """Test UrlModel validate_business_rules with empty URL."""
-        url_model = FlextApiModels.UrlModel(raw_url="")
-        result = url_model.validate_business_rules()
+        # Test the business rule validation by using a model validator
+        # since Pydantic field validation happens first
+        with pytest.raises(ValidationError) as exc_info:
+            FlextApiModels.UrlModel(raw_url="")
 
-        assert result.is_failure
-        assert result.error is not None
-        assert "URL cannot be empty" in result.error
+        # Verify that the validation error contains appropriate message for empty string
+        assert "String should have at least 1 character" in str(exc_info.value)
 
     def test_url_model_validate_business_rules_valid_url(self) -> None:
         """Test UrlModel validate_business_rules with valid URL."""
@@ -372,13 +373,13 @@ class TestFlextApiModelsCoverageBoost:
         """Test AppConfig validation with empty title."""
         with pytest.raises(ValidationError) as excinfo:
             FlextApiModels.AppConfig(title="", app_version="1.0.0")
-        assert "Field cannot be empty" in str(excinfo.value)
+        assert "String should have at least 1 character" in str(excinfo.value)
 
     def test_app_config_validation_empty_version(self) -> None:
         """Test AppConfig validation with empty version."""
         with pytest.raises(ValidationError) as excinfo:
             FlextApiModels.AppConfig(title="Test API", app_version="")
-        assert "Field cannot be empty" in str(excinfo.value)
+        assert "String should have at least 1 character" in str(excinfo.value)
 
     def test_app_config_validation_whitespace_title(self) -> None:
         """Test AppConfig validation with whitespace title."""

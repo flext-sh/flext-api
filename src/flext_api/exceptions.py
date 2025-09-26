@@ -4,10 +4,14 @@ All exception classes are centralized here following FLEXT standards.
 Only exception class definitions - no factory methods or utility functions.
 """
 
-from .constants import FlextApiConstants
-from .typings import FlextApiTypings
+from __future__ import annotations
 
-HttpStatusCode = FlextApiTypings.HttpStatusCode
+from typing import override
+
+from .constants import FlextApiConstants
+from .typings import FlextApiTypes
+
+HttpStatusCode = FlextApiTypes.HttpStatusCode
 
 
 class FlextApiExceptions:
@@ -16,6 +20,7 @@ class FlextApiExceptions:
     class ValidationError(Exception):
         """HTTP validation error with status code."""
 
+        @override
         def __init__(
             self, message: str, status_code: HttpStatusCode = 400, **_kwargs: object
         ) -> None:
@@ -26,6 +31,7 @@ class FlextApiExceptions:
     class AuthenticationError(Exception):
         """HTTP authentication error with status code."""
 
+        @override
         def __init__(
             self, message: str, status_code: HttpStatusCode = 401, **_kwargs: object
         ) -> None:
@@ -36,6 +42,7 @@ class FlextApiExceptions:
     class AuthorizationError(Exception):
         """HTTP authorization error with status code."""
 
+        @override
         def __init__(
             self, message: str, status_code: HttpStatusCode = 403, **_kwargs: object
         ) -> None:
@@ -46,6 +53,7 @@ class FlextApiExceptions:
     class NotFoundError(Exception):
         """HTTP not found error with status code."""
 
+        @override
         def __init__(
             self, message: str, status_code: HttpStatusCode = 404, **_kwargs: object
         ) -> None:
@@ -56,6 +64,7 @@ class FlextApiExceptions:
     class ConflictError(Exception):
         """HTTP conflict error with status code."""
 
+        @override
         def __init__(
             self, message: str, status_code: HttpStatusCode = 409, **_kwargs: object
         ) -> None:
@@ -66,6 +75,7 @@ class FlextApiExceptions:
     class RateLimitError(Exception):
         """HTTP rate limit error with status code."""
 
+        @override
         def __init__(
             self, message: str, status_code: HttpStatusCode = 429, **_kwargs: object
         ) -> None:
@@ -76,6 +86,7 @@ class FlextApiExceptions:
     class HttpError(Exception):
         """General HTTP error with status code and request context."""
 
+        @override
         def __init__(
             self,
             message: str,
@@ -93,6 +104,7 @@ class FlextApiExceptions:
     class HttpTimeoutError(Exception):
         """HTTP timeout error with status code."""
 
+        @override
         def __init__(
             self,
             message: str,
@@ -108,6 +120,7 @@ class FlextApiExceptions:
     class ClientError(HttpError):
         """HTTP client error (4xx status codes)."""
 
+        @override
         def __init__(
             self,
             message: str,
@@ -127,6 +140,7 @@ class FlextApiExceptions:
     class ServerError(HttpError):
         """HTTP server error (5xx status codes)."""
 
+        @override
         def __init__(
             self,
             message: str,
@@ -146,6 +160,7 @@ class FlextApiExceptions:
     class BadRequestError(ClientError):
         """HTTP 400 Bad Request error."""
 
+        @override
         def __init__(self, message: str = "Bad Request", **_kwargs: object) -> None:
             """Initialize HTTP 400 error."""
             super().__init__(message, status_code=400, **_kwargs)
@@ -153,6 +168,7 @@ class FlextApiExceptions:
     class UnauthorizedError(ClientError):
         """HTTP 401 Unauthorized error."""
 
+        @override
         def __init__(self, message: str = "Unauthorized", **_kwargs: object) -> None:
             """Initialize HTTP 401 error."""
             super().__init__(message, status_code=401, **_kwargs)
@@ -160,6 +176,7 @@ class FlextApiExceptions:
     class ForbiddenError(ClientError):
         """HTTP 403 Forbidden error."""
 
+        @override
         def __init__(self, message: str = "Forbidden", **_kwargs: object) -> None:
             """Initialize HTTP 403 error."""
             super().__init__(message, status_code=403, **_kwargs)
@@ -167,6 +184,7 @@ class FlextApiExceptions:
     class MethodNotAllowedError(ClientError):
         """HTTP 405 Method Not Allowed error."""
 
+        @override
         def __init__(
             self, message: str = "Method Not Allowed", **_kwargs: object
         ) -> None:
@@ -176,6 +194,7 @@ class FlextApiExceptions:
     class RequestTimeoutError(ClientError):
         """HTTP 408 Request Timeout error."""
 
+        @override
         def __init__(self, message: str = "Request Timeout", **_kwargs: object) -> None:
             """Initialize HTTP 408 error."""
             super().__init__(message, status_code=408, **_kwargs)
@@ -183,6 +202,7 @@ class FlextApiExceptions:
     class TooManyRequestsError(ClientError):
         """HTTP 429 Too Many Requests error."""
 
+        @override
         def __init__(
             self, message: str = "Too Many Requests", **_kwargs: object
         ) -> None:
@@ -192,6 +212,7 @@ class FlextApiExceptions:
     class InternalServerError(ServerError):
         """HTTP 500 Internal Server Error."""
 
+        @override
         def __init__(
             self, message: str = "Internal Server Error", **_kwargs: object
         ) -> None:
@@ -201,6 +222,7 @@ class FlextApiExceptions:
     class BadGatewayError(ServerError):
         """HTTP 502 Bad Gateway error."""
 
+        @override
         def __init__(self, message: str = "Bad Gateway", **_kwargs: object) -> None:
             """Initialize HTTP 502 error."""
             super().__init__(message, status_code=502, **_kwargs)
@@ -208,6 +230,7 @@ class FlextApiExceptions:
     class ServiceUnavailableError(ServerError):
         """HTTP 503 Service Unavailable error."""
 
+        @override
         def __init__(
             self, message: str = "Service Unavailable", **_kwargs: object
         ) -> None:
@@ -217,6 +240,7 @@ class FlextApiExceptions:
     class GatewayTimeoutError(ServerError):
         """HTTP 504 Gateway Timeout error."""
 
+        @override
         def __init__(self, message: str = "Gateway Timeout", **_kwargs: object) -> None:
             """Initialize HTTP 504 error."""
             super().__init__(message, status_code=504, **_kwargs)

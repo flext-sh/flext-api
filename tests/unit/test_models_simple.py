@@ -8,6 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from flext_api import FlextApiModels
+from flext_core import FlextConstants
 
 
 class TestFlextApiModelsSimple:
@@ -16,9 +17,12 @@ class TestFlextApiModelsSimple:
     def test_client_config_creation_default(self) -> None:
         """Test ClientConfig creation with default values."""
         config = FlextApiModels.ClientConfig()
-        assert config.base_url == "http://127.0.0.1:8000"
-        assert config.timeout == 30.0
-        assert config.max_retries == 3
+        assert (
+            config.base_url
+            == f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+        )
+        assert config.timeout == float(FlextConstants.Network.DEFAULT_TIMEOUT)
+        assert config.max_retries == FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
 
     def test_client_config_creation_custom(self) -> None:
         """Test ClientConfig creation with custom values."""
@@ -180,7 +184,9 @@ class TestFlextApiModelsSimple:
         assert config.page_size == 50
 
         # Invalid page size - Pydantic validation
-        with pytest.raises(ValidationError, match="greater than 0"):
+        with pytest.raises(
+            ValidationError, match="Input should be greater than or equal to 1"
+        ):
             FlextApiModels.PaginationConfig(page_size=0)
 
     def test_models_inheritance(self) -> None:

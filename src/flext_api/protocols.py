@@ -4,6 +4,8 @@ All protocol interfaces are centralized here for better type safety and dependen
 Following FLEXT standards: protocols only, no implementations.
 """
 
+from __future__ import annotations
+
 from typing import Protocol, runtime_checkable
 
 from flext_core import FlextProtocols, FlextResult

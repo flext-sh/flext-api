@@ -3,6 +3,8 @@
 Single responsibility module containing only logging constants.
 """
 
+from __future__ import annotations
+
 from flext_core import FlextConstants
 
 

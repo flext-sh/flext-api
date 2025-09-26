@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
-from typing import Protocol
+from typing import Protocol, override
 
 from flext_core import FlextLogger, FlextResult
 
@@ -33,6 +33,7 @@ class FlextApiRetryHelper:
     FLEXT "one class per module" architectural principle.
     """
 
+    @override
     def __init__(
         self,
         max_retries: int,

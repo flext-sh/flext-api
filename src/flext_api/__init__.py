@@ -112,7 +112,7 @@ class FlextApi:
         }
 
         # Cast remaining kwargs to the expected type
-        typed_remaining_kwargs = cast("dict[str, object]", remaining_kwargs)  # type: ignore[misc]
+        typed_remaining_kwargs = cast("dict[str, object]", remaining_kwargs)
 
         return cls.Client(
             config=None,
@@ -121,7 +121,7 @@ class FlextApi:
             max_retries=max_retries,
             headers=headers,
             verify_ssl=verify_ssl,
-            **typed_remaining_kwargs,  # type: ignore[arg-type]
+            **typed_remaining_kwargs,
         )
 
     @classmethod

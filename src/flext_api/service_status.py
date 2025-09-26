@@ -3,6 +3,8 @@
 Single responsibility module containing only service status constants.
 """
 
+from __future__ import annotations
+
 from flext_core import FlextConstants
 
 

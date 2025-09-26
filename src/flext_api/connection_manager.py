@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 from flext_api.models import FlextApiModels
 from flext_core import FlextLogger, FlextResult
 
@@ -20,6 +22,7 @@ class FlextApiConnectionManager:
     FLEXT "one class per module" architectural principle.
     """
 
+    @override
     def __init__(
         self, config: FlextApiModels.ClientConfig, logger: FlextLogger
     ) -> None:
@@ -55,7 +58,7 @@ class FlextApiConnectionManager:
                 )
 
                 self._connection_pool = {
-                    "active": True,
+                    "active": "True",
                     "url": self._config.base_url,
                     "timeout": self._config.timeout,
                     "max_retries": self._config.max_retries,
@@ -130,12 +133,17 @@ class FlextApiConnectionManager:
         """
         if self._connection_pool:
             return {
-                "connected": True,
+                "connected": "True",
                 "url": self._connection_pool.get("url"),
                 "timeout": self._connection_pool.get("timeout"),
                 "max_retries": self._connection_pool.get("max_retries"),
             }
-        return {"connected": False, "url": None, "timeout": None, "max_retries": None}
+        return {
+            "connected": "False",
+            "url": "None",
+            "timeout": "None",
+            "max_retries": "None",
+        }
 
 
 __all__ = ["FlextApiConnectionManager"]

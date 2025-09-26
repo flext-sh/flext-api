@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from flext_api import client as _client_module
 from flext_api.client import FlextApiClient
+from flext_api.constants import FlextApiConstants
 from flext_core import FlextResult, FlextService
 
 
@@ -33,11 +34,11 @@ class FlextApiClientFactory(FlextService[FlextApiClient]):
         """
         return await _client_module.FlextApiClient.create(
             base_url=base_url,
-            request_timeout=30,
-            max_retries=3,
+            request_timeout=FlextApiConstants.PRODUCTION_TIMEOUT,
+            max_retries=FlextApiConstants.DEFAULT_MAX_RETRIES,
             headers={
                 "User-Agent": "FlextApiClient-Production/1.0.0",
-                "Accept": "application/json",
+                "Accept": FlextApiConstants.DEFAULT_ACCEPT,
                 "Cache-Control": "no-cache",
             },
         )
@@ -57,11 +58,11 @@ class FlextApiClientFactory(FlextService[FlextApiClient]):
         """
         return await _client_module.FlextApiClient.create(
             base_url=base_url,
-            request_timeout=60,
+            request_timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT,
             max_retries=1,
             headers={
                 "User-Agent": "FlextApiClient-Dev/1.0.0",
-                "Accept": "application/json",
+                "Accept": FlextApiConstants.DEFAULT_ACCEPT,
             },
         )
 
@@ -80,11 +81,11 @@ class FlextApiClientFactory(FlextService[FlextApiClient]):
         """
         return await _client_module.FlextApiClient.create(
             base_url=base_url,
-            request_timeout=10,
-            max_retries=0,
+            request_timeout=FlextApiConstants.TESTING_TIMEOUT,
+            max_retries=FlextApiConstants.MIN_RETRIES,
             headers={
                 "User-Agent": "FlextApiClient-Test/1.0.0",
-                "Accept": "application/json",
+                "Accept": FlextApiConstants.DEFAULT_ACCEPT,
             },
         )
 
@@ -103,11 +104,11 @@ class FlextApiClientFactory(FlextService[FlextApiClient]):
         """
         return await _client_module.FlextApiClient.create(
             base_url=base_url,
-            request_timeout=5,
+            request_timeout=FlextApiConstants.MONITORING_TIMEOUT,
             max_retries=1,
             headers={
                 "User-Agent": "FlextApiClient-Monitor/1.0.0",
-                "Accept": "application/json",
+                "Accept": FlextApiConstants.DEFAULT_ACCEPT,
                 "X-Monitoring": "true",
             },
         )

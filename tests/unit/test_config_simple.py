@@ -4,7 +4,11 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
+import pytest
+from pydantic import ValidationError
+
 from flext_api import FlextApiConfig
+from flext_core import FlextConstants
 
 
 class TestFlextApiConfigSimple:
@@ -13,9 +17,12 @@ class TestFlextApiConfigSimple:
     def test_config_creation_default(self) -> None:
         """Test config creation with default values."""
         config = FlextApiConfig()
-        assert config.api_base_url == "http://localhost:8000"
-        assert config.api_timeout == 30
-        assert config.max_retries == 3
+        assert (
+            config.api_base_url
+            == f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+        )
+        assert config.api_timeout == FlextConstants.Network.DEFAULT_TIMEOUT
+        assert config.max_retries == FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
         assert config.log_requests is True
         assert config.log_responses is True
 
@@ -61,13 +68,15 @@ class TestFlextApiConfigSimple:
 
     def test_config_validation_pydantic_timeout_error(self) -> None:
         """Test Pydantic validation with invalid timeout."""
-        config = FlextApiConfig(api_timeout=0)
-        assert config.api_timeout == 0
+        with pytest.raises(ValidationError) as exc_info:
+            FlextApiConfig(api_timeout=0)
+        assert "Input should be greater than or equal to 1" in str(exc_info.value)
 
     def test_config_validation_pydantic_retries_error(self) -> None:
         """Test Pydantic validation with negative max_retries."""
-        config = FlextApiConfig(max_retries=-1)
-        assert config.max_retries == -1
+        with pytest.raises(ValidationError) as exc_info:
+            FlextApiConfig(max_retries=-1)
+        assert "Input should be greater than or equal to 0" in str(exc_info.value)
 
     def test_config_base_url_validation_success(self) -> None:
         """Test base URL validation success."""

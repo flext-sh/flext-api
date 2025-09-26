@@ -5,6 +5,10 @@ and provides a comprehensive facade for all flext-api functionality.
 Following FLEXT standards: single class per module, uses flext-core exclusively.
 """
 
+from __future__ import annotations
+
+from typing import override
+
 from flext_core import FlextLogger, FlextResult, FlextService
 
 from .constants import FlextApiConstants
@@ -22,6 +26,7 @@ class FlextApiModule(FlextService[FlextResult[object]]):
     following FLEXT standards with nested helper classes.
     """
 
+    @override
     def __init__(self) -> None:
         """Initialize FlextApiModule with flext-core integration."""
         super().__init__()
@@ -65,7 +70,7 @@ class FlextApiModule(FlextService[FlextResult[object]]):
             data: object = None, message: str = "Success"
         ) -> JsonObject:
             """Create standardized success response."""
-            return {  # type: ignore[return-value]
+            return {
                 "status": "success",
                 "data": data,
                 "message": message,

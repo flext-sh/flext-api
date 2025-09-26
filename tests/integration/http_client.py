@@ -22,7 +22,7 @@ class TestHttpClientIntegration:
         """Test real HTTP request with httpbin.org."""
         # Create client using modern API
         api = FlextApiClient()
-        client_result = api.create_client(
+        client_result = await api.create_client(
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10.0,
@@ -44,7 +44,7 @@ class TestHttpClientIntegration:
     async def test_basic_client_configuration(self) -> None:
         """Test client configuration without optional plugins."""
         api = FlextApiClient()
-        client_result = api.create_client(
+        client_result = await api.create_client(
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10.0,
@@ -63,7 +63,7 @@ class TestHttpClientIntegration:
         """Test POST request with JSON data."""
         # Create client using modern API
         api = FlextApiClient()
-        client_result = api.create_client(
+        client_result = await api.create_client(
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10.0,
@@ -86,7 +86,7 @@ class TestHttpClientIntegration:
         """Test client as async context manager."""
         # Create client using modern API
         api = FlextApiClient()
-        client_result = api.create_client(
+        client_result = await api.create_client(
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10.0,

@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 from flext_api.models import FlextApiModels
 from flext_core import FlextLogger, FlextResult
 
@@ -20,6 +22,7 @@ class FlextApiLifecycleManager:
     FLEXT "one class per module" architectural principle.
     """
 
+    @override
     def __init__(
         self, config: FlextApiModels.ClientConfig, logger: FlextLogger
     ) -> None:

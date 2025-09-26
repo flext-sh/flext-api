@@ -17,6 +17,7 @@ from flext_api import (
     FlextApiStorage,
     FlextApiUtilities,
 )
+from flext_core import FlextConstants
 
 
 def example_api_creation() -> None:
@@ -38,7 +39,7 @@ def example_client_creation() -> None:
     # Create client config using the refactored nested class
     client_config = FlextApiConfig(
         api_base_url="https://httpbin.org",
-        api_timeout=30,
+        api_timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
     )
 
     print(f"✅ Client config created: {client_config.api_base_url}")
@@ -53,7 +54,7 @@ def example_direct_client() -> None:
     # Create client configuration using refactored classes
     config = FlextApiConfig(
         api_base_url="https://httpbin.org",
-        api_timeout=30,
+        api_timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
     )
 
     print(f"✅ Client config: {config.api_base_url}")
@@ -140,7 +141,7 @@ def example_models_usage() -> None:
             method="GET",
             url="https://httpbin.org/get",
             headers={"Accept": "application/json"},
-            timeout=30.0,
+            timeout=float(FlextConstants.Network.DEFAULT_TIMEOUT),
         )
 
         print(f"✅ Request model created: {request.method} {request.url}")
@@ -154,6 +155,7 @@ def example_models_usage() -> None:
             url="https://httpbin.org/get",
             method="GET",
             elapsed_time=0.125,
+            domain_events=[],
         )
 
         print(f"✅ Response model created: {response.status_code}")

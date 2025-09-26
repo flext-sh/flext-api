@@ -3,6 +3,8 @@
 Single responsibility module containing only content type constants.
 """
 
+from __future__ import annotations
+
 from flext_core import FlextConstants
 
 
