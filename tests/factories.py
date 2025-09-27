@@ -14,6 +14,7 @@ from typing import cast
 from faker import Faker
 
 from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
+from flext_api.constants import FlextApiConstants
 from flext_core import FlextResult, FlextTypes
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
@@ -88,8 +89,15 @@ class FlextApiFactories:
 
         # Build with type-safe defaults
         defaults = {
-            "api_host": str(config_data.get("host", "127.0.0.1")),
-            "api_port": cast("int", config_data.get("port", 8000)),
+            "api_host": str(
+                config_data.get(
+                    "host",
+                    FlextApiConstants.DEFAULT_BASE_URL.split("://")[1].split(":")[0],
+                )
+            ),
+            "api_port": cast(
+                "int", config_data.get("port", FlextApiConstants.HTTP_PORT)
+            ),
             "api_base_url": str(config_data.get("base_url", "https://httpbin.org")),
             "api_timeout": cast("float", config_data.get("default_timeout", 30.0)),
             "max_retries": cast("int", config_data.get("max_retries", 3)),

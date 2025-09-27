@@ -29,7 +29,7 @@ class TestFlextApiClient:
 
     def test_create_flext_api_factory(self) -> None:
         """Test FlextApiClient constructor using flext_tests patterns."""
-        api = FlextApiClient("https://api.example.com")
+        api = FlextApiClient(base_url="https://api.example.com")
 
         # Verify constructor creates proper instance
         assert isinstance(api, FlextApiClient)
@@ -234,8 +234,8 @@ class TestFlextApiClient:
     def test_client_factory_function_consistency(self) -> None:
         """Test FlextApiClient constructor creates consistent clients."""
         # Multiple calls should create independent instances
-        client1 = FlextApiClient("https://api.example.com")
-        client2 = FlextApiClient("https://api.example.com")
+        client1 = FlextApiClient(base_url="https://api.example.com")
+        client2 = FlextApiClient(base_url="https://api.example.com")
 
         # Should be different instances but same configuration
         assert client1 is not client2

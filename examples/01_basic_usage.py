@@ -30,14 +30,15 @@ def example_api_creation() -> None:
 
 
 def example_client_creation() -> None:
-    """Demonstrate HTTP client creation using refactored classes."""
+    """Demonstrate HTTP client creation using enhanced singleton pattern."""
     print("\n=== Client Creation Example ===")
 
     # Create API instance
     FlextApiClient()
 
-    # Create client config using the refactored nested class
-    client_config = FlextApiConfig(
+    # Create client config using enhanced singleton pattern
+    client_config = FlextApiConfig.create_for_environment(
+        environment="development",
         api_base_url="https://httpbin.org",
         api_timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
     )
@@ -48,11 +49,12 @@ def example_client_creation() -> None:
 
 
 def example_direct_client() -> None:
-    """Demonstrate direct HTTP client usage with refactored classes."""
+    """Demonstrate direct HTTP client usage with enhanced singleton pattern."""
     print("\n=== Direct Client Example ===")
 
-    # Create client configuration using refactored classes
-    config = FlextApiConfig(
+    # Create client configuration using enhanced singleton pattern
+    config = FlextApiConfig.create_for_environment(
+        environment="development",
         api_base_url="https://httpbin.org",
         api_timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
     )

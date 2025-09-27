@@ -25,7 +25,7 @@ class TestHttpClientIntegration:
         client_result = await api.create_client(
             {
                 "base_url": "https://httpbin.org",
-                "timeout": 10.0,
+                "timeout": 10,
             },
         )
         assert client_result.is_success
@@ -47,7 +47,7 @@ class TestHttpClientIntegration:
         client_result = await api.create_client(
             {
                 "base_url": "https://httpbin.org",
-                "timeout": 10.0,
+                "timeout": 10,
             },
         )
         assert client_result.is_success
@@ -66,7 +66,7 @@ class TestHttpClientIntegration:
         client_result = await api.create_client(
             {
                 "base_url": "https://httpbin.org",
-                "timeout": 10.0,
+                "timeout": 10,
             },
         )
         assert client_result.is_success
@@ -89,7 +89,7 @@ class TestHttpClientIntegration:
         client_result = await api.create_client(
             {
                 "base_url": "https://httpbin.org",
-                "timeout": 10.0,
+                "timeout": 10,
             },
         )
         assert client_result.is_success

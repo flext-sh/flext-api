@@ -520,4 +520,7 @@ class TestFlextApiModelsCoverageBoost:
         assert request.method == "POST"
         assert response.is_success is True
         assert success_response["status"] == "success"
-        assert "users" in success_response["data"]
+        assert (
+            isinstance(success_response["data"], dict)
+            and "users" in success_response["data"]
+        )

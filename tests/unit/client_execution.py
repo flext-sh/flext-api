@@ -66,11 +66,11 @@ async def test_real_http_headers_and_user_agent() -> None:
 async def test_real_client_factory_function() -> None:
     """Test real HTTP using client factory function."""
     client = FlextApiClient(
-        {
+        config={
             "base_url": "https://httpbin.org",
             "timeout": 10,
             "headers": {"X-Test": "factory-created"},
-        },
+        },  # type: ignore[arg-type]
     )
 
     try:

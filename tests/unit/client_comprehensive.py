@@ -13,8 +13,7 @@ import json
 
 import pytest
 
-from flext_tests import FlextTestsMatchers
-from tests.factories import FlextApiFactories
+from flext_api.client import FlextApiClient
 
 
 class TestFlextApiClientReal:
@@ -22,9 +21,8 @@ class TestFlextApiClientReal:
 
     def test_client_initialization_with_factory(self) -> None:
         """Test client initialization using FlextApiFactories."""
-        client = FlextApiFactories.create_client(
-            base_url="https://httpbin.org",
-            timeout=30.0,
+        client = FlextApiClient(
+            config={"base_url": "https://httpbin.org", "timeout": 30.0}
         )
 
         assert client.base_url == "https://httpbin.org"
@@ -34,180 +32,131 @@ class TestFlextApiClientReal:
     @pytest.mark.asyncio
     async def test_get_request_with_factory(self) -> None:
         """Test GET request using factory-created client."""
-        client = FlextApiFactories.create_client(base_url="https://httpbin.org")
-        await client.start()
+        client = FlextApiClient(config={"base_url": "https://httpbin.org"})
 
-        try:
-            # Real GET request
-            result = await client.get("/get")
+        # Real GET request
+        result = await client.get("/get")
 
-            # Use FlextTestsMatchers for validation
-            FlextTestsMatchers.assert_result_success(result)
-            response = result.value
+        # Use FlextTestsMatchers for validation
+        assert result.is_success
+        response = result.value
 
-            # Verify response structure
-            assert response.status_code == 200
-            assert isinstance(response.body, dict)
-        finally:
-            await client.close()
+        # Verify response structure
+        assert response.status_code == 200
+        assert isinstance(response.body, dict)
 
     @pytest.mark.asyncio
     async def test_post_request_real(self) -> None:
         """Test POST request with real HTTP service."""
-        client = FlextApiFactories.create_client(base_url="https://httpbin.org")
-        await client.start()
+        client = FlextApiClient(config={"base_url": "https://httpbin.org"})
 
-        try:
-            # Real POST request
-            result = await client.post("/post")
+        # Real POST request
+        result = await client.post("/post")
 
-            FlextTestsMatchers.assert_result_success(result)
-            response = result.value
+        assert result.is_success
+        response = result.value
 
-            # Verify POST response
-            assert response.status_code == 200
-            assert isinstance(response.body, dict)
-        finally:
-            await client.close()
+        # Verify POST response
+        assert response.status_code == 200
+        assert isinstance(response.body, dict)
 
     @pytest.mark.asyncio
     async def test_put_request_real(self) -> None:
         """Test PUT request with real HTTP service."""
-        client = FlextApiFactories.create_client(base_url="https://httpbin.org")
-        await client.start()
+        client = FlextApiClient(config={"base_url": "https://httpbin.org"})
+        result = await client.put("/put")
 
-        try:
-            result = await client.put("/put")
+        assert result.is_success
+        response = result.value
 
-            FlextTestsMatchers.assert_result_success(result)
-            response = result.value
-
-            assert response.status_code == 200
-            assert isinstance(response.body, dict)
-        finally:
-            await client.close()
+        assert response.status_code == 200
+        assert isinstance(response.body, dict)
 
     @pytest.mark.asyncio
     async def test_delete_request_real(self) -> None:
         """Test DELETE request with real HTTP service."""
-        client = FlextApiFactories.create_client(base_url="https://httpbin.org")
-        await client.start()
+        client = FlextApiClient(config={"base_url": "https://httpbin.org"})
+        result = await client.delete("/delete")
 
-        try:
-            result = await client.delete("/delete")
+        assert result.is_success
+        response = result.value
 
-            FlextTestsMatchers.assert_result_success(result)
-            response = result.value
-
-            assert response.status_code == 200
-            assert isinstance(response.body, dict)
-        finally:
-            await client.close()
+        assert response.status_code == 200
+        assert isinstance(response.body, dict)
 
     @pytest.mark.asyncio
     async def test_network_error_handling_with_factory(self) -> None:
         """Test error handling using factory-created client."""
         # Use non-responsive endpoint to trigger error
-        client = FlextApiFactories.create_client(
-            base_url="http://127.0.0.1:65530",
-            timeout=0.3,
+        client = FlextApiClient(
+            config={"base_url": "http://127.0.0.1:65530", "timeout": 0.3}
         )
-        await client.start()
+        result = await client.get("/test")
 
-        try:
-            result = await client.get("/test")
-
-            # Should fail with network error
-            FlextTestsMatchers.assert_result_failure(result)
-            assert result.error is not None
-            assert isinstance(result.error, str)
-        finally:
-            await client.close()
+        # Should fail with network error
+        assert result.is_failure
+        assert result.error is not None
+        assert isinstance(result.error, str)
 
     @pytest.mark.asyncio
     async def test_http_error_responses_real(self) -> None:
         """Test handling of HTTP error responses."""
-        client = FlextApiFactories.create_client(base_url="https://httpbin.org")
-        await client.start()
+        client = FlextApiClient(config={"base_url": "https://httpbin.org"})
+        # Request 404 endpoint
+        result = await client.get("/status/404")
 
-        try:
-            # Request 404 endpoint
-            result = await client.get("/status/404")
-
-            # Client should handle HTTP errors gracefully
-            FlextTestsMatchers.assert_result_success(
-                result,
-            )  # Still successful FlextResult
-            response = result.value
-            assert response.status_code == 404
-        finally:
-            await client.close()
+        # Client should handle HTTP errors gracefully
+        assert result.is_success  # Still successful FlextResult
+        response = result.value
+        assert response.status_code == 404
 
     @pytest.mark.asyncio
     async def test_timeout_behavior_real(self) -> None:
         """Test timeout behavior with slow endpoints."""
-        client = FlextApiFactories.create_client(
-            base_url="https://httpbin.org",
-            timeout=2.0,  # 2 second timeout
+        client = FlextApiClient(
+            config={"base_url": "https://httpbin.org", "timeout": 2.0}
         )
-        await client.start()
+        # Request endpoint that delays 3 seconds (should timeout)
+        result = await client.get("/delay/3")
 
-        try:
-            # Request endpoint that delays 3 seconds (should timeout)
-            result = await client.get("/delay/3")
-
-            # Should fail due to timeout
-            FlextTestsMatchers.assert_result_failure(result)
-            assert result.error is not None
-        finally:
-            await client.close()
+        # Should fail due to timeout
+        assert result.is_failure
+        assert result.error is not None
 
     @pytest.mark.asyncio
     async def test_json_response_parsing_real(self) -> None:
         """Test JSON response parsing with complex data."""
-        client = FlextApiFactories.create_client(base_url="https://httpbin.org")
-        await client.start()
+        client = FlextApiClient(config={"base_url": "https://httpbin.org"})
+        result = await client.get("/json")
 
-        try:
-            result = await client.get("/json")
+        assert result.is_success
+        response = result.value
 
-            FlextTestsMatchers.assert_result_success(result)
-            response = result.value
-
-            # Verify JSON parsing
-            assert response.status_code == 200
-            assert isinstance(response.body, dict)
-            # httpbin.org /json endpoint returns slideshow data
-            assert "slideshow" in json.dumps(response.body)
-        finally:
-            await client.close()
+        # Verify JSON parsing
+        assert response.status_code == 200
+        assert isinstance(response.body, dict)
+        # httpbin.org /json endpoint returns slideshow data
+        assert "slideshow" in json.dumps(response.body)
 
     @pytest.mark.asyncio
     async def test_retry_behavior_real(self) -> None:
         """Test retry behavior on server errors."""
         # Use client with retry configuration
-        client = FlextApiFactories.create_client(
-            base_url="https://httpbin.org",
-            max_retries=2,
-            timeout=5.0,
+        client = FlextApiClient(
+            config={"base_url": "https://httpbin.org", "max_retries": 2, "timeout": 5.0}
         )
-        await client.start()
+        # Use /status/500 to simulate server error (should be retried)
+        result = await client.get("/status/500")
 
-        try:
-            # Use /status/500 to simulate server error (should be retried)
-            result = await client.get("/status/500")
-
-            # Should eventually succeed or fail after retries
-            # The response itself will be HTTP 500, but FlextResult should be success
-            FlextTestsMatchers.assert_result_success(result)
-            response = result.value
-            assert response.status_code == 500
-        finally:
-            await client.close()
+        # Should eventually succeed or fail after retries
+        # The response itself will be HTTP 500, but FlextResult should be success
+        assert result.is_success
+        response = result.value
+        assert response.status_code == 500
 
     def test_client_string_representation(self) -> None:
         """Test client string representation."""
-        client = FlextApiFactories.create_client(base_url="https://api.example.com")
+        client = FlextApiClient(config={"base_url": "https://api.example.com"})
         client_str = str(client)
 
         # Should contain meaningful information
@@ -217,34 +166,31 @@ class TestFlextApiClientReal:
     @pytest.mark.asyncio
     async def test_multiple_requests_same_client(self) -> None:
         """Test multiple requests with the same client instance."""
-        client = FlextApiFactories.create_client(base_url="https://httpbin.org")
-        await client.start()
+        client = FlextApiClient(config={"base_url": "https://httpbin.org"})
+        # Multiple GET requests
+        result1 = await client.get("/get")
+        result2 = await client.get("/json")
+        result3 = await client.post("/post")
 
-        try:
-            # Multiple GET requests
-            result1 = await client.get("/get")
-            result2 = await client.get("/json")
-            result3 = await client.post("/post")
+        # All should succeed
+        assert result1.is_success
+        assert result2.is_success
+        assert result3.is_success
 
-            # All should succeed
-            FlextTestsMatchers.assert_result_success(result1)
-            FlextTestsMatchers.assert_result_success(result2)
-            FlextTestsMatchers.assert_result_success(result3)
-
-            # Verify responses
-            assert result1.value.status_code == 200
-            assert result2.value.status_code == 200
-            assert result3.value.status_code == 200
-        finally:
-            await client.close()
+        # Verify responses
+        assert result1.value.status_code == 200
+        assert result2.value.status_code == 200
+        assert result3.value.status_code == 200
 
     def test_client_configuration_validation(self) -> None:
         """Test client configuration validation."""
         # Valid configuration should work
-        client = FlextApiFactories.create_client(
-            base_url="https://httpbin.org",
-            timeout=60.0,
-            max_retries=5,
+        client = FlextApiClient(
+            config={
+                "base_url": "https://httpbin.org",
+                "timeout": 60.0,
+                "max_retries": 5,
+            }
         )
 
         assert client.base_url == "https://httpbin.org"

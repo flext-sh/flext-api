@@ -10,19 +10,7 @@ from typing import Protocol, runtime_checkable
 
 from flext_core import FlextProtocols, FlextResult
 
-from .typings import FlextApiTypings
-
-HttpData = FlextApiTypings.HttpData
-HttpHeaders = FlextApiTypings.HttpHeaders
-HttpMethod = FlextApiTypings.HttpMethod
-HttpParams = FlextApiTypings.HttpParams
-HttpStatusCode = FlextApiTypings.HttpStatusCode
-JsonObject = FlextApiTypings.JsonObject
-RequestData = FlextApiTypings.RequestData
-ResponseData = FlextApiTypings.ResponseData
-StorageKey = FlextApiTypings.StorageKey
-StorageValue = FlextApiTypings.StorageValue
-TimeoutSeconds = FlextApiTypings.TimeoutSeconds
+from .typings import FlextApiTypes
 
 
 class FlextApiProtocols(FlextProtocols):
@@ -38,52 +26,52 @@ class FlextApiProtocols(FlextProtocols):
 
         def request(
             self,
-            method: HttpMethod,
+            method: FlextApiTypes.HttpMethod,
             url: str,
-            headers: HttpHeaders | None = None,
-            params: HttpParams | None = None,
-            data: HttpData | None = None,
-            timeout: TimeoutSeconds | None = None,
-        ) -> FlextResult[ResponseData]:
+            headers: FlextApiTypes.HttpHeaders | None = None,
+            params: FlextApiTypes.HttpParams | None = None,
+            data: FlextApiTypes.HttpData | None = None,
+            timeout: FlextApiTypes.TimeoutSeconds | None = None,
+        ) -> FlextResult[FlextApiTypes.ResponseData]:
             """Execute an HTTP request."""
             ...
 
         def get(
             self,
             url: str,
-            headers: HttpHeaders | None = None,
-            params: HttpParams | None = None,
-            timeout: TimeoutSeconds | None = None,
-        ) -> FlextResult[ResponseData]:
+            headers: FlextApiTypes.HttpHeaders | None = None,
+            params: FlextApiTypes.HttpParams | None = None,
+            timeout: FlextApiTypes.TimeoutSeconds | None = None,
+        ) -> FlextResult[FlextApiTypes.ResponseData]:
             """Execute HTTP GET request."""
             ...
 
         def post(
             self,
             url: str,
-            data: HttpData | None = None,
-            headers: HttpHeaders | None = None,
-            timeout: TimeoutSeconds | None = None,
-        ) -> FlextResult[ResponseData]:
+            data: FlextApiTypes.HttpData | None = None,
+            headers: FlextApiTypes.HttpHeaders | None = None,
+            timeout: FlextApiTypes.TimeoutSeconds | None = None,
+        ) -> FlextResult[FlextApiTypes.ResponseData]:
             """Execute HTTP POST request."""
             ...
 
         def put(
             self,
             url: str,
-            data: HttpData | None = None,
-            headers: HttpHeaders | None = None,
-            timeout: TimeoutSeconds | None = None,
-        ) -> FlextResult[ResponseData]:
+            data: FlextApiTypes.HttpData | None = None,
+            headers: FlextApiTypes.HttpHeaders | None = None,
+            timeout: FlextApiTypes.TimeoutSeconds | None = None,
+        ) -> FlextResult[FlextApiTypes.ResponseData]:
             """Execute HTTP PUT request."""
             ...
 
         def delete(
             self,
             url: str,
-            headers: HttpHeaders | None = None,
-            timeout: TimeoutSeconds | None = None,
-        ) -> FlextResult[ResponseData]:
+            headers: FlextApiTypes.HttpHeaders | None = None,
+            timeout: FlextApiTypes.TimeoutSeconds | None = None,
+        ) -> FlextResult[FlextApiTypes.ResponseData]:
             """Execute HTTP DELETE request."""
             ...
 
@@ -91,21 +79,26 @@ class FlextApiProtocols(FlextProtocols):
     class StorageBackendProtocol(Protocol):
         """Protocol for storage backend implementations."""
 
-        def get(self, key: StorageKey) -> FlextResult[StorageValue | None]:
+        def get(
+            self, key: FlextApiTypes.StorageKey
+        ) -> FlextResult[FlextApiTypes.StorageValue | None]:
             """Retrieve value by key."""
             ...
 
         def set(
-            self, key: StorageKey, value: StorageValue, timeout: int | None = None
+            self,
+            key: FlextApiTypes.StorageKey,
+            value: FlextApiTypes.StorageValue,
+            timeout: int | None = None,
         ) -> FlextResult[bool]:
             """Store value with optional timeout."""
             ...
 
-        def delete(self, key: StorageKey) -> FlextResult[bool]:
+        def delete(self, key: FlextApiTypes.StorageKey) -> FlextResult[bool]:
             """Delete value by key."""
             ...
 
-        def exists(self, key: StorageKey) -> FlextResult[bool]:
+        def exists(self, key: FlextApiTypes.StorageKey) -> FlextResult[bool]:
             """Check if key exists."""
             ...
 
@@ -113,7 +106,7 @@ class FlextApiProtocols(FlextProtocols):
             """Clear all stored values."""
             ...
 
-        def keys(self: object) -> FlextResult[list[StorageKey]]:
+        def keys(self: object) -> FlextResult[list[FlextApiTypes.StorageKey]]:
             """Get all keys."""
             ...
 
@@ -125,7 +118,7 @@ class FlextApiProtocols(FlextProtocols):
             self,
             attempt: int,
             exception: Exception,
-            status_code: HttpStatusCode | None = None,
+            status_code: FlextApiTypes.HttpStatusCode | None = None,
         ) -> bool:
             """Determine if operation should be retried."""
             ...
@@ -185,16 +178,20 @@ class FlextApiProtocols(FlextProtocols):
         """Protocol for request validation implementations."""
 
         def validate_request(
-            self, request_data: RequestData
-        ) -> FlextResult[RequestData]:
+            self, request_data: FlextApiTypes.RequestData
+        ) -> FlextResult[FlextApiTypes.RequestData]:
             """Validate and sanitize request data."""
             ...
 
-        def validate_headers(self, headers: HttpHeaders) -> FlextResult[HttpHeaders]:
+        def validate_headers(
+            self, headers: FlextApiTypes.HttpHeaders
+        ) -> FlextResult[FlextApiTypes.HttpHeaders]:
             """Validate HTTP headers."""
             ...
 
-        def validate_params(self, params: HttpParams) -> FlextResult[HttpParams]:
+        def validate_params(
+            self, params: FlextApiTypes.HttpParams
+        ) -> FlextResult[FlextApiTypes.HttpParams]:
             """Validate query parameters."""
             ...
 
@@ -203,13 +200,17 @@ class FlextApiProtocols(FlextProtocols):
         """Protocol for response processing implementations."""
 
         def process_response(
-            self, response_data: ResponseData, status_code: HttpStatusCode
-        ) -> FlextResult[ResponseData]:
+            self,
+            response_data: FlextApiTypes.ResponseData,
+            status_code: FlextApiTypes.HttpStatusCode,
+        ) -> FlextResult[FlextApiTypes.ResponseData]:
             """Process and transform response data."""
             ...
 
         def handle_error_response(
-            self, response_data: ResponseData, status_code: HttpStatusCode
+            self,
+            response_data: FlextApiTypes.ResponseData,
+            status_code: FlextApiTypes.HttpStatusCode,
         ) -> FlextResult[Exception]:
             """Handle error responses and create appropriate exceptions."""
             ...
@@ -218,7 +219,7 @@ class FlextApiProtocols(FlextProtocols):
     class AuthenticationProviderProtocol(Protocol):
         """Protocol for authentication provider implementations."""
 
-        def get_auth_headers(self: object) -> FlextResult[HttpHeaders]:
+        def get_auth_headers(self: object) -> FlextResult[FlextApiTypes.HttpHeaders]:
             """Get authentication headers for requests."""
             ...
 
@@ -236,21 +237,21 @@ class FlextApiProtocols(FlextProtocols):
 
         def record_request(
             self,
-            method: HttpMethod,
+            method: FlextApiTypes.HttpMethod,
             url: str,
-            status_code: HttpStatusCode,
+            status_code: FlextApiTypes.HttpStatusCode,
             duration_ms: float,
         ) -> FlextResult[bool]:
             """Record request metrics."""
             ...
 
         def record_error(
-            self, error: Exception, context: JsonObject
+            self, error: Exception, context: FlextApiTypes.JsonObject
         ) -> FlextResult[bool]:
             """Record error metrics."""
             ...
 
-        def get_metrics(self: object) -> FlextResult[JsonObject]:
+        def get_metrics(self: object) -> FlextResult[FlextApiTypes.JsonObject]:
             """Get collected metrics."""
             ...
 
@@ -259,14 +260,14 @@ class FlextApiProtocols(FlextProtocols):
         """Protocol for middleware implementations."""
 
         async def process_request(
-            self, request: RequestData
-        ) -> FlextResult[RequestData]:
+            self, request: FlextApiTypes.RequestData
+        ) -> FlextResult[FlextApiTypes.RequestData]:
             """Process incoming request."""
             ...
 
         async def process_response(
-            self, response: ResponseData
-        ) -> FlextResult[ResponseData]:
+            self, response: FlextApiTypes.ResponseData
+        ) -> FlextResult[FlextApiTypes.ResponseData]:
             """Process outgoing response."""
             ...
 
@@ -274,7 +275,7 @@ class FlextApiProtocols(FlextProtocols):
     class PluginProtocol(Protocol):
         """Protocol for plugin implementations."""
 
-        def initialize(self, config: JsonObject) -> FlextResult[bool]:
+        def initialize(self, config: FlextApiTypes.JsonObject) -> FlextResult[bool]:
             """Initialize plugin with configuration."""
             ...
 
@@ -327,34 +328,6 @@ class FlextApiProtocols(FlextProtocols):
             ...
 
 
-# Backward compatibility aliases
-HttpClientProtocol = FlextApiProtocols.HttpClientProtocol
-StorageBackendProtocol = FlextApiProtocols.StorageBackendProtocol
-RetryStrategyProtocol = FlextApiProtocols.RetryStrategyProtocol
-ConnectionManagerProtocol = FlextApiProtocols.ConnectionManagerProtocol
-CacheProtocol = FlextApiProtocols.CacheProtocol
-RequestValidatorProtocol = FlextApiProtocols.RequestValidatorProtocol
-ResponseProcessorProtocol = FlextApiProtocols.ResponseProcessorProtocol
-AuthenticationProviderProtocol = FlextApiProtocols.AuthenticationProviderProtocol
-MetricsCollectorProtocol = FlextApiProtocols.MetricsCollectorProtocol
-MiddlewareProtocol = FlextApiProtocols.MiddlewareProtocol
-PluginProtocol = FlextApiProtocols.PluginProtocol
-ConfigurationProviderProtocol = FlextApiProtocols.ConfigurationProviderProtocol
-LoggerProtocol = FlextApiProtocols.LoggerProtocol
-
 __all__ = [
-    "AuthenticationProviderProtocol",
-    "CacheProtocol",
-    "ConfigurationProviderProtocol",
-    "ConnectionManagerProtocol",
     "FlextApiProtocols",
-    "HttpClientProtocol",
-    "LoggerProtocol",
-    "MetricsCollectorProtocol",
-    "MiddlewareProtocol",
-    "PluginProtocol",
-    "RequestValidatorProtocol",
-    "ResponseProcessorProtocol",
-    "RetryStrategyProtocol",
-    "StorageBackendProtocol",
 ]
