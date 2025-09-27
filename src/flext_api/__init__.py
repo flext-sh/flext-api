@@ -14,42 +14,24 @@ from typing import cast
 
 from flext_api.app import FlextApiApp
 
-# Enum modules - one class per module
-from flext_api.authentication_type import FlextApiAuthenticationType
-from flext_api.cache_strategy import FlextApiCacheStrategy
+# Main modules - consolidated following [Project]Constants pattern
 from flext_api.client import FlextApiClient
-from flext_api.client_status import FlextApiClientStatus
 from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
-from flext_api.content_type import FlextApiContentType
 from flext_api.exceptions import FlextApiExceptions
-from flext_api.http_method import FlextApiHttpMethod
-from flext_api.logging_constants import FlextApiLoggingConstants
 from flext_api.models import FlextApiModels
-from flext_api.request_status import FlextApiRequestStatus
-from flext_api.service_status import FlextApiServiceStatus
 from flext_api.storage import FlextApiStorage
-from flext_api.storage_backend import FlextApiStorageBackend
 from flext_api.utilities import FlextApiUtilities
 
 __all__ = [
     "FlextApi",
     "FlextApiApp",
-    "FlextApiAuthenticationType",
-    "FlextApiCacheStrategy",
     "FlextApiClient",
-    "FlextApiClientStatus",
     "FlextApiConfig",
     "FlextApiConstants",
-    "FlextApiContentType",
     "FlextApiExceptions",
-    "FlextApiHttpMethod",
-    "FlextApiLoggingConstants",
     "FlextApiModels",
-    "FlextApiRequestStatus",
-    "FlextApiServiceStatus",
     "FlextApiStorage",
-    "FlextApiStorageBackend",
     "FlextApiUtilities",
     "__version__",
 ]
@@ -71,16 +53,16 @@ class FlextApi:
     Storage = FlextApiStorage
     Utilities = FlextApiUtilities
 
-    # Enum modules - one class per module
-    HttpMethod = FlextApiHttpMethod
-    ClientStatus = FlextApiClientStatus
-    RequestStatus = FlextApiRequestStatus
-    ServiceStatus = FlextApiServiceStatus
-    ContentType = FlextApiContentType
-    StorageBackend = FlextApiStorageBackend
-    AuthenticationType = FlextApiAuthenticationType
-    CacheStrategy = FlextApiCacheStrategy
-    LoggingConstants = FlextApiLoggingConstants
+    # Constants - consolidated from single-class modules
+    HttpMethod = FlextApiConstants.HttpMethod
+    ClientStatus = FlextApiConstants.ClientStatus
+    RequestStatus = FlextApiConstants.RequestStatus
+    ServiceStatus = FlextApiConstants.ServiceStatus
+    ContentType = FlextApiConstants.ContentType
+    StorageBackend = FlextApiConstants.StorageBackend
+    AuthenticationType = FlextApiConstants.AuthenticationType
+    CacheStrategy = FlextApiConstants.CacheStrategy
+    LoggingConstants = FlextApiConstants.LoggingConstants
 
     # Domain-specific functionality shortcuts
     @classmethod
@@ -105,14 +87,11 @@ class FlextApi:
         verify_ssl = cast("bool", kwargs.get("verify_ssl", True))
 
         # Filter out known parameters from kwargs
-        remaining_kwargs = {
+        {
             k: v
             for k, v in kwargs.items()
             if k not in {"timeout", "max_retries", "headers", "verify_ssl"}
         }
-
-        # Cast remaining kwargs to the expected type
-        typed_remaining_kwargs = cast("dict[str, object]", remaining_kwargs)
 
         return cls.Client(
             config=None,
@@ -121,14 +100,18 @@ class FlextApi:
             max_retries=max_retries,
             headers=headers,
             verify_ssl=verify_ssl,
-            **typed_remaining_kwargs,
         )
 
     @classmethod
     def create_config(cls, **kwargs: object) -> FlextApiConfig:
-        """Create API configuration."""
-        # Pydantic BaseSettings accepts **kwargs, but MyPy can't infer this
-        return cls.Config(**kwargs)
+        """Create API configuration using enhanced singleton pattern."""
+        # Use enhanced singleton pattern from FlextConfig
+        return cast(
+            "FlextApiConfig",
+            cls.Config.get_or_create_shared_instance(
+                project_name="flext-api", **kwargs
+            ),
+        )
 
     @classmethod
     def get_constants(cls) -> type[FlextApiConstants]:

@@ -15,7 +15,6 @@ from pathlib import Path
 from pydantic import ConfigDict, Field, field_validator
 
 from flext_api.constants import FlextApiConstants
-from flext_api.http_method import FlextApiHttpMethod
 from flext_api.typings import FlextApiTypes
 from flext_core import (
     FlextConstants,
@@ -72,7 +71,7 @@ class FlextApiModels(FlextModels):
             validate_default=True,
             # Serialization features
             json_encoders={
-                Path: "str",
+                Path: str,
             },
         )
 
@@ -82,7 +81,7 @@ class FlextApiModels(FlextModels):
 
         url: str = Field(description="Request URL")
         method: str = Field(
-            default=FlextApiHttpMethod.HttpMethod.GET, description="HTTP method"
+            default=FlextApiConstants.HttpMethod.GET, description="HTTP method"
         )
         headers: FlextApiTypes.Headers = Field(
             default_factory=dict, description="Request headers"
@@ -106,12 +105,10 @@ class FlextApiModels(FlextModels):
                 msg = "Invalid URL: URL cannot be empty"
                 raise ValueError(msg)
 
-            if isinstance(v, str) and v.strip().startswith("/"):
+            if v.strip().startswith("/"):
                 return v.strip()
 
-            validation_result = FlextModels.create_validated_http_url(
-                v.strip() if isinstance(v, str) else "",
-            )
+            validation_result = FlextModels.create_validated_http_url(v.strip())
             if validation_result.is_failure:
                 error_msg = validation_result.error or "Invalid URL"
                 if "URL must start with http:// or https://" in error_msg:
@@ -154,6 +151,9 @@ class FlextApiModels(FlextModels):
         method: str = Field(description="HTTP method")
         elapsed_time: float | None = Field(
             default=None, description="Request elapsed time"
+        )
+        domain_events: list[object] = Field(
+            default_factory=list, description="Domain events"
         )
 
         @property
@@ -223,9 +223,7 @@ class FlextApiModels(FlextModels):
         @classmethod
         def validate_base_url(cls, v: str) -> str:
             """Validate base URL using centralized FlextModels validation."""
-            validation_result = FlextModels.create_validated_http_url(
-                v.strip() if isinstance(v, str) else "",
-            )
+            validation_result = FlextModels.create_validated_http_url(v.strip())
             if validation_result.is_failure:
                 error_msg = validation_result.error or "Invalid base URL"
                 if (
@@ -331,7 +329,7 @@ class FlextApiModels(FlextModels):
 
         url: str = Field(description="Request URL")
         method: str = Field(
-            default=FlextApiHttpMethod.HttpMethod.GET, description="HTTP method"
+            default=FlextApiConstants.HttpMethod.GET, description="HTTP method"
         )
         headers: dict[str, str] = Field(
             default_factory=dict, description="Request headers"
@@ -353,6 +351,9 @@ class FlextApiModels(FlextModels):
         )
         headers: dict[str, str] = Field(
             default_factory=dict, description="Response headers"
+        )
+        domain_events: list[object] = Field(
+            default_factory=list, description="Domain events"
         )
 
     class UrlModel(FlextModels.Value):
@@ -460,7 +461,7 @@ class FlextApiModels(FlextModels):
             )
             url: str = Field(min_length=1, description="Request URL")
             method: str = Field(
-                default=FlextApiHttpMethod.HttpMethod.GET, description="HTTP method"
+                default=FlextApiConstants.HttpMethod.GET, description="HTTP method"
             )
             timeout: int = Field(
                 default=int(FlextApiConstants.DEFAULT_TIMEOUT),
@@ -522,7 +523,7 @@ class FlextApiModels(FlextModels):
     # Re-export nested classes for backward compatibility
     HttpRequestConfig = Http.HttpRequestConfig
     HttpErrorConfig = Http.HttpErrorConfig
-    HttpMethod = FlextApiHttpMethod.HttpMethod
+    HttpMethod = FlextApiConstants.HttpMethod
 
 
 __all__ = [

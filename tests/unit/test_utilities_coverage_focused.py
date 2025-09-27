@@ -86,7 +86,9 @@ class TestFlextUtilitiesCoverageFocused:
     def test_pagination_builder_exception_handling(self) -> None:
         """Test PaginationBuilder with large data."""
         # Create very large data scenario
-        very_large_data = [{"x" * 100000: "y" * 100000} for _ in range(1000)]
+        very_large_data: list[object] = [
+            {"x" * 100000: "y" * 100000} for _ in range(1000)
+        ]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
             data=very_large_data,
             page=1,
@@ -294,7 +296,7 @@ class TestFlextUtilitiesCoverageFocused:
 
     def test_batch_process_zero_batch_size(self) -> None:
         """Test batch_process with zero batch_size (should default to 100)."""
-        items = list(range(150))
+        items: list[object] = list(range(150))
         batches = FlextApiUtilities.batch_process(items, batch_size=0)
         assert len(batches) == 2  # 150 items in batches of 100
         assert len(batches[0]) == 100
@@ -302,14 +304,14 @@ class TestFlextUtilitiesCoverageFocused:
 
     def test_batch_process_negative_batch_size(self) -> None:
         """Test batch_process with negative batch_size (should default to 100)."""
-        items = list(range(50))
+        items: list[object] = list(range(50))
         batches = FlextApiUtilities.batch_process(items, batch_size=-10)
         assert len(batches) == 1  # 50 items in one batch of 100
         assert len(batches[0]) == 50
 
     def test_batch_process_normal_case(self) -> None:
         """Test batch_process with normal case."""
-        items = list(range(25))
+        items: list[object] = list(range(25))
         batches = FlextApiUtilities.batch_process(items, batch_size=10)
         assert len(batches) == 3  # 25 items in batches of 10
         assert len(batches[0]) == 10

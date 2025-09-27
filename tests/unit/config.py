@@ -47,12 +47,12 @@ class TestFlextApiConfigReal:
     def test_server_config_creation(self) -> None:
         """Test FlextApiConfig creation with custom server values."""
         config = FlextApiConfig(
-            api_base_url=f"http://{FlextConstants.Platform.LOCALHOST_IP}:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
+            api_base_url=f"http://{FlextConstants.Platform.LOOPBACK_IP}:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
         )
 
         assert (
             config.api_base_url
-            == f"http://{FlextConstants.Platform.LOCALHOST_IP}:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
+            == f"http://{FlextConstants.Platform.LOOPBACK_IP}:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
         )
 
     def test_security_config_creation(self) -> None:
@@ -108,7 +108,7 @@ class TestFlextApiConfigReal:
     def test_config_negative_timeout(self) -> None:
         """Test config validation with invalid values."""
         # Test that validation works
-        with pytest.raises((ValueError, TypeError)):
+        with pytest.raises((ValueError, TypeError)):  # type: ignore[arg-type]
             FlextApiConfig(
                 api_base_url="https://api.example.com",
                 api_timeout=-1,  # Invalid negative timeout

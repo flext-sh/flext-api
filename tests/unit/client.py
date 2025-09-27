@@ -523,7 +523,9 @@ class TestFlextApiClient:
             timeout=60,
             max_retries=3,
         )
-        client = FlextApiClient(base_cfg, base_url="https://kwargs.com", timeout=45)
+        client = FlextApiClient(
+            config=base_cfg, base_url="https://kwargs.com", timeout=45
+        )
 
         # Config values should be used, but kwargs should also be merged
         assert client.base_url == "https://kwargs.com"  # kwargs override config
@@ -761,11 +763,11 @@ async def test_real_http_headers_and_user_agent() -> None:
 async def test_real_client_factory_function() -> None:
     """Test real HTTP using client factory function."""
     client = FlextApiClient(
-        {
+        config={
             "base_url": "https://httpbin.org",
             "timeout": 10,
             "headers": {"X-Test": "factory-created"},
-        },
+        },  # type: ignore[arg-type]
     )
 
     try:
@@ -882,9 +884,9 @@ def test_create_flext_api_factory_function() -> None:
 
     # Cast to proper type for MyPy
     typed_config = cast(
-        "Mapping[str, str | int, float] | bool | dict[str, str] | None", config_dict
+        "Mapping[str, str | int | float] | bool | dict[str, str] | None", config_dict
     )
-    client = FlextApiClient(typed_config)
+    client = FlextApiClient(config=typed_config)
 
     assert client is not None
     assert isinstance(client, FlextApiClient)
@@ -901,10 +903,10 @@ def test_create_flext_api_validation_error() -> None:
     try:
         # Cast to proper type for MyPy
         typed_config = cast(
-            "Mapping[str, str | int, float] | bool | dict[str, str] | None",
+            "Mapping[str, str | int | float] | bool | dict[str, str] | None",
             invalid_config,
         )
-        client = FlextApiClient(typed_config)
+        client = FlextApiClient(config=typed_config)
         # If it returns a client, it should be valid
         assert client is not None
         assert isinstance(client, FlextApiClient)
@@ -947,6 +949,7 @@ def test_client_response_structure() -> None:
         status_code=200,
         headers={"Content-Type": "application/json"},
         body={"message": "success"},
+        domain_events=[],
     )
 
     assert response.status_code == 200

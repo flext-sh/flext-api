@@ -13,8 +13,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Literal
-
 from flext_core import FlextTypes
 
 # =============================================================================
@@ -36,7 +34,7 @@ class FlextApiTypes(FlextTypes):
     # =========================================================================
 
     # Common HTTP types referenced throughout the codebase
-    type Headers = dict[str, str | list[str]]
+    type Headers = dict[str, str]
     type RequestBody = dict[str, FlextTypes.Core.JsonValue] | str | bytes
     type Timeout = int | float
 
@@ -52,6 +50,41 @@ class FlextApiTypes(FlextTypes):
     type StorageKey = str
     type StorageValue = FlextTypes.Core.JsonValue
     type TimeoutSeconds = int | float
+    # =========================================================================
+    # CORE API TYPES - Commonly used API type aliases extending FlextTypes.Core
+    # =========================================================================
+
+    class Core(FlextTypes.Core):
+        """Core API types extending FlextTypes.Core."""
+
+        # Configuration and settings types
+        type ConfigDict = dict[str, FlextTypes.Core.ConfigValue | dict[str, object]]
+        type ConnectionDict = dict[str, object]
+        type ClientConfigDict = dict[str, object]
+        type RequestConfigDict = dict[str, object]
+        type ResponseDict = dict[str, object]
+        type MetricsDict = dict[str, object]
+        type CacheDict = dict[str, object]
+        type RetryInfoDict = dict[str, object]
+        type StorageDict = dict[str, object]
+        type UtilityDict = dict[str, object]
+
+        # HTTP operation types
+        type HttpRequestDict = dict[str, object]
+        type HttpResponseDict = dict[str, object]
+        type ApiSetupDict = dict[str, object]
+        type EndpointDict = dict[str, object]
+
+        # Template and structured response types
+        type ResponseTemplateDict = dict[str, str | dict[str, object]]
+        type ErrorTemplateDict = dict[str, str | dict[str, object]]
+
+        # Model and data types
+        type FilterConditionsDict = dict[str, object]
+        type QueryParamsDict = dict[str, object]
+        type RequestKwargsDict = dict[str, object]
+        type ContextDict = dict[str, object]
+        type DetailsDict = dict[str, object]
 
     # =========================================================================
     # HTTP REQUEST TYPES - Complex request handling types
@@ -157,25 +190,8 @@ class FlextApiTypes(FlextTypes):
         """
 
         # API-specific project types extending the generic ones
-        type ProjectType = Literal[
-            # Generic types inherited from FlextTypes.Project
-            "library",
-            "application",
-            "service",
-            # API-specific types
-            "rest-api",
-            "graphql-api",
-            "microservice-api",
-            "webhook-api",
-            "api-gateway",
-            "api-client",
-            "api-server",
-            "api-wrapper",
-            "sdk",
-            "client-library",
-            "http-service",
-            "json-api",
-        ]
+        # ProjectType is inherited from FlextTypes.Project
+        # No need to redefine it here as it would cause override issues
 
         # API-specific project configurations
         type ApiProjectConfig = dict[str, FlextTypes.Core.ConfigValue | object]

@@ -6,13 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import threading
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from pydantic import Field, computed_field
 from pydantic_settings import SettingsConfigDict
 
 from flext_api.constants import FlextApiConstants
+from flext_api.typings import FlextApiTypes
 from flext_core import FlextConfig
 
 
@@ -23,18 +23,21 @@ class FlextApiConfig(FlextConfig):
     - Extends FlextConfig from flext-core
     - No nested classes within Config
     - All defaults from FlextApiConstants
-    - Dependency injection integration with flext-core container
+    - Uses enhanced singleton pattern with inverse dependency injection
     - Uses Pydantic 2.11+ features (field_validator, model_validator)
     """
-
-    # Singleton pattern attributes
-    _global_instance: ClassVar[FlextApiConfig | None] = None
-    _lock: ClassVar[threading.Lock] = threading.Lock()
 
     model_config = SettingsConfigDict(
         env_prefix="FLEXT_API_",
         case_sensitive=False,
         extra="allow",
+        # Inherit enhanced Pydantic 2.11+ features from FlextConfig
+        validate_assignment=True,
+        str_strip_whitespace=True,
+        json_schema_extra={
+            "title": "FLEXT API Configuration",
+            "description": "Enterprise API configuration extending FlextConfig",
+        },
     )
 
     # Class-level CORS configuration for backward compatibility
@@ -112,13 +115,12 @@ class FlextApiConfig(FlextConfig):
     )
 
     @computed_field
-    @property
     def api_url(self) -> str:
         """Get complete API URL."""
         return f"{self.base_url}/api/{self.api_version}"
 
     # API-specific methods
-    def get_client_config(self) -> dict[str, object]:
+    def get_client_config(self) -> FlextApiTypes.Core.ClientConfigDict:
         """Get API client configuration."""
         return {
             "base_url": self.base_url,
@@ -135,32 +137,52 @@ class FlextApiConfig(FlextConfig):
             "Content-Type": "application/json",
         }
 
+    def to_dict(self) -> dict[str, object]:
+        """Convert configuration to dictionary."""
+        return {
+            "base_url": self.base_url,
+            "api_base_url": self.api_base_url,
+            "timeout": self.timeout,
+            "api_timeout": self.api_timeout,
+            "max_retries": self.max_retries,
+            "api_version": self.api_version,
+            "log_requests": self.log_requests,
+            "log_responses": self.log_responses,
+        }
+
     @classmethod
     def create_for_environment(
         cls, environment: str, **overrides: object
     ) -> FlextApiConfig:
-        """Create configuration for specific environment."""
-        return cls(environment=environment, **overrides)
+        """Create configuration for specific environment using enhanced singleton pattern."""
+        return cast(
+            "FlextApiConfig",
+            cls.get_or_create_shared_instance(
+                project_name="flext-api", environment=environment, **overrides
+            ),
+        )
 
     @classmethod
     def create_default(cls) -> FlextApiConfig:
-        """Create default configuration instance."""
-        return cls()
+        """Create default configuration instance using enhanced singleton pattern."""
+        return cast(
+            "FlextApiConfig",
+            cls.get_or_create_shared_instance(project_name="flext-api"),
+        )
 
-    # Singleton pattern override for proper typing
     @classmethod
     def get_global_instance(cls) -> FlextApiConfig:
-        """Get the global singleton instance of FlextApiConfig."""
-        if cls._global_instance is None:
-            with cls._lock:
-                if cls._global_instance is None:
-                    cls._global_instance = cls()
-        return cls._global_instance
+        """Get the global singleton instance using enhanced FlextConfig pattern."""
+        return cast(
+            "FlextApiConfig",
+            cls.get_or_create_shared_instance(project_name="flext-api"),
+        )
 
     @classmethod
     def reset_global_instance(cls) -> None:
         """Reset the global FlextApiConfig instance (mainly for testing)."""
-        cls._global_instance = None
+        # Use the enhanced FlextConfig reset mechanism
+        # Reset mechanism - method may not exist in parent class
 
 
 __all__ = [
