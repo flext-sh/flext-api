@@ -80,13 +80,15 @@ class FlextApiStorage(FlextModels.Entity):
     # Essential HTTP Storage API - Using Registry directly
     # =============================================================================
 
-    def set(self, key: str, value: object, ttl: int | None = None) -> FlextResult[None]:
+    def set(
+        self, key: str, value: object, timeout: int | None = None
+    ) -> FlextResult[None]:
         """Store HTTP data using flext-core Registry.
 
         Args:
             key: Storage key identifier
             value: Value to store
-            ttl: Time-to-live in seconds (currently unused but kept for API compatibility)
+            timeout: Timeout in seconds (TTL for stored data)
 
         Returns:
             FlextResult[None]: Success or failure result.
@@ -96,6 +98,9 @@ class FlextApiStorage(FlextModels.Entity):
         # key is declared as str in the signature; just ensure it's non-empty
         if not key:
             return FlextResult[None].fail("Invalid key: key must be a non-empty string")
+
+        # Calculate TTL from timeout if provided, otherwise use default
+        ttl = timeout if timeout is not None else self._default_ttl
 
         # Create metadata for storage
         metadata = {

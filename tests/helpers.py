@@ -299,7 +299,7 @@ def validate_email_format(email: str) -> bool:
 def create_test_headers(
     content_type: str = "application/json",
     **additional_headers: str,
-) -> FlextApiTypes.HttpHeaders:
+) -> dict[str, str]:
     """Create headers using FlextTestsDomains service data.
 
     Returns:

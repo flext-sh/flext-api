@@ -10,6 +10,7 @@ from typing import Protocol, runtime_checkable
 
 from flext_core import FlextProtocols, FlextResult
 
+from .models import FlextApiModels
 from .typings import FlextApiTypes
 
 
@@ -24,54 +25,44 @@ class FlextApiProtocols(FlextProtocols):
     class HttpClientProtocol(Protocol):
         """Protocol for HTTP client implementations."""
 
-        def request(
+        async def request(
             self,
-            method: FlextApiTypes.HttpMethod,
+            method: str,
             url: str,
-            headers: FlextApiTypes.HttpHeaders | None = None,
-            params: FlextApiTypes.HttpParams | None = None,
-            data: FlextApiTypes.HttpData | None = None,
-            timeout: FlextApiTypes.TimeoutSeconds | None = None,
-        ) -> FlextResult[FlextApiTypes.ResponseData]:
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute an HTTP request."""
             ...
 
-        def get(
+        async def get(
             self,
             url: str,
-            headers: FlextApiTypes.HttpHeaders | None = None,
-            params: FlextApiTypes.HttpParams | None = None,
-            timeout: FlextApiTypes.TimeoutSeconds | None = None,
-        ) -> FlextResult[FlextApiTypes.ResponseData]:
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP GET request."""
             ...
 
-        def post(
+        async def post(
             self,
             url: str,
-            data: FlextApiTypes.HttpData | None = None,
-            headers: FlextApiTypes.HttpHeaders | None = None,
-            timeout: FlextApiTypes.TimeoutSeconds | None = None,
-        ) -> FlextResult[FlextApiTypes.ResponseData]:
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP POST request."""
             ...
 
-        def put(
+        async def put(
             self,
             url: str,
-            data: FlextApiTypes.HttpData | None = None,
-            headers: FlextApiTypes.HttpHeaders | None = None,
-            timeout: FlextApiTypes.TimeoutSeconds | None = None,
-        ) -> FlextResult[FlextApiTypes.ResponseData]:
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP PUT request."""
             ...
 
-        def delete(
+        async def delete(
             self,
             url: str,
-            headers: FlextApiTypes.HttpHeaders | None = None,
-            timeout: FlextApiTypes.TimeoutSeconds | None = None,
-        ) -> FlextResult[FlextApiTypes.ResponseData]:
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP DELETE request."""
             ...
 
@@ -79,22 +70,20 @@ class FlextApiProtocols(FlextProtocols):
     class StorageBackendProtocol(Protocol):
         """Protocol for storage backend implementations."""
 
-        def get(
-            self, key: FlextApiTypes.StorageKey
-        ) -> FlextResult[FlextApiTypes.StorageValue | None]:
+        def get(self, key: str, default: object = None) -> FlextResult[object]:
             """Retrieve value by key."""
             ...
 
         def set(
             self,
             key: FlextApiTypes.StorageKey,
-            value: FlextApiTypes.StorageValue,
+            value: object,
             timeout: int | None = None,
-        ) -> FlextResult[bool]:
+        ) -> FlextResult[None]:
             """Store value with optional timeout."""
             ...
 
-        def delete(self, key: FlextApiTypes.StorageKey) -> FlextResult[bool]:
+        def delete(self, key: str) -> FlextResult[None]:
             """Delete value by key."""
             ...
 
@@ -102,7 +91,7 @@ class FlextApiProtocols(FlextProtocols):
             """Check if key exists."""
             ...
 
-        def clear(self: object) -> FlextResult[bool]:
+        def clear(self) -> FlextResult[None]:
             """Clear all stored values."""
             ...
 

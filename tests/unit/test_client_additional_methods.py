@@ -304,13 +304,9 @@ class TestFlextApiClientAdditionalMethods:
     def test_client_error_scenarios(self) -> None:
         """Test client error scenarios."""
         # Test with invalid config
-        try:
-            client = FlextApiClient({"invalid": "config"})
-            # Should still create client with defaults
-            assert client is not None
-        except Exception:
-            # Some invalid configs might raise exceptions
-            pass
+        client = FlextApiClient({"invalid": "config"})
+        # Should still create client with defaults
+        assert client is not None
 
     def test_client_method_existence(self) -> None:
         """Test that client has expected methods."""

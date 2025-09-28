@@ -1,5 +1,7 @@
 """Tests for missing coverage in FlextApiUtilities - focused on actual methods."""
 
+import time
+
 from flext_api import FlextApiUtilities
 
 
@@ -216,7 +218,7 @@ class TestFlextApiUtilitiesFocusedCoverage:
 
         # Test with empty string
         result = FlextApiUtilities.clean_text("")
-        assert result == ""
+        assert not result
 
     def test_safe_bool_conversion_various_inputs(self) -> None:
         """Test safe_bool_conversion with various inputs."""
@@ -363,8 +365,6 @@ class TestFlextApiUtilitiesFocusedCoverage:
 
     def test_get_elapsed_time_various_scenarios(self) -> None:
         """Test get_elapsed_time with various scenarios."""
-        import time
-
         # Test with start time
         start_time = time.time()
         time.sleep(0.01)  # Small delay
@@ -380,8 +380,6 @@ class TestFlextApiUtilitiesFocusedCoverage:
 
     def test_get_performance_metrics_various_scenarios(self) -> None:
         """Test get_performance_metrics with various scenarios."""
-        import time
-
         start_time = time.time()
         time.sleep(0.01)  # Small delay
         result = FlextApiUtilities.get_performance_metrics(start_time)

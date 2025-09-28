@@ -36,7 +36,7 @@ class TestFlextApiStorageAdditionalMethods:
         result = json_storage.serialize(circular_data)
 
         assert result.is_failure
-        assert "JSON serialization failed" in result.error
+        assert result.error is not None and "JSON serialization failed" in result.error
 
     def test_json_storage_deserialize_success(self) -> None:
         """Test JSON storage deserialization success."""
@@ -63,7 +63,9 @@ class TestFlextApiStorageAdditionalMethods:
         result = json_storage.deserialize(invalid_json)
 
         assert result.is_failure
-        assert "JSON deserialization failed" in result.error
+        assert (
+            result.error is not None and "JSON deserialization failed" in result.error
+        )
 
     def test_json_storage_deserialize_empty_string(self) -> None:
         """Test JSON storage deserialization with empty string."""
@@ -73,7 +75,9 @@ class TestFlextApiStorageAdditionalMethods:
         result = json_storage.deserialize("")
 
         assert result.is_failure
-        assert "JSON deserialization failed" in result.error
+        assert (
+            result.error is not None and "JSON deserialization failed" in result.error
+        )
 
     def test_cache_operations_get_cache_stats(self) -> None:
         """Test cache operations get cache stats."""
