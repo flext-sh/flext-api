@@ -31,7 +31,7 @@ class TestFlextApiModelsMissingCoverage:
         )
         result = url_model.validate_business_rules()
         assert result.is_failure
-        assert "URL cannot be empty" in result.error
+        assert result.error is not None and "URL cannot be empty" in result.error
 
     def test_url_model_validate_business_rules_valid_url(self) -> None:
         """Test URL model business rules validation with valid URL."""

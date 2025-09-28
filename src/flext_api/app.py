@@ -13,7 +13,7 @@ from flext_core import FlextService
 
 
 # Internal abstraction - FastAPI is imported at runtime only
-def _create_fastapi_instance(
+def create_fastapi_instance(
     title: str | None = None,
     version: str | None = None,
     description: str | None = None,
@@ -72,7 +72,7 @@ class FlextApiApp(FlextService[object]):
             FastAPI application instance
 
         """
-        app = _create_fastapi_instance(
+        app = create_fastapi_instance(
             title=config.title,
             version=config.app_version,
             description=getattr(config, "description", "FlextAPI Application"),

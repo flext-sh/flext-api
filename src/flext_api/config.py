@@ -97,6 +97,16 @@ class FlextApiConfig(FlextConfig):
         """Get complete API URL."""
         return f"{self.base_url}/api/{self.api_version}"
 
+    @property
+    def api_base_url(self) -> str:
+        """Alias for base_url to maintain backward compatibility."""
+        return self.base_url
+
+    @property
+    def api_timeout(self) -> int:
+        """Alias for timeout to maintain backward compatibility."""
+        return self.timeout
+
     # API-specific methods
     def get_client_config(self) -> FlextApiTypes.Core.ClientConfigDict:
         """Get API client configuration."""

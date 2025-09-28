@@ -78,7 +78,7 @@ def example_storage_usage() -> None:
         {},
         200,
     )
-    set_result = storage.set("example_key", cache_value, ttl=300)
+    set_result = storage.set("example_key", cache_value, timeout=300)
 
     if set_result.is_success:
         print("✅ Data stored successfully")

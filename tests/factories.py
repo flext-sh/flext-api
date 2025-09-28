@@ -47,10 +47,10 @@ class FlextApiFactories:
         base_config = FlextTestsDomains.create_configuration()
 
         # Ensure required client fields
-        client_config = {
-            "base_url": str(base_config.get("base_url", "https://httpbin.org")),
-            "timeout": cast("float", base_config.get("timeout", 30.0)),
-            "max_retries": cast("int", base_config.get("max_retries", 3)),
+        client_config: dict[str, object] = {
+            "base_url": base_config.get("base_url", "https://httpbin.org"),
+            "timeout": base_config.get("timeout", 30.0),
+            "max_retries": base_config.get("max_retries", 3),
             "headers": base_config.get(
                 "headers",
                 {"User-Agent": "FlextAPI-Test/0.9.0"},
@@ -162,15 +162,15 @@ class FlextApiFactories:
         # Use FlextTestsDomains for payload structure
         payload_data = FlextTestsDomains.create_payload()
 
-        base_request = {
-            "method": str(payload_data.get("method", "GET")),
-            "url": str(payload_data.get("url", "https://httpbin.org/get")),
+        base_request: dict[str, object] = {
+            "method": payload_data.get("method", "GET"),
+            "url": payload_data.get("url", "https://httpbin.org/get"),
             "headers": payload_data.get(
                 "headers",
                 {"Content-Type": "application/json"},
             ),
             "params": payload_data.get("params", {}),
-            "timeout": cast("float", payload_data.get("timeout", 30.0)),
+            "timeout": payload_data.get("timeout", 30.0),
             "request_id": str(uuid.uuid4()),
         }
         base_request.update(overrides)
@@ -187,14 +187,14 @@ class FlextApiFactories:
         # Use FlextTestsDomains for API response structure
         api_response = FlextTestsDomains.api_response_data()
 
-        response_data = {
+        response_data: dict[str, object] = {
             "status_code": 200,
             "data": api_response.get("data", {}),
             "headers": api_response.get(
                 "headers",
                 {"Content-Type": "application/json"},
             ),
-            "elapsed_time": cast("float", api_response.get("elapsed_time", 0.5)),
+            "elapsed_time": api_response.get("elapsed_time", 0.5),
             "request_id": str(api_response.get("request_id", str(uuid.uuid4()))),
             "from_cache": bool(api_response.get("from_cache", False)),
             "success": True,

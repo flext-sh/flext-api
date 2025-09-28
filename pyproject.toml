@@ -178,12 +178,6 @@
 [tool.ruff]
     extend = "../ruff-shared.toml"
 
-[tool.vulture]
-    extend = "../.vulture-shared.toml"
-
-[tool.pyrefly]
-    python_version = "3.13"
-
 [tool.pytest.ini_options]
     minversion = "8.0"
     asyncio_mode = "auto"
@@ -251,3 +245,12 @@
     bandit         = "^1.8.6"
     pip-audit      = "^2.9.0"
     pyrefly        = "^0.34.0"
+
+[tool.pyrefly]
+    python-version = "3.13"
+    search-path = [
+        "examples",
+        "scripts",
+        "src",
+        "tests",
+    ]
