@@ -136,7 +136,7 @@ class TestFlextApiStorageGaps:
 
         # Test with non-string key - this will succeed because Python allows it
         # The type checker would catch this, but runtime allows it
-        result = storage.set(123, "value")  # type: ignore[arg-type]
+        result = storage.set(123, "value")
         assert result.is_success  # This actually succeeds
 
     def test_ttl_expiration_simulation(self) -> None:

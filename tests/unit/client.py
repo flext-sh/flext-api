@@ -767,7 +767,7 @@ async def test_real_client_factory_function() -> None:
             "base_url": "https://httpbin.org",
             "timeout": 10,
             "headers": {"X-Test": "factory-created"},
-        },  # type: ignore[arg-type]
+        },
     )
 
     try:
@@ -949,7 +949,6 @@ def test_client_response_structure() -> None:
         status_code=200,
         headers={"Content-Type": "application/json"},
         body={"message": "success"},
-        domain_events=[],
     )
 
     assert response.status_code == 200

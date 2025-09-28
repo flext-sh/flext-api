@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, cast
+from typing import cast
 
 from pydantic import Field, computed_field
 from pydantic_settings import SettingsConfigDict
@@ -40,21 +40,10 @@ class FlextApiConfig(FlextConfig):
         },
     )
 
-    # Class-level CORS configuration for backward compatibility
-    cors_origins: ClassVar[list[str]] = ["*"]
-    cors_methods: ClassVar[list[str]] = ["GET", "POST", "PUT", "DELETE"]
-    cors_headers: ClassVar[list[str]] = ["Content-Type", "Authorization"]
-
     # API Configuration using FlextApiConstants for defaults
     base_url: str = Field(
         default=FlextApiConstants.DEFAULT_BASE_URL,
         description="Base URL for API requests",
-    )
-
-    # Legacy compatibility fields
-    api_base_url: str = Field(
-        default=FlextApiConstants.DEFAULT_BASE_URL,
-        description="API base URL (legacy compatibility)",
     )
 
     timeout: int = Field(
@@ -62,14 +51,6 @@ class FlextApiConfig(FlextConfig):
         ge=1,
         le=300,
         description="Request timeout in seconds",
-    )
-
-    # Legacy compatibility fields
-    api_timeout: int = Field(
-        default=FlextApiConstants.DEFAULT_TIMEOUT,
-        ge=1,
-        le=300,
-        description="API timeout (legacy compatibility)",
     )
 
     max_retries: int = Field(
@@ -95,23 +76,20 @@ class FlextApiConfig(FlextConfig):
         description="Enable response logging",
     )
 
-    # Instance CORS configuration (inherits from ClassVar defaults)
-    cors_origins_instance: list[str] = Field(
+    # CORS configuration
+    cors_origins: list[str] = Field(
         default_factory=lambda: ["*"],
         description="CORS allowed origins",
-        alias="cors_origins",
     )
 
-    cors_methods_instance: list[str] = Field(
+    cors_methods: list[str] = Field(
         default_factory=lambda: ["GET", "POST", "PUT", "DELETE"],
         description="CORS allowed methods",
-        alias="cors_methods",
     )
 
-    cors_headers_instance: list[str] = Field(
+    cors_headers: list[str] = Field(
         default_factory=lambda: ["Content-Type", "Authorization"],
         description="CORS allowed headers",
-        alias="cors_headers",
     )
 
     @computed_field
@@ -141,9 +119,7 @@ class FlextApiConfig(FlextConfig):
         """Convert configuration to dictionary."""
         return {
             "base_url": self.base_url,
-            "api_base_url": self.api_base_url,
             "timeout": self.timeout,
-            "api_timeout": self.api_timeout,
             "max_retries": self.max_retries,
             "api_version": self.api_version,
             "log_requests": self.log_requests,

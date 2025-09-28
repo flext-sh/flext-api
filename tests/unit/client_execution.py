@@ -70,7 +70,7 @@ async def test_real_client_factory_function() -> None:
             "base_url": "https://httpbin.org",
             "timeout": 10,
             "headers": {"X-Test": "factory-created"},
-        },  # type: ignore[arg-type]
+        },
     )
 
     try:

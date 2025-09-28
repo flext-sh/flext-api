@@ -14,7 +14,6 @@ from flext_core import (
     FlextLogger,
     FlextModels,
     FlextResult,
-    FlextTypes,
     FlextUtilities,
 )
 
@@ -25,7 +24,7 @@ class FlextApiStorage(FlextModels.Entity):
     @override
     def __init__(
         self,
-        config: FlextTypes.Core.Dict | object | None = None,
+        config: FlextApiTypes.Core.StorageDict | object | None = None,
         max_size: int | None = None,
         default_ttl: int | None = None,
         **_kwargs: object,
@@ -40,7 +39,7 @@ class FlextApiStorage(FlextModels.Entity):
         # Simplified config using flext-core patterns
         if isinstance(config, dict):
             # config is expected to be a mapping of configuration values
-            config_dict: FlextTypes.Core.Dict = config
+            config_dict: FlextApiTypes.Core.StorageDict = config
         elif config is not None:
             # Explicit config extraction - FLEXT pattern with clear type handling
             if hasattr(config, "model_dump") and callable(
@@ -48,13 +47,13 @@ class FlextApiStorage(FlextModels.Entity):
             ):
                 model_dump_method = getattr(config, "model_dump")
                 adapted = model_dump_method()
-                config_dict: FlextTypes.Core.Dict = (
+                config_dict: FlextApiTypes.Core.StorageDict = (
                     adapted if isinstance(adapted, dict) else {"value": "adapted"}
                 )
             else:
-                config_dict: FlextTypes.Core.Dict = {"value": "config"}
+                config_dict: FlextApiTypes.Core.StorageDict = {"value": "config"}
         else:
-            config_dict: FlextTypes.Core.Dict = {}
+            config_dict: FlextApiTypes.Core.StorageDict = {}
 
         self._namespace = str(config_dict.get("namespace", "flext_api"))
 
@@ -183,11 +182,11 @@ class FlextApiStorage(FlextModels.Entity):
         return FlextResult[int].ok(len(self._data))
 
     @property
-    def config(self) -> FlextTypes.Core.Dict:
+    def config(self) -> FlextApiTypes.Core.StorageDict:
         """Get storage configuration.
 
         Returns:
-            FlextTypes.Core.Dict: Configuration dictionary.
+            FlextApiTypes.Core.StorageDict: Configuration dictionary.
 
         """
         return {"namespace": self._namespace}

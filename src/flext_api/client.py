@@ -26,10 +26,6 @@ from flext_core import (
     FlextService,
 )
 
-# Backwards-compatibility: expose a module-level `httpx` symbol so tests can patch it.
-# In real runtime this should be the httpx module; tests only need to patch it.
-httpx = None
-
 
 class FlextApiClient(FlextService[None]):
     """Unified HTTP client orchestrator providing enterprise-grade HTTP operations.
@@ -407,96 +403,6 @@ class FlextApiClient(FlextService[None]):
             headers.update({str(k): str(v) for k, v in additional_headers.items()})
         return headers
 
-    # --- Backwards-compatible aliases / shims (tests expect older private API names) ---
-    def _prepare_headers(self, headers: dict[str, str] | None = None) -> dict[str, str]:
-        """Compatibility shim for older test expectations."""
-        return self._get_headers(headers)
-
-    def _extract_kwargs(self, kwargs: dict[str, object]) -> FlextApiClient.HttpKwargs:
-        """Compatibility shim delegating to current extraction logic.
-
-        Note: original implementation changed shape; tests expect this method to exist.
-        """
-        # Simple extraction compatible with tests
-        result: FlextApiClient.HttpKwargs = {}
-        if not isinstance(kwargs, dict):
-            return result
-        if "params" in kwargs:
-            result["params"] = cast("dict[str, str] | None", kwargs.get("params"))
-        if "data" in kwargs:
-            result["data"] = cast("dict[str, str] | None", kwargs.get("data"))
-        if "json" in kwargs:
-            result["json"] = cast("dict[str, str] | None", kwargs.get("json"))
-        if "headers" in kwargs:
-            result["headers"] = cast("dict[str, str] | None", kwargs.get("headers"))
-        if "request_timeout" in kwargs:
-            result["request_timeout"] = cast(
-                "int | None", kwargs.get("request_timeout")
-            )
-        return result
-
-    def _build_url(self, endpoint: str) -> str:
-        """Compatibility shim for test expectations of URL building."""
-        # Ensure endpoint begins with '/'
-        if not endpoint.startswith("/"):
-            endpoint = f"/{endpoint}"
-        base = getattr(
-            self._client_config, "base_url", FlextApiConstants.DEFAULT_BASE_URL
-        )
-        return f"{base}{endpoint}"
-
-    # Minimal merge/prepare helpers expected by tests (delegate to existing logic when possible)
-    def _merge_config(
-        self,
-        base: dict[str, object] | FlextApiModels.ClientConfig,
-        override: dict[str, object] | None = None,
-    ) -> FlextApiModels.ClientConfig:
-        """Merge two config sources into a FlextApiModels.ClientConfig instance."""
-        if isinstance(base, FlextApiModels.ClientConfig):
-            base_config = base
-        else:
-            base_config = FlextApiModels.ClientConfig(
-                base_url=str(base.get("base_url", FlextApiConstants.DEFAULT_BASE_URL)),
-                timeout=int(base.get("timeout", FlextApiConstants.DEFAULT_TIMEOUT)),
-                max_retries=int(
-                    base.get("max_retries", FlextApiConstants.DEFAULT_MAX_RETRIES)
-                ),
-                headers=cast("dict[str, str]", base.get("headers", {})),
-            )
-
-        if not override:
-            return base_config
-
-        merged = base_config.model_copy()
-        # Apply overrides simply
-        if "base_url" in override:
-            merged["base_url"] = str(override["base_url"])
-        if "timeout" in override:
-            merged["timeout"] = int(override["timeout"])
-        if "max_retries" in override:
-            merged["max_retries"] = int(override["max_retries"])
-        if "headers" in override:
-            merged_headers = dict(merged.get("headers", {}))
-            merged_headers.update(cast("dict[str, str]", override["headers"]))
-            merged["headers"] = merged_headers
-        return FlextApiModels.ClientConfig(**merged)
-
-    def _prepare_timeout(self, timeout: int | None = None) -> int:
-        """Return an effective timeout value (compat shim)."""
-        if timeout is None:
-            return getattr(
-                self._client_config, "timeout", FlextApiConstants.DEFAULT_TIMEOUT
-            )
-        return int(timeout)
-
-    def _parse_boolean_string(self, value: object) -> bool:
-        """Parse common boolean-like strings into bools (compat shim)."""
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, str):
-            return value.lower() in FlextConstants.Mixins.BOOL_TRUE_STRINGS
-        return bool(value)
-
     async def execute_request(
         self, request: FlextApiModels.HttpRequest
     ) -> FlextResult[FlextApiModels.HttpResponse]:
@@ -773,7 +679,6 @@ class FlextApiClient(FlextService[None]):
                 headers={str(k): str(v) for k, v in headers_raw.items()}
                 if isinstance(headers_raw, dict)
                 else {},
-                domain_events=[],
                 body=str(response_data["body"]),
                 url=str(response_data["url"]),
                 method=str(response_data["method"]),
@@ -1140,11 +1045,6 @@ class FlextApiClient(FlextService[None]):
             The FlextApiModels.ClientConfig object containing all settings.
 
         """
-        return self._client_config
-
-    @property
-    def _config(self) -> FlextApiConfig:
-        """Access the client configuration (for testing compatibility)."""
         return self._client_config
 
     def _extract_kwargs(self, kwargs: dict[str, object]) -> FlextApiClient.HttpKwargs:

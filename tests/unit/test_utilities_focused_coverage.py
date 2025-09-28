@@ -1,8 +1,6 @@
 """Tests for missing coverage in FlextApiUtilities - focused on actual methods."""
 
-import pytest
 from flext_api import FlextApiUtilities
-from flext_core.result import FlextResult
 
 
 class TestFlextApiUtilitiesFocusedCoverage:
@@ -16,7 +14,7 @@ class TestFlextApiUtilitiesFocusedCoverage:
             data={"test": "data"},
             error="Test error",
             error_code="TEST_ERROR",
-            details={"detail": "info"}
+            details={"detail": "info"},
         )
         assert result.is_success
         assert result.data["message"] == "Test message"
@@ -37,9 +35,7 @@ class TestFlextApiUtilitiesFocusedCoverage:
     def test_response_builder_build_success_response_with_all_params(self) -> None:
         """Test ResponseBuilder.build_success_response with all parameters."""
         result = FlextApiUtilities.ResponseBuilder.build_success_response(
-            data={"test": "data"},
-            message="Test success",
-            status_code=201
+            data={"test": "data"}, message="Test success", status_code=201
         )
         assert result.is_success
         assert result.data["data"] == {"test": "data"}
@@ -63,7 +59,7 @@ class TestFlextApiUtilitiesFocusedCoverage:
             page=2,
             page_size=5,
             total=10,
-            message="Test pagination"
+            message="Test pagination",
         )
         assert result.is_success
         assert result.data["data"] == [{"id": 1}, {"id": 2}]
@@ -76,10 +72,7 @@ class TestFlextApiUtilitiesFocusedCoverage:
     def test_pagination_builder_build_paginated_response_with_none_data(self) -> None:
         """Test PaginationBuilder.build_paginated_response with None data."""
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data=None,
-            page=1,
-            page_size=10,
-            total=0
+            data=None, page=1, page_size=10, total=0
         )
         assert result.is_success
         assert result.data["data"] == []
@@ -102,12 +95,14 @@ class TestFlextApiUtilitiesFocusedCoverage:
             "https://example.com",
             "http://localhost:8000",
             "https://api.example.com/v1/users",
-            "http://192.168.1.1:3000"
+            "http://192.168.1.1:3000",
         ]
         for url in valid_urls:
             result = FlextApiUtilities.validate_url(url)
             assert result.is_success
-            assert url in str(result.data)  # The result contains the URL in a formatted way
+            assert url in str(
+                result.data
+            )  # The result contains the URL in a formatted way
 
     def test_validate_url_invalid_urls(self) -> None:
         """Test validate_url with invalid URLs."""
@@ -116,7 +111,7 @@ class TestFlextApiUtilitiesFocusedCoverage:
             "example.com",
             "not-a-url",
             "",
-            "javascript:alert('xss')"
+            "javascript:alert('xss')",
         ]
         for url in invalid_urls:
             result = FlextApiUtilities.validate_url(url)
@@ -128,7 +123,7 @@ class TestFlextApiUtilitiesFocusedCoverage:
         config = {
             "base_url": "https://api.example.com",
             "timeout": 30,
-            "max_retries": 3
+            "max_retries": 3,
         }
         result = FlextApiUtilities.validate_config(config)
         assert result.is_success
@@ -138,12 +133,7 @@ class TestFlextApiUtilitiesFocusedCoverage:
 
     def test_validate_config_invalid_config(self) -> None:
         """Test validate_config with invalid configuration."""
-        invalid_configs = [
-            None,
-            "not a dict",
-            123,
-            []
-        ]
+        invalid_configs = [None, "not a dict", 123, []]
         for config in invalid_configs:
             result = FlextApiUtilities.validate_config(config)
             assert result.is_failure
@@ -213,7 +203,7 @@ class TestFlextApiUtilitiesFocusedCoverage:
     def test_clean_text_various_inputs(self) -> None:
         """Test clean_text with various inputs."""
         # Test with control characters
-        text_with_control = "Hello\x00\x01\x02World\x1F\x7F"
+        text_with_control = "Hello\x00\x01\x02World\x1f\x7f"
         result = FlextApiUtilities.clean_text(text_with_control)
         assert isinstance(result, str)
         assert "Hello" in result
@@ -256,11 +246,11 @@ class TestFlextApiUtilitiesFocusedCoverage:
         assert result["test"] == "value"
 
         # Invalid JSON
-        result = FlextApiUtilities.safe_json_parse('invalid json')
+        result = FlextApiUtilities.safe_json_parse("invalid json")
         assert result is None
 
         # Empty string
-        result = FlextApiUtilities.safe_json_parse('')
+        result = FlextApiUtilities.safe_json_parse("")
         assert result is None
 
         # None input

@@ -262,19 +262,17 @@ class FlextApiModels(FlextModels):
     class HttpQuery(FlextModels.Query):
         """HTTP query parameters model extending FlextModels.Query."""
 
-        # Core fields with Pydantic 2 alias support for backward compatibility
+        # Core fields using direct Pydantic 2 field names
         filter_conditions: dict[str, object] = Field(
-            alias="filters", default_factory=dict, description="Filter conditions"
+            default_factory=dict, description="Filter conditions"
         )
         sort_fields: list[str] = Field(default_factory=list, description="Sort fields")
         page_number: int = Field(
-            alias="page",
             default=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
             ge=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
             description="Page number",
         )
         page_size_value: int = Field(
-            alias="page_size",
             default=FlextApiConstants.DEFAULT_PAGE_SIZE,
             ge=FlextApiConstants.MIN_PAGE_SIZE,
             le=FlextApiConstants.MAX_PAGE_SIZE,
@@ -291,7 +289,7 @@ class FlextApiModels(FlextModels):
         def to_query_params(self) -> dict[str, object]:
             """Convert to query parameters dict with Python 3.13+ computational optimization."""
             # Python 3.13+ optimized dict merge with walrus operator
-            params = self.model_dump(by_alias=True, exclude_none=True)
+            params = self.model_dump(exclude_none=True)
             # Computational optimization: direct merge avoiding update() call
             return {
                 **params,
@@ -308,7 +306,6 @@ class FlextApiModels(FlextModels):
             description="Page size",
         )
         current_page: int = Field(
-            alias="page",
             default=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
             ge=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
             description="Current page",
@@ -519,11 +516,6 @@ class FlextApiModels(FlextModels):
             field: str | None = Field(default=None, description="Field name")
             value: object = Field(default=None, description="Field value")
             url: str | None = Field(default=None, description="Validation URL")
-
-    # Re-export nested classes for backward compatibility
-    HttpRequestConfig = Http.HttpRequestConfig
-    HttpErrorConfig = Http.HttpErrorConfig
-    HttpMethod = FlextApiConstants.HttpMethod
 
 
 __all__ = [

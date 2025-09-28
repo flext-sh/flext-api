@@ -1,9 +1,8 @@
 """Tests for FlextApiClient methods to improve coverage."""
 
-import pytest
-from unittest.mock import patch, Mock
-from flext_api import FlextApiClient, FlextApiConfig
 from flext_core.result import FlextResult
+
+from flext_api import FlextApiClient, FlextApiConfig
 
 
 class TestFlextApiClientAdditionalMethods:
@@ -12,9 +11,7 @@ class TestFlextApiClientAdditionalMethods:
     def test_client_initialization_with_config(self) -> None:
         """Test client initialization with config object."""
         config = FlextApiConfig(
-            base_url="https://api.example.com",
-            timeout=60.0,
-            max_retries=5
+            base_url="https://api.example.com", timeout=60.0, max_retries=5
         )
 
         client = FlextApiClient(config)
@@ -29,7 +26,7 @@ class TestFlextApiClientAdditionalMethods:
         config_dict = {
             "base_url": "https://api.example.com",
             "timeout": 45.0,
-            "max_retries": 3
+            "max_retries": 3,
         }
 
         client = FlextApiClient(config_dict)
@@ -54,8 +51,8 @@ class TestFlextApiClientAdditionalMethods:
         config = client._config
 
         assert config is not None
-        assert hasattr(config, 'base_url')
-        assert hasattr(config, 'timeout')
+        assert hasattr(config, "base_url")
+        assert hasattr(config, "timeout")
 
     def test_client_base_url_property(self) -> None:
         """Test client base URL property."""
@@ -99,8 +96,8 @@ class TestFlextApiClientAdditionalMethods:
         http_service = client.http
 
         assert http_service is not None
-        assert hasattr(http_service, 'get')
-        assert hasattr(http_service, 'post')
+        assert hasattr(http_service, "get")
+        assert hasattr(http_service, "post")
 
     def test_client_lifecycle_property(self) -> None:
         """Test client lifecycle property."""
@@ -109,8 +106,8 @@ class TestFlextApiClientAdditionalMethods:
         lifecycle_service = client.lifecycle
 
         assert lifecycle_service is not None
-        assert hasattr(lifecycle_service, 'start')
-        assert hasattr(lifecycle_service, 'stop')
+        assert hasattr(lifecycle_service, "start")
+        assert hasattr(lifecycle_service, "stop")
 
     def test_client_client_config_property(self) -> None:
         """Test client client_config property."""
@@ -119,7 +116,7 @@ class TestFlextApiClientAdditionalMethods:
         client_config_service = client.client_config
 
         assert client_config_service is not None
-        assert hasattr(client_config_service, 'validate_configuration')
+        assert hasattr(client_config_service, "validate_configuration")
 
     def test_client_build_url(self) -> None:
         """Test client URL building."""
@@ -146,7 +143,7 @@ class TestFlextApiClientAdditionalMethods:
             "data": {"field": "data"},
             "json": {"json_field": "json_value"},
             "headers": {"Authorization": "Bearer token"},
-            "request_timeout": 30
+            "request_timeout": 30,
         }
 
         extracted = client._extract_kwargs(kwargs)
@@ -191,14 +188,14 @@ class TestFlextApiClientAdditionalMethods:
         """Test client async context manager."""
         client = FlextApiClient()
 
-        async def test_async_context():
+        async def test_async_context() -> None:
             async with client as ctx_client:
                 assert ctx_client is client
                 assert ctx_client is not None
 
         # Note: This test doesn't actually run async, just tests the method exists
-        assert hasattr(client, '__aenter__')
-        assert hasattr(client, '__aexit__')
+        assert hasattr(client, "__aenter__")
+        assert hasattr(client, "__aexit__")
 
     def test_client_close(self) -> None:
         """Test client close method."""
@@ -235,11 +232,11 @@ class TestFlextApiClientAdditionalMethods:
         # Test that HTTP service has expected methods
         http_service = client.http
 
-        assert hasattr(http_service, 'get')
-        assert hasattr(http_service, 'post')
-        assert hasattr(http_service, 'put')
-        assert hasattr(http_service, 'delete')
-        assert hasattr(http_service, 'patch')
+        assert hasattr(http_service, "get")
+        assert hasattr(http_service, "post")
+        assert hasattr(http_service, "put")
+        assert hasattr(http_service, "delete")
+        assert hasattr(http_service, "patch")
 
     def test_client_headers_generation(self) -> None:
         """Test client headers generation."""
@@ -276,11 +273,11 @@ class TestFlextApiClientAdditionalMethods:
         client = FlextApiClient()
 
         # Test if method exists and is callable
-        if hasattr(client, '_extract_client_config_params'):
+        if hasattr(client, "_extract_client_config_params"):
             try:
                 extracted = client._extract_client_config_params()
-                assert hasattr(extracted, 'base_url')
-                assert hasattr(extracted, 'timeout')
+                assert hasattr(extracted, "base_url")
+                assert hasattr(extracted, "timeout")
             except TypeError:
                 # Method might be static or have different signature
                 pass
@@ -290,7 +287,11 @@ class TestFlextApiClientAdditionalMethods:
         configs = [
             {"base_url": "https://api1.example.com", "timeout": 30.0, "max_retries": 1},
             {"base_url": "https://api2.example.com", "timeout": 60.0, "max_retries": 3},
-            {"base_url": "https://api3.example.com", "timeout": 120.0, "max_retries": 5},
+            {
+                "base_url": "https://api3.example.com",
+                "timeout": 120.0,
+                "max_retries": 5,
+            },
         ]
 
         for config in configs:
@@ -316,10 +317,23 @@ class TestFlextApiClientAdditionalMethods:
         client = FlextApiClient()
 
         expected_methods = [
-            'base_url', 'timeout', 'max_retries', 'config_data',
-            'http', 'lifecycle', 'client_config', '_config',
-            '_build_url', '_extract_kwargs', '_get_headers', '_prepare_headers',
-            'perform_health_check', 'execute', 'close', 'create', 'create_client'
+            "base_url",
+            "timeout",
+            "max_retries",
+            "config_data",
+            "http",
+            "lifecycle",
+            "client_config",
+            "_config",
+            "_build_url",
+            "_extract_kwargs",
+            "_get_headers",
+            "_prepare_headers",
+            "perform_health_check",
+            "execute",
+            "close",
+            "create",
+            "create_client",
         ]
 
         for method in expected_methods:

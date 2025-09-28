@@ -1,9 +1,10 @@
 """Tests for FlextApiUtilities ConfigurationManager methods to improve coverage."""
 
-import pytest
-from unittest.mock import patch, Mock
-from flext_api import FlextApiUtilities
+from unittest.mock import Mock, patch
+
 from flext_core.result import FlextResult
+
+from flext_api import FlextApiUtilities
 
 
 class TestFlextApiUtilitiesConfigurationManager:
@@ -22,7 +23,9 @@ class TestFlextApiUtilitiesConfigurationManager:
         mock_config = Mock()
         mock_config.base_url = "https://api.example.com"
 
-        with patch.object(FlextApiUtilities.HttpValidator, 'validate_url') as mock_validate:
+        with patch.object(
+            FlextApiUtilities.HttpValidator, "validate_url"
+        ) as mock_validate:
             mock_validate.return_value = FlextResult[object].ok(None)
 
             result = config_manager.validate_configuration(mock_config)
@@ -38,7 +41,9 @@ class TestFlextApiUtilitiesConfigurationManager:
         mock_config = Mock()
         mock_config.base_url = "invalid-url"
 
-        with patch.object(FlextApiUtilities.HttpValidator, 'validate_url') as mock_validate:
+        with patch.object(
+            FlextApiUtilities.HttpValidator, "validate_url"
+        ) as mock_validate:
             mock_validate.return_value = FlextResult[object].fail("Invalid URL format")
 
             result = config_manager.validate_configuration(mock_config)
@@ -142,15 +147,15 @@ class TestFlextApiUtilitiesConfigurationManager:
         """Test that ConfigurationManager has expected methods."""
         config_manager = FlextApiUtilities.ConfigurationManager()
 
-        assert hasattr(config_manager, 'validate_configuration')
-        assert hasattr(config_manager, 'get_configuration_dict')
-        assert hasattr(config_manager, 'headers')
-        assert hasattr(config_manager, 'reset_to_defaults')
+        assert hasattr(config_manager, "validate_configuration")
+        assert hasattr(config_manager, "get_configuration_dict")
+        assert hasattr(config_manager, "headers")
+        assert hasattr(config_manager, "reset_to_defaults")
 
         # Test method types
         assert callable(config_manager.validate_configuration)
         assert callable(config_manager.get_configuration_dict)
-        assert callable(getattr(config_manager, 'headers'))
+        assert callable(getattr(config_manager, "headers"))
         assert callable(config_manager.reset_to_defaults)
 
     def test_configuration_manager_with_different_config_types(self) -> None:
@@ -182,7 +187,9 @@ class TestFlextApiUtilitiesConfigurationManager:
         mock_config = Mock()
         mock_config.base_url = "http://invalid"
 
-        with patch.object(FlextApiUtilities.HttpValidator, 'validate_url') as mock_validate:
+        with patch.object(
+            FlextApiUtilities.HttpValidator, "validate_url"
+        ) as mock_validate:
             mock_validate.return_value = FlextResult[object].fail("Invalid protocol")
 
             result = config_manager.validate_configuration(mock_config)

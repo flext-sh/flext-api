@@ -1,10 +1,8 @@
 """Tests for FlextApiStorage additional methods to improve coverage."""
 
-import pytest
 import json
+
 from flext_api import FlextApiStorage
-from flext_api.typings import FlextApiTypes
-from flext_core.result import FlextResult
 
 
 class TestFlextApiStorageAdditionalMethods:
@@ -151,7 +149,7 @@ class TestFlextApiStorageAdditionalMethods:
         assert "Invalid key" in result.error
 
         # Test with None key (should fail validation)
-        result = storage.set(None, "value")  # type: ignore
+        result = storage.set(None, "value")
         assert result.is_failure
         assert "Invalid key" in result.error
 
@@ -163,7 +161,7 @@ class TestFlextApiStorageAdditionalMethods:
         batch_data = {
             "batch_key_1": "value_1",
             "batch_key_2": "value_2",
-            "batch_key_3": "value_3"
+            "batch_key_3": "value_3",
         }
 
         result = storage.batch_set(batch_data)
@@ -224,7 +222,7 @@ class TestFlextApiStorageAdditionalMethods:
         test_data = {
             "keys_test_1": "value_1",
             "keys_test_2": "value_2",
-            "keys_test_3": "value_3"
+            "keys_test_3": "value_3",
         }
 
         for key, value in test_data.items():
@@ -234,7 +232,7 @@ class TestFlextApiStorageAdditionalMethods:
         keys_result = storage.keys()
         assert keys_result.is_success
         assert isinstance(keys_result.data, list)
-        for key in test_data.keys():
+        for key in test_data:
             assert key in keys_result.data
 
         # Test items method
@@ -308,12 +306,25 @@ class TestFlextApiStorageAdditionalMethods:
         storage = FlextApiStorage()
 
         expected_methods = [
-            'set', 'get', 'delete', 'exists', 'size', 'clear',
-            'batch_set', 'batch_get', 'batch_delete',
-            'info', 'health_check', 'metrics',
-            'keys', 'items', 'values'
+            "set",
+            "get",
+            "delete",
+            "exists",
+            "size",
+            "clear",
+            "batch_set",
+            "batch_get",
+            "batch_delete",
+            "info",
+            "health_check",
+            "metrics",
+            "keys",
+            "items",
+            "values",
         ]
 
         for method in expected_methods:
             assert hasattr(storage, method), f"Storage missing method: {method}"
-            assert callable(getattr(storage, method)), f"Storage method {method} is not callable"
+            assert callable(getattr(storage, method)), (
+                f"Storage method {method} is not callable"
+            )
