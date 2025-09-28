@@ -108,7 +108,7 @@ class TestFlextApiConfigReal:
     def test_config_negative_timeout(self) -> None:
         """Test config validation with invalid values."""
         # Test that validation works
-        with pytest.raises((ValueError, TypeError)):  # type: ignore[arg-type]
+        with pytest.raises((ValueError, TypeError)):
             FlextApiConfig(
                 api_base_url="https://api.example.com",
                 api_timeout=-1,  # Invalid negative timeout

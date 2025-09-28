@@ -26,7 +26,8 @@ from flext_api import (
     FlextApiConfig,
     FlextApiStorage,
 )
-from flext_core import FlextConstants, FlextContainer, FlextTypes
+from flext_api.typings import FlextApiTypes
+from flext_core import FlextConstants, FlextContainer
 from flext_tests import FlextTestsDomains
 
 # Configure Faker for deterministic test data
@@ -200,22 +201,22 @@ def test_client(fastapi_app: FastAPI) -> TestClient:
 
 
 @pytest.fixture
-def sample_api_data() -> FlextTypes.Core.Dict:
+def sample_api_data() -> FlextApiTypes.Core.ResponseDict:
     """Sample API data using FlextTestsDomains.
 
     Returns:
-        FlextTypes.Core.Dict: Sample API data.
+        FlextApiTypes.Core.ResponseDict: Sample API data.
 
     """
     return FlextTestsDomains.api_response_data()
 
 
 @pytest.fixture
-def sample_headers() -> FlextTypes.Core.Headers:
+def sample_headers() -> FlextApiTypes.HttpHeaders:
     """Sample HTTP headers using flext_tests.
 
     Returns:
-        FlextTypes.Core.Headers: Sample HTTP headers.
+        FlextApiTypes.HttpHeaders: Sample HTTP headers.
 
     """
     service_data = FlextTestsDomains.create_service()
@@ -228,55 +229,55 @@ def sample_headers() -> FlextTypes.Core.Headers:
 
 
 @pytest.fixture
-def sample_config_dict() -> FlextTypes.Core.Dict:
+def sample_config_dict() -> FlextApiTypes.Core.ResponseDict:
     """Sample config dictionary using FlextTestsDomains.
 
     Returns:
-        FlextTypes.Core.Dict: Sample configuration data.
+        FlextApiTypes.Core.ResponseDict: Sample configuration data.
 
     """
     return FlextTestsDomains.create_configuration()
 
 
 @pytest.fixture
-def sample_user_data() -> FlextTypes.Core.Dict:
+def sample_user_data() -> FlextApiTypes.Core.ResponseDict:
     """Sample user data using FlextTestsDomains.
 
     Returns:
-        FlextTypes.Core.Dict: Sample user data.
+        FlextApiTypes.Core.ResponseDict: Sample user data.
 
     """
     return FlextTestsDomains.create_user()
 
 
 @pytest.fixture
-def sample_service_data() -> FlextTypes.Core.Dict:
+def sample_service_data() -> FlextApiTypes.Core.ResponseDict:
     """Sample service data using FlextTestsDomains.
 
     Returns:
-        FlextTypes.Core.Dict: Sample service data.
+        FlextApiTypes.Core.ResponseDict: Sample service data.
 
     """
     return FlextTestsDomains.create_service()
 
 
 @pytest.fixture
-def sample_payload_data() -> FlextTypes.Core.Dict:
+def sample_payload_data() -> FlextApiTypes.Core.ResponseDict:
     """Sample payload data using FlextTestsDomains.
 
     Returns:
-        FlextTypes.Core.Dict: Sample payload data.
+        FlextApiTypes.Core.ResponseDict: Sample payload data.
 
     """
     return FlextTestsDomains.create_payload()
 
 
 @pytest.fixture
-def sample_configuration_data() -> FlextTypes.Core.Dict:
+def sample_configuration_data() -> FlextApiTypes.Core.ResponseDict:
     """Sample configuration data using FlextTestsDomains.
 
     Returns:
-        FlextTypes.Core.Dict: Sample configuration data.
+        FlextApiTypes.Core.ResponseDict: Sample configuration data.
 
     """
     return FlextTestsDomains.create_configuration()

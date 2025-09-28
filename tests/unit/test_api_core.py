@@ -12,7 +12,7 @@ import pytest
 from pydantic import ValidationError
 
 from flext_api import FlextApiClient
-from flext_core import FlextTypes
+from flext_api.typings import FlextApiTypes
 from flext_tests import FlextTestsDomains
 
 
@@ -76,7 +76,7 @@ class TestFlextApiClient:
 
     def test_client_with_configuration_data(
         self,
-        sample_configuration_data: FlextTypes.Core.Dict,
+        sample_configuration_data: FlextApiTypes.Core.ResponseDict,
     ) -> None:
         """Test client with configuration data from conftest fixture."""
         # Use configuration data from FlextTestsDomains via conftest
@@ -188,7 +188,7 @@ class TestFlextApiClient:
 
     def test_client_with_service_data(
         self,
-        sample_service_data: FlextTypes.Core.Dict,
+        sample_service_data: FlextApiTypes.Core.ResponseDict,
     ) -> None:
         """Test client with service data from conftest fixture."""
         # Build URL from service data

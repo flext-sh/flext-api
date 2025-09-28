@@ -73,7 +73,7 @@ class TestFlextUtilitiesAdditionalCoverage:
         """Test validate_url with None URL."""
         # This will raise an AttributeError because None doesn't have startswith
         try:
-            result = FlextApiUtilities.validate_url(None)  # type: ignore[arg-type]
+            result = FlextApiUtilities.validate_url(None)
             assert result.is_failure
         except AttributeError:
             # Expected behavior - None doesn't have startswith method
@@ -149,7 +149,7 @@ class TestFlextUtilitiesAdditionalCoverage:
         """Test clean_text with None input."""
         # clean_text will raise TypeError with None input
         try:
-            result = FlextApiUtilities.clean_text(None)  # type: ignore[arg-type]
+            result = FlextApiUtilities.clean_text(None)
             assert isinstance(result, str)
         except TypeError:
             # Expected behavior - None is not a string
@@ -300,7 +300,7 @@ class TestFlextUtilitiesAdditionalCoverage:
         """Test utilities error handling."""
         # Test error handling in various utility methods
         try:
-            result = FlextApiUtilities.clean_text(None)  # type: ignore[arg-type]
+            result = FlextApiUtilities.clean_text(None)
             assert isinstance(result, str)
         except TypeError:
             # Expected behavior - None is not a string

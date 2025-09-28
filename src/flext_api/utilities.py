@@ -19,9 +19,15 @@ from flext_core import (
     FlextConstants,
     FlextModels,
     FlextResult,
-    FlextTypes,
     FlextUtilities,
 )
+
+# Import FlextApiClient at module level to avoid circular imports
+try:
+    from flext_api.client import FlextApiClient
+except ImportError:
+    # Handle circular import gracefully
+    FlextApiClient = None
 
 
 class FlextApiUtilities(FlextUtilities):
@@ -49,7 +55,7 @@ class FlextApiUtilities(FlextUtilities):
             error: str | None = None,
             error_code: str | None = None,
             details: object | None = None,
-        ) -> FlextResult[FlextTypes.Core.Dict]:
+        ) -> FlextResult[FlextApiTypes.Core.ResponseDict]:
             """Build error response using flext-core patterns.
 
             Returns:
@@ -72,16 +78,16 @@ class FlextApiUtilities(FlextUtilities):
                     response["error_code"] = error_code
                 if details:
                     response["details"] = details
-                return FlextResult[FlextTypes.Core.Dict].ok(response)
+                return FlextResult[FlextApiTypes.Core.ResponseDict].ok(response)
             except Exception as e:
-                return FlextResult[FlextTypes.Core.Dict].fail(str(e))
+                return FlextResult[FlextApiTypes.Core.ConfigDict].fail(str(e))
 
         @staticmethod
         def build_success_response(
             data: object = None,
             message: str = "Success",
             status_code: int = FlextConstants.Platform.HTTP_STATUS_OK,
-        ) -> FlextResult[FlextTypes.Core.Dict]:
+        ) -> FlextResult[FlextApiTypes.Core.ResponseDict]:
             """Build success response using flext-core patterns.
 
             Returns:
@@ -97,9 +103,9 @@ class FlextApiUtilities(FlextUtilities):
                     "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
                     "request_id": FlextUtilities.Generators.generate_entity_id(),
                 }
-                return FlextResult[FlextTypes.Core.Dict].ok(response)
+                return FlextResult[FlextApiTypes.Core.ResponseDict].ok(response)
             except Exception as e:
-                return FlextResult[FlextTypes.Core.Dict].fail(str(e))
+                return FlextResult[FlextApiTypes.Core.ConfigDict].fail(str(e))
 
     class PaginationBuilder:
         """HTTP pagination builder using flext-core patterns."""
@@ -335,7 +341,7 @@ class FlextApiUtilities(FlextUtilities):
         return FlextResult[str].ok(str(url_obj))
 
     @staticmethod
-    def validate_config(config: object) -> FlextResult[FlextTypes.Core.Dict]:
+    def validate_config(config: object) -> FlextResult[FlextApiTypes.Core.ConfigDict]:
         """Validate configuration object and return config details.
 
         Returns:
@@ -344,7 +350,7 @@ class FlextApiUtilities(FlextUtilities):
         """
         try:
             if config is None:
-                return FlextResult[FlextTypes.Core.Dict].fail(
+                return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
                     "Configuration cannot be None",
                 )
 
@@ -361,13 +367,13 @@ class FlextApiUtilities(FlextUtilities):
             elif isinstance(config, dict):
                 config_dict = config
             else:
-                return FlextResult[FlextTypes.Core.Dict].fail(
+                return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
                     "Configuration must be dict-like or have attributes",
                 )
 
             # Ensure config_dict is not None
             if config_dict is None:
-                return FlextResult[FlextTypes.Core.Dict].fail(
+                return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
                     "Failed to extract configuration data",
                 )
 
@@ -388,7 +394,7 @@ class FlextApiUtilities(FlextUtilities):
                     str(config_dict["method"]),
                 )
                 if method_result.is_failure:
-                    return FlextResult[FlextTypes.Core.Dict].fail(
+                    return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
                         f"Invalid method: {method_result.error}",
                     )
 
@@ -407,7 +413,7 @@ class FlextApiUtilities(FlextUtilities):
                         )
                     )
                 if status_result.is_failure:
-                    return FlextResult[FlextTypes.Core.Dict].fail(
+                    return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
                         f"Invalid status code: {status_result.error}",
                     )
 
@@ -417,9 +423,9 @@ class FlextApiUtilities(FlextUtilities):
                 **config_dict,  # Include all original config data
             }
 
-            return FlextResult[dict[str, object]].ok(result_data)
+            return FlextResult[FlextApiTypes.Core.ConfigDict].ok(result_data)
         except Exception as e:
-            return FlextResult[FlextTypes.Core.Dict].fail(
+            return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
                 f"Configuration validation failed: {e}",
             )
 
@@ -748,7 +754,8 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                from flext_api.client import FlextApiClient  # noqa: PLC0415
+                if FlextApiClient is None:
+                    return FlextResult[object].fail("FlextApiClient not available")
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -780,7 +787,8 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                from flext_api.client import FlextApiClient  # noqa: PLC0415
+                if FlextApiClient is None:
+                    return FlextResult[object].fail("FlextApiClient not available")
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -811,7 +819,8 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                from flext_api.client import FlextApiClient  # noqa: PLC0415
+                if FlextApiClient is None:
+                    return FlextResult[object].fail("FlextApiClient not available")
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -840,7 +849,8 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                from flext_api.client import FlextApiClient  # noqa: PLC0415
+                if FlextApiClient is None:
+                    return FlextResult[object].fail("FlextApiClient not available")
 
                 client = FlextApiClient(
                     base_url=base_url,

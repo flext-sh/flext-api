@@ -72,7 +72,7 @@ def example_storage_usage() -> None:
     storage = FlextApiStorage()
 
     # Set data using FlextResult pattern
-    # CacheValue é tuple[object, FlextTypes.Core.Headers, int]
+    # CacheValue é tuple[object, FlextApiTypes.HttpHeaders, int]
     cache_value: tuple[object, dict[str, str], int] = (
         {"message": "Hello FlextAPI!"},
         {},
@@ -157,7 +157,6 @@ def example_models_usage() -> None:
             url="https://httpbin.org/get",
             method="GET",
             elapsed_time=0.125,
-            domain_events=[],
         )
 
         print(f"✅ Response model created: {response.status_code}")

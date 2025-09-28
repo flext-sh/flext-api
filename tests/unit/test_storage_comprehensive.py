@@ -292,7 +292,7 @@ class TestFlextApiStorage:
         storage = FlextApiStorage()
 
         # Test with None key
-        result = storage.set(None, "value")  # type: ignore[arg-type]
+        result = storage.set(None, "value")
         assert result.is_failure
 
         # Test with empty key
