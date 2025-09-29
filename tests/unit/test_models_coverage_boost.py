@@ -231,7 +231,7 @@ class TestFlextApiModelsCoverageBoost:
 
         assert result.is_failure
         assert result.error is not None
-        assert "Filter key cannot be empty" in result.error
+        assert result.error is not None and "Filter key cannot be empty" in result.error
 
     def test_http_query_add_filter_whitespace_key(self) -> None:
         """Test HttpQuery add_filter with whitespace key."""
@@ -240,7 +240,7 @@ class TestFlextApiModelsCoverageBoost:
 
         assert result.is_failure
         assert result.error is not None
-        assert "Filter key cannot be empty" in result.error
+        assert result.error is not None and "Filter key cannot be empty" in result.error
 
     def test_http_query_add_filter_key_trimming(self) -> None:
         """Test HttpQuery add_filter key trimming."""

@@ -34,7 +34,6 @@ class FlextApiTypes(FlextTypes):
     # =========================================================================
 
     # Common HTTP types referenced throughout the codebase
-    Headers = dict[str, str]
     RequestBody = dict[str, FlextTypes.Core.JsonValue] | str | bytes
     Timeout = int | float
 
@@ -57,8 +56,6 @@ class FlextApiTypes(FlextTypes):
     class Core(FlextTypes.Core):
         """Core API types extending FlextTypes.Core."""
 
-        # Configuration and settings types
-        ConfigDict = dict[str, FlextTypes.Core.ConfigValue | dict[str, object]]
         ConnectionDict = dict[str, object]
         ClientConfigDict = dict[str, object]
         RequestConfigDict = dict[str, object]

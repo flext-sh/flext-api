@@ -71,7 +71,7 @@ class TestFlextApiUtilitiesReal:
 
         assert result.is_failure
         assert result.error is not None
-        assert "Page must be >= 1" in result.error
+        assert result.error is not None and "Page must be >= 1" in result.error
 
     def test_pagination_builder_invalid_page_size(self) -> None:
         """Test PaginationBuilder with invalid page size."""
@@ -83,7 +83,7 @@ class TestFlextApiUtilitiesReal:
 
         assert result.is_failure
         assert result.error is not None
-        assert "Page size must be >= 1" in result.error
+        assert result.error is not None and "Page size must be >= 1" in result.error
 
     def test_http_validator_url_valid(self) -> None:
         """Test HttpValidator URL validation with valid URL."""
@@ -108,7 +108,7 @@ class TestFlextApiUtilitiesReal:
         result = FlextApiUtilities.HttpValidator.validate_url("https://example.com:0")
         assert result.is_failure
         assert result.error is not None
-        assert "Invalid port 0" in result.error
+        assert result.error is not None and "Invalid port 0" in result.error
 
     def test_http_validator_method_valid(self) -> None:
         """Test HttpValidator HTTP method validation with valid method."""
@@ -155,4 +155,4 @@ class TestFlextApiUtilitiesReal:
         result = FlextApiUtilities.HttpValidator.normalize_url("")
         assert result.is_failure
         assert result.error is not None
-        assert "Invalid URL" in result.error
+        assert result.error is not None and "Invalid URL" in result.error

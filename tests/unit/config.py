@@ -62,7 +62,7 @@ class TestFlextApiConfigReal:
             api_base_url="https://api.example.com",
         )
 
-        assert config.api_base_url.startswith("https://")  # HTTPS for security
+        assert config.api_base_url.startswith("https://")
 
     def test_env_config_creation(self) -> None:
         """Test FlextApiConfig creation with environment-style values."""

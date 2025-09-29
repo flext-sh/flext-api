@@ -1,6 +1,7 @@
 """Tests for missing coverage in FlextApiUtilities - focused on actual methods."""
 
 import time
+from typing import cast
 
 from flext_api import FlextApiUtilities
 
@@ -19,20 +20,20 @@ class TestFlextApiUtilitiesFocusedCoverage:
             details={"detail": "info"},
         )
         assert result.is_success
-        assert result.data["message"] == "Test message"
-        assert result.data["status_code"] == 400
-        assert result.data["data"] == {"test": "data"}
-        assert result.data["error"] == "Test error"
-        assert result.data["error_code"] == "TEST_ERROR"
-        assert result.data["details"] == {"detail": "info"}
+        assert cast("dict", result.data)["message"] == "Test message"
+        assert cast("dict", result.data)["status_code"] == 400
+        assert cast("dict", result.data)["data"] == {"test": "data"}
+        assert cast("dict", result.data)["error"] == "Test error"
+        assert cast("dict", result.data)["error_code"] == "TEST_ERROR"
+        assert cast("dict", result.data)["details"] == {"detail": "info"}
 
     def test_response_builder_build_error_response_minimal(self) -> None:
         """Test ResponseBuilder.build_error_response with minimal parameters."""
         result = FlextApiUtilities.ResponseBuilder.build_error_response()
         assert result.is_success
-        assert result.data["status_code"] == 500
-        assert result.data["message"] == "Unknown error"
-        assert result.data["success"] is False
+        assert cast("dict", result.data)["status_code"] == 500
+        assert cast("dict", result.data)["message"] == "Unknown error"
+        assert cast("dict", result.data)["success"] is False
 
     def test_response_builder_build_success_response_with_all_params(self) -> None:
         """Test ResponseBuilder.build_success_response with all parameters."""
@@ -40,19 +41,19 @@ class TestFlextApiUtilitiesFocusedCoverage:
             data={"test": "data"}, message="Test success", status_code=201
         )
         assert result.is_success
-        assert result.data["data"] == {"test": "data"}
-        assert result.data["message"] == "Test success"
-        assert result.data["status_code"] == 201
-        assert "timestamp" in result.data
-        assert "request_id" in result.data
+        assert cast("dict", result.data)["data"] == {"test": "data"}
+        assert cast("dict", result.data)["message"] == "Test success"
+        assert cast("dict", result.data)["status_code"] == 201
+        assert "timestamp" in cast("dict", result.data)
+        assert "request_id" in cast("dict", result.data)
 
     def test_response_builder_build_success_response_minimal(self) -> None:
         """Test ResponseBuilder.build_success_response with minimal parameters."""
         result = FlextApiUtilities.ResponseBuilder.build_success_response()
         assert result.is_success
-        assert result.data["message"] == "Success"
-        assert result.data["status_code"] == 200
-        assert result.data["data"] is None
+        assert cast("dict", result.data)["message"] == "Success"
+        assert cast("dict", result.data)["status_code"] == 200
+        assert cast("dict", result.data)["data"] is None
 
     def test_pagination_builder_build_paginated_response_with_all_params(self) -> None:
         """Test PaginationBuilder.build_paginated_response with all parameters."""
@@ -64,12 +65,12 @@ class TestFlextApiUtilitiesFocusedCoverage:
             message="Test pagination",
         )
         assert result.is_success
-        assert result.data["data"] == [{"id": 1}, {"id": 2}]
-        assert result.data["pagination"]["page"] == 2
-        assert result.data["pagination"]["page_size"] == 5
-        assert result.data["pagination"]["total"] == 10
-        assert result.data["pagination"]["total_pages"] == 2
-        assert result.data["message"] == "Test pagination"
+        assert cast("dict", result.data)["data"] == [{"id": 1}, {"id": 2}]
+        assert cast("dict", result.data)["pagination"]["page"] == 2
+        assert cast("dict", result.data)["pagination"]["page_size"] == 5
+        assert cast("dict", result.data)["pagination"]["total"] == 10
+        assert cast("dict", result.data)["pagination"]["total_pages"] == 2
+        assert cast("dict", result.data)["message"] == "Test pagination"
 
     def test_pagination_builder_build_paginated_response_with_none_data(self) -> None:
         """Test PaginationBuilder.build_paginated_response with None data."""
@@ -77,9 +78,9 @@ class TestFlextApiUtilitiesFocusedCoverage:
             data=None, page=1, page_size=10, total=0
         )
         assert result.is_success
-        assert result.data["data"] == []
-        assert result.data["pagination"]["page"] == 1
-        assert result.data["pagination"]["total"] == 0
+        assert cast("dict", result.data)["data"] == []
+        assert cast("dict", result.data)["pagination"]["page"] == 1
+        assert cast("dict", result.data)["pagination"]["total"] == 0
 
     def test_pagination_builder_build_paginated_response_minimal(self) -> None:
         """Test PaginationBuilder.build_paginated_response with minimal parameters."""
@@ -87,9 +88,9 @@ class TestFlextApiUtilitiesFocusedCoverage:
             data=[{"id": 1}]
         )
         assert result.is_success
-        assert result.data["data"] == [{"id": 1}]
-        assert result.data["pagination"]["page"] == 1
-        assert result.data["pagination"]["page_size"] == 20  # Default
+        assert cast("dict", result.data)["data"] == [{"id": 1}]
+        assert cast("dict", result.data)["pagination"]["page"] == 1
+        assert cast("dict", result.data)["pagination"]["page_size"] == 20  # Default
 
     def test_validate_url_valid_urls(self) -> None:
         """Test validate_url with valid URLs."""
@@ -118,7 +119,10 @@ class TestFlextApiUtilitiesFocusedCoverage:
         for url in invalid_urls:
             result = FlextApiUtilities.validate_url(url)
             assert result.is_failure
-            assert "URL must start with http:// or https://" in result.error
+            assert (
+                result.error is not None
+                and "URL must start with http:// or https://" in result.error
+            )
 
     def test_validate_config_valid_config(self) -> None:
         """Test validate_config with valid configuration."""
@@ -130,8 +134,8 @@ class TestFlextApiUtilitiesFocusedCoverage:
         result = FlextApiUtilities.validate_config(config)
         assert result.is_success
         assert isinstance(result.data, dict)
-        assert "base_url" in result.data
-        assert "timeout" in result.data
+        assert "base_url" in cast("dict", result.data)
+        assert "timeout" in cast("dict", result.data)
 
     def test_validate_config_invalid_config(self) -> None:
         """Test validate_config with invalid configuration."""
@@ -140,9 +144,15 @@ class TestFlextApiUtilitiesFocusedCoverage:
             result = FlextApiUtilities.validate_config(config)
             assert result.is_failure
             if config is None:
-                assert "Configuration cannot be None" in result.error
+                assert (
+                    result.error is not None
+                    and "Configuration cannot be None" in result.error
+                )
             else:
-                assert "Configuration must be dict" in result.error
+                assert (
+                    result.error is not None
+                    and "Configuration must be dict" in result.error
+                )
 
     def test_generate_id_multiple_calls(self) -> None:
         """Test generate_id produces different IDs."""

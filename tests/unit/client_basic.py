@@ -34,7 +34,9 @@ async def test_real_network_error_and_error_formatting() -> None:
         # Use FlextTestsMatchers for result validation
         FlextTestsMatchers.assert_result_failure(result)
         assert result.error is not None
-        assert "test" in result.error or "connection" in result.error.lower()
+        assert (
+            result.error is not None and "test" in result.error
+        ) or "connection" in str(result.error).lower()
     finally:
         await client.close()
 

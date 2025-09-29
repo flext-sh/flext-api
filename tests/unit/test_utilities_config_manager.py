@@ -49,7 +49,7 @@ class TestFlextApiUtilitiesConfigurationManager:
             result = config_manager.validate_configuration(mock_config)
 
             assert result.is_failure
-            assert "Invalid base URL" in result.error
+            assert result.error is not None and "Invalid base URL" in result.error
 
     def test_validate_configuration_non_string_base_url(self) -> None:
         """Test configuration validation with non-string base URL."""
@@ -62,7 +62,8 @@ class TestFlextApiUtilitiesConfigurationManager:
         result = config_manager.validate_configuration(mock_config)
 
         assert result.is_failure
-        assert "Base URL must be a string" in result.error
+        assert result.error is not None
+        assert result.error is not None and "Base URL must be a string" in result.error
 
     def test_validate_configuration_no_base_url(self) -> None:
         """Test configuration validation without base URL."""
@@ -88,7 +89,10 @@ class TestFlextApiUtilitiesConfigurationManager:
         result = config_manager.validate_configuration(mock_config)
 
         assert result.is_failure
-        assert "Configuration validation failed" in result.error
+        assert (
+            result.error is not None
+            and "Configuration validation failed" in result.error
+        )
 
     def test_get_configuration_dict(self) -> None:
         """Test getting configuration dictionary."""
@@ -141,7 +145,7 @@ class TestFlextApiUtilitiesConfigurationManager:
         result = config_manager.reset_to_defaults(mock_config_type)
 
         assert result.is_failure
-        assert "Configuration reset failed" in result.error
+        assert result.error is not None and "Configuration reset failed" in result.error
 
     def test_configuration_manager_methods_exist(self) -> None:
         """Test that ConfigurationManager has expected methods."""
@@ -195,4 +199,4 @@ class TestFlextApiUtilitiesConfigurationManager:
             result = config_manager.validate_configuration(mock_config)
 
             assert result.is_failure
-            assert "Invalid base URL" in result.error
+            assert result.error is not None and "Invalid base URL" in result.error

@@ -12,6 +12,7 @@ import pytest
 from pydantic import ValidationError
 
 from flext_api import FlextApiModels
+from flext_api.constants import FlextApiConstants
 from flext_core import FlextConstants
 
 
@@ -48,7 +49,7 @@ class TestFlextApiModelsFocused:
             url="https://api.example.com/create",
             headers=headers,
             body=body,
-            timeout=60,
+            timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT,
         )
 
         assert request.method == "POST"
@@ -86,7 +87,7 @@ class TestFlextApiModelsFocused:
         """Test HttpRequest URL validation with valid formats."""
         valid_urls = [
             "https://api.example.com",
-            "http://localhost:8000",
+            f"http://localhost:{FlextApiConstants.DEFAULT_BASE_URL.split(':')[-1] if ':' in FlextApiConstants.DEFAULT_BASE_URL else '8000'}",
             "/api/v1/users",
         ]
 
@@ -335,7 +336,7 @@ class TestFlextApiModelsFocused:
 
         config = FlextApiModels.ClientConfig(
             base_url="https://api.production.com",
-            timeout=60.0,
+            timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT,
             max_retries=5,
             headers=headers,
             auth_token="bearer_token_123",
@@ -523,8 +524,8 @@ class TestFlextApiModelsFocused:
         query = FlextApiModels.HttpQuery(page_size=1)
         assert query.page_size_value == 1
 
-        query_max = FlextApiModels.HttpQuery(page_size=1000)
-        assert query_max.page_size_value == 1000
+        query_max = FlextApiModels.HttpQuery(page_size=FlextApiConstants.MAX_PAGE_SIZE)
+        assert query_max.page_size_value == FlextApiConstants.MAX_PAGE_SIZE
 
         # Invalid page sizes
         with pytest.raises(ValidationError):
@@ -560,7 +561,7 @@ class TestFlextApiModelsFocused:
         result = query.add_filter("", "value")
         assert result.is_failure
         assert result.error is not None
-        assert "Filter key cannot be empty" in result.error
+        assert result.error is not None and "Filter key cannot be empty" in result.error
 
     def test_http_query_add_filter_whitespace_key(self) -> None:
         """Test HttpQuery.add_filter with whitespace-only key."""
@@ -569,7 +570,7 @@ class TestFlextApiModelsFocused:
         result = query.add_filter("   ", "value")
         assert result.is_failure
         assert result.error is not None
-        assert "Filter key cannot be empty" in result.error
+        assert result.error is not None and "Filter key cannot be empty" in result.error
 
     def test_http_query_to_query_params(self) -> None:
         """Test HttpQuery.to_query_params method."""
@@ -635,8 +636,10 @@ class TestFlextApiModelsFocused:
         config = FlextApiModels.PaginationConfig(page_size=1)
         assert config.page_size == 1
 
-        config_max = FlextApiModels.PaginationConfig(page_size=1000)
-        assert config_max.page_size == 1000
+        config_max = FlextApiModels.PaginationConfig(
+            page_size=FlextApiConstants.MAX_PAGE_SIZE
+        )
+        assert config_max.page_size == FlextApiConstants.MAX_PAGE_SIZE
 
         # Invalid page sizes
         with pytest.raises(ValidationError):

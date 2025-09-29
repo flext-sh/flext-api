@@ -275,6 +275,16 @@ class FlextApiModels(FlextModels):
 
         @computed_field
         @property
+        def is_redirect(self) -> bool:
+            """Check if response indicates redirect (3xx status codes)."""
+            return (
+                FlextApiConstants.HTTP_REDIRECTION_MIN
+                <= self.status_code
+                <= FlextApiConstants.HTTP_REDIRECTION_MAX
+            )
+
+        @computed_field
+        @property
         def response_time_ms(self) -> float:
             """Computed response time in milliseconds."""
             return (self.elapsed_time * 1000) if self.elapsed_time else 0.0

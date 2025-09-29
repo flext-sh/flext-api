@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 from flext_api.utilities import FlextApiUtilities
 
 
@@ -95,14 +97,16 @@ class TestPaginationBuilderSimple:
     def test_build_paginated_response_default(self) -> None:
         """Test building paginated response with default parameters."""
         data = ["item1", "item2", "item3"]
-        result = FlextApiUtilities.PaginationBuilder.build_paginated_response(data)
+        result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
+            cast("list[object]", data)
+        )
 
         assert result.is_success
-        response = result.data
+        response = cast("dict", result.data)
         assert response["success"] is True
         assert response["data"] == data
         assert "pagination" in response
-        pagination = response["pagination"]
+        pagination = cast("dict", response["pagination"])
         assert pagination["page"] == 1
         assert pagination["page_size"] == 20
         assert pagination["total"] == 3
@@ -114,16 +118,20 @@ class TestPaginationBuilderSimple:
         """Test building paginated response with custom parameters."""
         data = list(range(50))  # 50 items
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            data, page=2, page_size=10, total=50, message="Custom message"
+            cast("list[object]", data),
+            page=2,
+            page_size=10,
+            total=50,
+            message="Custom message",
         )
 
         assert result.is_success
-        response = result.data
+        response = cast("dict", result.data)
         assert response["success"] is True
         assert response["data"] == data
         assert response["message"] == "Custom message"
         assert "pagination" in response
-        pagination = response["pagination"]
+        pagination = cast("dict", response["pagination"])
         assert pagination["page"] == 2
         assert pagination["page_size"] == 10
         assert pagination["total"] == 50
@@ -138,7 +146,7 @@ class TestPaginationBuilderSimple:
         )
 
         assert result.is_failure
-        assert "Page must be >= 1" in result.error
+        assert result.error is not None and "Page must be >= 1" in result.error
 
     def test_build_paginated_response_invalid_page_size(self) -> None:
         """Test building paginated response with invalid page size."""
@@ -147,7 +155,7 @@ class TestPaginationBuilderSimple:
         )
 
         assert result.is_failure
-        assert "Page size must be >= 1" in result.error
+        assert result.error is not None and "Page size must be >= 1" in result.error
 
 
 class TestHttpValidatorSimple:

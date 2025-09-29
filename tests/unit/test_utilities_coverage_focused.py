@@ -104,7 +104,7 @@ class TestFlextUtilitiesCoverageFocused:
         )
         assert result.is_failure
         assert result.error is not None
-        assert "Invalid port 0" in result.error
+        assert result.error is not None and "Invalid port 0" in result.error
 
     def test_validate_config_with_invalid_method(self) -> None:
         """Test validate_config with invalid method."""
@@ -117,7 +117,10 @@ class TestFlextUtilitiesCoverageFocused:
         result = FlextApiUtilities.validate_config(config)
         assert result.is_failure
         assert result.error is not None
-        assert "HTTP method must be a non-empty string" in result.error
+        assert (
+            result.error is not None
+            and "HTTP method must be a non-empty string" in result.error
+        )
 
     def test_validate_config_with_invalid_status_code(self) -> None:
         """Test validate_config with invalid status code."""
@@ -130,7 +133,7 @@ class TestFlextUtilitiesCoverageFocused:
         result = FlextApiUtilities.validate_config(config)
         assert result.is_failure
         assert result.error is not None
-        assert "Invalid HTTP status code" in result.error
+        assert result.error is not None and "Invalid HTTP status code" in result.error
 
     def test_validate_config_exception_handling(self) -> None:
         """Test validate_config exception handling."""
@@ -190,7 +193,7 @@ class TestFlextUtilitiesCoverageFocused:
         result = FlextApiUtilities.DataTransformer.to_dict(model)
         assert result.is_failure
         assert result.error is not None
-        assert "Data conversion failed" in result.error
+        assert result.error is not None and "Data conversion failed" in result.error
 
     def test_safe_bool_conversion_string_cases(self) -> None:
         """Test safe_bool_conversion with various string cases."""
@@ -375,7 +378,7 @@ class TestFlextUtilitiesCoverageFocused:
         )
         assert result.is_failure
         assert result.error is not None
-        assert "Page must be >= 1" in result.error
+        assert result.error is not None and "Page must be >= 1" in result.error
 
         # Page size < 1
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
@@ -384,7 +387,7 @@ class TestFlextUtilitiesCoverageFocused:
         )
         assert result.is_failure
         assert result.error is not None
-        assert "Page size must be >= 1" in result.error
+        assert result.error is not None and "Page size must be >= 1" in result.error
 
         # Page size too large
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
@@ -393,7 +396,7 @@ class TestFlextUtilitiesCoverageFocused:
         )
         assert result.is_failure
         assert result.error is not None
-        assert "Page size cannot exceed" in result.error
+        assert result.error is not None and "Page size cannot exceed" in result.error
 
     def test_pagination_builder_none_data(self) -> None:
         """Test PaginationBuilder with None data."""
@@ -428,7 +431,7 @@ class TestFlextUtilitiesCoverageFocused:
         result = FlextApiUtilities.HttpValidator.validate_url(long_url)
         assert result.is_failure
         assert result.error is not None
-        assert "URL is too long" in result.error
+        assert result.error is not None and "URL is too long" in result.error
 
     def test_http_validator_validate_url_parsing_exception(self) -> None:
         """Test HttpValidator.validate_url with URL that causes parsing exception."""

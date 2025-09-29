@@ -60,14 +60,20 @@ class TestFlextUtilitiesAdditionalCoverage:
         result = FlextApiUtilities.validate_url("invalid-url")
         assert result.is_failure
         assert result.error is not None
-        assert "URL must start with http:// or https://" in result.error
+        assert (
+            result.error is not None
+            and "URL must start with http:// or https://" in result.error
+        )
 
     def test_validate_url_with_empty_url(self) -> None:
         """Test validate_url with empty URL."""
         result = FlextApiUtilities.validate_url("")
         assert result.is_failure
         assert result.error is not None
-        assert "URL must start with http:// or https://" in result.error
+        assert (
+            result.error is not None
+            and "URL must start with http:// or https://" in result.error
+        )
 
     def test_validate_url_with_none_url(self) -> None:
         """Test validate_url with None URL."""
@@ -84,14 +90,19 @@ class TestFlextUtilitiesAdditionalCoverage:
         result = FlextApiUtilities.validate_config("invalid-config")
         assert result.is_failure
         assert result.error is not None
-        assert "Configuration must be dict-like or have attributes" in result.error
+        assert (
+            result.error is not None
+            and "Configuration must be dict-like or have attributes" in result.error
+        )
 
     def test_validate_config_with_none_config(self) -> None:
         """Test validate_config with None configuration."""
         result = FlextApiUtilities.validate_config(None)
         assert result.is_failure
         assert result.error is not None
-        assert "Configuration cannot be None" in result.error
+        assert (
+            result.error is not None and "Configuration cannot be None" in result.error
+        )
 
     def test_generate_id_with_custom_prefix(self) -> None:
         """Test generate_id method."""

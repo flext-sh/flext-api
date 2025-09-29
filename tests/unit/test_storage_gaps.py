@@ -1,5 +1,7 @@
 """Tests for uncovered storage methods to improve coverage."""
 
+from typing import cast
+
 from flext_api import FlextApiStorage
 
 
@@ -132,7 +134,7 @@ class TestFlextApiStorageGaps:
         # Test with empty key - this should fail
         result = storage.set("", "value")
         assert result.is_failure
-        assert "Invalid key" in result.error
+        assert result.error is not None and "Invalid key" in result.error
 
         # Test with non-string key - this will succeed because Python allows it
         # The type checker would catch this, but runtime allows it
@@ -144,7 +146,7 @@ class TestFlextApiStorageGaps:
         storage = FlextApiStorage()
 
         # Set data with very short TTL
-        storage.set("temp_key", "temp_value", ttl=0.001)  # 1ms TTL
+        storage.set("temp_key", "temp_value", ttl=0.001)
 
         # Verify data exists initially
         result = storage.get("temp_key")
@@ -156,8 +158,9 @@ class TestFlextApiStorageGaps:
         storage_key = storage._make_key("temp_key")
         metadata = storage._storage.get(storage_key)
         assert metadata is not None
-        assert "ttl" in metadata
-        assert metadata["ttl"] == 0.001
+        metadata_dict = cast("dict", metadata)
+        assert "ttl" in metadata_dict
+        assert metadata_dict["ttl"] == 0.001
 
     def test_batch_operations_edge_cases(self) -> None:
         """Test batch operations with edge cases."""
