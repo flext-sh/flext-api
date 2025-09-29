@@ -1,6 +1,7 @@
 """Comprehensive tests for utilities module to improve coverage."""
 
 import time
+from typing import cast
 
 from flext_api import FlextApiUtilities
 
@@ -12,8 +13,8 @@ class TestFlextApiUtilitiesComprehensive:
         """Test ResponseBuilder.build_error_response method."""
         result = FlextApiUtilities.ResponseBuilder.build_error_response("Test error")
         assert result.is_success  # This returns success with error data
-        assert result.data["success"] is False
-        assert result.data["message"] == "Test error"
+        assert cast("dict", result.data)["success"] is False
+        assert cast("dict", result.data)["message"] == "Test error"
 
     def test_response_builder_success_response(self) -> None:
         """Test ResponseBuilder.build_success_response method."""
@@ -21,8 +22,8 @@ class TestFlextApiUtilitiesComprehensive:
             data={"id": 1, "name": "test"}
         )
         assert result.is_success
-        assert result.data["data"] == {"id": 1, "name": "test"}
-        assert result.data["success"] is True
+        assert cast("dict", result.data)["data"] == {"id": 1, "name": "test"}
+        assert cast("dict", result.data)["success"] is True
 
     def test_validate_url(self) -> None:
         """Test validate_url method."""
@@ -38,8 +39,8 @@ class TestFlextApiUtilitiesComprehensive:
         result = FlextApiUtilities.validate_config(config)
         assert result.is_success
         # The config gets additional metadata
-        assert result.data["base_url"] == "https://api.example.com"
-        assert result.data["timeout"] == 30
+        assert cast("dict", result.data)["base_url"] == "https://api.example.com"
+        assert cast("dict", result.data)["timeout"] == 30
 
         result = FlextApiUtilities.validate_config("invalid")
         assert result.is_failure

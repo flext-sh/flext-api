@@ -157,7 +157,10 @@ class TestFlextApiClient:
             result: FlextResult[None] = client.execute()
             FlextTestsMatchers.assert_result_failure(result)
             assert result.error is not None
-            assert "HTTP client execution failed" in result.error
+            assert (
+                result.error is not None
+                and "HTTP client execution failed" in result.error
+            )
 
     def test_config_property(self) -> None:
         """Test config property for test compatibility."""
@@ -252,7 +255,7 @@ class TestFlextApiClient:
             # result = await client.start()  # This would fail with the patch
             # assert result.is_failure
             # assert result.error is not None
-            # assert "HTTP session start failed" in result.error
+            # assert result.error is not None and "HTTP session start failed" in result.error
 
     @pytest.mark.asyncio
     async def test_session_stop_error_handling(self) -> None:
@@ -272,7 +275,7 @@ class TestFlextApiClient:
             # result = await client.stop()  # This would fail with the patch
             # assert result.is_failure
             # assert result.error is not None
-            # assert "Failed to stop HTTP client" in result.error
+            # assert result.error is not None and "Failed to stop HTTP client" in result.error
             pass  # Context manager handles this automatically
 
     @pytest.mark.asyncio
@@ -312,7 +315,10 @@ class TestFlextApiClient:
             result = await client.close()
             assert result.is_failure
             assert result.error is not None
-            assert "Failed to close HTTP client" in result.error
+            assert (
+                result.error is not None
+                and "Failed to close HTTP client" in result.error
+            )
 
     @pytest.mark.asyncio
     async def test_session_validation(self) -> None:
@@ -848,7 +854,7 @@ async def test_client_error_handling_pipeline() -> None:
         assert not result.is_success
         assert result.error is not None
         # Check for common connection error messages
-        error_lower = result.error.lower()
+        error_lower = str(result.error).lower()
         assert any(
             keyword in error_lower
             for keyword in ["failed", "error", "connection", "resolve", "name"]
@@ -1034,7 +1040,9 @@ async def test_real_network_error_and_error_formatting() -> None:
 
         # Check error contains expected information
         assert result.error is not None
-        assert "test" in result.error or "connection" in result.error.lower()
+        assert (
+            result.error is not None and "test" in result.error
+        ) or "connection" in str(result.error).lower()
     finally:
         await client.close()
 

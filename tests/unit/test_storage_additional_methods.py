@@ -1,6 +1,7 @@
 """Tests for FlextApiStorage additional methods to improve coverage."""
 
 import json
+from typing import cast
 
 from flext_api import FlextApiStorage
 
@@ -49,9 +50,10 @@ class TestFlextApiStorageAdditionalMethods:
 
         assert result.is_success
         assert isinstance(result.data, dict)
-        assert result.data["key"] == "value"
-        assert result.data["number"] == 123
-        assert result.data["list"] == [1, 2, 3]
+        data = result.data
+        assert data["key"] == "value"
+        assert data["number"] == 123
+        assert data["list"] == [1, 2, 3]
 
     def test_json_storage_deserialize_failure(self) -> None:
         """Test JSON storage deserialization failure."""
@@ -88,9 +90,9 @@ class TestFlextApiStorageAdditionalMethods:
 
         assert result.is_success
         assert isinstance(result.data, dict)
-        assert "size" in result.data
-        assert "backend" in result.data
-        assert result.data["backend"] == "memory"
+        assert "size" in cast("dict", result.data)
+        assert "backend" in cast("dict", result.data)
+        assert cast("dict", result.data)["backend"] == "memory"
 
     def test_cache_operations_cleanup_expired(self) -> None:
         """Test cache operations cleanup expired."""
@@ -150,12 +152,12 @@ class TestFlextApiStorageAdditionalMethods:
         # Test with empty key (should fail validation)
         result = storage.set("", "value")
         assert result.is_failure
-        assert "Invalid key" in result.error
+        assert result.error is not None and "Invalid key" in result.error
 
         # Test with None key (should fail validation)
         result = storage.set(None, "value")
         assert result.is_failure
-        assert "Invalid key" in result.error
+        assert result.error is not None and "Invalid key" in result.error
 
     def test_storage_batch_operations_comprehensive(self) -> None:
         """Test comprehensive batch operations."""
@@ -168,7 +170,7 @@ class TestFlextApiStorageAdditionalMethods:
             "batch_key_3": "value_3",
         }
 
-        result = storage.batch_set(batch_data)
+        result = storage.batch_set(cast("dict[str, object]", batch_data))
         assert result.is_success
 
         # Test batch get

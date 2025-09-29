@@ -11,6 +11,7 @@ from unittest.mock import ANY, Mock, patch
 import pytest
 
 from flext_api import FlextApiClient, FlextApiModels
+from flext_api.constants import FlextApiConstants
 from flext_core import FlextConstants, FlextResult
 
 
@@ -36,20 +37,20 @@ class TestFlextApiClientFocused:
         """Test FlextApiClient initialization with ClientConfig object."""
         config = FlextApiModels.ClientConfig(
             base_url="https://config.example.com",
-            timeout=60.0,
+            timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT,
             max_retries=5,
         )
         client = FlextApiClient(config=config)
 
         assert client.base_url == "https://config.example.com"
-        assert client.timeout == 60.0
+        assert client.timeout == FlextApiConstants.DEVELOPMENT_TIMEOUT
         assert client.max_retries == 5
 
     def test_client_initialization_with_config_and_kwargs(self) -> None:
         """Test FlextApiClient with ClientConfig and kwargs override."""
         config = FlextApiModels.ClientConfig(
             base_url="https://config.example.com",
-            timeout=30,
+            timeout=FlextApiConstants.DEFAULT_TIMEOUT,
         )
         client = FlextApiClient(config, timeout=45, max_retries=7)
 
@@ -122,7 +123,7 @@ class TestFlextApiClientFocused:
         # Test valid configuration
         client = FlextApiClient(
             base_url="https://test.com",
-            timeout=30,  # int should be converted to float
+            timeout=FlextApiConstants.DEFAULT_TIMEOUT,  # int should be converted to float
             auth_token=None,  # None value allowed
         )
 
@@ -134,7 +135,9 @@ class TestFlextApiClientFocused:
 
     def test_client_public_interface(self) -> None:
         """Test client public interface and services."""
-        client = FlextApiClient("https://test.com", timeout=60)
+        client = FlextApiClient(
+            "https://test.com", timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT
+        )
 
         # Test that public services are accessible
         assert client.http is not None
@@ -519,7 +522,7 @@ class TestFlextApiClientFocused:
 
             assert result.is_failure
             assert result.error is not None
-            assert "HTTP request failed" in result.error
+            assert result.error is not None and "HTTP request failed" in result.error
 
     @pytest.mark.asyncio
     async def test_request_general_error_handling(self) -> None:
@@ -536,7 +539,7 @@ class TestFlextApiClientFocused:
 
             assert result.is_failure
             assert result.error is not None
-            assert "Unexpected error" in result.error
+            assert result.error is not None and "Unexpected error" in result.error
 
     @pytest.mark.asyncio
     async def test_request_with_valid_parameters(self) -> None:

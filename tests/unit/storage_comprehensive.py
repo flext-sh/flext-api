@@ -143,7 +143,7 @@ class TestFlextApiStorage:
         result = storage.delete("nonexistent")
         assert result.is_failure
         assert result.error is not None
-        assert "Key not found" in result.error
+        assert result.error is not None and "Key not found" in result.error
 
     def test_storage_config_property(self) -> None:
         """Test storage config property."""
@@ -307,7 +307,7 @@ class TestIntegratedStorageOperations:
         result = storage.delete("nonexistent")
         assert result.is_failure
         assert result.error is not None
-        assert "Key not found" in result.error
+        assert result.error is not None and "Key not found" in result.error
 
         # Test operations after error
         result = storage.set("recovery_key", "recovery_value")

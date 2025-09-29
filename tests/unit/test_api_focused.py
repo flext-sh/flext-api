@@ -13,6 +13,7 @@ import pytest
 from pydantic import ValidationError
 
 from flext_api import FlextApiClient, FlextApiModels
+from flext_api.constants import FlextApiConstants
 
 
 class TestFlextApiClientCoverageBoost:
@@ -30,8 +31,8 @@ class TestFlextApiClientCoverageBoost:
         """Test FlextApiClient initialization with configuration dictionary."""
         config = {
             "base_url": "https://api.example.com",
-            "timeout": 30,
-            "max_retries": 3,
+            "timeout": FlextApiConstants.DEFAULT_TIMEOUT,
+            "max_retries": FlextApiConstants.DEFAULT_RETRIES,
         }
 
         typed_config = cast(

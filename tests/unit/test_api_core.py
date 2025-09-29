@@ -12,6 +12,7 @@ import pytest
 from pydantic import ValidationError
 
 from flext_api import FlextApiClient
+from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
 from flext_tests import FlextTestsDomains
 
@@ -41,8 +42,12 @@ class TestFlextApiClient:
         config_data = FlextTestsDomains.create_configuration()
 
         base_url = str(config_data.get("base_url", "https://httpbin.org"))
-        timeout = cast("int", config_data.get("timeout", 30))
-        max_retries = cast("int", config_data.get("max_retries", 3))
+        timeout = cast(
+            "int", config_data.get("timeout", FlextApiConstants.DEFAULT_TIMEOUT)
+        )
+        max_retries = cast(
+            "int", config_data.get("max_retries", FlextApiConstants.DEFAULT_RETRIES)
+        )
 
         client = FlextApiClient(
             base_url=base_url,
@@ -58,7 +63,7 @@ class TestFlextApiClient:
     def test_client_properties_with_factory_data(self) -> None:
         """Test client properties with test configuration data."""
         base_url = "https://api-service.example.com"
-        timeout = 45
+        timeout = FlextApiConstants.DEVELOPMENT_TIMEOUT
         max_retries = 5
 
         client = FlextApiClient(
@@ -81,8 +86,16 @@ class TestFlextApiClient:
         """Test client with configuration data from conftest fixture."""
         # Use configuration data from FlextTestsDomains via conftest
         base_url = str(sample_configuration_data.get("base_url", "https://httpbin.org"))
-        timeout = cast("int", sample_configuration_data.get("timeout", 30))
-        max_retries = cast("int", sample_configuration_data.get("max_retries", 3))
+        timeout = cast(
+            "int",
+            sample_configuration_data.get("timeout", FlextApiConstants.DEFAULT_TIMEOUT),
+        )
+        max_retries = cast(
+            "int",
+            sample_configuration_data.get(
+                "max_retries", FlextApiConstants.DEFAULT_RETRIES
+            ),
+        )
 
         client = FlextApiClient(
             base_url=base_url,
@@ -101,7 +114,11 @@ class TestFlextApiClient:
         config_scenarios = [
             FlextTestsDomains.create_configuration(),
             FlextTestsDomains.create_service(),
-            {"base_url": "https://api.test.com", "timeout": 60.0, "max_retries": 2},
+            {
+                "base_url": "https://api.test.com",
+                "timeout": FlextApiConstants.DEVELOPMENT_TIMEOUT,
+                "max_retries": 2,
+            },
         ]
 
         clients = []
@@ -180,7 +197,9 @@ class TestFlextApiClient:
         """Test client property types are properly validated."""
         base_url = "https://test-service.example.com"
 
-        client = FlextApiClient(base_url=base_url, timeout=30, max_retries=5)
+        client = FlextApiClient(
+            base_url=base_url, timeout=FlextApiConstants.DEFAULT_TIMEOUT, max_retries=5
+        )
 
         assert isinstance(client.base_url, str)
         assert isinstance(client.timeout, (int, float))

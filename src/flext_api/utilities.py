@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import re
 import time
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urlparse, urlunparse
 
 from flext_api.constants import FlextApiConstants
@@ -80,7 +80,7 @@ class FlextApiUtilities(FlextUtilities):
                     response["details"] = details
                 return FlextResult[FlextApiTypes.Core.ResponseDict].ok(response)
             except Exception as e:
-                return FlextResult[FlextApiTypes.Core.ConfigDict].fail(str(e))
+                return FlextResult[FlextApiTypes.Core.ResponseDict].fail(str(e))
 
         @staticmethod
         def build_success_response(
@@ -105,7 +105,7 @@ class FlextApiUtilities(FlextUtilities):
                 }
                 return FlextResult[FlextApiTypes.Core.ResponseDict].ok(response)
             except Exception as e:
-                return FlextResult[FlextApiTypes.Core.ConfigDict].fail(str(e))
+                return FlextResult[FlextApiTypes.Core.ResponseDict].fail(str(e))
 
     class PaginationBuilder:
         """HTTP pagination builder using flext-core patterns."""
@@ -423,7 +423,9 @@ class FlextApiUtilities(FlextUtilities):
                 **config_dict,  # Include all original config data
             }
 
-            return FlextResult[FlextApiTypes.Core.ConfigDict].ok(result_data)
+            return FlextResult[FlextApiTypes.Core.ConfigDict].ok(
+                cast("FlextApiTypes.Core.ConfigDict", result_data)
+            )
         except Exception as e:
             return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
                 f"Configuration validation failed: {e}",

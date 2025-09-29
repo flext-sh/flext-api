@@ -5,8 +5,10 @@ Tests storage functionality with actual implementation.
 
 from __future__ import annotations
 
+from typing import cast
 from unittest.mock import Mock
 
+from flext_api.constants import FlextApiConstants
 from flext_api.storage import FlextApiStorage
 
 
@@ -28,14 +30,14 @@ class TestFlextApiStorageSimple:
         """Test storage initialization with configuration."""
         config = {
             "namespace": "test_namespace",
-            "max_size": 1000,
+            "max_size": FlextApiConstants.MAX_PAGE_SIZE,
             "default_ttl": 3600,
             "backend": "redis",
         }
         storage = FlextApiStorage(config=config)
 
         assert storage._namespace == "test_namespace"
-        assert storage._max_size == 1000
+        assert storage._max_size == FlextApiConstants.MAX_PAGE_SIZE
         assert storage._default_ttl == 3600
         assert storage._backend == "redis"
 
@@ -83,7 +85,7 @@ class TestFlextApiStorageSimple:
         assert storage._data["test_key"] == "test_value"
         # Check TTL is stored in the storage dict
         stored_data = storage._storage["flext_api:test_key"]
-        assert stored_data["ttl"] == 3600
+        assert cast("dict", stored_data)["ttl"] == 3600
 
     def test_get_existing_key(self) -> None:
         """Test retrieving existing data."""
@@ -267,7 +269,7 @@ class TestFlextApiStorageSimple:
 
         # Verify data integrity
         assert retrieved_data == test_data
-        assert retrieved_data["complex"]["nested"]["data"] == [1, 2, 3]
+        assert cast("dict", retrieved_data)["complex"]["nested"]["data"] == [1, 2, 3]
 
     def test_concurrent_operations_simulation(self) -> None:
         """Test simulated concurrent operations."""
@@ -332,7 +334,7 @@ class TestFlextApiStorageSimple:
 
         # Check TTL is stored
         stored_data = storage._storage["flext_api:ttl_key"]
-        assert stored_data["ttl"] == 1
+        assert cast("dict", stored_data)["ttl"] == 1
 
     def test_storage_integration(self) -> None:
         """Test complete storage integration."""
@@ -346,7 +348,7 @@ class TestFlextApiStorageSimple:
         # Get values
         user1_result = storage.get("user:1")
         assert user1_result.is_success
-        assert user1_result.data["name"] == "Alice"
+        assert cast("dict", user1_result.data)["name"] == "Alice"
 
         # Check existence
         exists_result = storage.exists("user:1")

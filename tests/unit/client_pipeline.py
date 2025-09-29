@@ -56,7 +56,7 @@ async def test_client_error_handling_pipeline() -> None:
         assert not result.is_success
         assert result.error is not None
         # Check for common connection error messages
-        error_lower = result.error.lower()
+        error_lower = str(result.error).lower()
         assert any(
             keyword in error_lower
             for keyword in ["failed", "error", "connection", "resolve", "name"]

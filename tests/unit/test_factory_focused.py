@@ -83,7 +83,7 @@ class TestFlextApiFactoryFocused:
         """Test FlextApiClient with all configuration options."""
         client = FlextApiClient(
             base_url="https://full-config.example.com",
-            timeout=60,
+            timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT,
             max_retries=7,
             headers={
                 "Authorization": "Bearer full-token",
@@ -96,7 +96,9 @@ class TestFlextApiFactoryFocused:
 
     def test_create_flext_api_with_none_base_url(self) -> None:
         """Test FlextApiClient with None base_url (fallback case)."""
-        client = FlextApiClient(base_url=None, timeout=30)
+        client = FlextApiClient(
+            base_url=None, timeout=FlextApiConstants.DEFAULT_TIMEOUT
+        )
 
         assert isinstance(client, FlextApiClient)
         assert client is not None
@@ -107,7 +109,7 @@ class TestFlextApiFactoryFocused:
         # FlextApiClient should handle type validation gracefully
         client = FlextApiClient(
             base_url="https://api.example.com",
-            timeout=30,  # Use valid timeout for proper instantiation
+            timeout=FlextApiConstants.DEFAULT_TIMEOUT,  # Use valid timeout for proper instantiation
         )
 
         assert isinstance(client, FlextApiClient)
@@ -152,7 +154,7 @@ class TestFlextApiFactoryFocused:
         """Test FlextApiClient with non-string base_url that needs conversion."""
         client = FlextApiClient(
             base_url="https://converted.example.com",  # Valid URL string
-            timeout=30,
+            timeout=FlextApiConstants.DEFAULT_TIMEOUT,
         )
 
         assert isinstance(client, FlextApiClient)

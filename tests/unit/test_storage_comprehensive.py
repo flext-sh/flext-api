@@ -5,6 +5,7 @@ Tests all storage functionality with real implementations.
 
 from __future__ import annotations
 
+from typing import cast
 from unittest.mock import Mock
 
 from flext_api.storage import FlextApiStorage
@@ -240,7 +241,7 @@ class TestFlextApiStorage:
 
         # Test batch set
         batch_data = {"key1": "value1", "key2": "value2", "key3": "value3"}
-        result = storage.batch_set(batch_data)
+        result = storage.batch_set(cast("dict[str, object]", batch_data))
 
         assert result.is_success
 
@@ -380,7 +381,7 @@ class TestFlextApiStorage:
 
         # Verify data integrity
         assert retrieved_data == test_data
-        assert retrieved_data["complex"]["nested"]["data"] == [1, 2, 3]
+        assert cast("dict", retrieved_data)["complex"]["nested"]["data"] == [1, 2, 3]
 
     def test_storage_metrics(self) -> None:
         """Test storage metrics collection."""

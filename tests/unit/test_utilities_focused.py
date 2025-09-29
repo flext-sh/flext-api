@@ -121,7 +121,7 @@ class TestFlextApiUtilitiesFocused:
         )
         assert not result.is_success
         assert result.error is not None
-        assert "Page must be >= 1" in result.error
+        assert result.error is not None and "Page must be >= 1" in result.error
 
         # Page size must be >= 1
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
@@ -130,7 +130,7 @@ class TestFlextApiUtilitiesFocused:
         )
         assert not result.is_success
         assert result.error is not None
-        assert "Page size must be >= 1" in result.error
+        assert result.error is not None and "Page size must be >= 1" in result.error
 
         # Page size cannot exceed max
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
@@ -139,7 +139,7 @@ class TestFlextApiUtilitiesFocused:
         )
         assert not result.is_success
         assert result.error is not None
-        assert "Page size cannot exceed" in result.error
+        assert result.error is not None and "Page size cannot exceed" in result.error
 
     def test_pagination_builder_none_data_handling(self) -> None:
         """Test PaginationBuilder with None data."""
@@ -189,20 +189,26 @@ class TestFlextApiUtilitiesFocused:
         result = FlextApiUtilities.HttpValidator.validate_http_method("")
         assert not result.is_success
         assert result.error is not None
-        assert "HTTP method must be a non-empty string" in result.error
+        assert (
+            result.error is not None
+            and "HTTP method must be a non-empty string" in result.error
+        )
 
         # None method
         none_method: str | None = None
         result = FlextApiUtilities.HttpValidator.validate_http_method(none_method)
         assert not result.is_success
         assert result.error is not None
-        assert "HTTP method must be a non-empty string" in result.error
+        assert (
+            result.error is not None
+            and "HTTP method must be a non-empty string" in result.error
+        )
 
         # Invalid method
         result = FlextApiUtilities.HttpValidator.validate_http_method("INVALID")
         assert not result.is_success
         assert result.error is not None
-        assert "Invalid HTTP method" in result.error
+        assert result.error is not None and "Invalid HTTP method" in result.error
 
     def test_http_validator_validate_status_code(self) -> None:
         """Test HttpValidator.validate_status_code."""
@@ -226,13 +232,15 @@ class TestFlextApiUtilitiesFocused:
             result = FlextApiUtilities.HttpValidator.validate_status_code(code)
             assert not result.is_success
             assert result.error is not None
-            assert "Invalid HTTP status code" in result.error
+            assert (
+                result.error is not None and "Invalid HTTP status code" in result.error
+            )
 
         # Invalid string
         result = FlextApiUtilities.HttpValidator.validate_status_code("invalid")
         assert not result.is_success
         assert result.error is not None
-        assert "Invalid status code format" in result.error
+        assert result.error is not None and "Invalid status code format" in result.error
 
     def test_http_validator_normalize_url(self) -> None:
         """Test HttpValidator.normalize_url."""

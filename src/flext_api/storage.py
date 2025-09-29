@@ -81,14 +81,19 @@ class FlextApiStorage(FlextModels.Entity):
     # =============================================================================
 
     def set(
-        self, key: str, value: object, timeout: int | None = None
+        self,
+        key: str,
+        value: object,
+        timeout: int | None = None,
+        ttl: int | None = None,
     ) -> FlextResult[None]:
         """Store HTTP data using flext-core Registry.
 
         Args:
             key: Storage key identifier
             value: Value to store
-            timeout: Timeout in seconds (TTL for stored data)
+            timeout: Timeout in seconds (TTL for stored data) - deprecated, use ttl
+            ttl: Time-to-live in seconds for stored data
 
         Returns:
             FlextResult[None]: Success or failure result.
@@ -99,14 +104,18 @@ class FlextApiStorage(FlextModels.Entity):
         if not key:
             return FlextResult[None].fail("Invalid key: key must be a non-empty string")
 
-        # Calculate TTL from timeout if provided, otherwise use default
-        ttl = timeout if timeout is not None else self._default_ttl
+        # Calculate TTL from timeout or ttl parameter, otherwise use default
+        effective_ttl = (
+            timeout
+            if timeout is not None
+            else (ttl if ttl is not None else self._default_ttl)
+        )
 
         # Create metadata for storage
         metadata = {
             "value": value,
             "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
-            "ttl": ttl,
+            "ttl": effective_ttl,
         }
 
         # Update storage with both direct key and namespaced metadata
