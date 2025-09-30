@@ -250,7 +250,6 @@
     python-version = "3.13"
     search-path = [
         "examples",
-        "scripts",
         "src",
         "tests",
     ]
