@@ -119,7 +119,6 @@ class FlextApiModels(FlextModels):
         )
 
         @computed_field
-        @property
         def full_url(self) -> str:
             """Computed full URL with proper formatting."""
             base_url = self.url.rstrip("/")
@@ -128,7 +127,6 @@ class FlextApiModels(FlextModels):
             return base_url
 
         @computed_field
-        @property
         def request_size(self) -> int:
             """Computed request body size in bytes."""
             if not self.body:
@@ -140,7 +138,6 @@ class FlextApiModels(FlextModels):
             return 0
 
         @computed_field
-        @property
         def is_secure(self) -> bool:
             """Check if the request uses HTTPS."""
             return self.url.startswith("https://")
@@ -244,7 +241,6 @@ class FlextApiModels(FlextModels):
         )
 
         @computed_field
-        @property
         def is_success(self) -> bool:
             """Check if response indicates success (2xx status codes)."""
             return (
@@ -254,7 +250,6 @@ class FlextApiModels(FlextModels):
             )
 
         @computed_field
-        @property
         def is_client_error(self) -> bool:
             """Check if response indicates client error (4xx status codes)."""
             return (
@@ -264,7 +259,6 @@ class FlextApiModels(FlextModels):
             )
 
         @computed_field
-        @property
         def is_server_error(self) -> bool:
             """Check if response indicates server error (5xx status codes)."""
             return (
@@ -274,7 +268,6 @@ class FlextApiModels(FlextModels):
             )
 
         @computed_field
-        @property
         def is_redirect(self) -> bool:
             """Check if response indicates redirect (3xx status codes)."""
             return (
@@ -284,13 +277,11 @@ class FlextApiModels(FlextModels):
             )
 
         @computed_field
-        @property
         def response_time_ms(self) -> float:
             """Computed response time in milliseconds."""
             return (self.elapsed_time * 1000) if self.elapsed_time else 0.0
 
         @computed_field
-        @property
         def content_length(self) -> int:
             """Computed content length from headers or body."""
             if "content-length" in self.headers:
@@ -366,13 +357,11 @@ class FlextApiModels(FlextModels):
         api_key: str | None = Field(default=None, description="API key")
 
         @computed_field
-        @property
         def has_authentication(self) -> bool:
             """Check if client has authentication configured."""
             return bool(self.auth_token or self.api_key)
 
         @computed_field
-        @property
         def auth_type(self) -> str:
             """Determine the authentication type being used."""
             if self.auth_token:
@@ -382,7 +371,6 @@ class FlextApiModels(FlextModels):
             return "none"
 
         @computed_field
-        @property
         def timeout_ms(self) -> int:
             """Get timeout in milliseconds for compatibility."""
             return int(self.timeout * 1000)
@@ -473,19 +461,16 @@ class FlextApiModels(FlextModels):
         )
 
         @computed_field
-        @property
         def has_filters(self) -> bool:
             """Check if any filters are applied."""
             return bool(self.filter_conditions)
 
         @computed_field
-        @property
         def has_sorting(self) -> bool:
             """Check if any sorting is applied."""
             return bool(self.sort_fields)
 
         @computed_field
-        @property
         def offset(self) -> int:
             """Calculate SQL-style offset for pagination."""
             return (self.page_number - 1) * self.page_size_value
@@ -541,13 +526,11 @@ class FlextApiModels(FlextModels):
         total: int = Field(default=0, ge=0, description="Total items")
 
         @computed_field
-        @property
         def offset(self) -> int:
             """Calculate offset for database queries."""
             return (self.current_page - 1) * self.page_size
 
         @computed_field
-        @property
         def has_next_page(self) -> bool:
             """Check if there's a next page available."""
             if self.max_pages is None:
@@ -555,7 +538,6 @@ class FlextApiModels(FlextModels):
             return self.current_page < self.max_pages
 
         @computed_field
-        @property
         def has_previous_page(self) -> bool:
             """Check if there's a previous page available."""
             return self.current_page > 1
@@ -586,13 +568,11 @@ class FlextApiModels(FlextModels):
         default_ttl: int | None = Field(default=None, description="Default TTL")
 
         @computed_field
-        @property
         def has_size_limit(self) -> bool:
             """Check if storage has size limitations."""
             return self.max_size is not None
 
         @computed_field
-        @property
         def has_ttl(self) -> bool:
             """Check if storage has TTL configured."""
             return self.default_ttl is not None
@@ -625,13 +605,11 @@ class FlextApiModels(FlextModels):
         )
 
         @computed_field
-        @property
         def content_type(self) -> str | None:
             """Get Content-Type header value."""
             return self.headers.get("Content-Type") or self.headers.get("content-type")
 
         @computed_field
-        @property
         def is_json_request(self) -> bool:
             """Check if request contains JSON content."""
             content_type = self.content_type
@@ -667,19 +645,16 @@ class FlextApiModels(FlextModels):
         )
 
         @computed_field
-        @property
         def is_successful(self) -> bool:
             """Check if response indicates success."""
             return HTTP_SUCCESS_MIN <= self.status_code < HTTP_SUCCESS_MAX
 
         @computed_field
-        @property
         def content_type(self) -> str | None:
             """Get Content-Type header value."""
             return self.headers.get("Content-Type") or self.headers.get("content-type")
 
         @computed_field
-        @property
         def is_json_response(self) -> bool:
             """Check if response contains JSON content."""
             content_type = self.content_type
@@ -707,19 +682,16 @@ class FlextApiModels(FlextModels):
         fragment: str | None = Field(default=None, description="URL fragment")
 
         @computed_field
-        @property
         def is_secure(self) -> bool:
             """Check if URL uses HTTPS scheme."""
             return self.scheme == "https"
 
         @computed_field
-        @property
         def has_query(self) -> bool:
             """Check if URL has query parameters."""
             return bool(self.query)
 
         @computed_field
-        @property
         def full_url(self) -> str:
             """Reconstruct full URL from components."""
             url = self.raw_url
@@ -822,13 +794,11 @@ class FlextApiModels(FlextModels):
         )
 
         @computed_field
-        @property
         def has_docs(self) -> bool:
             """Check if documentation is enabled."""
             return bool(self.docs_url or self.redoc_url)
 
         @computed_field
-        @property
         def app_identifier(self) -> str:
             """Generate unique app identifier."""
             return f"{self.title.lower().replace(' ', '-')}-{self.app_version}"
