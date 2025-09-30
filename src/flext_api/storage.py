@@ -47,13 +47,13 @@ class FlextApiStorage(FlextModels.Entity):
             ):
                 model_dump_method = getattr(config, "model_dump")
                 adapted = model_dump_method()
-                config_dict: FlextApiTypes.Core.StorageDict = (
+                config_dict = (
                     adapted if isinstance(adapted, dict) else {"value": "adapted"}
                 )
             else:
-                config_dict: FlextApiTypes.Core.StorageDict = {"value": "config"}
+                config_dict = {"value": "config"}
         else:
-            config_dict: FlextApiTypes.Core.StorageDict = {}
+            config_dict = {}
 
         self._namespace = str(config_dict.get("namespace", "flext_api"))
 

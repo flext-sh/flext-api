@@ -38,7 +38,7 @@ class FlextApiTypes(FlextTypes):
     Timeout = int | float
 
     # HTTP-specific type aliases
-    HttpStatusCode = int
+    type HttpStatusCode = int
     JsonObject = dict[str, FlextTypes.Core.JsonValue]
     HttpData = str | bytes | dict[str, FlextTypes.Core.JsonValue]
     HttpHeaders = dict[str, str | list[str]]
@@ -46,7 +46,7 @@ class FlextApiTypes(FlextTypes):
     HttpParams = dict[str, str | list[str]]
     RequestData = dict[str, FlextTypes.Core.JsonValue] | str | bytes
     ResponseData = dict[str, FlextTypes.Core.JsonValue] | str | bytes
-    StorageKey = str
+    type StorageKey = str
     StorageValue = FlextTypes.Core.JsonValue
     TimeoutSeconds = int | float
     # =========================================================================
