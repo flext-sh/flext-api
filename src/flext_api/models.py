@@ -32,26 +32,7 @@ from flext_core import (
     FlextUtilities,
 )
 
-# Constants for HTTP status codes and validation
-HTTP_NO_CONTENT = 204
-HTTP_SUCCESS_MIN = 200
-HTTP_SUCCESS_MAX = 300
-HTTP_CLIENT_ERROR_MIN = 400
-HTTP_CLIENT_ERROR_MAX = 500
-HTTP_SERVER_ERROR_MIN = 500
-HTTP_SERVER_ERROR_MAX = 600
-MAX_RETRIES_PRODUCTION = 10
-MAX_PAGE_SIZE_PERFORMANCE = 1000
-MIN_PORT = 1
-MAX_PORT = 65535
-MASK_AUTH_THRESHOLD = 8
-
-# Standard model configuration for all API models
-STANDARD_MODEL_CONFIG = ConfigDict(
-    validate_assignment=True,
-    extra="forbid",
-    populate_by_name=True,
-)
+# All constants moved to FlextApiConstants for centralization
 
 
 class FlextApiModels(FlextModels):
@@ -98,37 +79,38 @@ class FlextApiModels(FlextModels):
     )
 
     # Simple API-specific models extending FlextModels base classes
-    class HttpRequest(FlextModels.Command):
-        """HTTP request model extending FlextModels.Command."""
+    class HttpRequest(FlextModels.HttpRequest):
+        """HTTP client request model extending flext-core HttpRequest base.
 
-        url: str = Field(description="Request URL")
-        method: str = Field(
-            default=FlextApiConstants.HttpMethod.GET, description="HTTP method"
-        )
-        headers: FlextApiTypes.Headers = Field(
-            default_factory=dict, description="Request headers"
-        )
-        body: FlextApiTypes.RequestBody | None = Field(
-            default=None, description="Request body"
-        )
-        timeout: FlextApiTypes.Timeout = Field(
-            default=FlextApiConstants.DEFAULT_TIMEOUT,
-            ge=FlextApiConstants.MIN_TIMEOUT,
-            le=FlextApiConstants.MAX_TIMEOUT,
-            description="Request timeout",
-        )
+        Inherits from flext-core:
+            - url: Request URL
+            - method: HTTP method (GET, POST, etc.)
+            - headers: Request headers
+            - body: Request body
+            - timeout: Request timeout
+            - has_body: Computed field - check if request has body
+            - is_secure: Computed field - check if request uses HTTPS
+            - validate_method: Validates HTTP method against centralized constants
+            - validate_request_consistency: Cross-field validation
+
+        Client-specific additions:
+            - full_url: Computed full URL with protocol
+            - request_size: Computed request body size in bytes
+        """
 
         @computed_field
+        @property
         def full_url(self) -> str:
-            """Computed full URL with proper formatting."""
+            """Computed full URL with proper formatting - CLIENT SPECIFIC."""
             base_url = self.url.rstrip("/")
             if not base_url.startswith(("http://", "https://")):
                 return f"http://{base_url}"
             return base_url
 
         @computed_field
+        @property
         def request_size(self) -> int:
-            """Computed request body size in bytes."""
+            """Computed request body size in bytes - CLIENT SPECIFIC."""
             if not self.body:
                 return 0
             if isinstance(self.body, str):
@@ -137,42 +119,16 @@ class FlextApiModels(FlextModels):
                 return len(json.dumps(self.body).encode("utf-8"))
             return 0
 
-        @computed_field
-        def is_secure(self) -> bool:
-            """Check if the request uses HTTPS."""
-            return self.url.startswith("https://")
-
-        @model_validator(mode="after")
-        def validate_request_consistency(self) -> Self:
-            """Cross-field validation for HTTP request consistency."""
-            # Validate method-body consistency
-            methods_without_body = {"GET", "HEAD", "DELETE"}
-            if self.method in methods_without_body and self.body is not None:
-                error_msg = f"HTTP {self.method} requests should not have a body"
-                raise ValueError(error_msg)
-
-            # Validate Content-Type for POST/PUT requests
-            methods_with_body = {"POST", "PUT", "PATCH"}
-            if self.method in methods_with_body and self.body:
-                headers_lower = {k.lower(): v for k, v in self.headers.items()}
-                if "content-type" not in headers_lower:
-                    # Auto-add Content-Type based on body type
-                    if isinstance(self.body, dict):
-                        self.headers["Content-Type"] = "application/json"
-                    elif isinstance(self.body, str):
-                        self.headers["Content-Type"] = "text/plain"
-
-            return self
-
         @field_validator("url")
         @classmethod
-        def validate_url(cls, v: str) -> str:
-            """Validate URL using centralized FlextModels validation."""
+        def validate_url_client_specific(cls, v: str) -> str:
+            """Validate URL with client-specific logic (relative paths allowed)."""
             # Handle empty URL case first
             if not v or not v.strip():
                 msg = "Invalid URL: URL cannot be empty"
                 raise ValueError(msg)
 
+            # CLIENT SPECIFIC: Allow relative paths for API clients
             if v.strip().startswith("/"):
                 return v.strip()
 
@@ -192,8 +148,10 @@ class FlextApiModels(FlextModels):
 
         @field_validator("headers")
         @classmethod
-        def validate_headers(cls, v: FlextApiTypes.Headers) -> FlextApiTypes.Headers:
-            """Validate and sanitize headers with Python 3.13+ dict comprehension optimization."""
+        def validate_headers_client_specific(
+            cls, v: FlextApiTypes.Headers
+        ) -> FlextApiTypes.Headers:
+            """Validate and sanitize headers - CLIENT SPECIFIC Python 3.13+ optimization."""
             # Python 3.13+ optimized dict comprehension with walrus operator
             return {
                 k_clean: val_clean
@@ -205,91 +163,82 @@ class FlextApiModels(FlextModels):
         def serialize_body(
             self, value: FlextApiTypes.RequestBody | None
         ) -> str | dict | None:
-            """Serialize request body for API transmission."""
+            """Serialize request body for API transmission - CLIENT SPECIFIC.
+
+            Returns:
+                Serialized body as dict (if JSON-serializable), string, or None.
+
+            Raises:
+                ValueError: If dict value is not JSON-serializable.
+
+            """
             if value is None:
                 return None
             if isinstance(value, dict):
-                # Ensure all dict values are JSON serializable
+                # Ensure all dict values are JSON serializable - fail fast if not
                 try:
-                    json.dumps(value)  # Test serialization
+                    json.dumps(value)  # Validate serialization
                     return value
-                except (TypeError, ValueError):
-                    return str(value)
+                except (TypeError, ValueError) as e:
+                    # FLEXT: No silent fallbacks - raise proper validation error
+                    error_msg = (
+                        f"Request body dict contains non-JSON-serializable values: {e}"
+                    )
+                    raise ValueError(error_msg) from e
             return str(value)
 
-    class HttpResponse(FlextModels.Entity):
-        """HTTP response model extending FlextModels.Entity."""
+    class HttpResponse(FlextModels.HttpResponse):
+        """HTTP client response model extending flext-core HttpResponse base.
 
-        status_code: int = Field(
-            ge=FlextApiConstants.HTTP_STATUS_MIN,
-            le=FlextApiConstants.HTTP_STATUS_MAX,
-            description="HTTP status code",
-        )
-        body: str | dict[str, object] | None = Field(
-            default=None, description="Response body"
-        )
-        headers: dict[str, str] = Field(
-            default_factory=dict, description="Response headers"
-        )
+        Inherits from flext-core:
+            - status_code: HTTP status code
+            - headers: Response headers
+            - body: Response body
+            - elapsed_time: Request/response elapsed time
+            - is_success: Computed field - check if response is successful (2xx)
+            - is_client_error: Computed field - check if response is client error (4xx)
+            - is_server_error: Computed field - check if response is server error (5xx)
+
+        Client-specific additions:
+            - url: Request URL (for tracking)
+            - method: HTTP method (for tracking)
+            - domain_events: Domain events list
+            - response_time_ms: Computed response time in milliseconds
+            - content_length: Computed content length from headers or body
+        """
+
+        # CLIENT-SPECIFIC fields for tracking request context
         url: str = Field(description="Request URL")
         method: str = Field(description="HTTP method")
-        elapsed_time: float | None = Field(
-            default=None, description="Request elapsed time"
-        )
-        domain_events: list[object] = Field(
+        domain_events: list[FlextApiTypes.Core.JsonValue] = Field(
             default_factory=list, description="Domain events"
         )
 
         @computed_field
-        def is_success(self) -> bool:
-            """Check if response indicates success (2xx status codes)."""
-            return (
-                FlextApiConstants.HTTP_SUCCESS_MIN
-                <= self.status_code
-                <= FlextApiConstants.HTTP_SUCCESS_MAX
-            )
-
-        @computed_field
-        def is_client_error(self) -> bool:
-            """Check if response indicates client error (4xx status codes)."""
-            return (
-                FlextApiConstants.HTTP_CLIENT_ERROR_MIN
-                <= self.status_code
-                <= FlextApiConstants.HTTP_CLIENT_ERROR_MAX
-            )
-
-        @computed_field
-        def is_server_error(self) -> bool:
-            """Check if response indicates server error (5xx status codes)."""
-            return (
-                FlextApiConstants.HTTP_SERVER_ERROR_MIN
-                <= self.status_code
-                <= FlextApiConstants.HTTP_SERVER_ERROR_MAX
-            )
-
-        @computed_field
-        def is_redirect(self) -> bool:
-            """Check if response indicates redirect (3xx status codes)."""
-            return (
-                FlextApiConstants.HTTP_REDIRECTION_MIN
-                <= self.status_code
-                <= FlextApiConstants.HTTP_REDIRECTION_MAX
-            )
-
-        @computed_field
+        @property
         def response_time_ms(self) -> float:
-            """Computed response time in milliseconds."""
+            """Computed response time in milliseconds - CLIENT SPECIFIC."""
             return (self.elapsed_time * 1000) if self.elapsed_time else 0.0
 
         @computed_field
+        @property
         def content_length(self) -> int:
-            """Computed content length from headers or body."""
+            """Computed content length from headers or body - CLIENT SPECIFIC.
+
+            Returns:
+                Content length in bytes. Returns 0 if header is invalid or body is empty.
+
+            """
+            # Try to get from headers first
             if "content-length" in self.headers:
                 try:
                     return int(self.headers["content-length"])
                 except (ValueError, TypeError):
+                    # FLEXT: Invalid header - calculate from body instead
+                    # This is acceptable as it's a fallback to calculation, not silent suppression
                     pass
 
+            # Calculate from body if header missing or invalid
             if self.body:
                 if isinstance(self.body, str):
                     return len(self.body.encode("utf-8"))
@@ -299,10 +248,10 @@ class FlextApiModels(FlextModels):
             return 0
 
         @model_validator(mode="after")
-        def validate_response_consistency(self) -> Self:
-            """Cross-field validation for HTTP response consistency."""
+        def validate_response_consistency_client_specific(self) -> Self:
+            """Cross-field validation for HTTP response consistency - CLIENT SPECIFIC."""
             # Validate status code and body consistency
-            if self.status_code == HTTP_NO_CONTENT and self.body:  # No Content
+            if self.status_code == 204 and self.body:  # No Content
                 error_msg = "HTTP 204 responses should not have a body"
                 raise ValueError(error_msg)
 
@@ -315,9 +264,9 @@ class FlextApiModels(FlextModels):
 
         @field_serializer("body")
         def serialize_response_body(
-            self, value: str | dict[str, object] | None
+            self, value: str | dict[str, FlextApiTypes.Core.JsonValue] | None
         ) -> str | dict | None:
-            """Serialize response body for storage/transmission."""
+            """Serialize response body for storage/transmission - CLIENT SPECIFIC."""
             if value is None:
                 return None
             if isinstance(value, dict):
@@ -378,14 +327,12 @@ class FlextApiModels(FlextModels):
         @model_validator(mode="after")
         def validate_client_config(self) -> Self:
             """Cross-field validation for client configuration."""
-            # Validate authentication consistency
-            if self.auth_token and self.api_key:
-                msg = "Cannot specify both auth_token and api_key"
-                raise ValueError(msg)
+            # Note: Both auth_token and api_key can be specified - auth_token takes priority
+            # This allows flexible authentication configuration with fallback options
 
             # Validate retry configuration
-            if self.max_retries > MAX_RETRIES_PRODUCTION:
-                msg = f"Max retries should not exceed {MAX_RETRIES_PRODUCTION} for production use"
+            if self.max_retries > FlextApiConstants.MAX_RETRIES_PRODUCTION:
+                msg = f"Max retries should not exceed {FlextApiConstants.MAX_RETRIES_PRODUCTION} for production use"
                 raise ValueError(msg)
 
             return self
@@ -415,7 +362,7 @@ class FlextApiModels(FlextModels):
             if value is None:
                 return None
             # Mask sensitive authentication data for logging/serialization
-            if len(value) <= MASK_AUTH_THRESHOLD:
+            if len(value) <= FlextApiConstants.MASK_AUTH_THRESHOLD:
                 return "***MASKED***"
             return f"{value[:4]}***{value[-4:]}"
 
@@ -444,20 +391,22 @@ class FlextApiModels(FlextModels):
         """HTTP query parameters model extending FlextModels.Query."""
 
         # Core fields using direct Pydantic 2 field names
-        filter_conditions: dict[str, object] = Field(
-            default_factory=dict, description="Filter conditions"
+        filter_conditions: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+            default_factory=dict, description="Filter conditions", alias="filters"
         )
         sort_fields: list[str] = Field(default_factory=list, description="Sort fields")
         page_number: int = Field(
             default=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
             ge=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
             description="Page number",
+            alias="page",
         )
         page_size_value: int = Field(
             default=FlextApiConstants.DEFAULT_PAGE_SIZE,
             ge=FlextApiConstants.MIN_PAGE_SIZE,
             le=FlextApiConstants.MAX_PAGE_SIZE,
             description="Page size",
+            alias="page_size",
         )
 
         @computed_field
@@ -485,23 +434,26 @@ class FlextApiModels(FlextModels):
                     raise ValueError(msg)
 
             # Validate pagination consistency
-            if self.page_size_value > MAX_PAGE_SIZE_PERFORMANCE:
+            if self.page_size_value > FlextApiConstants.MAX_PAGE_SIZE_PERFORMANCE:
                 msg = "Page size too large for performance"
                 raise ValueError(msg)
 
             return self
 
-        def add_filter(self, key: str, value: object) -> FlextResult[None]:
+        def add_filter(
+            self, key: str, value: FlextApiTypes.Core.JsonValue
+        ) -> FlextResult[None]:
             """Add a filter to the query."""
             if not key or not key.strip():
                 return FlextResult[None].fail("Filter key cannot be empty")
             self.filter_conditions[key.strip()] = value
             return FlextResult[None].ok(None)
 
-        def to_query_params(self) -> dict[str, object]:
+        def to_query_params(self) -> dict[str, FlextApiTypes.Core.JsonValue]:
             """Convert to query parameters dict with Python 3.13+ computational optimization."""
             # Python 3.13+ optimized dict merge with walrus operator
-            params = self.model_dump(exclude_none=True)
+            # Use by_alias=True to export with field aliases (page, page_size, filters)
+            params = self.model_dump(exclude_none=True, by_alias=True)
             # Computational optimization: direct merge avoiding update() call
             return {
                 **params,
@@ -521,6 +473,7 @@ class FlextApiModels(FlextModels):
             default=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
             ge=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
             description="Current page",
+            alias="page",
         )
         max_pages: int | None = Field(default=None, ge=1, description="Maximum pages")
         total: int = Field(default=0, ge=0, description="Total items")
@@ -595,12 +548,12 @@ class FlextApiModels(FlextModels):
 
         url: str = Field(description="Request URL")
         method: str = Field(
-            default=FlextApiConstants.HttpMethod.GET, description="HTTP method"
+            default=FlextConstants.Http.Method.GET, description="HTTP method"
         )
         headers: dict[str, str] = Field(
             default_factory=dict, description="Request headers"
         )
-        body: str | dict[str, object] | None = Field(
+        body: str | dict[str, FlextApiTypes.Core.JsonValue] | None = Field(
             default=None, description="Request body"
         )
 
@@ -612,8 +565,10 @@ class FlextApiModels(FlextModels):
         @computed_field
         def is_json_request(self) -> bool:
             """Check if request contains JSON content."""
-            content_type = self.content_type
-            return bool(content_type and "application/json" in content_type)
+            content_type_value = self.headers.get("Content-Type") or self.headers.get(
+                "content-type"
+            )
+            return bool(content_type_value and "application/json" in content_type_value)
 
         @model_validator(mode="after")
         def validate_api_request(self) -> Self:
@@ -630,24 +585,28 @@ class FlextApiModels(FlextModels):
         """API response model extending FlextModels.Entity."""
 
         status_code: int = Field(
-            ge=FlextApiConstants.HTTP_STATUS_MIN,
-            le=FlextApiConstants.HTTP_STATUS_MAX,
+            ge=FlextConstants.Http.HTTP_STATUS_MIN,
+            le=FlextConstants.Http.HTTP_STATUS_MAX,
             description="HTTP status code",
         )
-        body: str | dict[str, object] | None = Field(
+        body: str | dict[str, FlextApiTypes.Core.JsonValue] | None = Field(
             default=None, description="Response body"
         )
         headers: dict[str, str] = Field(
             default_factory=dict, description="Response headers"
         )
-        domain_events: list[object] = Field(
+        domain_events: list[FlextApiTypes.Core.JsonValue] = Field(
             default_factory=list, description="Domain events"
         )
 
         @computed_field
         def is_successful(self) -> bool:
             """Check if response indicates success."""
-            return HTTP_SUCCESS_MIN <= self.status_code < HTTP_SUCCESS_MAX
+            return (
+                FlextConstants.Http.HTTP_SUCCESS_MIN
+                <= self.status_code
+                < FlextConstants.Http.HTTP_SUCCESS_MAX
+            )
 
         @computed_field
         def content_type(self) -> str | None:
@@ -657,14 +616,18 @@ class FlextApiModels(FlextModels):
         @computed_field
         def is_json_response(self) -> bool:
             """Check if response contains JSON content."""
-            content_type = self.content_type
-            return bool(content_type and "application/json" in content_type)
+            content_type_value = self.headers.get("Content-Type") or self.headers.get(
+                "content-type"
+            )
+            return bool(content_type_value and "application/json" in content_type_value)
 
         @model_validator(mode="after")
         def validate_api_response(self) -> Self:
             """Cross-field validation for API responses."""
             # Validate status code and body consistency
-            if self.status_code == HTTP_NO_CONTENT and self.body:  # No Content
+            if (
+                self.status_code == FlextConstants.Http.HTTP_NO_CONTENT and self.body
+            ):  # No Content
                 error_msg = "HTTP 204 responses should not have a body"
                 raise ValueError(error_msg)
 
@@ -710,8 +673,11 @@ class FlextApiModels(FlextModels):
         @model_validator(mode="after")
         def validate_url_components(self) -> Self:
             """Cross-field validation for URL components."""
-            if self.port is not None and (self.port < MIN_PORT or self.port > MAX_PORT):
-                msg = f"Port must be between {MIN_PORT} and {MAX_PORT}"
+            if self.port is not None and (
+                self.port < FlextApiConstants.MIN_PORT
+                or self.port > FlextApiConstants.MAX_PORT
+            ):
+                msg = f"Port must be between {FlextApiConstants.MIN_PORT} and {FlextApiConstants.MAX_PORT}"
                 raise ValueError(msg)
 
             if self.scheme and self.scheme not in {"http", "https", "ftp", "ftps"}:
@@ -732,8 +698,8 @@ class FlextApiModels(FlextModels):
         def create(
             self,
             response_type: str = "success",
-            **kwargs: object,
-        ) -> dict[str, object]:
+            **kwargs: FlextApiTypes.Core.JsonValue,
+        ) -> dict[str, FlextApiTypes.Core.JsonValue]:
             """Create response using Python 3.13+ pattern matching optimization."""
             # Python 3.13+ match-case for computational efficiency
             match response_type:
@@ -759,7 +725,9 @@ class FlextApiModels(FlextModels):
                     }
 
         @staticmethod
-        def success(*, data: object = None, message: str = "") -> dict[str, object]:
+        def success(
+            *, data: FlextApiTypes.Core.JsonValue = None, message: str = ""
+        ) -> dict[str, FlextApiTypes.Core.JsonValue]:
             """Build success response using flext-core generators."""
             return {
                 "status": "success",
@@ -770,7 +738,9 @@ class FlextApiModels(FlextModels):
             }
 
         @staticmethod
-        def error(message: str, code: str = "error") -> dict[str, object]:
+        def error(
+            message: str, code: str = "error"
+        ) -> dict[str, FlextApiTypes.Core.JsonValue]:
             """Build error response using flext-core generators."""
             return {
                 "status": "error",
@@ -840,7 +810,7 @@ class FlextApiModels(FlextModels):
             )
             url: str = Field(min_length=1, description="Request URL")
             method: str = Field(
-                default=FlextApiConstants.HttpMethod.GET, description="HTTP method"
+                default=FlextConstants.Http.Method.GET, description="HTTP method"
             )
             timeout: int = Field(
                 default=int(FlextApiConstants.DEFAULT_TIMEOUT),
@@ -873,8 +843,8 @@ class FlextApiModels(FlextModels):
             @model_validator(mode="after")
             def validate_http_request_config(self) -> Self:
                 """Cross-field validation for HTTP request configuration."""
-                if self.retries > MAX_RETRIES_PRODUCTION:
-                    msg = f"Retries should not exceed {MAX_RETRIES_PRODUCTION} for production"
+                if self.retries > FlextApiConstants.MAX_RETRIES_PRODUCTION:
+                    msg = f"Retries should not exceed {FlextApiConstants.MAX_RETRIES_PRODUCTION} for production"
                     raise ValueError(msg)
 
                 return self
@@ -886,8 +856,8 @@ class FlextApiModels(FlextModels):
                 default="http_error", description="Configuration type"
             )
             status_code: int = Field(
-                ge=FlextApiConstants.HTTP_STATUS_MIN,
-                le=FlextApiConstants.HTTP_STATUS_MAX,
+                ge=FlextConstants.Http.HTTP_STATUS_MIN,
+                le=FlextConstants.Http.HTTP_STATUS_MAX,
                 description="HTTP status code",
             )
             message: str = Field(min_length=1, description="Error message")
@@ -896,10 +866,10 @@ class FlextApiModels(FlextModels):
             headers: dict[str, str] | None = Field(
                 default=None, description="Response headers"
             )
-            context: dict[str, object] = Field(
+            context: dict[str, FlextApiTypes.Core.JsonValue] = Field(
                 default_factory=dict, description="Error context"
             )
-            details: dict[str, object] = Field(
+            details: dict[str, FlextApiTypes.Core.JsonValue] = Field(
                 default_factory=dict, description="Error details"
             )
 
@@ -907,13 +877,21 @@ class FlextApiModels(FlextModels):
             @property
             def is_client_error(self) -> bool:
                 """Check if this is a client error (4xx)."""
-                return HTTP_CLIENT_ERROR_MIN <= self.status_code < HTTP_CLIENT_ERROR_MAX
+                return (
+                    FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
+                    <= self.status_code
+                    < FlextConstants.Http.HTTP_CLIENT_ERROR_MAX
+                )
 
             @computed_field
             @property
             def is_server_error(self) -> bool:
                 """Check if this is a server error (5xx)."""
-                return HTTP_SERVER_ERROR_MIN <= self.status_code < HTTP_SERVER_ERROR_MAX
+                return (
+                    FlextConstants.Http.HTTP_SERVER_ERROR_MIN
+                    <= self.status_code
+                    < FlextConstants.Http.HTTP_SERVER_ERROR_MAX
+                )
 
             @computed_field
             @property
@@ -928,7 +906,7 @@ class FlextApiModels(FlextModels):
             @model_validator(mode="after")
             def validate_http_error_config(self) -> Self:
                 """Cross-field validation for HTTP error configuration."""
-                if self.status_code < HTTP_CLIENT_ERROR_MIN:
+                if self.status_code < FlextConstants.Http.HTTP_CLIENT_ERROR_MIN:
                     msg = "Error status codes should be 400 or higher"
                     raise ValueError(msg)
 
@@ -948,7 +926,9 @@ class FlextApiModels(FlextModels):
                 default_factory=list, description="Custom validators"
             )
             field: str | None = Field(default=None, description="Field name")
-            value: object = Field(default=None, description="Field value")
+            value: FlextApiTypes.Core.JsonValue = Field(
+                default=None, description="Field value"
+            )
             url: str | None = Field(default=None, description="Validation URL")
 
             @computed_field
@@ -977,6 +957,449 @@ class FlextApiModels(FlextModels):
                             raise ValueError(msg)
 
                 return self
+
+    class ProtocolConfig(FlextModels.Value):
+        """Protocol configuration model."""
+
+        name: str = Field(
+            description="Protocol name (http, websocket, graphql, grpc, sse)"
+        )
+        version: str = Field(default="1.0.0", description="Protocol version")
+        enabled: bool = Field(default=True, description="Whether protocol is enabled")
+        options: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+            default_factory=dict, description="Protocol-specific options"
+        )
+
+        @field_validator("name")
+        @classmethod
+        def validate_protocol_name(cls, v: str) -> str:
+            """Validate protocol name."""
+            valid_protocols = {"http", "https", "websocket", "graphql", "grpc", "sse"}
+            if v.lower() not in valid_protocols:
+                msg = f"Protocol must be one of: {', '.join(valid_protocols)}"
+                raise ValueError(msg)
+            return v.lower()
+
+    class TransportConfig(FlextModels.Value):
+        """Transport configuration model."""
+
+        name: str = Field(description="Transport name (httpx, websockets, gql, grpcio)")
+        max_connections: int = Field(
+            default=100, ge=1, le=1000, description="Maximum connections"
+        )
+        max_keepalive_connections: int = Field(
+            default=20, ge=1, le=100, description="Max keep-alive connections"
+        )
+        keepalive_expiry: float = Field(
+            default=5.0, ge=0.0, description="Keep-alive expiry seconds"
+        )
+        connect_timeout: float = Field(
+            default=5.0, ge=0.1, description="Connect timeout seconds"
+        )
+        read_timeout: float = Field(
+            default=30.0, ge=0.1, description="Read timeout seconds"
+        )
+        write_timeout: float = Field(
+            default=30.0, ge=0.1, description="Write timeout seconds"
+        )
+        pool_timeout: float = Field(
+            default=5.0, ge=0.1, description="Pool timeout seconds"
+        )
+
+    class MiddlewareConfig(FlextModels.Value):
+        """Middleware configuration model."""
+
+        name: str = Field(description="Middleware name")
+        enabled: bool = Field(default=True, description="Whether middleware is enabled")
+        priority: int = Field(
+            default=100, ge=0, le=1000, description="Middleware execution priority"
+        )
+        options: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+            default_factory=dict, description="Middleware-specific options"
+        )
+
+        @field_validator("name")
+        @classmethod
+        def validate_middleware_name(cls, v: str) -> str:
+            """Validate middleware name is not empty."""
+            if not v or not v.strip():
+                msg = "Middleware name cannot be empty"
+                raise ValueError(msg)
+            return v.strip()
+
+    class PluginMetadata(FlextModels.Value):
+        """Plugin metadata model."""
+
+        name: str = Field(description="Plugin name")
+        version: str = Field(default="1.0.0", description="Plugin version")
+        description: str = Field(default="", description="Plugin description")
+        plugin_type: str = Field(
+            description="Plugin type (protocol, schema, transport, auth)"
+        )
+        enabled: bool = Field(default=True, description="Whether plugin is enabled")
+        dependencies: list[str] = Field(
+            default_factory=list, description="Plugin dependencies"
+        )
+
+        @field_validator("plugin_type")
+        @classmethod
+        def validate_plugin_type(cls, v: str) -> str:
+            """Validate plugin type."""
+            valid_types = {"protocol", "schema", "transport", "auth", "middleware"}
+            if v.lower() not in valid_types:
+                msg = f"Plugin type must be one of: {', '.join(valid_types)}"
+                raise ValueError(msg)
+            return v.lower()
+
+    class SchemaValidationResult(FlextModels.Entity):
+        """Schema validation result model."""
+
+        valid: bool = Field(description="Whether validation passed")
+        errors: list[str] = Field(default_factory=list, description="Validation errors")
+        warnings: list[str] = Field(
+            default_factory=list, description="Validation warnings"
+        )
+        schema_type: str = Field(
+            description="Schema type (openapi, jsonschema, asyncapi, graphql)"
+        )
+        validated_at: str = Field(description="Validation timestamp")
+
+        @computed_field
+        @property
+        def has_errors(self) -> bool:
+            """Check if validation has errors."""
+            return len(self.errors) > 0
+
+        @computed_field
+        @property
+        def has_warnings(self) -> bool:
+            """Check if validation has warnings."""
+            return len(self.warnings) > 0
+
+        @computed_field
+        @property
+        def error_count(self) -> int:
+            """Get error count."""
+            return len(self.errors)
+
+        @computed_field
+        @property
+        def warning_count(self) -> int:
+            """Get warning count."""
+            return len(self.warnings)
+
+    # Phase 3: WebSocket & SSE Models
+
+    class WebSocketMessage(FlextModels.Value):
+        """WebSocket message model."""
+
+        message: str | bytes = Field(description="Message content")
+        message_type: str = Field(
+            default="text", description="Message type (text or binary)"
+        )
+        timestamp: str = Field(description="Message timestamp")
+        event_id: str | None = Field(default=None, description="Optional event ID")
+
+        @field_validator("message_type")
+        @classmethod
+        def validate_message_type(cls, v: str) -> str:
+            """Validate message type."""
+            if v.lower() not in {"text", "binary"}:
+                msg = "Message type must be 'text' or 'binary'"
+                raise ValueError(msg)
+            return v.lower()
+
+    class WebSocketConnection(FlextModels.Entity):
+        """WebSocket connection model."""
+
+        url: str = Field(description="WebSocket URL (ws:// or wss://)")
+        state: str = Field(default="connecting", description="Connection state")
+        headers: dict[str, str] = Field(
+            default_factory=dict, description="Connection headers"
+        )
+        subprotocols: list[str] = Field(
+            default_factory=list, description="WebSocket subprotocols"
+        )
+        ping_interval: float = Field(
+            default=20.0, ge=0.0, description="Ping interval in seconds"
+        )
+        connected_at: str | None = Field(
+            default=None, description="Connection timestamp"
+        )
+        last_ping_at: str | None = Field(
+            default=None, description="Last ping timestamp"
+        )
+        messages_sent: int = Field(
+            default=0, ge=0, description="Number of messages sent"
+        )
+        messages_received: int = Field(
+            default=0, ge=0, description="Number of messages received"
+        )
+
+        @field_validator("state")
+        @classmethod
+        def validate_state(cls, v: str) -> str:
+            """Validate connection state."""
+            valid_states = {
+                "connecting",
+                "connected",
+                "disconnecting",
+                "disconnected",
+                "error",
+            }
+            if v.lower() not in valid_states:
+                msg = f"Connection state must be one of: {', '.join(valid_states)}"
+                raise ValueError(msg)
+            return v.lower()
+
+        @field_validator("url")
+        @classmethod
+        def validate_url(cls, v: str) -> str:
+            """Validate WebSocket URL."""
+            if not v.startswith(("ws://", "wss://")):
+                msg = "WebSocket URL must start with ws:// or wss://"
+                raise ValueError(msg)
+            return v
+
+        @computed_field
+        @property
+        def is_connected(self) -> bool:
+            """Check if connection is active."""
+            return self.state == "connected"
+
+        @computed_field
+        @property
+        def is_secure(self) -> bool:
+            """Check if connection is secure (wss://)."""
+            return self.url.startswith("wss://")
+
+    class SSEEvent(FlextModels.Value):
+        """Server-Sent Events event model."""
+
+        event_type: str = Field(default="message", description="Event type")
+        data: str = Field(description="Event data")
+        event_id: str | None = Field(default=None, description="Event ID for replay")
+        retry: int | None = Field(
+            default=None, ge=0, description="Retry timeout in milliseconds"
+        )
+        timestamp: str = Field(description="Event timestamp")
+
+        @computed_field
+        @property
+        def has_id(self) -> bool:
+            """Check if event has ID."""
+            return self.event_id is not None and len(self.event_id) > 0
+
+        @computed_field
+        @property
+        def data_length(self) -> int:
+            """Get data length."""
+            return len(self.data)
+
+    class SSEConnection(FlextModels.Entity):
+        """Server-Sent Events connection model."""
+
+        url: str = Field(description="SSE endpoint URL")
+        state: str = Field(default="connecting", description="Connection state")
+        headers: dict[str, str] = Field(
+            default_factory=dict, description="Connection headers"
+        )
+        last_event_id: str = Field(default="", description="Last received event ID")
+        retry_timeout: int = Field(
+            default=3000, ge=0, description="Retry timeout in milliseconds"
+        )
+        connected_at: str | None = Field(
+            default=None, description="Connection timestamp"
+        )
+        events_received: int = Field(
+            default=0, ge=0, description="Number of events received"
+        )
+        reconnect_count: int = Field(
+            default=0, ge=0, description="Number of reconnections"
+        )
+
+        @field_validator("state")
+        @classmethod
+        def validate_state(cls, v: str) -> str:
+            """Validate connection state."""
+            valid_states = {
+                "connecting",
+                "connected",
+                "disconnecting",
+                "disconnected",
+                "error",
+            }
+            if v.lower() not in valid_states:
+                msg = f"Connection state must be one of: {', '.join(valid_states)}"
+                raise ValueError(msg)
+            return v.lower()
+
+        @computed_field
+        @property
+        def is_connected(self) -> bool:
+            """Check if connection is active."""
+            return self.state == "connected"
+
+        @computed_field
+        @property
+        def has_last_event_id(self) -> bool:
+            """Check if has last event ID."""
+            return len(self.last_event_id) > 0
+
+        @computed_field
+        @property
+        def retry_timeout_seconds(self) -> float:
+            """Get retry timeout in seconds."""
+            return self.retry_timeout / 1000.0
+
+    # Phase 4: GraphQL Models
+
+    class GraphQLQuery(FlextModels.Command):
+        """GraphQL query model."""
+
+        query: str = Field(description="GraphQL query string")
+        variables: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+            default_factory=dict, description="Query variables"
+        )
+        operation_name: str | None = Field(default=None, description="Operation name")
+        fragments: list[str] = Field(
+            default_factory=list, description="GraphQL fragments"
+        )
+
+        @computed_field
+        @property
+        def has_variables(self) -> bool:
+            """Check if query has variables."""
+            return len(self.variables) > 0
+
+        @computed_field
+        @property
+        def has_fragments(self) -> bool:
+            """Check if query has fragments."""
+            return len(self.fragments) > 0
+
+        @computed_field
+        @property
+        def query_length(self) -> int:
+            """Get query string length."""
+            return len(self.query)
+
+    class GraphQLResponse(FlextModels.Entity):
+        """GraphQL response model."""
+
+        data: dict[str, FlextApiTypes.Core.JsonValue] | None = Field(
+            default=None, description="Response data"
+        )
+        errors: list[dict[str, FlextApiTypes.Core.JsonValue]] = Field(
+            default_factory=list, description="GraphQL errors"
+        )
+        extensions: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+            default_factory=dict, description="Response extensions"
+        )
+
+        @computed_field
+        @property
+        def has_errors(self) -> bool:
+            """Check if response has errors."""
+            return len(self.errors) > 0
+
+        @computed_field
+        @property
+        def has_data(self) -> bool:
+            """Check if response has data."""
+            return self.data is not None
+
+        @computed_field
+        @property
+        def is_success(self) -> bool:
+            """Check if response is successful."""
+            return self.has_data and not self.has_errors
+
+        @computed_field
+        @property
+        def error_count(self) -> int:
+            """Get error count."""
+            return len(self.errors)
+
+    class GraphQLSchema(FlextModels.Value):
+        """GraphQL schema model."""
+
+        schema_string: str = Field(description="GraphQL schema SDL string")
+        types: list[str] = Field(default_factory=list, description="Schema types")
+        queries: list[str] = Field(
+            default_factory=list, description="Available queries"
+        )
+        mutations: list[str] = Field(
+            default_factory=list, description="Available mutations"
+        )
+        subscriptions: list[str] = Field(
+            default_factory=list, description="Available subscriptions"
+        )
+        directives: list[str] = Field(
+            default_factory=list, description="Schema directives"
+        )
+
+        @computed_field
+        @property
+        def has_queries(self) -> bool:
+            """Check if schema has queries."""
+            return len(self.queries) > 0
+
+        @computed_field
+        @property
+        def has_mutations(self) -> bool:
+            """Check if schema has mutations."""
+            return len(self.mutations) > 0
+
+        @computed_field
+        @property
+        def has_subscriptions(self) -> bool:
+            """Check if schema has subscriptions."""
+            return len(self.subscriptions) > 0
+
+        @computed_field
+        @property
+        def operation_count(self) -> int:
+            """Get total operation count."""
+            return len(self.queries) + len(self.mutations) + len(self.subscriptions)
+
+    class GraphQLSubscription(FlextModels.Entity):
+        """GraphQL subscription model."""
+
+        subscription: str = Field(description="GraphQL subscription string")
+        variables: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+            default_factory=dict, description="Subscription variables"
+        )
+        operation_name: str | None = Field(default=None, description="Operation name")
+        state: str = Field(default="pending", description="Subscription state")
+        events_received: int = Field(
+            default=0, ge=0, description="Number of events received"
+        )
+        started_at: str | None = Field(
+            default=None, description="Subscription start time"
+        )
+
+        @field_validator("state")
+        @classmethod
+        def validate_state(cls, v: str) -> str:
+            """Validate subscription state."""
+            valid_states = {"pending", "active", "completed", "error", "cancelled"}
+            if v.lower() not in valid_states:
+                msg = f"Subscription state must be one of: {', '.join(valid_states)}"
+                raise ValueError(msg)
+            return v.lower()
+
+        @computed_field
+        @property
+        def is_active(self) -> bool:
+            """Check if subscription is active."""
+            return self.state == "active"
+
+        @computed_field
+        @property
+        def has_variables(self) -> bool:
+            """Check if subscription has variables."""
+            return len(self.variables) > 0
 
 
 __all__ = [

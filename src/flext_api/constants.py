@@ -32,35 +32,14 @@ class FlextApiConstants(FlextConstants):
     DEFAULT_PAGE_SIZE: ClassVar[int] = 20
     MIN_PAGE_SIZE: ClassVar[int] = 1
     MAX_PAGE_SIZE: ClassVar[int] = 1000
+    MAX_PAGE_SIZE_PERFORMANCE: ClassVar[int] = 1000
 
-    # HTTP status codes
-    HTTP_STATUS_MIN: ClassVar[int] = 100
-    HTTP_STATUS_MAX: ClassVar[int] = 599
+    # HTTP constants moved to flext-core.FlextConstants.Http
+    # Use FlextConstants.Http.HTTP_OK, FlextConstants.Http.HTTP_SUCCESS_MIN, etc.
+    # Use FlextConstants.Http.Method.GET, FlextConstants.Http.Method.POST, etc.
+    # Use FlextConstants.Http.ContentType.JSON, etc.
 
-    # HTTP port constants
-    HTTP_PORT: ClassVar[int] = 80
-    HTTPS_PORT: ClassVar[int] = 443
-
-    # HTTP status code ranges
-    HTTP_INFORMATIONAL_MIN: ClassVar[int] = 100
-    HTTP_INFORMATIONAL_MAX: ClassVar[int] = 199
-    HTTP_SUCCESS_MIN: ClassVar[int] = 200
-    HTTP_SUCCESS_MAX: ClassVar[int] = 299
-    HTTP_REDIRECTION_MIN: ClassVar[int] = 300
-    HTTP_REDIRECTION_MAX: ClassVar[int] = 399
-    HTTP_CLIENT_ERROR_MIN: ClassVar[int] = 400
-    HTTP_CLIENT_ERROR_MAX: ClassVar[int] = 499
-    HTTP_SERVER_ERROR_MIN: ClassVar[int] = 500
-    HTTP_SERVER_ERROR_MAX: ClassVar[int] = 599
-
-    # Common HTTP status codes
-    HTTP_OK: ClassVar[int] = 200
-    HTTP_CREATED: ClassVar[int] = 201
-    HTTP_BAD_REQUEST: ClassVar[int] = 400
-    HTTP_UNAUTHORIZED: ClassVar[int] = 401
-    HTTP_FORBIDDEN: ClassVar[int] = 403
-    HTTP_NOT_FOUND: ClassVar[int] = 404
-    HTTP_INTERNAL_SERVER_ERROR: ClassVar[int] = 500
+    # API-specific response templates (not in flext-core)
     SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, str | dict[str, object]]] = {
         "status": "success",
         "data": {},
@@ -70,16 +49,8 @@ class FlextApiConstants(FlextConstants):
         "data": {},
     }
 
-    # Common HTTP headers
-    AUTHORIZATION_HEADER: ClassVar[str] = "Authorization"
-    USER_AGENT_HEADER: ClassVar[str] = "User-Agent"
-    CONTENT_TYPE_HEADER: ClassVar[str] = "Content-Type"
-    ACCEPT_HEADER: ClassVar[str] = "Accept"
-
-    # Default header values
+    # API-specific header defaults (customize flext-core defaults)
     DEFAULT_USER_AGENT: ClassVar[str] = "FlextAPI/0.9.0"
-    DEFAULT_CONTENT_TYPE: ClassVar[str] = "application/json"
-    DEFAULT_ACCEPT: ClassVar[str] = "application/json"
 
     # Timeout constants
     MIN_TIMEOUT: ClassVar[float] = 0.0
@@ -88,6 +59,7 @@ class FlextApiConstants(FlextConstants):
     # Retry constants
     MIN_RETRIES: ClassVar[int] = 0
     MAX_RETRIES: ClassVar[int] = 10
+    MAX_RETRIES_PRODUCTION: ClassVar[int] = 10
     DEFAULT_RETRIES: ClassVar[int] = 3
 
     # Rate limiting constants
@@ -97,24 +69,16 @@ class FlextApiConstants(FlextConstants):
     # URL validation
     MAX_URL_LENGTH: ClassVar[int] = 2048
     MAX_HOSTNAME_LENGTH: ClassVar[int] = 253  # RFC 1035 max hostname length
+    MIN_PORT: ClassVar[int] = 1
     MAX_PORT: ClassVar[int] = 65535
 
-    # =============================================================================
-    # HTTP METHOD CONSTANTS - Consolidated from single-class modules
-    # =============================================================================
+    # Security constants
+    MASK_AUTH_THRESHOLD: ClassVar[int] = 8
 
-    class HttpMethod:
-        """HTTP method constants for API operations."""
-
-        GET = "GET"
-        POST = "POST"
-        PUT = "PUT"
-        DELETE = "DELETE"
-        PATCH = "PATCH"
-        HEAD = "HEAD"
-        OPTIONS = "OPTIONS"
-        TRACE = "TRACE"
-        CONNECT = "CONNECT"
+    # =============================================================================
+    # HTTP METHOD CONSTANTS - Moved to flext-core.FlextConstants.Http.Method
+    # Use FlextConstants.Http.Method.GET, etc.
+    # =============================================================================
 
     # =============================================================================
     # CLIENT STATUS CONSTANTS - Consolidated from single-class modules
@@ -159,19 +123,9 @@ class FlextApiConstants(FlextConstants):
         MAINTENANCE = "maintenance"
 
     # =============================================================================
-    # CONTENT TYPE CONSTANTS - Consolidated from single-class modules
+    # CONTENT TYPE CONSTANTS - Moved to flext-core.FlextConstants.Http.ContentType
+    # Use FlextConstants.Http.ContentType.JSON, etc.
     # =============================================================================
-
-    class ContentType:
-        """Content type constants for API operations."""
-
-        JSON = "application/json"
-        XML = "application/xml"
-        FORM = "application/x-www-form-urlencoded"
-        MULTIPART = "multipart/form-data"
-        TEXT = "text/plain"
-        HTML = "text/html"
-        BINARY = "application/octet-stream"
 
     # =============================================================================
     # STORAGE BACKEND CONSTANTS - Consolidated from single-class modules
