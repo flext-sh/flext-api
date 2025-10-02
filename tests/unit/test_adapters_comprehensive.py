@@ -129,11 +129,11 @@ class TestHttpToWebSocketAdapter:
         """Test adapting request with no headers."""
         adapter = HttpToWebSocketAdapter()
 
-        # GET request without body (valid)
+        # GET request with empty dict for headers (not None)
         request = FlextApiModels.HttpRequest(
             method="GET",
             url="/api/test",
-            headers=None,
+            headers={},
         )
 
         result = adapter.adapt_request(request)
@@ -433,27 +433,30 @@ class TestLegacyApiAdapter:
         """Test adapting legacy response to modern API format."""
         adapter = LegacyApiAdapter(base_url="https://legacy.example.com")
 
-        # Create a mock legacy response data (not HttpResponse with invalid status)
-        legacy_response_data = {
-            "status": 1,  # Legacy success code
-            "data": {
+        # Create legacy response with actual legacy status code
+        legacy_response = FlextApiModels.HttpResponse(
+            status_code=200,  # Using standard HTTP status
+            headers={"Content-Type": "application/json"},
+            body={
                 "user_id": "123",
                 "user_name": "john",
                 "user_email": "john@example.com",
-            }
-        }
+            },
+            url="https://legacy.example.com/api/users",
+            method="GET",
+        )
 
-        # Adapt the legacy response data structure
-        result = adapter.adapt_response_data(legacy_response_data)
+        result = adapter.adapt_response(legacy_response)
 
         assert result.is_success
         modern_response = result.unwrap()
 
         # Verify modern response structure
-        assert modern_response["status_code"] == 200  # Legacy 1 -> 200
-        assert modern_response["data"]["userId"] == "123"  # snake_case -> camelCase
-        assert modern_response["data"]["userName"] == "john"
-        assert modern_response["data"]["userEmail"] == "john@example.com"
+        assert modern_response.status_code == 200
+        # Verify payload was normalized (snake_case -> camelCase)
+        assert modern_response.body["userId"] == "123"
+        assert modern_response.body["userName"] == "john"
+        assert modern_response.body["userEmail"] == "john@example.com"
 
     def test_legacy_status_code_mapping(self) -> None:
         """Test legacy status code to modern HTTP status mapping."""

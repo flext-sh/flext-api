@@ -252,8 +252,7 @@ class FlextApiModels(FlextModels):
             """Cross-field validation for HTTP response consistency - CLIENT SPECIFIC."""
             # Validate status code and body consistency
             if (
-                self.status_code == FlextConstants.Http.StatusCodes.HTTP_NO_CONTENT
-                and self.body
+                self.status_code == FlextConstants.Http.HTTP_NO_CONTENT and self.body
             ):  # No Content
                 error_msg = "HTTP 204 responses should not have a body"
                 raise ValueError(error_msg)

@@ -27,7 +27,8 @@ from flext_core import FlextResult
 try:
     from gql import Client, gql as parse_gql
     from gql.transport.httpx import HTTPXTransport
-    from gql.utilities import print_schema
+
+    print_schema = None  # print_schema not available in current gql version
 except ImportError:
     Client = None  # type: ignore[misc,assignment]
     parse_gql = None  # type: ignore[misc,assignment]
@@ -119,6 +120,18 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         query = kwargs.get("query", request.body)
         variables = kwargs.get("variables", {})
         operation_name = kwargs.get("operation_name")
+
+        # Ensure query is a string
+        if not isinstance(query, str):
+            query = str(query) if query is not None else ""
+
+        # Ensure variables is a dict
+        if not isinstance(variables, dict):
+            variables = {}
+
+        # Ensure operation_name is a string or None
+        if operation_name is not None and not isinstance(operation_name, str):
+            operation_name = str(operation_name) if operation_name is not None else None
 
         # Ensure client is initialized
         if not self._client or not self._session:
@@ -303,8 +316,8 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
                 fetch_schema_from_transport=self._fetch_schema_from_transport,
             )
 
-            # Create session
-            self._session = self._client.connect(reconnecting=True)
+            # Create session (GraphQL Client doesn't need explicit connection)
+            self._session = self._client  # Client is ready to use
 
             # Store schema if fetched
             if self._fetch_schema_from_transport:

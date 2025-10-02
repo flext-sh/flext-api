@@ -19,6 +19,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import json
 from typing import Any, Protocol
 
 from flext_core import FlextLogger, FlextResult
@@ -62,7 +63,7 @@ class ProtobufMessage:
         )
 
     @classmethod
-    def deserialize(cls, data: bytes) -> FlextResult[ProtobufMessage]:
+    def deserialize(cls, data: bytes) -> FlextResult[ProtobufMessage]:  # noqa: ARG003 - stub implementation
         """Deserialize message from bytes.
 
         Args:
@@ -108,8 +109,6 @@ class ProtobufMessage:
 
         """
         try:
-            import json
-
             json_str = json.dumps(self._data)
             return FlextResult[str].ok(json_str)
         except Exception as e:
@@ -127,8 +126,6 @@ class ProtobufMessage:
 
         """
         try:
-            import json
-
             data = json.loads(json_str)
             return FlextResult[ProtobufMessage].ok(cls(data))
         except Exception as e:
@@ -181,7 +178,7 @@ class ProtobufSerializer:
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def deserialize(self, data: bytes) -> FlextResult[ProtobufMessage]:
+    def deserialize(self, data: bytes) -> FlextResult[ProtobufMessage]:  # noqa: ARG002 - stub implementation
         """Deserialize message from bytes.
 
         Args:
@@ -196,7 +193,7 @@ class ProtobufSerializer:
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def _validate_message(self, message: ProtobufMessage) -> FlextResult[None]:
+    def _validate_message(self, message: ProtobufMessage) -> FlextResult[None]:  # noqa: ARG002 - stub implementation
         """Validate message against schema.
 
         Args:
@@ -242,9 +239,10 @@ class ProtobufField:
         name: str,
         field_number: int,
         field_type: type,
+        *,
         required: bool = False,
         repeated: bool = False,
-        default: Any | None = None,
+        default: Any | None = None,  # noqa: ANN401 - stub implementation
     ) -> None:
         """Initialize Protobuf field.
 
@@ -284,7 +282,7 @@ class ProtobufField:
         """Check if field is repeated."""
         return self._repeated
 
-    def validate(self, value: Any) -> FlextResult[None]:
+    def validate(self, value: Any) -> FlextResult[None]:  # noqa: ANN401 - stub implementation
         """Validate field value.
 
         Args:
@@ -338,7 +336,7 @@ class ProtobufSchema:
 
         self._logger.info(
             "Protobuf schema stub created (placeholder)",
-            extra={"name": name},
+            extra={"schema_name": name},
         )
 
     def add_field(self, field: ProtobufField) -> FlextResult[None]:

@@ -309,7 +309,7 @@ class TestAsyncAPISchemaValidator:
         )
 
         assert validator is not None
-        assert validator.name == "api"
+        assert validator.name == "asyncapi"
         assert validator._strict_mode is True
         assert validator._validate_messages is True
         assert validator._validate_bindings is True
@@ -318,10 +318,10 @@ class TestAsyncAPISchemaValidator:
         """Test schema type support checking."""
         validator = AsyncAPISchemaValidator()
 
-        assert validator.supports_schema("api") is True
-        assert validator.supports_schema("-api") is True
-        assert validator.supports_schema("api2") is True
-        assert validator.supports_schema("api3") is True
+        assert validator.supports_schema("asyncapi") is True
+        assert validator.supports_schema("async-api") is True
+        assert validator.supports_schema("asyncapi2") is True
+        assert validator.supports_schema("asyncapi3") is True
         assert validator.supports_schema("openapi") is False
 
     def test_validator_get_supported_schemas(self) -> None:
@@ -330,17 +330,17 @@ class TestAsyncAPISchemaValidator:
 
         schemas = validator.get_supported_schemas()
 
-        assert "api" in schemas
-        assert "-api" in schemas
-        assert "api2" in schemas
-        assert "api3" in schemas
+        assert "asyncapi" in schemas
+        assert "async-api" in schemas
+        assert "asyncapi2" in schemas
+        assert "asyncapi3" in schemas
 
     def test_validate_minimalapi_v2_schema(self) -> None:
         """Test validation of minimal AsyncAPI 2.x schema."""
         validator = AsyncAPISchemaValidator()
 
         schema = {
-            "api": "2.6.0",
+            "asyncapi": "2.6.0",
             "info": {"title": "Test API", "version": "1.0.0"},
             "channels": {},
         }
@@ -356,7 +356,7 @@ class TestAsyncAPISchemaValidator:
         validator = AsyncAPISchemaValidator()
 
         schema = {
-            "api": "3.0.0",
+            "asyncapi": "3.0.0",
             "info": {"title": "Test API", "version": "1.0.0"},
             "channels": {},
         }
@@ -378,14 +378,14 @@ class TestAsyncAPISchemaValidator:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Missing 'api' version field" in result.error
+        assert "Missing 'asyncapi' version field" in result.error
 
     def test_validateapi_unsupported_version(self) -> None:
         """Test validation fails for unsupported version."""
         validator = AsyncAPISchemaValidator()
 
         schema = {
-            "api": "1.0.0",
+            "asyncapi": "1.0.0",
             "info": {"title": "Test API", "version": "1.0.0"},
             "channels": {},
         }
@@ -393,14 +393,14 @@ class TestAsyncAPISchemaValidator:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Unsupported API version" in result.error
+        assert "Unsupported AsyncAPI version" in result.error
 
     def test_validateapi_with_channels(self) -> None:
         """Test validation of AsyncAPI with channels."""
         validator = AsyncAPISchemaValidator()
 
         schema = {
-            "api": "2.6.0",
+            "asyncapi": "2.6.0",
             "info": {"title": "Test API", "version": "1.0.0"},
             "channels": {
                 "user/signup": {
@@ -426,7 +426,7 @@ class TestAsyncAPISchemaValidator:
         validator = AsyncAPISchemaValidator()
 
         schema = {
-            "api": "2.6.0",
+            "asyncapi": "2.6.0",
             "info": {"title": "Test API", "version": "1.0.0"},
             "channels": {},
             "servers": {
@@ -447,7 +447,7 @@ class TestAsyncAPISchemaValidator:
         validator = AsyncAPISchemaValidator()
 
         schema = {
-            "api": "2.6.0",
+            "asyncapi": "2.6.0",
             "info": {"title": "Test API", "version": "1.0.0"},
             "channels": {},
             "servers": {"production": {"url": "wss://example.com"}},
@@ -456,4 +456,4 @@ class TestAsyncAPISchemaValidator:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Server missing 'protocol'" in result.error
+        assert "missing 'protocol'" in result.error

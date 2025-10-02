@@ -10,7 +10,7 @@ import time
 import uuid
 from collections.abc import Mapping
 from types import TracebackType
-from typing import TYPE_CHECKING, NotRequired, Self, override
+from typing import NotRequired, Self, cast, override
 from urllib.parse import urlencode
 
 from pydantic import ConfigDict, PrivateAttr, ValidationError
@@ -21,12 +21,10 @@ from flext_api.config import FlextApiConfig
 from flext_api.middleware import MiddlewarePipeline
 from flext_api.models import FlextApiModels
 from flext_api.protocol_impls.http import HttpProtocolPlugin
+from flext_api.protocols import FlextApiProtocols
 from flext_api.registry import FlextApiRegistry
 from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
-
-if TYPE_CHECKING:
-    from flext_api.protocols import FlextApiProtocols
 from flext_core import (
     FlextBus,
     FlextConstants,
@@ -128,7 +126,7 @@ class FlextApiClient(FlextService[None]):
         max_retries: int | None = None,
         headers: Mapping[str, str] | None = None,
         verify_ssl: bool | object = True,
-        protocol: str = "http",
+        protocol: str | None = None,
         **kwargs: object,
     ) -> None:
         """Initialize FlextApiClient with configuration and services.
@@ -172,8 +170,11 @@ class FlextApiClient(FlextService[None]):
         # Initialize registry and get protocol plugin
         self._registry = FlextApiRegistry.get_global()
 
+        # Set default protocol if None
+        effective_protocol = protocol or "http"
+
         # Get protocol plugin from registry
-        protocol_result = self._registry.get_protocol(protocol)
+        protocol_result = self._registry.get_protocol(effective_protocol)
         if protocol_result.is_failure:
             # Create default HTTP protocol plugin
             http_plugin = HttpProtocolPlugin(
@@ -419,7 +420,9 @@ class FlextApiClient(FlextService[None]):
                         f"Keys operation failed: {e}"
                     )
 
-        return StorageBackendImplementation()
+        return cast(
+            "FlextApiProtocols.StorageBackendProtocol", StorageBackendImplementation()
+        )
 
     def _create_logger_protocol_implementation(
         self,

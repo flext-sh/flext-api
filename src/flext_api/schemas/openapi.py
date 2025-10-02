@@ -42,6 +42,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
     def __init__(
         self,
+        *,
         strict_mode: bool = True,
         validate_examples: bool = True,
         validate_responses: bool = True,
@@ -256,7 +257,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
             if section not in valid_sections and self._strict_mode:
                 return FlextResult[None].fail(f"Invalid component section: {section}")
 
-            if not isinstance(components[section], dict):
+            if not isinstance(components.get(section), dict):
                 return FlextResult[None].fail(
                     f"Component section must be a dictionary: {section}"
                 )
@@ -347,8 +348,8 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
     def validate_request(
         self,
-        request: Any,
-        schema: Any,
+        request: Any,  # noqa: ARG002,ANN401 - stub implementation
+        schema: Any,  # noqa: ARG002,ANN401 - stub implementation
     ) -> FlextResult[dict[str, Any]]:
         """Validate request against OpenAPI schema.
 
@@ -365,8 +366,8 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
     def validate_response(
         self,
-        response: Any,
-        schema: Any,
+        response: Any,  # noqa: ARG002,ANN401 - stub implementation
+        schema: Any,  # noqa: ARG002,ANN401 - stub implementation
     ) -> FlextResult[dict[str, Any]]:
         """Validate response against OpenAPI schema.
 

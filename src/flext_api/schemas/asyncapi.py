@@ -42,6 +42,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
 
     def __init__(
         self,
+        *,
         strict_mode: bool = True,
         validate_messages: bool = True,
         validate_bindings: bool = True,
@@ -378,7 +379,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
             if section not in valid_sections and self._strict_mode:
                 return FlextResult[None].fail(f"Invalid component section: {section}")
 
-            if not isinstance(components[section], dict):
+            if not isinstance(components.get(section), dict):
                 return FlextResult[None].fail(
                     f"Component section must be a dictionary: {section}"
                 )
@@ -413,8 +414,8 @@ class AsyncAPISchemaValidator(SchemaPlugin):
 
     def validate_request(
         self,
-        request: Any,
-        schema: Any,
+        request: Any,  # noqa: ARG002,ANN401 - stub implementation
+        schema: Any,  # noqa: ARG002,ANN401 - stub implementation
     ) -> FlextResult[dict[str, Any]]:
         """Validate request against AsyncAPI schema.
 
@@ -431,8 +432,8 @@ class AsyncAPISchemaValidator(SchemaPlugin):
 
     def validate_response(
         self,
-        response: Any,
-        schema: Any,
+        response: Any,  # noqa: ARG002,ANN401 - stub implementation
+        schema: Any,  # noqa: ARG002,ANN401 - stub implementation
     ) -> FlextResult[dict[str, Any]]:
         """Validate response against AsyncAPI schema.
 

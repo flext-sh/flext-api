@@ -178,7 +178,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
                 # Determine how to pass body based on Content-Type and body type
                 # For form data (dict with application/x-www-form-urlencoded), use data parameter
                 # For other content (str, bytes), use content parameter
-                request_kwargs = {
+                request_kwargs: dict[str, Any] = {
                     "method": method,
                     "url": url,
                     "headers": headers,
@@ -205,17 +205,13 @@ class HttpProtocolPlugin(ProtocolPlugin):
                 response = connection.request(**request_kwargs)
 
                 # Check if response is successful
-                if (
-                    response.status_code
-                    < FlextConstants.Http.StatusCodes.HTTP_CLIENT_ERROR_MIN
-                ):
+                if response.status_code < FlextConstants.Http.HTTP_CLIENT_ERROR_MIN:
                     # Success - convert to FlextApiModels.HttpResponse
                     return self._build_response(response, method)
 
                 # Client/server error
                 if (
-                    response.status_code
-                    >= FlextConstants.Http.StatusCodes.HTTP_CLIENT_ERROR_MIN
+                    response.status_code >= FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
                     and not self._should_retry(response.status_code, attempt)
                 ):
                     return FlextResult[FlextApiModels.HttpResponse].fail(
