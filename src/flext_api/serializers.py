@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 from enum import StrEnum
-from typing import Any, Protocol
+from typing import Protocol
 
 import cbor2
 import msgpack
@@ -39,7 +39,7 @@ class SerializationFormat(StrEnum):
 class SerializerProtocol(Protocol):
     """Protocol for custom serializers."""
 
-    def serialize(self, data: Any) -> bytes:  # noqa: ANN401 - protocol interface
+    def serialize(self, data: object) -> bytes:
         """Serialize data to bytes.
 
         Args:
@@ -49,9 +49,8 @@ class SerializerProtocol(Protocol):
             Serialized bytes
 
         """
-        ...
 
-    def deserialize(self, data: bytes) -> Any:  # noqa: ANN401 - protocol interface
+    def deserialize(self, data: bytes) -> object:
         """Deserialize bytes to data.
 
         Args:
@@ -61,12 +60,10 @@ class SerializerProtocol(Protocol):
             Deserialized data
 
         """
-        ...
 
     @property
     def content_type(self) -> str:
         """Get content type for this serializer."""
-        ...
 
 
 class JSONSerializer:
@@ -98,7 +95,7 @@ class JSONSerializer:
         else:
             self._logger.debug("Using standard json for serialization")
 
-    def serialize(self, data: Any) -> bytes:  # noqa: ANN401 - serializer interface
+    def serialize(self, data: object) -> bytes:
         """Serialize data to JSON bytes.
 
         Args:
@@ -116,7 +113,7 @@ class JSONSerializer:
         json_str = json.dumps(data, indent=2 if self._pretty else None)
         return json_str.encode("utf-8")
 
-    def deserialize(self, data: bytes) -> Any:
+    def deserialize(self, data: bytes) -> object:
         """Deserialize JSON bytes to data.
 
         Args:
@@ -157,7 +154,7 @@ class MessagePackSerializer:
                 "msgpack not available - install with: pip install msgpack"
             )
 
-    def serialize(self, data: Any) -> bytes:  # noqa: ANN401 - serializer interface
+    def serialize(self, data: object) -> bytes:
         """Serialize data to MessagePack bytes.
 
         Args:
@@ -176,7 +173,7 @@ class MessagePackSerializer:
 
         return self._msgpack.packb(data, use_bin_type=True)
 
-    def deserialize(self, data: bytes) -> Any:  # noqa: ANN401 - serializer interface
+    def deserialize(self, data: bytes) -> object:
         """Deserialize MessagePack bytes to data.
 
         Args:
@@ -222,7 +219,7 @@ class CBORSerializer:
                 "cbor2 not available - install with: pip install cbor2"
             )
 
-    def serialize(self, data: Any) -> bytes:
+    def serialize(self, data: object) -> bytes:
         """Serialize data to CBOR bytes.
 
         Args:
@@ -241,7 +238,7 @@ class CBORSerializer:
 
         return self._cbor.dumps(data)
 
-    def deserialize(self, data: bytes) -> Any:
+    def deserialize(self, data: bytes) -> object:
         """Deserialize CBOR bytes to data.
 
         Args:
@@ -279,7 +276,7 @@ class SerializerRegistry:
     def __init__(self) -> None:
         """Initialize serializer registry."""
         self._logger = FlextLogger(__name__)
-        self._serializers: dict[str, Any] = {}
+        self._serializers: dict[str, object] = {}
         self._default_format = SerializationFormat.JSON
 
         # Register default serializers
@@ -288,7 +285,7 @@ class SerializerRegistry:
         self.register_serializer(SerializationFormat.CBOR, CBORSerializer())
 
     def register_serializer(
-        self, format_type: SerializationFormat | str, serializer: Any
+        self, format_type: SerializationFormat | str, serializer: object
     ) -> FlextResult[None]:
         """Register serializer for format.
 
@@ -322,7 +319,7 @@ class SerializerRegistry:
 
     def get_serializer(
         self, format_type: SerializationFormat | str
-    ) -> FlextResult[Any]:
+    ) -> FlextResult[object]:
         """Get serializer for format.
 
         Args:
@@ -339,13 +336,13 @@ class SerializerRegistry:
         )
 
         if format_key not in self._serializers:
-            return FlextResult[Any].fail(
+            return FlextResult[object].fail(
                 f"No serializer registered for format: {format_key}"
             )
 
-        return FlextResult[Any].ok(self._serializers[format_key])
+        return FlextResult[object].ok(self._serializers[format_key])
 
-    def get_serializer_by_content_type(self, content_type: str) -> FlextResult[Any]:
+    def get_serializer_by_content_type(self, content_type: str) -> FlextResult[object]:
         """Get serializer by content type.
 
         Args:
@@ -360,14 +357,14 @@ class SerializerRegistry:
 
         for serializer in self._serializers.values():
             if serializer.content_type == normalized:
-                return FlextResult[Any].ok(serializer)
+                return FlextResult[object].ok(serializer)
 
-        return FlextResult[Any].fail(
+        return FlextResult[object].fail(
             f"No serializer found for content type: {content_type}"
         )
 
     def serialize(
-        self, data: Any, format_type: SerializationFormat | str | None = None
+        self, data: object, format_type: SerializationFormat | str | None = None
     ) -> FlextResult[bytes]:
         """Serialize data using specified format.
 
@@ -399,7 +396,7 @@ class SerializerRegistry:
 
     def deserialize(
         self, data: bytes, format_type: SerializationFormat | str | None = None
-    ) -> FlextResult[Any]:
+    ) -> FlextResult[object]:
         """Deserialize data using specified format.
 
         Args:
@@ -418,15 +415,15 @@ class SerializerRegistry:
 
         serializer_result = self.get_serializer(format_key)
         if serializer_result.is_failure:
-            return FlextResult[Any].fail(serializer_result.error)
+            return FlextResult[object].fail(serializer_result.error)
 
         serializer = serializer_result.unwrap()
 
         try:
             deserialized = serializer.deserialize(data)
-            return FlextResult[Any].ok(deserialized)
+            return FlextResult[object].ok(deserialized)
         except Exception as e:
-            return FlextResult[Any].fail(f"Deserialization failed: {e}")
+            return FlextResult[object].fail(f"Deserialization failed: {e}")
 
     def set_default_format(self, format_type: SerializationFormat) -> FlextResult[None]:
         """Set default serialization format.

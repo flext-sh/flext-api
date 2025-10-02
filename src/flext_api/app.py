@@ -12,7 +12,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import warnings
-from typing import Any
 
 from fastapi import FastAPI
 
@@ -138,7 +137,7 @@ class FlextApiApp(FlextService[object]):
         port: int = 8000,
         title: str = "Flext API Server",
         version: str = "1.0.0",
-    ) -> FlextResult[Any]:
+    ) -> FlextResult[object]:
         """Create FlextApiServer instance with protocol handler support.
 
         This is the enhanced server creation method that supports
@@ -162,18 +161,18 @@ class FlextApiApp(FlextService[object]):
                 version=version,
             )
 
-            return FlextResult[Any].ok(server)
+            return FlextResult[object].ok(server)
 
         except ImportError as e:
-            return FlextResult[Any].fail(f"Failed to import FlextApiServer: {e}")
+            return FlextResult[object].fail(f"Failed to import FlextApiServer: {e}")
         except Exception as e:
-            return FlextResult[Any].fail(f"Failed to create server: {e}")
+            return FlextResult[object].fail(f"Failed to create server: {e}")
 
     @staticmethod
     def create_webhook_handler(
         secret: str | None = None,
         max_retries: int = 3,
-    ) -> FlextResult[Any]:
+    ) -> FlextResult[object]:
         """Create FlextWebhookHandler instance.
 
         Args:
@@ -190,12 +189,14 @@ class FlextApiApp(FlextService[object]):
                 max_retries=max_retries,
             )
 
-            return FlextResult[Any].ok(handler)
+            return FlextResult[object].ok(handler)
 
         except ImportError as e:
-            return FlextResult[Any].fail(f"Failed to import FlextWebhookHandler: {e}")
+            return FlextResult[object].fail(
+                f"Failed to import FlextWebhookHandler: {e}"
+            )
         except Exception as e:
-            return FlextResult[Any].fail(f"Failed to create webhook handler: {e}")
+            return FlextResult[object].fail(f"Failed to create webhook handler: {e}")
 
 
 # Backward compatibility functions

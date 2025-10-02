@@ -20,7 +20,6 @@ import uuid
 import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import Any
 
 from flext_api.models import FlextApiModels
 from flext_core import FlextConstants, FlextLogger, FlextResult
@@ -29,16 +28,72 @@ from flext_core import FlextConstants, FlextLogger, FlextResult
 class BaseMiddleware(ABC):
     """Base middleware class for request/response processing.
 
+    **PROTOCOL IMPLEMENTATION**: This middleware implements FlextProtocols.Extensions.Middleware,
+    establishing the foundation pattern for ALL middleware across the FLEXT ecosystem.
+    
+    Note: BaseMiddleware provides a richer interface than the base protocol, with separate
+    methods for request/response/error processing. The protocol's process() method can be
+    implemented via adapter pattern if needed.
+
     All middleware must extend this class and implement the process methods.
     Middleware is executed in registration order for requests and reverse order
     for responses.
 
     Features:
-    - Request preprocessing
-    - Response postprocessing
-    - Error handling
-    - support
+    - Request preprocessing (process_request)
+    - Response postprocessing (process_response)
+    - Error handling (processerror)
+    - Enable/disable support
     - Chaining support
+    - Protocol compliance for ecosystem consistency
+
+    **How to use**: Middleware implementation patterns
+        ```python
+        from flext_api.middleware import BaseMiddleware
+        from flext_api.models import FlextApiModels
+        from flext_core import FlextResult
+
+
+        # Example 1: Implement custom middleware
+        class LoggingMiddleware(BaseMiddleware):
+            def _process_request_impl(
+                self, request: FlextApiModels.HttpRequest
+            ) -> FlextResult[FlextApiModels.HttpRequest]:
+                self._logger.info(f"Request: {request.method} {request.url}")
+                return FlextResult[FlextApiModels.HttpRequest].ok(request)
+
+            def _process_response_impl(
+                self, response: FlextApiModels.HttpResponse
+            ) -> FlextResult[FlextApiModels.HttpResponse]:
+                self._logger.info(f"Response: {response.status_code}")
+                return FlextResult[FlextApiModels.HttpResponse].ok(response)
+
+
+        # Example 2: Protocol compliance check (Extensions.Middleware interface)
+        middleware = LoggingMiddleware(name="logging")
+        
+        # Note: BaseMiddleware provides richer interface than protocol
+        # Protocol has process(request, next_handler)
+        # BaseMiddleware has process_request/response/error separation
+        
+        # Example 3: Use middleware features
+        middleware.enable()
+        result = middleware.process_request(request)
+        if result.is_success:
+            processed_request = result.unwrap()
+        ```
+
+    Note:
+        All middleware must implement _process_request_impl and _process_response_impl.
+        Error processing has default implementation but can be overridden.
+        Middleware can be enabled/disabled dynamically.
+        Protocol compliance ensures ecosystem-wide consistency.
+
+    See Also:
+        FlextProtocols.Extensions.Middleware: Protocol definition for middleware.
+        LoggingMiddleware: Concrete implementation example.
+        MetricsMiddleware: Metrics collection middleware.
+        AuthenticationMiddleware: Authentication middleware.
     """
 
     def __init__(self, name: str = "") -> None:
@@ -88,7 +143,7 @@ class BaseMiddleware(ABC):
 
         return self._process_response_impl(response)
 
-    def process_error(
+    def processerror(
         self,
         error: Exception,
         request: FlextApiModels.HttpRequest,
@@ -106,7 +161,7 @@ class BaseMiddleware(ABC):
         if not self._enabled:
             return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
 
-        return self._process_error_impl(error, request)
+        return self._processerror_impl(error, request)
 
     @abstractmethod
     def _process_request_impl(
@@ -140,12 +195,15 @@ class BaseMiddleware(ABC):
         """
         ...
 
-    def _process_error_impl(
+    def _processerror_impl(
         self,
-        error: Exception,  # noqa: ARG002 - reserved for future error processing
-        request: FlextApiModels.HttpRequest,  # noqa: ARG002 - reserved for future request context
+        error: Exception,
+        request: FlextApiModels.HttpRequest,
     ) -> FlextResult[FlextApiModels.HttpResponse | None]:
         """Implementation of error processing.
+
+        Default implementation: no error recovery (returns None).
+        Override in subclasses to provide custom error handling.
 
         Args:
             error: Exception that occurred
@@ -156,6 +214,8 @@ class BaseMiddleware(ABC):
 
         """
         # Default: no recovery
+        _ = error
+        _ = request
         return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
 
     def enable(self) -> None:
@@ -168,7 +228,11 @@ class BaseMiddleware(ABC):
 
     @property
     def is_enabled(self) -> bool:
-        """Check if middleware is enabled."""
+        """Check if middleware is enabled.
+        
+        Returns:
+            bool: True if middleware is enabled, False otherwise
+        """
         return self._enabled
 
 
@@ -221,10 +285,10 @@ class LoggingMiddleware(BaseMiddleware):
             }
 
             if self._log_headers and request.headers:
-                log_data["headers"] = dict(request.headers)
+                log_data["headers"] = str(dict(request.headers))
 
             if self._log_body and hasattr(request, "body") and request.body:
-                log_data["body_size"] = len(request.body)
+                log_data["body_size"] = str(len(request.body))
 
             self._logger.info("HTTP request", extra=log_data)
 
@@ -247,16 +311,15 @@ class LoggingMiddleware(BaseMiddleware):
             }
 
             # Get tracking info if available
-            if hasattr(response, "request"):
-                request = response.request
-                if hasattr(request, "tracking_id"):
-                    log_data["request_id"] = request.tracking_id
-                if hasattr(request, "start_time"):
-                    duration = time.time() - request.start_time
-                    log_data["duration_ms"] = round(duration * 1000, 2)
+            request = response.request
+        if request.tracking_id is not None:
+            log_data["request_id"] = request.tracking_id
+            if hasattr(request, "start_time"):
+                duration = time.time() - request.start_time
+                log_data["duration_ms"] = round(duration * 1000, 2)
 
             if self._log_headers and response.headers:
-                log_data["headers"] = dict(response.headers)
+                log_data["headers"] = str(dict(response.headers))
 
             if self._log_body and hasattr(response, "body") and response.body:
                 log_data["body_size"] = len(response.body)
@@ -265,7 +328,7 @@ class LoggingMiddleware(BaseMiddleware):
 
         return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
-    def _process_error_impl(
+    def _processerror_impl(
         self,
         error: Exception,
         request: FlextApiModels.HttpRequest,
@@ -278,7 +341,7 @@ class LoggingMiddleware(BaseMiddleware):
             "url": str(request.url),
         }
 
-        if hasattr(request, "tracking_id"):
+        if request.tracking_id is not None:
             log_data["request_id"] = request.tracking_id
 
         self._logger.error("HTTP request error", extra=log_data)
@@ -301,7 +364,7 @@ class MetricsMiddleware(BaseMiddleware):
     def __init__(self) -> None:
         """Initialize metrics middleware."""
         super().__init__("MetricsMiddleware")
-        self._metrics: dict[str, Any] = {
+        self._metrics: dict[str, object] = {
             "request_count": 0,
             "responses": 0,
             "errors": 0,
@@ -309,6 +372,7 @@ class MetricsMiddleware(BaseMiddleware):
             "status_codes": {},
             "total_duration": 0.0,
         }
+        self._request_count: int = 0
 
     def _process_request_impl(
         self,
@@ -336,26 +400,26 @@ class MetricsMiddleware(BaseMiddleware):
         )
 
         # Calculate duration if available
-        if hasattr(response, "request") and hasattr(
-            response.request, "metrics_start_time"
-        ):
+        if hasattr(response.request, "metrics_start_time"):
             duration = time.time() - response.request.metrics_start_time
             self._metrics["total_duration"] += duration
 
         return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
-    def _process_error_impl(
+    def _processerror_impl(
         self,
-        error: Exception,  # noqa: ARG002 - reserved for future error processing
-        request: FlextApiModels.HttpRequest,  # noqa: ARG002 - reserved for future request context
+        error: Exception,
+        request: FlextApiModels.HttpRequest,
     ) -> FlextResult[FlextApiModels.HttpResponse | None]:
         """Track error metrics."""
+        _ = error
+        _ = request
         self._metrics["errors"] += 1
         self._metrics["error_count"] += 1  # Alias for compatibility
 
         return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
 
-    def get_metrics(self) -> dict[str, Any]:
+    def get_metrics(self) -> dict[str, object]:
         """Get current metrics.
 
         Returns:
@@ -456,6 +520,7 @@ class AuthenticationMiddleware(BaseMiddleware):
         self._token = token
         self._api_key = api_key
         self._header_name = header_name
+        self._auth_provider = None  # Deprecated - should use flext_auth instead
 
     def _process_request_impl(
         self,
@@ -505,22 +570,22 @@ class ErrorHandlingMiddleware(BaseMiddleware):
 
     def __init__(
         self,
-        handle_http_errors: bool = True,
-        handle_network_errors: bool = True,
-        custom_error_handlers: dict[type[Exception], Callable] | None = None,
+        handle_httperrors: bool = True,
+        handle_networkerrors: bool = True,
+        customerror_handlers: dict[type[Exception], Callable] | None = None,
     ) -> None:
         """Initialize error handling middleware.
 
         Args:
-            handle_http_errors: Whether to handle HTTP errors (status codes >= 400)
-            handle_network_errors: Whether to handle network errors
-            custom_error_handlers: Custom handlers for specific exceptions
+            handle_httperrors: Whether to handle HTTP errors (status codes >= 400)
+            handle_networkerrors: Whether to handle network errors
+            customerror_handlers: Custom handlers for specific exceptions
 
         """
         super().__init__("ErrorHandlingMiddleware")
-        self._handle_http_errors = handle_http_errors
-        self._handle_network_errors = handle_network_errors
-        self._custom_handlers = custom_error_handlers or {}
+        self._handle_httperrors = handle_httperrors
+        self._handle_networkerrors = handle_networkerrors
+        self._custom_handlers = customerror_handlers or {}
 
     def _process_request_impl(
         self,
@@ -535,7 +600,7 @@ class ErrorHandlingMiddleware(BaseMiddleware):
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Handle HTTP errors if enabled."""
         if (
-            self._handle_http_errors
+            self._handle_httperrors
             and response.status_code >= FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
         ):
             # Log HTTP error
@@ -549,7 +614,7 @@ class ErrorHandlingMiddleware(BaseMiddleware):
 
         return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
-    def _process_error_impl(
+    def _processerror_impl(
         self,
         error: Exception,
         request: FlextApiModels.HttpRequest,
@@ -563,12 +628,12 @@ class ErrorHandlingMiddleware(BaseMiddleware):
                 result = handler(error, request)
                 if result:
                     return FlextResult[FlextApiModels.HttpResponse | None].ok(result)
-            except Exception as handler_error:
+            except Exception as handlererror:
                 self._logger.exception(
                     "Custom error handler failed",
                     extra={
-                        "original_error": str(error),
-                        "handler_error": str(handler_error),
+                        "originalerror": str(error),
+                        "handlererror": str(handlererror),
                     },
                 )
 
@@ -689,7 +754,7 @@ class MiddlewarePipeline:
 
         return FlextResult[FlextApiModels.HttpResponse].ok(current_response)
 
-    def process_error(
+    def processerror(
         self,
         error: Exception,
         request: FlextApiModels.HttpRequest,
@@ -706,7 +771,7 @@ class MiddlewarePipeline:
         """
         # Process in reverse order for error handling
         for middleware in reversed(self._middlewares):
-            result = middleware.process_error(error, request)
+            result = middleware.processerror(error, request)
             if result.is_success and result.unwrap() is not None:
                 # Middleware provided recovery response
                 return result

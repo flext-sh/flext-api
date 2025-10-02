@@ -11,12 +11,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
 import httpx
+from flext_core import FlextResult
 
 from flext_api.plugins import TransportPlugin
-from flext_core import FlextResult
 
 
 class HttpTransport(TransportPlugin):
@@ -71,7 +69,7 @@ class HttpTransport(TransportPlugin):
     def connect(
         self,
         url: str,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[httpx.Client]:
         """Establish HTTP client connection.
 
@@ -142,7 +140,7 @@ class HttpTransport(TransportPlugin):
         self,
         connection: httpx.Client,
         data: bytes | str,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Send HTTP request.
 
@@ -179,7 +177,7 @@ class HttpTransport(TransportPlugin):
     def receive(
         self,
         connection: httpx.Client,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[bytes]:
         """Receive HTTP response.
 
@@ -207,7 +205,7 @@ class HttpTransport(TransportPlugin):
         """HTTP transport supports streaming."""
         return True
 
-    def get_connection_info(self, connection: httpx.Client) -> dict[str, Any]:
+    def get_connection_info(self, connection: httpx.Client) -> dict[str, object]:
         """Get HTTP connection information.
 
         Args:
@@ -256,8 +254,8 @@ class WebSocketTransport(TransportPlugin):
     def connect(
         self,
         url: str,
-        **options: Any,
-    ) -> FlextResult[Any]:
+        **options: object,
+    ) -> FlextResult[object]:
         """Connect to WebSocket endpoint (stub).
 
         Args:
@@ -268,13 +266,13 @@ class WebSocketTransport(TransportPlugin):
             FlextResult with stub error
 
         """
-        return FlextResult[Any].fail(
+        return FlextResult[object].fail(
             "WebSocket transport not yet implemented (Phase 3)"
         )
 
     def disconnect(
         self,
-        connection: Any,
+        connection: object,
     ) -> FlextResult[None]:
         """Disconnect WebSocket (stub)."""
         return FlextResult[None].fail(
@@ -283,9 +281,9 @@ class WebSocketTransport(TransportPlugin):
 
     def send(
         self,
-        connection: Any,
+        connection: object,
         data: bytes | str,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Send WebSocket message (stub)."""
         return FlextResult[None].fail(
@@ -294,8 +292,8 @@ class WebSocketTransport(TransportPlugin):
 
     def receive(
         self,
-        connection: Any,
-        **options: Any,
+        connection: object,
+        **options: object,
     ) -> FlextResult[bytes | str]:
         """Receive WebSocket message (stub)."""
         return FlextResult[bytes | str].fail(
@@ -326,8 +324,8 @@ class GraphQLTransport(TransportPlugin):
     def connect(
         self,
         url: str,
-        **options: Any,
-    ) -> FlextResult[Any]:
+        **options: object,
+    ) -> FlextResult[object]:
         """Connect to GraphQL endpoint (stub).
 
         Args:
@@ -338,28 +336,30 @@ class GraphQLTransport(TransportPlugin):
             FlextResult with stub error
 
         """
-        return FlextResult[Any].fail("GraphQL transport not yet implemented (Phase 4)")
+        return FlextResult[object].fail(
+            "GraphQL transport not yet implemented (Phase 4)"
+        )
 
     def disconnect(
         self,
-        connection: Any,
+        connection: object,
     ) -> FlextResult[None]:
         """Disconnect GraphQL (stub)."""
         return FlextResult[None].fail("GraphQL transport not yet implemented (Phase 4)")
 
     def send(
         self,
-        connection: Any,
+        connection: object,
         data: bytes | str,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Send GraphQL query (stub)."""
         return FlextResult[None].fail("GraphQL transport not yet implemented (Phase 4)")
 
     def receive(
         self,
-        connection: Any,
-        **options: Any,
+        connection: object,
+        **options: object,
     ) -> FlextResult[bytes | str]:
         """Receive GraphQL response (stub)."""
         return FlextResult[bytes | str].fail(
@@ -390,8 +390,8 @@ class SSETransport(TransportPlugin):
     def connect(
         self,
         url: str,
-        **options: Any,
-    ) -> FlextResult[Any]:
+        **options: object,
+    ) -> FlextResult[object]:
         """Connect to SSE endpoint (stub).
 
         Args:
@@ -402,28 +402,28 @@ class SSETransport(TransportPlugin):
             FlextResult with stub error
 
         """
-        return FlextResult[Any].fail("SSE transport not yet implemented (Phase 3)")
+        return FlextResult[object].fail("SSE transport not yet implemented (Phase 3)")
 
     def disconnect(
         self,
-        connection: Any,
+        connection: object,
     ) -> FlextResult[None]:
         """Disconnect SSE (stub)."""
         return FlextResult[None].fail("SSE transport not yet implemented (Phase 3)")
 
     def send(
         self,
-        connection: Any,
+        connection: object,
         data: bytes | str,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Send not applicable for SSE (stub)."""
         return FlextResult[None].fail("SSE is receive-only, send not applicable")
 
     def receive(
         self,
-        connection: Any,
-        **options: Any,
+        connection: object,
+        **options: object,
     ) -> FlextResult[bytes | str]:
         """Receive SSE event (stub)."""
         return FlextResult[bytes | str].fail(
@@ -459,8 +459,8 @@ class GrpcTransport(TransportPlugin):
     def connect(
         self,
         url: str,
-        **options: Any,
-    ) -> FlextResult[Any]:
+        **options: object,
+    ) -> FlextResult[object]:
         """Connect to gRPC service (stub).
 
         Args:
@@ -471,13 +471,13 @@ class GrpcTransport(TransportPlugin):
             FlextResult with stub error
 
         """
-        return FlextResult[Any].fail(
+        return FlextResult[object].fail(
             "gRPC transport not yet implemented (future: flext-grpc integration)"
         )
 
     def disconnect(
         self,
-        connection: Any,
+        connection: object,
     ) -> FlextResult[None]:
         """Disconnect gRPC (stub)."""
         return FlextResult[None].fail(
@@ -486,9 +486,9 @@ class GrpcTransport(TransportPlugin):
 
     def send(
         self,
-        connection: Any,
+        connection: object,
         data: bytes | str,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Send gRPC request (stub)."""
         return FlextResult[None].fail(
@@ -497,8 +497,8 @@ class GrpcTransport(TransportPlugin):
 
     def receive(
         self,
-        connection: Any,
-        **options: Any,
+        connection: object,
+        **options: object,
     ) -> FlextResult[bytes | str]:
         """Receive gRPC response (stub)."""
         return FlextResult[bytes | str].fail(

@@ -142,7 +142,7 @@ class TestFlextApiServer:
         result = server.stop()
 
         assert result.is_failure
-        assert "not running" in result.error
+        assert result.error is not None and "not running" in result.error
 
     def test_server_start_stop_lifecycle(self) -> None:
         """Test server start/stop lifecycle."""
@@ -254,7 +254,7 @@ class TestFlextWebhookHandler:
         result = handler.receive_webhook(payload, headers)
 
         assert result.is_failure
-        assert "Signature" in result.error
+        assert result.error is not None and "Signature" in result.error
 
     def test_webhook_receive_missing_signature(self) -> None:
         """Test receiving webhook with missing signature when required."""
@@ -266,7 +266,7 @@ class TestFlextWebhookHandler:
         result = handler.receive_webhook(payload, headers)
 
         assert result.is_failure
-        assert "signature" in result.error.lower()
+        assert result.error is not None and "signature" in result.error.lower()
 
     def test_webhook_receive_invalid_json(self) -> None:
         """Test receiving webhook with invalid JSON."""
@@ -278,7 +278,7 @@ class TestFlextWebhookHandler:
         result = handler.receive_webhook(payload, headers)
 
         assert result.is_failure
-        assert "parse" in result.error.lower()
+        assert result.error is not None and "parse" in result.error.lower()
 
     def test_webhook_receive_missing_event_type(self) -> None:
         """Test receiving webhook without event type."""
@@ -290,7 +290,7 @@ class TestFlextWebhookHandler:
         result = handler.receive_webhook(payload, headers)
 
         assert result.is_failure
-        assert "event type" in result.error.lower()
+        assert result.error is not None and "event type" in result.error.lower()
 
     def test_webhook_get_queue_stats(self) -> None:
         """Test getting webhook queue statistics."""

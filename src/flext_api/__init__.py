@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Final
+
 from flext_api.api import FlextApi
 from flext_api.app import FlextApiApp
 from flext_api.client import FlextApiClient
@@ -20,10 +22,16 @@ from flext_api.protocols import FlextApiProtocols
 from flext_api.storage import FlextApiStorage
 from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
+from flext_api.version import VERSION, FlextApiVersion
 
-__version__ = "0.9.0"
+PROJECT_VERSION: Final[FlextApiVersion] = VERSION
+
+__version__: str = VERSION.version
+__version_info__: tuple[int | str, ...] = VERSION.version_info
 
 __all__ = [
+    "PROJECT_VERSION",
+    "VERSION",
     "FlextApi",
     "FlextApiApp",
     "FlextApiClient",
@@ -35,5 +43,7 @@ __all__ = [
     "FlextApiStorage",
     "FlextApiTypes",
     "FlextApiUtilities",
+    "FlextApiVersion",
     "__version__",
+    "__version_info__",
 ]

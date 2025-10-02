@@ -39,14 +39,14 @@ class TestProtobufMessage:
         result = message.serialize()
 
         assert result.is_failure
-        assert "placeholder" in result.error
+        assert result.error is not None and "placeholder" in result.error
 
     def test_message_deserialize_placeholder(self) -> None:
         """Test message deserialization (placeholder)."""
         result = ProtobufMessage.deserialize(b"data")
 
         assert result.is_failure
-        assert "placeholder" in result.error
+        assert result.error is not None and "placeholder" in result.error
 
     def test_message_to_dict(self) -> None:
         """Test message to dictionary conversion."""
@@ -90,7 +90,7 @@ class TestProtobufMessage:
         result = ProtobufMessage.from_json("invalid json")
 
         assert result.is_failure
-        assert "parsing failed" in result.error
+        assert result.error is not None and "parsing failed" in result.error
 
 
 class TestProtobufSerializer:
@@ -124,7 +124,7 @@ class TestProtobufSerializer:
         result = serializer.serialize(message)
 
         assert result.is_failure
-        assert "placeholder" in result.error
+        assert result.error is not None and "placeholder" in result.error
 
     def test_serializer_deserialize_placeholder(self) -> None:
         """Test serializer deserialize (placeholder)."""
@@ -132,7 +132,7 @@ class TestProtobufSerializer:
         result = serializer.deserialize(b"data")
 
         assert result.is_failure
-        assert "placeholder" in result.error
+        assert result.error is not None and "placeholder" in result.error
 
 
 class TestProtobufField:
@@ -195,7 +195,7 @@ class TestProtobufField:
         result = field.validate(123)
 
         assert result.is_failure
-        assert "expects str" in result.error
+        assert result.error is not None and "expects str" in result.error
 
     def test_field_validate_required_success(self) -> None:
         """Test required field validation success."""
@@ -222,7 +222,7 @@ class TestProtobufField:
         result = field.validate(None)
 
         assert result.is_failure
-        assert "Required field" in result.error
+        assert result.error is not None and "Required field" in result.error
 
     def test_field_validate_repeated_success(self) -> None:
         """Test repeated field validation success."""
@@ -249,7 +249,7 @@ class TestProtobufField:
         result = field.validate("not a list")
 
         assert result.is_failure
-        assert "must be a list" in result.error
+        assert result.error is not None and "must be a list" in result.error
 
 
 class TestProtobufSchema:
@@ -290,7 +290,7 @@ class TestProtobufSchema:
         result = schema.add_field(field)
 
         assert result.is_failure
-        assert "already exists" in result.error
+        assert result.error is not None and "already exists" in result.error
 
     def test_schema_validate_message_success(self) -> None:
         """Test schema message validation success."""
@@ -324,7 +324,7 @@ class TestProtobufSchema:
         result = schema.validate_message(message)
 
         assert result.is_failure
-        assert "Required field" in result.error
+        assert result.error is not None and "Required field" in result.error
 
     def test_schema_fields_property(self) -> None:
         """Test schema fields property returns copy."""

@@ -62,7 +62,7 @@ class TestGrpcStub:
         result = stub.call_unary("GetUser", {"id": 1})
 
         assert result.is_failure
-        assert "placeholder" in result.error
+        assert result.error is not None and "placeholder" in result.error
 
 
 class TestGrpcRequest:
@@ -140,7 +140,7 @@ class TestGrpcServer:
         result = server.start()
 
         assert result.is_failure
-        assert "placeholder" in result.error
+        assert result.error is not None and "placeholder" in result.error
 
     def test_server_stop(self) -> None:
         """Test server stop."""

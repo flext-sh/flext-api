@@ -12,10 +12,10 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
+from flext_core import FlextResult
 
 from flext_api.models import FlextApiModels
 from flext_api.protocol_impls.http import HttpProtocolPlugin
-from flext_core import FlextResult
 
 
 class TestHttpProtocolPlugin:
@@ -36,6 +36,7 @@ class TestHttpProtocolPlugin:
         mock_response.content = content
         mock_response.text = text
         mock_response.url = url
+        mock_response.read = Mock(return_value=content)
         mock_response.aread = Mock(return_value=content)
         return mock_response
 
@@ -192,7 +193,7 @@ class TestHttpProtocolPlugin:
             result = http_plugin.send_request(sample_request)
 
             assert result.is_failure
-            assert "failed after" in result.error
+            assert result.error is not None and "failed after" in result.error
             assert mock_client.request.call_count == http_plugin._max_retries + 1
 
     def test_send_request_network_error(
@@ -214,7 +215,9 @@ class TestHttpProtocolPlugin:
             result = http_plugin.send_request(sample_request)
 
             assert result.is_failure
-            assert "Connection failed" in result.error or "failed after" in result.error
+            assert (
+                result.error is not None and "Connection failed" in result.error
+            ) or "failed after" in result.error
 
     def test_send_request_http_error(
         self,

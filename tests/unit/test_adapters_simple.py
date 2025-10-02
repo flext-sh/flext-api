@@ -133,7 +133,7 @@ class TestGraphQLToHttpAdapter:
         result = adapter.adapt_response_to_result(response)
 
         assert result.is_failure
-        assert "GraphQL errors" in result.error
+        assert result.error is not None and "GraphQL errors" in result.error
 
     def test_adapt_http_error_response(self) -> None:
         """Test adapting HTTP error response."""
@@ -149,7 +149,7 @@ class TestGraphQLToHttpAdapter:
         result = adapter.adapt_response_to_result(response)
 
         assert result.is_failure
-        assert "failed with status 500" in result.error
+        assert result.error is not None and "failed with status 500" in result.error
 
 
 class TestSchemaAdapter:

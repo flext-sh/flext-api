@@ -19,10 +19,10 @@ from pathlib import Path
 from typing import cast
 
 import pytest
-
-from flext_api.typings import FlextApiTypes
 from flext_core import FlextConstants, FlextResult, T
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
+
+from flext_api.typings import FlextApiTypes
 
 
 def create_test_storage_config(**overrides: object) -> dict[str, str | int | bool]:

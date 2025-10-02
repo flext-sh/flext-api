@@ -348,17 +348,7 @@ def temp_dir() -> Generator[Path]:
         yield Path(temp_dir)
 
 
-@pytest.fixture
-def event_loop() -> Generator[AbstractEventLoop]:
-    """Provide event loop for testing.
-
-    Yields:
-        AbstractEventLoop: Event loop for testing.
-
-    """
-    loop = new_event_loop()
-    yield loop
-    loop.close()
+# Async event loop fixture removed - synchronous implementation only
 
 
 # ============================================================================

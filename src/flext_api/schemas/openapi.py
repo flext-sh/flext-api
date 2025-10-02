@@ -17,8 +17,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from flext_api.plugins import SchemaPlugin
 from flext_core import FlextResult
+
+from flext_api.plugins import SchemaPlugin
 
 
 class OpenAPISchemaValidator(SchemaPlugin):
@@ -348,8 +349,8 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
     def validate_request(
         self,
-        request: Any,  # noqa: ARG002,ANN401 - stub implementation
-        schema: Any,  # noqa: ARG002,ANN401 - stub implementation
+        request: Any,  # noqa: ARG002 - stub implementation
+        schema: Any,  # noqa: ARG002 - stub implementation
     ) -> FlextResult[dict[str, Any]]:
         """Validate request against OpenAPI schema.
 
@@ -366,8 +367,8 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
     def validate_response(
         self,
-        response: Any,  # noqa: ARG002,ANN401 - stub implementation
-        schema: Any,  # noqa: ARG002,ANN401 - stub implementation
+        response: Any,  # noqa: ARG002 - stub implementation
+        schema: Any,  # noqa: ARG002 - stub implementation
     ) -> FlextResult[dict[str, Any]]:
         """Validate response against OpenAPI schema.
 

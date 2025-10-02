@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
-from typing import Any, Protocol as TypingProtocol
+from typing import Protocol as TypingProtocol
 
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
@@ -38,7 +38,6 @@ class ProtocolAdapterProtocol(TypingProtocol):
             FlextResult containing adapted request or error
 
         """
-        ...
 
     def adapt_response(
         self, response: FlextApiTypes.ResponseData
@@ -52,7 +51,6 @@ class ProtocolAdapterProtocol(TypingProtocol):
             FlextResult containing adapted response or error
 
         """
-        ...
 
 
 class HttpToWebSocketAdapter:
@@ -72,7 +70,7 @@ class HttpToWebSocketAdapter:
 
     def adapt_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[dict[str, Any]]:
+    ) -> FlextResult[dict[str, object]]:
         """Adapt HTTP request to WebSocket message.
 
         Args:
@@ -97,15 +95,15 @@ class HttpToWebSocketAdapter:
                 extra={"method": request.method, "url": str(request.url)},
             )
 
-            return FlextResult[dict[str, Any]].ok(message)
+            return FlextResult[dict[str, object]].ok(message)
 
         except Exception as e:
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"HTTP to WebSocket adaptation failed: {e}"
             )
 
     def adapt_response(
-        self, message: dict[str, Any]
+        self, message: dict[str, object]
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Adapt WebSocket message to HTTP response.
 
@@ -167,7 +165,7 @@ class GraphQLToHttpAdapter:
         self._endpoint = endpoint
 
     def adapt_query_to_request(
-        self, query: str, variables: dict[str, Any] | None = None
+        self, query: str, variables: dict[str, object] | None = None
     ) -> FlextResult[FlextApiModels.HttpRequest]:
         """Adapt GraphQL query to HTTP request.
 
@@ -205,7 +203,7 @@ class GraphQLToHttpAdapter:
 
     def adapt_response_to_result(
         self, response: FlextApiModels.HttpResponse
-    ) -> FlextResult[dict[str, Any]]:
+    ) -> FlextResult[dict[str, object]]:
         """Adapt HTTP response to GraphQL result.
 
         Args:
@@ -218,7 +216,7 @@ class GraphQLToHttpAdapter:
         try:
             # Extract GraphQL result from HTTP response
             if response.status_code != FlextConstants.Http.HTTP_OK:
-                return FlextResult[dict[str, Any]].fail(
+                return FlextResult[dict[str, object]].fail(
                     f"GraphQL request failed with status {response.status_code}"
                 )
 
@@ -228,17 +226,17 @@ class GraphQLToHttpAdapter:
             if isinstance(result, dict) and "errors" in result:
                 errors = result["errors"]
                 error_messages = [e.get("message", "Unknown error") for e in errors]
-                return FlextResult[dict[str, Any]].fail(
+                return FlextResult[dict[str, object]].fail(
                     f"GraphQL errors: {', '.join(error_messages)}"
                 )
 
             self._logger.debug("HTTP response adapted to GraphQL result")
 
             data = result.get("data", {}) if isinstance(result, dict) else {}
-            return FlextResult[dict[str, Any]].ok(data)
+            return FlextResult[dict[str, object]].ok(data)
 
         except Exception as e:
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"HTTP to GraphQL result adaptation failed: {e}"
             )
 
@@ -259,8 +257,8 @@ class SchemaAdapter:
         self._logger = FlextLogger(__name__)
 
     def openapi_toapi(
-        self, openapi_schema: dict[str, Any]
-    ) -> FlextResult[dict[str, Any]]:
+        self, openapi_schema: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         """Convert OpenAPI schema to API schema.
 
         Args:
@@ -272,7 +270,7 @@ class SchemaAdapter:
         """
         try:
             # Basic conversion from OpenAPI to API
-            api_schema: dict[str, Any] = {
+            api_schema: dict[str, object] = {
                 "api": "3.0.0",
                 "info": openapi_schema.get("info", {}),
                 "channels": {},
@@ -302,15 +300,15 @@ class SchemaAdapter:
 
             self._logger.debug("OpenAPI schema converted to API")
 
-            return FlextResult[dict[str, Any]].ok(api_schema)
+            return FlextResult[dict[str, object]].ok(api_schema)
 
         except Exception as e:
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"OpenAPI to API conversion failed: {e}"
             )
 
     def openapi_to_graphql_schema(
-        self, openapi_schema: dict[str, Any]
+        self, openapi_schema: dict[str, object]
     ) -> FlextResult[str]:
         """Convert OpenAPI schema to GraphQL schema SDL.
 
@@ -514,7 +512,7 @@ class LegacyApiAdapter:
 
         return adapted
 
-    def _adapt_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+    def _adapt_payload(self, payload: dict[str, object]) -> dict[str, object]:
         """Adapt payload to legacy format.
 
         Args:
@@ -534,7 +532,7 @@ class LegacyApiAdapter:
 
         return adapted
 
-    def _normalize_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+    def _normalize_payload(self, payload: dict[str, object]) -> dict[str, object]:
         """Normalize legacy payload to modern format.
 
         Args:

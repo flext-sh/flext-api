@@ -29,8 +29,8 @@ class TestFlextApiModels:
     def test_models_class_exists(self) -> None:
         """Test FlextApiModels class exists and is accessible."""
         assert FlextApiModels is not None
-        # Verify constants exist
-        assert hasattr(FlextApiConstants, "HTTP_OK")
+        # Verify constants exist (nested under Http namespace)
+        assert hasattr(FlextApiConstants.Http, "HTTP_OK")
         assert hasattr(FlextApiConstants, "SUCCESS_RESPONSE_TEMPLATE")
         # Verify models exist
         assert hasattr(FlextApiModels, "ClientConfig")
@@ -41,11 +41,11 @@ class TestFlextApiModels:
 
     def test_http_method_enum(self) -> None:
         """Test HttpMethod enum values."""
-        assert FlextApiConstants.HTTP_OK == 200
-        assert FlextApiConstants.HTTP_CREATED == 201
-        assert FlextApiConstants.HTTP_BAD_REQUEST == 400
-        assert FlextApiConstants.HTTP_NOT_FOUND == 404
-        assert FlextApiConstants.HTTP_INTERNAL_SERVER_ERROR == 500
+        assert FlextApiConstants.Http.HTTP_OK == 200
+        assert FlextApiConstants.Http.HTTP_CREATED == 201
+        assert FlextApiConstants.Http.HTTP_BAD_REQUEST == 400
+        assert FlextApiConstants.Http.HTTP_NOT_FOUND == 404
+        assert FlextApiConstants.Http.HTTP_INTERNAL_SERVER_ERROR == 500
 
     def test_http_status_enum(self) -> None:
         """Test ResponseTemplates values."""

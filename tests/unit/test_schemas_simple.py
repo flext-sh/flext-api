@@ -79,7 +79,10 @@ class TestOpenAPISchemaValidator:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Missing 'openapi' version field" in result.error
+        assert (
+            result.error is not None
+            and "Missing 'openapi' version field" in result.error
+        )
 
     def test_validate_openapi_missing_info(self) -> None:
         """Test validation fails for missing info."""
@@ -90,7 +93,7 @@ class TestOpenAPISchemaValidator:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Missing required fields" in result.error
+        assert result.error is not None and "Missing required fields" in result.error
 
     def test_validate_openapi_with_paths(self) -> None:
         """Test validation of OpenAPI schema with paths."""
@@ -127,7 +130,7 @@ class TestOpenAPISchemaValidator:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Path must start with '/'" in result.error
+        assert result.error is not None and "Path must start with '/'" in result.error
 
     def test_validate_openapi_with_security_schemes(self) -> None:
         """Test validation of OpenAPI with security schemes."""
@@ -219,7 +222,7 @@ class TestJSONSchemaValidator:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Invalid type" in result.error
+        assert result.error is not None and "Invalid type" in result.error
 
     def test_validate_json_schema_with_array_items(self) -> None:
         """Test validation of JSON schema with array items."""
@@ -252,7 +255,7 @@ class TestJSONSchemaValidator:
         result = validator.validate_instance(instance, schema)
 
         assert result.is_failure
-        assert "Expected type string" in result.error
+        assert result.error is not None and "Expected type string" in result.error
 
     def test_validate_instance_missing_required(self) -> None:
         """Test instance validation fails for missing required property."""
@@ -268,7 +271,10 @@ class TestJSONSchemaValidator:
         result = validator.validate_instance(instance, schema)
 
         assert result.is_failure
-        assert "Missing required property: name" in result.error
+        assert (
+            result.error is not None
+            and "Missing required property: name" in result.error
+        )
 
     def test_validate_instance_object_with_properties(self) -> None:
         """Test instance validation for object with properties."""
@@ -378,7 +384,10 @@ class TestAsyncAPISchemaValidator:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Missing 'asyncapi' version field" in result.error
+        assert (
+            result.error is not None
+            and "Missing 'asyncapi' version field" in result.error
+        )
 
     def test_validateapi_unsupported_version(self) -> None:
         """Test validation fails for unsupported version."""
@@ -393,7 +402,9 @@ class TestAsyncAPISchemaValidator:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Unsupported AsyncAPI version" in result.error
+        assert (
+            result.error is not None and "Unsupported AsyncAPI version" in result.error
+        )
 
     def test_validateapi_with_channels(self) -> None:
         """Test validation of AsyncAPI with channels."""
@@ -456,4 +467,4 @@ class TestAsyncAPISchemaValidator:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "missing 'protocol'" in result.error
+        assert result.error is not None and "missing 'protocol'" in result.error

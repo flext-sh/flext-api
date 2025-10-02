@@ -32,7 +32,6 @@ class FlextApiProtocols(FlextProtocols):
             **kwargs: object,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute an HTTP request."""
-            ...
 
         def get(
             self,
@@ -40,7 +39,6 @@ class FlextApiProtocols(FlextProtocols):
             **kwargs: object,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP GET request."""
-            ...
 
         def post(
             self,
@@ -48,7 +46,6 @@ class FlextApiProtocols(FlextProtocols):
             **kwargs: object,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP POST request."""
-            ...
 
         def put(
             self,
@@ -56,7 +53,6 @@ class FlextApiProtocols(FlextProtocols):
             **kwargs: object,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP PUT request."""
-            ...
 
         def delete(
             self,
@@ -64,7 +60,6 @@ class FlextApiProtocols(FlextProtocols):
             **kwargs: object,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP DELETE request."""
-            ...
 
     @runtime_checkable
     class StorageBackendProtocol(Protocol):
@@ -74,7 +69,6 @@ class FlextApiProtocols(FlextProtocols):
             self, key: str, default: FlextApiTypes.Core.JsonValue = None
         ) -> FlextResult[FlextApiTypes.Core.JsonValue]:
             """Retrieve value by key."""
-            ...
 
         def set(
             self,
@@ -83,23 +77,18 @@ class FlextApiProtocols(FlextProtocols):
             timeout: int | None = None,
         ) -> FlextResult[None]:
             """Store value with optional timeout."""
-            ...
 
         def delete(self, key: str) -> FlextResult[None]:
             """Delete value by key."""
-            ...
 
         def exists(self, key: FlextApiTypes.StorageKey) -> FlextResult[bool]:
             """Check if key exists."""
-            ...
 
         def clear(self) -> FlextResult[None]:
             """Clear all stored values."""
-            ...
 
         def keys(self: object) -> FlextResult[list[FlextApiTypes.StorageKey]]:
             """Get all keys."""
-            ...
 
     @runtime_checkable
     class RetryStrategyProtocol(Protocol):
@@ -112,15 +101,12 @@ class FlextApiProtocols(FlextProtocols):
             status_code: FlextApiTypes.HttpStatusCode | None = None,
         ) -> bool:
             """Determine if operation should be retried."""
-            ...
 
         def get_delay(self, attempt: int) -> float:
             """Get delay before next retry attempt."""
-            ...
 
         def get_max_attempts(self: object) -> int:
             """Get maximum number of retry attempts."""
-            ...
 
     @runtime_checkable
     class ConnectionManagerProtocol(Protocol):
@@ -128,19 +114,15 @@ class FlextApiProtocols(FlextProtocols):
 
         def get_connection(self) -> FlextResult[FlextApiTypes.Core.JsonValue]:
             """Get active connection."""
-            ...
 
         def release_connection(self, connection: object) -> FlextResult[bool]:
             """Release connection back to pool."""
-            ...
 
         def close_all(self: object) -> FlextResult[bool]:
             """Close all connections."""
-            ...
 
         def is_healthy(self: object) -> FlextResult[bool]:
             """Check if connection manager is healthy."""
-            ...
 
     @runtime_checkable
     class CacheProtocol(Protocol):
@@ -148,21 +130,17 @@ class FlextApiProtocols(FlextProtocols):
 
         def get(self, key: str) -> FlextResult[object | None]:
             """Get cached value."""
-            ...
 
         def set(
             self, key: str, value: object, ttl: int | None = None
         ) -> FlextResult[bool]:
             """Set cached value with optional TTL."""
-            ...
 
         def invalidate(self, key: str) -> FlextResult[bool]:
             """Invalidate cache entry."""
-            ...
 
         def clear(self: object) -> FlextResult[bool]:
             """Clear all cache entries."""
-            ...
 
     @runtime_checkable
     class RequestValidatorProtocol(Protocol):
@@ -172,19 +150,16 @@ class FlextApiProtocols(FlextProtocols):
             self, request_data: FlextApiTypes.RequestData
         ) -> FlextResult[FlextApiTypes.RequestData]:
             """Validate and sanitize request data."""
-            ...
 
         def validate_headers(
             self, headers: FlextApiTypes.HttpHeaders
         ) -> FlextResult[FlextApiTypes.HttpHeaders]:
             """Validate HTTP headers."""
-            ...
 
         def validate_params(
             self, params: FlextApiTypes.HttpParams
         ) -> FlextResult[FlextApiTypes.HttpParams]:
             """Validate query parameters."""
-            ...
 
     @runtime_checkable
     class ResponseProcessorProtocol(Protocol):
@@ -196,7 +171,6 @@ class FlextApiProtocols(FlextProtocols):
             status_code: FlextApiTypes.HttpStatusCode,
         ) -> FlextResult[FlextApiTypes.ResponseData]:
             """Process and transform response data."""
-            ...
 
         def handle_error_response(
             self,
@@ -204,7 +178,6 @@ class FlextApiProtocols(FlextProtocols):
             status_code: FlextApiTypes.HttpStatusCode,
         ) -> FlextResult[Exception]:
             """Handle error responses and create appropriate exceptions."""
-            ...
 
     @runtime_checkable
     class AuthenticationProviderProtocol(Protocol):
@@ -212,15 +185,12 @@ class FlextApiProtocols(FlextProtocols):
 
         def get_auth_headers(self: object) -> FlextResult[FlextApiTypes.HttpHeaders]:
             """Get authentication headers for requests."""
-            ...
 
         def is_authenticated(self: object) -> FlextResult[bool]:
             """Check if currently authenticated."""
-            ...
 
         def refresh_auth(self: object) -> FlextResult[bool]:
             """Refresh authentication credentials."""
-            ...
 
     @runtime_checkable
     class MetricsCollectorProtocol(Protocol):
@@ -234,17 +204,14 @@ class FlextApiProtocols(FlextProtocols):
             duration_ms: float,
         ) -> FlextResult[bool]:
             """Record request metrics."""
-            ...
 
         def record_error(
             self, error: Exception, context: FlextApiTypes.JsonObject
         ) -> FlextResult[bool]:
             """Record error metrics."""
-            ...
 
         def get_metrics(self: object) -> FlextResult[FlextApiTypes.JsonObject]:
             """Get collected metrics."""
-            ...
 
     @runtime_checkable
     class MiddlewareProtocol(Protocol):
@@ -254,13 +221,11 @@ class FlextApiProtocols(FlextProtocols):
             self, request: FlextApiTypes.RequestData
         ) -> FlextResult[FlextApiTypes.RequestData]:
             """Process incoming request."""
-            ...
 
         def process_response(
             self, response: FlextApiTypes.ResponseData
         ) -> FlextResult[FlextApiTypes.ResponseData]:
             """Process outgoing response."""
-            ...
 
     @runtime_checkable
     class PluginProtocol(Protocol):
@@ -268,19 +233,15 @@ class FlextApiProtocols(FlextProtocols):
 
         def initialize(self, config: FlextApiTypes.JsonObject) -> FlextResult[bool]:
             """Initialize plugin with configuration."""
-            ...
 
         def is_enabled(self: object) -> bool:
             """Check if plugin is enabled."""
-            ...
 
         def get_name(self: object) -> str:
             """Get plugin name."""
-            ...
 
         def get_version(self: object) -> str:
             """Get plugin version."""
-            ...
 
     @runtime_checkable
     class ConfigurationProviderProtocol(Protocol):
@@ -288,15 +249,12 @@ class FlextApiProtocols(FlextProtocols):
 
         def get_config(self, key: str) -> FlextResult[FlextApiTypes.Core.ConfigValue]:
             """Get configuration value by key."""
-            ...
 
         def set_config(self, key: str, value: object) -> FlextResult[bool]:
             """Set configuration value."""
-            ...
 
         def reload_config(self: object) -> FlextResult[bool]:
             """Reload configuration from source."""
-            ...
 
     @runtime_checkable
     class LoggerProtocol(Protocol):
@@ -304,19 +262,15 @@ class FlextApiProtocols(FlextProtocols):
 
         def info(self, message: str, **kwargs: object) -> None:
             """Log info message."""
-            ...
 
         def error(self, message: str, **kwargs: object) -> None:
             """Log error message."""
-            ...
 
         def debug(self, message: str, **kwargs: object) -> None:
             """Log debug message."""
-            ...
 
         def warning(self, message: str, **kwargs: object) -> None:
             """Log warning message."""
-            ...
 
     # NEW PROTOCOLS FOR TRANSFORMATION (Phase 1)
 
@@ -334,15 +288,12 @@ class FlextApiProtocols(FlextProtocols):
             **kwargs: object,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Handle request for this protocol."""
-            ...
 
         def supports_protocol(self, protocol: str) -> bool:
             """Check if this handler supports the given protocol."""
-            ...
 
         def get_protocol_name(self) -> str:
             """Get protocol name (e.g., 'http', 'websocket', 'graphql')."""
-            ...
 
     @runtime_checkable
     class SchemaValidatorProtocol(Protocol):
@@ -358,7 +309,6 @@ class FlextApiProtocols(FlextProtocols):
             schema: object,
         ) -> FlextResult[dict[str, object]]:
             """Validate request against schema."""
-            ...
 
         def validate_response(
             self,
@@ -366,18 +316,15 @@ class FlextApiProtocols(FlextProtocols):
             schema: object,
         ) -> FlextResult[dict[str, object]]:
             """Validate response against schema."""
-            ...
 
         def load_schema(
             self,
             schema_source: str | dict[str, object],
         ) -> FlextResult[object]:
             """Load schema from source."""
-            ...
 
         def get_schema_type(self) -> str:
             """Get schema type (e.g., 'openapi', 'jsonschema', 'graphql')."""
-            ...
 
     @runtime_checkable
     class TransportLayerProtocol(Protocol):
@@ -393,14 +340,12 @@ class FlextApiProtocols(FlextProtocols):
             **options: object,
         ) -> FlextResult[object]:
             """Establish connection to endpoint."""
-            ...
 
         def disconnect(
             self,
             connection: object,
         ) -> FlextResult[None]:
             """Close connection."""
-            ...
 
         def send(
             self,
@@ -409,7 +354,6 @@ class FlextApiProtocols(FlextProtocols):
             **options: object,
         ) -> FlextResult[None]:
             """Send data through connection."""
-            ...
 
         def receive(
             self,
@@ -417,11 +361,9 @@ class FlextApiProtocols(FlextProtocols):
             **options: object,
         ) -> FlextResult[bytes | str]:
             """Receive data from connection."""
-            ...
 
         def supports_streaming(self) -> bool:
             """Check if transport supports streaming."""
-            ...
 
     @runtime_checkable
     class RegistryProtocol(Protocol):
@@ -436,25 +378,21 @@ class FlextApiProtocols(FlextProtocols):
             plugin: object,
         ) -> FlextResult[None]:
             """Register a plugin."""
-            ...
 
         def get(
             self,
             name: str,
         ) -> FlextResult[object]:
             """Get registered plugin by name."""
-            ...
 
         def list_registered(self) -> FlextResult[list[str]]:
             """List all registered plugin names."""
-            ...
 
         def unregister(
             self,
             name: str,
         ) -> FlextResult[None]:
             """Unregister a plugin."""
-            ...
 
 
 __all__ = [

@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from flext_core import FlextResult
 
 from flext_api.middleware import (
     AuthenticationMiddleware,
@@ -18,7 +19,6 @@ from flext_api.middleware import (
     MiddlewarePipeline,
 )
 from flext_api.models import FlextApiModels
-from flext_core import FlextResult
 
 
 class TestBaseMiddlewareSimple:
@@ -331,4 +331,4 @@ class TestMiddlewarePipelineSimple:
         result = pipeline.process_request(request)
 
         assert result.is_failure
-        assert "Middleware failed" in result.error
+        assert result.error is not None and "Middleware failed" in result.error

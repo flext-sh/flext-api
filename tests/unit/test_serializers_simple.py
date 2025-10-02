@@ -276,4 +276,4 @@ class TestSerializerRegistry:
         result = registry.get_serializer("unknown_format")
 
         assert result.is_failure
-        assert "No serializer registered" in result.error
+        assert result.error is not None and "No serializer registered" in result.error

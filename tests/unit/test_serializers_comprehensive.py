@@ -360,7 +360,7 @@ class TestSerializerRegistry:
         result = registry.get_serializer("unknown_format")
 
         assert result.is_failure
-        assert "No serializer registered" in result.error
+        assert result.error is not None and "No serializer registered" in result.error
 
     def test_get_serializer_by_content_type(self) -> None:
         """Test getting serializer by content type."""
@@ -392,7 +392,7 @@ class TestSerializerRegistry:
         result = registry.get_serializer_by_content_type("application/unknown")
 
         assert result.is_failure
-        assert "No serializer found" in result.error
+        assert result.error is not None and "No serializer found" in result.error
 
     def test_serialize_with_default_format(self) -> None:
         """Test serializing with default format."""
@@ -433,7 +433,7 @@ class TestSerializerRegistry:
         result = registry.serialize(data, format_type="unknown")
 
         assert result.is_failure
-        assert "No serializer registered" in result.error
+        assert result.error is not None and "No serializer registered" in result.error
 
     def test_deserialize_with_default_format(self) -> None:
         """Test deserializing with default format."""
@@ -452,7 +452,9 @@ class TestSerializerRegistry:
         registry = SerializerRegistry()
 
         data = {"name": "John", "age": 30}
-        serialized = registry.serialize(data, format_type=SerializationFormat.JSON).unwrap()
+        serialized = registry.serialize(
+            data, format_type=SerializationFormat.JSON
+        ).unwrap()
         result = registry.deserialize(serialized, format_type=SerializationFormat.JSON)
 
         assert result.is_success
@@ -466,7 +468,7 @@ class TestSerializerRegistry:
         result = registry.deserialize(b"dummy_data", format_type="unknown")
 
         assert result.is_failure
-        assert "No serializer registered" in result.error
+        assert result.error is not None and "No serializer registered" in result.error
 
     def test_set_default_format(self) -> None:
         """Test setting default serialization format."""

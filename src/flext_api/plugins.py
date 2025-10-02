@@ -9,13 +9,12 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-from __future__ import annotations
-
 from abc import abstractmethod
 from typing import Any
 
-from flext_api.models import FlextApiModels
 from flext_core import FlextLogger, FlextResult
+
+from flext_api.typings import FlextApiTypes
 
 
 class BasePlugin:
@@ -31,10 +30,7 @@ class BasePlugin:
     """
 
     def __init__(
-        self,
-        name: str,
-        version: str = "1.0.0",
-        description: str = "",
+        self, name: str, version: str = "1.0.0", description: str = ""
     ) -> None:
         """Initialize base plugin.
 
@@ -91,7 +87,7 @@ class BasePlugin:
         """Check if plugin is initialized."""
         return self._initialized
 
-    def get_metadata(self) -> dict[str, str]:
+    def get_metadata(self) -> dict:
         """Get plugin metadata.
 
         Returns:
@@ -121,10 +117,8 @@ class ProtocolPlugin(BasePlugin):
 
     @abstractmethod
     def send_request(
-        self,
-        request: FlextApiModels.HttpRequest,
-        **kwargs: float | str | bool,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        self, request: FlextApiTypes.RequestData, **kwargs: FlextApiTypes.Core.JsonValue
+    ) -> FlextResult[FlextApiTypes.ResponseData]:
         """Send request using this protocol.
 
         Args:
@@ -176,9 +170,9 @@ class SchemaPlugin(BasePlugin):
     @abstractmethod
     def validate_request(
         self,
-        request: FlextApiModels.HttpRequest,
-        schema: dict[str, Any],
-    ) -> FlextResult[dict[str, Any]]:
+        request: FlextApiTypes.RequestData,
+        schema: FlextApiTypes.Schema.JsonSchema,
+    ) -> FlextResult[bool]:
         """Validate request against schema.
 
         Args:
@@ -194,9 +188,9 @@ class SchemaPlugin(BasePlugin):
     @abstractmethod
     def validate_response(
         self,
-        response: FlextApiModels.HttpResponse,
-        schema: dict[str, Any],
-    ) -> FlextResult[dict[str, Any]]:
+        response: FlextApiTypes.ResponseData,
+        schema: FlextApiTypes.Schema.JsonSchema,
+    ) -> FlextResult[bool]:
         """Validate response against schema.
 
         Args:
@@ -210,10 +204,7 @@ class SchemaPlugin(BasePlugin):
         ...
 
     @abstractmethod
-    def load_schema(
-        self,
-        schema_source: str | dict[str, Any],
-    ) -> FlextResult[Any]:
+    def load_schema(self, schema_source: str) -> FlextResult[Any]:
         """Load schema from source.
 
         Args:
@@ -225,7 +216,7 @@ class SchemaPlugin(BasePlugin):
         """
         ...
 
-    def supports_schema_type(self, schema_type: str) -> bool:  # noqa: ARG002
+    def supports_schema_type(self) -> bool:
         """Check if this plugin supports the given schema type.
 
         Args:
@@ -261,10 +252,8 @@ class TransportPlugin(BasePlugin):
 
     @abstractmethod
     def connect(
-        self,
-        url: str,
-        **options: Any,  # noqa: ANN401 - connection options vary by transport
-    ) -> FlextResult[Any]:
+        self, url: str, **options: FlextApiTypes.Core.JsonValue
+    ) -> FlextResult[bool]:
         """Establish connection to endpoint.
 
         Args:
@@ -278,10 +267,7 @@ class TransportPlugin(BasePlugin):
         ...
 
     @abstractmethod
-    def disconnect(
-        self,
-        connection: Any,  # noqa: ANN401 - connection type varies by transport
-    ) -> FlextResult[None]:
+    def disconnect(self, connection: object) -> FlextResult[bool]:
         """Close connection.
 
         Args:
@@ -296,10 +282,10 @@ class TransportPlugin(BasePlugin):
     @abstractmethod
     def send(
         self,
-        connection: Any,  # noqa: ANN401 - connection type varies by transport
-        data: bytes | str,
-        **options: Any,  # noqa: ANN401 - send options vary by transport
-    ) -> FlextResult[None]:
+        connection: object,
+        data: FlextApiTypes.Protocol.ProtocolMessage,
+        **options: FlextApiTypes.Core.JsonValue,
+    ) -> FlextResult[bool]:
         """Send data through connection.
 
         Args:
@@ -315,10 +301,8 @@ class TransportPlugin(BasePlugin):
 
     @abstractmethod
     def receive(
-        self,
-        connection: Any,  # noqa: ANN401 - connection type varies by transport
-        **options: Any,  # noqa: ANN401 - receive options vary by transport
-    ) -> FlextResult[bytes | str]:
+        self, connection: object, **options: FlextApiTypes.Core.JsonValue
+    ) -> FlextResult[FlextApiTypes.Protocol.ProtocolMessage]:
         """Receive data from connection.
 
         Args:
@@ -340,7 +324,7 @@ class TransportPlugin(BasePlugin):
         """
         return False
 
-    def get_connection_info(self, connection: Any) -> dict[str, Any]:  # noqa: ARG002,ANN401
+    def get_connection_info(self) -> FlextApiTypes.Transport.ConnectionInfo:
         """Get connection information.
 
         Args:
@@ -369,9 +353,9 @@ class AuthenticationPlugin(BasePlugin):
     @abstractmethod
     def authenticate(
         self,
-        request: FlextApiModels.HttpRequest,
-        credentials: dict[str, Any],
-    ) -> FlextResult[FlextApiModels.HttpRequest]:
+        request: FlextApiTypes.RequestData,
+        credentials: FlextApiTypes.Authentication.AuthCredentials,
+    ) -> FlextResult[FlextApiTypes.RequestData]:
         """Add authentication to request.
 
         Args:
@@ -386,8 +370,7 @@ class AuthenticationPlugin(BasePlugin):
 
     @abstractmethod
     def validate_credentials(
-        self,
-        credentials: dict[str, Any],
+        self, credentials: FlextApiTypes.Authentication.AuthCredentials
     ) -> FlextResult[bool]:
         """Validate authentication credentials.
 
@@ -409,7 +392,7 @@ class AuthenticationPlugin(BasePlugin):
         """
         return "Unknown"
 
-    def requires_refresh(self, credentials: dict[str, Any]) -> bool:  # noqa: ARG002
+    def requires_refresh(self) -> bool:
         """Check if credentials need refresh.
 
         Args:
@@ -423,8 +406,8 @@ class AuthenticationPlugin(BasePlugin):
 
     def refresh_credentials(
         self,
-        credentials: dict[str, Any],  # noqa: ARG002 - interface requirement
-    ) -> FlextResult[dict[str, Any]]:
+        credentials: dict[str, object],
+    ) -> FlextResult[dict[str, object]]:
         """Refresh authentication credentials.
 
         Args:
@@ -434,7 +417,9 @@ class AuthenticationPlugin(BasePlugin):
             FlextResult containing refreshed credentials or error
 
         """
-        return FlextResult[dict[str, Any]].fail("Refresh not supported by this plugin")
+        return FlextResult[dict[str, object]].fail(
+            "Refresh not supported by this plugin"
+        )
 
 
 # Plugin Manager for discovery and loading

@@ -243,8 +243,8 @@ class TestGraphQLToHttpAdapter:
         result = adapter.adapt_response_to_result(response)
 
         assert result.is_failure
-        assert "User not found" in result.error
-        assert "Invalid permissions" in result.error
+        assert result.error is not None and "User not found" in result.error
+        assert result.error is not None and "Invalid permissions" in result.error
 
     def test_adapt_http_response_non_200_status(self) -> None:
         """Test adapting HTTP response with non-200 status."""
@@ -261,7 +261,7 @@ class TestGraphQLToHttpAdapter:
         result = adapter.adapt_response_to_result(response)
 
         assert result.is_failure
-        assert "500" in result.error
+        assert result.error is not None and "500" in result.error
 
 
 class TestSchemaAdapter:
