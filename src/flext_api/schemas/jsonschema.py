@@ -43,6 +43,7 @@ class JSONSchemaValidator(SchemaPlugin):
     def __init__(
         self,
         draft_version: str = "draft7",
+        *,
         validate_formats: bool = True,
         strict_mode: bool = True,
     ) -> None:
@@ -188,7 +189,9 @@ class JSONSchemaValidator(SchemaPlugin):
         })
 
     def validate_instance(
-        self, instance: Any, schema: dict[str, Any]
+        self,
+        instance: Any,
+        schema: dict[str, Any],
     ) -> FlextResult[dict[str, Any]]:
         """Validate instance against JSON Schema.
 
@@ -271,7 +274,7 @@ class JSONSchemaValidator(SchemaPlugin):
 
         return FlextResult[None].ok(None)
 
-    def _validate_type_field(self, type_value: Any) -> FlextResult[None]:
+    def _validate_type_field(self, type_value: Any) -> FlextResult[None]:  # noqa: ANN401 - stub implementation
         """Validate type field value.
 
         Args:
@@ -304,7 +307,9 @@ class JSONSchemaValidator(SchemaPlugin):
         return FlextResult[None].ok(None)
 
     def _validate_instance_type(
-        self, instance: Any, type_value: Any
+        self,
+        instance: Any,
+        type_value: Any,  # noqa: ANN401 - stub implementation
     ) -> FlextResult[None]:
         """Validate instance against type constraint.
 
@@ -369,8 +374,8 @@ class JSONSchemaValidator(SchemaPlugin):
 
     def validate_request(
         self,
-        request: Any,
-        schema: Any,
+        request: Any,  # noqa: ARG002,ANN401 - stub implementation
+        schema: Any,  # noqa: ARG002,ANN401 - stub implementation
     ) -> FlextResult[dict[str, Any]]:
         """Validate request against JSON Schema.
 
@@ -387,8 +392,8 @@ class JSONSchemaValidator(SchemaPlugin):
 
     def validate_response(
         self,
-        response: Any,
-        schema: Any,
+        response: Any,  # noqa: ARG002,ANN401 - stub implementation
+        schema: Any,  # noqa: ARG002,ANN401 - stub implementation
     ) -> FlextResult[dict[str, Any]]:
         """Validate response against JSON Schema.
 

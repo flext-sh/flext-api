@@ -93,8 +93,8 @@ class GrpcStub:
     def call_unary(
         self,
         method: str,
-        request: Any,
-        timeout: float | None = None,
+        request: Any,  # noqa: ARG002,ANN401 - stub implementation
+        timeout: float | None = None,  # noqa: ARG002 - stub implementation
     ) -> FlextResult[Any]:
         """Call unary gRPC method.
 
@@ -131,7 +131,7 @@ class GrpcRequest:
     def __init__(
         self,
         method: str,
-        message: Any,
+        message: Any,  # noqa: ANN401 - stub implementation
         metadata: dict[str, str] | None = None,
     ) -> None:
         """Initialize gRPC request.
@@ -161,7 +161,7 @@ class GrpcResponse:
 
     def __init__(
         self,
-        message: Any,
+        message: Any,  # noqa: ANN401 - stub implementation
         status_code: int = 0,
         metadata: dict[str, str] | None = None,
     ) -> None:
@@ -178,7 +178,7 @@ class GrpcResponse:
         self._metadata = metadata or {}
 
     @property
-    def message(self) -> Any:
+    def message(self) -> Any:  # noqa: ANN401 - stub implementation
         """Get response message."""
         return self._message
 
@@ -203,7 +203,7 @@ class GrpcServer:
 
     def __init__(
         self,
-        host: str = "0.0.0.0",
+        host: str = "127.0.0.1",
         port: int = 50051,
         options: dict[str, Any] | None = None,
     ) -> None:
@@ -225,7 +225,7 @@ class GrpcServer:
             extra={"host": host, "port": port},
         )
 
-    def add_service(self, service: Any) -> FlextResult[None]:
+    def add_service(self, service: Any) -> FlextResult[None]:  # noqa: ARG002,ANN401 - stub implementation
         """Add service to server.
 
         Args:
@@ -253,7 +253,7 @@ class GrpcServer:
             "gRPC server placeholder - awaiting flext-grpc integration"
         )
 
-    def stop(self, grace: float | None = None) -> FlextResult[None]:
+    def stop(self, grace: float | None = None) -> FlextResult[None]:  # noqa: ARG002 - stub implementation
         """Stop gRPC server.
 
         Args:

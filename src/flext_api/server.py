@@ -48,7 +48,7 @@ class FlextApiServer(FlextService):
 
     def __init__(
         self,
-        host: str = "0.0.0.0",
+        host: str = "127.0.0.1",
         port: int = 8000,
         title: str = "Flext API Server",
         version: str = "1.0.0",
@@ -158,7 +158,7 @@ class FlextApiServer(FlextService):
         path: str,
         method: str,
         handler: Callable,
-        **options: Any,
+        **options: Any,  # noqa: ANN401 - route options vary by framework
     ) -> FlextResult[None]:
         """Register route with server.
 

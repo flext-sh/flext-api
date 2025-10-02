@@ -225,7 +225,7 @@ class GraphQLToHttpAdapter:
             result = response.body if hasattr(response, "body") else {}
 
             # Check for GraphQL errors
-            if "errors" in result:
+            if isinstance(result, dict) and "errors" in result:
                 errors = result["errors"]
                 error_messages = [e.get("message", "Unknown error") for e in errors]
                 return FlextResult[dict[str, Any]].fail(
@@ -234,7 +234,8 @@ class GraphQLToHttpAdapter:
 
             self._logger.debug("HTTP response adapted to GraphQL result")
 
-            return FlextResult[dict[str, Any]].ok(result.get("data", {}))
+            data = result.get("data", {}) if isinstance(result, dict) else {}
+            return FlextResult[dict[str, Any]].ok(data)
 
         except Exception as e:
             return FlextResult[dict[str, Any]].fail(
@@ -271,7 +272,7 @@ class SchemaAdapter:
         """
         try:
             # Basic conversion from OpenAPI to API
-            api_schema = {
+            api_schema: dict[str, Any] = {
                 "api": "3.0.0",
                 "info": openapi_schema.get("info", {}),
                 "channels": {},
@@ -333,7 +334,7 @@ class SchemaAdapter:
             for schema_name, schema_def in schemas.items():
                 if schema_def.get("type") == "object":
                     properties = schema_def.get("properties", {})
-                    fields = []
+                    fields: list[str] = []
 
                     for prop_name, prop_def in properties.items():
                         prop_type = self._map_openapi_type_to_graphql(
@@ -439,7 +440,9 @@ class LegacyApiAdapter:
                 method=modern_request.method,
                 url=f"{self._base_url}{modern_request.url}",
                 headers=self._adapt_headers(dict(modern_request.headers or {})),
-                body=self._adapt_payload(modern_request.body or {}),
+                body=self._adapt_payload(
+                    modern_request.body if isinstance(modern_request.body, dict) else {}
+                ),
             )
 
             self._logger.debug(
@@ -471,7 +474,11 @@ class LegacyApiAdapter:
             modern_response = FlextApiModels.HttpResponse(
                 status_code=self._adapt_status_code(legacy_response.status_code),
                 headers=legacy_response.headers,
-                body=self._normalize_payload(legacy_response.body or {}),
+                body=self._normalize_payload(
+                    legacy_response.body
+                    if isinstance(legacy_response.body, dict)
+                    else {}
+                ),
                 url=legacy_response.url,
                 method=legacy_response.method,
             )

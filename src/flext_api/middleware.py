@@ -536,8 +536,7 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         """Handle HTTP errors if enabled."""
         if (
             self._handle_http_errors
-            and response.status_code
-            >= FlextConstants.Http.StatusCodes.HTTP_CLIENT_ERROR_MIN
+            and response.status_code >= FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
         ):
             # Log HTTP error
             self._logger.warning(
