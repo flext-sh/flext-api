@@ -410,7 +410,7 @@ class TestSerializerRegistry:
         registry = SerializerRegistry()
 
         data = {"name": "John", "age": 30}
-        result = registry.serialize(data, format=SerializationFormat.JSON)
+        result = registry.serialize(data, format_type=SerializationFormat.JSON)
 
         assert result.is_success
         serialized = result.unwrap()
@@ -421,7 +421,7 @@ class TestSerializerRegistry:
         registry = SerializerRegistry()
 
         data = {"name": "John", "age": 30}
-        result = registry.serialize(data, format="json")
+        result = registry.serialize(data, format_type="json")
 
         assert result.is_success
 
@@ -430,7 +430,7 @@ class TestSerializerRegistry:
         registry = SerializerRegistry()
 
         data = {"test": "data"}
-        result = registry.serialize(data, format="unknown")
+        result = registry.serialize(data, format_type="unknown")
 
         assert result.is_failure
         assert "No serializer registered" in result.error
@@ -452,8 +452,8 @@ class TestSerializerRegistry:
         registry = SerializerRegistry()
 
         data = {"name": "John", "age": 30}
-        serialized = registry.serialize(data, format=SerializationFormat.JSON).unwrap()
-        result = registry.deserialize(serialized, format=SerializationFormat.JSON)
+        serialized = registry.serialize(data, format_type=SerializationFormat.JSON).unwrap()
+        result = registry.deserialize(serialized, format_type=SerializationFormat.JSON)
 
         assert result.is_success
         deserialized = result.unwrap()
@@ -463,7 +463,7 @@ class TestSerializerRegistry:
         """Test deserializing with unknown format."""
         registry = SerializerRegistry()
 
-        result = registry.deserialize(b"dummy_data", format="unknown")
+        result = registry.deserialize(b"dummy_data", format_type="unknown")
 
         assert result.is_failure
         assert "No serializer registered" in result.error
@@ -492,14 +492,14 @@ class TestSerializerRegistry:
 
         # Serialize
         serialize_result = registry.serialize(
-            original_data, format=SerializationFormat.JSON
+            original_data, format_type=SerializationFormat.JSON
         )
         assert serialize_result.is_success
         serialized = serialize_result.unwrap()
 
         # Deserialize
         deserialize_result = registry.deserialize(
-            serialized, format=SerializationFormat.JSON
+            serialized, format_type=SerializationFormat.JSON
         )
         assert deserialize_result.is_success
         deserialized = deserialize_result.unwrap()
