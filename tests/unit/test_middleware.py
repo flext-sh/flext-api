@@ -12,6 +12,7 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
+from flext_core import FlextResult
 
 from flext_api.middleware import (
     AuthenticationMiddleware,
@@ -22,7 +23,6 @@ from flext_api.middleware import (
     MiddlewarePipeline,
 )
 from flext_api.models import FlextApiModels
-from flext_core import FlextResult
 
 
 class TestBaseMiddleware:
@@ -605,4 +605,4 @@ class TestMiddlewarePipeline:
         result = pipeline.process_request(sample_request)
 
         assert result.is_failure
-        assert "Middleware failed" in result.error
+        assert result.error is not None and "Middleware failed" in result.error

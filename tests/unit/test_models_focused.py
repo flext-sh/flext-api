@@ -9,11 +9,11 @@ from __future__ import annotations
 from typing import Literal, cast
 
 import pytest
+from flext_core import FlextConstants
 from pydantic import ValidationError
 
 from flext_api import FlextApiModels
 from flext_api.constants import FlextApiConstants
-from flext_core import FlextConstants
 
 
 class TestFlextApiModelsFocused:
@@ -117,9 +117,15 @@ class TestFlextApiModelsFocused:
 
     def test_http_request_method_literals(self) -> None:
         """Test HttpRequest accepts all valid HTTP methods."""
-        valid_methods: list[
-            Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
-        ] = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
+        valid_methods: list[Literal[GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS]] = [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH",
+            "HEAD",
+            "OPTIONS",
+        ]
 
         for method in valid_methods:
             request = FlextApiModels.HttpRequest(method=method, url="https://test.com")

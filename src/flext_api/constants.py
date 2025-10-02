@@ -40,14 +40,30 @@ class FlextApiConstants(FlextConstants):
     # Use FlextConstants.Http.ContentType.JSON, etc.
 
     # API-specific response templates (not in flext-core)
-    SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, str | dict[str, object]]] = {
-        "status": "success",
-        "data": {},
-    }
-    ERROR_RESPONSE_TEMPLATE: ClassVar[dict[str, str | dict[str, object]]] = {
-        "status": "error",
-        "data": {},
-    }
+    SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, str | dict[str, object]] | None] = (
+        None
+    )
+    ERROR_RESPONSE_TEMPLATE: ClassVar[dict[str, str | dict[str, object]] | None] = None
+
+    @classmethod
+    def get_success_template(cls) -> dict[str, str | dict[str, object]]:
+        """Get success response template."""
+        if cls.SUCCESS_RESPONSE_TEMPLATE is None:
+            cls.SUCCESS_RESPONSE_TEMPLATE = {
+                "status": "success",
+                "data": {},
+            }
+        return cls.SUCCESS_RESPONSE_TEMPLATE
+
+    @classmethod
+    def get_error_template(cls) -> dict[str, str | dict[str, object]]:
+        """Get error response template."""
+        if cls.ERROR_RESPONSE_TEMPLATE is None:
+            cls.ERROR_RESPONSE_TEMPLATE = {
+                "status": "error",
+                "data": {},
+            }
+        return cls.ERROR_RESPONSE_TEMPLATE
 
     # API-specific header defaults (customize flext-core defaults)
     DEFAULT_USER_AGENT: ClassVar[str] = "FlextAPI/0.9.0"

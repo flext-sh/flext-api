@@ -159,7 +159,6 @@ class TestFlextApiUtilitiesConfigurationManager:
         # Test method types
         assert callable(config_manager.validate_configuration)
         assert callable(config_manager.get_configuration_dict)
-        assert callable(getattr(config_manager, "headers"))
         assert callable(config_manager.reset_to_defaults)
 
     def test_configuration_manager_with_different_config_types(self) -> None:

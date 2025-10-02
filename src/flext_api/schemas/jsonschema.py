@@ -17,8 +17,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from flext_api.plugins import SchemaPlugin
 from flext_core import FlextResult
+
+from flext_api.plugins import SchemaPlugin
 
 
 class JSONSchemaValidator(SchemaPlugin):
@@ -274,7 +275,7 @@ class JSONSchemaValidator(SchemaPlugin):
 
         return FlextResult[None].ok(None)
 
-    def _validate_type_field(self, type_value: Any) -> FlextResult[None]:  # noqa: ANN401 - stub implementation
+    def _validate_type_field(self, type_value: Any) -> FlextResult[None]:
         """Validate type field value.
 
         Args:
@@ -309,7 +310,7 @@ class JSONSchemaValidator(SchemaPlugin):
     def _validate_instance_type(
         self,
         instance: Any,
-        type_value: Any,  # noqa: ANN401 - stub implementation
+        type_value: Any,
     ) -> FlextResult[None]:
         """Validate instance against type constraint.
 
@@ -374,8 +375,8 @@ class JSONSchemaValidator(SchemaPlugin):
 
     def validate_request(
         self,
-        request: Any,  # noqa: ARG002,ANN401 - stub implementation
-        schema: Any,  # noqa: ARG002,ANN401 - stub implementation
+        request: Any,  # noqa: ARG002 - stub implementation
+        schema: Any,  # noqa: ARG002 - stub implementation
     ) -> FlextResult[dict[str, Any]]:
         """Validate request against JSON Schema.
 
@@ -392,8 +393,8 @@ class JSONSchemaValidator(SchemaPlugin):
 
     def validate_response(
         self,
-        response: Any,  # noqa: ARG002,ANN401 - stub implementation
-        schema: Any,  # noqa: ARG002,ANN401 - stub implementation
+        response: Any,  # noqa: ARG002 - stub implementation
+        schema: Any,  # noqa: ARG002 - stub implementation
     ) -> FlextResult[dict[str, Any]]:
         """Validate response against JSON Schema.
 

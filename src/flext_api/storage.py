@@ -68,7 +68,7 @@ class FlextApiStorage(FlextService[None]):
         self._default_ttl = default_ttl or config_dict.get("default_ttl")
 
         # Use simple dict for storage since Registry is not available
-        self._storage: FlextApiTypes.Core.StorageDict = {}
+        self._storage: dict[str, object] = {}
 
         # Backend configuration that tests expect (using private attribute to avoid Pydantic field issues)
         self._backend = str(config_dict.get("backend", "memory"))
@@ -101,7 +101,7 @@ class FlextApiStorage(FlextService[None]):
 
     def set(
         self,
-        key: object,
+        key: str,
         value: object,
         timeout: int | None = None,
         ttl: int | None = None,
@@ -118,8 +118,10 @@ class FlextApiStorage(FlextService[None]):
             FlextResult[None]: Success or failure result.
 
         """
-        # Validate key
-        if key is None or (isinstance(key, str) and not key):
+        # Validate and convert key
+        if not isinstance(key, str):
+            return FlextResult[None].fail("Invalid key: key must be a string")
+        if not key:
             return FlextResult[None].fail("Invalid key: key must be a non-empty string")
 
         # Calculate TTL from timeout or ttl parameter, otherwise use default
@@ -258,35 +260,27 @@ class FlextApiStorage(FlextService[None]):
         return FlextResult[list[str]].ok(direct_keys)
 
     @property
-    def _data(self) -> dict[str, FlextApiTypes.Core.JsonValue]:
+    def _data(self) -> dict[str, object]:
         """Access direct data storage (for testing compatibility)."""
-        return {
-            key: value
-            for key, value in self._storage.items()
-            if not key.startswith(f"{self._namespace}:")
-        }
+        return dict(self._storage.items())
 
-    def items(self) -> FlextResult[list[tuple[str, FlextApiTypes.Core.JsonValue]]]:
+    def items(self) -> FlextResult[list[tuple[str, object]]]:
         """Get all key-value pairs in storage.
 
         Returns:
-            FlextResult[list[tuple[str, FlextApiTypes.Core.JsonValue]]]: Success result with items list or failure result.
+            FlextResult[list[tuple[str, object]]]: Success result with items list or failure result.
 
         """
-        return FlextResult[list[tuple[str, FlextApiTypes.Core.JsonValue]]].ok(
-            list(self._data.items())
-        )
+        return FlextResult[list[tuple[str, object]]].ok(list(self._data.items()))
 
-    def values(self) -> FlextResult[list[FlextApiTypes.Core.JsonValue]]:
+    def values(self) -> FlextResult[list[object]]:
         """Get all values in storage.
 
         Returns:
-            FlextResult[list[FlextApiTypes.Core.JsonValue]]: Success result with values list or failure result.
+            FlextResult[list[object]]: Success result with values list or failure result.
 
         """
-        return FlextResult[list[FlextApiTypes.Core.JsonValue]].ok(
-            list(self._storage.values())
-        )
+        return FlextResult[list[object]].ok(list(self._storage.values()))
 
     def close(self) -> FlextResult[None]:
         """Close storage connection.
@@ -433,9 +427,7 @@ class FlextApiStorage(FlextService[None]):
         except Exception as e:
             return FlextResult[None].fail(f"Batch set operation failed: {e}")
 
-    def batch_get(
-        self, keys: list[str]
-    ) -> FlextResult[dict[str, FlextApiTypes.Core.JsonValue]]:
+    def batch_get(self, keys: list[str]) -> FlextResult[dict[str, object]]:
         """Get multiple values in a single operation.
 
         Args:
@@ -446,7 +438,7 @@ class FlextApiStorage(FlextService[None]):
 
         """
         try:
-            result_data: dict[str, FlextApiTypes.Core.JsonValue] = {}
+            result_data: dict[str, object] = {}
             for key in keys:
                 get_result = self.get(key)
                 if get_result.is_success:
@@ -454,9 +446,9 @@ class FlextApiStorage(FlextService[None]):
                 else:
                     # Include None for missing keys
                     result_data[key] = None
-            return FlextResult[dict[str, FlextApiTypes.Core.JsonValue]].ok(result_data)
+            return FlextResult[dict[str, object]].ok(result_data)
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.Core.JsonValue]].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"Batch get operation failed: {e}"
             )
 

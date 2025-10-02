@@ -191,16 +191,16 @@ Register custom serializers for your own formats:
 ```python
 from flext_api.serializers import SerializerRegistry, SerializerProtocol
 from flext_core import FlextResult
-from typing import Any
+from typing import object
 
 class CustomSerializer:
     """Custom serializer implementation."""
 
-    def serialize(self, data: Any) -> bytes:
+    def serialize(self, data: object) -> bytes:
         # Custom serialization logic
         return b"custom_data"
 
-    def deserialize(self, data: bytes) -> Any:
+    def deserialize(self, data: bytes) -> object:
         # Custom deserialization logic
         return {"custom": "data"}
 
@@ -374,23 +374,6 @@ def test_registry_format_selection():
 
 ## Troubleshooting
 
-### ImportError for Optional Dependencies
-
-**Problem**: `msgpack not installed` or `cbor2 not installed`
-
-**Solution**:
-```bash
-# Install optional dependencies
-pip install msgpack
-pip install cbor2
-
-# Or check availability
-from flext_api.serializers import MessagePackSerializer
-serializer = MessagePackSerializer()
-if not serializer._available:
-    print("Please install msgpack: pip install msgpack")
-```
-
 ### SerializationError
 
 **Problem**: `Serialization failed: ...`
@@ -411,21 +394,21 @@ except TypeError as e:
 
 ### JSONSerializer
 - `__init__(pretty: bool = False)`
-- `serialize(data: Any) -> bytes`
-- `deserialize(data: bytes) -> Any`
+- `serialize(data: object) -> bytes`
+- `deserialize(data: bytes) -> object`
 - `content_type: str` → `"application/json"`
 
 ### MessagePackSerializer
 - `__init__()`
-- `serialize(data: Any) -> bytes`
-- `deserialize(data: bytes) -> Any`
+- `serialize(data: object) -> bytes`
+- `deserialize(data: bytes) -> object`
 - `content_type: str` → `"application/msgpack"`
 - `_available: bool` → Installation status
 
 ### CBORSerializer
 - `__init__()`
-- `serialize(data: Any) -> bytes`
-- `deserialize(data: bytes) -> Any`
+- `serialize(data: object) -> bytes`
+- `deserialize(data: bytes) -> object`
 - `content_type: str` → `"application/cbor"`
 - `_available: bool` → Installation status
 
@@ -435,7 +418,7 @@ except TypeError as e:
 - `get_serializer(format) -> FlextResult[Serializer]`
 - `get_serializer_by_content_type(content_type) -> FlextResult[Serializer]`
 - `serialize(data, format=None) -> FlextResult[bytes]`
-- `deserialize(data, format=None) -> FlextResult[Any]`
+- `deserialize(data, format=None) -> FlextResult[object]`
 - `set_default_format(format) -> FlextResult[None]`
 
 ---

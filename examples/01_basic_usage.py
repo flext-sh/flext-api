@@ -156,6 +156,7 @@ def example_models_usage() -> None:
             body={"message": "Success"},
             url="https://httpbin.org/get",
             method="GET",
+            request=request,
             elapsed_time=0.125,
         )
 

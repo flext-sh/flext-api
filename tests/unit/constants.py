@@ -10,12 +10,12 @@ import http
 
 from flext_api import FlextApiConstants
 
-# Use FlextTestsUtilities for test data instead of hardcoded constants
-EXPECTED_DATA_COUNT = 3
-
 
 class TestConstants:
     """Test FlextApiConstants using flext_tests patterns and real functionality."""
+
+    # Test data constants
+    EXPECTED_DATA_COUNT = 3
 
     def test_user_agent_constant(self) -> None:
         """Test user agent constant."""

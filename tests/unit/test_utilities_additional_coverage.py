@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from typing import Any
 
 from flext_api import FlextApiUtilities
 
@@ -296,7 +295,7 @@ class TestFlextUtilitiesAdditionalCoverage:
 
     def test_batch_process_with_empty_data(self) -> None:
         """Test batch_process with empty data."""
-        items: list[Any] = []
+        items: list[object] = []
         batches = FlextApiUtilities.batch_process(items, batch_size=10)
         assert len(batches) == 0
 

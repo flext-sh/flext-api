@@ -13,15 +13,14 @@ from __future__ import annotations
 
 import json
 import os
-from collections.abc import Mapping
 from typing import cast
 from unittest.mock import patch
 
 import pytest
-
-from flext_api import FlextApiClient, FlextApiModels
 from flext_core import FlextResult
 from flext_tests import FlextTestsMatchers
+
+from flext_api import FlextApiClient, FlextApiModels
 
 
 def test_client_build_and_error_formatting_on_invalid_url() -> None:

@@ -14,6 +14,12 @@ import json
 from pathlib import Path
 from typing import Self
 
+from flext_core import (
+    FlextConstants,
+    FlextModels,
+    FlextResult,
+    FlextUtilities,
+)
 from pydantic import (
     ConfigDict,
     Field,
@@ -25,14 +31,6 @@ from pydantic import (
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
-from flext_core import (
-    FlextConstants,
-    FlextModels,
-    FlextResult,
-    FlextUtilities,
-)
-
-# All constants moved to FlextApiConstants for centralization
 
 
 class FlextApiModels(FlextModels):
@@ -96,7 +94,12 @@ class FlextApiModels(FlextModels):
         Client-specific additions:
             - full_url: Computed full URL with protocol
             - request_size: Computed request body size in bytes
+            - tracking_id: Request tracking identifier for logging
         """
+
+        tracking_id: str | None = Field(
+            default=None, description="Request tracking ID for logging"
+        )
 
         @computed_field
         @property
@@ -202,6 +205,7 @@ class FlextApiModels(FlextModels):
         Client-specific additions:
             - url: Request URL (for tracking)
             - method: HTTP method (for tracking)
+            - request: Original request object (for tracking)
             - domain_events: Domain events list
             - response_time_ms: Computed response time in milliseconds
             - content_length: Computed content length from headers or body
@@ -210,7 +214,10 @@ class FlextApiModels(FlextModels):
         # CLIENT-SPECIFIC fields for tracking request context
         url: str = Field(description="Request URL")
         method: str = Field(description="HTTP method")
-        domain_events: list[FlextApiTypes.Core.JsonValue] = Field(
+        request: FlextApiModels.HttpRequest = Field(
+            description="Original request object"
+        )
+        domain_events: list[object] = Field(
             default_factory=list, description="Domain events"
         )
 
@@ -284,18 +291,16 @@ class FlextApiModels(FlextModels):
         """Streamlined client configuration extending FlextModels.Value."""
 
         # Essential configuration only
-        base_url: str = Field(
-            default=FlextApiConstants.DEFAULT_BASE_URL, description="Base URL"
-        )
+        base_url: str = Field(default="http://localhost:8000", description="Base URL")
         timeout: float = Field(
-            default=FlextApiConstants.DEFAULT_TIMEOUT,
-            gt=FlextApiConstants.MIN_TIMEOUT,
-            le=FlextApiConstants.MAX_TIMEOUT,
+            default=30,
+            gt=1,
+            le=300,
             description="Request timeout",
         )
         max_retries: int = Field(
-            default=FlextApiConstants.DEFAULT_RETRIES,
-            ge=FlextApiConstants.MIN_RETRIES,
+            default=3,
+            ge=0,
             le=FlextApiConstants.MAX_RETRIES,
             description="Maximum retries",
         )
@@ -372,11 +377,11 @@ class FlextApiModels(FlextModels):
             """Get authentication header if configured."""
             if self.auth_token:
                 return {
-                    FlextApiConstants.AUTHORIZATION_HEADER: f"Bearer {self.auth_token}"
+                    FlextConstants.Http.AUTHORIZATION_HEADER: f"Bearer {self.auth_token}"
                 }
             if self.api_key:
                 return {
-                    FlextApiConstants.AUTHORIZATION_HEADER: f"Bearer {self.api_key}"
+                    FlextConstants.Http.AUTHORIZATION_HEADER: f"Bearer {self.api_key}"
                 }
             return {}
 
@@ -597,7 +602,7 @@ class FlextApiModels(FlextModels):
         headers: dict[str, str] = Field(
             default_factory=dict, description="Response headers"
         )
-        domain_events: list[FlextApiTypes.Core.JsonValue] = Field(
+        domain_events: list[object] = Field(
             default_factory=list, description="Domain events"
         )
 

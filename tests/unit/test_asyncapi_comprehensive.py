@@ -102,7 +102,10 @@ class TestAsyncAPISchemaValidation:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Missing 'asyncapi' version field" in result.error
+        assert (
+            result.error is not None
+            and "Missing 'asyncapi' version field" in result.error
+        )
 
     def test_validate_unsupported_asyncapi_version(self) -> None:
         """Test validation fails for unsupported version."""
@@ -117,7 +120,9 @@ class TestAsyncAPISchemaValidation:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Unsupported AsyncAPI version" in result.error
+        assert (
+            result.error is not None and "Unsupported AsyncAPI version" in result.error
+        )
 
     def test_validate_missing_required_fields(self) -> None:
         """Test validation fails for missing required fields."""
@@ -131,7 +136,7 @@ class TestAsyncAPISchemaValidation:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Missing required fields" in result.error
+        assert result.error is not None and "Missing required fields" in result.error
 
     def test_validate_missing_info_fields(self) -> None:
         """Test validation fails for missing info fields."""
@@ -149,7 +154,9 @@ class TestAsyncAPISchemaValidation:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Missing required info fields" in result.error
+        assert (
+            result.error is not None and "Missing required info fields" in result.error
+        )
 
 
 class TestAsyncAPIChannelValidation:
@@ -256,7 +263,7 @@ class TestAsyncAPIChannelValidation:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Missing 'address'" in result.error
+        assert result.error is not None and "Missing 'address'" in result.error
 
     def test_validate_channel_with_multiple_operations(self) -> None:
         """Test channel with both publish and subscribe operations."""
@@ -377,7 +384,7 @@ class TestAsyncAPIServerValidation:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "missing 'url' or 'host'" in result.error
+        assert result.error is not None and "missing 'url' or 'host'" in result.error
 
     def test_validate_server_missing_protocol(self) -> None:
         """Test validation fails for server missing protocol."""
@@ -398,7 +405,7 @@ class TestAsyncAPIServerValidation:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "missing 'protocol'" in result.error
+        assert result.error is not None and "missing 'protocol'" in result.error
 
     def test_validate_server_unsupported_protocol_strict_mode(self) -> None:
         """Test validation fails for unsupported protocol in strict mode."""
@@ -419,7 +426,7 @@ class TestAsyncAPIServerValidation:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Unsupported protocol" in result.error
+        assert result.error is not None and "Unsupported protocol" in result.error
 
 
 class TestAsyncAPIComponentValidation:
@@ -509,7 +516,7 @@ class TestAsyncAPIComponentValidation:
         result = validator.validate_schema(schema)
 
         assert result.is_failure
-        assert "Invalid component section" in result.error
+        assert result.error is not None and "Invalid component section" in result.error
 
 
 class TestAsyncAPISchemaSupport:
@@ -599,4 +606,6 @@ class TestAsyncAPISchemaLoading:
         result = validator.load_schema("/path/to/schema.yaml")
 
         assert result.is_failure
-        assert "File loading not implemented" in result.error
+        assert (
+            result.error is not None and "File loading not implemented" in result.error
+        )

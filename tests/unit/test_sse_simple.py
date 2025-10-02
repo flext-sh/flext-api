@@ -91,7 +91,7 @@ class TestSSEProtocolPluginSimple:
         # Initially not connected
         assert not plugin.is_connected
         assert plugin._connected is False
-        assert plugin.last_event_id == ""
+        assert not plugin.last_event_id
 
     def test_plugin_event_handlers(self) -> None:
         """Test event handler registration."""

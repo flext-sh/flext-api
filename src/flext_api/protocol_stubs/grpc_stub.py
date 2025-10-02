@@ -19,7 +19,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any, Protocol
+from typing import Protocol
 
 from flext_core import FlextLogger, FlextResult
 
@@ -37,7 +37,7 @@ class GrpcChannel:
     - Load balancing
     """
 
-    def __init__(self, target: str, options: dict[str, Any] | None = None) -> None:
+    def __init__(self, target: str, options: dict[str, object] | None = None) -> None:
         """Initialize gRPC channel.
 
         Args:
@@ -93,9 +93,9 @@ class GrpcStub:
     def call_unary(
         self,
         method: str,
-        request: Any,  # noqa: ARG002,ANN401 - stub implementation
-        timeout: float | None = None,  # noqa: ARG002 - stub implementation
-    ) -> FlextResult[Any]:
+        request: object,
+        timeout: float | None = None,
+    ) -> FlextResult[object]:
         """Call unary gRPC method.
 
         Args:
@@ -111,7 +111,7 @@ class GrpcStub:
             "gRPC unary call (placeholder)",
             extra={"method": method},
         )
-        return FlextResult[Any].fail(
+        return FlextResult[object].fail(
             "gRPC stub placeholder - awaiting flext-grpc integration"
         )
 
@@ -131,7 +131,7 @@ class GrpcRequest:
     def __init__(
         self,
         method: str,
-        message: Any,  # noqa: ANN401 - stub implementation
+        message: object,
         metadata: dict[str, str] | None = None,
     ) -> None:
         """Initialize gRPC request.
@@ -161,7 +161,7 @@ class GrpcResponse:
 
     def __init__(
         self,
-        message: Any,  # noqa: ANN401 - stub implementation
+        message: object,
         status_code: int = 0,
         metadata: dict[str, str] | None = None,
     ) -> None:
@@ -178,7 +178,7 @@ class GrpcResponse:
         self._metadata = metadata or {}
 
     @property
-    def message(self) -> Any:  # noqa: ANN401 - stub implementation
+    def message(self) -> object:
         """Get response message."""
         return self._message
 
@@ -205,7 +205,7 @@ class GrpcServer:
         self,
         host: str = "127.0.0.1",
         port: int = 50051,
-        options: dict[str, Any] | None = None,
+        options: dict[str, object] | None = None,
     ) -> None:
         """Initialize gRPC server.
 
@@ -225,7 +225,7 @@ class GrpcServer:
             extra={"host": host, "port": port},
         )
 
-    def add_service(self, service: Any) -> FlextResult[None]:  # noqa: ARG002,ANN401 - stub implementation
+    def add_service(self, service: object) -> FlextResult[None]:
         """Add service to server.
 
         Args:
@@ -253,7 +253,7 @@ class GrpcServer:
             "gRPC server placeholder - awaiting flext-grpc integration"
         )
 
-    def stop(self, grace: float | None = None) -> FlextResult[None]:  # noqa: ARG002 - stub implementation
+    def stop(self, grace: float | None = None) -> FlextResult[None]:
         """Stop gRPC server.
 
         Args:
@@ -344,7 +344,6 @@ class GrpcServiceProtocol(Protocol):
             List of method descriptors
 
         """
-        ...
 
     def handle_request(
         self,
@@ -359,7 +358,6 @@ class GrpcServiceProtocol(Protocol):
             FlextResult containing response or error
 
         """
-        ...
 
 
 __all__ = [

@@ -20,7 +20,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from typing import Any, Protocol
+from typing import Protocol
 
 from flext_core import FlextLogger, FlextResult
 
@@ -38,7 +38,7 @@ class ProtobufMessage:
     - Field validation
     """
 
-    def __init__(self, data: dict[str, Any] | None = None) -> None:
+    def __init__(self, data: dict[str, object] | None = None) -> None:
         """Initialize Protobuf message.
 
         Args:
@@ -63,7 +63,7 @@ class ProtobufMessage:
         )
 
     @classmethod
-    def deserialize(cls, data: bytes) -> FlextResult[ProtobufMessage]:  # noqa: ARG003 - stub implementation
+    def deserialize(cls, data: bytes) -> FlextResult[ProtobufMessage]:
         """Deserialize message from bytes.
 
         Args:
@@ -79,7 +79,7 @@ class ProtobufMessage:
             "Protobuf stub placeholder - awaiting flext-grpc integration"
         )
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, object]:
         """Convert message to dictionary.
 
         Returns:
@@ -89,7 +89,7 @@ class ProtobufMessage:
         return self._data
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> ProtobufMessage:
+    def from_dict(cls, data: dict[str, object]) -> ProtobufMessage:
         """Create message from dictionary.
 
         Args:
@@ -145,7 +145,7 @@ class ProtobufSerializer:
     - Compression
     """
 
-    def __init__(self, schema: dict[str, Any] | None = None) -> None:
+    def __init__(self, schema: dict[str, object] | None = None) -> None:
         """Initialize Protobuf serializer.
 
         Args:
@@ -178,7 +178,7 @@ class ProtobufSerializer:
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def deserialize(self, data: bytes) -> FlextResult[ProtobufMessage]:  # noqa: ARG002 - stub implementation
+    def deserialize(self, data: bytes) -> FlextResult[ProtobufMessage]:
         """Deserialize message from bytes.
 
         Args:
@@ -193,7 +193,7 @@ class ProtobufSerializer:
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def _validate_message(self, message: ProtobufMessage) -> FlextResult[None]:  # noqa: ARG002 - stub implementation
+    def _validate_message(self, message: ProtobufMessage) -> FlextResult[None]:
         """Validate message against schema.
 
         Args:
@@ -242,7 +242,7 @@ class ProtobufField:
         *,
         required: bool = False,
         repeated: bool = False,
-        default: Any | None = None,  # noqa: ANN401 - stub implementation
+        default: object | None = None,
     ) -> None:
         """Initialize Protobuf field.
 
@@ -282,7 +282,7 @@ class ProtobufField:
         """Check if field is repeated."""
         return self._repeated
 
-    def validate(self, value: Any) -> FlextResult[None]:  # noqa: ANN401 - stub implementation
+    def validate(self, value: object) -> FlextResult[None]:
         """Validate field value.
 
         Args:
@@ -411,7 +411,6 @@ class ProtobufServiceProtocol(Protocol):
             FlextResult containing schema or error
 
         """
-        ...
 
     def get_response_schema(self, method: str) -> FlextResult[ProtobufSchema]:
         """Get response schema for method.
@@ -423,7 +422,6 @@ class ProtobufServiceProtocol(Protocol):
             FlextResult containing schema or error
 
         """
-        ...
 
 
 __all__ = [

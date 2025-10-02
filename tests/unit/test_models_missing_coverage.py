@@ -27,7 +27,7 @@ class TestFlextApiModelsMissingCoverage:
         query = FlextApiModels.HttpQuery()
         result = query.add_filter("", "value")
         assert result.is_failure
-        assert "Filter key cannot be empty" in result.error
+        assert result.error is not None and "Filter key cannot be empty" in result.error
 
     def test_url_model_validate_business_rules_empty_url(self) -> None:
         """Test URL model business rules validation with empty URL."""

@@ -13,9 +13,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from flext_core import FlextResult
+
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
-from flext_core import FlextResult
 
 
 class SSEProtocolPlugin(ProtocolPlugin):
@@ -39,12 +40,12 @@ class SSEProtocolPlugin(ProtocolPlugin):
     def __init__(
         self,
         retry_timeout: int = 3000,
-        connect_timeout: float = 30.0,  # noqa: ARG002 - reserved for future SSE implementation
-        read_timeout: float = 300.0,  # noqa: ARG002 - reserved for future SSE implementation
+        connect_timeout: float = 30.0,
+        read_timeout: float = 300.0,
         *,
         auto_reconnect: bool = True,
-        reconnect_max_attempts: int = 10,  # noqa: ARG002 - reserved for future SSE implementation
-        reconnect_backoff_factor: float = 1.5,  # noqa: ARG002 - reserved for future SSE implementation
+        reconnect_max_attempts: int = 10,
+        reconnect_backoff_factor: float = 1.5,
     ) -> None:
         """Initialize SSE protocol plugin stub.
 
@@ -76,8 +77,8 @@ class SSEProtocolPlugin(ProtocolPlugin):
 
     def send_request(
         self,
-        request: FlextApiModels.HttpRequest,  # noqa: ARG002 - reserved for future SSE implementation
-        **kwargs: float | str | bool,  # noqa: ARG002 - reserved for future SSE implementation
+        request: FlextApiModels.HttpRequest,
+        **kwargs: float | str | bool,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Send SSE request (stub - not implemented).
 

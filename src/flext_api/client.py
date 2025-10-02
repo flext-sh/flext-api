@@ -766,6 +766,9 @@ class FlextApiClient(FlextService[None]):
             FlextResult indicating success or failure of cleanup.
 
         """
+        if not self._initialized:
+            return FlextResult[None].fail("Client not started")
+
         self._connection_manager.close_connection()
         return self.lifecycle.stop_client()
 

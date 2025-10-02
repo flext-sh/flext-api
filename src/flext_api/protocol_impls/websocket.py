@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
-from typing import Any
 
 import websockets
 
@@ -28,8 +27,8 @@ from flext_core import FlextResult
 
 # Asyncio utilities
 # Synchronous alternatives for async functionality
-Task = None  # type: ignore[misc,assignment]
-create_task = None  # type: ignore[misc,assignment]
+Task = None
+create_task = None
 CancelledError = Exception
 sleep = time.sleep
 
@@ -100,7 +99,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
         self._reconnect_backoff_factor = reconnect_backoff_factor
 
         # Connection state
-        self._connection: Any | None = None
+        self._connection: object | None = None
         self._connected = False
         self._url: str = ""
         self._headers: dict[str, str] = {}

@@ -16,14 +16,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from typing import Any
 
 import httpx
+from flext_core import FlextConstants, FlextResult
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
 from flext_api.transports import HttpTransport
-from flext_core import FlextConstants, FlextResult
 
 
 class HttpProtocolPlugin(ProtocolPlugin):
@@ -178,7 +177,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
                 # Determine how to pass body based on Content-Type and body type
                 # For form data (dict with application/x-www-form-urlencoded), use data parameter
                 # For other content (str, bytes), use content parameter
-                request_kwargs: dict[str, Any] = {
+                request_kwargs: dict[str, object] = {
                     "method": method,
                     "url": url,
                     "headers": headers,
@@ -352,8 +351,8 @@ class HttpProtocolPlugin(ProtocolPlugin):
         self,
         request: FlextApiModels.HttpRequest,
         chunk_size: int = 8192,
-        **kwargs: float | str | bool,  # noqa: ARG002 - reserved for future streaming options
-    ) -> FlextResult[Any]:
+        **kwargs: float | str | bool,
+    ) -> FlextResult[object]:
         """Send streaming HTTP request.
 
         Args:
@@ -378,11 +377,11 @@ class HttpProtocolPlugin(ProtocolPlugin):
             },
         )
 
-        return FlextResult[Any].fail(
+        return FlextResult[object].fail(
             "Streaming not yet implemented (Phase 2 enhancement)"
         )
 
-    def get_protocol_info(self) -> dict[str, Any]:
+    def get_protocol_info(self) -> dict[str, object]:
         """Get protocol configuration information.
 
         Returns:

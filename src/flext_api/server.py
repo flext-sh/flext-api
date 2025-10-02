@@ -18,11 +18,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+
+from fastapi import FastAPI
+from flext_core import FlextLogger, FlextResult, FlextService
 
 from flext_api.middleware import BaseMiddleware
 from flext_api.plugins import ProtocolPlugin
-from flext_core import FlextLogger, FlextResult, FlextService
 
 
 class FlextApiServer(FlextService):
@@ -73,7 +74,7 @@ class FlextApiServer(FlextService):
 
         # Server state
         self._is_running = False
-        self._app: Any | None = None
+        self._app: object | None = None
 
         # Protocol handlers
         self._protocol_handlers: dict[str, ProtocolPlugin] = {}
@@ -82,13 +83,13 @@ class FlextApiServer(FlextService):
         self._middleware_pipeline: list[BaseMiddleware] = []
 
         # Route registry
-        self._routes: dict[str, dict[str, Any]] = {}
+        self._routes: dict[str, dict[str, object]] = {}
 
         # WebSocket connections
-        self._websocket_connections: dict[str, Any] = {}
+        self._websocket_connections: dict[str, object] = {}
 
         # SSE connections
-        self._sse_connections: dict[str, Any] = {}
+        self._sse_connections: dict[str, object] = {}
 
     def execute(self, *_args: object, **_kwargs: object) -> FlextResult[object]:
         """Execute server service lifecycle operations.
@@ -158,7 +159,7 @@ class FlextApiServer(FlextService):
         path: str,
         method: str,
         handler: Callable,
-        **options: Any,  # noqa: ANN401 - route options vary by framework
+        **options: object,
     ) -> FlextResult[None]:
         """Register route with server.
 
@@ -195,7 +196,7 @@ class FlextApiServer(FlextService):
         self,
         path: str,
         handler: Callable,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Register WebSocket endpoint.
 
@@ -233,7 +234,7 @@ class FlextApiServer(FlextService):
         self,
         path: str,
         handler: Callable,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Register SSE endpoint.
 
@@ -268,8 +269,8 @@ class FlextApiServer(FlextService):
     def register_graphql_endpoint(
         self,
         path: str = "/graphql",
-        schema: Any | None = None,
-        **options: Any,
+        schema: object | None = None,
+        **options: object,
     ) -> FlextResult[None]:
         """Register GraphQL endpoint.
 
@@ -406,22 +407,19 @@ class FlextApiServer(FlextService):
 
         return FlextResult[None].ok(None)
 
-    def _create_app(self) -> FlextResult[Any]:
+    def _create_app(self) -> FlextResult[object]:
         """Create FastAPI application.
 
         Returns:
             FlextResult containing FastAPI app or error
 
         """
-        try:
-            # Import FastAPI
-            try:
-                from fastapi import FastAPI
-            except ImportError:
-                return FlextResult[Any].fail(
-                    "FastAPI not installed. Install with: pip install fastapi"
-                )
+        if FastAPI is None:
+            return FlextResult[object].fail(
+                "FastAPI not installed. Install with: pip install fastapi"
+            )
 
+        try:
             # Create FastAPI app
             app = FastAPI(
                 title=self._title,
@@ -431,10 +429,10 @@ class FlextApiServer(FlextService):
                 openapi_url="/openapi.json",
             )
 
-            return FlextResult[Any].ok(app)
+            return FlextResult[object].ok(app)
 
         except Exception as e:
-            return FlextResult[Any].fail(f"Failed to create FastAPI app: {e}")
+            return FlextResult[object].fail(f"Failed to create FastAPI app: {e}")
 
     def _apply_middleware(self) -> FlextResult[None]:
         """Apply middleware to application.
@@ -502,7 +500,7 @@ class FlextApiServer(FlextService):
         except Exception as e:
             return FlextResult[None].fail(f"Failed to register routes: {e}")
 
-    def get_app(self) -> FlextResult[Any]:
+    def get_app(self) -> FlextResult[object]:
         """Get FastAPI application instance.
 
         Returns:
@@ -510,9 +508,11 @@ class FlextApiServer(FlextService):
 
         """
         if not self._app:
-            return FlextResult[Any].fail("Application not created. Call start() first.")
+            return FlextResult[object].fail(
+                "Application not created. Call start() first."
+            )
 
-        return FlextResult[Any].ok(self._app)
+        return FlextResult[object].ok(self._app)
 
     @property
     def is_running(self) -> bool:
@@ -530,7 +530,7 @@ class FlextApiServer(FlextService):
         return self._port
 
     @property
-    def routes(self) -> dict[str, dict[str, Any]]:
+    def routes(self) -> dict[str, dict[str, object]]:
         """Get registered routes."""
         return self._routes.copy()
 

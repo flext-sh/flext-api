@@ -11,7 +11,17 @@ from __future__ import annotations
 import pytest
 
 from flext_api.models import FlextApiModels
-from flext_api.protocol_impls.graphql import GraphQLProtocolPlugin
+
+# Optional GraphQL support - skip tests if gql library not installed
+try:
+    from flext_api.protocol_impls.graphql import GraphQLProtocolPlugin
+
+    HAS_GQL = True
+except ImportError:
+    GraphQLProtocolPlugin = None
+    HAS_GQL = False
+
+pytestmark = pytest.mark.skipif(not HAS_GQL, reason="gql library not installed")
 
 
 class TestGraphQLProtocolPluginSimple:

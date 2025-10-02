@@ -9,12 +9,9 @@ from __future__ import annotations
 import json
 import re
 import time
-from typing import TYPE_CHECKING, TypeVar
+from typing import TypeVar, cast
 from urllib.parse import urlparse, urlunparse
 
-from flext_api.constants import FlextApiConstants
-from flext_api.models import FlextApiModels
-from flext_api.typings import FlextApiTypes
 from flext_core import (
     FlextConstants,
     FlextModels,
@@ -22,9 +19,9 @@ from flext_core import (
     FlextUtilities,
 )
 
-# Use TYPE_CHECKING to avoid circular imports at runtime
-if TYPE_CHECKING:
-    from flext_api.client import FlextApiClient
+# FlextApiClient import moved inside functions to avoid circular import
+from flext_api.models import FlextApiModels
+from flext_api.typings import FlextApiTypes
 
 # TypeVar for generic batch processing
 T = TypeVar("T")
@@ -120,9 +117,10 @@ class FlextApiUtilities(FlextUtilities):
             data: list[object] | None,
             *,
             page: int = 1,
-            page_size: int = FlextApiConstants.DEFAULT_PAGE_SIZE,
+            page_size: int | None = None,
             total: int | None = None,
             message: str | None = None,
+            config: object | None = None,
         ) -> FlextResult[dict[str, object]]:
             """Build paginated response using flext-core patterns.
 
@@ -131,15 +129,30 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
+                # Get configuration values from config or use defaults
+                if config and hasattr(config, "default_page_size"):
+                    default_page_size = config.default_page_size
+                else:
+                    default_page_size = 20  # fallback default
+
+                if config and hasattr(config, "max_page_size"):
+                    max_page_size = config.max_page_size
+                else:
+                    max_page_size = 1000  # fallback default
+
+                # Use provided page_size or default from config
+                if page_size is None:
+                    page_size = default_page_size
+
                 if page < 1:
                     return FlextResult[dict[str, object]].fail("Page must be >= 1")
                 if page_size < 1:
                     return FlextResult[dict[str, object]].fail(
                         "Page size must be >= 1",
                     )
-                if page_size > FlextApiConstants.MAX_PAGE_SIZE:
+                if page_size > max_page_size:
                     return FlextResult[dict[str, object]].fail(
-                        f"Page size cannot exceed {FlextApiConstants.MAX_PAGE_SIZE}",
+                        f"Page size cannot exceed {max_page_size}",
                     )
 
                 if data is None:
@@ -179,8 +192,9 @@ class FlextApiUtilities(FlextUtilities):
                 FlextResult containing validated URL or error message.
 
             """
-            # Check URL length first
-            if len(url) > FlextApiConstants.MAX_URL_LENGTH:
+            # Check URL length first - using reasonable default since URL validation
+            # should work with any reasonable length
+            if len(url) > 2048:  # Reasonable URL length limit
                 return FlextResult[str].fail("URL is too long")
 
             # Check for invalid ports before delegating to flext-core
@@ -191,7 +205,7 @@ class FlextApiUtilities(FlextUtilities):
             port_match = re.search(r":(\d+)(?:/|$|\?)", url)
             if port_match:
                 port = int(port_match.group(1))
-                if port > FlextApiConstants.MAX_PORT:
+                if port > 65535:  # Standard maximum port number
                     return FlextResult[str].fail(f"Invalid port {port}")
 
             # Use FlextModels centralized validation with HTTP-specific rules
@@ -360,17 +374,18 @@ class FlextApiUtilities(FlextUtilities):
                 )
 
             # Extract config data - check for model_dump() first, then __dict__
-            config_dict: dict[str, object] | None = None
+            config_dict: FlextApiTypes.Core.ConfigDict | None = None
             if hasattr(config, "model_dump") and callable(
                 getattr(config, "model_dump")
             ):
-                model_dump_result: dict[str, object] = config.model_dump()
-                if isinstance(model_dump_result, dict):
-                    config_dict = model_dump_result
+                # Use getattr to access model_dump method safely
+                model_dump_method = getattr(config, "model_dump")
+                model_dump_result: FlextApiTypes.Core.ConfigDict = model_dump_method()
+                config_dict = model_dump_result
             elif hasattr(config, "__dict__"):
-                config_dict = config.__dict__
+                config_dict = cast("FlextApiTypes.Core.ConfigDict", config.__dict__)
             elif isinstance(config, dict):
-                config_dict = config
+                config_dict = cast("FlextApiTypes.Core.ConfigDict", config)
             else:
                 return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
                     "Configuration must be dict-like or have attributes",
@@ -532,7 +547,7 @@ class FlextApiUtilities(FlextUtilities):
         return bool(value)
 
     @staticmethod
-    def safe_json_parse(json_str: str) -> dict[str, object] | None:
+    def safe_json_parse(json_string: str) -> FlextResult[dict[str, object]]:
         """Safely parse JSON string to dictionary - delegates to flext-core.
 
         Returns:
@@ -540,15 +555,15 @@ class FlextApiUtilities(FlextUtilities):
 
         """
         try:
-            parsed_data: object = json.loads(json_str)
+            parsed_data: object = json.loads(json_string)
             if isinstance(parsed_data, dict):
-                return parsed_data
-            return None
-        except Exception:
-            return None
+                return FlextResult[dict[str, object]].ok(parsed_data)
+            return FlextResult[dict[str, object]].fail("JSON is not a dictionary")
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"JSON parsing failed: {e}")
 
     @staticmethod
-    def safe_json_stringify(data: object) -> str | None:
+    def safe_json_stringify(data: dict[str, object]) -> FlextResult[str]:
         """Safely convert object to JSON string - delegates to flext-core.
 
         Returns:
@@ -556,9 +571,9 @@ class FlextApiUtilities(FlextUtilities):
 
         """
         try:
-            return json.dumps(data)
-        except (TypeError, ValueError):
-            return None
+            return FlextResult[str].ok(json.dumps(data))
+        except (TypeError, ValueError) as e:
+            return FlextResult[str].fail(f"JSON serialization failed: {e}")
 
     @staticmethod
     def safe_int_conversion(value: str | int) -> int | None:
@@ -752,11 +767,13 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def create_production_client(
             base_url: str,
+            config: object | None = None,
         ) -> FlextResult[FlextApiClient]:
             """Create production-ready HTTP client with enterprise settings.
 
             Args:
                 base_url: Base URL for the API client
+                config: Configuration instance with timeout/max_retries settings
 
             Returns:
                 FlextResult containing configured client or error.
@@ -766,13 +783,17 @@ class FlextApiUtilities(FlextUtilities):
                 # Dynamic import to avoid circular dependency
                 from flext_api.client import FlextApiClient
 
+                # Get configuration values from config or use defaults
+                timeout = getattr(config, "timeout", 30) if config else 30
+                max_retries = getattr(config, "max_retries", 3) if config else 3
+
                 client = FlextApiClient(
                     base_url=base_url,
-                    timeout=FlextApiConstants.PRODUCTION_TIMEOUT,
-                    max_retries=FlextApiConstants.DEFAULT_MAX_RETRIES,
+                    timeout=timeout,
+                    max_retries=max_retries,
                     headers={
                         "User-Agent": "FlextApiClient-Production/1.0.0",
-                        "Accept": FlextApiConstants.DEFAULT_ACCEPT,
+                        "Accept": FlextConstants.HTTP_DEFAULT_ACCEPT,
                         "Cache-Control": "no-cache",
                     },
                 )
@@ -785,11 +806,13 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def create_development_client(
             base_url: str,
+            config: object | None = None,
         ) -> FlextResult[FlextApiClient]:
             """Create development HTTP client with extended timeouts.
 
             Args:
                 base_url: Base URL for the API client
+                config: Configuration instance with timeout settings
 
             Returns:
                 FlextResult containing configured client or error.
@@ -799,13 +822,19 @@ class FlextApiUtilities(FlextUtilities):
                 # Dynamic import to avoid circular dependency
                 from flext_api.client import FlextApiClient
 
+                # Get configuration values from config or use defaults
+                timeout = (
+                    getattr(config, "timeout", 60) if config else 60
+                )  # Longer timeout for dev
+                max_retries = getattr(config, "max_retries", 1) if config else 1
+
                 client = FlextApiClient(
                     base_url=base_url,
-                    timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT,
-                    max_retries=1,
+                    timeout=timeout,
+                    max_retries=max_retries,
                     headers={
                         "User-Agent": "FlextApiClient-Dev/1.0.0",
-                        "Accept": FlextApiConstants.DEFAULT_ACCEPT,
+                        "Accept": FlextConstants.HTTP_DEFAULT_ACCEPT,
                     },
                 )
                 return FlextResult[FlextApiClient].ok(client)
@@ -817,11 +846,13 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def create_testing_client(
             base_url: str,
+            config: object | None = None,
         ) -> FlextResult[FlextApiClient]:
             """Create testing HTTP client with minimal timeouts.
 
             Args:
                 base_url: Base URL for the API client
+                config: Configuration instance with timeout settings
 
             Returns:
                 FlextResult containing configured client or error.
@@ -831,13 +862,21 @@ class FlextApiUtilities(FlextUtilities):
                 # Dynamic import to avoid circular dependency
                 from flext_api.client import FlextApiClient
 
+                # Get configuration values from config or use defaults
+                timeout = (
+                    getattr(config, "timeout", 5) if config else 5
+                )  # Short timeout for testing
+                max_retries = (
+                    getattr(config, "max_retries", 0) if config else 0
+                )  # No retries for testing
+
                 client = FlextApiClient(
                     base_url=base_url,
-                    timeout=FlextApiConstants.TESTING_TIMEOUT,
-                    max_retries=FlextApiConstants.MIN_RETRIES,
+                    timeout=timeout,
+                    max_retries=max_retries,
                     headers={
                         "User-Agent": "FlextApiClient-Test/1.0.0",
-                        "Accept": FlextApiConstants.DEFAULT_ACCEPT,
+                        "Accept": FlextConstants.HTTP_DEFAULT_ACCEPT,
                     },
                 )
                 return FlextResult[FlextApiClient].ok(client)
@@ -849,11 +888,13 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def create_monitoring_client(
             base_url: str,
+            config: object | None = None,
         ) -> FlextResult[FlextApiClient]:
             """Create monitoring HTTP client for health checks and metrics.
 
             Args:
                 base_url: Base URL for the API client
+                config: Configuration instance with timeout settings
 
             Returns:
                 FlextResult containing configured client or error.
@@ -863,13 +904,19 @@ class FlextApiUtilities(FlextUtilities):
                 # Dynamic import to avoid circular dependency
                 from flext_api.client import FlextApiClient
 
+                # Get configuration values from config or use defaults
+                timeout = (
+                    getattr(config, "timeout", 10) if config else 10
+                )  # Moderate timeout for monitoring
+                max_retries = getattr(config, "max_retries", 1) if config else 1
+
                 client = FlextApiClient(
                     base_url=base_url,
-                    timeout=FlextApiConstants.MONITORING_TIMEOUT,
-                    max_retries=1,
+                    timeout=timeout,
+                    max_retries=max_retries,
                     headers={
                         "User-Agent": "FlextApiClient-Monitor/1.0.0",
-                        "Accept": FlextApiConstants.DEFAULT_ACCEPT,
+                        "Accept": FlextConstants.HTTP_DEFAULT_ACCEPT,
                         "X-Monitoring": FlextConstants.Mixins.STRING_TRUE,
                     },
                 )
@@ -893,12 +940,14 @@ class FlextApiUtilities(FlextUtilities):
         def create_for_environment(
             environment: str,
             base_url: str,
-        ) -> FlextResult[object]:
+            config: object | None = None,
+        ) -> FlextResult[FlextApiClient]:
             """Create client for specified environment.
 
             Args:
                 environment: Environment name (production, development, testing, monitoring)
                 base_url: Base URL for the API client
+                config: Configuration instance with timeout settings
 
             Returns:
                 FlextResult containing configured client or error.
@@ -906,17 +955,19 @@ class FlextApiUtilities(FlextUtilities):
             """
             if environment == "production":
                 return FlextApiUtilities.ClientFactory.create_production_client(
-                    base_url
+                    base_url, config
                 )
             if environment == "development":
                 return FlextApiUtilities.ClientFactory.create_development_client(
-                    base_url
+                    base_url, config
                 )
             if environment == "testing":
-                return FlextApiUtilities.ClientFactory.create_testing_client(base_url)
+                return FlextApiUtilities.ClientFactory.create_testing_client(
+                    base_url, config
+                )
             if environment == "monitoring":
                 return FlextApiUtilities.ClientFactory.create_monitoring_client(
-                    base_url
+                    base_url, config
                 )
             return FlextResult[object].fail(
                 f"Unsupported environment: {environment}. "
@@ -1018,8 +1069,8 @@ class FlextApiUtilities(FlextUtilities):
                 if hasattr(config, "base_url") and hasattr(config, "timeout"):
                     connection_pool: FlextApiTypes.Core.ConnectionDict = {
                         "active": True,
-                        "url": config.base_url,
-                        "timeout": config.timeout,
+                        "url": getattr(config, "base_url"),
+                        "timeout": getattr(config, "timeout"),
                         "max_retries": getattr(config, "max_retries", 3),
                         "headers": getattr(config, "headers", {}),
                     }
