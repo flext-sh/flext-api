@@ -7,8 +7,6 @@ from __future__ import annotations
 
 from unittest.mock import Mock
 
-import pytest
-
 from flext_api.protocols import FlextApiProtocols
 from flext_core import FlextResult
 
@@ -29,19 +27,18 @@ class TestFlextApiProtocols:
         mock_client.put.return_value = mock_response
         mock_client.delete.return_value = mock_response
 
-        # Test request method
+        # Test request method (for )
         result = mock_client.request(
             method="GET",
-            url="https://example.com/api",
+            url="https://example.com/api?param=value",
             headers={"Content-Type": "application/json"},
-            params={"param": "value"},
             data={"key": "value"},
             timeout=30.0,
         )
         assert result.is_success is True
         mock_client.request.assert_called_once()
 
-        # Test HTTP methods
+        # Test HTTP methods (for )
         mock_client.get("https://example.com/api")
         mock_client.post("https://example.com/api", data={"key": "value"})
         mock_client.put("https://example.com/api", data={"key": "value"})
@@ -272,8 +269,7 @@ class TestFlextApiProtocols:
         assert mock_metrics.record_error.called
         assert mock_metrics.get_metrics.called
 
-    @pytest.mark.asyncio
-    async def test_middleware_protocol_compliance(self) -> None:
+    def test_middleware_protocol_compliance(self) -> None:
         """Test MiddlewareProtocol compliance with mock implementation."""
         mock_middleware = Mock(spec=FlextApiProtocols.MiddlewareProtocol)
 
@@ -288,11 +284,11 @@ class TestFlextApiProtocols:
             data=mock_response_data
         )
 
-        # Test async methods
-        result = await mock_middleware.process_request(mock_request_data)
+        # Test methods
+        result = mock_middleware.process_request(mock_request_data)
         assert result.is_success is True
 
-        response_result = await mock_middleware.process_response(mock_response_data)
+        response_result = mock_middleware.process_response(mock_response_data)
         assert response_result.is_success is True
 
         # Verify all methods were called

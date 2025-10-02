@@ -26,24 +26,22 @@ def enable_external_calls() -> None:
     os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = "0"
 
 
-@pytest.mark.asyncio
-async def test_real_http_get_request() -> None:
+def test_real_http_get_request() -> None:
     """Test real HTTP GET request using httpbin.org."""
     client = FlextApiClient(base_url="https://httpbin.org", timeout=10, max_retries=2)
 
     try:
-        res = await client.get("/get?test_param=test_value")
+        res = client.get("/get?test_param=test_value")
         assert res.is_success
         response = res.value
         assert response.status_code in {200, 400, 404}
         assert isinstance(response.headers, dict)
 
     finally:
-        await client.close()
+        client.close()
 
 
-@pytest.mark.asyncio
-async def test_real_http_headers_and_user_agent() -> None:
+def test_real_http_headers_and_user_agent() -> None:
     """Test real HTTP request with custom headers."""
     client = FlextApiClient(
         config="https://httpbin.org",
@@ -52,18 +50,17 @@ async def test_real_http_headers_and_user_agent() -> None:
 
     try:
         # Test with headers endpoint
-        res = await client.get("/headers")
+        res = client.get("/headers")
         assert res.is_success
         response = res.value
         assert isinstance(response.headers, dict)
         assert len(response.headers) >= 0
 
     finally:
-        await client.close()
+        client.close()
 
 
-@pytest.mark.asyncio
-async def test_real_client_factory_function() -> None:
+def test_real_client_factory_function() -> None:
     """Test real HTTP using client factory function."""
     client = FlextApiClient(
         config={
@@ -75,7 +72,7 @@ async def test_real_client_factory_function() -> None:
 
     try:
         # Test that factory-created client works
-        response = await client.get("/get")
+        response = client.get("/get")
 
         assert response is not None
         # Basic success validation
@@ -86,7 +83,7 @@ async def test_real_client_factory_function() -> None:
         # Note: headers are not directly accessible as a public attribute
 
     finally:
-        await client.close()
+        client.close()
 
 
 def test_client_configuration_validation() -> None:

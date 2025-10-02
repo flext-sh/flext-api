@@ -38,9 +38,9 @@
 class ClientConfig(FlextModels.Value):
     max_retries: int = 3  # Configured but not used
 
-async def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
+def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
     # Direct httpx call - no retry logic whatsoever
-    response = await self._client.request(...)
+    response = self._client.request(...)
     return FlextResult[HttpResponse].ok(response)
 ```
 
@@ -48,12 +48,12 @@ async def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
 
 ### 2. CONNECTION POOLING: Default httpx Settings Only 🔧
 
-**Evidence**: Basic httpx.AsyncClient with no pool optimization
+**Evidence**: Basic httpx.Client with no pool optimization
 **Location**: `client.py` lines 45-50 - Default httpx client instantiation
 
 ```python
 # ❌ CURRENT: Basic client, no optimization
-self._client = httpx.AsyncClient(
+self._client = httpx.Client(
     base_url=base_url,
     timeout=timeout  # Only basic timeout, no pool config
 )
@@ -82,10 +82,10 @@ class FlextApiPlugins:
 
 ```python
 # ❌ CURRENT: HTTP/1.1 only
-self._client = httpx.AsyncClient(base_url=base_url, timeout=timeout)
+self._client = httpx.Client(base_url=base_url, timeout=timeout)
 
 # ✅ TARGET: HTTP/2 enabled
-self._client = httpx.AsyncClient(
+self._client = httpx.Client(
     base_url=base_url,
     timeout=timeout,
     http2=True,  # Missing in current implementation
@@ -120,10 +120,10 @@ class PaginationConfig(FlextModels.Value):
 - **Status Code Selection**: Retry on `[429, 500, 502, 503, 504]` by default
 - **Production Configuration**: `total=4, status_forcelist=[429, 500, 502, 503, 504], backoff_factor=0.1`
 
-#### **Tenacity**: Modern Async Retry Library
+#### **Tenacity**: Modern Retry Library
 
-- **AsyncRetrying**: Full async support with context managers and decorators
-- **HTTPX Integration**: Seamless integration with httpx.AsyncClient
+- **Retrying**: Full support with context managers and decorators
+- **HTTPX Integration**: Seamless integration with httpx.Client
 - **Production Pattern**: `@retry(stop=stop_after_attempt(3), wait=wait_exponential())`
 
 #### **HTTPX Connection Pooling**: Performance Standards
@@ -145,11 +145,11 @@ class PaginationConfig(FlextModels.Value):
 ### 1. FlextApiRetryClient - Modern Retry Implementation
 
 ```python
-from tenacity import AsyncRetrying, retry, wait_exponential, stop_after_attempt
+from tenacity import Retrying, retry, wait_exponential, stop_after_attempt
 from flext_core import FlextService, FlextResult
 
 class FlextApiRetryClient(FlextService):
-    """Production HTTP client with tenacity async retry integration."""
+    """Production HTTP client with tenacity retry integration."""
 
     class _RetryConfiguration:
         """Retry configuration using 2025 best practices."""
@@ -157,7 +157,7 @@ class FlextApiRetryClient(FlextService):
         @staticmethod
         def create_production_retry() -> object:
             """Create production retry configuration."""
-            return AsyncRetrying(
+            return Retrying(
                 stop=stop_after_attempt(3),
                 wait=wait_exponential(multiplier=1, min=1, max=10),
                 retry_error_cls=Exception,  # Configurable retry conditions
@@ -168,16 +168,16 @@ class FlextApiRetryClient(FlextService):
         """HTTP request execution with retry logic."""
 
         @staticmethod
-        async def execute_with_retry(
+        def execute_with_retry(
             client: object,
             request: HttpRequest,
             retry_config: object
         ) -> FlextResult[HttpResponse]:
-            """Execute HTTP request with tenacity async retry."""
-            # IMPLEMENTATION: AsyncRetrying context manager with httpx
-            async for attempt in retry_config:
+            """Execute HTTP request with tenacity retry."""
+            # IMPLEMENTATION: Retrying context manager with httpx
+            for attempt in retry_config:
                 with attempt:
-                    response = await client.request(...)
+                    response = client.request(...)
                     if response.status_code >= 500:  # Retry server errors
                         raise HttpServerException(f"Server error: {response.status_code}")
                     return FlextResult[HttpResponse].ok(response)
@@ -211,26 +211,26 @@ class FlextApiConnectionPool(FlextService):
         def create_http2_client(
             base_url: str,
             limits: httpx.Limits
-        ) -> httpx.AsyncClient:
+        ) -> httpx.Client:
             """Create HTTP/2 enabled client with connection pooling."""
-            return httpx.AsyncClient(
+            return httpx.Client(
                 base_url=base_url,
                 limits=limits,
                 http2=True,  # Enable HTTP/2 multiplexing
                 timeout=httpx.Timeout(30.0)
             )
 
-    async def create_optimized_client(
+    def create_optimized_client(
         self,
         base_url: str
-    ) -> FlextResult[httpx.AsyncClient]:
+    ) -> FlextResult[httpx.Client]:
         """Create production-optimized HTTP client."""
         try:
             limits = self._PoolConfiguration.create_production_pool()
             client = self._Http2Client.create_http2_client(base_url, limits)
-            return FlextResult[httpx.AsyncClient].ok(client)
+            return FlextResult[httpx.Client].ok(client)
         except Exception as e:
-            return FlextResult[httpx.AsyncClient].fail(f"Client creation failed: {e}")
+            return FlextResult[httpx.Client].fail(f"Client creation failed: {e}")
 ```
 
 ### 3. FlextApiCircuitBreaker - Fault Tolerance Implementation
@@ -247,24 +247,24 @@ class FlextApiCircuitBreaker(FlextService):
 
         @staticmethod
         @circuit(failure_threshold=5, recovery_timeout=30)
-        async def protected_http_request(
-            client: httpx.AsyncClient,
+        def protected_http_request(
+            client: httpx.Client,
             request: HttpRequest
         ) -> HttpResponse:
             """HTTP request protected by circuit breaker."""
-            response = await client.request(...)
+            response = client.request(...)
             if response.status_code >= 500:
                 raise Exception(f"Server error: {response.status_code}")
             return response
 
-    async def request_with_circuit_breaker(
+    def request_with_circuit_breaker(
         self,
-        client: httpx.AsyncClient,
+        client: httpx.Client,
         request: HttpRequest
     ) -> FlextResult[HttpResponse]:
         """Execute HTTP request with circuit breaker protection."""
         try:
-            response = await self._CircuitConfiguration.protected_http_request(client, request)
+            response = self._CircuitConfiguration.protected_http_request(client, request)
             return FlextResult[HttpResponse].ok(response)
         except Exception as e:
             return FlextResult[HttpResponse].fail(f"Circuit breaker: {e}")
@@ -279,11 +279,11 @@ from typing import Protocol
 class MiddlewarePlugin(Protocol):
     """Middleware plugin protocol for HTTP processing."""
 
-    async def process_request(self, request: HttpRequest) -> FlextResult[HttpRequest]:
+    def process_request(self, request: HttpRequest) -> FlextResult[HttpRequest]:
         """Process HTTP request in middleware pipeline."""
         ...
 
-    async def process_response(self, response: HttpResponse) -> FlextResult[HttpResponse]:
+    def process_response(self, response: HttpResponse) -> FlextResult[HttpResponse]:
         """Process HTTP response in middleware pipeline."""
         ...
 
@@ -293,7 +293,7 @@ class FlextApiMiddleware(FlextService):
     class _AuthenticationMiddleware:
         """Authentication middleware for HTTP requests."""
 
-        async def process_request(self, request: HttpRequest) -> FlextResult[HttpRequest]:
+        def process_request(self, request: HttpRequest) -> FlextResult[HttpRequest]:
             """Add authentication headers to HTTP request."""
             # IMPLEMENTATION: Bearer token, API key, OAuth integration
             pass
@@ -301,12 +301,12 @@ class FlextApiMiddleware(FlextService):
     class _LoggingMiddleware:
         """Logging middleware for HTTP operations."""
 
-        async def process_request(self, request: HttpRequest) -> FlextResult[HttpRequest]:
+        def process_request(self, request: HttpRequest) -> FlextResult[HttpRequest]:
             """Log HTTP request with sanitized headers."""
             # IMPLEMENTATION: Structured logging with request tracking
             pass
 
-    async def execute_middleware_pipeline(
+    def execute_middleware_pipeline(
         self,
         request: HttpRequest,
         plugins: list[MiddlewarePlugin]
@@ -324,9 +324,9 @@ class FlextApiMiddleware(FlextService):
 
 **Priority**: IMMEDIATE - Production Blocking
 
-1. **[ ] Implement Tenacity Async Retry**
+1. **[ ] Implement Tenacity Retry**
    - Add `tenacity` dependency to pyproject.toml
-   - Implement `FlextApiRetryClient` with AsyncRetrying patterns
+   - Implement `FlextApiRetryClient` with Retrying patterns
    - Replace direct httpx calls with retry-wrapped requests
 
 2. **[ ] Fix Field Name Mismatches**
@@ -345,7 +345,7 @@ class FlextApiMiddleware(FlextService):
 
 1. **[ ] HTTP/2 Connection Pooling**
    - Implement `FlextApiConnectionPool` with optimized limits
-   - Enable HTTP/2: `httpx.AsyncClient(http2=True, limits=...)`
+   - Enable HTTP/2: `httpx.Client(http2=True, limits=...)`
    - Configure production pool: `max_connections=100, keepalive=20`
 
 2. **[ ] Connection Pool Optimization**
@@ -449,7 +449,7 @@ class FlextApiMiddleware(FlextService):
 
 ### Modern HTTP Client Standards
 
-**MANDATE**: Implement 2025 HTTP client best practices including tenacity async retry, httpx connection pooling, HTTP/2 multiplexing, and circuit breaker fault tolerance
+**MANDATE**: Implement 2025 HTTP client best practices including tenacity retry, httpx connection pooling, HTTP/2 multiplexing, and circuit breaker fault tolerance
 
 ### FLEXT Ecosystem Integration
 

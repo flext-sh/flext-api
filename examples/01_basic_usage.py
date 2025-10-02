@@ -72,12 +72,12 @@ def example_storage_usage() -> None:
     storage = FlextApiStorage()
 
     # Set data using FlextResult pattern
-    # CacheValue é tuple[object, FlextApiTypes.HttpHeaders, int]
-    cache_value: tuple[object, dict[str, str], int] = (
-        {"message": "Hello FlextAPI!"},
-        {},
-        200,
-    )
+    # CacheValue as dict for JSON compatibility
+    cache_value: dict[str, object] = {
+        "data": {"message": "Hello FlextAPI!"},
+        "headers": {},
+        "status_code": 200,
+    }
     set_result = storage.set("example_key", cache_value, timeout=300)
 
     if set_result.is_success:
@@ -167,21 +167,23 @@ def example_models_usage() -> None:
         print(f"❌ Model creation failed: {e}")
 
 
-def example_async_operations() -> None:
-    """Demonstrate async operations with refactored classes."""
-    print("\n=== Async Operations Example ===")
+def example_batch_operations() -> None:
+    """Demonstrate batch operations with refactored classes."""
+    print("\n=== Batch Operations Example ===")
 
-    # Create storage for async operations
+    # Create storage for batch operations
     storage = FlextApiStorage()
 
     try:
-        # Example async-style operations
-        print("✅ Storage ready for async operations")
+        # Example batch operations
+        print("✅ Storage ready for batch operations")
 
         # Set multiple values
         keys = ["key1", "key2", "key3"]
         for i, key in enumerate(keys):
-            result = storage.set(key, {"id": i + 1, "name": f"item_{i + 1}"})
+            result = storage.set(
+                key, {"id": i + 1, "name": f"item_{i + 1}", "status_code": 200}
+            )
             if result.is_success:
                 print(f"✅ Set {key} successfully")
             else:
@@ -195,7 +197,7 @@ def example_async_operations() -> None:
             print(f"❌ Failed to get cache size: {size_result.error}")
 
     except Exception as e:
-        print(f"❌ Async operations failed: {e}")
+        print(f"❌ Batch operations failed: {e}")
 
 
 def main() -> None:
@@ -211,15 +213,13 @@ def main() -> None:
     example_utilities_usage()
     example_app_creation()
     example_models_usage()
-
-    # Async example
-    print("\n=== Running Async Examples ===")
-    example_async_operations()
+    example_batch_operations()
 
     print("\n🎉 All examples completed successfully using refactored classes!")
     print("✅ FlextResult pattern used throughout")
     print("✅ flext-core compliance maintained")
     print("✅ No legacy APIs or helpers used")
+    print("✅ Synchronous architecture - no /await needed")
 
 
 if __name__ == "__main__":

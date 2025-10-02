@@ -17,15 +17,13 @@ from flext_api import (
 class TestApiWorkflowE2E:
     """End-to-end tests for complete API workflows."""
 
-    @pytest.mark.asyncio
-    async def test_complete_api_workflow(self) -> None:
+    def test_complete_api_workflow(self) -> None:
         """Test complete workflow from API creation to HTTP operations."""
         # Simple e2e test
         api_instance = FlextApiClient()
         assert api_instance is not None
 
-    @pytest.mark.asyncio
-    async def test_http_client_workflow(self) -> None:
+    def test_http_client_workflow(self) -> None:
         """Test HTTP client workflow."""
         # Simple client workflow test
         client = FlextApiClient(base_url="https://httpbin.org")

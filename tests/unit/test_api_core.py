@@ -153,15 +153,15 @@ class TestFlextApiClient:
         assert client1 is not client2
         assert client1.base_url != client2.base_url
 
-    def test_client_async_interface_methods(self) -> None:
-        """Test client async interface methods exist."""
+    def test_client_interface_methods(self) -> None:
+        """Test client interface methods exist."""
         # Use FlextTestsDomains for configuration - ACESSO DIRETO
         config_data = FlextTestsDomains.create_configuration()
         base_url = str(config_data.get("base_url", "https://httpbin.org"))
 
         client = FlextApiClient(base_url=base_url)
 
-        # Verify async methods exist
+        # Verify methods exist
         assert hasattr(client, "request")
         assert hasattr(client, "get")
         assert hasattr(client, "post")
@@ -262,11 +262,10 @@ class TestFlextApiClient:
         assert client1.timeout == client2.timeout
         assert client1.max_retries == client2.max_retries
 
-    @pytest.mark.asyncio
-    async def test_client_type_validation_with_flext_tests(self) -> None:
+    def test_client_type_validation_with_flext_tests(self) -> None:
         """Test client is proper type using flext_tests validation."""
         # Create client using factory
-        result = await FlextApiClient.create_flext_api()
+        result = FlextApiClient.create_flext_api()
         assert result.is_success
 
         api_client = result.value["client"]

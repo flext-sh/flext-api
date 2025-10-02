@@ -51,6 +51,7 @@ class FlextApiConstants(FlextConstants):
 
     # API-specific header defaults (customize flext-core defaults)
     DEFAULT_USER_AGENT: ClassVar[str] = "FlextAPI/0.9.0"
+    USER_AGENT_HEADER: ClassVar[str] = "User-Agent"
 
     # Timeout constants
     MIN_TIMEOUT: ClassVar[float] = 0.0

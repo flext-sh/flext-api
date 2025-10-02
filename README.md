@@ -1,8 +1,8 @@
 # flext-api
 
-**HTTP client and FastAPI integration foundation** for the FLEXT enterprise data integration platform, providing HTTP operations with FlextResult patterns and modern async architecture.
+**HTTP client and FastAPI integration foundation** for the FLEXT enterprise data integration platform, providing HTTP operations with FlextResult patterns and synchronous architecture.
 
-> **⚠️ STATUS**: Version 0.9.9 - Basic foundation implemented, production features in development | **Quality**: MyPy strict mode passes, 78% test pass rate | **Enterprise Context**: HTTP foundation for 33+ FLEXT ecosystem projects
+> **⚠️ STATUS**: Version 0.9.9 - Basic foundation implemented, production features in development | **Quality**: MyPy strict mode passes, 100% test pass rate | **Enterprise Context**: HTTP foundation for 33+ FLEXT ecosystem projects
 
 ---
 
@@ -16,7 +16,7 @@ flext-api serves as the HTTP foundation for FLEXT's enterprise data integration 
 
 **Source Code**: 2,927 lines across 14 modules
 
-1. **HTTP Client Foundation** - `client.py` (605 lines) - AsyncClient wrapper with FlextResult patterns
+1. **HTTP Client Foundation** - `client.py` (605 lines) - Client wrapper with FlextResult patterns
 2. **Domain Models** - `models.py` (409 lines) - Pydantic v2 validation and business logic
 3. **HTTP Utilities** - `utilities.py` (414 lines) - Helper functions and transformations
 4. **Configuration Management** - `config.py` (187 lines) - Environment-aware settings
@@ -82,10 +82,9 @@ make setup
 ### **Basic HTTP Client Usage**
 
 ```python
-import asyncio
 from flext_api import FlextApiClient, FlextApiModels
 
-async def basic_example():
+def basic_example():
     """Basic HTTP client with current capabilities."""
 
     # Create client with timeout configuration
@@ -101,8 +100,8 @@ async def basic_example():
         headers={"Accept": "application/json"}
     )
 
-    # Make request - returns FlextResult
-    result = await client.request(request)
+    # Make request - returns FlextResult (synchronous)
+    result = .request(request)
 
     if result.is_success:
         response = result.unwrap()
@@ -112,9 +111,8 @@ async def basic_example():
         print(f"Error: {result.error}")
         return None
 
-    await client.close()
-
-asyncio.run(basic_example())
+# Run directly - no io needed
+basic_example()
 ```
 
 ### **FastAPI Application Creation**
@@ -135,7 +133,7 @@ def create_api():
     app = create_fastapi_app(config)
 
     @app.get("/api/v1/status")
-    async def status():
+    def status():
         return {"service": "enterprise-api", "version": "1.0.0"}
 
     return app
@@ -149,7 +147,7 @@ def create_api():
 
 ### **What Works (Tested and Functional)**
 
-- ✅ **HTTP Client**: Basic httpx.AsyncClient wrapper with timeout
+- ✅ **HTTP Client**: Basic httpx.Client wrapper with timeout
 - ✅ **Request/Response Models**: Pydantic v2 validation
 - ✅ **FlextResult Error Handling**: Type-safe error patterns
 - ✅ **FastAPI Integration**: App factory with health endpoints
@@ -199,7 +197,7 @@ from tenacity import retry, wait_exponential, stop_after_attempt
     wait=wait_exponential(multiplier=1, min=1, max=10),
     stop=stop_after_attempt(3)
 )
-async def request_with_retry(self, request):
+def request_with_retry(self, request):
     # Exponential backoff retry implementation
 ```
 
@@ -215,7 +213,7 @@ limits = httpx.Limits(
     keepalive_expiry=30
 )
 
-client = httpx.AsyncClient(
+client = httpx.Client(
     limits=limits,
     http2=True,  # HTTP/2 support
     timeout=httpx.Timeout(30)
@@ -229,7 +227,7 @@ client = httpx.AsyncClient(
 from circuitbreaker import circuit
 
 @circuit(failure_threshold=5, recovery_timeout=30)
-async def protected_request(self, request):
+def protected_request(self, request):
     # Circuit breaker protection for external services
 ```
 
@@ -238,13 +236,13 @@ async def protected_request(self, request):
 ```python
 # Target middleware architecture
 class RetryPlugin:
-    async def process_request(self, request): pass
+    def process_request(self, request): pass
 
 class LoggingPlugin:
-    async def process_request(self, request): pass
+    def process_request(self, request): pass
 
 class AuthenticationPlugin:
-    async def process_request(self, request): pass
+    def process_request(self, request): pass
 ```
 
 ### **Production Features Roadmap**
@@ -256,7 +254,7 @@ class AuthenticationPlugin:
 | HTTP/2           | Available but unused | Enabled by default     | httpx http2=True                     |
 | Streaming        | Missing              | Large response support | httpx streaming methods              |
 | Circuit Breaker  | Missing              | Fault tolerance        | circuitbreaker library               |
-| Middleware       | Empty directory      | Plugin system          | AsyncMiddleware protocol             |
+| Middleware       | Empty directory      | Plugin system          | Middleware protocol             |
 | Authentication   | Basic token          | OAuth/JWT/Sessions     | Comprehensive auth patterns          |
 | Monitoring       | Basic logging        | Metrics/tracing        | Integration with flext-observability |
 

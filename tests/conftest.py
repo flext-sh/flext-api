@@ -8,7 +8,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio
 import os
 import tempfile
 import uuid
@@ -350,14 +349,14 @@ def temp_dir() -> Generator[Path]:
 
 
 @pytest.fixture
-def event_loop() -> Generator[asyncio.AbstractEventLoop]:
-    """Provide event loop for async testing.
+def event_loop() -> Generator[AbstractEventLoop]:
+    """Provide event loop for testing.
 
     Yields:
-        asyncio.AbstractEventLoop: Event loop for testing.
+        AbstractEventLoop: Event loop for testing.
 
     """
-    loop = asyncio.new_event_loop()
+    loop = new_event_loop()
     yield loop
     loop.close()
 

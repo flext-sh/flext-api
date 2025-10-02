@@ -251,7 +251,10 @@ class FlextApiModels(FlextModels):
         def validate_response_consistency_client_specific(self) -> Self:
             """Cross-field validation for HTTP response consistency - CLIENT SPECIFIC."""
             # Validate status code and body consistency
-            if self.status_code == 204 and self.body:  # No Content
+            if (
+                self.status_code == FlextConstants.Http.StatusCodes.HTTP_NO_CONTENT
+                and self.body
+            ):  # No Content
                 error_msg = "HTTP 204 responses should not have a body"
                 raise ValueError(error_msg)
 
@@ -1060,7 +1063,7 @@ class FlextApiModels(FlextModels):
             default_factory=list, description="Validation warnings"
         )
         schema_type: str = Field(
-            description="Schema type (openapi, jsonschema, asyncapi, graphql)"
+            description="Schema type (openapi, jsonschema, api, graphql)"
         )
         validated_at: str = Field(description="Validation timestamp")
 

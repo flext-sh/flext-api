@@ -31,7 +31,7 @@
         "pydantic>=2.10.0",
         "pyjwt>=2.10.1",
         "slowapi>=0.1.9",
-        "sqlalchemy[asyncio]>=2.0.0",
+        "sqlalchemy>=2.0.0",
         "uvicorn[standard]>=0.34.0",
         "structlog>=25.4.0",
         "packaging>=23.0",
@@ -50,9 +50,11 @@
         "referencing (>=0.36.2,<0.37.0)",
         "pytest-mock (>=3.15.0,<4.0.0)",
         "termcolor (>=3.1.0,<4.0.0)",
+        "h2 (>=4.3.0,<5.0.0)",
+        "gql (>=4.0.0,<5.0.0)",
     ]
     keywords = [
-        "async",
+        "",
         "enterprise",
         "fastapi",
         "flext",
@@ -100,7 +102,6 @@
         "pytest-cov>=6.2.0",
         "pytest-deadfixtures>=2.2.1",
         "pytest-env>=1.1.5",
-        "pytest-httpx>=0.35.0",
         "pytest-mock>=3.14.0",
         "pytest-randomly>=3.16.0",
         "pytest-sugar>=1.0.0",
@@ -124,10 +125,6 @@
         "bandit>=1.8.0",
         "pip-audit>=2.7.3",
     ]
-
-[project.scripts]
-    flext-api        = "flext_api.cli:main"
-    flext-api-server = "flext_api.server:main"
 
 [tool.poetry]
 [[tool.poetry.packages]]
@@ -180,7 +177,6 @@
 
 [tool.pytest.ini_options]
     minversion = "8.0"
-    asyncio_mode = "auto"
     addopts = [
         "--cov=src/flext_api",
         "--cov-context=test",
@@ -210,7 +206,7 @@
         "security: Security-related tests",
         "mock: Tests using mocks heavily",
         "real: Tests using real external services",
-        "concurrency: Concurrency and async tests",
+        "concurrency: Concurrency and tests",
         "race_condition: Race condition and thread safety tests",
         "performance: Performance and load tests",
         "memory: Memory usage and leak tests",
@@ -241,10 +237,10 @@
     pytest         = "^8.4.1"
     pytest-cov     = "^6.2.1"
     faker          = "^37.5.3"
-    pytest-asyncio = "^1.1.0"
     bandit         = "^1.8.6"
     pip-audit      = "^2.9.0"
     pyrefly        = "^0.34.0"
+pytest-httpx = "^0.35.0"
 
 [tool.pyrefly]
     python-version = "3.13"

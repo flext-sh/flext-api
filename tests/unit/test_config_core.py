@@ -16,11 +16,11 @@ class TestFlextApiConfig:
 
     def setup_method(self) -> None:
         """Clear config before each test."""
-        FlextConfig.clear_global_instance()
+        FlextConfig.reset_global_instance()
 
     def teardown_method(self) -> None:
         """Clear config after each test."""
-        FlextConfig.clear_global_instance()
+        FlextConfig.reset_global_instance()
 
     def test_config_creation_defaults(self) -> None:
         """Test config creation with default values."""
@@ -72,7 +72,7 @@ class TestFlextApiConfig:
         """Test validation error scenarios for comprehensive coverage."""
         # Test configuration validation with invalid values
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiConfig(api_timeout=-1)
+            FlextApiConfig(timeout=-1)
 
         # Verify that the validation error contains appropriate message
         assert "Input should be greater than or equal to 1" in str(exc_info.value)

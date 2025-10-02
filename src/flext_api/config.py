@@ -6,8 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
-
 from pydantic import Field, computed_field
 from pydantic_settings import SettingsConfigDict
 
@@ -141,32 +139,39 @@ class FlextApiConfig(FlextConfig):
         cls, environment: str, **overrides: object
     ) -> FlextApiConfig:
         """Create configuration for specific environment using enhanced singleton pattern."""
-        return cast(
-            "FlextApiConfig",
-            cls.get_or_create_shared_instance(
-                project_name="flext-api", environment=environment, **overrides
-            ),
+        instance = cls.get_or_create_shared_instance(
+            project_name="flext-api", environment=environment, **overrides
         )
+        if not isinstance(instance, cls):
+            msg = f"Expected {cls.__name__}, got {type(instance).__name__}"
+            raise TypeError(msg)
+        return instance
 
     @classmethod
     def create_default(cls) -> FlextApiConfig:
         """Create default configuration instance using enhanced singleton pattern."""
-        return cast(
-            "FlextApiConfig",
-            cls.get_or_create_shared_instance(project_name="flext-api"),
-        )
+        # Use get_or_create_shared_instance for singleton pattern
+        instance = cls.get_or_create_shared_instance(project_name="flext-api")
+        if not isinstance(instance, cls):
+            msg = f"Expected {cls.__name__}, got {type(instance).__name__}"
+            raise TypeError(msg)
+        return instance
 
     @classmethod
     def get_global_instance(cls) -> FlextApiConfig:
         """Get the global singleton instance using enhanced FlextConfig pattern."""
-        return cast(
-            "FlextApiConfig",
-            cls.get_or_create_shared_instance(project_name="flext-api"),
-        )
+        # Call parent class method directly to avoid recursion
+        instance = super().get_global_instance()
+        if not isinstance(instance, cls):
+            msg = f"Expected {cls.__name__}, got {type(instance).__name__}"
+            raise TypeError(msg)
+        return instance
 
     @classmethod
     def reset_global_instance(cls) -> None:
         """Reset the global FlextApiConfig instance (mainly for testing)."""
+        # Call parent class method to reset singleton
+        super().reset_global_instance()
         # Use the enhanced FlextConfig reset mechanism
         # Reset mechanism - method may not exist in parent class
 

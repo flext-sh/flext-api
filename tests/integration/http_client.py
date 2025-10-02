@@ -17,12 +17,11 @@ from flext_api import FlextApiClient
 class TestHttpClientIntegration:
     """Integration tests for HTTP client."""
 
-    @pytest.mark.asyncio
-    async def test_real_http_request_with_httpbin(self) -> None:
+    def test_real_http_request_with_httpbin(self) -> None:
         """Test real HTTP request with httpbin.org."""
         # Create client using modern API
         api = FlextApiClient()
-        client_result = await api.create_client(
+        client_result = api.create_client(
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10,
@@ -38,13 +37,12 @@ class TestHttpClientIntegration:
             # In production, this would make a real HTTP call
 
         finally:
-            await client.close()
+            client.close()
 
-    @pytest.mark.asyncio
-    async def test_basic_client_configuration(self) -> None:
+    def test_basic_client_configuration(self) -> None:
         """Test client configuration without optional plugins."""
         api = FlextApiClient()
-        client_result = await api.create_client(
+        client_result = api.create_client(
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10,
@@ -56,14 +54,13 @@ class TestHttpClientIntegration:
             assert client.base_url == "https://httpbin.org"
             assert client.timeout == 10.0
         finally:
-            await client.close()
+            client.close()
 
-    @pytest.mark.asyncio
-    async def test_post_request_with_json_data(self) -> None:
+    def test_post_request_with_json_data(self) -> None:
         """Test POST request with JSON data."""
         # Create client using modern API
         api = FlextApiClient()
-        client_result = await api.create_client(
+        client_result = api.create_client(
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10,
@@ -79,14 +76,13 @@ class TestHttpClientIntegration:
             # In production, this would make a real HTTP POST call with test_data
 
         finally:
-            await client.close()
+            client.close()
 
-    @pytest.mark.asyncio
-    async def test_client_context_manager(self) -> None:
-        """Test client as async context manager."""
+    def test_client_context_manager(self) -> None:
+        """Test client as context manager."""
         # Create client using modern API
         api = FlextApiClient()
-        client_result = await api.create_client(
+        client_result = api.create_client(
             {
                 "base_url": "https://httpbin.org",
                 "timeout": 10,
@@ -102,5 +98,5 @@ class TestHttpClientIntegration:
             assert client.timeout == 10.0
 
         finally:
-            await client.close()
+            client.close()
             # Client should be properly closed

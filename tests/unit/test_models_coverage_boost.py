@@ -455,11 +455,13 @@ class TestFlextApiModelsCoverageBoost:
         assert hasattr(FlextApiModels, "AppConfig")
 
     def test_re_exported_models(self) -> None:
-        """Test re-exported models from flext-core."""
-        # Test that re-exports are available
-        assert hasattr(FlextApiModels, "HttpRequestConfig")
-        assert hasattr(FlextApiModels, "HttpErrorConfig")
-        assert hasattr(FlextApiModels, "HttpMethod")
+        """Test models actually exported in FlextApiModels."""
+        # Test that actual models are available
+        assert hasattr(FlextApiModels, "HttpRequest")
+        assert hasattr(FlextApiModels, "HttpResponse")
+        assert hasattr(FlextApiModels, "ClientConfig")
+        assert hasattr(FlextApiModels, "HttpQuery")
+        assert hasattr(FlextApiModels, "UrlModel")
 
     def test_model_inheritance(self) -> None:
         """Test that models properly inherit from FlextModels.Entity."""

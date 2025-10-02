@@ -24,26 +24,24 @@ from flext_core import FlextResult
 from flext_tests import FlextTestsMatchers
 
 
-@pytest.mark.asyncio
-async def test_client_build_and_error_formatting_on_invalid_url() -> None:
+def test_client_build_and_error_formatting_on_invalid_url() -> None:
     """Client handles REAL non-200 status and returns data."""
-    async with FlextApiClient(base_url="https://httpbin.org") as client:
+    with FlextApiClient(base_url="https://httpbin.org") as client:
         # REAL HTTP request - httpbin.org/status/400 returns HTTP 400
-        res: FlextResult[FlextApiModels.HttpResponse] = await client.get("/status/400")
+        res: FlextResult[FlextApiModels.HttpResponse] = client.get("/status/400")
         # Should succeed (request was made) but with 400 status code
         assert res.is_success
         assert res.value is not None
         assert res.value.status_code == 400
 
 
-@pytest.mark.asyncio
-async def test_client_headers_merge_and_prepare_params() -> None:
+def test_client_headers_merge_and_prepare_params() -> None:
     """Client merges headers and serializes params correctly."""
-    async with FlextApiClient(
+    with FlextApiClient(
         config="https://httpbin.org",
         headers={"A": "1"},
     ) as client:
-        result: FlextResult[FlextApiModels.HttpResponse] = await client.post(
+        result: FlextResult[FlextApiModels.HttpResponse] = client.post(
             "/post", json_data={"x": 1}, headers={"B": "2"}
         )
         assert result.is_success
@@ -210,8 +208,7 @@ class TestFlextApiClient:
         url4: str = client2._build_url("/users")
         assert url4 == "https://api.example.com/users"
 
-    @pytest.mark.asyncio
-    async def test_session_lifecycle(self) -> None:
+    def test_session_lifecycle(self) -> None:
         """Test session start and stop lifecycle."""
         FlextApiClient(base_url="https://httpbin.org")
 
@@ -221,7 +218,7 @@ class TestFlextApiClient:
         assert health["status"] == "stopped"
 
         # Note: FlextApiClient doesn't have a start() method
-        # start_result: FlextResult[None] = await client.start()
+        # start_result: FlextResult[None] = client.start()
         # assert start_result.is_success
 
         # Check health after start
@@ -230,11 +227,11 @@ class TestFlextApiClient:
         assert health["status"] == "healthy"
 
         # Note: FlextApiClient doesn't have a start() method
-        # start_result2: FlextResult[None] = await client.start()
+        # start_result2: FlextResult[None] = client.start()
         # assert start_result2.is_success
 
         # Note: FlextApiClient doesn't have a stop() method
-        # stop_result: FlextResult[None] = await client.stop()
+        # stop_result: FlextResult[None] = client.stop()
         # assert stop_result.is_success
 
         # Check health after stop
@@ -243,22 +240,20 @@ class TestFlextApiClient:
         assert health["status"] == "stopped"
 
         # Stop again (idempotent) - context manager handles this automatically
-        # stop_result2 = await client.stop()
+        # stop_result2 = client.stop()
         # assert stop_result2.is_success
 
-    @pytest.mark.asyncio
-    async def test_session_start_error_handling(self) -> None:
+    def test_session_start_error_handling(self) -> None:
         """Test session start error handling."""
-        with patch("httpx.AsyncClient", side_effect=Exception("Connection failed")):
+        with patch("httpx.Client", side_effect=Exception("Connection failed")):
             FlextApiClient()
             # Context manager handles start/stop automatically
-            # result = await client.start()  # This would fail with the patch
+            # result = client.start()  # This would fail with the patch
             # assert result.is_failure
             # assert result.error is not None
             # assert result.error is not None and "HTTP session start failed" in result.error
 
-    @pytest.mark.asyncio
-    async def test_session_stop_error_handling(self) -> None:
+    def test_session_stop_error_handling(self) -> None:
         """Test session stop error handling."""
         client = FlextApiClient()
 
@@ -272,14 +267,13 @@ class TestFlextApiClient:
             side_effect=Exception("Close failed"),
         ):
             # Context manager handles stop automatically
-            # result = await client.stop()  # This would fail with the patch
+            # result = client.stop()  # This would fail with the patch
             # assert result.is_failure
             # assert result.error is not None
             # assert result.error is not None and "Failed to stop HTTP client" in result.error
             pass  # Context manager handles this automatically
 
-    @pytest.mark.asyncio
-    async def test_close_method(self) -> None:
+    def test_close_method(self) -> None:
         """Test close method (alias for stop)."""
         client = FlextApiClient()
 
@@ -290,7 +284,7 @@ class TestFlextApiClient:
         assert health["status"] == "healthy"
 
         # Close should work
-        result = await client.close()
+        result = client.close()
         assert result.is_success
 
         # Check health after close
@@ -298,8 +292,7 @@ class TestFlextApiClient:
         health = {"status": "ok"}
         assert health["status"] == "stopped"
 
-    @pytest.mark.asyncio
-    async def test_close_method_error_handling(self) -> None:
+    def test_close_method_error_handling(self) -> None:
         """Test close method error handling."""
         client = FlextApiClient()
 
@@ -312,7 +305,7 @@ class TestFlextApiClient:
             "close",
             side_effect=Exception("Close failed"),
         ):
-            result = await client.close()
+            result = client.close()
             assert result.is_failure
             assert result.error is not None
             assert (
@@ -320,8 +313,7 @@ class TestFlextApiClient:
                 and "Failed to close HTTP client" in result.error
             )
 
-    @pytest.mark.asyncio
-    async def test_session_validation(self) -> None:
+    def test_session_validation(self) -> None:
         """Test session validation before requests."""
         FlextApiClient()
 
@@ -336,8 +328,7 @@ class TestFlextApiClient:
         health = {"status": "ok"}
         assert health["status"] == "healthy"
 
-    @pytest.mark.asyncio
-    async def test_http_request_context(self) -> None:
+    def test_http_request_context(self) -> None:
         """Test HTTP request context model - using public API instead."""
         # Test that we can make requests with the public API
         client = FlextApiClient(base_url="https://httpbin.org")
@@ -345,15 +336,14 @@ class TestFlextApiClient:
 
         try:
             # Test POST request with JSON data
-            result = await client.post("/post", json={"data": "value"})
+            result = client.post("/post", json={"data": "value"})
             assert result.is_success
             assert result.value is not None
         finally:
             # Client auto-stops with context manager
             pass
 
-    @pytest.mark.asyncio
-    async def test_http_request_context_with_data(self) -> None:
+    def test_http_request_context_with_data(self) -> None:
         """Test HTTP request context with raw data instead of JSON."""
         # Test that we can make requests with raw data using the public API
         client = FlextApiClient(base_url="https://httpbin.org")
@@ -361,15 +351,14 @@ class TestFlextApiClient:
 
         try:
             # Test POST request with raw data
-            result = await client.post("/post", data=b"raw data content")
+            result = client.post("/post", data=b"raw data content")
             assert result.is_success
             assert result.value is not None
         finally:
             # Client auto-stops with context manager
             pass
 
-    @pytest.mark.asyncio
-    async def test_retry_strategy(self) -> None:
+    def test_retry_strategy(self) -> None:
         """Test retry strategy functionality."""
         # Test that retry configuration is properly set
         client = FlextApiClient(max_retries=2)
@@ -380,8 +369,7 @@ class TestFlextApiClient:
         config = {"max_retries": 2}
         assert config["max_retries"] == 2
 
-    @pytest.mark.asyncio
-    async def test_retry_strategy_should_retry(self) -> None:
+    def test_retry_strategy_should_retry(self) -> None:
         """Test retry strategy decision logic."""
         # Test that retry configuration affects client behavior
         client = FlextApiClient(max_retries=2)
@@ -394,7 +382,7 @@ class TestFlextApiClient:
         # Test that we can make requests with retry configuration
         # Client auto-starts with context manager
         try:
-            result = await client.get("/get")
+            result = client.get("/get")
             # The request should succeed or fail based on network, not retry logic
             assert result is not None
         finally:
@@ -429,8 +417,7 @@ class TestFlextApiClient:
         # Test that the client can be created and configured
         assert client.max_retries == 2
 
-    @pytest.mark.asyncio
-    async def test_response_parsing(self) -> None:
+    def test_response_parsing(self) -> None:
         """Test response parsing logic."""
         # Test that response parsing works with real HTTP requests
         client = FlextApiClient(base_url="https://httpbin.org")
@@ -438,12 +425,12 @@ class TestFlextApiClient:
 
         try:
             # Test JSON response parsing
-            result = await client.get("/json")
+            result = client.get("/json")
             assert result.is_success
             assert result.value is not None
 
             # Test text response parsing
-            result2 = await client.get("/get")
+            result2 = client.get("/get")
             assert result2.is_success
             assert result2.value is not None
         finally:
@@ -465,8 +452,7 @@ class TestFlextApiClient:
         health = {"status": "ok"}
         assert health["status"] == "stopped"
 
-    @pytest.mark.asyncio
-    async def test_request_methods_session_validation(self) -> None:
+    def test_request_methods_session_validation(self) -> None:
         """Test that HTTP methods validate session state."""
         client = FlextApiClient()
 
@@ -475,23 +461,22 @@ class TestFlextApiClient:
 
         try:
             # Test that methods work when session is started
-            get_result = await client.get("/test")
+            get_result = client.get("/test")
             assert get_result is not None  # Should not crash
 
-            post_result = await client.post("/test", json={"data": "test"})
+            post_result = client.post("/test", json={"data": "test"})
             assert post_result is not None  # Should not crash
 
-            put_result = await client.put("/test", json={"data": "test"})
+            put_result = client.put("/test", json={"data": "test"})
             assert put_result is not None  # Should not crash
 
-            delete_result = await client.delete("/test")
+            delete_result = client.delete("/test")
             assert delete_result is not None  # Should not crash
         finally:
             # Client auto-stops with context manager
             pass
 
-    @pytest.mark.asyncio
-    async def test_make_request_method(self) -> None:
+    def test_make_request_method(self) -> None:
         """Test internal _make_request method."""
         client = FlextApiClient(base_url="https://httpbin.org")
 
@@ -499,14 +484,13 @@ class TestFlextApiClient:
         # Client auto-starts with context manager
 
         try:
-            result = await client.get("/get")
+            result = client.get("/get")
             assert result is not None  # Should not crash
         finally:
             # Client auto-stops with context manager
             pass
 
-    @pytest.mark.asyncio
-    async def test_execute_single_request_client_not_initialized(self) -> None:
+    def test_execute_single_request_client_not_initialized(self) -> None:
         """Test _execute_single_request when client is None."""
         client = FlextApiClient()
 
@@ -514,14 +498,13 @@ class TestFlextApiClient:
         # Client auto-starts with context manager
 
         try:
-            result = await client.get("/test")
+            result = client.get("/test")
             assert result is not None  # Should not crash
         finally:
             # Client auto-stops with context manager
             pass
 
-    @pytest.mark.asyncio
-    async def test_config_merge_behavior(self) -> None:
+    def test_config_merge_behavior(self) -> None:
         """Test config and kwargs merge behavior."""
         # Config dict takes precedence over kwargs
         base_cfg = FlextApiModels.ClientConfig(
@@ -541,8 +524,7 @@ class TestFlextApiClient:
         client2 = FlextApiClient(base_url="https://kwargs-only.com")
         assert client2.base_url == "https://kwargs-only.com"
 
-    @pytest.mark.asyncio
-    async def test_retry_strategy_execution_with_mock(self) -> None:
+    def test_retry_strategy_execution_with_mock(self) -> None:
         """Test retry strategy execution with mocked HTTP client."""
         client = FlextApiClient(max_retries=2, base_url="https://httpbin.org")
         # Client auto-starts with context manager
@@ -552,14 +534,13 @@ class TestFlextApiClient:
             assert client.max_retries == 2
 
             # Test that we can make requests
-            result = await client.get("/get")
+            result = client.get("/get")
             assert result is not None  # Should not crash
         finally:
             # Client auto-stops with context manager
             pass
 
-    @pytest.mark.asyncio
-    async def test_retry_strategy_all_attempts_fail(self) -> None:
+    def test_retry_strategy_all_attempts_fail(self) -> None:
         """Test retry strategy when all attempts fail."""
         client = FlextApiClient(max_retries=1)
 
@@ -571,8 +552,7 @@ class TestFlextApiClient:
         config = {"max_retries": 2}
         assert config["max_retries"] == 1
 
-    @pytest.mark.asyncio
-    async def test_retry_strategy_with_exceptions(self) -> None:
+    def test_retry_strategy_with_exceptions(self) -> None:
         """Test retry strategy with network exceptions."""
         client = FlextApiClient(max_retries=1)
 
@@ -584,8 +564,7 @@ class TestFlextApiClient:
         config = {"max_retries": 2}
         assert config["max_retries"] == 1
 
-    @pytest.mark.asyncio
-    async def test_retry_strategy_with_unexpected_exception(self) -> None:
+    def test_retry_strategy_with_unexpected_exception(self) -> None:
         """Test retry strategy with unexpected exceptions."""
         client = FlextApiClient(max_retries=1)
 
@@ -597,37 +576,34 @@ class TestFlextApiClient:
         config = {"max_retries": 2}
         assert config["max_retries"] == 1
 
-    @pytest.mark.asyncio
-    async def test_execute_single_request_with_mock_response(self) -> None:
+    def test_execute_single_request_with_mock_response(self) -> None:
         """Test _execute_single_request with mock httpx response."""
         client = FlextApiClient(base_url="https://httpbin.org")
         # Client auto-starts with context manager
 
         try:
             # Test that we can make requests using the public API
-            result = await client.get("/get")
+            result = client.get("/get")
             assert result is not None  # Should not crash
         finally:
             # Client auto-stops with context manager
             pass
 
-    @pytest.mark.asyncio
-    async def test_execute_single_request_with_http_error(self) -> None:
+    def test_execute_single_request_with_http_error(self) -> None:
         """Test _execute_single_request with HTTP error response."""
         client = FlextApiClient(base_url="https://httpbin.org")
         # Client auto-starts with context manager
 
         try:
             # Test that we can make requests using the public API
-            result = await client.get("/status/404")
+            result = client.get("/status/404")
             assert result is not None  # Should not crash
         finally:
             # Client auto-stops with context manager
             pass
 
 
-@pytest.mark.asyncio
-async def test_request_build_failure_and_pipeline_error() -> None:
+def test_request_build_failure_and_pipeline_error() -> None:
     """Test real error paths using invalid configurations."""
     # Test invalid error path - validation now happens at config creation
     with pytest.raises(Exception) as exc_info:
@@ -654,7 +630,7 @@ async def test_request_build_failure_and_pipeline_error() -> None:
     # Network error should cause request errors
     # Client auto-starts with context manager
     try:
-        res = await client.get("/json")
+        res = client.get("/json")
         assert not res.is_success
         assert res.error is not None
     finally:
@@ -669,7 +645,7 @@ async def test_request_build_failure_and_pipeline_error() -> None:
 
     try:
         # Use the public API method instead of non-existent private methods
-        result = await invalid_client.get("/test")
+        result = invalid_client.get("/test")
         assert not result.is_success
         # Should have connection-related error
         error_msg = result.error or ""
@@ -678,7 +654,7 @@ async def test_request_build_failure_and_pipeline_error() -> None:
             for term in ["connection", "refused", "timeout", "failed", "cannot connect"]
         )
     finally:
-        await invalid_client.close()
+        invalid_client.close()
 
 
 """Test client.py with REAL HTTP execution - NO MOCKS.
@@ -698,14 +674,13 @@ def enable_external_calls() -> None:
     os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = "0"
 
 
-@pytest.mark.asyncio
-async def test_real_http_get_request() -> None:
+def test_real_http_get_request() -> None:
     """Test real HTTP GET request using httpbin.org."""
     client = FlextApiClient(base_url="https://httpbin.org", timeout=10, max_retries=2)
 
     try:
         # Test real GET request using public API
-        response = await client.get("/get?test_param=test_value")
+        response = client.get("/get?test_param=test_value")
 
         assert response is not None
         # Validate response success first
@@ -728,11 +703,10 @@ async def test_real_http_get_request() -> None:
             pass
 
     finally:
-        await client.close()
+        client.close()
 
 
-@pytest.mark.asyncio
-async def test_real_http_headers_and_user_agent() -> None:
+def test_real_http_headers_and_user_agent() -> None:
     """Test real HTTP request with custom headers."""
     config = FlextApiClient(
         base_url="https://httpbin.org",
@@ -742,7 +716,7 @@ async def test_real_http_headers_and_user_agent() -> None:
 
     try:
         # Test with headers endpoint
-        response = await client.get("/headers")
+        response = client.get("/headers")
 
         assert response is not None
         # Basic success validation
@@ -762,11 +736,10 @@ async def test_real_http_headers_and_user_agent() -> None:
                 assert header_found or len(headers) > 0  # At least some headers
 
     finally:
-        await client.close()
+        client.close()
 
 
-@pytest.mark.asyncio
-async def test_real_client_factory_function() -> None:
+def test_real_client_factory_function() -> None:
     """Test real HTTP using client factory function."""
     client = FlextApiClient(
         config={
@@ -778,7 +751,7 @@ async def test_real_client_factory_function() -> None:
 
     try:
         # Test that factory-created client works
-        response = await client.get("/get")
+        response = client.get("/get")
 
         assert response is not None
         # Basic success validation
@@ -790,7 +763,7 @@ async def test_real_client_factory_function() -> None:
         assert client.config_data.headers["X-Test"] == "factory-created"
 
     finally:
-        await client.close()
+        client.close()
 
 
 def test_client_configuration_validation() -> None:
@@ -818,8 +791,7 @@ SPDX-License-Identifier: MIT
 """
 
 
-@pytest.mark.asyncio
-async def test_client_request_pipeline_success() -> None:
+def test_client_request_pipeline_success() -> None:
     """Test successful client request pipeline execution."""
     config = FlextApiClient(
         base_url="https://httpbin.org",
@@ -830,15 +802,14 @@ async def test_client_request_pipeline_success() -> None:
 
     # Test the basic request pipeline
     # Client auto-starts with context manager
-    result = await client.get("/get")
+    result = client.get("/get")
 
     assert result.is_success
     assert result.value is not None
     assert result.value.status_code == 200
 
 
-@pytest.mark.asyncio
-async def test_client_error_handling_pipeline() -> None:
+def test_client_error_handling_pipeline() -> None:
     """Test client error handling in request pipeline."""
     config = FlextApiClient(
         base_url="https://invalid-domain-that-does-not-exist-12345.com",
@@ -849,7 +820,7 @@ async def test_client_error_handling_pipeline() -> None:
 
     try:
         # Should fail due to DNS resolution failure
-        result = await client.get("/test")
+        result = client.get("/test")
 
         assert not result.is_success
         assert result.error is not None
@@ -962,8 +933,7 @@ def test_client_response_structure() -> None:
     assert response.body == {"message": "success"}
 
 
-@pytest.mark.asyncio
-async def test_client_lifecycle_with_requests() -> None:
+def test_client_lifecycle_with_requests() -> None:
     """Test complete client lifecycle with actual requests."""
     config = FlextApiClient(
         base_url="https://httpbin.org",
@@ -979,7 +949,7 @@ async def test_client_lifecycle_with_requests() -> None:
     assert health["status"] == "healthy"
 
     # Make a request during lifecycle
-    result = await client.get("/uuid")
+    result = client.get("/uuid")
 
     assert result.is_success
     assert result.value is not None
@@ -1023,8 +993,7 @@ SPDX-License-Identifier: MIT
 """
 
 
-@pytest.mark.asyncio
-async def test_real_network_error_and_error_formatting() -> None:
+def test_real_network_error_and_error_formatting() -> None:
     """Test real network error and error message formatting."""
     # Use non-responsive localhost port to trigger real connection error
     client = FlextApiClient(
@@ -1035,7 +1004,7 @@ async def test_real_network_error_and_error_formatting() -> None:
 
     try:
         # Real network error triggers error path
-        result = await client.get("/test")
+        result = client.get("/test")
         assert not result.is_success
 
         # Check error contains expected information
@@ -1044,11 +1013,10 @@ async def test_real_network_error_and_error_formatting() -> None:
             result.error is not None and "test" in result.error
         ) or "connection" in str(result.error).lower()
     finally:
-        await client.close()
+        client.close()
 
 
-@pytest.mark.asyncio
-async def test_read_response_data_real_json_parsing() -> None:
+def test_read_response_data_real_json_parsing() -> None:
     """Verify JSON parsing with real HTTP response."""
     # Use real httpbin.org service for JSON response parsing
     client = FlextApiClient(base_url="https://httpbin.org")
@@ -1056,7 +1024,7 @@ async def test_read_response_data_real_json_parsing() -> None:
 
     try:
         # Real JSON endpoint that returns structured data
-        res = await client.get("/json")
+        res = client.get("/json")
         assert res.is_success
         response = res.value  # FlextResult[FlextApiModels.ApiResponse] -> response
 
@@ -1065,4 +1033,4 @@ async def test_read_response_data_real_json_parsing() -> None:
         # httpbin.org /json returns a slideshow example
         assert "slideshow" in json.dumps(response.body)
     finally:
-        await client.close()
+        client.close()

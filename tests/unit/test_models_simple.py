@@ -69,12 +69,12 @@ class TestFlextApiModelsSimple:
         """Test HttpRequest creation."""
         request = FlextApiModels.HttpRequest(
             url="https://api.example.com/users",
-            method="GET",
+            method="POST",
             headers={"Content-Type": "application/json"},
             body='{"name": "test"}',
         )
         assert request.url == "https://api.example.com/users"
-        assert request.method == "GET"
+        assert request.method == "POST"
         assert request.headers == {"Content-Type": "application/json"}
         assert request.body == '{"name": "test"}'
 

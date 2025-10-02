@@ -8,8 +8,6 @@ from __future__ import annotations
 
 from unittest.mock import ANY, Mock, patch
 
-import pytest
-
 from flext_api import FlextApiClient, FlextApiModels
 from flext_api.constants import FlextApiConstants
 from flext_core import FlextConstants, FlextResult
@@ -83,21 +81,23 @@ class TestFlextApiClientFocused:
         assert client.max_retries == 10
 
     def test_client_initialization_with_custom_config_object(self) -> None:
-        """Test FlextApiClient with custom config object having api_base_url."""
-        mock_config = Mock()
-        mock_config.api_base_url = "https://custom.example.com"
+        """Test FlextApiClient with custom config object having base_url."""
+        from flext_api.models import FlextApiModels
 
-        client = FlextApiClient(mock_config)
+        custom_config = FlextApiModels.ClientConfig(
+            base_url="https://custom.example.com"
+        )
+
+        client = FlextApiClient(custom_config)
         assert client.base_url == "https://custom.example.com"
 
     def test_client_initialization_with_config_base_url(self) -> None:
         """Test FlextApiClient with custom config object having base_url."""
-        mock_config = Mock()
-        # Remove api_base_url attribute to test base_url fallback
-        del mock_config.api_base_url
-        mock_config.base_url = "https://base.example.com"
+        from flext_api.models import FlextApiModels
 
-        client = FlextApiClient(mock_config)
+        custom_config = FlextApiModels.ClientConfig(base_url="https://base.example.com")
+
+        client = FlextApiClient(custom_config)
         assert client.base_url == "https://base.example.com"
 
     def test_client_constructor_with_kwargs(self) -> None:
@@ -146,10 +146,9 @@ class TestFlextApiClientFocused:
         assert client.base_url == "https://test.com"
         assert client.timeout == 60
 
-    @pytest.mark.asyncio
-    async def test_client_async_context_manager(self) -> None:
-        """Test client async context manager behavior."""
-        async with FlextApiClient("https://test.com") as client:
+    def test_client_context_manager(self) -> None:
+        """Test client context manager behavior."""
+        with FlextApiClient("https://test.com") as client:
             # Client should be properly initialized in context manager
             assert client is not None
             assert client.base_url == "https://test.com"
@@ -157,24 +156,22 @@ class TestFlextApiClientFocused:
             assert hasattr(client, "get")
             assert hasattr(client, "post")
 
-    @pytest.mark.asyncio
-    async def test_client_close_method(self) -> None:
+    def test_client_close_method(self) -> None:
         """Test client close method."""
         client = FlextApiClient(base_url="https://test.com")
 
-        # Start the client using async context manager
-        async with client:
+        # Start the client using context manager
+        with client:
             # Test that client can be closed properly
-            result = await client.close()
+            result = client.close()
             assert result.is_success
 
-    @pytest.mark.asyncio
-    async def test_client_close_when_not_initialized(self) -> None:
+    def test_client_close_when_not_initialized(self) -> None:
         """Test client close when not initialized."""
         client = FlextApiClient(base_url="https://test.com")
 
         # Should fail when client is not initialized
-        result = await client.close()
+        result = client.close()
         assert result.is_failure
         assert result.error == "Client not started"
 
@@ -199,8 +196,7 @@ class TestFlextApiClientFocused:
         assert client is not None
         assert client.base_url == "https://test.com"
 
-    @pytest.mark.asyncio
-    async def test_request_alias_method(self) -> None:
+    def test_request_alias_method(self) -> None:
         """Test request method as alias for _request."""
         client = FlextApiClient(base_url="https://httpbin.org")
 
@@ -219,7 +215,7 @@ class TestFlextApiClientFocused:
             )
             mock_request.return_value = mock_response
 
-            result: FlextResult[FlextApiModels.HttpResponse] = await client.request(
+            result: FlextResult[FlextApiModels.HttpResponse] = client.request(
                 "GET", "/get", params={"test": "value"}
             )
 
@@ -244,8 +240,7 @@ class TestFlextApiClientFocused:
         # execute() returns FlextResult[None], so we just check success
         assert result.value is None
 
-    @pytest.mark.asyncio
-    async def test_get_method(self) -> None:
+    def test_get_method(self) -> None:
         """Test GET method."""
         client = FlextApiClient(base_url="https://httpbin.org")
 
@@ -261,7 +256,7 @@ class TestFlextApiClientFocused:
             )
             mock_request.return_value = mock_response
 
-            result = await client.get("/get", params={"test": "value"})
+            result = client.get("/get", params={"test": "value"})
 
             mock_request.assert_called_once_with(
                 "GET",
@@ -274,8 +269,7 @@ class TestFlextApiClientFocused:
             )
             assert result.is_success
 
-    @pytest.mark.asyncio
-    async def test_post_method(self) -> None:
+    def test_post_method(self) -> None:
         """Test POST method."""
         client = FlextApiClient(base_url="https://httpbin.org")
 
@@ -291,7 +285,7 @@ class TestFlextApiClientFocused:
             )
             mock_request.return_value = mock_response
 
-            result = await client.post("/post", json={"data": "value"})
+            result = client.post("/post", json={"data": "value"})
 
             mock_request.assert_called_once_with(
                 "POST",
@@ -304,8 +298,7 @@ class TestFlextApiClientFocused:
             )
             assert result.is_success
 
-    @pytest.mark.asyncio
-    async def test_put_method(self) -> None:
+    def test_put_method(self) -> None:
         """Test PUT method."""
         client = FlextApiClient(base_url="https://httpbin.org")
 
@@ -321,7 +314,7 @@ class TestFlextApiClientFocused:
             )
             mock_request.return_value = mock_response
 
-            result = await client.put("/put", json={"data": "updated"})
+            result = client.put("/put", json={"data": "updated"})
 
             mock_request.assert_called_once_with(
                 "PUT",
@@ -334,8 +327,7 @@ class TestFlextApiClientFocused:
             )
             assert result.is_success
 
-    @pytest.mark.asyncio
-    async def test_delete_method(self) -> None:
+    def test_delete_method(self) -> None:
         """Test DELETE method."""
         client = FlextApiClient(base_url="https://httpbin.org")
 
@@ -351,7 +343,7 @@ class TestFlextApiClientFocused:
             )
             mock_request.return_value = mock_response
 
-            result = await client.delete("/delete")
+            result = client.delete("/delete")
 
             mock_request.assert_called_once_with(
                 "DELETE",
@@ -378,44 +370,40 @@ class TestFlextApiClientFocused:
         assert client.max_retries == 8
         assert client.config_data == config
 
-    @pytest.mark.asyncio
-    async def test_context_manager_enter(self) -> None:
-        """Test async context manager __aenter__."""
+    def test_context_manager_enter(self) -> None:
+        """Test context manager __aenter__."""
         client = FlextApiClient(base_url="https://test.com")
 
         # Test that context manager works without errors
-        async with client as ctx_result:
+        with client as ctx_result:
             assert ctx_result is client
             assert client.base_url == "https://test.com"
 
-    @pytest.mark.asyncio
-    async def test_context_manager_exit(self) -> None:
-        """Test async context manager __aexit__."""
+    def test_context_manager_exit(self) -> None:
+        """Test context manager __aexit__."""
         client = FlextApiClient(base_url="https://test.com")
 
         # Test that context manager exit works without errors
-        await client.__aexit__(None, None, None)
+        client.__aexit__(None, None, None)
 
-    @pytest.mark.asyncio
-    async def test_close_method(self) -> None:
+    def test_close_method(self) -> None:
         """Test close method."""
         client = FlextApiClient(base_url="https://test.com")
 
-        # Start the client using async context manager
-        async with client:
+        # Start the client using context manager
+        with client:
             # Test that close method works without errors
-            result = await client.close()
+            result = client.close()
             assert result.is_success
 
-    @pytest.mark.asyncio
-    async def test_close_method_failure(self) -> None:
+    def test_close_method_failure(self) -> None:
         """Test close method failure handling."""
         client = FlextApiClient(base_url="https://test.com")
 
-        # Start the client using async context manager
-        async with client:
+        # Start the client using context manager
+        with client:
             # Test that close method handles errors gracefully
-            result = await client.close()
+            result = client.close()
             # Close should succeed even if there's no connection to close
             assert result.is_success
 
@@ -468,8 +456,7 @@ class TestFlextApiClientFocused:
         client2 = FlextApiClient("https://base.com/api")
         assert client2.base_url == "https://base.com/api"
 
-    @pytest.mark.asyncio
-    async def test_request_internal_with_all_parameters(self) -> None:
+    def test_request_internal_with_all_parameters(self) -> None:
         """Test _request method with all parameter types."""
         client = FlextApiClient(base_url="https://httpbin.org")
 
@@ -492,7 +479,7 @@ class TestFlextApiClientFocused:
             )
             mock_request.return_value = mock_result
 
-            result = await client.request(
+            result = client.request(
                 "POST",
                 "/post",
                 headers={"Custom": "Header"},
@@ -507,8 +494,7 @@ class TestFlextApiClientFocused:
             assert response.body == '{"success": true}'
             assert response.method == "POST"
 
-    @pytest.mark.asyncio
-    async def test_request_error_handling(self) -> None:
+    def test_request_error_handling(self) -> None:
         """Test request method error handling."""
         client = FlextApiClient(base_url="https://httpbin.org")
 
@@ -518,14 +504,13 @@ class TestFlextApiClientFocused:
                 "HTTP request failed: Network error"
             )
 
-            result = await client.request("GET", "/get")
+            result = client.request("GET", "/get")
 
             assert result.is_failure
             assert result.error is not None
             assert result.error is not None and "HTTP request failed" in result.error
 
-    @pytest.mark.asyncio
-    async def test_request_general_error_handling(self) -> None:
+    def test_request_general_error_handling(self) -> None:
         """Test request method general error handling."""
         client = FlextApiClient(base_url="https://httpbin.org")
 
@@ -535,14 +520,13 @@ class TestFlextApiClientFocused:
                 "Unexpected error"
             )
 
-            result = await client.request("GET", "/get")
+            result = client.request("GET", "/get")
 
             assert result.is_failure
             assert result.error is not None
             assert result.error is not None and "Unexpected error" in result.error
 
-    @pytest.mark.asyncio
-    async def test_request_with_valid_parameters(self) -> None:
+    def test_request_with_valid_parameters(self) -> None:
         """Test request method with valid parameters."""
         client = FlextApiClient(base_url="https://httpbin.org")
 
@@ -560,7 +544,7 @@ class TestFlextApiClientFocused:
             mock_request.return_value = mock_response
 
             # Test with valid parameters
-            result = await client.request(
+            result = client.request(
                 "GET",
                 "/get",
                 params={"test": "value"},

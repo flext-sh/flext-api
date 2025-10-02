@@ -135,11 +135,10 @@ app_config = FlextApiModels.AppConfig(
 ### **Basic HTTP Client Configuration**
 
 ```python
-import asyncio
 from flext_api import FlextApiClient
 from flext_api.config import FlextApiConfig
 
-async def basic_client_config():
+def basic_client_config():
     """Basic HTTP client with configuration."""
 
     # Create configuration
@@ -157,15 +156,15 @@ async def basic_client_config():
 
     try:
         # Use configured client
-        result = await client.get("/posts/1")
+        result = client.get("/posts/1")
         if result.is_success:
             response = result.unwrap()
             print(f"Post: {response.body}")
     finally:
-        await client.close()
+        client.close()
 
 # Run example
-asyncio.run(basic_client_config())
+run(basic_client_config())
 ```
 
 ### **Environment-Based Configuration**
@@ -212,8 +211,8 @@ def create_production_api():
 
     # Add production middleware
     @app.middleware("http")
-    async def add_security_headers(request, call_next):
-        response = await call_next(request)
+    def add_security_headers(request, call_next):
+        response = call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
@@ -468,9 +467,9 @@ def create_production_fastapi():
 
     # Production security middleware
     @app.middleware("http")
-    async def security_middleware(request, call_next):
+    def security_middleware(request, call_next):
         # Add security headers
-        response = await call_next(request)
+        response = call_next(request)
         response.headers.update({
             "X-Content-Type-Options": "nosniff",
             "X-Frame-Options": "DENY",
@@ -525,7 +524,7 @@ def validate_production_config() -> FlextResult[FlextApiConfig]:
 ### **Configuration Health Check**
 
 ```python
-async def config_health_check():
+def config_health_check():
     """Check configuration health."""
 
     config = FlextApiConfig()
@@ -533,7 +532,7 @@ async def config_health_check():
 
     try:
         # Test basic connectivity
-        result = await client.get("/health")
+        result = client.get("/health")
 
         if result.is_success:
             print("✅ Configuration healthy")
@@ -546,7 +545,7 @@ async def config_health_check():
         print(f"❌ Configuration failed: {e}")
         return False
     finally:
-        await client.close()
+        client.close()
 ```
 
 ---
