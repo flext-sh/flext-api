@@ -11,14 +11,11 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 from flext_api import FlextApiClient
 from flext_tests import FlextTestsMatchers
 
 
-@pytest.mark.asyncio
-async def test_real_network_error_and_error_formatting() -> None:
+def test_real_network_error_and_error_formatting() -> None:
     """Test real network error and error message formatting using FlextTestsMatchers."""
     # Use non-responsive localhost port to trigger real connection error
     client = FlextApiClient(
@@ -29,7 +26,7 @@ async def test_real_network_error_and_error_formatting() -> None:
 
     try:
         # Real network error triggers error path
-        result = await client.get("/test")
+        result = client.get("/test")
 
         # Use FlextTestsMatchers for result validation
         FlextTestsMatchers.assert_result_failure(result)
@@ -38,11 +35,10 @@ async def test_real_network_error_and_error_formatting() -> None:
             result.error is not None and "test" in result.error
         ) or "connection" in str(result.error).lower()
     finally:
-        await client.close()
+        client.close()
 
 
-@pytest.mark.asyncio
-async def test_read_response_data_real_json_parsing() -> None:
+def test_read_response_data_real_json_parsing() -> None:
     """Verify JSON parsing with real HTTP response using FlextTestsMatchers."""
     # Use real httpbin.org service for JSON response parsing
     client = FlextApiClient(base_url="https://httpbin.org")
@@ -50,7 +46,7 @@ async def test_read_response_data_real_json_parsing() -> None:
 
     try:
         # Real JSON endpoint that returns structured data
-        result = await client.get("/json")
+        result = client.get("/json")
 
         # Use FlextTestsMatchers for result validation
         FlextTestsMatchers.assert_result_success(result)
@@ -61,4 +57,4 @@ async def test_read_response_data_real_json_parsing() -> None:
         # httpbin.org /json returns a slideshow example
         assert "slideshow" in json.dumps(response.body)
     finally:
-        await client.close()
+        client.close()

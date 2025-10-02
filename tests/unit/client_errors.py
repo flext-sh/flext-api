@@ -13,8 +13,7 @@ from flext_api import (
 )
 
 
-@pytest.mark.asyncio
-async def test_request_build_failure_and_pipeline_error() -> None:
+def test_request_build_failure_and_pipeline_error() -> None:
     """Test real error paths using invalid configurations."""
     # Test invalid error path - validation now happens at config creation
     with pytest.raises(Exception) as exc_info:
@@ -39,7 +38,7 @@ async def test_request_build_failure_and_pipeline_error() -> None:
     )
 
     # Network error should cause request errors
-    res = await client.get("/json")
+    res = client.get("/json")
     assert not res.is_success
     assert res.error is not None
 
@@ -51,7 +50,7 @@ async def test_request_build_failure_and_pipeline_error() -> None:
 
     try:
         # Use the public API method instead of non-existent private methods
-        result = await invalid_client.get("/test")
+        result = invalid_client.get("/test")
         assert not result.is_success
         # Should have connection-related error
         error_msg = result.error or ""
@@ -60,4 +59,4 @@ async def test_request_build_failure_and_pipeline_error() -> None:
             for term in ["connection", "refused", "timeout", "failed", "cannot connect"]
         )
     finally:
-        await invalid_client.close()
+        invalid_client.close()

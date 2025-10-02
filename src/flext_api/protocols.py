@@ -25,7 +25,7 @@ class FlextApiProtocols(FlextProtocols):
     class HttpClientProtocol(Protocol):
         """Protocol for HTTP client implementations."""
 
-        async def request(
+        def request(
             self,
             method: str,
             url: str,
@@ -34,7 +34,7 @@ class FlextApiProtocols(FlextProtocols):
             """Execute an HTTP request."""
             ...
 
-        async def get(
+        def get(
             self,
             url: str,
             **kwargs: object,
@@ -42,7 +42,7 @@ class FlextApiProtocols(FlextProtocols):
             """Execute HTTP GET request."""
             ...
 
-        async def post(
+        def post(
             self,
             url: str,
             **kwargs: object,
@@ -50,7 +50,7 @@ class FlextApiProtocols(FlextProtocols):
             """Execute HTTP POST request."""
             ...
 
-        async def put(
+        def put(
             self,
             url: str,
             **kwargs: object,
@@ -58,7 +58,7 @@ class FlextApiProtocols(FlextProtocols):
             """Execute HTTP PUT request."""
             ...
 
-        async def delete(
+        def delete(
             self,
             url: str,
             **kwargs: object,
@@ -70,7 +70,9 @@ class FlextApiProtocols(FlextProtocols):
     class StorageBackendProtocol(Protocol):
         """Protocol for storage backend implementations."""
 
-        def get(self, key: str, default: object = None) -> FlextResult[object]:
+        def get(
+            self, key: str, default: FlextApiTypes.Core.JsonValue = None
+        ) -> FlextResult[FlextApiTypes.Core.JsonValue]:
             """Retrieve value by key."""
             ...
 
@@ -124,7 +126,7 @@ class FlextApiProtocols(FlextProtocols):
     class ConnectionManagerProtocol(Protocol):
         """Protocol for connection manager implementations."""
 
-        def get_connection(self: object) -> FlextResult[object]:
+        def get_connection(self) -> FlextResult[FlextApiTypes.Core.JsonValue]:
             """Get active connection."""
             ...
 
@@ -248,13 +250,13 @@ class FlextApiProtocols(FlextProtocols):
     class MiddlewareProtocol(Protocol):
         """Protocol for middleware implementations."""
 
-        async def process_request(
+        def process_request(
             self, request: FlextApiTypes.RequestData
         ) -> FlextResult[FlextApiTypes.RequestData]:
             """Process incoming request."""
             ...
 
-        async def process_response(
+        def process_response(
             self, response: FlextApiTypes.ResponseData
         ) -> FlextResult[FlextApiTypes.ResponseData]:
             """Process outgoing response."""
@@ -284,7 +286,7 @@ class FlextApiProtocols(FlextProtocols):
     class ConfigurationProviderProtocol(Protocol):
         """Protocol for configuration provider implementations."""
 
-        def get_config(self, key: str) -> FlextResult[object]:
+        def get_config(self, key: str) -> FlextResult[FlextApiTypes.Core.ConfigValue]:
             """Get configuration value by key."""
             ...
 
@@ -314,6 +316,144 @@ class FlextApiProtocols(FlextProtocols):
 
         def warning(self, message: str, **kwargs: object) -> None:
             """Log warning message."""
+            ...
+
+    # NEW PROTOCOLS FOR TRANSFORMATION (Phase 1)
+
+    @runtime_checkable
+    class ProtocolHandlerProtocol(Protocol):
+        """Protocol for protocol handler implementations.
+
+        Protocol handlers implement support for different API protocols
+        (HTTP, WebSocket, GraphQL, gRPC, SSE).
+        """
+
+        def handle_request(
+            self,
+            request: FlextApiModels.HttpRequest,
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            """Handle request for this protocol."""
+            ...
+
+        def supports_protocol(self, protocol: str) -> bool:
+            """Check if this handler supports the given protocol."""
+            ...
+
+        def get_protocol_name(self) -> str:
+            """Get protocol name (e.g., 'http', 'websocket', 'graphql')."""
+            ...
+
+    @runtime_checkable
+    class SchemaValidatorProtocol(Protocol):
+        """Protocol for schema validator implementations.
+
+        Schema validators implement support for different schema systems
+        (OpenAPI, API, JSON Schema, GraphQL Schema, Protobuf).
+        """
+
+        def validate_request(
+            self,
+            request: FlextApiModels.HttpRequest,
+            schema: object,
+        ) -> FlextResult[dict[str, object]]:
+            """Validate request against schema."""
+            ...
+
+        def validate_response(
+            self,
+            response: FlextApiModels.HttpResponse,
+            schema: object,
+        ) -> FlextResult[dict[str, object]]:
+            """Validate response against schema."""
+            ...
+
+        def load_schema(
+            self,
+            schema_source: str | dict[str, object],
+        ) -> FlextResult[object]:
+            """Load schema from source."""
+            ...
+
+        def get_schema_type(self) -> str:
+            """Get schema type (e.g., 'openapi', 'jsonschema', 'graphql')."""
+            ...
+
+    @runtime_checkable
+    class TransportLayerProtocol(Protocol):
+        """Protocol for transport layer implementations.
+
+        Transport layers implement the actual network communication
+        (httpx, websockets, gql, grpcio).
+        """
+
+        def connect(
+            self,
+            url: str,
+            **options: object,
+        ) -> FlextResult[object]:
+            """Establish connection to endpoint."""
+            ...
+
+        def disconnect(
+            self,
+            connection: object,
+        ) -> FlextResult[None]:
+            """Close connection."""
+            ...
+
+        def send(
+            self,
+            connection: object,
+            data: bytes | str,
+            **options: object,
+        ) -> FlextResult[None]:
+            """Send data through connection."""
+            ...
+
+        def receive(
+            self,
+            connection: object,
+            **options: object,
+        ) -> FlextResult[bytes | str]:
+            """Receive data from connection."""
+            ...
+
+        def supports_streaming(self) -> bool:
+            """Check if transport supports streaming."""
+            ...
+
+    @runtime_checkable
+    class RegistryProtocol(Protocol):
+        """Protocol for registry implementations.
+
+        Registries manage plugin registration and lookup.
+        """
+
+        def register(
+            self,
+            name: str,
+            plugin: object,
+        ) -> FlextResult[None]:
+            """Register a plugin."""
+            ...
+
+        def get(
+            self,
+            name: str,
+        ) -> FlextResult[object]:
+            """Get registered plugin by name."""
+            ...
+
+        def list_registered(self) -> FlextResult[list[str]]:
+            """List all registered plugin names."""
+            ...
+
+        def unregister(
+            self,
+            name: str,
+        ) -> FlextResult[None]:
+            """Unregister a plugin."""
             ...
 
 

@@ -8,7 +8,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio
 import contextlib
 import json
 import re
@@ -137,28 +136,28 @@ def create_test_response(
 
 
 # ============================================================================
-# ASYNC UTILITIES using FlextTestsUtilities - ABSOLUTE
+# UTILITIES using FlextTestsUtilities - ABSOLUTE
 # ============================================================================
 
 
-async def run_async_test[T](coro: Awaitable[T]) -> T:
-    """Run async test using FlextTestsUtilities patterns.
+def run_test[T](coro: Awaitable[T]) -> T:
+    """Run test using FlextTestsUtilities patterns.
 
     Returns:
-        Result of the async coroutine.
+        Result of the coroutine.
 
     Raises:
-        AssertionError: If the async test fails.
+        AssertionError: If the test fails.
 
     """
     try:
-        return await coro
+        return coro
     except Exception as e:
-        msg = f"Async test failed: {e}"
+        msg = f"test failed: {e}"
         raise AssertionError(msg) from e
 
 
-async def wait_for_condition(
+def wait_for_condition(
     condition: Callable[[], bool],
     timeout_seconds: float = 5.0,
     interval: float = 0.1,
@@ -173,7 +172,7 @@ async def wait_for_condition(
     while elapsed < timeout_seconds:
         if condition():
             return True
-        await asyncio.sleep(interval)
+        sleep(interval)
         elapsed += interval
     return False
 

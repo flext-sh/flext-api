@@ -68,43 +68,38 @@ class TestFlextApiClientCoverageBoost:
         assert api._client_config is not None
         assert hasattr(api._client_config, "base_url")
 
-    @pytest.mark.asyncio
-    async def test_flext_api_close(self) -> None:
+    def test_flext_api_close(self) -> None:
         """Test FlextApiClient close method delegation."""
         api = FlextApiClient()
-        result = await api.close()
+        result = api.close()
         # Should return FlextResult without error
         assert result is not None
 
-    @pytest.mark.asyncio
-    async def test_flext_api_get(self) -> None:
+    def test_flext_api_get(self) -> None:
         """Test FlextApiClient GET request delegation."""
         api = FlextApiClient(config={"base_url": "https://httpbin.org"})
-        result = await api.get("/get")
+        result = api.get("/get")
         # Should return FlextResult
         assert result is not None
 
-    @pytest.mark.asyncio
-    async def test_flext_api_post(self) -> None:
+    def test_flext_api_post(self) -> None:
         """Test FlextApiClient POST request delegation."""
         api = FlextApiClient(config={"base_url": "https://httpbin.org"})
-        result = await api.post("/post", json={"test": "data"})
+        result = api.post("/post", json={"test": "data"})
         # Should return FlextResult
         assert result is not None
 
-    @pytest.mark.asyncio
-    async def test_flext_api_put(self) -> None:
+    def test_flext_api_put(self) -> None:
         """Test FlextApiClient PUT request delegation."""
         api = FlextApiClient(config={"base_url": "https://httpbin.org"})
-        result = await api.put("/put", json={"test": "data"})
+        result = api.put("/put", json={"test": "data"})
         # Should return FlextResult
         assert result is not None
 
-    @pytest.mark.asyncio
-    async def test_flext_api_delete(self) -> None:
+    def test_flext_api_delete(self) -> None:
         """Test FlextApiClient DELETE request delegation."""
         api = FlextApiClient(config={"base_url": "https://httpbin.org"})
-        result = await api.delete("/delete")
+        result = api.delete("/delete")
         # Should return FlextResult
         assert result is not None
 
@@ -144,7 +139,7 @@ class TestFlextApiClientCoverageBoost:
         """Test FlextApiClient execute method."""
         api = FlextApiClient()
 
-        # Test execute method (no longer async)
+        # Test execute method (no longer )
         result = api.execute()
 
         # Should return success with None value (execute method returns None)

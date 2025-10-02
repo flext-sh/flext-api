@@ -20,14 +20,14 @@
   - Query builder with filters
   - Response builder patterns
   - Model validation examples
-  - Async patterns with HTTP client
+  - Synchronous HTTP client patterns
 
 ## Key Patterns Demonstrated
 
 ### REAL Classes Usage
 
 - **FlextApiClient** - Core API service class
-- **FlextApiClient** - HTTP client with async support
+- **FlextApiClient** - HTTP client with support
 - **FlextApiModels** - Domain models and data structures
 - **FlextApiStorage** - Storage backends (Memory, File)
 - **FlextApiPlugins** - Extensible plugin system

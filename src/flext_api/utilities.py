@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import re
 import time
-from typing import Any, cast
+from typing import TYPE_CHECKING, TypeVar
 from urllib.parse import urlparse, urlunparse
 
 from flext_api.constants import FlextApiConstants
@@ -22,16 +22,21 @@ from flext_core import (
     FlextUtilities,
 )
 
-# Import FlextApiClient at module level to avoid circular imports
-try:
+# Use TYPE_CHECKING to avoid circular imports at runtime
+if TYPE_CHECKING:
     from flext_api.client import FlextApiClient
-except ImportError:
-    # Handle circular import gracefully
-    FlextApiClient = None
+
+# TypeVar for generic batch processing
+T = TypeVar("T")
 
 
 class FlextApiUtilities(FlextUtilities):
-    """HTTP-specific utilities using flext-core FlextUtilities extensively - ZERO DUPLICATION.
+    """HTTP-specific utilities with FlextProcessors and FlextMixins integration.
+
+    Extends flext-core FlextUtilities with:
+    - FlextProcessors for utility operation pipelines
+    - FlextMixins for reusable utility patterns
+    - ZERO DUPLICATION - delegates to flext-core where possible
 
     Inherits from FlextUtilities to avoid duplication and ensure consistency.
     This class delegates to flext-core utilities wherever possible and only provides
@@ -299,14 +304,14 @@ class FlextApiUtilities(FlextUtilities):
                 netloc = parsed.netloc.lower()
                 if (
                     parsed.scheme == "http"
-                    and f":{FlextApiConstants.HTTP_PORT}" in netloc
+                    and f":{FlextConstants.Http.HTTP_PORT}" in netloc
                 ):
-                    netloc = netloc.replace(f":{FlextApiConstants.HTTP_PORT}", "")
+                    netloc = netloc.replace(f":{FlextConstants.Http.HTTP_PORT}", "")
                 elif (
                     parsed.scheme == "https"
-                    and f":{FlextApiConstants.HTTPS_PORT}" in netloc
+                    and f":{FlextConstants.Http.HTTPS_PORT}" in netloc
                 ):
-                    netloc = netloc.replace(f":{FlextApiConstants.HTTPS_PORT}", "")
+                    netloc = netloc.replace(f":{FlextConstants.Http.HTTPS_PORT}", "")
 
                 normalized = urlunparse((
                     parsed.scheme.lower(),
@@ -409,7 +414,7 @@ class FlextApiUtilities(FlextUtilities):
                 else:
                     status_result = (
                         FlextApiUtilities.HttpValidator.validate_status_code(
-                            FlextApiConstants.HTTP_OK
+                            FlextConstants.Http.HTTP_OK
                         )
                     )
                 if status_result.is_failure:
@@ -418,14 +423,12 @@ class FlextApiUtilities(FlextUtilities):
                     )
 
             # Return validation result with config details
-            result_data = {
+            result_data: FlextApiTypes.Core.ConfigDict = {
                 "config_type": config_type,
                 **config_dict,  # Include all original config data
             }
 
-            return FlextResult[FlextApiTypes.Core.ConfigDict].ok(
-                cast("FlextApiTypes.Core.ConfigDict", result_data)
-            )
+            return FlextResult[FlextApiTypes.Core.ConfigDict].ok(result_data)
         except Exception as e:
             return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
                 f"Configuration validation failed: {e}",
@@ -680,8 +683,12 @@ class FlextApiUtilities(FlextUtilities):
         }
 
     @staticmethod
-    def batch_process(items: list[Any], batch_size: int = 10) -> list[list[Any]]:
-        """Process items in batches.
+    def batch_process(items: list[T], batch_size: int = 10) -> list[list[T]]:
+        """Process items in batches with proper generic typing.
+
+        Args:
+            items: List of items to process in batches
+            batch_size: Size of each batch (default 10)
 
         Returns:
             List of batches, where each batch is a list of items.
@@ -743,9 +750,9 @@ class FlextApiUtilities(FlextUtilities):
         """HTTP client factory utilities - consolidated from client_factory.py."""
 
         @staticmethod
-        async def create_production_client(
+        def create_production_client(
             base_url: str,
-        ) -> FlextResult[object]:
+        ) -> FlextResult[FlextApiClient]:
             """Create production-ready HTTP client with enterprise settings.
 
             Args:
@@ -756,8 +763,8 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                if FlextApiClient is None:
-                    return FlextResult[object].fail("FlextApiClient not available")
+                # Dynamic import to avoid circular dependency
+                from flext_api.client import FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -769,16 +776,16 @@ class FlextApiUtilities(FlextUtilities):
                         "Cache-Control": "no-cache",
                     },
                 )
-                return FlextResult[object].ok(client)
+                return FlextResult[FlextApiClient].ok(client)
             except Exception as e:
-                return FlextResult[object].fail(
+                return FlextResult[FlextApiClient].fail(
                     f"Production client creation failed: {e}"
                 )
 
         @staticmethod
-        async def create_development_client(
+        def create_development_client(
             base_url: str,
-        ) -> FlextResult[object]:
+        ) -> FlextResult[FlextApiClient]:
             """Create development HTTP client with extended timeouts.
 
             Args:
@@ -789,8 +796,8 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                if FlextApiClient is None:
-                    return FlextResult[object].fail("FlextApiClient not available")
+                # Dynamic import to avoid circular dependency
+                from flext_api.client import FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -801,16 +808,16 @@ class FlextApiUtilities(FlextUtilities):
                         "Accept": FlextApiConstants.DEFAULT_ACCEPT,
                     },
                 )
-                return FlextResult[object].ok(client)
+                return FlextResult[FlextApiClient].ok(client)
             except Exception as e:
-                return FlextResult[object].fail(
+                return FlextResult[FlextApiClient].fail(
                     f"Development client creation failed: {e}"
                 )
 
         @staticmethod
-        async def create_testing_client(
+        def create_testing_client(
             base_url: str,
-        ) -> FlextResult[object]:
+        ) -> FlextResult[FlextApiClient]:
             """Create testing HTTP client with minimal timeouts.
 
             Args:
@@ -821,8 +828,8 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                if FlextApiClient is None:
-                    return FlextResult[object].fail("FlextApiClient not available")
+                # Dynamic import to avoid circular dependency
+                from flext_api.client import FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -833,14 +840,16 @@ class FlextApiUtilities(FlextUtilities):
                         "Accept": FlextApiConstants.DEFAULT_ACCEPT,
                     },
                 )
-                return FlextResult[object].ok(client)
+                return FlextResult[FlextApiClient].ok(client)
             except Exception as e:
-                return FlextResult[object].fail(f"Testing client creation failed: {e}")
+                return FlextResult[FlextApiClient].fail(
+                    f"Testing client creation failed: {e}"
+                )
 
         @staticmethod
-        async def create_monitoring_client(
+        def create_monitoring_client(
             base_url: str,
-        ) -> FlextResult[object]:
+        ) -> FlextResult[FlextApiClient]:
             """Create monitoring HTTP client for health checks and metrics.
 
             Args:
@@ -851,8 +860,8 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                if FlextApiClient is None:
-                    return FlextResult[object].fail("FlextApiClient not available")
+                # Dynamic import to avoid circular dependency
+                from flext_api.client import FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -864,9 +873,9 @@ class FlextApiUtilities(FlextUtilities):
                         "X-Monitoring": FlextConstants.Mixins.STRING_TRUE,
                     },
                 )
-                return FlextResult[object].ok(client)
+                return FlextResult[FlextApiClient].ok(client)
             except Exception as e:
-                return FlextResult[object].fail(
+                return FlextResult[FlextApiClient].fail(
                     f"Monitoring client creation failed: {e}"
                 )
 
@@ -881,7 +890,7 @@ class FlextApiUtilities(FlextUtilities):
             return ["production", "development", "testing", "monitoring"]
 
         @staticmethod
-        async def create_for_environment(
+        def create_for_environment(
             environment: str,
             base_url: str,
         ) -> FlextResult[object]:
@@ -896,19 +905,17 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             if environment == "production":
-                return await FlextApiUtilities.ClientFactory.create_production_client(
+                return FlextApiUtilities.ClientFactory.create_production_client(
                     base_url
                 )
             if environment == "development":
-                return await FlextApiUtilities.ClientFactory.create_development_client(
+                return FlextApiUtilities.ClientFactory.create_development_client(
                     base_url
                 )
             if environment == "testing":
-                return await FlextApiUtilities.ClientFactory.create_testing_client(
-                    base_url
-                )
+                return FlextApiUtilities.ClientFactory.create_testing_client(base_url)
             if environment == "monitoring":
-                return await FlextApiUtilities.ClientFactory.create_monitoring_client(
+                return FlextApiUtilities.ClientFactory.create_monitoring_client(
                     base_url
                 )
             return FlextResult[object].fail(
@@ -1139,7 +1146,7 @@ class FlextApiUtilities(FlextUtilities):
         """HTTP operations utilities - consolidated from http_operations.py."""
 
         @staticmethod
-        async def execute_get(
+        def execute_get(
             url: str,
             params: dict[str, str] | None = None,
             headers: dict[str, str] | None = None,
@@ -1176,7 +1183,7 @@ class FlextApiUtilities(FlextUtilities):
                 )
 
         @staticmethod
-        async def execute_post(
+        def execute_post(
             url: str,
             data: dict[str, object] | None = None,
             headers: dict[str, str] | None = None,
@@ -1213,37 +1220,37 @@ class FlextApiUtilities(FlextUtilities):
                 )
 
         @classmethod
-        async def get(
+        def get(
             cls, url: str, **kwargs: object
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """HTTP GET method."""
             params = kwargs.get("params")
             headers = kwargs.get("headers")
             if isinstance(params, dict) and isinstance(headers, dict):
-                return await cls.execute_get(url, params=params, headers=headers)
+                return cls.execute_get(url, params=params, headers=headers)
             if isinstance(params, dict):
-                return await cls.execute_get(url, params=params)
+                return cls.execute_get(url, params=params)
             if isinstance(headers, dict):
-                return await cls.execute_get(url, headers=headers)
-            return await cls.execute_get(url)
+                return cls.execute_get(url, headers=headers)
+            return cls.execute_get(url)
 
         @classmethod
-        async def post(
+        def post(
             cls, url: str, **kwargs: object
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """HTTP POST method."""
             data = kwargs.get("data")
             headers = kwargs.get("headers")
             if isinstance(data, dict) and isinstance(headers, dict):
-                return await cls.execute_post(url, data=data, headers=headers)
+                return cls.execute_post(url, data=data, headers=headers)
             if isinstance(data, dict):
-                return await cls.execute_post(url, data=data)
+                return cls.execute_post(url, data=data)
             if isinstance(headers, dict):
-                return await cls.execute_post(url, headers=headers)
-            return await cls.execute_post(url)
+                return cls.execute_post(url, headers=headers)
+            return cls.execute_post(url)
 
         @staticmethod
-        async def execute_put(
+        def execute_put(
             url: str,
             data: dict[str, object] | None = None,
             headers: dict[str, str] | None = None,
@@ -1280,7 +1287,7 @@ class FlextApiUtilities(FlextUtilities):
                 )
 
         @staticmethod
-        async def execute_delete(
+        def execute_delete(
             url: str,
             headers: dict[str, str] | None = None,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
@@ -1311,29 +1318,29 @@ class FlextApiUtilities(FlextUtilities):
                 )
 
         @classmethod
-        async def put(
+        def put(
             cls, url: str, **kwargs: object
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """HTTP PUT method."""
             data = kwargs.get("data")
             headers = kwargs.get("headers")
             if isinstance(data, dict) and isinstance(headers, dict):
-                return await cls.execute_put(url, data=data, headers=headers)
+                return cls.execute_put(url, data=data, headers=headers)
             if isinstance(data, dict):
-                return await cls.execute_put(url, data=data)
+                return cls.execute_put(url, data=data)
             if isinstance(headers, dict):
-                return await cls.execute_put(url, headers=headers)
-            return await cls.execute_put(url)
+                return cls.execute_put(url, headers=headers)
+            return cls.execute_put(url)
 
         @classmethod
-        async def delete(
+        def delete(
             cls, url: str, **kwargs: object
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """HTTP DELETE method."""
             headers = kwargs.get("headers")
             if isinstance(headers, dict):
-                return await cls.execute_delete(url, headers=headers)
-            return await cls.execute_delete(url)
+                return cls.execute_delete(url, headers=headers)
+            return cls.execute_delete(url)
 
     class RetryHelper:
         """Retry logic utilities - consolidated from retry_helper.py."""
@@ -1388,27 +1395,27 @@ class FlextApiUtilities(FlextUtilities):
         def is_success_status(status_code: int) -> bool:
             """Check if HTTP status code indicates success (2xx range)."""
             return (
-                FlextApiConstants.HTTP_SUCCESS_MIN
+                FlextConstants.Http.HTTP_SUCCESS_MIN
                 <= status_code
-                <= FlextApiConstants.HTTP_SUCCESS_MAX
+                <= FlextConstants.Http.HTTP_SUCCESS_MAX
             )
 
         @staticmethod
         def is_client_error_status(status_code: int) -> bool:
             """Check if HTTP status code indicates client error (4xx range)."""
             return (
-                FlextApiConstants.HTTP_CLIENT_ERROR_MIN
+                FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
                 <= status_code
-                <= FlextApiConstants.HTTP_CLIENT_ERROR_MAX
+                <= FlextConstants.Http.HTTP_CLIENT_ERROR_MAX
             )
 
         @staticmethod
         def is_server_error_status(status_code: int) -> bool:
             """Check if HTTP status code indicates server error (5xx range)."""
             return (
-                FlextApiConstants.HTTP_SERVER_ERROR_MIN
+                FlextConstants.Http.HTTP_SERVER_ERROR_MIN
                 <= status_code
-                <= FlextApiConstants.HTTP_SERVER_ERROR_MAX
+                <= FlextConstants.Http.HTTP_SERVER_ERROR_MAX
             )
 
         @staticmethod
@@ -1442,14 +1449,14 @@ class FlextApiUtilities(FlextUtilities):
         def validate_status_code(status_code: int) -> FlextResult[int]:
             """Validate HTTP status code range."""
             if (
-                FlextApiConstants.HTTP_STATUS_MIN
+                FlextConstants.Http.HTTP_STATUS_MIN
                 <= status_code
-                <= FlextApiConstants.HTTP_STATUS_MAX
+                <= FlextConstants.Http.HTTP_STATUS_MAX
             ):
                 return FlextResult[int].ok(status_code)
 
             return FlextResult[int].fail(
-                f"Status code must be between {FlextApiConstants.HTTP_STATUS_MIN} and {FlextApiConstants.HTTP_STATUS_MAX}"
+                f"Status code must be between {FlextConstants.Http.HTTP_STATUS_MIN} and {FlextConstants.Http.HTTP_STATUS_MAX}"
             )
 
         @staticmethod
@@ -1462,15 +1469,15 @@ class FlextApiUtilities(FlextUtilities):
             if FlextApiUtilities.ModuleFacade.is_server_error_status(status_code):
                 return "server_error"
             if (
-                FlextApiConstants.HTTP_INFORMATIONAL_MIN
+                FlextConstants.Http.HTTP_INFORMATIONAL_MIN
                 <= status_code
-                <= FlextApiConstants.HTTP_INFORMATIONAL_MAX
+                <= FlextConstants.Http.HTTP_INFORMATIONAL_MAX
             ):
                 return "informational"
             if (
-                FlextApiConstants.HTTP_REDIRECTION_MIN
+                FlextConstants.Http.HTTP_REDIRECTION_MIN
                 <= status_code
-                <= FlextApiConstants.HTTP_REDIRECTION_MAX
+                <= FlextConstants.Http.HTTP_REDIRECTION_MAX
             ):
                 return "redirection"
             return "unknown"

@@ -76,18 +76,18 @@ class FlextApiClient(FlextService):
 
     def __init__(self, base_url: str = None, **kwargs):
         super().__init__()
-        self._client = httpx.AsyncClient(
+        self._client = httpx.Client(
             base_url=base_url,
             timeout=kwargs.get('timeout', 30)
         )
 
-    async def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
+    def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
         """Execute HTTP request with FlextResult error handling."""
 ```
 
 **Current Implementation**:
 
-- Basic httpx.AsyncClient wrapper
+- Basic httpx.Client wrapper
 - Timeout configuration support
 - FlextResult integration for error handling
 - No actual retry logic implementation (configured but not implemented)
@@ -163,13 +163,13 @@ class FlextApiPlugins:
 ```python
 class AuthenticationPlugin(MiddlewarePlugin):
     """Enterprise authentication plugin."""
-    async def process_request(self, request: HttpRequest) -> FlextResult[HttpRequest]:
+    def process_request(self, request: HttpRequest) -> FlextResult[HttpRequest]:
         # Add authentication headers
         pass
 
 class LoggingPlugin(MiddlewarePlugin):
     """Request/response logging plugin."""
-    async def process_request(self, request: HttpRequest) -> FlextResult[HttpRequest]:
+    def process_request(self, request: HttpRequest) -> FlextResult[HttpRequest]:
         # Log HTTP requests
         pass
 ```
@@ -193,7 +193,7 @@ def create_fastapi_app(config: AppConfig) -> FastAPI:
 
     # Add basic health endpoint
     @app.get("/health")
-    async def health_check():
+    def health_check():
         return {"status": "healthy"}
 
     return app
@@ -216,7 +216,7 @@ def create_fastapi_app(config: AppConfig) -> FastAPI:
 graph TD
     A[HTTP Request] --> B[FlextApiClient]
     B --> C[Request Validation]
-    C --> D[httpx.AsyncClient]
+    C --> D[httpx.Client]
     D --> E[External API]
     E --> F[Response Processing]
     F --> G[FlextResult Response]
@@ -308,7 +308,7 @@ class ClientConfig(FlextModels.Value):
 
 Based on source code analysis:
 
-- **HTTP Client**: Basic httpx.AsyncClient (no optimization)
+- **HTTP Client**: Basic httpx.Client (no optimization)
 - **Connection Pooling**: Default httpx pooling (not configured)
 - **Retry Logic**: Configuration exists but not implemented
 - **Caching**: Storage abstraction but no HTTP caching
@@ -324,7 +324,7 @@ limits = httpx.Limits(
     keepalive_expiry=30
 )
 
-client = httpx.AsyncClient(
+client = httpx.Client(
     limits=limits,
     http2=True,  # HTTP/2 support
     timeout=httpx.Timeout(30)
@@ -365,10 +365,10 @@ Main testing challenges identified:
 Comprehensive FlextResult usage throughout:
 
 ```python
-async def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
+def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
     """HTTP request with proper error handling."""
     try:
-        response = await self._client.request(...)
+        response = self._client.request(...)
         return FlextResult[HttpResponse].ok(response)
     except httpx.TimeoutException as e:
         return FlextResult[HttpResponse].fail(f"Request timeout: {e}")
@@ -423,7 +423,7 @@ class ProductionHttpClient:
         stop=stop_after_attempt(3)
     )
     @circuit(failure_threshold=5, recovery_timeout=FlextApiConstants.DEFAULT_TIMEOUT)
-    async def request_with_resilience(self, request: HttpRequest):
+    def request_with_resilience(self, request: HttpRequest):
         # Production HTTP request with retry and circuit breaker
         pass
 ```
@@ -436,7 +436,7 @@ class ProductionHttpClient:
 
 - **Single Instance**: Basic httpx client, no clustering
 - **Memory Usage**: Dictionary-based storage (not persistent)
-- **Concurrency**: AsyncIO-based but not optimized
+- **Concurrency**: IO-based but not optimized
 - **Resource Management**: Basic timeout handling only
 
 ### **Production Scalability Architecture**

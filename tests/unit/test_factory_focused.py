@@ -6,8 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio
-
 from flext_api import (
     FlextApiClient,
     FlextApiConstants,
@@ -197,8 +195,8 @@ class TestFlextApiFactoryFocused:
     def test_create_flext_api_with_mixed_valid_invalid_config(self) -> None:
         """Test FlextApiClient.create with mix of valid and invalid config values."""
 
-        async def test_async() -> None:
-            result = await FlextApiClient.create(
+        def test() -> None:
+            result = FlextApiClient.create(
                 base_url="https://mixed.example.com",
                 request_timeout=30,
                 max_retries=4,
@@ -209,13 +207,13 @@ class TestFlextApiFactoryFocused:
             assert client is not None
             assert isinstance(client, FlextApiClient)
 
-        asyncio.run(test_async())
+        test()
 
     def test_create_flext_api_type_conversion_edge_cases(self) -> None:
         """Test edge cases in type conversion."""
 
-        async def test_async() -> None:
-            result = await FlextApiClient.create(
+        def test() -> None:
+            result = FlextApiClient.create(
                 base_url="https://edge.example.com",
                 request_timeout=1,
                 max_retries=1,
@@ -226,4 +224,4 @@ class TestFlextApiFactoryFocused:
             assert client is not None
             assert isinstance(client, FlextApiClient)
 
-        asyncio.run(test_async())
+        test()

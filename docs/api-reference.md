@@ -64,12 +64,12 @@ client = FlextApiClient(
 
 #### **Methods**
 
-##### **async request()**
+##### **request()**
 
 Execute HTTP request with FlextResult error handling.
 
 ```python
-async def request(
+def request(
     self,
     request: FlextApiModels.HttpRequest
 ) -> FlextResult[FlextApiModels.HttpResponse]:
@@ -92,19 +92,19 @@ request = FlextApiModels.HttpRequest(
     headers={"Accept": "application/json"}
 )
 
-result = await client.request(request)
+result = client.request(request)
 if result.is_success:
     response = result.unwrap()
     print(f"Status: {response.status_code}")
     print(f"Data: {response.body}")
 ```
 
-##### **async get()**
+##### **get()**
 
 Convenience method for GET requests.
 
 ```python
-async def get(
+def get(
     self,
     url: str,
     params: dict = None,
@@ -112,12 +112,12 @@ async def get(
 ) -> FlextResult[FlextApiModels.HttpResponse]:
 ```
 
-##### **async post()**
+##### **post()**
 
 Convenience method for POST requests.
 
 ```python
-async def post(
+def post(
     self,
     url: str,
     json: dict = None,
@@ -126,12 +126,12 @@ async def post(
 ) -> FlextResult[FlextApiModels.HttpResponse]:
 ```
 
-##### **async close()**
+##### **close()**
 
 Close the HTTP client and cleanup resources.
 
 ```python
-async def close(self) -> None:
+def close(self) -> None:
 ```
 
 **Example:**
@@ -139,9 +139,9 @@ async def close(self) -> None:
 ```python
 try:
     # Use client for requests
-    result = await client.get("/data")
+    result = client.get("/data")
 finally:
-    await client.close()
+    client.close()
 ```
 
 ---
@@ -338,7 +338,7 @@ app = create_fastapi_app(config)
 
 # Add custom endpoints
 @app.get("/api/v1/status")
-async def get_status():
+def get_status():
     return {
         "service": "my-api",
         "version": "1.0.0",
@@ -545,7 +545,7 @@ All HTTP operations return `FlextResult[T]` for type-safe error handling:
 from flext_core import FlextResult
 
 # Successful result
-result = await client.get("/data")
+result = client.get("/data")
 if result.is_success:
     response = result.unwrap()
     print(f"Data: {response.body}")
@@ -555,7 +555,7 @@ if result.is_failure:
     print(f"Error: {result.error}")
 
 # Chaining operations
-result = (await client.get("/users")
+result = (client.get("/users")
     .map(lambda response: response.json())
     .filter(lambda data: len(data) > 0)
 )
@@ -577,8 +577,8 @@ test_client = FlextApiTestClient(base_url="https://httpbin.org")
 from flext_api.testing import mock_http_response
 
 @mock_http_response(status_code=200, json={"test": "data"})
-async def test_api_call():
-    result = await client.get("/test")
+def test_api_call():
+    result = client.get("/test")
     assert result.is_success
 ```
 
@@ -590,9 +590,9 @@ async def test_api_call():
 
 ```python
 # Reuse client instances for better performance
-async with FlextApiClient(base_url="https://api.example.com") as client:
-    result1 = await client.get("/endpoint1")
-    result2 = await client.get("/endpoint2")
+with FlextApiClient(base_url="https://api.example.com") as client:
+    result1 = client.get("/endpoint1")
+    result2 = client.get("/endpoint2")
     # Client automatically closed
 ```
 
@@ -605,7 +605,7 @@ requests = [
     for i in range(10)
 ]
 
-results = await client.batch_request(requests)
+results = client.batch_request(requests)
 ```
 
 ---

@@ -29,8 +29,8 @@ class TestFlextApiConfigSimple:
     def test_config_creation_custom(self) -> None:
         """Test config creation with custom values."""
         config = FlextApiConfig(
-            api_base_url="https://api.example.com",
-            api_timeout=60,
+            base_url="https://api.example.com",
+            timeout=60,
             max_retries=5,
         )
         assert config.api_base_url == "https://api.example.com"
@@ -46,18 +46,17 @@ class TestFlextApiConfigSimple:
 
     def test_config_cors_custom(self) -> None:
         """Test CORS custom values."""
-        # CORS settings are ClassVar, not instance parameters - test class attributes directly
+        # CORS settings are instance fields, not class variables
+        config = FlextApiConfig(
+            cors_origins=["https://example.com"],
+            cors_methods=["GET", "POST"],
+            cors_headers=["Content-Type"],
+        )
 
-        # Test that default CORS settings exist
-        assert hasattr(FlextApiConfig, "cors_origins")
-        assert hasattr(FlextApiConfig, "cors_methods")
-        assert hasattr(FlextApiConfig, "cors_headers")
-
-        # Test default values
-        assert FlextApiConfig.cors_origins == ["*"]
-        assert "GET" in FlextApiConfig.cors_methods
-        assert "POST" in FlextApiConfig.cors_methods
-        assert "Content-Type" in FlextApiConfig.cors_headers
+        # Test custom CORS values
+        assert config.cors_origins == ["https://example.com"]
+        assert config.cors_methods == ["GET", "POST"]
+        assert config.cors_headers == ["Content-Type"]
 
     def test_config_validation_success(self) -> None:
         """Test config validation success."""
@@ -69,7 +68,7 @@ class TestFlextApiConfigSimple:
     def test_config_validation_pydantic_timeout_error(self) -> None:
         """Test Pydantic validation with invalid timeout."""
         with pytest.raises(ValidationError) as exc_info:
-            FlextApiConfig(api_timeout=0)
+            FlextApiConfig(timeout=0)
         assert "Input should be greater than or equal to 1" in str(exc_info.value)
 
     def test_config_validation_pydantic_retries_error(self) -> None:
@@ -80,18 +79,18 @@ class TestFlextApiConfigSimple:
 
     def test_config_base_url_validation_success(self) -> None:
         """Test base URL validation success."""
-        config = FlextApiConfig(api_base_url="https://api.example.com")
+        config = FlextApiConfig(base_url="https://api.example.com")
         assert config.api_base_url == "https://api.example.com"
 
     def test_config_base_url_validation_error(self) -> None:
         """Test base URL with invalid format."""
-        config = FlextApiConfig(api_base_url="invalid-url")
+        config = FlextApiConfig(base_url="invalid-url")
         assert config.api_base_url == "invalid-url"
 
     def test_config_multiple_instances(self) -> None:
         """Test multiple config instances."""
-        config1 = FlextApiConfig(api_base_url="http://api1.example.com")
-        config2 = FlextApiConfig(api_base_url="http://api2.example.com")
+        config1 = FlextApiConfig(base_url="http://api1.example.com")
+        config2 = FlextApiConfig(base_url="http://api2.example.com")
 
         assert config1 is not config2
         assert config1.api_base_url == "http://api1.example.com"

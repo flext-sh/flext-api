@@ -84,10 +84,9 @@ print('✅ flext-api installed successfully')
 Create your first HTTP client:
 
 ```python
-import asyncio
 from flext_api import FlextApiClient, FlextApiModels
 
-async def basic_http_example():
+def basic_http_example():
     """Basic HTTP client usage with FlextResult error handling."""
 
     # Create HTTP client
@@ -108,7 +107,7 @@ async def basic_http_example():
 
     # Make request with FlextResult error handling
     try:
-        response = await client.request(request)
+        response = client.request(request)
 
         if response.status_code == 200:
             print(f"✅ Success: {response.json()}")
@@ -119,10 +118,10 @@ async def basic_http_example():
         print(f"❌ Request failed: {e}")
 
     finally:
-        await client.close()
+        client.close()
 
 # Run the example
-asyncio.run(basic_http_example())
+run(basic_http_example())
 ```
 
 ### **3. FastAPI Application Creation**
@@ -148,7 +147,7 @@ def create_basic_api():
 
     # Add custom endpoint
     @app.get("/api/status")
-    async def get_status():
+    def get_status():
         return {
             "service": "my-api",
             "version": "1.0.0",
@@ -203,10 +202,10 @@ config = FlextApiConfig(
 # Use with HTTP client
 from flext_api import FlextApiClient
 
-async def configured_client():
+def configured_client():
     client = FlextApiClient(config=config)
     # Use client for requests...
-    await client.close()
+    client.close()
 ```
 
 ---
@@ -228,11 +227,10 @@ pytest -m api                # FastAPI tests
 ### **2. Test HTTP Client**
 
 ```python
-import asyncio
 from flext_api import FlextApiClient
 from flext_api.models import FlextApiModels
 
-async def test_http_client():
+def test_http_client():
     """Test HTTP client with a real API."""
 
     client = FlextApiClient(base_url="https://httpbin.org")
@@ -244,7 +242,7 @@ async def test_http_client():
             url="/json"
         )
 
-        response = await client.request(request)
+        response = client.request(request)
         print(f"GET Response: {response.status_code}")
 
         # Test POST request
@@ -254,17 +252,17 @@ async def test_http_client():
             json={"test": "data", "timestamp": "2025-09-17"}
         )
 
-        post_response = await client.request(post_request)
+        post_response = client.request(post_request)
         print(f"POST Response: {post_response.status_code}")
 
     except Exception as e:
         print(f"Test failed: {e}")
 
     finally:
-        await client.close()
+        client.close()
 
 # Run the test
-asyncio.run(test_http_client())
+run(test_http_client())
 ```
 
 ### **3. Test FastAPI Application**

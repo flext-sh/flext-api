@@ -6,8 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-
 from flext_api import FlextApiApp, FlextApiModels
 
 
@@ -89,8 +87,7 @@ class TestFlextApiAppFocused:
         assert app is not None
         assert getattr(app, "title") == "Attr Test API"
 
-    @pytest.mark.asyncio
-    async def test_create_fastapi_app_health_endpoint_functionality(self) -> None:
+    def test_create_fastapi_app_health_endpoint_functionality(self) -> None:
         """Test that health endpoint actually works and returns expected response."""
         config = FlextApiModels.AppConfig(
             title="Health Function Test API",
@@ -118,7 +115,7 @@ class TestFlextApiAppFocused:
         if hasattr(health_route, "endpoint"):
             result = health_route.endpoint()
             if hasattr(result, "__await__"):
-                result = await result
+                result = result
             assert isinstance(result, dict)
             assert "status" in result
         else:

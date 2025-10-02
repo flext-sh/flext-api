@@ -146,7 +146,7 @@ class TestFlextApiStorageGaps:
         storage = FlextApiStorage()
 
         # Set data with very short TTL
-        storage.set("temp_key", "temp_value", ttl=0.001)
+        storage.set("temp_key", "temp_value", ttl=1)
 
         # Verify data exists initially
         result = storage.get("temp_key")

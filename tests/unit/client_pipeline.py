@@ -10,16 +10,13 @@ import os
 from collections.abc import Mapping
 from typing import cast
 
-import pytest
-
 from flext_api import (
     FlextApiClient,
     FlextApiModels,
 )
 
 
-@pytest.mark.asyncio
-async def test_client_request_pipeline_success() -> None:
+def test_client_request_pipeline_success() -> None:
     """Test successful client request pipeline execution."""
     client = FlextApiClient(
         config="https://httpbin.org",
@@ -28,15 +25,14 @@ async def test_client_request_pipeline_success() -> None:
     )
 
     # Test the basic request pipeline
-    result = await client.get("/get")
+    result = client.get("/get")
 
     assert result.is_success
     assert result.value is not None
     assert result.value.status_code == 200
 
 
-@pytest.mark.asyncio
-async def test_client_error_handling_pipeline() -> None:
+def test_client_error_handling_pipeline() -> None:
     """Test client error handling in request pipeline."""
     client_config = FlextApiModels.ClientConfig(
         base_url="https://invalid-domain-that-does-not-exist-12345.com",
@@ -51,7 +47,7 @@ async def test_client_error_handling_pipeline() -> None:
         )
 
         # Should fail due to DNS resolution failure
-        result = await client.get(request.url)
+        result = client.get(request.url)
 
         assert not result.is_success
         assert result.error is not None
@@ -167,8 +163,7 @@ def test_client_response_structure() -> None:
     assert response.elapsed_time == 0.5
 
 
-@pytest.mark.asyncio
-async def test_client_lifecycle_with_requests() -> None:
+def test_client_lifecycle_with_requests() -> None:
     """Test complete client lifecycle with actual requests."""
     client = FlextApiClient(
         config="https://httpbin.org",
@@ -180,7 +175,7 @@ async def test_client_lifecycle_with_requests() -> None:
     # Client should be ready for requests
 
     # Make a request
-    result = await client.get("https://httpbin.org/uuid")
+    result = client.get("https://httpbin.org/uuid")
 
     assert result.is_success
     assert result.value is not None

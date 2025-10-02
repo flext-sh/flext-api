@@ -2,7 +2,6 @@
 
 from unittest.mock import patch
 
-import pytest
 from flext_core.result import FlextResult
 
 from flext_api import FlextApiClient
@@ -11,8 +10,7 @@ from flext_api import FlextApiClient
 class TestFlextApiClientHttpMethods:
     """Tests for FlextApiClient HTTP methods to improve coverage."""
 
-    @pytest.mark.asyncio
-    async def test_client_get_method(self) -> None:
+    def test_client_get_method(self) -> None:
         """Test client GET method."""
         client = FlextApiClient()
 
@@ -20,7 +18,7 @@ class TestFlextApiClientHttpMethods:
             mock_response = FlextResult[object].ok({"status": "success"})
             mock_request.return_value = mock_response
 
-            result = await client.get("/test")
+            result = client.get("/test")
 
             assert result.is_success
             mock_request.assert_called_once()
@@ -28,8 +26,7 @@ class TestFlextApiClientHttpMethods:
             assert call_args[0][0] == "GET"  # method
             assert call_args[0][1] == "/test"  # url
 
-    @pytest.mark.asyncio
-    async def test_client_get_method_with_params(self) -> None:
+    def test_client_get_method_with_params(self) -> None:
         """Test client GET method with parameters."""
         client = FlextApiClient()
 
@@ -37,15 +34,14 @@ class TestFlextApiClientHttpMethods:
             mock_response = FlextResult[object].ok({"status": "success"})
             mock_request.return_value = mock_response
 
-            result = await client.get("/test", params={"key": "value"})
+            result = client.get("/test", params={"key": "value"})
 
             assert result.is_success
             mock_request.assert_called_once()
             call_args = mock_request.call_args
             assert call_args[1]["params"] == {"key": "value"}
 
-    @pytest.mark.asyncio
-    async def test_client_post_method(self) -> None:
+    def test_client_post_method(self) -> None:
         """Test client POST method."""
         client = FlextApiClient()
 
@@ -53,7 +49,7 @@ class TestFlextApiClientHttpMethods:
             mock_response = FlextResult[object].ok({"status": "success"})
             mock_request.return_value = mock_response
 
-            result = await client.post("/test")
+            result = client.post("/test")
 
             assert result.is_success
             mock_request.assert_called_once()
@@ -61,8 +57,7 @@ class TestFlextApiClientHttpMethods:
             assert call_args[0][0] == "POST"  # method
             assert call_args[0][1] == "/test"  # url
 
-    @pytest.mark.asyncio
-    async def test_client_post_method_with_json(self) -> None:
+    def test_client_post_method_with_json(self) -> None:
         """Test client POST method with JSON data."""
         client = FlextApiClient()
 
@@ -71,15 +66,14 @@ class TestFlextApiClientHttpMethods:
             mock_request.return_value = mock_response
 
             json_data = {"name": "test", "value": 123}
-            result = await client.post("/test", json=json_data)
+            result = client.post("/test", json=json_data)
 
             assert result.is_success
             mock_request.assert_called_once()
             call_args = mock_request.call_args
             assert call_args[1]["json"] == json_data
 
-    @pytest.mark.asyncio
-    async def test_client_put_method(self) -> None:
+    def test_client_put_method(self) -> None:
         """Test client PUT method."""
         client = FlextApiClient()
 
@@ -87,7 +81,7 @@ class TestFlextApiClientHttpMethods:
             mock_response = FlextResult[object].ok({"status": "success"})
             mock_request.return_value = mock_response
 
-            result = await client.put("/test")
+            result = client.put("/test")
 
             assert result.is_success
             mock_request.assert_called_once()
@@ -95,8 +89,7 @@ class TestFlextApiClientHttpMethods:
             assert call_args[0][0] == "PUT"  # method
             assert call_args[0][1] == "/test"  # url
 
-    @pytest.mark.asyncio
-    async def test_client_put_method_with_data(self) -> None:
+    def test_client_put_method_with_data(self) -> None:
         """Test client PUT method with data."""
         client = FlextApiClient()
 
@@ -105,15 +98,14 @@ class TestFlextApiClientHttpMethods:
             mock_request.return_value = mock_response
 
             data = {"field": "value"}
-            result = await client.put("/test", data=data)
+            result = client.put("/test", data=data)
 
             assert result.is_success
             mock_request.assert_called_once()
             call_args = mock_request.call_args
             assert call_args[1]["data"] == data
 
-    @pytest.mark.asyncio
-    async def test_client_delete_method(self) -> None:
+    def test_client_delete_method(self) -> None:
         """Test client DELETE method."""
         client = FlextApiClient()
 
@@ -121,7 +113,7 @@ class TestFlextApiClientHttpMethods:
             mock_response = FlextResult[object].ok({"status": "success"})
             mock_request.return_value = mock_response
 
-            result = await client.delete("/test")
+            result = client.delete("/test")
 
             assert result.is_success
             mock_request.assert_called_once()
@@ -129,8 +121,7 @@ class TestFlextApiClientHttpMethods:
             assert call_args[0][0] == "DELETE"  # method
             assert call_args[0][1] == "/test"  # url
 
-    @pytest.mark.asyncio
-    async def test_client_delete_method_with_headers(self) -> None:
+    def test_client_delete_method_with_headers(self) -> None:
         """Test client DELETE method with headers."""
         client = FlextApiClient()
 
@@ -139,15 +130,14 @@ class TestFlextApiClientHttpMethods:
             mock_request.return_value = mock_response
 
             headers = {"Authorization": "Bearer token"}
-            result = await client.delete("/test", headers=headers)
+            result = client.delete("/test", headers=headers)
 
             assert result.is_success
             mock_request.assert_called_once()
             call_args = mock_request.call_args
             assert call_args[1]["headers"] == headers
 
-    @pytest.mark.asyncio
-    async def test_client_patch_method(self) -> None:
+    def test_client_patch_method(self) -> None:
         """Test client PATCH method."""
         client = FlextApiClient()
 
@@ -155,7 +145,7 @@ class TestFlextApiClientHttpMethods:
             mock_response = FlextResult[object].ok({"status": "success"})
             mock_request.return_value = mock_response
 
-            result = await client.patch("/test")
+            result = client.patch("/test")
 
             assert result.is_success
             mock_request.assert_called_once()
@@ -163,8 +153,7 @@ class TestFlextApiClientHttpMethods:
             assert call_args[0][0] == "PATCH"  # method
             assert call_args[0][1] == "/test"  # url
 
-    @pytest.mark.asyncio
-    async def test_client_patch_method_with_timeout(self) -> None:
+    def test_client_patch_method_with_timeout(self) -> None:
         """Test client PATCH method with timeout."""
         client = FlextApiClient()
 
@@ -172,15 +161,14 @@ class TestFlextApiClientHttpMethods:
             mock_response = FlextResult[object].ok({"status": "success"})
             mock_request.return_value = mock_response
 
-            result = await client.patch("/test", request_timeout=30)
+            result = client.patch("/test", request_timeout=30)
 
             assert result.is_success
             mock_request.assert_called_once()
             call_args = mock_request.call_args
             assert call_args[1]["request_timeout"] == 30
 
-    @pytest.mark.asyncio
-    async def test_client_http_methods_with_complex_params(self) -> None:
+    def test_client_http_methods_with_complex_params(self) -> None:
         """Test client HTTP methods with complex parameters."""
         client = FlextApiClient()
 
@@ -189,7 +177,7 @@ class TestFlextApiClientHttpMethods:
             mock_request.return_value = mock_response
 
             # Test with multiple parameters
-            result = await client.post(
+            result = client.post(
                 "/test",
                 params={"page": 1, "limit": 10},
                 json={"name": "test"},
@@ -205,8 +193,7 @@ class TestFlextApiClientHttpMethods:
             assert call_args[1]["headers"] == {"Content-Type": "application/json"}
             assert call_args[1]["request_timeout"] == 60
 
-    @pytest.mark.asyncio
-    async def test_client_http_methods_error_handling(self) -> None:
+    def test_client_http_methods_error_handling(self) -> None:
         """Test client HTTP methods error handling."""
         client = FlextApiClient()
 
@@ -214,13 +201,12 @@ class TestFlextApiClientHttpMethods:
             mock_response = FlextResult[object].fail("Request failed")
             mock_request.return_value = mock_response
 
-            result = await client.get("/test")
+            result = client.get("/test")
 
             assert result.is_failure
             assert result.error == "Request failed"
 
-    @pytest.mark.asyncio
-    async def test_client_extract_kwargs_method(self) -> None:
+    def test_client_extract_kwargs_method(self) -> None:
         """Test client _extract_kwargs method."""
         client = FlextApiClient()
 
@@ -247,8 +233,7 @@ class TestFlextApiClientHttpMethods:
         assert extracted["headers"] == {"Authorization": "Bearer token"}
         assert extracted["request_timeout"] == 30
 
-    @pytest.mark.asyncio
-    async def test_client_extract_kwargs_empty(self) -> None:
+    def test_client_extract_kwargs_empty(self) -> None:
         """Test client _extract_kwargs with empty kwargs."""
         client = FlextApiClient()
 
@@ -260,14 +245,18 @@ class TestFlextApiClientHttpMethods:
             len(extracted) == 6
         )  # params, data, json, headers, request_timeout, timeout
 
-    @pytest.mark.asyncio
-    async def test_client_extract_kwargs_invalid_input(self) -> None:
+    def test_client_extract_kwargs_invalid_input(self) -> None:
         """Test client _extract_kwargs with invalid input."""
         client = FlextApiClient()
 
-        # Test with non-dict input - this should cause an AttributeError
-        with pytest.raises(AttributeError):
-            client._extract_kwargs("not_a_dict")
+        # Test with non-dict input - should return empty HttpKwargs gracefully
+        result = client._extract_kwargs("not_a_dict")
+        assert result is not None
+        assert isinstance(result, dict)
+        # Empty HttpKwargs should have None values
+        assert result.get("params") is None
+        assert result.get("data") is None
+        assert result.get("json") is None
 
     def test_client_http_methods_exist(self) -> None:
         """Test that client has expected HTTP methods."""
@@ -281,8 +270,7 @@ class TestFlextApiClientHttpMethods:
                 f"Client method {method} is not callable"
             )
 
-    @pytest.mark.asyncio
-    async def test_client_http_methods_with_none_values(self) -> None:
+    def test_client_http_methods_with_none_values(self) -> None:
         """Test client HTTP methods with None values in kwargs."""
         client = FlextApiClient()
 
@@ -290,7 +278,7 @@ class TestFlextApiClientHttpMethods:
             mock_response = FlextResult[object].ok({"status": "success"})
             mock_request.return_value = mock_response
 
-            result = await client.post(
+            result = client.post(
                 "/test", params=None, json=None, headers=None, request_timeout=None
             )
 

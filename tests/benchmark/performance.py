@@ -15,7 +15,7 @@ class TestAPIPerformanceBenchmarks:
     def test_api_creation_benchmark(self) -> None:
         """Benchmark API creation performance."""
         # Simple benchmark for API creation
-        api_instance = FlextApi.create_client(base_url="https://httpbin.org")
+        api_instance = FlextApi.Client(base_url="https://httpbin.org")
         assert api_instance is not None
 
     def test_client_creation_benchmark(self) -> None:

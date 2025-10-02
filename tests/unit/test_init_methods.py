@@ -1,312 +1,168 @@
-"""Tests for FlextApi __init__.py methods to improve coverage."""
+"""Tests for FlextApi thin facade."""
 
-from unittest.mock import Mock, patch
+from flext_api import (
+    FlextApi,
+    FlextApiApp,
+    FlextApiClient,
+    FlextApiConfig,
+    FlextApiConstants,
+    FlextApiExceptions,
+    FlextApiModels,
+    FlextApiProtocols,
+    FlextApiStorage,
+    FlextApiTypes,
+    FlextApiUtilities,
+)
 
-import pytest
 
-from flext_api import FlextApi, FlextApiConstants
+class TestFlextApiFacade:
+    """Tests for FlextApi thin facade - verifies all modules are properly exposed."""
 
+    def test_facade_exposes_app(self) -> None:
+        """Test that FlextApi.App references FlextApiApp."""
+        assert FlextApi.App is FlextApiApp
+        assert hasattr(FlextApi, "App")
 
-class TestFlextApiInitMethods:
-    """Tests for FlextApi __init__.py methods to improve coverage."""
+    def test_facade_exposes_client(self) -> None:
+        """Test that FlextApi.Client references FlextApiClient."""
+        assert FlextApi.Client is FlextApiClient
+        assert hasattr(FlextApi, "Client")
 
-    def test_create_client_with_default_config(self) -> None:
-        """Test create_client with default configuration."""
-        base_url = "https://api.example.com"
+    def test_facade_exposes_config(self) -> None:
+        """Test that FlextApi.Config references FlextApiConfig."""
+        assert FlextApi.Config is FlextApiConfig
+        assert hasattr(FlextApi, "Config")
 
-        with patch("flext_api.FlextApi.Client") as mock_client_class:
-            mock_client = Mock()
-            mock_client_class.return_value = mock_client
+    def test_facade_exposes_constants(self) -> None:
+        """Test that FlextApi.Constants references FlextApiConstants."""
+        assert FlextApi.Constants is FlextApiConstants
+        assert hasattr(FlextApi, "Constants")
 
-            client = FlextApi.create_client(base_url)
+    def test_facade_exposes_exceptions(self) -> None:
+        """Test that FlextApi.Exceptions references FlextApiExceptions."""
+        assert FlextApi.Exceptions is FlextApiExceptions
+        assert hasattr(FlextApi, "Exceptions")
 
-            assert client == mock_client
-            mock_client_class.assert_called_once()
+    def test_facade_exposes_models(self) -> None:
+        """Test that FlextApi.Models references FlextApiModels."""
+        assert FlextApi.Models is FlextApiModels
+        assert hasattr(FlextApi, "Models")
 
-            # Check the call arguments
-            call_args = mock_client_class.call_args
-            assert call_args[1]["base_url"] == base_url
-            assert call_args[1]["config"] is None
+    def test_facade_exposes_protocols(self) -> None:
+        """Test that FlextApi.Protocols references FlextApiProtocols."""
+        assert FlextApi.Protocols is FlextApiProtocols
+        assert hasattr(FlextApi, "Protocols")
 
-    def test_create_client_with_custom_parameters(self) -> None:
-        """Test create_client with custom parameters."""
-        base_url = "https://api.example.com"
-        kwargs = {
-            "timeout": 60,
-            "max_retries": 5,
-            "headers": {"Authorization": "Bearer token"},
-            "verify_ssl": False,
-        }
+    def test_facade_exposes_storage(self) -> None:
+        """Test that FlextApi.Storage references FlextApiStorage."""
+        assert FlextApi.Storage is FlextApiStorage
+        assert hasattr(FlextApi, "Storage")
 
-        with patch("flext_api.FlextApi.Client") as mock_client_class:
-            mock_client = Mock()
-            mock_client_class.return_value = mock_client
+    def test_facade_exposes_types(self) -> None:
+        """Test that FlextApi.Types references FlextApiTypes."""
+        assert FlextApi.Types is FlextApiTypes
+        assert hasattr(FlextApi, "Types")
 
-            client = FlextApi.create_client(base_url, **kwargs)
+    def test_facade_exposes_utilities(self) -> None:
+        """Test that FlextApi.Utilities references FlextApiUtilities."""
+        assert FlextApi.Utilities is FlextApiUtilities
+        assert hasattr(FlextApi, "Utilities")
 
-            assert client == mock_client
-            mock_client_class.assert_called_once()
+    def test_facade_constant_shortcuts(self) -> None:
+        """Test that FlextApi provides constant shortcuts."""
+        assert FlextApi.HttpMethod is FlextApiConstants.HttpMethod
+        assert FlextApi.ClientStatus is FlextApiConstants.ClientStatus
+        assert FlextApi.RequestStatus is FlextApiConstants.RequestStatus
+        assert FlextApi.ServiceStatus is FlextApiConstants.ServiceStatus
+        assert FlextApi.ContentType is FlextApiConstants.ContentType
+        assert FlextApi.StorageBackend is FlextApiConstants.StorageBackend
+        assert FlextApi.AuthenticationType is FlextApiConstants.AuthenticationType
+        assert FlextApi.CacheStrategy is FlextApiConstants.CacheStrategy
+        assert FlextApi.LoggingConstants is FlextApiConstants.LoggingConstants
 
-            # Check the call arguments
-            call_args = mock_client_class.call_args
-            assert call_args[1]["base_url"] == base_url
-            assert call_args[1]["timeout"] == 60
-            assert call_args[1]["max_retries"] == 5
-            assert call_args[1]["headers"] == {"Authorization": "Bearer token"}
-            assert call_args[1]["verify_ssl"] is False
-
-    def test_create_client_with_none_parameters(self) -> None:
-        """Test create_client with None parameters."""
-        base_url = "https://api.example.com"
-        kwargs = {
-            "timeout": None,
-            "max_retries": None,
-            "headers": None,
-            "verify_ssl": True,
-        }
-
-        with patch("flext_api.FlextApi.Client") as mock_client_class:
-            mock_client = Mock()
-            mock_client_class.return_value = mock_client
-
-            client = FlextApi.create_client(base_url, **kwargs)
-
-            assert client == mock_client
-            mock_client_class.assert_called_once()
-
-            # Check the call arguments
-            call_args = mock_client_class.call_args
-            assert call_args[1]["base_url"] == base_url
-            assert call_args[1]["timeout"] is None
-            assert call_args[1]["max_retries"] is None
-            assert call_args[1]["headers"] is None
-            assert call_args[1]["verify_ssl"] is True
-
-    def test_create_client_with_default_verify_ssl(self) -> None:
-        """Test create_client with default verify_ssl."""
-        base_url = "https://api.example.com"
-
-        with patch("flext_api.FlextApi.Client") as mock_client_class:
-            mock_client = Mock()
-            mock_client_class.return_value = mock_client
-
-            client = FlextApi.create_client(base_url)
-
-            assert client == mock_client
-            mock_client_class.assert_called_once()
-
-            # Check the call arguments
-            call_args = mock_client_class.call_args
-            assert call_args[1]["verify_ssl"] is True  # Default value
-
-    def test_create_config_with_kwargs(self) -> None:
-        """Test create_config with kwargs."""
-        kwargs = {
-            "base_url": "https://api.example.com",
-            "timeout": 30.0,
-            "max_retries": 3,
-        }
-
-        with patch("flext_api.FlextApi.Config") as mock_config_class:
-            mock_config_instance = Mock()
-            mock_config_class.get_or_create_shared_instance.return_value = (
-                mock_config_instance
-            )
-
-            config = FlextApi.create_config(**kwargs)
-
-            assert config == mock_config_instance
-            mock_config_class.get_or_create_shared_instance.assert_called_once_with(
-                project_name="flext-api", **kwargs
-            )
-
-    def test_create_config_without_kwargs(self) -> None:
-        """Test create_config without kwargs."""
-        with patch("flext_api.FlextApi.Config") as mock_config_class:
-            mock_config_instance = Mock()
-            mock_config_class.get_or_create_shared_instance.return_value = (
-                mock_config_instance
-            )
-
-            config = FlextApi.create_config()
-
-            assert config == mock_config_instance
-            mock_config_class.get_or_create_shared_instance.assert_called_once_with(
-                project_name="flext-api"
-            )
-
-    def test_get_constants(self) -> None:
-        """Test get_constants method."""
-        constants = FlextApi.get_constants()
-
-        assert constants == FlextApiConstants
-        assert constants is not None
-
-    def test_flext_api_class_methods_exist(self) -> None:
-        """Test that FlextApi has expected class methods."""
-        assert hasattr(FlextApi, "create_client")
-        assert hasattr(FlextApi, "create_config")
-        assert hasattr(FlextApi, "get_constants")
-
-        # Test method types
-        assert callable(FlextApi.create_client)
-        assert callable(FlextApi.create_config)
-        assert callable(FlextApi.get_constants)
-
-    def test_create_client_with_various_base_urls(self) -> None:
-        """Test create_client with various base URLs."""
-        test_urls = [
-            "https://api.example.com",
-            "http://localhost:8000",
-            "https://staging-api.example.com",
-            "https://production-api.example.com",
+    def test_facade_provides_unified_access(self) -> None:
+        """Test that facade provides unified access to all components."""
+        # Verify all expected attributes exist
+        expected_attributes = [
+            "App",
+            "Client",
+            "Config",
+            "Constants",
+            "Exceptions",
+            "Models",
+            "Protocols",
+            "Storage",
+            "Types",
+            "Utilities",
+            "HttpMethod",
+            "ClientStatus",
+            "RequestStatus",
+            "ServiceStatus",
+            "ContentType",
+            "StorageBackend",
+            "AuthenticationType",
+            "CacheStrategy",
+            "LoggingConstants",
         ]
 
-        with patch("flext_api.FlextApi.Client") as mock_client_class:
-            mock_client = Mock()
-            mock_client_class.return_value = mock_client
+        for attr in expected_attributes:
+            assert hasattr(FlextApi, attr), f"FlextApi missing attribute: {attr}"
 
-            for url in test_urls:
-                client = FlextApi.create_client(url)
+    def test_client_instantiation_through_facade(self) -> None:
+        """Test that client can be instantiated through facade."""
+        # This should work - direct instantiation
+        client = FlextApi.Client(base_url="https://api.example.com")
+        assert client is not None
+        assert isinstance(client, FlextApiClient)
 
-                assert client == mock_client
+    def test_config_instantiation_through_facade(self) -> None:
+        """Test that config can be instantiated through facade."""
+        # This should work - direct instantiation
+        config = FlextApi.Config()
+        assert config is not None
+        assert isinstance(config, FlextApiConfig)
 
-                # Verify the base_url was passed correctly
-                call_args = mock_client_class.call_args
-                assert call_args[1]["base_url"] == url
+    def test_storage_instantiation_through_facade(self) -> None:
+        """Test that storage can be instantiated through facade."""
+        # This should work - direct instantiation
+        storage = FlextApi.Storage()
+        assert storage is not None
+        assert isinstance(storage, FlextApiStorage)
 
-    def test_create_client_parameter_filtering(self) -> None:
-        """Test create_client parameter filtering."""
-        base_url = "https://api.example.com"
-        kwargs = {
-            "timeout": 60,
-            "max_retries": 5,
-            "headers": {"Authorization": "Bearer token"},
-            "verify_ssl": False,
-            "unknown_param": "should_be_ignored",
-            "another_unknown": 123,
-        }
+    def test_models_access_through_facade(self) -> None:
+        """Test that models can be accessed through facade."""
+        # Models is a class with nested classes
+        assert hasattr(FlextApi.Models, "HttpRequest")
+        assert hasattr(FlextApi.Models, "HttpResponse")
+        assert hasattr(FlextApi.Models, "ClientConfig")
 
-        with patch("flext_api.FlextApi.Client") as mock_client_class:
-            mock_client = Mock()
-            mock_client_class.return_value = mock_client
+    def test_constants_access_through_facade(self) -> None:
+        """Test that constants can be accessed through facade."""
+        # Constants is a class with constant values
+        assert hasattr(FlextApi.Constants, "HTTP_OK")
+        assert FlextApi.Constants.HTTP_OK == 200
+        assert hasattr(FlextApi.Constants, "DEFAULT_TIMEOUT")
 
-            client = FlextApi.create_client(base_url, **kwargs)
+    def test_exceptions_access_through_facade(self) -> None:
+        """Test that exceptions can be accessed through facade."""
+        # Exceptions is a class with nested exception classes
+        assert hasattr(FlextApi.Exceptions, "ValidationError")
+        assert hasattr(FlextApi.Exceptions, "AuthenticationError")
+        assert hasattr(FlextApi.Exceptions, "NotFoundError")
 
-            assert client == mock_client
-            mock_client_class.assert_called_once()
+    def test_facade_is_thin_no_logic(self) -> None:
+        """Test that facade contains no logic - only references."""
+        # Verify that all class attributes are direct references
+        assert FlextApi.Client is FlextApiClient
+        assert FlextApi.Config is FlextApiConfig
+        assert FlextApi.Constants is FlextApiConstants
 
-            # Check that only known parameters are passed
-            call_args = mock_client_class.call_args
-            call_kwargs = call_args[1]
+        # Verify no instance methods exist (only class references)
+        import inspect
 
-            assert call_kwargs["base_url"] == base_url
-            assert call_kwargs["timeout"] == 60
-            assert call_kwargs["max_retries"] == 5
-            assert call_kwargs["headers"] == {"Authorization": "Bearer token"}
-            assert call_kwargs["verify_ssl"] is False
-
-            # Unknown parameters should not be passed
-            assert "unknown_param" not in call_kwargs
-            assert "another_unknown" not in call_kwargs
-
-    def test_create_config_with_complex_kwargs(self) -> None:
-        """Test create_config with complex kwargs."""
-        complex_kwargs = {
-            "base_url": "https://api.example.com",
-            "timeout": 30.0,
-            "max_retries": 3,
-            "headers": {"Content-Type": "application/json"},
-            "verify_ssl": True,
-            "custom_setting": "custom_value",
-        }
-
-        with patch("flext_api.FlextApi.Config") as mock_config_class:
-            mock_config_instance = Mock()
-            mock_config_class.get_or_create_shared_instance.return_value = (
-                mock_config_instance
-            )
-
-            config = FlextApi.create_config(**complex_kwargs)
-
-            assert config == mock_config_instance
-            mock_config_class.get_or_create_shared_instance.assert_called_once_with(
-                project_name="flext-api", **complex_kwargs
-            )
-
-    def test_flext_api_attributes_exist(self) -> None:
-        """Test that FlextApi has expected attributes."""
-        assert hasattr(FlextApi, "Client")
-        assert hasattr(FlextApi, "Config")
-        assert hasattr(FlextApi, "Constants")
-        assert hasattr(FlextApi, "Storage")
-        assert hasattr(FlextApi, "Utilities")
-        assert hasattr(FlextApi, "Exceptions")
-        assert hasattr(FlextApi, "Models")
-        # Note: Types is not exposed in the main FlextApi class
-
-    def test_create_client_error_handling(self) -> None:
-        """Test create_client error handling."""
-        base_url = "https://api.example.com"
-
-        with patch("flext_api.FlextApi.Client") as mock_client_class:
-            mock_client_class.side_effect = Exception("Client creation failed")
-
-            with pytest.raises(Exception, match="Client creation failed"):
-                FlextApi.create_client(base_url)
-
-    def test_create_config_error_handling(self) -> None:
-        """Test create_config error handling."""
-        with patch("flext_api.FlextApi.Config") as mock_config_class:
-            mock_config_class.get_or_create_shared_instance.side_effect = Exception(
-                "Config creation failed"
-            )
-
-            with pytest.raises(Exception, match="Config creation failed"):
-                FlextApi.create_config()
-
-    def test_flext_api_singleton_pattern(self) -> None:
-        """Test FlextApi singleton pattern behavior."""
-        # Test that get_constants returns the same instance
-        constants1 = FlextApi.get_constants()
-        constants2 = FlextApi.get_constants()
-
-        assert constants1 is constants2
-        assert constants1 == FlextApiConstants
-
-    def test_create_client_with_minimal_parameters(self) -> None:
-        """Test create_client with minimal parameters."""
-        base_url = "https://api.example.com"
-
-        with patch("flext_api.FlextApi.Client") as mock_client_class:
-            mock_client = Mock()
-            mock_client_class.return_value = mock_client
-
-            client = FlextApi.create_client(base_url)
-
-            assert client == mock_client
-            mock_client_class.assert_called_once()
-
-            # Check default values
-            call_args = mock_client_class.call_args
-            assert call_args[1]["base_url"] == base_url
-            assert call_args[1]["config"] is None
-            assert call_args[1]["timeout"] is None
-            assert call_args[1]["max_retries"] is None
-            assert call_args[1]["headers"] is None
-            assert call_args[1]["verify_ssl"] is True
-
-    def test_get_models_method(self) -> None:
-        """Test get_models method."""
-        models = FlextApi.get_models()
-        assert models is not None
-        assert hasattr(models, "AppConfig")
-        assert hasattr(models, "HttpResponse")
-
-    def test_get_exceptions_method(self) -> None:
-        """Test get_exceptions method."""
-        exceptions = FlextApi.get_exceptions()
-        assert exceptions is not None
-        assert hasattr(exceptions, "AuthenticationError")
-        assert hasattr(exceptions, "ValidationError")
-        assert hasattr(exceptions, "NotFoundError")
+        methods = [
+            name
+            for name, method in inspect.getmembers(FlextApi, predicate=inspect.ismethod)
+            if not name.startswith("_")
+        ]
+        assert len(methods) == 0, f"Facade should have no methods, found: {methods}"

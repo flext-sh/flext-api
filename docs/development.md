@@ -141,15 +141,14 @@ pytest tests/unit/test_client.py::test_http_request -v -s
 
 ```python
 import pytest
-import asyncio
 from flext_api import FlextApiClient, FlextApiModels
 from flext_core import FlextResult
 
 class TestFlextApiClient:
     """Test HTTP client functionality."""
 
-    @pytest.mark.asyncio
-    async def test_basic_http_request(self):
+    @pytest.mark.io
+    def test_basic_http_request(self):
         """Test basic HTTP request functionality."""
 
         client = FlextApiClient(base_url="https://httpbin.org")
@@ -161,7 +160,7 @@ class TestFlextApiClient:
         )
 
         try:
-            result = await client.request(request)
+            result = client.request(request)
 
             assert result.is_success, f"Request failed: {result.error}"
 
@@ -170,7 +169,7 @@ class TestFlextApiClient:
             assert isinstance(response.body, (dict, str))
 
         finally:
-            await client.close()
+            client.close()
 
     def test_http_request_model_validation(self):
         """Test HTTP request model validation."""
@@ -205,7 +204,7 @@ All code MUST follow FLEXT ecosystem patterns:
 from flext_core import FlextResult, FlextService
 
 class MyHttpService(FlextService):
-    async def process_request(self, data: dict) -> FlextResult[dict]:
+    def process_request(self, data: dict) -> FlextResult[dict]:
         if not data:
             return FlextResult[dict].fail("Data cannot be empty")
 
@@ -237,7 +236,7 @@ class FlextApiClient(FlextService):
         super().__init__()
         self._logger = FlextLogger(__name__)
 
-    async def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
+    def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
         # Use nested helper
         validation_result = self._RequestHelper.validate_request(request)
         if validation_result.is_failure:
@@ -415,9 +414,8 @@ poetry run ipython
 from flext_api import FlextApiClient
 client = FlextApiClient(base_url="https://httpbin.org")
 
-# Use async in IPython
-import asyncio
-result = await client.get("/json")
+# Use in IPython
+result = client.get("/json")
 print(result.unwrap().body if result.is_success else result.error)
 ```
 
@@ -434,7 +432,7 @@ httpx.logger.setLevel(logging.DEBUG)
 # Debug specific request
 from flext_api import FlextApiClient
 client = FlextApiClient(base_url="https://httpbin.org")
-result = await client.get("/get")
+result = client.get("/get")
 ```
 
 ### **Performance Profiling**
