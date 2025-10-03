@@ -13,6 +13,7 @@ from flext_api import (
     FlextApiClient,
     FlextApiModels,
 )
+from flext_core import FlextTypes
 
 
 def test_client_request_pipeline_success() -> None:
@@ -86,7 +87,8 @@ def test_create_client_factory_function() -> None:
     }
 
     typed_config = cast(
-        "Mapping[str, str | int | float] | bool | dict[str, str] | None", config_dict
+        "Mapping[str, str | int | float] | bool | FlextTypes.StringDict | None",
+        config_dict,
     )
     client = FlextApiClient(config=typed_config)
 
@@ -98,12 +100,12 @@ def test_create_client_factory_function() -> None:
 def test_create_client_validation_error() -> None:
     """Test create_client with validation errors."""
     # Invalid config without base_url should raise exception or return valid client with defaults
-    invalid_config: dict[str, object] = {"timeout": 30.0}
+    invalid_config: FlextTypes.Dict = {"timeout": 30.0}
 
     # The function may throw an exception or return a client - test it doesn't crash
     try:
         typed_invalid_config = cast(
-            "Mapping[str, str | int | float] | bool | dict[str, str] | None",
+            "Mapping[str, str | int | float] | bool | FlextTypes.StringDict | None",
             invalid_config,
         )
         client = FlextApiClient(config=typed_invalid_config)

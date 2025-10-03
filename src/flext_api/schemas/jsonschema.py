@@ -17,9 +17,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from flext_core import FlextResult
-
 from flext_api.plugins import SchemaPlugin
+from flext_core import FlextResult, FlextTypes
 
 
 class JSONSchemaValidator(SchemaPlugin):
@@ -364,7 +363,7 @@ class JSONSchemaValidator(SchemaPlugin):
         """
         return schema_type.lower() in {"json-schema", "jsonschema", "json"}
 
-    def get_supported_schemas(self) -> list[str]:
+    def get_supported_schemas(self) -> FlextTypes.StringList:
         """Get list of supported schema types.
 
         Returns:

@@ -17,10 +17,10 @@ from typing import cast
 from unittest.mock import patch
 
 import pytest
-from flext_core import FlextResult
 from flext_tests import FlextTestsMatchers
 
 from flext_api import FlextApiClient, FlextApiModels
+from flext_core import FlextResult, FlextTypes
 
 
 def test_client_build_and_error_formatting_on_invalid_url() -> None:
@@ -178,7 +178,7 @@ class TestFlextApiClient:
         """Test health check functionality."""
         FlextApiClient(base_url="https://api.example.com")
         # Note: FlextApiClient doesn't have a health_check() method
-        health: dict[str, object] = {"status": "ok"}
+        health: FlextTypes.Dict = {"status": "ok"}
 
         assert "client_id" in health
         assert health["session_started"] is False
@@ -213,7 +213,7 @@ class TestFlextApiClient:
 
         # Initial state - check health instead of private attributes
         # Note: FlextApiClient doesn't have a health_check() method
-        health: dict[str, object] = {"status": "ok"}
+        health: FlextTypes.Dict = {"status": "ok"}
         assert health["status"] == "stopped"
 
         # Note: FlextApiClient doesn't have a start() method
@@ -860,7 +860,8 @@ def test_create_flext_api_factory_function() -> None:
 
     # Cast to proper type for MyPy
     typed_config = cast(
-        "Mapping[str, str | int | float] | bool | dict[str, str] | None", config_dict
+        "Mapping[str, str | int | float] | bool | FlextTypes.StringDict | None",
+        config_dict,
     )
     client = FlextApiClient(config=typed_config)
 
@@ -873,13 +874,13 @@ def test_create_flext_api_factory_function() -> None:
 def test_create_flext_api_validation_error() -> None:
     """Test create_flext_api with validation errors."""
     # Invalid config without base_url should raise exception or return valid client with defaults
-    invalid_config: dict[str, object] = {"timeout": 30.0}
+    invalid_config: FlextTypes.Dict = {"timeout": 30.0}
 
     # The function may throw an exception or return a client - test it doesn't crash
     try:
         # Cast to proper type for MyPy
         typed_config = cast(
-            "Mapping[str, str | int | float] | bool | dict[str, str] | None",
+            "Mapping[str, str | int | float] | bool | FlextTypes.StringDict | None",
             invalid_config,
         )
         client = FlextApiClient(config=typed_config)

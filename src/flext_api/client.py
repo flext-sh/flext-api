@@ -10,7 +10,7 @@ import time
 import uuid
 from collections.abc import Mapping
 from types import TracebackType
-from typing import NotRequired, Self, cast, override
+from typing import NotRequired, Self, override
 from urllib.parse import urlencode
 
 from pydantic import ConfigDict, PrivateAttr, ValidationError
@@ -18,8 +18,13 @@ from typing_extensions import TypedDict
 
 from flext_api.app import FlextApiApp
 from flext_api.config import FlextApiConfig
-from flext_api.middleware import MiddlewarePipeline
+from flext_api.middleware import FlextApiMiddleware
 from flext_api.models import FlextApiModels
+from flext_api.protocol_impls import (
+    HttpClientImplementation,
+    LoggerProtocolImplementation,
+    StorageBackendImplementation,
+)
 from flext_api.protocol_impls.http import HttpProtocolPlugin
 from flext_api.protocols import FlextApiProtocols
 from flext_api.registry import FlextApiRegistry
@@ -33,6 +38,7 @@ from flext_core import (
     FlextLogger,
     FlextResult,
     FlextService,
+    FlextTypes,
 )
 
 
@@ -65,11 +71,9 @@ class FlextApiClient(FlextService[None]):
         )
 
         # Execute HTTP request
-        response_result: FlextResult[FlextApiTypes.Core.JsonValue] = client.get(
-            "/users"
-        )
+        response_result: FlextResult[FlextApiTypes.JsonValue] = client.get("/users")
         if response_result.is_success:
-            data: dict[str, FlextApiTypes.Core.JsonValue] = response_result.unwrap()
+            data: dict[str, FlextApiTypes.JsonValue] = response_result.unwrap()
             print(f"Retrieved {len(data)} users")
         else:
             logger.error(f"Request failed: {response_result.error}")
@@ -85,10 +89,10 @@ class FlextApiClient(FlextService[None]):
     class HttpKwargs(TypedDict):
         """Type definition for HTTP request kwargs."""
 
-        params: NotRequired[dict[str, str] | None]
-        data: NotRequired[dict[str, str] | None]
-        json: NotRequired[dict[str, str] | None]
-        headers: NotRequired[dict[str, str] | None]
+        params: NotRequired[FlextTypes.StringDict | None]
+        data: NotRequired[FlextTypes.StringDict | None]
+        json: NotRequired[FlextTypes.StringDict | None]
+        headers: NotRequired[FlextTypes.StringDict | None]
         request_timeout: NotRequired[int | None]
         timeout: NotRequired[float | None]
 
@@ -115,8 +119,8 @@ class FlextApiClient(FlextService[None]):
         self,
         config: FlextApiModels.ClientConfig
         | FlextApiConfig
-        | Mapping[str, str | int | float | dict[str, str]]
-        | dict[str, str]
+        | Mapping[str, str | int | float | FlextTypes.StringDict]
+        | FlextTypes.StringDict
         | str
         | object
         | None = None,
@@ -195,7 +199,7 @@ class FlextApiClient(FlextService[None]):
             self._protocol_plugin = protocol_result.unwrap()
 
         # Initialize middleware pipeline
-        self._middleware = MiddlewarePipeline()
+        self._middleware = FlextApiMiddleware.Pipeline()
 
         # Initialize modular services
         self._http = FlextApiUtilities.HttpOperations()
@@ -238,84 +242,6 @@ class FlextApiClient(FlextService[None]):
             HTTP client protocol implementation for making requests
 
         """
-
-        class HttpClientImplementation:
-            """HTTP client implementation conforming to HttpClientProtocol."""
-
-            def __init__(self, client_config: FlextApiModels.ClientConfig) -> None:
-                self._config = client_config
-                self._logger = FlextLogger(__name__)
-
-            def request(
-                self,
-                method: str,
-                url: str,
-                **kwargs: object,
-            ) -> FlextResult[FlextApiModels.HttpResponse]:
-                """Execute an HTTP request conforming to protocol."""
-                try:
-                    # Build full URL
-                    if url.startswith(("http://", "https://")):
-                        full_url = url
-                    else:
-                        base_url = self._config.base_url.rstrip("/")
-                        url = url.lstrip("/")
-                        full_url = f"{base_url}/{url}"
-
-                    # Prepare headers
-                    request_headers: dict[str, str] = dict(self._config.headers or {})
-                    headers_value = kwargs.get("headers")
-                    if headers_value and isinstance(headers_value, dict):
-                        request_headers.update(headers_value)
-
-                    # Create response model with proper field types
-                    response = FlextApiModels.HttpResponse(
-                        status_code=FlextConstants.Http.HTTP_OK,
-                        headers={str(k): str(v) for k, v in request_headers.items()},
-                        body='{"message": "success"}',
-                        url=full_url,
-                        method=method,
-                    )
-
-                    return FlextResult[FlextApiModels.HttpResponse].ok(response)
-
-                except Exception as e:
-                    error_msg = f"HTTP protocol request failed: {e}"
-                    self._logger.exception(error_msg)
-                    return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
-
-            def get(
-                self,
-                url: str,
-                **kwargs: object,
-            ) -> FlextResult[FlextApiModels.HttpResponse]:
-                """Execute HTTP GET request."""
-                return self.request("GET", url, **kwargs)
-
-            def post(
-                self,
-                url: str,
-                **kwargs: object,
-            ) -> FlextResult[FlextApiModels.HttpResponse]:
-                """Execute HTTP POST request."""
-                return self.request("POST", url, **kwargs)
-
-            def put(
-                self,
-                url: str,
-                **kwargs: object,
-            ) -> FlextResult[FlextApiModels.HttpResponse]:
-                """Execute HTTP PUT request."""
-                return self.request("PUT", url, **kwargs)
-
-            def delete(
-                self,
-                url: str,
-                **kwargs: object,
-            ) -> FlextResult[FlextApiModels.HttpResponse]:
-                """Execute HTTP DELETE request."""
-                return self.request("DELETE", url, **kwargs)
-
         return HttpClientImplementation(self._client_config)
 
     def _create_storage_backend_implementation(
@@ -327,102 +253,7 @@ class FlextApiClient(FlextService[None]):
             Storage backend protocol implementation for caching
 
         """
-
-        class StorageBackendImplementation:
-            """Storage backend implementation conforming to StorageBackendProtocol."""
-
-            def __init__(self) -> None:
-                self._storage: dict[str, FlextApiTypes.Core.JsonValue] = {}
-                self._logger = FlextLogger(__name__)
-
-            def get(
-                self, key: str, default: FlextApiTypes.Core.JsonValue = None
-            ) -> FlextResult[FlextApiTypes.Core.JsonValue]:
-                """Retrieve value by key."""
-                try:
-                    if not key:
-                        return FlextResult[FlextApiTypes.Core.JsonValue].fail(
-                            "Storage key cannot be empty"
-                        )
-
-                    if key in self._storage:
-                        value = self._storage[key]
-                        self._logger.debug(f"Retrieved data with key: {key}")
-                        return FlextResult[FlextApiTypes.Core.JsonValue].ok(value)
-                    if default is not None:
-                        return FlextResult[FlextApiTypes.Core.JsonValue].ok(default)
-                    return FlextResult[FlextApiTypes.Core.JsonValue].fail(
-                        f"Key not found: {key}"
-                    )
-
-                except Exception as e:
-                    return FlextResult[FlextApiTypes.Core.JsonValue].fail(
-                        f"Retrieval operation failed: {e}"
-                    )
-
-            def set(
-                self,
-                key: FlextApiTypes.StorageKey,
-                value: object,
-                _timeout: int | None = None,
-            ) -> FlextResult[None]:
-                """Store value with optional timeout."""
-                try:
-                    if not key:
-                        return FlextResult[None].fail("Storage key cannot be empty")
-
-                    self._storage[str(key)] = value
-                    self._logger.debug(f"Stored data with key: {key}")
-                    return FlextResult[None].ok(None)
-
-                except Exception as e:
-                    return FlextResult[None].fail(f"Storage operation failed: {e}")
-
-            def delete(self, key: str) -> FlextResult[None]:
-                """Delete value by key."""
-                try:
-                    if not key:
-                        return FlextResult[None].fail("Storage key cannot be empty")
-
-                    if key in self._storage:
-                        del self._storage[key]
-                        self._logger.debug(f"Deleted data with key: {key}")
-                        return FlextResult[None].ok(None)
-                    return FlextResult[None].fail(f"Key not found: {key}")
-
-                except Exception as e:
-                    return FlextResult[None].fail(f"Delete operation failed: {e}")
-
-            def exists(self, key: FlextApiTypes.StorageKey) -> FlextResult[bool]:
-                """Check if key exists."""
-                try:
-                    exists = str(key) in self._storage
-                    return FlextResult[bool].ok(exists)
-                except Exception as e:
-                    return FlextResult[bool].fail(f"Exists check failed: {e}")
-
-            def clear(self) -> FlextResult[None]:
-                """Clear all stored values."""
-                try:
-                    self._storage.clear()
-                    self._logger.debug("Cleared all storage data")
-                    return FlextResult[None].ok(None)
-                except Exception as e:
-                    return FlextResult[None].fail(f"Clear operation failed: {e}")
-
-            def keys(self) -> FlextResult[list[FlextApiTypes.StorageKey]]:
-                """Get all keys."""
-                try:
-                    storage_keys: list[FlextApiTypes.StorageKey] = list(self._storage)
-                    return FlextResult[list[FlextApiTypes.StorageKey]].ok(storage_keys)
-                except Exception as e:
-                    return FlextResult[list[FlextApiTypes.StorageKey]].fail(
-                        f"Keys operation failed: {e}"
-                    )
-
-        return cast(
-            "FlextApiProtocols.StorageBackendProtocol", StorageBackendImplementation()
-        )
+        return StorageBackendImplementation()
 
     def _create_logger_protocol_implementation(
         self,
@@ -433,29 +264,6 @@ class FlextApiClient(FlextService[None]):
             Logger protocol implementation for structured logging
 
         """
-
-        class LoggerProtocolImplementation:
-            """Logger implementation conforming to LoggerProtocol."""
-
-            def __init__(self) -> None:
-                self._logger = FlextLogger(__name__)
-
-            def info(self, message: str, **kwargs: object) -> None:
-                """Log info message."""
-                self._logger.info(message, extra=kwargs)
-
-            def error(self, message: str, **kwargs: object) -> None:
-                """Log error message."""
-                self._logger.error(message, extra=kwargs)
-
-            def debug(self, message: str, **kwargs: object) -> None:
-                """Log debug message."""
-                self._logger.debug(message, extra=kwargs)
-
-            def warning(self, message: str, **kwargs: object) -> None:
-                """Log warning message."""
-                self._logger.warning(message, extra=kwargs)
-
         return LoggerProtocolImplementation()
 
     # Public property interfaces for modular services
@@ -506,8 +314,8 @@ class FlextApiClient(FlextService[None]):
         return self._protocol_plugin
 
     def create_flext_api_app(
-        self, app_config: dict[str, str] | None = None
-    ) -> FlextResult[FlextApiTypes.Core.JsonValue]:
+        self, app_config: FlextTypes.StringDict | None = None
+    ) -> FlextResult[FlextApiTypes.JsonValue]:
         """Create FastAPI application using FlextApi patterns.
 
         Args:
@@ -556,12 +364,12 @@ class FlextApiClient(FlextService[None]):
                 },
             )
 
-            return FlextResult[FlextApiTypes.Core.JsonValue].ok(app)
+            return FlextResult[FlextApiTypes.JsonValue].ok(app)
 
         except Exception as e:
             error_msg = f"FastAPI app creation failed: {e}"
             self._logger.exception(error_msg)
-            return FlextResult[FlextApiTypes.Core.JsonValue].fail(error_msg)
+            return FlextResult[FlextApiTypes.JsonValue].fail(error_msg)
 
     def _extract_client_config_params(
         self,
@@ -569,8 +377,8 @@ class FlextApiClient(FlextService[None]):
         config: (
             FlextApiModels.ClientConfig
             | FlextApiConfig
-            | Mapping[str, str | int | float | dict[str, str]]
-            | dict[str, str]
+            | Mapping[str, str | int | float | FlextTypes.StringDict]
+            | FlextTypes.StringDict
             | str
             | object
             | None
@@ -679,8 +487,8 @@ class FlextApiClient(FlextService[None]):
         )
 
     def _get_headers(
-        self, additional_headers: dict[str, str] | None = None
-    ) -> dict[str, str]:
+        self, additional_headers: FlextTypes.StringDict | None = None
+    ) -> FlextTypes.StringDict:
         """Prepare request headers with defaults and additional headers.
 
         Args:
@@ -690,7 +498,7 @@ class FlextApiClient(FlextService[None]):
             Complete headers dictionary for the request
 
         """
-        headers: dict[str, str] = {
+        headers: FlextTypes.StringDict = {
             str(k): str(v) for k, v in (self._client_config.headers or {}).items()
         }
         if additional_headers:
@@ -807,10 +615,10 @@ class FlextApiClient(FlextService[None]):
         method: str,
         url: str,
         *,
-        params: dict[str, str] | None = None,
-        data: dict[str, str] | None = None,
-        json: dict[str, str] | None = None,
-        headers: dict[str, str] | None = None,
+        params: FlextTypes.StringDict | None = None,
+        data: FlextTypes.StringDict | None = None,
+        json: FlextTypes.StringDict | None = None,
+        headers: FlextTypes.StringDict | None = None,
         request_timeout: int | None = None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Low-level HTTP request method using protocol plugin and middleware.
@@ -850,7 +658,9 @@ class FlextApiClient(FlextService[None]):
                 full_url = f"{full_url}{separator}{urlencode(params)}"
 
             # Prepare headers
-            request_headers: dict[str, str] = dict(self._client_config.headers or {})
+            request_headers: FlextTypes.StringDict = dict(
+                self._client_config.headers or {}
+            )
             if headers:
                 request_headers.update(headers)
 
@@ -961,7 +771,7 @@ class FlextApiClient(FlextService[None]):
     @classmethod
     def create_flext_api(
         cls, config: dict[str, str | int] | None = None
-    ) -> FlextResult[dict[str, object]]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Create complete FLEXT API setup with client and server.
 
         Args:
@@ -992,7 +802,7 @@ class FlextApiClient(FlextService[None]):
             }
 
             # Merge configurations
-            final_config: dict[str, object] = {**default_config, **(config or {})}
+            final_config: FlextTypes.Dict = {**default_config, **(config or {})}
 
             # Extract and validate values with proper type conversion
             base_url_value = str(final_config["base_url"])
@@ -1030,7 +840,7 @@ class FlextApiClient(FlextService[None]):
             })
 
             if app_result.is_failure:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"API app creation failed: {app_result.error}"
                 )
 
@@ -1041,16 +851,14 @@ class FlextApiClient(FlextService[None]):
                 "config": final_config,
             }
 
-            return FlextResult[dict[str, object]].ok(api_setup)
+            return FlextResult[FlextTypes.Dict].ok(api_setup)
 
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(
-                f"FLEXT API creation failed: {e}"
-            )
+            return FlextResult[FlextTypes.Dict].fail(f"FLEXT API creation failed: {e}")
 
     @classmethod
     def create_flext_api_app_with_settings(
-        cls, settings: dict[str, str] | None = None
+        cls, settings: FlextTypes.StringDict | None = None
     ) -> FlextResult[object]:
         """Create FastAPI application with specific settings.
 
@@ -1070,7 +878,7 @@ class FlextApiClient(FlextService[None]):
                 f"FastAPI app creation with settings failed: {e}"
             )
 
-    def perform_health_check(self) -> FlextResult[dict[str, str]]:
+    def perform_health_check(self) -> FlextResult[FlextTypes.StringDict]:
         """Perform client health check and return status information.
 
         Returns:
@@ -1095,10 +903,10 @@ class FlextApiClient(FlextService[None]):
                 "error_count": str(self._error_count),
             }
 
-            return FlextResult[dict[str, str]].ok(health_status)
+            return FlextResult[FlextTypes.StringDict].ok(health_status)
 
         except Exception as e:
-            return FlextResult[dict[str, str]].fail(f"Health check failed: {e}")
+            return FlextResult[FlextTypes.StringDict].fail(f"Health check failed: {e}")
 
     @override
     def execute(
@@ -1196,7 +1004,7 @@ class FlextApiClient(FlextService[None]):
         base_url: str | None = None,
         request_timeout: int | None = None,
         max_retries: int | None = None,
-        headers: dict[str, str] | None = None,
+        headers: FlextTypes.StringDict | None = None,
         **kwargs: object,
     ) -> FlextResult[FlextApiClient]:
         """Create a new client instance with the given parameters.
@@ -1228,8 +1036,8 @@ class FlextApiClient(FlextService[None]):
         self,
         config: FlextApiModels.ClientConfig
         | FlextApiConfig
-        | dict[str, str | int | float | dict[str, str]]
-        | dict[str, str]
+        | dict[str, str | int | float | FlextTypes.StringDict]
+        | FlextTypes.StringDict
         | str
         | None = None,
     ) -> FlextResult[FlextApiClient]:
@@ -1249,8 +1057,8 @@ class FlextApiClient(FlextService[None]):
             return FlextResult[FlextApiClient].fail(f"Failed to create client: {e}")
 
     def _prepare_headers(
-        self, additional_headers: dict[str, str] | None = None
-    ) -> dict[str, str]:
+        self, additional_headers: FlextTypes.StringDict | None = None
+    ) -> FlextTypes.StringDict:
         """Prepare headers for HTTP requests.
 
         Args:
@@ -1324,22 +1132,22 @@ class FlextApiClient(FlextService[None]):
             return FlextApiClient.HttpKwargs()
 
         params_value = kwargs.get("params")
-        params: dict[str, str] | None = (
+        params: FlextTypes.StringDict | None = (
             params_value if isinstance(params_value, dict) else None
         )
 
         data_value = kwargs.get("data")
-        data: dict[str, str] | None = (
+        data: FlextTypes.StringDict | None = (
             data_value if isinstance(data_value, dict) else None
         )
 
         json_value = kwargs.get("json")
-        json_val: dict[str, str] | None = (
+        json_val: FlextTypes.StringDict | None = (
             json_value if isinstance(json_value, dict) else None
         )
 
         headers_value = kwargs.get("headers")
-        headers: dict[str, str] | None = (
+        headers: FlextTypes.StringDict | None = (
             headers_value if isinstance(headers_value, dict) else None
         )
 
@@ -1361,6 +1169,33 @@ class FlextApiClient(FlextService[None]):
             "timeout": timeout,
         }
 
+    def _http_method(
+        self, method: str, url: str, **kwargs: object
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """Generic HTTP method implementation.
+
+        Consolidates the common logic for all HTTP methods (GET, POST, PUT, DELETE, etc.).
+
+        Args:
+            method: HTTP method (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
+            url: The URL path or full URL to request
+            **kwargs: Additional request parameters
+
+        Returns:
+            FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped in FlextResult
+
+        """
+        extracted = self._extract_kwargs(kwargs)
+        return self._request(
+            method,
+            url,
+            params=extracted.get("params"),
+            data=extracted.get("data"),
+            json=extracted.get("json"),
+            headers=extracted.get("headers"),
+            request_timeout=extracted.get("request_timeout"),
+        )
+
     def get(
         self, url: str, **kwargs: object
     ) -> FlextResult[FlextApiModels.HttpResponse]:
@@ -1374,16 +1209,7 @@ class FlextApiClient(FlextService[None]):
             FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped in FlextResult
 
         """
-        extracted = self._extract_kwargs(kwargs)
-        return self._request(
-            "GET",
-            url,
-            params=extracted.get("params"),
-            data=extracted.get("data"),
-            json=extracted.get("json"),
-            headers=extracted.get("headers"),
-            request_timeout=extracted.get("request_timeout"),
-        )
+        return self._http_method("GET", url, **kwargs)
 
     def post(
         self, url: str, **kwargs: object
@@ -1398,16 +1224,7 @@ class FlextApiClient(FlextService[None]):
             FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped in FlextResult
 
         """
-        extracted = self._extract_kwargs(kwargs)
-        return self._request(
-            "POST",
-            url,
-            params=extracted.get("params"),
-            data=extracted.get("data"),
-            json=extracted.get("json"),
-            headers=extracted.get("headers"),
-            request_timeout=extracted.get("request_timeout"),
-        )
+        return self._http_method("POST", url, **kwargs)
 
     def put(
         self, url: str, **kwargs: object
@@ -1422,16 +1239,7 @@ class FlextApiClient(FlextService[None]):
             FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped in FlextResult
 
         """
-        extracted = self._extract_kwargs(kwargs)
-        return self._request(
-            "PUT",
-            url,
-            params=extracted.get("params"),
-            data=extracted.get("data"),
-            json=extracted.get("json"),
-            headers=extracted.get("headers"),
-            request_timeout=extracted.get("request_timeout"),
-        )
+        return self._http_method("PUT", url, **kwargs)
 
     def delete(
         self, url: str, **kwargs: object
@@ -1446,16 +1254,7 @@ class FlextApiClient(FlextService[None]):
             FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped in FlextResult
 
         """
-        extracted = self._extract_kwargs(kwargs)
-        return self._request(
-            "DELETE",
-            url,
-            params=extracted.get("params"),
-            data=extracted.get("data"),
-            json=extracted.get("json"),
-            headers=extracted.get("headers"),
-            request_timeout=extracted.get("request_timeout"),
-        )
+        return self._http_method("DELETE", url, **kwargs)
 
     def patch(
         self, url: str, **kwargs: object

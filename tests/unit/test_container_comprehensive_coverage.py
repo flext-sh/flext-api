@@ -9,8 +9,9 @@ SPDX-License-Identifier: MIT
 
 import math
 
-from flext_core import FlextContainer
 from flext_tests import FlextTestsMatchers
+
+from flext_core import FlextContainer, FlextTypes
 
 
 class TestFlextContainerComprehensiveCoverage:
@@ -64,7 +65,7 @@ class TestFlextContainerComprehensiveCoverage:
         container = clean_container
 
         # Test factory registration
-        def create_service() -> dict[str, str]:
+        def create_service() -> FlextTypes.StringDict:
             return {"type": "factory_created", "id": "123"}
 
         result = container.register_factory("factory_service", create_service)
@@ -77,7 +78,7 @@ class TestFlextContainerComprehensiveCoverage:
         assert service_result.value["type"] == "factory_created"
 
         # Test factory with exception
-        def failing_factory() -> dict[str, str]:
+        def failing_factory() -> FlextTypes.StringDict:
             error_msg = "Factory failed"
             raise ValueError(error_msg)
 
@@ -328,7 +329,7 @@ class TestFlextContainerComprehensiveCoverage:
         container.register("logger", logger_service)
 
         # Create composite service that depends on others
-        def create_composite_service() -> dict[str, object]:
+        def create_composite_service() -> FlextTypes.Dict:
             db_result = container.get("database")
             logger_result = container.get("logger")
 

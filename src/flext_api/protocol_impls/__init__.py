@@ -1,32 +1,15 @@
-"""Protocol implementations package.
-
-Contains protocol-specific implementations for HTTP, WebSocket, GraphQL, gRPC, and SSE.
-
-See TRANSFORMATION_PLAN.md - Phase 2, 3, 4 for implementation details.
+"""Protocol implementations for flext-api.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-from __future__ import annotations
-
-from flext_api.protocol_impls.http import HttpProtocolPlugin
-from flext_api.protocol_impls.sse import SSEProtocolPlugin
-from flext_api.protocol_impls.websocket import WebSocketProtocolPlugin
-
-try:
-    from flext_api.protocol_impls.graphql import GraphQLProtocolPlugin
-
-    _has_graphql = True
-except ImportError:
-    GraphQLProtocolPlugin = None
-    _has_graphql = False
+from flext_api.protocol_impls.http_client import HttpClientImplementation
+from flext_api.protocol_impls.logger import LoggerProtocolImplementation
+from flext_api.protocol_impls.storage_backend import StorageBackendImplementation
 
 __all__ = [
-    "HttpProtocolPlugin",
-    "SSEProtocolPlugin",
-    "WebSocketProtocolPlugin",
+    "HttpClientImplementation",
+    "LoggerProtocolImplementation",
+    "StorageBackendImplementation",
 ]
-
-if _has_graphql:
-    __all__.append("GraphQLProtocolPlugin")

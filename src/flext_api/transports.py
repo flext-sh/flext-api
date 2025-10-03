@@ -12,9 +12,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import httpx
-from flext_core import FlextResult
 
 from flext_api.plugins import TransportPlugin
+from flext_core import FlextResult, FlextTypes
 
 
 class HttpTransport(TransportPlugin):
@@ -205,7 +205,7 @@ class HttpTransport(TransportPlugin):
         """HTTP transport supports streaming."""
         return True
 
-    def get_connection_info(self, connection: httpx.Client) -> dict[str, object]:
+    def get_connection_info(self, connection: httpx.Client) -> FlextTypes.Dict:
         """Get HTTP connection information.
 
         Args:

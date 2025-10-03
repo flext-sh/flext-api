@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
 
@@ -97,10 +97,10 @@ class TestSSEProtocolPluginSimple:
         """Test event handler registration."""
         plugin = SSEProtocolPlugin()
 
-        def on_message_event(event) -> None:
+        def on_message_event(event: dict) -> None:
             pass
 
-        def on_update_event(event) -> None:
+        def on_update_event(event: dict) -> None:
             pass
 
         def on_connect() -> None:
@@ -109,7 +109,7 @@ class TestSSEProtocolPluginSimple:
         def on_disconnect() -> None:
             pass
 
-        def on_error(error) -> None:
+        def on_error(error: Exception) -> None:
             pass
 
         plugin.on_event("message", on_message_event)
@@ -147,7 +147,7 @@ class TestSSEModelsSimple:
         event = FlextApiModels.SSEEvent(
             event_type="message",
             data="Hello SSE",
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         assert event.event_type == "message"
@@ -160,7 +160,7 @@ class TestSSEModelsSimple:
             event_type="update",
             data="Update data",
             event_id="123",
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         assert event.event_id == "123"
@@ -172,7 +172,7 @@ class TestSSEModelsSimple:
             event_type="message",
             data="test data",
             retry=5000,
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         assert event.retry == 5000
@@ -182,7 +182,7 @@ class TestSSEModelsSimple:
         event = FlextApiModels.SSEEvent(
             event_type="message",
             data="test data with length",
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         assert event.data_length == len("test data with length")

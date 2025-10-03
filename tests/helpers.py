@@ -19,10 +19,10 @@ from pathlib import Path
 from typing import cast
 
 import pytest
-from flext_core import FlextConstants, FlextResult, T
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 from flext_api.typings import FlextApiTypes
+from flext_core import FlextConstants, FlextResult, FlextTypes, T
 
 
 def create_test_storage_config(**overrides: object) -> dict[str, str | int | bool]:
@@ -80,9 +80,9 @@ def create_test_request(
     method: str = "GET",
     url: str = "https://httpbin.org/get",
     headers: FlextApiTypes.HttpHeaders | None = None,
-    params: FlextApiTypes.Core.ResponseDict | None = None,
+    params: FlextApiTypes.ResponseDict | None = None,
     timeout: float = 30.0,
-) -> FlextApiTypes.Core.ResponseDict:
+) -> FlextApiTypes.ResponseDict:
     """Create test request using FlextTestsDomains - ABSOLUTE usage.
 
     Returns:
@@ -104,8 +104,8 @@ def create_test_request(
 
 def create_test_response(
     status_code: int = 200,
-    data: FlextApiTypes.Core.ResponseDict
-    | FlextApiTypes.Core.ResponseList
+    data: FlextApiTypes.ResponseDict
+    | FlextApiTypes.ResponseList
     | str
     | bytes
     | None = None,
@@ -114,7 +114,7 @@ def create_test_response(
     request_id: str | None = None,
     *,
     from_cache: bool = False,
-) -> FlextApiTypes.Core.ResponseDict:
+) -> FlextApiTypes.ResponseDict:
     """Create test response using FlextTestsDomains - ABSOLUTE usage.
 
     Returns:
@@ -182,7 +182,7 @@ def wait_for_condition(
 # ============================================================================
 
 
-def create_temp_json_file(path: Path, data: FlextApiTypes.Core.ResponseDict) -> Path:
+def create_temp_json_file(path: Path, data: FlextApiTypes.ResponseDict) -> Path:
     """Create temp JSON file using FlextTestsUtilities patterns.
 
     Returns:
@@ -217,7 +217,7 @@ def restore_file_permissions(path: Path) -> None:
 
 
 def assert_http_status(
-    response: FlextApiTypes.Core.ResponseDict,
+    response: FlextApiTypes.ResponseDict,
     expected_status: int = 200,
 ) -> None:
     """Assert HTTP status using FlextTestsMatchers patterns."""
@@ -230,8 +230,8 @@ def assert_http_status(
 
 
 def assert_response_structure(
-    response: FlextApiTypes.Core.ResponseDict,
-    required_keys: list[str] | None = None,
+    response: FlextApiTypes.ResponseDict,
+    required_keys: FlextTypes.StringList | None = None,
 ) -> None:
     """Assert response structure using FlextTestsMatchers patterns."""
     required_keys = required_keys or ["status_code", "data", "success"]
@@ -241,7 +241,7 @@ def assert_response_structure(
             pytest.fail(f"Missing required key '{key}' in response: {response}")
 
 
-def assert_success_response(response: FlextApiTypes.Core.ResponseDict) -> None:
+def assert_success_response(response: FlextApiTypes.ResponseDict) -> None:
     """Assert success response using FlextTestsMatchers patterns."""
     assert_response_structure(response)
     assert_http_status(response, 200)
@@ -252,7 +252,7 @@ def assert_success_response(response: FlextApiTypes.Core.ResponseDict) -> None:
 
 
 def assert_error_response(
-    response: FlextApiTypes.Core.ResponseDict,
+    response: FlextApiTypes.ResponseDict,
     expected_status: int = 400,
 ) -> None:
     """Assert error response using FlextTestsMatchers patterns."""
@@ -266,8 +266,8 @@ def assert_error_response(
 
 def create_mock_response(
     status_code: int = 200,
-    data: FlextApiTypes.Core.ResponseDict | None = None,
-) -> FlextApiTypes.Core.ResponseDict:
+    data: FlextApiTypes.ResponseDict | None = None,
+) -> FlextApiTypes.ResponseDict:
     """Create mock response using FlextTestsDomains - ABSOLUTE.
 
     Returns:
@@ -298,7 +298,7 @@ def validate_email_format(email: str) -> bool:
 def create_test_headers(
     content_type: str = "application/json",
     **additional_headers: str,
-) -> dict[str, str]:
+) -> FlextTypes.StringDict:
     """Create headers using FlextTestsDomains service data.
 
     Returns:

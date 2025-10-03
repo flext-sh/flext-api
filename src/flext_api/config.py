@@ -10,31 +10,34 @@ from pydantic import Field, computed_field
 from pydantic_settings import SettingsConfigDict
 
 from flext_api.constants import FlextApiConstants
-from flext_api.typings import FlextApiTypes
-from flext_core import FlextConfig
+from flext_core import FlextConfig, FlextResult, FlextTypes
 
 
 class FlextApiConfig(FlextConfig):
-    """Single Pydantic 2 Settings class for flext-api extending FlextConfig.
+    """Single Pydantic Settings class for flext-api extending FlextConfig.
 
-    Follows standardized pattern:
-    - Extends FlextConfig from flext-core
-    - No nested classes within Config
-    - All defaults from FlextApiConstants
-    - Uses enhanced singleton pattern with inverse dependency injection
-    - Uses Pydantic 2.11+ features (field_validator, model_validator)
+    Uses enhanced FlextConfig features:
+    - Protocol inheritance (Infrastructure.Configurable)
+    - Computed fields for derived configuration
+    - Enhanced validation with field_validator and model_validator
+    - Type-safe configuration management
+    - Business rule validation
+    - Configuration persistence
+
+    All defaults from FlextApiConstants with FlextConfig enhancements.
     """
 
     model_config = SettingsConfigDict(
         env_prefix="FLEXT_API_",
         case_sensitive=False,
         extra="allow",
-        # Inherit enhanced Pydantic 2.11+ features from FlextConfig
+        # Enhanced Pydantic 2.11+ features from FlextConfig
         validate_assignment=True,
         str_strip_whitespace=True,
+        str_to_lower=False,
         json_schema_extra={
             "title": "FLEXT API Configuration",
-            "description": "Enterprise API configuration extending FlextConfig",
+            "description": "Enterprise API configuration with FlextConfig protocol support",
         },
     )
 
@@ -75,105 +78,151 @@ class FlextApiConfig(FlextConfig):
     )
 
     # CORS configuration
-    cors_origins: list[str] = Field(
+    cors_origins: FlextTypes.StringList = Field(
         default_factory=lambda: ["*"],
         description="CORS allowed origins",
     )
 
-    cors_methods: list[str] = Field(
+    cors_methods: FlextTypes.StringList = Field(
         default_factory=lambda: ["GET", "POST", "PUT", "DELETE"],
         description="CORS allowed methods",
     )
 
-    cors_headers: list[str] = Field(
+    cors_headers: FlextTypes.StringList = Field(
         default_factory=lambda: ["Content-Type", "Authorization"],
         description="CORS allowed headers",
     )
 
     @computed_field
+    @property
     def api_url(self) -> str:
-        """Get complete API URL."""
+        """Get complete API URL with version."""
         return f"{self.base_url}/api/{self.api_version}"
 
-    @computed_field
-    def api_base_url(self) -> str:
-        """Alias for base_url to maintain API compatibility."""
-        return self.base_url
+    # =========================================================================
+    # Infrastructure Protocol Implementations (FlextConfig inheritance)
+    # =========================================================================
 
-    @computed_field
-    def api_timeout(self) -> int:
-        """Alias for timeout to maintain API compatibility."""
-        return self.timeout
+    def configure(self, config: FlextTypes.Dict) -> FlextResult[None]:
+        """Configure API settings with provided configuration.
 
-    # API-specific methods
-    def get_client_config(self) -> FlextApiTypes.Core.ClientConfigDict:
-        """Get API client configuration."""
-        return {
-            "base_url": self.base_url,
-            "timeout": self.timeout,
-            "max_retries": self.max_retries,
-            "api_version": self.api_version,
-        }
+        Implements Infrastructure.Configurable protocol from FlextConfig.
 
-    def get_default_headers(self) -> dict[str, str]:
-        """Get default HTTP headers for API requests."""
-        return {
-            "User-Agent": f"flext-api/{self.api_version}",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
+        Args:
+            config: Configuration dictionary to apply
 
-    def to_dict(self) -> dict[str, object]:
-        """Convert configuration to dictionary."""
-        return {
-            "base_url": self.base_url,
-            "timeout": self.timeout,
-            "max_retries": self.max_retries,
-            "api_version": self.api_version,
-            "log_requests": self.log_requests,
-            "log_responses": self.log_responses,
-        }
+        Returns:
+            FlextResult[None]: Success if configuration valid, failure otherwise
+
+        """
+        try:
+            # Apply API-specific configuration
+            for key, value in config.items():
+                if hasattr(self, key) and key in {
+                    "base_url", "timeout", "max_retries", "api_version",
+                    "log_requests", "log_responses", "cors_origins",
+                    "cors_methods", "cors_headers"
+                }:
+                    setattr(self, key, value)
+
+            # Call parent configure for core configuration
+            return super().configure(config)
+        except Exception as e:
+            return FlextResult[None].fail(f"API configuration failed: {e}")
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate API-specific business rules for configuration consistency.
+
+        Extends Infrastructure.ConfigValidator protocol from FlextConfig.
+
+        Returns:
+            FlextResult[None]: Success if valid, failure with error details
+
+        """
+        # Call parent business rules validation first
+        parent_result = super().validate_business_rules()
+        if parent_result.is_failure:
+            return parent_result
+
+        # API-specific business rules
+        if self.is_production():
+            # Production API validation - use constants for magic values
+            max_prod_timeout = 60  # seconds
+            max_prod_retries = 5
+
+            if not self.base_url or not self.base_url.startswith(('https://', 'http://')):
+                return FlextResult[None].fail(
+                    "Production API requires valid base_url starting with http:// or https://"
+                )
+
+            if self.timeout > max_prod_timeout:
+                return FlextResult[None].fail(
+                    f"Production API timeout too high: {self.timeout}s (max: {max_prod_timeout}s)"
+                )
+
+            if self.max_retries > max_prod_retries:
+                return FlextResult[None].fail(
+                    f"Production API max_retries too high: {self.max_retries} (max: {max_prod_retries})"
+                )
+
+        # Development validation - combine nested if statements
+        if self.is_development() and self.base_url and self.base_url.startswith('https://') and self.debug:
+            # Allow HTTPS in development for testing, but warn via logging
+            pass
+
+        return FlextResult[None].ok(None)
 
     @classmethod
     def create_for_environment(
         cls, environment: str, **overrides: object
     ) -> FlextApiConfig:
-        """Create configuration for specific environment using enhanced singleton pattern."""
-        instance = cls.get_or_create_shared_instance(
-            project_name="flext-api", environment=environment, **overrides
-        )
-        if not isinstance(instance, cls):
-            msg = f"Expected {cls.__name__}, got {type(instance).__name__}"
-            raise TypeError(msg)
-        return instance
+        """Create configuration for specific environment using direct instantiation.
+
+        Migration from old singleton pattern to new FlextConfig direct instantiation.
+        """
+        return cls(environment=environment, **overrides)
 
     @classmethod
     def create_default(cls) -> FlextApiConfig:
-        """Create default configuration instance using enhanced singleton pattern."""
-        # Use get_or_create_shared_instance for singleton pattern
-        instance = cls.get_or_create_shared_instance(project_name="flext-api")
-        if not isinstance(instance, cls):
-            msg = f"Expected {cls.__name__}, got {type(instance).__name__}"
-            raise TypeError(msg)
-        return instance
+        """Create default configuration instance using direct instantiation.
+
+        Migration from old singleton pattern to new FlextConfig direct instantiation.
+        """
+        return cls()
 
     @classmethod
     def get_global_instance(cls) -> FlextApiConfig:
-        """Get the global singleton instance using enhanced FlextConfig pattern."""
-        # Call parent class method directly to avoid recursion
-        instance = super().get_global_instance()
-        if not isinstance(instance, cls):
-            msg = f"Expected {cls.__name__}, got {type(instance).__name__}"
-            raise TypeError(msg)
-        return instance
+        """REMOVED: Use direct instantiation with FlextApiConfig().
+
+        Migration:
+            # Old pattern
+            config = FlextApiConfig.get_global_instance()
+
+            # New pattern - create instance directly
+            config = FlextApiConfig()
+        """
+        msg = (
+            "FlextApiConfig.get_global_instance() has been removed. "
+            "Use FlextApiConfig() to create instances directly."
+        )
+        raise NotImplementedError(msg)
 
     @classmethod
     def reset_global_instance(cls) -> None:
-        """Reset the global FlextApiConfig instance (mainly for testing)."""
-        # Call parent class method to reset singleton
-        super().reset_global_instance()
-        # Use the enhanced FlextConfig reset mechanism
-        # Reset mechanism - method may not exist in parent class
+        """REMOVED: Singleton pattern removed in favor of direct instantiation.
+
+        Migration:
+            # Old pattern - no longer needed
+            FlextApiConfig.reset_global_instance()
+
+            # New pattern - create fresh instances as needed
+            config = FlextApiConfig()
+        """
+        msg = (
+            "FlextApiConfig.reset_global_instance() has been removed. "
+            "Create new instances directly with FlextApiConfig()."
+        )
+        raise NotImplementedError(msg)
 
 
 __all__ = [

@@ -11,10 +11,11 @@ from __future__ import annotations
 from typing import cast
 
 import pytest
+from flext_tests import FlextTestsDomains
 from pydantic import ValidationError
 
 from flext_api import FlextApiConstants, FlextApiModels
-from flext_tests import FlextTestsDomains
+from flext_core import FlextTypes
 
 
 class TestFlextApiModels:
@@ -193,7 +194,7 @@ class TestFlextApiModels:
 
         response = FlextApiModels.HttpResponse(
             status_code=200,
-            body=cast("dict[str, object]", data),
+            body=cast("FlextTypes.Dict", data),
             headers=headers,
             url="/api/test",
             method="GET",
@@ -268,7 +269,7 @@ class TestFlextApiModels:
 
         # Use aliases for constructor parameters
         builder = FlextApiModels.HttpQuery(
-            filters=cast("dict[str, object]", filter_conditions),
+            filters=cast("FlextTypes.Dict", filter_conditions),
             sort_fields=sort_fields,
             page=2,
             page_size=25,

@@ -24,7 +24,7 @@ import cbor2
 import msgpack
 import orjson
 
-from flext_core import FlextLogger, FlextResult
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class SerializationFormat(StrEnum):
@@ -276,7 +276,7 @@ class SerializerRegistry:
     def __init__(self) -> None:
         """Initialize serializer registry."""
         self._logger = FlextLogger(__name__)
-        self._serializers: dict[str, object] = {}
+        self._serializers: FlextTypes.Dict = {}
         self._default_format = SerializationFormat.JSON
 
         # Register default serializers

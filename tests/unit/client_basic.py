@@ -11,8 +11,9 @@ from __future__ import annotations
 
 import json
 
-from flext_api import FlextApiClient
 from flext_tests import FlextTestsMatchers
+
+from flext_api import FlextApiClient
 
 
 def test_real_network_error_and_error_formatting() -> None:

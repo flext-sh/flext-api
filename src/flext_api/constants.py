@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from flext_core import FlextConstants
+from flext_core import FlextConstants, FlextTypes
 
 
 class FlextApiConstants(FlextConstants):
@@ -40,13 +40,11 @@ class FlextApiConstants(FlextConstants):
     # Use FlextConstants.Http.ContentType.JSON, etc.
 
     # API-specific response templates (not in flext-core)
-    SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, str | dict[str, object]] | None] = (
-        None
-    )
-    ERROR_RESPONSE_TEMPLATE: ClassVar[dict[str, str | dict[str, object]] | None] = None
+    SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, str | FlextTypes.Dict] | None] = None
+    ERROR_RESPONSE_TEMPLATE: ClassVar[dict[str, str | FlextTypes.Dict] | None] = None
 
     @classmethod
-    def get_success_template(cls) -> dict[str, str | dict[str, object]]:
+    def get_success_template(cls) -> dict[str, str | FlextTypes.Dict]:
         """Get success response template."""
         if cls.SUCCESS_RESPONSE_TEMPLATE is None:
             cls.SUCCESS_RESPONSE_TEMPLATE = {
@@ -56,7 +54,7 @@ class FlextApiConstants(FlextConstants):
         return cls.SUCCESS_RESPONSE_TEMPLATE
 
     @classmethod
-    def get_error_template(cls) -> dict[str, str | dict[str, object]]:
+    def get_error_template(cls) -> dict[str, str | FlextTypes.Dict]:
         """Get error response template."""
         if cls.ERROR_RESPONSE_TEMPLATE is None:
             cls.ERROR_RESPONSE_TEMPLATE = {
@@ -88,6 +86,8 @@ class FlextApiConstants(FlextConstants):
     MAX_HOSTNAME_LENGTH: ClassVar[int] = 253  # RFC 1035 max hostname length
     MIN_PORT: ClassVar[int] = 1
     MAX_PORT: ClassVar[int] = 65535
+    HTTP_PORT: ClassVar[int] = 80
+    HTTPS_PORT: ClassVar[int] = 443
 
     # Security constants
     MASK_AUTH_THRESHOLD: ClassVar[int] = 8

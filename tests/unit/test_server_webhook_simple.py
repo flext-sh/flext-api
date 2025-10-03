@@ -80,7 +80,7 @@ class TestFlextApiServer:
         """Test registering duplicate route fails."""
         server = FlextApiServer()
 
-        def test_handler():
+        def test_handler() -> dict:
             return {"message": "test"}
 
         result1 = server.register_route("/test", "GET", test_handler)
@@ -187,7 +187,7 @@ class TestFlextWebhookHandler:
         """Test event handler registration."""
         handler = FlextWebhookHandler()
 
-        def test_handler(event_data) -> None:
+        def test_handler(event_data: dict) -> None:
             pass
 
         result = handler.register_event_handler("user.created", test_handler)

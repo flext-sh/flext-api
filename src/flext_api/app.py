@@ -18,7 +18,7 @@ from fastapi import FastAPI
 from flext_api.models import FlextApiModels
 from flext_api.server import FlextApiServer
 from flext_api.webhook import FlextWebhookHandler
-from flext_core import FlextLogger, FlextResult, FlextService
+from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 
 class FlextApiApp(FlextService[object]):
@@ -119,7 +119,7 @@ class FlextApiApp(FlextService[object]):
 
         if hasattr(app, "get") and hasattr(app, "add_api_route"):
 
-            def health_check() -> dict[str, str]:
+            def health_check() -> FlextTypes.StringDict:
                 return {"status": "healthy", "service": "flext-api"}
 
             # Use add_api_route instead of decorator to avoid type issues

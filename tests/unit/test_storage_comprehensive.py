@@ -9,6 +9,7 @@ from typing import cast
 from unittest.mock import Mock
 
 from flext_api.storage import FlextApiStorage
+from flext_core import FlextTypes
 
 
 class TestFlextApiStorage:
@@ -241,7 +242,7 @@ class TestFlextApiStorage:
 
         # Test batch set
         batch_data = {"key1": "value1", "key2": "value2", "key3": "value3"}
-        result = storage.batch_set(cast("dict[str, object]", batch_data))
+        result = storage.batch_set(cast("FlextTypes.Dict", batch_data))
 
         assert result.is_success
 

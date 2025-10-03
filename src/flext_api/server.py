@@ -20,10 +20,10 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from fastapi import FastAPI
-from flext_core import FlextLogger, FlextResult, FlextService
 
-from flext_api.middleware import BaseMiddleware
+from flext_api.middleware import FlextApiMiddleware
 from flext_api.plugins import ProtocolPlugin
+from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 
 class FlextApiServer(FlextService):
@@ -80,16 +80,16 @@ class FlextApiServer(FlextService):
         self._protocol_handlers: dict[str, ProtocolPlugin] = {}
 
         # Middleware pipeline
-        self._middleware_pipeline: list[BaseMiddleware] = []
+        self._middleware_pipeline: list[FlextApiMiddleware.BaseMiddleware] = []
 
         # Route registry
-        self._routes: dict[str, dict[str, object]] = {}
+        self._routes: FlextTypes.NestedDict = {}
 
         # WebSocket connections
-        self._websocket_connections: dict[str, object] = {}
+        self._websocket_connections: FlextTypes.Dict = {}
 
         # SSE connections
-        self._sse_connections: dict[str, object] = {}
+        self._sse_connections: FlextTypes.Dict = {}
 
     def execute(self, *_args: object, **_kwargs: object) -> FlextResult[object]:
         """Execute server service lifecycle operations.
@@ -134,7 +134,7 @@ class FlextApiServer(FlextService):
 
     def add_middleware(
         self,
-        middleware: BaseMiddleware,
+        middleware: FlextApiMiddleware.BaseMiddleware,
     ) -> FlextResult[None]:
         """Add middleware to server pipeline.
 
@@ -530,12 +530,12 @@ class FlextApiServer(FlextService):
         return self._port
 
     @property
-    def routes(self) -> dict[str, dict[str, object]]:
+    def routes(self) -> FlextTypes.NestedDict:
         """Get registered routes."""
         return self._routes.copy()
 
     @property
-    def protocols(self) -> list[str]:
+    def protocols(self) -> FlextTypes.StringList:
         """Get registered protocols."""
         return list(self._protocol_handlers.keys())
 

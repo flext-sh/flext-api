@@ -10,6 +10,7 @@ import time
 from dataclasses import dataclass, field
 
 from flext_api import FlextApiUtilities
+from flext_core import FlextTypes
 
 
 class TestFlextUtilitiesCoverageFocused:
@@ -86,7 +87,7 @@ class TestFlextUtilitiesCoverageFocused:
     def test_pagination_builder_exception_handling(self) -> None:
         """Test PaginationBuilder with large data."""
         # Create very large data scenario
-        very_large_data: list[object] = [
+        very_large_data: FlextTypes.List = [
             {"x" * 100000: "y" * 100000} for _ in range(1000)
         ]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
@@ -155,7 +156,7 @@ class TestFlextUtilitiesCoverageFocused:
         """Test DataTransformer.to_dict with model_dump method."""
 
         class MockModel:
-            def model_dump(self) -> dict[str, str]:
+            def model_dump(self) -> FlextTypes.StringDict:
                 return {"field": "value"}
 
         model = MockModel()
@@ -167,7 +168,7 @@ class TestFlextUtilitiesCoverageFocused:
         """Test DataTransformer.to_dict with dict method."""
 
         class MockModel:
-            def dict(self) -> dict[str, str]:
+            def dict(self) -> FlextTypes.StringDict:
                 return {"field": "value"}
 
         model = MockModel()
@@ -185,7 +186,7 @@ class TestFlextUtilitiesCoverageFocused:
         """Test DataTransformer.to_dict exception handling."""
 
         class ProblematicModel:
-            def model_dump(self) -> dict[str, str]:
+            def model_dump(self) -> FlextTypes.StringDict:
                 error_msg = "Model dump failed"
                 raise ValueError(error_msg)
 
@@ -299,7 +300,7 @@ class TestFlextUtilitiesCoverageFocused:
 
     def test_batch_process_zero_batch_size(self) -> None:
         """Test batch_process with zero batch_size (should default to 100)."""
-        items: list[object] = list(range(150))
+        items: FlextTypes.List = list(range(150))
         batches = FlextApiUtilities.batch_process(items, batch_size=0)
         assert len(batches) == 2  # 150 items in batches of 100
         assert len(batches[0]) == 100
@@ -307,14 +308,14 @@ class TestFlextUtilitiesCoverageFocused:
 
     def test_batch_process_negative_batch_size(self) -> None:
         """Test batch_process with negative batch_size (should default to 100)."""
-        items: list[object] = list(range(50))
+        items: FlextTypes.List = list(range(50))
         batches = FlextApiUtilities.batch_process(items, batch_size=-10)
         assert len(batches) == 1  # 50 items in one batch of 100
         assert len(batches[0]) == 50
 
     def test_batch_process_normal_case(self) -> None:
         """Test batch_process with normal case."""
-        items: list[object] = list(range(25))
+        items: FlextTypes.List = list(range(25))
         batches = FlextApiUtilities.batch_process(items, batch_size=10)
         assert len(batches) == 3  # 25 items in batches of 10
         assert len(batches[0]) == 10

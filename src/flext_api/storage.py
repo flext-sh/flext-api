@@ -14,6 +14,7 @@ from flext_core import (
     FlextLogger,
     FlextResult,
     FlextService,
+    FlextTypes,
     FlextUtilities,
 )
 
@@ -45,7 +46,7 @@ class FlextApiStorage(FlextService[None]):
         # Simplified config using flext-core patterns
         if isinstance(config, dict):
             # config is expected to be a mapping of configuration values
-            config_dict: FlextApiTypes.Core.StorageDict = config
+            config_dict: FlextApiTypes.StorageDict = config
         elif config is not None:
             # Explicit config extraction - FLEXT pattern with clear type handling
             if hasattr(config, "model_dump") and callable(
@@ -68,7 +69,7 @@ class FlextApiStorage(FlextService[None]):
         self._default_ttl = default_ttl or config_dict.get("default_ttl")
 
         # Use simple dict for storage since Registry is not available
-        self._storage: dict[str, object] = {}
+        self._storage: FlextTypes.Dict = {}
 
         # Backend configuration that tests expect (using private attribute to avoid Pydantic field issues)
         self._backend = str(config_dict.get("backend", "memory"))
@@ -217,11 +218,11 @@ class FlextApiStorage(FlextService[None]):
         return FlextResult[int].ok(len(self._data))
 
     @property
-    def config(self) -> FlextApiTypes.Core.StorageDict:
+    def config(self) -> FlextApiTypes.StorageDict:
         """Get storage configuration.
 
         Returns:
-            FlextApiTypes.Core.StorageDict: Configuration dictionary.
+            FlextApiTypes.StorageDict: Configuration dictionary.
 
         """
         return {"namespace": self._namespace}
@@ -246,21 +247,21 @@ class FlextApiStorage(FlextService[None]):
         """
         return self._backend
 
-    def keys(self) -> FlextResult[list[str]]:
+    def keys(self) -> FlextResult[FlextTypes.StringList]:
         """Get all keys in storage.
 
         Returns:
-            FlextResult[list[str]]: Success result with keys list or failure result.
+            FlextResult[FlextTypes.StringList]: Success result with keys list or failure result.
 
         """
         # Return only direct keys (not namespaced ones)
         direct_keys = [
             key for key in self._storage if not key.startswith(f"{self._namespace}:")
         ]
-        return FlextResult[list[str]].ok(direct_keys)
+        return FlextResult[FlextTypes.StringList].ok(direct_keys)
 
     @property
-    def _data(self) -> dict[str, object]:
+    def _data(self) -> FlextTypes.Dict:
         """Access direct data storage (for testing compatibility)."""
         return dict(self._storage.items())
 
@@ -273,14 +274,14 @@ class FlextApiStorage(FlextService[None]):
         """
         return FlextResult[list[tuple[str, object]]].ok(list(self._data.items()))
 
-    def values(self) -> FlextResult[list[object]]:
+    def values(self) -> FlextResult[FlextTypes.List]:
         """Get all values in storage.
 
         Returns:
-            FlextResult[list[object]]: Success result with values list or failure result.
+            FlextResult[FlextTypes.List]: Success result with values list or failure result.
 
         """
-        return FlextResult[list[object]].ok(list(self._storage.values()))
+        return FlextResult[FlextTypes.List].ok(list(self._storage.values()))
 
     def close(self) -> FlextResult[None]:
         """Close storage connection.
@@ -312,20 +313,18 @@ class FlextApiStorage(FlextService[None]):
             except Exception as e:
                 return FlextResult[str].fail(f"JSON serialization failed: {e}")
 
-        def deserialize(
-            self, json_str: str
-        ) -> FlextResult[FlextApiTypes.Core.JsonValue]:
+        def deserialize(self, json_str: str) -> FlextResult[FlextApiTypes.JsonValue]:
             """Deserialize JSON string to JsonValue.
 
             Returns:
-                FlextResult[FlextApiTypes.Core.JsonValue]: Success result with data or failure result.
+                FlextResult[FlextApiTypes.JsonValue]: Success result with data or failure result.
 
             """
             try:
-                data: FlextApiTypes.Core.JsonValue = json.loads(json_str)
-                return FlextResult[FlextApiTypes.Core.JsonValue].ok(data)
+                data: FlextApiTypes.JsonValue = json.loads(json_str)
+                return FlextResult[FlextApiTypes.JsonValue].ok(data)
             except Exception as e:
-                return FlextResult[FlextApiTypes.Core.JsonValue].fail(
+                return FlextResult[FlextApiTypes.JsonValue].fail(
                     f"JSON deserialization failed: {e}"
                 )
 
@@ -336,14 +335,14 @@ class FlextApiStorage(FlextService[None]):
         def __init__(self) -> None:
             """Initialize cache operations."""
 
-        def get_cache_stats(self) -> FlextResult[FlextApiTypes.Core.CacheDict]:
+        def get_cache_stats(self) -> FlextResult[FlextApiTypes.CacheDict]:
             """Get cache statistics.
 
             Returns:
-                FlextResult[FlextApiTypes.Core.CacheDict]: Success result with cache stats or failure result.
+                FlextResult[FlextApiTypes.CacheDict]: Success result with cache stats or failure result.
 
             """
-            return FlextResult[FlextApiTypes.Core.CacheDict].ok(
+            return FlextResult[FlextApiTypes.CacheDict].ok(
                 {
                     "size": 0,  # Default size since we don't have access to storage
                     "backend": "memory",
@@ -372,18 +371,18 @@ class FlextApiStorage(FlextService[None]):
         def __init__(self) -> None:
             """Initialize storage metrics."""
 
-        def get_metrics(self) -> FlextResult[FlextApiTypes.Core.MetricsDict]:
+        def get_metrics(self) -> FlextResult[FlextApiTypes.MetricsDict]:
             """Get storage metrics.
 
             Returns:
-                FlextResult[FlextApiTypes.Core.MetricsDict]: Success result with metrics or failure result.
+                FlextResult[FlextApiTypes.MetricsDict]: Success result with metrics or failure result.
 
             """
-            return FlextResult[FlextApiTypes.Core.MetricsDict].ok(
+            return FlextResult[FlextApiTypes.MetricsDict].ok(
                 {"total_operations": 0, "cache_hits": 0, "cache_misses": 0},
             )
 
-        def get_statistics(self) -> FlextResult[dict[str, float]]:
+        def get_statistics(self) -> FlextResult[FlextTypes.FloatDict]:
             """Get storage statistics.
 
             Returns:
@@ -399,14 +398,14 @@ class FlextApiStorage(FlextService[None]):
                     "storage_size": 0,
                     "memory_usage": 0,
                 }
-                return FlextResult[dict[str, float]].ok(stats)
+                return FlextResult[FlextTypes.FloatDict].ok(stats)
             except Exception as e:
-                return FlextResult[dict[str, float]].fail(
+                return FlextResult[FlextTypes.FloatDict].fail(
                     f"Statistics collection failed: {e}",
                 )
 
     def batch_set(
-        self, data: dict[str, object], ttl: int | None = None
+        self, data: FlextTypes.Dict, ttl: int | None = None
     ) -> FlextResult[None]:
         """Set multiple key-value pairs in a single operation.
 
@@ -427,7 +426,7 @@ class FlextApiStorage(FlextService[None]):
         except Exception as e:
             return FlextResult[None].fail(f"Batch set operation failed: {e}")
 
-    def batch_get(self, keys: list[str]) -> FlextResult[dict[str, object]]:
+    def batch_get(self, keys: FlextTypes.StringList) -> FlextResult[FlextTypes.Dict]:
         """Get multiple values in a single operation.
 
         Args:
@@ -438,21 +437,19 @@ class FlextApiStorage(FlextService[None]):
 
         """
         try:
-            result_data: dict[str, object] = {}
+            result_data: FlextTypes.Dict = {}
             for key in keys:
                 get_result = self.get(key)
-                if get_result.is_success:
-                    result_data[key] = get_result.data
+                if get_result.success:
+                    result_data[key] = get_result.unwrap()
                 else:
                     # Include None for missing keys
                     result_data[key] = None
-            return FlextResult[dict[str, object]].ok(result_data)
+            return FlextResult[FlextTypes.Dict].ok(result_data)
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(
-                f"Batch get operation failed: {e}"
-            )
+            return FlextResult[FlextTypes.Dict].fail(f"Batch get operation failed: {e}")
 
-    def batch_delete(self, keys: list[str]) -> FlextResult[None]:
+    def batch_delete(self, keys: FlextTypes.StringList) -> FlextResult[None]:
         """Delete multiple keys in a single operation.
 
         Args:
@@ -471,7 +468,7 @@ class FlextApiStorage(FlextService[None]):
         except Exception as e:
             return FlextResult[None].fail(f"Batch delete operation failed: {e}")
 
-    def info(self) -> FlextResult[dict[str, FlextApiTypes.Core.JsonValue]]:
+    def info(self) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
         """Get storage information.
 
         Returns:
@@ -479,7 +476,7 @@ class FlextApiStorage(FlextService[None]):
 
         """
         try:
-            info_data: dict[str, FlextApiTypes.Core.JsonValue] = {
+            info_data: dict[str, FlextApiTypes.JsonValue] = {
                 "namespace": getattr(self, "_namespace", "default"),
                 "backend": "memory",
                 "size": len(self._storage),
@@ -487,13 +484,13 @@ class FlextApiStorage(FlextService[None]):
                 "max_size": getattr(self, "_max_size", None),
                 "default_ttl": getattr(self, "_default_ttl", None),
             }
-            return FlextResult[dict[str, FlextApiTypes.Core.JsonValue]].ok(info_data)
+            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(info_data)
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.Core.JsonValue]].fail(
+            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(
                 f"Info retrieval failed: {e}"
             )
 
-    def health_check(self) -> FlextResult[dict[str, FlextApiTypes.Core.JsonValue]]:
+    def health_check(self) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
         """Perform storage health check.
 
         Returns:
@@ -501,19 +498,19 @@ class FlextApiStorage(FlextService[None]):
 
         """
         try:
-            health_data: dict[str, FlextApiTypes.Core.JsonValue] = {
+            health_data: dict[str, FlextApiTypes.JsonValue] = {
                 "status": "healthy",
                 "timestamp": FlextUtilities.Generators.generate_timestamp(),
                 "storage_accessible": True,
                 "size": len(self._storage),
             }
-            return FlextResult[dict[str, FlextApiTypes.Core.JsonValue]].ok(health_data)
+            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(health_data)
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.Core.JsonValue]].fail(
+            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(
                 f"Health check failed: {e}"
             )
 
-    def metrics(self) -> FlextResult[dict[str, FlextApiTypes.Core.JsonValue]]:
+    def metrics(self) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
         """Get storage metrics.
 
         Returns:
@@ -521,16 +518,16 @@ class FlextApiStorage(FlextService[None]):
 
         """
         try:
-            metrics_data: dict[str, FlextApiTypes.Core.JsonValue] = {
+            metrics_data: dict[str, FlextApiTypes.JsonValue] = {
                 "operations_count": getattr(self, "_operations_count", 0),
                 "storage_size": len(self._storage),
                 "namespace": getattr(self, "_namespace", "default"),
                 "memory_usage": len(str(self._storage)),
                 "keys_count": len(self._storage),
             }
-            return FlextResult[dict[str, FlextApiTypes.Core.JsonValue]].ok(metrics_data)
+            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(metrics_data)
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.Core.JsonValue]].fail(
+            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(
                 f"Metrics collection failed: {e}"
             )
 
