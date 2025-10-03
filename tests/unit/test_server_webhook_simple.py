@@ -68,7 +68,7 @@ class TestFlextApiServer:
         """Test route registration."""
         server = FlextApiServer()
 
-        def test_handler():
+        def test_handler() -> dict[str, str]:
             return {"message": "test"}
 
         result = server.register_route("/test", "GET", test_handler)

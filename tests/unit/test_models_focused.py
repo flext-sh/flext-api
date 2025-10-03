@@ -15,6 +15,15 @@ from flext_api import FlextApiModels
 from flext_api.constants import FlextApiConstants
 from flext_core import FlextConstants, FlextTypes
 
+# Import HTTP method constants
+GET = FlextConstants.Http.Method.GET
+POST = FlextConstants.Http.Method.POST
+PUT = FlextConstants.Http.Method.PUT
+DELETE = FlextConstants.Http.Method.DELETE
+PATCH = FlextConstants.Http.Method.PATCH
+HEAD = FlextConstants.Http.Method.HEAD
+OPTIONS = FlextConstants.Http.Method.OPTIONS
+
 
 class TestFlextApiModelsFocused:
     """Focused tests to improve models.py coverage from 58% to 80%+.
