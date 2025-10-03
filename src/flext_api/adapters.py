@@ -16,73 +16,32 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
-from typing import Protocol as TypingProtocol
+from typing import cast
 
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
-from flext_core import FlextConstants, FlextLogger, FlextResult
+from flext_core import FlextConstants, FlextLogger, FlextResult, FlextTypes
 
 
-class ProtocolAdapterProtocol(TypingProtocol):
-    """Protocol for protocol adapters."""
+class FlextApiAdapters:
+    """Unified API adapters service - single class per module.
 
-    def adapt_request(
-        self, request: FlextApiTypes.RequestData
-    ) -> FlextResult[FlextApiTypes.RequestData]:
-        """Adapt request from one protocol to another.
-
-        Args:
-            request: Source protocol request
-
-        Returns:
-            FlextResult containing adapted request or error
-
-        """
-
-    def adapt_response(
-        self, response: FlextApiTypes.ResponseData
-    ) -> FlextResult[FlextApiTypes.ResponseData]:
-        """Adapt response from one protocol to another.
-
-        Args:
-            response: Source protocol response
-
-        Returns:
-            FlextResult containing adapted response or error
-
-        """
-
-
-class HttpToWebSocketAdapter:
-    """Adapter for HTTP to WebSocket protocol conversion.
-
-    Features:
-    - Convert HTTP requests to WebSocket messages
-    - Convert WebSocket messages to HTTP responses
-    - Query parameter handling
-    - Header preservation
-    - Event stream simulation
+    Provides protocol adaptation, schema conversion, and legacy API integration.
+    All functionality consolidated into direct methods following FLEXT standards.
     """
 
     def __init__(self) -> None:
-        """Initialize HTTP to WebSocket adapter."""
+        """Initialize the unified adapters service."""
         self._logger = FlextLogger(__name__)
+        self._endpoint = "/graphql"  # Default GraphQL endpoint
+        self._base_url = ""  # For legacy API adapter
 
-    def adapt_request(
+    def adapt_http_request_to_websocket(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[dict[str, object]]:
-        """Adapt HTTP request to WebSocket message.
-
-        Args:
-            request: HTTP request
-
-        Returns:
-            FlextResult containing WebSocket message or error
-
-        """
+    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+        """Convert HTTP request to WebSocket message format."""
         try:
-            # Convert HTTP request to WebSocket message format
-            message = {
+            message: dict[str, FlextApiTypes.JsonValue] = {
                 "type": "request",
                 "method": request.method,
                 "url": str(request.url),
@@ -95,15 +54,15 @@ class HttpToWebSocketAdapter:
                 extra={"method": request.method, "url": str(request.url)},
             )
 
-            return FlextResult[dict[str, object]].ok(message)
+            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(message)
 
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(
                 f"HTTP to WebSocket adaptation failed: {e}"
             )
 
-    def adapt_response(
-        self, message: dict[str, object]
+    def adapt_websocket_message_to_http_response(
+        self, message: dict[str, FlextApiTypes.JsonValue]
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Adapt WebSocket message to HTTP response.
 
@@ -122,12 +81,20 @@ class HttpToWebSocketAdapter:
             url = message.get("url", "/")
             method = message.get("method", "GET")
 
+            request = FlextApiModels.HttpRequest(
+                url=url,
+                method=method,
+                headers=headers,
+                body=body,
+            )
+
             response = FlextApiModels.HttpResponse(
                 status_code=status_code,
                 headers=headers,
                 body=body,
                 url=url,
                 method=method,
+                request=request,
             )
 
             self._logger.debug(
@@ -142,29 +109,7 @@ class HttpToWebSocketAdapter:
                 f"WebSocket to HTTP adaptation failed: {e}"
             )
 
-
-class GraphQLToHttpAdapter:
-    """Adapter for GraphQL to HTTP protocol conversion.
-
-    Features:
-    - Convert GraphQL queries to HTTP requests
-    - Convert HTTP responses to GraphQL results
-    - Variable handling
-    - Fragment support
-    - Error formatting
-    """
-
-    def __init__(self, endpoint: str = "/graphql") -> None:
-        """Initialize GraphQL to HTTP adapter.
-
-        Args:
-            endpoint: GraphQL endpoint path
-
-        """
-        self._logger = FlextLogger(__name__)
-        self._endpoint = endpoint
-
-    def adapt_query_to_request(
+    def adapt_graphql_query_to_http_request(
         self, query: str, variables: dict[str, object] | None = None
     ) -> FlextResult[FlextApiModels.HttpRequest]:
         """Adapt GraphQL query to HTTP request.
@@ -201,7 +146,7 @@ class GraphQLToHttpAdapter:
                 f"GraphQL to HTTP adaptation failed: {e}"
             )
 
-    def adapt_response_to_result(
+    def adapt_http_response_to_graphql_result(
         self, response: FlextApiModels.HttpResponse
     ) -> FlextResult[dict[str, object]]:
         """Adapt HTTP response to GraphQL result.
@@ -240,25 +185,9 @@ class GraphQLToHttpAdapter:
                 f"HTTP to GraphQL result adaptation failed: {e}"
             )
 
-
-class SchemaAdapter:
-    """Adapter for schema format conversion.
-
-    Features:
-    - OpenAPI <-> API conversion
-    - OpenAPI <-> GraphQL Schema conversion
-    - Schema validation
-    - Type mapping
-    - Documentation preservation
-    """
-
-    def __init__(self) -> None:
-        """Initialize schema adapter."""
-        self._logger = FlextLogger(__name__)
-
-    def openapi_toapi(
-        self, openapi_schema: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+    def convert_openapi_to_api_schema(
+        self, openapi_schema: dict[str, FlextApiTypes.JsonValue]
+    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
         """Convert OpenAPI schema to API schema.
 
         Args:
@@ -270,7 +199,7 @@ class SchemaAdapter:
         """
         try:
             # Basic conversion from OpenAPI to API
-            api_schema: dict[str, object] = {
+            api_schema: dict[str, FlextApiTypes.JsonValue] = {
                 "api": "3.0.0",
                 "info": openapi_schema.get("info", {}),
                 "channels": {},
@@ -278,37 +207,70 @@ class SchemaAdapter:
 
             # Convert paths to channels
             paths = openapi_schema.get("paths", {})
+            if not isinstance(paths, dict):
+                paths = {}
             for path, operations in paths.items():
+                if not isinstance(operations, dict):
+                    continue
                 channel_name = path.replace("/", "_").strip("_")
-                api_schema["channels"][channel_name] = {
+                channels = api_schema["channels"]
+                if not isinstance(channels, dict):
+                    channels = {}
+                    api_schema["channels"] = channels
+
+                channels = cast("dict[str, FlextApiTypes.JsonValue]", channels)
+                channels[channel_name] = {
                     "address": path,
                     "messages": {},
                 }
 
                 # Convert operations to messages
-                for method, operation in operations.items():
-                    if method in {"get", "post", "put", "delete"}:
-                        message_name = f"{method}_{channel_name}"
-                        api_schema["channels"][channel_name]["messages"][
-                            message_name
-                        ] = {
-                            "payload": operation.get("requestBody", {})
-                            .get("content", {})
-                            .get("application/json", {})
-                            .get("schema", {})
-                        }
+                channel_data = channels[channel_name]
+                if isinstance(channel_data, dict):
+                    messages = channel_data.get("messages", {})
+                    if not isinstance(messages, dict):
+                        messages = {}
+                        channel_data["messages"] = messages
+
+                    messages = cast("dict[str, FlextApiTypes.JsonValue]", messages)
+                    operations_dict = cast(
+                        "dict[str, FlextApiTypes.JsonValue]", operations
+                    )
+                    for method, operation in operations_dict.items():
+                        if not isinstance(operation, dict):
+                            continue
+                        if method in {"get", "post", "put", "delete"}:
+                            message_name = f"{method}_{channel_name}"
+                            request_body = operation.get("requestBody", {})
+                            if isinstance(request_body, dict):
+                                content = request_body.get("content", {})
+                                if isinstance(content, dict):
+                                    json_content = content.get("application/json", {})
+                                    if isinstance(json_content, dict):
+                                        schema = json_content.get("schema", {})
+                                    else:
+                                        schema = {}
+                                else:
+                                    schema = {}
+                            else:
+                                schema = {}
+
+                            messages_dict = cast(
+                                "dict[str, FlextApiTypes.JsonValue]", messages
+                            )
+                            messages_dict[message_name] = {"payload": schema}
 
             self._logger.debug("OpenAPI schema converted to API")
 
-            return FlextResult[dict[str, object]].ok(api_schema)
+            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(api_schema)
 
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(
                 f"OpenAPI to API conversion failed: {e}"
             )
 
-    def openapi_to_graphql_schema(
-        self, openapi_schema: dict[str, object]
+    def convert_openapi_to_graphql_schema(
+        self, openapi_schema: dict[str, FlextApiTypes.JsonValue]
     ) -> FlextResult[str]:
         """Convert OpenAPI schema to GraphQL schema SDL.
 
@@ -327,16 +289,26 @@ class SchemaAdapter:
 
             # Convert components/schemas to GraphQL types
             components = openapi_schema.get("components", {})
+            if not isinstance(components, dict):
+                components = {}
             schemas = components.get("schemas", {})
+            if not isinstance(schemas, dict):
+                schemas = {}
 
             for schema_name, schema_def in schemas.items():
+                if not isinstance(schema_def, dict):
+                    continue
                 if schema_def.get("type") == "object":
                     properties = schema_def.get("properties", {})
-                    fields: list[str] = []
+                    if not isinstance(properties, dict):
+                        properties = {}
+                    fields: FlextTypes.StringList = []
 
                     for prop_name, prop_def in properties.items():
+                        if not isinstance(prop_def, dict):
+                            continue
                         prop_type = self._map_openapi_type_to_graphql(
-                            prop_def.get("type", "String")
+                            str(prop_def.get("type", "String"))
                         )
                         fields.append(f"  {prop_name}: {prop_type}")
 
@@ -345,9 +317,17 @@ class SchemaAdapter:
 
             # Convert paths to queries and mutations
             paths = openapi_schema.get("paths", {})
+            if not isinstance(paths, dict):
+                paths = {}
             for path, operations in paths.items():
+                if not isinstance(operations, dict):
+                    continue
                 for method, operation in operations.items():
+                    if not isinstance(operation, dict):
+                        continue
                     operation_id = operation.get("operationId", path.replace("/", "_"))
+                    if not isinstance(operation_id, str):
+                        operation_id = str(operation_id)
 
                     if method == "get":
                         # GET -> Query
@@ -398,47 +378,18 @@ class SchemaAdapter:
 
         return type_mapping.get(openapi_type, "String")
 
-
-class LegacyApiAdapter:
-    """Adapter for legacy API integration.
-
-    Features:
-    - Legacy endpoint wrapping
-    - Request transformation
-    - Response normalization
-    - Error code mapping
-    - Authentication adaptation
-    """
-
-    def __init__(self, base_url: str) -> None:
-        """Initialize legacy API adapter.
-
-        Args:
-            base_url: Legacy API base URL
-
-        """
-        self._logger = FlextLogger(__name__)
-        self._base_url = base_url
-
-    def adapt_request(
+    def adapt_request_to_legacy_format(
         self, modern_request: FlextApiModels.HttpRequest
     ) -> FlextResult[FlextApiModels.HttpRequest]:
-        """Adapt modern request to legacy API format.
-
-        Args:
-            modern_request: Modern API request
-
-        Returns:
-            FlextResult containing legacy request or error
-
-        """
+        """Transform request to legacy format."""
         try:
-            # Transform request to legacy format
             legacy_request = FlextApiModels.HttpRequest(
                 method=modern_request.method,
                 url=f"{self._base_url}{modern_request.url}",
-                headers=self._adapt_headers(dict(modern_request.headers or {})),
-                body=self._adapt_payload(
+                headers=self._adapt_headers_to_legacy(
+                    dict(modern_request.headers or {})
+                ),
+                body=self._adapt_payload_to_legacy(
                     modern_request.body if isinstance(modern_request.body, dict) else {}
                 ),
             )
@@ -455,7 +406,7 @@ class LegacyApiAdapter:
                 f"Request adaptation failed: {e}"
             )
 
-    def adapt_response(
+    def adapt_legacy_response_to_modern(
         self, legacy_response: FlextApiModels.HttpResponse
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Adapt legacy response to modern API format.
@@ -470,15 +421,16 @@ class LegacyApiAdapter:
         try:
             # Transform response to modern format
             modern_response = FlextApiModels.HttpResponse(
-                status_code=self._adapt_status_code(legacy_response.status_code),
+                status_code=self._adapt_legacy_status_code(legacy_response.status_code),
                 headers=legacy_response.headers,
-                body=self._normalize_payload(
+                body=self._normalize_legacy_payload(
                     legacy_response.body
                     if isinstance(legacy_response.body, dict)
                     else {}
                 ),
                 url=legacy_response.url,
                 method=legacy_response.method,
+                request=legacy_response.request,
             )
 
             self._logger.debug(
@@ -493,7 +445,9 @@ class LegacyApiAdapter:
                 f"Response adaptation failed: {e}"
             )
 
-    def _adapt_headers(self, headers: dict[str, str]) -> dict[str, str]:
+    def _adapt_headers_to_legacy(
+        self, headers: FlextTypes.StringDict
+    ) -> FlextTypes.StringDict:
         """Adapt headers to legacy format.
 
         Args:
@@ -512,7 +466,7 @@ class LegacyApiAdapter:
 
         return adapted
 
-    def _adapt_payload(self, payload: dict[str, object]) -> dict[str, object]:
+    def _adapt_payload_to_legacy(self, payload: dict[str, object]) -> dict[str, object]:
         """Adapt payload to legacy format.
 
         Args:
@@ -527,12 +481,14 @@ class LegacyApiAdapter:
 
         for key, value in payload.items():
             # Legacy API might use snake_case instead of camelCase
-            legacy_key = self._camel_to_snake(key)
+            legacy_key = self._convert_camel_to_snake(key)
             adapted[legacy_key] = value
 
         return adapted
 
-    def _normalize_payload(self, payload: dict[str, object]) -> dict[str, object]:
+    def _normalize_legacy_payload(
+        self, payload: dict[str, object]
+    ) -> dict[str, object]:
         """Normalize legacy payload to modern format.
 
         Args:
@@ -547,12 +503,12 @@ class LegacyApiAdapter:
 
         for key, value in payload.items():
             # Convert snake_case back to camelCase
-            modern_key = self._snake_to_camel(key)
+            modern_key = self._convert_snake_to_camel(key)
             normalized[modern_key] = value
 
         return normalized
 
-    def _adapt_status_code(self, legacy_code: int) -> int:
+    def _adapt_legacy_status_code(self, legacy_code: int) -> int:
         """Adapt legacy status code to modern standard.
 
         Args:
@@ -573,7 +529,7 @@ class LegacyApiAdapter:
 
         return code_mapping.get(legacy_code, legacy_code)
 
-    def _camel_to_snake(self, name: str) -> str:
+    def _convert_camel_to_snake(self, name: str) -> str:
         """Convert camelCase to snake_case.
 
         Args:
@@ -585,7 +541,7 @@ class LegacyApiAdapter:
         """
         return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
-    def _snake_to_camel(self, name: str) -> str:
+    def _convert_snake_to_camel(self, name: str) -> str:
         """Convert snake_case to camelCase.
 
         Args:
@@ -600,9 +556,5 @@ class LegacyApiAdapter:
 
 
 __all__ = [
-    "GraphQLToHttpAdapter",
-    "HttpToWebSocketAdapter",
-    "LegacyApiAdapter",
-    "ProtocolAdapterProtocol",
-    "SchemaAdapter",
+    "FlextApiAdapters",
 ]

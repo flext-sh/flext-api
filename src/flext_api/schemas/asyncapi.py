@@ -17,9 +17,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from flext_core import FlextResult
-
 from flext_api.plugins import SchemaPlugin
+from flext_core import FlextResult, FlextTypes
 
 
 class AsyncAPISchemaValidator(SchemaPlugin):
@@ -404,7 +403,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
             "asyncapi3",
         }
 
-    def get_supported_schemas(self) -> list[str]:
+    def get_supported_schemas(self) -> FlextTypes.StringList:
         """Get list of supported schema types.
 
         Returns:

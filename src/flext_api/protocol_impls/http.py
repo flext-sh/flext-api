@@ -18,11 +18,11 @@ from __future__ import annotations
 import time
 
 import httpx
-from flext_core import FlextConstants, FlextResult
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
 from flext_api.transports import HttpTransport
+from flext_core import FlextConstants, FlextResult, FlextTypes
 
 
 class HttpProtocolPlugin(ProtocolPlugin):
@@ -177,7 +177,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
                 # Determine how to pass body based on Content-Type and body type
                 # For form data (dict with application/x-www-form-urlencoded), use data parameter
                 # For other content (str, bytes), use content parameter
-                request_kwargs: dict[str, object] = {
+                request_kwargs: FlextTypes.Dict = {
                     "method": method,
                     "url": url,
                     "headers": headers,
@@ -335,7 +335,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
 
         return protocol.lower() in supported
 
-    def get_supported_protocols(self) -> list[str]:
+    def get_supported_protocols(self) -> FlextTypes.StringList:
         """Get list of supported protocols.
 
         Returns:
@@ -381,7 +381,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
             "Streaming not yet implemented (Phase 2 enhancement)"
         )
 
-    def get_protocol_info(self) -> dict[str, object]:
+    def get_protocol_info(self) -> FlextTypes.Dict:
         """Get protocol configuration information.
 
         Returns:

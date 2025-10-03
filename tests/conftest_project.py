@@ -18,6 +18,7 @@ import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from flext_tests import FlextTestsDomains
 
 # DIRECT imports from flext_api - verified classes
 from flext_api import (
@@ -26,8 +27,7 @@ from flext_api import (
     FlextApiStorage,
 )
 from flext_api.typings import FlextApiTypes
-from flext_core import FlextConstants, FlextContainer
-from flext_tests import FlextTestsDomains
+from flext_core import FlextConstants, FlextContainer, FlextTypes
 
 # Configure Faker for deterministic test data
 fake = Faker()
@@ -200,11 +200,11 @@ def test_client(fastapi_app: FastAPI) -> TestClient:
 
 
 @pytest.fixture
-def sample_api_data() -> FlextApiTypes.Core.ResponseDict:
+def sample_api_data() -> FlextApiTypes.ResponseDict:
     """Sample API data using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.Core.ResponseDict: Sample API data.
+        FlextApiTypes.ResponseDict: Sample API data.
 
     """
     return FlextTestsDomains.api_response_data()
@@ -228,55 +228,55 @@ def sample_headers() -> FlextApiTypes.HttpHeaders:
 
 
 @pytest.fixture
-def sample_config_dict() -> FlextApiTypes.Core.ResponseDict:
+def sample_config_dict() -> FlextApiTypes.ResponseDict:
     """Sample config dictionary using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.Core.ResponseDict: Sample configuration data.
+        FlextApiTypes.ResponseDict: Sample configuration data.
 
     """
     return FlextTestsDomains.create_configuration()
 
 
 @pytest.fixture
-def sample_user_data() -> FlextApiTypes.Core.ResponseDict:
+def sample_user_data() -> FlextApiTypes.ResponseDict:
     """Sample user data using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.Core.ResponseDict: Sample user data.
+        FlextApiTypes.ResponseDict: Sample user data.
 
     """
     return FlextTestsDomains.create_user()
 
 
 @pytest.fixture
-def sample_service_data() -> FlextApiTypes.Core.ResponseDict:
+def sample_service_data() -> FlextApiTypes.ResponseDict:
     """Sample service data using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.Core.ResponseDict: Sample service data.
+        FlextApiTypes.ResponseDict: Sample service data.
 
     """
     return FlextTestsDomains.create_service()
 
 
 @pytest.fixture
-def sample_payload_data() -> FlextApiTypes.Core.ResponseDict:
+def sample_payload_data() -> FlextApiTypes.ResponseDict:
     """Sample payload data using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.Core.ResponseDict: Sample payload data.
+        FlextApiTypes.ResponseDict: Sample payload data.
 
     """
     return FlextTestsDomains.create_payload()
 
 
 @pytest.fixture
-def sample_configuration_data() -> FlextApiTypes.Core.ResponseDict:
+def sample_configuration_data() -> FlextApiTypes.ResponseDict:
     """Sample configuration data using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.Core.ResponseDict: Sample configuration data.
+        FlextApiTypes.ResponseDict: Sample configuration data.
 
     """
     return FlextTestsDomains.create_configuration()
@@ -288,22 +288,22 @@ def sample_configuration_data() -> FlextApiTypes.Core.ResponseDict:
 
 
 @pytest.fixture
-def valid_email_cases() -> list[str]:
+def valid_email_cases() -> FlextTypes.StringList:
     """Valid email cases from FlextTestsDomains.
 
     Returns:
-        list[str]: List of valid email addresses.
+        FlextTypes.StringList: List of valid email addresses.
 
     """
     return FlextTestsDomains.valid_email_cases()
 
 
 @pytest.fixture
-def invalid_email_cases() -> list[str]:
+def invalid_email_cases() -> FlextTypes.StringList:
     """Invalid email cases from FlextTestsDomains.
 
     Returns:
-        list[str]: List of invalid email addresses.
+        FlextTypes.StringList: List of invalid email addresses.
 
     """
     return FlextTestsDomains.invalid_email_cases()

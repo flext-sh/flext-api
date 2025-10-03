@@ -101,15 +101,15 @@ class HttpRequest(FlextModels.Entity):
     """HTTP request model with validation."""
     method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
     url: str
-    headers: dict[str, str] = Field(default_factory=dict)
-    body: str | dict[str, object] | None = None
+    headers: FlextTypes.StringDict = Field(default_factory=dict)
+    body: str | FlextTypes.Dict | None = None
     timeout: int | float = 30
 
 class HttpResponse(FlextModels.Entity):
     """HTTP response model."""
     status_code: int
-    body: str | dict[str, object] | None = None
-    headers: dict[str, str] = Field(default_factory=dict)
+    body: str | FlextTypes.Dict | None = None
+    headers: FlextTypes.StringDict = Field(default_factory=dict)
     elapsed_time: float | None = None
 ```
 
@@ -123,7 +123,7 @@ class FlextApiConfig(FlextModels.Value):
     base_url: str = "https://api.example.com"
     timeout: float = 30.0
     max_retries: int = 3  # Configured but not implemented
-    headers: dict[str, str] = Field(default_factory=dict)
+    headers: FlextTypes.StringDict = Field(default_factory=dict)
 ```
 
 ---
@@ -252,8 +252,8 @@ class FlextApiStorage(FlextModels.Entity):
 
     def __init__(self, config: dict = None):
         super().__init__()
-        self._storage: dict[str, object] = {}
-        self._data: dict[str, object] = {}
+        self._storage: FlextTypes.Dict = {}
+        self._data: FlextTypes.Dict = {}
 
     def set(self, key: str, value: object) -> FlextResult[None]:
         """Store HTTP data."""
@@ -285,7 +285,7 @@ class ClientConfig(FlextModels.Value):
     auth_token: str | None = None
     api_key: str | None = None
 
-    def get_auth_header(self) -> dict[str, str]:
+    def get_auth_header(self) -> FlextTypes.StringDict:
         if self.auth_token:
             return {"Authorization": f"Bearer {self.auth_token}"}
         return {}

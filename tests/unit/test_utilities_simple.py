@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import cast
 
 from flext_api.utilities import FlextApiUtilities
+from flext_core import FlextTypes
 
 
 class TestFlextApiUtilitiesSimple:
@@ -98,7 +99,7 @@ class TestPaginationBuilderSimple:
         """Test building paginated response with default parameters."""
         data = ["item1", "item2", "item3"]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            cast("list[object]", data)
+            cast("FlextTypes.List", data)
         )
 
         assert result.is_success
@@ -118,7 +119,7 @@ class TestPaginationBuilderSimple:
         """Test building paginated response with custom parameters."""
         data = list(range(50))  # 50 items
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
-            cast("list[object]", data),
+            cast("FlextTypes.List", data),
             page=2,
             page_size=10,
             total=50,

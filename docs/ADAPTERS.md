@@ -416,7 +416,7 @@ from typing import object
 class CustomLegacyAdapter(LegacyApiAdapter):
     """Custom adapter with additional transformations."""
 
-    def _transform_payload(self, payload: dict[str, object]) -> dict[str, object]:
+    def _transform_payload(self, payload: FlextTypes.Dict) -> FlextTypes.Dict:
         """Add custom field transformations."""
         transformed = super()._transform_payload(payload)
 

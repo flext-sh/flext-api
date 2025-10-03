@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
 
@@ -96,7 +96,7 @@ class TestWebSocketProtocolPluginSimple:
         """Test event handler registration."""
         plugin = WebSocketProtocolPlugin()
 
-        def on_message(message) -> None:
+        def on_message(message: str) -> None:
             pass
 
         def on_connect() -> None:
@@ -105,7 +105,7 @@ class TestWebSocketProtocolPluginSimple:
         def on_disconnect() -> None:
             pass
 
-        def on_error(error) -> None:
+        def on_error(error: Exception) -> None:
             pass
 
         plugin.on_message(on_message)
@@ -127,7 +127,7 @@ class TestWebSocketModelsSimple:
         message = FlextApiModels.WebSocketMessage(
             message="Hello WebSocket",
             message_type="text",
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         assert message.message == "Hello WebSocket"
@@ -138,7 +138,7 @@ class TestWebSocketModelsSimple:
         message = FlextApiModels.WebSocketMessage(
             message=b"Binary data",
             message_type="binary",
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
         assert message.message == b"Binary data"
@@ -150,7 +150,7 @@ class TestWebSocketModelsSimple:
             FlextApiModels.WebSocketMessage(
                 message="test",
                 message_type="invalid",
-                timestamp=datetime.now().isoformat(),
+                timestamp=datetime.now(UTC).isoformat(),
             )
 
     def test_websocket_connection_creation(self) -> None:

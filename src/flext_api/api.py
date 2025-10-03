@@ -19,9 +19,7 @@ from flext_api.protocols import FlextApiProtocols
 from flext_api.storage import FlextApiStorage
 from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
-from flext_core import FlextConstants
-
-__all__ = ["FlextApi"]
+from flext_core import FlextConstants, FlextTypes
 
 
 class FlextApi:
@@ -98,8 +96,8 @@ class FlextApi:
         base_url: str | None = None,
         timeout: float | None = None,
         max_retries: int | None = None,
-        headers: dict[str, str] | None = None,
-        **kwargs: FlextApiTypes.Core.ConfigValue,
+        headers: FlextTypes.StringDict | None = None,
+        **kwargs: FlextApiTypes.ConfigValue,
     ) -> FlextApiClient:
         """Create HTTP client with configuration.
 
@@ -127,7 +125,7 @@ class FlextApi:
         title: str = "FLEXT API Service",
         version: str = "1.0.0",
         description: str = "Enterprise API built on FLEXT foundation",
-        **kwargs: FlextApiTypes.Core.ConfigValue,
+        **kwargs: FlextApiTypes.ConfigValue,
     ) -> object:
         """Create FastAPI application with FLEXT patterns.
 
@@ -153,7 +151,7 @@ class FlextApi:
     def create_storage(
         backend: str = "memory",
         namespace: str = "flext_api",
-        **kwargs: FlextApiTypes.Core.ConfigValue,
+        **kwargs: FlextApiTypes.ConfigValue,
     ) -> FlextApiStorage:
         """Create storage backend with configuration.
 
@@ -175,10 +173,10 @@ class FlextApi:
 
     @staticmethod
     def build_response(
-        data: FlextApiTypes.Core.JsonValue = None,
+        data: FlextApiTypes.JsonValue = None,
         message: str = "",
         status: str = "success",
-    ) -> dict[str, FlextApiTypes.Core.JsonValue]:
+    ) -> dict[str, FlextApiTypes.JsonValue]:
         """Build structured API response.
 
         Args:
@@ -199,7 +197,7 @@ class FlextApi:
     def build_error_response(
         message: str,
         code: str = "error",
-    ) -> dict[str, FlextApiTypes.Core.JsonValue]:
+    ) -> dict[str, FlextApiTypes.JsonValue]:
         """Build error response.
 
         Args:
@@ -243,3 +241,6 @@ class FlextApi:
             return FlextApiModels.UrlModel(raw_url=url)
         except Exception:
             return None
+
+
+__all__ = ["FlextApi"]

@@ -9,6 +9,7 @@ from __future__ import annotations
 import time
 
 from flext_api import FlextApiUtilities
+from flext_core import FlextTypes
 
 
 class TestFlextUtilitiesAdditionalCoverage:
@@ -295,7 +296,7 @@ class TestFlextUtilitiesAdditionalCoverage:
 
     def test_batch_process_with_empty_data(self) -> None:
         """Test batch_process with empty data."""
-        items: list[object] = []
+        items: FlextTypes.List = []
         batches = FlextApiUtilities.batch_process(items, batch_size=10)
         assert len(batches) == 0
 

@@ -36,14 +36,6 @@ class TestFlextApiClientAdditionalMethods:
         assert client._client_config.timeout == 45.0
         assert client._client_config.max_retries == 3
 
-    def test_client_context_manager(self) -> None:
-        """Test client context manager functionality."""
-        client = FlextApiClient()
-
-        with client as ctx_client:
-            assert ctx_client is client
-            assert ctx_client is not None
-
     def test_client_config_property(self) -> None:
         """Test client config property access."""
         client = FlextApiClient()

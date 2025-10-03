@@ -274,7 +274,7 @@ secure_client = FlextApiClient(
 
 # Development configuration (less secure)
 dev_client = FlextApiClient(
-    base_url=f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",  # HTTP allowed for local dev
+    base_url=f"http://{FlextConstants["Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}""],  # HTTP allowed for local dev
     ssl_verify=False,  # Only for development
     timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT
 )
@@ -354,7 +354,7 @@ def setup_development_environment():
 
     # HTTP client configuration
     http_config = FlextApiConfig(
-        base_url=f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",
+        base_url=f"http://{FlextConstants["Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}""],
         timeout=FlextApiConstants.DEVELOPMENT_TIMEOUT,
         ssl_verify=False,  # Development only
         headers={

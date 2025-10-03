@@ -17,7 +17,7 @@ from flext_api import (
     FlextApiStorage,
     FlextApiUtilities,
 )
-from flext_core import FlextConstants
+from flext_core import FlextConstants, FlextTypes
 
 
 def example_api_creation() -> None:
@@ -73,7 +73,7 @@ def example_storage_usage() -> None:
 
     # Set data using FlextResult pattern
     # CacheValue as dict for JSON compatibility
-    cache_value: dict[str, object] = {
+    cache_value: FlextTypes.Dict = {
         "data": {"message": "Hello FlextAPI!"},
         "headers": {},
         "status_code": 200,

@@ -17,7 +17,13 @@ from flext_api.plugins import (
     SchemaPlugin,
     TransportPlugin,
 )
-from flext_core import FlextDispatcher, FlextLogger, FlextRegistry, FlextResult
+from flext_core import (
+    FlextDispatcher,
+    FlextLogger,
+    FlextRegistry,
+    FlextResult,
+    FlextTypes,
+)
 
 
 class FlextApiRegistry(FlextRegistry):
@@ -137,14 +143,14 @@ class FlextApiRegistry(FlextRegistry):
 
         return FlextResult[ProtocolPlugin].ok(self._protocols[name])
 
-    def list_protocols(self) -> FlextResult[list[str]]:
+    def list_protocols(self) -> FlextResult[FlextTypes.StringList]:
         """List all registered protocol names.
 
         Returns:
             FlextResult containing list of protocol names
 
         """
-        return FlextResult[list[str]].ok(list(self._protocols.keys()))
+        return FlextResult[FlextTypes.StringList].ok(list(self._protocols.keys()))
 
     def unregister_protocol(self, name: str) -> FlextResult[None]:
         """Unregister a protocol plugin.
@@ -215,14 +221,14 @@ class FlextApiRegistry(FlextRegistry):
 
         return FlextResult[SchemaPlugin].ok(self._schemas[name])
 
-    def list_schemas(self) -> FlextResult[list[str]]:
+    def list_schemas(self) -> FlextResult[FlextTypes.StringList]:
         """List all registered schema system names.
 
         Returns:
             FlextResult containing list of schema names
 
         """
-        return FlextResult[list[str]].ok(list(self._schemas.keys()))
+        return FlextResult[FlextTypes.StringList].ok(list(self._schemas.keys()))
 
     def unregister_schema(self, name: str) -> FlextResult[None]:
         """Unregister a schema plugin.
@@ -293,14 +299,14 @@ class FlextApiRegistry(FlextRegistry):
 
         return FlextResult[TransportPlugin].ok(self._transports[name])
 
-    def list_transports(self) -> FlextResult[list[str]]:
+    def list_transports(self) -> FlextResult[FlextTypes.StringList]:
         """List all registered transport names.
 
         Returns:
             FlextResult containing list of transport names
 
         """
-        return FlextResult[list[str]].ok(list(self._transports.keys()))
+        return FlextResult[FlextTypes.StringList].ok(list(self._transports.keys()))
 
     def unregister_transport(self, name: str) -> FlextResult[None]:
         """Unregister a transport plugin.
@@ -371,14 +377,14 @@ class FlextApiRegistry(FlextRegistry):
 
         return FlextResult[AuthenticationPlugin].ok(self._auth_providers[name])
 
-    def list_auth_providers(self) -> FlextResult[list[str]]:
+    def list_auth_providers(self) -> FlextResult[FlextTypes.StringList]:
         """List all registered authentication provider names.
 
         Returns:
             FlextResult containing list of auth provider names
 
         """
-        return FlextResult[list[str]].ok(list(self._auth_providers.keys()))
+        return FlextResult[FlextTypes.StringList].ok(list(self._auth_providers.keys()))
 
     def unregister_auth_provider(self, name: str) -> FlextResult[None]:
         """Unregister an authentication provider.

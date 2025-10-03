@@ -11,6 +11,7 @@ from __future__ import annotations
 import time
 
 from flext_api import FlextApiStorage
+from flext_core import FlextTypes
 
 
 class TestFlextApiStorage:
@@ -125,7 +126,7 @@ class TestFlextApiStorage:
         items_result = storage.items()
         assert items_result.is_success
         assert items_result.value is not None
-        items: dict[str, object] = dict(items_result.value)
+        items: FlextTypes.Dict = dict(items_result.value)
         assert items["key1"] == "value1"
         assert items["key2"] == "value2"
 

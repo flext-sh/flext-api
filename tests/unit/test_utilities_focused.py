@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api import FlextApiUtilities
+from flext_core import FlextTypes
 
 
 class TestFlextApiUtilitiesFocused:
@@ -77,7 +78,7 @@ class TestFlextApiUtilitiesFocused:
 
     def test_pagination_builder_build_paginated_response_basic(self) -> None:
         """Test PaginationBuilder basic functionality."""
-        test_data: list[object] = [{"id": 1}, {"id": 2}, {"id": 3}]
+        test_data: FlextTypes.List = [{"id": 1}, {"id": 2}, {"id": 3}]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
             data=test_data,
             page=1,
@@ -157,7 +158,7 @@ class TestFlextApiUtilitiesFocused:
 
     def test_pagination_builder_no_total_uses_data_length(self) -> None:
         """Test PaginationBuilder uses data length when total is None."""
-        test_data: list[object] = [1, 2, 3, 4, 5]
+        test_data: FlextTypes.List = [1, 2, 3, 4, 5]
         result = FlextApiUtilities.PaginationBuilder.build_paginated_response(
             data=test_data,
             total=None,
@@ -281,7 +282,7 @@ class TestFlextApiUtilitiesFocused:
 
         # Test with object that has model_dump
         class MockConfig:
-            def model_dump(self) -> dict[str, object]:
+            def model_dump(self) -> FlextTypes.Dict:
                 return {"base_url": "https://test.com", "timeout": 60}
 
         mock_config = MockConfig()

@@ -13,6 +13,7 @@ from pydantic import ValidationError
 
 from flext_api import FlextApiClient, FlextApiModels
 from flext_api.constants import FlextApiConstants
+from flext_core import FlextTypes
 
 
 class TestFlextApiClientCoverageBoost:
@@ -35,7 +36,8 @@ class TestFlextApiClientCoverageBoost:
         }
 
         typed_config = cast(
-            "Mapping[str, str | int | float] | bool | dict[str, str] | None", config
+            "Mapping[str, str | int | float] | bool | FlextTypes.StringDict | None",
+            config,
         )
         api = FlextApiClient(config=typed_config)
         assert api is not None
@@ -53,7 +55,7 @@ class TestFlextApiClientCoverageBoost:
 
         # FlextApiClient should raise ValidationError when client creation fails
         typed_invalid_config = cast(
-            "Mapping[str, str | int | float] | bool | dict[str, str] | None",
+            "Mapping[str, str | int | float] | bool | FlextTypes.StringDict | None",
             invalid_config,
         )
         with pytest.raises(ValidationError):

@@ -39,7 +39,7 @@ def __init__(
     base_url: str = None,
     timeout: float = 30.0,
     max_retries: int = 3,
-    headers: dict[str, str] = None,
+    headers: FlextTypes.StringDict = None,
     **kwargs
 ) -> None:
 ```
@@ -108,7 +108,7 @@ def get(
     self,
     url: str,
     params: dict = None,
-    headers: dict[str, str] = None
+    headers: FlextTypes.StringDict = None
 ) -> FlextResult[FlextApiModels.HttpResponse]:
 ```
 
@@ -122,7 +122,7 @@ def post(
     url: str,
     json: dict = None,
     data: str = None,
-    headers: dict[str, str] = None
+    headers: FlextTypes.StringDict = None
 ) -> FlextResult[FlextApiModels.HttpResponse]:
 ```
 
@@ -164,8 +164,8 @@ HTTP request model with validation.
 class HttpRequest(FlextModels.Entity):
     method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
     url: str
-    headers: dict[str, str] = Field(default_factory=dict)
-    body: str | dict[str, object] | None = None
+    headers: FlextTypes.StringDict = Field(default_factory=dict)
+    body: str | FlextTypes.Dict | None = None
     timeout: int | float = 30
 ```
 
@@ -190,8 +190,8 @@ HTTP response model.
 ```python
 class HttpResponse(FlextModels.Entity):
     status_code: int
-    body: str | dict[str, object] | None = None
-    headers: dict[str, str] = Field(default_factory=dict)
+    body: str | FlextTypes.Dict | None = None
+    headers: FlextTypes.StringDict = Field(default_factory=dict)
     url: str
     method: str
     elapsed_time: float | None = None
@@ -222,7 +222,7 @@ class ClientConfig(FlextModels.Value):
     base_url: str = "https://api.example.com"
     timeout: float = 30.0
     max_retries: int = 3
-    headers: dict[str, str] = Field(default_factory=dict)
+    headers: FlextTypes.StringDict = Field(default_factory=dict)
     auth_token: str | None = None
     api_key: str | None = None
 ```
@@ -230,10 +230,10 @@ class ClientConfig(FlextModels.Value):
 **Methods:**
 
 ```python
-def get_auth_header(self) -> dict[str, str]:
+def get_auth_header(self) -> FlextTypes.StringDict:
     """Get authentication header if configured."""
 
-def get_default_headers(self) -> dict[str, str]:
+def get_default_headers(self) -> FlextTypes.StringDict:
     """Get all default headers including auth."""
 ```
 
@@ -284,7 +284,7 @@ def get_timeout(self) -> float:
 def get_max_retries(self) -> int:
     """Get configured max retry attempts."""
 
-def get_default_headers(self) -> dict[str, str]:
+def get_default_headers(self) -> FlextTypes.StringDict:
     """Get default HTTP headers."""
 
 def load_from_env(self) -> FlextResult[None]:
@@ -425,7 +425,7 @@ class DataTransformer:
     def from_json(json_str: str) -> FlextResult[object]:
 
     @staticmethod
-    def to_dict(data: object) -> FlextResult[dict[str, object]]:
+    def to_dict(data: object) -> FlextResult[FlextTypes.Dict]:
 ```
 
 ---
@@ -472,7 +472,7 @@ def clear(self) -> FlextResult[None]:
 def size(self) -> FlextResult[int]:
     """Get number of stored items."""
 
-def keys(self) -> FlextResult[list[str]]:
+def keys(self) -> FlextResult[FlextTypes.StringList]:
     """Get all keys in storage."""
 ```
 

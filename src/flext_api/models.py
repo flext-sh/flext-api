@@ -14,12 +14,6 @@ import json
 from pathlib import Path
 from typing import Self
 
-from flext_core import (
-    FlextConstants,
-    FlextModels,
-    FlextResult,
-    FlextUtilities,
-)
 from pydantic import (
     ConfigDict,
     Field,
@@ -31,6 +25,13 @@ from pydantic import (
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
+from flext_core import (
+    FlextConstants,
+    FlextModels,
+    FlextResult,
+    FlextTypes,
+    FlextUtilities,
+)
 
 
 class FlextApiModels(FlextModels):
@@ -135,7 +136,7 @@ class FlextApiModels(FlextModels):
             if v.strip().startswith("/"):
                 return v.strip()
 
-            validation_result = FlextModels.create_validated_http_url(v.strip())
+            validation_result = FlextApiModels.create_validated_http_url(v.strip())
             if validation_result.is_failure:
                 error_msg = validation_result.error or "Invalid URL"
                 if "URL must start with http:// or https://" in error_msg:
@@ -217,7 +218,7 @@ class FlextApiModels(FlextModels):
         request: FlextApiModels.HttpRequest = Field(
             description="Original request object"
         )
-        domain_events: list[object] = Field(
+        domain_events: FlextTypes.List = Field(
             default_factory=list, description="Domain events"
         )
 
@@ -273,7 +274,7 @@ class FlextApiModels(FlextModels):
 
         @field_serializer("body")
         def serialize_response_body(
-            self, value: str | dict[str, FlextApiTypes.Core.JsonValue] | None
+            self, value: str | dict[str, FlextApiTypes.JsonValue] | None
         ) -> str | dict | None:
             """Serialize response body for storage/transmission - CLIENT SPECIFIC."""
             if value is None:
@@ -304,7 +305,7 @@ class FlextApiModels(FlextModels):
             le=FlextApiConstants.MAX_RETRIES,
             description="Maximum retries",
         )
-        headers: dict[str, str] = Field(
+        headers: FlextTypes.StringDict = Field(
             default_factory=dict, description="Default headers"
         )
 
@@ -348,7 +349,7 @@ class FlextApiModels(FlextModels):
         @classmethod
         def validate_base_url(cls, v: str) -> str:
             """Validate base URL using centralized FlextModels validation."""
-            validation_result = FlextModels.create_validated_http_url(v.strip())
+            validation_result = FlextApiModels.create_validated_http_url(v.strip())
             if validation_result.is_failure:
                 error_msg = validation_result.error or "Invalid base URL"
                 if (
@@ -373,7 +374,7 @@ class FlextApiModels(FlextModels):
                 return "***MASKED***"
             return f"{value[:4]}***{value[-4:]}"
 
-        def get_auth_header(self) -> dict[str, str]:
+        def get_auth_header(self) -> FlextTypes.StringDict:
             """Get authentication header if configured."""
             if self.auth_token:
                 return {
@@ -385,7 +386,7 @@ class FlextApiModels(FlextModels):
                 }
             return {}
 
-        def get_default_headers(self) -> dict[str, str]:
+        def get_default_headers(self) -> FlextTypes.StringDict:
             """Get all default headers including auth."""
             headers = {
                 FlextApiConstants.USER_AGENT_HEADER: FlextApiConstants.DEFAULT_USER_AGENT,
@@ -398,10 +399,12 @@ class FlextApiModels(FlextModels):
         """HTTP query parameters model extending FlextModels.Query."""
 
         # Core fields using direct Pydantic 2 field names
-        filter_conditions: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+        filter_conditions: dict[str, FlextApiTypes.JsonValue] = Field(
             default_factory=dict, description="Filter conditions", alias="filters"
         )
-        sort_fields: list[str] = Field(default_factory=list, description="Sort fields")
+        sort_fields: FlextTypes.StringList = Field(
+            default_factory=list, description="Sort fields"
+        )
         page_number: int = Field(
             default=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
             ge=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
@@ -448,7 +451,7 @@ class FlextApiModels(FlextModels):
             return self
 
         def add_filter(
-            self, key: str, value: FlextApiTypes.Core.JsonValue
+            self, key: str, value: FlextApiTypes.JsonValue
         ) -> FlextResult[None]:
             """Add a filter to the query."""
             if not key or not key.strip():
@@ -456,7 +459,7 @@ class FlextApiModels(FlextModels):
             self.filter_conditions[key.strip()] = value
             return FlextResult[None].ok(None)
 
-        def to_query_params(self) -> dict[str, FlextApiTypes.Core.JsonValue]:
+        def to_query_params(self) -> dict[str, FlextApiTypes.JsonValue]:
             """Convert to query parameters dict with Python 3.13+ computational optimization."""
             # Python 3.13+ optimized dict merge with walrus operator
             # Use by_alias=True to export with field aliases (page, page_size, filters)
@@ -557,10 +560,10 @@ class FlextApiModels(FlextModels):
         method: str = Field(
             default=FlextConstants.Http.Method.GET, description="HTTP method"
         )
-        headers: dict[str, str] = Field(
+        headers: FlextTypes.StringDict = Field(
             default_factory=dict, description="Request headers"
         )
-        body: str | dict[str, FlextApiTypes.Core.JsonValue] | None = Field(
+        body: str | dict[str, FlextApiTypes.JsonValue] | None = Field(
             default=None, description="Request body"
         )
 
@@ -596,13 +599,13 @@ class FlextApiModels(FlextModels):
             le=FlextConstants.Http.HTTP_STATUS_MAX,
             description="HTTP status code",
         )
-        body: str | dict[str, FlextApiTypes.Core.JsonValue] | None = Field(
+        body: str | dict[str, FlextApiTypes.JsonValue] | None = Field(
             default=None, description="Response body"
         )
-        headers: dict[str, str] = Field(
+        headers: FlextTypes.StringDict = Field(
             default_factory=dict, description="Response headers"
         )
-        domain_events: list[object] = Field(
+        domain_events: FlextTypes.List = Field(
             default_factory=list, description="Domain events"
         )
 
@@ -705,8 +708,8 @@ class FlextApiModels(FlextModels):
         def create(
             self,
             response_type: str = "success",
-            **kwargs: FlextApiTypes.Core.JsonValue,
-        ) -> dict[str, FlextApiTypes.Core.JsonValue]:
+            **kwargs: FlextApiTypes.JsonValue,
+        ) -> dict[str, FlextApiTypes.JsonValue]:
             """Create response using Python 3.13+ pattern matching optimization."""
             # Python 3.13+ match-case for computational efficiency
             match response_type:
@@ -733,8 +736,8 @@ class FlextApiModels(FlextModels):
 
         @staticmethod
         def success(
-            *, data: FlextApiTypes.Core.JsonValue = None, message: str = ""
-        ) -> dict[str, FlextApiTypes.Core.JsonValue]:
+            *, data: FlextApiTypes.JsonValue = None, message: str = ""
+        ) -> dict[str, FlextApiTypes.JsonValue]:
             """Build success response using flext-core generators."""
             return {
                 "status": "success",
@@ -747,7 +750,7 @@ class FlextApiModels(FlextModels):
         @staticmethod
         def error(
             message: str, code: str = "error"
-        ) -> dict[str, FlextApiTypes.Core.JsonValue]:
+        ) -> dict[str, FlextApiTypes.JsonValue]:
             """Build error response using flext-core generators."""
             return {
                 "status": "error",
@@ -831,7 +834,7 @@ class FlextApiModels(FlextModels):
                 le=FlextApiConstants.MAX_RETRIES,
                 description="Retry count",
             )
-            headers: dict[str, str] = Field(
+            headers: FlextTypes.StringDict = Field(
                 default_factory=dict, description="Request headers"
             )
 
@@ -870,13 +873,13 @@ class FlextApiModels(FlextModels):
             message: str = Field(min_length=1, description="Error message")
             url: str | None = Field(default=None, description="Request URL")
             method: str | None = Field(default=None, description="HTTP method")
-            headers: dict[str, str] | None = Field(
+            headers: FlextTypes.StringDict | None = Field(
                 default=None, description="Response headers"
             )
-            context: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+            context: dict[str, FlextApiTypes.JsonValue] = Field(
                 default_factory=dict, description="Error context"
             )
-            details: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+            details: dict[str, FlextApiTypes.JsonValue] = Field(
                 default_factory=dict, description="Error details"
             )
 
@@ -929,11 +932,11 @@ class FlextApiModels(FlextModels):
                 default=False, description="Strict validation mode"
             )
             validate_schema: bool = Field(default=True, description="Validate schema")
-            custom_validators: list[str] = Field(
+            custom_validators: FlextTypes.StringList = Field(
                 default_factory=list, description="Custom validators"
             )
             field: str | None = Field(default=None, description="Field name")
-            value: FlextApiTypes.Core.JsonValue = Field(
+            value: FlextApiTypes.JsonValue = Field(
                 default=None, description="Field value"
             )
             url: str | None = Field(default=None, description="Validation URL")
@@ -973,7 +976,7 @@ class FlextApiModels(FlextModels):
         )
         version: str = Field(default="1.0.0", description="Protocol version")
         enabled: bool = Field(default=True, description="Whether protocol is enabled")
-        options: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+        options: dict[str, FlextApiTypes.JsonValue] = Field(
             default_factory=dict, description="Protocol-specific options"
         )
 
@@ -1021,7 +1024,7 @@ class FlextApiModels(FlextModels):
         priority: int = Field(
             default=100, ge=0, le=1000, description="Middleware execution priority"
         )
-        options: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+        options: dict[str, FlextApiTypes.JsonValue] = Field(
             default_factory=dict, description="Middleware-specific options"
         )
 
@@ -1044,7 +1047,7 @@ class FlextApiModels(FlextModels):
             description="Plugin type (protocol, schema, transport, auth)"
         )
         enabled: bool = Field(default=True, description="Whether plugin is enabled")
-        dependencies: list[str] = Field(
+        dependencies: FlextTypes.StringList = Field(
             default_factory=list, description="Plugin dependencies"
         )
 
@@ -1062,8 +1065,10 @@ class FlextApiModels(FlextModels):
         """Schema validation result model."""
 
         valid: bool = Field(description="Whether validation passed")
-        errors: list[str] = Field(default_factory=list, description="Validation errors")
-        warnings: list[str] = Field(
+        errors: FlextTypes.StringList = Field(
+            default_factory=list, description="Validation errors"
+        )
+        warnings: FlextTypes.StringList = Field(
             default_factory=list, description="Validation warnings"
         )
         schema_type: str = Field(
@@ -1121,10 +1126,10 @@ class FlextApiModels(FlextModels):
 
         url: str = Field(description="WebSocket URL (ws:// or wss://)")
         state: str = Field(default="connecting", description="Connection state")
-        headers: dict[str, str] = Field(
+        headers: FlextTypes.StringDict = Field(
             default_factory=dict, description="Connection headers"
         )
-        subprotocols: list[str] = Field(
+        subprotocols: FlextTypes.StringList = Field(
             default_factory=list, description="WebSocket subprotocols"
         )
         ping_interval: float = Field(
@@ -1208,7 +1213,7 @@ class FlextApiModels(FlextModels):
 
         url: str = Field(description="SSE endpoint URL")
         state: str = Field(default="connecting", description="Connection state")
-        headers: dict[str, str] = Field(
+        headers: FlextTypes.StringDict = Field(
             default_factory=dict, description="Connection headers"
         )
         last_event_id: str = Field(default="", description="Last received event ID")
@@ -1265,11 +1270,11 @@ class FlextApiModels(FlextModels):
         """GraphQL query model."""
 
         query: str = Field(description="GraphQL query string")
-        variables: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+        variables: dict[str, FlextApiTypes.JsonValue] = Field(
             default_factory=dict, description="Query variables"
         )
         operation_name: str | None = Field(default=None, description="Operation name")
-        fragments: list[str] = Field(
+        fragments: FlextTypes.StringList = Field(
             default_factory=list, description="GraphQL fragments"
         )
 
@@ -1294,13 +1299,13 @@ class FlextApiModels(FlextModels):
     class GraphQLResponse(FlextModels.Entity):
         """GraphQL response model."""
 
-        data: dict[str, FlextApiTypes.Core.JsonValue] | None = Field(
+        data: dict[str, FlextApiTypes.JsonValue] | None = Field(
             default=None, description="Response data"
         )
-        errors: list[dict[str, FlextApiTypes.Core.JsonValue]] = Field(
+        errors: list[dict[str, FlextApiTypes.JsonValue]] = Field(
             default_factory=list, description="GraphQL errors"
         )
-        extensions: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+        extensions: dict[str, FlextApiTypes.JsonValue] = Field(
             default_factory=dict, description="Response extensions"
         )
 
@@ -1332,17 +1337,19 @@ class FlextApiModels(FlextModels):
         """GraphQL schema model."""
 
         schema_string: str = Field(description="GraphQL schema SDL string")
-        types: list[str] = Field(default_factory=list, description="Schema types")
-        queries: list[str] = Field(
+        types: FlextTypes.StringList = Field(
+            default_factory=list, description="Schema types"
+        )
+        queries: FlextTypes.StringList = Field(
             default_factory=list, description="Available queries"
         )
-        mutations: list[str] = Field(
+        mutations: FlextTypes.StringList = Field(
             default_factory=list, description="Available mutations"
         )
-        subscriptions: list[str] = Field(
+        subscriptions: FlextTypes.StringList = Field(
             default_factory=list, description="Available subscriptions"
         )
-        directives: list[str] = Field(
+        directives: FlextTypes.StringList = Field(
             default_factory=list, description="Schema directives"
         )
 
@@ -1374,7 +1381,7 @@ class FlextApiModels(FlextModels):
         """GraphQL subscription model."""
 
         subscription: str = Field(description="GraphQL subscription string")
-        variables: dict[str, FlextApiTypes.Core.JsonValue] = Field(
+        variables: dict[str, FlextApiTypes.JsonValue] = Field(
             default_factory=dict, description="Subscription variables"
         )
         operation_name: str | None = Field(default=None, description="Operation name")
@@ -1407,6 +1414,67 @@ class FlextApiModels(FlextModels):
         def has_variables(self) -> bool:
             """Check if subscription has variables."""
             return len(self.variables) > 0
+
+    # =========================================================================
+    # UTILITY METHODS - Direct access following FLEXT standards
+    # =========================================================================
+
+    @classmethod
+    def create_validated_http_url(cls, url: str) -> FlextResult[str]:
+        """Create and validate an HTTP URL.
+
+        Args:
+            url: URL string to validate and create
+
+        Returns:
+            FlextResult containing validated URL object or error
+
+        """
+        try:
+            from urllib.parse import urlparse
+
+            if not url or not isinstance(url, str):
+                return FlextResult[str].fail(
+                    "URL must be a non-empty string"
+                )
+
+            url = url.strip()
+            if not url:
+                return FlextResult[str].fail("URL cannot be empty")
+
+            # Parse URL
+            parsed = urlparse(url)
+
+            # Validate scheme
+            if not parsed.scheme:
+                # Default to https for relative URLs
+                url = f"https://{url}"
+                parsed = urlparse(url)
+            elif parsed.scheme not in {"http", "https"}:
+                return FlextResult[str].fail(
+                    f"URL scheme must be http or https, got: {parsed.scheme}"
+                )
+
+            # Validate hostname
+            if not parsed.hostname:
+                return FlextResult[str].fail(
+                    "URL must have a valid hostname"
+                )
+
+            # Check hostname length
+            if len(parsed.hostname) > FlextApiConstants.MAX_HOSTNAME_LENGTH:
+                return FlextResult[str].fail("Hostname too long")
+
+            # Validate port if specified
+            if parsed.port is not None and not (
+                FlextApiConstants.MIN_PORT <= parsed.port <= FlextApiConstants.MAX_PORT
+            ):
+                return FlextResult[str].fail("Invalid port number")
+
+            return FlextResult[str].ok(parsed)
+
+        except Exception as e:
+            return FlextResult[str].fail(f"URL validation failed: {e}")
 
 
 __all__ = [

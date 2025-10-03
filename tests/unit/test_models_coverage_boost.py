@@ -10,6 +10,7 @@ import pytest
 from pydantic import ValidationError
 
 from flext_api import FlextApiModels
+from flext_core import FlextTypes
 
 
 class TestFlextApiModelsCoverageBoost:
@@ -318,7 +319,7 @@ class TestFlextApiModelsCoverageBoost:
     def test_builder_create_error_response(self) -> None:
         """Test Builder create error response."""
         builder = FlextApiModels.Builder()
-        response: dict[str, object] = builder.create(
+        response: FlextTypes.Dict = builder.create(
             response_type="error",
             code="ERR_001",
             message="Error occurred",
@@ -356,7 +357,7 @@ class TestFlextApiModelsCoverageBoost:
 
     def test_builder_static_error(self) -> None:
         """Test Builder static error method."""
-        response: dict[str, object] = FlextApiModels.Builder.error(
+        response: FlextTypes.Dict = FlextApiModels.Builder.error(
             message="Something went wrong",
             code="ERR_500",
         )

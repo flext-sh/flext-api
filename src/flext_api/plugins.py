@@ -12,9 +12,8 @@ SPDX-License-Identifier: MIT
 from abc import abstractmethod
 from typing import Any
 
-from flext_core import FlextLogger, FlextResult
-
 from flext_api.typings import FlextApiTypes
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class BasePlugin:
@@ -117,7 +116,7 @@ class ProtocolPlugin(BasePlugin):
 
     @abstractmethod
     def send_request(
-        self, request: FlextApiTypes.RequestData, **kwargs: FlextApiTypes.Core.JsonValue
+        self, request: FlextApiTypes.RequestData, **kwargs: FlextApiTypes.JsonValue
     ) -> FlextResult[FlextApiTypes.ResponseData]:
         """Send request using this protocol.
 
@@ -144,7 +143,7 @@ class ProtocolPlugin(BasePlugin):
         """
         ...
 
-    def get_supported_protocols(self) -> list[str]:
+    def get_supported_protocols(self) -> FlextTypes.StringList:
         """Get list of supported protocols.
 
         Returns:
@@ -252,7 +251,7 @@ class TransportPlugin(BasePlugin):
 
     @abstractmethod
     def connect(
-        self, url: str, **options: FlextApiTypes.Core.JsonValue
+        self, url: str, **options: FlextApiTypes.JsonValue
     ) -> FlextResult[bool]:
         """Establish connection to endpoint.
 
@@ -284,7 +283,7 @@ class TransportPlugin(BasePlugin):
         self,
         connection: object,
         data: FlextApiTypes.Protocol.ProtocolMessage,
-        **options: FlextApiTypes.Core.JsonValue,
+        **options: FlextApiTypes.JsonValue,
     ) -> FlextResult[bool]:
         """Send data through connection.
 
@@ -301,7 +300,7 @@ class TransportPlugin(BasePlugin):
 
     @abstractmethod
     def receive(
-        self, connection: object, **options: FlextApiTypes.Core.JsonValue
+        self, connection: object, **options: FlextApiTypes.JsonValue
     ) -> FlextResult[FlextApiTypes.Protocol.ProtocolMessage]:
         """Receive data from connection.
 
@@ -406,7 +405,7 @@ class AuthenticationPlugin(BasePlugin):
 
     def refresh_credentials(
         self,
-        credentials: dict[str, object],
+        _credentials: dict[str, object],
     ) -> FlextResult[dict[str, object]]:
         """Refresh authentication credentials.
 
@@ -519,7 +518,7 @@ class PluginManager:
 
         return FlextResult[BasePlugin].ok(self._loaded_plugins[plugin_name])
 
-    def list_loaded_plugins(self) -> list[str]:
+    def list_loaded_plugins(self) -> FlextTypes.StringList:
         """Get list of loaded plugin names.
 
         Returns:
@@ -554,7 +553,7 @@ class PluginManager:
             FlextResult indicating success or failure
 
         """
-        failed_plugins: list[str] = []
+        failed_plugins: FlextTypes.StringList = []
 
         for plugin_name in list(self._loaded_plugins.keys()):
             result = self.unload_plugin(plugin_name)

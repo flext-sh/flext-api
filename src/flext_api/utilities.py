@@ -12,16 +12,17 @@ import time
 from typing import TypeVar, cast
 from urllib.parse import urlparse, urlunparse
 
+from flext_api.constants import FlextApiConstants
+from flext_api.models import FlextApiModels
+from flext_api.typings import FlextApiTypes
 from flext_core import (
     FlextConstants,
     FlextModels,
     FlextResult,
+    FlextTypes,
     FlextUtilities,
+    T,
 )
-
-# FlextApiClient import moved inside functions to avoid circular import
-from flext_api.models import FlextApiModels
-from flext_api.typings import FlextApiTypes
 
 # TypeVar for generic batch processing
 T = TypeVar("T")
@@ -57,7 +58,7 @@ class FlextApiUtilities(FlextUtilities):
             error: str | None = None,
             error_code: str | None = None,
             details: object | None = None,
-        ) -> FlextResult[FlextApiTypes.Core.ResponseDict]:
+        ) -> FlextResult[FlextApiTypes.ResponseDict]:
             """Build error response using flext-core patterns.
 
             Returns:
@@ -80,16 +81,16 @@ class FlextApiUtilities(FlextUtilities):
                     response["error_code"] = error_code
                 if details:
                     response["details"] = details
-                return FlextResult[FlextApiTypes.Core.ResponseDict].ok(response)
+                return FlextResult[FlextApiTypes.ResponseDict].ok(response)
             except Exception as e:
-                return FlextResult[FlextApiTypes.Core.ResponseDict].fail(str(e))
+                return FlextResult[FlextApiTypes.ResponseDict].fail(str(e))
 
         @staticmethod
         def build_success_response(
             data: object = None,
             message: str = "Success",
             status_code: int = FlextConstants.Platform.HTTP_STATUS_OK,
-        ) -> FlextResult[FlextApiTypes.Core.ResponseDict]:
+        ) -> FlextResult[FlextApiTypes.ResponseDict]:
             """Build success response using flext-core patterns.
 
             Returns:
@@ -105,23 +106,23 @@ class FlextApiUtilities(FlextUtilities):
                     "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
                     "request_id": FlextUtilities.Generators.generate_entity_id(),
                 }
-                return FlextResult[FlextApiTypes.Core.ResponseDict].ok(response)
+                return FlextResult[FlextApiTypes.ResponseDict].ok(response)
             except Exception as e:
-                return FlextResult[FlextApiTypes.Core.ResponseDict].fail(str(e))
+                return FlextResult[FlextApiTypes.ResponseDict].fail(str(e))
 
     class PaginationBuilder:
         """HTTP pagination builder using flext-core patterns."""
 
         @staticmethod
         def build_paginated_response(
-            data: list[object] | None,
+            data: FlextTypes.List | None,
             *,
             page: int = 1,
             page_size: int | None = None,
             total: int | None = None,
             message: str | None = None,
             config: object | None = None,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[FlextTypes.Dict]:
             """Build paginated response using flext-core patterns.
 
             Returns:
@@ -145,13 +146,13 @@ class FlextApiUtilities(FlextUtilities):
                     page_size = default_page_size
 
                 if page < 1:
-                    return FlextResult[dict[str, object]].fail("Page must be >= 1")
+                    return FlextResult[FlextTypes.Dict].fail("Page must be >= 1")
                 if page_size < 1:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[FlextTypes.Dict].fail(
                         "Page size must be >= 1",
                     )
                 if page_size > max_page_size:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[FlextTypes.Dict].fail(
                         f"Page size cannot exceed {max_page_size}",
                     )
 
@@ -163,7 +164,7 @@ class FlextApiUtilities(FlextUtilities):
                 total_pages = (
                     max(1, (total + page_size - 1) // page_size) if total > 0 else 1
                 )
-                response: dict[str, object] = {
+                response: FlextTypes.Dict = {
                     "success": True,
                     "data": data,
                     "pagination": {
@@ -177,9 +178,9 @@ class FlextApiUtilities(FlextUtilities):
                 }
                 if message:
                     response["message"] = message
-                return FlextResult[dict[str, object]].ok(response)
+                return FlextResult[FlextTypes.Dict].ok(response)
             except Exception as e:
-                return FlextResult[dict[str, object]].fail(str(e))
+                return FlextResult[FlextTypes.Dict].fail(str(e))
 
     class HttpValidator:
         """HTTP-specific validation using centralized flext-core FlextModels."""
@@ -194,7 +195,7 @@ class FlextApiUtilities(FlextUtilities):
             """
             # Check URL length first - using reasonable default since URL validation
             # should work with any reasonable length
-            if len(url) > 2048:  # Reasonable URL length limit
+            if len(url) > FlextApiConstants.Validation.MAX_URL_LENGTH:
                 return FlextResult[str].fail("URL is too long")
 
             # Check for invalid ports before delegating to flext-core
@@ -205,7 +206,7 @@ class FlextApiUtilities(FlextUtilities):
             port_match = re.search(r":(\d+)(?:/|$|\?)", url)
             if port_match:
                 port = int(port_match.group(1))
-                if port > 65535:  # Standard maximum port number
+                if port > FlextApiConstants.Validation.MAX_PORT:
                     return FlextResult[str].fail(f"Invalid port {port}")
 
             # Use FlextModels centralized validation with HTTP-specific rules
@@ -360,7 +361,7 @@ class FlextApiUtilities(FlextUtilities):
         return FlextResult[str].ok(str(url_obj))
 
     @staticmethod
-    def validate_config(config: object) -> FlextResult[FlextApiTypes.Core.ConfigDict]:
+    def validate_config(config: object) -> FlextResult[FlextApiTypes.ConfigDict]:
         """Validate configuration object and return config details.
 
         Returns:
@@ -369,31 +370,31 @@ class FlextApiUtilities(FlextUtilities):
         """
         try:
             if config is None:
-                return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
+                return FlextResult[FlextApiTypes.ConfigDict].fail(
                     "Configuration cannot be None",
                 )
 
             # Extract config data - check for model_dump() first, then __dict__
-            config_dict: FlextApiTypes.Core.ConfigDict | None = None
+            config_dict: FlextApiTypes.ConfigDict | None = None
             if hasattr(config, "model_dump") and callable(
                 getattr(config, "model_dump")
             ):
                 # Use getattr to access model_dump method safely
                 model_dump_method = getattr(config, "model_dump")
-                model_dump_result: FlextApiTypes.Core.ConfigDict = model_dump_method()
+                model_dump_result: FlextApiTypes.ConfigDict = model_dump_method()
                 config_dict = model_dump_result
             elif hasattr(config, "__dict__"):
-                config_dict = cast("FlextApiTypes.Core.ConfigDict", config.__dict__)
+                config_dict = cast("FlextApiTypes.ConfigDict", config.__dict__)
             elif isinstance(config, dict):
-                config_dict = cast("FlextApiTypes.Core.ConfigDict", config)
+                config_dict = cast("FlextApiTypes.ConfigDict", config)
             else:
-                return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
+                return FlextResult[FlextApiTypes.ConfigDict].fail(
                     "Configuration must be dict-like or have attributes",
                 )
 
             # Ensure config_dict is not None
             if config_dict is None:
-                return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
+                return FlextResult[FlextApiTypes.ConfigDict].fail(
                     "Failed to extract configuration data",
                 )
 
@@ -414,7 +415,7 @@ class FlextApiUtilities(FlextUtilities):
                     str(config_dict["method"]),
                 )
                 if method_result.is_failure:
-                    return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
+                    return FlextResult[FlextApiTypes.ConfigDict].fail(
                         f"Invalid method: {method_result.error}",
                     )
 
@@ -433,19 +434,19 @@ class FlextApiUtilities(FlextUtilities):
                         )
                     )
                 if status_result.is_failure:
-                    return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
+                    return FlextResult[FlextApiTypes.ConfigDict].fail(
                         f"Invalid status code: {status_result.error}",
                     )
 
             # Return validation result with config details
-            result_data: FlextApiTypes.Core.ConfigDict = {
+            result_data: FlextApiTypes.ConfigDict = {
                 "config_type": config_type,
                 **config_dict,  # Include all original config data
             }
 
-            return FlextResult[FlextApiTypes.Core.ConfigDict].ok(result_data)
+            return FlextResult[FlextApiTypes.ConfigDict].ok(result_data)
         except Exception as e:
-            return FlextResult[FlextApiTypes.Core.ConfigDict].fail(
+            return FlextResult[FlextApiTypes.ConfigDict].fail(
                 f"Configuration validation failed: {e}",
             )
 
@@ -547,7 +548,7 @@ class FlextApiUtilities(FlextUtilities):
         return bool(value)
 
     @staticmethod
-    def safe_json_parse(json_string: str) -> FlextResult[dict[str, object]]:
+    def safe_json_parse(json_string: str) -> FlextResult[FlextTypes.Dict]:
         """Safely parse JSON string to dictionary - delegates to flext-core.
 
         Returns:
@@ -557,13 +558,13 @@ class FlextApiUtilities(FlextUtilities):
         try:
             parsed_data: object = json.loads(json_string)
             if isinstance(parsed_data, dict):
-                return FlextResult[dict[str, object]].ok(parsed_data)
-            return FlextResult[dict[str, object]].fail("JSON is not a dictionary")
+                return FlextResult[FlextTypes.Dict].ok(parsed_data)
+            return FlextResult[FlextTypes.Dict].fail("JSON is not a dictionary")
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"JSON parsing failed: {e}")
+            return FlextResult[FlextTypes.Dict].fail(f"JSON parsing failed: {e}")
 
     @staticmethod
-    def safe_json_stringify(data: dict[str, object]) -> FlextResult[str]:
+    def safe_json_stringify(data: FlextTypes.Dict) -> FlextResult[str]:
         """Safely convert object to JSON string - delegates to flext-core.
 
         Returns:
@@ -719,7 +720,7 @@ class FlextApiUtilities(FlextUtilities):
         """Data transformation utilities."""
 
         @staticmethod
-        def to_dict(data: object) -> FlextResult[dict[str, object]]:
+        def to_dict(data: object) -> FlextResult[FlextTypes.Dict]:
             """Convert data to dictionary.
 
             Returns:
@@ -728,13 +729,13 @@ class FlextApiUtilities(FlextUtilities):
             """
             try:
                 if isinstance(data, dict):
-                    return FlextResult[dict[str, object]].ok(data)
+                    return FlextResult[FlextTypes.Dict].ok(data)
                 if hasattr(data, "dict") and callable(getattr(data, "dict", None)):
                     # Handle objects with dict() method - safe attribute access
                     dict_method = getattr(data, "dict")
                     dict_result = dict_method()
                     if isinstance(dict_result, dict):
-                        return FlextResult[dict[str, object]].ok(dict_result)
+                        return FlextResult[FlextTypes.Dict].ok(dict_result)
                 if hasattr(data, "model_dump") and callable(
                     getattr(data, "model_dump", None)
                 ):
@@ -742,18 +743,16 @@ class FlextApiUtilities(FlextUtilities):
                     model_dump_method = getattr(data, "model_dump")
                     model_result: object = model_dump_method()
                     if isinstance(model_result, dict):
-                        return FlextResult[dict[str, object]].ok(model_result)
+                        return FlextResult[FlextTypes.Dict].ok(model_result)
 
                 # If no conversion method available, create dict representation
                 if hasattr(data, "__dict__"):
-                    return FlextResult[dict[str, object]].ok(data.__dict__)
+                    return FlextResult[FlextTypes.Dict].ok(data.__dict__)
 
                 # Last resort - convert to string representation
-                return FlextResult[dict[str, object]].ok({"value": str(data)})
+                return FlextResult[FlextTypes.Dict].ok({"value": str(data)})
             except Exception as e:
-                return FlextResult[dict[str, object]].fail(
-                    f"Data conversion failed: {e}"
-                )
+                return FlextResult[FlextTypes.Dict].fail(f"Data conversion failed: {e}")
 
     # =============================================================================
     # CONSOLIDATED SERVICE CLASSES - Following [Project]Utilities pattern
@@ -780,12 +779,14 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                # Dynamic import to avoid circular dependency
-                from flext_api.client import FlextApiClient
-
                 # Get configuration values from config or use defaults
                 timeout = getattr(config, "timeout", 30) if config else 30
                 max_retries = getattr(config, "max_retries", 3) if config else 3
+
+                # Lazy import to avoid circular dependency
+                import importlib
+                client_module = importlib.import_module('flext_api.client')
+                FlextApiClient = client_module.FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -819,14 +820,16 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                # Dynamic import to avoid circular dependency
-                from flext_api.client import FlextApiClient
-
                 # Get configuration values from config or use defaults
                 timeout = (
                     getattr(config, "timeout", 60) if config else 60
                 )  # Longer timeout for dev
                 max_retries = getattr(config, "max_retries", 1) if config else 1
+
+                # Lazy import to avoid circular dependency
+                import importlib
+                client_module = importlib.import_module('flext_api.client')
+                FlextApiClient = client_module.FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -859,9 +862,6 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                # Dynamic import to avoid circular dependency
-                from flext_api.client import FlextApiClient
-
                 # Get configuration values from config or use defaults
                 timeout = (
                     getattr(config, "timeout", 5) if config else 5
@@ -869,6 +869,11 @@ class FlextApiUtilities(FlextUtilities):
                 max_retries = (
                     getattr(config, "max_retries", 0) if config else 0
                 )  # No retries for testing
+
+                # Lazy import to avoid circular dependency
+                import importlib
+                client_module = importlib.import_module('flext_api.client')
+                FlextApiClient = client_module.FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -901,14 +906,16 @@ class FlextApiUtilities(FlextUtilities):
 
             """
             try:
-                # Dynamic import to avoid circular dependency
-                from flext_api.client import FlextApiClient
-
                 # Get configuration values from config or use defaults
                 timeout = (
                     getattr(config, "timeout", 10) if config else 10
                 )  # Moderate timeout for monitoring
                 max_retries = getattr(config, "max_retries", 1) if config else 1
+
+                # Lazy import to avoid circular dependency
+                import importlib
+                client_module = importlib.import_module('flext_api.client')
+                FlextApiClient = client_module.FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -927,7 +934,7 @@ class FlextApiUtilities(FlextUtilities):
                 )
 
         @staticmethod
-        def get_supported_environments() -> list[str]:
+        def get_supported_environments() -> FlextTypes.StringList:
             """Get list of supported client environment configurations.
 
             Returns:
@@ -1007,7 +1014,7 @@ class FlextApiUtilities(FlextUtilities):
             except Exception as e:
                 return FlextResult[None].fail(f"Configuration validation failed: {e}")
 
-        def get_configuration_dict(self) -> FlextApiTypes.Core.ConfigDict:
+        def get_configuration_dict(self) -> FlextApiTypes.ConfigDict:
             """Get current configuration as dictionary.
 
             Returns:
@@ -1023,7 +1030,7 @@ class FlextApiUtilities(FlextUtilities):
             }
 
         @property
-        def headers(self) -> dict[str, str]:
+        def headers(self) -> FlextTypes.StringDict:
             """Get headers configuration."""
             return {}
 
@@ -1050,12 +1057,12 @@ class FlextApiUtilities(FlextUtilities):
         def __init__(self) -> None:
             """Initialize connection manager."""
             self._connected = False
-            self._connection_pool: FlextApiTypes.Core.ConnectionDict | None = None
+            self._connection_pool: FlextApiTypes.ConnectionDict | None = None
 
         @staticmethod
         def create_connection_pool(
             config: object,
-        ) -> FlextResult[FlextApiTypes.Core.ConnectionDict]:
+        ) -> FlextResult[FlextApiTypes.ConnectionDict]:
             """Create HTTP connection pool.
 
             Args:
@@ -1067,28 +1074,26 @@ class FlextApiUtilities(FlextUtilities):
             """
             try:
                 if hasattr(config, "base_url") and hasattr(config, "timeout"):
-                    connection_pool: FlextApiTypes.Core.ConnectionDict = {
+                    connection_pool: FlextApiTypes.ConnectionDict = {
                         "active": True,
                         "url": getattr(config, "base_url"),
                         "timeout": getattr(config, "timeout"),
                         "max_retries": getattr(config, "max_retries", 3),
                         "headers": getattr(config, "headers", {}),
                     }
-                    return FlextResult[FlextApiTypes.Core.ConnectionDict].ok(
-                        connection_pool
-                    )
-                return FlextResult[FlextApiTypes.Core.ConnectionDict].fail(
+                    return FlextResult[FlextApiTypes.ConnectionDict].ok(connection_pool)
+                return FlextResult[FlextApiTypes.ConnectionDict].fail(
                     "Invalid configuration for connection pool"
                 )
             except Exception as e:
-                return FlextResult[FlextApiTypes.Core.ConnectionDict].fail(
+                return FlextResult[FlextApiTypes.ConnectionDict].fail(
                     f"Connection pool creation failed: {e}"
                 )
 
         @staticmethod
         def get_connection_info(
-            connection_pool: FlextApiTypes.Core.ConnectionDict | None,
-        ) -> FlextApiTypes.Core.ConnectionDict:
+            connection_pool: FlextApiTypes.ConnectionDict | None,
+        ) -> FlextApiTypes.ConnectionDict:
             """Get connection information and statistics.
 
             Args:
@@ -1122,7 +1127,7 @@ class FlextApiUtilities(FlextUtilities):
             """Check if connection manager is connected."""
             return self._connected
 
-        def get_connection(self) -> FlextResult[FlextApiTypes.Core.ConnectionDict]:
+        def get_connection(self) -> FlextResult[FlextApiTypes.ConnectionDict]:
             """Get connection from pool."""
             if not self._connected:
                 # Create connection on first request
@@ -1137,7 +1142,7 @@ class FlextApiUtilities(FlextUtilities):
                 }
                 self._connected = True
 
-            return FlextResult[FlextApiTypes.Core.ConnectionDict].ok(
+            return FlextResult[FlextApiTypes.ConnectionDict].ok(
                 self._connection_pool or {}
             )
 
@@ -1199,8 +1204,8 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def execute_get(
             url: str,
-            params: dict[str, str] | None = None,
-            headers: dict[str, str] | None = None,
+            params: FlextTypes.StringDict | None = None,
+            headers: FlextTypes.StringDict | None = None,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP GET request.
 
@@ -1236,8 +1241,8 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def execute_post(
             url: str,
-            data: dict[str, object] | None = None,
-            headers: dict[str, str] | None = None,
+            data: FlextTypes.Dict | None = None,
+            headers: FlextTypes.StringDict | None = None,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP POST request.
 
@@ -1303,8 +1308,8 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def execute_put(
             url: str,
-            data: dict[str, object] | None = None,
-            headers: dict[str, str] | None = None,
+            data: FlextTypes.Dict | None = None,
+            headers: FlextTypes.StringDict | None = None,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP PUT request.
 
@@ -1340,7 +1345,7 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def execute_delete(
             url: str,
-            headers: dict[str, str] | None = None,
+            headers: FlextTypes.StringDict | None = None,
         ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Execute HTTP DELETE request.
 
@@ -1472,7 +1477,7 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def create_success_response(
             data: object = None, message: str = "Success"
-        ) -> dict[str, object]:
+        ) -> FlextTypes.Dict:
             """Create standardized success response."""
             return {
                 "status": "success",
@@ -1484,9 +1489,9 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def create_error_response(
             message: str, error_code: str | None = None
-        ) -> dict[str, object]:
+        ) -> FlextTypes.Dict:
             """Create standardized error response."""
-            response: dict[str, object] = {
+            response: FlextTypes.Dict = {
                 "status": "error",
                 "data": None,
                 "message": message,

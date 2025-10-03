@@ -4,6 +4,7 @@ import json
 from typing import cast
 
 from flext_api import FlextApiStorage
+from flext_core import FlextTypes
 
 
 class TestFlextApiStorageAdditionalMethods:
@@ -170,7 +171,7 @@ class TestFlextApiStorageAdditionalMethods:
             "batch_key_3": "value_3",
         }
 
-        result = storage.batch_set(cast("dict[str, object]", batch_data))
+        result = storage.batch_set(cast("FlextTypes.Dict", batch_data))
         assert result.is_success
 
         # Test batch get

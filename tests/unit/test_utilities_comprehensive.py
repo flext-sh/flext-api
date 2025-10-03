@@ -115,15 +115,17 @@ class TestFlextApiUtilitiesComprehensive:
     def test_safe_json_parse(self) -> None:
         """Test safe_json_parse method."""
         result = FlextApiUtilities.safe_json_parse('{"key": "value"}')
-        assert result == {"key": "value"}
+        assert result.is_success
+        assert result.data == {"key": "value"}
 
         result = FlextApiUtilities.safe_json_parse("invalid json")
-        assert result is None
+        assert result.is_failure
 
     def test_safe_json_stringify(self) -> None:
         """Test safe_json_stringify method."""
         result = FlextApiUtilities.safe_json_stringify({"key": "value"})
-        assert result == '{"key": "value"}'
+        assert result.is_success
+        assert result.data == '{"key": "value"}'
 
     def test_safe_int_conversion(self) -> None:
         """Test safe_int_conversion method."""

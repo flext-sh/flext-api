@@ -9,11 +9,11 @@ from __future__ import annotations
 from typing import Literal, cast
 
 import pytest
-from flext_core import FlextConstants
 from pydantic import ValidationError
 
 from flext_api import FlextApiModels
 from flext_api.constants import FlextApiConstants
+from flext_core import FlextConstants, FlextTypes
 
 
 class TestFlextApiModelsFocused:
@@ -42,7 +42,7 @@ class TestFlextApiModelsFocused:
     def test_http_request_all_parameters(self) -> None:
         """Test HttpRequest with all parameters set."""
         headers = {"Authorization": "Bearer token", "Content-Type": "application/json"}
-        body: dict[str, object] = {"data": "test"}
+        body: FlextTypes.Dict = {"data": "test"}
 
         request = FlextApiModels.HttpRequest(
             method="POST",
@@ -110,7 +110,7 @@ class TestFlextApiModelsFocused:
 
         request = FlextApiModels.HttpRequest(url="https://test.com", headers=headers)
 
-        # Should filter out empty values, strip whitespace (None values not allowed in dict[str, str])
+        # Should filter out empty values, strip whitespace (None values not allowed in FlextTypes.StringDict)
         assert request.headers["Valid-Header"] == "value"
         assert "Empty-Header" not in request.headers
         assert request.headers["Whitespace-Key"] == "whitespace-value"
@@ -153,7 +153,7 @@ class TestFlextApiModelsFocused:
     def test_http_response_with_all_fields(self) -> None:
         """Test HttpResponse with all fields."""
         headers = {"Content-Type": "application/json"}
-        body: dict[str, object] = {"result": "success"}
+        body: FlextTypes.Dict = {"result": "success"}
 
         response = FlextApiModels.HttpResponse(
             status_code=201,
@@ -580,7 +580,7 @@ class TestFlextApiModelsFocused:
 
     def test_http_query_to_query_params(self) -> None:
         """Test HttpQuery.to_query_params method."""
-        filter_conditions: dict[str, object] = {"status": "active", "type": "user"}
+        filter_conditions: FlextTypes.Dict = {"status": "active", "type": "user"}
         query = FlextApiModels.HttpQuery(
             filters=filter_conditions,
             page=3,
