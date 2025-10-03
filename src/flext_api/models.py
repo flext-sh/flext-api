@@ -1434,9 +1434,7 @@ class FlextApiModels(FlextModels):
             from urllib.parse import urlparse
 
             if not url or not isinstance(url, str):
-                return FlextResult[str].fail(
-                    "URL must be a non-empty string"
-                )
+                return FlextResult[str].fail("URL must be a non-empty string")
 
             url = url.strip()
             if not url:
@@ -1457,9 +1455,7 @@ class FlextApiModels(FlextModels):
 
             # Validate hostname
             if not parsed.hostname:
-                return FlextResult[str].fail(
-                    "URL must have a valid hostname"
-                )
+                return FlextResult[str].fail("URL must have a valid hostname")
 
             # Check hostname length
             if len(parsed.hostname) > FlextApiConstants.MAX_HOSTNAME_LENGTH:

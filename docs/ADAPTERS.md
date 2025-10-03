@@ -14,11 +14,13 @@ The flext-api adapter system enables seamless conversion between different API p
 **Purpose**: Convert HTTP requests to WebSocket messages and vice versa
 
 **Use Cases**:
+
 - Bridge HTTP clients to WebSocket servers
 - Convert REST API calls to real-time WebSocket communication
 - Protocol gateway implementations
 
 **Usage**:
+
 ```python
 from flext_api.adapters import HttpToWebSocketAdapter
 from flext_api.models import FlextApiModels
@@ -66,12 +68,14 @@ if result.is_success:
 **Purpose**: Convert GraphQL queries/mutations to HTTP requests and responses
 
 **Use Cases**:
+
 - GraphQL client over HTTP
 - GraphQL gateway implementations
 - REST to GraphQL migration
 - Schema introspection
 
 **Configuration**:
+
 ```python
 from flext_api.adapters import GraphQLToHttpAdapter
 
@@ -83,6 +87,7 @@ default_adapter = GraphQLToHttpAdapter()
 ```
 
 **Usage**:
+
 ```python
 from flext_api.adapters import GraphQLToHttpAdapter
 
@@ -144,6 +149,7 @@ if result.is_success:
 ```
 
 **Error Handling**:
+
 ```python
 # GraphQL errors
 http_response = FlextApiModels.HttpResponse(
@@ -183,12 +189,14 @@ if result.is_failure:
 **Purpose**: Convert between OpenAPI, API, and GraphQL schema formats
 
 **Use Cases**:
+
 - API documentation migration
 - Multi-protocol API development
 - Schema validation and transformation
 - Code generation from schemas
 
 **OpenAPI to API**:
+
 ```python
 from flext_api.adapters import SchemaAdapter
 
@@ -232,6 +240,7 @@ if result.is_success:
 ```
 
 **OpenAPI to GraphQL SDL**:
+
 ```python
 from flext_api.adapters import SchemaAdapter
 
@@ -285,12 +294,14 @@ if result.is_success:
 **Purpose**: Integrate legacy APIs with modern applications
 
 **Features**:
+
 - Field name transformation (camelCase ↔ snake_case)
 - Authentication header conversion
 - Status code mapping
 - URL rewriting
 
 **Configuration**:
+
 ```python
 from flext_api.adapters import LegacyApiAdapter
 
@@ -299,6 +310,7 @@ adapter = LegacyApiAdapter(base_url="https://legacy.api.com")
 ```
 
 **Modern to Legacy Request**:
+
 ```python
 from flext_api.adapters import LegacyApiAdapter
 from flext_api.models import FlextApiModels
@@ -327,6 +339,7 @@ if result.is_success:
 ```
 
 **Legacy to Modern Response**:
+
 ```python
 from flext_api.adapters import LegacyApiAdapter
 from flext_api.models import FlextApiModels
@@ -359,6 +372,7 @@ if result.is_success:
 ```
 
 **Status Code Mapping**:
+
 ```python
 from flext_api.adapters import LegacyApiAdapter
 
@@ -576,6 +590,7 @@ def test_http_to_websocket_roundtrip():
 **Problem**: `GraphQL errors: Field not found`
 
 **Solution**: Check GraphQL schema and query syntax
+
 ```python
 # Verify query is valid GraphQL
 result = adapter.adapt_query_to_request(query, variables)
@@ -588,6 +603,7 @@ if result.is_failure:
 **Problem**: Fields not converting correctly
 
 **Solution**: Debug transformation process
+
 ```python
 adapter = LegacyApiAdapter(base_url="https://legacy.api.com")
 
@@ -602,6 +618,7 @@ print(f"{camel_case} → {snake_case}")  # userName → user_name
 **Problem**: WebSocket server doesn't accept adapted messages
 
 **Solution**: Customize message format
+
 ```python
 class CustomWSAdapter(HttpToWebSocketAdapter):
     def adapt_request(self, request):
@@ -616,19 +633,23 @@ class CustomWSAdapter(HttpToWebSocketAdapter):
 ## API Reference
 
 ### HttpToWebSocketAdapter
+
 - `adapt_request(request: HttpRequest) -> FlextResult[dict]`
 - `adapt_response(message: dict) -> FlextResult[HttpResponse]`
 
 ### GraphQLToHttpAdapter
+
 - `__init__(endpoint: str = "/graphql")`
 - `adapt_query_to_request(query: str, variables: dict) -> FlextResult[HttpRequest]`
 - `adapt_response_to_result(response: HttpResponse) -> FlextResult[dict]`
 
 ### SchemaAdapter
+
 - `openapi_toapi(schema: dict) -> FlextResult[dict]`
 - `openapi_to_graphql_schema(schema: dict) -> FlextResult[str]`
 
 ### LegacyApiAdapter
+
 - `__init__(base_url: str)`
 - `adapt_request(request: HttpRequest) -> FlextResult[HttpRequest]`
 - `adapt_response(response: HttpResponse) -> FlextResult[HttpResponse]`

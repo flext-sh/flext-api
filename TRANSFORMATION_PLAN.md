@@ -23,6 +23,7 @@ Transform flext-api into a **generic, protocol-agnostic HTTP/API foundation libr
 ## 📊 CURRENT STATE vs TARGET STATE
 
 ### Current State
+
 - Basic HTTP client (httpx)
 - Simple FastAPI integration
 - Monolithic design
@@ -31,6 +32,7 @@ Transform flext-api into a **generic, protocol-agnostic HTTP/API foundation libr
 - Some CLI examples in tests/docs
 
 ### Target State
+
 - **Protocol-agnostic** transport layer
 - **Registry-based** plugin architecture
 - **Schema-aware** request/response handling
@@ -44,24 +46,28 @@ Transform flext-api into a **generic, protocol-agnostic HTTP/API foundation libr
 ## 🏗️ ARCHITECTURAL PRINCIPLES
 
 ### 1. Protocol Agnostic
+
 - No hardcoded protocol assumptions
 - All protocols registered via FlextApiRegistry
 - Transport layer abstraction
 - Protocol-specific handlers as plugins
 
 ### 2. Schema Aware
+
 - Multiple schema system support
 - Schema-based validation
 - Schema introspection
 - Schema generation/documentation
 
 ### 3. FLEXT Ecosystem Integration
+
 - **FlextWeb Authority**: All server code uses FlextWeb
 - **FlextAuth Authority**: All authentication uses FlextAuth
 - **FlextCore Foundation**: FlextResult, FlextLogger, FlextRegistry, FlextService
 - **FlextObservability**: Metrics and monitoring integration
 
 ### 4. Plugin Architecture
+
 - Registry-based plugin discovery
 - Protocol plugins (HTTP, WebSocket, GraphQL, gRPC, SSE)
 - Schema plugins (OpenAPI, API, JSON Schema, Protobuf)
@@ -69,6 +75,7 @@ Transform flext-api into a **generic, protocol-agnostic HTTP/API foundation libr
 - Authentication plugins (via FlextAuth)
 
 ### 5. Library Focus
+
 - Zero CLI code in library
 - Pure programmatic API
 - Library-only examples
@@ -125,40 +132,47 @@ src/flext_api/
 ## 🔧 TECHNOLOGY STACK
 
 ### Core HTTP/Transport (Already Present)
+
 - **httpx** - HTTP/1.1, HTTP/2, HTTP/3 client
 - **pydantic** - Data validation
 
 ### New Dependencies Required
 
 #### WebSocket Support
+
 ```toml
 websockets = "^12.0"
 ```
 
 #### GraphQL Support
+
 ```toml
 gql = {extras = ["httpx"], version = "^3.5"}
 graphql-core = "^3.2"
 ```
 
 #### SSE Support
+
 ```toml
 sse-starlette = "^2.0"
 ```
 
 #### Schema Validation
+
 ```toml
 openapi-core = "^0.19"
 jsonschema = "^4.21"
 ```
 
 #### Serialization
+
 ```toml
 msgpack = "^1.0"
 cbor2 = "^5.6"
 ```
 
 #### FLEXT Integration (Add if not present)
+
 ```toml
 flext-web = {path = "../flext-web", develop = true}
 flext-auth = {path = "../flext-auth", develop = true}
@@ -169,10 +183,12 @@ flext-auth = {path = "../flext-auth", develop = true}
 ## 📋 IMPLEMENTATION PHASES
 
 ### Phase 1: Foundation & Registry System
+
 **Duration**: Week 1
 **Goal**: Create plugin architecture foundation
 
-#### Tasks:
+#### Tasks
+
 1. ✅ Create `registry.py` - Central plugin registry
    - Extends FlextRegistry from flext-core
    - Protocol registration
@@ -210,10 +226,12 @@ flext-auth = {path = "../flext-auth", develop = true}
 ---
 
 ### Phase 2: Enhanced HTTP Protocol Support
+
 **Duration**: Week 1-2
 **Goal**: Implement HTTP/1.1, HTTP/2, HTTP/3 support
 
-#### Tasks:
+#### Tasks
+
 6. ✅ Create `protocols/http.py` - Enhanced HTTP support
    - HTTP/1.1 support
    - HTTP/2 support (httpx)
@@ -254,10 +272,12 @@ flext-auth = {path = "../flext-auth", develop = true}
 ---
 
 ### Phase 3: WebSocket & SSE Support
+
 **Duration**: Week 2
 **Goal**: Implement WebSocket and Server-Sent Events
 
-#### Tasks:
+#### Tasks
+
 11. ✅ Create `protocols/websocket.py` - WebSocket support
     - Uses websockets library
     - Connection management
@@ -294,10 +314,12 @@ flext-auth = {path = "../flext-auth", develop = true}
 ---
 
 ### Phase 4: GraphQL Support
+
 **Duration**: Week 2-3
 **Goal**: Implement GraphQL client and schema support
 
-#### Tasks:
+#### Tasks
+
 16. ✅ Create `protocols/graphql.py` - GraphQL support
     - Uses gql library with httpx transport
     - Query execution
@@ -334,10 +356,12 @@ flext-auth = {path = "../flext-auth", develop = true}
 ---
 
 ### Phase 5: Schema Systems
+
 **Duration**: Week 3
 **Goal**: Implement schema validation systems
 
-#### Tasks:
+#### Tasks
+
 21. ✅ Create `schemas/openapi.py` - OpenAPI 3.x support
     - Uses openapi-core
     - Request validation
@@ -376,10 +400,12 @@ flext-auth = {path = "../flext-auth", develop = true}
 ---
 
 ### Phase 6: Server & Webhook Support
+
 **Duration**: Week 3-4
 **Goal**: Implement generic server and webhook handling
 
-#### Tasks:
+#### Tasks
+
 26. ✅ Create `server.py` - Generic server abstraction
     - Uses FlextWeb for FastAPI integration
     - Protocol handler registration
@@ -421,10 +447,12 @@ flext-auth = {path = "../flext-auth", develop = true}
 ---
 
 ### Phase 7: FlextAuth Integration
+
 **Duration**: Week 4
 **Goal**: Deep FlextAuth integration for all authentication
 
-#### Tasks:
+#### Tasks
+
 31. ✅ Update `client.py` - FlextAuth for all auth types
     - Bearer token authentication
     - API key authentication
@@ -460,10 +488,12 @@ flext-auth = {path = "../flext-auth", develop = true}
 ---
 
 ### Phase 8: Serialization & Advanced Features
+
 **Duration**: Week 4-5
 **Goal**: Multiple serialization formats and advanced features
 
-#### Tasks:
+#### Tasks
+
 36. ✅ Create `serializers.py` - Multiple formats
     - JSON serializer (orjson)
     - MessagePack serializer
@@ -500,10 +530,12 @@ flext-auth = {path = "../flext-auth", develop = true}
 ---
 
 ### Phase 9: CLI Removal & Cleanup
+
 **Duration**: Week 5
 **Goal**: Remove all CLI code and finalize library
 
-#### Tasks:
+#### Tasks
+
 41. ✅ Remove CLI code from tests
     - Review all test files
     - Remove CLI invocation tests
@@ -544,6 +576,7 @@ flext-auth = {path = "../flext-auth", develop = true}
 ## ✅ SUCCESS CRITERIA
 
 ### Functional Requirements
+
 1. ✅ **Protocol Support**: HTTP/1.1, HTTP/2, HTTP/3, WebSocket, GraphQL, SSE working
 2. ✅ **Schema Support**: OpenAPI, JSON Schema, GraphQL Schema validation
 3. ✅ **Client API**: Generic client supports all protocols
@@ -551,12 +584,14 @@ flext-auth = {path = "../flext-auth", develop = true}
 5. ✅ **Webhook API**: Webhook handling with signature verification
 
 ### Integration Requirements
+
 6. ✅ **FlextWeb Integration**: All server code uses FlextWeb
 7. ✅ **FlextAuth Integration**: All authentication uses FlextAuth
 8. ✅ **FlextCore Integration**: Uses FlextResult, FlextLogger, FlextRegistry, FlextService
 9. ✅ **FlextObservability Integration**: Metrics and logging
 
 ### Quality Requirements
+
 10. ✅ **Zero CLI**: No CLI code in library, tests, or documentation
 11. ✅ **Plugin Architecture**: Easy to add new protocols/schemas
 12. ✅ **All Tests Pass**: `make test` passes with 75%+ coverage
@@ -565,6 +600,7 @@ flext-auth = {path = "../flext-auth", develop = true}
 15. ✅ **Documentation**: Complete API docs with examples
 
 ### Performance Requirements
+
 16. ✅ **HTTP/2 Performance**: Multiplexing working correctly
 17. ✅ **Connection Pooling**: Efficient connection reuse
 18. ✅ **Streaming**: Large file streaming without memory issues
@@ -576,6 +612,7 @@ flext-auth = {path = "../flext-auth", develop = true}
 ## 📚 EXAMPLE USAGE (POST-TRANSFORMATION)
 
 ### Generic HTTP Client
+
 ```python
 from flext_api import FlextApi
 
@@ -597,6 +634,7 @@ for chunk in api.client.stream("GET", "https://api.example.com/large-file"):
 ```
 
 ### WebSocket Client
+
 ```python
 from flext_api import FlextApi
 
@@ -610,6 +648,7 @@ with api.client.websocket("wss://stream.example.com") as ws:
 ```
 
 ### GraphQL Client
+
 ```python
 from flext_api import FlextApi
 
@@ -644,6 +683,7 @@ result = api.client.graphql(
 ```
 
 ### SSE Client
+
 ```python
 from flext_api import FlextApi
 
@@ -655,6 +695,7 @@ for event in api.client.sse("https://api.example.com/events"):
 ```
 
 ### Server with FlextWeb
+
 ```python
 from flext_api import FlextApi
 from flext_web import FlextWeb
@@ -689,6 +730,7 @@ server.run()
 ```
 
 ### Webhook Receiver
+
 ```python
 from flext_api import FlextApi
 from flext_auth import FlextAuth
@@ -711,6 +753,7 @@ result = webhook.process(request)
 ```
 
 ### Schema Validation
+
 ```python
 from flext_api import FlextApi
 from flext_api.schemas import OpenApiSchema
@@ -745,6 +788,7 @@ result = api.client.request(
 ## 📊 PROGRESS TRACKING
 
 ### Phase 1: Foundation & Registry System
+
 - [ ] Create registry.py
 - [ ] Create plugins.py
 - [ ] Create transports.py
@@ -752,6 +796,7 @@ result = api.client.request(
 - [ ] Update typings.py
 
 ### Phase 2: Enhanced HTTP Protocol Support
+
 - [ ] Create protocols/http.py
 - [ ] Create middleware.py
 - [ ] Refactor client.py
@@ -759,6 +804,7 @@ result = api.client.request(
 - [ ] Create HTTP tests
 
 ### Phase 3: WebSocket & SSE Support
+
 - [ ] Create protocols/websocket.py
 - [ ] Create protocols/sse.py
 - [ ] Update models.py
@@ -766,6 +812,7 @@ result = api.client.request(
 - [ ] Create WebSocket/SSE tests
 
 ### Phase 4: GraphQL Support
+
 - [ ] Create protocols/graphql.py
 - [ ] Create schemas/graphql_schema.py
 - [ ] Update client.py
@@ -773,6 +820,7 @@ result = api.client.request(
 - [ ] Create GraphQL tests
 
 ### Phase 5: Schema Systems
+
 - [ ] Create schemas/openapi.py
 - [ ] Create schemas/jsonschema.py
 - [ ] Create schemas/api.py
@@ -780,6 +828,7 @@ result = api.client.request(
 - [ ] Create schema tests
 
 ### Phase 6: Server & Webhook Support
+
 - [ ] Create server.py
 - [ ] Create webhook.py
 - [ ] Refactor app.py
@@ -787,6 +836,7 @@ result = api.client.request(
 - [ ] Create server/webhook tests
 
 ### Phase 7: FlextAuth Integration
+
 - [ ] Update client.py (FlextAuth)
 - [ ] Update server.py (FlextAuth)
 - [ ] Update webhook.py (FlextAuth)
@@ -794,6 +844,7 @@ result = api.client.request(
 - [ ] Create FlextAuth integration tests
 
 ### Phase 8: Serialization & Advanced Features
+
 - [x] Create serializers.py - ✅ Complete with JSON/MessagePack/CBOR support (22 tests)
 - [x] Create adapters.py - ✅ Complete with HTTP/WebSocket/GraphQL/Legacy adapters (18 tests)
 - [x] Create protocol stubs - ✅ Complete with gRPC and Protobuf stubs (47 tests)
@@ -801,6 +852,7 @@ result = api.client.request(
 - [ ] Performance optimization - Future enhancement
 
 ### Phase 9: CLI Removal & Cleanup
+
 - [x] Remove CLI code from tests - ✅ No CLI code found in tests
 - [x] Remove CLI documentation - ✅ No CLI documentation found (command-line testing docs are appropriate)
 - [x] Update README.md - ✅ Already library-focused, no CLI references

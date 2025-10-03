@@ -14,6 +14,7 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
     """Logger implementation conforming to LoggerProtocol."""
 
     def __init__(self) -> None:
+        """Initialize logger protocol implementation."""
         self._logger = FlextLogger(__name__)
 
     def info(self, message: str, **kwargs: object) -> None:

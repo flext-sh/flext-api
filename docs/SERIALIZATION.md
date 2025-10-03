@@ -14,12 +14,14 @@ The flext-api serialization system provides multiple format support with automat
 **Format**: `application/json`
 **Implementation**: `JSONSerializer`
 **Features**:
-- Fast serialization with orjson (falls back to standard json)
+
+- Fast serialization with orjson (falls back to standard JSON)
 - UTF-8 encoding
 - Pretty printing support
 - Custom type handling
 
 **Usage**:
+
 ```python
 from flext_api.serializers import JSONSerializer
 
@@ -42,25 +44,29 @@ pretty_json = pretty_serializer.serialize(data)
 ```
 
 **Performance**:
-- With orjson: ~3-5x faster than standard json
-- Fallback: Standard json module (always available)
+
+- With orjson: ~3-5x faster than standard JSON
+- Fallback: Standard JSON module (always available)
 
 ### 2. MessagePack Serialization
 
 **Format**: `application/msgpack`
 **Implementation**: `MessagePackSerializer`
 **Features**:
+
 - Compact binary format
 - Efficient for large datasets
 - Type preservation
 - Streaming support
 
 **Installation**:
+
 ```bash
 pip install msgpack
 ```
 
 **Usage**:
+
 ```python
 from flext_api.serializers import MessagePackSerializer
 
@@ -82,6 +88,7 @@ deserialized = serializer.deserialize(serialized)
 ```
 
 **Benefits**:
+
 - 30-50% smaller than JSON
 - Faster serialization/deserialization
 - Maintains type information
@@ -91,17 +98,20 @@ deserialized = serializer.deserialize(serialized)
 **Format**: `application/cbor`
 **Implementation**: `CBORSerializer`
 **Features**:
+
 - Compact binary format
 - Self-describing
 - Extensible type system
 - Standards-based (RFC 8949)
 
 **Installation**:
+
 ```bash
 pip install cbor2
 ```
 
 **Usage**:
+
 ```python
 from flext_api.serializers import CBORSerializer
 
@@ -119,6 +129,7 @@ deserialized = serializer.deserialize(serialized)
 ```
 
 **Use Cases**:
+
 - IoT data exchange
 - Binary protocol communication
 - Efficient data storage
@@ -329,15 +340,18 @@ def handle_request(request_data: bytes, content_type: str):
 ## Performance Considerations
 
 ### JSON Performance
+
 - **orjson**: 3-5x faster serialization, 2-3x faster deserialization
-- **Fallback**: Standard json always available, no dependencies
+- **Fallback**: Standard JSON always available, no dependencies
 
 ### MessagePack Performance
+
 - **Size**: 30-50% smaller than JSON
 - **Speed**: 2-3x faster than standard JSON
 - **Trade-off**: Requires msgpack dependency
 
 ### CBOR Performance
+
 - **Size**: Similar to MessagePack
 - **Standards**: RFC 8949 compliance
 - **Compatibility**: Better language interoperability
@@ -379,6 +393,7 @@ def test_registry_format_selection():
 **Problem**: `Serialization failed: ...`
 
 **Solution**: Check data types and format compatibility
+
 ```python
 # Ensure data is serializable
 import json
@@ -393,12 +408,14 @@ except TypeError as e:
 ## API Reference
 
 ### JSONSerializer
+
 - `__init__(pretty: bool = False)`
 - `serialize(data: object) -> bytes`
 - `deserialize(data: bytes) -> object`
 - `content_type: str` → `"application/json"`
 
 ### MessagePackSerializer
+
 - `__init__()`
 - `serialize(data: object) -> bytes`
 - `deserialize(data: bytes) -> object`
@@ -406,6 +423,7 @@ except TypeError as e:
 - `_available: bool` → Installation status
 
 ### CBORSerializer
+
 - `__init__()`
 - `serialize(data: object) -> bytes`
 - `deserialize(data: bytes) -> object`
@@ -413,6 +431,7 @@ except TypeError as e:
 - `_available: bool` → Installation status
 
 ### SerializerRegistry
+
 - `__init__()`
 - `register_serializer(format, serializer) -> FlextResult[None]`
 - `get_serializer(format) -> FlextResult[Serializer]`

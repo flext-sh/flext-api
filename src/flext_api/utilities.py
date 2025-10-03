@@ -9,9 +9,11 @@ from __future__ import annotations
 import json
 import re
 import time
-from typing import TypeVar, cast
+from typing import TYPE_CHECKING, TypeVar, cast
 from urllib.parse import urlparse, urlunparse
 
+if TYPE_CHECKING:
+    from flext_api.client import FlextApiClient
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
@@ -785,8 +787,10 @@ class FlextApiUtilities(FlextUtilities):
 
                 # Lazy import to avoid circular dependency
                 import importlib
-                client_module = importlib.import_module('flext_api.client')
-                FlextApiClient = client_module.FlextApiClient
+
+                FlextApiClient = importlib.import_module(
+                    "flext_api.client"
+                ).FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -828,8 +832,10 @@ class FlextApiUtilities(FlextUtilities):
 
                 # Lazy import to avoid circular dependency
                 import importlib
-                client_module = importlib.import_module('flext_api.client')
-                FlextApiClient = client_module.FlextApiClient
+
+                FlextApiClient = importlib.import_module(
+                    "flext_api.client"
+                ).FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -872,8 +878,10 @@ class FlextApiUtilities(FlextUtilities):
 
                 # Lazy import to avoid circular dependency
                 import importlib
-                client_module = importlib.import_module('flext_api.client')
-                FlextApiClient = client_module.FlextApiClient
+
+                FlextApiClient = importlib.import_module(
+                    "flext_api.client"
+                ).FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,
@@ -914,8 +922,10 @@ class FlextApiUtilities(FlextUtilities):
 
                 # Lazy import to avoid circular dependency
                 import importlib
-                client_module = importlib.import_module('flext_api.client')
-                FlextApiClient = client_module.FlextApiClient
+
+                FlextApiClient = importlib.import_module(
+                    "flext_api.client"
+                ).FlextApiClient
 
                 client = FlextApiClient(
                     base_url=base_url,

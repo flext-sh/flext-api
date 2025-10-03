@@ -6,8 +6,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import re
+from typing import Self
+
 import httpx
-from typing_extensions import Self
 
 from flext_api.models import FlextApiModels
 from flext_api.protocols import FlextApiProtocols
@@ -56,9 +58,25 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
             if url.startswith(("http://", "https://")):
                 full_url = url
             else:
-                base_url = self._config.base_url.rstrip("/")
-                url = url.lstrip("/")
-                full_url = f"{base_url}/{url}"
+                # Ensure base_url is a proper string
+                base_url_str = str(self._config.base_url)
+                if base_url_str.startswith("ParseResult("):
+                    # Handle case where base_url is stored as ParseResult string representation
+                    # Extract the actual URL from the string representation
+                    match = re.search(
+                        r"scheme='([^']*)'.*netloc='([^']*)'", base_url_str
+                    )
+                    if match:
+                        scheme, netloc = match.groups()
+                        base_url_str = f"{scheme}://{netloc}"
+                    else:
+                        base_url_str = "http://localhost:8000"  # fallback
+
+                base_url_clean = base_url_str.rstrip("/")
+                url_clean = url.lstrip("/")
+                full_url = (
+                    f"{base_url_clean}/{url_clean}" if url_clean else base_url_clean
+                )
 
             # Prepare headers
             request_headers: dict[str, str] = dict(self._config.headers or {})
@@ -75,9 +93,9 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
             # Add other parameters from kwargs
             allowed_keys = {"params", "data", "json", "content", "files"}
-            request_kwargs.update(
-                {key: value for key, value in kwargs.items() if key in allowed_keys}
-            )
+            request_kwargs.update({
+                key: value for key, value in kwargs.items() if key in allowed_keys
+            })
 
             # Make the HTTP request using httpx client
             httpx_response = self._client.request(**request_kwargs)
@@ -123,7 +141,7 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
     def close(self) -> None:
         """Close the HTTP client and cleanup resources."""
-        if hasattr(self, '_client'):
+        if hasattr(self, "_client"):
             self._client.close()
 
     def __enter__(self) -> Self:
