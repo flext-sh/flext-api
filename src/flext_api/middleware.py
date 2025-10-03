@@ -803,6 +803,15 @@ class FlextApiMiddleware:
             self._middlewares.clear()
 
 
+# Module-level aliases for nested classes to support direct imports
+BaseMiddleware = FlextApiMiddleware.BaseMiddleware
+LoggingMiddleware = FlextApiMiddleware.LoggingMiddleware
+MetricsMiddleware = FlextApiMiddleware.MetricsMiddleware
+AuthenticationMiddleware = FlextApiMiddleware.AuthenticationMiddleware
+ErrorHandlingMiddleware = FlextApiMiddleware.ErrorHandlingMiddleware
+MiddlewarePipeline = FlextApiMiddleware.Pipeline
+
+
 __all__ = [
     "FlextApiMiddleware",
     # Middleware classes for testing and external usage
