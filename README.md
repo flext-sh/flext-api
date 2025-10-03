@@ -254,7 +254,7 @@ class AuthenticationPlugin:
 | HTTP/2           | Available but unused | Enabled by default     | httpx http2=True                     |
 | Streaming        | Missing              | Large response support | httpx streaming methods              |
 | Circuit Breaker  | Missing              | Fault tolerance        | circuitbreaker library               |
-| Middleware       | Empty directory      | Plugin system          | Middleware protocol             |
+| Middleware       | Empty directory      | Plugin system          | Middleware protocol                  |
 | Authentication   | Basic token          | OAuth/JWT/Sessions     | Comprehensive auth patterns          |
 | Monitoring       | Basic logging        | Metrics/tracing        | Integration with flext-observability |
 

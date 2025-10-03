@@ -24,7 +24,6 @@ from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
 
 __all__ = [
-    "VERSION",
     "FlextApi",
     "FlextApiAdapters",
     "FlextApiApp",
@@ -37,7 +36,6 @@ __all__ = [
     "FlextApiStorage",
     "FlextApiTypes",
     "FlextApiUtilities",
-    "FlextApiVersion",
     "__version__",
     "__version_info__",
 ]

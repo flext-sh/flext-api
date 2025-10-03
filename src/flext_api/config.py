@@ -119,9 +119,15 @@ class FlextApiConfig(FlextConfig):
             # Apply API-specific configuration
             for key, value in config.items():
                 if hasattr(self, key) and key in {
-                    "base_url", "timeout", "max_retries", "api_version",
-                    "log_requests", "log_responses", "cors_origins",
-                    "cors_methods", "cors_headers"
+                    "base_url",
+                    "timeout",
+                    "max_retries",
+                    "api_version",
+                    "log_requests",
+                    "log_responses",
+                    "cors_origins",
+                    "cors_methods",
+                    "cors_headers",
                 }:
                     setattr(self, key, value)
 
@@ -150,7 +156,10 @@ class FlextApiConfig(FlextConfig):
             max_prod_timeout = 60  # seconds
             max_prod_retries = 5
 
-            if not self.base_url or not self.base_url.startswith(('https://', 'http://')):
+            if not self.base_url or not self.base_url.startswith((
+                "https://",
+                "http://",
+            )):
                 return FlextResult[None].fail(
                     "Production API requires valid base_url starting with http:// or https://"
                 )
@@ -166,7 +175,12 @@ class FlextApiConfig(FlextConfig):
                 )
 
         # Development validation - combine nested if statements
-        if self.is_development() and self.base_url and self.base_url.startswith('https://') and self.debug:
+        if (
+            self.is_development()
+            and self.base_url
+            and self.base_url.startswith("https://")
+            and self.debug
+        ):
             # Allow HTTPS in development for testing, but warn via logging
             pass
 

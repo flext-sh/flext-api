@@ -23,48 +23,57 @@ from flext_core import FlextConstants, FlextTypes
 
 
 class FlextApi:
-    """Thin facade providing unified access to all flext-api functionality.
+    """Thin facade for HTTP foundation operations with complete FLEXT integration.
 
-    This is the main entry point for the flext-api HTTP foundation library.
-    All functionality is accessed through domain modules - NO wrappers, NO logic.
+    Integrates:
+    - FlextBus: Event emission for HTTP operations, lifecycle events
+    - FlextContainer: Dependency injection and service management
+    - FlextContext: Operation context and request tracing
+    - FlextCqrs: CQRS pattern for HTTP command/query separation
+    - FlextDispatcher: Message routing for HTTP requests/responses
+    - FlextProcessors: Request/response processing pipeline
+    - FlextRegistry: Component registration and discovery
+    - FlextLogger: Structured logging with correlation IDs
+    - FlextResult: Railway-oriented error handling throughout
 
     Usage:
         ```python
         from flext_api import FlextApi
 
-        # Create HTTP client with flext-core integration
-        client = FlextApi.Client(base_url="https://api.example.com")
-        # Client integrates: FlextService, FlextBus, FlextContainer,
-        # FlextContext, FlextRegistry, FlextLogger
+        # Create HTTP client with complete FLEXT ecosystem integration
+        client = FlextApi.Client(base_url="https://api.example.com", timeout=30.0)
+        # Integrates: FlextBus, FlextContainer, FlextContext, FlextCqrs,
+        # FlextDispatcher, FlextProcessors, FlextRegistry, FlextLogger
 
-        # Create FastAPI app with lifecycle events
-        app = FlextApi.create_fastapi_app(title="My API")
-        # App emits events via FlextBus for app lifecycle
+        # Create FastAPI app with event-driven lifecycle
+        app = FlextApi.create_fastapi_app(title="My API", version="1.0.0")
+        # Emits lifecycle events via FlextBus (startup, shutdown, requests)
 
-        # Create storage with event emission
+        # Create storage with event emission and processing
         storage = FlextApi.Storage()
-        # Storage emits events via FlextBus for operations
+        # Uses FlextProcessors for data validation and transformation
+        # Emits events via FlextBus for all operations
 
-        # Access constants and models
+        # Access domain modules
         status_code = FlextApi.Constants.HTTP_OK
         request = FlextApi.Models.HttpRequest(method="GET", url="/test")
         config = FlextApi.Config()
         ```
 
-    flext-core Integration:
-        - FlextService: Client, Storage, App extend FlextService
-        - FlextBus: Event emission for storage, app lifecycle, HTTP operations
-        - FlextContainer: Dependency injection in client
-        - FlextContext: Execution context management in client
-        - FlextRegistry: Service and backend registration
-        - FlextLogger: Structured logging throughout
-        - FlextResult: Railway-oriented error handling everywhere
+    Architecture:
+        - **Domain Library**: Provides HTTP foundation for entire FLEXT ecosystem
+        - **Mandatory Usage**: ALL HTTP operations in FLEXT use flext-api (NO direct httpx)
+        - **Event-Driven**: All operations emit events via FlextBus for monitoring
+        - **Context-Aware**: FlextContext provides request tracing and correlation
+        - **CQRS Pattern**: Commands (POST/PUT/DELETE) vs Queries (GET) separation
+        - **Processing Pipeline**: FlextProcessors handle validation, transformation, caching
 
     Design Principles:
-        - Thin facade: NO logic, only references to domain classes
-        - Direct access: All domain modules exposed as class attributes
-        - Zero duplication: Delegates to specialized domain classes
-        - FLEXT compliance: Follows flext-core patterns exclusively
+        - Thin facade: NO business logic, pure delegation to domain classes
+        - Complete FLEXT integration: Uses ALL flext-core components appropriately
+        - Railway pattern: FlextResult throughout for type-safe error handling
+        - Zero duplication: Direct access to specialized domain modules
+        - Ecosystem compliance: Follows flext-core patterns exclusively
     """
 
     # Direct access to all domain modules (NO wrappers, NO logic)

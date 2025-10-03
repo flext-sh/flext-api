@@ -15,6 +15,7 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
     """Storage backend implementation conforming to StorageBackendProtocol."""
 
     def __init__(self) -> None:
+        """Initialize storage backend protocol implementation."""
         self._storage: dict[str, FlextApiTypes.JsonValue] = {}
         self._logger = FlextLogger(__name__)
 
