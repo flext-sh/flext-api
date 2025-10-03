@@ -27,6 +27,13 @@ class FlextApiVersion:
     """Structured metadata for the flext api distribution."""
 
     def __init__(self, version: str, version_info: tuple[int | str, ...]) -> None:
+        """Initialize version information.
+
+        Args:
+            version: Version string
+            version_info: Version info tuple
+
+        """
         self._version = version
         self._version_info = version_info
 
