@@ -805,4 +805,11 @@ class FlextApiMiddleware:
 
 __all__ = [
     "FlextApiMiddleware",
+    # Middleware classes for testing and external usage
+    "BaseMiddleware",
+    "LoggingMiddleware",
+    "MetricsMiddleware",
+    "AuthenticationMiddleware",
+    "ErrorHandlingMiddleware",
+    "MiddlewarePipeline",
 ]
