@@ -40,7 +40,7 @@ class SSEProtocolPlugin(ProtocolPlugin):
     def __init__(
         self,
         retry_timeout: int = 3000,
-        connect_timeout: float = 30.0,
+        _connect_timeout: float = 30.0,
         read_timeout: float = 300.0,
         *,
         auto_reconnect: bool = True,
