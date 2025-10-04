@@ -11,14 +11,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import warnings
-
 from fastapi import FastAPI
+from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 from flext_api.models import FlextApiModels
 from flext_api.server import FlextApiServer
 from flext_api.webhook import FlextWebhookHandler
-from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 
 class FlextApiApp(FlextService[object]):
@@ -99,7 +97,8 @@ class FlextApiApp(FlextService[object]):
         """
         # Initialize flext-core services for application
         logger = FlextLogger(__name__)
-        # NOTE: FlextContext will be used for request context management in future enhancement
+        # NOTE: FlextContext will be used for request context
+        # management in future enhancement
         # NOTE: FlextBus is a CQRS command/query bus, not an event emitter
 
         logger.info(
@@ -199,50 +198,4 @@ class FlextApiApp(FlextService[object]):
             return FlextResult[object].fail(f"Failed to create webhook handler: {e}")
 
 
-# Backward compatibility functions
-def create_fastapi_app(config: FlextApiModels.AppConfig) -> object:
-    """Create FastAPI application (backward compatibility function).
-
-    .. deprecated:: 1.0.0
-        FastAPI functionality has moved to flext-web. Use
-        :func:`flext_web.create_fastapi_app` instead.
-
-        This function is maintained for backward compatibility and now
-        delegates to flext-web.
-
-        Migration example::
-
-            # Old (deprecated):
-            from flext_api import create_fastapi_app
-            from flext_api.models import FlextApiModels
-
-            config = FlextApiModels.AppConfig(title="My API", app_version="1.0.0")
-            app = create_fastapi_app(config)
-
-            # New (recommended):
-            from flext_web import create_fastapi_app
-            from flext_web.models import FlextWebModels
-
-            config = FlextWebModels.AppConfig(title="My API", version="1.0.0")
-            result = create_fastapi_app(config)
-            app = result.unwrap()
-
-    Args:
-        config: Application configuration
-
-    Returns:
-        FastAPI application instance
-
-    """
-    warnings.warn(
-        "create_fastapi_app from flext-api is deprecated. "
-        "Use flext_web.create_fastapi_app instead. "
-        "See https://docs.flext.dev/migration/fastapi",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-    return FlextApiApp.create_fastapi_app(config)
-
-
-__all__ = ["FlextApiApp", "create_fastapi_app"]
+__all__ = ["FlextApiApp"]

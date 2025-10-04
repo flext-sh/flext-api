@@ -9,11 +9,11 @@ from __future__ import annotations
 from typing import Literal, cast
 
 import pytest
+from flext_core import FlextConstants, FlextTypes
 from pydantic import ValidationError
 
 from flext_api import FlextApiModels
 from flext_api.constants import FlextApiConstants
-from flext_core import FlextConstants, FlextTypes
 
 # Import HTTP method constants
 GET = FlextConstants.Http.Method.GET

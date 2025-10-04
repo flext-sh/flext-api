@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import FlextConstants, FlextTypes
+
 from flext_api import (
     FlextApiClient,
     FlextApiConfig,
@@ -17,7 +19,6 @@ from flext_api import (
     FlextApiStorage,
     FlextApiUtilities,
 )
-from flext_core import FlextConstants, FlextTypes
 
 
 def example_api_creation() -> None:

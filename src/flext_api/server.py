@@ -20,10 +20,10 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from fastapi import FastAPI
+from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 from flext_api.middleware import FlextApiMiddleware
 from flext_api.plugins import ProtocolPlugin
-from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 
 class FlextApiServer(FlextService):
@@ -49,7 +49,7 @@ class FlextApiServer(FlextService):
 
     def __init__(
         self,
-        host: str = "0.0.0.0",
+        host: str = "127.0.0.1",
         port: int = 8000,
         title: str = "Flext API Server",
         version: str = "1.0.0",

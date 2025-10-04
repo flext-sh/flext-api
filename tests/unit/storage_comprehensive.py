@@ -10,8 +10,9 @@ from __future__ import annotations
 
 import time
 
-from flext_api import FlextApiStorage
 from flext_core import FlextTypes
+
+from flext_api import FlextApiStorage
 
 
 class TestFlextApiStorage:

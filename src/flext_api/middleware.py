@@ -20,9 +20,11 @@ import uuid
 import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from dataclasses import dataclass
+
+from flext_core import FlextConstants, FlextLogger, FlextResult, FlextTypes
 
 from flext_api.models import FlextApiModels
-from flext_core import FlextConstants, FlextLogger, FlextResult, FlextTypes
 
 
 class FlextApiMiddleware:
@@ -51,17 +53,18 @@ class FlextApiMiddleware:
         pipeline.add_middleware(logging_mw)
 
         # Use in HTTP client
-        client.middleware = pipeline"""
+        client.middleware = pipeline
+    """
 
     # =========================================================================
     # MIDDLEWARE BASE CLASSES - Foundation for all middleware types
     # =========================================================================
 
+    @dataclass
     class _BaseMiddleware:
         """Base class for all middleware implementations."""
 
-        def __init__(self, name: str = "middleware") -> None:
-            self.name = name
+        name: str = "middleware"
 
     class BaseMiddleware(ABC):
         """Base middleware class for request/response processing.

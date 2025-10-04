@@ -9,9 +9,8 @@ SPDX-License-Identifier: MIT
 
 import math
 
-from flext_tests import FlextTestsMatchers
-
 from flext_core import FlextContainer, FlextTypes
+from flext_tests import FlextTestsMatchers
 
 
 class TestFlextContainerComprehensiveCoverage:

@@ -15,9 +15,11 @@ from typing import override
 from flext_core import FlextConstants, FlextExceptions
 
 
-class FlextApiExceptions:
+class FlextApiExceptions(FlextExceptions):
     """HTTP API exception classes extending FlextExceptions.
 
+    Extends FlextExceptions to inherit all base exception types while
+    adding HTTP-specific exception classes for API operations.
     All HTTP exceptions properly extend FlextExceptions.BaseError for
     structured error handling with error codes and correlation tracking.
     """

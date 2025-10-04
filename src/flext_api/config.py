@@ -6,11 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import FlextConfig, FlextResult, FlextTypes
 from pydantic import Field, computed_field
 from pydantic_settings import SettingsConfigDict
 
 from flext_api.constants import FlextApiConstants
-from flext_core import FlextConfig, FlextResult, FlextTypes
 
 
 class FlextApiConfig(FlextConfig):
@@ -99,6 +99,122 @@ class FlextApiConfig(FlextConfig):
         """Get complete API URL with version."""
         return f"{self.base_url}/api/{self.api_version}"
 
+    @computed_field
+    def client_config(self) -> FlextTypes.Dict:
+        """Get HTTP client configuration with flext-core integration patterns."""
+        return {
+            "base_url": self.api_url,
+            "timeout": self.timeout,
+            "max_retries": self.max_retries,
+            "headers": {
+                "User-Agent": f"FlextApi/{self.api_version}",
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+            "transport_config": {
+                "connection_pool_size": self.database_pool_size,
+                "max_connections": min(self.max_workers, 100),
+                "retry_on": [500, 502, 503, 504],
+            },
+            "performance_config": {
+                "enable_metrics": self.enable_metrics,
+                "enable_tracing": self.enable_tracing,
+                "cache_responses": self.enable_caching,
+            },
+        }
+
+    @computed_field
+    def server_config(self) -> FlextTypes.Dict:
+        """Get HTTP server configuration with flext-core integration patterns."""
+        return {
+            "host": "127.0.0.1",
+            "port": 8000,
+            "workers": self.max_workers,
+            "timeout": self.timeout_seconds,
+            "cors": {
+                "origins": self.cors_origins,
+                "methods": self.cors_methods,
+                "headers": self.cors_headers,
+                "credentials": True,
+            },
+            "logging": {
+                "request_logging": self.log_requests,
+                "response_logging": self.log_responses,
+                "structured": self.structured_output,
+                "level": self.effective_log_level,
+            },
+            "security": {
+                "enable_auth": True,
+                "rate_limiting": self.rate_limit_max_requests > 0,
+                "rate_limit_window": self.rate_limit_window_seconds,
+            },
+        }
+
+    @computed_field
+    def middleware_config(self) -> FlextTypes.Dict:
+        """Get middleware configuration with flext-core integration patterns."""
+        return {
+            "cors": {
+                "enabled": len(self.cors_origins) > 0,
+                "origins": self.cors_origins,
+                "methods": self.cors_methods,
+                "headers": self.cors_headers,
+            },
+            "logging": {
+                "request_logging": self.log_requests,
+                "response_logging": self.log_responses,
+                "include_context": self.include_context,
+                "include_correlation_id": self.include_correlation_id,
+            },
+            "security": {
+                "rate_limiting": {
+                    "enabled": self.rate_limit_max_requests > 0,
+                    "max_requests": self.rate_limit_max_requests,
+                    "window_seconds": self.rate_limit_window_seconds,
+                },
+                "authentication": {
+                    "enabled": True,
+                    "jwt_expiry": self.jwt_expiry_minutes,
+                },
+            },
+            "performance": {
+                "caching": {
+                    "enabled": self.enable_caching,
+                    "ttl": self.cache_ttl,
+                },
+                "compression": {
+                    "enabled": True,
+                    "algorithms": ["gzip", "deflate"],
+                },
+            },
+        }
+
+    @computed_field
+    def monitoring_config(self) -> FlextTypes.Dict:
+        """Get monitoring configuration with flext-core integration patterns."""
+        return {
+            "metrics": {
+                "enabled": self.enable_metrics,
+                "endpoint": "/metrics",
+                "collection_interval": 60,
+            },
+            "tracing": {
+                "enabled": self.enable_tracing,
+                "service_name": f"flext-api-{self.api_version}",
+                "sampling_rate": 0.1,
+            },
+            "health_checks": {
+                "enabled": True,
+                "endpoint": "/health",
+                "checks": ["database", "cache", "external_apis"],
+            },
+            "logging": {
+                "structured": self.structured_output,
+                "correlation_id": self.include_correlation_id,
+                "performance_tracking": self.track_performance,
+            },
+        }
+
     # =========================================================================
     # Infrastructure Protocol Implementations (FlextConfig inheritance)
     # =========================================================================
@@ -186,57 +302,19 @@ class FlextApiConfig(FlextConfig):
 
         return FlextResult[None].ok(None)
 
-    @classmethod
-    def create_for_environment(
-        cls, environment: str, **overrides: object
-    ) -> FlextApiConfig:
-        """Create configuration for specific environment using direct instantiation.
+    # Factory methods removed - use direct instantiation only
+    # ✅ CORRECT: config = FlextApiConfig()
+    # ❌ FORBIDDEN: config = FlextApiConfig.get_global_instance()
 
-        Migration from old singleton pattern to new FlextConfig direct instantiation.
-        """
-        return cls(environment=environment, **overrides)
+    # =========================================================================
+    # Enhanced flext-core Integration Methods
+    # =========================================================================
 
-    @classmethod
-    def create_default(cls) -> FlextApiConfig:
-        """Create default configuration instance using direct instantiation.
+    # Removed complex factory methods - use direct instantiation
+    # ✅ CORRECT: config = FlextApiConfig()
 
-        Migration from old singleton pattern to new FlextConfig direct instantiation.
-        """
-        return cls()
-
-    @classmethod
-    def get_global_instance(cls) -> FlextApiConfig:
-        """REMOVED: Use direct instantiation with FlextApiConfig().
-
-        Migration:
-            # Old pattern
-            config = FlextApiConfig.get_global_instance()
-
-            # New pattern - create instance directly
-            config = FlextApiConfig()
-        """
-        msg = (
-            "FlextApiConfig.get_global_instance() has been removed. "
-            "Use FlextApiConfig() to create instances directly."
-        )
-        raise NotImplementedError(msg)
-
-    @classmethod
-    def reset_global_instance(cls) -> None:
-        """REMOVED: Singleton pattern removed in favor of direct instantiation.
-
-        Migration:
-            # Old pattern - no longer needed
-            FlextApiConfig.reset_global_instance()
-
-            # New pattern - create fresh instances as needed
-            config = FlextApiConfig()
-        """
-        msg = (
-            "FlextApiConfig.reset_global_instance() has been removed. "
-            "Create new instances directly with FlextApiConfig()."
-        )
-        raise NotImplementedError(msg)
+    # Complex validation and demonstration methods removed for simplicity
+    # Focus on core configuration functionality only
 
 
 __all__ = [

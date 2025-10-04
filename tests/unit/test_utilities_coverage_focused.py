@@ -9,8 +9,9 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 
-from flext_api import FlextApiUtilities
 from flext_core import FlextTypes
+
+from flext_api import FlextApiUtilities
 
 
 class TestFlextUtilitiesCoverageFocused:

@@ -12,10 +12,10 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
+from flext_core import FlextResult
 
 from flext_api.models import FlextApiModels
 from flext_api.protocol_impls.http import HttpProtocolPlugin
-from flext_core import FlextResult
 
 
 class TestHttpProtocolPlugin:

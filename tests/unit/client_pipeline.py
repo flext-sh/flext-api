@@ -7,13 +7,15 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from typing import cast
+
+from flext_core import FlextTypes
 
 from flext_api import (
     FlextApiClient,
     FlextApiModels,
 )
-from flext_core import FlextTypes
 
 
 def test_client_request_pipeline_success() -> None:

@@ -15,10 +15,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
+from flext_core import FlextResult, FlextTypes
 
 from flext_api.plugins import SchemaPlugin
-from flext_core import FlextResult, FlextTypes
 
 
 class JSONSchemaValidator(SchemaPlugin):
@@ -87,7 +86,7 @@ class JSONSchemaValidator(SchemaPlugin):
             "regex",
         ]
 
-    def validate_schema(self, schema: dict[str, Any]) -> FlextResult[dict[str, Any]]:
+    def validate_schema(self, schema: FlextTypes.Dict) -> FlextResult[FlextTypes.Dict]:
         """Validate JSON Schema against meta-schema.
 
         Args:
@@ -99,27 +98,27 @@ class JSONSchemaValidator(SchemaPlugin):
         """
         # Check if schema is a dictionary
         if not isinstance(schema, dict):
-            return FlextResult[dict[str, Any]].fail("Schema must be a dictionary")
+            return FlextResult[FlextTypes.Dict].fail("Schema must be a dictionary")
 
         # Validate $schema field if present
         schema_uri = schema.get("$schema")
         if schema_uri:
             draft_result = self._validate_schema_uri(schema_uri)
             if draft_result.is_failure:
-                return FlextResult[dict[str, Any]].fail(draft_result.error)
+                return FlextResult[FlextTypes.Dict].fail(draft_result.error)
 
         # Validate type if present
         if "type" in schema:
             type_result = self._validate_type_field(schema["type"])
             if type_result.is_failure:
-                return FlextResult[dict[str, Any]].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"Invalid type field: {type_result.error}"
                 )
 
         # Validate properties if present
         if "properties" in schema:
             if not isinstance(schema["properties"], dict):
-                return FlextResult[dict[str, Any]].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     "Properties must be a dictionary"
                 )
 
@@ -128,7 +127,7 @@ class JSONSchemaValidator(SchemaPlugin):
                 if isinstance(prop_schema, dict):
                     prop_result = self.validate_schema(prop_schema)
                     if prop_result.is_failure:
-                        return FlextResult[dict[str, Any]].fail(
+                        return FlextResult[FlextTypes.Dict].fail(
                             f"Invalid property schema '{prop_name}': {prop_result.error}"
                         )
 
@@ -138,7 +137,7 @@ class JSONSchemaValidator(SchemaPlugin):
             if isinstance(items, dict):
                 items_result = self.validate_schema(items)
                 if items_result.is_failure:
-                    return FlextResult[dict[str, Any]].fail(
+                    return FlextResult[FlextTypes.Dict].fail(
                         f"Invalid items schema: {items_result.error}"
                     )
             elif isinstance(items, list):
@@ -146,18 +145,18 @@ class JSONSchemaValidator(SchemaPlugin):
                     if isinstance(item_schema, dict):
                         item_result = self.validate_schema(item_schema)
                         if item_result.is_failure:
-                            return FlextResult[dict[str, Any]].fail(
+                            return FlextResult[FlextTypes.Dict].fail(
                                 f"Invalid items[{i}] schema: {item_result.error}"
                             )
 
         # Validate required field if present
         if "required" in schema:
             if not isinstance(schema["required"], list):
-                return FlextResult[dict[str, Any]].fail("Required must be an array")
+                return FlextResult[FlextTypes.Dict].fail("Required must be an array")
 
             for req in schema["required"]:
                 if not isinstance(req, str):
-                    return FlextResult[dict[str, Any]].fail(
+                    return FlextResult[FlextTypes.Dict].fail(
                         "Required items must be strings"
                     )
 
@@ -165,10 +164,10 @@ class JSONSchemaValidator(SchemaPlugin):
         if "format" in schema and self._validate_formats:
             format_value = schema["format"]
             if not isinstance(format_value, str):
-                return FlextResult[dict[str, Any]].fail("Format must be a string")
+                return FlextResult[FlextTypes.Dict].fail("Format must be a string")
 
             if format_value not in self._supported_formats and self._strict_mode:
-                return FlextResult[dict[str, Any]].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"Unsupported format: {format_value}"
                 )
 
@@ -181,7 +180,7 @@ class JSONSchemaValidator(SchemaPlugin):
             },
         )
 
-        return FlextResult[dict[str, Any]].ok({
+        return FlextResult[FlextTypes.Dict].ok({
             "valid": True,
             "draft": self._draft_version,
             "type": schema.get("type"),
@@ -190,9 +189,9 @@ class JSONSchemaValidator(SchemaPlugin):
 
     def validate_instance(
         self,
-        instance: Any,
-        schema: dict[str, Any],
-    ) -> FlextResult[dict[str, Any]]:
+        instance: FlextTypes.JsonValue,
+        schema: dict[str, FlextTypes.JsonValue],
+    ) -> FlextResult[dict[str, FlextTypes.JsonValue]]:
         """Validate instance against JSON Schema.
 
         Args:
@@ -206,7 +205,7 @@ class JSONSchemaValidator(SchemaPlugin):
         # First validate the schema itself
         schema_result = self.validate_schema(schema)
         if schema_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"Invalid schema: {schema_result.error}"
             )
 
@@ -214,13 +213,13 @@ class JSONSchemaValidator(SchemaPlugin):
         if "type" in schema:
             type_result = self._validate_instance_type(instance, schema["type"])
             if type_result.is_failure:
-                return FlextResult[dict[str, Any]].fail(type_result.error)
+                return FlextResult[FlextTypes.Dict].fail(type_result.error)
 
         # Validate required properties for objects
         if isinstance(instance, dict) and "required" in schema:
             for required_prop in schema["required"]:
                 if required_prop not in instance:
-                    return FlextResult[dict[str, Any]].fail(
+                    return FlextResult[FlextTypes.Dict].fail(
                         f"Missing required property: {required_prop}"
                     )
 
@@ -232,7 +231,7 @@ class JSONSchemaValidator(SchemaPlugin):
                     if isinstance(prop_schema, dict):
                         prop_result = self.validate_instance(prop_value, prop_schema)
                         if prop_result.is_failure:
-                            return FlextResult[dict[str, Any]].fail(
+                            return FlextResult[FlextTypes.Dict].fail(
                                 f"Invalid property '{prop_name}': {prop_result.error}"
                             )
 
@@ -243,11 +242,11 @@ class JSONSchemaValidator(SchemaPlugin):
                 for i, item in enumerate(instance):
                     item_result = self.validate_instance(item, items_schema)
                     if item_result.is_failure:
-                        return FlextResult[dict[str, Any]].fail(
+                        return FlextResult[FlextTypes.Dict].fail(
                             f"Invalid array item[{i}]: {item_result.error}"
                         )
 
-        return FlextResult[dict[str, Any]].ok({
+        return FlextResult[FlextTypes.Dict].ok({
             "valid": True,
             "type": type(instance).__name__,
         })
@@ -274,7 +273,9 @@ class JSONSchemaValidator(SchemaPlugin):
 
         return FlextResult[None].ok(None)
 
-    def _validate_type_field(self, type_value: Any) -> FlextResult[None]:
+    def _validate_type_field(
+        self, type_value: FlextTypes.JsonValue
+    ) -> FlextResult[None]:
         """Validate type field value.
 
         Args:
@@ -308,8 +309,8 @@ class JSONSchemaValidator(SchemaPlugin):
 
     def _validate_instance_type(
         self,
-        instance: Any,
-        type_value: Any,
+        instance: FlextTypes.JsonValue,
+        type_value: FlextTypes.JsonValue,
     ) -> FlextResult[None]:
         """Validate instance against type constraint.
 
@@ -374,9 +375,9 @@ class JSONSchemaValidator(SchemaPlugin):
 
     def validate_request(
         self,
-        request: Any,  # noqa: ARG002 - stub implementation
-        schema: Any,  # noqa: ARG002 - stub implementation
-    ) -> FlextResult[dict[str, Any]]:
+        request: FlextTypes.JsonValue,  # noqa: ARG002 - stub implementation
+        schema: dict[str, FlextTypes.JsonValue],  # noqa: ARG002 - stub implementation
+    ) -> FlextResult[dict[str, FlextTypes.JsonValue]]:
         """Validate request against JSON Schema.
 
         Args:
@@ -388,13 +389,13 @@ class JSONSchemaValidator(SchemaPlugin):
 
         """
         # Implementation would validate request body against JSON Schema
-        return FlextResult[dict[str, Any]].ok({"valid": True})
+        return FlextResult[FlextTypes.Dict].ok({"valid": True})
 
     def validate_response(
         self,
-        response: Any,  # noqa: ARG002 - stub implementation
-        schema: Any,  # noqa: ARG002 - stub implementation
-    ) -> FlextResult[dict[str, Any]]:
+        response: FlextTypes.JsonValue,  # noqa: ARG002 - stub implementation
+        schema: dict[str, FlextTypes.JsonValue],  # noqa: ARG002 - stub implementation
+    ) -> FlextResult[dict[str, FlextTypes.JsonValue]]:
         """Validate response against JSON Schema.
 
         Args:
@@ -406,12 +407,12 @@ class JSONSchemaValidator(SchemaPlugin):
 
         """
         # Implementation would validate response body against JSON Schema
-        return FlextResult[dict[str, Any]].ok({"valid": True})
+        return FlextResult[FlextTypes.Dict].ok({"valid": True})
 
     def load_schema(
         self,
-        schema_source: str | dict[str, Any],
-    ) -> FlextResult[Any]:
+        schema_source: str | FlextTypes.Dict,
+    ) -> FlextResult[FlextTypes.Dict]:
         """Load JSON Schema from source.
 
         Args:
@@ -422,10 +423,10 @@ class JSONSchemaValidator(SchemaPlugin):
 
         """
         if isinstance(schema_source, dict):
-            return FlextResult[Any].ok(schema_source)
+            return FlextResult[FlextTypes.Dict].ok(schema_source)
 
         # For string paths, would load from file
-        return FlextResult[Any].fail("File loading not implemented yet")
+        return FlextResult[FlextTypes.Dict].fail("File loading not implemented yet")
 
 
 __all__ = ["JSONSchemaValidator"]

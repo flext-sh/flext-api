@@ -1,7 +1,7 @@
 """Protocol definitions for flext-api domain.
 
-All protocol interfaces are centralized here for better type safety and dependency inversion.
-Following FLEXT standards: protocols only, no implementations.
+All protocol interfaces are centralized here following FLEXT standards.
+Single unified class with nested protocol definitions - no multiple top-level classes.
 """
 
 from __future__ import annotations
@@ -14,138 +14,107 @@ from .models import FlextApiModels
 from .typings import FlextApiTypes
 
 
-class FlextApiProtocols:
-    """Single unified API protocols class following FLEXT standards.
+class FlextApiProtocols(FlextProtocols):
+    """Single unified API protocols class extending flext-core FlextProtocols.
 
-    Contains all protocol definitions for API domain operations.
-    All protocols exposed as direct attributes for hierarchical access.
+    Contains all protocol definitions for API domain operations using nested classes.
+    Follows FLEXT namespace class pattern - single class with nested protocol definitions.
     """
 
     # =========================================================================
-    # RE-EXPORT FOUNDATION PROTOCOLS - Use FlextProtocols from flext-core
+    # API-SPECIFIC PROTOCOLS - Nested classes within unified namespace
     # =========================================================================
 
-    Foundation = FlextProtocols.Foundation
-    Domain = FlextProtocols.Domain
-    Application = FlextProtocols.Application
-    Infrastructure = FlextProtocols.Infrastructure
-    Extensions = FlextProtocols.Extensions
-    Commands = FlextProtocols.Commands
+    @runtime_checkable
+    class HttpClientProtocol(Protocol):
+        """Protocol for HTTP client implementations."""
 
-    # =========================================================================
-    # API-SPECIFIC PROTOCOLS - Direct attributes for hierarchical access
-    # =========================================================================
+        def request(
+            self,
+            method: str,
+            url: str,
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            """Execute an HTTP request."""
 
+        def get(
+            self,
+            url: str,
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            """Execute HTTP GET request."""
 
-@runtime_checkable
-class _HttpClientProtocol(Protocol):
-    """Protocol for HTTP client implementations."""
+        def post(
+            self,
+            url: str,
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            """Execute HTTP POST request."""
 
-    def request(
-        self,
-        method: str,
-        url: str,
-        **kwargs: object,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
-        """Execute an HTTP request."""
+        def put(
+            self,
+            url: str,
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            """Execute HTTP PUT request."""
 
-    def get(
-        self,
-        url: str,
-        **kwargs: object,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
-        """Execute HTTP GET request."""
+        def delete(
+            self,
+            url: str,
+            **kwargs: object,
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            """Execute HTTP DELETE request."""
 
-    def post(
-        self,
-        url: str,
-        **kwargs: object,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
-        """Execute HTTP POST request."""
+    @runtime_checkable
+    class StorageBackendProtocol(Protocol):
+        """Protocol for storage backend implementations."""
 
-    def put(
-        self,
-        url: str,
-        **kwargs: object,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
-        """Execute HTTP PUT request."""
+        def get(
+            self, key: str, default: FlextApiTypes.JsonValue = None
+        ) -> FlextResult[FlextApiTypes.JsonValue]:
+            """Retrieve value by key."""
+            ...
 
-    def delete(
-        self,
-        url: str,
-        **kwargs: object,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
-        """Execute HTTP DELETE request."""
+        def set(
+            self,
+            key: str,
+            value: object,
+            timeout: int | None = None,
+        ) -> FlextResult[None]:
+            """Store value with optional timeout."""
+            ...
 
+        def delete(self, key: str) -> FlextResult[None]:
+            """Delete value by key."""
+            ...
 
-@runtime_checkable
-class _StorageBackendProtocol(Protocol):
-    """Protocol for storage backend implementations."""
+        def exists(self, key: str) -> FlextResult[bool]:
+            """Check if key exists."""
+            ...
 
-    def get(
-        self, key: str, default: FlextApiTypes.JsonValue = None
-    ) -> FlextResult[FlextApiTypes.JsonValue]:
-        """Retrieve value by key."""
+        def clear(self) -> FlextResult[None]:
+            """Clear all stored values."""
+            ...
 
-    def set(
-        self,
-        key: str,
-        value: object,
-        timeout: int | None = None,
-    ) -> FlextResult[None]:
-        """Store value with optional timeout."""
+        def keys(self) -> FlextResult[list[str]]:
+            """Get all keys."""
+            ...
 
-    def delete(self, key: str) -> FlextResult[None]:
-        """Delete value by key."""
+    @runtime_checkable
+    class LoggerProtocol(Protocol):
+        """Protocol for logger implementations."""
 
-    def exists(self, key: str) -> FlextResult[bool]:
-        """Check if key exists."""
+        def info(self, message: str, **kwargs: object) -> None:
+            """Log info message."""
 
-    def clear(self) -> FlextResult[None]:
-        """Clear all stored values."""
+        def error(self, message: str, **kwargs: object) -> None:
+            """Log error message."""
 
-    def keys(self: object) -> FlextResult[list[str]]:
-        """Get all keys."""
+        def debug(self, message: str, **kwargs: object) -> None:
+            """Log debug message."""
 
-
-@runtime_checkable
-class _LoggerProtocol(Protocol):
-    """Protocol for logger implementations."""
-
-    def info(self, message: str, **kwargs: object) -> None:
-        """Log info message."""
-
-    def error(self, message: str, **kwargs: object) -> None:
-        """Log error message."""
-
-    def debug(self, message: str, **kwargs: object) -> None:
-        """Log debug message."""
-
-    def warning(self, message: str, **kwargs: object) -> None:
-        """Log warning message."""
-
-
-# =========================================================================
-# API-SPECIFIC PROTOCOLS - Direct attributes for hierarchical access
-# =========================================================================
-
-# Direct protocol attributes (defined after class definitions to avoid forward reference issues)
-FlextApiProtocols.LoggerProtocol = _LoggerProtocol
-
-# =========================================================================
-# RE-EXPORT FOUNDATION PROTOCOLS - Use FlextProtocols from flext-core
-# =========================================================================
-
-FlextApiProtocols.Foundation = FlextProtocols.Foundation
-FlextApiProtocols.Domain = FlextProtocols.Domain
-FlextApiProtocols.Application = FlextProtocols.Application
-FlextApiProtocols.Infrastructure = FlextProtocols.Infrastructure
-FlextApiProtocols.Extensions = FlextProtocols.Extensions
-FlextApiProtocols.Commands = FlextProtocols.Commands
-
-# Direct protocol attributes
-FlextApiProtocols.HttpClientProtocol = _HttpClientProtocol
-FlextApiProtocols.StorageBackendProtocol = _StorageBackendProtocol
+        def warning(self, message: str, **kwargs: object) -> None:
+            """Log warning message."""
 
 
 __all__ = [

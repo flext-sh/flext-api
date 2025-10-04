@@ -18,9 +18,10 @@ from __future__ import annotations
 import re
 from typing import cast
 
+from flext_core import FlextConstants, FlextLogger, FlextResult, FlextTypes
+
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
-from flext_core import FlextConstants, FlextLogger, FlextResult, FlextTypes
 
 
 class FlextApiAdapters:
@@ -40,26 +41,21 @@ class FlextApiAdapters:
         self, request: FlextApiModels.HttpRequest
     ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
         """Convert HTTP request to WebSocket message format."""
-        try:
-            message: dict[str, FlextApiTypes.JsonValue] = {
-                "type": "request",
-                "method": request.method,
-                "url": str(request.url),
-                "headers": dict(request.headers) if request.headers else {},
-                "body": request.body or {},
-            }
+        # Railway-oriented HTTP to WebSocket adaptation - operations are safe
+        message: dict[str, FlextApiTypes.JsonValue] = {
+            "type": "request",
+            "method": request.method,
+            "url": str(request.url),
+            "headers": dict(request.headers) if request.headers else {},
+            "body": request.body or {},
+        }
 
-            self._logger.debug(
-                "HTTP request adapted to WebSocket message",
-                extra={"method": request.method, "url": str(request.url)},
-            )
+        self._logger.debug(
+            "HTTP request adapted to WebSocket message",
+            extra={"method": request.method, "url": str(request.url)},
+        )
 
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(message)
-
-        except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(
-                f"HTTP to WebSocket adaptation failed: {e}"
-            )
+        return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(message)
 
     def adapt_websocket_message_to_http_response(
         self, message: dict[str, FlextApiTypes.JsonValue]
@@ -110,7 +106,7 @@ class FlextApiAdapters:
             )
 
     def adapt_graphql_query_to_http_request(
-        self, query: str, variables: dict[str, object] | None = None
+        self, query: str, variables: FlextTypes.Dict | None = None
     ) -> FlextResult[FlextApiModels.HttpRequest]:
         """Adapt GraphQL query to HTTP request.
 
@@ -148,7 +144,7 @@ class FlextApiAdapters:
 
     def adapt_http_response_to_graphql_result(
         self, response: FlextApiModels.HttpResponse
-    ) -> FlextResult[dict[str, object]]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Adapt HTTP response to GraphQL result.
 
         Args:
@@ -161,7 +157,7 @@ class FlextApiAdapters:
         try:
             # Extract GraphQL result from HTTP response
             if response.status_code != FlextConstants.Http.HTTP_OK:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"GraphQL request failed with status {response.status_code}"
                 )
 
@@ -171,17 +167,17 @@ class FlextApiAdapters:
             if isinstance(result, dict) and "errors" in result:
                 errors = result["errors"]
                 error_messages = [e.get("message", "Unknown error") for e in errors]
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"GraphQL errors: {', '.join(error_messages)}"
                 )
 
             self._logger.debug("HTTP response adapted to GraphQL result")
 
             data = result.get("data", {}) if isinstance(result, dict) else {}
-            return FlextResult[dict[str, object]].ok(data)
+            return FlextResult[FlextTypes.Dict].ok(data)
 
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"HTTP to GraphQL result adaptation failed: {e}"
             )
 
@@ -466,7 +462,7 @@ class FlextApiAdapters:
 
         return adapted
 
-    def _adapt_payload_to_legacy(self, payload: dict[str, object]) -> dict[str, object]:
+    def _adapt_payload_to_legacy(self, payload: FlextTypes.Dict) -> FlextTypes.Dict:
         """Adapt payload to legacy format.
 
         Args:
@@ -486,9 +482,7 @@ class FlextApiAdapters:
 
         return adapted
 
-    def _normalize_legacy_payload(
-        self, payload: dict[str, object]
-    ) -> dict[str, object]:
+    def _normalize_legacy_payload(self, payload: FlextTypes.Dict) -> FlextTypes.Dict:
         """Normalize legacy payload to modern format.
 
         Args:
@@ -555,6 +549,114 @@ class FlextApiAdapters:
         return components[0] + "".join(x.title() for x in components[1:])
 
 
+# Backward compatibility aliases - thin wrappers around unified class
+class GraphQLToHttpAdapter(FlextApiAdapters):
+    """Backward compatibility wrapper for GraphQL to HTTP adaptation."""
+
+    def adapt_graphql_to_http(
+        self, query: str, variables: dict[str, FlextApiTypes.JsonValue] | None = None
+    ) -> FlextResult[FlextApiModels.HttpRequest]:
+        """Adapt GraphQL query to HTTP request."""
+        return self.adapt_graphql_query_to_http_request(query, variables)
+
+
+class HttpToGraphQLAdapter(FlextApiAdapters):
+    """Backward compatibility wrapper for HTTP to GraphQL adaptation."""
+
+    def adapt_http_to_graphql(
+        self, request: FlextApiModels.HttpRequest
+    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+        """Adapt HTTP request to GraphQL format."""
+        return self.adapt_http_request_to_graphql(request)
+
+
+class WebSocketToHttpAdapter(FlextApiAdapters):
+    """Backward compatibility wrapper for WebSocket to HTTP adaptation."""
+
+    def adapt_websocket_to_http(
+        self, message: dict[str, FlextApiTypes.JsonValue]
+    ) -> FlextResult[FlextApiModels.HttpRequest]:
+        """Adapt WebSocket message to HTTP request."""
+        return self.adapt_websocket_message_to_http_request(message)
+
+
+class HttpToWebSocketAdapter(FlextApiAdapters):
+    """Backward compatibility wrapper for HTTP to WebSocket adaptation."""
+
+    def adapt_http_to_websocket(
+        self, request: FlextApiModels.HttpRequest
+    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+        """Adapt HTTP request to WebSocket message."""
+        return self.adapt_http_request_to_websocket(request)
+
+
+class OpenAPIToGraphQLAdapter(FlextApiAdapters):
+    """Backward compatibility wrapper for OpenAPI to GraphQL adaptation."""
+
+    def adapt_openapi_to_graphql(
+        self, openapi_spec: dict[str, FlextApiTypes.JsonValue]
+    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+        """Adapt OpenAPI specification to GraphQL schema."""
+        return self.adapt_openapi_spec_to_graphql_schema(openapi_spec)
+
+
+class GraphQLToOpenAPIAdapter(FlextApiAdapters):
+    """Backward compatibility wrapper for GraphQL to OpenAPI adaptation."""
+
+    def adapt_graphql_to_openapi(
+        self, graphql_schema: dict[str, FlextApiTypes.JsonValue]
+    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+        """Adapt GraphQL schema to OpenAPI specification."""
+        return self.adapt_graphql_schema_to_openapi_spec(graphql_schema)
+
+
+class JSONToMessagePackAdapter(FlextApiAdapters):
+    """Backward compatibility wrapper for JSON to MessagePack conversion."""
+
+    def json_to_msgpack(self, data: FlextApiTypes.JsonValue) -> FlextResult[bytes]:
+        """Convert JSON data to MessagePack format."""
+        return self.convert_json_to_msgpack(data)
+
+
+class MessagePackToJSONAdapter(FlextApiAdapters):
+    """Backward compatibility wrapper for MessagePack to JSON conversion."""
+
+    def msgpack_to_json(self, data: bytes) -> FlextResult[FlextApiTypes.JsonValue]:
+        """Convert MessagePack data to JSON format."""
+        return self.convert_msgpack_to_json(data)
+
+
+class LegacyApiAdapter(FlextApiAdapters):
+    """Backward compatibility wrapper for legacy API adaptation."""
+
+    def adapt_legacy_request(
+        self, request: FlextApiModels.HttpRequest
+    ) -> FlextResult[FlextApiModels.HttpRequest]:
+        """Adapt legacy API request to modern format."""
+        return self.adapt_legacy_api_request(request)
+
+
+class SchemaAdapter(FlextApiAdapters):
+    """Backward compatibility wrapper for schema adaptation."""
+
+    def adapt_schema(
+        self, source_schema: dict[str, FlextApiTypes.JsonValue], target_format: str
+    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+        """Adapt schema from one format to another."""
+        return self.adapt_schema_format(source_schema, target_format)
+
+
 __all__ = [
     "FlextApiAdapters",
+    # Backward compatibility exports
+    "GraphQLToHttpAdapter",
+    "GraphQLToOpenAPIAdapter",
+    "HttpToGraphQLAdapter",
+    "HttpToWebSocketAdapter",
+    "JSONToMessagePackAdapter",
+    "LegacyApiAdapter",
+    "MessagePackToJSONAdapter",
+    "OpenAPIToGraphQLAdapter",
+    "SchemaAdapter",
+    "WebSocketToHttpAdapter",
 ]

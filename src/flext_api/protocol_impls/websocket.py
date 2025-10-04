@@ -20,10 +20,10 @@ import time
 from collections.abc import Callable
 
 import websockets
+from flext_core import FlextResult, FlextTypes
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
-from flext_core import FlextResult, FlextTypes
 
 # Asyncio utilities
 # Synchronous alternatives for async functionality

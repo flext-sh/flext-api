@@ -7,8 +7,9 @@ from __future__ import annotations
 
 from unittest.mock import Mock
 
-from flext_api.protocols import FlextApiProtocols
 from flext_core import FlextResult
+
+from flext_api.protocols import FlextApiProtocols
 
 
 class TestFlextApiProtocols:

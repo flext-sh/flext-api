@@ -5,10 +5,10 @@ SPDX-License-Identifier: MIT
 """
 
 import pytest
+from flext_core import FlextConstants
 from pydantic import ValidationError
 
 from flext_api import FlextApiConfig
-from flext_core import FlextConstants
 
 
 class TestFlextApiConfigSimple:

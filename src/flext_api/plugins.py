@@ -12,8 +12,9 @@ SPDX-License-Identifier: MIT
 from abc import abstractmethod
 from typing import Any
 
-from flext_api.typings import FlextApiTypes
 from flext_core import FlextLogger, FlextResult, FlextTypes
+
+from flext_api.typings import FlextApiTypes
 
 
 class BasePlugin:
@@ -405,8 +406,8 @@ class AuthenticationPlugin(BasePlugin):
 
     def refresh_credentials(
         self,
-        _credentials: dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
+        _credentials: FlextTypes.Dict,
+    ) -> FlextResult[FlextTypes.Dict]:
         """Refresh authentication credentials.
 
         Args:
@@ -416,9 +417,7 @@ class AuthenticationPlugin(BasePlugin):
             FlextResult containing refreshed credentials or error
 
         """
-        return FlextResult[dict[str, object]].fail(
-            "Refresh not supported by this plugin"
-        )
+        return FlextResult[FlextTypes.Dict].fail("Refresh not supported by this plugin")
 
 
 # Plugin Manager for discovery and loading

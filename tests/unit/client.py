@@ -18,10 +18,10 @@ from typing import cast
 from unittest.mock import patch
 
 import pytest
+from flext_core import FlextResult, FlextTypes
 from flext_tests import FlextTestsMatchers
 
 from flext_api import FlextApiClient, FlextApiModels
-from flext_core import FlextResult, FlextTypes
 
 
 def test_client_build_and_error_formatting_on_invalid_url() -> None:

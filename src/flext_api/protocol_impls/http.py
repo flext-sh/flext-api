@@ -18,11 +18,11 @@ from __future__ import annotations
 import time
 
 import httpx
+from flext_core import FlextConstants, FlextResult, FlextTypes
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
 from flext_api.transports import HttpTransport
-from flext_core import FlextConstants, FlextResult, FlextTypes
 
 
 class HttpProtocolPlugin(ProtocolPlugin):
@@ -351,14 +351,12 @@ class HttpProtocolPlugin(ProtocolPlugin):
         self,
         request: FlextApiModels.HttpRequest,
         chunk_size: int = 8192,
-        **kwargs: float | str | bool,
     ) -> FlextResult[object]:
         """Send streaming HTTP request.
 
         Args:
             request: HTTP request model
             chunk_size: Size of chunks for streaming (bytes)
-            **kwargs: Additional request options
 
         Returns:
             FlextResult containing iterator of response chunks

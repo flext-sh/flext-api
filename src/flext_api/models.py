@@ -14,6 +14,13 @@ import json
 from pathlib import Path
 from typing import Self
 
+from flext_core import (
+    FlextConstants,
+    FlextModels,
+    FlextResult,
+    FlextTypes,
+    FlextUtilities,
+)
 from pydantic import (
     ConfigDict,
     Field,
@@ -25,13 +32,6 @@ from pydantic import (
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
-from flext_core import (
-    FlextConstants,
-    FlextModels,
-    FlextResult,
-    FlextTypes,
-    FlextUtilities,
-)
 
 
 class FlextApiModels(FlextModels):
@@ -1471,6 +1471,102 @@ class FlextApiModels(FlextModels):
 
         except Exception as e:
             return FlextResult[str].fail(f"URL validation failed: {e}")
+
+    # =========================================================================
+    # CQRS COMMAND AND EVENT MODELS - For handlers.py
+    # =========================================================================
+
+    # Command Models (extending FlextModels.Command)
+    class CreateResourceCommand(FlextModels.Command):
+        """Command to create a resource."""
+
+        resource_type: str
+        data: FlextTypes.Dict
+        metadata: FlextTypes.Dict | None = None
+
+    class UpdateResourceCommand(FlextModels.Command):
+        """Command to update a resource."""
+
+        resource_id: str
+        resource_type: str
+        data: FlextTypes.Dict
+        metadata: FlextTypes.Dict | None = None
+
+    class DeleteResourceCommand(FlextModels.Command):
+        """Command to delete a resource."""
+
+        resource_id: str
+        resource_type: str
+        metadata: FlextTypes.Dict | None = None
+
+    # Query Models (extending FlextModels.Query)
+    class GetResourceQuery(FlextModels.Query):
+        """Query to get a single resource."""
+
+        resource_id: str
+        resource_type: str
+        include_metadata: bool = False
+
+    class ListResourcesQuery(FlextModels.Query):
+        """Query to list resources."""
+
+        resource_type: str
+        filters: FlextTypes.Dict | None = None
+        pagination: FlextTypes.Dict | None = None
+        include_metadata: bool = False
+
+    class SearchResourcesQuery(FlextModels.Query):
+        """Query to search resources."""
+
+        resource_type: str
+        search_term: str
+        filters: FlextTypes.Dict | None = None
+        pagination: FlextTypes.Dict | None = None
+        include_metadata: bool = False
+
+    # Event Models (extending FlextModels.DomainEvent)
+    class ResourceCreatedEvent(FlextModels.DomainEvent):
+        """Event emitted when a resource is created."""
+
+        resource_id: str
+        resource_type: str
+        data: FlextTypes.Dict
+        metadata: FlextTypes.Dict | None = None
+
+    class ResourceUpdatedEvent(FlextModels.DomainEvent):
+        """Event emitted when a resource is updated."""
+
+        resource_id: str
+        resource_type: str
+        old_data: FlextTypes.Dict
+        new_data: FlextTypes.Dict
+        metadata: FlextTypes.Dict | None = None
+
+    class ResourceDeletedEvent(FlextModels.DomainEvent):
+        """Event emitted when a resource is deleted."""
+
+        resource_id: str
+        resource_type: str
+        metadata: FlextTypes.Dict | None = None
+
+    # Response Models for queries
+    class ResourceData(FlextModels.Value):
+        """Data model for a single resource."""
+
+        resource_id: str
+        resource_type: str
+        data: FlextTypes.Dict
+        metadata: FlextTypes.Dict | None = None
+        created_at: str
+        updated_at: str
+
+    class ResourceList(FlextModels.Value):
+        """Data model for a list of resources."""
+
+        resources: list[FlextTypes.Dict]
+        total_count: int
+        pagination: FlextTypes.Dict | None = None
+        metadata: FlextTypes.Dict | None = None
 
 
 __all__ = [

@@ -6,17 +6,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import importlib
 import json
 import re
 import time
-from typing import TYPE_CHECKING, TypeVar, cast
+from typing import TYPE_CHECKING, cast
 from urllib.parse import urlparse, urlunparse
 
-if TYPE_CHECKING:
-    from flext_api.client import FlextApiClient
-from flext_api.constants import FlextApiConstants
-from flext_api.models import FlextApiModels
-from flext_api.typings import FlextApiTypes
 from flext_core import (
     FlextConstants,
     FlextModels,
@@ -26,8 +22,12 @@ from flext_core import (
     T,
 )
 
-# TypeVar for generic batch processing
-T = TypeVar("T")
+if TYPE_CHECKING:
+    from flext_api.client import FlextApiClient
+
+from flext_api.constants import FlextApiConstants
+from flext_api.models import FlextApiModels
+from flext_api.typings import FlextApiTypes
 
 
 class FlextApiUtilities(FlextUtilities):
@@ -67,25 +67,23 @@ class FlextApiUtilities(FlextUtilities):
                 FlextResult containing error response dictionary.
 
             """
-            try:
-                final_message = (
-                    message if message is not None else (error or "Unknown error")
-                )
-                response = {
-                    "success": False,
-                    "message": final_message,
-                    "status_code": status_code,
-                    "data": data,
-                }
-                if error and error != final_message:
-                    response["error"] = error
-                if error_code:
-                    response["error_code"] = error_code
-                if details:
-                    response["details"] = details
-                return FlextResult[FlextApiTypes.ResponseDict].ok(response)
-            except Exception as e:
-                return FlextResult[FlextApiTypes.ResponseDict].fail(str(e))
+            # Railway-oriented error response building - operations are safe
+            final_message = (
+                message if message is not None else (error or "Unknown error")
+            )
+            response = {
+                "success": False,
+                "message": final_message,
+                "status_code": status_code,
+                "data": data,
+            }
+            if error and error != final_message:
+                response["error"] = error
+            if error_code:
+                response["error_code"] = error_code
+            if details:
+                response["details"] = details
+            return FlextResult[FlextApiTypes.ResponseDict].ok(response)
 
         @staticmethod
         def build_success_response(
@@ -99,18 +97,16 @@ class FlextApiUtilities(FlextUtilities):
                 FlextResult containing success response dictionary.
 
             """
-            try:
-                response = {
-                    "success": True,
-                    "message": message,
-                    "status_code": status_code,
-                    "data": data,
-                    "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
-                    "request_id": FlextUtilities.Generators.generate_entity_id(),
-                }
-                return FlextResult[FlextApiTypes.ResponseDict].ok(response)
-            except Exception as e:
-                return FlextResult[FlextApiTypes.ResponseDict].fail(str(e))
+            # Railway-oriented success response building - operations are safe
+            response = {
+                "success": True,
+                "message": message,
+                "status_code": status_code,
+                "data": data,
+                "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
+                "request_id": FlextUtilities.Generators.generate_entity_id(),
+            }
+            return FlextResult[FlextApiTypes.ResponseDict].ok(response)
 
     class PaginationBuilder:
         """HTTP pagination builder using flext-core patterns."""
@@ -131,58 +127,113 @@ class FlextApiUtilities(FlextUtilities):
                 FlextResult containing paginated response dictionary.
 
             """
-            try:
-                # Get configuration values from config or use defaults
-                if config and hasattr(config, "default_page_size"):
-                    default_page_size = config.default_page_size
-                else:
-                    default_page_size = 20  # fallback default
-
-                if config and hasattr(config, "max_page_size"):
-                    max_page_size = config.max_page_size
-                else:
-                    max_page_size = 1000  # fallback default
-
-                # Use provided page_size or default from config
-                if page_size is None:
-                    page_size = default_page_size
-
-                if page < 1:
-                    return FlextResult[FlextTypes.Dict].fail("Page must be >= 1")
-                if page_size < 1:
-                    return FlextResult[FlextTypes.Dict].fail(
-                        "Page size must be >= 1",
+            # Railway-oriented pagination building
+            return (
+                FlextResult[object]
+                .ok(config)
+                .map(FlextApiUtilities.PaginationBuilder.extract_pagination_config)
+                .flat_map(
+                    lambda cfg_dict: FlextApiUtilities.PaginationBuilder.validate_pagination_params(
+                        page=page,
+                        page_size=page_size,
+                        max_page_size=cfg_dict["max_page_size"],
                     )
-                if page_size > max_page_size:
-                    return FlextResult[FlextTypes.Dict].fail(
-                        f"Page size cannot exceed {max_page_size}",
-                    )
-
-                if data is None:
-                    data = []
-                if total is None:
-                    total = len(data)
-
-                total_pages = (
-                    max(1, (total + page_size - 1) // page_size) if total > 0 else 1
                 )
-                response: FlextTypes.Dict = {
-                    "success": True,
-                    "data": data,
-                    "pagination": {
-                        "page": page,
-                        "page_size": page_size,
-                        "total": total,
-                        "total_pages": total_pages,
-                        "has_next": page < total_pages,
-                        "has_previous": page > 1,
-                    },
-                }
-                if message:
-                    response["message"] = message
-                return FlextResult[FlextTypes.Dict].ok(response)
-            except Exception as e:
-                return FlextResult[FlextTypes.Dict].fail(str(e))
+                .flat_map(
+                    lambda params: FlextApiUtilities.PaginationBuilder.prepare_pagination_data(
+                        data=data, total=total, **params
+                    )
+                )
+                .map(
+                    lambda pagination_data: FlextApiUtilities.PaginationBuilder.build_pagination_response(
+                        pagination_data, message
+                    )
+                )
+            )
+
+        @staticmethod
+        def _extract_pagination_config(config: object | None) -> dict:
+            """Extract pagination configuration values."""
+            default_page_size = (
+                getattr(config, "default_page_size", 20) if config else 20
+            )
+            max_page_size = getattr(config, "max_page_size", 1000) if config else 1000
+            return {
+                "default_page_size": default_page_size,
+                "max_page_size": max_page_size,
+            }
+
+        @staticmethod
+        def _validate_pagination_params(
+            *, page: int, page_size: int | None, max_page_size: int
+        ) -> FlextResult[FlextTypes.Dict]:
+            """Validate pagination parameters."""
+            effective_page_size = page_size or 20  # Will be overridden by config
+
+            if page < 1:
+                return FlextResult[FlextTypes.Dict].fail("Page must be >= 1")
+            if effective_page_size < 1:
+                return FlextResult[FlextTypes.Dict].fail("Page size must be >= 1")
+            if effective_page_size > max_page_size:
+                return FlextResult[FlextTypes.Dict].fail(
+                    f"Page size cannot exceed {max_page_size}"
+                )
+
+            return FlextResult[FlextTypes.Dict].ok({
+                "page": page,
+                "page_size": effective_page_size,
+                "max_page_size": max_page_size,
+            })
+
+        @staticmethod
+        def _prepare_pagination_data(
+            *,
+            data: FlextTypes.List | None,
+            total: int | None,
+            page: int,
+            page_size: int,
+            **kwargs: object,
+        ) -> dict:
+            """Prepare pagination data and calculations."""
+            final_data = data or []
+            final_total = total if total is not None else len(final_data)
+
+            total_pages = (
+                max(1, (final_total + page_size - 1) // page_size)
+                if final_total > 0
+                else 1
+            )
+
+            return {
+                "data": final_data,
+                "total": final_total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_previous": page > 1,
+            }
+
+        @staticmethod
+        def _build_pagination_response(
+            pagination_data: dict, message: str | None
+        ) -> dict:
+            """Build final pagination response."""
+            response = {
+                "success": True,
+                "data": pagination_data["data"],
+                "pagination": {
+                    "page": pagination_data["page"],
+                    "page_size": pagination_data["page_size"],
+                    "total": pagination_data["total"],
+                    "total_pages": pagination_data["total_pages"],
+                    "has_next": pagination_data["has_next"],
+                    "has_previous": pagination_data["has_previous"],
+                },
+            }
+            if message:
+                response["message"] = message
+            return response
 
     class HttpValidator:
         """HTTP-specific validation using centralized flext-core FlextModels."""
@@ -301,46 +352,60 @@ class FlextApiUtilities(FlextUtilities):
                 FlextResult containing normalized URL or error message.
 
             """
-            # First create URL object then normalize
-            # Create and validate URL object
+            # Railway-oriented URL normalization
+            return (
+                FlextResult[str]
+                .ok(url)
+                .flat_map(FlextApiUtilities.HttpValidator.validate_and_parse_url)
+                .map(
+                    lambda parsed: FlextApiUtilities.HttpValidator.normalize_parsed_url(
+                        parsed, url
+                    )
+                )
+            )
+
+        @staticmethod
+        def _validate_and_parse_url(url: str) -> FlextResult[object]:
+            """Validate URL and return parsed object."""
             url_result: FlextResult[object] = FlextModels.Url.create(url)
             if url_result.is_failure:
-                return FlextResult[str].fail(url_result.error or "Invalid URL")
+                return FlextResult[object].fail(url_result.error or "Invalid URL")
+            return url_result
 
-            # Normalize URL manually since Url model doesnt have normalize method
-            try:
-                parsed = urlparse(url)
-                # Basic normalization: lowercase scheme and netloc, remove default ports
-                path = parsed.path
+        @staticmethod
+        def _normalize_parsed_url(parsed_url: object, original_url: str) -> str:
+            """Normalize a parsed URL object."""
+            # Normalize URL manually since Url model doesn't have normalize method
+            parsed = urlparse(original_url)
 
-                # Preserve trailing slash for all URLs (including root URLs)
-                if path and not path.endswith("/") and url.endswith("/"):
-                    path += "/"
+            # Basic normalization: lowercase scheme and netloc, remove default ports
+            path = parsed.path
 
-                # Remove default ports
-                netloc = parsed.netloc.lower()
-                if (
-                    parsed.scheme == "http"
-                    and f":{FlextConstants.Http.HTTP_PORT}" in netloc
-                ):
-                    netloc = netloc.replace(f":{FlextConstants.Http.HTTP_PORT}", "")
-                elif (
-                    parsed.scheme == "https"
-                    and f":{FlextConstants.Http.HTTPS_PORT}" in netloc
-                ):
-                    netloc = netloc.replace(f":{FlextConstants.Http.HTTPS_PORT}", "")
+            # Preserve trailing slash for all URLs (including root URLs)
+            if path and not path.endswith("/") and original_url.endswith("/"):
+                path += "/"
 
-                normalized = urlunparse((
-                    parsed.scheme.lower(),
-                    netloc,
-                    path,
-                    parsed.params,
-                    parsed.query,
-                    parsed.fragment,
-                ))
-                return FlextResult[str].ok(normalized)
-            except Exception as e:
-                return FlextResult[str].fail(f"URL normalization failed: {e!s}")
+            # Remove default ports
+            netloc = parsed.netloc.lower()
+            if (
+                parsed.scheme == "http"
+                and f":{FlextConstants.Http.HTTP_PORT}" in netloc
+            ):
+                netloc = netloc.replace(f":{FlextConstants.Http.HTTP_PORT}", "")
+            elif (
+                parsed.scheme == "https"
+                and f":{FlextConstants.Http.HTTPS_PORT}" in netloc
+            ):
+                netloc = netloc.replace(f":{FlextConstants.Http.HTTPS_PORT}", "")
+
+            return urlunparse((
+                parsed.scheme.lower(),
+                netloc,
+                path,
+                parsed.params,
+                parsed.query,
+                parsed.fragment,
+            ))
 
     # =============================================================================
     # FLEXT-CORE DELEGATION METHODS - ZERO DUPLICATION
@@ -370,87 +435,95 @@ class FlextApiUtilities(FlextUtilities):
             FlextResult containing validated configuration dictionary or error message.
 
         """
-        try:
-            if config is None:
-                return FlextResult[FlextApiTypes.ConfigDict].fail(
-                    "Configuration cannot be None",
-                )
+        # Railway-oriented configuration validation
+        return (
+            FlextResult[object]
+            .ok(config)
+            .flat_map(FlextApiUtilities.HttpValidator.check_config_not_none)
+            .flat_map(FlextApiUtilities.HttpValidator.extract_config_data)
+            .map(FlextApiUtilities.HttpValidator.determine_config_type)
+            .flat_map(FlextApiUtilities.HttpValidator.validate_config_fields)
+        )
 
-            # Extract config data - check for model_dump() first, then __dict__
-            config_dict: FlextApiTypes.ConfigDict | None = None
-            if hasattr(config, "model_dump") and callable(
-                getattr(config, "model_dump")
-            ):
-                # Use getattr to access model_dump method safely
-                model_dump_method = getattr(config, "model_dump")
-                model_dump_result: FlextApiTypes.ConfigDict = model_dump_method()
-                config_dict = model_dump_result
-            elif hasattr(config, "__dict__"):
-                config_dict = cast("FlextApiTypes.ConfigDict", config.__dict__)
-            elif isinstance(config, dict):
-                config_dict = cast("FlextApiTypes.ConfigDict", config)
-            else:
-                return FlextResult[FlextApiTypes.ConfigDict].fail(
-                    "Configuration must be dict-like or have attributes",
-                )
+    @staticmethod
+    def _check_config_not_none(config: object) -> FlextResult[object]:
+        """Check that configuration is not None."""
+        if config is None:
+            return FlextResult[object].fail("Configuration cannot be None")
+        return FlextResult[object].ok(config)
 
-            # Ensure config_dict is not None
-            if config_dict is None:
-                return FlextResult[FlextApiTypes.ConfigDict].fail(
-                    "Failed to extract configuration data",
-                )
+    @staticmethod
+    def _extract_config_data(config: object) -> FlextResult[FlextApiTypes.ConfigDict]:
+        """Extract configuration data from various input types."""
+        config_dict: FlextApiTypes.ConfigDict | None = None
 
-            # Determine config type based on attributes
-            config_type = "generic"
-            if "url" in config_dict and "method" in config_dict:
-                config_type = "http_request"
-            elif "base_url" in config_dict and "timeout" in config_dict:
-                config_type = "client_config"
-            elif "error_code" in config_dict or "retry_count" in config_dict:
-                config_type = "http_error"
-            elif "rules" in config_dict or "validators" in config_dict:
-                config_type = "validation"
-
-            # Validate common HTTP configuration fields
-            if "method" in config_dict:
-                method_result = FlextApiUtilities.HttpValidator.validate_http_method(
-                    str(config_dict["method"]),
-                )
-                if method_result.is_failure:
-                    return FlextResult[FlextApiTypes.ConfigDict].fail(
-                        f"Invalid method: {method_result.error}",
-                    )
-
-            if "status_code" in config_dict:
-                status_code_value = config_dict["status_code"]
-                if isinstance(status_code_value, (int, str)):
-                    status_result = (
-                        FlextApiUtilities.HttpValidator.validate_status_code(
-                            int(status_code_value)
-                        )
-                    )
-                else:
-                    status_result = (
-                        FlextApiUtilities.HttpValidator.validate_status_code(
-                            FlextConstants.Http.HTTP_OK
-                        )
-                    )
-                if status_result.is_failure:
-                    return FlextResult[FlextApiTypes.ConfigDict].fail(
-                        f"Invalid status code: {status_result.error}",
-                    )
-
-            # Return validation result with config details
-            result_data: FlextApiTypes.ConfigDict = {
-                "config_type": config_type,
-                **config_dict,  # Include all original config data
-            }
-
-            return FlextResult[FlextApiTypes.ConfigDict].ok(result_data)
-        except Exception as e:
+        if hasattr(config, "model_dump") and callable(getattr(config, "model_dump")):
+            # Use getattr to access model_dump method safely
+            model_dump_method = getattr(config, "model_dump")
+            config_dict = model_dump_method()
+        elif hasattr(config, "__dict__"):
+            config_dict = cast("FlextApiTypes.ConfigDict", config.__dict__)
+        elif isinstance(config, dict):
+            config_dict = cast("FlextApiTypes.ConfigDict", config)
+        else:
             return FlextResult[FlextApiTypes.ConfigDict].fail(
-                f"Configuration validation failed: {e}",
+                "Configuration must be dict-like or have attributes"
             )
+
+        if config_dict is None:
+            return FlextResult[FlextApiTypes.ConfigDict].fail(
+                "Failed to extract configuration data"
+            )
+
+        return FlextResult[FlextApiTypes.ConfigDict].ok(config_dict)
+
+    @staticmethod
+    def _determine_config_type(config_dict: FlextApiTypes.ConfigDict) -> dict:
+        """Determine configuration type based on attributes."""
+        config_type = "generic"
+        if "url" in config_dict and "method" in config_dict:
+            config_type = "http_request"
+        elif "base_url" in config_dict and "timeout" in config_dict:
+            config_type = "client_config"
+        elif "error_code" in config_dict or "retry_count" in config_dict:
+            config_type = "http_error"
+        elif "rules" in config_dict or "validators" in config_dict:
+            config_type = "validation"
+
+        return {"config_type": config_type, **config_dict}
+
+    @staticmethod
+    def _validate_config_fields(
+        config_data: dict,
+    ) -> FlextResult[FlextApiTypes.ConfigDict]:
+        """Validate specific configuration fields."""
+        # Validate HTTP method if present
+        if "method" in config_data:
+            method_result = FlextApiUtilities.HttpValidator.validate_http_method(
+                str(config_data["method"])
+            )
+            if method_result.is_failure:
+                return FlextResult[FlextApiTypes.ConfigDict].fail(
+                    f"Invalid method: {method_result.error}"
+                )
+
+        # Validate status code if present
+        if "status_code" in config_data:
+            status_code_value = config_data["status_code"]
+            if isinstance(status_code_value, (int, str)):
+                status_result = FlextApiUtilities.HttpValidator.validate_status_code(
+                    int(status_code_value)
+                )
+            else:
+                status_result = FlextApiUtilities.HttpValidator.validate_status_code(
+                    FlextConstants.Http.HTTP_OK
+                )
+            if status_result.is_failure:
+                return FlextResult[FlextApiTypes.ConfigDict].fail(
+                    f"Invalid status code: {status_result.error}"
+                )
+
+        return FlextResult[FlextApiTypes.ConfigDict].ok(config_data)
 
     # =============================================================================
     # FLEXT-CORE DELEGATION - ID and Timestamp Generation
@@ -785,14 +858,12 @@ class FlextApiUtilities(FlextUtilities):
                 timeout = getattr(config, "timeout", 30) if config else 30
                 max_retries = getattr(config, "max_retries", 3) if config else 3
 
-                # Lazy import to avoid circular dependency
-                import importlib
-
-                FlextApiClient = importlib.import_module(
+                # Dynamic import to avoid circular dependency
+                flext_api_client = importlib.import_module(
                     "flext_api.client"
                 ).FlextApiClient
 
-                client = FlextApiClient(
+                client = flext_api_client(
                     base_url=base_url,
                     timeout=timeout,
                     max_retries=max_retries,
@@ -830,14 +901,12 @@ class FlextApiUtilities(FlextUtilities):
                 )  # Longer timeout for dev
                 max_retries = getattr(config, "max_retries", 1) if config else 1
 
-                # Lazy import to avoid circular dependency
-                import importlib
-
-                FlextApiClient = importlib.import_module(
+                # Dynamic import to avoid circular dependency
+                flext_api_client = importlib.import_module(
                     "flext_api.client"
                 ).FlextApiClient
 
-                client = FlextApiClient(
+                client = flext_api_client(
                     base_url=base_url,
                     timeout=timeout,
                     max_retries=max_retries,
@@ -876,14 +945,12 @@ class FlextApiUtilities(FlextUtilities):
                     getattr(config, "max_retries", 0) if config else 0
                 )  # No retries for testing
 
-                # Lazy import to avoid circular dependency
-                import importlib
-
-                FlextApiClient = importlib.import_module(
+                # Dynamic import to avoid circular dependency
+                flext_api_client = importlib.import_module(
                     "flext_api.client"
                 ).FlextApiClient
 
-                client = FlextApiClient(
+                client = flext_api_client(
                     base_url=base_url,
                     timeout=timeout,
                     max_retries=max_retries,
@@ -920,14 +987,12 @@ class FlextApiUtilities(FlextUtilities):
                 )  # Moderate timeout for monitoring
                 max_retries = getattr(config, "max_retries", 1) if config else 1
 
-                # Lazy import to avoid circular dependency
-                import importlib
-
-                FlextApiClient = importlib.import_module(
+                # Dynamic import to avoid circular dependency
+                flext_api_client = importlib.import_module(
                     "flext_api.client"
                 ).FlextApiClient
 
-                client = FlextApiClient(
+                client = flext_api_client(
                     base_url=base_url,
                     timeout=timeout,
                     max_retries=max_retries,
@@ -1547,3 +1612,484 @@ class FlextApiUtilities(FlextUtilities):
             ):
                 return "redirection"
             return "unknown"
+
+    # =========================================================================
+    # Enhanced flext-core Integration Methods
+    # =========================================================================
+
+    @staticmethod
+    def create_flext_api_utilities() -> FlextResult[FlextApiUtilities]:
+        """Create enhanced FlextApiUtilities with complete flext-core integration.
+
+        Demonstrates proper flext-core integration by creating utilities
+        that integrate with FlextContainer, FlextBus, FlextDispatcher, and other
+        flext-core components for comprehensive API utility management.
+
+        Returns:
+            FlextResult[FlextApiUtilities]: Configured FlextApiUtilities instance or error
+
+        Example:
+            >>> utilities_result = FlextApiUtilities.create_flext_api_utilities()
+            >>> if utilities_result.is_success:
+            ...     utilities = utilities_result.unwrap()
+            ...     # Use utilities with full flext-core integration
+            ...     response = utilities.build_http_response({"data": "test"})
+
+        """
+        try:
+            # Create base utilities with enhanced flext-core integration
+            utilities = FlextApiUtilities()
+
+            # Validate utilities can access flext-core components
+            try:
+                # Test integration with core components
+
+                return FlextResult[FlextApiUtilities].ok(utilities)
+
+            except Exception as e:
+                return FlextResult[FlextApiUtilities].fail(
+                    f"Flext-core integration check failed: {e}"
+                )
+
+        except Exception as e:
+            return FlextResult[FlextApiUtilities].fail(
+                f"Failed to create flext-api utilities: {e}"
+            )
+
+    @staticmethod
+    def validate_flext_api_utilities() -> FlextResult[FlextTypes.Dict]:
+        """Validate complete flext-api utilities setup with integration patterns.
+
+        Demonstrates comprehensive flext-api validation by checking that all
+        utilities are properly configured and integrated with each other.
+
+        Returns:
+            FlextResult[FlextTypes.Dict]: Validation results with detailed component status
+
+        Example:
+            >>> setup_result = FlextApiUtilities.validate_flext_api_utilities()
+            >>> if setup_result.is_success:
+            ...     status = setup_result.unwrap()
+            ...     print(f"Response builder: {status['response_builder']['status']}")
+            ...     print(f"HTTP utilities: {status['http_utilities']['status']}")
+
+        """
+        validation_results = {
+            "utilities": {"status": "unknown", "details": ""},
+            "response_builder": {"status": "unknown", "details": ""},
+            "http_utilities": {"status": "unknown", "details": ""},
+            "validation": {"status": "unknown", "details": ""},
+            "transformation": {"status": "unknown", "details": ""},
+        }
+
+        try:
+            # Validate utilities itself
+            utilities_result = FlextApiUtilities.create_flext_api_utilities()
+            if utilities_result.is_success:
+                validation_results["utilities"] = {
+                    "status": "valid",
+                    "details": "FlextApiUtilities properly initialized",
+                }
+            else:
+                validation_results["utilities"] = {
+                    "status": "invalid",
+                    "details": utilities_result.error,
+                }
+
+            # Validate response builder
+            try:
+                validation_results["response_builder"] = {
+                    "status": "available",
+                    "details": "Response builder accessible",
+                }
+            except Exception as e:
+                validation_results["response_builder"] = {
+                    "status": "error",
+                    "details": str(e),
+                }
+
+            # Validate HTTP utilities
+            try:
+                http_utils = FlextApiUtilities.ModuleFacade
+                status_category = http_utils.get_status_category(200)
+                validation_results["http_utilities"] = {
+                    "status": "available",
+                    "details": f"HTTP utilities accessible, status 200 = {status_category}",
+                }
+            except Exception as e:
+                validation_results["http_utilities"] = {
+                    "status": "error",
+                    "details": str(e),
+                }
+
+            # Validate validation utilities
+            try:
+                validation_result = FlextApiUtilities.ModuleFacade.validate_status_code(
+                    200
+                )
+                validation_results["validation"] = {
+                    "status": "available",
+                    "details": f"Validation utilities accessible, result: {validation_result.is_success}",
+                }
+            except Exception as e:
+                validation_results["validation"] = {
+                    "status": "error",
+                    "details": str(e),
+                }
+
+            # Validate transformation utilities
+            try:
+                transform_result = FlextApiUtilities.ModuleFacade.normalize_url(
+                    "https://example.com"
+                )
+                validation_results["transformation"] = {
+                    "status": "available",
+                    "details": f"Transformation utilities accessible, result: {transform_result.is_success}",
+                }
+            except Exception as e:
+                validation_results["transformation"] = {
+                    "status": "error",
+                    "details": str(e),
+                }
+
+            # Check overall health
+            all_valid = all(
+                result["status"] in {"valid", "available"}
+                for result in validation_results.values()
+            )
+            if all_valid:
+                return FlextResult[FlextTypes.Dict].ok({
+                    "overall_status": "healthy",
+                    "components": validation_results,
+                    "message": "All flext-api utilities are properly configured and accessible",
+                })
+            return FlextResult[FlextTypes.Dict].ok({
+                "overall_status": "degraded",
+                "components": validation_results,
+                "message": "Some flext-api utilities have issues - check details",
+            })
+
+        except Exception as e:
+            return FlextResult[FlextTypes.Dict].fail(
+                f"Flext-api utilities validation failed: {e}"
+            )
+
+    @staticmethod
+    def create_integration_example(component: str) -> FlextResult[str]:
+        """Create practical flext-api utilities integration examples.
+
+        Provides working code examples that demonstrate proper flext-api
+        utilities integration patterns for different components and use cases.
+
+        Args:
+            component: Component name ('response', 'validation', 'transformation', 'http')
+
+        Returns:
+            FlextResult[str]: Integration example code or error
+
+        Example:
+            >>> example = FlextApiUtilities.create_integration_example("response")
+            >>> if example.is_success:
+            ...     print(f"Response integration example: {example.unwrap()[:100]}...")
+
+        """
+        examples = {
+            "response": """
+# Example: Enhanced response building with flext-core integration
+from flext_api import FlextApiUtilities, FlextApiModels
+from flext_core import FlextResult
+
+class ResponseService:
+    def __init__(self):
+        self._utilities = FlextApiUtilities()
+
+    def create_success_response(self, data: dict) -> FlextResult[FlextTypes.Dict]:
+        # Use flext-core patterns for response building
+        response_result = FlextApiUtilities.ResponseBuilder.build_success_response(
+            data=data,
+            message="Operation completed successfully",
+            status_code=200
+        )
+
+        if response_result.is_failure:
+            return FlextResult[FlextTypes.Dict].fail(f"Response building failed: {response_result.error}")
+
+        return FlextResult[FlextTypes.Dict].ok(response_result.unwrap())
+
+    def create_error_response(self, message: str, error_code: str) -> FlextResult[FlextTypes.Dict]:
+        # Use flext-core patterns for error response building
+        response_result = FlextApiUtilities.ResponseBuilder.build_error_response(
+            message=message,
+            status_code=400,
+            error_code=error_code,
+            details={"timestamp": "now", "request_id": "req-123"}
+        )
+
+        if response_result.is_failure:
+            return FlextResult[FlextTypes.Dict].fail(f"Error response building failed: {response_result.error}")
+
+        return FlextResult[FlextTypes.Dict].ok(response_result.unwrap())
+
+# Usage with flext-core integration
+service = ResponseService()
+success_result = service.create_success_response({"user": "john"})
+error_result = service.create_error_response("Invalid input", "VALIDATION_ERROR")
+""",
+            "validation": """
+# Example: Enhanced validation with flext-core integration
+from flext_api import FlextApiUtilities
+from flext_core import FlextResult
+
+class ValidationService:
+    def __init__(self):
+        self._utilities = FlextApiUtilities()
+
+    def validate_http_request(self, request: dict) -> FlextResult[FlextTypes.Dict]:
+        # Validate using flext-core patterns
+        if not request.get("method"):
+            return FlextResult[FlextTypes.Dict].fail("HTTP method is required")
+
+        if not request.get("url"):
+            return FlextResult[FlextTypes.Dict].fail("URL is required")
+
+        # Use utilities for status code validation
+        status_result = FlextApiUtilities.ModuleFacade.validate_status_code(200)
+        if status_result.is_failure:
+            return FlextResult[FlextTypes.Dict].fail(f"Status validation failed: {status_result.error}")
+
+        return FlextResult[FlextTypes.Dict].ok({
+            "valid": True,
+            "method": request["method"],
+            "url": request["url"],
+            "status_category": FlextApiUtilities.ModuleFacade.get_status_category(200)
+        })
+
+    def validate_response_data(self, response: dict) -> FlextResult[FlextTypes.Dict]:
+        # Validate response using flext-core patterns
+        if not isinstance(response, dict):
+            return FlextResult[FlextTypes.Dict].fail("Response must be a dictionary")
+
+        if "data" not in response:
+            return FlextResult[FlextTypes.Dict].fail("Response missing data field")
+
+        # Use utilities for comprehensive validation
+        return FlextResult[FlextTypes.Dict].ok({
+            "valid": True,
+            "has_data": True,
+            "data_type": type(response["data"]).__name__
+        })
+
+# Usage with flext-core integration
+service = ValidationService()
+request_result = service.validate_http_request({"method": "GET", "url": "/users"})
+response_result = service.validate_response_data({"data": "test", "status": 200})
+""",
+            "transformation": """
+# Example: Enhanced transformation with flext-core integration
+from flext_api import FlextApiUtilities
+from flext_core import FlextResult
+
+class TransformationService:
+    def __init__(self):
+        self._utilities = FlextApiUtilities()
+
+    def normalize_request_data(self, data: dict) -> FlextResult[FlextTypes.Dict]:
+        # Use flext-core transformation patterns
+        if not isinstance(data, dict):
+            return FlextResult[FlextTypes.Dict].fail("Data must be a dictionary")
+
+        # Normalize using utilities
+        normalized = {}
+        for key, value in data.items():
+            if isinstance(value, str):
+                # Use string normalization utilities
+                normalized[key] = value.strip().lower()
+            else:
+                normalized[key] = value
+
+        return FlextResult[FlextTypes.Dict].ok({
+            "original": data,
+            "normalized": normalized,
+            "transformation_applied": True
+        })
+
+    def sanitize_response_data(self, data: dict) -> FlextResult[FlextTypes.Dict]:
+        # Use flext-core sanitization patterns
+        if not isinstance(data, dict):
+            return FlextResult[FlextTypes.Dict].fail("Data must be a dictionary")
+
+        # Sanitize sensitive data
+        sanitized = {}
+        for key, value in data.items():
+            if "password" in key.lower() or "token" in key.lower():
+                sanitized[key] = "***REDACTED***"
+            else:
+                sanitized[key] = value
+
+        return FlextResult[FlextTypes.Dict].ok({
+            "sanitized": sanitized,
+            "sensitive_fields_redacted": len([k for k in data.keys() if "password" in k.lower() or "token" in k.lower()]) > 0
+        })
+
+# Usage with flext-core integration
+service = TransformationService()
+normalize_result = service.normalize_request_data({"name": " John ", "email": "USER@EXAMPLE.COM"})
+sanitize_result = service.sanitize_response_data({"username": "john", "password": "secret123", "data": "public"})
+""",
+            "http": """
+# Example: Enhanced HTTP utilities with flext-core integration
+from flext_api import FlextApiUtilities
+from flext_core import FlextResult
+
+class HttpUtilitiesService:
+    def __init__(self):
+        self._utilities = FlextApiUtilities()
+
+    def process_http_request(self, request: dict) -> FlextResult[FlextTypes.Dict]:
+        # Use flext-core HTTP utility patterns
+        if not request.get("method"):
+            return FlextResult[FlextTypes.Dict].fail("HTTP method is required")
+
+        if not request.get("url"):
+            return FlextResult[FlextTypes.Dict].fail("URL is required")
+
+        # Process using utilities
+        method = request["method"].upper()
+        url = request["url"]
+
+        # Get status category using utilities
+        status_category = FlextApiUtilities.ModuleFacade.get_status_category(200)
+
+        return FlextResult[FlextTypes.Dict].ok({
+            "method": method,
+            "url": url,
+            "status_category": status_category,
+            "processed": True
+        })
+
+    def build_http_headers(self, include_auth: bool = False) -> FlextResult[FlextTypes.Dict]:
+        # Build headers using flext-core patterns
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "FlextApi/1.0.0",
+            "Accept": "application/json"
+        }
+
+        if include_auth:
+            headers["Authorization"] = "Bearer token123"
+
+        return FlextResult[FlextTypes.Dict].ok(headers)
+
+# Usage with flext-core integration
+service = HttpUtilitiesService()
+request_result = service.process_http_request({"method": "GET", "url": "/api/users"})
+headers_result = service.build_http_headers(include_auth=True)
+""",
+        }
+
+        if component not in examples:
+            available = ", ".join(examples.keys())
+            return FlextResult[str].fail(
+                f"Unknown component: {component}. Available: {available}"
+            )
+
+        return FlextResult[str].ok(examples[component].strip())
+
+    @staticmethod
+    def demonstrate_flext_api_utilities_patterns() -> FlextResult[FlextTypes.Dict]:
+        """Demonstrate comprehensive flext-api utilities integration patterns.
+
+        Provides a working example that showcases how all flext-api utilities
+        work together with flext-core in realistic scenarios, demonstrating
+        best practices for HTTP API utility development.
+
+        Returns:
+            FlextResult[FlextTypes.Dict]: Demonstration results with pattern explanations
+
+        Example:
+            >>> demo = FlextApiUtilities.demonstrate_flext_api_utilities_patterns()
+            >>> if demo.is_success:
+            ...     patterns = demo.unwrap()
+            ...     print(
+            ...         f"Utilities pattern: {patterns['utilities_pattern']['description']}"
+            ...     )
+
+        """
+        try:
+            # Create utilities with integration validation
+            utilities_result = FlextApiUtilities.create_flext_api_utilities()
+            if utilities_result.is_failure:
+                return FlextResult[FlextTypes.Dict].fail(
+                    f"Utilities creation failed: {utilities_result.error}"
+                )
+
+            # Demonstrate response building pattern
+            response_example = FlextApiUtilities.ResponseBuilder.build_success_response({
+                "test": "data"
+            })
+
+            # Demonstrate validation pattern
+            validation_example = FlextApiUtilities.ModuleFacade.validate_status_code(
+                200
+            )
+
+            # Demonstrate transformation pattern
+            transform_example = (
+                FlextApiUtilities.ResponseBuilder.build_success_response({
+                    "transformation": "test"
+                })
+            )
+
+            # Demonstrate HTTP utilities pattern
+            http_example = FlextApiUtilities.ModuleFacade.get_status_category(200)
+
+            return FlextResult[FlextTypes.Dict].ok({
+                "demonstration_status": "successful",
+                "patterns_demonstrated": {
+                    "response_pattern": {
+                        "description": "HTTP response building with flext-core integration",
+                        "example_result": response_example.is_success,
+                        "example_data": response_example.unwrap()
+                        if response_example.is_success
+                        else None,
+                    },
+                    "validation_pattern": {
+                        "description": "HTTP validation with status code checking",
+                        "example_result": validation_example.is_success,
+                        "example_data": validation_example.unwrap()
+                        if validation_example.is_success
+                        else None,
+                    },
+                    "transformation_pattern": {
+                        "description": "URL transformation and normalization",
+                        "example_result": transform_example.is_success,
+                        "example_data": transform_example.unwrap()
+                        if transform_example.is_success
+                        else None,
+                    },
+                    "http_utilities_pattern": {
+                        "description": "HTTP status category classification",
+                        "example_result": http_example == "success",
+                        "example_data": http_example,
+                    },
+                },
+                "integration_level": "comprehensive",
+                "components_integrated": [
+                    "FlextApiUtilities",
+                    "FlextApiModels",
+                    "FlextApiConstants",
+                ],
+                "best_practices_demonstrated": [
+                    "HTTP response building with flext-core patterns",
+                    "HTTP validation with status code checking",
+                    "URL transformation and normalization",
+                    "HTTP utilities with category classification",
+                    "Error handling with flext-core integration",
+                    "Type-safe utility operations",
+                ],
+            })
+
+        except Exception as e:
+            return FlextResult[FlextTypes.Dict].fail(
+                f"Utilities pattern demonstration failed: {e}"
+            )

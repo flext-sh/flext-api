@@ -296,6 +296,207 @@ class FlextApiTypes(FlextTypes):
         # Plugin registry
         RegistryEntry = dict[str, str | object | dict[str, FlextTypes.JsonValue]]
 
+    # =========================================================================
+    # ENHANCED API TYPES - Advanced flext-core integration types
+    # =========================================================================
+
+    class Async:
+        """Enhanced async types for HTTP API operations with flext-core integration.
+
+        This namespace provides advanced async types that integrate with flext-core
+        async patterns for modern HTTP API development.
+
+        Examples:
+            Async HTTP operations with proper typing:
+
+            >>> async def fetch_data(url: Async.HttpUrl) -> Async.HttpResponse:
+            ...     response = await http_client.get(url)
+            ...     return {"data": response.json(), "status": response.status_code}
+            >>>
+            >>> async def batch_process(
+            ...     requests: Async.HttpRequestList,
+            ... ) -> Async.HttpResult:
+            ...     return await asyncio.gather(*[
+            ...         process_request(req) for req in requests
+            ...     ])
+
+        """
+
+        type HttpUrl = str
+        type HttpMethod = str
+        type HttpHeaders = dict[str, str]
+        type HttpParams = dict[str, str | FlextTypes.StringList]
+        type HttpData = str | bytes | dict[str, FlextTypes.JsonValue]
+
+        type HttpRequest = dict[
+            str, HttpUrl | HttpMethod | HttpHeaders | HttpParams | HttpData
+        ]
+        type HttpResponse = dict[str, int | HttpData | HttpHeaders | float]
+        type HttpRequestList = list[HttpRequest]
+        type HttpResponseList = list[HttpResponse]
+
+        type HttpResult = dict[str, HttpResponse | Exception | str]
+        type HttpBatchResult = dict[str, list[HttpResult]]
+
+        type StreamingResponse = dict[str, bytes | str | bool]
+        type StreamingChunk = dict[str, bytes | int | float]
+
+    class ErrorHandling:
+        """Enhanced error handling types for HTTP API operations.
+
+        This namespace provides comprehensive error handling types that integrate
+        with flext-core error handling patterns for robust HTTP API error management.
+
+        Examples:
+            HTTP error classification and handling:
+
+            >>> def classify_http_error(
+            ...     error: ErrorHandling.HttpError,
+            ... ) -> ErrorHandling.HttpErrorCategory:
+            ...     if error.status_code >= 500:
+            ...         return "server_error"
+            ...     elif error.status_code >= 400:
+            ...         return "client_error"
+            ...     return "unknown"
+            >>>
+            >>> def handle_http_error(
+            ...     error: ErrorHandling.HttpError,
+            ... ) -> ErrorHandling.HttpErrorRecovery:
+            ...     if error.category == "server_error":
+            ...         return {"action": "retry", "delay": 1.0}
+            ...     return {"action": "fail", "message": error.message}
+
+        """
+
+        type HttpError = dict[str, int | str | dict[str, FlextTypes.JsonValue]]
+        type HttpErrorCategory = str
+        type HttpErrorRecovery = dict[
+            str, str | float | dict[str, FlextTypes.JsonValue]
+        ]
+
+        type HttpErrorHandler = dict[str, HttpErrorCategory | HttpErrorRecovery]
+        type HttpErrorRegistry = dict[str, HttpErrorHandler]
+
+        type HttpRetryStrategy = dict[str, int | float | str]
+        type HttpCircuitBreaker = dict[str, bool | int | float | str]
+
+    class Service:
+        """Enhanced service layer types for HTTP API operations.
+
+        This namespace provides comprehensive service types that integrate
+        with flext-core service patterns for robust HTTP API service management.
+
+        Examples:
+            Service registration and discovery:
+
+            >>> services: Service.HttpServiceRegistry = {
+            ...     "user_service": UserService(),
+            ...     "auth_service": AuthService(),
+            ...     "notification_service": NotificationService(),
+            ... }
+            >>>
+            >>> service_configs: Service.HttpServiceConfig = {
+            ...     "user_service": {"timeout": 30, "retries": 3},
+            ...     "auth_service": {"timeout": 15, "retries": 2},
+            ... }
+
+        """
+
+        type HttpServiceRegistry = FlextTypes.Dict
+        type HttpServiceConfig = dict[str, dict[str, int | float | str]]
+        type HttpServiceFactory = FlextTypes.Dict
+
+        # Enhanced service lifecycle types
+        type HttpServiceLifecycle = str
+        type HttpServiceHealth = dict[str, bool | str | int]
+        type HttpServiceStatus = dict[
+            str, HttpServiceLifecycle | dict[str, int | float]
+        ]
+
+        # Enhanced service communication types
+        type HttpServiceEndpoint = str
+        type HttpServiceProtocol = str
+        type HttpServiceContract = dict[str, HttpServiceEndpoint | HttpServiceProtocol]
+
+    class Validation:
+        """Enhanced validation types for HTTP API operations.
+
+        This namespace provides comprehensive validation types that integrate
+        with flext-core validation patterns for robust HTTP API validation.
+
+        Examples:
+            HTTP request/response validation:
+
+            >>> def validate_request_schema(
+            ...     request: Validation.HttpRequestSchema,
+            ... ) -> Validation.HttpValidationResult:
+            ...     if not request.get("method"):
+            ...         return {"valid": False, "errors": ["method required"]}
+            ...     return {"valid": True, "warnings": []}
+            >>>
+            >>> def validate_response_schema(
+            ...     response: Validation.HttpResponseSchema,
+            ... ) -> Validation.HttpValidationResult:
+            ...     if response.get("status_code", 200) >= 400:
+            ...         return {"valid": False, "errors": ["response error"]}
+            ...     return {"valid": True, "warnings": []}
+
+        """
+
+        type HttpRequestSchema = dict[
+            str, str | int | bool | dict[str, FlextTypes.JsonValue]
+        ]
+        type HttpResponseSchema = dict[str, int | str | dict[str, FlextTypes.JsonValue]]
+        type HttpValidationResult = dict[str, bool | list[str]]
+
+        type HttpFieldValidator = FlextTypes.Dict
+        type HttpSchemaValidator = dict[str, HttpFieldValidator]
+
+        type HttpValidationRule = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type HttpValidationRules = list[HttpValidationRule]
+
+    class Processing:
+        """Enhanced processing types for HTTP API operations.
+
+        This namespace provides comprehensive processing types that integrate
+        with flext-core processing patterns for robust HTTP API processing.
+
+        Examples:
+            HTTP request processing pipeline:
+
+            >>> def process_request_pipeline(
+            ...     request: Processing.HttpRequestPipeline,
+            ... ) -> Processing.HttpProcessingResult:
+            ...     # Validate -> Transform -> Enrich -> Respond
+            ...     return {
+            ...         "processed": True,
+            ...         "steps": ["validation", "transformation", "enrichment"],
+            ...         "result": request,
+            ...     }
+            >>>
+            >>> def batch_process_requests(
+            ...     requests: Processing.HttpRequestBatch,
+            ... ) -> Processing.HttpBatchResult:
+            ...     return {
+            ...         "processed": len(requests),
+            ...         "successful": len(requests),
+            ...         "failed": 0,
+            ...         "results": requests,
+            ...     }
+
+        """
+
+        type HttpRequestPipeline = list[FlextTypes.Dict]
+        type HttpResponsePipeline = list[FlextTypes.Dict]
+        type HttpProcessingResult = dict[str, bool | list[str] | object]
+
+        type HttpRequestBatch = list[FlextTypes.Dict]
+        type HttpResponseBatch = list[FlextTypes.Dict]
+        type HttpBatchResult = dict[str, int | list[object]]
+
+        type HttpMiddlewareConfig = dict[str, object | FlextTypes.Dict]
+        type HttpMiddlewarePipeline = list[HttpMiddlewareConfig]
+
 
 # =============================================================================
 # PUBLIC API EXPORTS - API types and classes

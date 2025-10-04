@@ -6,8 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.protocols import FlextApiProtocols
 from flext_core import FlextLogger
+
+from flext_api.protocols import FlextApiProtocols
 
 
 class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
