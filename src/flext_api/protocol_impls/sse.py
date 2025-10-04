@@ -13,9 +13,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from flext_core import FlextResult, FlextTypes
+
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
-from flext_core import FlextResult, FlextTypes
 
 
 class SSEProtocolPlugin(ProtocolPlugin):

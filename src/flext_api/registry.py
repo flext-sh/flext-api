@@ -11,18 +11,19 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.plugins import (
-    AuthenticationPlugin,
-    ProtocolPlugin,
-    SchemaPlugin,
-    TransportPlugin,
-)
 from flext_core import (
     FlextDispatcher,
     FlextLogger,
     FlextRegistry,
     FlextResult,
     FlextTypes,
+)
+
+from flext_api.plugins import (
+    AuthenticationPlugin,
+    ProtocolPlugin,
+    SchemaPlugin,
+    TransportPlugin,
 )
 
 

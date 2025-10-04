@@ -8,8 +8,9 @@ from __future__ import annotations
 from typing import cast
 from unittest.mock import Mock
 
-from flext_api.storage import FlextApiStorage
 from flext_core import FlextTypes
+
+from flext_api.storage import FlextApiStorage
 
 
 class TestFlextApiStorage:

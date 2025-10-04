@@ -94,7 +94,7 @@ class TestFlextApiServer:
         """Test WebSocket endpoint registration."""
         server = FlextApiServer()
 
-        def ws_handler(websocket) -> None:
+        def ws_handler(websocket: object) -> None:
             pass
 
         result = server.register_websocket_endpoint("/ws", ws_handler)
@@ -199,10 +199,10 @@ class TestFlextWebhookHandler:
         """Test registering multiple handlers for same event."""
         handler = FlextWebhookHandler()
 
-        def handler1(event_data) -> None:
+        def handler1(event_data: FlextTypes.Dict) -> None:
             pass
 
-        def handler2(event_data) -> None:
+        def handler2(event_data: FlextTypes.Dict) -> None:
             pass
 
         result1 = handler.register_event_handler("user.created", handler1)

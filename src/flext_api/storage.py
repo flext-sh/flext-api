@@ -9,14 +9,16 @@ from __future__ import annotations
 import json
 from typing import override
 
-from flext_api.typings import FlextApiTypes
 from flext_core import (
+    FlextBus,
     FlextLogger,
     FlextResult,
     FlextService,
     FlextTypes,
     FlextUtilities,
 )
+
+from flext_api.typings import FlextApiTypes
 
 
 class FlextApiStorage(FlextService[None]):
@@ -41,6 +43,7 @@ class FlextApiStorage(FlextService[None]):
 
         # Initialize flext-core services
         self._logger = FlextLogger(__name__)
+        self._bus = FlextBus()
         # NOTE: FlextRegistry requires dispatcher - storage backend registration deferred
 
         # Simplified config using flext-core patterns
@@ -151,10 +154,21 @@ class FlextApiStorage(FlextService[None]):
             FlextResult[object]: Success result with data or failure result.
 
         """
+        # Emit storage access event
+        self._bus.publish(
+            "storage.get.requested",
+            {
+                "key": key,
+                "namespace": self._namespace,
+            },
+        )
+
+        result = None
+
         # Check direct key first (for comprehensive tests)
         if key in self._storage:
             # storage values are typed as JsonValue in _storage
-            return FlextResult[object].ok(self._storage[key])
+            result = FlextResult[object].ok(self._storage[key])
 
         # Check namespaced key (for simple tests)
         storage_key = self._make_key(key)
@@ -163,11 +177,35 @@ class FlextApiStorage(FlextService[None]):
             # data may be a metadata dict or a raw value; handle both
             if isinstance(data, dict) and "value" in data:
                 value: object = data["value"]
-                return FlextResult[object].ok(value)
-            return FlextResult[object].ok(data)
+                result = FlextResult[object].ok(value)
+            else:
+                result = FlextResult[object].ok(data)
 
         # If nothing found, return the default value wrapped in FlextResult
-        return FlextResult[object].ok(default)
+        if result is None:
+            result = FlextResult[object].ok(default)
+
+        # Emit storage access result event
+        if result.is_success:
+            self._bus.publish(
+                "storage.get.succeeded",
+                {
+                    "key": key,
+                    "namespace": self._namespace,
+                    "found": result.unwrap() is not default,
+                },
+            )
+        else:
+            self._bus.publish(
+                "storage.get.failed",
+                {
+                    "key": key,
+                    "namespace": self._namespace,
+                    "error": result.error,
+                },
+            )
+
+        return result
 
     def delete(self, key: str) -> FlextResult[None]:
         """Delete HTTP data using flext-core Registry.
@@ -176,13 +214,33 @@ class FlextApiStorage(FlextService[None]):
             FlextResult[None]: Success or failure result.
 
         """
+        # Emit storage delete event
+        self._bus.publish(
+            "storage.delete.requested",
+            {
+                "key": key,
+                "namespace": self._namespace,
+            },
+        )
+
         storage_key = self._make_key(key)
+        existed = key in self._storage or storage_key in self._storage
 
         # Remove from storage if exists (delete operations typically succeed even if key doesn't exist)
         if key in self._storage:
             del self._storage[key]
         if storage_key in self._storage:
             del self._storage[storage_key]
+
+        # Emit storage delete result event
+        self._bus.publish(
+            "storage.delete.completed",
+            {
+                "key": key,
+                "namespace": self._namespace,
+                "existed": existed,
+            },
+        )
 
         return FlextResult[None].ok(None)
 

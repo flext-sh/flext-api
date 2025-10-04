@@ -457,7 +457,7 @@ Handle adaptation failures gracefully:
 from flext_api.adapters import GraphQLToHttpAdapter
 from flext_core import FlextResult
 
-def safe_graphql_query(query: str, variables: dict) -> FlextResult[dict]:
+def safe_graphql_query(query: str, variables: dict) -> FlextResult[FlextTypes.Dict]:
     """Execute GraphQL query with error recovery."""
     adapter = GraphQLToHttpAdapter()
 
@@ -467,7 +467,7 @@ def safe_graphql_query(query: str, variables: dict) -> FlextResult[dict]:
     if request_result.is_failure:
         # Log error and return failure
         print(f"Query adaptation failed: {request_result.error}")
-        return FlextResult[dict].fail(request_result.error)
+        return FlextResult[FlextTypes.Dict].fail(request_result.error)
 
     # Send HTTP request (implementation specific)
     # response = http_client.send(request_result.unwrap())
@@ -476,7 +476,7 @@ def safe_graphql_query(query: str, variables: dict) -> FlextResult[dict]:
     # result = adapter.adapt_response_to_result(response)
     # return result
 
-    return FlextResult[dict].ok({"status": "prepared"})
+    return FlextResult[FlextTypes.Dict].ok({"status": "prepared"})
 ```
 
 ## Best Practices
@@ -634,18 +634,18 @@ class CustomWSAdapter(HttpToWebSocketAdapter):
 
 ### HttpToWebSocketAdapter
 
-- `adapt_request(request: HttpRequest) -> FlextResult[dict]`
+- `adapt_request(request: HttpRequest) -> FlextResult[FlextTypes.Dict]`
 - `adapt_response(message: dict) -> FlextResult[HttpResponse]`
 
 ### GraphQLToHttpAdapter
 
 - `__init__(endpoint: str = "/graphql")`
 - `adapt_query_to_request(query: str, variables: dict) -> FlextResult[HttpRequest]`
-- `adapt_response_to_result(response: HttpResponse) -> FlextResult[dict]`
+- `adapt_response_to_result(response: HttpResponse) -> FlextResult[FlextTypes.Dict]`
 
 ### SchemaAdapter
 
-- `openapi_toapi(schema: dict) -> FlextResult[dict]`
+- `openapi_toapi(schema: dict) -> FlextResult[FlextTypes.Dict]`
 - `openapi_to_graphql_schema(schema: dict) -> FlextResult[str]`
 
 ### LegacyApiAdapter

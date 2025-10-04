@@ -130,7 +130,7 @@ class TestSSEProtocolPluginSimple:
         """Test wildcard event handler registration."""
         plugin = SSEProtocolPlugin()
 
-        def on_any_event(event) -> None:
+        def on_any_event(event: FlextTypes.Dict) -> None:
             pass
 
         plugin.on_event("*", on_any_event)

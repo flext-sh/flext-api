@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import time
 
-from flext_api import FlextApiUtilities
 from flext_core import FlextTypes
+
+from flext_api import FlextApiUtilities
 
 
 class TestFlextUtilitiesAdditionalCoverage:

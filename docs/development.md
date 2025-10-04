@@ -204,12 +204,12 @@ All code MUST follow FLEXT ecosystem patterns:
 from flext_core import FlextResult, FlextService
 
 class MyHttpService(FlextService):
-    def process_request(self, data: dict) -> FlextResult[dict]:
+    def process_request(self, data: dict) -> FlextResult[FlextTypes.Dict]:
         if not data:
-            return FlextResult[dict].fail("Data cannot be empty")
+            return FlextResult[FlextTypes.Dict].fail("Data cannot be empty")
 
         # Process data...
-        return FlextResult[dict].ok(processed_data)
+        return FlextResult[FlextTypes.Dict].ok(processed_data)
 
 # ❌ INCORRECT: Don't use try/except fallbacks
 def bad_function(data):

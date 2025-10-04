@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from flext_core import FlextResult
 
 from flext_api.middleware import (
     AuthenticationMiddleware,
@@ -18,7 +19,6 @@ from flext_api.middleware import (
     MiddlewarePipeline,
 )
 from flext_api.models import FlextApiModels
-from flext_core import FlextResult
 
 
 class TestBaseMiddlewareSimple:
@@ -273,11 +273,15 @@ class TestMiddlewarePipelineSimple:
             def __init__(self) -> None:
                 super().__init__("OrderMiddleware2")
 
-            def _process_request_impl(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpRequest]:
+            def _process_request_impl(
+                self, request: FlextApiModels.HttpRequest
+            ) -> FlextResult[FlextApiModels.HttpRequest]:
                 execution_order.append("middleware2")
                 return FlextResult[FlextApiModels.HttpRequest].ok(request)
 
-            def _process_response_impl(self, response: FlextApiModels.HttpResponse) -> FlextResult[FlextApiModels.HttpResponse]:
+            def _process_response_impl(
+                self, response: FlextApiModels.HttpResponse
+            ) -> FlextResult[FlextApiModels.HttpResponse]:
                 execution_order.append("middleware2_response")
                 return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
@@ -315,10 +319,14 @@ class TestMiddlewarePipelineSimple:
             def __init__(self) -> None:
                 super().__init__("FailingMiddleware")
 
-            def _process_request_impl(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpRequest]:
+            def _process_request_impl(
+                self, request: FlextApiModels.HttpRequest
+            ) -> FlextResult[FlextApiModels.HttpRequest]:
                 return FlextResult[FlextApiModels.HttpRequest].fail("Middleware failed")
 
-            def _process_response_impl(self, response: FlextApiModels.HttpResponse) -> FlextResult[FlextApiModels.HttpResponse]:
+            def _process_response_impl(
+                self, response: FlextApiModels.HttpResponse
+            ) -> FlextResult[FlextApiModels.HttpResponse]:
                 return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
         pipeline.add_middleware(FailingMiddleware())

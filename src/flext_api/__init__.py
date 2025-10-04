@@ -17,6 +17,7 @@ from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
 from flext_api.exceptions import FlextApiExceptions
+from flext_api.handlers import FlextApiHandlers
 from flext_api.models import FlextApiModels
 from flext_api.protocols import FlextApiProtocols
 from flext_api.storage import FlextApiStorage
@@ -31,6 +32,7 @@ __all__ = [
     "FlextApiConfig",
     "FlextApiConstants",
     "FlextApiExceptions",
+    "FlextApiHandlers",
     "FlextApiModels",
     "FlextApiProtocols",
     "FlextApiStorage",

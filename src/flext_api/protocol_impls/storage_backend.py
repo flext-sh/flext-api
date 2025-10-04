@@ -6,9 +6,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import FlextLogger, FlextResult
+
 from flext_api.protocols import FlextApiProtocols
 from flext_api.typings import FlextApiTypes
-from flext_core import FlextLogger, FlextResult
 
 
 class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):

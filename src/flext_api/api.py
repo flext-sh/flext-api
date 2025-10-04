@@ -9,17 +9,30 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import (
+    FlextBus,
+    FlextConstants,
+    FlextContainer,
+    FlextContext,
+    FlextDispatcher,
+    FlextHandlers,
+    FlextLogger,
+    FlextProcessors,
+    FlextRegistry,
+    FlextTypes,
+)
+
 from flext_api.app import FlextApiApp
 from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
 from flext_api.exceptions import FlextApiExceptions
+from flext_api.handlers import FlextApiHandlers
 from flext_api.models import FlextApiModels
 from flext_api.protocols import FlextApiProtocols
 from flext_api.storage import FlextApiStorage
 from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
-from flext_core import FlextConstants, FlextTypes
 
 
 class FlextApi:
@@ -29,7 +42,6 @@ class FlextApi:
     - FlextBus: Event emission for HTTP operations, lifecycle events
     - FlextContainer: Dependency injection and service management
     - FlextContext: Operation context and request tracing
-    - FlextCqrs: CQRS pattern for HTTP command/query separation
     - FlextDispatcher: Message routing for HTTP requests/responses
     - FlextProcessors: Request/response processing pipeline
     - FlextRegistry: Component registration and discovery
@@ -42,8 +54,8 @@ class FlextApi:
 
         # Create HTTP client with complete FLEXT ecosystem integration
         client = FlextApi.Client(base_url="https://api.example.com", timeout=30.0)
-        # Integrates: FlextBus, FlextContainer, FlextContext, FlextCqrs,
-        # FlextDispatcher, FlextProcessors, FlextRegistry, FlextLogger
+        # Integrates: FlextBus, FlextContainer, FlextContext, FlextDispatcher,
+        # FlextProcessors, FlextRegistry, FlextLogger
 
         # Create FastAPI app with event-driven lifecycle
         app = FlextApi.create_fastapi_app(title="My API", version="1.0.0")
@@ -62,11 +74,13 @@ class FlextApi:
 
     Architecture:
         - **Domain Library**: Provides HTTP foundation for entire FLEXT ecosystem
-        - **Mandatory Usage**: ALL HTTP operations in FLEXT use flext-api (NO direct httpx)
+        - **Mandatory Usage**: ALL HTTP operations in FLEXT use flext-api
+          (NO direct httpx)
         - **Event-Driven**: All operations emit events via FlextBus for monitoring
         - **Context-Aware**: FlextContext provides request tracing and correlation
         - **CQRS Pattern**: Commands (POST/PUT/DELETE) vs Queries (GET) separation
-        - **Processing Pipeline**: FlextProcessors handle validation, transformation, caching
+        - **Processing Pipeline**: FlextProcessors handle validation,
+          transformation, caching
 
     Design Principles:
         - Thin facade: NO business logic, pure delegation to domain classes
@@ -82,11 +96,30 @@ class FlextApi:
     Config = FlextApiConfig
     Constants = FlextApiConstants
     Exceptions = FlextApiExceptions
+    Handlers = FlextApiHandlers
     Models = FlextApiModels
     Protocols = FlextApiProtocols
     Storage = FlextApiStorage
     Types = FlextApiTypes
     Utilities = FlextApiUtilities
+
+    @classmethod
+    def initialize_flext_integration(cls) -> FlextTypes.Dict:
+        """Initialize and return FLEXT ecosystem components for integration.
+
+        Returns:
+            Dictionary containing initialized FLEXT components
+
+        """
+        return {
+            "container": FlextContainer.get_global(),
+            "context": FlextContext(),
+            "bus": FlextBus(),
+            "dispatcher": FlextDispatcher(),
+            "processors": FlextProcessors(),
+            "registry": FlextRegistry(dispatcher=FlextDispatcher()),
+            "logger": FlextLogger(__name__),
+        }
 
     # Constant shortcuts for convenience (direct references only)
     HttpMethod = FlextConstants.Http.Method
@@ -221,6 +254,164 @@ class FlextApi:
         return builder.error(message=message, code=code)
 
     # Convenience access to utility functions
+    @staticmethod
+    def create_cqrs_client(
+        base_url: str | None = None,
+        timeout: float | None = None,
+        max_retries: int | None = None,
+        headers: FlextTypes.StringDict | None = None,
+        **kwargs: FlextApiTypes.ConfigValue,
+    ) -> FlextApiClient:
+        """Create HTTP client optimized for CQRS operations.
+
+        Creates a client configured for command/query separation with
+        enhanced logging and error handling for CQRS patterns.
+
+        Args:
+            base_url: Base URL for HTTP requests
+            timeout: Request timeout in seconds
+            max_retries: Maximum retry attempts
+            headers: Default headers
+            **kwargs: Additional configuration
+
+        Returns:
+            Configured FlextApiClient with CQRS-optimized settings
+
+        """
+        # CQRS-optimized configuration
+        cqrs_headers = {
+            "X-Request-Type": "cqrs-operation",
+            **(headers or {}),
+        }
+
+        return FlextApiClient(
+            base_url=base_url,
+            timeout=timeout or FlextConstants.Defaults.TIMEOUT,
+            max_retries=max_retries or FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+            headers=cqrs_headers,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_processing_client(
+        base_url: str | None = None,
+        timeout: float | None = None,
+        max_retries: int | None = None,
+        headers: FlextTypes.StringDict | None = None,
+        **kwargs: FlextApiTypes.ConfigValue,
+    ) -> FlextApiClient:
+        """Create HTTP client with processing pipeline optimizations.
+
+        Creates a client configured for data processing operations with
+        enhanced timeouts and retry logic for batch operations.
+
+        Args:
+            base_url: Base URL for HTTP requests
+            timeout: Request timeout in seconds
+            max_retries: Maximum retry attempts
+            headers: Default headers
+            **kwargs: Additional configuration
+
+        Returns:
+            Configured FlextApiClient with processing optimizations
+
+        """
+        # Processing-optimized configuration
+        processing_headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            **(headers or {}),
+        }
+
+        return FlextApiClient(
+            base_url=base_url,
+            timeout=timeout
+            or (FlextConstants.Defaults.TIMEOUT * 2),  # Longer timeout for processing
+            max_retries=max_retries
+            or (FlextConstants.Reliability.MAX_RETRY_ATTEMPTS + 2),  # More retries
+            headers=processing_headers,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_event_driven_client(
+        base_url: str | None = None,
+        timeout: float | None = None,
+        max_retries: int | None = None,
+        headers: FlextTypes.StringDict | None = None,
+        **kwargs: FlextApiTypes.ConfigValue,
+    ) -> FlextApiClient:
+        """Create HTTP client for event-driven architectures.
+
+        Creates a client optimized for event-driven patterns with
+        correlation ID support and structured event emission.
+
+        Args:
+            base_url: Base URL for HTTP requests
+            timeout: Request timeout in seconds
+            max_retries: Maximum retry attempts
+            headers: Default headers
+            **kwargs: Additional configuration
+
+        Returns:
+            Configured FlextApiClient with event-driven optimizations
+
+        """
+        # Event-driven configuration
+        event_headers = {
+            "X-Event-Driven": "true",
+            "X-Correlation-ID": FlextContext().get("correlation_id", "unknown"),
+            **(headers or {}),
+        }
+
+        return FlextApiClient(
+            base_url=base_url,
+            timeout=timeout or FlextConstants.Defaults.TIMEOUT,
+            max_retries=max_retries or FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+            headers=event_headers,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_http_request_handler() -> (
+        FlextApiHandlers.HttpOperationHandlers.HttpRequestHandler
+    ):
+        """Create HTTP request handler for CQRS operations.
+
+        Returns:
+            Configured HTTP request handler instance
+
+        """
+        return FlextApiHandlers.HttpOperationHandlers.HttpRequestHandler()
+
+    @staticmethod
+    def create_resource_command_handlers() -> dict[str, FlextHandlers]:
+        """Create resource command handlers (create, update, delete).
+
+        Returns:
+            Dictionary mapping operation names to handler instances
+
+        """
+        return {
+            "create": FlextApiHandlers.HttpCommandHandlers.CreateResourceHandler(),
+            "update": FlextApiHandlers.HttpCommandHandlers.UpdateResourceHandler(),
+            "delete": FlextApiHandlers.HttpCommandHandlers.DeleteResourceHandler(),
+        }
+
+    @staticmethod
+    def create_resource_query_handlers() -> dict[str, FlextHandlers]:
+        """Create resource query handlers (get, list, search).
+
+        Returns:
+            Dictionary mapping operation names to handler instances
+
+        """
+        return {
+            "get": FlextApiHandlers.HttpQueryHandlers.GetResourceHandler(),
+            "list": FlextApiHandlers.HttpQueryHandlers.ListResourcesHandler(),
+            "search": FlextApiHandlers.HttpQueryHandlers.SearchResourcesHandler(),
+        }
+
     @staticmethod
     def validate_url(url: str) -> bool:
         """Validate URL format.

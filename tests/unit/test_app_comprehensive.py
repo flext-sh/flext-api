@@ -4,11 +4,11 @@ import inspect
 from unittest.mock import Mock, patch
 
 import pytest
+from flext_core import FlextService
 
 from flext_api import app
 from flext_api.app import FlextApiApp
 from flext_api.models import FlextApiModels
-from flext_core import FlextService
 
 
 class TestFlextApiAppComprehensive:

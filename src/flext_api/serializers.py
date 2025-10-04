@@ -23,7 +23,6 @@ from typing import Protocol
 import cbor2
 import msgpack
 import orjson
-
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
 

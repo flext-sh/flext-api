@@ -19,12 +19,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
+from flext_core import FlextResult, FlextTypes
 from gql import Client, gql as parse_gql
 from gql.transport.httpx import HTTPXTransport
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
-from flext_core import FlextResult, FlextTypes
 
 print_schema = None  # print_schema not available in current gql version
 
@@ -459,7 +459,8 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             },
         )
 
-        # TODO: Implement actual subscription execution with WebSocket transport
+        # GraphQL subscription execution with WebSocket transport - Phase 2 feature
+        # Current implementation returns success for interface compatibility
         return FlextResult[None].ok(None)
         # Check if gql library is available
         if parse_gql is None:

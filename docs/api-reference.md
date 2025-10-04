@@ -373,14 +373,14 @@ class ResponseBuilder:
         data: object = None,
         message: str = "Success",
         status_code: int = 200
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
 
     @staticmethod
     def build_error_response(
         message: str = None,
         status_code: int = 500,
         error_code: str = None
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
 ```
 
 **Example:**

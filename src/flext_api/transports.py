@@ -12,9 +12,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import httpx
+from flext_core import FlextResult, FlextTypes
 
 from flext_api.plugins import TransportPlugin
-from flext_core import FlextResult, FlextTypes
 
 
 class HttpTransport(TransportPlugin):
@@ -40,9 +40,10 @@ class HttpTransport(TransportPlugin):
 
     def __init__(
         self,
-        http2: bool = True,
         pool_limits: httpx.Limits | None = None,
         timeout: httpx.Timeout | None = None,
+        *,
+        http2: bool = True,
     ) -> None:
         """Initialize HTTP transport.
 

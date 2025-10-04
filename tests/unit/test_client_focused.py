@@ -8,9 +8,10 @@ from __future__ import annotations
 
 from unittest.mock import ANY, Mock, patch
 
+from flext_core import FlextConstants, FlextResult
+
 from flext_api import FlextApiClient, FlextApiModels
 from flext_api.constants import FlextApiConstants
-from flext_core import FlextConstants, FlextResult
 
 
 class TestFlextApiClientFocused:

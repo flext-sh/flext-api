@@ -9,11 +9,11 @@ from __future__ import annotations
 from typing import cast
 
 import pytest
+from flext_core import FlextTypes
 from pydantic import ValidationError
 
 from flext_api import FlextApiClient, FlextApiModels
 from flext_api.constants import FlextApiConstants
-from flext_core import FlextTypes
 
 
 class TestFlextApiClientCoverageBoost:

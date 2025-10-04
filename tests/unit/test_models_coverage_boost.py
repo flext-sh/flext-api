@@ -7,10 +7,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from flext_core import FlextTypes
 from pydantic import ValidationError
 
 from flext_api import FlextApiModels
-from flext_core import FlextTypes
 
 
 class TestFlextApiModelsCoverageBoost:
