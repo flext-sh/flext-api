@@ -105,9 +105,9 @@ class FlextApiClient(FlextService[None]):
     )
 
     # Private attributes for modular services - not validated by Pydantic
-    _http: "FlextApiClient.HttpOperations" = PrivateAttr()
-    _lifecycle: "FlextApiClient.LifecycleManager" = PrivateAttr()
-    _client_config_manager: "FlextApiClient.ConfigurationManager" = PrivateAttr()
+    _http: FlextApiClient.HttpOperations = PrivateAttr()
+    _lifecycle: FlextApiClient.LifecycleManager = PrivateAttr()
+    _client_config_manager: FlextApiClient.ConfigurationManager = PrivateAttr()
     _initialized: bool = PrivateAttr(default=False)
 
     # ZERO TOLERANCE FIX: Protocol-based service composition
@@ -347,8 +347,7 @@ class FlextApiClient(FlextService[None]):
                 return FlextResult[FlextTypes.Dict].fail(
                     f"FastAPI app creation failed: {config_model.error}"
                 )
-            app_instance = self._create_fastapi_app_instance(config_model.unwrap())
-            return app_instance
+            return self._create_fastapi_app_instance(config_model.unwrap())
         except Exception as e:
             return FlextResult[FlextTypes.Dict].fail(
                 f"FastAPI app creation failed: {e}"

@@ -31,21 +31,15 @@ class FlextApiAdapters:
     All functionality consolidated into direct methods following FLEXT standards.
     """
 
-    # Individual adapter classes for backward compatibility and testing
-    class HttpToWebSocketAdapter:
-        """Adapter for converting HTTP requests to WebSocket messages."""
+    def __init__(self, endpoint: str = "/graphql", base_url: str = "") -> None:
+        """Initialize the unified adapters service."""
+        self._logger = FlextLogger(__name__)
+        self._endpoint = endpoint  # Default GraphQL endpoint
+        self._base_url = base_url  # For legacy API adapter
 
-        def __init__(self) -> None:
-            """Initialize WebSocket adapter."""
-
-        def adapt_request(
-            self, request: FlextApiModels.HttpRequest
-        ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
-            """Convert HTTP request to WebSocket message format."""
-            adapter = FlextApiAdapters()
-            return adapter.adapt_http_request_to_websocket(request)
-
-    class GraphQLToHttpAdapter:
+    def adapt_http_request_to_websocket(
+        self, request: FlextApiModels.HttpRequest
+    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
         """Adapter for converting GraphQL queries to HTTP requests."""
 
         def __init__(self, endpoint: str = "/graphql") -> None:
