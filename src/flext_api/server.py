@@ -26,7 +26,7 @@ from flext_api.middleware import FlextApiMiddleware
 from flext_api.plugins import ProtocolPlugin
 
 
-class FlextApiServer(FlextService):
+class FlextApiServer(FlextService[object]):
     """Generic API server with protocol handler support.
 
     Features:

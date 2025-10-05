@@ -10,7 +10,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api.__version__ import __version__, __version_info__
-from flext_api.adapters import FlextApiAdapters
+from flext_api.adapters import (
+    FlextApiAdapters,
+)
 from flext_api.api import FlextApi
 from flext_api.app import FlextApiApp
 from flext_api.client import FlextApiClient
@@ -38,6 +40,10 @@ __all__ = [
     "FlextApiStorage",
     "FlextApiTypes",
     "FlextApiUtilities",
+    "GraphQLToHttpAdapter",
+    "HttpToWebSocketAdapter",
+    "LegacyApiAdapter",
+    "SchemaAdapter",
     "__version__",
     "__version_info__",
 ]

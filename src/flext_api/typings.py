@@ -20,7 +20,6 @@ from flext_core import FlextTypes
 # =============================================================================
 
 
-# API domain TypeVars
 class FlextApiTypes(FlextTypes):
     """API-specific type definitions extending FlextTypes.
 

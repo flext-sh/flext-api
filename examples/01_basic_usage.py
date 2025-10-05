@@ -37,15 +37,14 @@ def example_client_creation() -> None:
     # Create API instance
     FlextApiClient()
 
-    # Create client config using enhanced singleton pattern
-    client_config = FlextApiConfig.create_for_environment(
-        environment="development",
-        api_base_url="https://httpbin.org",
-        api_timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
+    # Create client config using direct instantiation
+    client_config = FlextApiConfig(
+        base_url="https://httpbin.org",
+        timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
     )
 
-    print(f"✅ Client config created: {client_config.api_base_url}")
-    print(f"   Timeout: {client_config.api_timeout}s")
+    print(f"✅ Client config created: {client_config.base_url}")
+    print(f"   Timeout: {client_config.timeout}s")
     print(f"   Max retries: {client_config.max_retries}")
 
 
@@ -53,15 +52,14 @@ def example_direct_client() -> None:
     """Demonstrate direct HTTP client usage with enhanced singleton pattern."""
     print("\n=== Direct Client Example ===")
 
-    # Create client configuration using enhanced singleton pattern
-    config = FlextApiConfig.create_for_environment(
-        environment="development",
-        api_base_url="https://httpbin.org",
-        api_timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
+    # Create client configuration using direct instantiation
+    config = FlextApiConfig(
+        base_url="https://httpbin.org",
+        timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
     )
 
-    print(f"✅ Client config: {config.api_base_url}")
-    print(f"   Timeout: {config.api_timeout}")
+    print(f"✅ Client config: {config.base_url}")
+    print(f"   Timeout: {config.timeout}")
     print(f"   Default headers: {config.get_default_headers()}")
 
 

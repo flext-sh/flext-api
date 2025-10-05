@@ -105,9 +105,9 @@ class FlextApiClient(FlextService[None]):
     )
 
     # Private attributes for modular services - not validated by Pydantic
-    _http: FlextApiClient.HttpOperations = PrivateAttr()
-    _lifecycle: FlextApiClient.LifecycleManager = PrivateAttr()
-    _client_config_manager: FlextApiClient.ConfigurationManager = PrivateAttr()
+    _http: "FlextApiClient.HttpOperations" = PrivateAttr()
+    _lifecycle: "FlextApiClient.LifecycleManager" = PrivateAttr()
+    _client_config_manager: "FlextApiClient.ConfigurationManager" = PrivateAttr()
     _initialized: bool = PrivateAttr(default=False)
 
     # ZERO TOLERANCE FIX: Protocol-based service composition
@@ -156,7 +156,7 @@ class FlextApiClient(FlextService[None]):
         self._context = FlextContext()
 
         # Extract and validate client configuration using FlextResult pattern
-        config_result = FlextResult[FlextApiModels.ClientConfig].ok(None)
+        config_result: FlextResult[FlextApiModels.ClientConfig]
         try:
             config_params = self._extract_client_config_params(
                 config=config,
@@ -177,7 +177,7 @@ class FlextApiClient(FlextService[None]):
             error_msg = f"Client creation failed: {e}"
             self._logger.exception(error_msg)
             config_result = FlextResult[FlextApiModels.ClientConfig].fail(
-                error_msg, error_code=FlextConstants.Errors.INITIALIZATION_ERROR
+                error_msg, error_code="INITIALIZATION_ERROR"
             )
 
         if config_result.is_failure:
@@ -282,17 +282,17 @@ class FlextApiClient(FlextService[None]):
 
     # Public property interfaces for modular services
     @property
-    def http(self) -> HttpOperations:
+    def http(self) -> FlextApiClient.HttpOperations:
         """HTTP operations service."""
         return self._http
 
     @property
-    def lifecycle(self) -> LifecycleManager:
+    def lifecycle(self) -> FlextApiClient.LifecycleManager:
         """Lifecycle management service."""
         return self._lifecycle
 
     @property
-    def client_config(self) -> ConfigurationManager:
+    def client_config(self) -> FlextApiClient.ConfigurationManager:
         """Configuration management service."""
         return self._client_config_manager
 
@@ -340,14 +340,19 @@ class FlextApiClient(FlextService[None]):
 
         """
         # Railway-oriented FastAPI app creation using FlextResult pattern
-        return (
-            FlextResult[FlextTypes.Dict]
-            .ok(app_config or {})
-            .map(self._prepare_app_config)
-            .flat_map(self._create_app_config_model)
-            .flat_map(self._create_fastapi_app_instance)
-            .map_error(lambda e: f"FastAPI app creation failed: {e}")
-        )
+        try:
+            prepared_config = self._prepare_app_config(app_config or {})
+            config_model = self._create_app_config_model(prepared_config)
+            if config_model.is_failure:
+                return FlextResult[FlextTypes.Dict].fail(
+                    f"FastAPI app creation failed: {config_model.error}"
+                )
+            app_instance = self._create_fastapi_app_instance(config_model.unwrap())
+            return app_instance
+        except Exception as e:
+            return FlextResult[FlextTypes.Dict].fail(
+                f"FastAPI app creation failed: {e}"
+            )
 
     def _prepare_app_config(self, app_config: dict) -> dict:
         """Prepare app configuration with defaults and field mapping.

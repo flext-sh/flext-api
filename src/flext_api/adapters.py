@@ -31,10 +31,105 @@ class FlextApiAdapters:
     All functionality consolidated into direct methods following FLEXT standards.
     """
 
-    def __init__(self) -> None:
+    # Individual adapter classes for backward compatibility and testing
+    class HttpToWebSocketAdapter:
+        """Adapter for converting HTTP requests to WebSocket messages."""
+
+        def __init__(self) -> None:
+            """Initialize WebSocket adapter."""
+
+        def adapt_request(
+            self, request: FlextApiModels.HttpRequest
+        ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+            """Convert HTTP request to WebSocket message format."""
+            adapter = FlextApiAdapters()
+            return adapter.adapt_http_request_to_websocket(request)
+
+    class GraphQLToHttpAdapter:
+        """Adapter for converting GraphQL queries to HTTP requests."""
+
+        def __init__(self, endpoint: str = "/graphql") -> None:
+            """Initialize GraphQL adapter.
+
+            Args:
+                endpoint: GraphQL endpoint URL
+
+            """
+            self._endpoint = endpoint
+
+        def adapt_query(
+            self, query: str, variables: FlextTypes.Dict | None = None
+        ) -> FlextResult[FlextApiModels.HttpRequest]:
+            """Convert GraphQL query to HTTP request."""
+            adapter = FlextApiAdapters(endpoint=self._endpoint)
+            return adapter.adapt_graphql_query_to_http_request(query, variables)
+
+        def adapt_response(
+            self, response: FlextApiModels.HttpResponse
+        ) -> FlextResult[FlextTypes.Dict]:
+            """Convert HTTP response to GraphQL result."""
+            adapter = FlextApiAdapters()
+            return adapter.adapt_http_response_to_graphql_result(response)
+
+        def set_endpoint(self, endpoint: str) -> None:
+            """Set the GraphQL endpoint."""
+            self._endpoint = endpoint
+
+    class SchemaAdapter:
+        """Adapter for converting between different schema formats."""
+
+        def __init__(self) -> None:
+            """Initialize schema adapter."""
+
+        def convert_openapi_to_api(
+            self, openapi_schema: dict[str, FlextApiTypes.JsonValue]
+        ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+            """Convert OpenAPI schema to API schema."""
+            adapter = FlextApiAdapters()
+            return adapter.convert_openapi_to_api_schema(openapi_schema)
+
+        def convert_openapi_to_graphql(
+            self, openapi_schema: dict[str, FlextApiTypes.JsonValue]
+        ) -> FlextResult[str]:
+            """Convert OpenAPI schema to GraphQL schema."""
+            adapter = FlextApiAdapters()
+            return adapter.convert_openapi_to_graphql_schema(openapi_schema)
+
+    class LegacyApiAdapter:
+        """Adapter for legacy API format conversion."""
+
+        def __init__(self, base_url: str = "https://api.example.com") -> None:
+            """Initialize legacy API adapter.
+
+            Args:
+                base_url: Base URL for legacy API
+
+            """
+            self._base_url = base_url
+
+        def adapt_request_to_legacy(
+            self, request: FlextApiModels.HttpRequest
+        ) -> FlextResult[FlextApiModels.HttpRequest]:
+            """Adapt request to legacy format."""
+            adapter = FlextApiAdapters(base_url=self._base_url)
+            return adapter.adapt_request_to_legacy_format(request)
+
+        def adapt_legacy_response_to_modern(
+            self, response: FlextApiModels.HttpResponse
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            """Adapt legacy response to modern format."""
+            adapter = FlextApiAdapters()
+            return adapter.adapt_legacy_response_to_modern(response)
+
+        def set_base_url(self, base_url: str) -> None:
+            """Set the legacy API base URL."""
+            self._base_url = base_url
+
+    # Main adapter implementation
+    def __init__(self, endpoint: str = "/graphql", base_url: str = "") -> None:
         """Initialize the unified adapters service."""
         self._logger = FlextLogger(__name__)
-        self._endpoint = "/graphql"  # Default GraphQL endpoint
+        self._endpoint = endpoint  # Default GraphQL endpoint
         self._base_url = ""  # For legacy API adapter
 
     def adapt_http_request_to_websocket(
@@ -549,156 +644,6 @@ class FlextApiAdapters:
         return components[0] + "".join(x.title() for x in components[1:])
 
 
-# Backward compatibility aliases - thin wrappers around unified class
-class GraphQLToHttpAdapter(FlextApiAdapters):
-    """Backward compatibility wrapper for GraphQL to HTTP adaptation."""
-
-    def adapt_graphql_to_http(
-        self, query: str, variables: dict[str, FlextApiTypes.JsonValue] | None = None
-    ) -> FlextResult[FlextApiModels.HttpRequest]:
-        """Adapt GraphQL query to HTTP request."""
-        return self.adapt_graphql_query_to_http_request(query, variables)
-
-
-class HttpToGraphQLAdapter(FlextApiAdapters):
-    """Backward compatibility wrapper for HTTP to GraphQL adaptation."""
-
-    def adapt_http_to_graphql(
-        self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
-        """Adapt HTTP request to GraphQL format."""
-        # For now, return the request data as-is
-        # TODO(marlonsc): Implement proper HTTP to GraphQL conversion. See issue #124.
-        return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok({
-            "query": request.body.get("query")
-            if isinstance(request.body, dict)
-            else None,
-            "variables": request.body.get("variables")
-            if isinstance(request.body, dict)
-            else {},
-            "operationName": request.body.get("operationName")
-            if isinstance(request.body, dict)
-            else None,
-        })
-
-
-class WebSocketToHttpAdapter(FlextApiAdapters):
-    """Backward compatibility wrapper for WebSocket to HTTP adaptation."""
-
-    def adapt_websocket_to_http(
-        self, message: dict[str, FlextApiTypes.JsonValue]
-    ) -> FlextResult[FlextApiModels.HttpRequest]:
-        """Adapt WebSocket message to HTTP request."""
-        # For now, create a basic HTTP request from WebSocket message
-        # TODO(marlonsc): Implement proper WebSocket to HTTP conversion. See issue #124.
-        return FlextResult[FlextApiModels.HttpRequest].ok(
-            FlextApiModels.HttpRequest(
-                method=message.get("method", "GET"),
-                url=str(message.get("url", "/")),
-                headers=dict(message.get("headers", {})),
-                body=message.get("body", {}),
-            )
-        )
-
-
-class HttpToWebSocketAdapter(FlextApiAdapters):
-    """Backward compatibility wrapper for HTTP to WebSocket adaptation."""
-
-    def adapt_http_to_websocket(
-        self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
-        """Adapt HTTP request to WebSocket message."""
-        return self.adapt_http_request_to_websocket(request)
-
-
-class OpenAPIToGraphQLAdapter(FlextApiAdapters):
-    """Backward compatibility wrapper for OpenAPI to GraphQL adaptation."""
-
-    def adapt_openapi_to_graphql(
-        self, openapi_spec: dict[str, FlextApiTypes.JsonValue]
-    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
-        """Adapt OpenAPI specification to GraphQL schema."""
-        # For now, return a basic GraphQL schema structure
-        # TODO(marlonsc): Implement proper OpenAPI to GraphQL schema conversion. See issue #124.
-        return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok({
-            "type": "schema",
-            "query": "Query",
-            "mutation": "Mutation",
-            "subscription": "Subscription",
-        })
-
-
-class GraphQLToOpenAPIAdapter(FlextApiAdapters):
-    """Backward compatibility wrapper for GraphQL to OpenAPI adaptation."""
-
-    def adapt_graphql_to_openapi(
-        self, graphql_schema: dict[str, FlextApiTypes.JsonValue]
-    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
-        """Adapt GraphQL schema to OpenAPI specification."""
-        # For now, return a basic OpenAPI specification structure
-        # TODO(marlonsc): Implement proper GraphQL schema to OpenAPI conversion. See issue #124.
-        return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok({
-            "openapi": "3.0.0",
-            "info": {"title": "API", "version": "1.0.0"},
-            "paths": {},
-        })
-
-
-class JSONToMessagePackAdapter(FlextApiAdapters):
-    """Backward compatibility wrapper for JSON to MessagePack conversion."""
-
-    def json_to_msgpack(self, data: FlextApiTypes.JsonValue) -> FlextResult[bytes]:
-        """Convert JSON data to MessagePack format."""
-        # For now, return empty bytes - proper implementation would use msgpack library
-        # TODO(marlonsc): Implement proper JSON to MessagePack conversion. See issue #124.
-        return FlextResult[bytes].ok(b"")
-
-
-class MessagePackToJSONAdapter(FlextApiAdapters):
-    """Backward compatibility wrapper for MessagePack to JSON conversion."""
-
-    def msgpack_to_json(self, data: bytes) -> FlextResult[FlextApiTypes.JsonValue]:
-        """Convert MessagePack data to JSON format."""
-        # For now, return empty dict - proper implementation would use msgpack library
-        # TODO(marlonsc): Implement proper MessagePack to JSON conversion. See issue #124.
-        return FlextResult[FlextApiTypes.JsonValue].ok({})
-
-
-class LegacyApiAdapter(FlextApiAdapters):
-    """Backward compatibility wrapper for legacy API adaptation."""
-
-    def adapt_legacy_request(
-        self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpRequest]:
-        """Adapt legacy API request to modern format."""
-        # For now, return the request as-is
-        # TODO(marlonsc): Implement proper legacy API request adaptation. See issue #124.
-        return FlextResult[FlextApiModels.HttpRequest].ok(request)
-
-
-class SchemaAdapter(FlextApiAdapters):
-    """Backward compatibility wrapper for schema adaptation."""
-
-    def adapt_schema(
-        self, source_schema: dict[str, FlextApiTypes.JsonValue], target_format: str
-    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
-        """Adapt schema from one format to another."""
-        # For now, return the source schema as-is
-        # TODO(marlonsc): Implement proper schema format adaptation. See issue #124.
-        return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(source_schema)
-
-
 __all__ = [
     "FlextApiAdapters",
-    # Backward compatibility exports
-    "GraphQLToHttpAdapter",
-    "GraphQLToOpenAPIAdapter",
-    "HttpToGraphQLAdapter",
-    "HttpToWebSocketAdapter",
-    "JSONToMessagePackAdapter",
-    "LegacyApiAdapter",
-    "MessagePackToJSONAdapter",
-    "OpenAPIToGraphQLAdapter",
-    "SchemaAdapter",
-    "WebSocketToHttpAdapter",
 ]

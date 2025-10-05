@@ -215,8 +215,8 @@ class FlextApiModels(FlextModels):
         # CLIENT-SPECIFIC fields for tracking request context
         url: str = Field(description="Request URL")
         method: str = Field(description="HTTP method")
-        request: FlextApiModels.HttpRequest = Field(
-            description="Original request object"
+        request: FlextApiModels.HttpRequest | None = Field(
+            default=None, description="Original request object"
         )
         domain_events: FlextTypes.List = Field(
             default_factory=list, description="Domain events"
