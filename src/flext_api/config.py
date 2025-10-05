@@ -316,6 +316,14 @@ class FlextApiConfig(FlextConfig):
     # Complex validation and demonstration methods removed for simplicity
     # Focus on core configuration functionality only
 
+    def get_default_headers(self) -> dict[str, str]:
+        """Get default headers for HTTP requests."""
+        return {
+            "User-Agent": f"FlextApi/{self.api_version}",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+
 
 __all__ = [
     "FlextApiConfig",

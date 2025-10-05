@@ -27,6 +27,7 @@
         "flext-grpc @ file:///home/marlonsc/flext/flext-grpc",
         "flext-observability @ file:///home/marlonsc/flext/flext-observability",
         "flext-plugin @ file:///home/marlonsc/flext/flext-plugin",
+        "flext-tests @ file:///home/marlonsc/flext/flext-tests",
         "fsspec (>=2025.9.0)",
         "gql (>=4.0.0)",
         "grpcio-health-checking>=0",

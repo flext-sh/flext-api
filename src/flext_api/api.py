@@ -373,43 +373,72 @@ class FlextApi:
         )
 
     @staticmethod
-    def create_http_request_handler() -> (
-        FlextApiHandlers.HttpOperationHandlers.HttpRequestHandler
-    ):
+    def create_http_request_handler(
+        config: FlextApiConfig | None = None,
+    ) -> FlextApiHandlers.HttpOperationHandlers.HttpRequestHandler:
         """Create HTTP request handler for CQRS operations.
+
+        Args:
+            config: API configuration instance
 
         Returns:
             Configured HTTP request handler instance
 
         """
-        return FlextApiHandlers.HttpOperationHandlers.HttpRequestHandler()
+        return FlextApiHandlers.HttpOperationHandlers.HttpRequestHandler(
+            config=config or FlextApiConfig()
+        )
 
     @staticmethod
-    def create_resource_command_handlers() -> dict[str, FlextHandlers]:
+    def create_resource_command_handlers(
+        config: FlextApiConfig | None = None,
+    ) -> dict[str, FlextHandlers]:
         """Create resource command handlers (create, update, delete).
+
+        Args:
+            config: API configuration instance
 
         Returns:
             Dictionary mapping operation names to handler instances
 
         """
+        config_instance = config or FlextApiConfig()
         return {
-            "create": FlextApiHandlers.HttpCommandHandlers.CreateResourceHandler(),
-            "update": FlextApiHandlers.HttpCommandHandlers.UpdateResourceHandler(),
-            "delete": FlextApiHandlers.HttpCommandHandlers.DeleteResourceHandler(),
+            "create": FlextApiHandlers.HttpCommandHandlers.CreateResourceHandler(
+                config=config_instance
+            ),
+            "update": FlextApiHandlers.HttpCommandHandlers.UpdateResourceHandler(
+                config=config_instance
+            ),
+            "delete": FlextApiHandlers.HttpCommandHandlers.DeleteResourceHandler(
+                config=config_instance
+            ),
         }
 
     @staticmethod
-    def create_resource_query_handlers() -> dict[str, FlextHandlers]:
+    def create_resource_query_handlers(
+        config: FlextApiConfig | None = None,
+    ) -> dict[str, FlextHandlers]:
         """Create resource query handlers (get, list, search).
+
+        Args:
+            config: API configuration instance
 
         Returns:
             Dictionary mapping operation names to handler instances
 
         """
+        config_instance = config or FlextApiConfig()
         return {
-            "get": FlextApiHandlers.HttpQueryHandlers.GetResourceHandler(),
-            "list": FlextApiHandlers.HttpQueryHandlers.ListResourcesHandler(),
-            "search": FlextApiHandlers.HttpQueryHandlers.SearchResourcesHandler(),
+            "get": FlextApiHandlers.HttpQueryHandlers.GetResourceHandler(
+                config=config_instance
+            ),
+            "list": FlextApiHandlers.HttpQueryHandlers.ListResourcesHandler(
+                config=config_instance
+            ),
+            "search": FlextApiHandlers.HttpQueryHandlers.SearchResourcesHandler(
+                config=config_instance
+            ),
         }
 
     @staticmethod

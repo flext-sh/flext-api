@@ -28,7 +28,7 @@ from collections.abc import Callable
 from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 
-class FlextWebhookHandler(FlextService):
+class FlextWebhookHandler(FlextService[object]):
     """Webhook handler with signature verification and event processing.
 
     Features:
