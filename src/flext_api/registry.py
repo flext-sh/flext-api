@@ -60,7 +60,7 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         super().__init__(dispatcher=dispatcher)
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Plugin storage by category
         self._protocols: dict[str, ProtocolPlugin] = {}
@@ -68,7 +68,7 @@ class FlextApiRegistry(FlextRegistry):
         self._transports: dict[str, TransportPlugin] = {}
         self._auth_providers: dict[str, AuthenticationPlugin] = {}
 
-        self._logger.debug("FlextApiRegistry initialized")
+        self.logger.debug("FlextApiRegistry initialized")
 
     @classmethod
     def get_global(cls) -> FlextApiRegistry:
@@ -113,13 +113,13 @@ class FlextApiRegistry(FlextRegistry):
             return FlextResult[None].fail("Protocol name cannot be empty")
 
         if name in self._protocols:
-            self._logger.warning(
+            self.logger.warning(
                 f"Protocol '{name}' already registered, overwriting",
                 extra={"protocol": name},
             )
 
         self._protocols[name] = plugin
-        self._logger.info(
+        self.logger.info(
             f"Registered protocol: {name}",
             extra={"protocol": name, "plugin_type": type(plugin).__name__},
         )
@@ -167,7 +167,7 @@ class FlextApiRegistry(FlextRegistry):
             return FlextResult[None].fail(f"Protocol '{name}' not registered")
 
         del self._protocols[name]
-        self._logger.info(f"Unregistered protocol: {name}", extra={"protocol": name})
+        self.logger.info(f"Unregistered protocol: {name}", extra={"protocol": name})
         return FlextResult[None].ok(None)
 
     # Schema Registration
@@ -191,13 +191,13 @@ class FlextApiRegistry(FlextRegistry):
             return FlextResult[None].fail("Schema name cannot be empty")
 
         if name in self._schemas:
-            self._logger.warning(
+            self.logger.warning(
                 f"Schema '{name}' already registered, overwriting",
                 extra={"schema": name},
             )
 
         self._schemas[name] = plugin
-        self._logger.info(
+        self.logger.info(
             f"Registered schema: {name}",
             extra={"schema": name, "plugin_type": type(plugin).__name__},
         )
@@ -245,7 +245,7 @@ class FlextApiRegistry(FlextRegistry):
             return FlextResult[None].fail(f"Schema '{name}' not registered")
 
         del self._schemas[name]
-        self._logger.info(f"Unregistered schema: {name}", extra={"schema": name})
+        self.logger.info(f"Unregistered schema: {name}", extra={"schema": name})
         return FlextResult[None].ok(None)
 
     # Transport Registration
@@ -269,13 +269,13 @@ class FlextApiRegistry(FlextRegistry):
             return FlextResult[None].fail("Transport name cannot be empty")
 
         if name in self._transports:
-            self._logger.warning(
+            self.logger.warning(
                 f"Transport '{name}' already registered, overwriting",
                 extra={"transport": name},
             )
 
         self._transports[name] = plugin
-        self._logger.info(
+        self.logger.info(
             f"Registered transport: {name}",
             extra={"transport": name, "plugin_type": type(plugin).__name__},
         )
@@ -323,7 +323,7 @@ class FlextApiRegistry(FlextRegistry):
             return FlextResult[None].fail(f"Transport '{name}' not registered")
 
         del self._transports[name]
-        self._logger.info(f"Unregistered transport: {name}", extra={"transport": name})
+        self.logger.info(f"Unregistered transport: {name}", extra={"transport": name})
         return FlextResult[None].ok(None)
 
     # Authentication Provider Registration
@@ -347,13 +347,13 @@ class FlextApiRegistry(FlextRegistry):
             return FlextResult[None].fail("Auth provider name cannot be empty")
 
         if name in self._auth_providers:
-            self._logger.warning(
+            self.logger.warning(
                 f"Auth provider '{name}' already registered, overwriting",
                 extra={"auth_provider": name},
             )
 
         self._auth_providers[name] = plugin
-        self._logger.info(
+        self.logger.info(
             f"Registered auth provider: {name}",
             extra={"auth_provider": name, "plugin_type": type(plugin).__name__},
         )
@@ -403,7 +403,7 @@ class FlextApiRegistry(FlextRegistry):
             )
 
         del self._auth_providers[name]
-        self._logger.info(
+        self.logger.info(
             f"Unregistered auth provider: {name}", extra={"auth_provider": name}
         )
         return FlextResult[None].ok(None)
@@ -442,7 +442,7 @@ class FlextApiRegistry(FlextRegistry):
         self._transports.clear()
         self._auth_providers.clear()
 
-        self._logger.info("Cleared all registry plugins")
+        self.logger.info("Cleared all registry plugins")
         return FlextResult[None].ok(None)
 
 

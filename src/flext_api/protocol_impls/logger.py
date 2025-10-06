@@ -16,20 +16,20 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def __init__(self) -> None:
         """Initialize logger protocol implementation."""
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def info(self, message: str, **kwargs: object) -> None:
         """Log info message."""
-        self._logger.info(message, extra=kwargs)
+        self.logger.info(message, extra=kwargs)
 
     def error(self, message: str, **kwargs: object) -> None:
         """Log error message."""
-        self._logger.error(message, extra=kwargs)
+        self.logger.error(message, extra=kwargs)
 
     def debug(self, message: str, **kwargs: object) -> None:
         """Log debug message."""
-        self._logger.debug(message, extra=kwargs)
+        self.logger.debug(message, extra=kwargs)
 
     def warning(self, message: str, **kwargs: object) -> None:
         """Log warning message."""
-        self._logger.warning(message, extra=kwargs)
+        self.logger.warning(message, extra=kwargs)

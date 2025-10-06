@@ -18,7 +18,7 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
         self._storage: dict[str, FlextApiTypes.JsonValue] = {}
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def get(
         self, key: str, default: FlextApiTypes.JsonValue = None
@@ -32,7 +32,7 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
 
             if key in self._storage:
                 value = self._storage[key]
-                self._logger.debug(f"Retrieved data with key: {key}")
+                self.logger.debug(f"Retrieved data with key: {key}")
                 return FlextResult[FlextApiTypes.JsonValue].ok(value)
             if default is not None:
                 return FlextResult[FlextApiTypes.JsonValue].ok(default)
@@ -55,7 +55,7 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
                 return FlextResult[None].fail("Storage key cannot be empty")
 
             self._storage[str(key)] = value
-            self._logger.debug(f"Stored data with key: {key}")
+            self.logger.debug(f"Stored data with key: {key}")
             return FlextResult[None].ok(None)
 
         except Exception as e:
@@ -69,7 +69,7 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
 
             if key in self._storage:
                 del self._storage[key]
-                self._logger.debug(f"Deleted data with key: {key}")
+                self.logger.debug(f"Deleted data with key: {key}")
                 return FlextResult[None].ok(None)
             return FlextResult[None].fail(f"Key not found: {key}")
 
@@ -88,7 +88,7 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
         """Clear all stored values."""
         try:
             self._storage.clear()
-            self._logger.debug("Cleared all storage data")
+            self.logger.debug("Cleared all storage data")
             return FlextResult[None].ok(None)
         except Exception as e:
             return FlextResult[None].fail(f"Clear operation failed: {e}")

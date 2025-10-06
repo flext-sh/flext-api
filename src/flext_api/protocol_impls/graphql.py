@@ -308,7 +308,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             if self._fetch_schema_from_transport:
                 self._schema = self._client.schema
 
-            self._logger.info(
+            self.logger.info(
                 "GraphQL client initialized",
                 extra={
                     "endpoint": self._endpoint,
@@ -361,7 +361,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
                 operation_name=operation_name,
             )
 
-            self._logger.debug(
+            self.logger.debug(
                 "GraphQL query executed",
                 extra={
                     "operation_name": operation_name,
@@ -415,7 +415,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
                 operation_name=operation_name,
             )
 
-            self._logger.debug(
+            self.logger.debug(
                 "GraphQL mutation executed",
                 extra={
                     "operation_name": operation_name,
@@ -450,7 +450,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         """
         # Note: Subscription execution requires WebSocket transport
         # For now, we'll return success and log the subscription setup
-        self._logger.info(
+        self.logger.info(
             "GraphQL subscription registered",
             extra={
                 "operation_name": operation_name,
@@ -483,7 +483,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
 
             # Note: Subscription execution requires WebSocket transport
             # For now, we'll return success and log the subscription setup
-            self._logger.info(
+            self.logger.info(
                 "GraphQL subscription registered",
                 extra={
                     "operation_name": operation_name,
@@ -514,7 +514,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             self._client = None
             self._schema = None
 
-            self._logger.info("GraphQL client closed")
+            self.logger.info("GraphQL client closed")
 
             return FlextResult[None].ok(None)
 

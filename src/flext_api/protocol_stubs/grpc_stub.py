@@ -45,11 +45,11 @@ class GrpcChannel:
             options: Channel options
 
         """
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._target = target
         self._options = options or {}
 
-        self._logger.info(
+        self.logger.info(
             "gRPC channel stub created (placeholder)",
             extra={"target": target},
         )
@@ -61,7 +61,7 @@ class GrpcChannel:
             FlextResult indicating success or failure
 
         """
-        self._logger.info("gRPC channel stub closed (placeholder)")
+        self.logger.info("gRPC channel stub closed (placeholder)")
         return FlextResult[None].ok(None)
 
 
@@ -85,10 +85,10 @@ class GrpcStub:
             channel: gRPC channel
 
         """
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._channel = channel
 
-        self._logger.info("gRPC stub created (placeholder)")
+        self.logger.info("gRPC stub created (placeholder)")
 
     def call_unary(
         self,
@@ -107,7 +107,7 @@ class GrpcStub:
             FlextResult containing response or error
 
         """
-        self._logger.info(
+        self.logger.info(
             "gRPC unary call (placeholder)",
             extra={"method": _method},
         )
@@ -215,12 +215,12 @@ class GrpcServer:
             options: Server options
 
         """
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._host = host
         self._port = port
         self._options = options or {}
 
-        self._logger.info(
+        self.logger.info(
             "gRPC server stub created (placeholder)",
             extra={"host": host, "port": port},
         )
@@ -235,7 +235,7 @@ class GrpcServer:
             FlextResult indicating success or failure
 
         """
-        self._logger.info("gRPC service added (placeholder)")
+        self.logger.info("gRPC service added (placeholder)")
         return FlextResult[None].ok(None)
 
     def start(self) -> FlextResult[None]:
@@ -245,7 +245,7 @@ class GrpcServer:
             FlextResult indicating success or failure
 
         """
-        self._logger.info(
+        self.logger.info(
             "gRPC server start (placeholder)",
             extra={"host": self._host, "port": self._port},
         )
@@ -263,7 +263,7 @@ class GrpcServer:
             FlextResult indicating success or failure
 
         """
-        self._logger.info("gRPC server stop (placeholder)")
+        self.logger.info("gRPC server stop (placeholder)")
         return FlextResult[None].ok(None)
 
 

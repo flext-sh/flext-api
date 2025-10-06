@@ -231,9 +231,9 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
                 try:
                     handler()
                 except Exception:
-                    self._logger.exception("Disconnect handler error")
+                    self.logger.exception("Disconnect handler error")
 
-            self._logger.info("WebSocket disconnected", extra={"url": self._url})
+            self.logger.info("WebSocket disconnected", extra={"url": self._url})
 
             return FlextResult[None].ok(None)
 
@@ -344,9 +344,9 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
                 try:
                     handler()
                 except Exception:
-                    self._logger.exception("Connect handler error")
+                    self.logger.exception("Connect handler error")
 
-            self._logger.info(
+            self.logger.info(
                 "WebSocket connected",
                 extra={
                     "url": url,
@@ -392,7 +392,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
             else:
                 return FlextResult[None].fail(f"Invalid message type: {message_type}")
 
-            self._logger.debug(
+            self.logger.debug(
                 "WebSocket message sent",
                 extra={"message_type": message_type, "size": len(message)},
             )
@@ -413,19 +413,19 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
                     try:
                         handler(message)
                     except Exception:
-                        self._logger.exception("Message handler error")
+                        self.logger.exception("Message handler error")
 
             except CancelledError:
                 break
             except Exception as e:
-                self._logger.exception("WebSocket receive error")
+                self.logger.exception("WebSocket receive error")
 
                 # Notify error handlers
                 for handler in self._on_error_handlers:
                     try:
                         handler(e)
                     except Exception:
-                        self._logger.exception("Error handler error")
+                        self.logger.exception("Error handler error")
 
                 # Attempt reconnection if enabled
                 if self._auto_reconnect:
@@ -440,12 +440,12 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
 
                 if self._connection:
                     # Ping is handled automatically by websockets library
-                    self._logger.debug("WebSocket heartbeat")
+                    self.logger.debug("WebSocket heartbeat")
 
             except CancelledError:
                 break
             except Exception:
-                self._logger.exception("Heartbeat error")
+                self.logger.exception("Heartbeat error")
                 break
 
     def _reconnect(self) -> FlextResult[None]:
@@ -458,7 +458,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
         for attempt in range(self._reconnect_max_attempts):
             delay = self._reconnect_backoff_factor**attempt
 
-            self._logger.info(
+            self.logger.info(
                 f"Reconnecting... (attempt {attempt + 1}/{self._reconnect_max_attempts})",
                 extra={"delay": delay},
             )
@@ -467,7 +467,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
 
             connect_result = self._connect(self._url, self._headers)
             if connect_result.is_success:
-                self._logger.info("WebSocket reconnected successfully")
+                self.logger.info("WebSocket reconnected successfully")
                 return connect_result
 
         return FlextResult[None].fail(

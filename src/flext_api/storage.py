@@ -49,7 +49,7 @@ class FlextApiStorage(FlextService[None]):
         super().__init__()
 
         # Initialize flext-core services
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._container = FlextContainer.get_global()
         self._context = FlextContext()
         self._bus = FlextBus()
