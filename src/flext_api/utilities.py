@@ -14,8 +14,6 @@ from typing import cast
 from urllib.parse import urlparse, urlunparse
 
 from flext_core import (
-    FlextConstants,
-    FlextModels,
     FlextResult,
     FlextTypes,
     FlextUtilities,
@@ -29,11 +27,17 @@ from flext_api.typings import FlextApiTypes
 
 
 class FlextApiUtilities(FlextUtilities):
-    """HTTP-specific utilities with FlextProcessors and FlextMixins integration.
+    """HTTP-specific utilities with complete flext-core integration.
 
     Extends flext-core FlextUtilities with:
     - FlextProcessors for utility operation pipelines
     - FlextMixins for reusable utility patterns
+    - FlextBus for event emission
+    - FlextContainer for dependency injection
+    - FlextContext for operation context
+    - FlextDispatcher for message routing
+    - FlextLogger for structured logging
+    - FlextService for service lifecycle management
     - ZERO DUPLICATION - delegates to flext-core where possible
 
     Inherits from FlextUtilities to avoid duplication and ensure consistency.
@@ -42,10 +46,6 @@ class FlextApiUtilities(FlextUtilities):
     Follows SOLID principles: Single Responsibility and Dependency Inversion.
     """
 
-    # Constants for HTTP-specific time calculations
-    SECONDS_PER_MINUTE: int = 60
-    SECONDS_PER_HOUR: int = 3600
-
     class ResponseBuilder:
         """HTTP response builder using flext-core patterns."""
 
@@ -53,7 +53,7 @@ class FlextApiUtilities(FlextUtilities):
         def build_error_response(
             message: str | None = None,
             *,  # Python 3.13+ keyword-only parameters for clarity
-            status_code: int = FlextConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
+            status_code: int = FlextApiConstants.Platform.HTTP_STATUS_INTERNAL_ERROR,
             data: object | None = None,
             error: str | None = None,
             error_code: str | None = None,
@@ -87,7 +87,7 @@ class FlextApiUtilities(FlextUtilities):
         def build_success_response(
             data: object = None,
             message: str = "Success",
-            status_code: int = FlextConstants.Platform.HTTP_STATUS_OK,
+            status_code: int = FlextApiConstants.Platform.HTTP_STATUS_OK,
         ) -> FlextResult[FlextApiTypes.ResponseDict]:
             """Build success response using flext-core patterns.
 
@@ -190,7 +190,7 @@ class FlextApiUtilities(FlextUtilities):
             total: int | None,
             page: int,
             page_size: int,
-            **kwargs: object,
+            **_kwargs: object,
         ) -> dict:
             """Prepare pagination data and calculations."""
             final_data = data or []
@@ -234,11 +234,11 @@ class FlextApiUtilities(FlextUtilities):
             return response
 
     class HttpValidator:
-        """HTTP-specific validation using centralized flext-core FlextModels."""
+        """HTTP-specific validation using centralized flext-core FlextApiModels."""
 
         @staticmethod
         def validate_url(url: str) -> FlextResult[str]:
-            """Validate URL using centralized FlextModels.create_validated_http_url().
+            """Validate URL using centralized FlextApiModels.create_validated_http_url().
 
             Returns:
                 FlextResult containing validated URL or error message.
@@ -261,7 +261,7 @@ class FlextApiUtilities(FlextUtilities):
                     return FlextResult[str].fail(f"Invalid port {port}")
 
             # Use FlextModels centralized validation with HTTP-specific rules
-            result = FlextModels.create_validated_http_url(url)
+            result = FlextApiModels.create_validated_http_url(url)
             # Map flext-core error messages to expected test messages
             if result.is_failure:
                 error_msg = result.error or "Invalid URL"
@@ -333,18 +333,18 @@ class FlextApiUtilities(FlextUtilities):
             # int_code is guaranteed to be int at this point
 
             if (
-                int_code < FlextConstants.Platform.MIN_HTTP_STATUS_RANGE
-                or int_code > FlextConstants.Platform.MAX_HTTP_STATUS_RANGE
+                int_code < FlextApiConstants.Platform.MIN_HTTP_STATUS_RANGE
+                or int_code > FlextApiConstants.Platform.MAX_HTTP_STATUS_RANGE
             ):
                 return FlextResult[int].fail(
-                    f"Invalid HTTP status code: {int_code}. Must be between {FlextConstants.Platform.MIN_HTTP_STATUS_RANGE} and {FlextConstants.Platform.MAX_HTTP_STATUS_RANGE}."
+                    f"Invalid HTTP status code: {int_code}. Must be between {FlextApiConstants.Platform.MIN_HTTP_STATUS_RANGE} and {FlextApiConstants.Platform.MAX_HTTP_STATUS_RANGE}."
                 )
 
             return FlextResult[int].ok(int_code)
 
         @staticmethod
         def normalize_url(url: str) -> FlextResult[str]:
-            """Normalize URL using centralized FlextModels.Url.normalize().
+            """Normalize URL using centralized FlextApiModels.Url.normalize().
 
             Returns:
                 FlextResult containing normalized URL or error message.
@@ -365,15 +365,16 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def _validate_and_parse_url(url: str) -> FlextResult[object]:
             """Validate URL and return parsed object."""
-            url_result: FlextResult[object] = FlextModels.Url.create(url)
+            url_result: FlextResult[object] = FlextApiModels.Url.create(url)
             if url_result.is_failure:
                 return FlextResult[object].fail(url_result.error or "Invalid URL")
             return url_result
 
         @staticmethod
-        def _normalize_parsed_url(parsed_url: object, original_url: str) -> str:
+        def _normalize_parsed_url(original_url: str) -> str:
             """Normalize a parsed URL object."""
             # Normalize URL manually since Url model doesn't have normalize method
+            # Note: parsed_url parameter is kept for API compatibility but not used
             parsed = urlparse(original_url)
 
             # Basic normalization: lowercase scheme and netloc, remove default ports
@@ -387,14 +388,14 @@ class FlextApiUtilities(FlextUtilities):
             netloc = parsed.netloc.lower()
             if (
                 parsed.scheme == "http"
-                and f":{FlextConstants.Http.HTTP_PORT}" in netloc
+                and f":{FlextApiConstants.Http.HTTP_PORT}" in netloc
             ):
-                netloc = netloc.replace(f":{FlextConstants.Http.HTTP_PORT}", "")
+                netloc = netloc.replace(f":{FlextApiConstants.Http.HTTP_PORT}", "")
             elif (
                 parsed.scheme == "https"
-                and f":{FlextConstants.Http.HTTPS_PORT}" in netloc
+                and f":{FlextApiConstants.Http.HTTPS_PORT}" in netloc
             ):
-                netloc = netloc.replace(f":{FlextConstants.Http.HTTPS_PORT}", "")
+                netloc = netloc.replace(f":{FlextApiConstants.Http.HTTPS_PORT}", "")
 
             return urlunparse((
                 parsed.scheme.lower(),
@@ -419,7 +420,7 @@ class FlextApiUtilities(FlextUtilities):
             FlextResult containing validated URL or error message.
 
         """
-        result = FlextModels.create_validated_http_url(url)
+        result = FlextApiModels.create_validated_http_url(url)
         if result.is_failure:
             return FlextResult[str].fail(result.error or "Validation failed")
         url_obj = result.unwrap()
@@ -491,7 +492,7 @@ class FlextApiUtilities(FlextUtilities):
         return {"config_type": config_type, **config_dict}
 
     @staticmethod
-    def _validate_config_fields(
+    def validate_config_fields(
         config_data: dict,
     ) -> FlextResult[FlextApiTypes.ConfigDict]:
         """Validate specific configuration fields."""
@@ -514,7 +515,7 @@ class FlextApiUtilities(FlextUtilities):
                 )
             else:
                 status_result = FlextApiUtilities.HttpValidator.validate_status_code(
-                    FlextConstants.Http.HTTP_OK
+                    FlextApiConstants.Http.HTTP_OK
                 )
             if status_result.is_failure:
                 return FlextResult[FlextApiTypes.ConfigDict].fail(
@@ -616,7 +617,7 @@ class FlextApiUtilities(FlextUtilities):
         if isinstance(value, bool):
             return value
         if isinstance(value, str):
-            return value.lower() in FlextConstants.Mixins.BOOL_TRUE_STRINGS
+            return value.lower() in FlextApiConstants.Mixins.BOOL_TRUE_STRINGS
         # isinstance(value, int)
         return bool(value)
 
@@ -719,22 +720,24 @@ class FlextApiUtilities(FlextUtilities):
         """
         if seconds < 1:
             return f"{int(seconds * 1000)}ms"
-        if seconds < FlextApiUtilities.SECONDS_PER_MINUTE:
+        if seconds < FlextApiConstants.TimeConstants.SECONDS_PER_MINUTE:
             if seconds == 1.0:
                 return "1s"
             return f"{seconds:.1f}s"
-        if seconds < FlextApiUtilities.SECONDS_PER_HOUR:
-            minutes = int(seconds // FlextApiUtilities.SECONDS_PER_MINUTE)
-            remaining_seconds = seconds % FlextApiUtilities.SECONDS_PER_MINUTE
+        if seconds < FlextApiConstants.TimeConstants.SECONDS_PER_HOUR:
+            minutes = int(seconds // FlextApiConstants.TimeConstants.SECONDS_PER_MINUTE)
+            remaining_seconds = (
+                seconds % FlextApiConstants.TimeConstants.SECONDS_PER_MINUTE
+            )
             if minutes == 1 and remaining_seconds < 1:
                 return "1m"
             if remaining_seconds < 1:
                 return f"{minutes}m"
             return f"{minutes}m {remaining_seconds:.1f}s"
-        hours = int(seconds // FlextApiUtilities.SECONDS_PER_HOUR)
+        hours = int(seconds // FlextApiConstants.TimeConstants.SECONDS_PER_HOUR)
         remaining_minutes = int(
-            (seconds % FlextApiUtilities.SECONDS_PER_HOUR)
-            // FlextApiUtilities.SECONDS_PER_MINUTE
+            (seconds % FlextApiConstants.TimeConstants.SECONDS_PER_HOUR)
+            // FlextApiConstants.TimeConstants.SECONDS_PER_MINUTE
         )
         if remaining_minutes == 0:
             return f"{hours}h"
@@ -867,7 +870,7 @@ class FlextApiUtilities(FlextUtilities):
                     max_retries=max_retries,
                     headers={
                         "User-Agent": "FlextApiClient-Production/1.0.0",
-                        "Accept": FlextConstants.HTTP_DEFAULT_ACCEPT,
+                        "Accept": FlextApiConstants.HTTP_DEFAULT_ACCEPT,
                         "Cache-Control": "no-cache",
                     },
                 )
@@ -910,7 +913,7 @@ class FlextApiUtilities(FlextUtilities):
                     max_retries=max_retries,
                     headers={
                         "User-Agent": "FlextApiClient-Dev/1.0.0",
-                        "Accept": FlextConstants.HTTP_DEFAULT_ACCEPT,
+                        "Accept": FlextApiConstants.HTTP_DEFAULT_ACCEPT,
                     },
                 )
                 return FlextResult[FlextApiClient].ok(client)
@@ -954,7 +957,7 @@ class FlextApiUtilities(FlextUtilities):
                     max_retries=max_retries,
                     headers={
                         "User-Agent": "FlextApiClient-Test/1.0.0",
-                        "Accept": FlextConstants.HTTP_DEFAULT_ACCEPT,
+                        "Accept": FlextApiConstants.HTTP_DEFAULT_ACCEPT,
                     },
                 )
                 return FlextResult[FlextApiClient].ok(client)
@@ -996,8 +999,8 @@ class FlextApiUtilities(FlextUtilities):
                     max_retries=max_retries,
                     headers={
                         "User-Agent": "FlextApiClient-Monitor/1.0.0",
-                        "Accept": FlextConstants.HTTP_DEFAULT_ACCEPT,
-                        "X-Monitoring": FlextConstants.Mixins.STRING_TRUE,
+                        "Accept": FlextApiConstants.HTTP_DEFAULT_ACCEPT,
+                        "X-Monitoring": FlextApiConstants.Mixins.STRING_TRUE,
                     },
                 )
                 return FlextResult[FlextApiClient].ok(client)
@@ -1049,7 +1052,7 @@ class FlextApiUtilities(FlextUtilities):
                 return FlextApiUtilities.ClientFactory.create_monitoring_client(
                     base_url, config
                 )
-            return FlextResult[object].fail(
+            return FlextResult[FlextApiClient].fail(
                 f"Unsupported environment: {environment}. "
                 f"Supported environments: {FlextApiUtilities.ClientFactory.get_supported_environments()}"
             )
@@ -1524,27 +1527,27 @@ class FlextApiUtilities(FlextUtilities):
         def is_success_status(status_code: int) -> bool:
             """Check if HTTP status code indicates success (2xx range)."""
             return (
-                FlextConstants.Http.HTTP_SUCCESS_MIN
+                FlextApiConstants.Http.HTTP_SUCCESS_MIN
                 <= status_code
-                <= FlextConstants.Http.HTTP_SUCCESS_MAX
+                <= FlextApiConstants.Http.HTTP_SUCCESS_MAX
             )
 
         @staticmethod
         def is_client_error_status(status_code: int) -> bool:
             """Check if HTTP status code indicates client error (4xx range)."""
             return (
-                FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
+                FlextApiConstants.Http.HTTP_CLIENT_ERROR_MIN
                 <= status_code
-                <= FlextConstants.Http.HTTP_CLIENT_ERROR_MAX
+                <= FlextApiConstants.Http.HTTP_CLIENT_ERROR_MAX
             )
 
         @staticmethod
         def is_server_error_status(status_code: int) -> bool:
             """Check if HTTP status code indicates server error (5xx range)."""
             return (
-                FlextConstants.Http.HTTP_SERVER_ERROR_MIN
+                FlextApiConstants.Http.HTTP_SERVER_ERROR_MIN
                 <= status_code
-                <= FlextConstants.Http.HTTP_SERVER_ERROR_MAX
+                <= FlextApiConstants.Http.HTTP_SERVER_ERROR_MAX
             )
 
         @staticmethod
@@ -1578,14 +1581,14 @@ class FlextApiUtilities(FlextUtilities):
         def validate_status_code(status_code: int) -> FlextResult[int]:
             """Validate HTTP status code range."""
             if (
-                FlextConstants.Http.HTTP_STATUS_MIN
+                FlextApiConstants.Http.HTTP_STATUS_MIN
                 <= status_code
-                <= FlextConstants.Http.HTTP_STATUS_MAX
+                <= FlextApiConstants.Http.HTTP_STATUS_MAX
             ):
                 return FlextResult[int].ok(status_code)
 
             return FlextResult[int].fail(
-                f"Status code must be between {FlextConstants.Http.HTTP_STATUS_MIN} and {FlextConstants.Http.HTTP_STATUS_MAX}"
+                f"Status code must be between {FlextApiConstants.Http.HTTP_STATUS_MIN} and {FlextApiConstants.Http.HTTP_STATUS_MAX}"
             )
 
         @staticmethod
@@ -1598,15 +1601,15 @@ class FlextApiUtilities(FlextUtilities):
             if FlextApiUtilities.ModuleFacade.is_server_error_status(status_code):
                 return "server_error"
             if (
-                FlextConstants.Http.HTTP_INFORMATIONAL_MIN
+                FlextApiConstants.Http.HTTP_INFORMATIONAL_MIN
                 <= status_code
-                <= FlextConstants.Http.HTTP_INFORMATIONAL_MAX
+                <= FlextApiConstants.Http.HTTP_INFORMATIONAL_MAX
             ):
                 return "informational"
             if (
-                FlextConstants.Http.HTTP_REDIRECTION_MIN
+                FlextApiConstants.Http.HTTP_REDIRECTION_MIN
                 <= status_code
-                <= FlextConstants.Http.HTTP_REDIRECTION_MAX
+                <= FlextApiConstants.Http.HTTP_REDIRECTION_MAX
             ):
                 return "redirection"
             return "unknown"
@@ -1794,194 +1797,94 @@ class FlextApiUtilities(FlextUtilities):
         examples = {
             "response": """
 # Example: Enhanced response building with flext-core integration
-from flext_api import FlextApiUtilities, FlextApiModels
+from flext_api import FlextApiUtilities
 from flext_core import FlextResult
 
-class ResponseService:
-    def __init__(self):
-        self._utilities = FlextApiUtilities()
+# Direct usage of utilities for response building
+success_result = FlextApiUtilities.ResponseBuilder.build_success_response(
+    data={"user": "john"},
+    message="Operation completed successfully",
+    status_code=200
+)
 
-    def create_success_response(self, data: dict) -> FlextResult[FlextTypes.Dict]:
-        # Use flext-core patterns for response building
-        response_result = FlextApiUtilities.ResponseBuilder.build_success_response(
-            data=data,
-            message="Operation completed successfully",
-            status_code=200
-        )
-
-        if response_result.is_failure:
-            return FlextResult[FlextTypes.Dict].fail(f"Response building failed: {response_result.error}")
-
-        return FlextResult[FlextTypes.Dict].ok(response_result.unwrap())
-
-    def create_error_response(self, message: str, error_code: str) -> FlextResult[FlextTypes.Dict]:
-        # Use flext-core patterns for error response building
-        response_result = FlextApiUtilities.ResponseBuilder.build_error_response(
-            message=message,
-            status_code=400,
-            error_code=error_code,
-            details={"timestamp": "now", "request_id": "req-123"}
-        )
-
-        if response_result.is_failure:
-            return FlextResult[FlextTypes.Dict].fail(f"Error response building failed: {response_result.error}")
-
-        return FlextResult[FlextTypes.Dict].ok(response_result.unwrap())
-
-# Usage with flext-core integration
-service = ResponseService()
-success_result = service.create_success_response({"user": "john"})
-error_result = service.create_error_response("Invalid input", "VALIDATION_ERROR")
+error_result = FlextApiUtilities.ResponseBuilder.build_error_response(
+    message="Invalid input",
+    status_code=400,
+    error_code="VALIDATION_ERROR",
+    details={"timestamp": "now", "request_id": "req-123"}
+)
 """,
             "validation": """
 # Example: Enhanced validation with flext-core integration
 from flext_api import FlextApiUtilities
 from flext_core import FlextResult
 
-class ValidationService:
-    def __init__(self):
-        self._utilities = FlextApiUtilities()
+# Direct validation using utilities
+status_result = FlextApiUtilities.ModuleFacade.validate_status_code(200)
+status_category = FlextApiUtilities.ModuleFacade.get_status_category(200)
 
-    def validate_http_request(self, request: dict) -> FlextResult[FlextTypes.Dict]:
-        # Validate using flext-core patterns
-        if not request.get("method"):
-            return FlextResult[FlextTypes.Dict].fail("HTTP method is required")
-
-        if not request.get("url"):
-            return FlextResult[FlextTypes.Dict].fail("URL is required")
-
-        # Use utilities for status code validation
-        status_result = FlextApiUtilities.ModuleFacade.validate_status_code(200)
-        if status_result.is_failure:
-            return FlextResult[FlextTypes.Dict].fail(f"Status validation failed: {status_result.error}")
-
-        return FlextResult[FlextTypes.Dict].ok({
-            "valid": True,
-            "method": request["method"],
-            "url": request["url"],
-            "status_category": FlextApiUtilities.ModuleFacade.get_status_category(200)
-        })
-
-    def validate_response_data(self, response: dict) -> FlextResult[FlextTypes.Dict]:
-        # Validate response using flext-core patterns
-        if not isinstance(response, dict):
-            return FlextResult[FlextTypes.Dict].fail("Response must be a dictionary")
-
-        if "data" not in response:
-            return FlextResult[FlextTypes.Dict].fail("Response missing data field")
-
-        # Use utilities for comprehensive validation
-        return FlextResult[FlextTypes.Dict].ok({
-            "valid": True,
-            "has_data": True,
-            "data_type": type(response["data"]).__name__
-        })
-
-# Usage with flext-core integration
-service = ValidationService()
-request_result = service.validate_http_request({"method": "GET", "url": "/users"})
-response_result = service.validate_response_data({"data": "test", "status": 200})
+# Validate HTTP request structure
+request = {"method": "GET", "url": "/users"}
+if not request.get("method"):
+    print("HTTP method is required")
+else:
+    validation_result = {
+        "valid": True,
+        "method": request["method"],
+        "url": request["url"],
+        "status_category": status_category
+    }
 """,
             "transformation": """
 # Example: Enhanced transformation with flext-core integration
 from flext_api import FlextApiUtilities
 from flext_core import FlextResult
 
-class TransformationService:
-    def __init__(self):
-        self._utilities = FlextApiUtilities()
+# Direct data transformation
+data = {"name": " John ", "email": "USER@EXAMPLE.COM"}
+normalized = {}
+for key, value in data.items():
+    if isinstance(value, str):
+        normalized[key] = value.strip().lower()
+    else:
+        normalized[key] = value
 
-    def normalize_request_data(self, data: dict) -> FlextResult[FlextTypes.Dict]:
-        # Use flext-core transformation patterns
-        if not isinstance(data, dict):
-            return FlextResult[FlextTypes.Dict].fail("Data must be a dictionary")
-
-        # Normalize using utilities
-        normalized = {}
-        for key, value in data.items():
-            if isinstance(value, str):
-                # Use string normalization utilities
-                normalized[key] = value.strip().lower()
-            else:
-                normalized[key] = value
-
-        return FlextResult[FlextTypes.Dict].ok({
-            "original": data,
-            "normalized": normalized,
-            "transformation_applied": True
-        })
-
-    def sanitize_response_data(self, data: dict) -> FlextResult[FlextTypes.Dict]:
-        # Use flext-core sanitization patterns
-        if not isinstance(data, dict):
-            return FlextResult[FlextTypes.Dict].fail("Data must be a dictionary")
-
-        # Sanitize sensitive data
-        sanitized = {}
-        for key, value in data.items():
-            if "password" in key.lower() or "token" in key.lower():
-                sanitized[key] = "***REDACTED***"
-            else:
-                sanitized[key] = value
-
-        return FlextResult[FlextTypes.Dict].ok({
-            "sanitized": sanitized,
-            "sensitive_fields_redacted": len([k for k in data.keys() if "password" in k.lower() or "token" in k.lower()]) > 0
-        })
-
-# Usage with flext-core integration
-service = TransformationService()
-normalize_result = service.normalize_request_data({"name": " John ", "email": "USER@EXAMPLE.COM"})
-sanitize_result = service.sanitize_response_data({"username": "john", "password": "secret123", "data": "public"})
+# Sanitize sensitive data
+response_data = {"username": "john", "password": "secret123", "data": "public"}
+sanitized = {}
+for key, value in response_data.items():
+    if "password" in key.lower() or "token" in key.lower():
+        sanitized[key] = "***REDACTED***"
+    else:
+        sanitized[key] = value
 """,
             "http": """
 # Example: Enhanced HTTP utilities with flext-core integration
 from flext_api import FlextApiUtilities
 from flext_core import FlextResult
 
-class HttpUtilitiesService:
-    def __init__(self):
-        self._utilities = FlextApiUtilities()
+# Direct HTTP processing
+request = {"method": "GET", "url": "/api/users"}
+if request.get("method") and request.get("url"):
+    method = request["method"].upper()
+    url = request["url"]
+    status_category = FlextApiUtilities.ModuleFacade.get_status_category(200)
 
-    def process_http_request(self, request: dict) -> FlextResult[FlextTypes.Dict]:
-        # Use flext-core HTTP utility patterns
-        if not request.get("method"):
-            return FlextResult[FlextTypes.Dict].fail("HTTP method is required")
+    processed_request = {
+        "method": method,
+        "url": url,
+        "status_category": status_category,
+        "processed": True
+    }
 
-        if not request.get("url"):
-            return FlextResult[FlextTypes.Dict].fail("URL is required")
-
-        # Process using utilities
-        method = request["method"].upper()
-        url = request["url"]
-
-        # Get status category using utilities
-        status_category = FlextApiUtilities.ModuleFacade.get_status_category(200)
-
-        return FlextResult[FlextTypes.Dict].ok({
-            "method": method,
-            "url": url,
-            "status_category": status_category,
-            "processed": True
-        })
-
-    def build_http_headers(self, include_auth: bool = False) -> FlextResult[FlextTypes.Dict]:
-        # Build headers using flext-core patterns
-        headers = {
-            "Content-Type": "application/json",
-            "User-Agent": "FlextApi/1.0.0",
-            "Accept": "application/json"
-        }
-
-        if include_auth:
-            headers["Authorization"] = "Bearer token123"
-
-        return FlextResult[FlextTypes.Dict].ok(headers)
-
-# Usage with flext-core integration
-service = HttpUtilitiesService()
-request_result = service.process_http_request({"method": "GET", "url": "/api/users"})
-headers_result = service.build_http_headers(include_auth=True)
+# Build HTTP headers
+headers = {
+    "Content-Type": "application/json",
+    "User-Agent": "FlextApi/1.0.0",
+    "Accept": "application/json"
+}
+# Add auth if needed
+headers["Authorization"] = "Bearer token123"
 """,
         }
 
@@ -2074,7 +1977,7 @@ headers_result = service.build_http_headers(include_auth=True)
                 "integration_level": "comprehensive",
                 "components_integrated": [
                     "FlextApiUtilities",
-                    "FlextApiModels",
+                    "FlextModels",
                     "FlextApiConstants",
                 ],
                 "best_practices_demonstrated": [
@@ -2091,3 +1994,6 @@ headers_result = service.build_http_headers(include_auth=True)
             return FlextResult[FlextTypes.Dict].fail(
                 f"Utilities pattern demonstration failed: {e}"
             )
+
+
+__all__ = ["FlextApiUtilities"]

@@ -375,8 +375,8 @@ class JSONSchemaValidator(SchemaPlugin):
 
     def validate_request(
         self,
-        request: FlextTypes.JsonValue,  # noqa: ARG002 - stub implementation
-        schema: dict[str, FlextTypes.JsonValue],  # noqa: ARG002 - stub implementation
+        _request: FlextTypes.JsonValue,
+        _schema: dict[str, FlextTypes.JsonValue],
     ) -> FlextResult[dict[str, FlextTypes.JsonValue]]:
         """Validate request against JSON Schema.
 
@@ -393,8 +393,8 @@ class JSONSchemaValidator(SchemaPlugin):
 
     def validate_response(
         self,
-        response: FlextTypes.JsonValue,  # noqa: ARG002 - stub implementation
-        schema: dict[str, FlextTypes.JsonValue],  # noqa: ARG002 - stub implementation
+        _response: FlextTypes.JsonValue,
+        _schema: dict[str, FlextTypes.JsonValue],
     ) -> FlextResult[dict[str, FlextTypes.JsonValue]]:
         """Validate response against JSON Schema.
 

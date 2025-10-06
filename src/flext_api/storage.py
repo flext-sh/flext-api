@@ -11,6 +11,9 @@ from typing import override
 
 from flext_core import (
     FlextBus,
+    FlextContainer,
+    FlextContext,
+    FlextDispatcher,
     FlextLogger,
     FlextResult,
     FlextService,
@@ -28,6 +31,10 @@ class FlextApiStorage(FlextService[None]):
     - Extends FlextService for service lifecycle management
     - Uses FlextLogger for structured logging
     - Uses FlextResult for railway-oriented error handling
+    - Uses FlextContainer for dependency injection
+    - Uses FlextContext for operation context
+    - Uses FlextBus for event emission
+    - Uses FlextDispatcher for message routing
     """
 
     @override
@@ -43,7 +50,10 @@ class FlextApiStorage(FlextService[None]):
 
         # Initialize flext-core services
         self._logger = FlextLogger(__name__)
+        self._container = FlextContainer.get_global()
+        self._context = FlextContext()
         self._bus = FlextBus()
+        self._dispatcher = FlextDispatcher()
         # NOTE: FlextRegistry requires dispatcher - storage backend registration deferred
 
         # Simplified config using flext-core patterns
@@ -155,13 +165,15 @@ class FlextApiStorage(FlextService[None]):
 
         """
         # Emit storage access event
-        self._bus.publish(
-            "storage.get.requested",
-            {
+        event = {
+            "event_type": "storage.get.requested",
+            "aggregate_id": key,
+            "data": {
                 "key": key,
                 "namespace": self._namespace,
             },
-        )
+        }
+        self._bus.publish_event(event)
 
         result = None
 
@@ -187,23 +199,27 @@ class FlextApiStorage(FlextService[None]):
 
         # Emit storage access result event
         if result.is_success:
-            self._bus.publish(
-                "storage.get.succeeded",
-                {
+            event = {
+                "event_type": "storage.get.succeeded",
+                "aggregate_id": key,
+                "data": {
                     "key": key,
                     "namespace": self._namespace,
                     "found": result.unwrap() is not default,
                 },
-            )
+            }
+            self._bus.publish_event(event)
         else:
-            self._bus.publish(
-                "storage.get.failed",
-                {
+            event = {
+                "event_type": "storage.get.failed",
+                "aggregate_id": key,
+                "data": {
                     "key": key,
                     "namespace": self._namespace,
-                    "error": result.error,
+                    "error": str(result.error),
                 },
-            )
+            }
+            self._bus.publish_event(event)
 
         return result
 
@@ -215,7 +231,7 @@ class FlextApiStorage(FlextService[None]):
 
         """
         # Emit storage delete event
-        self._bus.publish(
+        self._bus.publish_event(
             "storage.delete.requested",
             {
                 "key": key,
@@ -233,7 +249,7 @@ class FlextApiStorage(FlextService[None]):
             del self._storage[storage_key]
 
         # Emit storage delete result event
-        self._bus.publish(
+        self._bus.publish_event(
             "storage.delete.completed",
             {
                 "key": key,
@@ -351,116 +367,95 @@ class FlextApiStorage(FlextService[None]):
         # For registry-based storage, no cleanup needed
         return FlextResult[None].ok(None)
 
-    class JsonStorage:
-        """JSON storage operations for HTTP data."""
+    def serialize_json(self, data: object) -> FlextResult[str]:
+        """Serialize data to JSON string.
 
-        @override
-        def __init__(self) -> None:
-            """Initialize JSON storage."""
+        Returns:
+            FlextResult[str]: Success result with JSON string or failure result.
 
-        def serialize(self, data: object) -> FlextResult[str]:
-            """Serialize data to JSON string.
+        """
+        try:
+            json_str = json.dumps(data, default=str)
+            return FlextResult[str].ok(json_str)
+        except Exception as e:
+            return FlextResult[str].fail(f"JSON serialization failed: {e}")
 
-            Returns:
-                FlextResult[str]: Success result with JSON string or failure result.
+    def deserialize_json(self, json_str: str) -> FlextResult[FlextApiTypes.JsonValue]:
+        """Deserialize JSON string to JsonValue.
 
-            """
-            try:
-                json_str = json.dumps(data, default=str)
-                return FlextResult[str].ok(json_str)
-            except Exception as e:
-                return FlextResult[str].fail(f"JSON serialization failed: {e}")
+        Returns:
+            FlextResult[FlextApiTypes.JsonValue]: Success result with data or failure result.
 
-        def deserialize(self, json_str: str) -> FlextResult[FlextApiTypes.JsonValue]:
-            """Deserialize JSON string to JsonValue.
-
-            Returns:
-                FlextResult[FlextApiTypes.JsonValue]: Success result with data or failure result.
-
-            """
-            try:
-                data: FlextApiTypes.JsonValue = json.loads(json_str)
-                return FlextResult[FlextApiTypes.JsonValue].ok(data)
-            except Exception as e:
-                return FlextResult[FlextApiTypes.JsonValue].fail(
-                    f"JSON deserialization failed: {e}"
-                )
-
-    class CacheOperations:
-        """Cache operations for HTTP data."""
-
-        @override
-        def __init__(self) -> None:
-            """Initialize cache operations."""
-
-        def get_cache_stats(self) -> FlextResult[FlextApiTypes.CacheDict]:
-            """Get cache statistics.
-
-            Returns:
-                FlextResult[FlextApiTypes.CacheDict]: Success result with cache stats or failure result.
-
-            """
-            return FlextResult[FlextApiTypes.CacheDict].ok(
-                {
-                    "size": 0,  # Default size since we don't have access to storage
-                    "backend": "memory",
-                },
+        """
+        try:
+            data: FlextApiTypes.JsonValue = json.loads(json_str)
+            return FlextResult[FlextApiTypes.JsonValue].ok(data)
+        except Exception as e:
+            return FlextResult[FlextApiTypes.JsonValue].fail(
+                f"JSON deserialization failed: {e}"
             )
 
-        def cleanup_expired(self) -> FlextResult[int]:
-            """Clean up expired cache entries.
+    def get_cache_stats(self) -> FlextResult[FlextApiTypes.CacheDict]:
+        """Get cache statistics.
 
-            Returns:
-                FlextResult containing number of entries removed
+        Returns:
+            FlextResult[FlextApiTypes.CacheDict]: Success result with cache stats or failure result.
 
-            """
-            try:
-                # For this simple implementation, we don't track expiration
-                # In a real implementation, this would remove expired entries
-                removed_count = 0
-                return FlextResult[int].ok(removed_count)
-            except Exception as e:
-                return FlextResult[int].fail(f"Cache cleanup failed: {e}")
+        """
+        return FlextResult[FlextApiTypes.CacheDict].ok(
+            {
+                "size": 0,  # Default size since we don't have access to storage
+                "backend": "memory",
+            },
+        )
 
-    class StorageMetrics:
-        """Storage metrics collection."""
+    def cleanup_expired(self) -> FlextResult[int]:
+        """Clean up expired cache entries.
 
-        @override
-        def __init__(self) -> None:
-            """Initialize storage metrics."""
+        Returns:
+            FlextResult containing number of entries removed
 
-        def get_metrics(self) -> FlextResult[FlextApiTypes.MetricsDict]:
-            """Get storage metrics.
+        """
+        try:
+            # For this simple implementation, we don't track expiration
+            # In a real implementation, this would remove expired entries
+            removed_count = 0
+            return FlextResult[int].ok(removed_count)
+        except Exception as e:
+            return FlextResult[int].fail(f"Cache cleanup failed: {e}")
 
-            Returns:
-                FlextResult[FlextApiTypes.MetricsDict]: Success result with metrics or failure result.
+    def get_storage_metrics(self) -> FlextResult[FlextApiTypes.MetricsDict]:
+        """Get storage metrics.
 
-            """
-            return FlextResult[FlextApiTypes.MetricsDict].ok(
-                {"total_operations": 0, "cache_hits": 0, "cache_misses": 0},
+        Returns:
+            FlextResult[FlextApiTypes.MetricsDict]: Success result with metrics or failure result.
+
+        """
+        return FlextResult[FlextApiTypes.MetricsDict].ok(
+            {"total_operations": 0, "cache_hits": 0, "cache_misses": 0},
+        )
+
+    def get_storage_statistics(self) -> FlextResult[FlextTypes.FloatDict]:
+        """Get storage statistics.
+
+        Returns:
+            FlextResult containing storage statistics
+
+        """
+        try:
+            stats = {
+                "total_operations": 0,
+                "cache_hits": 0,
+                "cache_misses": 0,
+                "hit_ratio": 0.0,
+                "storage_size": 0,
+                "memory_usage": 0,
+            }
+            return FlextResult[FlextTypes.FloatDict].ok(stats)
+        except Exception as e:
+            return FlextResult[FlextTypes.FloatDict].fail(
+                f"Statistics collection failed: {e}",
             )
-
-        def get_statistics(self) -> FlextResult[FlextTypes.FloatDict]:
-            """Get storage statistics.
-
-            Returns:
-                FlextResult containing storage statistics
-
-            """
-            try:
-                stats = {
-                    "total_operations": 0,
-                    "cache_hits": 0,
-                    "cache_misses": 0,
-                    "hit_ratio": 0.0,
-                    "storage_size": 0,
-                    "memory_usage": 0,
-                }
-                return FlextResult[FlextTypes.FloatDict].ok(stats)
-            except Exception as e:
-                return FlextResult[FlextTypes.FloatDict].fail(
-                    f"Statistics collection failed: {e}",
-                )
 
     def batch_set(
         self, data: FlextTypes.Dict, ttl: int | None = None

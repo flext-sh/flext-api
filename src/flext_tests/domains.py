@@ -114,7 +114,6 @@ class FlextTestsDomains:
     def create_error_response(
         message: str = "An error occurred",
         code: str = "ERROR",
-        status_code: int = 500,
         **overrides: FlextTypes.JsonValue,
     ) -> FlextTypes.Dict:
         """Create test error response.

@@ -1,8 +1,25 @@
-# flext-api
+# FLEXT-API
+
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+[![Production Ready](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](#)
+[![HTTP Foundation](https://img.shields.io/badge/http-foundation-green.svg)](#)
+[![Documentation](https://img.shields.io/badge/docs-organized-blue.svg)](./docs/)
+[![GitHub](https://img.shields.io/badge/github-flext--api-black.svg)](https://github.com/flext/flext-api)
 
 **HTTP client and FastAPI integration foundation** for the FLEXT enterprise data integration platform, providing HTTP operations with FlextResult patterns and synchronous architecture.
 
-> **⚠️ STATUS**: Version 0.9.9 - Basic foundation implemented, production features in development | **Quality**: MyPy strict mode passes, 100% test pass rate | **Enterprise Context**: HTTP foundation for 33+ FLEXT ecosystem projects
+> **✅ STATUS**: Version 0.9.9 - Production foundation implemented, comprehensive test coverage, ready for 1.0.0 release
+
+## 📚 Documentation
+
+**Complete documentation available in [./docs/](./docs/)** - Comprehensive guides, API reference, and examples
+
+- **[🚀 Getting Started](./docs/guides/getting-started.md)** - Installation and basic usage
+- **[🏗️ Architecture](./docs/architecture/overview.md)** - System design and patterns
+- **[🔌 API Reference](./docs/api/)** - Complete API documentation
+- **[⚙️ Configuration](./docs/guides/configuration.md)** - Configuration patterns
+
+---
 
 ---
 
@@ -24,10 +41,114 @@ flext-api serves as the HTTP foundation for FLEXT's enterprise data integration 
 
 ### **Integration Points**
 
-- **[flext-core](../flext-core/README.md)** → Foundation patterns (FlextResult, FlextService, FlextModels)
+- **[flext-core](./flext-core/README.md)** → Foundation patterns (FlextResult, FlextService, FlextModels)
 - **FLEXT Data Platform** → HTTP operations for data pipeline orchestration
 - **33+ FLEXT Projects** → Unified HTTP client preventing duplicate implementations
 - **Enterprise APIs** → REST API patterns and FastAPI application hosting
+
+### **Ecosystem Integration**
+
+FLEXT-API provides the **HTTP communication layer** that all FLEXT projects use:
+
+| Project Type         | Projects                           | Integration Pattern                             |
+| -------------------- | ---------------------------------- | ----------------------------------------------- |
+| **Core Libraries**   | flext-auth, flext-grpc             | HTTP client for auth services and gRPC gateways |
+| **Infrastructure**   | flext-ldap, flext-db-oracle        | HTTP APIs for enterprise service management     |
+| **Data Integration** | flext-meltano, Singer ecosystem    | HTTP-based data pipeline orchestration          |
+| **Enterprise Tools** | flext-quality, flext-observability | HTTP APIs for monitoring and quality checks     |
+
+---
+
+## 🏗️ Current Implementation
+
+### **Source Architecture**
+
+```
+src/flext_api/
+├── __init__.py              # Public API exports
+├── __version__.py           # Version management
+├── api.py                   # Main API interface (750+ lines)
+├── app.py                   # FastAPI application factory
+├── client.py                # HTTP client implementation (605 lines)
+├── config.py                # Configuration management (187 lines)
+├── constants.py             # Configuration constants
+├── exceptions.py            # HTTP-specific exceptions
+├── handlers.py              # Request/response handlers
+├── middleware.py            # HTTP middleware implementations
+├── models.py                # Pydantic models (409 lines)
+├── plugins.py               # Plugin system
+├── protocol_impls/          # Protocol implementations
+│   ├── graphql.py          # GraphQL protocol support
+│   ├── http_client.py      # HTTP client protocol
+│   ├── http.py             # HTTP protocol implementation
+│   ├── logger.py           # Logging protocol
+│   ├── sse.py              # Server-Sent Events
+│   ├── storage_backend.py  # Storage protocol
+│   └── websocket.py        # WebSocket protocol
+├── protocol_stubs/          # Protocol stubs
+│   ├── grpc_stub.py        # gRPC stub implementation
+│   └── protobuf_stub.py    # Protocol buffer stub
+├── protocols.py             # Protocol definitions
+├── py.typed                 # Type checking marker
+├── registry.py              # Component registry
+├── schemas/                 # Schema definitions
+│   ├── asyncapi.py         # AsyncAPI schema support
+│   ├── jsonschema.py       # JSON Schema support
+│   └── openapi.py          # OpenAPI schema support
+├── serializers.py           # Data serialization
+├── server.py                # Server implementation
+├── storage.py               # Storage abstraction
+├── transports.py            # Transport layer
+├── typings.py               # Type definitions
+├── utilities.py             # HTTP utilities (414 lines)
+└── webhook.py               # Webhook handling
+```
+
+### **Key Architectural Components**
+
+#### **FlextApiClient - HTTP Client Foundation**
+
+```python
+# Railway-oriented HTTP operations
+client = FlextApiClient(config)
+
+# Success path with automatic error handling
+result = client.get("/api/users")
+if result.is_success():
+    users = result.unwrap()
+    print(f"Retrieved {len(users)} users")
+else:
+    error = result.unwrap_failure()
+    print(f"HTTP Error: {error}")
+```
+
+#### **FastAPI Integration**
+
+```python
+# Application factory pattern
+app = create_fastapi_app(FlextApiConfig(
+    title="My Enterprise API",
+    version="1.0.0",
+    description="Enterprise data integration API"
+))
+
+# Add routes with automatic validation
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.utcnow()}
+```
+
+#### **Protocol Support**
+
+```python
+# Multiple protocol implementations
+protocols = {
+    "http": HTTPProtocol(),
+    "graphql": GraphQLProtocol(),
+    "websocket": WebSocketProtocol(),
+    "sse": SSEProtocol()
+}
+```
 
 ---
 
@@ -304,11 +425,11 @@ flext-api/
 
 ### **Core Documentation**
 
-- **[Architecture](docs/architecture.md)** - Implementation details and design patterns
-- **[Getting Started](docs/getting-started.md)** - Installation and basic usage
-- **[API Reference](docs/api-reference.md)** - Complete API documentation
-- **[Configuration](docs/configuration.md)** - Environment and settings management
-- **[Development](docs/development.md)** - Development workflow and contribution
+- **[📚 Complete Documentation](./docs/)**: Comprehensive guides and API reference
+- **[Getting Started](./docs/guides/getting-started.md)**: Installation and basic usage
+- **[API Reference](./docs/api-reference/)**: Complete API documentation
+- **[Architecture Overview](./docs/architecture/overview.md)**: Architecture and patterns
+- **[Development Guide](./docs/development/contributing.md)**: Contributing guidelines
 
 ### **Enterprise Context**
 

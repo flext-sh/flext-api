@@ -21,8 +21,8 @@ class FlextTestsMatchers:
 
     @staticmethod
     def assert_flext_result_success(
-        result: FlextResult[Any],
-        expected_data: Any = None,
+        result: FlextResult[FlextTypes.JsonValue],
+        expected_data: FlextTypes.JsonValue | None = None,
     ) -> None:
         """Assert that a FlextResult is successful.
 

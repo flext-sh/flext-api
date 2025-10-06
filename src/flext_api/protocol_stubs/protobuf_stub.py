@@ -63,7 +63,7 @@ class ProtobufMessage:
         )
 
     @classmethod
-    def deserialize(cls, data: bytes) -> FlextResult[ProtobufMessage]:
+    def deserialize(cls, _data: bytes) -> FlextResult[ProtobufMessage]:
         """Deserialize message from bytes.
 
         Args:
@@ -178,7 +178,7 @@ class ProtobufSerializer:
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def deserialize(self, data: bytes) -> FlextResult[ProtobufMessage]:
+    def deserialize(self, _data: bytes) -> FlextResult[ProtobufMessage]:
         """Deserialize message from bytes.
 
         Args:
@@ -193,7 +193,7 @@ class ProtobufSerializer:
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def _validate_message(self, message: ProtobufMessage) -> FlextResult[None]:
+    def _validate_message(self, _message: ProtobufMessage) -> FlextResult[None]:
         """Validate message against schema.
 
         Args:

@@ -63,7 +63,7 @@
     ]
     name = "flext-api"
     readme = "README.md"
-    requires-python = ">=3.13,<3.14"
+    requires-python = ">=3.13"
     version = "0.9.0"
     [[project.authors]]
         email = "team@flext.sh"
@@ -129,126 +129,131 @@
             "types-toml>=0.10.8.20240310",
         ]
 
-[tool.poetry]
-    [[tool.poetry.packages]]
-        from    = "src"
-        include = "flext_api"
+[tool]
+    [tool.poetry]
+        [[tool.poetry.packages]]
+            from    = "src"
+            include = "flext_api"
 
-[tool.bandit]
-    extend = "../.bandit-shared.toml"
-    skips = [
-        "B101",
-        "B104",
-        "B105",
-        "B601",
-    ]
+        [tool.poetry.dependencies]
+            python = "^3.13"
 
-[tool.coverage]
-    extend = "../.coverage-shared.toml"
+        [tool.poetry.group.dev.dependencies]
+            bandit       = "^1.8.6"
+            faker        = "^37.5.3"
+            pip-audit    = "^2.9.0"
+            pyrefly      = "^0.34.0"
+            pytest       = "^8.4.1"
+            pytest-cov   = "^6.2.1"
+            pytest-httpx = "^0.35.0"
 
-[tool.deptry]
-    exclude = [
-        ".archive",
-        ".git",
-        ".meltano",
-        ".mypy_cache",
-        ".pyrefly_cache",
-        ".pytest_cache",
-        ".ruff_cache",
-        ".venv",
-        "__pycache__",
-        "build",
-        "dist",
-        "htmlcov",
-        "node_modules",
-        "reports",
-        "vendor",
-        "venv",
-    ]
-    known_first_party = [
-        "flext_api",
-    ]
-    pep621_dev_dependency_groups = [
-        "dev",
-        "security",
-        "test",
-        "typings",
-    ]
+    [tool.bandit]
+        extend = "../.bandit-shared.toml"
+        skips = [
+            "B101",
+            "B104",
+            "B105",
+            "B601",
+        ]
 
-[tool.ruff]
-    extend = "../ruff-shared.toml"
+    [tool.coverage]
+        extend = "../.coverage-shared.toml"
 
-[tool.pytest.ini_options]
-    addopts = [
-        "--color=yes",
-        "--cov-branch",
-        "--cov-context=test",
-        "--cov-report=html:htmlcov",
-        "--cov-report=term-missing:skip-covered",
-        "--cov-report=xml:reports/coverage.xml",
-        "--cov=src/flext_api",
-        "--strict-config",
-        "--strict-markers",
-        "--tb=short",
-        "-ra",
-    ]
-    markers = [
-        "api: FastAPI endpoint tests",
-        "architecture: Architectural pattern tests",
-        "benchmark: Performance benchmark tests",
-        "builder: Builder pattern tests",
-        "client: HTTP client tests",
-        "concurrency: Concurrency and tests",
-        "core: Core functionality tests",
-        "e2e: End-to-end tests with real services",
-        "integration: Integration tests (may require external services)",
-        "memory: Memory usage and leak tests",
-        "mock: Tests using mocks heavily",
-        "performance: Performance and load tests",
-        "race_condition: Race condition and thread safety tests",
-        "real: Tests using real external services",
-        "regression: Regression tests for bug fixes",
-        "security: Security-related tests",
-        "skip: Tests that should be skipped",
-        "slow: Slow running tests (>1s)",
-        "smoke: Quick smoke tests for CI",
-        "timeout: Tests with timeout constraints",
-        "unit: Fast unit tests with mocks",
-        "xfail: Tests expected to fail",
-    ]
-    minversion = "8.0"
-    python_classes = [
-        "Test*",
-    ]
-    python_files = [
-        "*_test.py",
-        "test_*.py",
-    ]
-    python_functions = [
-        "test_*",
-    ]
-    testpaths = [
-        "tests",
-    ]
+    [tool.deptry]
+        exclude = [
+            ".archive",
+            ".git",
+            ".meltano",
+            ".mypy_cache",
+            ".pyrefly_cache",
+            ".pytest_cache",
+            ".ruff_cache",
+            ".venv",
+            "__pycache__",
+            "build",
+            "dist",
+            "htmlcov",
+            "node_modules",
+            "reports",
+            "vendor",
+            "venv",
+        ]
+        known_first_party = [
+            "flext_api",
+        ]
+        pep621_dev_dependency_groups = [
+            "dev",
+            "security",
+            "test",
+            "typings",
+        ]
+
+    [tool.pytest.ini_options]
+        addopts = [
+            "--color=yes",
+            "--cov-branch",
+            "--cov-context=test",
+            "--cov-report=html:htmlcov",
+            "--cov-report=term-missing:skip-covered",
+            "--cov-report=xml:reports/coverage.xml",
+            "--cov=src/flext_api",
+            "--strict-config",
+            "--strict-markers",
+            "--tb=short",
+            "-ra",
+        ]
+        markers = [
+            "api: FastAPI endpoint tests",
+            "architecture: Architectural pattern tests",
+            "benchmark: Performance benchmark tests",
+            "builder: Builder pattern tests",
+            "client: HTTP client tests",
+            "concurrency: Concurrency and tests",
+            "core: Core functionality tests",
+            "e2e: End-to-end tests with real services",
+            "integration: Integration tests (may require external services)",
+            "memory: Memory usage and leak tests",
+            "mock: Tests using mocks heavily",
+            "performance: Performance and load tests",
+            "race_condition: Race condition and thread safety tests",
+            "real: Tests using real external services",
+            "regression: Regression tests for bug fixes",
+            "security: Security-related tests",
+            "skip: Tests that should be skipped",
+            "slow: Slow running tests (>1s)",
+            "smoke: Quick smoke tests for CI",
+            "timeout: Tests with timeout constraints",
+            "unit: Fast unit tests with mocks",
+            "xfail: Tests expected to fail",
+        ]
+        minversion = "8.0"
+        python_classes = [
+            "Test*",
+        ]
+        python_files = [
+            "*_test.py",
+            "test_*.py",
+        ]
+        python_functions = [
+            "test_*",
+        ]
+        testpaths = [
+            "tests",
+        ]
+
+    [tool.pyrefly]
+        python-version = "3.13"
+        search-path = [
+            "examples",
+            "src",
+            "tests",
+            "../flext-core/src",
+        ]
+
+    [tool.ruff]
+        extend = "../ruff-shared.toml"
 
     [tool.ruff.lint.isort]
         known-first-party = [
             "flext_api",
         ]
-
-    [tool.poetry.group.dev.dependencies]
-        bandit       = "^1.8.6"
-        faker        = "^37.5.3"
-        pip-audit    = "^2.9.0"
-        pyrefly      = "^0.34.0"
-        pytest       = "^8.4.1"
-        pytest-cov   = "^6.2.1"
-        pytest-httpx = "^0.35.0"
-
-[tool.pyrefly]
-    python-version = "3.13"
-    search-path = [
-        "examples",
-        "src",
-        "tests",
-    ]

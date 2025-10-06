@@ -39,13 +39,13 @@ class SSEProtocolPlugin(ProtocolPlugin):
 
     def __init__(
         self,
-        retry_timeout: int = 3000,
+        _retry_timeout: int = 3000,
         _connect_timeout: float = 30.0,
-        read_timeout: float = 300.0,
+        _read_timeout: float = 300.0,
         *,
-        auto_reconnect: bool = True,
-        reconnect_max_attempts: int = 10,
-        reconnect_backoff_factor: float = 1.5,
+        _auto_reconnect: bool = True,
+        _reconnect_max_attempts: int = 10,
+        _reconnect_backoff_factor: float = 1.5,
     ) -> None:
         """Initialize SSE protocol plugin stub.
 
@@ -72,13 +72,13 @@ class SSEProtocolPlugin(ProtocolPlugin):
         self._on_connect_handlers = []
         self._on_disconnect_handlers = []
         self._on_error_handlers = []
-        self._retry_timeout = retry_timeout
-        self._auto_reconnect = auto_reconnect
+        self._retry_timeout = _retry_timeout
+        self._auto_reconnect = _auto_reconnect
 
     def send_request(
         self,
-        request: FlextApiModels.HttpRequest,
-        **kwargs: float | str | bool,
+        _request: FlextApiModels.HttpRequest,
+        **_kwargs: float | str | bool,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Send SSE request (stub - not implemented).
 

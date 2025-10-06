@@ -6,13 +6,13 @@ Only constants and enums - no functions or classes with behavior.
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import ClassVar, Final
 
 from flext_core import FlextConstants, FlextTypes
 
 
 class FlextApiConstants(FlextConstants):
-    """API-specific constants extending flext-core FlextConstants."""
+    """Flext constants extending flext-core FlextConstants."""
 
     # Client configuration
     DEFAULT_TIMEOUT: ClassVar[int] = FlextConstants.Network.DEFAULT_TIMEOUT
@@ -91,6 +91,9 @@ class FlextApiConstants(FlextConstants):
 
     # Security constants
     MASK_AUTH_THRESHOLD: ClassVar[int] = 8
+
+    # HTTP constants (API-specific extensions)
+    HTTP_DEFAULT_ACCEPT: ClassVar[str] = "application/json"
 
     # =============================================================================
     # HTTP METHOD CONSTANTS - Moved to flext-core.FlextConstants.Http.Method
@@ -187,6 +190,16 @@ class FlextApiConstants(FlextConstants):
         WRITE_BACK = "write_back"
 
     # =============================================================================
+    # TIME CONSTANTS - HTTP-specific time calculations
+    # =============================================================================
+
+    class TimeConstants:
+        """Time-related constants for HTTP operations."""
+
+        SECONDS_PER_MINUTE: Final[int] = 60
+        SECONDS_PER_HOUR: Final[int] = 3600
+
+    # =============================================================================
     # LOGGING CONSTANTS - Consolidated from single-class modules
     # =============================================================================
 
@@ -199,6 +212,21 @@ class FlextApiConstants(FlextConstants):
             "Error: {error_type} - Message: {message} - Traceback: {traceback}"
         )
         DEBUG_LOG_FORMAT = "Debug: {component} - {message} - Data: {data}"
+
+    # =============================================================================
+    # ERROR CODES - API-specific error codes
+    # =============================================================================
+
+    class Errors:
+        """API-specific error codes."""
+
+        MIDDLEWARE_ERROR = "MIDDLEWARE_ERROR"
+        PROTOCOL_ERROR = "PROTOCOL_ERROR"
+        HTTP_ERROR = "HTTP_ERROR"
+        CONNECTION_ERROR = "CONNECTION_ERROR"
+        TIMEOUT_ERROR = "TIMEOUT_ERROR"
+        VALIDATION_ERROR = "VALIDATION_ERROR"
+        CONFIG_ERROR = "CONFIG_ERROR"
 
 
 __all__ = ["FlextApiConstants"]

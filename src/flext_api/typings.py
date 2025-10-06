@@ -13,7 +13,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from enum import StrEnum
+from typing import NotRequired
+
 from flext_core import FlextTypes
+from typing_extensions import TypedDict
 
 # =============================================================================
 # API-SPECIFIC TYPE VARIABLES - Domain-specific TypeVars for API operations
@@ -162,6 +166,16 @@ class FlextApiTypes(FlextTypes):
             str, FlextTypes.JsonValue | dict[str, FlextTypes.JsonValue]
         ]
 
+        class HttpKwargs(TypedDict):
+            """Type definition for HTTP request kwargs."""
+
+            params: NotRequired[FlextTypes.StringDict | None]
+            data: NotRequired[FlextTypes.StringDict | None]
+            json: NotRequired[FlextTypes.StringDict | None]
+            headers: NotRequired[FlextTypes.StringDict | None]
+            request_timeout: NotRequired[int | None]
+            timeout: NotRequired[float | None]
+
     # =========================================================================
     # API PROJECT TYPES - Domain-specific project types extending FlextTypes
     # =========================================================================
@@ -294,6 +308,21 @@ class FlextApiTypes(FlextTypes):
 
         # Plugin registry
         RegistryEntry = dict[str, str | object | dict[str, FlextTypes.JsonValue]]
+
+    # =========================================================================
+    # SERIALIZATION TYPES - Serialization format types
+    # =========================================================================
+
+    class Serialization:
+        """Serialization-related types."""
+
+        class SerializationFormat(StrEnum):
+            """Supported serialization formats."""
+
+            JSON = "json"
+            MSGPACK = "msgpack"
+            CBOR = "cbor"
+            CUSTOM = "custom"
 
     # =========================================================================
     # ENHANCED API TYPES - Advanced flext-core integration types
