@@ -43,7 +43,7 @@ class BasePlugin:
         self.name = name
         self.version = version
         self.description = description
-        self._logger = FlextLogger(f"{__name__}.{name}")
+        self.logger = FlextLogger(f"{__name__}.{name}")
         self._initialized = False
 
     def initialize(self) -> FlextResult[None]:
@@ -59,7 +59,7 @@ class BasePlugin:
         if self._initialized:
             return FlextResult[None].fail(f"Plugin '{self.name}' already initialized")
 
-        self._logger.debug(f"Initializing plugin: {self.name}")
+        self.logger.debug(f"Initializing plugin: {self.name}")
         self._initialized = True
         return FlextResult[None].ok(None)
 
@@ -78,7 +78,7 @@ class BasePlugin:
                 f"Plugin '{self.name}' not initialized, cannot shutdown"
             )
 
-        self._logger.debug(f"Shutting down plugin: {self.name}")
+        self.logger.debug(f"Shutting down plugin: {self.name}")
         self._initialized = False
         return FlextResult[None].ok(None)
 
@@ -437,7 +437,7 @@ class PluginManager:
 
     def __init__(self) -> None:
         """Initialize plugin manager."""
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._loaded_plugins: dict[str, BasePlugin] = {}
 
     def load_plugin(
@@ -464,7 +464,7 @@ class PluginManager:
             )
 
         self._loaded_plugins[plugin.name] = plugin
-        self._logger.info(f"Loaded plugin: {plugin.name} v{plugin.version}")
+        self.logger.info(f"Loaded plugin: {plugin.name} v{plugin.version}")
 
         return FlextResult[None].ok(None)
 
@@ -489,13 +489,13 @@ class PluginManager:
         # Shutdown plugin
         shutdown_result = plugin.shutdown()
         if shutdown_result.is_failure:
-            self._logger.warning(
+            self.logger.warning(
                 f"Plugin shutdown warning: {shutdown_result.error}",
                 extra={"plugin": plugin_name},
             )
 
         del self._loaded_plugins[plugin_name]
-        self._logger.info(f"Unloaded plugin: {plugin_name}")
+        self.logger.info(f"Unloaded plugin: {plugin_name}")
 
         return FlextResult[None].ok(None)
 

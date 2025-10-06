@@ -111,7 +111,7 @@ class FlextApiTransports:
                         **options_copy,
                     )
 
-                self._logger.debug(
+                self.logger.debug(
                     f"HTTP client connected to: {url}",
                     extra={"url": url, "http2": self._http2},
                 )
@@ -140,7 +140,7 @@ class FlextApiTransports:
                 connection.close()
                 self._client = None
 
-                self._logger.debug("HTTP client disconnected")
+                self.logger.debug("HTTP client disconnected")
                 return FlextResult[None].ok(None)
 
             except Exception as e:

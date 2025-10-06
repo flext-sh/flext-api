@@ -112,7 +112,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
             ),
         )
 
-        self._logger.info(
+        self.logger.info(
             "HTTP protocol initialized",
             extra={
                 "http2": http2,
@@ -219,21 +219,21 @@ class HttpProtocolPlugin(ProtocolPlugin):
 
             except httpx.TimeoutException as e:
                 last_error = f"Request timeout: {e}"
-                self._logger.warning(
+                self.logger.warning(
                     f"Request timeout (attempt {attempt + 1}/{self._max_retries + 1})",
                     extra={"url": url, "method": method, "attempt": attempt + 1},
                 )
 
             except httpx.NetworkError as e:
                 last_error = f"Network error: {e}"
-                self._logger.warning(
+                self.logger.warning(
                     f"Network error (attempt {attempt + 1}/{self._max_retries + 1})",
                     extra={"url": url, "method": method, "attempt": attempt + 1},
                 )
 
             except httpx.HTTPError as e:
                 last_error = f"HTTP error: {e}"
-                self._logger.exception(
+                self.logger.exception(
                     "HTTP error",
                     extra={"url": url, "method": method, "error": str(e)},
                 )
@@ -241,7 +241,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
 
             except Exception as e:
                 last_error = f"Unexpected error: {e}"
-                self._logger.exception(
+                self.logger.exception(
                     "Unexpected error",
                     extra={"url": url, "method": method},
                 )
@@ -366,7 +366,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
             will be added in future iterations.
 
         """
-        self._logger.info(
+        self.logger.info(
             "Streaming request",
             extra={
                 "url": str(request.url),

@@ -83,7 +83,7 @@ class FlextWebhookHandler(FlextService[object]):
         super().__init__()
 
         # Initialize flext-core components
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._container = FlextContainer.get_global()
         self._context = FlextContext()
         self._bus = FlextBus()
@@ -141,7 +141,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         self._event_handlers[event_type].append(handler)
 
-        self._logger.info(
+        self.logger.info(
             "Event handler registered",
             extra={"event_type": event_type},
         )
@@ -211,7 +211,7 @@ class FlextWebhookHandler(FlextService[object]):
                 "status": "delivered",
             }
 
-            self._logger.info(
+            self.logger.info(
                 "Webhook processed successfully",
                 extra={"event_id": event_id, "event_type": event_type},
             )
@@ -225,7 +225,7 @@ class FlextWebhookHandler(FlextService[object]):
         if isinstance(attempts, int) and attempts < self._max_retries:
             self._retry_queue.append(event)
 
-            self._logger.warning(
+            self.logger.warning(
                 "Webhook processing failed, added to retry queue",
                 extra={
                     "event_id": event_id,
@@ -246,7 +246,7 @@ class FlextWebhookHandler(FlextService[object]):
             "error": process_result.error,
         }
 
-        self._logger.error(
+        self.logger.error(
             "Webhook processing failed after max retries",
             extra={
                 "event_id": event_id,
@@ -329,7 +329,7 @@ class FlextWebhookHandler(FlextService[object]):
         handlers = self._event_handlers.get(event_type, [])
 
         if not handlers:
-            self._logger.warning(
+            self.logger.warning(
                 "No handlers registered for event type",
                 extra={"event_type": event_type},
             )
@@ -367,7 +367,7 @@ class FlextWebhookHandler(FlextService[object]):
                 # Skip invalid event
                 continue
 
-            self._logger.info(
+            self.logger.info(
                 "Retrying event",
                 extra={
                     "event_id": event["id"],

@@ -84,16 +84,16 @@ class FlextApiSerializers(FlextService[None]):
                     pretty: Enable pretty printing
 
                 """
-                self._logger = FlextLogger(__name__)
+                self.logger = FlextLogger(__name__)
                 self._pretty = pretty
 
                 # Try to use orjson for performance
                 self._orjson = orjson
                 self._use_orjson = orjson is not None
                 if self._use_orjson:
-                    self._logger.debug("Using orjson for JSON serialization")
+                    self.logger.debug("Using orjson for JSON serialization")
                 else:
-                    self._logger.debug("Using standard json for serialization")
+                    self.logger.debug("Using standard json for serialization")
 
             def serialize(self, data: object) -> bytes:
                 """Serialize data to JSON bytes.
@@ -144,12 +144,12 @@ class FlextApiSerializers(FlextService[None]):
 
                 def __init__(self) -> None:
                     """Initialize MessagePack serializer."""
-                    self._logger = FlextLogger(__name__)
+                    self.logger = FlextLogger(__name__)
 
                     self._msgpack = msgpack
                     self._available = msgpack is not None
                     if not self._available:
-                        self._logger.warning(
+                        self.logger.warning(
                             "msgpack not available - install with: pip install msgpack"
                         )
 
@@ -208,12 +208,12 @@ class FlextApiSerializers(FlextService[None]):
 
                     def __init__(self) -> None:
                         """Initialize CBOR serializer."""
-                        self._logger = FlextLogger(__name__)
+                        self.logger = FlextLogger(__name__)
 
                         self._cbor = cbor2
                         self._available = cbor2 is not None
                         if not self._available:
-                            self._logger.warning(
+                            self.logger.warning(
                                 "cbor2 not available - install with: pip install cbor2"
                             )
 
@@ -272,7 +272,7 @@ class FlextApiSerializers(FlextService[None]):
 
                         def __init__(self) -> None:
                             """Initialize serializer registry."""
-                            self._logger = FlextLogger(__name__)
+                            self.logger = FlextLogger(__name__)
                             self._serializers: FlextTypes.Dict = {}
                             self._default_format = (
                                 FlextApiTypes.Serialization.SerializationFormat.JSON
@@ -318,13 +318,13 @@ class FlextApiSerializers(FlextService[None]):
                             )
 
                             if format_key in self._serializers:
-                                self._logger.warning(
+                                self.logger.warning(
                                     f"Serializer already registered for format: {format_key}"
                                 )
 
                             self._serializers[format_key] = serializer
 
-                            self._logger.info(
+                            self.logger.info(
                                 "Serializer registered",
                                 extra={
                                     "format": format_key,
@@ -491,7 +491,7 @@ class FlextApiSerializers(FlextService[None]):
 
                             """
                             self._default_format = format_type
-                            self._logger.info(
+                            self.logger.info(
                                 f"Default serialization format set to: {format_type.value}"
                             )
                             return FlextResult[None].ok(None)

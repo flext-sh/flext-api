@@ -53,8 +53,7 @@ class FlextApiMiddleware:
         pipeline.add_middleware(logging_mw)
 
         # Use in HTTP client
-        client.middleware = pipeline
-    """
+        client.middleware = pipeline"""
 
     # =========================================================================
     # MIDDLEWARE BASE CLASSES - Foundation for all middleware types
@@ -110,7 +109,7 @@ class FlextApiMiddleware:
 
             """
             self.name = name or self.__class__.__name__
-            self._logger = FlextLogger(f"{__name__}.{self.name}")
+            self.logger = FlextLogger(f"{__name__}.{self.name}")
             self._enabled = True
 
         def process_request(
@@ -296,7 +295,7 @@ class FlextApiMiddleware:
                 if self._log_body and hasattr(request, "body") and request.body:
                     log_data["body_size"] = str(len(request.body))
 
-                self._logger.info("HTTP request", extra=log_data)
+                self.logger.info("HTTP request", extra=log_data)
 
                 # Create enhanced request with tracking attributes using object.__setattr__
                 # to bypass Pydantic's extra="forbid" validation
@@ -330,7 +329,7 @@ class FlextApiMiddleware:
                 if self._log_body and hasattr(response, "body") and response.body:
                     log_data["body_size"] = len(response.body)
 
-                self._logger.info("HTTP response", extra=log_data)
+                self.logger.info("HTTP response", extra=log_data)
 
             return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
@@ -350,7 +349,7 @@ class FlextApiMiddleware:
             if request.tracking_id is not None:
                 log_data["request_id"] = request.tracking_id
 
-            self._logger.error("HTTP request error", extra=log_data)
+            self.logger.error("HTTP request error", extra=log_data)
 
             # No recovery - return None
             return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
@@ -611,7 +610,7 @@ class FlextApiMiddleware:
                 and response.status_code >= FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
             ):
                 # Log HTTP error
-                self._logger.warning(
+                self.logger.warning(
                     f"HTTP error response: {response.status_code}",
                     extra={
                         "status_code": response.status_code,
@@ -640,7 +639,7 @@ class FlextApiMiddleware:
                             result
                         )
                 except Exception as handlererror:
-                    self._logger.exception(
+                    self.logger.exception(
                         "Custom error handler failed",
                         extra={
                             "originalerror": str(error),
@@ -649,7 +648,7 @@ class FlextApiMiddleware:
                     )
 
             # Default: log and propagate
-            self._logger.error(
+            self.logger.error(
                 f"Error handling: {error}",
                 extra={
                     "error_type": error_type.__name__,
@@ -673,7 +672,7 @@ class FlextApiMiddleware:
 
         def __init__(self) -> None:
             """Initialize middleware pipeline."""
-            self._logger = FlextLogger(__name__)
+            self.logger = FlextLogger(__name__)
             self._middlewares: list[FlextApiMiddleware.BaseMiddleware] = []
 
         def add_middleware(
@@ -694,7 +693,7 @@ class FlextApiMiddleware:
                 )
 
             self._middlewares.append(middleware)
-            self._logger.debug(f"Added middleware: {middleware.name}")
+            self.logger.debug(f"Added middleware: {middleware.name}")
 
             return FlextResult[None].ok(None)
 
@@ -711,7 +710,7 @@ class FlextApiMiddleware:
             for middleware in self._middlewares:
                 if middleware.name == middleware_name:
                     self._middlewares.remove(middleware)
-                    self._logger.debug(f"Removed middleware: {middleware_name}")
+                    self.logger.debug(f"Removed middleware: {middleware_name}")
                     return FlextResult[None].ok(None)
 
             return FlextResult[None].fail(f"Middleware {middleware_name} not found")
@@ -758,7 +757,7 @@ class FlextApiMiddleware:
             for middleware in reversed(self._middlewares):
                 result = middleware.process_response(current_response)
                 if result.is_failure:
-                    self._logger.warning(
+                    self.logger.warning(
                         f"Middleware {middleware.name} response processing failed"
                     )
                     continue  # Continue with other middleware

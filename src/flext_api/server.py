@@ -64,7 +64,7 @@ class FlextApiServer(FlextService[object]):
 
         """
         super().__init__()
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Server configuration
         self._host = host
@@ -125,7 +125,7 @@ class FlextApiServer(FlextService[object]):
 
         self._protocol_handlers[protocol] = handler
 
-        self._logger.info(
+        self.logger.info(
             "Protocol handler registered",
             extra={"protocol": protocol, "handler": handler.name},
         )
@@ -147,7 +147,7 @@ class FlextApiServer(FlextService[object]):
         """
         self._middleware_pipeline.append(middleware)
 
-        self._logger.info(
+        self.logger.info(
             "Middleware added to pipeline",
             extra={"middleware": middleware.__class__.__name__},
         )
@@ -185,7 +185,7 @@ class FlextApiServer(FlextService[object]):
             "options": options,
         }
 
-        self._logger.info(
+        self.logger.info(
             "Route registered",
             extra={"path": path, "method": method},
         )
@@ -223,7 +223,7 @@ class FlextApiServer(FlextService[object]):
             "options": options,
         }
 
-        self._logger.info(
+        self.logger.info(
             "WebSocket endpoint registered",
             extra={"path": path},
         )
@@ -259,7 +259,7 @@ class FlextApiServer(FlextService[object]):
             "options": options,
         }
 
-        self._logger.info(
+        self.logger.info(
             "SSE endpoint registered",
             extra={"path": path},
         )
@@ -297,7 +297,7 @@ class FlextApiServer(FlextService[object]):
             "options": options,
         }
 
-        self._logger.info(
+        self.logger.info(
             "GraphQL endpoint registered",
             extra={"path": path},
         )
@@ -340,7 +340,7 @@ class FlextApiServer(FlextService[object]):
         # Mark server as running
         self._is_running = True
 
-        self._logger.info(
+        self.logger.info(
             "API server started",
             extra={
                 "host": self._host,
@@ -367,7 +367,7 @@ class FlextApiServer(FlextService[object]):
             try:
                 connection.close()
             except Exception as e:
-                self._logger.warning(
+                self.logger.warning(
                     f"Failed to close WebSocket connection {conn_id}: {e}"
                 )
 
@@ -376,13 +376,13 @@ class FlextApiServer(FlextService[object]):
             try:
                 connection.close()
             except Exception as e:
-                self._logger.warning(f"Failed to close SSE connection {conn_id}: {e}")
+                self.logger.warning(f"Failed to close SSE connection {conn_id}: {e}")
 
         # Mark server as stopped
         self._is_running = False
         self._app = None
 
-        self._logger.info("API server stopped")
+        self.logger.info("API server stopped")
 
         return FlextResult[None].ok(None)
 
@@ -403,7 +403,7 @@ class FlextApiServer(FlextService[object]):
                 f"Failed to start server: {start_result.error}"
             )
 
-        self._logger.info("API server restarted")
+        self.logger.info("API server restarted")
 
         return FlextResult[None].ok(None)
 
@@ -448,7 +448,7 @@ class FlextApiServer(FlextService[object]):
             for middleware in self._middleware_pipeline:
                 # Apply middleware to app
                 # Note: Actual middleware application would depend on middleware type
-                self._logger.debug(
+                self.logger.debug(
                     "Middleware applied",
                     extra={"middleware": middleware.__class__.__name__},
                 )
@@ -490,7 +490,7 @@ class FlextApiServer(FlextService[object]):
                     if hasattr(self._app, method_lower):
                         getattr(self._app, method_lower)(path)(handler)
 
-                self._logger.debug(
+                self.logger.debug(
                     "Route registered",
                     extra={"method": method, "path": path},
                 )

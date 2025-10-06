@@ -45,10 +45,10 @@ class ProtobufMessage:
             data: Message data
 
         """
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._data = data or {}
 
-        self._logger.debug("Protobuf message stub created (placeholder)")
+        self.logger.debug("Protobuf message stub created (placeholder)")
 
     def serialize(self) -> FlextResult[bytes]:
         """Serialize message to bytes.
@@ -57,7 +57,7 @@ class ProtobufMessage:
             FlextResult containing serialized bytes or error
 
         """
-        self._logger.debug("Protobuf serialization (placeholder)")
+        self.logger.debug("Protobuf serialization (placeholder)")
         return FlextResult[bytes].fail(
             "Protobuf stub placeholder - awaiting flext-grpc integration"
         )
@@ -152,10 +152,10 @@ class ProtobufSerializer:
             schema: Protobuf schema definition
 
         """
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._schema = schema or {}
 
-        self._logger.info("Protobuf serializer stub created (placeholder)")
+        self.logger.info("Protobuf serializer stub created (placeholder)")
 
     def serialize(self, message: ProtobufMessage) -> FlextResult[bytes]:
         """Serialize message to bytes.
@@ -167,7 +167,7 @@ class ProtobufSerializer:
             FlextResult containing serialized bytes or error
 
         """
-        self._logger.debug("Protobuf serialization (placeholder)")
+        self.logger.debug("Protobuf serialization (placeholder)")
 
         # Validate message against schema
         validation_result = self._validate_message(message)
@@ -188,7 +188,7 @@ class ProtobufSerializer:
             FlextResult containing message or error
 
         """
-        self._logger.debug("Protobuf deserialization (placeholder)")
+        self.logger.debug("Protobuf deserialization (placeholder)")
         return FlextResult[ProtobufMessage].fail(
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
@@ -204,7 +204,7 @@ class ProtobufSerializer:
 
         """
         if not self._schema:
-            self._logger.warning("No schema defined for validation")
+            self.logger.warning("No schema defined for validation")
             return FlextResult[None].ok(None)
 
         # Schema validation would happen here with flext-grpc
@@ -330,11 +330,11 @@ class ProtobufSchema:
             name: Schema name
 
         """
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._name = name
         self._fields: dict[str, ProtobufField] = {}
 
-        self._logger.info(
+        self.logger.info(
             "Protobuf schema stub created (placeholder)",
             extra={"schema_name": name},
         )
@@ -354,7 +354,7 @@ class ProtobufSchema:
 
         self._fields[field.name] = field
 
-        self._logger.debug(
+        self.logger.debug(
             "Field added to schema (placeholder)",
             extra={"field": field.name},
         )

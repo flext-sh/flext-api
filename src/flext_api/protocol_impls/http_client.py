@@ -27,7 +27,7 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
         """
         self._config = client_config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Create httpx client with configuration
         self._client = httpx.Client(
@@ -113,17 +113,17 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
         except httpx.TimeoutException as e:
             error_msg = f"HTTP request timeout: {e}"
-            self._logger.warning(error_msg)
+            self.logger.warning(error_msg)
             return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
 
         except httpx.NetworkError as e:
             error_msg = f"HTTP network error: {e}"
-            self._logger.warning(error_msg)
+            self.logger.warning(error_msg)
             return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
 
         except httpx.HTTPStatusError as e:
             error_msg = f"HTTP error {e.response.status_code}: {e.response.text}"
-            self._logger.warning(error_msg)
+            self.logger.warning(error_msg)
             # Still return a response for HTTP errors
             response = FlextApiModels.HttpResponse(
                 status_code=e.response.status_code,
@@ -136,7 +136,7 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
         except Exception as e:
             error_msg = f"HTTP protocol request failed: {e}"
-            self._logger.exception(error_msg)
+            self.logger.exception(error_msg)
             return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
 
     def close(self) -> None:
