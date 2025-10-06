@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Self
 
 from flext_core import (
-    FlextConstants,
     FlextModels,
     FlextResult,
     FlextTypes,
@@ -35,7 +34,7 @@ from flext_api.typings import FlextApiTypes
 
 
 class FlextApiModels(FlextModels):
-    """API models using flext-core extensively - Pydantic models only.
+    """Flext models using flext-core extensively - Pydantic models only.
 
     Inherits from FlextModels to avoid duplication and ensure consistency.
     Follows FLEXT standardization patterns with Pydantic 2.11 features.
@@ -136,7 +135,7 @@ class FlextApiModels(FlextModels):
             if v.strip().startswith("/"):
                 return v.strip()
 
-            validation_result = FlextApiModels.create_validated_http_url(v.strip())
+            validation_result = FlextModels.create_validated_http_url(v.strip())
             if validation_result.is_failure:
                 error_msg = validation_result.error or "Invalid URL"
                 if "URL must start with http:// or https://" in error_msg:
@@ -215,7 +214,7 @@ class FlextApiModels(FlextModels):
         # CLIENT-SPECIFIC fields for tracking request context
         url: str = Field(description="Request URL")
         method: str = Field(description="HTTP method")
-        request: FlextApiModels.HttpRequest | None = Field(
+        request: FlextModels.HttpRequest | None = Field(
             default=None, description="Original request object"
         )
         domain_events: FlextTypes.List = Field(
@@ -260,7 +259,7 @@ class FlextApiModels(FlextModels):
             """Cross-field validation for HTTP response consistency - CLIENT SPECIFIC."""
             # Validate status code and body consistency
             if (
-                self.status_code == FlextConstants.Http.HTTP_NO_CONTENT and self.body
+                self.status_code == FlextApiConstants.Http.HTTP_NO_CONTENT and self.body
             ):  # No Content
                 error_msg = "HTTP 204 responses should not have a body"
                 raise ValueError(error_msg)
@@ -349,7 +348,7 @@ class FlextApiModels(FlextModels):
         @classmethod
         def validate_base_url(cls, v: str) -> str:
             """Validate base URL using centralized FlextModels validation."""
-            validation_result = FlextApiModels.create_validated_http_url(v.strip())
+            validation_result = FlextModels.create_validated_http_url(v.strip())
             if validation_result.is_failure:
                 error_msg = validation_result.error or "Invalid base URL"
                 if (
@@ -378,11 +377,11 @@ class FlextApiModels(FlextModels):
             """Get authentication header if configured."""
             if self.auth_token:
                 return {
-                    FlextConstants.Http.AUTHORIZATION_HEADER: f"Bearer {self.auth_token}"
+                    FlextApiConstants.Http.AUTHORIZATION_HEADER: f"Bearer {self.auth_token}"
                 }
             if self.api_key:
                 return {
-                    FlextConstants.Http.AUTHORIZATION_HEADER: f"Bearer {self.api_key}"
+                    FlextApiConstants.Http.AUTHORIZATION_HEADER: f"Bearer {self.api_key}"
                 }
             return {}
 
@@ -406,8 +405,8 @@ class FlextApiModels(FlextModels):
             default_factory=list, description="Sort fields"
         )
         page_number: int = Field(
-            default=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
-            ge=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
+            default=FlextApiConstants.Performance.DEFAULT_PAGE_NUMBER,
+            ge=FlextApiConstants.Performance.DEFAULT_PAGE_NUMBER,
             description="Page number",
             alias="page",
         )
@@ -480,8 +479,8 @@ class FlextApiModels(FlextModels):
             description="Page size",
         )
         current_page: int = Field(
-            default=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
-            ge=FlextConstants.Performance.DEFAULT_PAGE_NUMBER,
+            default=FlextApiConstants.Performance.DEFAULT_PAGE_NUMBER,
+            ge=FlextApiConstants.Performance.DEFAULT_PAGE_NUMBER,
             description="Current page",
             alias="page",
         )
@@ -558,7 +557,7 @@ class FlextApiModels(FlextModels):
 
         url: str = Field(description="Request URL")
         method: str = Field(
-            default=FlextConstants.Http.Method.GET, description="HTTP method"
+            default=FlextApiConstants.Http.Method.GET, description="HTTP method"
         )
         headers: FlextTypes.StringDict = Field(
             default_factory=dict, description="Request headers"
@@ -595,8 +594,8 @@ class FlextApiModels(FlextModels):
         """API response model extending FlextModels.Entity."""
 
         status_code: int = Field(
-            ge=FlextConstants.Http.HTTP_STATUS_MIN,
-            le=FlextConstants.Http.HTTP_STATUS_MAX,
+            ge=FlextApiConstants.Http.HTTP_STATUS_MIN,
+            le=FlextApiConstants.Http.HTTP_STATUS_MAX,
             description="HTTP status code",
         )
         body: str | dict[str, FlextApiTypes.JsonValue] | None = Field(
@@ -613,9 +612,9 @@ class FlextApiModels(FlextModels):
         def is_successful(self) -> bool:
             """Check if response indicates success."""
             return (
-                FlextConstants.Http.HTTP_SUCCESS_MIN
+                FlextApiConstants.Http.HTTP_SUCCESS_MIN
                 <= self.status_code
-                < FlextConstants.Http.HTTP_SUCCESS_MAX
+                < FlextApiConstants.Http.HTTP_SUCCESS_MAX
             )
 
         @computed_field
@@ -636,7 +635,7 @@ class FlextApiModels(FlextModels):
             """Cross-field validation for API responses."""
             # Validate status code and body consistency
             if (
-                self.status_code == FlextConstants.Http.HTTP_NO_CONTENT and self.body
+                self.status_code == FlextApiConstants.Http.HTTP_NO_CONTENT and self.body
             ):  # No Content
                 error_msg = "HTTP 204 responses should not have a body"
                 raise ValueError(error_msg)
@@ -820,7 +819,7 @@ class FlextApiModels(FlextModels):
             )
             url: str = Field(min_length=1, description="Request URL")
             method: str = Field(
-                default=FlextConstants.Http.Method.GET, description="HTTP method"
+                default=FlextApiConstants.Http.Method.GET, description="HTTP method"
             )
             timeout: int = Field(
                 default=int(FlextApiConstants.DEFAULT_TIMEOUT),
@@ -866,8 +865,8 @@ class FlextApiModels(FlextModels):
                 default="http_error", description="Configuration type"
             )
             status_code: int = Field(
-                ge=FlextConstants.Http.HTTP_STATUS_MIN,
-                le=FlextConstants.Http.HTTP_STATUS_MAX,
+                ge=FlextApiConstants.Http.HTTP_STATUS_MIN,
+                le=FlextApiConstants.Http.HTTP_STATUS_MAX,
                 description="HTTP status code",
             )
             message: str = Field(min_length=1, description="Error message")
@@ -888,9 +887,9 @@ class FlextApiModels(FlextModels):
             def is_client_error(self) -> bool:
                 """Check if this is a client error (4xx)."""
                 return (
-                    FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
+                    FlextApiConstants.Http.HTTP_CLIENT_ERROR_MIN
                     <= self.status_code
-                    < FlextConstants.Http.HTTP_CLIENT_ERROR_MAX
+                    < FlextApiConstants.Http.HTTP_CLIENT_ERROR_MAX
                 )
 
             @computed_field
@@ -898,9 +897,9 @@ class FlextApiModels(FlextModels):
             def is_server_error(self) -> bool:
                 """Check if this is a server error (5xx)."""
                 return (
-                    FlextConstants.Http.HTTP_SERVER_ERROR_MIN
+                    FlextApiConstants.Http.HTTP_SERVER_ERROR_MIN
                     <= self.status_code
-                    < FlextConstants.Http.HTTP_SERVER_ERROR_MAX
+                    < FlextApiConstants.Http.HTTP_SERVER_ERROR_MAX
                 )
 
             @computed_field
@@ -916,7 +915,7 @@ class FlextApiModels(FlextModels):
             @model_validator(mode="after")
             def validate_http_error_config(self) -> Self:
                 """Cross-field validation for HTTP error configuration."""
-                if self.status_code < FlextConstants.Http.HTTP_CLIENT_ERROR_MIN:
+                if self.status_code < FlextApiConstants.Http.HTTP_CLIENT_ERROR_MIN:
                     msg = "Error status codes should be 400 or higher"
                     raise ValueError(msg)
 

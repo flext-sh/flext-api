@@ -11,9 +11,36 @@ from __future__ import annotations
 import json
 import tempfile
 from pathlib import Path
-from typing import Any
 
 from flext_core import FlextResult, FlextTypes
+
+
+class MockResponse:
+    """Mock HTTP response for testing."""
+
+    def __init__(
+        self,
+        status: int,
+        json_data: FlextTypes.JsonValue,
+        text: str,
+        headers: FlextTypes.StringDict,
+    ) -> None:
+        self.status_code = status
+        self._json_data = json_data
+        self._text = text
+        self.headers = headers or {}
+
+    def json(self) -> FlextTypes.JsonValue:
+        return self._json_data
+
+    def text(self) -> str:
+        return self._text
+
+    def ajson(self) -> FlextTypes.JsonValue:
+        return self._json_data
+
+    def atext(self) -> str:
+        return self._text
 
 
 class FlextTestsUtilities:
@@ -118,7 +145,7 @@ class FlextTestsUtilities:
         json_data: FlextTypes.Dict | None = None,
         text: str | None = None,
         headers: FlextTypes.StringDict | None = None,
-    ) -> Any:
+    ) -> MockResponse:
         """Create a mock HTTP response object.
 
         Args:
@@ -131,28 +158,6 @@ class FlextTestsUtilities:
             Mock response object
 
         """
-
-        class MockResponse:
-            def __init__(
-                self, status: int, json_data: Any, text: str, headers: Any
-            ) -> None:
-                self.status_code = status
-                self._json_data = json_data
-                self._text = text
-                self.headers = headers or {}
-
-            def json(self):
-                return self._json_data
-
-            def text(self):
-                return self._text
-
-            async def ajson(self):
-                return self._json_data
-
-            async def atext(self):
-                return self._text
-
         return MockResponse(status_code, json_data, text or "", headers)
 
 

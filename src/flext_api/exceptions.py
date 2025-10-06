@@ -12,7 +12,9 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import FlextConstants, FlextExceptions
+from flext_core import FlextExceptions
+
+from flext_api.constants import FlextApiConstants
 
 
 class FlextApiExceptions(FlextExceptions):
@@ -32,7 +34,7 @@ class FlextApiExceptions(FlextExceptions):
             self,
             message: str,
             *,
-            status_code: int = FlextConstants.Http.HTTP_INTERNAL_SERVER_ERROR,
+            status_code: int = FlextApiConstants.Http.HTTP_INTERNAL_SERVER_ERROR,
             endpoint: str | None = None,
             method: str | None = None,
             **kwargs: object,
@@ -69,7 +71,7 @@ class FlextApiExceptions(FlextExceptions):
         def __init__(
             self,
             message: str,
-            status_code: int = FlextConstants.Http.HTTP_BAD_REQUEST,
+            status_code: int = FlextApiConstants.Http.HTTP_BAD_REQUEST,
             **kwargs: object,
         ) -> None:
             """Initialize HTTP validation error."""
@@ -105,7 +107,7 @@ class FlextApiExceptions(FlextExceptions):
         def __init__(
             self,
             message: str,
-            status_code: int = FlextConstants.Http.HTTP_UNAUTHORIZED,
+            status_code: int = FlextApiConstants.Http.HTTP_UNAUTHORIZED,
             **kwargs: object,
         ) -> None:
             """Initialize HTTP authentication error."""
@@ -118,7 +120,7 @@ class FlextApiExceptions(FlextExceptions):
         def __init__(
             self,
             message: str,
-            status_code: int = FlextConstants.Http.HTTP_FORBIDDEN,
+            status_code: int = FlextApiConstants.Http.HTTP_FORBIDDEN,
             **kwargs: object,
         ) -> None:
             """Initialize HTTP authorization error."""
@@ -131,7 +133,7 @@ class FlextApiExceptions(FlextExceptions):
         def __init__(
             self,
             message: str,
-            status_code: int = FlextConstants.Http.HTTP_NOT_FOUND,
+            status_code: int = FlextApiConstants.Http.HTTP_NOT_FOUND,
             **kwargs: object,
         ) -> None:
             """Initialize HTTP not found error."""
@@ -184,7 +186,7 @@ class FlextApiExceptions(FlextExceptions):
         def __init__(
             self,
             message: str,
-            status_code: int = FlextConstants.Http.HTTP_INTERNAL_SERVER_ERROR,
+            status_code: int = FlextApiConstants.Http.HTTP_INTERNAL_SERVER_ERROR,
             url: str | None = None,
             method: str | None = None,
             **kwargs: object,
@@ -215,14 +217,14 @@ class FlextApiExceptions(FlextExceptions):
         def __init__(
             self,
             message: str,
-            status_code: int = FlextConstants.Http.HTTP_BAD_REQUEST,
+            status_code: int = FlextApiConstants.Http.HTTP_BAD_REQUEST,
             **kwargs: object,
         ) -> None:
             """Initialize HTTP client error."""
             if not (
-                FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
+                FlextApiConstants.Http.HTTP_CLIENT_ERROR_MIN
                 <= status_code
-                <= FlextConstants.Http.HTTP_CLIENT_ERROR_MAX
+                <= FlextApiConstants.Http.HTTP_CLIENT_ERROR_MAX
             ):
                 msg = f"Client error status code must be 4xx, got {status_code}"
                 raise ValueError(msg)
@@ -235,14 +237,14 @@ class FlextApiExceptions(FlextExceptions):
         def __init__(
             self,
             message: str,
-            status_code: int = FlextConstants.Http.HTTP_INTERNAL_SERVER_ERROR,
+            status_code: int = FlextApiConstants.Http.HTTP_INTERNAL_SERVER_ERROR,
             **kwargs: object,
         ) -> None:
             """Initialize HTTP server error."""
             if not (
-                FlextConstants.Http.HTTP_SERVER_ERROR_MIN
+                FlextApiConstants.Http.HTTP_SERVER_ERROR_MIN
                 <= status_code
-                <= FlextConstants.Http.HTTP_SERVER_ERROR_MAX
+                <= FlextApiConstants.Http.HTTP_SERVER_ERROR_MAX
             ):
                 msg = f"Server error status code must be 5xx, got {status_code}"
                 raise ValueError(msg)
@@ -255,7 +257,7 @@ class FlextApiExceptions(FlextExceptions):
         def __init__(self, message: str = "Bad Request", **kwargs: object) -> None:
             """Initialize HTTP 400 error."""
             super().__init__(
-                message, status_code=FlextConstants.Http.HTTP_BAD_REQUEST, **kwargs
+                message, status_code=FlextApiConstants.Http.HTTP_BAD_REQUEST, **kwargs
             )
 
     class UnauthorizedError(ClientError):
@@ -265,7 +267,7 @@ class FlextApiExceptions(FlextExceptions):
         def __init__(self, message: str = "Unauthorized", **kwargs: object) -> None:
             """Initialize HTTP 401 error."""
             super().__init__(
-                message, status_code=FlextConstants.Http.HTTP_UNAUTHORIZED, **kwargs
+                message, status_code=FlextApiConstants.Http.HTTP_UNAUTHORIZED, **kwargs
             )
 
     class ForbiddenError(ClientError):
@@ -275,7 +277,7 @@ class FlextApiExceptions(FlextExceptions):
         def __init__(self, message: str = "Forbidden", **kwargs: object) -> None:
             """Initialize HTTP 403 error."""
             super().__init__(
-                message, status_code=FlextConstants.Http.HTTP_FORBIDDEN, **kwargs
+                message, status_code=FlextApiConstants.Http.HTTP_FORBIDDEN, **kwargs
             )
 
     class MethodNotAllowedError(ClientError):
@@ -316,7 +318,7 @@ class FlextApiExceptions(FlextExceptions):
             """Initialize HTTP 500 error."""
             super().__init__(
                 message,
-                status_code=FlextConstants.Http.HTTP_INTERNAL_SERVER_ERROR,
+                status_code=FlextApiConstants.Http.HTTP_INTERNAL_SERVER_ERROR,
                 **kwargs,
             )
 

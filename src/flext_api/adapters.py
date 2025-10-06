@@ -1,11 +1,11 @@
 """Protocol and format adapters for flext-api.
 
 Provides adapters for:
-- Protocol adaptation (HTTP <-> WebSocket <-> GraphQL)
-- Schema adaptation (OpenAPI <-> API <-> GraphQL Schema)
-- Format conversion (JSON <-> MessagePack <-> CBOR)
-- Legacy API adaptation
-- Request/response transformation
+|- Protocol adaptation (HTTP <-> WebSocket <-> GraphQL)
+|- Schema adaptation (OpenAPI <-> API <-> GraphQL Schema)
+|- Format conversion (JSON <-> MessagePack <-> CBOR)
+|- Legacy API adaptation
+|- Request/response transformation
 
 See TRANSFORMATION_PLAN.md - Phase 8 for implementation details.
 
@@ -18,113 +18,56 @@ from __future__ import annotations
 import re
 from typing import cast
 
-from flext_core import FlextConstants, FlextLogger, FlextResult, FlextTypes
+from flext_core import (
+    FlextBus,
+    FlextConstants,
+    FlextContainer,
+    FlextContext,
+    FlextLogger,
+    FlextResult,
+    FlextService,
+    FlextTypes,
+)
+from pydantic import PrivateAttr
 
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
 
 
-class FlextApiAdapters:
-    """Unified API adapters service - single class per module.
+class FlextApiAdapters(FlextService[None]):
+    """Unified API adapters service with complete flext-core integration.
 
     Provides protocol adaptation, schema conversion, and legacy API integration.
     All functionality consolidated into direct methods following FLEXT standards.
+
+    Integration:
+        - Extends FlextService for service lifecycle management
+        - Uses FlextLogger for structured logging
+        - Uses FlextResult for railway-oriented error handling
+        - Uses FlextContainer for dependency injection
+        - Uses FlextContext for operation context
+        - Uses FlextBus for event emission
+        - Uses FlextConstants for configuration values
     """
 
+    # Type annotations for private attributes
+    _logger: FlextLogger = PrivateAttr()
+    _container: FlextContainer = PrivateAttr()
+    _context: FlextContext = PrivateAttr()
+    _bus: FlextBus = PrivateAttr()
+    _endpoint: str = PrivateAttr()
+    _base_url: str = PrivateAttr()
+
     def __init__(self, endpoint: str = "/graphql", base_url: str = "") -> None:
-        """Initialize the unified adapters service."""
+        """Initialize the unified adapters service with complete flext-core integration."""
+        # Complete flext-core integration
         self._logger = FlextLogger(__name__)
+        self._container = FlextContainer.get_global()
+        self._context = FlextContext()
+        self._bus = FlextBus()
+
         self._endpoint = endpoint  # Default GraphQL endpoint
         self._base_url = base_url  # For legacy API adapter
-
-    def adapt_http_request_to_websocket(
-        self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
-        """Adapter for converting GraphQL queries to HTTP requests."""
-
-        def __init__(self, endpoint: str = "/graphql") -> None:
-            """Initialize GraphQL adapter.
-
-            Args:
-                endpoint: GraphQL endpoint URL
-
-            """
-            self._endpoint = endpoint
-
-        def adapt_query(
-            self, query: str, variables: FlextTypes.Dict | None = None
-        ) -> FlextResult[FlextApiModels.HttpRequest]:
-            """Convert GraphQL query to HTTP request."""
-            adapter = FlextApiAdapters(endpoint=self._endpoint)
-            return adapter.adapt_graphql_query_to_http_request(query, variables)
-
-        def adapt_response(
-            self, response: FlextApiModels.HttpResponse
-        ) -> FlextResult[FlextTypes.Dict]:
-            """Convert HTTP response to GraphQL result."""
-            adapter = FlextApiAdapters()
-            return adapter.adapt_http_response_to_graphql_result(response)
-
-        def set_endpoint(self, endpoint: str) -> None:
-            """Set the GraphQL endpoint."""
-            self._endpoint = endpoint
-
-    class SchemaAdapter:
-        """Adapter for converting between different schema formats."""
-
-        def __init__(self) -> None:
-            """Initialize schema adapter."""
-
-        def convert_openapi_to_api(
-            self, openapi_schema: dict[str, FlextApiTypes.JsonValue]
-        ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
-            """Convert OpenAPI schema to API schema."""
-            adapter = FlextApiAdapters()
-            return adapter.convert_openapi_to_api_schema(openapi_schema)
-
-        def convert_openapi_to_graphql(
-            self, openapi_schema: dict[str, FlextApiTypes.JsonValue]
-        ) -> FlextResult[str]:
-            """Convert OpenAPI schema to GraphQL schema."""
-            adapter = FlextApiAdapters()
-            return adapter.convert_openapi_to_graphql_schema(openapi_schema)
-
-    class LegacyApiAdapter:
-        """Adapter for legacy API format conversion."""
-
-        def __init__(self, base_url: str = "https://api.example.com") -> None:
-            """Initialize legacy API adapter.
-
-            Args:
-                base_url: Base URL for legacy API
-
-            """
-            self._base_url = base_url
-
-        def adapt_request_to_legacy(
-            self, request: FlextApiModels.HttpRequest
-        ) -> FlextResult[FlextApiModels.HttpRequest]:
-            """Adapt request to legacy format."""
-            adapter = FlextApiAdapters(base_url=self._base_url)
-            return adapter.adapt_request_to_legacy_format(request)
-
-        def adapt_legacy_response_to_modern(
-            self, response: FlextApiModels.HttpResponse
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
-            """Adapt legacy response to modern format."""
-            adapter = FlextApiAdapters()
-            return adapter.adapt_legacy_response_to_modern(response)
-
-        def set_base_url(self, base_url: str) -> None:
-            """Set the legacy API base URL."""
-            self._base_url = base_url
-
-    # Main adapter implementation
-    def __init__(self, endpoint: str = "/graphql", base_url: str = "") -> None:
-        """Initialize the unified adapters service."""
-        self._logger = FlextLogger(__name__)
-        self._endpoint = endpoint  # Default GraphQL endpoint
-        self._base_url = ""  # For legacy API adapter
 
     def adapt_http_request_to_websocket(
         self, request: FlextApiModels.HttpRequest
@@ -442,27 +385,6 @@ class FlextApiAdapters:
                 f"OpenAPI to GraphQL schema conversion failed: {e}"
             )
 
-    def _map_openapi_type_to_graphql(self, openapi_type: str) -> str:
-        """Map OpenAPI type to GraphQL type.
-
-        Args:
-            openapi_type: OpenAPI type
-
-        Returns:
-            GraphQL type
-
-        """
-        type_mapping = {
-            "string": "String",
-            "integer": "Int",
-            "number": "Float",
-            "boolean": "Boolean",
-            "array": "[String]",
-            "object": "JSON",
-        }
-
-        return type_mapping.get(openapi_type, "String")
-
     def adapt_request_to_legacy_format(
         self, modern_request: FlextApiModels.HttpRequest
     ) -> FlextResult[FlextApiModels.HttpRequest]:
@@ -523,7 +445,7 @@ class FlextApiAdapters:
                 extra={"status": modern_response.status_code},
             )
 
-            return FlextResult[FlextApiModels.HttpResponse].ok(modern_response)
+            return FlextApiModels.HttpResponse.ok(modern_response)
 
         except Exception as e:
             return FlextResult[FlextApiModels.HttpResponse].fail(
@@ -612,6 +534,27 @@ class FlextApiAdapters:
 
         return code_mapping.get(legacy_code, legacy_code)
 
+    def _map_openapi_type_to_graphql(self, openapi_type: str) -> str:
+        """Map OpenAPI type to GraphQL type.
+
+        Args:
+            openapi_type: OpenAPI type
+
+        Returns:
+            GraphQL type
+
+        """
+        type_mapping = {
+            "string": "String",
+            "integer": "Int",
+            "number": "Float",
+            "boolean": "Boolean",
+            "array": "[String]",
+            "object": "JSON",
+        }
+
+        return type_mapping.get(openapi_type, "String")
+
     def _convert_camel_to_snake(self, name: str) -> str:
         """Convert camelCase to snake_case.
 
@@ -638,6 +581,4 @@ class FlextApiAdapters:
         return components[0] + "".join(x.title() for x in components[1:])
 
 
-__all__ = [
-    "FlextApiAdapters",
-]
+__all__ = ["FlextApiAdapters"]

@@ -25,7 +25,16 @@ import uuid
 from collections import deque
 from collections.abc import Callable
 
-from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
+from flext_core import (
+    FlextBus,
+    FlextContainer,
+    FlextContext,
+    FlextDispatcher,
+    FlextLogger,
+    FlextResult,
+    FlextService,
+    FlextTypes,
+)
 
 
 class FlextWebhookHandler(FlextService[object]):
@@ -41,11 +50,14 @@ class FlextWebhookHandler(FlextService[object]):
     - Webhook registration and lifecycle
 
     Integration:
+    - Complete flext-core integration (FlextBus, FlextContainer, FlextContext, FlextDispatcher, FlextUtilities)
     - Signature verification using HMAC
     - Event routing to registered handlers
     - Retry queue with configurable attempts
-    - FlextResult for error handling
-    - FlextLogger for audit logging
+    - FlextResult for railway-oriented error handling
+    - FlextLogger for structured audit logging
+    - FlextService for service lifecycle management
+    - FlextUtilities for additional utility functions
     """
 
     def __init__(
@@ -69,7 +81,13 @@ class FlextWebhookHandler(FlextService[object]):
 
         """
         super().__init__()
+
+        # Initialize flext-core components
         self._logger = FlextLogger(__name__)
+        self._container = FlextContainer.get_global()
+        self._context = FlextContext()
+        self._bus = FlextBus()
+        self._dispatcher = FlextDispatcher()
 
         # Webhook configuration
         self._secret = secret
@@ -203,7 +221,8 @@ class FlextWebhookHandler(FlextService[object]):
                 "status": "processed",
             })
         # Add to retry queue
-        if event["attempts"] < self._max_retries:
+        attempts = event.get("attempts", 0)
+        if isinstance(attempts, int) and attempts < self._max_retries:
             self._retry_queue.append(event)
 
             self._logger.warning(
@@ -267,13 +286,14 @@ class FlextWebhookHandler(FlextService[object]):
 
         # Compute expected signature
         try:
+            secret_bytes = self._secret.encode("utf-8")
             if self._algorithm == "sha256":
                 expected = hmac.new(
-                    self._secret.encode("utf-8"), payload_bytes, hashlib.sha256
+                    secret_bytes, payload_bytes, hashlib.sha256
                 ).hexdigest()
             elif self._algorithm == "sha512":
                 expected = hmac.new(
-                    self._secret.encode("utf-8"), payload_bytes, hashlib.sha512
+                    secret_bytes, payload_bytes, hashlib.sha512
                 ).hexdigest()
             else:
                 return FlextResult[None].fail(
@@ -338,10 +358,14 @@ class FlextWebhookHandler(FlextService[object]):
 
         while self._retry_queue:
             event = self._retry_queue.popleft()
-            event["attempts"] += 1
-
-            # Calculate retry delay
-            delay = self._retry_delay * (self._retry_backoff ** (event["attempts"] - 1))
+            attempts = event.get("attempts", 0)
+            if isinstance(attempts, int):
+                event["attempts"] = attempts + 1
+                # Calculate retry delay
+                delay = self._retry_delay * (self._retry_backoff**attempts)
+            else:
+                # Skip invalid event
+                continue
 
             self._logger.info(
                 "Retrying event",
@@ -361,15 +385,18 @@ class FlextWebhookHandler(FlextService[object]):
 
             if process_result.is_success:
                 processed += 1
-                self._delivery_confirmations[event["id"]] = {
-                    "event_type": event["type"],
-                    "timestamp": time.time(),
-                    "status": "delivered_after_retry",
-                    "attempts": event["attempts"],
-                }
+                event_id = event.get("id")
+                if isinstance(event_id, str):
+                    self._delivery_confirmations[event_id] = {
+                        "event_type": event.get("type", "unknown"),
+                        "timestamp": time.time(),
+                        "status": "delivered_after_retry",
+                        "attempts": event.get("attempts", 1),
+                    }
             else:
                 failed += 1
-                if event["attempts"] < self._max_retries:
+                attempts = event.get("attempts", 0)
+                if isinstance(attempts, int) and attempts < self._max_retries:
                     # Re-add to retry queue
                     self._retry_queue.append(event)
 

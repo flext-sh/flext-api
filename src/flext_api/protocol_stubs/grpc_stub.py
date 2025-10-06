@@ -92,9 +92,9 @@ class GrpcStub:
 
     def call_unary(
         self,
-        method: str,
-        request: object,
-        timeout: float | None = None,
+        _method: str,
+        _request: object,
+        _timeout: float | None = None,
     ) -> FlextResult[object]:
         """Call unary gRPC method.
 
@@ -109,7 +109,7 @@ class GrpcStub:
         """
         self._logger.info(
             "gRPC unary call (placeholder)",
-            extra={"method": method},
+            extra={"method": _method},
         )
         return FlextResult[object].fail(
             "gRPC stub placeholder - awaiting flext-grpc integration"
@@ -225,7 +225,7 @@ class GrpcServer:
             extra={"host": host, "port": port},
         )
 
-    def add_service(self, service: object) -> FlextResult[None]:
+    def add_service(self, _service: object) -> FlextResult[None]:
         """Add service to server.
 
         Args:
@@ -253,7 +253,7 @@ class GrpcServer:
             "gRPC server placeholder - awaiting flext-grpc integration"
         )
 
-    def stop(self, grace: float | None = None) -> FlextResult[None]:
+    def stop(self, _grace: float | None = None) -> FlextResult[None]:
         """Stop gRPC server.
 
         Args:

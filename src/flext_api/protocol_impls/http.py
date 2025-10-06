@@ -22,7 +22,7 @@ from flext_core import FlextConstants, FlextResult, FlextTypes
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
-from flext_api.transports import HttpTransport
+from flext_api.transports import FlextApiTransports
 
 
 class HttpProtocolPlugin(ProtocolPlugin):
@@ -97,7 +97,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
         self._max_redirects = max_redirects
 
         # Create HTTP transport with configuration
-        self._transport = HttpTransport(
+        self._transport = FlextApiTransports.HttpTransport(
             http2=http2,
             pool_limits=httpx.Limits(
                 max_connections=max_connections,

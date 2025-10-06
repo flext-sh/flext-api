@@ -17,219 +17,228 @@ from flext_core import FlextResult, FlextTypes
 from flext_api.plugins import TransportPlugin
 
 
-class HttpTransport(TransportPlugin):
-    """HTTP transport implementation using httpx.
+class FlextApiTransports:
+    """Unified transport layer abstraction for flext-api.
 
-    Supports HTTP/1.1, HTTP/2, and HTTP/3 protocols.
-    Provides connection pooling, retry logic, and streaming.
-
-    Features:
-    - HTTP/2 multiplexing
-    - Connection keep-alive
-    - Automatic decompression
-    - Streaming support
-    - Timeout management
-
-    Usage:
-        transport = HttpTransport()
-        conn_result = transport.connect("https://api.example.com")
-        if conn_result.is_success:
-            conn = conn_result.unwrap()
-            # Use connection...
+    Provides transport implementations for HTTP, WebSocket, GraphQL, gRPC, and SSE
+    within a single namespace class following FLEXT patterns.
     """
 
-    def __init__(
-        self,
-        pool_limits: httpx.Limits | None = None,
-        timeout: httpx.Timeout | None = None,
-        *,
-        http2: bool = True,
-    ) -> None:
-        """Initialize HTTP transport.
+    class HttpTransport(TransportPlugin):
+        """HTTP transport implementation using httpx.
 
-        Args:
-            http2: Enable HTTP/2 support (default: True)
-            pool_limits: Connection pool limits
-            timeout: Default timeout configuration
+        Supports HTTP/1.1, HTTP/2, and HTTP/3 protocols.
+        Provides connection pooling, retry logic, and streaming.
 
+        Features:
+        - HTTP/2 multiplexing
+        - Connection keep-alive
+        - Automatic decompression
+        - Streaming support
+        - Timeout management
+
+        Usage:
+            transport = FlextApiTransports.HttpTransport()
+            conn_result = transport.connect("https://api.example.com")
+            if conn_result.is_success:
+                conn = conn_result.unwrap()
+                # Use connection...
         """
-        super().__init__(
-            name="http",
-            version="1.0.0",
-            description="HTTP/1.1, HTTP/2, HTTP/3 transport using httpx",
-        )
 
-        self._http2 = http2
-        self._pool_limits = pool_limits or httpx.Limits(
-            max_connections=100,
-            max_keepalive_connections=20,
-        )
-        self._timeout = timeout or httpx.Timeout(30.0)
-        self._client: httpx.Client | None = None
+        def __init__(
+            self,
+            pool_limits: httpx.Limits | None = None,
+            timeout: httpx.Timeout | None = None,
+            *,
+            http2: bool = True,
+        ) -> None:
+            """Initialize HTTP transport.
 
-    def connect(
-        self,
-        url: str,
-        **options: object,
-    ) -> FlextResult[httpx.Client]:
-        """Establish HTTP client connection.
+            Args:
+                http2: Enable HTTP/2 support (default: True)
+                pool_limits: Connection pool limits
+                timeout: Default timeout configuration
 
-        Args:
-            url: Base URL for client
-            **options: Additional httpx client options
+            """
+            super().__init__(
+                name="http",
+                version="1.0.0",
+                description="HTTP/1.1, HTTP/2, HTTP/3 transport using httpx",
+            )
 
-        Returns:
-            FlextResult containing Client or error
+            self._http2 = http2
+            self._pool_limits = pool_limits or httpx.Limits(
+                max_connections=100,
+                max_keepalive_connections=20,
+            )
+            self._timeout = timeout or httpx.Timeout(30.0)
+            self._client: httpx.Client | None = None
 
-        """
-        try:
-            # Create client if not exists
-            if self._client is None:
-                # Extract parameters that are explicitly set to avoid duplicate keyword arguments
-                # when unpacking **options
-                options_copy = options.copy()
-                follow_redirects = options_copy.pop("follow_redirects", True)
-                # Remove other explicitly set parameters if present in options
-                options_copy.pop("http2", None)
-                options_copy.pop("limits", None)
-                options_copy.pop("timeout", None)
-                options_copy.pop("base_url", None)
+        def connect(
+            self,
+            url: str,
+            **options: object,
+        ) -> FlextResult[httpx.Client]:
+            """Establish HTTP client connection.
 
-                self._client = httpx.Client(
-                    base_url=url,
-                    http2=self._http2,
-                    limits=self._pool_limits,
-                    timeout=self._timeout,
-                    follow_redirects=follow_redirects,
-                    **options_copy,
+            Args:
+                url: Base URL for client
+                **options: Additional httpx client options
+
+            Returns:
+                FlextResult containing Client or error
+
+            """
+            try:
+                # Create client if not exists
+                if self._client is None:
+                    # Extract parameters that are explicitly set to avoid duplicate keyword arguments
+                    # when unpacking **options
+                    options_copy = options.copy()
+                    follow_redirects = options_copy.pop("follow_redirects", True)
+                    # Remove other explicitly set parameters if present in options
+                    options_copy.pop("http2", None)
+                    options_copy.pop("limits", None)
+                    options_copy.pop("timeout", None)
+                    options_copy.pop("base_url", None)
+
+                    self._client = httpx.Client(
+                        base_url=url,
+                        http2=self._http2,
+                        limits=self._pool_limits,
+                        timeout=self._timeout,
+                        follow_redirects=follow_redirects,
+                        **options_copy,
+                    )
+
+                self._logger.debug(
+                    f"HTTP client connected to: {url}",
+                    extra={"url": url, "http2": self._http2},
                 )
 
-            self._logger.debug(
-                f"HTTP client connected to: {url}",
-                extra={"url": url, "http2": self._http2},
-            )
+                return FlextResult[httpx.Client].ok(self._client)
 
-            return FlextResult[httpx.Client].ok(self._client)
+            except Exception as e:
+                return FlextResult[httpx.Client].fail(
+                    f"Failed to create HTTP client: {e}"
+                )
 
-        except Exception as e:
-            return FlextResult[httpx.Client].fail(f"Failed to create HTTP client: {e}")
+        def disconnect(
+            self,
+            connection: httpx.Client,
+        ) -> FlextResult[None]:
+            """Close HTTP client connection.
 
-    def disconnect(
-        self,
-        connection: httpx.Client,
-    ) -> FlextResult[None]:
-        """Close HTTP client connection.
+            Args:
+                connection: Client to close
 
-        Args:
-            connection: Client to close
+            Returns:
+                FlextResult indicating success or failure
 
-        Returns:
-            FlextResult indicating success or failure
+            """
+            try:
+                connection.close()
+                self._client = None
 
-        """
-        try:
-            connection.close()
-            self._client = None
+                self._logger.debug("HTTP client disconnected")
+                return FlextResult[None].ok(None)
 
-            self._logger.debug("HTTP client disconnected")
-            return FlextResult[None].ok(None)
+            except Exception as e:
+                return FlextResult[None].fail(f"Failed to close HTTP client: {e}")
 
-        except Exception as e:
-            return FlextResult[None].fail(f"Failed to close HTTP client: {e}")
+        def send(
+            self,
+            connection: httpx.Client,
+            data: bytes | str,
+            **options: object,
+        ) -> FlextResult[None]:
+            """Send HTTP request.
 
-    def send(
-        self,
-        connection: httpx.Client,
-        data: bytes | str,
-        **options: object,
-    ) -> FlextResult[None]:
-        """Send HTTP request.
+            Args:
+                connection: Active HTTP client
+                data: Request data (will be converted to request)
+                **options: Request options (method, url, headers, etc.)
 
-        Args:
-            connection: Active HTTP client
-            data: Request data (will be converted to request)
-            **options: Request options (method, url, headers, etc.)
+            Returns:
+                FlextResult indicating success or failure
 
-        Returns:
-            FlextResult indicating success or failure
+            """
+            try:
+                method = options.get("method", "GET")
+                url = options.get("url", "/")
+                headers = options.get("headers", {})
 
-        """
-        try:
-            method = options.get("method", "GET")
-            url = options.get("url", "/")
-            headers = options.get("headers", {})
+                # Send request (response will be retrieved via receive)
+                response = connection.request(
+                    method=method,
+                    url=url,
+                    content=data if isinstance(data, bytes) else data.encode(),
+                    headers=headers,
+                )
 
-            # Send request (response will be retrieved via receive)
-            response = connection.request(
-                method=method,
-                url=url,
-                content=data if isinstance(data, bytes) else data.encode(),
-                headers=headers,
-            )
+                # Store response for receive()
+                self._last_response = response
 
-            # Store response for receive()
-            self._last_response = response
+                return FlextResult[None].ok(None)
 
-            return FlextResult[None].ok(None)
+            except Exception as e:
+                return FlextResult[None].fail(f"Failed to send HTTP request: {e}")
 
-        except Exception as e:
-            return FlextResult[None].fail(f"Failed to send HTTP request: {e}")
+        def receive(
+            self,
+            _connection: httpx.Client,
+            **_options: object,
+        ) -> FlextResult[bytes]:
+            """Receive HTTP response.
 
-    def receive(
-        self,
-        connection: httpx.Client,
-        **options: object,
-    ) -> FlextResult[bytes]:
-        """Receive HTTP response.
+            Args:
+                connection: Active HTTP client
+                **options: Receive options
 
-        Args:
-            connection: Active HTTP client
-            **options: Receive options
+            Returns:
+                FlextResult containing response bytes or error
 
-        Returns:
-            FlextResult containing response bytes or error
+            """
+            try:
+                if not hasattr(self, "_last_response"):
+                    return FlextResult[bytes].fail("No response available")
 
-        """
-        try:
-            if not hasattr(self, "_last_response"):
-                return FlextResult[bytes].fail("No response available")
+                response = self._last_response
+                content = response.read()
 
-            response = self._last_response
-            content = response.read()
+                return FlextResult[bytes].ok(content)
 
-            return FlextResult[bytes].ok(content)
+            except Exception as e:
+                return FlextResult[bytes].fail(f"Failed to receive HTTP response: {e}")
 
-        except Exception as e:
-            return FlextResult[bytes].fail(f"Failed to receive HTTP response: {e}")
+        def supports_streaming(self) -> bool:
+            """HTTP transport supports streaming."""
+            return True
 
-    def supports_streaming(self) -> bool:
-        """HTTP transport supports streaming."""
-        return True
+        def get_connection_info(self, _connection: httpx.Client) -> FlextTypes.Dict:
+            """Get HTTP connection information.
 
-    def get_connection_info(self, connection: httpx.Client) -> FlextTypes.Dict:
-        """Get HTTP connection information.
+            Args:
+                connection: Active HTTP client
 
-        Args:
-            connection: Active HTTP client
+            Returns:
+                Dictionary containing connection metadata
 
-        Returns:
-            Dictionary containing connection metadata
-
-        """
-        return {
-            "transport": "http",
-            "http2_enabled": self._http2,
-            "pool_limits": {
-                "max_connections": self._pool_limits.max_connections,
-                "max_keepalive": self._pool_limits.max_keepalive_connections,
-            },
-            "timeout": {
-                "connect": self._timeout.connect,
-                "read": self._timeout.read,
-                "write": self._timeout.write,
-                "pool": self._timeout.pool,
-            },
-        }
+            """
+            return {
+                "transport": "http",
+                "http2_enabled": self._http2,
+                "pool_limits": {
+                    "max_connections": self._pool_limits.max_connections,
+                    "max_keepalive": self._pool_limits.max_keepalive_connections,
+                },
+                "timeout": {
+                    "connect": self._timeout.connect,
+                    "read": self._timeout.read,
+                    "write": self._timeout.write,
+                    "pool": self._timeout.pool,
+                },
+            }
 
 
 class WebSocketTransport(TransportPlugin):
@@ -254,8 +263,8 @@ class WebSocketTransport(TransportPlugin):
 
     def connect(
         self,
-        url: str,
-        **options: object,
+        _url: str,
+        **_options: object,
     ) -> FlextResult[object]:
         """Connect to WebSocket endpoint (stub).
 
@@ -273,7 +282,7 @@ class WebSocketTransport(TransportPlugin):
 
     def disconnect(
         self,
-        connection: object,
+        _connection: object,
     ) -> FlextResult[None]:
         """Disconnect WebSocket (stub)."""
         return FlextResult[None].fail(
@@ -282,9 +291,9 @@ class WebSocketTransport(TransportPlugin):
 
     def send(
         self,
-        connection: object,
-        data: bytes | str,
-        **options: object,
+        _connection: object,
+        _data: bytes | str,
+        **_options: object,
     ) -> FlextResult[None]:
         """Send WebSocket message (stub)."""
         return FlextResult[None].fail(
@@ -293,8 +302,8 @@ class WebSocketTransport(TransportPlugin):
 
     def receive(
         self,
-        connection: object,
-        **options: object,
+        _connection: object,
+        **_options: object,
     ) -> FlextResult[bytes | str]:
         """Receive WebSocket message (stub)."""
         return FlextResult[bytes | str].fail(
@@ -324,8 +333,8 @@ class GraphQLTransport(TransportPlugin):
 
     def connect(
         self,
-        url: str,
-        **options: object,
+        _url: str,
+        **_options: object,
     ) -> FlextResult[object]:
         """Connect to GraphQL endpoint (stub).
 
@@ -343,24 +352,24 @@ class GraphQLTransport(TransportPlugin):
 
     def disconnect(
         self,
-        connection: object,
+        _connection: object,
     ) -> FlextResult[None]:
         """Disconnect GraphQL (stub)."""
         return FlextResult[None].fail("GraphQL transport not yet implemented (Phase 4)")
 
     def send(
         self,
-        connection: object,
-        data: bytes | str,
-        **options: object,
+        _connection: object,
+        _data: bytes | str,
+        **_options: object,
     ) -> FlextResult[None]:
         """Send GraphQL query (stub)."""
         return FlextResult[None].fail("GraphQL transport not yet implemented (Phase 4)")
 
     def receive(
         self,
-        connection: object,
-        **options: object,
+        _connection: object,
+        **_options: object,
     ) -> FlextResult[bytes | str]:
         """Receive GraphQL response (stub)."""
         return FlextResult[bytes | str].fail(
@@ -390,14 +399,14 @@ class SSETransport(TransportPlugin):
 
     def connect(
         self,
-        url: str,
-        **options: object,
+        _url: str,
+        **_options: object,
     ) -> FlextResult[object]:
         """Connect to SSE endpoint (stub).
 
         Args:
-            url: SSE endpoint URL
-            **options: Connection options
+            _url: SSE endpoint URL
+            **_options: Connection options
 
         Returns:
             FlextResult with stub error
@@ -407,24 +416,24 @@ class SSETransport(TransportPlugin):
 
     def disconnect(
         self,
-        connection: object,
+        _connection: object,
     ) -> FlextResult[None]:
         """Disconnect SSE (stub)."""
         return FlextResult[None].fail("SSE transport not yet implemented (Phase 3)")
 
     def send(
         self,
-        connection: object,
-        data: bytes | str,
-        **options: object,
+        _connection: object,
+        _data: bytes | str,
+        **_options: object,
     ) -> FlextResult[None]:
         """Send not applicable for SSE (stub)."""
         return FlextResult[None].fail("SSE is receive-only, send not applicable")
 
     def receive(
         self,
-        connection: object,
-        **options: object,
+        _connection: object,
+        **_options: object,
     ) -> FlextResult[bytes | str]:
         """Receive SSE event (stub)."""
         return FlextResult[bytes | str].fail(
@@ -459,14 +468,14 @@ class GrpcTransport(TransportPlugin):
 
     def connect(
         self,
-        url: str,
-        **options: object,
+        _url: str,
+        **_options: object,
     ) -> FlextResult[object]:
         """Connect to gRPC service (stub).
 
         Args:
-            url: gRPC service URL
-            **options: Connection options
+            _url: gRPC service URL
+            **_options: Connection options
 
         Returns:
             FlextResult with stub error
@@ -478,7 +487,7 @@ class GrpcTransport(TransportPlugin):
 
     def disconnect(
         self,
-        connection: object,
+        _connection: object,
     ) -> FlextResult[None]:
         """Disconnect gRPC (stub)."""
         return FlextResult[None].fail(
@@ -487,9 +496,9 @@ class GrpcTransport(TransportPlugin):
 
     def send(
         self,
-        connection: object,
-        data: bytes | str,
-        **options: object,
+        _connection: object,
+        _data: bytes | str,
+        **_options: object,
     ) -> FlextResult[None]:
         """Send gRPC request (stub)."""
         return FlextResult[None].fail(
@@ -498,8 +507,8 @@ class GrpcTransport(TransportPlugin):
 
     def receive(
         self,
-        connection: object,
-        **options: object,
+        _connection: object,
+        **_options: object,
     ) -> FlextResult[bytes | str]:
         """Receive gRPC response (stub)."""
         return FlextResult[bytes | str].fail(
@@ -508,9 +517,5 @@ class GrpcTransport(TransportPlugin):
 
 
 __all__ = [
-    "GraphQLTransport",
-    "GrpcTransport",
-    "HttpTransport",
-    "SSETransport",
-    "WebSocketTransport",
+    "FlextApiTransports",
 ]

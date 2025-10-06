@@ -1,18 +1,56 @@
 """FLEXT API - HTTP Foundation Library.
 
-Streamlined HTTP client and API foundation for FLEXT ecosystem.
-Direct usage of flext-core patterns without over-engineering.
+FlextApi provides a streamlined HTTP client and API foundation for the FLEXT ecosystem,
+offering enterprise-grade HTTP operations with flext-core patterns. This library serves
+as the HTTP foundation for 33+ FLEXT projects, eliminating implementation duplication
+while maintaining enterprise-grade patterns.
+
+The library provides:
+    - HTTP client with automatic retry and timeout handling
+    - FastAPI application factory with flext-core integration
+    - Request/response models with Pydantic v2 validation
+    - Configuration management with environment integration
+    - Storage abstraction for various backends
+    - Protocol definitions for extensible HTTP operations
+
+All components follow flext-core patterns including:
+    - FlextResult for railway-oriented error handling
+    - FlextService for dependency injection
+    - FlextModels for type-safe data validation
+    - Structured logging throughout
+
+Args:
+    None
+
+Returns:
+    None
+
+Example:
+    >>> from flext_api import FlextApiClient, FlextApiConfig
+    >>>
+    >>> # Configure HTTP client
+    >>> config = FlextApiConfig(base_url="https://api.example.com")
+    >>> client = FlextApiClient(config)
+    >>>
+    >>> # Make HTTP requests with automatic error handling
+    >>> result = client.get("/users")
+    >>> if result.is_success:
+    >>>     users = result.unwrap()
+    >>>
+    >>> # Create FastAPI application
+    >>> from flext_api import FlextApiApp
+    >>> app = FlextApiApp()
+    >>> # Add routes and middleware...
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
 
 from flext_api.__version__ import __version__, __version_info__
-from flext_api.adapters import (
-    FlextApiAdapters,
-)
+from flext_api.adapters import FlextApiAdapters
 from flext_api.api import FlextApi
 from flext_api.app import FlextApiApp
 from flext_api.client import FlextApiClient
@@ -40,10 +78,6 @@ __all__ = [
     "FlextApiStorage",
     "FlextApiTypes",
     "FlextApiUtilities",
-    "GraphQLToHttpAdapter",
-    "HttpToWebSocketAdapter",
-    "LegacyApiAdapter",
-    "SchemaAdapter",
     "__version__",
     "__version_info__",
 ]
