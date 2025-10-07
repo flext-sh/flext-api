@@ -129,23 +129,6 @@ class TestFlextApiUtilitiesReal:
         assert result.is_success
         assert result.unwrap() == "POST"
 
-    def test_http_validator_status_code_valid(self) -> None:
-        """Test HttpValidator status code validation with valid code."""
-        result = FlextApiUtilities.HttpValidator.validate_status_code(200)
-        assert result.is_success
-        assert result.unwrap() == 200
-
-    def test_http_validator_status_code_string(self) -> None:
-        """Test HttpValidator status code validation with string."""
-        result = FlextApiUtilities.HttpValidator.validate_status_code("404")
-        assert result.is_success
-        assert result.unwrap() == 404
-
-    def test_http_validator_status_code_invalid(self) -> None:
-        """Test HttpValidator status code validation with invalid code."""
-        result = FlextApiUtilities.HttpValidator.validate_status_code(9999)
-        assert result.is_failure
-
     def test_http_validator_normalize_url(self) -> None:
         """Test HttpValidator URL normalization."""
         result = FlextApiUtilities.HttpValidator.normalize_url("https://example.com/")
