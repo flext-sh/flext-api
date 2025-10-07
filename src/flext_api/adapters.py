@@ -51,7 +51,7 @@ class FlextApiAdapters(FlextService[None]):
     """
 
     # Type annotations for private attributes
-    logger: FlextLogger = PrivateAttr()
+    _logger: FlextLogger = PrivateAttr()
     _container: FlextContainer = PrivateAttr()
     _context: FlextContext = PrivateAttr()
     _bus: FlextBus = PrivateAttr()
@@ -61,7 +61,7 @@ class FlextApiAdapters(FlextService[None]):
     def __init__(self, endpoint: str = "/graphql", base_url: str = "") -> None:
         """Initialize the unified adapters service with complete flext-core integration."""
         # Complete flext-core integration
-        self.logger = FlextLogger(__name__)
+        self._logger = FlextLogger(__name__)
         self._container = FlextContainer.get_global()
         self._context = FlextContext()
         self._bus = FlextBus()
@@ -125,7 +125,7 @@ class FlextApiAdapters(FlextService[None]):
                 request=request,
             )
 
-            self.logger.debug(
+            self._logger.debug(
                 "WebSocket message adapted to HTTP response",
                 extra={"status": status_code},
             )
@@ -165,7 +165,7 @@ class FlextApiAdapters(FlextService[None]):
                 },
             )
 
-            self.logger.debug("GraphQL query adapted to HTTP request")
+            self._logger.debug("GraphQL query adapted to HTTP request")
 
             return FlextResult[FlextApiModels.HttpRequest].ok(request)
 
@@ -203,7 +203,7 @@ class FlextApiAdapters(FlextService[None]):
                     f"GraphQL errors: {', '.join(error_messages)}"
                 )
 
-            self.logger.debug("HTTP response adapted to GraphQL result")
+            self._logger.debug("HTTP response adapted to GraphQL result")
 
             data = result.get("data", {}) if isinstance(result, dict) else {}
             return FlextResult[FlextTypes.Dict].ok(data)
@@ -288,7 +288,7 @@ class FlextApiAdapters(FlextService[None]):
                             )
                             messages_dict[message_name] = {"payload": schema}
 
-            self.logger.debug("OpenAPI schema converted to API")
+            self._logger.debug("OpenAPI schema converted to API")
 
             return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(api_schema)
 
@@ -376,7 +376,7 @@ class FlextApiAdapters(FlextService[None]):
 
             graphql_sdl = "\n\n".join(sdl_parts)
 
-            self.logger.debug("OpenAPI schema converted to GraphQL SDL")
+            self._logger.debug("OpenAPI schema converted to GraphQL SDL")
 
             return FlextResult[str].ok(graphql_sdl)
 
@@ -401,7 +401,7 @@ class FlextApiAdapters(FlextService[None]):
                 ),
             )
 
-            self.logger.debug(
+            self._logger.debug(
                 "Modern request adapted to legacy format",
                 extra={"url": str(legacy_request.url)},
             )
@@ -440,7 +440,7 @@ class FlextApiAdapters(FlextService[None]):
                 request=legacy_response.request,
             )
 
-            self.logger.debug(
+            self._logger.debug(
                 "Legacy response adapted to modern format",
                 extra={"status": modern_response.status_code},
             )
