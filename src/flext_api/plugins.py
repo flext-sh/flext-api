@@ -10,7 +10,6 @@ SPDX-License-Identifier: MIT
 """
 
 from abc import abstractmethod
-from typing import Any
 
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
@@ -204,7 +203,7 @@ class SchemaPlugin(BasePlugin):
         ...
 
     @abstractmethod
-    def load_schema(self, schema_source: str) -> FlextResult[Any]:
+    def load_schema(self, schema_source: str) -> FlextResult[object]:
         """Load schema from source.
 
         Args:

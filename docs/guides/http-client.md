@@ -543,15 +543,15 @@ client = FlextApiClient(
 ### Request Batching
 
 ```python
-from typing import List, Dict, Any
+from typing import List, Dict, object
 
-def batch_requests(requests: List[Dict[str, Any]]) -> List[FlextResult[Any]]:
+def batch_requests(requests: List[Dict[str, object]]) -> List[FlextResult[object]]:
     """Execute multiple HTTP requests efficiently."""
 
     async def execute_batch():
         import asyncio
 
-        async def execute_request(req_data: Dict[str, Any]) -> FlextResult[Any]:
+        async def execute_request(req_data: Dict[str, object]) -> FlextResult[object]:
             method = req_data.get("method", "GET")
             url = req_data["url"]
             **kwargs = req_data.get("kwargs", {})
