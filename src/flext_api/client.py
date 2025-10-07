@@ -143,7 +143,7 @@ class FlextApiClient(FlextService[None]):
 
         # Initialize core services from FLEXT ecosystem
         self._container = FlextContainer.get_global()
-        self.logger = FlextLogger(__name__)
+        self._logger = FlextLogger(__name__)
         self._bus = FlextBus()
         self._context = FlextContext()
 
@@ -167,7 +167,7 @@ class FlextApiClient(FlextService[None]):
             )
         except Exception as e:
             error_msg = f"Client creation failed: {e}"
-            self.logger.exception(error_msg)
+            self._logger.exception(error_msg)
             config_result = FlextResult[FlextApiModels.ClientConfig].fail(
                 error_msg, error_code="INITIALIZATION_ERROR"
             )
@@ -229,7 +229,7 @@ class FlextApiClient(FlextService[None]):
         self._container.register("middleware_pipeline", self._middleware)
         self._container.register("registry", self._registry)
 
-        self.logger.info(
+        self._logger.info(
             "FlextApiClient initialized with registry and protocols",
             extra={
                 "base_url": self._client_config.base_url,
@@ -398,7 +398,7 @@ class FlextApiClient(FlextService[None]):
             return FlextResult[FlextApiModels.AppConfig].ok(config_model)
         except Exception as e:
             error_msg = f"App config model creation failed: {e}"
-            self.logger.exception(error_msg)
+            self._logger.exception(error_msg)
             return FlextResult[FlextApiModels.AppConfig].fail(
                 error_msg, error_code=FlextConstants.Errors.VALIDATION_ERROR
             )
@@ -419,7 +419,7 @@ class FlextApiClient(FlextService[None]):
             # Create FastAPI app using FLEXT patterns
             app = FlextApiApp.create_fastapi_app(config_model)
 
-            self.logger.info(
+            self._logger.info(
                 "FastAPI application created successfully",
                 extra={
                     "title": config_model.title,
@@ -430,7 +430,7 @@ class FlextApiClient(FlextService[None]):
             return FlextResult[FlextApiTypes.JsonValue].ok(app)
         except Exception as e:
             error_msg = f"FastAPI app instance creation failed: {e}"
-            self.logger.exception(error_msg)
+            self._logger.exception(error_msg)
             return FlextResult[FlextApiTypes.JsonValue].fail(
                 error_msg, error_code=FlextConstants.Errors.OPERATION_ERROR
             )
@@ -689,7 +689,7 @@ class FlextApiClient(FlextService[None]):
         """
         response_middleware_result = self._middleware.process_response(response)
         if response_middleware_result.is_failure:
-            self.logger.warning(
+            self._logger.warning(
                 "Middleware response processing warning: "
                 f"{response_middleware_result.error}"
             )
@@ -819,7 +819,7 @@ class FlextApiClient(FlextService[None]):
             processed_request = middleware_result.unwrap()
 
             # Log request details
-            self.logger.info(
+            self._logger.info(
                 f"Executing {method} request via protocol plugin",
                 extra={
                     "correlation_id": correlation_id,
@@ -859,7 +859,7 @@ class FlextApiClient(FlextService[None]):
             # Process response through middleware pipeline (sync)
             response_middleware_result = self._middleware.process_response(response)
             if response_middleware_result.is_failure:
-                self.logger.warning(
+                self._logger.warning(
                     "Middleware response processing warning: "
                     f"{response_middleware_result.error}"
                 )
@@ -870,7 +870,7 @@ class FlextApiClient(FlextService[None]):
 
             request_duration = time.time() - request_start
 
-            self.logger.info(
+            self._logger.info(
                 "Request completed successfully",
                 extra={
                     "correlation_id": correlation_id,
@@ -1117,7 +1117,7 @@ class FlextApiClient(FlextService[None]):
                 return FlextResult[None].fail("Logger protocol not initialized")
 
             # Log successful execution
-            self.logger.info(
+            self._logger.info(
                 "FlextApiClient domain service execution completed successfully",
                 extra={
                     "base_url": self._client_config.base_url,
@@ -1130,7 +1130,7 @@ class FlextApiClient(FlextService[None]):
 
         except Exception as e:
             error_msg = f"Domain service execution failed: {e}"
-            self.logger.exception(error_msg)
+            self._logger.exception(error_msg)
             return FlextResult[None].fail(error_msg)
 
     @classmethod
