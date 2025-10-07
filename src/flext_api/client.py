@@ -101,7 +101,7 @@ class FlextApiClient(FlextService[None]):
     _initialized: bool = PrivateAttr(default=False)
 
     # ZERO TOLERANCE FIX: Protocol-based service composition
-    logger: FlextLogger = PrivateAttr()
+    _logger: FlextLogger = PrivateAttr()
     _http_client_protocol: FlextApiProtocols.HttpClientProtocol = PrivateAttr()
     _storage_backend_protocol: FlextApiProtocols.StorageBackendProtocol = PrivateAttr()
     _logger_protocol: FlextApiProtocols.LoggerProtocol = PrivateAttr()
