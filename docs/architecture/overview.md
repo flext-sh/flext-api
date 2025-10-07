@@ -163,12 +163,12 @@ class BaseProtocol(ABC):
     """Base protocol interface."""
 
     @abstractmethod
-    def create_client(self, config: dict) -> Any:
+    def create_client(self, config: dict) -> object:
         """Create protocol-specific client."""
         pass
 
     @abstractmethod
-    async def execute_request(self, request: Any) -> FlextResult[Any]:
+    async def execute_request(self, request: object) -> FlextResult[object]:
         """Execute protocol-specific request."""
         pass
 
@@ -353,7 +353,7 @@ class StorageBackend(ABC):
     """Abstract storage backend interface."""
 
     @abstractmethod
-    async def upload_file(self, file: Any, path: str, metadata: dict = None) -> FlextResult[str]:
+    async def upload_file(self, file: object, path: str, metadata: dict = None) -> FlextResult[str]:
         """Upload file to storage."""
         pass
 
@@ -378,7 +378,7 @@ class S3StorageBackend(StorageBackend):
     def __init__(self, config: dict):
         self.client = boto3.client("s3", **config)
 
-    async def upload_file(self, file: Any, path: str, metadata: dict = None) -> FlextResult[str]:
+    async def upload_file(self, file: object, path: str, metadata: dict = None) -> FlextResult[str]:
         """Upload file to S3."""
         try:
             # S3 upload implementation
@@ -753,11 +753,11 @@ from flext_api.protocols import BaseProtocol
 class CustomProtocol(BaseProtocol):
     """Custom protocol implementation."""
 
-    def create_client(self, config: dict) -> Any:
+    def create_client(self, config: dict) -> object:
         """Create protocol-specific client."""
         return CustomClient(**config)
 
-    async def execute_request(self, request: Any) -> FlextResult[Any]:
+    async def execute_request(self, request: object) -> FlextResult[object]:
         """Execute protocol-specific request."""
         # Custom protocol implementation
         pass

@@ -8,8 +8,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
 from flext_core import FlextResult, FlextTypes
 
 
@@ -90,7 +88,7 @@ class FlextTestsMatchers:
 
     @staticmethod
     def assert_flext_result_failure(
-        result: FlextResult[Any],
+        result: FlextResult[object],
         expected_error: str | None = None,
     ) -> None:
         """Assert that a FlextResult is a failure.
