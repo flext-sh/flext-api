@@ -43,7 +43,6 @@ class FlextTestsMatchers:
         ) -> FlextTestsMatchers.TestDataBuilder:
             """Add configuration to dataset."""
             self._data["configs"] = {
-                "environment": "production" if production else "development",
                 "debug": not production,
                 "database_url": "postgresql://localhost/testdb",
                 "api_timeout": 30,

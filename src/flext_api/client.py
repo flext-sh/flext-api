@@ -65,7 +65,7 @@ class FlextApiClient(FlextService[None]):
 
         # Create HTTP client
         client = FlextApiClient(
-            base_url="https://api.example.com",
+            base_url=FlextApiConstants.EXAMPLE_BASE_URL,
             timeout=FlextConstants.Defaults.TIMEOUT,
             max_retries=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
         )
@@ -729,7 +729,7 @@ class FlextApiClient(FlextService[None]):
             url = client._build_url("/users/123")
             # Returns: https://api.example.com/users/123
 
-            url = client._build_url("https://other.com/api")
+            url = client._build_url("https://other.com/api")  # Test URL
             # Returns: https://other.com/api (absolute URLs unchanged)
             ```
 
@@ -917,7 +917,7 @@ class FlextApiClient(FlextService[None]):
         Example:
             ```python
             api_result = FlextApiClient.create_flext_api({
-                "base_url": "https://api.example.com",
+                "base_url": FlextApiConstants.EXAMPLE_BASE_URL,
                 "title": "My API",
                 "version": "1.0.0",
             })
@@ -1063,7 +1063,7 @@ class FlextApiClient(FlextService[None]):
 
         Example:
             ```python
-            client = FlextApiClient(base_url="https://api.example.com")
+            client = FlextApiClient(base_url=FlextApiConstants.EXAMPLE_BASE_URL)
             execution_result: FlextResult[object] = client.execute()
             if execution_result.is_success:
                 print("HTTP client is ready for operations")
@@ -1541,8 +1541,8 @@ class FlextApiClient(FlextService[None]):
     def get_configuration_dict(self) -> FlextApiTypes.ConfigDict:
         """Get current configuration as dictionary."""
         return {
-            "base_url": "https://localhost:8000",
-            "timeout": 30.0,
+            "base_url": FlextApiConstants.LOCALHOST_BASE_URL,
+            "timeout": FlextApiConstants.DEFAULT_REQUEST_TIMEOUT,
             "max_retries": 3,
             "headers": {},
         }
@@ -1633,7 +1633,7 @@ class FlextApiClient(FlextService[None]):
             # HTTP GET operation would be implemented here
             # For now, return a mock response
             response = FlextApiModels.HttpResponse(
-                status_code=200,
+                status_code=FlextConstants.Http.HTTP_OK,
                 body={
                     "message": "GET request executed",
                     "url": url,
@@ -1660,7 +1660,7 @@ class FlextApiClient(FlextService[None]):
             # HTTP POST operation would be implemented here
             # For now, return a mock response
             response = FlextApiModels.HttpResponse(
-                status_code=201,
+                status_code=FlextConstants.Http.HTTP_CREATED,
                 body={
                     "message": "POST request executed",
                     "url": url,
@@ -1687,7 +1687,7 @@ class FlextApiClient(FlextService[None]):
             # HTTP PUT operation would be implemented here
             # For now, return a mock response
             response = FlextApiModels.HttpResponse(
-                status_code=200,
+                status_code=FlextConstants.Http.HTTP_OK,
                 body={
                     "message": "PUT request executed",
                     "url": url,
@@ -1713,7 +1713,7 @@ class FlextApiClient(FlextService[None]):
             # HTTP DELETE operation would be implemented here
             # For now, return a mock response
             response = FlextApiModels.HttpResponse(
-                status_code=204,
+                status_code=FlextConstants.Http.HTTP_NO_CONTENT,
                 body={"message": "DELETE request executed", "url": url},
                 headers=headers or {},
                 url=url,
