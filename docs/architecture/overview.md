@@ -247,9 +247,6 @@ async def request_pipeline(request, call_next):
 def create_fastapi_app(config: FlextApiConfig = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
 
-    # 1. Load configuration
-    if config is None:
-        config = FlextApiConfig.create_for_environment()
 
     # 2. Create FastAPI app
     app = FastAPI(

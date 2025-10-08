@@ -142,9 +142,6 @@ class MyApiConfig(FlextApiConfig):
     """Custom API configuration."""
     custom_setting: str = "default_value"
     feature_flags: dict = {}
-
-# Environment-based configuration
-config = MyApiConfig.create_for_environment("production")
 ```
 
 ## HTTP Models and Schemas
