@@ -107,19 +107,6 @@ config = FlextApiConfig(
 app = create_fastapi_app(config=config)
 ```
 
-### Environment-Specific Configuration
-
-```python
-# Development configuration
-dev_config = FlextApiConfig.create_for_environment("development")
-
-# Production configuration
-prod_config = FlextApiConfig.create_for_environment("production")
-
-# Staging configuration
-staging_config = FlextApiConfig.create_for_environment("staging")
-```
-
 ## Configuration Options
 
 ### Core API Settings
@@ -203,7 +190,7 @@ except ValidationError as e:
 from flext_api import create_fastapi_app, FlextApiConfig
 
 # Load configuration
-config = FlextApiConfig.create_for_environment("production")
+config = FlextApiConfig())
 
 # Create application with configuration
 app = create_fastapi_app(config=config)
@@ -252,11 +239,7 @@ class UserService(FlextService):
 from flext_api import FlextApiConfig
 
 # Automatic environment detection
-config = FlextApiConfig.create_for_environment()  # Uses os.environ.get("ENVIRONMENT")
-
-# Manual environment specification
-dev_config = FlextApiConfig.create_for_environment("development")
-prod_config = FlextApiConfig.create_for_environment("production")
+config = FlextApiConfig()
 ```
 
 ### Environment Variables
@@ -384,14 +367,14 @@ class ConfigurationManager:
     """Manage configuration with hot reloading."""
 
     def __init__(self):
-        self.config = FlextApiConfig.create_for_environment()
+        self.config = FlextApiConfig()
         self.last_modified = time.time()
         self.lock = threading.Lock()
 
     def reload_config(self):
         """Reload configuration from files."""
         with self.lock:
-            new_config = FlextApiConfig.create_for_environment()
+            new_config = FlextApiConfig()
 
             # Validate new configuration
             if self._validate_config_change(new_config):

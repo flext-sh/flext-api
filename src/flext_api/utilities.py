@@ -10,20 +10,21 @@ import importlib
 import json
 import re
 import time
-from typing import cast
+from typing import TypeVar, cast
 from urllib.parse import urlparse, urlunparse
 
 from flext_core import (
     FlextResult,
     FlextTypes,
     FlextUtilities,
-    T,
 )
 
 from flext_api.client import FlextApiClient
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
+
+T = TypeVar("T")
 
 
 class FlextApiUtilities(FlextUtilities):

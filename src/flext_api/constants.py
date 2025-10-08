@@ -22,22 +22,31 @@ class FlextApiConstants(FlextConstants):
     )
     API_VERSION: ClassVar[str] = "v1"
 
-    # Environment-specific timeouts
-    PRODUCTION_TIMEOUT: ClassVar[int] = FlextConstants.Network.DEFAULT_TIMEOUT
-    DEVELOPMENT_TIMEOUT: ClassVar[int] = FlextConstants.Network.DEFAULT_TIMEOUT * 2
-    TESTING_TIMEOUT: ClassVar[int] = FlextConstants.Network.DEFAULT_TIMEOUT // 3
-    MONITORING_TIMEOUT: ClassVar[int] = FlextConstants.Network.DEFAULT_TIMEOUT // 6
-
     # Pagination constants
-    DEFAULT_PAGE_SIZE: ClassVar[int] = 20
-    MIN_PAGE_SIZE: ClassVar[int] = 1
-    MAX_PAGE_SIZE: ClassVar[int] = 1000
-    MAX_PAGE_SIZE_PERFORMANCE: ClassVar[int] = 1000
+    DEFAULT_PAGE_SIZE: ClassVar[int] = (
+        FlextConstants.Processing.DEFAULT_BATCH_SIZE // 5
+    )  # 200
+    MIN_PAGE_SIZE: ClassVar[int] = FlextConstants.Pagination.MIN_PAGE_SIZE
+    MAX_PAGE_SIZE: ClassVar[int] = FlextConstants.Pagination.MAX_PAGE_SIZE
+    MAX_PAGE_SIZE_PERFORMANCE: ClassVar[int] = FlextConstants.Pagination.MAX_PAGE_SIZE
 
     # HTTP constants moved to flext-core.FlextConstants.Http
     # Use FlextConstants.Http.HTTP_OK, FlextConstants.Http.HTTP_SUCCESS_MIN, etc.
     # Use FlextConstants.Http.Method.GET, FlextConstants.Http.Method.POST, etc.
     # Use FlextConstants.Http.ContentType.JSON, etc.
+
+    # CORS constants
+    DEFAULT_CORS_ORIGINS: ClassVar[FlextTypes.StringList] = ["*"]
+    DEFAULT_CORS_METHODS: ClassVar[FlextTypes.StringList] = [
+        FlextConstants.Http.Method.GET,
+        FlextConstants.Http.Method.POST,
+        FlextConstants.Http.Method.PUT,
+        FlextConstants.Http.Method.DELETE,
+    ]
+    DEFAULT_CORS_HEADERS: ClassVar[FlextTypes.StringList] = [
+        FlextConstants.Platform.HEADER_CONTENT_TYPE,
+        FlextConstants.Platform.HEADER_AUTHORIZATION,
+    ]
 
     # API-specific response templates (not in flext-core)
     SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, str | FlextTypes.Dict] | None] = None

@@ -147,11 +147,7 @@ class FlextApiSerializers(FlextService[None]):
                     self.logger = FlextLogger(__name__)
 
                     self._msgpack = msgpack
-                    self._available = msgpack is not None
-                    if not self._available:
-                        self.logger.warning(
-                            "msgpack not available - install with: pip install msgpack"
-                        )
+                    self._available = True  # msgpack is mandatory dependency
 
                 def serialize(self, data: object) -> bytes:
                     """Serialize data to MessagePack bytes.
@@ -163,7 +159,7 @@ class FlextApiSerializers(FlextService[None]):
                         MessagePack bytes
 
                     Raises:
-                        ImportError: If msgpack is not installed
+                        No exceptions raised - msgpack is mandatory dependency
 
                     """
                     if not self._available:
@@ -182,7 +178,7 @@ class FlextApiSerializers(FlextService[None]):
                         Deserialized data
 
                     Raises:
-                        ImportError: If msgpack is not installed
+                        No exceptions raised - msgpack is mandatory dependency
 
                     """
                     if not self._available:
@@ -227,7 +223,7 @@ class FlextApiSerializers(FlextService[None]):
                             CBOR bytes
 
                         Raises:
-                            ImportError: If cbor2 is not installed
+                        No exceptions raised - cbor2 is mandatory dependency
 
                         """
                         if not self._available:
@@ -246,7 +242,7 @@ class FlextApiSerializers(FlextService[None]):
                             Deserialized data
 
                         Raises:
-                            ImportError: If cbor2 is not installed
+                        No exceptions raised - cbor2 is mandatory dependency
 
                         """
                         if not self._available:

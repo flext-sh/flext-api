@@ -28,7 +28,6 @@ class FlextApiConfig(FlextConfig):
     """
 
     model_config = SettingsConfigDict(
-        env_prefix="FLEXT_API_",
         case_sensitive=False,
         extra="allow",
         # Enhanced Pydantic 2.11+ features from FlextConfig
@@ -79,17 +78,17 @@ class FlextApiConfig(FlextConfig):
 
     # CORS configuration
     cors_origins: FlextTypes.StringList = Field(
-        default_factory=lambda: ["*"],
+        default_factory=FlextApiConstants.DEFAULT_CORS_ORIGINS.copy,
         description="CORS allowed origins",
     )
 
     cors_methods: FlextTypes.StringList = Field(
-        default_factory=lambda: ["GET", "POST", "PUT", "DELETE"],
+        default_factory=FlextApiConstants.DEFAULT_CORS_METHODS.copy,
         description="CORS allowed methods",
     )
 
     cors_headers: FlextTypes.StringList = Field(
-        default_factory=lambda: ["Content-Type", "Authorization"],
+        default_factory=FlextApiConstants.DEFAULT_CORS_HEADERS.copy,
         description="CORS allowed headers",
     )
 
@@ -265,40 +264,6 @@ class FlextApiConfig(FlextConfig):
         parent_result = super().validate_business_rules()
         if parent_result.is_failure:
             return parent_result
-
-        # API-specific business rules
-        if self.is_production():
-            # Production API validation - use constants for magic values
-            max_prod_timeout = 60  # seconds
-            max_prod_retries = 5
-
-            if not self.base_url or not self.base_url.startswith((
-                "https://",
-                "http://",
-            )):
-                return FlextResult[None].fail(
-                    "Production API requires valid base_url starting with http:// or https://"
-                )
-
-            if self.timeout > max_prod_timeout:
-                return FlextResult[None].fail(
-                    f"Production API timeout too high: {self.timeout}s (max: {max_prod_timeout}s)"
-                )
-
-            if self.max_retries > max_prod_retries:
-                return FlextResult[None].fail(
-                    f"Production API max_retries too high: {self.max_retries} (max: {max_prod_retries})"
-                )
-
-        # Development validation - combine nested if statements
-        if (
-            self.is_development()
-            and self.base_url
-            and self.base_url.startswith("https://")
-            and self.debug
-        ):
-            # Allow HTTPS in development for testing, but warn via logging
-            pass
 
         return FlextResult[None].ok(None)
 

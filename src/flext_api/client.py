@@ -189,7 +189,7 @@ class FlextApiClient(FlextService[None]):
             # Create default HTTP protocol plugin
             http_plugin = HttpProtocolPlugin(
                 http2=True,
-                max_connections=100,
+                max_connections=FlextConstants.Network.MAX_CONNECTIONS,
                 max_retries=max_retries
                 or FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
             )

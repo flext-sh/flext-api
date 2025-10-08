@@ -10,9 +10,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextHandlers, FlextResult, FlextUtilities, T, U
+from typing import TypeVar
+
+from flext_core import FlextHandlers, FlextResult, FlextUtilities
 
 from flext_api.models import FlextApiModels
+
+T = TypeVar("T")
+U = TypeVar("U")
 
 
 class FlextApiHandlers(FlextHandlers[T, U]):

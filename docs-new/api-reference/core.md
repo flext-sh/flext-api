@@ -144,7 +144,7 @@ class MyApiConfig(FlextApiConfig):
     feature_flags: dict = {}
 
 # Environment-based configuration
-config = MyApiConfig.create_for_environment("production")
+config = MyApiConfig()
 ```
 
 ## HTTP Models and Schemas

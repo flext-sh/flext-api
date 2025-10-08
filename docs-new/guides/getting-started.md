@@ -191,8 +191,8 @@ FLEXT-API supports configuration through multiple sources:
 from flext_api import FlextApiConfig
 
 # Create configuration for different environments
-dev_config = FlextApiConfig.create_for_environment("development")
-prod_config = FlextApiConfig.create_for_environment("production")
+dev_config = FlextApiConfig()
+prod_config = FlextApiConfig()
 
 # Custom configuration
 custom_config = FlextApiConfig(
@@ -331,7 +331,7 @@ python --version  # Should be 3.13+
 # Validate configuration loading
 python -c "
 from flext_api import FlextApiConfig
-config = FlextApiConfig.create_for_environment('development')
+config = FlextApiConfig()
 print(f'Config loaded: {config.title}')
 "
 ```
