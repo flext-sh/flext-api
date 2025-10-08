@@ -53,7 +53,7 @@ python examples/01_basic_usage.py
 python examples/02_advanced.py
 
 # Run from project root
-cd /home/marlonsc/flext/flext-api
+cd ..flext-api
 PYTHONPATH=src python examples/01_basic_usage.py
 PYTHONPATH=src python examples/02_advanced.py
 ```
