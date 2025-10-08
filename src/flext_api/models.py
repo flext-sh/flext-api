@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Self
+from urllib.parse import urlparse
 
 from flext_core import (
     FlextModels,
@@ -338,8 +339,8 @@ class FlextApiModels(FlextModels):
             # This allows flexible authentication configuration with fallback options
 
             # Validate retry configuration
-            if self.max_retries > FlextApiConstants.MAX_RETRIES_PRODUCTION:
-                msg = f"Max retries should not exceed {FlextApiConstants.MAX_RETRIES_PRODUCTION} for production use"
+            if self.max_retries > FlextApiConstants.MAX_RETRIES:
+                msg = f"Max retries should not exceed {FlextApiConstants.MAX_RETRIES}"
                 raise ValueError(msg)
 
             return self
@@ -852,8 +853,8 @@ class FlextApiModels(FlextModels):
             @model_validator(mode="after")
             def validate_http_request_config(self) -> Self:
                 """Cross-field validation for HTTP request configuration."""
-                if self.retries > FlextApiConstants.MAX_RETRIES_PRODUCTION:
-                    msg = f"Retries should not exceed {FlextApiConstants.MAX_RETRIES_PRODUCTION} for production"
+                if self.retries > FlextApiConstants.MAX_RETRIES:
+                    msg = f"Retries should not exceed {FlextApiConstants.MAX_RETRIES}"
                     raise ValueError(msg)
 
                 return self
@@ -1430,8 +1431,6 @@ class FlextApiModels(FlextModels):
 
         """
         try:
-            from urllib.parse import urlparse
-
             if not url or not isinstance(url, str):
                 return FlextResult[str].fail("URL must be a non-empty string")
 

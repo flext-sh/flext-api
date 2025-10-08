@@ -22,6 +22,11 @@ class FlextApiConstants(FlextConstants):
     )
     API_VERSION: ClassVar[str] = "v1"
 
+    # Example and test URLs
+    EXAMPLE_BASE_URL: ClassVar[str] = "https://api.example.com"
+    LOCALHOST_BASE_URL: ClassVar[str] = "https://localhost:8000"
+    DEFAULT_REQUEST_TIMEOUT: ClassVar[float] = 30.0
+
     # Pagination constants
     DEFAULT_PAGE_SIZE: ClassVar[int] = (
         FlextConstants.Processing.DEFAULT_BATCH_SIZE // 5
@@ -83,7 +88,6 @@ class FlextApiConstants(FlextConstants):
     # Retry constants
     MIN_RETRIES: ClassVar[int] = 0
     MAX_RETRIES: ClassVar[int] = 10
-    MAX_RETRIES_PRODUCTION: ClassVar[int] = 10
     DEFAULT_RETRIES: ClassVar[int] = 3
 
     # Rate limiting constants

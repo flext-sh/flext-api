@@ -478,9 +478,9 @@ class FlextApiMiddleware:
 
                 # New (recommended):
                 from flext_auth import HttpAuthMiddleware
-                from flext_auth.providers import ApiKeyAuthProvider
+                from flext_auth.providers import FlextAuthApiKeyProvider
 
-                provider = ApiKeyAuthProvider(config={"api_key": "my-token"})
+                provider = FlextAuthApiKeyProvider(config={"api_key": "my-token"})
                 middleware = HttpAuthMiddleware(
                     provider=provider, header_name="Authorization"
                 )

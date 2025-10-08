@@ -162,10 +162,6 @@ class FlextApiSerializers(FlextService[None]):
                         No exceptions raised - msgpack is mandatory dependency
 
                     """
-                    if not self._available:
-                        msg = "msgpack not installed. Install with: pip install msgpack"
-                        raise ImportError(msg)
-
                     return self._msgpack.packb(data, use_bin_type=True)
 
                 def deserialize(self, data: bytes) -> object:
@@ -181,10 +177,6 @@ class FlextApiSerializers(FlextService[None]):
                         No exceptions raised - msgpack is mandatory dependency
 
                     """
-                    if not self._available:
-                        msg = "msgpack not installed. Install with: pip install msgpack"
-                        raise ImportError(msg)
-
                     return self._msgpack.unpackb(data, raw=False)
 
                 @property
@@ -207,11 +199,7 @@ class FlextApiSerializers(FlextService[None]):
                         self.logger = FlextLogger(__name__)
 
                         self._cbor = cbor2
-                        self._available = cbor2 is not None
-                        if not self._available:
-                            self.logger.warning(
-                                "cbor2 not available - install with: pip install cbor2"
-                            )
+                        self._available = True  # cbor2 is mandatory dependency
 
                     def serialize(self, data: object) -> bytes:
                         """Serialize data to CBOR bytes.
@@ -226,10 +214,6 @@ class FlextApiSerializers(FlextService[None]):
                         No exceptions raised - cbor2 is mandatory dependency
 
                         """
-                        if not self._available:
-                            msg = "cbor2 not installed. Install with: pip install cbor2"
-                            raise ImportError(msg)
-
                         return self._cbor.dumps(data)
 
                     def deserialize(self, data: bytes) -> object:
@@ -245,10 +229,6 @@ class FlextApiSerializers(FlextService[None]):
                         No exceptions raised - cbor2 is mandatory dependency
 
                         """
-                        if not self._available:
-                            msg = "cbor2 not installed. Install with: pip install cbor2"
-                            raise ImportError(msg)
-
                         return self._cbor.loads(data)
 
                     @property
