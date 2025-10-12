@@ -1,0 +1,140 @@
+@startuml FLEXT-API Data Flow Diagram
+title FLEXT-API Data Flow and Processing
+
+database "External Data Sources" as sources {
+    frame "Databases" as dbs {
+        [PostgreSQL] as postgres
+        [Oracle] as oracle
+        [MongoDB] as mongo
+        [Redis Cache] as redis
+    }
+
+    frame "APIs" as apis {
+        [REST APIs] as rest
+        [GraphQL APIs] as graphql
+        [SOAP Services] as soap
+    }
+
+    frame "Files" as files {
+        [S3 Storage] as s3
+        [Local Files] as local
+        [FTP/SFTP] as ftp
+    }
+
+    frame "Queues" as queues {
+        [RabbitMQ] as rabbitmq
+        [Kafka] as kafka
+        [Redis Queue] as redisq
+    }
+}
+
+node "FLEXT-API Gateway" as gateway #lightblue
+
+frame "Request Processing" as processing #lightgreen {
+    node "Authentication" as auth
+    node "Authorization" as authz
+    node "Rate Limiting" as ratelimit
+    node "Input Validation" as validation
+}
+
+frame "Business Logic" as business #lightyellow {
+    node "Domain Services" as domain
+    node "Business Rules" as rules
+    node "Data Transformation" as transform
+    node "Workflow Orchestration" as workflow
+}
+
+frame "Data Layer" as data #lightcoral {
+    node "Query Builder" as query
+    node "ORM/Data Access" as orm
+    node "Cache Manager" as cache
+    node "Storage Router" as storage
+}
+
+node "Response Processing" as response #lightcyan
+
+database "FLEXT-API Storage" as storage {
+    frame "Primary Storage" as primary {
+        [PostgreSQL DB] as app_db
+        [Redis Cache] as app_cache
+        [S3 Storage] as app_s3
+    }
+
+    frame "Audit/Logging" as audit {
+        [Audit Logs] as audit_logs
+        [Metrics Store] as metrics
+        [Event Store] as events
+    }
+}
+
+== Data Ingestion Flow ==
+sources --> gateway: Raw data from\nvarious sources
+
+gateway --> processing: Route to\nprocessing pipeline
+processing --> auth: User authentication
+auth --> authz: Permission checking
+authz --> ratelimit: Rate limit validation
+ratelimit --> validation: Input validation
+
+validation --> business: Validated request
+business --> domain: Domain logic execution
+domain --> rules: Business rule application
+rules --> transform: Data transformation
+transform --> workflow: Workflow orchestration
+
+workflow --> data: Data operations
+data --> query: Query construction
+query --> orm: ORM operations
+orm --> cache: Cache checking/lookup
+cache --> storage: Storage routing
+
+storage --> primary: Data persistence
+primary --> audit: Audit logging
+audit --> metrics: Metrics collection
+metrics --> events: Event publishing
+
+== Data Retrieval Flow ==
+gateway --> processing: API requests
+processing --> auth
+auth --> authz
+authz --> validation
+
+validation --> data: Query requests
+data --> cache: Cache lookup
+cache --> orm: Database queries
+orm --> query: Result processing
+
+query --> business: Business logic
+business --> transform: Data formatting
+transform --> response: Response building
+
+response --> gateway: Formatted response
+
+== Caching Flow ==
+orm --> cache: Cache population
+cache --> orm: Cache hits
+cache --> storage: Cache invalidation
+storage --> cache: Cache warming
+
+== Error Flow ==
+processing --> response: Validation errors
+auth --> response: Authentication errors
+authz --> response: Authorization errors
+ratelimit --> response: Rate limit errors
+business --> response: Business logic errors
+data --> response: Data access errors
+
+response --> audit: Error logging
+audit --> metrics: Error metrics
+metrics --> response: Error reporting
+
+== Monitoring Flow ==
+processing --> metrics: Request metrics
+business --> metrics: Business metrics
+data --> metrics: Performance metrics
+response --> metrics: Response metrics
+
+metrics --> audit: Metric logging
+audit --> events: Metric events
+
+@enduml

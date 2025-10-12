@@ -6,11 +6,11 @@ This section covers the core HTTP client and server classes that form the founda
 
 ### FlextApiClient - Main HTTP Client
 
-The primary HTTP client for all HTTP operations within the FLEXT ecosystem, providing type-safe operations with FlextResult patterns.
+The primary HTTP client for all HTTP operations within the FLEXT ecosystem, providing type-safe operations with FlextCore.Result patterns.
 
 ```python
 from flext_api import FlextApiClient
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 # Create client instance
 client = FlextApiClient(
@@ -192,7 +192,7 @@ from flext_api.models import ErrorResponse
 
 class ValidationErrorResponse(ErrorResponse):
     """Validation error response."""
-    field_errors: dict[str, list[str]]
+    field_errors: dict[str, FlextCore.Types.StringList]
 
 class AuthenticationErrorResponse(ErrorResponse):
     """Authentication error response."""
@@ -259,7 +259,7 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 
 ```python
 from flext_api import FlextApiClient, FlextApiConfig
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 class UserApiClient(FlextApiClient):
     """HTTP client for user management API."""
@@ -271,23 +271,23 @@ class UserApiClient(FlextApiClient):
             headers={"User-Agent": "FLEXT-API-Example/0.9.9"}
         )
 
-    def get_users(self, limit: int = 10) -> FlextResult[list]:
+    def get_users(self, limit: int = 10) -> FlextCore.Result[list]:
         """Get list of users with pagination."""
         return self.get("/users", params={"_limit": limit})
 
-    def get_user(self, user_id: int) -> FlextResult[dict]:
+    def get_user(self, user_id: int) -> FlextCore.Result[dict]:
         """Get single user by ID."""
         return self.get(f"/users/{user_id}")
 
-    def create_user(self, user_data: dict) -> FlextResult[dict]:
+    def create_user(self, user_data: dict) -> FlextCore.Result[dict]:
         """Create new user."""
         return self.post("/users", json=user_data)
 
-    def update_user(self, user_id: int, user_data: dict) -> FlextResult[dict]:
+    def update_user(self, user_id: int, user_data: dict) -> FlextCore.Result[dict]:
         """Update existing user."""
         return self.put(f"/users/{user_id}", json=user_data)
 
-    def delete_user(self, user_id: int) -> FlextResult[None]:
+    def delete_user(self, user_id: int) -> FlextCore.Result[None]:
         """Delete user."""
         return self.delete(f"/users/{user_id}")
 
@@ -317,7 +317,7 @@ if error_result.is_failure:
 
 ```python
 from flext_api import create_fastapi_app, FlextApiConfig
-from flext_core import FlextResult
+from flext_core import FlextCore
 from fastapi import HTTPException, Depends
 
 # Configuration

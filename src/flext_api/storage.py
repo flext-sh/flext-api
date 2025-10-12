@@ -9,32 +9,22 @@ from __future__ import annotations
 import json
 from typing import override
 
-from flext_core import (
-    FlextBus,
-    FlextContainer,
-    FlextContext,
-    FlextDispatcher,
-    FlextLogger,
-    FlextResult,
-    FlextService,
-    FlextTypes,
-    FlextUtilities,
-)
+from flext_core import FlextCore
 
 from flext_api.typings import FlextApiTypes
 
 
-class FlextApiStorage(FlextService[None]):
-    """HTTP-specific storage backend using FlextService patterns.
+class FlextApiStorage(FlextCore.Service[None]):
+    """HTTP-specific storage backend using FlextCore.Service patterns.
 
     Integrated with flext-core:
-    - Extends FlextService for service lifecycle management
-    - Uses FlextLogger for structured logging
-    - Uses FlextResult for railway-oriented error handling
-    - Uses FlextContainer for dependency injection
-    - Uses FlextContext for operation context
-    - Uses FlextBus for event emission
-    - Uses FlextDispatcher for message routing
+    - Extends FlextCore.Service for service lifecycle management
+    - Uses FlextCore.Logger for structured logging
+    - Uses FlextCore.Result for railway-oriented error handling
+    - Uses FlextCore.Container for dependency injection
+    - Uses FlextCore.Context for operation context
+    - Uses FlextCore.Bus for event emission
+    - Uses FlextCore.Dispatcher for message routing
     """
 
     @override
@@ -48,13 +38,12 @@ class FlextApiStorage(FlextService[None]):
         """Initialize HTTP storage using flext-core service patterns."""
         super().__init__()
 
-        # Initialize flext-core services
-        self.logger = FlextLogger(__name__)
-        self._container = FlextContainer.get_global()
-        self._context = FlextContext()
-        self._bus = FlextBus()
-        self._dispatcher = FlextDispatcher()
-        # NOTE: FlextRegistry requires dispatcher - storage backend registration deferred
+        # Initialize flext-core services (logger provided by FlextCore.Mixins)
+        self._container = FlextCore.Container.get_global()
+        self._context = FlextCore.Context()
+        self._bus = FlextCore.Bus()
+        self._dispatcher = FlextCore.Dispatcher()
+        # NOTE: FlextCore.Registry requires dispatcher - storage backend registration deferred
 
         # Simplified config using flext-core patterns
         if isinstance(config, dict):
@@ -82,23 +71,23 @@ class FlextApiStorage(FlextService[None]):
         self._default_ttl = default_ttl or config_dict.get("default_ttl")
 
         # Use simple dict for storage since Registry is not available
-        self._storage: FlextTypes.Dict = {}
+        self._storage: FlextCore.Types.Dict = {}
 
         # Backend configuration that tests expect (using private attribute to avoid Pydantic field issues)
         self._backend = str(config_dict.get("backend", "memory"))
 
     @override
-    def execute(self, *_args: object, **_kwargs: object) -> FlextResult[None]:
+    def execute(self, *_args: object, **_kwargs: object) -> FlextCore.Result[None]:
         """Execute storage service lifecycle operations.
 
-        FlextService requires this method for service execution.
+        FlextCore.Service requires this method for service execution.
         For storage, this is a no-op as operations are method-based.
 
         Returns:
-            FlextResult[None]: Success result
+            FlextCore.Result[None]: Success result
 
         """
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
     def _make_key(self, key: str) -> str:
         """Create namespaced key.
@@ -119,7 +108,7 @@ class FlextApiStorage(FlextService[None]):
         value: object,
         timeout: int | None = None,
         ttl: int | None = None,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Store HTTP data with event emission.
 
         Args:
@@ -129,14 +118,16 @@ class FlextApiStorage(FlextService[None]):
             ttl: Time-to-live in seconds for stored data
 
         Returns:
-            FlextResult[None]: Success or failure result.
+            FlextCore.Result[None]: Success or failure result.
 
         """
         # Validate and convert key
         if not isinstance(key, str):
-            return FlextResult[None].fail("Invalid key: key must be a string")
+            return FlextCore.Result[None].fail("Invalid key: key must be a string")
         if not key:
-            return FlextResult[None].fail("Invalid key: key must be a non-empty string")
+            return FlextCore.Result[None].fail(
+                "Invalid key: key must be a non-empty string"
+            )
 
         # Calculate TTL from timeout or ttl parameter, otherwise use default
         effective_ttl = (
@@ -148,20 +139,20 @@ class FlextApiStorage(FlextService[None]):
         # Create metadata for storage
         metadata = {
             "value": value,
-            "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
+            "timestamp": FlextCore.Utilities.Generators.generate_iso_timestamp(),
             "ttl": effective_ttl,
         }
 
         # Update storage with both direct key and namespaced metadata
         self._storage[key] = value
         self._storage[self._make_key(key)] = metadata
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def get(self, key: str, default: object = None) -> FlextResult[object]:
+    def get(self, key: str, default: object = None) -> FlextCore.Result[object]:
         """Get HTTP data using flext-core Registry.
 
         Returns:
-            FlextResult[object]: Success result with data or failure result.
+            FlextCore.Result[object]: Success result with data or failure result.
 
         """
         # Emit storage access event
@@ -180,7 +171,7 @@ class FlextApiStorage(FlextService[None]):
         # Check direct key first (for comprehensive tests)
         if key in self._storage:
             # storage values are typed as JsonValue in _storage
-            result = FlextResult[object].ok(self._storage[key])
+            result = FlextCore.Result[object].ok(self._storage[key])
 
         # Check namespaced key (for simple tests)
         storage_key = self._make_key(key)
@@ -189,13 +180,13 @@ class FlextApiStorage(FlextService[None]):
             # data may be a metadata dict or a raw value; handle both
             if isinstance(data, dict) and "value" in data:
                 value: object = data["value"]
-                result = FlextResult[object].ok(value)
+                result = FlextCore.Result[object].ok(value)
             else:
-                result = FlextResult[object].ok(data)
+                result = FlextCore.Result[object].ok(data)
 
-        # If nothing found, return the default value wrapped in FlextResult
+        # If nothing found, return the default value wrapped in FlextCore.Result
         if result is None:
-            result = FlextResult[object].ok(default)
+            result = FlextCore.Result[object].ok(default)
 
         # Emit storage access result event
         if result.is_success:
@@ -223,11 +214,11 @@ class FlextApiStorage(FlextService[None]):
 
         return result
 
-    def delete(self, key: str) -> FlextResult[None]:
+    def delete(self, key: str) -> FlextCore.Result[None]:
         """Delete HTTP data using flext-core Registry.
 
         Returns:
-            FlextResult[None]: Success or failure result.
+            FlextCore.Result[None]: Success or failure result.
 
         """
         # Emit storage delete event
@@ -258,38 +249,38 @@ class FlextApiStorage(FlextService[None]):
             },
         )
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def exists(self, key: str) -> FlextResult[bool]:
+    def exists(self, key: str) -> FlextCore.Result[bool]:
         """Check if HTTP data exists using flext-core Registry.
 
         Returns:
-            FlextResult[bool]: Success result with boolean or failure result.
+            FlextCore.Result[bool]: Success result with boolean or failure result.
 
         """
         storage_key = self._make_key(key)
         exists_result = key in self._storage or storage_key in self._storage
-        return FlextResult[bool].ok(exists_result)
+        return FlextCore.Result[bool].ok(exists_result)
 
-    def clear(self) -> FlextResult[None]:
+    def clear(self) -> FlextCore.Result[None]:
         """Clear all HTTP data using flext-core Registry.
 
         Returns:
-            FlextResult[None]: Success or failure result.
+            FlextCore.Result[None]: Success or failure result.
 
         """
         self._data.clear()
         self._storage.clear()
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def size(self) -> FlextResult[int]:
+    def size(self) -> FlextCore.Result[int]:
         """Get number of stored items using flext-core Registry.
 
         Returns:
-            FlextResult[int]: Success result with count or failure result.
+            FlextCore.Result[int]: Success result with count or failure result.
 
         """
-        return FlextResult[int].ok(len(self._data))
+        return FlextCore.Result[int].ok(len(self._data))
 
     @property
     def config(self) -> FlextApiTypes.StorageDict:
@@ -321,125 +312,127 @@ class FlextApiStorage(FlextService[None]):
         """
         return self._backend
 
-    def keys(self) -> FlextResult[FlextTypes.StringList]:
+    def keys(self) -> FlextCore.Result[FlextCore.Types.StringList]:
         """Get all keys in storage.
 
         Returns:
-            FlextResult[FlextTypes.StringList]: Success result with keys list or failure result.
+            FlextCore.Result[FlextCore.Types.StringList]: Success result with keys list or failure result.
 
         """
         # Return only direct keys (not namespaced ones)
         direct_keys = [
             key for key in self._storage if not key.startswith(f"{self._namespace}:")
         ]
-        return FlextResult[FlextTypes.StringList].ok(direct_keys)
+        return FlextCore.Result[FlextCore.Types.StringList].ok(direct_keys)
 
     @property
-    def _data(self) -> FlextTypes.Dict:
+    def _data(self) -> FlextCore.Types.Dict:
         """Access direct data storage (for testing compatibility)."""
         return dict(self._storage.items())
 
-    def items(self) -> FlextResult[list[tuple[str, object]]]:
+    def items(self) -> FlextCore.Result[list[tuple[str, object]]]:
         """Get all key-value pairs in storage.
 
         Returns:
-            FlextResult[list[tuple[str, object]]]: Success result with items list or failure result.
+            FlextCore.Result[list[tuple[str, object]]]: Success result with items list or failure result.
 
         """
-        return FlextResult[list[tuple[str, object]]].ok(list(self._data.items()))
+        return FlextCore.Result[list[tuple[str, object]]].ok(list(self._data.items()))
 
-    def values(self) -> FlextResult[FlextTypes.List]:
+    def values(self) -> FlextCore.Result[FlextCore.Types.List]:
         """Get all values in storage.
 
         Returns:
-            FlextResult[FlextTypes.List]: Success result with values list or failure result.
+            FlextCore.Result[FlextCore.Types.List]: Success result with values list or failure result.
 
         """
-        return FlextResult[FlextTypes.List].ok(list(self._storage.values()))
+        return FlextCore.Result[FlextCore.Types.List].ok(list(self._storage.values()))
 
-    def close(self) -> FlextResult[None]:
+    def close(self) -> FlextCore.Result[None]:
         """Close storage connection.
 
         Returns:
-            FlextResult[None]: Success or failure result.
+            FlextCore.Result[None]: Success or failure result.
 
         """
         # For registry-based storage, no cleanup needed
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def serialize_json(self, data: object) -> FlextResult[str]:
+    def serialize_json(self, data: object) -> FlextCore.Result[str]:
         """Serialize data to JSON string.
 
         Returns:
-            FlextResult[str]: Success result with JSON string or failure result.
+            FlextCore.Result[str]: Success result with JSON string or failure result.
 
         """
         try:
             json_str = json.dumps(data, default=str)
-            return FlextResult[str].ok(json_str)
+            return FlextCore.Result[str].ok(json_str)
         except Exception as e:
-            return FlextResult[str].fail(f"JSON serialization failed: {e}")
+            return FlextCore.Result[str].fail(f"JSON serialization failed: {e}")
 
-    def deserialize_json(self, json_str: str) -> FlextResult[FlextApiTypes.JsonValue]:
+    def deserialize_json(
+        self, json_str: str
+    ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
         """Deserialize JSON string to JsonValue.
 
         Returns:
-            FlextResult[FlextApiTypes.JsonValue]: Success result with data or failure result.
+            FlextCore.Result[FlextApiTypes.JsonValue]: Success result with data or failure result.
 
         """
         try:
             data: FlextApiTypes.JsonValue = json.loads(json_str)
-            return FlextResult[FlextApiTypes.JsonValue].ok(data)
+            return FlextCore.Result[FlextApiTypes.JsonValue].ok(data)
         except Exception as e:
-            return FlextResult[FlextApiTypes.JsonValue].fail(
+            return FlextCore.Result[FlextApiTypes.JsonValue].fail(
                 f"JSON deserialization failed: {e}"
             )
 
-    def get_cache_stats(self) -> FlextResult[FlextApiTypes.CacheDict]:
+    def get_cache_stats(self) -> FlextCore.Result[FlextApiTypes.CacheDict]:
         """Get cache statistics.
 
         Returns:
-            FlextResult[FlextApiTypes.CacheDict]: Success result with cache stats or failure result.
+            FlextCore.Result[FlextApiTypes.CacheDict]: Success result with cache stats or failure result.
 
         """
-        return FlextResult[FlextApiTypes.CacheDict].ok(
+        return FlextCore.Result[FlextApiTypes.CacheDict].ok(
             {
                 "size": 0,  # Default size since we don't have access to storage
                 "backend": "memory",
             },
         )
 
-    def cleanup_expired(self) -> FlextResult[int]:
+    def cleanup_expired(self) -> FlextCore.Result[int]:
         """Clean up expired cache entries.
 
         Returns:
-            FlextResult containing number of entries removed
+            FlextCore.Result containing number of entries removed
 
         """
         try:
             # For this simple implementation, we don't track expiration
             # In a real implementation, this would remove expired entries
             removed_count = 0
-            return FlextResult[int].ok(removed_count)
+            return FlextCore.Result[int].ok(removed_count)
         except Exception as e:
-            return FlextResult[int].fail(f"Cache cleanup failed: {e}")
+            return FlextCore.Result[int].fail(f"Cache cleanup failed: {e}")
 
-    def get_storage_metrics(self) -> FlextResult[FlextApiTypes.MetricsDict]:
+    def get_storage_metrics(self) -> FlextCore.Result[FlextApiTypes.MetricsDict]:
         """Get storage metrics.
 
         Returns:
-            FlextResult[FlextApiTypes.MetricsDict]: Success result with metrics or failure result.
+            FlextCore.Result[FlextApiTypes.MetricsDict]: Success result with metrics or failure result.
 
         """
-        return FlextResult[FlextApiTypes.MetricsDict].ok(
+        return FlextCore.Result[FlextApiTypes.MetricsDict].ok(
             {"total_operations": 0, "cache_hits": 0, "cache_misses": 0},
         )
 
-    def get_storage_statistics(self) -> FlextResult[FlextTypes.FloatDict]:
+    def get_storage_statistics(self) -> FlextCore.Result[FlextCore.Types.FloatDict]:
         """Get storage statistics.
 
         Returns:
-            FlextResult containing storage statistics
+            FlextCore.Result containing storage statistics
 
         """
         try:
@@ -451,15 +444,15 @@ class FlextApiStorage(FlextService[None]):
                 "storage_size": 0,
                 "memory_usage": 0,
             }
-            return FlextResult[FlextTypes.FloatDict].ok(stats)
+            return FlextCore.Result[FlextCore.Types.FloatDict].ok(stats)
         except Exception as e:
-            return FlextResult[FlextTypes.FloatDict].fail(
+            return FlextCore.Result[FlextCore.Types.FloatDict].fail(
                 f"Statistics collection failed: {e}",
             )
 
     def batch_set(
-        self, data: FlextTypes.Dict, ttl: int | None = None
-    ) -> FlextResult[None]:
+        self, data: FlextCore.Types.Dict, ttl: int | None = None
+    ) -> FlextCore.Result[None]:
         """Set multiple key-value pairs in a single operation.
 
         Args:
@@ -467,7 +460,7 @@ class FlextApiStorage(FlextService[None]):
             ttl: Optional TTL for all keys
 
         Returns:
-            FlextResult indicating success or failure
+            FlextCore.Result indicating success or failure
 
         """
         try:
@@ -475,22 +468,24 @@ class FlextApiStorage(FlextService[None]):
                 set_result = self.set(key, value, ttl)
                 if set_result.is_failure:
                     return set_result
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
         except Exception as e:
-            return FlextResult[None].fail(f"Batch set operation failed: {e}")
+            return FlextCore.Result[None].fail(f"Batch set operation failed: {e}")
 
-    def batch_get(self, keys: FlextTypes.StringList) -> FlextResult[FlextTypes.Dict]:
+    def batch_get(
+        self, keys: FlextCore.Types.StringList
+    ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Get multiple values in a single operation.
 
         Args:
             keys: List of keys to retrieve
 
         Returns:
-            FlextResult containing dictionary of key-value pairs
+            FlextCore.Result containing dictionary of key-value pairs
 
         """
         try:
-            result_data: FlextTypes.Dict = {}
+            result_data: FlextCore.Types.Dict = {}
             for key in keys:
                 get_result = self.get(key)
                 if get_result.success:
@@ -498,18 +493,20 @@ class FlextApiStorage(FlextService[None]):
                 else:
                     # Include None for missing keys
                     result_data[key] = None
-            return FlextResult[FlextTypes.Dict].ok(result_data)
+            return FlextCore.Result[FlextCore.Types.Dict].ok(result_data)
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(f"Batch get operation failed: {e}")
+            return FlextCore.Result[FlextCore.Types.Dict].fail(
+                f"Batch get operation failed: {e}"
+            )
 
-    def batch_delete(self, keys: FlextTypes.StringList) -> FlextResult[None]:
+    def batch_delete(self, keys: FlextCore.Types.StringList) -> FlextCore.Result[None]:
         """Delete multiple keys in a single operation.
 
         Args:
             keys: List of keys to delete
 
         Returns:
-            FlextResult indicating success or failure
+            FlextCore.Result indicating success or failure
 
         """
         try:
@@ -517,15 +514,15 @@ class FlextApiStorage(FlextService[None]):
                 delete_result = self.delete(key)
                 if delete_result.is_failure:
                     return delete_result
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
         except Exception as e:
-            return FlextResult[None].fail(f"Batch delete operation failed: {e}")
+            return FlextCore.Result[None].fail(f"Batch delete operation failed: {e}")
 
-    def info(self) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+    def info(self) -> FlextCore.Result[dict[str, FlextApiTypes.JsonValue]]:
         """Get storage information.
 
         Returns:
-            FlextResult containing storage information dictionary
+            FlextCore.Result containing storage information dictionary
 
         """
         try:
@@ -537,37 +534,37 @@ class FlextApiStorage(FlextService[None]):
                 "max_size": getattr(self, "_max_size", None),
                 "default_ttl": getattr(self, "_default_ttl", None),
             }
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(info_data)
+            return FlextCore.Result[dict[str, FlextApiTypes.JsonValue]].ok(info_data)
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(
+            return FlextCore.Result[dict[str, FlextApiTypes.JsonValue]].fail(
                 f"Info retrieval failed: {e}"
             )
 
-    def health_check(self) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+    def health_check(self) -> FlextCore.Result[dict[str, FlextApiTypes.JsonValue]]:
         """Perform storage health check.
 
         Returns:
-            FlextResult containing health status
+            FlextCore.Result containing health status
 
         """
         try:
             health_data: dict[str, FlextApiTypes.JsonValue] = {
                 "status": "healthy",
-                "timestamp": FlextUtilities.Generators.generate_timestamp(),
+                "timestamp": FlextCore.Utilities.Generators.generate_timestamp(),
                 "storage_accessible": True,
                 "size": len(self._storage),
             }
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(health_data)
+            return FlextCore.Result[dict[str, FlextApiTypes.JsonValue]].ok(health_data)
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(
+            return FlextCore.Result[dict[str, FlextApiTypes.JsonValue]].fail(
                 f"Health check failed: {e}"
             )
 
-    def metrics(self) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+    def metrics(self) -> FlextCore.Result[dict[str, FlextApiTypes.JsonValue]]:
         """Get storage metrics.
 
         Returns:
-            FlextResult containing metrics dictionary
+            FlextCore.Result containing metrics dictionary
 
         """
         try:
@@ -578,9 +575,9 @@ class FlextApiStorage(FlextService[None]):
                 "memory_usage": len(str(self._storage)),
                 "keys_count": len(self._storage),
             }
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(metrics_data)
+            return FlextCore.Result[dict[str, FlextApiTypes.JsonValue]].ok(metrics_data)
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(
+            return FlextCore.Result[dict[str, FlextApiTypes.JsonValue]].fail(
                 f"Metrics collection failed: {e}"
             )
 

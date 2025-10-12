@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from abc import abstractmethod
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextCore
 
 from flext_api.typings import FlextApiTypes
 
@@ -23,7 +23,7 @@ class BasePlugin:
     - Plugin metadata (name, version, description)
     - Lifecycle methods (initialize, shutdown)
     - Configuration management
-    - Error handling with FlextResult
+    - Error handling with FlextCore.Result
 
     All plugins must extend this base class.
     """
@@ -42,44 +42,46 @@ class BasePlugin:
         self.name = name
         self.version = version
         self.description = description
-        self.logger = FlextLogger(f"{__name__}.{name}")
+        self.logger = FlextCore.Logger(f"{__name__}.{name}")
         self._initialized = False
 
-    def initialize(self) -> FlextResult[None]:
+    def initialize(self) -> FlextCore.Result[None]:
         """Initialize plugin resources.
 
         Called when plugin is registered or loaded.
         Override this method to perform plugin-specific initialization.
 
         Returns:
-            FlextResult indicating success or failure
+            FlextCore.Result indicating success or failure
 
         """
         if self._initialized:
-            return FlextResult[None].fail(f"Plugin '{self.name}' already initialized")
+            return FlextCore.Result[None].fail(
+                f"Plugin '{self.name}' already initialized"
+            )
 
         self.logger.debug(f"Initializing plugin: {self.name}")
         self._initialized = True
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def shutdown(self) -> FlextResult[None]:
+    def shutdown(self) -> FlextCore.Result[None]:
         """Shutdown plugin and release resources.
 
         Called when plugin is unregistered or application shuts down.
         Override this method to perform plugin-specific cleanup.
 
         Returns:
-            FlextResult indicating success or failure
+            FlextCore.Result indicating success or failure
 
         """
         if not self._initialized:
-            return FlextResult[None].fail(
+            return FlextCore.Result[None].fail(
                 f"Plugin '{self.name}' not initialized, cannot shutdown"
             )
 
         self.logger.debug(f"Shutting down plugin: {self.name}")
         self._initialized = False
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
     @property
     def is_initialized(self) -> bool:
@@ -117,7 +119,7 @@ class ProtocolPlugin(BasePlugin):
     @abstractmethod
     def send_request(
         self, request: FlextApiTypes.RequestData, **kwargs: FlextApiTypes.JsonValue
-    ) -> FlextResult[FlextApiTypes.ResponseData]:
+    ) -> FlextCore.Result[FlextApiTypes.ResponseData]:
         """Send request using this protocol.
 
         Args:
@@ -125,7 +127,7 @@ class ProtocolPlugin(BasePlugin):
             **kwargs: Protocol-specific parameters
 
         Returns:
-            FlextResult containing response or error
+            FlextCore.Result containing response or error
 
         """
         ...
@@ -143,7 +145,7 @@ class ProtocolPlugin(BasePlugin):
         """
         ...
 
-    def get_supported_protocols(self) -> FlextTypes.StringList:
+    def get_supported_protocols(self) -> FlextCore.Types.StringList:
         """Get list of supported protocols.
 
         Returns:
@@ -171,7 +173,7 @@ class SchemaPlugin(BasePlugin):
         self,
         request: FlextApiTypes.RequestData,
         schema: FlextApiTypes.Schema.JsonSchema,
-    ) -> FlextResult[bool]:
+    ) -> FlextCore.Result[bool]:
         """Validate request against schema.
 
         Args:
@@ -179,7 +181,7 @@ class SchemaPlugin(BasePlugin):
             schema: Schema definition
 
         Returns:
-            FlextResult containing validation result or errors
+            FlextCore.Result containing validation result or errors
 
         """
         ...
@@ -189,7 +191,7 @@ class SchemaPlugin(BasePlugin):
         self,
         response: FlextApiTypes.ResponseData,
         schema: FlextApiTypes.Schema.JsonSchema,
-    ) -> FlextResult[bool]:
+    ) -> FlextCore.Result[bool]:
         """Validate response against schema.
 
         Args:
@@ -197,20 +199,20 @@ class SchemaPlugin(BasePlugin):
             schema: Schema definition
 
         Returns:
-            FlextResult containing validation result or errors
+            FlextCore.Result containing validation result or errors
 
         """
         ...
 
     @abstractmethod
-    def load_schema(self, schema_source: str) -> FlextResult[object]:
+    def load_schema(self, schema_source: str) -> FlextCore.Result[object]:
         """Load schema from source.
 
         Args:
             schema_source: Schema file path or schema dict
 
         Returns:
-            FlextResult containing loaded schema or error
+            FlextCore.Result containing loaded schema or error
 
         """
         ...
@@ -252,7 +254,7 @@ class TransportPlugin(BasePlugin):
     @abstractmethod
     def connect(
         self, url: str, **options: FlextApiTypes.JsonValue
-    ) -> FlextResult[bool]:
+    ) -> FlextCore.Result[bool]:
         """Establish connection to endpoint.
 
         Args:
@@ -260,20 +262,20 @@ class TransportPlugin(BasePlugin):
             **options: Transport-specific connection options
 
         Returns:
-            FlextResult containing connection object or error
+            FlextCore.Result containing connection object or error
 
         """
         ...
 
     @abstractmethod
-    def disconnect(self, connection: object) -> FlextResult[bool]:
+    def disconnect(self, connection: object) -> FlextCore.Result[bool]:
         """Close connection.
 
         Args:
             connection: Connection object to close
 
         Returns:
-            FlextResult indicating success or failure
+            FlextCore.Result indicating success or failure
 
         """
         ...
@@ -284,7 +286,7 @@ class TransportPlugin(BasePlugin):
         connection: object,
         data: FlextApiTypes.Protocol.ProtocolMessage,
         **options: FlextApiTypes.JsonValue,
-    ) -> FlextResult[bool]:
+    ) -> FlextCore.Result[bool]:
         """Send data through connection.
 
         Args:
@@ -293,7 +295,7 @@ class TransportPlugin(BasePlugin):
             **options: Transport-specific send options
 
         Returns:
-            FlextResult indicating success or failure
+            FlextCore.Result indicating success or failure
 
         """
         ...
@@ -301,7 +303,7 @@ class TransportPlugin(BasePlugin):
     @abstractmethod
     def receive(
         self, connection: object, **options: FlextApiTypes.JsonValue
-    ) -> FlextResult[FlextApiTypes.Protocol.ProtocolMessage]:
+    ) -> FlextCore.Result[FlextApiTypes.Protocol.ProtocolMessage]:
         """Receive data from connection.
 
         Args:
@@ -309,7 +311,7 @@ class TransportPlugin(BasePlugin):
             **options: Transport-specific receive options
 
         Returns:
-            FlextResult containing received data or error
+            FlextCore.Result containing received data or error
 
         """
         ...
@@ -354,7 +356,7 @@ class AuthenticationPlugin(BasePlugin):
         self,
         request: FlextApiTypes.RequestData,
         credentials: FlextApiTypes.Authentication.AuthCredentials,
-    ) -> FlextResult[FlextApiTypes.RequestData]:
+    ) -> FlextCore.Result[FlextApiTypes.RequestData]:
         """Add authentication to request.
 
         Args:
@@ -362,7 +364,7 @@ class AuthenticationPlugin(BasePlugin):
             credentials: Authentication credentials
 
         Returns:
-            FlextResult containing authenticated request or error
+            FlextCore.Result containing authenticated request or error
 
         """
         ...
@@ -370,14 +372,14 @@ class AuthenticationPlugin(BasePlugin):
     @abstractmethod
     def validate_credentials(
         self, credentials: FlextApiTypes.Authentication.AuthCredentials
-    ) -> FlextResult[bool]:
+    ) -> FlextCore.Result[bool]:
         """Validate authentication credentials.
 
         Args:
             credentials: Credentials to validate
 
         Returns:
-            FlextResult containing validation result
+            FlextCore.Result containing validation result
 
         """
         ...
@@ -405,18 +407,20 @@ class AuthenticationPlugin(BasePlugin):
 
     def refresh_credentials(
         self,
-        _credentials: FlextTypes.Dict,
-    ) -> FlextResult[FlextTypes.Dict]:
+        _credentials: FlextCore.Types.Dict,
+    ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Refresh authentication credentials.
 
         Args:
             credentials: Current credentials
 
         Returns:
-            FlextResult containing refreshed credentials or error
+            FlextCore.Result containing refreshed credentials or error
 
         """
-        return FlextResult[FlextTypes.Dict].fail("Refresh not supported by this plugin")
+        return FlextCore.Result[FlextCore.Types.Dict].fail(
+            "Refresh not supported by this plugin"
+        )
 
 
 # Plugin Manager for discovery and loading
@@ -436,52 +440,52 @@ class PluginManager:
 
     def __init__(self) -> None:
         """Initialize plugin manager."""
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
         self._loaded_plugins: dict[str, BasePlugin] = {}
 
     def load_plugin(
         self,
         plugin: BasePlugin,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Load and initialize a plugin.
 
         Args:
             plugin: Plugin instance to load
 
         Returns:
-            FlextResult indicating success or failure
+            FlextCore.Result indicating success or failure
 
         """
         if plugin.name in self._loaded_plugins:
-            return FlextResult[None].fail(f"Plugin '{plugin.name}' already loaded")
+            return FlextCore.Result[None].fail(f"Plugin '{plugin.name}' already loaded")
 
         # Initialize plugin
         init_result = plugin.initialize()
         if init_result.is_failure:
-            return FlextResult[None].fail(
+            return FlextCore.Result[None].fail(
                 f"Failed to initialize plugin '{plugin.name}': {init_result.error}"
             )
 
         self._loaded_plugins[plugin.name] = plugin
         self.logger.info(f"Loaded plugin: {plugin.name} v{plugin.version}")
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
     def unload_plugin(
         self,
         plugin_name: str,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Unload and shutdown a plugin.
 
         Args:
             plugin_name: Name of plugin to unload
 
         Returns:
-            FlextResult indicating success or failure
+            FlextCore.Result indicating success or failure
 
         """
         if plugin_name not in self._loaded_plugins:
-            return FlextResult[None].fail(f"Plugin '{plugin_name}' not loaded")
+            return FlextCore.Result[None].fail(f"Plugin '{plugin_name}' not loaded")
 
         plugin = self._loaded_plugins[plugin_name]
 
@@ -496,27 +500,29 @@ class PluginManager:
         del self._loaded_plugins[plugin_name]
         self.logger.info(f"Unloaded plugin: {plugin_name}")
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
     def get_plugin(
         self,
         plugin_name: str,
-    ) -> FlextResult[BasePlugin]:
+    ) -> FlextCore.Result[BasePlugin]:
         """Get loaded plugin by name.
 
         Args:
             plugin_name: Plugin name
 
         Returns:
-            FlextResult containing plugin or error
+            FlextCore.Result containing plugin or error
 
         """
         if plugin_name not in self._loaded_plugins:
-            return FlextResult[BasePlugin].fail(f"Plugin '{plugin_name}' not loaded")
+            return FlextCore.Result[BasePlugin].fail(
+                f"Plugin '{plugin_name}' not loaded"
+            )
 
-        return FlextResult[BasePlugin].ok(self._loaded_plugins[plugin_name])
+        return FlextCore.Result[BasePlugin].ok(self._loaded_plugins[plugin_name])
 
-    def list_loaded_plugins(self) -> FlextTypes.StringList:
+    def list_loaded_plugins(self) -> FlextCore.Types.StringList:
         """Get list of loaded plugin names.
 
         Returns:
@@ -544,14 +550,14 @@ class PluginManager:
             if isinstance(plugin, plugin_type)
         ]
 
-    def shutdown_all(self) -> FlextResult[None]:
+    def shutdown_all(self) -> FlextCore.Result[None]:
         """Shutdown and unload all plugins.
 
         Returns:
-            FlextResult indicating success or failure
+            FlextCore.Result indicating success or failure
 
         """
-        failed_plugins: FlextTypes.StringList = []
+        failed_plugins: FlextCore.Types.StringList = []
 
         for plugin_name in list(self._loaded_plugins.keys()):
             result = self.unload_plugin(plugin_name)
@@ -559,11 +565,11 @@ class PluginManager:
                 failed_plugins.append(plugin_name)
 
         if failed_plugins:
-            return FlextResult[None].fail(
+            return FlextCore.Result[None].fail(
                 f"Failed to unload plugins: {', '.join(failed_plugins)}"
             )
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
 
 __all__ = [

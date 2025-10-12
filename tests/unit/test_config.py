@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext_core import FlextConstants
+from flext_core import FlextCore
 from flext_tests import FlextTestsDomains
 
 from flext_api import FlextApiConfig
@@ -28,31 +28,31 @@ class TestFlextApiConfigReal:
         assert isinstance(config, FlextApiConfig)
         assert (
             config.api_base_url
-            == f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+            == f"http://{FlextCore.Constants.Platform.DEFAULT_HOST}:{FlextCore.Constants.Platform.FLEXT_API_PORT}"
         )
-        assert config.api_timeout == FlextConstants.Network.DEFAULT_TIMEOUT
+        assert config.api_timeout == FlextCore.Constants.Network.DEFAULT_TIMEOUT
 
     def test_client_config_creation(self) -> None:
         """Test FlextApiConfig creation with custom client values."""
         config = FlextApiConfig(
             api_base_url="https://api.example.com",
-            api_timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
-            max_retries=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+            api_timeout=FlextCore.Constants.Network.DEFAULT_TIMEOUT,
+            max_retries=FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS,
         )
 
         assert config.api_base_url == "https://api.example.com"
-        assert config.api_timeout == FlextConstants.Network.DEFAULT_TIMEOUT
-        assert config.max_retries == FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+        assert config.api_timeout == FlextCore.Constants.Network.DEFAULT_TIMEOUT
+        assert config.max_retries == FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS
 
     def test_server_config_creation(self) -> None:
         """Test FlextApiConfig creation with custom server values."""
         config = FlextApiConfig(
-            api_base_url=f"http://{FlextConstants.Platform.LOOPBACK_IP}:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
+            api_base_url=f"http://{FlextCore.Constants.Platform.LOOPBACK_IP}:{FlextCore.Constants.Platform.DEFAULT_HTTP_PORT}"
         )
 
         assert (
             config.api_base_url
-            == f"http://{FlextConstants.Platform.LOOPBACK_IP}:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
+            == f"http://{FlextCore.Constants.Platform.LOOPBACK_IP}:{FlextCore.Constants.Platform.DEFAULT_HTTP_PORT}"
         )
 
     def test_security_config_creation(self) -> None:
@@ -122,11 +122,11 @@ class TestFlextApiConfigReal:
         # Should have sensible defaults
         assert (
             config.api_base_url
-            == f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+            == f"http://{FlextCore.Constants.Platform.DEFAULT_HOST}:{FlextCore.Constants.Platform.FLEXT_API_PORT}"
         )
         assert isinstance(config.api_timeout, (int, float))
         assert config.api_timeout > 0
-        assert config.max_retries == FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+        assert config.max_retries == FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS
 
     def test_config_with_factory_data(self) -> None:
         """Test FlextApiConfig creation with factory data."""
@@ -134,7 +134,7 @@ class TestFlextApiConfigReal:
         config_data = FlextTestsDomains.create_configuration()
 
         # Create config with some values from factory data
-        config_data.get("port", FlextConstants.Platform.FLEXT_API_PORT)
+        config_data.get("port", FlextCore.Constants.Platform.FLEXT_API_PORT)
         config = FlextApiConfig(
             api_base_url="https://api.example.com",
         )

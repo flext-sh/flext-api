@@ -69,7 +69,7 @@ python -c "from flext_api import __version__; print(f'FLEXT-API {__version__}')"
 
 ```python
 from flext_api import FlextApiClient
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 # Create HTTP client
 client = FlextApiClient(
@@ -170,15 +170,15 @@ FLEXT-API follows a clean, layered architecture with clear separation of concern
 ┌─────────────────────────────────────────────────────────────┐
 │                    Foundation Layer                          │
 │   (Core patterns from flext-core)                           │
-│   FlextResult, FlextContainer, FlextService, FlextModels   │
+│   FlextCore.Result, FlextCore.Container, FlextCore.Service, FlextCore.Models   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Key Principles:**
 
-- **Railway Pattern**: All operations return `FlextResult[T]` for type-safe error handling
-- **Dependency Injection**: `FlextContainer` for service management
-- **Domain-Driven Design**: `FlextModels` for HTTP-specific entities
+- **Railway Pattern**: All operations return `FlextCore.Result[T]` for type-safe error handling
+- **Dependency Injection**: `FlextCore.Container` for service management
+- **Domain-Driven Design**: `FlextCore.Models` for HTTP-specific entities
 - **Protocol Abstraction**: Plugin architecture for multiple protocols
 
 ## 🔧 Configuration
@@ -222,7 +222,7 @@ custom_config = FlextApiConfig(
 All FLEXT-API operations use the railway pattern for error handling:
 
 ```python
-# HTTP operations always return FlextResult
+# HTTP operations always return FlextCore.Result
 result = client.get("/users/123")
 
 # Type-safe success/failure handling
@@ -234,7 +234,7 @@ else:
     print(f"Failed: {error.message}")
 
 # Railway composition for complex operations
-def get_user_with_posts(user_id: str) -> FlextResult[dict]:
+def get_user_with_posts(user_id: str) -> FlextCore.Result[dict]:
     return (
         client.get(f"/users/{user_id}")
         .flat_map(lambda user: client.get(f"/users/{user_id}/posts"))
@@ -268,7 +268,7 @@ FLEXT-API provides comprehensive testing utilities:
 ```python
 import pytest
 from flext_api.testing import FlextApiTestClient
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 class TestUserAPI:
     def setup_method(self):
@@ -319,7 +319,7 @@ pytest tests/unit/test_client.py -v
 
 ```bash
 # Ensure flext-core is available
-python -c "from flext_core import FlextResult; print('✅ Core available')"
+python -c "from flext_core import FlextCore; print('✅ Core available')"
 
 # Check Python version
 python --version  # Should be 3.13+
@@ -354,9 +354,9 @@ if result.is_failure:
 FLEXT-API integrates with FLEXT-Core's structured logging:
 
 ```python
-from flext_core import FlextLogger
+from flext_core import FlextCore
 
-logger = FlextLogger("flext_api_example")
+logger = FlextCore.Logger("flext_api_example")
 
 # Log HTTP operations
 logger.info("Making HTTP request", extra={

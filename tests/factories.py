@@ -12,7 +12,7 @@ import uuid
 from typing import cast
 
 from faker import Faker
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextCore
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
@@ -47,7 +47,7 @@ class FlextApiFactories:
         base_config = FlextTestsDomains.create_configuration()
 
         # Ensure required client fields
-        client_config: FlextTypes.Dict = {
+        client_config: FlextCore.Types.Dict = {
             "base_url": base_config.get("base_url", "https://httpbin.org"),
             "timeout": base_config.get("timeout", 30.0),
             "max_retries": base_config.get("max_retries", 3),
@@ -162,7 +162,7 @@ class FlextApiFactories:
         # Use FlextTestsDomains for payload structure
         payload_data = FlextTestsDomains.create_payload()
 
-        base_request: FlextTypes.Dict = {
+        base_request: FlextCore.Types.Dict = {
             "method": payload_data.get("method", "GET"),
             "url": payload_data.get("url", "https://httpbin.org/get"),
             "headers": payload_data.get(
@@ -187,7 +187,7 @@ class FlextApiFactories:
         # Use FlextTestsDomains for API response structure
         api_response = FlextTestsDomains.api_response_data()
 
-        response_data: FlextTypes.Dict = {
+        response_data: FlextCore.Types.Dict = {
             "status_code": 200,
             "data": api_response.get("data", {}),
             "headers": api_response.get(
@@ -222,32 +222,32 @@ class FlextApiFactories:
     @staticmethod
     def create_error_result(
         error_message: str = "Test error",
-    ) -> FlextResult[FlextApiTypes.ResponseDict]:
-        """Create error FlextResult using FlextTestsUtilities - ABSOLUTE.
+    ) -> FlextCore.Result[FlextApiTypes.ResponseDict]:
+        """Create error FlextCore.Result using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            FlextResult[FlextApiTypes.ResponseDict]: Error result instance.
+            FlextCore.Result[FlextApiTypes.ResponseDict]: Error result instance.
 
         """
         return cast(
-            "FlextResult[FlextApiTypes.ResponseDict]",
+            "FlextCore.Result[FlextApiTypes.ResponseDict]",
             FlextTestsUtilities.create_test_result(success=False, error=error_message),
         )
 
     @staticmethod
     def create_success_result(
         data: FlextApiTypes.ResponseDict | None = None,
-    ) -> FlextResult[FlextApiTypes.ResponseDict]:
-        """Create success FlextResult using FlextTestsUtilities - ABSOLUTE.
+    ) -> FlextCore.Result[FlextApiTypes.ResponseDict]:
+        """Create success FlextCore.Result using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            FlextResult[FlextApiTypes.ResponseDict]: Success result instance.
+            FlextCore.Result[FlextApiTypes.ResponseDict]: Success result instance.
 
         """
         if data is None:
             data = {"success": True, "message": "Test operation successful"}
         return cast(
-            "FlextResult[FlextApiTypes.ResponseDict]",
+            "FlextCore.Result[FlextApiTypes.ResponseDict]",
             FlextTestsUtilities.create_test_result(success=True, data=data),
         )
 
@@ -320,7 +320,7 @@ class FlextApiFactories:
         return FlextTestsDomains.batch_users(count)
 
     @staticmethod
-    def get_valid_email_cases() -> FlextTypes.StringList:
+    def get_valid_email_cases() -> FlextCore.Types.StringList:
         """Get valid emails using FlextTestsDomains - ABSOLUTE.
 
         Returns:
@@ -330,7 +330,7 @@ class FlextApiFactories:
         return FlextTestsDomains.valid_email_cases()
 
     @staticmethod
-    def get_invalid_email_cases() -> FlextTypes.StringList:
+    def get_invalid_email_cases() -> FlextCore.Types.StringList:
         """Get invalid emails using FlextTestsDomains - ABSOLUTE.
 
         Returns:
@@ -340,7 +340,7 @@ class FlextApiFactories:
         return FlextTestsDomains.invalid_email_cases()
 
     @staticmethod
-    def get_valid_ages() -> list[int]:
+    def get_valid_ages() -> FlextCore.Types.IntList:
         """Get valid ages using FlextTestsDomains - ABSOLUTE.
 
         Returns:
@@ -350,7 +350,7 @@ class FlextApiFactories:
         return FlextTestsDomains.valid_ages()
 
     @staticmethod
-    def get_invalid_ages() -> list[int]:
+    def get_invalid_ages() -> FlextCore.Types.IntList:
         """Get invalid ages using FlextTestsDomains - ABSOLUTE.
 
         Returns:

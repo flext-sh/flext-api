@@ -2,7 +2,7 @@
 
 Provides command and query handlers for HTTP operations following
 the railway pattern and CQRS principles. All handlers extend
-FlextHandlers from flext-core for consistent command/query separation.
+FlextCore.Handlers from flext-core for consistent command/query separation.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from flext_core import FlextHandlers, FlextResult, FlextUtilities
+from flext_core import FlextCore
 
 from flext_api.models import FlextApiModels
 
@@ -20,31 +20,31 @@ T = TypeVar("T")
 U = TypeVar("U")
 
 
-class FlextApiHandlers(FlextHandlers[T, U]):
+class FlextApiHandlers(FlextCore.Handlers[T, U]):
     """CQRS handlers for HTTP operations following railway pattern.
 
     Provides command and query handlers for HTTP operations with
-    proper separation of concerns and FlextResult error handling.
+    proper separation of concerns and FlextCore.Result error handling.
 
-    All handlers extend FlextHandlers from flext-core to ensure
+    All handlers extend FlextCore.Handlers from flext-core to ensure
     consistent CQRS patterns across the FLEXT ecosystem.
     """
 
     def handle_create_resource(
         self, message: FlextApiModels.CreateResourceCommand
-    ) -> FlextResult[FlextApiModels.ResourceCreatedEvent]:
+    ) -> FlextCore.Result[FlextApiModels.ResourceCreatedEvent]:
         """Handle resource creation command.
 
         Args:
             message: Create resource command with data
 
         Returns:
-            FlextResult containing creation event or error
+            FlextCore.Result containing creation event or error
 
         """
         # Validation
         if not message.data:
-            return FlextResult[FlextApiModels.ResourceCreatedEvent].fail(
+            return FlextCore.Result[FlextApiModels.ResourceCreatedEvent].fail(
                 "Cannot create resource with empty data"
             )
 
@@ -56,23 +56,23 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             data=message.data,
         )
 
-        return FlextResult[FlextApiModels.ResourceCreatedEvent].ok(event)
+        return FlextCore.Result[FlextApiModels.ResourceCreatedEvent].ok(event)
 
     def handle_update_resource(
         self, message: FlextApiModels.UpdateResourceCommand
-    ) -> FlextResult[FlextApiModels.ResourceUpdatedEvent]:
+    ) -> FlextCore.Result[FlextApiModels.ResourceUpdatedEvent]:
         """Handle resource update command.
 
         Args:
             message: Update resource command with data
 
         Returns:
-            FlextResult containing update event or error
+            FlextCore.Result containing update event or error
 
         """
         # Validation
         if not message.resource_id:
-            return FlextResult[FlextApiModels.ResourceUpdatedEvent].fail(
+            return FlextCore.Result[FlextApiModels.ResourceUpdatedEvent].fail(
                 "Resource ID is required for update"
             )
 
@@ -83,23 +83,23 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             changes=message.data,
         )
 
-        return FlextResult[FlextApiModels.ResourceUpdatedEvent].ok(event)
+        return FlextCore.Result[FlextApiModels.ResourceUpdatedEvent].ok(event)
 
     def handle_delete_resource(
         self, message: FlextApiModels.DeleteResourceCommand
-    ) -> FlextResult[FlextApiModels.ResourceDeletedEvent]:
+    ) -> FlextCore.Result[FlextApiModels.ResourceDeletedEvent]:
         """Handle resource deletion command.
 
         Args:
             message: Delete resource command
 
         Returns:
-            FlextResult containing deletion event or error
+            FlextCore.Result containing deletion event or error
 
         """
         # Validation
         if not message.resource_id:
-            return FlextResult[FlextApiModels.ResourceDeletedEvent].fail(
+            return FlextCore.Result[FlextApiModels.ResourceDeletedEvent].fail(
                 "Resource ID is required for deletion"
             )
 
@@ -109,23 +109,23 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             resource_type=message.resource_type,
         )
 
-        return FlextResult[FlextApiModels.ResourceDeletedEvent].ok(event)
+        return FlextCore.Result[FlextApiModels.ResourceDeletedEvent].ok(event)
 
     def handle_get_resource(
         self, message: FlextApiModels.GetResourceQuery
-    ) -> FlextResult[FlextApiModels.ResourceData]:
+    ) -> FlextCore.Result[FlextApiModels.ResourceData]:
         """Handle resource retrieval query.
 
         Args:
             message: Get resource query
 
         Returns:
-            FlextResult containing resource data or error
+            FlextCore.Result containing resource data or error
 
         """
         # Validation
         if not message.resource_id:
-            return FlextResult[FlextApiModels.ResourceData].fail(
+            return FlextCore.Result[FlextApiModels.ResourceData].fail(
                 "Resource ID is required for retrieval"
             )
 
@@ -135,22 +135,22 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             resource_id=message.resource_id,
             resource_type=message.resource_type,
             data={"mock": "data"},
-            created_at=FlextUtilities.Generators.generate_timestamp(),
-            updated_at=FlextUtilities.Generators.generate_timestamp(),
+            created_at=FlextCore.Utilities.Generators.generate_timestamp(),
+            updated_at=FlextCore.Utilities.Generators.generate_timestamp(),
         )
 
-        return FlextResult[FlextApiModels.ResourceData].ok(data)
+        return FlextCore.Result[FlextApiModels.ResourceData].ok(data)
 
     def handle_list_resources(
         self, message: FlextApiModels.ListResourcesQuery
-    ) -> FlextResult[FlextApiModels.ResourceList]:
+    ) -> FlextCore.Result[FlextApiModels.ResourceList]:
         """Handle resource listing query.
 
         Args:
             message: List resources query with filters
 
         Returns:
-            FlextResult containing resource list or error
+            FlextCore.Result containing resource list or error
 
         """
         # Business logic would go here
@@ -161,8 +161,8 @@ class FlextApiHandlers(FlextHandlers[T, U]):
                     resource_id="generated-id",
                     resource_type="resource_type",
                     data={"mock": "data"},
-                    created_at=FlextUtilities.Generators.generate_timestamp(),
-                    updated_at=FlextUtilities.Generators.generate_timestamp(),
+                    created_at=FlextCore.Utilities.Generators.generate_timestamp(),
+                    updated_at=FlextCore.Utilities.Generators.generate_timestamp(),
                 )
             ],
             total_count=0,
@@ -170,23 +170,23 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             page_size=message.page_size,
         )
 
-        return FlextResult[FlextApiModels.ResourceList].ok(resource_list)
+        return FlextCore.Result[FlextApiModels.ResourceList].ok(resource_list)
 
     def handle_search_resources(
         self, message: FlextApiModels.SearchResourcesQuery
-    ) -> FlextResult[FlextApiModels.ResourceList]:
+    ) -> FlextCore.Result[FlextApiModels.ResourceList]:
         """Handle resource search query.
 
         Args:
             message: Search resources query with criteria
 
         Returns:
-            FlextResult containing search results or error
+            FlextCore.Result containing search results or error
 
         """
         # Validation
         if not message.search_term and not message.filters:
-            return FlextResult[FlextApiModels.ResourceList].fail(
+            return FlextCore.Result[FlextApiModels.ResourceList].fail(
                 "Search term or filters are required"
             )
 
@@ -197,8 +197,8 @@ class FlextApiHandlers(FlextHandlers[T, U]):
                     resource_id="generated-id",
                     resource_type="resource_type",
                     data={"mock": "data"},
-                    created_at=FlextUtilities.Generators.generate_timestamp(),
-                    updated_at=FlextUtilities.Generators.generate_timestamp(),
+                    created_at=FlextCore.Utilities.Generators.generate_timestamp(),
+                    updated_at=FlextCore.Utilities.Generators.generate_timestamp(),
                 )
             ],
             total_count=0,
@@ -206,18 +206,18 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             page_size=message.page_size,
         )
 
-        return FlextResult[FlextApiModels.ResourceList].ok(resource_list)
+        return FlextCore.Result[FlextApiModels.ResourceList].ok(resource_list)
 
     def handle_http_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Handle generic HTTP request.
 
         Args:
             request: HTTP request model
 
         Returns:
-            FlextResult containing HTTP response or error
+            FlextCore.Result containing HTTP response or error
 
         """
         # Route to appropriate handler based on method
@@ -229,13 +229,13 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             return self._handle_put_request(request)
         if request.method == "DELETE":
             return self._handle_delete_request(request)
-        return FlextResult[FlextApiModels.HttpResponse].fail(
+        return FlextCore.Result[FlextApiModels.HttpResponse].fail(
             f"Unsupported HTTP method: {request.method}"
         )
 
     def _handle_get_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Handle GET requests."""
         # Query logic would go here
         response = FlextApiModels.HttpResponse(
@@ -245,11 +245,11 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             headers={},
             body={"message": "GET request handled"},
         )
-        return FlextResult[FlextApiModels.HttpResponse].ok(response)
+        return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
     def _handle_post_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Handle POST requests."""
         # Command logic would go here
         response = FlextApiModels.HttpResponse(
@@ -259,11 +259,11 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             headers={},
             body={"message": "POST request handled"},
         )
-        return FlextResult[FlextApiModels.HttpResponse].ok(response)
+        return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
     def _handle_put_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Handle PUT requests."""
         # Update command logic would go here
         response = FlextApiModels.HttpResponse(
@@ -273,11 +273,11 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             headers={},
             body={"message": "PUT request handled"},
         )
-        return FlextResult[FlextApiModels.HttpResponse].ok(response)
+        return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
     def _handle_delete_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Handle DELETE requests."""
         # Delete command logic would go here
         response = FlextApiModels.HttpResponse(
@@ -287,7 +287,7 @@ class FlextApiHandlers(FlextHandlers[T, U]):
             headers={},
             body=None,
         )
-        return FlextResult[FlextApiModels.HttpResponse].ok(response)
+        return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
 
 __all__ = ["FlextApiHandlers"]

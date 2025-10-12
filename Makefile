@@ -157,6 +157,61 @@ docs-serve: ## Serve documentation
 	$(POETRY) run mkdocs serve
 
 # =============================================================================
+# DOCUMENTATION MAINTENANCE (COMPREHENSIVE QA SYSTEM)
+# =============================================================================
+
+.PHONY: docs-audit
+docs-audit: ## Run comprehensive documentation audit
+	$(POETRY) run python docs-maintenance/scripts/doc_audit.py --comprehensive --report --format json --output docs_audit
+
+.PHONY: docs-links
+docs-links: ## Validate all documentation links
+	$(POETRY) run python docs-maintenance/scripts/link_validator.py --comprehensive --report --format json --output link_validation
+
+.PHONY: docs-style
+docs-style: ## Check documentation style and formatting
+	$(POETRY) run python docs-maintenance/scripts/style_checker.py --comprehensive --report --format json --output style_check
+
+.PHONY: docs-optimize
+docs-optimize: ## Analyze and optimize documentation content
+	$(POETRY) run python docs-maintenance/scripts/content_optimizer.py --analyze --report --format json --output content_analysis
+
+.PHONY: docs-dashboard
+docs-dashboard: ## Generate documentation quality dashboard
+	$(POETRY) run python docs-maintenance/scripts/quality_dashboard.py --dashboard --format markdown --output quality_dashboard
+
+.PHONY: docs-maintenance
+docs-maintenance: ## Run full documentation maintenance suite
+	$(POETRY) run python docs-maintenance/scripts/maintenance_runner.py --full-audit --report --format markdown --output maintenance_full
+
+.PHONY: docs-maintenance-ci
+docs-maintenance-ci: ## Run documentation maintenance in CI mode
+	$(POETRY) run python docs-maintenance/scripts/maintenance_runner.py --ci-mode --report --format json --output maintenance_ci
+
+.PHONY: docs-fix
+docs-fix: ## Apply automatic documentation fixes
+	$(POETRY) run python docs-maintenance/scripts/content_optimizer.py --comprehensive --apply --report --format json --output content_optimization
+
+.PHONY: docs-git-sync
+docs-git-sync: ## Synchronize documentation changes with Git
+	$(POETRY) run python docs-maintenance/scripts/git_sync.py --sync --action maintenance --report --format json --output git_sync
+
+.PHONY: docs-health
+docs-health: ## Quick documentation health check
+	@echo "🔍 Running documentation health check..."
+	$(POETRY) run python docs-maintenance/scripts/doc_audit.py --quick --report --format json --output health_check
+	$(POETRY) run python docs-maintenance/scripts/quality_dashboard.py --dashboard --format markdown --output health_dashboard
+	@echo "✅ Health check complete - see docs-maintenance/reports/health_check.json"
+
+.PHONY: docs-setup
+docs-setup: ## Set up documentation maintenance system
+	@echo "🔧 Setting up documentation maintenance system..."
+	@mkdir -p docs-maintenance/{scripts,config,reports,dashboards}
+	@echo "📁 Created directory structure"
+	@if [ ! -f docs-maintenance/config/audit_config.yaml ]; then cp docs-maintenance/config/audit_config.yaml.example docs-maintenance/config/audit_config.yaml 2>/dev/null || echo "⚠️  Configuration files need to be created"; fi
+	@echo "✅ Documentation maintenance system ready"
+
+# =============================================================================
 # DEPENDENCIES
 # =============================================================================
 

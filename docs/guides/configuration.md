@@ -210,17 +210,17 @@ async def get_config():
 ### Dependency Injection
 
 ```python
-from flext_core import FlextContainer
+from flext_core import FlextCore
 
 # Register configuration in container
-container = FlextContainer.get_global()
+container = FlextCore.Container.get_global()
 container.register("api_config", config)
 
 # Access configuration in services
-class UserService(FlextService):
+class UserService(FlextCore.Service):
     def __init__(self):
         super().__init__()
-        self.container = FlextContainer.get_global()
+        self.container = FlextCore.Container.get_global()
         self.config_result = self.container.get("api_config")
 
     def get_config_value(self, key: str):

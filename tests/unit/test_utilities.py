@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextTypes
+from flext_core import FlextCore
 
 from flext_api import FlextApiUtilities
 
@@ -54,12 +54,12 @@ class TestFlextApiUtilitiesReal:
         assert result.is_success
         response_obj = result.unwrap()
         assert isinstance(response_obj, dict)
-        response: FlextTypes.Dict = response_obj
+        response: FlextCore.Types.Dict = response_obj
         assert response["success"] is True
         assert response["data"] == [1, 2, 3]
         pagination_obj = response["pagination"]
         assert isinstance(pagination_obj, dict)
-        pagination: FlextTypes.Dict = pagination_obj
+        pagination: FlextCore.Types.Dict = pagination_obj
         assert pagination["page"] == 1
         assert pagination["total"] == 3
 
