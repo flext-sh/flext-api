@@ -191,6 +191,7 @@ flext_api/
 ### Key Classes and Their Responsibilities
 
 #### FlextApi (api.py)
+
 ```python
 class FlextApi(FlextCore.Service[FlextApiConfig]):
     """Thin facade providing access to all FLEXT-API functionality."""
@@ -216,6 +217,7 @@ class FlextApi(FlextCore.Service[FlextApiConfig]):
 ```
 
 #### FlextApiClient (client.py)
+
 ```python
 class FlextApiClient(FlextCore.Service[None]):
     """Enterprise HTTP client with railway pattern integration."""
@@ -242,6 +244,7 @@ class FlextApiClient(FlextCore.Service[None]):
 ```
 
 #### FlextApiModels (models.py)
+
 ```python
 class FlextApiModels(FlextCore.Models):
     """Pydantic models extending flext-core base classes."""

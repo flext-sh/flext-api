@@ -1,72 +1,83 @@
 // FLEXT-API Architecture Documentation JavaScript
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize interactive features
-    initializeNavigation();
-    loadADRs();
-    loadQualityMetrics();
-    setupImageModal();
+document.addEventListener("DOMContentLoaded", function () {
+  // Initialize interactive features
+  initializeNavigation();
+  loadADRs();
+  loadQualityMetrics();
+  setupImageModal();
 });
 
 // Navigation highlighting
 function initializeNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll(".nav-link");
+  const sections = document.querySelectorAll("section[id]");
 
-    function highlightNavigation() {
-        const scrollPosition = window.scrollY + 100;
+  function highlightNavigation() {
+    const scrollPosition = window.scrollY + 100;
 
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            const sectionId = section.getAttribute('id');
+    sections.forEach((section) => {
+      const sectionTop = section.offsetTop;
+      const sectionHeight = section.offsetHeight;
+      const sectionId = section.getAttribute("id");
 
-            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${sectionId}`) {
-                        link.classList.add('active');
-                    }
-                });
-            }
+      if (
+        scrollPosition >= sectionTop &&
+        scrollPosition < sectionTop + sectionHeight
+      ) {
+        navLinks.forEach((link) => {
+          link.classList.remove("active");
+          if (link.getAttribute("href") === `#${sectionId}`) {
+            link.classList.add("active");
+          }
         });
-    }
+      }
+    });
+  }
 
-    window.addEventListener('scroll', highlightNavigation);
-    highlightNavigation(); // Initial call
+  window.addEventListener("scroll", highlightNavigation);
+  highlightNavigation(); // Initial call
 }
 
 // Load ADR list dynamically
 async function loadADRs() {
-    const adrList = document.getElementById('adr-list');
+  const adrList = document.getElementById("adr-list");
 
-    try {
-        // In a real implementation, this would fetch ADR data
-        // For now, we'll simulate with static data
-        const adrs = [
-            { number: '001', title: 'FLEXT-Core Dependency', status: 'Accepted' },
-            { number: '002', title: 'Railway-Oriented Error Handling', status: 'Accepted' },
-            { number: '003', title: 'Protocol Plugin Architecture', status: 'Accepted' }
-        ];
+  try {
+    // In a real implementation, this would fetch ADR data
+    // For now, we'll simulate with static data
+    const adrs = [
+      { number: "001", title: "FLEXT-Core Dependency", status: "Accepted" },
+      {
+        number: "002",
+        title: "Railway-Oriented Error Handling",
+        status: "Accepted",
+      },
+      {
+        number: "003",
+        title: "Protocol Plugin Architecture",
+        status: "Accepted",
+      },
+    ];
 
-        let html = '<div class="adr-grid">';
-        adrs.forEach(adr => {
-            html += `
+    let html = '<div class="adr-grid">';
+    adrs.forEach((adr) => {
+      html += `
                 <div class="adr-card">
                     <h4>ADR-${adr.number}</h4>
                     <p>${adr.title}</p>
                     <span class="status status-${adr.status.toLowerCase()}">${adr.status}</span>
-                    <a href="../decisions/${adr.number}-${adr.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md" class="btn">View ADR</a>
+                    <a href="../decisions/${adr.number}-${adr.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.md" class="btn">View ADR</a>
                 </div>
             `;
-        });
-        html += '</div>';
+    });
+    html += "</div>";
 
-        adrList.innerHTML = html;
+    adrList.innerHTML = html;
 
-        // Add ADR card styles
-        const style = document.createElement('style');
-        style.textContent = `
+    // Add ADR card styles
+    const style = document.createElement("style");
+    style.textContent = `
             .adr-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -97,35 +108,36 @@ async function loadADRs() {
                 color: #155724;
             }
         `;
-        document.head.appendChild(style);
-
-    } catch (error) {
-        adrList.innerHTML = '<p>Error loading ADRs</p>';
-        console.error('Error loading ADRs:', error);
-    }
+    document.head.appendChild(style);
+  } catch (error) {
+    adrList.innerHTML = "<p>Error loading ADRs</p>";
+    console.error("Error loading ADRs:", error);
+  }
 }
 
 // Load quality metrics dynamically
 async function loadQualityMetrics() {
-    const metricsDiv = document.getElementById('quality-metrics');
+  const metricsDiv = document.getElementById("quality-metrics");
 
-    try {
-        // Simulate loading quality metrics
-        const metrics = {
-            overall_score: 61.6,
-            audit_compliance: 46.5,
-            link_health: 62.7,
-            style_consistency: 76.9,
-            content_quality: 95.4,
-            maintenance_coverage: 0.0
-        };
+  try {
+    // Simulate loading quality metrics
+    const metrics = {
+      overall_score: 61.6,
+      audit_compliance: 46.5,
+      link_health: 62.7,
+      style_consistency: 76.9,
+      content_quality: 95.4,
+      maintenance_coverage: 0.0,
+    };
 
-        let html = '<div class="metrics-grid">';
-        Object.entries(metrics).forEach(([key, value]) => {
-            const displayName = key.replace(/_/g, ' ').replace(/\w/g, l => l.toUpperCase());
-            const color = value >= 80 ? 'high' : value >= 60 ? 'medium' : 'low';
+    let html = '<div class="metrics-grid">';
+    Object.entries(metrics).forEach(([key, value]) => {
+      const displayName = key
+        .replace(/_/g, " ")
+        .replace(/\w/g, (l) => l.toUpperCase());
+      const color = value >= 80 ? "high" : value >= 60 ? "medium" : "low";
 
-            html += `
+      html += `
                 <div class="metric-item ${color}">
                     <h4>${displayName}</h4>
                     <div class="metric-value">${value}%</div>
@@ -134,14 +146,14 @@ async function loadQualityMetrics() {
                     </div>
                 </div>
             `;
-        });
-        html += '</div>';
+    });
+    html += "</div>";
 
-        metricsDiv.innerHTML = html;
+    metricsDiv.innerHTML = html;
 
-        // Add metric styles
-        const style = document.createElement('style');
-        style.textContent = `
+    // Add metric styles
+    const style = document.createElement("style");
+    style.textContent = `
             .metrics-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -177,28 +189,27 @@ async function loadQualityMetrics() {
                 transition: width 0.3s ease;
             }
         `;
-        document.head.appendChild(style);
-
-    } catch (error) {
-        metricsDiv.innerHTML = '<p>Error loading quality metrics</p>';
-        console.error('Error loading quality metrics:', error);
-    }
+    document.head.appendChild(style);
+  } catch (error) {
+    metricsDiv.innerHTML = "<p>Error loading quality metrics</p>";
+    console.error("Error loading quality metrics:", error);
+  }
 }
 
 // Setup image modal for diagram viewing
 function setupImageModal() {
-    // Create modal elements
-    const modal = document.createElement('div');
-    modal.id = 'image-modal';
-    modal.innerHTML = `
+  // Create modal elements
+  const modal = document.createElement("div");
+  modal.id = "image-modal";
+  modal.innerHTML = `
         <div class="modal-content">
             <span class="modal-close">&times;</span>
             <img id="modal-image" src="" alt="Architecture Diagram">
         </div>
     `;
 
-    const style = document.createElement('style');
-    style.textContent = `
+  const style = document.createElement("style");
+  style.textContent = `
         #image-modal {
             display: none;
             position: fixed;
@@ -233,41 +244,41 @@ function setupImageModal() {
         }
     `;
 
-    document.body.appendChild(style);
-    document.body.appendChild(modal);
+  document.body.appendChild(style);
+  document.body.appendChild(modal);
 
-    // Add click handlers for image links
-    document.querySelectorAll('.image-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const img = document.getElementById('modal-image');
-            img.src = this.href;
-            modal.style.display = 'block';
-        });
+  // Add click handlers for image links
+  document.querySelectorAll(".image-link").forEach((link) => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      const img = document.getElementById("modal-image");
+      img.src = this.href;
+      modal.style.display = "block";
     });
+  });
 
-    // Close modal when clicking X or outside
-    document.querySelector('.modal-close').addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
+  // Close modal when clicking X or outside
+  document.querySelector(".modal-close").addEventListener("click", () => {
+    modal.style.display = "none";
+  });
 
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  });
 }
 
 // Utility functions
 function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 }
 
 function capitalizeFirst(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }

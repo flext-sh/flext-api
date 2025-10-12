@@ -17,6 +17,7 @@ Modern applications need to communicate with various APIs using different protoc
 5. Enables protocol negotiation and fallback
 
 Key considerations:
+
 - Enterprise applications use diverse protocols (REST, GraphQL, WebSocket, SSE)
 - Protocol implementations have different connection models and APIs
 - Need to maintain high performance for each protocol
@@ -59,18 +60,21 @@ FLEXT-API will implement a **Protocol Plugin Architecture** with:
 ## Alternatives Considered
 
 ### Option 1: Monolithic Client
+
 - **Description**: Single client class with conditional logic for different protocols
 - **Pros**: Simple implementation, direct performance
 - **Cons**: Hard to maintain, difficult to add new protocols, protocol coupling
 - **Rejected**: Violates open/closed principle, becomes unmaintainable
 
 ### Option 2: Inheritance Hierarchy
+
 - **Description**: Base client class with protocol-specific subclasses
 - **Pros**: Object-oriented approach, shared functionality
 - **Cons**: Tight coupling, inflexible for dynamic protocol selection
 - **Rejected**: Doesn't support runtime protocol selection well
 
 ### Option 3: Facade Pattern Only
+
 - **Description**: Simple facade that delegates to protocol-specific functions
 - **Pros**: Simple, minimal abstraction
 - **Cons**: No common interface, inconsistent error handling, harder to test
@@ -262,6 +266,7 @@ class GraphQLProtocol(BaseProtocol):
 ## Usage Examples
 
 ### HTTP Usage
+
 ```python
 from flext_api import FlextApiClient
 
@@ -271,6 +276,7 @@ result = await client.get("/users/123")
 ```
 
 ### GraphQL Usage
+
 ```python
 # GraphQL client
 client = FlextApiClient(protocol="graphql", url="https://api.example.com/graphql")
@@ -288,6 +294,7 @@ result = await client.request("query", query, variables={"id": "123"})
 ```
 
 ### WebSocket Usage
+
 ```python
 # WebSocket client
 client = FlextApiClient(protocol="websocket", url="wss://api.example.com/ws")
@@ -298,6 +305,7 @@ await client.send({"type": "subscribe", "channel": "updates"})
 ## Testing Strategy
 
 ### Protocol Isolation Testing
+
 ```python
 @pytest.fixture
 def http_protocol():
@@ -323,6 +331,7 @@ async def test_http_request_success(http_protocol):
 ```
 
 ### Integration Testing
+
 ```python
 @pytest.mark.integration
 @pytest.mark.asyncio
@@ -345,16 +354,19 @@ async def test_protocol_registry_integration():
 ## Performance Considerations
 
 ### Connection Pooling
+
 - HTTP protocol uses httpx connection pooling
 - GraphQL maintains persistent connections
 - WebSocket implements connection reuse
 
 ### Request Batching
+
 - GraphQL supports query batching
 - HTTP can batch requests using HTTP/2 multiplexing
 - Protocol-specific optimizations maintained
 
 ### Resource Management
+
 - Automatic cleanup of protocol resources
 - Connection limits and health monitoring
 - Memory-efficient request processing
@@ -364,6 +376,7 @@ async def test_protocol_registry_integration():
 ### Adding New Protocols
 
 1. **Implement Protocol Class**:
+
 ```python
 class CustomProtocol(BaseProtocol):
     def create_client(self, config: Dict[str, Any]):
@@ -378,12 +391,14 @@ class CustomProtocol(BaseProtocol):
 ```
 
 2. **Register Protocol**:
+
 ```python
 registry = ProtocolRegistry()
 registry.register("custom", CustomProtocol)
 ```
 
 3. **Use in Client**:
+
 ```python
 client = FlextApiClient(protocol="custom", **config)
 ```
@@ -391,12 +406,14 @@ client = FlextApiClient(protocol="custom", **config)
 ## Monitoring and Observability
 
 ### Protocol Metrics
+
 - Request count and latency by protocol
 - Error rates and failure patterns
 - Connection pool utilization
 - Protocol-specific performance metrics
 
 ### Health Checks
+
 - Protocol connectivity verification
 - Capability validation
 - Resource usage monitoring
@@ -405,16 +422,19 @@ client = FlextApiClient(protocol="custom", **config)
 ## Migration Strategy
 
 ### Phase 1: Core Architecture
+
 - [x] Implement protocol abstraction interfaces
 - [x] Create protocol registry system
 - [x] Implement HTTP protocol (primary use case)
 
 ### Phase 2: Additional Protocols
+
 - [x] Implement GraphQL protocol
 - [ ] Implement WebSocket protocol
 - [ ] Implement Server-Sent Events protocol
 
 ### Phase 3: Ecosystem Integration
+
 - [ ] Update documentation with protocol examples
 - [ ] Create protocol selection guidelines
 - [ ] Provide migration utilities for existing code

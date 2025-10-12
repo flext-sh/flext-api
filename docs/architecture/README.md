@@ -49,6 +49,7 @@ FLEXT-API follows a **Clean Architecture** with **Protocol-Based Design** and **
 ## 📖 Documentation Formats
 
 ### C4 Model Documentation
+
 Following Simon Brown's C4 model for visual architecture documentation:
 
 - **Context**: System in its environment (system context diagram)
@@ -57,6 +58,7 @@ Following Simon Brown's C4 model for visual architecture documentation:
 - **Code**: Code structure and implementation details (code diagram)
 
 ### Architecture Decision Records (ADRs)
+
 Documenting important architectural decisions following the ADR format:
 
 - **Structured Format**: Consistent template for all decisions
@@ -65,6 +67,7 @@ Documenting important architectural decisions following the ADR format:
 - **Alternatives**: Other options considered with pros/cons
 
 ### Visual Diagrams
+
 Architecture diagrams using PlantUML:
 
 - **System Landscape**: Enterprise ecosystem overview
@@ -76,33 +79,37 @@ Architecture diagrams using PlantUML:
 
 ### Core Decisions
 
-| Decision | Status | Impact |
-|----------|--------|---------|
+| Decision                                                                 | Status      | Impact                          |
+| ------------------------------------------------------------------------ | ----------- | ------------------------------- |
 | [ADR-001: FLEXT-Core Dependency](decisions/001-flext-core-dependency.md) | ✅ Accepted | Mandatory ecosystem integration |
-| [ADR-002: Railway Pattern](decisions/002-railway-pattern.md) | ✅ Accepted | Type-safe error handling |
-| [ADR-003: Protocol Abstraction](decisions/003-protocol-abstraction.md) | ✅ Accepted | Multi-protocol support |
+| [ADR-002: Railway Pattern](decisions/002-railway-pattern.md)             | ✅ Accepted | Type-safe error handling        |
+| [ADR-003: Protocol Abstraction](decisions/003-protocol-abstraction.md)   | ✅ Accepted | Multi-protocol support          |
 
 ### Quality Attributes
 
 #### Performance
+
 - **HTTP Client**: Connection pooling with HTTPX
 - **Async Processing**: Full async/await support throughout
 - **Caching**: Multi-level caching (application, HTTP, external)
 - **Optimization**: Request batching and response streaming
 
 #### Reliability
+
 - **Error Handling**: Railway pattern prevents silent failures
 - **Retry Logic**: Exponential backoff for transient failures
 - **Circuit Breakers**: Protection against cascading failures
 - **Health Checks**: Comprehensive system monitoring
 
 #### Security
+
 - **Authentication**: JWT, API keys, OAuth support
 - **Authorization**: Role-based and permission-based access
 - **Transport Security**: TLS/SSL with certificate validation
 - **Input Validation**: Comprehensive request/response validation
 
 #### Maintainability
+
 - **Clean Architecture**: Clear separation of concerns
 - **Type Safety**: Full type annotations with runtime checking
 - **Documentation**: Comprehensive API and architecture docs
@@ -230,16 +237,19 @@ The architecture supports extension in several areas:
 ## 📚 References and Resources
 
 ### Architecture Methodologies
+
 - [C4 Model](https://c4model.com/) - Visual architecture documentation
 - [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) - Architectural principles
 - [Domain-Driven Design](https://domainlanguage.com/ddd/) - Domain modeling approach
 
 ### Documentation Tools
+
 - [PlantUML](https://plantuml.com/) - Text-to-diagram generation
 - [Mermaid](https://mermaid.js.org/) - JavaScript diagram generation
 - [Structurizr](https://structurizr.com/) - C4 model tooling
 
 ### Industry Standards
+
 - [OpenAPI Specification](https://swagger.io/specification/) - API documentation standard
 - [AsyncAPI](https://www.asyncapi.com/) - Event-driven API specification
 - [RFC 2119](https://tools.ietf.org/html/rfc2119) - Key words for requirements
@@ -251,6 +261,7 @@ The architecture supports extension in several areas:
 FLEXT-API aims to be the **enterprise HTTP foundation** that enables reliable, scalable, and maintainable API integrations across the entire FLEXT ecosystem. By providing a unified, protocol-agnostic interface with railway-oriented error handling and clean architecture principles, FLEXT-API eliminates the complexity and inconsistency of HTTP operations while maintaining the flexibility needed for enterprise integration scenarios.
 
 **Key Success Metrics:**
+
 - **Adoption Rate**: 90%+ of FLEXT projects using FLEXT-API
 - **Error Reduction**: 70% reduction in HTTP-related bugs
 - **Development Speed**: 50% faster API integration development
@@ -258,4 +269,4 @@ FLEXT-API aims to be the **enterprise HTTP foundation** that enables reliable, s
 
 ---
 
-*This architecture documentation is maintained using automated tools and reviewed regularly to ensure accuracy and completeness.*
+_This architecture documentation is maintained using automated tools and reviewed regularly to ensure accuracy and completeness._

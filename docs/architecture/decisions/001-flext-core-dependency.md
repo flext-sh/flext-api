@@ -11,6 +11,7 @@ Accepted
 FLEXT-API is designed as part of the FLEXT enterprise ecosystem, which provides shared patterns and utilities across multiple projects. The decision needed to be made about whether FLEXT-API should depend on flext-core and integrate with the broader ecosystem patterns.
 
 Key considerations:
+
 - FLEXT ecosystem has 30+ projects that need consistent patterns
 - HTTP operations are fundamental to enterprise applications
 - Error handling, logging, and service patterns need to be standardized
@@ -48,18 +49,21 @@ FLEXT-API will have a **mandatory dependency on flext-core** and will fully inte
 ## Alternatives Considered
 
 ### Option 1: Standalone HTTP Library
+
 - **Description**: FLEXT-API as independent library without flext-core dependency
 - **Pros**: Independent evolution, simpler dependencies, easier adoption
 - **Cons**: Pattern inconsistency across ecosystem, duplication of core functionality
 - **Rejected**: Violates ecosystem standardization goals
 
 ### Option 2: Optional flext-core Integration
+
 - **Description**: flext-core as optional dependency with fallback implementations
 - **Pros**: Gradual adoption, reduced coupling, flexible integration
 - **Cons**: Inconsistent behavior, maintenance burden, testing complexity
 - **Rejected**: Would lead to ecosystem fragmentation
 
 ### Option 3: Minimal flext-core Integration
+
 - **Description**: Only use core utilities, implement custom patterns for HTTP operations
 - **Pros**: Some consistency benefits, reduced coupling
 - **Cons**: Still requires coordination, partial benefits
@@ -68,18 +72,21 @@ FLEXT-API will have a **mandatory dependency on flext-core** and will fully inte
 ## Implementation Plan
 
 ### Phase 1: Core Integration (Week 1-2)
+
 - [x] Add flext-core dependency to pyproject.toml
 - [x] Update imports to use FlextCore.Result, FlextCore.Service, etc.
 - [x] Replace custom error handling with railway pattern
 - [x] Integrate FlextCore.Logger for structured logging
 
 ### Phase 2: Ecosystem Migration (Week 3-8)
+
 - [x] Update all internal HTTP operations to use FLEXT-API
 - [ ] Create migration guide for ecosystem projects
 - [ ] Provide migration utilities and examples
 - [ ] Update documentation and examples
 
 ### Phase 3: Enforcement (Week 9-12)
+
 - [ ] Add linting rules to prevent direct httpx imports
 - [ ] Implement CI/CD checks for ecosystem compliance
 - [ ] Create monitoring and reporting for adoption status
