@@ -11,12 +11,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Self
 from urllib.parse import urlparse
 
-from flext_core import FlextCore
 from pydantic import (
+    BaseModel,
     ConfigDict,
     Field,
     computed_field,
@@ -29,241 +28,52 @@ from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
 
 
-class FlextApiModels(FlextCore.Models):
-    """Flext models using flext-core extensively - Pydantic models only.
+class FlextApiModels:
+    """Flext API models - Pydantic models only.
 
-    Inherits from FlextCore.Models to avoid duplication and ensure consistency.
-    Follows FLEXT standardization patterns with Pydantic 2.11 features.
-
-    ARCHITECTURAL COMPLIANCE:
-    - Inherits from FlextCore.Models to avoid duplication
-    - Uses FlextApiConstants for all defaults
-    - Implements Pydantic 2.11 features
-    - Uses FlextCore.Models base classes (Entity, Value, Command, Query)
+    Contains all API-specific Pydantic models as nested classes.
+    Uses FlextCore patterns and types.
     """
 
-    # Enhanced model configuration with Pydantic 2.11 features
-    model_config = ConfigDict(
-        validate_assignment=True,
-        use_enum_values=True,
-        arbitrary_types_allowed=True,
-        extra="forbid",
-        frozen=False,
-        # Pydantic 2.11 enhanced features
-        validate_return=True,
-        ser_json_timedelta="iso8601",
-        ser_json_bytes="base64",
-        # Enhanced serialization
-        serialize_by_alias=True,
-        populate_by_name=True,
-        # String processing features
-        str_strip_whitespace=True,
-        str_to_lower=False,
-        str_to_upper=False,
-        # Performance optimizations
-        defer_build=False,
-        # Type coercion features
-        coerce_numbers_to_str=False,
-        # Validation features
-        validate_default=True,
-        # JSON encoding
-        json_encoders={
-            Path: str,
-        },
-    )
-
     # Simple API-specific models extending FlextCore.Models base classes
-    class HttpRequest(FlextCore.Models.HttpRequest):
-        """HTTP client request model extending flext-core HttpRequest base.
+    class HttpRequest(BaseModel):
+        """HTTP client request model.
 
-        Inherits from flext-core:
-            - url: Request URL
-            - method: HTTP method (GET, POST, etc.)
-            - headers: Request headers
-            - body: Request body
-            - timeout: Request timeout
-            - has_body: Computed field - check if request has body
-            - is_secure: Computed field - check if request uses HTTPS
-            - validate_method: Validates HTTP method against centralized constants
-            - validate_request_consistency: Cross-field validation
-
-        Client-specific additions:
-            - full_url: Computed full URL with protocol
-            - request_size: Computed request body size in bytes
-            - tracking_id: Request tracking identifier for logging
+        Core HTTP request fields with validation and computed properties.
         """
+
+        model_config = ConfigDict(
+            validate_assignment=True,
+            extra="forbid",
+            str_strip_whitespace=True,
+        )
+
+        url: str = Field(..., description="Request URL")
+        method: str = Field(..., description="HTTP method")
+        headers: dict[str, str] | None = Field(
+            default_factory=dict, description="Request headers"
+        )
+        body: str | bytes | dict | None = Field(
+            default=None, description="Request body"
+        )
+        timeout: float | None = Field(
+            default=None, description="Request timeout in seconds"
+        )
 
         tracking_id: str | None = Field(
             default=None, description="Request tracking ID for logging"
         )
 
-        @computed_field
-        @property
-        def full_url(self) -> str:
-            """Computed full URL with proper formatting - CLIENT SPECIFIC."""
-            base_url = self.url.rstrip("/")
-            if not base_url.startswith(("http://", "https://")):
-                return f"http://{base_url}"
-            return base_url
-
-        @computed_field
-        @property
-        def request_size(self) -> int:
-            """Computed request body size in bytes - CLIENT SPECIFIC."""
-            if not self.body:
-                return 0
-            if isinstance(self.body, str):
-                return len(self.body.encode("utf-8"))
-            if isinstance(self.body, dict):
-                return len(json.dumps(self.body).encode("utf-8"))
-            return 0
-
-        @field_validator("url")
-        @classmethod
-        def validate_url_client_specific(cls, v: str) -> str:
-            """Validate URL with client-specific logic (relative paths allowed)."""
-            # Handle empty URL case first
-            if not v or not v.strip():
-                msg = "Invalid URL: URL cannot be empty"
-                raise ValueError(msg)
-
-            # CLIENT SPECIFIC: Allow relative paths for API clients
-            if v.strip().startswith("/"):
-                return v.strip()
-
-            validation_result = FlextCore.Models.create_validated_http_url(v.strip())
-            if validation_result.is_failure:
-                error_msg = validation_result.error or "Invalid URL"
-                if "URL must start with http:// or https://" in error_msg:
-                    error_msg = "Invalid URL format"
-                elif "URL cannot be empty" in error_msg:
-                    error_msg = "URL cannot be empty"
-                elif "URL must have a valid hostname" in error_msg:
-                    error_msg = "Invalid URL format"
-                msg = f"Invalid URL: {error_msg}"
-                raise ValueError(msg)
-            url_obj = validation_result.unwrap()
-            return str(url_obj.url) if hasattr(url_obj, "url") else str(url_obj)
-
-        @field_validator("headers")
-        @classmethod
-        def validate_headers_client_specific(
-            cls, v: FlextApiTypes.Headers
-        ) -> FlextApiTypes.Headers:
-            """Validate and sanitize headers - CLIENT SPECIFIC Python 3.13+ optimization."""
-            # Python 3.13+ optimized dict comprehension with walrus operator
-            return {
-                k_clean: val_clean
-                for k, val in v.items()
-                if (k_clean := k.strip()) and (val_clean := str(val).strip())
-            }
-
-        @field_serializer("body")
-        def serialize_body(
-            self, value: FlextApiTypes.RequestBody | None
-        ) -> str | dict | None:
-            """Serialize request body for API transmission - CLIENT SPECIFIC.
-
-            Returns:
-                Serialized body as dict (if JSON-serializable), string, or None.
-
-            Raises:
-                ValueError: If dict value is not JSON-serializable.
-
-            """
-            if value is None:
-                return None
-            if isinstance(value, dict):
-                # Ensure all dict values are JSON serializable - fail fast if not
-                try:
-                    json.dumps(value)  # Validate serialization
-                    return value
-                except (TypeError, ValueError) as e:
-                    # FLEXT: No silent fallbacks - raise proper validation error
-                    error_msg = (
-                        f"Request body dict contains non-JSON-serializable values: {e}"
-                    )
-                    raise ValueError(error_msg) from e
-            return str(value)
-
-    class HttpResponse(FlextCore.Models.HttpResponse):
-        """HTTP client response model extending flext-core HttpResponse base.
-
-        Inherits from flext-core:
-            - status_code: HTTP status code
-            - headers: Response headers
-            - body: Response body
-            - elapsed_time: Request/response elapsed time
-            - is_success: Computed field - check if response is successful (2xx)
-            - is_client_error: Computed field - check if response is client error (4xx)
-            - is_server_error: Computed field - check if response is server error (5xx)
-
-        Client-specific additions:
-            - url: Request URL (for tracking)
-            - method: HTTP method (for tracking)
-            - request: Original request object (for tracking)
-            - domain_events: Domain events list
-            - response_time_ms: Computed response time in milliseconds
-            - content_length: Computed content length from headers or body
-        """
-
-        # CLIENT-SPECIFIC fields for tracking request context
-        url: str = Field(description="Request URL")
-        method: str = Field(description="HTTP method")
-        request: FlextCore.Models.HttpRequest | None = Field(
-            default=None, description="Original request object"
-        )
-        domain_events: FlextCore.Types.List = Field(
-            default_factory=list, description="Domain events"
+    class HttpResponse(BaseModel):
+        """HTTP response model."""
+        model_config = ConfigDict(
+            validate_assignment=True,
+            extra="forbid",
         )
 
-        @computed_field
-        @property
-        def response_time_ms(self) -> float:
-            """Computed response time in milliseconds - CLIENT SPECIFIC."""
-            return (self.elapsed_time * 1000) if self.elapsed_time else 0.0
-
-        @computed_field
-        @property
-        def content_length(self) -> int:
-            """Computed content length from headers or body - CLIENT SPECIFIC.
-
-            Returns:
-                Content length in bytes. Returns 0 if header is invalid or body is empty.
-
-            """
-            # Try to get from headers first
-            if "content-length" in self.headers:
-                try:
-                    return int(self.headers["content-length"])
-                except (ValueError, TypeError):
-                    # FLEXT: Invalid header - calculate from body instead
-                    # This is acceptable as it's a fallback to calculation, not silent suppression
-                    pass
-
-            # Calculate from body if header missing or invalid
-            if self.body:
-                if isinstance(self.body, str):
-                    return len(self.body.encode("utf-8"))
-                if isinstance(self.body, dict):
-                    return len(json.dumps(self.body).encode("utf-8"))
-
-            return 0
-
-        @model_validator(mode="after")
-        def validate_response_consistency_client_specific(self) -> Self:
-            """Cross-field validation for HTTP response consistency - CLIENT SPECIFIC."""
-            # Validate status code and body consistency
-            if (
-                self.status_code == FlextApiConstants.Http.HTTP_NO_CONTENT and self.body
-            ):  # No Content
-                error_msg = "HTTP 204 responses should not have a body"
-                raise ValueError(error_msg)
-
-            # Validate elapsed time
-            if self.elapsed_time is not None and self.elapsed_time < 0:
-                error_msg = "Elapsed time cannot be negative"
-                raise ValueError(error_msg)
+        status_code: int = Field(..., description="HTTP status code")
+        headers: dict[str, str] = Field(default_factory=dict, description="Response headers")
+        body: str | bytes | dict | None = Field(default=None, description="Response body")
 
             return self
 

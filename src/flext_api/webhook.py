@@ -324,6 +324,8 @@ class FlextWebhookHandler(FlextCore.Service[object]):
 
         # Get handlers for event type
         handlers = self._event_handlers.get(event_type, [])
+        if not isinstance(handlers, list):
+            handlers = []
 
         if not handlers:
             self.logger.warning(
