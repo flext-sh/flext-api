@@ -1,0 +1,57 @@
+@startuml FLEXT System Landscape
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title FLEXT Enterprise System Landscape
+
+Person(enterprise_developer, "Enterprise Developer", "Builds enterprise applications")
+Person(data_engineer, "Data Engineer", "Manages data pipelines")
+Person(system_REDACTED_LDAP_BIND_PASSWORD, "System Administrator", "Manages infrastructure")
+
+Enterprise_Boundary(flext_ecosystem, "FLEXT Ecosystem") {
+    System(flext_api, "FLEXT-API", "HTTP client and FastAPI foundation")
+    System(flext_core, "FLEXT-Core", "Foundation patterns and utilities")
+    System(flext_ldap, "FLEXT-LDAP", "LDAP directory services")
+    System(flext_auth, "FLEXT-Auth", "Authentication and authorization")
+    System(flext_data, "FLEXT-Data", "Data integration and ETL")
+
+    System(client-a_migration, "client-a Migration", "Legacy system migration")
+    System(identity_management, "Identity Management", "User provisioning")
+    System(data_warehouse, "Data Warehouse", "Enterprise data storage")
+}
+
+System_Ext(active_directory, "Active Directory", "Microsoft directory services")
+System_Ext(oracle_database, "Oracle Database", "Enterprise RDBMS")
+System_Ext(postgresql, "PostgreSQL", "Open source RDBMS")
+System_Ext(mongodb, "MongoDB", "Document database")
+System_Ext(rabbitmq, "RabbitMQ", "Message broker")
+System_Ext(redis, "Redis", "Cache and session store")
+System_Ext(s3_storage, "Amazon S3", "Object storage")
+System_Ext(kubernetes, "Kubernetes", "Container orchestration")
+
+Rel(enterprise_developer, flext_api, "Uses for HTTP operations")
+Rel(enterprise_developer, flext_core, "Depends on foundation")
+Rel(data_engineer, flext_data, "Uses for data integration")
+Rel(system_REDACTED_LDAP_BIND_PASSWORD, kubernetes, "Manages containers")
+
+Rel(flext_api, flext_core, "Depends on", "patterns & utilities")
+Rel(flext_ldap, flext_core, "Depends on", "patterns & utilities")
+Rel(flext_auth, flext_core, "Depends on", "patterns & utilities")
+Rel(flext_data, flext_core, "Depends on", "patterns & utilities")
+
+Rel(flext_api, active_directory, "Authenticates users", "LDAP/LDAPS")
+Rel(flext_api, oracle_database, "Reads/writes data", "JDBC")
+Rel(flext_api, postgresql, "Reads/writes data", "psycopg2")
+Rel(flext_api, mongodb, "Reads/writes data", "pymongo")
+Rel(flext_api, rabbitmq, "Publishes/subscribes", "AMQP")
+Rel(flext_api, redis, "Caches data", "redis-py")
+Rel(flext_api, s3_storage, "Stores files", "boto3")
+
+Rel(client-a_migration, flext_api, "Uses HTTP client", "migration operations")
+Rel(identity_management, flext_auth, "Uses auth services", "user provisioning")
+Rel(data_warehouse, flext_data, "Loads data via", "ETL pipelines")
+
+Rel(kubernetes, flext_api, "Hosts containers", "Docker/K8s")
+Rel(kubernetes, flext_ldap, "Hosts containers", "Docker/K8s")
+Rel(kubernetes, flext_auth, "Hosts containers", "Docker/K8s")
+
+@enduml

@@ -8,7 +8,7 @@ Comprehensive guide for using the FLEXT-API HTTP client with railway patterns, e
 
 ```python
 from flext_api import FlextApiClient
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 # Basic client
 client = FlextApiClient(
@@ -36,7 +36,7 @@ custom_client = FlextApiClient(
 
 ### HTTP Methods
 
-All HTTP methods return `FlextResult[T]` for type-safe error handling.
+All HTTP methods return `FlextCore.Result[T]` for type-safe error handling.
 
 ```python
 # GET request
@@ -80,14 +80,14 @@ Add custom logic before and after HTTP requests.
 
 ```python
 from flext_api import FlextApiClient
-from flext_core import FlextLogger
+from flext_core import FlextCore
 
 class LoggingClient(FlextApiClient):
     """HTTP client with automatic request/response logging."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
     def _log_request(self, method: str, url: str, **kwargs):
         """Log outgoing request."""
@@ -164,7 +164,7 @@ client = FlextApiClient(
 FLEXT-API uses the railway pattern for type-safe error handling.
 
 ```python
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 def safe_api_call():
     """Example of safe API call with error handling."""
@@ -173,16 +173,16 @@ def safe_api_call():
     # Type-safe error handling
     if result.is_success:
         user = result.unwrap()
-        return FlextResult[dict].ok(user)
+        return FlextCore.Result[dict].ok(user)
     else:
         error = result.error
         # Handle different error types
         if error.code == "NOT_FOUND":
-            return FlextResult[dict].fail("User not found")
+            return FlextCore.Result[dict].fail("User not found")
         elif error.code == "UNAUTHORIZED":
-            return FlextResult[dict].fail("Authentication required")
+            return FlextCore.Result[dict].fail("Authentication required")
         else:
-            return FlextResult[dict].fail(f"API error: {error.message}")
+            return FlextCore.Result[dict].fail(f"API error: {error.message}")
 
 # Usage
 result = safe_api_call()
@@ -336,11 +336,11 @@ if result.is_success:
 ```python
 from typing import List
 
-async def batch_create_users(users: List[dict]) -> List[FlextResult[dict]]:
+async def batch_create_users(users: List[dict]) -> List[FlextCore.Result[dict]]:
     """Create multiple users in parallel."""
     import asyncio
 
-    async def create_user(user_data: dict) -> FlextResult[dict]:
+    async def create_user(user_data: dict) -> FlextCore.Result[dict]:
         return client.post("/users", json=user_data)
 
     # Execute requests concurrently
@@ -405,7 +405,7 @@ print(f"Total users: {len(users)}")
 
 ```python
 from flext_api import FlextApiClient
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 class RetryClient(FlextApiClient):
     """HTTP client with custom retry logic."""
@@ -545,13 +545,13 @@ client = FlextApiClient(
 ```python
 from typing import List, Dict, object
 
-def batch_requests(requests: List[Dict[str, object]]) -> List[FlextResult[object]]:
+def batch_requests(requests: List[FlextCore.Types.Dict]) -> List[FlextCore.Result[object]]:
     """Execute multiple HTTP requests efficiently."""
 
     async def execute_batch():
         import asyncio
 
-        async def execute_request(req_data: Dict[str, object]) -> FlextResult[object]:
+        async def execute_request(req_data: FlextCore.Types.Dict) -> FlextCore.Result[object]:
             method = req_data.get("method", "GET")
             url = req_data["url"]
             **kwargs = req_data.get("kwargs", {})

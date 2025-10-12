@@ -8,17 +8,19 @@ from __future__ import annotations
 
 from typing import ClassVar, Final
 
-from flext_core import FlextConstants, FlextTypes
+from flext_core import FlextCore
 
 
-class FlextApiConstants(FlextConstants):
-    """Flext constants extending flext-core FlextConstants."""
+class FlextApiConstants(FlextCore.Constants):
+    """Flext constants extending flext-core FlextCore.Constants."""
 
     # Client configuration
-    DEFAULT_TIMEOUT: ClassVar[int] = FlextConstants.Network.DEFAULT_TIMEOUT
-    DEFAULT_MAX_RETRIES: ClassVar[int] = FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+    DEFAULT_TIMEOUT: ClassVar[int] = FlextCore.Constants.Network.DEFAULT_TIMEOUT
+    DEFAULT_MAX_RETRIES: ClassVar[int] = (
+        FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS
+    )
     DEFAULT_BASE_URL: ClassVar[str] = (
-        f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+        f"http://{FlextCore.Constants.Platform.DEFAULT_HOST}:{FlextCore.Constants.Platform.FLEXT_API_PORT}"
     )
     API_VERSION: ClassVar[str] = "v1"
 
@@ -29,36 +31,42 @@ class FlextApiConstants(FlextConstants):
 
     # Pagination constants
     DEFAULT_PAGE_SIZE: ClassVar[int] = (
-        FlextConstants.Processing.DEFAULT_BATCH_SIZE // 5
+        FlextCore.Constants.Processing.DEFAULT_BATCH_SIZE // 5
     )  # 200
-    MIN_PAGE_SIZE: ClassVar[int] = FlextConstants.Pagination.MIN_PAGE_SIZE
-    MAX_PAGE_SIZE: ClassVar[int] = FlextConstants.Pagination.MAX_PAGE_SIZE
-    MAX_PAGE_SIZE_PERFORMANCE: ClassVar[int] = FlextConstants.Pagination.MAX_PAGE_SIZE
+    MIN_PAGE_SIZE: ClassVar[int] = FlextCore.Constants.Pagination.MIN_PAGE_SIZE
+    MAX_PAGE_SIZE: ClassVar[int] = FlextCore.Constants.Pagination.MAX_PAGE_SIZE
+    MAX_PAGE_SIZE_PERFORMANCE: ClassVar[int] = (
+        FlextCore.Constants.Pagination.MAX_PAGE_SIZE
+    )
 
-    # HTTP constants moved to flext-core.FlextConstants.Http
-    # Use FlextConstants.Http.HTTP_OK, FlextConstants.Http.HTTP_SUCCESS_MIN, etc.
-    # Use FlextConstants.Http.Method.GET, FlextConstants.Http.Method.POST, etc.
-    # Use FlextConstants.Http.ContentType.JSON, etc.
+    # HTTP constants moved to flext-core.FlextCore.Constants.Http
+    # Use FlextCore.Constants.Http.HTTP_OK, FlextCore.Constants.Http.HTTP_SUCCESS_MIN, etc.
+    # Use FlextCore.Constants.Http.Method.GET, FlextCore.Constants.Http.Method.POST, etc.
+    # Use FlextCore.Constants.Http.ContentType.JSON, etc.
 
     # CORS constants
-    DEFAULT_CORS_ORIGINS: ClassVar[FlextTypes.StringList] = ["*"]
-    DEFAULT_CORS_METHODS: ClassVar[FlextTypes.StringList] = [
-        FlextConstants.Http.Method.GET,
-        FlextConstants.Http.Method.POST,
-        FlextConstants.Http.Method.PUT,
-        FlextConstants.Http.Method.DELETE,
+    DEFAULT_CORS_ORIGINS: ClassVar[FlextCore.Types.StringList] = ["*"]
+    DEFAULT_CORS_METHODS: ClassVar[FlextCore.Types.StringList] = [
+        FlextCore.Constants.Http.Method.GET,
+        FlextCore.Constants.Http.Method.POST,
+        FlextCore.Constants.Http.Method.PUT,
+        FlextCore.Constants.Http.Method.DELETE,
     ]
-    DEFAULT_CORS_HEADERS: ClassVar[FlextTypes.StringList] = [
-        FlextConstants.Platform.HEADER_CONTENT_TYPE,
-        FlextConstants.Platform.HEADER_AUTHORIZATION,
+    DEFAULT_CORS_HEADERS: ClassVar[FlextCore.Types.StringList] = [
+        FlextCore.Constants.Platform.HEADER_CONTENT_TYPE,
+        FlextCore.Constants.Platform.HEADER_AUTHORIZATION,
     ]
 
     # API-specific response templates (not in flext-core)
-    SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, str | FlextTypes.Dict] | None] = None
-    ERROR_RESPONSE_TEMPLATE: ClassVar[dict[str, str | FlextTypes.Dict] | None] = None
+    SUCCESS_RESPONSE_TEMPLATE: ClassVar[
+        dict[str, str | FlextCore.Types.Dict] | None
+    ] = None
+    ERROR_RESPONSE_TEMPLATE: ClassVar[dict[str, str | FlextCore.Types.Dict] | None] = (
+        None
+    )
 
     @classmethod
-    def get_success_template(cls) -> dict[str, str | FlextTypes.Dict]:
+    def get_success_template(cls) -> dict[str, str | FlextCore.Types.Dict]:
         """Get success response template."""
         if cls.SUCCESS_RESPONSE_TEMPLATE is None:
             cls.SUCCESS_RESPONSE_TEMPLATE = {
@@ -68,7 +76,7 @@ class FlextApiConstants(FlextConstants):
         return cls.SUCCESS_RESPONSE_TEMPLATE
 
     @classmethod
-    def get_error_template(cls) -> dict[str, str | FlextTypes.Dict]:
+    def get_error_template(cls) -> dict[str, str | FlextCore.Types.Dict]:
         """Get error response template."""
         if cls.ERROR_RESPONSE_TEMPLATE is None:
             cls.ERROR_RESPONSE_TEMPLATE = {
@@ -108,9 +116,21 @@ class FlextApiConstants(FlextConstants):
     # HTTP constants (API-specific extensions)
     HTTP_DEFAULT_ACCEPT: ClassVar[str] = "application/json"
 
+    # HTTP Status Code Ranges (API-specific)
+    HTTP_SUCCESS_MIN: ClassVar[int] = 200
+    HTTP_SUCCESS_MAX: ClassVar[int] = 299
+    HTTP_SUCCESS_STATUSES: ClassVar[tuple[int, ...]] = (
+        200,  # OK
+        201,  # Created
+        202,  # Accepted
+        204,  # No Content
+        304,  # Not Modified
+        206,  # Partial Content
+    )
+
     # =============================================================================
-    # HTTP METHOD CONSTANTS - Moved to flext-core.FlextConstants.Http.Method
-    # Use FlextConstants.Http.Method.GET, etc.
+    # HTTP METHOD CONSTANTS - Moved to flext-core.FlextCore.Constants.Http.Method
+    # Use FlextCore.Constants.Http.Method.GET, etc.
     # =============================================================================
 
     # =============================================================================
@@ -156,8 +176,8 @@ class FlextApiConstants(FlextConstants):
         MAINTENANCE = "maintenance"
 
     # =============================================================================
-    # CONTENT TYPE CONSTANTS - Moved to flext-core.FlextConstants.Http.ContentType
-    # Use FlextConstants.Http.ContentType.JSON, etc.
+    # CONTENT TYPE CONSTANTS - Moved to flext-core.FlextCore.Constants.Http.ContentType
+    # Use FlextCore.Constants.Http.ContentType.JSON, etc.
     # =============================================================================
 
     # =============================================================================

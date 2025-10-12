@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from flext_core import FlextConstants, FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextCore
 
 from flext_api.models import FlextApiModels
 
@@ -53,8 +53,7 @@ class FlextApiMiddleware:
         pipeline.add_middleware(logging_mw)
 
         # Use in HTTP client
-        client.middleware = pipeline
-    """
+        client.middleware = pipeline"""
 
     # =========================================================================
     # MIDDLEWARE BASE CLASSES - Foundation for all middleware types
@@ -69,7 +68,7 @@ class FlextApiMiddleware:
     class BaseMiddleware(ABC):
         """Base middleware class for request/response processing.
 
-        **PROTOCOL IMPLEMENTATION**: This middleware implements FlextProtocols.Extensions.Middleware,
+        **PROTOCOL IMPLEMENTATION**: This middleware implements FlextCore.Protocols.Extensions.Middleware,
         establishing the foundation pattern for ALL middleware across the FLEXT ecosystem.
 
         Note: BaseMiddleware provides a richer interface than the base protocol, with separate
@@ -95,7 +94,7 @@ class FlextApiMiddleware:
             Protocol compliance ensures ecosystem-wide consistency.
 
         See Also:
-            FlextProtocols.Extensions.Middleware: Protocol definition for middleware.
+            FlextCore.Protocols.Extensions.Middleware: Protocol definition for middleware.
             FlextApiMiddleware.LoggingMiddleware: Concrete implementation example.
             FlextApiMiddleware.MetricsMiddleware: Metrics collection middleware.
             FlextApiMiddleware.AuthenticationMiddleware: Authentication middleware.
@@ -110,42 +109,42 @@ class FlextApiMiddleware:
 
             """
             self.name = name or self.__class__.__name__
-            self.logger = FlextLogger(f"{__name__}.{self.name}")
+            self.logger = FlextCore.Logger(f"{__name__}.{self.name}")
             self._enabled = True
 
         def process_request(
             self,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpRequest]:
+        ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
             """Process HTTP request through middleware.
 
             Args:
                 request: HTTP request to process
 
             Returns:
-                FlextResult containing processed request or error
+                FlextCore.Result containing processed request or error
 
             """
             if not self._enabled:
-                return FlextResult[FlextApiModels.HttpRequest].ok(request)
+                return FlextCore.Result[FlextApiModels.HttpRequest].ok(request)
 
             return self._process_request_impl(request)
 
         def process_response(
             self,
             response: FlextApiModels.HttpResponse,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Process HTTP response through middleware.
 
             Args:
                 response: HTTP response to process
 
             Returns:
-                FlextResult containing processed response or error
+                FlextCore.Result containing processed response or error
 
             """
             if not self._enabled:
-                return FlextResult[FlextApiModels.HttpResponse].ok(response)
+                return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
             return self._process_response_impl(response)
 
@@ -153,7 +152,7 @@ class FlextApiMiddleware:
             self,
             error: Exception,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpResponse | None]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse | None]:
             """Process error through middleware.
 
             Args:
@@ -161,11 +160,11 @@ class FlextApiMiddleware:
                 request: Original HTTP request
 
             Returns:
-                FlextResult containing recovery response or None
+                FlextCore.Result containing recovery response or None
 
             """
             if not self._enabled:
-                return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
+                return FlextCore.Result[FlextApiModels.HttpResponse | None].ok(None)
 
             return self._processerror_impl(error, request)
 
@@ -173,14 +172,14 @@ class FlextApiMiddleware:
         def _process_request_impl(
             self,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpRequest]:
+        ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
             """Implementation of request processing.
 
             Args:
                 request: HTTP request to process
 
             Returns:
-                FlextResult containing processed request or error
+                FlextCore.Result containing processed request or error
 
             """
             ...
@@ -189,14 +188,14 @@ class FlextApiMiddleware:
         def _process_response_impl(
             self,
             response: FlextApiModels.HttpResponse,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Implementation of response processing.
 
             Args:
                 response: HTTP response to process
 
             Returns:
-                FlextResult containing processed response or error
+                FlextCore.Result containing processed response or error
 
             """
             ...
@@ -205,7 +204,7 @@ class FlextApiMiddleware:
             self,
             error: Exception,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpResponse | None]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse | None]:
             """Implementation of error processing.
 
             Default implementation: no error recovery (returns None).
@@ -216,13 +215,13 @@ class FlextApiMiddleware:
                 request: Original HTTP request
 
             Returns:
-                FlextResult containing recovery response or None
+                FlextCore.Result containing recovery response or None
 
             """
             # Default: no recovery
             _ = error
             _ = request
-            return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
+            return FlextCore.Result[FlextApiModels.HttpResponse | None].ok(None)
 
         def enable(self) -> None:
             """Enable middleware processing."""
@@ -250,7 +249,7 @@ class FlextApiMiddleware:
         - Response logging with status, timing
         - Error logging
         - Configurable detail level
-        - Integration with FlextLogger
+        - Integration with FlextCore.Logger
         """
 
         def __init__(
@@ -278,7 +277,7 @@ class FlextApiMiddleware:
         def _process_request_impl(
             self,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpRequest]:
+        ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
             """Log request details."""
             if self._log_requests:
                 tracking_id = str(uuid.uuid4())
@@ -303,12 +302,12 @@ class FlextApiMiddleware:
                 object.__setattr__(request, "tracking_id", tracking_id)
                 object.__setattr__(request, "start_time", start_time)
 
-            return FlextResult[FlextApiModels.HttpRequest].ok(request)
+            return FlextCore.Result[FlextApiModels.HttpRequest].ok(request)
 
         def _process_response_impl(
             self,
             response: FlextApiModels.HttpResponse,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Log response details."""
             if self._log_responses:
                 log_data = {
@@ -332,13 +331,13 @@ class FlextApiMiddleware:
 
                 self.logger.info("HTTP response", extra=log_data)
 
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
         def _processerror_impl(
             self,
             error: Exception,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpResponse | None]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse | None]:
             """Log error details."""
             log_data = {
                 "error": str(error),
@@ -353,7 +352,7 @@ class FlextApiMiddleware:
             self.logger.error("HTTP request error", extra=log_data)
 
             # No recovery - return None
-            return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
+            return FlextCore.Result[FlextApiModels.HttpResponse | None].ok(None)
 
     class MetricsMiddleware(BaseMiddleware):
         """Metrics middleware for request/response monitoring.
@@ -369,7 +368,7 @@ class FlextApiMiddleware:
         def __init__(self) -> None:
             """Initialize metrics middleware."""
             super().__init__("MetricsMiddleware")
-            self._metrics: FlextTypes.Dict = {
+            self._metrics: FlextCore.Types.Dict = {
                 "request_count": 0,
                 "responses": 0,
                 "errors": 0,
@@ -382,19 +381,19 @@ class FlextApiMiddleware:
         def _process_request_impl(
             self,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpRequest]:
+        ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
             """Track request metrics."""
             self._request_count += 1
 
             # Add metrics tracking
             object.__setattr__(request, "metrics_start_time", time.time())
 
-            return FlextResult[FlextApiModels.HttpRequest].ok(request)
+            return FlextCore.Result[FlextApiModels.HttpRequest].ok(request)
 
         def _process_response_impl(
             self,
             response: FlextApiModels.HttpResponse,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Track response metrics."""
             self._metrics["responses"] += 1
 
@@ -409,22 +408,22 @@ class FlextApiMiddleware:
                 duration = time.time() - response.request.metrics_start_time
                 self._metrics["total_duration"] += duration
 
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
         def _processerror_impl(
             self,
             error: Exception,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpResponse | None]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse | None]:
             """Track error metrics."""
             _ = error
             _ = request
             self._metrics["errors"] += 1
             self._metrics["error_count"] += 1  # Alias for compatibility
 
-            return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
+            return FlextCore.Result[FlextApiModels.HttpResponse | None].ok(None)
 
-        def get_metrics(self) -> FlextTypes.Dict:
+        def get_metrics(self) -> FlextCore.Types.Dict:
             """Get current metrics.
 
             Returns:
@@ -533,7 +532,7 @@ class FlextApiMiddleware:
         def _process_request_impl(
             self,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpRequest]:
+        ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
             """Add authentication headers to request."""
             if self._auth_provider:
                 # Add auth headers from provider
@@ -555,14 +554,14 @@ class FlextApiMiddleware:
                     stacklevel=2,
                 )
 
-            return FlextResult[FlextApiModels.HttpRequest].ok(request)
+            return FlextCore.Result[FlextApiModels.HttpRequest].ok(request)
 
         def _process_response_impl(
             self,
             response: FlextApiModels.HttpResponse,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Pass through response."""
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
     class ErrorHandlingMiddleware(BaseMiddleware):
         """Error handling middleware for graceful error recovery.
@@ -597,18 +596,19 @@ class FlextApiMiddleware:
         def _process_request_impl(
             self,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpRequest]:
+        ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
             """Pass through request."""
-            return FlextResult[FlextApiModels.HttpRequest].ok(request)
+            return FlextCore.Result[FlextApiModels.HttpRequest].ok(request)
 
         def _process_response_impl(
             self,
             response: FlextApiModels.HttpResponse,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Handle HTTP errors if enabled."""
             if (
                 self._handle_httperrors
-                and response.status_code >= FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
+                and response.status_code
+                >= FlextCore.Constants.Http.HTTP_CLIENT_ERROR_MIN
             ):
                 # Log HTTP error
                 self.logger.warning(
@@ -621,13 +621,13 @@ class FlextApiMiddleware:
                     },
                 )
 
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
         def _processerror_impl(
             self,
             error: Exception,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpResponse | None]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse | None]:
             """Handle error with custom logic."""
             # Check for custom handler
             error_type = type(error)
@@ -636,7 +636,7 @@ class FlextApiMiddleware:
                     handler = self._custom_handlers[error_type]
                     result = handler(error, request)
                     if result:
-                        return FlextResult[FlextApiModels.HttpResponse | None].ok(
+                        return FlextCore.Result[FlextApiModels.HttpResponse | None].ok(
                             result
                         )
                 except Exception as handlererror:
@@ -658,7 +658,7 @@ class FlextApiMiddleware:
                 },
             )
 
-            return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
+            return FlextCore.Result[FlextApiModels.HttpResponse | None].ok(None)
 
     class Pipeline:
         """Middleware pipeline for chaining multiple middleware.
@@ -673,60 +673,62 @@ class FlextApiMiddleware:
 
         def __init__(self) -> None:
             """Initialize middleware pipeline."""
-            self.logger = FlextLogger(__name__)
+            self.logger = FlextCore.Logger(__name__)
             self._middlewares: list[FlextApiMiddleware.BaseMiddleware] = []
 
         def add_middleware(
             self, middleware: FlextApiMiddleware._BaseMiddleware
-        ) -> FlextResult[None]:
+        ) -> FlextCore.Result[None]:
             """Add middleware to pipeline.
 
             Args:
                 middleware: Middleware instance to add
 
             Returns:
-                FlextResult indicating success or failure
+                FlextCore.Result indicating success or failure
 
             """
             if middleware in self._middlewares:
-                return FlextResult[None].fail(
+                return FlextCore.Result[None].fail(
                     f"Middleware {middleware.name} already in pipeline"
                 )
 
             self._middlewares.append(middleware)
             self.logger.debug(f"Added middleware: {middleware.name}")
 
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
 
-        def remove_middleware(self, middleware_name: str) -> FlextResult[None]:
+        def remove_middleware(self, middleware_name: str) -> FlextCore.Result[None]:
             """Remove middleware from pipeline.
 
             Args:
                 middleware_name: Name of middleware to remove
 
             Returns:
-                FlextResult indicating success or failure
+                FlextCore.Result indicating success or failure
 
             """
             for middleware in self._middlewares:
                 if middleware.name == middleware_name:
                     self._middlewares.remove(middleware)
                     self.logger.debug(f"Removed middleware: {middleware_name}")
-                    return FlextResult[None].ok(None)
+                    return FlextCore.Result[None].ok(None)
 
-            return FlextResult[None].fail(f"Middleware {middleware_name} not found")
+            return FlextCore.Result[None].fail(
+                f"Middleware {middleware_name} not found"
+            )
 
         def process_request(
             self,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpRequest]:
+        ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
             """Process request through middleware pipeline.
 
             Args:
                 request: HTTP request to process
 
             Returns:
-                FlextResult containing processed request or error
+                FlextCore.Result containing processed request or error
 
             """
             current_request = request
@@ -737,19 +739,19 @@ class FlextApiMiddleware:
                     return result
                 current_request = result.unwrap()
 
-            return FlextResult[FlextApiModels.HttpRequest].ok(current_request)
+            return FlextCore.Result[FlextApiModels.HttpRequest].ok(current_request)
 
         def process_response(
             self,
             response: FlextApiModels.HttpResponse,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Process response through middleware pipeline.
 
             Args:
                 response: HTTP response to process
 
             Returns:
-                FlextResult containing processed response or error
+                FlextCore.Result containing processed response or error
 
             """
             current_response = response
@@ -764,13 +766,13 @@ class FlextApiMiddleware:
                     continue  # Continue with other middleware
                 current_response = result.unwrap()
 
-            return FlextResult[FlextApiModels.HttpResponse].ok(current_response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(current_response)
 
         def processerror(
             self,
             error: Exception,
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiModels.HttpResponse | None]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse | None]:
             """Process error through middleware pipeline.
 
             Args:
@@ -778,7 +780,7 @@ class FlextApiMiddleware:
                 request: Original HTTP request
 
             Returns:
-                FlextResult containing recovery response or None
+                FlextCore.Result containing recovery response or None
 
             """
             # Process in reverse order for error handling
@@ -789,9 +791,9 @@ class FlextApiMiddleware:
                     return result
 
             # No middleware provided recovery
-            return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
+            return FlextCore.Result[FlextApiModels.HttpResponse | None].ok(None)
 
-        def list_middleware(self) -> FlextTypes.StringList:
+        def list_middleware(self) -> FlextCore.Types.StringList:
             """Get list of middleware names in pipeline.
 
             Returns:

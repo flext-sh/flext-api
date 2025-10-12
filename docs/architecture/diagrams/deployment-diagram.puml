@@ -1,0 +1,61 @@
+@startuml FLEXT-API Deployment Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+title FLEXT-API Deployment Architecture
+
+Deployment_Node(prod_cluster, "Production Kubernetes Cluster", "v1.28+", "High-availability cluster") {
+    Deployment_Node(api_ingress, "API Gateway", "NGINX Ingress", "Load balancer and routing") {
+        Container(api_gateway, "NGINX Ingress Controller", "nginx:1.25", "Routes traffic to services")
+    }
+
+    Deployment_Node(api_services, "API Services", "Kubernetes Deployment") {
+        Container(flext_api_app, "FLEXT-API Application", "python:3.13", "FastAPI web application")
+        Container(flext_api_worker, "Background Worker", "python:3.13", "Async task processing")
+    }
+
+    Deployment_Node(cache_layer, "Cache Layer", "Redis Cluster") {
+        Container(redis_master, "Redis Master", "redis:7.2", "Primary cache store")
+        Container(redis_replica, "Redis Replica", "redis:7.2", "Cache replication")
+    }
+
+    Deployment_Node(storage_layer, "Storage Layer", "Multi-cloud storage") {
+        Container(s3_gateway, "S3 Gateway", "minio:latest", "S3-compatible storage")
+        Container(local_storage, "Local Storage", "NFS", "Persistent volume storage")
+    }
+}
+
+Deployment_Node(monitoring, "Monitoring Stack", "Prometheus/Grafana") {
+    Container(prometheus, "Prometheus", "prometheus:latest", "Metrics collection")
+    Container(grafana, "Grafana", "grafana:latest", "Visualization dashboard")
+    Container(alertmanager, "AlertManager", "alertmanager:latest", "Alert routing")
+}
+
+Deployment_Node(logging, "Logging Stack", "ELK Stack") {
+    Container(elasticsearch, "Elasticsearch", "elasticsearch:8.11", "Log storage and search")
+    Container(logstash, "Logstash", "logstash:8.11", "Log processing pipeline")
+    Container(kibana, "Kibana", "kibana:8.11", "Log visualization")
+}
+
+Deployment_Node(ci_cd, "CI/CD Pipeline", "GitHub Actions") {
+    Container(actions_runner, "GitHub Actions Runner", "ubuntu:latest", "Automated testing and deployment")
+}
+
+System_Ext(github, "GitHub", "Version control and CI/CD")
+System_Ext(cloud_storage, "Cloud Storage", "S3, GCS, Azure Blob")
+System_Ext(external_apis, "External APIs", "Third-party services")
+
+Rel(api_gateway, flext_api_app, "Routes requests to", "HTTP/REST")
+Rel(flext_api_app, cache_layer, "Reads/writes cache", "Redis protocol")
+Rel(flext_api_app, storage_layer, "Stores/retrieves files", "HTTP/S3 API")
+Rel(flext_api_worker, cache_layer, "Processes async tasks", "Redis protocol")
+
+Rel(flext_api_app, monitoring, "Exports metrics to", "Prometheus format")
+Rel(flext_api_app, logging, "Sends logs to", "JSON over HTTP")
+
+Rel(ci_cd, github, "Triggered by", "webhooks")
+Rel(ci_cd, prod_cluster, "Deploys to", "kubectl/helm")
+
+Rel(prod_cluster, cloud_storage, "Backups to", "S3 API")
+Rel(flext_api_app, external_apis, "Makes requests to", "HTTP/REST")
+
+@enduml

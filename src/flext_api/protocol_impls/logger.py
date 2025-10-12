@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger
+from flext_core import FlextCore
 
 from flext_api.protocols import FlextApiProtocols
 
@@ -16,7 +16,7 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def __init__(self) -> None:
         """Initialize logger protocol implementation."""
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
     def info(self, message: str, **kwargs: object) -> None:
         """Log info message."""

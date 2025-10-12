@@ -319,41 +319,6 @@ config = FlextApiConfig(
 )
 ```
 
-**2. Configuration File Issues**
-
-```python
-# Symptom: Configuration file not found or invalid
-# Solution: Check file paths and format
-
-import os
-from flext_api import FlextApiConfig
-
-# Check if config file exists
-config_paths = [
-    "config.toml",
-    "config.yaml",
-    "config.json",
-    "/etc/flext-api/config.toml"
-]
-
-config_file = None
-for path in config_paths:
-    if os.path.exists(path):
-        config_file = path
-        break
-
-if not config_file:
-    print("No configuration file found")
-    config = FlextApiConfig()  # Use defaults
-else:
-    print(f"Using config file: {config_file}")
-    try:
-        config = FlextApiConfig.from_file(config_file)
-    except Exception as e:
-        print(f"Error loading config file: {e}")
-        config = FlextApiConfig()
-```
-
 ## Database Issues
 
 ### Connection Problems
@@ -364,10 +329,10 @@ else:
 # Symptom: Database connection fails
 # Solution: Check connection parameters and database status
 
-from flext_core import FlextContainer
+from flext_core import FlextCore
 
 # Check database service registration
-container = FlextContainer.get_global()
+container = FlextCore.Container.get_global()
 db_result = container.get("database")
 
 if db_result.is_failure:
@@ -433,11 +398,11 @@ except Exception as e:
 # Symptom: Application logs don't appear
 # Solution: Check logging configuration
 
-from flext_core import FlextLogger
+from flext_core import FlextCore
 import logging
 
 # Check logger configuration
-logger = FlextLogger(__name__)
+logger = FlextCore.Logger(__name__)
 logger.info("Test log message")
 
 # Check if logging is configured
@@ -463,7 +428,7 @@ else:
 # Solution: Check logging configuration
 
 # Configure structured logging
-logger = FlextLogger(__name__, format="json")
+logger = FlextCore.Logger(__name__, format="json")
 
 # Test structured logging
 logger.info("User action", extra={
@@ -740,7 +705,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Create debug logger
-logger = FlextLogger(__name__)
+logger = FlextCore.Logger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Add debug information to requests

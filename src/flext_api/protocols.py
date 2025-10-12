@@ -8,14 +8,14 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextProtocols, FlextResult
+from flext_core import FlextCore
 
 from .models import FlextApiModels
 from .typings import FlextApiTypes
 
 
-class FlextApiProtocols(FlextProtocols):
-    """Single unified API protocols class extending flext-core FlextProtocols.
+class FlextApiProtocols(FlextCore.Protocols):
+    """Single unified API protocols class extending flext-core FlextCore.Protocols.
 
     Contains all protocol definitions for API domain operations using nested classes.
     Follows FLEXT namespace class pattern - single class with nested protocol definitions.
@@ -34,35 +34,35 @@ class FlextApiProtocols(FlextProtocols):
             method: str,
             url: str,
             **kwargs: object,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Execute an HTTP request."""
 
         def get(
             self,
             url: str,
             **kwargs: object,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Execute HTTP GET request."""
 
         def post(
             self,
             url: str,
             **kwargs: object,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Execute HTTP POST request."""
 
         def put(
             self,
             url: str,
             **kwargs: object,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Execute HTTP PUT request."""
 
         def delete(
             self,
             url: str,
             **kwargs: object,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
             """Execute HTTP DELETE request."""
 
     @runtime_checkable
@@ -71,7 +71,7 @@ class FlextApiProtocols(FlextProtocols):
 
         def get(
             self, key: str, default: FlextApiTypes.JsonValue = None
-        ) -> FlextResult[FlextApiTypes.JsonValue]:
+        ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
             """Retrieve value by key."""
             ...
 
@@ -80,23 +80,23 @@ class FlextApiProtocols(FlextProtocols):
             key: str,
             value: object,
             timeout: int | None = None,
-        ) -> FlextResult[None]:
+        ) -> FlextCore.Result[None]:
             """Store value with optional timeout."""
             ...
 
-        def delete(self, key: str) -> FlextResult[None]:
+        def delete(self, key: str) -> FlextCore.Result[None]:
             """Delete value by key."""
             ...
 
-        def exists(self, key: str) -> FlextResult[bool]:
+        def exists(self, key: str) -> FlextCore.Result[bool]:
             """Check if key exists."""
             ...
 
-        def clear(self) -> FlextResult[None]:
+        def clear(self) -> FlextCore.Result[None]:
             """Clear all stored values."""
             ...
 
-        def keys(self) -> FlextResult[list[str]]:
+        def keys(self) -> FlextCore.Result[FlextCore.Types.StringList]:
             """Get all keys."""
             ...
 

@@ -1,0 +1,76 @@
+@startuml HTTP Request Flow
+title FLEXT-API HTTP Request Processing Flow
+
+actor "Client Application" as Client
+participant "FastAPI App" as FastAPI
+participant "FlextApiClient" as ClientLib
+participant "Protocol Layer" as Protocol
+participant "HTTPX Client" as HTTPX
+participant "External API" as External
+
+== Request Initiation ==
+Client -> FastAPI: HTTP Request\n(GET /api/users)
+activate FastAPI
+
+FastAPI -> FastAPI: Route matching\n& validation
+FastAPI -> ClientLib: client.get("/api/users")
+activate ClientLib
+
+== Request Building ==
+ClientLib -> ClientLib: Build HttpRequest\n(method, url, headers)
+ClientLib -> ClientLib: Apply authentication
+ClientLib -> ClientLib: Add middleware processing
+
+== Protocol Execution ==
+ClientLib -> Protocol: execute_request(request)
+activate Protocol
+
+Protocol -> HTTPX: Prepare HTTPX request
+activate HTTPX
+
+HTTPX -> HTTPX: Connection pooling\n& reuse check
+HTTPX -> External: HTTP GET /api/users
+activate External
+
+== Response Processing ==
+External --> HTTPX: HTTP Response\n(200 OK, JSON data)
+deactivate External
+
+HTTPX --> Protocol: Raw HTTP response
+deactivate HTTPX
+
+Protocol -> Protocol: Response validation\n& parsing
+Protocol --> ClientLib: FlextCore.Result[HttpResponse]
+deactivate Protocol
+
+== Result Processing ==
+ClientLib -> ClientLib: Apply response middleware
+ClientLib -> ClientLib: Error handling & transformation
+ClientLib --> FastAPI: FlextCore.Result[UserData]
+deactivate ClientLib
+
+FastAPI -> FastAPI: Response formatting\n& serialization
+FastAPI --> Client: JSON Response\n(200 OK, user data)
+deactivate FastAPI
+
+== Error Handling Scenario ==
+group Error Scenario
+    Client -> FastAPI: HTTP Request\n(GET /api/missing)
+    FastAPI -> ClientLib: client.get("/api/missing")
+
+    ClientLib -> Protocol: execute_request(request)
+    Protocol -> HTTPX: HTTP GET /api/missing
+    External --> HTTPX: HTTP Response\n(404 Not Found)
+
+    HTTPX --> Protocol: Error response
+    Protocol -> Protocol: Validate error response
+    Protocol --> ClientLib: FlextCore.Result.fail("HTTP 404")
+
+    ClientLib -> ClientLib: Apply error middleware
+    ClientLib --> FastAPI: FlextCore.Result[UserData] (failure)
+
+    FastAPI -> FastAPI: Error response formatting
+    FastAPI --> Client: JSON Error Response\n(404 Not Found)
+end
+
+@enduml

@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextConstants, FlextTypes
+from flext_core import FlextCore
 
 from flext_api import (
     FlextApiClient,
@@ -40,7 +40,7 @@ def example_client_creation() -> None:
     # Create client config using direct instantiation
     client_config = FlextApiConfig(
         base_url="https://httpbin.org",
-        timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
+        timeout=FlextCore.Constants.Network.DEFAULT_TIMEOUT,
     )
 
     print(f"✅ Client config created: {client_config.base_url}")
@@ -55,7 +55,7 @@ def example_direct_client() -> None:
     # Create client configuration using direct instantiation
     config = FlextApiConfig(
         base_url="https://httpbin.org",
-        timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
+        timeout=FlextCore.Constants.Network.DEFAULT_TIMEOUT,
     )
 
     print(f"✅ Client config: {config.base_url}")
@@ -70,9 +70,9 @@ def example_storage_usage() -> None:
     # Create storage using the refactored FlextApiStorage class
     storage = FlextApiStorage()
 
-    # Set data using FlextResult pattern
+    # Set data using FlextCore.Result pattern
     # CacheValue as dict for JSON compatibility
-    cache_value: FlextTypes.Dict = {
+    cache_value: FlextCore.Types.Dict = {
         "data": {"message": "Hello FlextAPI!"},
         "headers": {},
         "status_code": 200,
@@ -82,7 +82,7 @@ def example_storage_usage() -> None:
     if set_result.is_success:
         print("✅ Data stored successfully")
 
-        # Get data using FlextResult pattern
+        # Get data using FlextCore.Result pattern
         get_result = storage.get("example_key")
         if get_result.is_success:
             print(f"✅ Data retrieved: {get_result.value}")
@@ -142,7 +142,7 @@ def example_models_usage() -> None:
             method="GET",
             url="https://httpbin.org/get",
             headers={"Accept": "application/json"},
-            timeout=float(FlextConstants.Network.DEFAULT_TIMEOUT),
+            timeout=float(FlextCore.Constants.Network.DEFAULT_TIMEOUT),
         )
 
         print(f"✅ Request model created: {request.method} {request.url}")
@@ -216,7 +216,7 @@ def main() -> None:
     example_batch_operations()
 
     print("\n🎉 All examples completed successfully using refactored classes!")
-    print("✅ FlextResult pattern used throughout")
+    print("✅ FlextCore.Result pattern used throughout")
     print("✅ flext-core compliance maintained")
     print("✅ No legacy APIs or helpers used")
     print("✅ Synchronous architecture - no /await needed")

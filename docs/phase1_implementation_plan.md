@@ -12,13 +12,13 @@
 
 ### Primary Goals
 1. **HTTP Abstraction Layer**: Complete HTTP client abstraction preventing direct httpx usage
-2. **FlextResult Integration**: Railway-oriented error handling throughout HTTP operations
+2. **FlextCore.Result Integration**: Railway-oriented error handling throughout HTTP operations
 3. **Clean Architecture**: Proper Domain-Driven Design with layer separation
 4. **Type Safety**: MyPy strict mode compliance for src/ directory
 5. **Basic Test Coverage**: 75%+ test coverage with real HTTP functionality
 
 ### Success Criteria
-- ✅ **HTTP Client**: Core GET/POST/PUT/DELETE operations with FlextResult[T]
+- ✅ **HTTP Client**: Core GET/POST/PUT/DELETE operations with FlextCore.Result[T]
 - ✅ **Domain Models**: Pydantic v2 validation for HTTP entities
 - ✅ **FastAPI Integration**: Application factory with health endpoints
 - ✅ **Zero Direct HTTP Imports**: httpx contained within flext-api boundaries
@@ -34,7 +34,7 @@
 **Completed**:
 - ✅ Core HTTP operations (GET, POST, PUT, DELETE)
 - ✅ httpx-based infrastructure layer
-- ✅ Synchronous operations with FlextResult patterns
+- ✅ Synchronous operations with FlextCore.Result patterns
 - ✅ Basic timeout and retry configuration
 - ✅ Protocol plugin architecture foundation
 
@@ -51,10 +51,10 @@
 - ✅ HttpRequest and HttpResponse Pydantic models
 - ✅ HTTP-specific exception hierarchy
 - ✅ Status code constants and validation
-- ✅ Basic model validation with FlextResult
+- ✅ Basic model validation with FlextCore.Result
 
 **Remaining**:
-- ❌ `FlextModels.create_validated_http_url()` method implementation
+- ❌ `FlextCore.Models.create_validated_http_url()` method implementation
 - ❌ Advanced validation patterns
 - ❌ Model serialization improvements
 
@@ -152,7 +152,7 @@
 ### High Priority Blockers
 
 1. **Missing Core Methods** (Critical)
-   - `FlextModels.create_validated_http_url()` - Referenced but not implemented
+   - `FlextCore.Models.create_validated_http_url()` - Referenced but not implemented
    - Breaks model validation tests
 
 2. **Type Safety Violations** (Critical)
@@ -174,7 +174,7 @@
    - Transport method parameter mismatches
 
 2. **Error Handling Gaps**
-   - Some operations don't return FlextResult consistently
+   - Some operations don't return FlextCore.Result consistently
    - Exception leakage in infrastructure layer
 
 3. **Documentation Synchronization**
@@ -186,7 +186,7 @@
 ### Week 1-2: Critical Bug Fixes
 **Focus**: Fix blocking issues preventing basic functionality
 
-- ✅ Implement `FlextModels.create_validated_http_url()`
+- ✅ Implement `FlextCore.Models.create_validated_http_url()`
 - ✅ Fix configuration serialization methods
 - ✅ Resolve storage property setter issues
 - ✅ Fix protocol interface inconsistencies
@@ -237,7 +237,7 @@
 
 #### Functional Requirements
 - ✅ HTTP client supports GET/POST/PUT/DELETE operations
-- ✅ All HTTP operations return FlextResult[T]
+- ✅ All HTTP operations return FlextCore.Result[T]
 - ✅ FastAPI application factory works
 - ✅ Basic middleware system functional
 - ✅ Configuration management operational
@@ -290,7 +290,7 @@
 ## Dependencies & Prerequisites
 
 ### Internal Dependencies
-- **flext-core v0.9.9 RC**: FlextResult, FlextService, FlextModels
+- **flext-core v0.9.9 RC**: FlextCore.Result, FlextCore.Service, FlextCore.Models
 - **Python 3.13+**: Type safety and performance features
 - **httpx**: HTTP protocol implementation (internal only)
 
@@ -309,7 +309,7 @@
 
 ### Architectural Decisions
 1. **Synchronous HTTP**: Simpler error handling and debugging
-2. **FlextResult Throughout**: Railway patterns for composable error handling
+2. **FlextCore.Result Throughout**: Railway patterns for composable error handling
 3. **Plugin Architecture**: Extensible middleware and protocol systems
 4. **Clean Architecture**: Clear separation of concerns and testability
 

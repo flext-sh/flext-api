@@ -10,7 +10,7 @@
   - FlextApiClient creation and configuration
   - HTTP client creation and setup
   - Model instantiation and validation
-  - Error handling with FlextResult
+  - Error handling with FlextCore.Result
 
 ### Advanced Features
 
@@ -60,10 +60,10 @@ PYTHONPATH=src python examples/02_advanced.py
 
 ## Example Patterns
 
-### FlextResult Usage (REAL Pattern)
+### FlextCore.Result Usage (REAL Pattern)
 
 ```python
-# Always check success/failure using REAL FlextResult methods
+# Always check success/failure using REAL FlextCore.Result methods
 result = api_operation()
 if result.success:
     data = result.data
@@ -89,7 +89,7 @@ from flext_api import FlextApiClient, FlextApiClient, FlextApiModels
 # Create API using REAL class
 api = FlextApiClient()
 
-# Create client using REAL method that returns FlextResult
+# Create client using REAL method that returns FlextCore.Result
 client_result = api.create_client({"base_url": "https://api.example.com"})
 
 if client_result.success:
@@ -117,7 +117,7 @@ result = storage.set("key", {"data": "value"})
 
 - **Use ONLY REAL classes** - No helpers, no aliases, no compatibility layers
 - **Import from root level** - Always `from flext_api import ClassName`
-- **Check FlextResult patterns** - Always handle `.success` and `.error`
+- **Check FlextCore.Result patterns** - Always handle `.success` and `.error`
 - **Use REAL nested classes** - Access via `ParentClass.NestedClass`
 - **Test examples regularly** - Ensure they work with actual implementation
 - **No placeholder code** - All examples must use working functionality

@@ -10,7 +10,7 @@ Main storage interface for handling file uploads, downloads, and metadata operat
 
 ```python
 from flext_api.storage import FlextApiStorage
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 # Create storage instance
 storage = FlextApiStorage(

@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import cast
 
 import pytest
-from flext_core import FlextConstants, FlextResult, FlextTypes, T
+from flext_core import FlextCore, T
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 from flext_api.typings import FlextApiTypes
@@ -52,10 +52,10 @@ def create_test_storage_config(**overrides: object) -> dict[str, str | int | boo
 
 
 def assert_flext_result_success(
-    result: FlextResult[T],
+    result: FlextCore.Result[T],
     expected_value: T | None = None,
 ) -> None:
-    """Assert FlextResult success using FlextTestsMatchers - ABSOLUTE."""
+    """Assert FlextCore.Result success using FlextTestsMatchers - ABSOLUTE."""
     # Direct assertion to avoid type variance issues in matchers
     if not result.is_success:
         pytest.fail(f"Expected success but got error: {result.error}")
@@ -64,10 +64,10 @@ def assert_flext_result_success(
 
 
 def assert_flext_result_failure[T](
-    result: FlextResult[T],
+    result: FlextCore.Result[T],
     expected_error: str | None = None,
 ) -> None:
-    """Assert FlextResult failure using FlextTestsMatchers - ABSOLUTE."""
+    """Assert FlextCore.Result failure using FlextTestsMatchers - ABSOLUTE."""
     # Direct assertion to avoid type variance issues in matchers
     if result.is_success:
         pytest.fail(f"Expected failure but got data: {result.value}")
@@ -232,7 +232,7 @@ def assert_http_status(
 
 def assert_response_structure(
     response: FlextApiTypes.ResponseDict,
-    required_keys: FlextTypes.StringList | None = None,
+    required_keys: FlextCore.Types.StringList | None = None,
 ) -> None:
     """Assert response structure using FlextTestsMatchers patterns."""
     required_keys = required_keys or ["status_code", "data", "success"]
@@ -299,7 +299,7 @@ def validate_email_format(email: str) -> bool:
 def create_test_headers(
     content_type: str = "application/json",
     **additional_headers: str,
-) -> FlextTypes.StringDict:
+) -> FlextCore.Types.StringDict:
     """Create headers using FlextTestsDomains service data.
 
     Returns:
@@ -313,7 +313,7 @@ def create_test_headers(
         "Content-Type": content_type,
         "Accept": content_type,
         "User-Agent": f"{service_data.get('name', 'FlextAPI')!s}-Test/{service_data.get('version', '0.9.0')!s}",
-        FlextConstants.Platform.HEADER_REQUEST_ID: str(uuid.uuid4()),
+        FlextCore.Constants.Platform.HEADER_REQUEST_ID: str(uuid.uuid4()),
     }
     headers.update(additional_headers)
     return headers
@@ -351,21 +351,21 @@ def assert_url_format(url: str) -> None:
 # ============================================================================
 
 
-def create_test_result_success(data: object = None) -> FlextResult[object]:
+def create_test_result_success(data: object = None) -> FlextCore.Result[object]:
     """Create success result using FlextTestsUtilities - ABSOLUTE.
 
     Returns:
-        Successful FlextResult object.
+        Successful FlextCore.Result object.
 
     """
     return FlextTestsUtilities.create_test_result(success=True, data=data)
 
 
-def create_test_result_failure(error: str = "Test error") -> FlextResult[object]:
+def create_test_result_failure(error: str = "Test error") -> FlextCore.Result[object]:
     """Create failure result using FlextTestsUtilities - ABSOLUTE.
 
     Returns:
-        Failed FlextResult object.
+        Failed FlextCore.Result object.
 
     """
     return FlextTestsUtilities.create_test_result(success=False, error=error)
@@ -399,7 +399,7 @@ def create_test_context(
     return FlextTestsUtilities.test_context(target, attribute, new_value, **options)
 
 
-def assert_result_with_utilities[T](result: FlextResult[T]) -> T:
+def assert_result_with_utilities[T](result: FlextCore.Result[T]) -> T:
     """Assert result success using FlextTestsUtilities - ABSOLUTE.
 
     Returns:
@@ -409,7 +409,7 @@ def assert_result_with_utilities[T](result: FlextResult[T]) -> T:
     return FlextTestsUtilities.TestUtilities.assert_result_success(result)
 
 
-def assert_failure_with_utilities[T](result: FlextResult[T]) -> str:
+def assert_failure_with_utilities[T](result: FlextCore.Result[T]) -> str:
     """Assert result failure using FlextTestsUtilities - ABSOLUTE.
 
     Returns:

@@ -13,21 +13,13 @@ from types import TracebackType
 from typing import Self, override
 from urllib.parse import urlencode
 
-from flext_core import (
-    FlextBus,
-    FlextConstants,
-    FlextContainer,
-    FlextContext,
-    FlextLogger,
-    FlextResult,
-    FlextService,
-    FlextTypes,
-    FlextUtilities,
-)
+from flext_core import FlextCore
 from pydantic import ConfigDict, PrivateAttr, ValidationError
 
 from flext_api.app import FlextApiApp
-from flext_api.config import FlextApiConfig
+from flext_api.client.configuration_manager import ConfigurationManager
+from flext_api.client.http_operations import HttpOperations
+from flext_api.client.lifecycle_manager import LifecycleManager
 from flext_api.constants import FlextApiConstants
 from flext_api.middleware import FlextApiMiddleware
 from flext_api.models import FlextApiModels
@@ -42,17 +34,17 @@ from flext_api.registry import FlextApiRegistry
 from flext_api.typings import FlextApiTypes
 
 
-class FlextApiClient(FlextService[None]):
+class FlextApiClient(FlextCore.Service[None], HttpOperations):
     """Unified HTTP client orchestrator providing enterprise-grade HTTP operations.
 
     The FlextApiClient serves as the foundation HTTP client for the entire FLEXT
     providing comprehensive HTTP operations, connection management, and error handling
-    through the FlextResult railway pattern. This is the MANDATORY HTTP client for all
+    through the FlextCore.Result railway pattern. This is the MANDATORY HTTP client for all
     FLEXT projects - NO custom HTTP implementations allowed.
 
     Core Features:
         - Enterprise HTTP client operations with connection pooling
-        - Complete FlextResult integration for error handling
+        - Complete FlextCore.Result integration for error handling
         - Configurable retry logic with exponential backoff
         - Request/response lifecycle management
         - Authentication and middleware support
@@ -61,17 +53,19 @@ class FlextApiClient(FlextService[None]):
     Usage:
         ```python
         from flext_api import FlextApiClient
-        from flext_core import FlextResult
+        from flext_core import FlextCore
 
         # Create HTTP client
         client = FlextApiClient(
             base_url=FlextApiConstants.EXAMPLE_BASE_URL,
-            timeout=FlextConstants.Defaults.TIMEOUT,
-            max_retries=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+            timeout=FlextCore.Constants.Defaults.TIMEOUT,
+            max_retries=FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS,
         )
 
         # Execute HTTP request
-        response_result: FlextResult[FlextApiTypes.JsonValue] = client.get("/users")
+        response_result: FlextCore.Result[FlextApiTypes.JsonValue] = client.get(
+            "/users"
+        )
         if response_result.is_success:
             data: dict[str, FlextApiTypes.JsonValue] = response_result.unwrap()
             print(f"Retrieved {len(data)} users")
@@ -80,8 +74,8 @@ class FlextApiClient(FlextService[None]):
         ```
 
     Integration:
-        - MANDATORY use of flext-core foundation (FlextResult, FlextContainer,
-          FlextLogger)
+        - MANDATORY use of flext-core foundation (FlextCore.Result, FlextCore.Container,
+          FlextCore.Logger)
         - NO direct httpx imports allowed - use FlextApiClient exclusively
         - Complete integration with FLEXT ecosystem monitoring and authentication
 
@@ -95,13 +89,13 @@ class FlextApiClient(FlextService[None]):
     )
 
     # Private attributes for modular services - not validated by Pydantic
-    _http: FlextApiClient.HttpOperations = PrivateAttr()
-    _lifecycle: FlextApiClient.LifecycleManager = PrivateAttr()
-    _client_config_manager: FlextApiClient.ConfigurationManager = PrivateAttr()
+    _http: HttpOperations = PrivateAttr()
+    _lifecycle: LifecycleManager = PrivateAttr()
+    _client_config_manager: ConfigurationManager = PrivateAttr()
     _initialized: bool = PrivateAttr(default=False)
 
     # ZERO TOLERANCE FIX: Protocol-based service composition
-    _logger: FlextLogger = PrivateAttr()
+    _logger: FlextCore.Logger = PrivateAttr()
     _http_client_protocol: FlextApiProtocols.HttpClientProtocol = PrivateAttr()
     _storage_backend_protocol: FlextApiProtocols.StorageBackendProtocol = PrivateAttr()
     _logger_protocol: FlextApiProtocols.LoggerProtocol = PrivateAttr()
@@ -110,13 +104,6 @@ class FlextApiClient(FlextService[None]):
     @override
     def __init__(
         self,
-        config: FlextApiModels.ClientConfig
-        | FlextApiConfig
-        | Mapping[str, str | int | float | FlextTypes.StringDict]
-        | FlextTypes.StringDict
-        | str
-        | object
-        | None = None,
         *,
         base_url: str | None = None,
         timeout: float | None = None,
@@ -126,14 +113,16 @@ class FlextApiClient(FlextService[None]):
         protocol: str | None = None,
         **kwargs: object,
     ) -> None:
-        """Initialize FlextApiClient with configuration and services.
+        """Initialize FlextApiClient with configuration from singleton.
+
+        Configuration is accessed via FlextCore.Container.get_global() singleton pattern.
+        Individual parameters can override singleton configuration values.
 
         Args:
-            config: Client configuration (FlextApiConfig, dict, or string)
-            base_url: Base URL for HTTP requests (overrides config)
-            timeout: Request timeout in seconds (overrides config)
-            max_retries: Maximum retry attempts (overrides config)
-            headers: Default headers (merges with config)
+            base_url: Base URL for HTTP requests (overrides singleton config)
+            timeout: Request timeout in seconds (overrides singleton config)
+            max_retries: Maximum retry attempts (overrides singleton config)
+            headers: Default headers (merges with singleton config)
             verify_ssl: Whether to verify SSL certificates
             protocol: Protocol to use (default: http)
             **kwargs: Additional configuration parameters
@@ -142,16 +131,19 @@ class FlextApiClient(FlextService[None]):
         super().__init__()
 
         # Initialize core services from FLEXT ecosystem
-        self._container = FlextContainer.get_global()
-        self._logger = FlextLogger(__name__)
-        self._bus = FlextBus()
-        self._context = FlextContext()
+        self._container = FlextCore.Container.get_global()
+        self._logger = FlextCore.Logger(__name__)
+        self._bus = FlextCore.Bus()
+        self._context = FlextCore.Context()
 
-        # Extract and validate client configuration using FlextResult pattern
-        config_result: FlextResult[FlextApiModels.ClientConfig]
+        # Initialize extracted components
+        self._lifecycle = LifecycleManager()
+        self._client_config_manager = ConfigurationManager()
+
+        # Extract and validate client configuration using singleton pattern
+        config_result: FlextCore.Result[FlextApiModels.ClientConfig]
         try:
             config_params = self._extract_client_config_params(
-                config=config,
                 base_url=base_url,
                 timeout=timeout,
                 max_retries=max_retries,
@@ -159,16 +151,18 @@ class FlextApiClient(FlextService[None]):
                 verify_ssl=verify_ssl,
                 **kwargs,
             )
-            config_result = FlextResult[FlextApiModels.ClientConfig].ok(config_params)
+            config_result = FlextCore.Result[FlextApiModels.ClientConfig].ok(
+                config_params
+            )
         except (ValidationError, ValueError, TypeError):
-            config_result = FlextResult[FlextApiModels.ClientConfig].fail(
+            config_result = FlextCore.Result[FlextApiModels.ClientConfig].fail(
                 "Configuration validation failed",
-                error_code=FlextConstants.Errors.VALIDATION_ERROR,
+                error_code=FlextCore.Constants.Errors.VALIDATION_ERROR,
             )
         except Exception as e:
             error_msg = f"Client creation failed: {e}"
             self._logger.exception(error_msg)
-            config_result = FlextResult[FlextApiModels.ClientConfig].fail(
+            config_result = FlextCore.Result[FlextApiModels.ClientConfig].fail(
                 error_msg, error_code="INITIALIZATION_ERROR"
             )
 
@@ -189,9 +183,9 @@ class FlextApiClient(FlextService[None]):
             # Create default HTTP protocol plugin
             http_plugin = HttpProtocolPlugin(
                 http2=True,
-                max_connections=FlextConstants.Network.MAX_CONNECTIONS,
+                max_connections=FlextCore.Constants.Network.MAX_CONNECTIONS,
                 max_retries=max_retries
-                or FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+                or FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS,
             )
 
             # Register protocol
@@ -320,28 +314,28 @@ class FlextApiClient(FlextService[None]):
         return self._protocol_plugin
 
     def create_flext_api_app(
-        self, app_config: FlextTypes.StringDict | None = None
-    ) -> FlextResult[FlextApiTypes.JsonValue]:
+        self, app_config: FlextCore.Types.StringDict | None = None
+    ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
         """Create FastAPI application using FlextApi patterns.
 
         Args:
             app_config: FastAPI application configuration
 
         Returns:
-            FlextResult containing the FastAPI application instance
+            FlextCore.Result containing the FastAPI application instance
 
         """
-        # Railway-oriented FastAPI app creation using FlextResult pattern
+        # Railway-oriented FastAPI app creation using FlextCore.Result pattern
         try:
             prepared_config = self._prepare_app_config(app_config or {})
             config_model = self._create_app_config_model(prepared_config)
             if config_model.is_failure:
-                return FlextResult[FlextTypes.Dict].fail(
+                return FlextCore.Result[FlextCore.Types.Dict].fail(
                     f"FastAPI app creation failed: {config_model.error}"
                 )
             return self._create_fastapi_app_instance(config_model.unwrap())
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextCore.Result[FlextCore.Types.Dict].fail(
                 f"FastAPI app creation failed: {e}"
             )
 
@@ -376,14 +370,14 @@ class FlextApiClient(FlextService[None]):
 
     def _create_app_config_model(
         self, config_dict: dict
-    ) -> FlextResult[FlextApiModels.AppConfig]:
+    ) -> FlextCore.Result[FlextApiModels.AppConfig]:
         """Create app config model with proper validation.
 
         Args:
             config_dict: Prepared configuration dictionary
 
         Returns:
-            FlextResult containing the app config model
+            FlextCore.Result containing the app config model
 
         """
         try:
@@ -395,24 +389,24 @@ class FlextApiClient(FlextService[None]):
                 redoc_url=str(config_dict["redoc_url"]),
                 openapi_url=str(config_dict["openapi_url"]),
             )
-            return FlextResult[FlextApiModels.AppConfig].ok(config_model)
+            return FlextCore.Result[FlextApiModels.AppConfig].ok(config_model)
         except Exception as e:
             error_msg = f"App config model creation failed: {e}"
             self._logger.exception(error_msg)
-            return FlextResult[FlextApiModels.AppConfig].fail(
-                error_msg, error_code=FlextConstants.Errors.VALIDATION_ERROR
+            return FlextCore.Result[FlextApiModels.AppConfig].fail(
+                error_msg, error_code=FlextCore.Constants.Errors.VALIDATION_ERROR
             )
 
     def _create_fastapi_app_instance(
         self, config_model: FlextApiModels.AppConfig
-    ) -> FlextResult[FlextApiTypes.JsonValue]:
+    ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
         """Create FastAPI app instance using FLEXT patterns.
 
         Args:
             config_model: Validated app configuration model
 
         Returns:
-            FlextResult containing the FastAPI app instance
+            FlextCore.Result containing the FastAPI app instance
 
         """
         try:
@@ -427,95 +421,54 @@ class FlextApiClient(FlextService[None]):
                 },
             )
 
-            return FlextResult[FlextApiTypes.JsonValue].ok(app)
+            return FlextCore.Result[FlextApiTypes.JsonValue].ok(app)
         except Exception as e:
             error_msg = f"FastAPI app instance creation failed: {e}"
             self._logger.exception(error_msg)
-            return FlextResult[FlextApiTypes.JsonValue].fail(
-                error_msg, error_code=FlextConstants.Errors.OPERATION_ERROR
+            return FlextCore.Result[FlextApiTypes.JsonValue].fail(
+                error_msg, error_code=FlextCore.Constants.Errors.OPERATION_ERROR
             )
 
     def _extract_client_config_params(
         self,
         *,
-        config: (
-            FlextApiModels.ClientConfig
-            | FlextApiConfig
-            | Mapping[str, str | int | float | FlextTypes.StringDict]
-            | FlextTypes.StringDict
-            | str
-            | object
-            | None
-        ) = None,
         base_url: str | None = None,
         timeout: float | None = None,
         max_retries: int | None = None,
         headers: Mapping[str, str] | None = None,
         **kwargs: object,
     ) -> FlextApiModels.ClientConfig:
-        """Extract client configuration parameters with proper type handling.
+        """Extract client configuration parameters from singleton with overrides.
+
+        Gets base configuration from FlextCore.Container.get_global() singleton,
+        then applies parameter overrides.
 
         Returns:
             FlextApiModels.ClientConfig: Validated client configuration object.
 
         """
-        default_base_url = f"https://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
-        default_timeout = float(FlextConstants.Defaults.TIMEOUT)
-        default_max_retries = FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
-        default_headers = {"User-Agent": "FlextApiClient/1.0.0"}
-
-        base_url_value = default_base_url
-        timeout_value: str | int | float = default_timeout
-        max_retries_value = default_max_retries
-        headers_value = default_headers
-
-        if isinstance(config, FlextApiModels.ClientConfig):
-            base_url_value = config.base_url
-            timeout_value = config.timeout
-            max_retries_value = config.max_retries
-            headers_value = config.headers
-        elif isinstance(config, FlextApiConfig):
-            # Handle FlextApiConfig using enhanced singleton pattern
-            base_url_value = config.base_url
-            timeout_value = config.timeout
-            max_retries_value = config.max_retries
-            headers_value = (
-                config.get_default_headers()
-            )  # Use config method for headers
-        elif isinstance(config, str):
-            base_url_value = config
-        elif isinstance(config, Mapping):
-            for key, value in config.items():
-                if value is not None:
-                    if key == "base_url" and isinstance(value, str):
-                        base_url_value = value
-                    elif key == "timeout" and isinstance(value, (int, float)):
-                        timeout_value = float(value)
-                    elif key == "max_retries" and isinstance(value, int):
-                        max_retries_value = value
-                    elif key == "headers" and isinstance(value, dict):
-                        headers_value = dict(value)
+        # Get configuration from singleton container
+        config_result = self._container.get("api_config")
+        if config_result.is_success:
+            singleton_config = config_result.unwrap()
+            base_url_value = getattr(
+                singleton_config, "base_url", FlextApiConstants.DEFAULT_BASE_URL
+            )
+            timeout_value = getattr(
+                singleton_config, "timeout", FlextApiConstants.DEFAULT_TIMEOUT
+            )
+            max_retries_value = getattr(
+                singleton_config, "max_retries", FlextApiConstants.DEFAULT_MAX_RETRIES
+            )
+            headers_value = getattr(singleton_config, "get_default_headers", dict)()
+            if callable(headers_value):
+                headers_value = headers_value()
         else:
-            if hasattr(config, "base_url"):
-                attr_value = getattr(config, "base_url")
-                if isinstance(attr_value, str):
-                    base_url_value = attr_value
-            if hasattr(config, "timeout"):
-                attr_value = getattr(config, "timeout")
-                if isinstance(attr_value, (int, float)):
-                    timeout_value = float(attr_value)
-            if hasattr(config, "max_retries"):
-                attr_value = getattr(config, "max_retries")
-                if isinstance(attr_value, int):
-                    max_retries_value = attr_value
-            if hasattr(config, "headers"):
-                attr_value = getattr(config, "headers")
-                if isinstance(attr_value, dict):
-                    # Type-safe conversion of headers
-                    headers_value = {}
-                    for k, v in attr_value.items():
-                        if isinstance(k, (str, int)) and isinstance(v, (str, int)):
-                            headers_value[str(k)] = str(v)
+            # Fallback to constants if no config in container
+            base_url_value = FlextApiConstants.DEFAULT_BASE_URL
+            timeout_value = FlextApiConstants.DEFAULT_TIMEOUT
+            max_retries_value = FlextApiConstants.DEFAULT_MAX_RETRIES
+            headers_value = {"User-Agent": "FlextApiClient/1.0.0"}
 
         if base_url is not None:
             base_url_value = base_url
@@ -545,14 +498,14 @@ class FlextApiClient(FlextService[None]):
             base_url=base_url_value,
             timeout=float(timeout_value)
             if isinstance(timeout_value, (str, int, float))
-            else float(default_timeout),
+            else float(FlextApiConstants.DEFAULT_TIMEOUT),
             max_retries=max_retries_value,
             headers=headers_value,
         )
 
     def _get_headers(
-        self, additional_headers: FlextTypes.StringDict | None = None
-    ) -> FlextTypes.StringDict:
+        self, additional_headers: FlextCore.Types.StringDict | None = None
+    ) -> FlextCore.Types.StringDict:
         """Prepare request headers with defaults and additional headers.
 
         Args:
@@ -562,7 +515,7 @@ class FlextApiClient(FlextService[None]):
             Complete headers dictionary for the request
 
         """
-        headers: FlextTypes.StringDict = {
+        headers: FlextCore.Types.StringDict = {
             str(k): str(v) for k, v in (self._client_config.headers or {}).items()
         }
         if additional_headers:
@@ -571,14 +524,14 @@ class FlextApiClient(FlextService[None]):
 
     def execute_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Execute an HTTP request using the protocol plugin and middleware pipeline.
 
         Args:
             request: The HTTP request to execute
 
         Returns:
-            FlextResult containing the HTTP response or error details
+            FlextCore.Result containing the HTTP response or error details
 
         """
         # Emit request start event
@@ -590,9 +543,9 @@ class FlextApiClient(FlextService[None]):
             "timestamp": self._context.get("request_start_time"),
         })
 
-        # Railway-oriented request execution using FlextResult pattern
+        # Railway-oriented request execution using FlextCore.Result pattern
         result = (
-            FlextResult[FlextApiModels.HttpRequest]
+            FlextCore.Result[FlextApiModels.HttpRequest]
             .ok(request)
             .flat_map(self._process_request_middleware)
             .flat_map(self._execute_protocol_request)
@@ -625,34 +578,36 @@ class FlextApiClient(FlextService[None]):
 
     def _process_request_middleware(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpRequest]:
+    ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
         """Process request through middleware pipeline.
 
         Args:
             request: The HTTP request to process
 
         Returns:
-            FlextResult containing the processed request
+            FlextCore.Result containing the processed request
 
         """
         middleware_result = self._middleware.process_request(request)
         if middleware_result.is_failure:
-            return FlextResult[FlextApiModels.HttpRequest].fail(
+            return FlextCore.Result[FlextApiModels.HttpRequest].fail(
                 f"Middleware request processing failed: {middleware_result.error}",
                 error_code=FlextApiConstants.Errors.MIDDLEWARE_ERROR,
             )
-        return FlextResult[FlextApiModels.HttpRequest].ok(middleware_result.unwrap())
+        return FlextCore.Result[FlextApiModels.HttpRequest].ok(
+            middleware_result.unwrap()
+        )
 
     def _execute_protocol_request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Execute request through protocol plugin with error recovery.
 
         Args:
             request: The processed HTTP request
 
         Returns:
-            FlextResult containing the HTTP response
+            FlextCore.Result containing the HTTP response
 
         """
         response_result = self._protocol_plugin.send_request(request)
@@ -664,27 +619,29 @@ class FlextApiClient(FlextService[None]):
             )
 
             if error_recovery.is_success and error_recovery.unwrap():
-                return FlextResult[FlextApiModels.HttpResponse].ok(
+                return FlextCore.Result[FlextApiModels.HttpResponse].ok(
                     error_recovery.unwrap()
                 )
 
-            return FlextResult[FlextApiModels.HttpResponse].fail(
+            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
                 f"Protocol request failed: {response_result.error}",
                 error_code=FlextApiConstants.Errors.PROTOCOL_ERROR,
             )
 
-        return FlextResult[FlextApiModels.HttpResponse].ok(response_result.unwrap())
+        return FlextCore.Result[FlextApiModels.HttpResponse].ok(
+            response_result.unwrap()
+        )
 
     def _process_response_middleware(
         self, response: FlextApiModels.HttpResponse
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Process response through middleware pipeline.
 
         Args:
             response: The HTTP response to process
 
         Returns:
-            FlextResult containing the processed response
+            FlextCore.Result containing the processed response
 
         """
         response_middleware_result = self._middleware.process_response(response)
@@ -693,22 +650,22 @@ class FlextApiClient(FlextService[None]):
                 "Middleware response processing warning: "
                 f"{response_middleware_result.error}"
             )
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
-        return FlextResult[FlextApiModels.HttpResponse].ok(
+        return FlextCore.Result[FlextApiModels.HttpResponse].ok(
             response_middleware_result.unwrap()
         )
 
     # Connection lifecycle methods
-    def close(self) -> FlextResult[None]:
+    def close(self) -> FlextCore.Result[None]:
         """Close client connection and cleanup resources.
 
         Returns:
-            FlextResult indicating success or failure of cleanup.
+            FlextCore.Result indicating success or failure of cleanup.
 
         """
         if not self._initialized:
-            return FlextResult[None].fail("Client not started")
+            return FlextCore.Result[None].fail("Client not started")
 
         self._connection_manager.close_connection()
         return self.stop_client()
@@ -748,12 +705,12 @@ class FlextApiClient(FlextService[None]):
         method: str,
         url: str,
         *,
-        params: FlextTypes.StringDict | None = None,
-        data: FlextTypes.StringDict | None = None,
-        json: FlextTypes.StringDict | None = None,
-        headers: FlextTypes.StringDict | None = None,
+        params: FlextCore.Types.StringDict | None = None,
+        data: FlextCore.Types.StringDict | None = None,
+        json: FlextCore.Types.StringDict | None = None,
+        headers: FlextCore.Types.StringDict | None = None,
         request_timeout: int | None = None,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Low-level HTTP request method using protocol plugin and middleware.
 
         Args:
@@ -766,7 +723,7 @@ class FlextApiClient(FlextService[None]):
             request_timeout: Request timeout override
 
         Returns:
-            FlextResult containing HTTP response or error message
+            FlextCore.Result containing HTTP response or error message
 
         """
         # Generate correlation ID for request tracking
@@ -791,7 +748,7 @@ class FlextApiClient(FlextService[None]):
                 full_url = f"{full_url}{separator}{urlencode(params)}"
 
             # Prepare headers
-            request_headers: FlextTypes.StringDict = dict(
+            request_headers: FlextCore.Types.StringDict = dict(
                 self._client_config.headers or {}
             )
             if headers:
@@ -812,7 +769,7 @@ class FlextApiClient(FlextService[None]):
             middleware_result = self._middleware.process_request(http_request)
             if middleware_result.is_failure:
                 self._error_count += 1
-                return FlextResult[FlextApiModels.HttpResponse].fail(
+                return FlextCore.Result[FlextApiModels.HttpResponse].fail(
                     f"Middleware request processing failed: {middleware_result.error}"
                 )
 
@@ -846,11 +803,11 @@ class FlextApiClient(FlextService[None]):
 
                 if error_recovery.is_success and error_recovery.unwrap():
                     # Middleware provided recovery response
-                    return FlextResult[FlextApiModels.HttpResponse].ok(
+                    return FlextCore.Result[FlextApiModels.HttpResponse].ok(
                         error_recovery.unwrap()
                     )
 
-                return FlextResult[FlextApiModels.HttpResponse].fail(
+                return FlextCore.Result[FlextApiModels.HttpResponse].fail(
                     f"Protocol request failed: {response_result.error}"
                 )
 
@@ -881,7 +838,7 @@ class FlextApiClient(FlextService[None]):
                 },
             )
 
-            return FlextResult[FlextApiModels.HttpResponse].ok(final_response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(final_response)
 
         except Exception as e:
             # Increment error counter
@@ -900,19 +857,19 @@ class FlextApiClient(FlextService[None]):
                     "duration_ms": round(request_duration * 1000, 2),
                 },
             )
-            return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
+            return FlextCore.Result[FlextApiModels.HttpResponse].fail(error_msg)
 
     @classmethod
     def create_flext_api(
         cls, config: dict[str, str | int] | None = None
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Create complete FLEXT API setup with client and server.
 
         Args:
             config: API configuration dictionary
 
         Returns:
-            FlextResult containing API setup object
+            FlextCore.Result containing API setup object
 
         Example:
             ```python
@@ -927,16 +884,16 @@ class FlextApiClient(FlextService[None]):
         try:
             # Default configuration with proper types
             default_config: dict[str, str | int] = {
-                "base_url": f"https://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",
+                "base_url": f"https://{FlextCore.Constants.Platform.DEFAULT_HOST}:{FlextCore.Constants.Platform.FLEXT_API_PORT}",
                 "title": "FLEXT API",
                 "description": "Enterprise API built on FLEXT foundation",
                 "version": "1.0.0",
-                "timeout": FlextConstants.Defaults.TIMEOUT,
-                "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+                "timeout": FlextCore.Constants.Defaults.TIMEOUT,
+                "max_retries": FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS,
             }
 
             # Merge configurations
-            final_config: FlextTypes.Dict = {**default_config, **(config or {})}
+            final_config: FlextCore.Types.Dict = {**default_config, **(config or {})}
 
             # Extract and validate values with proper type conversion
             base_url_value = str(final_config["base_url"])
@@ -949,14 +906,14 @@ class FlextApiClient(FlextService[None]):
                 if isinstance(timeout_value, str)
                 else timeout_value
                 if isinstance(timeout_value, int)
-                else FlextConstants.Defaults.TIMEOUT
+                else FlextCore.Constants.Defaults.TIMEOUT
             )
             max_retries_int = (
                 int(max_retries_value)
                 if isinstance(max_retries_value, str)
                 else max_retries_value
                 if isinstance(max_retries_value, int)
-                else FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+                else FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS
             )
 
             # Create HTTP client with validated types
@@ -974,7 +931,7 @@ class FlextApiClient(FlextService[None]):
             })
 
             if app_result.is_failure:
-                return FlextResult[FlextTypes.Dict].fail(
+                return FlextCore.Result[FlextCore.Types.Dict].fail(
                     f"API app creation failed: {app_result.error}"
                 )
 
@@ -985,22 +942,24 @@ class FlextApiClient(FlextService[None]):
                 "config": final_config,
             }
 
-            return FlextResult[FlextTypes.Dict].ok(api_setup)
+            return FlextCore.Result[FlextCore.Types.Dict].ok(api_setup)
 
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(f"FLEXT API creation failed: {e}")
+            return FlextCore.Result[FlextCore.Types.Dict].fail(
+                f"FLEXT API creation failed: {e}"
+            )
 
     @classmethod
     def create_flext_api_app_with_settings(
-        cls, settings: FlextTypes.StringDict | None = None
-    ) -> FlextResult[object]:
+        cls, settings: FlextCore.Types.StringDict | None = None
+    ) -> FlextCore.Result[object]:
         """Create FastAPI application with specific settings.
 
         Args:
             settings: FastAPI application settings
 
         Returns:
-            FlextResult containing FastAPI application
+            FlextCore.Result containing FastAPI application
 
         """
         try:
@@ -1008,19 +967,19 @@ class FlextApiClient(FlextService[None]):
             return client.create_flext_api_app(settings)
 
         except Exception as e:
-            return FlextResult[object].fail(
+            return FlextCore.Result[object].fail(
                 f"FastAPI app creation with settings failed: {e}"
             )
 
-    def perform_health_check(self) -> FlextResult[FlextTypes.StringDict]:
+    def perform_health_check(self) -> FlextCore.Result[FlextCore.Types.StringDict]:
         """Perform client health check and return status information.
 
         Returns:
-            FlextResult containing health status dictionary
+            FlextCore.Result containing health status dictionary
 
         Example:
             ```python
-            health_result: FlextResult[object] = client.perform_health_check()
+            health_result: FlextCore.Result[object] = client.perform_health_check()
             if health_result.is_success:
                 status = health_result.unwrap()
                 print(f"Client status: {status['status']}")
@@ -1037,18 +996,20 @@ class FlextApiClient(FlextService[None]):
                 "error_count": str(self._error_count),
             }
 
-            return FlextResult[FlextTypes.StringDict].ok(health_status)
+            return FlextCore.Result[FlextCore.Types.StringDict].ok(health_status)
 
         except Exception as e:
-            return FlextResult[FlextTypes.StringDict].fail(f"Health check failed: {e}")
+            return FlextCore.Result[FlextCore.Types.StringDict].fail(
+                f"Health check failed: {e}"
+            )
 
     @override
     def execute(
         self, method: str | None = None, path: str | None = None
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Execute the main domain service operation or HTTP request.
 
-        This method implements the abstract execute method from FlextService.
+        This method implements the abstract execute method from FlextCore.Service.
         For the HTTP client service, this performs initialization validation
         and readiness checks. If method and path are provided, it executes
         an HTTP request.
@@ -1058,13 +1019,13 @@ class FlextApiClient(FlextService[None]):
             path: Request path - optional
 
         Returns:
-            FlextResult[None]: Success if the client is ready for operations,
+            FlextCore.Result[None]: Success if the client is ready for operations,
                               failure if there are configuration or connectivity issues.
 
         Example:
             ```python
             client = FlextApiClient(base_url=FlextApiConstants.EXAMPLE_BASE_URL)
-            execution_result: FlextResult[object] = client.execute()
+            execution_result: FlextCore.Result[object] = client.execute()
             if execution_result.is_success:
                 print("HTTP client is ready for operations")
             else:
@@ -1076,45 +1037,47 @@ class FlextApiClient(FlextService[None]):
             # If method and path are provided, this is an HTTP request
             if method is not None and path is not None:
                 # For now, just return success - actual HTTP execution would be
-                return FlextResult[None].ok(None)
+                return FlextCore.Result[None].ok(None)
 
             # Validate client configuration
             if not self._client_config.base_url:
-                return FlextResult[None].fail("Base URL not configured")
+                return FlextCore.Result[None].fail("Base URL not configured")
 
             if self._client_config.timeout <= 0:
-                return FlextResult[None].fail("Invalid timeout configuration")
+                return FlextCore.Result[None].fail("Invalid timeout configuration")
 
             if self._client_config.max_retries < 0:
-                return FlextResult[None].fail("Invalid retry configuration")
+                return FlextCore.Result[None].fail("Invalid retry configuration")
 
             # Verify essential components are initialized
             if not hasattr(self, "_http"):
-                return FlextResult[None].fail(
+                return FlextCore.Result[None].fail(
                     "HTTP operations component not initialized"
                 )
 
             if not hasattr(self, "_lifecycle"):
-                return FlextResult[None].fail(
+                return FlextCore.Result[None].fail(
                     "Lifecycle manager component not initialized"
                 )
 
             if not hasattr(self, "_client_config_manager"):
-                return FlextResult[None].fail(
+                return FlextCore.Result[None].fail(
                     "Configuration manager component not initialized"
                 )
 
             # ZERO TOLERANCE FIX: Verify protocol implementations are initialized
             if not hasattr(self, "_http_client_protocol"):
-                return FlextResult[None].fail("HTTP client protocol not initialized")
+                return FlextCore.Result[None].fail(
+                    "HTTP client protocol not initialized"
+                )
 
             if not hasattr(self, "_storage_backend_protocol"):
-                return FlextResult[None].fail(
+                return FlextCore.Result[None].fail(
                     "Storage backend protocol not initialized"
                 )
 
             if not hasattr(self, "_logger_protocol"):
-                return FlextResult[None].fail("Logger protocol not initialized")
+                return FlextCore.Result[None].fail("Logger protocol not initialized")
 
             # Log successful execution
             self._logger.info(
@@ -1126,12 +1089,12 @@ class FlextApiClient(FlextService[None]):
                 },
             )
 
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
 
         except Exception as e:
             error_msg = f"Domain service execution failed: {e}"
             self._logger.exception(error_msg)
-            return FlextResult[None].fail(error_msg)
+            return FlextCore.Result[None].fail(error_msg)
 
     @classmethod
     def create(
@@ -1139,9 +1102,9 @@ class FlextApiClient(FlextService[None]):
         base_url: str | None = None,
         request_timeout: int | None = None,
         max_retries: int | None = None,
-        headers: FlextTypes.StringDict | None = None,
+        headers: FlextCore.Types.StringDict | None = None,
         **kwargs: object,
-    ) -> FlextResult[FlextApiClient]:
+    ) -> FlextCore.Result[FlextApiClient]:
         """Create a new client instance with the given parameters.
 
         Args:
@@ -1152,7 +1115,7 @@ class FlextApiClient(FlextService[None]):
             **kwargs: Additional parameters
 
         Returns:
-            FlextResult containing the new client instance
+            FlextCore.Result containing the new client instance
 
         """
         try:
@@ -1163,37 +1126,36 @@ class FlextApiClient(FlextService[None]):
                 headers=headers,
                 **kwargs,
             )
-            return FlextResult[FlextApiClient].ok(new_client)
+            return FlextCore.Result[FlextApiClient].ok(new_client)
         except Exception as e:
-            return FlextResult[FlextApiClient].fail(f"Failed to create client: {e}")
+            return FlextCore.Result[FlextApiClient].fail(
+                f"Failed to create client: {e}"
+            )
 
     def create_client(
         self,
-        config: FlextApiModels.ClientConfig
-        | FlextApiConfig
-        | dict[str, str | int | float | FlextTypes.StringDict]
-        | FlextTypes.StringDict
-        | str
-        | None = None,
-    ) -> FlextResult[FlextApiClient]:
-        """Create a new client instance with the given configuration.
+        **kwargs: object,
+    ) -> FlextCore.Result[FlextApiClient]:
+        """Create a new client instance using singleton configuration.
 
         Args:
-            config: Client configuration
+            **kwargs: Configuration overrides for singleton config
 
         Returns:
-            FlextResult containing the new client instance
+            FlextCore.Result containing the new client instance
 
         """
         try:
-            new_client = FlextApiClient(config=config)
-            return FlextResult[FlextApiClient].ok(new_client)
+            new_client = FlextApiClient(**kwargs)
+            return FlextCore.Result[FlextApiClient].ok(new_client)
         except Exception as e:
-            return FlextResult[FlextApiClient].fail(f"Failed to create client: {e}")
+            return FlextCore.Result[FlextApiClient].fail(
+                f"Failed to create client: {e}"
+            )
 
     def _prepare_headers(
-        self, additional_headers: FlextTypes.StringDict | None = None
-    ) -> FlextTypes.StringDict:
+        self, additional_headers: FlextCore.Types.StringDict | None = None
+    ) -> FlextCore.Types.StringDict:
         """Prepare headers for HTTP requests.
 
         Args:
@@ -1208,56 +1170,6 @@ class FlextApiClient(FlextService[None]):
             headers.update(additional_headers)
         return headers
 
-    @property
-    def _config(self) -> FlextApiModels.ClientConfig:
-        """Get the client configuration.
-
-        Returns:
-            The client configuration
-
-        """
-        return self._client_config
-
-    @property
-    def base_url(self) -> str:
-        """Get the base URL for HTTP requests.
-
-        Returns:
-            The configured base URL string.
-
-        """
-        return self._client_config.base_url
-
-    @property
-    def timeout(self) -> int:
-        """Get the request timeout configuration.
-
-        Returns:
-            The configured timeout in seconds as integer.
-
-        """
-        return int(self._client_config.timeout)
-
-    @property
-    def max_retries(self) -> int:
-        """Get the maximum retry attempts configuration.
-
-        Returns:
-            The configured maximum number of retry attempts.
-
-        """
-        return self._client_config.max_retries
-
-    @property
-    def config_data(self) -> FlextApiModels.ClientConfig:
-        """Get complete client configuration object.
-
-        Returns:
-            The FlextApiModels.ClientConfig object containing all settings.
-
-        """
-        return self._client_config
-
     def _extract_kwargs(
         self, kwargs: Mapping[str, object] | str
     ) -> FlextApiTypes.Client.HttpKwargs:
@@ -1267,22 +1179,22 @@ class FlextApiClient(FlextService[None]):
             return FlextApiTypes.Client.HttpKwargs()
 
         params_value = kwargs.get("params")
-        params: FlextTypes.StringDict | None = (
+        params: FlextCore.Types.StringDict | None = (
             params_value if isinstance(params_value, dict) else None
         )
 
         data_value = kwargs.get("data")
-        data: FlextTypes.StringDict | None = (
+        data: FlextCore.Types.StringDict | None = (
             data_value if isinstance(data_value, dict) else None
         )
 
         json_value = kwargs.get("json")
-        json_val: FlextTypes.StringDict | None = (
+        json_val: FlextCore.Types.StringDict | None = (
             json_value if isinstance(json_value, dict) else None
         )
 
         headers_value = kwargs.get("headers")
-        headers: FlextTypes.StringDict | None = (
+        headers: FlextCore.Types.StringDict | None = (
             headers_value if isinstance(headers_value, dict) else None
         )
 
@@ -1306,7 +1218,7 @@ class FlextApiClient(FlextService[None]):
 
     def _http_method(
         self, method: str, url: str, **kwargs: object
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Generic HTTP method implementation.
 
         Consolidates the common logic for all HTTP methods (GET, POST, PUT,
@@ -1318,8 +1230,8 @@ class FlextApiClient(FlextService[None]):
             **kwargs: Additional request parameters
 
         Returns:
-            FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped
-        in FlextResult
+            FlextCore.Result[FlextApiModels.HttpResponse]: The HTTP response wrapped
+        in FlextCore.Result
 
         """
         extracted = self._extract_kwargs(kwargs)
@@ -1335,7 +1247,7 @@ class FlextApiClient(FlextService[None]):
 
     def get(
         self, url: str, **kwargs: object
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Perform HTTP GET request.
 
         Args:
@@ -1343,15 +1255,15 @@ class FlextApiClient(FlextService[None]):
             **kwargs: Additional request parameters
 
         Returns:
-            FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped
-        in FlextResult
+            FlextCore.Result[FlextApiModels.HttpResponse]: The HTTP response wrapped
+        in FlextCore.Result
 
         """
         return self._http_method("GET", url, **kwargs)
 
     def post(
         self, url: str, **kwargs: object
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Perform HTTP POST request.
 
         Args:
@@ -1359,15 +1271,15 @@ class FlextApiClient(FlextService[None]):
             **kwargs: Additional request parameters
 
         Returns:
-            FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped
-        in FlextResult
+            FlextCore.Result[FlextApiModels.HttpResponse]: The HTTP response wrapped
+        in FlextCore.Result
 
         """
         return self._http_method("POST", url, **kwargs)
 
     def put(
         self, url: str, **kwargs: object
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Perform HTTP PUT request.
 
         Args:
@@ -1375,15 +1287,15 @@ class FlextApiClient(FlextService[None]):
             **kwargs: Additional request parameters
 
         Returns:
-            FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped
-        in FlextResult
+            FlextCore.Result[FlextApiModels.HttpResponse]: The HTTP response wrapped
+        in FlextCore.Result
 
         """
         return self._http_method("PUT", url, **kwargs)
 
     def delete(
         self, url: str, **kwargs: object
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Perform HTTP DELETE request.
 
         Args:
@@ -1391,15 +1303,15 @@ class FlextApiClient(FlextService[None]):
             **kwargs: Additional request parameters
 
         Returns:
-            FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped
-        in FlextResult
+            FlextCore.Result[FlextApiModels.HttpResponse]: The HTTP response wrapped
+        in FlextCore.Result
 
         """
         return self._http_method("DELETE", url, **kwargs)
 
     def patch(
         self, url: str, **kwargs: object
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Perform HTTP PATCH request.
 
         Args:
@@ -1407,8 +1319,8 @@ class FlextApiClient(FlextService[None]):
             **kwargs: Additional request parameters
 
         Returns:
-            FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped
-        in FlextResult
+            FlextCore.Result[FlextApiModels.HttpResponse]: The HTTP response wrapped
+        in FlextCore.Result
 
         """
         extracted = self._extract_kwargs(kwargs)
@@ -1424,7 +1336,7 @@ class FlextApiClient(FlextService[None]):
 
     def head(
         self, url: str, **kwargs: object
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Perform HTTP HEAD request.
 
         Args:
@@ -1432,8 +1344,8 @@ class FlextApiClient(FlextService[None]):
             **kwargs: Additional request parameters
 
         Returns:
-            FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped
-        in FlextResult
+            FlextCore.Result[FlextApiModels.HttpResponse]: The HTTP response wrapped
+        in FlextCore.Result
 
         """
         extracted = self._extract_kwargs(kwargs)
@@ -1449,7 +1361,7 @@ class FlextApiClient(FlextService[None]):
 
     def options(
         self, url: str, **kwargs: object
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Perform HTTP OPTIONS request.
 
         Args:
@@ -1457,8 +1369,8 @@ class FlextApiClient(FlextService[None]):
             **kwargs: Additional request parameters
 
         Returns:
-            FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped
-        in FlextResult
+            FlextCore.Result[FlextApiModels.HttpResponse]: The HTTP response wrapped
+        in FlextCore.Result
 
         """
         extracted = self._extract_kwargs(kwargs)
@@ -1477,7 +1389,7 @@ class FlextApiClient(FlextService[None]):
         method: str,
         url: str,
         **kwargs: object,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Perform HTTP request with specified method.
 
         Args:
@@ -1486,8 +1398,8 @@ class FlextApiClient(FlextService[None]):
             **kwargs: Additional request parameters
 
         Returns:
-            FlextResult[FlextApiModels.HttpResponse]: The HTTP response wrapped
-        in FlextResult
+            FlextCore.Result[FlextApiModels.HttpResponse]: The HTTP response wrapped
+        in FlextCore.Result
 
         """
         extracted = self._extract_kwargs(kwargs)
@@ -1518,7 +1430,7 @@ class FlextApiClient(FlextService[None]):
     # DIRECT METHODS - Following flext standards (no nested classes)
     # ============================================================================
 
-    def validate_configuration(self, config: object) -> FlextResult[None]:
+    def validate_configuration(self, config: object) -> FlextCore.Result[None]:
         """Validate configuration object."""
         try:
             # Validate base URL if present
@@ -1526,17 +1438,19 @@ class FlextApiClient(FlextService[None]):
                 base_url_value = getattr(config, "base_url")
                 if isinstance(base_url_value, str):
                     # Use flext-core validation utilities
-                    url_result = FlextUtilities.Validation.validate_url(base_url_value)
+                    url_result = FlextCore.Utilities.Validation.validate_url(
+                        base_url_value
+                    )
                 else:
-                    return FlextResult[None].fail("Base URL must be a string")
+                    return FlextCore.Result[None].fail("Base URL must be a string")
                 if url_result.is_failure:
-                    return FlextResult[None].fail(
+                    return FlextCore.Result[None].fail(
                         f"Invalid base URL: {url_result.error}"
                     )
 
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
         except Exception as e:
-            return FlextResult[None].fail(f"Configuration validation failed: {e}")
+            return FlextCore.Result[None].fail(f"Configuration validation failed: {e}")
 
     def get_configuration_dict(self) -> FlextApiTypes.ConfigDict:
         """Get current configuration as dictionary."""
@@ -1547,21 +1461,21 @@ class FlextApiClient(FlextService[None]):
             "headers": {},
         }
 
-    def get_headers_config(self) -> FlextTypes.StringDict:
+    def get_headers_config(self) -> FlextCore.Types.StringDict:
         """Get headers configuration."""
         return {}
 
-    def reset_to_defaults(self, config_type: type) -> FlextResult[object]:
+    def reset_to_defaults(self, config_type: type) -> FlextCore.Result[object]:
         """Reset configuration to default values."""
         try:
             default_config = config_type()
-            return FlextResult[object].ok(default_config)
+            return FlextCore.Result[object].ok(default_config)
         except Exception as e:
-            return FlextResult[object].fail(f"Configuration reset failed: {e}")
+            return FlextCore.Result[object].fail(f"Configuration reset failed: {e}")
 
     def create_connection_pool(
         self, config: object
-    ) -> FlextResult[FlextApiTypes.ConnectionDict]:
+    ) -> FlextCore.Result[FlextApiTypes.ConnectionDict]:
         """Create HTTP connection pool."""
         try:
             if hasattr(config, "base_url") and hasattr(config, "timeout"):
@@ -1572,12 +1486,14 @@ class FlextApiClient(FlextService[None]):
                     "max_retries": getattr(config, "max_retries", 3),
                     "headers": getattr(config, "headers", {}),
                 }
-                return FlextResult[FlextApiTypes.ConnectionDict].ok(connection_pool)
-            return FlextResult[FlextApiTypes.ConnectionDict].fail(
+                return FlextCore.Result[FlextApiTypes.ConnectionDict].ok(
+                    connection_pool
+                )
+            return FlextCore.Result[FlextApiTypes.ConnectionDict].fail(
                 "Invalid configuration for connection pool"
             )
         except Exception as e:
-            return FlextResult[FlextApiTypes.ConnectionDict].fail(
+            return FlextCore.Result[FlextApiTypes.ConnectionDict].fail(
                 f"Connection pool creation failed: {e}"
             )
 
@@ -1604,36 +1520,36 @@ class FlextApiClient(FlextService[None]):
             "base_url": connection_pool.get("url", ""),
         }
 
-    def start_client(self) -> FlextResult[None]:
+    def start_client(self) -> FlextCore.Result[None]:
         """Start the HTTP client with resource initialization."""
         try:
             # Client startup logic would go here
             # For now, just return success
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
         except Exception as e:
-            return FlextResult[None].fail(f"Client startup failed: {e}")
+            return FlextCore.Result[None].fail(f"Client startup failed: {e}")
 
-    def stop_client(self) -> FlextResult[None]:
+    def stop_client(self) -> FlextCore.Result[None]:
         """Stop the HTTP client and cleanup resources."""
         try:
             # Client shutdown logic would go here
             # For now, just return success
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
         except Exception as e:
-            return FlextResult[None].fail(f"Client shutdown failed: {e}")
+            return FlextCore.Result[None].fail(f"Client shutdown failed: {e}")
 
     def execute_get(
         self,
         url: str,
-        params: FlextTypes.StringDict | None = None,
-        headers: FlextTypes.StringDict | None = None,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        params: FlextCore.Types.StringDict | None = None,
+        headers: FlextCore.Types.StringDict | None = None,
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Execute HTTP GET request."""
         try:
             # HTTP GET operation would be implemented here
             # For now, return a mock response
             response = FlextApiModels.HttpResponse(
-                status_code=FlextConstants.Http.HTTP_OK,
+                status_code=FlextCore.Constants.Http.HTTP_OK,
                 body={
                     "message": "GET request executed",
                     "url": url,
@@ -1643,9 +1559,9 @@ class FlextApiClient(FlextService[None]):
                 url=url,
                 method="GET",
             )
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
         except Exception as e:
-            return FlextResult[FlextApiModels.HttpResponse].fail(
+            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
                 f"GET request failed: {e}"
             )
 
@@ -1653,14 +1569,14 @@ class FlextApiClient(FlextService[None]):
         self,
         url: str,
         data: FlextApiTypes.JsonValue | None = None,
-        headers: FlextTypes.StringDict | None = None,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        headers: FlextCore.Types.StringDict | None = None,
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Execute HTTP POST request."""
         try:
             # HTTP POST operation would be implemented here
             # For now, return a mock response
             response = FlextApiModels.HttpResponse(
-                status_code=FlextConstants.Http.HTTP_CREATED,
+                status_code=FlextCore.Constants.Http.HTTP_CREATED,
                 body={
                     "message": "POST request executed",
                     "url": url,
@@ -1670,9 +1586,9 @@ class FlextApiClient(FlextService[None]):
                 url=url,
                 method="POST",
             )
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
         except Exception as e:
-            return FlextResult[FlextApiModels.HttpResponse].fail(
+            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
                 f"POST request failed: {e}"
             )
 
@@ -1680,14 +1596,14 @@ class FlextApiClient(FlextService[None]):
         self,
         url: str,
         data: FlextApiTypes.JsonValue | None = None,
-        headers: FlextTypes.StringDict | None = None,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        headers: FlextCore.Types.StringDict | None = None,
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Execute HTTP PUT request."""
         try:
             # HTTP PUT operation would be implemented here
             # For now, return a mock response
             response = FlextApiModels.HttpResponse(
-                status_code=FlextConstants.Http.HTTP_OK,
+                status_code=FlextCore.Constants.Http.HTTP_OK,
                 body={
                     "message": "PUT request executed",
                     "url": url,
@@ -1697,31 +1613,31 @@ class FlextApiClient(FlextService[None]):
                 url=url,
                 method="PUT",
             )
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
         except Exception as e:
-            return FlextResult[FlextApiModels.HttpResponse].fail(
+            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
                 f"PUT request failed: {e}"
             )
 
     def execute_delete(
         self,
         url: str,
-        headers: FlextTypes.StringDict | None = None,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        headers: FlextCore.Types.StringDict | None = None,
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Execute HTTP DELETE request."""
         try:
             # HTTP DELETE operation would be implemented here
             # For now, return a mock response
             response = FlextApiModels.HttpResponse(
-                status_code=FlextConstants.Http.HTTP_NO_CONTENT,
+                status_code=FlextCore.Constants.Http.HTTP_NO_CONTENT,
                 body={"message": "DELETE request executed", "url": url},
                 headers=headers or {},
                 url=url,
                 method="DELETE",
             )
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
         except Exception as e:
-            return FlextResult[FlextApiModels.HttpResponse].fail(
+            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
                 f"DELETE request failed: {e}"
             )
 

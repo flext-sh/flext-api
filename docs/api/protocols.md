@@ -27,7 +27,7 @@ Primary protocol implementation for REST APIs and HTTP-based communication.
 
 ```python
 from flext_api.protocol_impls.http import HttpProtocol
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 # Create HTTP protocol instance
 http_protocol = HttpProtocol(

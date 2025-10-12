@@ -18,60 +18,51 @@ from __future__ import annotations
 import re
 from typing import cast
 
-from flext_core import (
-    FlextBus,
-    FlextConstants,
-    FlextContainer,
-    FlextContext,
-    FlextLogger,
-    FlextResult,
-    FlextService,
-    FlextTypes,
-)
+from flext_core import FlextCore
 from pydantic import PrivateAttr
 
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
 
 
-class FlextApiAdapters(FlextService[None]):
+class FlextApiAdapters(FlextCore.Service[None]):
     """Unified API adapters service with complete flext-core integration.
 
     Provides protocol adaptation, schema conversion, and legacy API integration.
     All functionality consolidated into direct methods following FLEXT standards.
 
     Integration:
-        - Extends FlextService for service lifecycle management
-        - Uses FlextLogger for structured logging
-        - Uses FlextResult for railway-oriented error handling
-        - Uses FlextContainer for dependency injection
-        - Uses FlextContext for operation context
-        - Uses FlextBus for event emission
-        - Uses FlextConstants for configuration values
+        - Extends FlextCore.Service for service lifecycle management
+        - Uses FlextCore.Logger for structured logging
+        - Uses FlextCore.Result for railway-oriented error handling
+        - Uses FlextCore.Container for dependency injection
+        - Uses FlextCore.Context for operation context
+        - Uses FlextCore.Bus for event emission
+        - Uses FlextCore.Constants for configuration values
     """
 
     # Type annotations for private attributes
-    _logger: FlextLogger = PrivateAttr()
-    _container: FlextContainer = PrivateAttr()
-    _context: FlextContext = PrivateAttr()
-    _bus: FlextBus = PrivateAttr()
+    _logger: FlextCore.Logger = PrivateAttr()
+    _container: FlextCore.Container = PrivateAttr()
+    _context: FlextCore.Context = PrivateAttr()
+    _bus: FlextCore.Bus = PrivateAttr()
     _endpoint: str = PrivateAttr()
     _base_url: str = PrivateAttr()
 
     def __init__(self, endpoint: str = "/graphql", base_url: str = "") -> None:
         """Initialize the unified adapters service with complete flext-core integration."""
         # Complete flext-core integration
-        self._logger = FlextLogger(__name__)
-        self._container = FlextContainer.get_global()
-        self._context = FlextContext()
-        self._bus = FlextBus()
+        self._logger = FlextCore.Logger(__name__)
+        self._container = FlextCore.Container.get_global()
+        self._context = FlextCore.Context()
+        self._bus = FlextCore.Bus()
 
         self._endpoint = endpoint  # Default GraphQL endpoint
         self._base_url = base_url  # For legacy API adapter
 
     def adapt_http_request_to_websocket(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+    ) -> FlextCore.Result[dict[str, FlextApiTypes.JsonValue]]:
         """Convert HTTP request to WebSocket message format."""
         # Railway-oriented HTTP to WebSocket adaptation - operations are safe
         message: dict[str, FlextApiTypes.JsonValue] = {
@@ -87,18 +78,18 @@ class FlextApiAdapters(FlextService[None]):
             extra={"method": request.method, "url": str(request.url)},
         )
 
-        return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(message)
+        return FlextCore.Result[dict[str, FlextApiTypes.JsonValue]].ok(message)
 
     def adapt_websocket_message_to_http_response(
         self, message: dict[str, FlextApiTypes.JsonValue]
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Adapt WebSocket message to HTTP response.
 
         Args:
             message: WebSocket message
 
         Returns:
-            FlextResult containing HTTP response or error
+            FlextCore.Result containing HTTP response or error
 
         """
         try:
@@ -130,16 +121,16 @@ class FlextApiAdapters(FlextService[None]):
                 extra={"status": status_code},
             )
 
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
+            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
 
         except Exception as e:
-            return FlextResult[FlextApiModels.HttpResponse].fail(
+            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
                 f"WebSocket to HTTP adaptation failed: {e}"
             )
 
     def adapt_graphql_query_to_http_request(
-        self, query: str, variables: FlextTypes.Dict | None = None
-    ) -> FlextResult[FlextApiModels.HttpRequest]:
+        self, query: str, variables: FlextCore.Types.Dict | None = None
+    ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
         """Adapt GraphQL query to HTTP request.
 
         Args:
@@ -147,7 +138,7 @@ class FlextApiAdapters(FlextService[None]):
             variables: Query variables
 
         Returns:
-            FlextResult containing HTTP request or error
+            FlextCore.Result containing HTTP request or error
 
         """
         try:
@@ -167,29 +158,29 @@ class FlextApiAdapters(FlextService[None]):
 
             self._logger.debug("GraphQL query adapted to HTTP request")
 
-            return FlextResult[FlextApiModels.HttpRequest].ok(request)
+            return FlextCore.Result[FlextApiModels.HttpRequest].ok(request)
 
         except Exception as e:
-            return FlextResult[FlextApiModels.HttpRequest].fail(
+            return FlextCore.Result[FlextApiModels.HttpRequest].fail(
                 f"GraphQL to HTTP adaptation failed: {e}"
             )
 
     def adapt_http_response_to_graphql_result(
         self, response: FlextApiModels.HttpResponse
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Adapt HTTP response to GraphQL result.
 
         Args:
             response: HTTP response
 
         Returns:
-            FlextResult containing GraphQL result or error
+            FlextCore.Result containing GraphQL result or error
 
         """
         try:
             # Extract GraphQL result from HTTP response
-            if response.status_code != FlextConstants.Http.HTTP_OK:
-                return FlextResult[FlextTypes.Dict].fail(
+            if response.status_code != FlextCore.Constants.Http.HTTP_OK:
+                return FlextCore.Result[FlextCore.Types.Dict].fail(
                     f"GraphQL request failed with status {response.status_code}"
                 )
 
@@ -199,30 +190,30 @@ class FlextApiAdapters(FlextService[None]):
             if isinstance(result, dict) and "errors" in result:
                 errors = result["errors"]
                 error_messages = [e.get("message", "Unknown error") for e in errors]
-                return FlextResult[FlextTypes.Dict].fail(
+                return FlextCore.Result[FlextCore.Types.Dict].fail(
                     f"GraphQL errors: {', '.join(error_messages)}"
                 )
 
             self._logger.debug("HTTP response adapted to GraphQL result")
 
             data = result.get("data", {}) if isinstance(result, dict) else {}
-            return FlextResult[FlextTypes.Dict].ok(data)
+            return FlextCore.Result[FlextCore.Types.Dict].ok(data)
 
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextCore.Result[FlextCore.Types.Dict].fail(
                 f"HTTP to GraphQL result adaptation failed: {e}"
             )
 
     def convert_openapi_to_api_schema(
         self, openapi_schema: dict[str, FlextApiTypes.JsonValue]
-    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+    ) -> FlextCore.Result[dict[str, FlextApiTypes.JsonValue]]:
         """Convert OpenAPI schema to API schema.
 
         Args:
             openapi_schema: OpenAPI schema
 
         Returns:
-            FlextResult containing API schema or error
+            FlextCore.Result containing API schema or error
 
         """
         try:
@@ -290,23 +281,23 @@ class FlextApiAdapters(FlextService[None]):
 
             self._logger.debug("OpenAPI schema converted to API")
 
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(api_schema)
+            return FlextCore.Result[dict[str, FlextApiTypes.JsonValue]].ok(api_schema)
 
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(
+            return FlextCore.Result[dict[str, FlextApiTypes.JsonValue]].fail(
                 f"OpenAPI to API conversion failed: {e}"
             )
 
     def convert_openapi_to_graphql_schema(
         self, openapi_schema: dict[str, FlextApiTypes.JsonValue]
-    ) -> FlextResult[str]:
+    ) -> FlextCore.Result[str]:
         """Convert OpenAPI schema to GraphQL schema SDL.
 
         Args:
             openapi_schema: OpenAPI schema
 
         Returns:
-            FlextResult containing GraphQL schema SDL or error
+            FlextCore.Result containing GraphQL schema SDL or error
 
         """
         try:
@@ -330,7 +321,7 @@ class FlextApiAdapters(FlextService[None]):
                     properties = schema_def.get("properties", {})
                     if not isinstance(properties, dict):
                         properties = {}
-                    fields: FlextTypes.StringList = []
+                    fields: FlextCore.Types.StringList = []
 
                     for prop_name, prop_def in properties.items():
                         if not isinstance(prop_def, dict):
@@ -378,16 +369,16 @@ class FlextApiAdapters(FlextService[None]):
 
             self._logger.debug("OpenAPI schema converted to GraphQL SDL")
 
-            return FlextResult[str].ok(graphql_sdl)
+            return FlextCore.Result[str].ok(graphql_sdl)
 
         except Exception as e:
-            return FlextResult[str].fail(
+            return FlextCore.Result[str].fail(
                 f"OpenAPI to GraphQL schema conversion failed: {e}"
             )
 
     def adapt_request_to_legacy_format(
         self, modern_request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpRequest]:
+    ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
         """Transform request to legacy format."""
         try:
             legacy_request = FlextApiModels.HttpRequest(
@@ -406,23 +397,23 @@ class FlextApiAdapters(FlextService[None]):
                 extra={"url": str(legacy_request.url)},
             )
 
-            return FlextResult[FlextApiModels.HttpRequest].ok(legacy_request)
+            return FlextCore.Result[FlextApiModels.HttpRequest].ok(legacy_request)
 
         except Exception as e:
-            return FlextResult[FlextApiModels.HttpRequest].fail(
+            return FlextCore.Result[FlextApiModels.HttpRequest].fail(
                 f"Request adaptation failed: {e}"
             )
 
     def adapt_legacy_response_to_modern(
         self, legacy_response: FlextApiModels.HttpResponse
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
         """Adapt legacy response to modern API format.
 
         Args:
             legacy_response: Legacy API response
 
         Returns:
-            FlextResult containing modern response or error
+            FlextCore.Result containing modern response or error
 
         """
         try:
@@ -448,13 +439,13 @@ class FlextApiAdapters(FlextService[None]):
             return FlextApiModels.HttpResponse.ok(modern_response)
 
         except Exception as e:
-            return FlextResult[FlextApiModels.HttpResponse].fail(
+            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
                 f"Response adaptation failed: {e}"
             )
 
     def _adapt_headers_to_legacy(
-        self, headers: FlextTypes.StringDict
-    ) -> FlextTypes.StringDict:
+        self, headers: FlextCore.Types.StringDict
+    ) -> FlextCore.Types.StringDict:
         """Adapt headers to legacy format.
 
         Args:
@@ -473,7 +464,9 @@ class FlextApiAdapters(FlextService[None]):
 
         return adapted
 
-    def _adapt_payload_to_legacy(self, payload: FlextTypes.Dict) -> FlextTypes.Dict:
+    def _adapt_payload_to_legacy(
+        self, payload: FlextCore.Types.Dict
+    ) -> FlextCore.Types.Dict:
         """Adapt payload to legacy format.
 
         Args:
@@ -493,7 +486,9 @@ class FlextApiAdapters(FlextService[None]):
 
         return adapted
 
-    def _normalize_legacy_payload(self, payload: FlextTypes.Dict) -> FlextTypes.Dict:
+    def _normalize_legacy_payload(
+        self, payload: FlextCore.Types.Dict
+    ) -> FlextCore.Types.Dict:
         """Normalize legacy payload to modern format.
 
         Args:

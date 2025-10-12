@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextResult
+from flext_core import FlextCore
 
 from flext_api.protocols import FlextApiProtocols
 from flext_api.typings import FlextApiTypes
@@ -18,28 +18,30 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
         self._storage: dict[str, FlextApiTypes.JsonValue] = {}
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
     def get(
         self, key: str, default: FlextApiTypes.JsonValue = None
-    ) -> FlextResult[FlextApiTypes.JsonValue]:
+    ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
         """Retrieve value by key."""
         try:
             if not key:
-                return FlextResult[FlextApiTypes.JsonValue].fail(
+                return FlextCore.Result[FlextApiTypes.JsonValue].fail(
                     "Storage key cannot be empty"
                 )
 
             if key in self._storage:
                 value = self._storage[key]
                 self.logger.debug(f"Retrieved data with key: {key}")
-                return FlextResult[FlextApiTypes.JsonValue].ok(value)
+                return FlextCore.Result[FlextApiTypes.JsonValue].ok(value)
             if default is not None:
-                return FlextResult[FlextApiTypes.JsonValue].ok(default)
-            return FlextResult[FlextApiTypes.JsonValue].fail(f"Key not found: {key}")
+                return FlextCore.Result[FlextApiTypes.JsonValue].ok(default)
+            return FlextCore.Result[FlextApiTypes.JsonValue].fail(
+                f"Key not found: {key}"
+            )
 
         except Exception as e:
-            return FlextResult[FlextApiTypes.JsonValue].fail(
+            return FlextCore.Result[FlextApiTypes.JsonValue].fail(
                 f"Retrieval operation failed: {e}"
             )
 
@@ -48,55 +50,57 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
         key: str,
         value: object,
         _timeout: int | None = None,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Store value with optional timeout."""
         try:
             if not key:
-                return FlextResult[None].fail("Storage key cannot be empty")
+                return FlextCore.Result[None].fail("Storage key cannot be empty")
 
             self._storage[str(key)] = value
             self.logger.debug(f"Stored data with key: {key}")
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
 
         except Exception as e:
-            return FlextResult[None].fail(f"Storage operation failed: {e}")
+            return FlextCore.Result[None].fail(f"Storage operation failed: {e}")
 
-    def delete(self, key: str) -> FlextResult[None]:
+    def delete(self, key: str) -> FlextCore.Result[None]:
         """Delete value by key."""
         try:
             if not key:
-                return FlextResult[None].fail("Storage key cannot be empty")
+                return FlextCore.Result[None].fail("Storage key cannot be empty")
 
             if key in self._storage:
                 del self._storage[key]
                 self.logger.debug(f"Deleted data with key: {key}")
-                return FlextResult[None].ok(None)
-            return FlextResult[None].fail(f"Key not found: {key}")
+                return FlextCore.Result[None].ok(None)
+            return FlextCore.Result[None].fail(f"Key not found: {key}")
 
         except Exception as e:
-            return FlextResult[None].fail(f"Delete operation failed: {e}")
+            return FlextCore.Result[None].fail(f"Delete operation failed: {e}")
 
-    def exists(self, key: str) -> FlextResult[bool]:
+    def exists(self, key: str) -> FlextCore.Result[bool]:
         """Check if key exists."""
         try:
             exists = str(key) in self._storage
-            return FlextResult[bool].ok(exists)
+            return FlextCore.Result[bool].ok(exists)
         except Exception as e:
-            return FlextResult[bool].fail(f"Exists check failed: {e}")
+            return FlextCore.Result[bool].fail(f"Exists check failed: {e}")
 
-    def clear(self) -> FlextResult[None]:
+    def clear(self) -> FlextCore.Result[None]:
         """Clear all stored values."""
         try:
             self._storage.clear()
             self.logger.debug("Cleared all storage data")
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
         except Exception as e:
-            return FlextResult[None].fail(f"Clear operation failed: {e}")
+            return FlextCore.Result[None].fail(f"Clear operation failed: {e}")
 
-    def keys(self) -> FlextResult[list[str]]:
+    def keys(self) -> FlextCore.Result[FlextCore.Types.StringList]:
         """Get all keys."""
         try:
-            storage_keys: list[str] = list(self._storage)
-            return FlextResult[list[str]].ok(storage_keys)
+            storage_keys: FlextCore.Types.StringList = list(self._storage)
+            return FlextCore.Result[FlextCore.Types.StringList].ok(storage_keys)
         except Exception as e:
-            return FlextResult[list[str]].fail(f"Keys operation failed: {e}")
+            return FlextCore.Result[FlextCore.Types.StringList].fail(
+                f"Keys operation failed: {e}"
+            )

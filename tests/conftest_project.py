@@ -18,7 +18,7 @@ import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from flext_core import FlextConstants, FlextContainer, FlextTypes
+from flext_core import FlextCore
 from flext_tests import FlextTestsDomains
 
 # DIRECT imports from flext_api - verified classes
@@ -111,27 +111,29 @@ def flext_api_client() -> FlextApiClient:
 
     base_url_val = config_data.get(
         "base_url",
-        f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",
+        f"http://{FlextCore.Constants.Platform.DEFAULT_HOST}:{FlextCore.Constants.Platform.FLEXT_API_PORT}",
     )
-    timeout_val = config_data.get("timeout", FlextConstants.Network.DEFAULT_TIMEOUT)
+    timeout_val = config_data.get(
+        "timeout", FlextCore.Constants.Network.DEFAULT_TIMEOUT
+    )
     retries_val = config_data.get(
-        "max_retries", FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+        "max_retries", FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS
     )
 
     base_url = (
         str(base_url_val)
         if base_url_val is not None
-        else f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+        else f"http://{FlextCore.Constants.Platform.DEFAULT_HOST}:{FlextCore.Constants.Platform.FLEXT_API_PORT}"
     )
     timeout = (
         int(timeout_val)
         if isinstance(timeout_val, (int, float, str))
-        else FlextConstants.Network.DEFAULT_TIMEOUT
+        else FlextCore.Constants.Network.DEFAULT_TIMEOUT
     )
     max_retries = (
         int(retries_val)
         if isinstance(retries_val, (int, str))
-        else FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+        else FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS
     )
 
     return FlextApiClient(
@@ -153,15 +155,15 @@ def flext_api_config() -> FlextApiConfig:
 
 
 @pytest.fixture
-def clean_container() -> FlextContainer:
-    """Provide clean FlextContainer instance for testing.
+def clean_container() -> FlextCore.Container:
+    """Provide clean FlextCore.Container instance for testing.
 
     Returns:
-        FlextContainer: Clean container instance.
+        FlextCore.Container: Clean container instance.
 
     """
     # Create a separate container instance for testing (not the global one)
-    container = FlextContainer()
+    container = FlextCore.Container()
     container.clear()  # Clear any existing registrations
     return container
 
@@ -288,44 +290,44 @@ def sample_configuration_data() -> FlextApiTypes.ResponseDict:
 
 
 @pytest.fixture
-def valid_email_cases() -> FlextTypes.StringList:
+def valid_email_cases() -> FlextCore.Types.StringList:
     """Valid email cases from FlextTestsDomains.
 
     Returns:
-        FlextTypes.StringList: List of valid email addresses.
+        FlextCore.Types.StringList: List of valid email addresses.
 
     """
     return FlextTestsDomains.valid_email_cases()
 
 
 @pytest.fixture
-def invalid_email_cases() -> FlextTypes.StringList:
+def invalid_email_cases() -> FlextCore.Types.StringList:
     """Invalid email cases from FlextTestsDomains.
 
     Returns:
-        FlextTypes.StringList: List of invalid email addresses.
+        FlextCore.Types.StringList: List of invalid email addresses.
 
     """
     return FlextTestsDomains.invalid_email_cases()
 
 
 @pytest.fixture
-def valid_ages() -> list[int]:
+def valid_ages() -> FlextCore.Types.IntList:
     """Valid age cases from FlextTestsDomains.
 
     Returns:
-        list[int]: List of valid ages.
+        FlextCore.Types.IntList: List of valid ages.
 
     """
     return FlextTestsDomains.valid_ages()
 
 
 @pytest.fixture
-def invalid_ages() -> list[int]:
+def invalid_ages() -> FlextCore.Types.IntList:
     """Invalid age cases from FlextTestsDomains.
 
     Returns:
-        list[int]: List of invalid ages.
+        FlextCore.Types.IntList: List of invalid ages.
 
     """
     return FlextTestsDomains.invalid_ages()

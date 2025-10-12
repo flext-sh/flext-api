@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import httpx
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextCore
 
 from flext_api.plugins import TransportPlugin
 
@@ -78,7 +78,7 @@ class FlextApiTransports:
             self,
             url: str,
             **options: object,
-        ) -> FlextResult[httpx.Client]:
+        ) -> FlextCore.Result[httpx.Client]:
             """Establish HTTP client connection.
 
             Args:
@@ -86,7 +86,7 @@ class FlextApiTransports:
                 **options: Additional httpx client options
 
             Returns:
-                FlextResult containing Client or error
+                FlextCore.Result containing Client or error
 
             """
             try:
@@ -116,24 +116,24 @@ class FlextApiTransports:
                     extra={"url": url, "http2": self._http2},
                 )
 
-                return FlextResult[httpx.Client].ok(self._client)
+                return FlextCore.Result[httpx.Client].ok(self._client)
 
             except Exception as e:
-                return FlextResult[httpx.Client].fail(
+                return FlextCore.Result[httpx.Client].fail(
                     f"Failed to create HTTP client: {e}"
                 )
 
         def disconnect(
             self,
             connection: httpx.Client,
-        ) -> FlextResult[None]:
+        ) -> FlextCore.Result[None]:
             """Close HTTP client connection.
 
             Args:
                 connection: Client to close
 
             Returns:
-                FlextResult indicating success or failure
+                FlextCore.Result indicating success or failure
 
             """
             try:
@@ -141,17 +141,17 @@ class FlextApiTransports:
                 self._client = None
 
                 self.logger.debug("HTTP client disconnected")
-                return FlextResult[None].ok(None)
+                return FlextCore.Result[None].ok(None)
 
             except Exception as e:
-                return FlextResult[None].fail(f"Failed to close HTTP client: {e}")
+                return FlextCore.Result[None].fail(f"Failed to close HTTP client: {e}")
 
         def send(
             self,
             connection: httpx.Client,
             data: bytes | str,
             **options: object,
-        ) -> FlextResult[None]:
+        ) -> FlextCore.Result[None]:
             """Send HTTP request.
 
             Args:
@@ -160,7 +160,7 @@ class FlextApiTransports:
                 **options: Request options (method, url, headers, etc.)
 
             Returns:
-                FlextResult indicating success or failure
+                FlextCore.Result indicating success or failure
 
             """
             try:
@@ -179,16 +179,16 @@ class FlextApiTransports:
                 # Store response for receive()
                 self._last_response = response
 
-                return FlextResult[None].ok(None)
+                return FlextCore.Result[None].ok(None)
 
             except Exception as e:
-                return FlextResult[None].fail(f"Failed to send HTTP request: {e}")
+                return FlextCore.Result[None].fail(f"Failed to send HTTP request: {e}")
 
         def receive(
             self,
             _connection: httpx.Client,
             **_options: object,
-        ) -> FlextResult[bytes]:
+        ) -> FlextCore.Result[bytes]:
             """Receive HTTP response.
 
             Args:
@@ -196,26 +196,30 @@ class FlextApiTransports:
                 **options: Receive options
 
             Returns:
-                FlextResult containing response bytes or error
+                FlextCore.Result containing response bytes or error
 
             """
             try:
                 if not hasattr(self, "_last_response"):
-                    return FlextResult[bytes].fail("No response available")
+                    return FlextCore.Result[bytes].fail("No response available")
 
                 response = self._last_response
                 content = response.read()
 
-                return FlextResult[bytes].ok(content)
+                return FlextCore.Result[bytes].ok(content)
 
             except Exception as e:
-                return FlextResult[bytes].fail(f"Failed to receive HTTP response: {e}")
+                return FlextCore.Result[bytes].fail(
+                    f"Failed to receive HTTP response: {e}"
+                )
 
         def supports_streaming(self) -> bool:
             """HTTP transport supports streaming."""
             return True
 
-        def get_connection_info(self, _connection: httpx.Client) -> FlextTypes.Dict:
+        def get_connection_info(
+            self, _connection: httpx.Client
+        ) -> FlextCore.Types.Dict:
             """Get HTTP connection information.
 
             Args:
@@ -265,7 +269,7 @@ class WebSocketTransport(TransportPlugin):
         self,
         _url: str,
         **_options: object,
-    ) -> FlextResult[object]:
+    ) -> FlextCore.Result[object]:
         """Connect to WebSocket endpoint (stub).
 
         Args:
@@ -273,19 +277,19 @@ class WebSocketTransport(TransportPlugin):
             **options: Connection options
 
         Returns:
-            FlextResult with stub error
+            FlextCore.Result with stub error
 
         """
-        return FlextResult[object].fail(
+        return FlextCore.Result[object].fail(
             "WebSocket transport not yet implemented (Phase 3)"
         )
 
     def disconnect(
         self,
         _connection: object,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Disconnect WebSocket (stub)."""
-        return FlextResult[None].fail(
+        return FlextCore.Result[None].fail(
             "WebSocket transport not yet implemented (Phase 3)"
         )
 
@@ -294,9 +298,9 @@ class WebSocketTransport(TransportPlugin):
         _connection: object,
         _data: bytes | str,
         **_options: object,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Send WebSocket message (stub)."""
-        return FlextResult[None].fail(
+        return FlextCore.Result[None].fail(
             "WebSocket transport not yet implemented (Phase 3)"
         )
 
@@ -304,9 +308,9 @@ class WebSocketTransport(TransportPlugin):
         self,
         _connection: object,
         **_options: object,
-    ) -> FlextResult[bytes | str]:
+    ) -> FlextCore.Result[bytes | str]:
         """Receive WebSocket message (stub)."""
-        return FlextResult[bytes | str].fail(
+        return FlextCore.Result[bytes | str].fail(
             "WebSocket transport not yet implemented (Phase 3)"
         )
 
@@ -335,7 +339,7 @@ class GraphQLTransport(TransportPlugin):
         self,
         _url: str,
         **_options: object,
-    ) -> FlextResult[object]:
+    ) -> FlextCore.Result[object]:
         """Connect to GraphQL endpoint (stub).
 
         Args:
@@ -343,36 +347,40 @@ class GraphQLTransport(TransportPlugin):
             **options: Connection options
 
         Returns:
-            FlextResult with stub error
+            FlextCore.Result with stub error
 
         """
-        return FlextResult[object].fail(
+        return FlextCore.Result[object].fail(
             "GraphQL transport not yet implemented (Phase 4)"
         )
 
     def disconnect(
         self,
         _connection: object,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Disconnect GraphQL (stub)."""
-        return FlextResult[None].fail("GraphQL transport not yet implemented (Phase 4)")
+        return FlextCore.Result[None].fail(
+            "GraphQL transport not yet implemented (Phase 4)"
+        )
 
     def send(
         self,
         _connection: object,
         _data: bytes | str,
         **_options: object,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Send GraphQL query (stub)."""
-        return FlextResult[None].fail("GraphQL transport not yet implemented (Phase 4)")
+        return FlextCore.Result[None].fail(
+            "GraphQL transport not yet implemented (Phase 4)"
+        )
 
     def receive(
         self,
         _connection: object,
         **_options: object,
-    ) -> FlextResult[bytes | str]:
+    ) -> FlextCore.Result[bytes | str]:
         """Receive GraphQL response (stub)."""
-        return FlextResult[bytes | str].fail(
+        return FlextCore.Result[bytes | str].fail(
             "GraphQL transport not yet implemented (Phase 4)"
         )
 
@@ -401,7 +409,7 @@ class SSETransport(TransportPlugin):
         self,
         _url: str,
         **_options: object,
-    ) -> FlextResult[object]:
+    ) -> FlextCore.Result[object]:
         """Connect to SSE endpoint (stub).
 
         Args:
@@ -409,34 +417,38 @@ class SSETransport(TransportPlugin):
             **_options: Connection options
 
         Returns:
-            FlextResult with stub error
+            FlextCore.Result with stub error
 
         """
-        return FlextResult[object].fail("SSE transport not yet implemented (Phase 3)")
+        return FlextCore.Result[object].fail(
+            "SSE transport not yet implemented (Phase 3)"
+        )
 
     def disconnect(
         self,
         _connection: object,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Disconnect SSE (stub)."""
-        return FlextResult[None].fail("SSE transport not yet implemented (Phase 3)")
+        return FlextCore.Result[None].fail(
+            "SSE transport not yet implemented (Phase 3)"
+        )
 
     def send(
         self,
         _connection: object,
         _data: bytes | str,
         **_options: object,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Send not applicable for SSE (stub)."""
-        return FlextResult[None].fail("SSE is receive-only, send not applicable")
+        return FlextCore.Result[None].fail("SSE is receive-only, send not applicable")
 
     def receive(
         self,
         _connection: object,
         **_options: object,
-    ) -> FlextResult[bytes | str]:
+    ) -> FlextCore.Result[bytes | str]:
         """Receive SSE event (stub)."""
-        return FlextResult[bytes | str].fail(
+        return FlextCore.Result[bytes | str].fail(
             "SSE transport not yet implemented (Phase 3)"
         )
 
@@ -470,7 +482,7 @@ class GrpcTransport(TransportPlugin):
         self,
         _url: str,
         **_options: object,
-    ) -> FlextResult[object]:
+    ) -> FlextCore.Result[object]:
         """Connect to gRPC service (stub).
 
         Args:
@@ -478,19 +490,19 @@ class GrpcTransport(TransportPlugin):
             **_options: Connection options
 
         Returns:
-            FlextResult with stub error
+            FlextCore.Result with stub error
 
         """
-        return FlextResult[object].fail(
+        return FlextCore.Result[object].fail(
             "gRPC transport not yet implemented (future: flext-grpc integration)"
         )
 
     def disconnect(
         self,
         _connection: object,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Disconnect gRPC (stub)."""
-        return FlextResult[None].fail(
+        return FlextCore.Result[None].fail(
             "gRPC transport not yet implemented (future: flext-grpc integration)"
         )
 
@@ -499,9 +511,9 @@ class GrpcTransport(TransportPlugin):
         _connection: object,
         _data: bytes | str,
         **_options: object,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Send gRPC request (stub)."""
-        return FlextResult[None].fail(
+        return FlextCore.Result[None].fail(
             "gRPC transport not yet implemented (future: flext-grpc integration)"
         )
 
@@ -509,9 +521,9 @@ class GrpcTransport(TransportPlugin):
         self,
         _connection: object,
         **_options: object,
-    ) -> FlextResult[bytes | str]:
+    ) -> FlextCore.Result[bytes | str]:
         """Receive gRPC response (stub)."""
-        return FlextResult[bytes | str].fail(
+        return FlextCore.Result[bytes | str].fail(
             "gRPC transport not yet implemented (future: flext-grpc integration)"
         )
 

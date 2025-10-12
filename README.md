@@ -6,7 +6,7 @@
 [![Documentation](https://img.shields.io/badge/docs-organized-blue.svg)](./docs/)
 [![GitHub](https://img.shields.io/badge/github-flext--api-black.svg)](https://github.com/flext/flext-api)
 
-**HTTP client and FastAPI integration foundation** for the FLEXT enterprise data integration platform, providing HTTP operations with FlextResult patterns and synchronous architecture.
+**HTTP client and FastAPI integration foundation** for the FLEXT enterprise data integration platform, providing HTTP operations with FlextCore.Result patterns and synchronous architecture.
 
 > **🚧 STATUS**: Version 0.9.0 - Phase 1 HTTP Foundation (70% complete), 23 tests passing, 76 failing (28% pass rate), critical fixes needed
 
@@ -33,7 +33,7 @@ flext-api serves as the HTTP foundation for FLEXT's enterprise data integration 
 
 **Source Code**: 2,927 lines across 14 modules
 
-1. **HTTP Client Foundation** - `client.py` (605 lines) - Client wrapper with FlextResult patterns 🚧 (interface issues)
+1. **HTTP Client Foundation** - `client.py` (605 lines) - Client wrapper with FlextCore.Result patterns 🚧 (interface issues)
 2. **Domain Models** - `models.py` (409 lines) - Pydantic v2 validation and business logic ❌ (missing methods)
 3. **HTTP Utilities** - `utilities.py` (414 lines) - Helper functions and transformations 🚧 (incomplete)
 4. **Configuration Management** - `config.py` (187 lines) - Environment-aware settings ❌ (API gaps)
@@ -41,7 +41,7 @@ flext-api serves as the HTTP foundation for FLEXT's enterprise data integration 
 
 ### **Integration Points**
 
-- **[flext-core](./flext-core/README.md)** → Foundation patterns (FlextResult, FlextService, FlextModels)
+- **[flext-core](./flext-core/README.md)** → Foundation patterns (FlextCore.Result, FlextCore.Service, FlextCore.Models)
 - **FLEXT Data Platform** → HTTP operations for data pipeline orchestration
 - **33+ FLEXT Projects** → Unified HTTP client preventing duplicate implementations
 - **Enterprise APIs** → REST API patterns and FastAPI application hosting
@@ -158,10 +158,10 @@ protocols = {
 
 | Pattern            | Status | Implementation                          |
 | ------------------ | ------ | --------------------------------------- |
-| **FlextResult[T]** | 🟢 90% | Comprehensive error handling throughout |
-| **FlextService**   | 🟢 85% | FlextApiClient extends FlextService     |
-| **FlextModels**    | 🟡 70% | HTTP models use patterns, missing methods |
-| **FlextContainer** | 🟡 60% | Basic dependency injection usage        |
+| **FlextCore.Result[T]** | 🟢 90% | Comprehensive error handling throughout |
+| **FlextCore.Service**   | 🟢 85% | FlextApiClient extends FlextCore.Service     |
+| **FlextCore.Models**    | 🟡 70% | HTTP models use patterns, missing methods |
+| **FlextCore.Container** | 🟡 60% | Basic dependency injection usage        |
 
 > **Status**: 🟢 Working Foundation | 🟡 Partial Implementation | 🔴 Critical Gaps
 
@@ -171,7 +171,7 @@ protocols = {
 
 ```
 src/flext_api/
-├── client.py            # 605 lines - HTTP client with FlextResult patterns
+├── client.py            # 605 lines - HTTP client with FlextCore.Result patterns
 ├── models.py            # 409 lines - Pydantic v2 domain models
 ├── utilities.py         # 414 lines - HTTP transformations and helpers
 ├── constants.py         # 373 lines - HTTP constants and status codes
@@ -221,7 +221,7 @@ def basic_example():
         headers={"Accept": "application/json"}
     )
 
-    # Make request - returns FlextResult (synchronous)
+    # Make request - returns FlextCore.Result (synchronous)
     result = .request(request)
 
     if result.is_success:
@@ -270,7 +270,7 @@ def create_api():
 
 - ✅ **HTTP Client**: Basic httpx.Client wrapper with timeout
 - ✅ **Request/Response Models**: Pydantic v2 validation
-- ✅ **FlextResult Error Handling**: Type-safe error patterns
+- ✅ **FlextCore.Result Error Handling**: Type-safe error patterns
 - ✅ **FastAPI Integration**: App factory with health endpoints
 - ✅ **Authentication**: Basic token and API key support
 - ✅ **Configuration**: Environment-aware settings

@@ -1,6 +1,6 @@
 """Exception definitions for flext-api domain.
 
-All exception classes extend FlextExceptions from flext-core following FLEXT
+All exception classes extend FlextCore.Exceptions from flext-core following FLEXT
 ecosystem standards. HTTP-specific exception hierarchy with status codes,
 error codes, and correlation tracking.
 
@@ -12,21 +12,42 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import FlextExceptions
+from flext_core import FlextCore
 
 from flext_api.constants import FlextApiConstants
 
 
-class FlextApiExceptions(FlextExceptions):
-    """HTTP API exception classes extending FlextExceptions.
+class FlextApiExceptions(FlextCore.Exceptions):
+    """HTTP API exception classes extending FlextCore.Exceptions.
 
-    Extends FlextExceptions to inherit all base exception types while
+    Extends FlextCore.Exceptions to inherit all base exception types while
     adding HTTP-specific exception classes for API operations.
-    All HTTP exceptions properly extend FlextExceptions.BaseError for
+    All HTTP exceptions properly extend FlextCore.Exceptions.BaseError for
     structured error handling with error codes and correlation tracking.
     """
 
-    class ApiError(FlextExceptions.BaseError):
+    @staticmethod
+    def _extract_common_kwargs(kwargs: dict) -> tuple[dict, str | None, str | None]:
+        """Extract common kwargs for exception initialization.
+
+        Args:
+            kwargs: Keyword arguments passed to exception
+
+        Returns:
+            Tuple of (base_context, correlation_id, error_code)
+
+        """
+        base_context = kwargs.copy()
+        correlation_id = kwargs.get("correlation_id")
+        error_code = kwargs.get("error_code")
+
+        # Remove extracted keys from base_context
+        base_context.pop("correlation_id", None)
+        base_context.pop("error_code", None)
+
+        return base_context, correlation_id, error_code
+
+    class ApiError(FlextCore.Exceptions.BaseError):
         """Base HTTP API error with status code and request context."""
 
         @override
@@ -64,8 +85,8 @@ class FlextApiExceptions(FlextExceptions):
                 correlation_id=correlation_id,
             )
 
-    class ValidationError(FlextExceptions.ValidationError):
-        """HTTP validation error with status code - extends FlextExceptions."""
+    class ValidationError(FlextCore.Exceptions.ValidationError):
+        """HTTP validation error with status code - extends FlextCore.Exceptions."""
 
         @override
         def __init__(
@@ -126,8 +147,8 @@ class FlextApiExceptions(FlextExceptions):
             """Initialize HTTP authorization error."""
             super().__init__(message, status_code=status_code, **kwargs)
 
-    class NotFoundError(FlextExceptions.NotFoundError):
-        """HTTP not found error (404) - extends FlextExceptions."""
+    class NotFoundError(FlextCore.Exceptions.NotFoundError):
+        """HTTP not found error (404) - extends FlextCore.Exceptions."""
 
         @override
         def __init__(
