@@ -354,7 +354,7 @@ class FlextApiTypes(FlextCore.Types):
     # ENHANCED API TYPES - Advanced flext-core integration types
     # =========================================================================
 
-    class Async:
+    class AsyncTypes:
         """Enhanced async types for HTTP API operations with flext-core integration.
 
         This namespace provides advanced async types that integrate with flext-core
@@ -395,7 +395,7 @@ class FlextApiTypes(FlextCore.Types):
         type StreamingResponse = dict[str, bytes | str | bool]
         type StreamingChunk = dict[str, bytes | int | float]
 
-    class ErrorHandling:
+    class ErrorHandlingTypes:
         """Enhanced error handling types for HTTP API operations.
 
         This namespace provides comprehensive error handling types that integrate
@@ -434,7 +434,7 @@ class FlextApiTypes(FlextCore.Types):
         type HttpRetryStrategy = dict[str, int | float | str]
         type HttpCircuitBreaker = dict[str, bool | int | float | str]
 
-    class Service:
+    class ServiceTypes:
         """Enhanced service layer types for HTTP API operations.
 
         This namespace provides comprehensive service types that integrate
@@ -472,7 +472,7 @@ class FlextApiTypes(FlextCore.Types):
         type HttpServiceProtocol = str
         type HttpServiceContract = dict[str, HttpServiceEndpoint | HttpServiceProtocol]
 
-    class Validation:
+    class ValidationTypes:
         """Enhanced validation types for HTTP API operations.
 
         This namespace provides comprehensive validation types that integrate
@@ -511,7 +511,7 @@ class FlextApiTypes(FlextCore.Types):
         type HttpValidationRule = dict[str, str | dict[str, FlextCore.Types.JsonValue]]
         type HttpValidationRules = list[HttpValidationRule]
 
-    class Processing:
+    class ProcessingTypes:
         """Enhanced processing types for HTTP API operations.
 
         This namespace provides comprehensive processing types that integrate

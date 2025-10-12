@@ -267,8 +267,8 @@ class WebSocketTransport(TransportPlugin):
 
     def connect(
         self,
-        _url: str,
-        **_options: object,
+        url: str,
+        **options: object,
     ) -> FlextCore.Result[object]:
         """Connect to WebSocket endpoint (stub).
 
@@ -286,7 +286,7 @@ class WebSocketTransport(TransportPlugin):
 
     def disconnect(
         self,
-        _connection: object,
+        connection: object,
     ) -> FlextCore.Result[None]:
         """Disconnect WebSocket (stub)."""
         return FlextCore.Result[None].fail(
@@ -337,8 +337,8 @@ class GraphQLTransport(TransportPlugin):
 
     def connect(
         self,
-        _url: str,
-        **_options: object,
+        url: str,
+        **options: object,
     ) -> FlextCore.Result[object]:
         """Connect to GraphQL endpoint (stub).
 
@@ -407,14 +407,14 @@ class SSETransport(TransportPlugin):
 
     def connect(
         self,
-        _url: str,
-        **_options: object,
+        url: str,
+        **options: object,
     ) -> FlextCore.Result[object]:
         """Connect to SSE endpoint (stub).
 
         Args:
-            _url: SSE endpoint URL
-            **_options: Connection options
+            url: SSE endpoint URL
+            **options: Connection options
 
         Returns:
             FlextCore.Result with stub error
@@ -480,14 +480,14 @@ class GrpcTransport(TransportPlugin):
 
     def connect(
         self,
-        _url: str,
-        **_options: object,
+        url: str,
+        **options: object,
     ) -> FlextCore.Result[object]:
         """Connect to gRPC service (stub).
 
         Args:
-            _url: gRPC service URL
-            **_options: Connection options
+            url: gRPC service URL
+            **options: Connection options
 
         Returns:
             FlextCore.Result with stub error
