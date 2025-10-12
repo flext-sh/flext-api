@@ -17,6 +17,7 @@ HTTP operations are inherently unreliable - network failures, server errors, tim
 5. Integrates well with async/await patterns
 
 Key challenges:
+
 - HTTP errors are expected and frequent (timeouts, 4xx, 5xx responses)
 - Error handling code often obscures business logic
 - Exception-based code is hard to test and reason about
@@ -53,17 +54,20 @@ FLEXT-API will use **Railway-Oriented Programming** with `FlextCore.Result[T]` f
 ## Alternatives Considered
 
 ### Option 1: Traditional Exceptions
+
 ```python
 def get_user(user_id: int) -> User:
     response = httpx.get(f"/users/{user_id}")
     response.raise_for_status()
     return User(**response.json())
 ```
+
 - **Pros**: Familiar, concise for success paths
 - **Cons**: Silent failures, complex error handling, hard to test
 - **Rejected**: Not suitable for enterprise HTTP operations
 
 ### Option 2: Result Pattern (Custom Implementation)
+
 ```python
 class Result:
     def __init__(self, success: bool, value=None, error=None):
@@ -71,11 +75,13 @@ class Result:
         self.value = value
         self.error = error
 ```
+
 - **Pros**: Simple implementation, explicit error handling
 - **Cons**: No composability, reinventing the wheel, less type-safe
 - **Rejected**: FlextCore.Result from flext-core is more robust and feature-complete
 
 ### Option 3: Hybrid Approach
+
 - **Description**: Use railway pattern internally but expose traditional APIs
 - **Pros**: Gradual adoption, familiar external APIs
 - **Cons**: Inconsistent error handling, defeats the purpose
@@ -84,6 +90,7 @@ class Result:
 ## Implementation Examples
 
 ### Basic HTTP Operation
+
 ```python
 def get_user(user_id: int) -> FlextCore.Result[User]:
     """Get user with railway error handling."""
@@ -97,6 +104,7 @@ def get_user(user_id: int) -> FlextCore.Result[User]:
 ```
 
 ### Usage in Application Code
+
 ```python
 # Success path
 result = get_user(123)
@@ -118,6 +126,7 @@ user_profile = (get_user(user_id)
 ```
 
 ### Testing Railway Code
+
 ```python
 def test_get_user_success():
     # Given
@@ -146,17 +155,20 @@ def test_get_user_not_found():
 ## Migration Strategy
 
 ### Phase 1: Core Implementation
+
 - [x] Implement FlextCore.Result integration in all HTTP operations
 - [x] Update FlextApiClient to return FlextCore.Result[T]
 - [x] Add railway pattern utilities and helpers
 
 ### Phase 2: Ecosystem Migration
+
 - [x] Update all internal usage to railway pattern
 - [ ] Create migration examples and documentation
 - [ ] Provide utility functions for common transformations
 - [ ] Update testing patterns and examples
 
 ### Phase 3: Ecosystem Adoption
+
 - [ ] Update all ecosystem projects to use railway pattern
 - [ ] Provide training and support for migration
 - [ ] Update documentation and code examples

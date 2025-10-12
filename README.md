@@ -156,12 +156,12 @@ protocols = {
 
 ### **FLEXT-Core Integration Status**
 
-| Pattern            | Status | Implementation                          |
-| ------------------ | ------ | --------------------------------------- |
-| **FlextCore.Result[T]** | 🟢 90% | Comprehensive error handling throughout |
-| **FlextCore.Service**   | 🟢 85% | FlextApiClient extends FlextCore.Service     |
+| Pattern                 | Status | Implementation                            |
+| ----------------------- | ------ | ----------------------------------------- |
+| **FlextCore.Result[T]** | 🟢 90% | Comprehensive error handling throughout   |
+| **FlextCore.Service**   | 🟢 85% | FlextApiClient extends FlextCore.Service  |
 | **FlextCore.Models**    | 🟡 70% | HTTP models use patterns, missing methods |
-| **FlextCore.Container** | 🟡 60% | Basic dependency injection usage        |
+| **FlextCore.Container** | 🟡 60% | Basic dependency injection usage          |
 
 > **Status**: 🟢 Working Foundation | 🟡 Partial Implementation | 🔴 Critical Gaps
 

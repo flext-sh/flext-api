@@ -75,6 +75,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
 
 **Technology**: Python with HTTPX and FastAPI
 **Responsibilities**:
+
 - Enterprise-grade HTTP client operations
 - Connection pooling and lifecycle management
 - Automatic retry logic with exponential backoff
@@ -83,6 +84,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
 - Error handling with railway pattern
 
 **Key Interfaces**:
+
 - `FlextApiClient` - Main HTTP client class
 - Request/response model validation
 - Connection pool management
@@ -92,6 +94,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
 
 **Technology**: Python with FastAPI framework
 **Responsibilities**:
+
 - Web API server with automatic OpenAPI generation
 - Request routing and middleware processing
 - Response serialization and formatting
@@ -99,6 +102,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
 - CORS and security headers management
 
 **Key Interfaces**:
+
 - `create_fastapi_app()` - Application factory function
 - Middleware pipeline integration
 - Route registration and validation
@@ -108,12 +112,14 @@ Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
 
 **Technology**: Python with protocol abstractions
 **Responsibilities**:
+
 - Multi-protocol support (HTTP, GraphQL, WebSocket, SSE)
 - Protocol-specific client implementations
 - Message format translation and validation
 - Protocol negotiation and capability detection
 
 **Key Interfaces**:
+
 - Protocol registry and discovery
 - Protocol-specific client factories
 - Message serialization/deserialization
@@ -123,6 +129,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
 
 **Technology**: Python with multi-backend support
 **Responsibilities**:
+
 - Multi-cloud storage abstraction (S3, GCS, Azure)
 - Local filesystem operations
 - File upload/download with streaming
@@ -130,6 +137,7 @@ Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
 - Storage backend failover and load balancing
 
 **Key Interfaces**:
+
 - Storage backend registry
 - File operation abstractions
 - Upload/download progress tracking
@@ -139,12 +147,14 @@ Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
 
 **Technology**: Python with Pydantic validation
 **Responsibilities**:
+
 - Environment-aware configuration loading
 - Configuration validation and type safety
 - Secret management integration
 - Configuration hot-reloading support
 
 **Key Interfaces**:
+
 - Configuration model definitions
 - Environment variable parsing
 - Configuration validation rules
@@ -154,25 +164,25 @@ Rel(fastapi_app, config_layer, "Reads configuration", "config loading")
 
 ### Core Technologies
 
-| Component | Technology | Justification |
-|-----------|------------|---------------|
-| **HTTP Client** | HTTPX | Modern async HTTP client with excellent performance |
-| **Web Framework** | FastAPI | High-performance async API framework with auto-docs |
+| Component           | Technology  | Justification                                        |
+| ------------------- | ----------- | ---------------------------------------------------- |
+| **HTTP Client**     | HTTPX       | Modern async HTTP client with excellent performance  |
+| **Web Framework**   | FastAPI     | High-performance async API framework with auto-docs  |
 | **Data Validation** | Pydantic v2 | Type-safe data validation with excellent performance |
-| **JSON Processing** | orjson | Fastest JSON library for Python |
-| **WebSocket** | websockets | Mature WebSocket library for real-time communication |
-| **GraphQL** | gql | Comprehensive GraphQL client library |
+| **JSON Processing** | orjson      | Fastest JSON library for Python                      |
+| **WebSocket**       | websockets  | Mature WebSocket library for real-time communication |
+| **GraphQL**         | gql         | Comprehensive GraphQL client library                 |
 
 ### Infrastructure Dependencies
 
-| Dependency | Purpose | Version Constraint |
-|------------|---------|-------------------|
+| Dependency     | Purpose             | Version Constraint |
+| -------------- | ------------------- | ------------------ |
 | **flext-core** | Foundation patterns | file:../flext-core |
-| **httpx** | HTTP client | >=0.28.1 |
-| **fastapi** | Web framework | >=0.116.0 |
-| **pydantic** | Data validation | >=2.10.0 |
-| **websockets** | WebSocket protocol | >=15.0.1 |
-| **gql** | GraphQL client | >=4.0.0 |
+| **httpx**      | HTTP client         | >=0.28.1           |
+| **fastapi**    | Web framework       | >=0.116.0          |
+| **pydantic**   | Data validation     | >=2.10.0           |
+| **websockets** | WebSocket protocol  | >=15.0.1           |
+| **gql**        | GraphQL client      | >=4.0.0            |
 
 ## Deployment Considerations
 
@@ -242,23 +252,27 @@ database:
 ## Quality Attributes
 
 ### Performance
+
 - **HTTP Client**: Connection pooling, HTTP/2 support, async operations
 - **FastAPI**: Async request handling, optimized serialization
 - **Storage**: Streaming uploads/downloads, CDN integration
 
 ### Reliability
+
 - **Error Handling**: Railway pattern throughout all operations
 - **Retry Logic**: Exponential backoff for transient failures
 - **Circuit Breakers**: Protection against cascading failures
 - **Health Checks**: Comprehensive system health monitoring
 
 ### Security
+
 - **Authentication**: JWT, API keys, OAuth support
 - **Authorization**: Role-based and permission-based access control
 - **Transport Security**: TLS/SSL encryption, certificate validation
 - **Input Validation**: Comprehensive request/response validation
 
 ### Maintainability
+
 - **Clean Architecture**: Clear separation of concerns
 - **Type Safety**: Full type annotations with runtime checking
 - **Documentation**: Comprehensive API and architecture documentation
@@ -267,18 +281,21 @@ database:
 ## Monitoring and Observability
 
 ### Metrics Collection
+
 - **HTTP Metrics**: Request count, latency, error rates
 - **Performance Metrics**: Memory usage, CPU utilization, response times
 - **Business Metrics**: API usage patterns, user behavior
 - **System Metrics**: Disk usage, network I/O, database connections
 
 ### Logging Strategy
+
 - **Structured Logging**: JSON format with correlation IDs
 - **Log Levels**: DEBUG, INFO, WARNING, ERROR, CRITICAL
 - **Log Aggregation**: Centralized logging with search capabilities
 - **Security Logging**: Audit trails for sensitive operations
 
 ### Health Checks
+
 - **Application Health**: Service availability and responsiveness
 - **Dependency Health**: Database, cache, external service connectivity
 - **Performance Health**: Response time thresholds and error rates

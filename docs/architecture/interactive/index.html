@@ -1,142 +1,158 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FLEXT-API Architecture Documentation</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <header>
-        <h1>FLEXT-API Architecture Documentation</h1>
-        <p>Interactive documentation generated on 2025-10-10 19:17:04</p>
+      <h1>FLEXT-API Architecture Documentation</h1>
+      <p>Interactive documentation generated on 2025-10-10 19:17:04</p>
     </header>
 
     <nav id="navbar">
-        <ul>
-            <li><a href="#overview" class="nav-link">Overview</a></li>
-            <li><a href="#c4-model" class="nav-link">C4 Model</a></li>
-            <li><a href="#diagrams" class="nav-link">Diagrams</a></li>
-            <li><a href="#decisions" class="nav-link">ADRs</a></li>
-            <li><a href="#quality" class="nav-link">Quality Metrics</a></li>
-        </ul>
+      <ul>
+        <li><a href="#overview" class="nav-link">Overview</a></li>
+        <li><a href="#c4-model" class="nav-link">C4 Model</a></li>
+        <li><a href="#diagrams" class="nav-link">Diagrams</a></li>
+        <li><a href="#decisions" class="nav-link">ADRs</a></li>
+        <li><a href="#quality" class="nav-link">Quality Metrics</a></li>
+      </ul>
     </nav>
 
     <main>
-        <section id="overview">
-            <h2>Architecture Overview</h2>
-            <div class="architecture-summary">
-                <div class="metric-card">
-                    <h3>Clean Architecture</h3>
-                    <p>Protocol-based design with clear separation of concerns</p>
-                </div>
-                <div class="metric-card">
-                    <h3>Railway Pattern</h3>
-                    <p>Type-safe error handling throughout the system</p>
-                </div>
-                <div class="metric-card">
-                    <h3>Multi-Protocol</h3>
-                    <p>HTTP, GraphQL, WebSocket, and custom protocols</p>
-                </div>
-                <div class="metric-card">
-                    <h3>Enterprise Ready</h3>
-                    <p>Production-grade with comprehensive monitoring</p>
-                </div>
-            </div>
-        </section>
+      <section id="overview">
+        <h2>Architecture Overview</h2>
+        <div class="architecture-summary">
+          <div class="metric-card">
+            <h3>Clean Architecture</h3>
+            <p>Protocol-based design with clear separation of concerns</p>
+          </div>
+          <div class="metric-card">
+            <h3>Railway Pattern</h3>
+            <p>Type-safe error handling throughout the system</p>
+          </div>
+          <div class="metric-card">
+            <h3>Multi-Protocol</h3>
+            <p>HTTP, GraphQL, WebSocket, and custom protocols</p>
+          </div>
+          <div class="metric-card">
+            <h3>Enterprise Ready</h3>
+            <p>Production-grade with comprehensive monitoring</p>
+          </div>
+        </div>
+      </section>
 
-        <section id="c4-model">
-            <h2>C4 Model Documentation</h2>
-            <div class="c4-diagram-grid">
-                <div class="diagram-card">
-                    <h3>Context</h3>
-                    <p>System in its environment</p>
-                    <a href="../c4-model/context.md" class="btn">View Details</a>
-                </div>
-                <div class="diagram-card">
-                    <h3>Containers</h3>
-                    <p>Technology choices and deployment</p>
-                    <a href="../c4-model/containers.md" class="btn">View Details</a>
-                </div>
-                <div class="diagram-card">
-                    <h3>Components</h3>
-                    <p>Component relationships</p>
-                    <a href="../c4-model/components.md" class="btn">View Details</a>
-                </div>
-                <div class="diagram-card">
-                    <h3>Code</h3>
-                    <p>Implementation details</p>
-                    <a href="../c4-model/code.md" class="btn">View Details</a>
-                </div>
-            </div>
-        </section>
+      <section id="c4-model">
+        <h2>C4 Model Documentation</h2>
+        <div class="c4-diagram-grid">
+          <div class="diagram-card">
+            <h3>Context</h3>
+            <p>System in its environment</p>
+            <a href="../c4-model/context.md" class="btn">View Details</a>
+          </div>
+          <div class="diagram-card">
+            <h3>Containers</h3>
+            <p>Technology choices and deployment</p>
+            <a href="../c4-model/containers.md" class="btn">View Details</a>
+          </div>
+          <div class="diagram-card">
+            <h3>Components</h3>
+            <p>Component relationships</p>
+            <a href="../c4-model/components.md" class="btn">View Details</a>
+          </div>
+          <div class="diagram-card">
+            <h3>Code</h3>
+            <p>Implementation details</p>
+            <a href="../c4-model/code.md" class="btn">View Details</a>
+          </div>
+        </div>
+      </section>
 
-        <section id="diagrams">
-            <h2>Architecture Diagrams</h2>
-            <div class="diagrams-grid">
-                <div class="diagram-item">
-                    <h3>System Landscape</h3>
-                    <p>Enterprise ecosystem overview</p>
-                    <div class="diagram-links">
-                        <a href="../diagrams/system-landscape.puml">PlantUML</a>
-                        <a href="../diagrams/system-landscape.png" class="image-link">PNG</a>
-                        <a href="../diagrams/system-landscape.svg" class="image-link">SVG</a>
-                    </div>
-                </div>
-                <div class="diagram-item">
-                    <h3>Deployment Architecture</h3>
-                    <p>Infrastructure and containerization</p>
-                    <div class="diagram-links">
-                        <a href="../diagrams/deployment-diagram.puml">PlantUML</a>
-                        <a href="../diagrams/deployment-diagram.png" class="image-link">PNG</a>
-                        <a href="../diagrams/deployment-diagram.svg" class="image-link">SVG</a>
-                    </div>
-                </div>
-                <div class="diagram-item">
-                    <h3>HTTP Request Flow</h3>
-                    <p>Request processing sequence</p>
-                    <div class="diagram-links">
-                        <a href="../diagrams/http-request-flow.puml">PlantUML</a>
-                        <a href="../diagrams/http-request-flow.png" class="image-link">PNG</a>
-                        <a href="../diagrams/http-request-flow.svg" class="image-link">SVG</a>
-                    </div>
-                </div>
-                <div class="diagram-item">
-                    <h3>Data Flow</h3>
-                    <p>Data processing and storage</p>
-                    <div class="diagram-links">
-                        <a href="../diagrams/data-flow-diagram.puml">PlantUML</a>
-                        <a href="../diagrams/data-flow-diagram.png" class="image-link">PNG</a>
-                        <a href="../diagrams/data-flow-diagram.svg" class="image-link">SVG</a>
-                    </div>
-                </div>
+      <section id="diagrams">
+        <h2>Architecture Diagrams</h2>
+        <div class="diagrams-grid">
+          <div class="diagram-item">
+            <h3>System Landscape</h3>
+            <p>Enterprise ecosystem overview</p>
+            <div class="diagram-links">
+              <a href="../diagrams/system-landscape.puml">PlantUML</a>
+              <a href="../diagrams/system-landscape.png" class="image-link"
+                >PNG</a
+              >
+              <a href="../diagrams/system-landscape.svg" class="image-link"
+                >SVG</a
+              >
             </div>
-        </section>
+          </div>
+          <div class="diagram-item">
+            <h3>Deployment Architecture</h3>
+            <p>Infrastructure and containerization</p>
+            <div class="diagram-links">
+              <a href="../diagrams/deployment-diagram.puml">PlantUML</a>
+              <a href="../diagrams/deployment-diagram.png" class="image-link"
+                >PNG</a
+              >
+              <a href="../diagrams/deployment-diagram.svg" class="image-link"
+                >SVG</a
+              >
+            </div>
+          </div>
+          <div class="diagram-item">
+            <h3>HTTP Request Flow</h3>
+            <p>Request processing sequence</p>
+            <div class="diagram-links">
+              <a href="../diagrams/http-request-flow.puml">PlantUML</a>
+              <a href="../diagrams/http-request-flow.png" class="image-link"
+                >PNG</a
+              >
+              <a href="../diagrams/http-request-flow.svg" class="image-link"
+                >SVG</a
+              >
+            </div>
+          </div>
+          <div class="diagram-item">
+            <h3>Data Flow</h3>
+            <p>Data processing and storage</p>
+            <div class="diagram-links">
+              <a href="../diagrams/data-flow-diagram.puml">PlantUML</a>
+              <a href="../diagrams/data-flow-diagram.png" class="image-link"
+                >PNG</a
+              >
+              <a href="../diagrams/data-flow-diagram.svg" class="image-link"
+                >SVG</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <section id="decisions">
-            <h2>Architecture Decision Records</h2>
-            <div id="adr-list">
-                <p>Loading ADRs...</p>
-            </div>
-            <div class="adr-actions">
-                <a href="../decisions/adr-template.md" class="btn">ADR Template</a>
-                <a href="../decisions/README.md" class="btn">ADR Guidelines</a>
-            </div>
-        </section>
+      <section id="decisions">
+        <h2>Architecture Decision Records</h2>
+        <div id="adr-list">
+          <p>Loading ADRs...</p>
+        </div>
+        <div class="adr-actions">
+          <a href="../decisions/adr-template.md" class="btn">ADR Template</a>
+          <a href="../decisions/README.md" class="btn">ADR Guidelines</a>
+        </div>
+      </section>
 
-        <section id="quality">
-            <h2>Quality Metrics</h2>
-            <div id="quality-metrics">
-                <p>Loading quality metrics...</p>
-            </div>
-        </section>
+      <section id="quality">
+        <h2>Quality Metrics</h2>
+        <div id="quality-metrics">
+          <p>Loading quality metrics...</p>
+        </div>
+      </section>
     </main>
 
     <footer>
-        <p>Generated by FLEXT-API Architecture Documentation Generator</p>
-        <p>&copy; 2025 FLEXT Team</p>
+      <p>Generated by FLEXT-API Architecture Documentation Generator</p>
+      <p>&copy; 2025 FLEXT Team</p>
     </footer>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>

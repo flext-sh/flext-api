@@ -5,43 +5,43 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Maintenance mode'
+        description: "Maintenance mode"
         required: true
-        default: 'full-audit'
+        default: "full-audit"
         type: choice
         options:
           - full-audit
           - quick-check
           - auto-fix
       auto_fix:
-        description: 'Apply automatic fixes'
+        description: "Apply automatic fixes"
         required: false
         default: false
         type: boolean
 
   # Scheduled runs (weekly on Monday at 2 AM UTC)
   schedule:
-    - cron: '0 2 * * 1'
+    - cron: "0 2 * * 1"
 
   # Run on documentation changes
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
-      - 'docs/**'
-      - 'docs-new/**'
-      - 'examples/**'
-      - '*.md'
-      - 'docs-maintenance/**'
+      - "docs/**"
+      - "docs-new/**"
+      - "examples/**"
+      - "*.md"
+      - "docs-maintenance/**"
 
   # Pull request checks
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
-      - 'docs/**'
-      - 'docs-new/**'
-      - 'examples/**'
-      - '*.md'
-      - 'docs-maintenance/**'
+      - "docs/**"
+      - "docs-new/**"
+      - "examples/**"
+      - "*.md"
+      - "docs-maintenance/**"
 
 jobs:
   docs-maintenance:
@@ -52,253 +52,253 @@ jobs:
       pull-requests: write
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Full history for git operations
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for git operations
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.13'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
 
-    - name: Cache pip dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyyaml requests
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml requests
 
-    - name: Determine maintenance mode
-      id: mode
-      run: |
-        if [ "${{ github.event_name }}" = "schedule" ]; then
-          echo "mode=full-audit" >> $GITHUB_OUTPUT
-          echo "auto_fix=false" >> $GITHUB_OUTPUT
-        elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
-          echo "auto_fix=${{ inputs.auto_fix }}" >> $GITHUB_OUTPUT
-        elif [ "${{ github.event_name }}" = "push" ]; then
-          echo "mode=quick-check" >> $GITHUB_OUTPUT
-          echo "auto_fix=false" >> $GITHUB_OUTPUT
-        elif [ "${{ github.event_name }}" = "pull_request" ]; then
-          echo "mode=ci-mode" >> $GITHUB_OUTPUT
-          echo "auto_fix=false" >> $GITHUB_OUTPUT
-        else
-          echo "mode=full-audit" >> $GITHUB_OUTPUT
-          echo "auto_fix=false" >> $GITHUB_OUTPUT
-        fi
-
-    - name: Run documentation maintenance
-      id: maintenance
-      run: |
-        echo "Running documentation maintenance in ${{ steps.mode.outputs.mode }} mode"
-
-        # Set CI mode environment variable
-        export DOCS_CI_MODE=true
-
-        # Run maintenance
-        if [ "${{ steps.mode.outputs.auto_fix }}" = "true" ]; then
-          python docs-maintenance/scripts/maintenance_runner.py --${{ steps.mode.outputs.mode }} --auto-fix --report --format json --output maintenance_ci
-        else
-          python docs-maintenance/scripts/maintenance_runner.py --${{ steps.mode.outputs.mode }} --report --format json --output maintenance_ci
-        fi
-
-    - name: Check maintenance results
-      id: results
-      run: |
-        if [ -f "docs-maintenance/reports/maintenance_ci.json" ]; then
-          # Extract key metrics
-          quality_score=$(python -c "
-          import json
-          try:
-              with open('docs-maintenance/dashboards/quality_dashboard_result.json', 'r') as f:
-                  data = json.load(f)
-                  score = data.get('metrics', {}).get('overall_score', 0)
-                  print(f'{score:.1f}')
-          except:
-              print('0.0')
-          ")
-
-          issues_found=$(python -c "
-          import json
-          try:
-              with open('docs-maintenance/reports/maintenance_ci.json', 'r') as f:
-                  data = json.load(f)
-                  issues = data.get('summary', {}).get('total_issues_found', 0)
-                  print(issues)
-          except:
-              print('0')
-          ")
-
-          echo "quality_score=$quality_score" >> $GITHUB_OUTPUT
-          echo "issues_found=$issues_found" >> $GITHUB_OUTPUT
-
-          # Check for failures
-          failed_tools=$(python -c "
-          import json
-          try:
-              with open('docs-maintenance/reports/maintenance_ci.json', 'r') as f:
-                  data = json.load(f)
-                  failed = data.get('summary', {}).get('failed_tools', 0)
-                  print(failed)
-          except:
-              print('0')
-          ")
-
-          if [ "$failed_tools" -gt 0 ]; then
-            echo "has_failures=true" >> $GITHUB_OUTPUT
+      - name: Determine maintenance mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "mode=full-audit" >> $GITHUB_OUTPUT
+            echo "auto_fix=false" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+            echo "auto_fix=${{ inputs.auto_fix }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            echo "mode=quick-check" >> $GITHUB_OUTPUT
+            echo "auto_fix=false" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "mode=ci-mode" >> $GITHUB_OUTPUT
+            echo "auto_fix=false" >> $GITHUB_OUTPUT
           else
-            echo "has_failures=false" >> $GITHUB_OUTPUT
+            echo "mode=full-audit" >> $GITHUB_OUTPUT
+            echo "auto_fix=false" >> $GITHUB_OUTPUT
           fi
-        else
-          echo "quality_score=0.0" >> $GITHUB_OUTPUT
-          echo "issues_found=0" >> $GITHUB_OUTPUT
-          echo "has_failures=true" >> $GITHUB_OUTPUT
-        fi
 
-    - name: Upload maintenance reports
-      uses: actions/upload-artifact@v3
-      with:
-        name: docs-maintenance-reports-${{ github.run_id }}
-        path: |
-          docs-maintenance/reports/
-          docs-maintenance/dashboards/
-        retention-days: 30
+      - name: Run documentation maintenance
+        id: maintenance
+        run: |
+          echo "Running documentation maintenance in ${{ steps.mode.outputs.mode }} mode"
 
-    - name: Comment on PR (if applicable)
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const fs = require('fs');
-          const path = require('path');
+          # Set CI mode environment variable
+          export DOCS_CI_MODE=true
 
-          // Read maintenance report
-          let reportContent = '## Documentation Maintenance Results\n\n';
-          let qualityScore = 0;
-          let issuesFound = 0;
+          # Run maintenance
+          if [ "${{ steps.mode.outputs.auto_fix }}" = "true" ]; then
+            python docs-maintenance/scripts/maintenance_runner.py --${{ steps.mode.outputs.mode }} --auto-fix --report --format json --output maintenance_ci
+          else
+            python docs-maintenance/scripts/maintenance_runner.py --${{ steps.mode.outputs.mode }} --report --format json --output maintenance_ci
+          fi
 
-          try {
-            const reportPath = path.join(process.cwd(), 'docs-maintenance/reports/maintenance_ci.json');
-            if (fs.existsSync(reportPath)) {
-              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
-              qualityScore = report.summary?.quality_score || 0;
-              issuesFound = report.summary?.total_issues_found || 0;
+      - name: Check maintenance results
+        id: results
+        run: |
+          if [ -f "docs-maintenance/reports/maintenance_ci.json" ]; then
+            # Extract key metrics
+            quality_score=$(python -c "
+            import json
+            try:
+                with open('docs-maintenance/dashboards/quality_dashboard_result.json', 'r') as f:
+                    data = json.load(f)
+                    score = data.get('metrics', {}).get('overall_score', 0)
+                    print(f'{score:.1f}')
+            except:
+                print('0.0')
+            ")
 
-              reportContent += `### Quality Score: ${qualityScore}%\n`;
-              reportContent += `### Issues Found: ${issuesFound}\n\n`;
+            issues_found=$(python -c "
+            import json
+            try:
+                with open('docs-maintenance/reports/maintenance_ci.json', 'r') as f:
+                    data = json.load(f)
+                    issues = data.get('summary', {}).get('total_issues_found', 0)
+                    print(issues)
+            except:
+                print('0')
+            ")
 
-              if (report.recommendations && report.recommendations.length > 0) {
-                reportContent += '### Recommendations:\n';
-                report.recommendations.slice(0, 5).forEach(rec => {
-                  reportContent += `- ${rec}\n`;
-                });
-                reportContent += '\n';
+            echo "quality_score=$quality_score" >> $GITHUB_OUTPUT
+            echo "issues_found=$issues_found" >> $GITHUB_OUTPUT
+
+            # Check for failures
+            failed_tools=$(python -c "
+            import json
+            try:
+                with open('docs-maintenance/reports/maintenance_ci.json', 'r') as f:
+                    data = json.load(f)
+                    failed = data.get('summary', {}).get('failed_tools', 0)
+                    print(failed)
+            except:
+                print('0')
+            ")
+
+            if [ "$failed_tools" -gt 0 ]; then
+              echo "has_failures=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_failures=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "quality_score=0.0" >> $GITHUB_OUTPUT
+            echo "issues_found=0" >> $GITHUB_OUTPUT
+            echo "has_failures=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload maintenance reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs-maintenance-reports-${{ github.run_id }}
+          path: |
+            docs-maintenance/reports/
+            docs-maintenance/dashboards/
+          retention-days: 30
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Read maintenance report
+            let reportContent = '## Documentation Maintenance Results\n\n';
+            let qualityScore = 0;
+            let issuesFound = 0;
+
+            try {
+              const reportPath = path.join(process.cwd(), 'docs-maintenance/reports/maintenance_ci.json');
+              if (fs.existsSync(reportPath)) {
+                const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+                qualityScore = report.summary?.quality_score || 0;
+                issuesFound = report.summary?.total_issues_found || 0;
+
+                reportContent += `### Quality Score: ${qualityScore}%\n`;
+                reportContent += `### Issues Found: ${issuesFound}\n\n`;
+
+                if (report.recommendations && report.recommendations.length > 0) {
+                  reportContent += '### Recommendations:\n';
+                  report.recommendations.slice(0, 5).forEach(rec => {
+                    reportContent += `- ${rec}\n`;
+                  });
+                  reportContent += '\n';
+                }
               }
+            } catch (error) {
+              reportContent += '⚠️ Could not read maintenance report\n\n';
             }
-          } catch (error) {
-            reportContent += '⚠️ Could not read maintenance report\n\n';
-          }
 
-          // Read quality dashboard
-          try {
-            const dashboardPath = path.join(process.cwd(), 'docs-maintenance/dashboards/quality_dashboard_result.md');
-            if (fs.existsSync(dashboardPath)) {
-              const dashboard = fs.readFileSync(dashboardPath, 'utf8');
-              const lines = dashboard.split('\n').slice(0, 20); // First 20 lines
-              reportContent += '### Quality Dashboard Summary:\n```\n';
-              reportContent += lines.join('\n');
-              reportContent += '\n```\n\n';
+            // Read quality dashboard
+            try {
+              const dashboardPath = path.join(process.cwd(), 'docs-maintenance/dashboards/quality_dashboard_result.md');
+              if (fs.existsSync(dashboardPath)) {
+                const dashboard = fs.readFileSync(dashboardPath, 'utf8');
+                const lines = dashboard.split('\n').slice(0, 20); // First 20 lines
+                reportContent += '### Quality Dashboard Summary:\n```\n';
+                reportContent += lines.join('\n');
+                reportContent += '\n```\n\n';
+              }
+            } catch (error) {
+              // Ignore dashboard read errors
             }
-          } catch (error) {
-            // Ignore dashboard read errors
-          }
 
-          reportContent += '[📊 View Full Reports](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})';
+            reportContent += '[📊 View Full Reports](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})';
 
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: reportContent
-          });
-
-    - name: Create issue on quality degradation
-      if: |
-        steps.results.outputs.has_failures == 'true' ||
-        (steps.results.outputs.quality_score != '' && steps.results.outputs.quality_score < 60)
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const qualityScore = parseFloat('${{ steps.results.outputs.quality_score }}') || 0;
-          const issuesFound = parseInt('${{ steps.results.outputs.issues_found }}') || 0;
-
-          const title = `🚨 Documentation Quality Alert: ${qualityScore}% Score`;
-          const body = `## Documentation Quality Issue Detected
-
-          **Quality Score:** ${qualityScore}%
-          **Issues Found:** ${issuesFound}
-
-          ### Details
-          The documentation maintenance workflow detected quality issues that require attention.
-
-          ### Next Steps
-          1. Review the [maintenance reports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          2. Address critical and high-priority issues
-          3. Consider running the maintenance workflow with auto-fix enabled
-
-          ### Automatic Actions
-          - Maintenance reports have been uploaded as artifacts
-          - Quality dashboard is available for detailed analysis
-
-          ---
-          *This issue was automatically created by the documentation maintenance workflow.*`;
-
-          // Check if similar issue already exists
-          const existingIssues = await github.rest.issues.listForRepo({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            labels: ['documentation', 'quality-alert'],
-            state: 'open'
-          });
-
-          const similarIssue = existingIssues.data.find(issue =>
-            issue.title.includes('Documentation Quality Alert')
-          );
-
-          if (!similarIssue) {
-            await github.rest.issues.create({
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: title,
-              body: body,
-              labels: ['documentation', 'quality-alert', 'automated']
+              body: reportContent
             });
-          }
 
-    - name: Fail CI on critical issues (PR checks)
-      if: |
-        github.event_name == 'pull_request' &&
-        (steps.results.outputs.has_failures == 'true' ||
-         (steps.results.outputs.quality_score != '' && steps.results.outputs.quality_score < 70))
-      run: |
-        echo "❌ Documentation quality check failed"
-        echo "Quality Score: ${{ steps.results.outputs.quality_score }}%"
-        echo "Issues Found: ${{ steps.results.outputs.issues_found }}"
-        echo ""
-        echo "Please review the maintenance reports and address the issues."
-        exit 1
+      - name: Create issue on quality degradation
+        if: |
+          steps.results.outputs.has_failures == 'true' ||
+          (steps.results.outputs.quality_score != '' && steps.results.outputs.quality_score < 60)
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const qualityScore = parseFloat('${{ steps.results.outputs.quality_score }}') || 0;
+            const issuesFound = parseInt('${{ steps.results.outputs.issues_found }}') || 0;
 
-    - name: Success notification
-      if: steps.results.outputs.has_failures == 'false'
-      run: |
-        echo "✅ Documentation maintenance completed successfully"
-        echo "Quality Score: ${{ steps.results.outputs.quality_score }}%"
-        echo "Issues Found: ${{ steps.results.outputs.issues_found }}"
+            const title = `🚨 Documentation Quality Alert: ${qualityScore}% Score`;
+            const body = `## Documentation Quality Issue Detected
+
+            **Quality Score:** ${qualityScore}%
+            **Issues Found:** ${issuesFound}
+
+            ### Details
+            The documentation maintenance workflow detected quality issues that require attention.
+
+            ### Next Steps
+            1. Review the [maintenance reports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            2. Address critical and high-priority issues
+            3. Consider running the maintenance workflow with auto-fix enabled
+
+            ### Automatic Actions
+            - Maintenance reports have been uploaded as artifacts
+            - Quality dashboard is available for detailed analysis
+
+            ---
+            *This issue was automatically created by the documentation maintenance workflow.*`;
+
+            // Check if similar issue already exists
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['documentation', 'quality-alert'],
+              state: 'open'
+            });
+
+            const similarIssue = existingIssues.data.find(issue =>
+              issue.title.includes('Documentation Quality Alert')
+            );
+
+            if (!similarIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['documentation', 'quality-alert', 'automated']
+              });
+            }
+
+      - name: Fail CI on critical issues (PR checks)
+        if: |
+          github.event_name == 'pull_request' &&
+          (steps.results.outputs.has_failures == 'true' ||
+           (steps.results.outputs.quality_score != '' && steps.results.outputs.quality_score < 70))
+        run: |
+          echo "❌ Documentation quality check failed"
+          echo "Quality Score: ${{ steps.results.outputs.quality_score }}%"
+          echo "Issues Found: ${{ steps.results.outputs.issues_found }}"
+          echo ""
+          echo "Please review the maintenance reports and address the issues."
+          exit 1
+
+      - name: Success notification
+        if: steps.results.outputs.has_failures == 'false'
+        run: |
+          echo "✅ Documentation maintenance completed successfully"
+          echo "Quality Score: ${{ steps.results.outputs.quality_score }}%"
+          echo "Issues Found: ${{ steps.results.outputs.issues_found }}"

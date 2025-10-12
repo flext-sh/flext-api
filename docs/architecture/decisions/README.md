@@ -2,7 +2,7 @@
 
 This directory contains Architecture Decision Records (ADRs) that document important architectural decisions made for the FLEXT-API project.
 
-## What are ADRs?
+## What are ADRs
 
 Architecture Decision Records (ADRs) are documents that capture important architectural decisions along with their context and consequences.
 
@@ -46,14 +46,14 @@ Date: [YYYY-MM-DD]
 
 ## Current ADRs
 
-| ADR | Title | Status | Date |
-|-----|-------|--------|------|
-| [ADR-001](001-flext-core-dependency.md) | Mandatory FLEXT-Core Dependency | Accepted | 2025-01-01 |
-| [ADR-002](002-railway-pattern.md) | Railway-Oriented Error Handling | Accepted | 2025-01-01 |
-| [ADR-003](003-protocol-abstraction.md) | Protocol Plugin Architecture | Accepted | 2025-01-01 |
-| [ADR-004](004-pydantic-v2.md) | Pydantic v2 Adoption | Accepted | 2025-01-15 |
-| [ADR-005](005-httpx-client.md) | HTTPX as HTTP Client | Accepted | 2025-01-15 |
-| [ADR-006](006-clean-architecture.md) | Clean Architecture Implementation | Accepted | 2025-01-20 |
+| ADR                                     | Title                             | Status   | Date       |
+| --------------------------------------- | --------------------------------- | -------- | ---------- |
+| [ADR-001](001-flext-core-dependency.md) | Mandatory FLEXT-Core Dependency   | Accepted | 2025-01-01 |
+| [ADR-002](002-railway-pattern.md)       | Railway-Oriented Error Handling   | Accepted | 2025-01-01 |
+| [ADR-003](003-protocol-abstraction.md)  | Protocol Plugin Architecture      | Accepted | 2025-01-01 |
+| [ADR-004](004-pydantic-v2.md)           | Pydantic v2 Adoption              | Accepted | 2025-01-15 |
+| [ADR-005](005-httpx-client.md)          | HTTPX as HTTP Client              | Accepted | 2025-01-15 |
+| [ADR-006](006-clean-architecture.md)    | Clean Architecture Implementation | Accepted | 2025-01-20 |
 
 ## ADR Workflow
 
