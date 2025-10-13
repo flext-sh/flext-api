@@ -30,6 +30,7 @@ class FlextApiClient:
         """Configuration management for FlextApiClient."""
 
         def __init__(self) -> None:
+            """Initialize configuration manager."""
             self._config: FlextApiConfig | None = None
 
         def configure(
@@ -65,9 +66,7 @@ class FlextApiClient:
 
             return FlextCore.Result[None].ok(None)
 
-        def get_client_config(
-            self, **kwargs: Any
-        ) -> FlextCore.Result[FlextApiModels.ClientConfig]:
+        def get_client_config(self) -> FlextCore.Result[FlextApiModels.ClientConfig]:
             """Get client configuration."""
             if self._config is None:
                 return FlextCore.Result[FlextApiModels.ClientConfig].fail(
@@ -79,7 +78,6 @@ class FlextApiClient:
                     base_url=self._config.base_url
                     or FlextApiConstants.DEFAULT_BASE_URL,
                     timeout=self._config.timeout,
-                    max_retries=self._config.max_retries,
                     headers=self._config.get_default_headers()
                     if hasattr(self._config, "get_default_headers")
                     else {},

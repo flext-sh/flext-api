@@ -50,7 +50,7 @@ class FlextApiAdapters(FlextCore.Service[None]):
     _base_url: str = PrivateAttr()
 
     def __init__(self, endpoint: str = "/graphql", base_url: str = "") -> None:
-        """Initialize the unified adapters service with complete flext-core integration."""
+        """Initialize the unified adapters service with flext-core integration."""
         # Complete flext-core integration
         self._logger = FlextCore.Logger(__name__)
         self._container = FlextCore.Container.get_global()

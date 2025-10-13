@@ -42,7 +42,7 @@ class FlextApi(FlextCore.Service[FlextApiConfig]):
 
         # Create HTTP client with complete FLEXT ecosystem integration
         client = FlextApi().client(base_url="https://api.example.com", timeout=30.0)
-        # Integrates: FlextCore.Bus, FlextCore.Container, FlextCore.Context, FlextCore.Dispatcher,
+        # Integrates: FlextCore.Bus, Container, Context, Dispatcher,
         # FlextCore.Processors, FlextCore.Registry, FlextCore.Logger
 
         # Create FastAPI app with event-driven lifecycle
