@@ -32,4 +32,4 @@ __all__ = [
 ]
 
 if _flext_api_client_available:
-    __all__.append("FlextApiClient")
+    __all__ += ["FlextApiClient"]

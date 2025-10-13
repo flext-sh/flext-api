@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from contextlib import asynccontextmanager
-from typing import Any, AsyncContextManager, Protocol
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from typing import Any, Protocol
 
 from flext_core import FlextCore
 
@@ -226,7 +226,7 @@ class LifecycleManager:
     @asynccontextmanager
     async def lifecycle_context(
         self, config: dict[str, Any] | None = None
-    ) -> AsyncContextManager[LifecycleManager]:
+    ) -> AbstractAsyncContextManager[LifecycleManager]:
         """Context manager for lifecycle management.
 
         Args:

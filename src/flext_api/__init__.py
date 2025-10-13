@@ -26,11 +26,9 @@ Returns:
     None
 
 Example:
-    >>> from flext_api import FlextApiClient, FlextApiConfig
     >>>
     >>> # Configure HTTP client
     >>> config = FlextApiConfig(base_url="https://api.example.com")
-    >>> client = FlextApiClient(config)
     >>>
     >>> # Make HTTP requests with automatic error handling
     >>> result = client.get("/users")
@@ -68,7 +66,6 @@ __all__ = [
     "FlextApi",
     "FlextApiAdapters",
     "FlextApiApp",
-    "FlextApiClient",
     "FlextApiConfig",
     "FlextApiConstants",
     "FlextApiExceptions",
@@ -82,12 +79,3 @@ __all__ = [
     "__version_info__",
     "_client_module",
 ]
-
-# Make FlextApiClient available at package level
-# Import the client module which contains the FlextApiClient class
-# Import FlextApiClient directly from the client module to avoid circular imports
-try:
-    from flext_api.client.client import FlextApiClient
-except ImportError:
-    # Fallback for development
-    FlextApiClient = None
