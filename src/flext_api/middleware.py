@@ -53,8 +53,7 @@ class FlextApiMiddleware:
         pipeline.add_middleware(logging_mw)
 
         # Use in HTTP client
-        client.middleware = pipeline
-    """
+        client.middleware = pipeline"""
 
     # =========================================================================
     # MIDDLEWARE BASE CLASSES - Foundation for all middleware types

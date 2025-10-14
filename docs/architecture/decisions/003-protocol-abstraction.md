@@ -89,12 +89,12 @@ class BaseProtocol(ABC):
     """Abstract base class for all protocol implementations."""
 
     @abstractmethod
-    def create_client(self, config: Dict[str, Any]) -> Any:
+    def create_client(self, config: Dict[str, object]) -> object:
         """Create protocol-specific client instance."""
         pass
 
     @abstractmethod
-    async def execute_request(self, request: Any) -> FlextCore.Result[Any]:
+    async def execute_request(self, request: object) -> FlextCore.Result[object]:
         """Execute request using protocol-specific logic."""
         pass
 
@@ -159,7 +159,7 @@ class FlextApiClient(FlextCore.Service[None]):
             self._protocol_instance = registry.get_protocol(self._protocol_name)
         return self._protocol_instance
 
-    async def request(self, method: str, url: str, **kwargs) -> FlextCore.Result[Any]:
+    async def request(self, method: str, url: str, **kwargs) -> FlextCore.Result[object]:
         """Unified request method that delegates to protocol."""
         protocol = await self._get_protocol_instance()
 
@@ -172,7 +172,7 @@ class FlextApiClient(FlextCore.Service[None]):
         # Convert back to unified response format
         return self._convert_from_protocol_response(result)
 
-    def _convert_to_protocol_request(self, method: str, url: str, kwargs) -> Any:
+    def _convert_to_protocol_request(self, method: str, url: str, kwargs) -> object:
         """Convert unified request to protocol-specific format."""
         if self._protocol_name == "http":
             return HttpRequest(method=method, url=url, **kwargs)
@@ -180,7 +180,7 @@ class FlextApiClient(FlextCore.Service[None]):
             return GraphQLRequest(query=kwargs.get("query"), variables=kwargs.get("variables"))
         # ... other protocol conversions
 
-    def _convert_from_protocol_response(self, result: FlextCore.Result[Any]) -> FlextCore.Result[Any]:
+    def _convert_from_protocol_response(self, result: FlextCore.Result[object]) -> FlextCore.Result[object]:
         """Convert protocol-specific response to unified format."""
         # Standardize response format across protocols
         return result
@@ -194,7 +194,7 @@ class FlextApiClient(FlextCore.Service[None]):
 class HttpProtocol(BaseProtocol):
     """HTTP/REST protocol implementation."""
 
-    def create_client(self, config: Dict[str, Any]) -> httpx.AsyncClient:
+    def create_client(self, config: Dict[str, object]) -> httpx.AsyncClient:
         return httpx.AsyncClient(**config)
 
     async def execute_request(self, request: HttpRequest) -> FlextCore.Result[HttpResponse]:
@@ -236,7 +236,7 @@ class HttpProtocol(BaseProtocol):
 class GraphQLProtocol(BaseProtocol):
     """GraphQL protocol implementation."""
 
-    def create_client(self, config: Dict[str, Any]) -> gql.Client:
+    def create_client(self, config: Dict[str, object]) -> gql.Client:
         transport = AIOHTTPTransport(url=config["url"])
         return gql.Client(transport=transport, execute_timeout=config.get("timeout", 30))
 
@@ -379,7 +379,7 @@ async def test_protocol_registry_integration():
 
 ```python
 class CustomProtocol(BaseProtocol):
-    def create_client(self, config: Dict[str, Any]):
+    def create_client(self, config: Dict[str, object]):
         return CustomClient(**config)
 
     async def execute_request(self, request):

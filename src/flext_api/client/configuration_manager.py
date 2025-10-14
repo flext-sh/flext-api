@@ -9,8 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
 from flext_core import FlextCore
 
 from flext_api.config import FlextApiConfig
@@ -39,7 +37,7 @@ class ConfigurationManager:
         self._config = value
 
     def configure(
-        self, config: FlextApiConfig | dict[str, Any] | None = None
+        self, config: FlextApiConfig | dict[str, object] | None = None
     ) -> FlextCore.Result[None]:
         """Configure the HTTP client with provided configuration.
 
@@ -131,7 +129,7 @@ class ConfigurationManager:
 
         return headers
 
-    def merge_config(self, updates: dict[str, Any]) -> FlextCore.Result[None]:
+    def merge_config(self, updates: dict[str, object]) -> FlextCore.Result[None]:
         """Merge configuration updates into current config.
 
         Args:
@@ -168,7 +166,7 @@ class ConfigurationManager:
         except Exception as e:
             return FlextCore.Result[None].fail(f"Configuration reset failed: {e}")
 
-    def get_config_summary(self) -> dict[str, Any]:
+    def get_config_summary(self) -> dict[str, object]:
         """Get configuration summary for debugging/logging."""
         if self._config is None:
             return {"status": "unconfigured"}

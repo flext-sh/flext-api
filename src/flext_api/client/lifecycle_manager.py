@@ -12,7 +12,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
-from typing import Any, Protocol
+from typing import Protocol
 
 from flext_core import FlextCore
 
@@ -70,7 +70,7 @@ class LifecycleManager:
         self._initialized = False
         self._registry: FlextApiRegistry | None = None
         self._protocols: FlextApiProtocols | None = None
-        self._resources: list[ResourceProtocol | Any] = []
+        self._resources: list[ResourceProtocol | object] = []
 
     @property
     def initialized(self) -> bool:
@@ -88,7 +88,7 @@ class LifecycleManager:
         return self._protocols
 
     async def initialize(
-        self, config: dict[str, Any] | None = None
+        self, config: dict[str, object] | None = None
     ) -> FlextCore.Result[None]:
         """Initialize the client lifecycle.
 
@@ -155,7 +155,9 @@ class LifecycleManager:
         """Initialize protocol interfaces."""
         # Protocol interfaces are initialized on-demand
 
-    async def _initialize_resources(self, config: dict[str, Any] | None = None) -> None:
+    async def _initialize_resources(
+        self, config: dict[str, object] | None = None
+    ) -> None:
         """Initialize additional resources."""
         # Initialize any additional resources needed
 
@@ -225,7 +227,7 @@ class LifecycleManager:
 
     @asynccontextmanager
     async def lifecycle_context(
-        self, config: dict[str, Any] | None = None
+        self, config: dict[str, object] | None = None
     ) -> AbstractAsyncContextManager[LifecycleManager]:
         """Context manager for lifecycle management.
 
@@ -252,7 +254,7 @@ class LifecycleManager:
                 # Log error but don't raise to avoid masking original exceptions
                 pass
 
-    def get_status(self) -> dict[str, Any]:
+    def get_status(self) -> dict[str, object]:
         """Get lifecycle status for monitoring."""
         return {
             "initialized": self._initialized,
