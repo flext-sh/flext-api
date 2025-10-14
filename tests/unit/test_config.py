@@ -5,6 +5,7 @@ Uses flext_tests and our base test utilities for comprehensive testing.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations

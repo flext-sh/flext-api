@@ -11,6 +11,7 @@ See TRANSFORMATION_PLAN.md - Phase 8 for implementation details.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
@@ -54,7 +55,7 @@ class FlextApiAdapters(FlextCore.Service[None]):
         super().__init__()
         # Complete flext-core integration
         self._logger = FlextCore.Logger(__name__)
-        self._container = FlextCore.Container.get_global()  # type: ignore[assignment]
+        self._container = FlextCore.Container.get_global()
         self._context = FlextCore.Context()
         self._bus = FlextCore.Bus()
 

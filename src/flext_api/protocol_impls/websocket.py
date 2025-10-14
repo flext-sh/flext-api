@@ -12,6 +12,7 @@ See TRANSFORMATION_PLAN.md - Phase 3 for implementation details.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations

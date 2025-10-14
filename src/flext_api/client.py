@@ -2,6 +2,7 @@
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
@@ -64,7 +65,7 @@ class FlextApiClient:
     class ConfigurationManager:
         """Configuration management for FlextApiClient."""
 
-        def __init__(self) -> None:  # type: ignore[reportMissingSuperCall]
+        def __init__(self) -> None:
             """Initialize configuration manager."""
             self._config: FlextApiConfig | None = None
 
@@ -102,7 +103,7 @@ class FlextApiClient:
                             )
                         else:
                             config_dict[key] = value
-                    self._config = FlextApiConfig(**config_dict)  # type: ignore[arg-type]
+                    self._config = FlextApiConfig(**config_dict)
                 elif isinstance(config, FlextApiConfig):
                     self._config = config
                 else:
@@ -687,7 +688,7 @@ class FlextApiClient:
             except Exception as e:
                 return FlextCore.Result[bool].fail(f"Health check failed: {e}")
 
-    def __init__(  # type: ignore[reportMissingSuperCall]
+    def __init__(
         self,
         *,
         base_url: str | None = None,
