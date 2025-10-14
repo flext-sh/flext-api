@@ -41,7 +41,7 @@ Date: [YYYY-MM-DD]
 
 ## References
 
-[Any references to external documents, issues, or discussions]
+[object references to external documents, issues, or discussions]
 ```
 
 ## Current ADRs

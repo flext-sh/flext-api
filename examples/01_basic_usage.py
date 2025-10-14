@@ -205,9 +205,9 @@ def example_app_creation() -> None:
 
         print(f"✅ Response model created: {response.status_code}")
         print(f"   Status: {response.status_code}")
-        print(f"   Content-Type: {response.content_type or "unknown"}")
+        print(f"   Content-Type: {response.content_type or 'unknown'}")
         print(f"   Status: {response.status_code}")
-        print(f"   Content-Type: {response.content_type or "unknown"}")
+        print(f"   Content-Type: {response.content_type or 'unknown'}")
 
     except Exception as e:
         print(f"❌ Model creation failed: {e}")

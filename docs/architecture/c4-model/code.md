@@ -254,7 +254,7 @@ class FlextApiModels(FlextCore.Models):
         method: str
         url: str
         headers: Dict[str, str] = {}
-        body: Optional[Any] = None
+        body: Optional[object] = None
         timeout: float = 30.0
 
         @computed_field
@@ -271,7 +271,7 @@ class FlextApiModels(FlextCore.Models):
         """HTTP response model with validation."""
         status_code: int
         headers: Dict[str, str]
-        body: Any
+        body: object
         response_time: float
 
         @computed_field
@@ -295,12 +295,12 @@ class BaseProtocol(ABC):
     """Abstract base class for all protocols."""
 
     @abstractmethod
-    def create_client(self, config: dict) -> Any:
+    def create_client(self, config: dict) -> object:
         """Create protocol-specific client."""
         pass
 
     @abstractmethod
-    async def execute_request(self, request: Any) -> FlextCore.Result[Any]:
+    async def execute_request(self, request: object) -> FlextCore.Result[object]:
         """Execute protocol-specific request."""
         pass
 
@@ -539,7 +539,7 @@ class StorageBackend(ABC):
 class S3Backend(StorageBackend):
     """Amazon S3 storage backend."""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, object]):
         self.bucket = config["bucket"]
         self.client = boto3.client(
             "s3",

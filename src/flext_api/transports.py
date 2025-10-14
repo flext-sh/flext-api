@@ -91,14 +91,18 @@ class FlextApiTransports:
                 return FlextCore.Result[object].fail("WebSocket URL is required")
             # options parameter is reserved for future WebSocket connection options (e.g., headers, protocols)
             _ = options  # Reserved for future use
-            return FlextCore.Result[object].fail("WebSocket transport not implemented (Phase 3)")
+            return FlextCore.Result[object].fail(
+                "WebSocket transport not implemented (Phase 3)"
+            )
 
         def disconnect(self, connection: object) -> FlextCore.Result[None]:
             """Disconnect WebSocket."""
             # Parameter validation for future implementation
             if connection is None:
                 return FlextCore.Result[None].fail("Connection object is required")
-            return FlextCore.Result[None].fail("WebSocket transport not implemented (Phase 3)")
+            return FlextCore.Result[None].fail(
+                "WebSocket transport not implemented (Phase 3)"
+            )
 
         def send(self, connection: object, data: object) -> FlextCore.Result[object]:
             """Send WebSocket message."""
@@ -107,7 +111,9 @@ class FlextApiTransports:
                 return FlextCore.Result[object].fail("Connection object is required")
             if data is None:
                 return FlextCore.Result[object].fail("Data is required")
-            return FlextCore.Result[object].fail("WebSocket transport not implemented (Phase 3)")
+            return FlextCore.Result[object].fail(
+                "WebSocket transport not implemented (Phase 3)"
+            )
 
     class SseTransport(TransportPlugin):
         """Server-Sent Events transport implementation."""
@@ -119,14 +125,18 @@ class FlextApiTransports:
                 return FlextCore.Result[object].fail("SSE URL is required")
             # options parameter is reserved for future SSE connection options (e.g., headers, reconnect settings)
             _ = options  # Reserved for future use
-            return FlextCore.Result[object].fail("SSE transport not implemented (Phase 3)")
+            return FlextCore.Result[object].fail(
+                "SSE transport not implemented (Phase 3)"
+            )
 
         def disconnect(self, connection: object) -> FlextCore.Result[None]:
             """Disconnect SSE."""
             # Parameter validation for future implementation
             if connection is None:
                 return FlextCore.Result[None].fail("Connection object is required")
-            return FlextCore.Result[None].fail("SSE transport not implemented (Phase 3)")
+            return FlextCore.Result[None].fail(
+                "SSE transport not implemented (Phase 3)"
+            )
 
         def send(self, connection: object, data: object) -> FlextCore.Result[object]:
             """Send SSE data."""
@@ -135,7 +145,9 @@ class FlextApiTransports:
                 return FlextCore.Result[object].fail("Connection object is required")
             if data is None:
                 return FlextCore.Result[object].fail("Data is required")
-            return FlextCore.Result[object].fail("SSE transport not implemented (Phase 3)")
+            return FlextCore.Result[object].fail(
+                "SSE transport not implemented (Phase 3)"
+            )
 
     class GraphQLTransport(TransportPlugin):
         """GraphQL transport implementation."""
@@ -147,14 +159,18 @@ class FlextApiTransports:
                 return FlextCore.Result[object].fail("GraphQL URL is required")
             # options parameter is reserved for future GraphQL connection options (e.g., headers, schema)
             _ = options  # Reserved for future use
-            return FlextCore.Result[object].fail("GraphQL transport not implemented (Phase 3)")
+            return FlextCore.Result[object].fail(
+                "GraphQL transport not implemented (Phase 3)"
+            )
 
         def disconnect(self, connection: object) -> FlextCore.Result[None]:
             """Disconnect GraphQL."""
             # Parameter validation for future implementation
             if connection is None:
                 return FlextCore.Result[None].fail("Connection object is required")
-            return FlextCore.Result[None].fail("GraphQL transport not implemented (Phase 3)")
+            return FlextCore.Result[None].fail(
+                "GraphQL transport not implemented (Phase 3)"
+            )
 
         def send(self, connection: object, data: object) -> FlextCore.Result[object]:
             """Send GraphQL query."""
@@ -163,7 +179,9 @@ class FlextApiTransports:
                 return FlextCore.Result[object].fail("Connection object is required")
             if data is None:
                 return FlextCore.Result[object].fail("Query data is required")
-            return FlextCore.Result[object].fail("GraphQL transport not implemented (Phase 3)")
+            return FlextCore.Result[object].fail(
+                "GraphQL transport not implemented (Phase 3)"
+            )
 
     class GrpcTransport(TransportPlugin):
         """gRPC transport implementation."""
@@ -174,14 +192,18 @@ class FlextApiTransports:
             if not url:
                 return FlextCore.Result[object].fail("gRPC URL is required")
             # options parameter is used for future gRPC connection options
-            return FlextCore.Result[object].fail("gRPC transport not implemented (Phase 3)")
+            return FlextCore.Result[object].fail(
+                "gRPC transport not implemented (Phase 3)"
+            )
 
         def disconnect(self, connection: object) -> FlextCore.Result[None]:
             """Disconnect gRPC."""
             # Parameter validation for future implementation
             if connection is None:
                 return FlextCore.Result[None].fail("Connection object is required")
-            return FlextCore.Result[None].fail("gRPC transport not implemented (Phase 3)")
+            return FlextCore.Result[None].fail(
+                "gRPC transport not implemented (Phase 3)"
+            )
 
         def send(self, connection: object, data: object) -> FlextCore.Result[object]:
             """Send gRPC request."""
@@ -190,7 +212,9 @@ class FlextApiTransports:
                 return FlextCore.Result[object].fail("Connection object is required")
             if data is None:
                 return FlextCore.Result[object].fail("Request data is required")
-            return FlextCore.Result[object].fail("gRPC transport not implemented (Phase 3)")
+            return FlextCore.Result[object].fail(
+                "gRPC transport not implemented (Phase 3)"
+            )
 
 
 __all__ = [

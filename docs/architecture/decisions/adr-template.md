@@ -73,7 +73,7 @@ Date: [YYYY-MM-DD]
 
 ## References
 
-[Any references to external documents, issues, discussions, or research that informed this decision.]
+[object references to external documents, issues, discussions, or research that informed this decision.]
 
 - [Link to relevant issue/PR]
 - [Link to external documentation]

@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
 
 import httpx
 from flext_core import FlextCore
@@ -34,7 +33,7 @@ class FlextApiClient:
             self._config: FlextApiConfig | None = None
 
         def configure(
-            self, config: FlextApiConfig | dict[str, Any] | None = None
+            self, config: FlextApiConfig | dict[str, object] | None = None
         ) -> FlextCore.Result[None]:
             """Configure the HTTP client."""
             try:
