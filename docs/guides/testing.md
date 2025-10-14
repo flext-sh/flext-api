@@ -493,7 +493,7 @@ class TestHelpers:
         assert error.status_code == expected_status
 
     @staticmethod
-    def create_test_user_data(overrides: dict = None) -> dict:
+    def create_test_user_data(overrides: dict[str, object] = None) -> dict[str, object]:
         """Create test user data."""
         base_data = {
             "name": "Test User",

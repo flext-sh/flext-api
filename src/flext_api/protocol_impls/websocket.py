@@ -144,7 +144,9 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
 
         # Connect if not connected
         if not self._connected:
-            connect_result = self._connect(str(request.url), dict(request.headers))
+            connect_result = self._connect(
+                str(request.url), dict[str, object](request.headers)
+            )
             if connect_result.is_failure:
                 return FlextCore.Result[FlextApiModels.HttpResponse].fail(
                     f"WebSocket connection failed: {connect_result.error}"

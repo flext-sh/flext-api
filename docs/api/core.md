@@ -141,7 +141,7 @@ from flext_api import FlextApiConfig
 class MyApiConfig(FlextApiConfig):
     """Custom API configuration."""
     custom_setting: str = "default_value"
-    feature_flags: dict = {}
+    feature_flags: dict[str, object] = {}
 ```
 
 ## HTTP Models and Schemas

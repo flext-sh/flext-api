@@ -15,6 +15,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import json
 import re
 from typing import cast
 
@@ -45,15 +46,15 @@ class FlextApiAdapters(FlextCore.Service[None]):
     _logger: FlextCore.Logger = PrivateAttr()
     _container: FlextCore.Container = PrivateAttr()
     _context: FlextCore.Context = PrivateAttr()
-    _bus: FlextCore.Bus = PrivateAttr()
     _endpoint: str = PrivateAttr()
     _base_url: str = PrivateAttr()
 
     def __init__(self, endpoint: str = "/graphql", base_url: str = "") -> None:
         """Initialize the unified adapters service with flext-core integration."""
+        super().__init__()
         # Complete flext-core integration
         self._logger = FlextCore.Logger(__name__)
-        self._container = FlextCore.Container.get_global()
+        self._container = FlextCore.Container.get_global()  # type: ignore[assignment]
         self._context = FlextCore.Context()
         self._bus = FlextCore.Bus()
 
@@ -65,12 +66,20 @@ class FlextApiAdapters(FlextCore.Service[None]):
     ) -> FlextCore.Result[dict[str, FlextApiTypes.JsonValue]]:
         """Convert HTTP request to WebSocket message format."""
         # Railway-oriented HTTP to WebSocket adaptation - operations are safe
+        # Convert body to string if bytes, otherwise use as-is
+        body_value: str | dict[str, object] | list[object] | None = None
+        if request.body is not None:
+            try:
+                body_value = request.body.decode("utf-8")
+            except UnicodeDecodeError:
+                body_value = "<binary data>"
+
         message: dict[str, FlextApiTypes.JsonValue] = {
             "type": "request",
             "method": request.method,
             "url": str(request.url),
-            "headers": dict(request.headers) if request.headers else {},
-            "body": request.body or {},
+            "headers": dict[str, object](request.headers) if request.headers else {},
+            "body": body_value,
         }
 
         self.logger.debug(
@@ -100,20 +109,45 @@ class FlextApiAdapters(FlextCore.Service[None]):
             url = message.get("url", "/")
             method = message.get("method", "GET")
 
-            request = FlextApiModels.HttpRequest(
-                url=url,
-                method=method,
-                headers=headers,
-                body=body,
+            # Cast JsonValue types to expected types
+            url_str = str(url) if url is not None else "/"
+            method_str = str(method) if method is not None else "GET"
+            headers_dict: dict[str, str] = (
+                {k: str(v) for k, v in headers.items()}
+                if isinstance(headers, dict)
+                else {}
+            )
+            body_bytes = (
+                body.encode("utf-8")
+                if isinstance(body, str)
+                else (body if isinstance(body, bytes) else None)
             )
 
+            FlextApiModels.HttpRequest(
+                url=url_str,
+                method=method_str,
+                headers=headers_dict,
+                body=body_bytes,
+            )
+
+            # Convert status_code to int safely
+            status_int = 200
+            if isinstance(status_code, int):
+                status_int = status_code
+            elif isinstance(status_code, str):
+                try:
+                    status_int = int(status_code)
+                except ValueError:
+                    status_int = 200
+            elif isinstance(status_code, (float, bool)):
+                status_int = int(status_code)
+
             response = FlextApiModels.HttpResponse(
-                status_code=status_code,
-                headers=headers,
-                body=body,
-                url=url,
-                method=method,
-                request=request,
+                status_code=status_int,
+                headers={k: str(v) for k, v in headers_dict.items()}
+                if isinstance(headers_dict, dict)
+                else {},
+                body=body_bytes,
             )
 
             self._logger.debug(
@@ -143,13 +177,16 @@ class FlextApiAdapters(FlextCore.Service[None]):
         """
         try:
             # Convert GraphQL query to HTTP POST request
+            body_data = {
+                "query": query,
+                "variables": variables or {},
+            }
+            body_bytes = json.dumps(body_data).encode("utf-8")
+
             request = FlextApiModels.HttpRequest(
                 method="POST",
                 url=self._endpoint,
-                body={
-                    "query": query,
-                    "variables": variables or {},
-                },
+                body=body_bytes,
                 headers={
                     "Content-Type": "application/json",
                     "Accept": "application/json",
@@ -274,9 +311,7 @@ class FlextApiAdapters(FlextCore.Service[None]):
                             else:
                                 schema = {}
 
-                            messages_dict = cast(
-                                "dict[str, FlextApiTypes.JsonValue]", messages
-                            )
+                            messages_dict = messages
                             messages_dict[message_name] = {"payload": schema}
 
             self._logger.debug("OpenAPI schema converted to API")
@@ -376,73 +411,6 @@ class FlextApiAdapters(FlextCore.Service[None]):
                 f"OpenAPI to GraphQL schema conversion failed: {e}"
             )
 
-    def adapt_request_to_legacy_format(
-        self, modern_request: FlextApiModels.HttpRequest
-    ) -> FlextCore.Result[FlextApiModels.HttpRequest]:
-        """Transform request to legacy format."""
-        try:
-            legacy_request = FlextApiModels.HttpRequest(
-                method=modern_request.method,
-                url=f"{self._base_url}{modern_request.url}",
-                headers=self._adapt_headers_to_legacy(
-                    dict(modern_request.headers or {})
-                ),
-                body=self._adapt_payload_to_legacy(
-                    modern_request.body if isinstance(modern_request.body, dict) else {}
-                ),
-            )
-
-            self._logger.debug(
-                "Modern request adapted to legacy format",
-                extra={"url": str(legacy_request.url)},
-            )
-
-            return FlextCore.Result[FlextApiModels.HttpRequest].ok(legacy_request)
-
-        except Exception as e:
-            return FlextCore.Result[FlextApiModels.HttpRequest].fail(
-                f"Request adaptation failed: {e}"
-            )
-
-    def adapt_legacy_response_to_modern(
-        self, legacy_response: FlextApiModels.HttpResponse
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
-        """Adapt legacy response to modern API format.
-
-        Args:
-            legacy_response: Legacy API response
-
-        Returns:
-            FlextCore.Result containing modern response or error
-
-        """
-        try:
-            # Transform response to modern format
-            modern_response = FlextApiModels.HttpResponse(
-                status_code=self._adapt_legacy_status_code(legacy_response.status_code),
-                headers=legacy_response.headers,
-                body=self._normalize_legacy_payload(
-                    legacy_response.body
-                    if isinstance(legacy_response.body, dict)
-                    else {}
-                ),
-                url=legacy_response.url,
-                method=legacy_response.method,
-                request=legacy_response.request,
-            )
-
-            self._logger.debug(
-                "Legacy response adapted to modern format",
-                extra={"status": modern_response.status_code},
-            )
-
-            return FlextApiModels.HttpResponse.ok(modern_response)
-
-        except Exception as e:
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
-                f"Response adaptation failed: {e}"
-            )
-
     def _adapt_headers_to_legacy(
         self, headers: FlextCore.Types.StringDict
     ) -> FlextCore.Types.StringDict:
@@ -464,18 +432,19 @@ class FlextApiAdapters(FlextCore.Service[None]):
 
         return adapted
 
-    def _adapt_payload_to_legacy(
-        self, payload: FlextCore.Types.Dict
-    ) -> FlextCore.Types.Dict:
+    def _adapt_payload_to_legacy(self, payload: FlextCore.Types.Dict) -> bytes | None:
         """Adapt payload to legacy format.
 
         Args:
             payload: Modern payload
 
         Returns:
-            Legacy payload
+            Legacy payload as JSON bytes or None
 
         """
+        if not payload:
+            return None
+
         # Example: transform field names
         adapted = {}
 
@@ -484,7 +453,7 @@ class FlextApiAdapters(FlextCore.Service[None]):
             legacy_key = self._convert_camel_to_snake(key)
             adapted[legacy_key] = value
 
-        return adapted
+        return json.dumps(adapted).encode("utf-8")
 
     def _normalize_legacy_payload(
         self, payload: FlextCore.Types.Dict

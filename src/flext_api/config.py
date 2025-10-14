@@ -92,6 +92,17 @@ class FlextApiConfig(FlextCore.Config):
         description="CORS allowed headers",
     )
 
+    # Application metadata
+    title: str = Field(
+        default="FLEXT API",
+        description="Application title for API documentation",
+    )
+
+    app_version: str = Field(
+        default=FlextApiConstants.API_VERSION,
+        description="Application version for API documentation",
+    )
+
     @computed_field
     @property
     def api_url(self) -> str:

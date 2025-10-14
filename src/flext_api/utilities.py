@@ -123,7 +123,7 @@ class FlextApiUtilities(FlextCore.Utilities):
             )
 
         @staticmethod
-        def extract_pagination_config(config: object | None) -> dict:
+        def extract_pagination_config(config: object | None) -> dict[str, object]:
             """Extract pagination configuration values."""
             default_page_size = (
                 getattr(config, "default_page_size", 20) if config else 20

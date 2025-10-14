@@ -70,7 +70,7 @@ class FlextApiStorage(FlextCore.Service[None]):
         self._max_size = max_size or config_dict.get("max_size")
         self._default_ttl = default_ttl or config_dict.get("default_ttl")
 
-        # Use simple dict for storage since Registry is not available
+        # Use simple dict[str, object] for storage since Registry is not available
         self._storage: FlextCore.Types.Dict = {}
 
         # Backend configuration that tests expect (using private attribute to avoid Pydantic field issues)
@@ -177,7 +177,7 @@ class FlextApiStorage(FlextCore.Service[None]):
         storage_key = self._make_key(key)
         data: object | None = self._storage.get(storage_key)
         if data is not None:
-            # data may be a metadata dict or a raw value; handle both
+            # data may be a metadata dict[str, object] or a raw value; handle both
             if isinstance(data, dict) and "value" in data:
                 value: object = data["value"]
                 result = FlextCore.Result[object].ok(value)
@@ -328,7 +328,7 @@ class FlextApiStorage(FlextCore.Service[None]):
     @property
     def _data(self) -> FlextCore.Types.Dict:
         """Access direct data storage (for testing compatibility)."""
-        return dict(self._storage.items())
+        return dict[str, object](self._storage.items())
 
     def items(self) -> FlextCore.Result[list[tuple[str, object]]]:
         """Get all key-value pairs in storage.

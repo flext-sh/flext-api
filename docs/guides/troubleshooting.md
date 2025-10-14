@@ -714,7 +714,7 @@ async def debug_middleware(request, call_next):
     logger.debug("Incoming request", extra={
         "method": request.method,
         "url": str(request.url),
-        "headers": dict(request.headers),
+        "headers": dict[str, object](request.headers),
         "client_ip": request.client.host if request.client else "unknown"
     })
 
@@ -722,7 +722,7 @@ async def debug_middleware(request, call_next):
 
     logger.debug("Outgoing response", extra={
         "status_code": response.status_code,
-        "response_headers": dict(response.headers)
+        "response_headers": dict[str, object](response.headers)
     })
 
     return response

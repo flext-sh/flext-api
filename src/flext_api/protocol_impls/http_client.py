@@ -79,7 +79,9 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
                 )
 
             # Prepare headers
-            request_headers: dict[str, str] = dict(self._config.headers or {})
+            request_headers: dict[str, str] = dict[str, object](
+                self._config.headers or {}
+            )
             headers_value = kwargs.get("headers")
             if headers_value and isinstance(headers_value, dict):
                 request_headers.update(headers_value)

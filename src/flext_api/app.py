@@ -14,7 +14,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from flext_core import FlextCore
 
-from flext_api.models import FlextApiModels
+from flext_api.config import FlextApiConfig
 from flext_api.server import FlextApiServer
 from flext_api.webhook import FlextWebhookHandler
 
@@ -85,7 +85,7 @@ class FlextApiApp(FlextCore.Service[object]):
                 raise ImportError(error_msg) from e
 
     @staticmethod
-    def create_fastapi_app(config: FlextApiModels.AppConfig) -> object:
+    def create_fastapi_app(config: FlextApiConfig) -> object:
         """Create a FastAPI application with flext-core integration.
 
         Args:
