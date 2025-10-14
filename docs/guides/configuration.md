@@ -156,7 +156,7 @@ class CustomApiConfig(FlextApiConfig):
     # Custom settings
     database_url: str = Field(..., description="Database connection URL")
     redis_url: str = Field(default="redis://localhost:6379", description="Redis connection URL")
-    feature_flags: dict = Field(default_factory=dict, description="Feature flags")
+    feature_flags: dict[str, object] = Field(default_factory=dict, description="Feature flags")
     worker_count: int = Field(default=4, ge=1, le=16, description="Number of worker processes")
 
 # Usage

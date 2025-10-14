@@ -71,7 +71,7 @@ def example_storage_usage() -> None:
     storage = FlextApiStorage()
 
     # Set data using FlextCore.Result pattern
-    # CacheValue as dict for JSON compatibility
+    # CacheValue as dict[str, object] for JSON compatibility
     cache_value: FlextCore.Types.Dict = {
         "data": {"message": "Hello FlextAPI!"},
         "headers": {},

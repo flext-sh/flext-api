@@ -549,7 +549,7 @@ class TestFlextApiClient:
 
     def test_config_merge_behavior(self) -> None:
         """Test config and kwargs merge behavior."""
-        # Config dict takes precedence over kwargs
+        # Config dict[str, object] takes precedence over kwargs
         base_cfg = FlextApiModels.ClientConfig(
             base_url="https://config.com",
             timeout=60,

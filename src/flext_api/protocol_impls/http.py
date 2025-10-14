@@ -147,8 +147,8 @@ class HttpProtocolPlugin(ProtocolPlugin):
         # Extract request parameters
         method = request.method.upper()
         url = str(request.url)
-        headers = dict(request.headers) if request.headers else {}
-        params = dict(request.params) if hasattr(request, "params") else {}
+        headers = dict[str, object](request.headers) if request.headers else {}
+        params = dict[str, object](request.params) if hasattr(request, "params") else {}
         timeout = request.timeout if hasattr(request, "timeout") else None
 
         # Prepare request body

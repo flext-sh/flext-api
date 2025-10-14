@@ -88,7 +88,7 @@ class BasePlugin:
         """Check if plugin is initialized."""
         return self._initialized
 
-    def get_metadata(self) -> dict:
+    def get_metadata(self) -> dict[str, object]:
         """Get plugin metadata.
 
         Returns:

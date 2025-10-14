@@ -13,10 +13,10 @@ from flext_core import FlextCore
 
 import flext_api.client as client_module
 from flext_api.app import FlextApiApp
+from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
 from flext_api.exceptions import FlextApiExceptions
-from flext_api.handlers import FlextApiHandlers
 from flext_api.models import FlextApiModels
 from flext_api.protocols import FlextApiProtocols
 from flext_api.typings import FlextApiTypes
@@ -116,7 +116,7 @@ class FlextApi(FlextCore.Service[FlextApiConfig]):
 
     # Domain module access properties
     @property
-    def client(self) -> type[client_module.FlextApiClient]:
+    def client(self) -> type[FlextApiClient]:
         """Access HTTP client functionality."""
         return client_module.FlextApiClient
 
@@ -144,11 +144,6 @@ class FlextApi(FlextCore.Service[FlextApiConfig]):
     def exceptions(self) -> type[FlextApiExceptions]:
         """Access API exceptions."""
         return FlextApiExceptions
-
-    @property
-    def handlers(self) -> type[FlextApiHandlers]:
-        """Access API handlers."""
-        return FlextApiHandlers
 
     @property
     def protocols(self) -> type[FlextApiProtocols]:

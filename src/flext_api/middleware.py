@@ -539,7 +539,9 @@ class FlextApiMiddleware:
                 auth_headers = self._auth_provider.get_headers()
                 if auth_headers:
                     # Merge with existing headers
-                    current_headers = dict(request.headers) if request.headers else {}
+                    current_headers = (
+                        dict[str, object](request.headers) if request.headers else {}
+                    )
                     current_headers.update(auth_headers)
 
                     # Create new request with updated headers

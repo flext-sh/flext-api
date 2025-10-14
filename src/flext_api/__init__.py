@@ -49,13 +49,11 @@ from __future__ import annotations
 
 from flext_api import client as _client_module
 from flext_api.__version__ import __version__, __version_info__
-from flext_api.adapters import FlextApiAdapters
 from flext_api.api import FlextApi
 from flext_api.app import FlextApiApp
 from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
 from flext_api.exceptions import FlextApiExceptions
-from flext_api.handlers import FlextApiHandlers
 from flext_api.models import FlextApiModels
 from flext_api.protocols import FlextApiProtocols
 from flext_api.storage import FlextApiStorage
@@ -64,12 +62,10 @@ from flext_api.utilities import FlextApiUtilities
 
 __all__ = [
     "FlextApi",
-    "FlextApiAdapters",
     "FlextApiApp",
     "FlextApiConfig",
     "FlextApiConstants",
     "FlextApiExceptions",
-    "FlextApiHandlers",
     "FlextApiModels",
     "FlextApiProtocols",
     "FlextApiStorage",

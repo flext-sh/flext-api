@@ -291,7 +291,7 @@ def register_api_routes(app: FastAPI):
     async def list_users(
         limit: int = 10,
         offset: int = 0,
-        current_user: dict = Depends(get_current_user)
+        current_user: dict[str, object] = Depends(get_current_user)
     ) -> List[UserResponse]:
         """List users with pagination."""
         result = await user_service.get_users(limit=limit, offset=offset)
@@ -350,7 +350,7 @@ class StorageBackend(ABC):
     """Abstract storage backend interface."""
 
     @abstractmethod
-    async def upload_file(self, file: object, path: str, metadata: dict = None) -> FlextCore.Result[str]:
+    async def upload_file(self, file: object, path: str, metadata: dict[str, object] = None) -> FlextCore.Result[str]:
         """Upload file to storage."""
         pass
 
@@ -375,7 +375,7 @@ class S3StorageBackend(StorageBackend):
     def __init__(self, config: dict):
         self.client = boto3.client("s3", **config)
 
-    async def upload_file(self, file: object, path: str, metadata: dict = None) -> FlextCore.Result[str]:
+    async def upload_file(self, file: object, path: str, metadata: dict[str, object] = None) -> FlextCore.Result[str]:
         """Upload file to S3."""
         try:
             # S3 upload implementation
