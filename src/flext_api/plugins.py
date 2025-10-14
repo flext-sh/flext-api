@@ -7,6 +7,7 @@ See TRANSFORMATION_PLAN.md - Phase 1 for architecture details.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from abc import abstractmethod

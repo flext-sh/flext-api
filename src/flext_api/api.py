@@ -5,6 +5,7 @@ NO logic in this facade - pure delegation to specialized classes.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations

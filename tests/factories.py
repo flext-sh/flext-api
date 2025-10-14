@@ -4,6 +4,7 @@ This module provides factory functions for creating test data and objects.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
