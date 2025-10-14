@@ -673,7 +673,7 @@ class ResponseCache:
                 status_code=response.status_code,
                 headers=response.headers,
                 body=response.body,
-                cached_at=datetime.now(),
+                cached_at=datetime.now(UTC),
                 ttl=ttl or self.default_ttl
             )
             self.cache[key] = cached
