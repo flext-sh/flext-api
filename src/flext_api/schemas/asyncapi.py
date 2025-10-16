@@ -163,16 +163,14 @@ class AsyncAPISchemaValidator(SchemaPlugin):
             },
         )
 
-        return FlextResult[FlextTypes.Dict].ok(
-            {
-                "valid": True,
-                "version": asyncapi_version,
-                "title": str(info.get("title", "")),
-                "channels": list(
-                    cast("FlextTypes.Dict", schema.get("channels", {})).keys()
-                ),
-            }
-        )
+        return FlextResult[FlextTypes.Dict].ok({
+            "valid": True,
+            "version": asyncapi_version,
+            "title": str(info.get("title", "")),
+            "channels": list(
+                cast("FlextTypes.Dict", schema.get("channels", {})).keys()
+            ),
+        })
 
     def _validate_channels(
         self, channels: FlextTypes.Dict, version: str

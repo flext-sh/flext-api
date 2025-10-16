@@ -140,14 +140,12 @@ class OpenAPISchemaValidator(SchemaPlugin):
             },
         )
 
-        return FlextResult[FlextTypes.Dict].ok(
-            {
-                "valid": True,
-                "version": openapi_version,
-                "title": info.get("title"),
-                "paths": list(schema.get("paths", {}).keys()),
-            }
-        )
+        return FlextResult[FlextTypes.Dict].ok({
+            "valid": True,
+            "version": openapi_version,
+            "title": info.get("title"),
+            "paths": list(schema.get("paths", {}).keys()),
+        })
 
     def _validate_paths(self, paths: FlextTypes.Dict) -> FlextResult[None]:
         """Validate OpenAPI paths object.

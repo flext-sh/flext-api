@@ -181,14 +181,12 @@ class JSONSchemaValidator(SchemaPlugin):
             },
         )
 
-        return FlextResult[FlextTypes.Dict].ok(
-            {
-                "valid": True,
-                "draft": self._draft_version,
-                "type": schema.get("type"),
-                "properties": list(schema.get("properties", {}).keys()),
-            }
-        )
+        return FlextResult[FlextTypes.Dict].ok({
+            "valid": True,
+            "draft": self._draft_version,
+            "type": schema.get("type"),
+            "properties": list(schema.get("properties", {}).keys()),
+        })
 
     def validate_instance(
         self,
@@ -249,12 +247,10 @@ class JSONSchemaValidator(SchemaPlugin):
                             f"Invalid array item[{i}]: {item_result.error}"
                         )
 
-        return FlextResult[FlextTypes.Dict].ok(
-            {
-                "valid": True,
-                "type": type(instance).__name__,
-            }
-        )
+        return FlextResult[FlextTypes.Dict].ok({
+            "valid": True,
+            "type": type(instance).__name__,
+        })
 
     def _validate_schema_uri(self, schema_uri: str) -> FlextResult[None]:
         """Validate $schema URI.
