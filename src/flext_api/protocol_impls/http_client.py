@@ -96,9 +96,9 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
             # Add other parameters from kwargs
             allowed_keys = {"params", "data", "json", "content", "files"}
-            request_kwargs.update(
-                {key: value for key, value in kwargs.items() if key in allowed_keys}
-            )
+            request_kwargs.update({
+                key: value for key, value in kwargs.items() if key in allowed_keys
+            })
 
             # Make the HTTP request using httpx client
             httpx_response = self._client.request(**request_kwargs)

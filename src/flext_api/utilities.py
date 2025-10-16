@@ -148,13 +148,11 @@ class FlextApiUtilities(FlextUtilities):
             if effective_page_size > max_page_size:
                 return FlextResult.fail(f"Page size cannot exceed {max_page_size}")
 
-            return FlextResult.ok(
-                {
-                    "page": page,
-                    "page_size": effective_page_size,
-                    "max_page_size": max_page_size,
-                }
-            )
+            return FlextResult.ok({
+                "page": page,
+                "page_size": effective_page_size,
+                "max_page_size": max_page_size,
+            })
 
         @staticmethod
         def prepare_pagination_data(
@@ -175,19 +173,17 @@ class FlextApiUtilities(FlextUtilities):
                 else 1
             )
 
-            return FlextResult.ok(
-                {
-                    "data": final_data,
-                    "total": final_total,
-                    "page": page,
-                    "page_size": page_size,
-                    "total_pages": total_pages,
-                    "has_next": page < total_pages,
-                    "has_prev": page > 1,
-                    "next_page": page + 1 if page < total_pages else None,
-                    "prev_page": page - 1 if page > 1 else None,
-                }
-            )
+            return FlextResult.ok({
+                "data": final_data,
+                "total": final_total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_prev": page > 1,
+                "next_page": page + 1 if page < total_pages else None,
+                "prev_page": page - 1 if page > 1 else None,
+            })
 
         @staticmethod
         def build_pagination_response(

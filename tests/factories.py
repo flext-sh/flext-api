@@ -135,13 +135,11 @@ class FlextApiFactories:
             "cache_ttl_seconds": cast("int", base_config.get("cache_ttl", 300)),
         }
         # Apply overrides with type filtering
-        storage_config.update(
-            {
-                key: value
-                for key, value in overrides.items()
-                if isinstance(value, (str, int, bool))
-            }
-        )
+        storage_config.update({
+            key: value
+            for key, value in overrides.items()
+            if isinstance(value, (str, int, bool))
+        })
         return storage_config
 
     @staticmethod

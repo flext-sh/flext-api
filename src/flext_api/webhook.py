@@ -215,12 +215,10 @@ class FlextWebhookHandler(FlextService[object]):
                 extra={"event_id": event_id, "event_type": event_type},
             )
 
-            return FlextResult[FlextTypes.Dict].ok(
-                {
-                    "event_id": event_id,
-                    "status": "processed",
-                }
-            )
+            return FlextResult[FlextTypes.Dict].ok({
+                "event_id": event_id,
+                "status": "processed",
+            })
         # Add to retry queue
         attempts = event.get("attempts", 0)
         if isinstance(attempts, int) and attempts < self._max_retries:
@@ -235,12 +233,10 @@ class FlextWebhookHandler(FlextService[object]):
                 },
             )
 
-            return FlextResult[FlextTypes.Dict].ok(
-                {
-                    "event_id": event_id,
-                    "status": "queued_for_retry",
-                }
-            )
+            return FlextResult[FlextTypes.Dict].ok({
+                "event_id": event_id,
+                "status": "queued_for_retry",
+            })
         # Max retries exceeded
         self._delivery_confirmations[event_id] = {
             "event_type": event_type,
@@ -408,12 +404,10 @@ class FlextWebhookHandler(FlextService[object]):
                     # Re-add to retry queue
                     self._retry_queue.append(event)
 
-        return FlextResult[FlextTypes.Dict].ok(
-            {
-                "processed": processed,
-                "failed": failed,
-            }
-        )
+        return FlextResult[FlextTypes.Dict].ok({
+            "processed": processed,
+            "failed": failed,
+        })
 
     def _generate_event_id(self) -> str:
         """Generate unique event ID.

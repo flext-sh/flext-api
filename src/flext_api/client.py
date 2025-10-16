@@ -713,14 +713,12 @@ class FlextApiClient:
     ) -> None:
         """Initialize FlextApiClient with configuration."""
         self._config_manager = self.ConfigurationManager()
-        self._config_manager.configure(
-            {
-                "base_url": base_url,
-                "timeout": timeout,
-                "max_retries": max_retries,
-                "headers": dict[str, object](headers) if headers else {},
-            }
-        )
+        self._config_manager.configure({
+            "base_url": base_url,
+            "timeout": timeout,
+            "max_retries": max_retries,
+            "headers": dict[str, object](headers) if headers else {},
+        })
 
     def request(
         self, request: FlextApiModels.HttpRequest

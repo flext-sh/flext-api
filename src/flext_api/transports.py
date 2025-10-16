@@ -16,8 +16,6 @@ from typing import Protocol
 import httpx
 from flext_core import FlextResult
 
-from flext_api.protocol_impls.http import HttpProtocolPlugin
-
 
 class TransportPlugin(Protocol):
     """Protocol for transport plugins."""
@@ -39,42 +37,81 @@ class FlextApiTransports:
     """FLEXT API transport implementations."""
 
     class HttpTransport(TransportPlugin):
-        """HTTP transport implementation using HttpProtocolPlugin."""
+        """HTTP transport implementation using httpx."""
 
         def __init__(self) -> None:
             """Initialize HTTP transport."""
-            self._plugin = HttpProtocolPlugin()
+            self._client: httpx.Client | None = None
 
-        def connect(self, url: str, **options: object) -> FlextResult[httpx.Client]:
+        def connect(self, url: str, **options: object) -> FlextResult[object]:
             """Connect to HTTP endpoint."""
             try:
-                # Use HttpProtocolPlugin for actual implementation
-                result = self._plugin.connect(url, **options)
-                if result.is_success:
-                    return FlextResult[httpx.Client].ok(result.unwrap())
-                return FlextResult[httpx.Client].fail(result.error)
-            except Exception as e:
-                return FlextResult[httpx.Client].fail(f"HTTP connect failed: {e}")
+                # Validate URL parameter
+                if not url:
+                    return FlextResult[object].fail(
+                        "URL is required for HTTP connection"
+                    )
 
-        def disconnect(self, connection: httpx.Client) -> FlextResult[None]:
+                # Create a basic httpx client - options can be used by subclasses
+                # The url parameter is validated but not directly used in client creation
+                # as httpx.Client doesn't take a base URL in connect()
+                # Options parameter is reserved for future extensibility
+                _ = options  # Reserved for future use
+                self._client = httpx.Client()
+                return FlextResult[object].ok(self._client)
+            except Exception as e:
+                return FlextResult[object].fail(f"HTTP connect failed: {e}")
+
+        def disconnect(self, connection: object) -> FlextResult[None]:
             """Disconnect HTTP connection."""
             try:
-                # Use HttpProtocolPlugin for actual implementation
-                result = self._plugin.disconnect(connection)
-                if result.is_success:
-                    return FlextResult[None].ok(None)
-                return FlextResult[None].fail(result.error)
+                if isinstance(connection, httpx.Client):
+                    connection.close()
+                self._client = None
+                return FlextResult[None].ok(None)
             except Exception as e:
                 return FlextResult[None].fail(f"HTTP disconnect failed: {e}")
 
-        def send(self, connection: httpx.Client, data: object) -> FlextResult[object]:
+        def send(self, connection: object, data: object) -> FlextResult[object]:
             """Send HTTP request."""
             try:
-                # Use HttpProtocolPlugin for actual implementation
-                result = self._plugin.send(connection, data)
-                if result.is_success:
-                    return FlextResult[object].ok(result.unwrap())
-                return FlextResult[object].fail(result.error)
+                if not isinstance(connection, httpx.Client):
+                    return FlextResult[object].fail(
+                        "Connection must be an httpx.Client"
+                    )
+
+                if not isinstance(data, dict):
+                    return FlextResult[object].fail("HTTP send data must be a dict")
+
+                # Extract request parameters from data
+                method = data.get("method", "GET")
+                url = data.get("url", "")
+                headers = data.get("headers", {})
+                params = data.get("params")
+                json_data = data.get("json")
+                content = data.get("content")
+
+                if not url:
+                    return FlextResult[object].fail("URL is required for HTTP request")
+
+                # Make the request
+                response = connection.request(
+                    method=method,
+                    url=url,
+                    headers=headers,
+                    params=params,
+                    json=json_data,
+                    content=content,
+                )
+
+                # Return response data
+                return FlextResult[object].ok({
+                    "status_code": response.status_code,
+                    "headers": dict(response.headers),
+                    "content": response.content,
+                    "text": response.text,
+                    "url": str(response.url),
+                })
             except Exception as e:
                 return FlextResult[object].fail(f"HTTP send failed: {e}")
 
