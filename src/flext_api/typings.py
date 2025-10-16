@@ -1,11 +1,11 @@
 """FLEXT API Types - Domain-specific API type definitions.
 
-This module provides API-specific type definitions extending FlextCore.Types.
+This module provides API-specific type definitions extending FlextTypes.
 Follows FLEXT standards:
 - Domain-specific complex types only
 - No simple aliases to primitive types
 - Python 3.13+ syntax
-- Extends FlextCore.Types properly
+- Extends FlextTypes properly
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -17,7 +17,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import NotRequired
 
-from flext_core import FlextCore
+from flext_core import FlextTypes
 from typing_extensions import TypedDict
 
 # =============================================================================
@@ -25,8 +25,8 @@ from typing_extensions import TypedDict
 # =============================================================================
 
 
-class FlextApiTypes(FlextCore.Types):
-    """API-specific type definitions extending FlextCore.Types.
+class FlextApiTypes(FlextTypes):
+    """API-specific type definitions extending FlextTypes.
 
     Domain-specific type system for HTTP/API operations.
     Contains ONLY complex API-specific types, no simple aliases.
@@ -38,36 +38,36 @@ class FlextApiTypes(FlextCore.Types):
     # =========================================================================
 
     # HTTP-specific type aliases
-    type JsonObject = dict[str, FlextCore.Types.JsonValue]
+    type JsonObject = dict[str, FlextTypes.JsonValue]
     type HttpData = str | bytes | JsonObject
-    type HttpHeaders = dict[str, str | FlextCore.Types.StringList]
+    type HttpHeaders = dict[str, str | FlextTypes.StringList]
     type HttpParams = HttpHeaders
     type RequestData = HttpData
     type ResponseData = HttpData
 
     # =========================================================================
-    # CORE API TYPES - Commonly used API type aliases extending FlextCore.Types
+    # CORE API TYPES - Commonly used API type aliases extending FlextTypes
     # =========================================================================
 
     type ConnectionDict = JsonObject
-    type ClientConfigDict = dict[str, FlextCore.Types.ConfigValue]
+    type ClientConfigDict = dict[str, FlextTypes.ConfigValue]
     type ResponseDict = JsonObject
     type MetricsDict = dict[str, str | int | float]
     type CacheDict = JsonObject
     type StorageDict = JsonObject
-    type UtilityDict = dict[str, FlextCore.Types.JsonValue]
+    type UtilityDict = dict[str, FlextTypes.JsonValue]
 
     # Template and structured response types
-    type ResponseTemplateDict = dict[str, str | dict[str, FlextCore.Types.JsonValue]]
-    type ErrorTemplateDict = dict[str, str | dict[str, FlextCore.Types.JsonValue]]
+    type ResponseTemplateDict = dict[str, str | dict[str, FlextTypes.JsonValue]]
+    type ErrorTemplateDict = dict[str, str | dict[str, FlextTypes.JsonValue]]
 
     # Model and data types
-    type FilterConditionsDict = dict[str, FlextCore.Types.JsonValue]
-    type QueryParamsDict = dict[str, str | FlextCore.Types.StringList]
-    type RequestKwargsDict = dict[str, FlextCore.Types.JsonValue]
-    type ContextDict = dict[str, FlextCore.Types.JsonValue]
-    type DetailsDict = dict[str, FlextCore.Types.JsonValue]
-    type ResponseList = list[dict[str, FlextCore.Types.JsonValue]]
+    type FilterConditionsDict = dict[str, FlextTypes.JsonValue]
+    type QueryParamsDict = dict[str, str | FlextTypes.StringList]
+    type RequestKwargsDict = dict[str, FlextTypes.JsonValue]
+    type ContextDict = dict[str, FlextTypes.JsonValue]
+    type DetailsDict = dict[str, FlextTypes.JsonValue]
+    type ResponseList = list[dict[str, FlextTypes.JsonValue]]
 
     # =========================================================================
     # HTTP REQUEST TYPES - Complex request handling types
@@ -78,20 +78,14 @@ class FlextApiTypes(FlextCore.Types):
 
         RequestConfiguration = dict[
             str,
-            str
-            | int
-            | bool
-            | FlextCore.Types.StringList
-            | dict[str, FlextCore.Types.JsonValue],
+            str | int | bool | FlextTypes.StringList | dict[str, FlextTypes.JsonValue],
         ]
-        RequestHeaders = dict[str, str | FlextCore.Types.StringList]
-        RequestParameters = dict[
-            str, FlextCore.Types.JsonValue | list[FlextCore.Types.JsonValue]
-        ]
-        RequestBody = dict[str, FlextCore.Types.JsonValue] | str | bytes
-        RequestMiddleware = list[dict[str, FlextCore.Types.JsonValue]]
+        RequestHeaders = dict[str, str | FlextTypes.StringList]
+        RequestParameters = dict[str, FlextTypes.JsonValue | list[FlextTypes.JsonValue]]
+        RequestBody = dict[str, FlextTypes.JsonValue] | str | bytes
+        RequestMiddleware = list[dict[str, FlextTypes.JsonValue]]
         RequestValidation = dict[
-            str, FlextCore.Types.StringList | dict[str, FlextCore.Types.JsonValue]
+            str, FlextTypes.StringList | dict[str, FlextTypes.JsonValue]
         ]
 
     # =========================================================================
@@ -102,15 +96,15 @@ class FlextApiTypes(FlextCore.Types):
         """HTTP response complex types."""
 
         ResponseConfiguration = dict[
-            str, FlextCore.Types.JsonValue | dict[str, FlextCore.Types.JsonValue]
+            str, FlextTypes.JsonValue | dict[str, FlextTypes.JsonValue]
         ]
-        ResponseHeaders = dict[str, str | FlextCore.Types.StringList]
-        ResponseBody = dict[str, FlextCore.Types.JsonValue] | str | bytes
+        ResponseHeaders = dict[str, str | FlextTypes.StringList]
+        ResponseBody = dict[str, FlextTypes.JsonValue] | str | bytes
         ResponseMetadata = dict[
-            str, int | float | str | dict[str, FlextCore.Types.JsonValue]
+            str, int | float | str | dict[str, FlextTypes.JsonValue]
         ]
-        ResponseTransformation = list[dict[str, FlextCore.Types.JsonValue]]
-        ResponseValidation = dict[str, bool | str | FlextCore.Types.StringList]
+        ResponseTransformation = list[dict[str, FlextTypes.JsonValue]]
+        ResponseValidation = dict[str, bool | str | FlextTypes.StringList]
 
     # =========================================================================
     # API ENDPOINT TYPES - Complex endpoint management types
@@ -121,25 +115,22 @@ class FlextApiTypes(FlextCore.Types):
 
         EndpointConfiguration = dict[
             str,
-            FlextCore.Types.JsonValue
-            | FlextCore.Types.StringList
-            | dict[str, FlextCore.Types.JsonValue],
+            FlextTypes.JsonValue
+            | FlextTypes.StringList
+            | dict[str, FlextTypes.JsonValue],
         ]
         EndpointMetadata = dict[
             str,
-            str
-            | int
-            | FlextCore.Types.StringList
-            | dict[str, FlextCore.Types.JsonValue],
+            str | int | FlextTypes.StringList | dict[str, FlextTypes.JsonValue],
         ]
         EndpointValidation = dict[
             str,
-            FlextCore.Types.StringList | dict[str, FlextCore.Types.JsonValue] | bool,
+            FlextTypes.StringList | dict[str, FlextTypes.JsonValue] | bool,
         ]
-        EndpointMiddleware = list[dict[str, FlextCore.Types.JsonValue]]
-        EndpointDocumentation = dict[str, str | dict[str, FlextCore.Types.JsonValue]]
+        EndpointMiddleware = list[dict[str, FlextTypes.JsonValue]]
+        EndpointDocumentation = dict[str, str | dict[str, FlextTypes.JsonValue]]
         RouteConfiguration = dict[
-            str, str | FlextCore.Types.StringList | dict[str, FlextCore.Types.JsonValue]
+            str, str | FlextTypes.StringList | dict[str, FlextTypes.JsonValue]
         ]
 
     # =========================================================================
@@ -150,18 +141,15 @@ class FlextApiTypes(FlextCore.Types):
         """API authentication complex types."""
 
         AuthConfiguration = dict[
-            str, FlextCore.Types.ConfigValue | dict[str, FlextCore.Types.ConfigValue]
+            str, FlextTypes.ConfigValue | dict[str, FlextTypes.ConfigValue]
         ]
-        AuthCredentials = dict[str, str | dict[str, FlextCore.Types.JsonValue]]
-        AuthTokenData = dict[str, FlextCore.Types.JsonValue | int | bool]
-        AuthProviderConfig = dict[str, FlextCore.Types.ConfigDict]
-        AuthMiddleware = list[dict[str, FlextCore.Types.JsonValue]]
+        AuthCredentials = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        AuthTokenData = dict[str, FlextTypes.JsonValue | int | bool]
+        AuthProviderConfig = dict[str, FlextTypes.ConfigDict]
+        AuthMiddleware = list[dict[str, FlextTypes.JsonValue]]
         SecurityConfiguration = dict[
             str,
-            bool
-            | str
-            | FlextCore.Types.StringList
-            | dict[str, FlextCore.Types.ConfigValue],
+            bool | str | FlextTypes.StringList | dict[str, FlextTypes.ConfigValue],
         ]
 
     # =========================================================================
@@ -172,48 +160,46 @@ class FlextApiTypes(FlextCore.Types):
         """HTTP client complex types."""
 
         ClientConfiguration = dict[
-            str, FlextCore.Types.ConfigValue | dict[str, FlextCore.Types.ConfigValue]
+            str, FlextTypes.ConfigValue | dict[str, FlextTypes.ConfigValue]
         ]
         ConnectionPool = dict[str, int | bool | dict[str, int | bool]]
-        RetryConfiguration = dict[str, int | float | FlextCore.Types.StringList | bool]
+        RetryConfiguration = dict[str, int | float | FlextTypes.StringList | bool]
         TimeoutConfiguration = dict[str, int | float | dict[str, int | float]]
-        ClientMiddleware = list[dict[str, FlextCore.Types.JsonValue]]
+        ClientMiddleware = list[dict[str, FlextTypes.JsonValue]]
         SessionManagement = dict[
-            str, FlextCore.Types.JsonValue | dict[str, FlextCore.Types.JsonValue]
+            str, FlextTypes.JsonValue | dict[str, FlextTypes.JsonValue]
         ]
 
         class HttpKwargs(TypedDict):
             """Type definition for HTTP request kwargs."""
 
-            params: NotRequired[FlextCore.Types.StringDict | None]
-            data: NotRequired[FlextCore.Types.StringDict | None]
-            json: NotRequired[FlextCore.Types.StringDict | None]
-            headers: NotRequired[FlextCore.Types.StringDict | None]
+            params: NotRequired[FlextTypes.StringDict | None]
+            data: NotRequired[FlextTypes.StringDict | None]
+            json: NotRequired[FlextTypes.StringDict | None]
+            headers: NotRequired[FlextTypes.StringDict | None]
             request_timeout: NotRequired[int | None]
             timeout: NotRequired[float | None]
 
     # =========================================================================
-    # API PROJECT TYPES - Domain-specific project types extending FlextCore.Types
+    # API PROJECT TYPES - Domain-specific project types extending FlextTypes
     # =========================================================================
 
-    class Project(FlextCore.Types.Project):
-        """API-specific project types extending FlextCore.Types.Project.
+    class Project(FlextTypes.Project):
+        """API-specific project types extending FlextTypes.Project.
 
-        Adds API-specific project types while inheriting generic types from FlextCore.Types.
+        Adds API-specific project types while inheriting generic types from FlextTypes.
         Follows domain separation principle: API domain owns API-specific types.
         """
 
         # API-specific project types extending the generic ones
-        # ProjectType is inherited from FlextCore.Types.Project
+        # ProjectType is inherited from FlextTypes.Project
         # No need to redefine it here as it would cause override issues
 
         # API-specific project configurations
-        ApiProjectConfig = dict[str, FlextCore.Types.ConfigValue]
-        RestApiConfig = dict[str, str | int | bool | FlextCore.Types.StringList]
-        GraphqlApiConfig = dict[
-            str, bool | str | dict[str, FlextCore.Types.ConfigValue]
-        ]
-        MicroserviceConfig = dict[str, FlextCore.Types.ConfigValue]
+        ApiProjectConfig = dict[str, FlextTypes.ConfigValue]
+        RestApiConfig = dict[str, str | int | bool | FlextTypes.StringList]
+        GraphqlApiConfig = dict[str, bool | str | dict[str, FlextTypes.ConfigValue]]
+        MicroserviceConfig = dict[str, FlextTypes.ConfigValue]
 
     # =========================================================================
     # PROTOCOL TYPES - Protocol-specific types (Phase 1 - Transformation)
@@ -231,28 +217,24 @@ class FlextApiTypes(FlextCore.Types):
 
         # Protocol configurations
         HttpProtocolConfig = dict[
-            str, bool | int | str | dict[str, FlextCore.Types.JsonValue]
+            str, bool | int | str | dict[str, FlextTypes.JsonValue]
         ]
         WebSocketProtocolConfig = dict[
-            str, bool | int | str | dict[str, FlextCore.Types.JsonValue]
+            str, bool | int | str | dict[str, FlextTypes.JsonValue]
         ]
-        GraphQLProtocolConfig = dict[
-            str, bool | str | dict[str, FlextCore.Types.JsonValue]
-        ]
-        GrpcProtocolConfig = dict[
-            str, bool | str | dict[str, FlextCore.Types.JsonValue]
-        ]
+        GraphQLProtocolConfig = dict[str, bool | str | dict[str, FlextTypes.JsonValue]]
+        GrpcProtocolConfig = dict[str, bool | str | dict[str, FlextTypes.JsonValue]]
         SSEProtocolConfig = dict[
-            str, bool | int | str | dict[str, FlextCore.Types.JsonValue]
+            str, bool | int | str | dict[str, FlextTypes.JsonValue]
         ]
 
         # Protocol messages
-        ProtocolMessage = dict[str, FlextCore.Types.JsonValue] | str | bytes
-        WebSocketMessage = dict[str, FlextCore.Types.JsonValue] | str | bytes
+        ProtocolMessage = dict[str, FlextTypes.JsonValue] | str | bytes
+        WebSocketMessage = dict[str, FlextTypes.JsonValue] | str | bytes
         GraphQLQuery = str
         GraphQLMutation = str
         GraphQLSubscription = str
-        SSEEvent = dict[str, str | FlextCore.Types.JsonValue]
+        SSEEvent = dict[str, str | FlextTypes.JsonValue]
 
     # =========================================================================
     # SCHEMA TYPES - Schema system types (Phase 1 - Transformation)
@@ -269,21 +251,21 @@ class FlextApiTypes(FlextCore.Types):
         SchemaVersion = str  # "3.1.0", "2.6.0", etc.
 
         # Schema definitions
-        OpenApiSchema = dict[str, FlextCore.Types.JsonValue]
-        ApiSchema = dict[str, FlextCore.Types.JsonValue]
-        JsonSchema = dict[str, FlextCore.Types.JsonValue]
+        OpenApiSchema = dict[str, FlextTypes.JsonValue]
+        ApiSchema = dict[str, FlextTypes.JsonValue]
+        JsonSchema = dict[str, FlextTypes.JsonValue]
         GraphQLSchema = str  # SDL (Schema Definition Language)
         ProtobufSchema = str  # .proto file content
 
         # Schema validation
         ValidationResult = dict[
             str,
-            bool | FlextCore.Types.StringList | dict[str, FlextCore.Types.JsonValue],
+            bool | FlextTypes.StringList | dict[str, FlextTypes.JsonValue],
         ]
-        ValidationErrors = list[dict[str, str | FlextCore.Types.JsonValue]]
+        ValidationErrors = list[dict[str, str | FlextTypes.JsonValue]]
 
         # Schema metadata
-        SchemaMetadata = dict[str, str | dict[str, FlextCore.Types.JsonValue]]
+        SchemaMetadata = dict[str, str | dict[str, FlextTypes.JsonValue]]
 
     # =========================================================================
     # TRANSPORT TYPES - Transport layer types (Phase 1 - Transformation)
@@ -301,17 +283,13 @@ class FlextApiTypes(FlextCore.Types):
         # Transport configurations
         HttpTransportConfig = dict[str, bool | int | dict[str, int | bool]]
         WebSocketTransportConfig = dict[
-            str, bool | int | str | dict[str, FlextCore.Types.JsonValue]
+            str, bool | int | str | dict[str, FlextTypes.JsonValue]
         ]
-        GraphQLTransportConfig = dict[str, str | dict[str, FlextCore.Types.JsonValue]]
-        GrpcTransportConfig = dict[
-            str, str | int | dict[str, FlextCore.Types.JsonValue]
-        ]
+        GraphQLTransportConfig = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        GrpcTransportConfig = dict[str, str | int | dict[str, FlextTypes.JsonValue]]
 
         # Connection management
-        ConnectionInfo = dict[
-            str, str | int | bool | dict[str, FlextCore.Types.JsonValue]
-        ]
+        ConnectionInfo = dict[str, str | int | bool | dict[str, FlextTypes.JsonValue]]
         ConnectionStatus = str  # "connected", "disconnected", "error"
 
     # =========================================================================
@@ -330,11 +308,11 @@ class FlextApiTypes(FlextCore.Types):
         PluginType = str  # "protocol", "schema", "transport", "auth"
 
         # Plugin configurations
-        PluginConfig = dict[str, FlextCore.Types.ConfigValue]
-        PluginMetadata = dict[str, str | bool | dict[str, FlextCore.Types.JsonValue]]
+        PluginConfig = dict[str, FlextTypes.ConfigValue]
+        PluginMetadata = dict[str, str | bool | dict[str, FlextTypes.JsonValue]]
 
         # Plugin registry
-        RegistryEntry = dict[str, str | object | dict[str, FlextCore.Types.JsonValue]]
+        RegistryEntry = dict[str, str | object | dict[str, FlextTypes.JsonValue]]
 
     # =========================================================================
     # SERIALIZATION TYPES - Serialization format types
@@ -380,8 +358,8 @@ class FlextApiTypes(FlextCore.Types):
         type HttpUrl = str
         type HttpMethod = str
         type HttpHeaders = dict[str, str]
-        type HttpParams = dict[str, str | FlextCore.Types.StringList]
-        type HttpData = str | bytes | dict[str, FlextCore.Types.JsonValue]
+        type HttpParams = dict[str, str | FlextTypes.StringList]
+        type HttpData = str | bytes | dict[str, FlextTypes.JsonValue]
 
         type HttpRequest = dict[
             str, HttpUrl | HttpMethod | HttpHeaders | HttpParams | HttpData
@@ -423,10 +401,10 @@ class FlextApiTypes(FlextCore.Types):
 
         """
 
-        type HttpError = dict[str, int | str | dict[str, FlextCore.Types.JsonValue]]
+        type HttpError = dict[str, int | str | dict[str, FlextTypes.JsonValue]]
         type HttpErrorCategory = str
         type HttpErrorRecovery = dict[
-            str, str | float | dict[str, FlextCore.Types.JsonValue]
+            str, str | float | dict[str, FlextTypes.JsonValue]
         ]
 
         type HttpErrorHandler = dict[str, HttpErrorCategory | HttpErrorRecovery]
@@ -457,9 +435,9 @@ class FlextApiTypes(FlextCore.Types):
 
         """
 
-        type HttpServiceRegistry = FlextCore.Types.Dict
+        type HttpServiceRegistry = FlextTypes.Dict
         type HttpServiceConfig = dict[str, dict[str, int | float | str]]
-        type HttpServiceFactory = FlextCore.Types.Dict
+        type HttpServiceFactory = FlextTypes.Dict
 
         # Enhanced service lifecycle types
         type HttpServiceLifecycle = str
@@ -499,17 +477,15 @@ class FlextApiTypes(FlextCore.Types):
         """
 
         type HttpRequestSchema = dict[
-            str, str | int | bool | dict[str, FlextCore.Types.JsonValue]
+            str, str | int | bool | dict[str, FlextTypes.JsonValue]
         ]
-        type HttpResponseSchema = dict[
-            str, int | str | dict[str, FlextCore.Types.JsonValue]
-        ]
-        type HttpValidationResult = dict[str, bool | FlextCore.Types.StringList]
+        type HttpResponseSchema = dict[str, int | str | dict[str, FlextTypes.JsonValue]]
+        type HttpValidationResult = dict[str, bool | FlextTypes.StringList]
 
-        type HttpFieldValidator = FlextCore.Types.Dict
+        type HttpFieldValidator = FlextTypes.Dict
         type HttpSchemaValidator = dict[str, HttpFieldValidator]
 
-        type HttpValidationRule = dict[str, str | dict[str, FlextCore.Types.JsonValue]]
+        type HttpValidationRule = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type HttpValidationRules = list[HttpValidationRule]
 
     class ProcessingTypes:
@@ -543,17 +519,15 @@ class FlextApiTypes(FlextCore.Types):
 
         """
 
-        type HttpRequestPipeline = list[FlextCore.Types.Dict]
-        type HttpResponsePipeline = list[FlextCore.Types.Dict]
-        type HttpProcessingResult = dict[
-            str, bool | FlextCore.Types.StringList | object
-        ]
+        type HttpRequestPipeline = list[FlextTypes.Dict]
+        type HttpResponsePipeline = list[FlextTypes.Dict]
+        type HttpProcessingResult = dict[str, bool | FlextTypes.StringList | object]
 
-        type HttpRequestBatch = list[FlextCore.Types.Dict]
-        type HttpResponseBatch = list[FlextCore.Types.Dict]
-        type HttpBatchResult = dict[str, int | FlextCore.Types.List]
+        type HttpRequestBatch = list[FlextTypes.Dict]
+        type HttpResponseBatch = list[FlextTypes.Dict]
+        type HttpBatchResult = dict[str, int | FlextTypes.List]
 
-        type HttpMiddlewareConfig = dict[str, object | FlextCore.Types.Dict]
+        type HttpMiddlewareConfig = dict[str, object | FlextTypes.Dict]
         type HttpMiddlewarePipeline = list[HttpMiddlewareConfig]
 
 
@@ -561,6 +535,6 @@ class FlextApiTypes(FlextCore.Types):
 # PUBLIC API EXPORTS - API types and classes
 # =============================================================================
 
-__all__: FlextCore.Types.StringList = [
+__all__: FlextTypes.StringList = [
     "FlextApiTypes",
 ]

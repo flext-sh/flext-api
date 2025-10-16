@@ -21,7 +21,26 @@ FLEXT-API follows a comprehensive testing strategy that ensures reliability, mai
 ```python
 import pytest
 from flext_api import FlextApiClient
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
 class TestFlextApiClient:
     def setup_method(self):
@@ -68,7 +87,7 @@ class TestFlextApiClient:
         result = self.client.post("/users", json=invalid_data)
 
         # Should handle validation errors gracefully
-        assert isinstance(result, FlextCore.Result)
+        assert isinstance(result, FlextResult)
 ```
 
 ### Middleware Testing
@@ -76,11 +95,30 @@ class TestFlextApiClient:
 ```python
 import pytest
 from flext_api.middleware import LoggingMiddleware, AuthenticationMiddleware
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
 class TestLoggingMiddleware:
     def setup_method(self):
-        self.logger = FlextCore.Logger("test")
+        self.logger = FlextLogger("test")
         self.middleware = LoggingMiddleware(self.logger)
 
     def test_request_logging(self, mock_request):
@@ -162,12 +200,31 @@ class TestUserAPI:
 ```python
 import pytest
 from flext_api import FlextApiClient
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
 class TestDatabaseIntegration:
     def setup_method(self):
         # Setup test database
-        self.container = FlextCore.Container.get_global()
+        self.container = FlextContainer.get_global()
         self.db_service = self.container.get("database").unwrap()
 
         # Clear test data
@@ -428,7 +485,26 @@ class TestInputValidation:
 ```python
 import pytest
 from flext_api import FlextApiClient
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
 @pytest.fixture
 def api_client():
@@ -441,7 +517,7 @@ def api_client():
 @pytest.fixture
 def test_database():
     """Provide test database with cleanup."""
-    container = FlextCore.Container.get_global()
+    container = FlextContainer.get_global()
     db = container.get("test_database").unwrap()
 
     # Setup test data
@@ -479,14 +555,14 @@ class TestHelpers:
     """Helper methods for testing."""
 
     @staticmethod
-    def assert_success_response(result: FlextCore.Result, expected_status: int = 200):
+    def assert_success_response(result: FlextResult, expected_status: int = 200):
         """Assert that result is successful."""
         assert result.is_success, f"Expected success but got error: {result.error}"
         response = result.unwrap()
         assert response.status_code == expected_status
 
     @staticmethod
-    def assert_error_response(result: FlextCore.Result, expected_status: int):
+    def assert_error_response(result: FlextResult, expected_status: int):
         """Assert that result is an error."""
         assert result.is_failure, "Expected error but got success"
         error = result.error

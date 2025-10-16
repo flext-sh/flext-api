@@ -25,7 +25,7 @@ Key challenges:
 
 ## Decision
 
-FLEXT-API will use **Railway-Oriented Programming** with `FlextCore.Result[T]` for all HTTP operations. Every public method returns `FlextCore.Result[T]` instead of throwing exceptions. Operations are composed using `flat_map`, `map`, and `map_error` methods.
+FLEXT-API will use **Railway-Oriented Programming** with `FlextResult[T]` for all HTTP operations. Every public method returns `FlextResult[T]` instead of throwing exceptions. Operations are composed using `flat_map`, `map`, and `map_error` methods.
 
 ## Consequences
 
@@ -78,7 +78,7 @@ class Result:
 
 - **Pros**: Simple implementation, explicit error handling
 - **Cons**: No composability, reinventing the wheel, less type-safe
-- **Rejected**: FlextCore.Result from flext-core is more robust and feature-complete
+- **Rejected**: FlextResult from flext-core is more robust and feature-complete
 
 ### Option 3: Hybrid Approach
 
@@ -92,7 +92,7 @@ class Result:
 ### Basic HTTP Operation
 
 ```python
-def get_user(user_id: int) -> FlextCore.Result[User]:
+def get_user(user_id: int) -> FlextResult[User]:
     """Get user with railway error handling."""
     return (FlextApiClient()
         .get(f"/users/{user_id}")
@@ -131,7 +131,7 @@ user_profile = (get_user(user_id)
 def test_get_user_success():
     # Given
     mock_response = MockHttpResponse(status_code=200, body='{"name": "John"}')
-    client.get.return_value = FlextCore.Result.ok(mock_response)
+    client.get.return_value = FlextResult.ok(mock_response)
 
     # When
     result = get_user(123)
@@ -142,7 +142,7 @@ def test_get_user_success():
 
 def test_get_user_not_found():
     # Given
-    client.get.return_value = FlextCore.Result.fail("HTTP 404")
+    client.get.return_value = FlextResult.fail("HTTP 404")
 
     # When
     result = get_user(123)
@@ -156,8 +156,8 @@ def test_get_user_not_found():
 
 ### Phase 1: Core Implementation
 
-- [x] Implement FlextCore.Result integration in all HTTP operations
-- [x] Update FlextApiClient to return FlextCore.Result[T]
+- [x] Implement FlextResult integration in all HTTP operations
+- [x] Update FlextApiClient to return FlextResult[T]
 - [x] Add railway pattern utilities and helpers
 
 ### Phase 2: Ecosystem Migration
@@ -178,7 +178,7 @@ def test_get_user_not_found():
 
 ### Railway Pattern Guidelines
 
-1. **Always Return FlextCore.Result**: Every public method should return FlextCore.Result[T]
+1. **Always Return FlextResult**: Every public method should return FlextResult[T]
 2. **Use Descriptive Errors**: Error messages should be user-friendly and actionable
 3. **Chain Operations**: Use `flat_map` for sequential operations, `map` for transformations
 4. **Handle Errors Early**: Validate inputs and fail fast with clear error messages
@@ -188,13 +188,13 @@ def test_get_user_not_found():
 
 ```python
 # Good error messages
-FlextCore.Result.fail("Invalid user ID: must be positive integer")
-FlextCore.Result.fail("HTTP request timeout after 30 seconds")
-FlextCore.Result.fail("JSON parsing failed: invalid response format")
+FlextResult.fail("Invalid user ID: must be positive integer")
+FlextResult.fail("HTTP request timeout after 30 seconds")
+FlextResult.fail("JSON parsing failed: invalid response format")
 
 # Avoid generic messages
-FlextCore.Result.fail("Error")  # Too vague
-FlextCore.Result.fail("Something went wrong")  # Not helpful
+FlextResult.fail("Error")  # Too vague
+FlextResult.fail("Something went wrong")  # Not helpful
 ```
 
 ### Performance Considerations
@@ -206,7 +206,7 @@ FlextCore.Result.fail("Something went wrong")  # Not helpful
 
 ## References
 
-- [FLEXT-Core FlextCore.Result Documentation](../../../flext-core/docs/flext_result.md)
+- [FLEXT-Core FlextResult Documentation](../../../flext-core/docs/flext_result.md)
 - [Railway-Oriented Programming](https://fsharpforfunandprofit.com/rop/)
 - [Error Handling in Scala](https://typelevel.org/cats/datatypes/either.html)
 - GitHub Issue: #156 - Railway Pattern Implementation

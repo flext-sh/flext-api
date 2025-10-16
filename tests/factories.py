@@ -13,15 +13,12 @@ import uuid
 from typing import cast
 
 from faker import Faker
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextTypes
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
-
-# MAXIMUM usage of flext_tests - use EM ABSOLUTO
-
 
 # Configure Faker for consistent test data
 fake = Faker()
@@ -48,7 +45,7 @@ class FlextApiFactories:
         base_config = FlextTestsDomains.create_configuration()
 
         # Ensure required client fields
-        client_config: FlextCore.Types.Dict = {
+        client_config = {
             "base_url": base_config.get("base_url", "https://httpbin.org"),
             "timeout": base_config.get("timeout", 30.0),
             "max_retries": base_config.get("max_retries", 3),
@@ -58,7 +55,9 @@ class FlextApiFactories:
             ),
         }
         client_config.update(overrides)
-        return client_config
+        from typing import cast
+
+        return cast("FlextApiTypes.ResponseDict", client_config)
 
     @staticmethod
     def create_client(**overrides: object) -> FlextApiClient:
@@ -75,7 +74,9 @@ class FlextApiFactories:
             base_url=str(config["base_url"]),
             timeout=int(timeout_val) if isinstance(timeout_val, (int, float)) else 30,
             max_retries=cast("int", config["max_retries"]),
-            headers=dict(headers_val) if isinstance(headers_val, dict) else {},
+            headers=cast("dict[str, str]", headers_val)
+            if isinstance(headers_val, dict)
+            else {},
         )
 
     @staticmethod
@@ -111,8 +112,8 @@ class FlextApiFactories:
                 defaults[key] = value
 
         return FlextApiConfig(
-            api_base_url=cast("str", defaults["api_base_url"]),
-            api_timeout=cast("int", defaults["api_timeout"]),
+            base_url=cast("str", defaults["base_url"]),
+            timeout=cast("int", defaults["timeout"]),
             max_retries=cast("int", defaults["max_retries"]),
         )
 
@@ -134,11 +135,13 @@ class FlextApiFactories:
             "cache_ttl_seconds": cast("int", base_config.get("cache_ttl", 300)),
         }
         # Apply overrides with type filtering
-        storage_config.update({
-            key: value
-            for key, value in overrides.items()
-            if isinstance(value, (str, int, bool))
-        })
+        storage_config.update(
+            {
+                key: value
+                for key, value in overrides.items()
+                if isinstance(value, (str, int, bool))
+            }
+        )
         return storage_config
 
     @staticmethod
@@ -163,7 +166,7 @@ class FlextApiFactories:
         # Use FlextTestsDomains for payload structure
         payload_data = FlextTestsDomains.create_payload()
 
-        base_request: FlextCore.Types.Dict = {
+        base_request: FlextTypes.Dict = {
             "method": payload_data.get("method", "GET"),
             "url": payload_data.get("url", "https://httpbin.org/get"),
             "headers": payload_data.get(
@@ -188,7 +191,7 @@ class FlextApiFactories:
         # Use FlextTestsDomains for API response structure
         api_response = FlextTestsDomains.api_response_data()
 
-        response_data: FlextCore.Types.Dict = {
+        response_data = {
             "status_code": 200,
             "data": api_response.get("data", {}),
             "headers": api_response.get(
@@ -200,7 +203,12 @@ class FlextApiFactories:
             "from_cache": bool(api_response.get("from_cache", False)),
             "success": True,
         }
-        response_data.update(overrides)
+        # Update with overrides, ensuring type compatibility
+        for key, value in overrides.items():
+            if key in response_data and isinstance(
+                value, (str, int, float, bool, dict, list)
+            ):
+                response_data[key] = value
 
         # Update success based on status code
         if "status_code" in overrides and isinstance(response_data["status_code"], int):
@@ -223,32 +231,32 @@ class FlextApiFactories:
     @staticmethod
     def create_error_result(
         error_message: str = "Test error",
-    ) -> FlextCore.Result[FlextApiTypes.ResponseDict]:
-        """Create error FlextCore.Result using FlextTestsUtilities - ABSOLUTE.
+    ) -> FlextResult[FlextApiTypes.ResponseDict]:
+        """Create error FlextResult using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            FlextCore.Result[FlextApiTypes.ResponseDict]: Error result instance.
+            FlextResult[FlextApiTypes.ResponseDict]: Error result instance.
 
         """
         return cast(
-            "FlextCore.Result[FlextApiTypes.ResponseDict]",
+            "FlextResult[FlextApiTypes.ResponseDict]",
             FlextTestsUtilities.create_test_result(success=False, error=error_message),
         )
 
     @staticmethod
     def create_success_result(
         data: FlextApiTypes.ResponseDict | None = None,
-    ) -> FlextCore.Result[FlextApiTypes.ResponseDict]:
-        """Create success FlextCore.Result using FlextTestsUtilities - ABSOLUTE.
+    ) -> FlextResult[FlextApiTypes.ResponseDict]:
+        """Create success FlextResult using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            FlextCore.Result[FlextApiTypes.ResponseDict]: Success result instance.
+            FlextResult[FlextApiTypes.ResponseDict]: Success result instance.
 
         """
         if data is None:
             data = {"success": True, "message": "Test operation successful"}
         return cast(
-            "FlextCore.Result[FlextApiTypes.ResponseDict]",
+            "FlextResult[FlextApiTypes.ResponseDict]",
             FlextTestsUtilities.create_test_result(success=True, data=data),
         )
 
@@ -321,7 +329,7 @@ class FlextApiFactories:
         return FlextTestsDomains.batch_users(count)
 
     @staticmethod
-    def get_valid_email_cases() -> FlextCore.Types.StringList:
+    def get_valid_email_cases() -> FlextTypes.StringList:
         """Get valid emails using FlextTestsDomains - ABSOLUTE.
 
         Returns:
@@ -331,7 +339,7 @@ class FlextApiFactories:
         return FlextTestsDomains.valid_email_cases()
 
     @staticmethod
-    def get_invalid_email_cases() -> FlextCore.Types.StringList:
+    def get_invalid_email_cases() -> FlextTypes.StringList:
         """Get invalid emails using FlextTestsDomains - ABSOLUTE.
 
         Returns:
@@ -341,7 +349,7 @@ class FlextApiFactories:
         return FlextTestsDomains.invalid_email_cases()
 
     @staticmethod
-    def get_valid_ages() -> FlextCore.Types.IntList:
+    def get_valid_ages() -> FlextTypes.IntList:
         """Get valid ages using FlextTestsDomains - ABSOLUTE.
 
         Returns:
@@ -351,7 +359,7 @@ class FlextApiFactories:
         return FlextTestsDomains.valid_ages()
 
     @staticmethod
-    def get_invalid_ages() -> FlextCore.Types.IntList:
+    def get_invalid_ages() -> FlextTypes.IntList:
         """Get invalid ages using FlextTestsDomains - ABSOLUTE.
 
         Returns:

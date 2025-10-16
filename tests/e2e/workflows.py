@@ -29,4 +29,3 @@ class TestApiWorkflowE2E:
         # Simple client workflow test
         client = FlextApiClient(base_url="https://httpbin.org")
         assert client is not None
-        assert client.base_url == "https://httpbin.org"

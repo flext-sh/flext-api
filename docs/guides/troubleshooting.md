@@ -329,10 +329,29 @@ config = FlextApiConfig(
 # Symptom: Database connection fails
 # Solution: Check connection parameters and database status
 
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
 # Check database service registration
-container = FlextCore.Container.get_global()
+container = FlextContainer.get_global()
 db_result = container.get("database")
 
 if db_result.is_failure:
@@ -398,11 +417,30 @@ except Exception as e:
 # Symptom: Application logs don't appear
 # Solution: Check logging configuration
 
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 import logging
 
 # Check logger configuration
-logger = FlextCore.Logger(__name__)
+logger = FlextLogger(__name__)
 logger.info("Test log message")
 
 # Check if logging is configured
@@ -428,7 +466,7 @@ else:
 # Solution: Check logging configuration
 
 # Configure structured logging
-logger = FlextCore.Logger(__name__, format="json")
+logger = FlextLogger(__name__, format="json")
 
 # Test structured logging
 logger.info("User action", extra={
@@ -705,7 +743,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Create debug logger
-logger = FlextCore.Logger(__name__)
+logger = FlextLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Add debug information to requests

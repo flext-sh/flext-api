@@ -23,7 +23,7 @@ from __future__ import annotations
 import json
 from typing import Protocol
 
-from flext_core import FlextCore
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class ProtobufMessage:
@@ -39,48 +39,48 @@ class ProtobufMessage:
     - Field validation
     """
 
-    def __init__(self, data: FlextCore.Types.Dict | None = None) -> None:
+    def __init__(self, data: FlextTypes.Dict | None = None) -> None:
         """Initialize Protobuf message.
 
         Args:
             data: Message data
 
         """
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
         self._data = data or {}
 
         self.logger.debug("Protobuf message stub created (placeholder)")
 
-    def serialize(self) -> FlextCore.Result[bytes]:
+    def serialize(self) -> FlextResult[bytes]:
         """Serialize message to bytes.
 
         Returns:
-            FlextCore.Result containing serialized bytes or error
+            FlextResult containing serialized bytes or error
 
         """
         self.logger.debug("Protobuf serialization (placeholder)")
-        return FlextCore.Result[bytes].fail(
+        return FlextResult[bytes].fail(
             "Protobuf stub placeholder - awaiting flext-grpc integration"
         )
 
     @classmethod
-    def deserialize(cls, _data: bytes) -> FlextCore.Result[ProtobufMessage]:
+    def deserialize(cls, _data: bytes) -> FlextResult[ProtobufMessage]:
         """Deserialize message from bytes.
 
         Args:
             data: Serialized message bytes
 
         Returns:
-            FlextCore.Result containing message or error
+            FlextResult containing message or error
 
         """
-        logger = FlextCore.Logger(__name__)
+        logger = FlextLogger(__name__)
         logger.debug("Protobuf deserialization (placeholder)")
-        return FlextCore.Result[ProtobufMessage].fail(
+        return FlextResult[ProtobufMessage].fail(
             "Protobuf stub placeholder - awaiting flext-grpc integration"
         )
 
-    def to_dict(self) -> FlextCore.Types.Dict:
+    def to_dict(self) -> FlextTypes.Dict:
         """Convert message to dictionary.
 
         Returns:
@@ -90,7 +90,7 @@ class ProtobufMessage:
         return self._data
 
     @classmethod
-    def from_dict(cls, data: FlextCore.Types.Dict) -> ProtobufMessage:
+    def from_dict(cls, data: FlextTypes.Dict) -> ProtobufMessage:
         """Create message from dictionary.
 
         Args:
@@ -102,35 +102,35 @@ class ProtobufMessage:
         """
         return cls(data)
 
-    def to_json(self) -> FlextCore.Result[str]:
+    def to_json(self) -> FlextResult[str]:
         """Convert message to JSON string.
 
         Returns:
-            FlextCore.Result containing JSON string or error
+            FlextResult containing JSON string or error
 
         """
         try:
             json_str = json.dumps(self._data)
-            return FlextCore.Result[str].ok(json_str)
+            return FlextResult[str].ok(json_str)
         except Exception as e:
-            return FlextCore.Result[str].fail(f"JSON conversion failed: {e}")
+            return FlextResult[str].fail(f"JSON conversion failed: {e}")
 
     @classmethod
-    def from_json(cls, json_str: str) -> FlextCore.Result[ProtobufMessage]:
+    def from_json(cls, json_str: str) -> FlextResult[ProtobufMessage]:
         """Create message from JSON string.
 
         Args:
             json_str: JSON string
 
         Returns:
-            FlextCore.Result containing message or error
+            FlextResult containing message or error
 
         """
         try:
             data = json.loads(json_str)
-            return FlextCore.Result[ProtobufMessage].ok(cls(data))
+            return FlextResult[ProtobufMessage].ok(cls(data))
         except Exception as e:
-            return FlextCore.Result[ProtobufMessage].fail(f"JSON parsing failed: {e}")
+            return FlextResult[ProtobufMessage].fail(f"JSON parsing failed: {e}")
 
 
 class ProtobufSerializer:
@@ -146,26 +146,26 @@ class ProtobufSerializer:
     - Compression
     """
 
-    def __init__(self, schema: FlextCore.Types.Dict | None = None) -> None:
+    def __init__(self, schema: FlextTypes.Dict | None = None) -> None:
         """Initialize Protobuf serializer.
 
         Args:
             schema: Protobuf schema definition
 
         """
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
         self._schema = schema or {}
 
         self.logger.info("Protobuf serializer stub created (placeholder)")
 
-    def serialize(self, message: ProtobufMessage) -> FlextCore.Result[bytes]:
+    def serialize(self, message: ProtobufMessage) -> FlextResult[bytes]:
         """Serialize message to bytes.
 
         Args:
             message: Protobuf message
 
         Returns:
-            FlextCore.Result containing serialized bytes or error
+            FlextResult containing serialized bytes or error
 
         """
         self.logger.debug("Protobuf serialization (placeholder)")
@@ -173,43 +173,43 @@ class ProtobufSerializer:
         # Validate message against schema
         validation_result = self._validate_message(message)
         if validation_result.is_failure:
-            return FlextCore.Result[bytes].fail(validation_result.error)
+            return FlextResult[bytes].fail(validation_result.error)
 
-        return FlextCore.Result[bytes].fail(
+        return FlextResult[bytes].fail(
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def deserialize(self, _data: bytes) -> FlextCore.Result[ProtobufMessage]:
+    def deserialize(self, _data: bytes) -> FlextResult[ProtobufMessage]:
         """Deserialize message from bytes.
 
         Args:
             data: Serialized message bytes
 
         Returns:
-            FlextCore.Result containing message or error
+            FlextResult containing message or error
 
         """
         self.logger.debug("Protobuf deserialization (placeholder)")
-        return FlextCore.Result[ProtobufMessage].fail(
+        return FlextResult[ProtobufMessage].fail(
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def _validate_message(self, _message: ProtobufMessage) -> FlextCore.Result[None]:
+    def _validate_message(self, _message: ProtobufMessage) -> FlextResult[None]:
         """Validate message against schema.
 
         Args:
             message: Message to validate
 
         Returns:
-            FlextCore.Result indicating validation success or failure
+            FlextResult indicating validation success or failure
 
         """
         if not self._schema:
             self.logger.warning("No schema defined for validation")
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         # Schema validation would happen here with flext-grpc
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     @property
     def content_type(self) -> str:
@@ -283,36 +283,32 @@ class ProtobufField:
         """Check if field is repeated."""
         return self._repeated
 
-    def validate(self, value: object) -> FlextCore.Result[None]:
+    def validate(self, value: object) -> FlextResult[None]:
         """Validate field value.
 
         Args:
             value: Value to validate
 
         Returns:
-            FlextCore.Result indicating validation success or failure
+            FlextResult indicating validation success or failure
 
         """
         # Required check (do this first, before type checking)
         if self._required and value is None:
-            return FlextCore.Result[None].fail(
-                f"Required field {self._name} is missing"
-            )
+            return FlextResult[None].fail(f"Required field {self._name} is missing")
 
         # Repeated check (do this before type checking for repeated fields)
         if self._repeated and not isinstance(value, list):
-            return FlextCore.Result[None].fail(
-                f"Repeated field {self._name} must be a list"
-            )
+            return FlextResult[None].fail(f"Repeated field {self._name} must be a list")
 
         # Type checking (do this last, after repeated/required checks)
         if not isinstance(value, self._field_type) and value is not None:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"Field {self._name} expects {self._field_type.__name__}, "
                 f"got {type(value).__name__}"
             )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
 
 class ProtobufSchema:
@@ -335,7 +331,7 @@ class ProtobufSchema:
             name: Schema name
 
         """
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
         self._name = name
         self._fields: dict[str, ProtobufField] = {}
 
@@ -344,18 +340,18 @@ class ProtobufSchema:
             extra={"schema_name": name},
         )
 
-    def add_field(self, field: ProtobufField) -> FlextCore.Result[None]:
+    def add_field(self, field: ProtobufField) -> FlextResult[None]:
         """Add field to schema.
 
         Args:
             field: Field to add
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if field.name in self._fields:
-            return FlextCore.Result[None].fail(f"Field {field.name} already exists")
+            return FlextResult[None].fail(f"Field {field.name} already exists")
 
         self._fields[field.name] = field
 
@@ -364,16 +360,16 @@ class ProtobufSchema:
             extra={"field": field.name},
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def validate_message(self, message: ProtobufMessage) -> FlextCore.Result[None]:
+    def validate_message(self, message: ProtobufMessage) -> FlextResult[None]:
         """Validate message against schema.
 
         Args:
             message: Message to validate
 
         Returns:
-            FlextCore.Result indicating validation success or failure
+            FlextResult indicating validation success or failure
 
         """
         data = message.to_dict()
@@ -386,7 +382,7 @@ class ProtobufSchema:
             if validation_result.is_failure:
                 return validation_result
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     @property
     def name(self) -> str:
@@ -406,25 +402,25 @@ class ProtobufServiceProtocol(Protocol):
     when flext-grpc is integrated.
     """
 
-    def get_request_schema(self, method: str) -> FlextCore.Result[ProtobufSchema]:
+    def get_request_schema(self, method: str) -> FlextResult[ProtobufSchema]:
         """Get request schema for method.
 
         Args:
             method: Method name
 
         Returns:
-            FlextCore.Result containing schema or error
+            FlextResult containing schema or error
 
         """
 
-    def get_response_schema(self, method: str) -> FlextCore.Result[ProtobufSchema]:
+    def get_response_schema(self, method: str) -> FlextResult[ProtobufSchema]:
         """Get response schema for method.
 
         Args:
             method: Method name
 
         Returns:
-            FlextCore.Result containing schema or error
+            FlextResult containing schema or error
 
         """
 

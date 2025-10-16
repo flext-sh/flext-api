@@ -26,10 +26,18 @@ import uuid
 from collections import deque
 from collections.abc import Callable
 
-from flext_core import FlextCore
+from flext_core import (
+    FlextBus,
+    FlextContainer,
+    FlextContext,
+    FlextDispatcher,
+    FlextResult,
+    FlextService,
+    FlextTypes,
+)
 
 
-class FlextWebhookHandler(FlextCore.Service[object]):
+class FlextWebhookHandler(FlextService[object]):
     """Webhook handler with signature verification and event processing.
 
     Features:
@@ -42,14 +50,14 @@ class FlextWebhookHandler(FlextCore.Service[object]):
     - Webhook registration and lifecycle
 
     Integration:
-    - Complete flext-core integration (FlextCore.Bus, FlextCore.Container, FlextCore.Context, FlextCore.Dispatcher, FlextCore.Utilities)
+    - Complete flext-core integration (FlextBus, FlextContainer, FlextContext, FlextDispatcher, FlextUtilities)
     - Signature verification using HMAC
     - Event routing to registered handlers
     - Retry queue with configurable attempts
-    - FlextCore.Result for railway-oriented error handling
-    - FlextCore.Logger for structured audit logging
-    - FlextCore.Service for service lifecycle management
-    - FlextCore.Utilities for additional utility functions
+    - FlextResult for railway-oriented error handling
+    - FlextLogger for structured audit logging
+    - FlextService for service lifecycle management
+    - FlextUtilities for additional utility functions
     """
 
     def __init__(
@@ -75,10 +83,10 @@ class FlextWebhookHandler(FlextCore.Service[object]):
         super().__init__()
 
         # Initialize flext-core components
-        self._container = FlextCore.Container.get_global()
-        self._context = FlextCore.Context()
-        self._bus = FlextCore.Bus()
-        self._dispatcher = FlextCore.Dispatcher()
+        self._container = FlextContainer.get_global()
+        self._context = FlextContext()
+        self._bus = FlextBus()
+        self._dispatcher = FlextDispatcher()
 
         # Webhook configuration
         self._secret = secret
@@ -92,31 +100,31 @@ class FlextWebhookHandler(FlextCore.Service[object]):
         self._event_handlers: dict[str, list[Callable]] = {}
 
         # Event queue
-        self._event_queue: deque[FlextCore.Types.Dict] = deque(maxlen=1000)
+        self._event_queue: deque[FlextTypes.Dict] = deque(maxlen=1000)
 
         # Delivery tracking
-        self._delivery_confirmations: FlextCore.Types.NestedDict = {}
+        self._delivery_confirmations: FlextTypes.NestedDict = {}
 
         # Retry queue
-        self._retry_queue: deque[FlextCore.Types.Dict] = deque(maxlen=500)
+        self._retry_queue: deque[FlextTypes.Dict] = deque(maxlen=500)
 
-    def execute(self, *_args: object, **_kwargs: object) -> FlextCore.Result[object]:
+    def execute(self, *_args: object, **_kwargs: object) -> FlextResult[object]:
         """Execute webhook service lifecycle operations.
 
-        FlextCore.Service requires this method for service execution.
+        FlextService requires this method for service execution.
         For webhook handler, this is a no-op as webhook processing is event-driven.
 
         Returns:
-            FlextCore.Result[object]: Success result
+            FlextResult[object]: Success result
 
         """
-        return FlextCore.Result[object].ok(None)
+        return FlextResult[object].ok(None)
 
     def register_event_handler(
         self,
         event_type: str,
         handler: Callable,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Register event handler for webhook events.
 
         Args:
@@ -124,7 +132,7 @@ class FlextWebhookHandler(FlextCore.Service[object]):
             handler: Event handler function
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if event_type not in self._event_handlers:
@@ -137,13 +145,13 @@ class FlextWebhookHandler(FlextCore.Service[object]):
             extra={"event_type": event_type},
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     def receive_webhook(
         self,
         payload: bytes | str,
-        headers: FlextCore.Types.StringDict,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        headers: FlextTypes.StringDict,
+    ) -> FlextResult[FlextTypes.Dict]:
         """Receive and process webhook request.
 
         Args:
@@ -151,14 +159,14 @@ class FlextWebhookHandler(FlextCore.Service[object]):
             headers: HTTP headers
 
         Returns:
-            FlextCore.Result containing processing result or error
+            FlextResult containing processing result or error
 
         """
         # Verify signature if secret is configured
         if self._secret:
             signature_result = self._verify_signature(payload, headers)
             if signature_result.is_failure:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"Signature verification failed: {signature_result.error}"
                 )
 
@@ -171,16 +179,12 @@ class FlextWebhookHandler(FlextCore.Service[object]):
 
             event_data = json.loads(payload_str)
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
-                f"Failed to parse payload: {e}"
-            )
+            return FlextResult[FlextTypes.Dict].fail(f"Failed to parse payload: {e}")
 
         # Extract event type
         event_type = event_data.get("type") or event_data.get("event_type")
         if not event_type:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
-                "Missing event type in payload"
-            )
+            return FlextResult[FlextTypes.Dict].fail("Missing event type in payload")
 
         # Generate event ID
         event_id = event_data.get("id") or self._generate_event_id()
@@ -211,10 +215,12 @@ class FlextWebhookHandler(FlextCore.Service[object]):
                 extra={"event_id": event_id, "event_type": event_type},
             )
 
-            return FlextCore.Result[FlextCore.Types.Dict].ok({
-                "event_id": event_id,
-                "status": "processed",
-            })
+            return FlextResult[FlextTypes.Dict].ok(
+                {
+                    "event_id": event_id,
+                    "status": "processed",
+                }
+            )
         # Add to retry queue
         attempts = event.get("attempts", 0)
         if isinstance(attempts, int) and attempts < self._max_retries:
@@ -229,10 +235,12 @@ class FlextWebhookHandler(FlextCore.Service[object]):
                 },
             )
 
-            return FlextCore.Result[FlextCore.Types.Dict].ok({
-                "event_id": event_id,
-                "status": "queued_for_retry",
-            })
+            return FlextResult[FlextTypes.Dict].ok(
+                {
+                    "event_id": event_id,
+                    "status": "queued_for_retry",
+                }
+            )
         # Max retries exceeded
         self._delivery_confirmations[event_id] = {
             "event_type": event_type,
@@ -250,15 +258,15 @@ class FlextWebhookHandler(FlextCore.Service[object]):
             },
         )
 
-        return FlextCore.Result[FlextCore.Types.Dict].fail(
+        return FlextResult[FlextTypes.Dict].fail(
             f"Processing failed: {process_result.error}"
         )
 
     def _verify_signature(
         self,
         payload: bytes | str,
-        headers: FlextCore.Types.StringDict,
-    ) -> FlextCore.Result[None]:
+        headers: FlextTypes.StringDict,
+    ) -> FlextResult[None]:
         """Verify webhook signature.
 
         Args:
@@ -266,13 +274,13 @@ class FlextWebhookHandler(FlextCore.Service[object]):
             headers: HTTP headers
 
         Returns:
-            FlextCore.Result indicating verification success or failure
+            FlextResult indicating verification success or failure
 
         """
         # Get signature from headers
         signature = headers.get(self._signature_header)
         if not signature:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"Missing signature header: {self._signature_header}"
             )
 
@@ -282,7 +290,7 @@ class FlextWebhookHandler(FlextCore.Service[object]):
         # Compute expected signature
         try:
             if self._secret is None:
-                return FlextCore.Result[None].fail("Webhook secret is not configured")
+                return FlextResult[None].fail("Webhook secret is not configured")
 
             secret_bytes = self._secret.encode("utf-8")
             if self._algorithm == "sha256":
@@ -294,30 +302,30 @@ class FlextWebhookHandler(FlextCore.Service[object]):
                     secret_bytes, payload_bytes, hashlib.sha512
                 ).hexdigest()
             else:
-                return FlextCore.Result[None].fail(
+                return FlextResult[None].fail(
                     f"Unsupported algorithm: {self._algorithm}"
                 )
 
             # Compare signatures (constant-time comparison)
             if not hmac.compare_digest(signature, expected):
-                return FlextCore.Result[None].fail("Signature mismatch")
+                return FlextResult[None].fail("Signature mismatch")
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
-            return FlextCore.Result[None].fail(f"Signature verification error: {e}")
+            return FlextResult[None].fail(f"Signature verification error: {e}")
 
     def _process_event(
         self,
-        event: FlextCore.Types.Dict,
-    ) -> FlextCore.Result[None]:
+        event: FlextTypes.Dict,
+    ) -> FlextResult[None]:
         """Process webhook event.
 
         Args:
             event: Event dictionary
 
         Returns:
-            FlextCore.Result indicating processing success or failure
+            FlextResult indicating processing success or failure
 
         """
         event_type = event["type"]
@@ -333,24 +341,24 @@ class FlextWebhookHandler(FlextCore.Service[object]):
                 "No handlers registered for event type",
                 extra={"event_type": event_type},
             )
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         # Execute handlers
         for handler in handlers:
             try:
                 result = handler(event_data)
-                if isinstance(result, FlextCore.Result) and result.is_failure:
+                if isinstance(result, FlextResult) and result.is_failure:
                     return result
             except Exception as e:
-                return FlextCore.Result[None].fail(f"Handler execution failed: {e}")
+                return FlextResult[None].fail(f"Handler execution failed: {e}")
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def process_retry_queue(self) -> FlextCore.Result[FlextCore.Types.Dict]:
+    def process_retry_queue(self) -> FlextResult[FlextTypes.Dict]:
         """Process events in retry queue.
 
         Returns:
-            FlextCore.Result containing processing statistics
+            FlextResult containing processing statistics
 
         """
         processed = 0
@@ -400,10 +408,12 @@ class FlextWebhookHandler(FlextCore.Service[object]):
                     # Re-add to retry queue
                     self._retry_queue.append(event)
 
-        return FlextCore.Result[FlextCore.Types.Dict].ok({
-            "processed": processed,
-            "failed": failed,
-        })
+        return FlextResult[FlextTypes.Dict].ok(
+            {
+                "processed": processed,
+                "failed": failed,
+            }
+        )
 
     def _generate_event_id(self) -> str:
         """Generate unique event ID.
@@ -417,26 +427,22 @@ class FlextWebhookHandler(FlextCore.Service[object]):
     def get_delivery_status(
         self,
         event_id: str,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Get delivery status for event.
 
         Args:
             event_id: Event ID
 
         Returns:
-            FlextCore.Result containing delivery status or error
+            FlextResult containing delivery status or error
 
         """
         if event_id not in self._delivery_confirmations:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
-                f"Event not found: {event_id}"
-            )
+            return FlextResult[FlextTypes.Dict].fail(f"Event not found: {event_id}")
 
-        return FlextCore.Result[FlextCore.Types.Dict].ok(
-            self._delivery_confirmations[event_id]
-        )
+        return FlextResult[FlextTypes.Dict].ok(self._delivery_confirmations[event_id])
 
-    def get_queue_stats(self) -> FlextCore.Types.Dict:
+    def get_queue_stats(self) -> FlextTypes.Dict:
         """Get event queue statistics.
 
         Returns:

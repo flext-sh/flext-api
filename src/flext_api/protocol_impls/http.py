@@ -19,7 +19,7 @@ from __future__ import annotations
 import time
 
 import httpx
-from flext_core import FlextCore
+from flext_core import FlextConstants, FlextResult, FlextTypes
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
@@ -127,7 +127,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
         self,
         request: FlextApiModels.HttpRequest,
         **kwargs: float | str | bool,
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Send HTTP request with retry logic and error handling.
 
         Args:
@@ -135,7 +135,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
             **kwargs: Additional request options
 
         Returns:
-            FlextCore.Result containing HTTP response or error
+            FlextResult containing HTTP response or error
 
         Features:
             - Automatic retry on transient errors
@@ -165,7 +165,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
         )
 
         if conn_result.is_failure:
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
+            return FlextResult[FlextApiModels.HttpResponse].fail(
                 f"Failed to establish connection: {conn_result.error}"
             )
 
@@ -178,7 +178,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
                 # Determine how to pass body based on Content-Type and body type
                 # For form data (dict with application/x-www-form-urlencoded), use data parameter
                 # For other content (str, bytes), use content parameter
-                request_kwargs: FlextCore.Types.Dict = {
+                request_kwargs: FlextTypes.Dict = {
                     "method": method,
                     "url": url,
                     "headers": headers,
@@ -205,20 +205,16 @@ class HttpProtocolPlugin(ProtocolPlugin):
                 response = connection.request(**request_kwargs)
 
                 # Check if response is successful
-                if (
-                    response.status_code
-                    < FlextCore.Constants.Http.HTTP_CLIENT_ERROR_MIN
-                ):
+                if response.status_code < FlextConstants.Http.HTTP_CLIENT_ERROR_MIN:
                     # Success - convert to FlextApiModels.HttpResponse
                     return self._build_response(response, method)
 
                 # Client/server error
                 if (
-                    response.status_code
-                    >= FlextCore.Constants.Http.HTTP_CLIENT_ERROR_MIN
+                    response.status_code >= FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
                     and not self._should_retry(response.status_code, attempt)
                 ):
-                    return FlextCore.Result[FlextApiModels.HttpResponse].fail(
+                    return FlextResult[FlextApiModels.HttpResponse].fail(
                         f"HTTP {response.status_code}: {response.text}"
                     )
 
@@ -258,7 +254,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
                 time.sleep(backoff_time)
 
         # All retries exhausted
-        return FlextCore.Result[FlextApiModels.HttpResponse].fail(
+        return FlextResult[FlextApiModels.HttpResponse].fail(
             f"Request failed after {self._max_retries + 1} attempts: {last_error}"
         )
 
@@ -266,7 +262,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
         self,
         httpx_response: httpx.Response,
         method: str,
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Build FlextApiModels.HttpResponse from httpx.Response.
 
         Args:
@@ -274,7 +270,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
             method: HTTP method used for the request
 
         Returns:
-            FlextCore.Result containing FlextApiModels.HttpResponse
+            FlextResult containing FlextApiModels.HttpResponse
 
         """
         try:
@@ -290,10 +286,10 @@ class HttpProtocolPlugin(ProtocolPlugin):
                 method=method,
             )
 
-            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
+            return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
         except Exception as e:
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
+            return FlextResult[FlextApiModels.HttpResponse].fail(
                 f"Failed to build response: {e}"
             )
 
@@ -340,7 +336,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
 
         return protocol.lower() in supported
 
-    def get_supported_protocols(self) -> FlextCore.Types.StringList:
+    def get_supported_protocols(self) -> FlextTypes.StringList:
         """Get list of supported protocols.
 
         Returns:
@@ -356,7 +352,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
         self,
         request: FlextApiModels.HttpRequest,
         chunk_size: int = 8192,
-    ) -> FlextCore.Result[object]:
+    ) -> FlextResult[object]:
         """Send streaming HTTP request.
 
         Args:
@@ -364,7 +360,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
             chunk_size: Size of chunks for streaming (bytes)
 
         Returns:
-            FlextCore.Result containing iterator of response chunks
+            FlextResult containing iterator of response chunks
 
         Note:
             This is a stub for Phase 2. Full streaming implementation
@@ -380,11 +376,11 @@ class HttpProtocolPlugin(ProtocolPlugin):
             },
         )
 
-        return FlextCore.Result[object].fail(
+        return FlextResult[object].fail(
             "Streaming not yet implemented (Phase 2 enhancement)"
         )
 
-    def get_protocol_info(self) -> FlextCore.Types.Dict:
+    def get_protocol_info(self) -> FlextTypes.Dict:
         """Get protocol configuration information.
 
         Returns:

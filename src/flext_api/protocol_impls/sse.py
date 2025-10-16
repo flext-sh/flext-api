@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextTypes
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
@@ -80,7 +80,7 @@ class SSEProtocolPlugin(ProtocolPlugin):
         self,
         _request: FlextApiModels.HttpRequest,
         **_kwargs: float | str | bool,
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Send SSE request (stub - not implemented).
 
         Args:
@@ -88,10 +88,10 @@ class SSEProtocolPlugin(ProtocolPlugin):
             **kwargs: Additional SSE-specific parameters (unused in stub)
 
         Returns:
-            FlextCore.Result with error indicating not implemented
+            FlextResult with error indicating not implemented
 
         """
-        return FlextCore.Result[FlextApiModels.HttpResponse].fail(
+        return FlextResult[FlextApiModels.HttpResponse].fail(
             "SSE protocol not yet implemented (Phase 3)"
         )
 
@@ -107,7 +107,7 @@ class SSEProtocolPlugin(ProtocolPlugin):
         """
         return protocol.lower() in {"sse", "server-sent-events", "eventsource"}
 
-    def get_supported_protocols(self) -> FlextCore.Types.StringList:
+    def get_supported_protocols(self) -> FlextTypes.StringList:
         """Get list of supported protocols.
 
         Returns:

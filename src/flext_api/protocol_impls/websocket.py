@@ -6,7 +6,7 @@ Implements WebSocket protocol support with:
 - Event-driven architecture
 - Automatic reconnection logic
 - Ping/pong heartbeat mechanism
-- Integration with FlextCore.Result patterns
+- Integration with FlextResult patterns
 
 See TRANSFORMATION_PLAN.md - Phase 3 for implementation details.
 
@@ -21,7 +21,7 @@ import time
 from collections.abc import Callable
 
 import websockets
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextTypes
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
@@ -48,8 +48,8 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
 
     Integration:
     - Uses websockets library for transport
-    - FlextCore.Result for error handling
-    - FlextCore.Logger for structured logging
+    - FlextResult for error handling
+    - FlextLogger for structured logging
     - Event callbacks for message handling
     """
 
@@ -103,7 +103,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
         self._connection: object | None = None
         self._connected = False
         self._url: str = ""
-        self._headers: FlextCore.Types.StringDict = {}
+        self._headers: FlextTypes.StringDict = {}
 
         # Event handlers
         self._on_message_handlers: list[Callable] = []
@@ -118,7 +118,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
         self,
         request: FlextApiModels.HttpRequest,
         **kwargs: float | str | bool,
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Send WebSocket request (connect and send message).
 
         Args:
@@ -126,7 +126,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
             **kwargs: Additional WebSocket-specific parameters
 
         Returns:
-            FlextCore.Result containing response or error
+            FlextResult containing response or error
 
         """
         # Extract WebSocket-specific parameters
@@ -149,14 +149,14 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
                 str(request.url), dict[str, object](request.headers)
             )
             if connect_result.is_failure:
-                return FlextCore.Result[FlextApiModels.HttpResponse].fail(
+                return FlextResult[FlextApiModels.HttpResponse].fail(
                     f"WebSocket connection failed: {connect_result.error}"
                 )
 
         # Send message
         send_result = self._send_message(message, message_type)
         if send_result.is_failure:
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
+            return FlextResult[FlextApiModels.HttpResponse].fail(
                 f"WebSocket send failed: {send_result.error}"
             )
 
@@ -169,7 +169,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
             body={"status": "message_sent", "message_type": message_type},
         )
 
-        return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
+        return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol.
@@ -183,7 +183,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
         """
         return protocol.lower() in {"websocket", "ws", "wss"}
 
-    def get_supported_protocols(self) -> FlextCore.Types.StringList:
+    def get_supported_protocols(self) -> FlextTypes.StringList:
         """Get list of supported protocols.
 
         Returns:
@@ -195,8 +195,8 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
     def connect(
         self,
         url: str,
-        headers: FlextCore.Types.StringDict | None = None,
-    ) -> FlextCore.Result[None]:
+        headers: FlextTypes.StringDict | None = None,
+    ) -> FlextResult[None]:
         """Connect to WebSocket server.
 
         Args:
@@ -204,20 +204,20 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
             headers: Optional connection headers
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         return self._connect(url, headers or {})
 
-    def disconnect(self) -> FlextCore.Result[None]:
+    def disconnect(self) -> FlextResult[None]:
         """Disconnect from WebSocket server.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if not self._connected:
-            return FlextCore.Result[None].fail("Not connected to WebSocket server")
+            return FlextResult[None].fail("Not connected to WebSocket server")
 
         try:
             # Simplified sync disconnect - no async tasks to cancel
@@ -236,18 +236,18 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
                 except Exception:
                     self.logger.exception("Disconnect handler error")
 
-            self.logger.info("WebSocket disconnected", extra={"url": self._url})
+            self.logger.info("WebSocket disconnected", url=self._url)
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
-            return FlextCore.Result[None].fail(f"WebSocket disconnect failed: {e}")
+            return FlextResult[None].fail(f"WebSocket disconnect failed: {e}")
 
     def send_message(
         self,
         message: str | bytes,
         message_type: str = "text",
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Send message over WebSocket.
 
         Args:
@@ -255,7 +255,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
             message_type: Message type ("text" or "binary")
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         return self._send_message(message, message_type)
@@ -304,8 +304,8 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
     def _connect(
         self,
         url: str,
-        headers: FlextCore.Types.StringDict,
-    ) -> FlextCore.Result[None]:
+        headers: FlextTypes.StringDict,
+    ) -> FlextResult[None]:
         """Internal connection implementation.
 
         Args:
@@ -313,12 +313,12 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
             headers: Connection headers
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         # Check if websockets library is available
         if websockets is None:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 "websockets library not installed. Install with: pip install websockets"
             )
 
@@ -358,18 +358,18 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
                 },
             )
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
             self._connected = False
             self._connection = None
-            return FlextCore.Result[None].fail(f"WebSocket connection error: {e}")
+            return FlextResult[None].fail(f"WebSocket connection error: {e}")
 
     def _send_message(
         self,
         message: str | bytes,
         message_type: str,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Internal send message implementation.
 
         Args:
@@ -377,11 +377,11 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
             message_type: Message type
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if not self._connected or not self._connection:
-            return FlextCore.Result[None].fail("Not connected to WebSocket server")
+            return FlextResult[None].fail("Not connected to WebSocket server")
 
         try:
             if message_type == "text":
@@ -393,19 +393,17 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
                     message = message.encode("utf-8")
                 self._connection.send(message)
             else:
-                return FlextCore.Result[None].fail(
-                    f"Invalid message type: {message_type}"
-                )
+                return FlextResult[None].fail(f"Invalid message type: {message_type}")
 
             self.logger.debug(
                 "WebSocket message sent",
                 extra={"message_type": message_type, "size": len(message)},
             )
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
-            return FlextCore.Result[None].fail(f"WebSocket send error: {e}")
+            return FlextResult[None].fail(f"WebSocket send error: {e}")
 
     def _receive_loop(self) -> None:
         """Background task to receive messages."""
@@ -453,11 +451,11 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
                 self.logger.exception("Heartbeat error")
                 break
 
-    def _reconnect(self) -> FlextCore.Result[None]:
+    def _reconnect(self) -> FlextResult[None]:
         """Attempt to reconnect with exponential backoff.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         for attempt in range(self._reconnect_max_attempts):
@@ -475,7 +473,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
                 self.logger.info("WebSocket reconnected successfully")
                 return connect_result
 
-        return FlextCore.Result[None].fail(
+        return FlextResult[None].fail(
             f"Failed to reconnect after {self._reconnect_max_attempts} attempts"
         )
 
