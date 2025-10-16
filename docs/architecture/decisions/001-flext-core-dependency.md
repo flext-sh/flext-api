@@ -74,9 +74,9 @@ FLEXT-API will have a **mandatory dependency on flext-core** and will fully inte
 ### Phase 1: Core Integration (Week 1-2)
 
 - [x] Add flext-core dependency to pyproject.toml
-- [x] Update imports to use FlextCore.Result, FlextCore.Service, etc.
+- [x] Update imports to use FlextResult, FlextService, etc.
 - [x] Replace custom error handling with railway pattern
-- [x] Integrate FlextCore.Logger for structured logging
+- [x] Integrate FlextLogger for structured logging
 
 ### Phase 2: Ecosystem Migration (Week 3-8)
 

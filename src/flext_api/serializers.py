@@ -23,16 +23,16 @@ from typing import Protocol
 import cbor2
 import msgpack
 import orjson
-from flext_core import FlextCore
+from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 from flext_api.typings import FlextApiTypes
 
 
-class FlextApiSerializers(FlextCore.Service[None]):
+class FlextApiSerializers(FlextService[None]):
     """Unified serialization service with multiple format support.
 
     Provides JSON, MessagePack, and CBOR serialization through nested classes.
-    Follows FLEXT standards with FlextCore.Result error handling.
+    Follows FLEXT standards with FlextResult error handling.
     """
 
     class SerializerProtocol(Protocol):
@@ -85,7 +85,7 @@ class FlextApiSerializers(FlextCore.Service[None]):
                     pretty: Enable pretty printing
 
                 """
-                self.logger = FlextCore.Logger(__name__)
+                self.logger = FlextLogger(__name__)
                 self._pretty = pretty
 
                 # Try to use orjson for performance
@@ -145,7 +145,7 @@ class FlextApiSerializers(FlextCore.Service[None]):
 
                 def __init__(self) -> None:
                     """Initialize MessagePack serializer."""
-                    self.logger = FlextCore.Logger(__name__)
+                    self.logger = FlextLogger(__name__)
 
                     self._msgpack = msgpack
                     self._available = True  # msgpack is mandatory dependency
@@ -197,7 +197,7 @@ class FlextApiSerializers(FlextCore.Service[None]):
 
                     def __init__(self) -> None:
                         """Initialize CBOR serializer."""
-                        self.logger = FlextCore.Logger(__name__)
+                        self.logger = FlextLogger(__name__)
 
                         self._cbor = cbor2
                         self._available = True  # cbor2 is mandatory dependency
@@ -249,8 +249,8 @@ class FlextApiSerializers(FlextCore.Service[None]):
 
                         def __init__(self) -> None:
                             """Initialize serializer registry."""
-                            self.logger = FlextCore.Logger(__name__)
-                            self._serializers: FlextCore.Types.Dict = {}
+                            self.logger = FlextLogger(__name__)
+                            self._serializers: FlextTypes.Dict = {}
                             self._default_format = (
                                 FlextApiTypes.Serialization.SerializationFormat.JSON
                             )
@@ -274,7 +274,7 @@ class FlextApiSerializers(FlextCore.Service[None]):
                             format_type: FlextApiTypes.Serialization.SerializationFormat
                             | str,
                             serializer: FlextApiSerializers.SerializerProtocol,
-                        ) -> FlextCore.Result[None]:
+                        ) -> FlextResult[None]:
                             """Register serializer for format.
 
                             Args:
@@ -282,7 +282,7 @@ class FlextApiSerializers(FlextCore.Service[None]):
                                 serializer: Serializer instance
 
                             Returns:
-                                FlextCore.Result indicating success or failure
+                                FlextResult indicating success or failure
 
                             """
                             format_key = (
@@ -309,20 +309,20 @@ class FlextApiSerializers(FlextCore.Service[None]):
                                 },
                             )
 
-                            return FlextCore.Result[None].ok(None)
+                            return FlextResult[None].ok(None)
 
                         def get_serializer(
                             self,
                             format_type: FlextApiTypes.Serialization.SerializationFormat
                             | str,
-                        ) -> FlextCore.Result[FlextApiSerializers.SerializerProtocol]:
+                        ) -> FlextResult[FlextApiSerializers.SerializerProtocol]:
                             """Get serializer for format.
 
                             Args:
                                 format_type: Serialization format
 
                             Returns:
-                                FlextCore.Result containing serializer or error
+                                FlextResult containing serializer or error
 
                             """
                             format_key = (
@@ -335,24 +335,24 @@ class FlextApiSerializers(FlextCore.Service[None]):
                             )
 
                             if format_key not in self._serializers:
-                                return FlextCore.Result[object].fail(
+                                return FlextResult[object].fail(
                                     f"No serializer registered for format: {format_key}"
                                 )
 
-                            return FlextCore.Result[
+                            return FlextResult[
                                 FlextApiSerializers.SerializerProtocol
                             ].ok(self._serializers[format_key])
 
                         def get_serializer_by_content_type(
                             self, content_type: str
-                        ) -> FlextCore.Result[FlextApiSerializers.SerializerProtocol]:
+                        ) -> FlextResult[FlextApiSerializers.SerializerProtocol]:
                             """Get serializer by content type.
 
                             Args:
                                 content_type: Content type (e.g., "application/json")
 
                             Returns:
-                                FlextCore.Result containing serializer or error
+                                FlextResult containing serializer or error
 
                             """
                             # Normalize content type (remove charset, etc.)
@@ -362,11 +362,11 @@ class FlextApiSerializers(FlextCore.Service[None]):
 
                             for serializer in self._serializers.values():
                                 if serializer.content_type == normalized:
-                                    return FlextCore.Result[
+                                    return FlextResult[
                                         FlextApiSerializers.SerializerProtocol
                                     ].ok(serializer)
 
-                            return FlextCore.Result[
+                            return FlextResult[
                                 FlextApiSerializers.SerializerProtocol
                             ].fail(
                                 f"No serializer found for content type: {content_type}"
@@ -378,7 +378,7 @@ class FlextApiSerializers(FlextCore.Service[None]):
                             format_type: FlextApiTypes.Serialization.SerializationFormat
                             | str
                             | None = None,
-                        ) -> FlextCore.Result[bytes]:
+                        ) -> FlextResult[bytes]:
                             """Serialize data using specified format.
 
                             Args:
@@ -386,7 +386,7 @@ class FlextApiSerializers(FlextCore.Service[None]):
                                 format_type: Serialization format (uses default if None)
 
                             Returns:
-                                FlextCore.Result containing serialized bytes or error
+                                FlextResult containing serialized bytes or error
 
                             """
                             format_key = (
@@ -400,17 +400,15 @@ class FlextApiSerializers(FlextCore.Service[None]):
 
                             serializer_result = self.get_serializer(format_key)
                             if serializer_result.is_failure:
-                                return FlextCore.Result[bytes].fail(
-                                    serializer_result.error
-                                )
+                                return FlextResult[bytes].fail(serializer_result.error)
 
                             serializer = serializer_result.unwrap()
 
                             try:
                                 serialized = serializer.serialize(data)
-                                return FlextCore.Result[bytes].ok(serialized)
+                                return FlextResult[bytes].ok(serialized)
                             except Exception as e:
-                                return FlextCore.Result[bytes].fail(
+                                return FlextResult[bytes].fail(
                                     f"Serialization failed: {e}"
                                 )
 
@@ -420,7 +418,7 @@ class FlextApiSerializers(FlextCore.Service[None]):
                             format_type: FlextApiTypes.Serialization.SerializationFormat
                             | str
                             | None = None,
-                        ) -> FlextCore.Result[
+                        ) -> FlextResult[
                             object
                         ]:  # Returns deserialized object, can be any type
                             """Deserialize data using specified format.
@@ -430,7 +428,7 @@ class FlextApiSerializers(FlextCore.Service[None]):
                                 format_type: Serialization format (uses default if None)
 
                             Returns:
-                                FlextCore.Result containing deserialized data or error
+                                FlextResult containing deserialized data or error
 
                             """
                             format_key = (
@@ -444,38 +442,36 @@ class FlextApiSerializers(FlextCore.Service[None]):
 
                             serializer_result = self.get_serializer(format_key)
                             if serializer_result.is_failure:
-                                return FlextCore.Result[object].fail(
-                                    serializer_result.error
-                                )
+                                return FlextResult[object].fail(serializer_result.error)
 
                             serializer = serializer_result.unwrap()
 
                             try:
                                 deserialized = serializer.deserialize(data)
-                                return FlextCore.Result[object].ok(deserialized)
+                                return FlextResult[object].ok(deserialized)
                             except Exception as e:
-                                return FlextCore.Result[object].fail(
+                                return FlextResult[object].fail(
                                     f"Deserialization failed: {e}"
                                 )
 
                         def set_default_format(
                             self,
                             format_type: FlextApiTypes.Serialization.SerializationFormat,
-                        ) -> FlextCore.Result[None]:
+                        ) -> FlextResult[None]:
                             """Set default serialization format.
 
                             Args:
                                 format_type: Default format
 
                             Returns:
-                                FlextCore.Result indicating success
+                                FlextResult indicating success
 
                             """
                             self._default_format = format_type
                             self.logger.info(
                                 f"Default serialization format set to: {format_type.value}"
                             )
-                            return FlextCore.Result[None].ok(None)
+                            return FlextResult[None].ok(None)
 
 
 __all__ = [

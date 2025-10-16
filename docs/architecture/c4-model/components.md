@@ -53,10 +53,10 @@ Container_Boundary(config_layer, "Configuration Layer") {
 }
 
 Container_Boundary(flext_core, "FLEXT-Core Foundation") {
-    Component(flext_result, "FlextCore.Result[T]", "Python", "Railway-oriented error handling")
-    Component(flext_container, "FlextCore.Container", "Python", "Dependency injection and service management")
-    Component(flext_models, "FlextCore.Models", "Python", "Domain modeling with Pydantic")
-    Component(flext_logger, "FlextCore.Logger", "Python", "Structured logging with correlation")
+    Component(flext_result, "FlextResult[T]", "Python", "Railway-oriented error handling")
+    Component(flext_container, "FlextContainer", "Python", "Dependency injection and service management")
+    Component(flext_models, "FlextModels", "Python", "Domain modeling with Pydantic")
+    Component(flext_logger, "FlextLogger", "Python", "Structured logging with correlation")
 }
 
 Rel(client_core, request_builder, "Uses", "builds requests")
@@ -66,7 +66,7 @@ Rel(client_core, retry_logic, "Uses", "handles retries")
 Rel(client_core, auth_handler, "Uses", "manages auth")
 
 Rel(request_builder, flext_models, "Uses", "request models")
-Rel(response_handler, flext_result, "Returns", "FlextCore.Result")
+Rel(response_handler, flext_result, "Returns", "FlextResult")
 Rel(auth_handler, flext_container, "Uses", "credential storage")
 
 Rel(app_factory, route_registry, "Configures", "route setup")
@@ -462,7 +462,7 @@ Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 4. **Connection Pool** provides connection for request
 5. **Retry Logic** handles transient failures
 6. **Response Handler** processes and validates response
-7. **Client Core** returns final `FlextCore.Result[T]`
+7. **Client Core** returns final `FlextResult[T]`
 
 ### Application Startup Flow
 
@@ -477,7 +477,7 @@ Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 
 1. **Storage Router** selects appropriate backend
 2. **Backend Component** executes storage operation
-3. **Error handling** wraps operation in `FlextCore.Result[T]`
+3. **Error handling** wraps operation in `FlextResult[T]`
 4. **Metrics collection** records operation performance
 5. **Result** returned to calling component
 

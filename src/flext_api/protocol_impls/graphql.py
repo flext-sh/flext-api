@@ -6,7 +6,7 @@ Implements GraphQL protocol support with:
 - Subscription support (via WebSocket)
 - Schema introspection
 - Fragment and variable handling
-- Integration with FlextCore.Result patterns
+- Integration with FlextResult patterns
 
 See TRANSFORMATION_PLAN.md - Phase 4 for implementation details.
 
@@ -20,7 +20,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextTypes
 from gql import Client, gql as parse_gql
 from gql.transport.httpx import HTTPXTransport
 
@@ -47,14 +47,14 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
     - Uses gql library for GraphQL operations
     - httpx transport for HTTP operations
     - WebSocket transport for subscriptions
-    - FlextCore.Result for error handling
-    - FlextCore.Logger for structured logging
+    - FlextResult for error handling
+    - FlextLogger for structured logging
     """
 
     def __init__(
         self,
         endpoint: str = "",
-        headers: FlextCore.Types.StringDict | None = None,
+        headers: FlextTypes.StringDict | None = None,
         timeout: float = 30.0,
         *,
         verify_ssl: bool = True,
@@ -98,7 +98,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         self,
         request: FlextApiModels.HttpRequest,
         **kwargs: float | str | bool,
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Send GraphQL request (query, mutation, or subscription).
 
         Args:
@@ -106,7 +106,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             **kwargs: Additional GraphQL-specific parameters
 
         Returns:
-            FlextCore.Result containing response or error
+            FlextResult containing response or error
 
         """
         # Extract GraphQL parameters
@@ -131,7 +131,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         if not self._client or not self._session:
             init_result = self._initialize_client()
             if init_result.is_failure:
-                return FlextCore.Result[FlextApiModels.HttpResponse].fail(
+                return FlextResult[FlextApiModels.HttpResponse].fail(
                     f"GraphQL client initialization failed: {init_result.error}"
                 )
 
@@ -143,12 +143,12 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         elif operation == "subscription":
             result = self._execute_subscription(query, variables, operation_name)
         else:
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
+            return FlextResult[FlextApiModels.HttpResponse].fail(
                 f"Invalid GraphQL operation: {operation}"
             )
 
         if result.is_failure:
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(result.error)
+            return FlextResult[FlextApiModels.HttpResponse].fail(result.error)
 
         # Create response
         response_data = result.unwrap()
@@ -160,7 +160,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             body=response_data,
         )
 
-        return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
+        return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol.
@@ -174,7 +174,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         """
         return protocol.lower() in {"graphql", "gql"}
 
-    def get_supported_protocols(self) -> FlextCore.Types.StringList:
+    def get_supported_protocols(self) -> FlextTypes.StringList:
         """Get list of supported protocols.
 
         Returns:
@@ -186,9 +186,9 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
     def query(
         self,
         query: str,
-        variables: FlextCore.Types.Dict | None = None,
+        variables: FlextTypes.Dict | None = None,
         operation_name: str | None = None,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Execute GraphQL query.
 
         Args:
@@ -197,7 +197,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             operation_name: Optional operation name
 
         Returns:
-            FlextCore.Result containing query result or error
+            FlextResult containing query result or error
 
         """
         return self._execute_query(query, variables, operation_name)
@@ -205,9 +205,9 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
     def mutation(
         self,
         mutation: str,
-        variables: FlextCore.Types.Dict | None = None,
+        variables: FlextTypes.Dict | None = None,
         operation_name: str | None = None,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Execute GraphQL mutation.
 
         Args:
@@ -216,7 +216,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             operation_name: Optional operation name
 
         Returns:
-            FlextCore.Result containing mutation result or error
+            FlextResult containing mutation result or error
 
         """
         return self._execute_mutation(mutation, variables, operation_name)
@@ -224,10 +224,10 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
     def subscription(
         self,
         subscription: str,
-        variables: FlextCore.Types.Dict | None = None,
+        variables: FlextTypes.Dict | None = None,
         operation_name: str | None = None,
         handler: Callable | None = None,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Execute GraphQL subscription.
 
         Args:
@@ -237,7 +237,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             handler: Callback for subscription events
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if handler:
@@ -250,22 +250,20 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             subscription, variables, operation_name, handler
         )
 
-    def introspect_schema(self) -> FlextCore.Result[FlextCore.Types.Dict]:
+    def introspect_schema(self) -> FlextResult[FlextTypes.Dict]:
         """Introspect GraphQL schema.
 
         Returns:
-            FlextCore.Result containing schema introspection result
+            FlextResult containing schema introspection result
 
         """
         if not self._introspection:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
-                "Schema introspection is disabled"
-            )
+            return FlextResult[FlextTypes.Dict].fail("Schema introspection is disabled")
 
         if not self._client or not self._session:
             init_result = self._initialize_client()
             if init_result.is_failure:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"Client initialization failed: {init_result.error}"
                 )
 
@@ -273,20 +271,20 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         try:
             if self._schema:
                 schema_str = print_schema(self._schema)
-                return FlextCore.Result[FlextCore.Types.Dict].ok({"schema": schema_str})
+                return FlextResult[FlextTypes.Dict].ok({"schema": schema_str})
 
-            return FlextCore.Result[FlextCore.Types.Dict].fail("Schema not available")
+            return FlextResult[FlextTypes.Dict].fail("Schema not available")
 
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"Schema introspection failed: {e}"
             )
 
-    def _initialize_client(self) -> FlextCore.Result[None]:
+    def _initialize_client(self) -> FlextResult[None]:
         """Initialize GraphQL client and session.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         try:
@@ -320,19 +318,17 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
                 },
             )
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
-            return FlextCore.Result[None].fail(
-                f"GraphQL client initialization error: {e}"
-            )
+            return FlextResult[None].fail(f"GraphQL client initialization error: {e}")
 
     def _execute_query(
         self,
         query: str,
-        variables: FlextCore.Types.Dict | None,
+        variables: FlextTypes.Dict | None,
         operation_name: str | None,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Execute GraphQL query.
 
         Args:
@@ -341,18 +337,18 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             operation_name: Optional operation name
 
         Returns:
-            FlextCore.Result containing query result
+            FlextResult containing query result
 
         """
         try:
             # Check if gql library is available
             if parse_gql is None:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     "gql library not installed. Install with: pip install gql[all]"
                 )
 
             if not self._session:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     "GraphQL session not initialized"
                 )
 
@@ -374,19 +370,19 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
                 },
             )
 
-            return FlextCore.Result[FlextCore.Types.Dict].ok(result)
+            return FlextResult[FlextTypes.Dict].ok(result)
 
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"GraphQL query execution failed: {e}"
             )
 
     def _execute_mutation(
         self,
         mutation: str,
-        variables: FlextCore.Types.Dict | None,
+        variables: FlextTypes.Dict | None,
         operation_name: str | None,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Execute GraphQL mutation.
 
         Args:
@@ -395,18 +391,18 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             operation_name: Optional operation name
 
         Returns:
-            FlextCore.Result containing mutation result
+            FlextResult containing mutation result
 
         """
         try:
             # Check if gql library is available
             if parse_gql is None:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     "gql library not installed. Install with: pip install gql[all]"
                 )
 
             if not self._session:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     "GraphQL session not initialized"
                 )
 
@@ -428,20 +424,20 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
                 },
             )
 
-            return FlextCore.Result[FlextCore.Types.Dict].ok(result)
+            return FlextResult[FlextTypes.Dict].ok(result)
 
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"GraphQL mutation execution failed: {e}"
             )
 
     def _execute_subscription(
         self,
         subscription: str,
-        variables: FlextCore.Types.Dict | None,
+        variables: FlextTypes.Dict | None,
         operation_name: str | None,
         handler: Callable | None = None,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Execute GraphQL subscription.
 
         Args:
@@ -450,7 +446,7 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             operation_name: Optional operation name
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         # Note: Subscription execution requires WebSocket transport
@@ -466,20 +462,20 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
 
         # GraphQL subscription execution with WebSocket transport - Phase 2 feature
         # Current implementation returns success for interface compatibility
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
         # Check if gql library is available
         if parse_gql is None:
             return cast(
-                "FlextCore.Result[None]",
-                FlextCore.Result[None].fail(
+                "FlextResult[None]",
+                FlextResult[None].fail(
                     "gql library not installed. Install with: pip install gql[all]"
                 ),
             )
 
         if not self._session:
             return cast(
-                "FlextCore.Result[None]",
-                FlextCore.Result[None].fail("GraphQL session not initialized"),
+                "FlextResult[None]",
+                FlextResult[None].fail("GraphQL session not initialized"),
             )
 
         try:
@@ -496,19 +492,19 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
                 },
             )
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
             return cast(
-                "FlextCore.Result[None]",
-                FlextCore.Result[None].fail(f"GraphQL subscription setup failed: {e}"),
+                "FlextResult[None]",
+                FlextResult[None].fail(f"GraphQL subscription setup failed: {e}"),
             )
 
-    def close(self) -> FlextCore.Result[None]:
+    def close(self) -> FlextResult[None]:
         """Close GraphQL client and session.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         try:
@@ -521,12 +517,12 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
 
             self.logger.info("GraphQL client closed")
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
             return cast(
-                "FlextCore.Result[None]",
-                FlextCore.Result[None].fail(f"GraphQL client close failed: {e}"),
+                "FlextResult[None]",
+                FlextResult[None].fail(f"GraphQL client close failed: {e}"),
             )
 
 

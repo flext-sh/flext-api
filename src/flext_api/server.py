@@ -21,13 +21,13 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from fastapi import FastAPI
-from flext_core import FlextCore
+from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 from flext_api.middleware import FlextApiMiddleware
 from flext_api.plugins import ProtocolPlugin
 
 
-class FlextApiServer(FlextCore.Service[object]):
+class FlextApiServer(FlextService[object]):
     """Generic API server with protocol handler support.
 
     Features:
@@ -44,8 +44,8 @@ class FlextApiServer(FlextCore.Service[object]):
     - Uses FastAPI for HTTP server
     - Protocol plugins for WebSocket, SSE, GraphQL
     - Middleware pipeline for request/response processing
-    - FlextCore.Result for error handling
-    - FlextCore.Logger for structured logging
+    - FlextResult for error handling
+    - FlextLogger for structured logging
     """
 
     def __init__(
@@ -65,7 +65,7 @@ class FlextApiServer(FlextCore.Service[object]):
 
         """
         super().__init__()
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Server configuration
         self._host = host
@@ -84,31 +84,31 @@ class FlextApiServer(FlextCore.Service[object]):
         self._middleware_pipeline: list[FlextApiMiddleware.BaseMiddleware] = []
 
         # Route registry
-        self._routes: FlextCore.Types.NestedDict = {}
+        self._routes: FlextTypes.NestedDict = {}
 
         # WebSocket connections
-        self._websocket_connections: FlextCore.Types.Dict = {}
+        self._websocket_connections: FlextTypes.Dict = {}
 
         # SSE connections
-        self._sse_connections: FlextCore.Types.Dict = {}
+        self._sse_connections: FlextTypes.Dict = {}
 
-    def execute(self, *_args: object, **_kwargs: object) -> FlextCore.Result[object]:
+    def execute(self, *_args: object, **_kwargs: object) -> FlextResult[object]:
         """Execute server service lifecycle operations.
 
-        FlextCore.Service requires this method for service execution.
+        FlextService requires this method for service execution.
         For server, this is handled by start/stop methods.
 
         Returns:
-            FlextCore.Result[object]: Success result
+            FlextResult[object]: Success result
 
         """
-        return FlextCore.Result[object].ok(None)
+        return FlextResult[object].ok(None)
 
     def register_protocol_handler(
         self,
         protocol: str,
         handler: ProtocolPlugin,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Register protocol handler for server.
 
         Args:
@@ -116,11 +116,11 @@ class FlextApiServer(FlextCore.Service[object]):
             handler: Protocol plugin instance
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if protocol in self._protocol_handlers:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"Protocol handler already registered: {protocol}"
             )
 
@@ -131,19 +131,19 @@ class FlextApiServer(FlextCore.Service[object]):
             extra={"protocol": protocol, "handler": handler.name},
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     def add_middleware(
         self,
         middleware: FlextApiMiddleware.BaseMiddleware,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Add middleware to server pipeline.
 
         Args:
             middleware: Middleware instance
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         self._middleware_pipeline.append(middleware)
@@ -153,7 +153,7 @@ class FlextApiServer(FlextCore.Service[object]):
             extra={"middleware": middleware.__class__.__name__},
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     def register_route(
         self,
@@ -161,7 +161,7 @@ class FlextApiServer(FlextCore.Service[object]):
         method: str,
         handler: Callable,
         **options: object,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Register route with server.
 
         Args:
@@ -171,13 +171,13 @@ class FlextApiServer(FlextCore.Service[object]):
             **options: Additional route options
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         route_key = f"{method}:{path}"
 
         if route_key in self._routes:
-            return FlextCore.Result[None].fail(f"Route already registered: {route_key}")
+            return FlextResult[None].fail(f"Route already registered: {route_key}")
 
         self._routes[route_key] = {
             "path": path,
@@ -191,14 +191,14 @@ class FlextApiServer(FlextCore.Service[object]):
             extra={"path": path, "method": method},
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     def register_websocket_endpoint(
         self,
         path: str,
         handler: Callable,
         **options: object,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Register WebSocket endpoint.
 
         Args:
@@ -207,13 +207,13 @@ class FlextApiServer(FlextCore.Service[object]):
             **options: Additional endpoint options
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         route_key = f"WS:{path}"
 
         if route_key in self._routes:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"WebSocket endpoint already registered: {path}"
             )
 
@@ -229,14 +229,14 @@ class FlextApiServer(FlextCore.Service[object]):
             extra={"path": path},
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     def register_sse_endpoint(
         self,
         path: str,
         handler: Callable,
         **options: object,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Register SSE endpoint.
 
         Args:
@@ -245,15 +245,13 @@ class FlextApiServer(FlextCore.Service[object]):
             **options: Additional endpoint options
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         route_key = f"SSE:{path}"
 
         if route_key in self._routes:
-            return FlextCore.Result[None].fail(
-                f"SSE endpoint already registered: {path}"
-            )
+            return FlextResult[None].fail(f"SSE endpoint already registered: {path}")
 
         self._routes[route_key] = {
             "path": path,
@@ -267,14 +265,14 @@ class FlextApiServer(FlextCore.Service[object]):
             extra={"path": path},
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     def register_graphql_endpoint(
         self,
         path: str = "/graphql",
         schema: object | None = None,
         **options: object,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Register GraphQL endpoint.
 
         Args:
@@ -283,13 +281,13 @@ class FlextApiServer(FlextCore.Service[object]):
             **options: Additional endpoint options
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         route_key = f"GRAPHQL:{path}"
 
         if route_key in self._routes:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"GraphQL endpoint already registered: {path}"
             )
 
@@ -305,22 +303,22 @@ class FlextApiServer(FlextCore.Service[object]):
             extra={"path": path},
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def start(self) -> FlextCore.Result[None]:
+    def start(self) -> FlextResult[None]:
         """Start API server.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if self._is_running:
-            return FlextCore.Result[None].fail("Server is already running")
+            return FlextResult[None].fail("Server is already running")
 
         # Create FastAPI application
         app_result = self._create_app()
         if app_result.is_failure:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"Failed to create application: {app_result.error}"
             )
 
@@ -329,14 +327,14 @@ class FlextApiServer(FlextCore.Service[object]):
         # Apply middleware
         middleware_result = self._apply_middleware()
         if middleware_result.is_failure:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"Failed to apply middleware: {middleware_result.error}"
             )
 
         # Register routes
         routes_result = self._register_routes()
         if routes_result.is_failure:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"Failed to register routes: {routes_result.error}"
             )
 
@@ -353,17 +351,17 @@ class FlextApiServer(FlextCore.Service[object]):
             },
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def stop(self) -> FlextCore.Result[None]:
+    def stop(self) -> FlextResult[None]:
         """Stop API server.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if not self._is_running:
-            return FlextCore.Result[None].fail("Server is not running")
+            return FlextResult[None].fail("Server is not running")
 
         # Close WebSocket connections
         for conn_id, connection in self._websocket_connections.items():
@@ -387,40 +385,38 @@ class FlextApiServer(FlextCore.Service[object]):
 
         self.logger.info("API server stopped")
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def restart(self) -> FlextCore.Result[None]:
+    def restart(self) -> FlextResult[None]:
         """Restart API server.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         stop_result = self.stop()
         if stop_result.is_failure:
-            return FlextCore.Result[None].fail(
-                f"Failed to stop server: {stop_result.error}"
-            )
+            return FlextResult[None].fail(f"Failed to stop server: {stop_result.error}")
 
         start_result = self.start()
         if start_result.is_failure:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"Failed to start server: {start_result.error}"
             )
 
         self.logger.info("API server restarted")
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def _create_app(self) -> FlextCore.Result[object]:
+    def _create_app(self) -> FlextResult[object]:
         """Create FastAPI application.
 
         Returns:
-            FlextCore.Result containing FastAPI app or error
+            FlextResult containing FastAPI app or error
 
         """
         if FastAPI is None:
-            return FlextCore.Result[object].fail(
+            return FlextResult[object].fail(
                 "FastAPI not installed. Install with: pip install fastapi"
             )
 
@@ -434,20 +430,20 @@ class FlextApiServer(FlextCore.Service[object]):
                 openapi_url="/openapi.json",
             )
 
-            return FlextCore.Result[object].ok(app)
+            return FlextResult[object].ok(app)
 
         except Exception as e:
-            return FlextCore.Result[object].fail(f"Failed to create FastAPI app: {e}")
+            return FlextResult[object].fail(f"Failed to create FastAPI app: {e}")
 
-    def _apply_middleware(self) -> FlextCore.Result[None]:
+    def _apply_middleware(self) -> FlextResult[None]:
         """Apply middleware to application.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if not self._app:
-            return FlextCore.Result[None].fail("Application not created")
+            return FlextResult[None].fail("Application not created")
 
         try:
             for middleware in self._middleware_pipeline:
@@ -458,20 +454,20 @@ class FlextApiServer(FlextCore.Service[object]):
                     extra={"middleware": middleware.__class__.__name__},
                 )
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
-            return FlextCore.Result[None].fail(f"Failed to apply middleware: {e}")
+            return FlextResult[None].fail(f"Failed to apply middleware: {e}")
 
-    def _register_routes(self) -> FlextCore.Result[None]:
+    def _register_routes(self) -> FlextResult[None]:
         """Register routes with application.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if not self._app:
-            return FlextCore.Result[None].fail("Application not created")
+            return FlextResult[None].fail("Application not created")
 
         try:
             for route_config in self._routes.values():
@@ -500,24 +496,24 @@ class FlextApiServer(FlextCore.Service[object]):
                     extra={"method": method, "path": path},
                 )
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
-            return FlextCore.Result[None].fail(f"Failed to register routes: {e}")
+            return FlextResult[None].fail(f"Failed to register routes: {e}")
 
-    def get_app(self) -> FlextCore.Result[object]:
+    def get_app(self) -> FlextResult[object]:
         """Get FastAPI application instance.
 
         Returns:
-            FlextCore.Result containing FastAPI app or error
+            FlextResult containing FastAPI app or error
 
         """
         if not self._app:
-            return FlextCore.Result[object].fail(
+            return FlextResult[object].fail(
                 "Application not created. Call start() first."
             )
 
-        return FlextCore.Result[object].ok(self._app)
+        return FlextResult[object].ok(self._app)
 
     @property
     def is_running(self) -> bool:
@@ -535,12 +531,12 @@ class FlextApiServer(FlextCore.Service[object]):
         return self._port
 
     @property
-    def routes(self) -> FlextCore.Types.NestedDict:
+    def routes(self) -> FlextTypes.NestedDict:
         """Get registered routes."""
         return self._routes.copy()
 
     @property
-    def protocols(self) -> FlextCore.Types.StringList:
+    def protocols(self) -> FlextTypes.StringList:
         """Get registered protocols."""
         return list(self._protocol_handlers.keys())
 

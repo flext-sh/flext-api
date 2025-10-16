@@ -40,13 +40,13 @@ HTTPX --> Protocol: Raw HTTP response
 deactivate HTTPX
 
 Protocol -> Protocol: Response validation\n& parsing
-Protocol --> ClientLib: FlextCore.Result[HttpResponse]
+Protocol --> ClientLib: FlextResult[HttpResponse]
 deactivate Protocol
 
 == Result Processing ==
 ClientLib -> ClientLib: Apply response middleware
 ClientLib -> ClientLib: Error handling & transformation
-ClientLib --> FastAPI: FlextCore.Result[UserData]
+ClientLib --> FastAPI: FlextResult[UserData]
 deactivate ClientLib
 
 FastAPI -> FastAPI: Response formatting\n& serialization
@@ -64,10 +64,10 @@ group Error Scenario
 
     HTTPX --> Protocol: Error response
     Protocol -> Protocol: Validate error response
-    Protocol --> ClientLib: FlextCore.Result.fail("HTTP 404")
+    Protocol --> ClientLib: FlextResult.fail("HTTP 404")
 
     ClientLib -> ClientLib: Apply error middleware
-    ClientLib --> FastAPI: FlextCore.Result[UserData] (failure)
+    ClientLib --> FastAPI: FlextResult[UserData] (failure)
 
     FastAPI -> FastAPI: Error response formatting
     FastAPI --> Client: JSON Error Response\n(404 Not Found)

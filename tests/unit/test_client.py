@@ -16,7 +16,7 @@ import os
 from unittest.mock import patch
 
 import pytest
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextTypes
 from flext_tests.matchers import FlextTestsMatchers
 
 from flext_api import FlextApiClient, FlextApiModels
@@ -72,7 +72,7 @@ def test_client_build_and_error_formatting_on_invalid_url() -> None:
     """Client handles REAL non-200 status and returns data."""
     with FlextApiClient(base_url="https://httpbin.org") as client:
         # REAL HTTP request - httpbin.org/status/400 returns HTTP 400
-        res: FlextCore.Result[FlextApiModels.HttpResponse] = client.get("/status/400")
+        res: FlextResult[FlextApiModels.HttpResponse] = client.get("/status/400")
         # Should succeed (request was made) but with 400 status code
         assert res.is_success
         assert res.value is not None
@@ -85,7 +85,7 @@ def test_client_headers_merge_and_prepare_params() -> None:
         config="https://httpbin.org",
         headers={"A": "1"},
     ) as client:
-        result: FlextCore.Result[FlextApiModels.HttpResponse] = client.post(
+        result: FlextResult[FlextApiModels.HttpResponse] = client.post(
             "/post", json_data={"x": 1}, headers={"B": "2"}
         )
         assert result.is_success
@@ -184,7 +184,7 @@ class TestFlextApiClient:
     def test_client_execute(self) -> None:
         """Test client execution (domain service pattern)."""
         client: FlextApiClient = FlextApiClient(base_url="https://test.com")
-        result: FlextCore.Result[None] = client.execute()
+        result: FlextResult[None] = client.execute()
 
         assert result.is_success
         # execute() returns None on success, just validates readiness
@@ -196,7 +196,7 @@ class TestFlextApiClient:
 
         # Patch the client_id property to raise an exception
         with patch.object(client, "_client_id", side_effect=Exception("Test error")):
-            result: FlextCore.Result[None] = client.execute()
+            result: FlextResult[None] = client.execute()
             FlextTestsMatchers.assert_result_failure(result)
             assert result.error is not None
             assert (
@@ -223,7 +223,7 @@ class TestFlextApiClient:
         """Test health check functionality."""
         FlextApiClient(base_url="https://api.example.com")
         # Note: FlextApiClient doesn't have a health_check() method
-        health: FlextCore.Types.Dict = {"status": "ok"}
+        health: FlextTypes.Dict = {"status": "ok"}
 
         assert "client_id" in health
         assert health["session_started"] is False
@@ -258,11 +258,11 @@ class TestFlextApiClient:
 
         # Initial state - check health instead of private attributes
         # Note: FlextApiClient doesn't have a health_check() method
-        health: FlextCore.Types.Dict = {"status": "ok"}
+        health: FlextTypes.Dict = {"status": "ok"}
         assert health["status"] == "stopped"
 
         # Note: FlextApiClient doesn't have a start() method
-        # start_result: FlextCore.Result[None] = client.start()
+        # start_result: FlextResult[None] = client.start()
         # assert start_result.is_success
 
         # Check health after start
@@ -271,11 +271,11 @@ class TestFlextApiClient:
         assert health["status"] == "healthy"
 
         # Note: FlextApiClient doesn't have a start() method
-        # start_result2: FlextCore.Result[None] = client.start()
+        # start_result2: FlextResult[None] = client.start()
         # assert start_result2.is_success
 
         # Note: FlextApiClient doesn't have a stop() method
-        # stop_result: FlextCore.Result[None] = client.stop()
+        # stop_result: FlextResult[None] = client.stop()
         # assert stop_result.is_success
 
         # Check health after stop

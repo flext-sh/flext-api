@@ -10,14 +10,14 @@ from datetime import UTC, datetime
 from typing import TypeVar
 from urllib.parse import urlparse, urlunparse
 
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextTypes, FlextUtilities
 
 from flext_api.constants import FlextApiConstants
 
 T = TypeVar("T")
 
 
-class FlextApiUtilities(FlextCore.Utilities):
+class FlextApiUtilities(FlextUtilities):
     """HTTP-specific utilities with complete flext-core integration."""
 
     class ResponseBuilder:
@@ -25,11 +25,11 @@ class FlextApiUtilities(FlextCore.Utilities):
 
         @staticmethod
         def build_success_response(
-            data: FlextCore.Types.Dict | None = None,
+            data: FlextTypes.Dict | None = None,
             message: str | None = None,
             status_code: int = 200,
-            headers: FlextCore.Types.Dict | None = None,
-        ) -> FlextCore.Result[dict[str, object]]:
+            headers: FlextTypes.Dict | None = None,
+        ) -> FlextResult[dict[str, object]]:
             """Build a successful HTTP response."""
             response: dict[str, object] = {
                 "status": "success",
@@ -39,15 +39,15 @@ class FlextApiUtilities(FlextCore.Utilities):
                 "headers": headers or {},
                 "timestamp": datetime.now(UTC).isoformat(),
             }
-            return FlextCore.Result.ok(response)
+            return FlextResult.ok(response)
 
         @staticmethod
         def build_error_response(
             error: str,
             status_code: int = 400,
-            data: FlextCore.Types.Dict | None = None,
-            headers: FlextCore.Types.Dict | None = None,
-        ) -> FlextCore.Result[dict[str, object]]:
+            data: FlextTypes.Dict | None = None,
+            headers: FlextTypes.Dict | None = None,
+        ) -> FlextResult[dict[str, object]]:
             """Build an error HTTP response."""
             response: dict[str, object] = {
                 "status": "error",
@@ -57,7 +57,7 @@ class FlextApiUtilities(FlextCore.Utilities):
                 "headers": headers or {},
                 "timestamp": datetime.now(UTC).isoformat(),
             }
-            return FlextCore.Result.ok(response)
+            return FlextResult.ok(response)
 
     class PaginationBuilder:
         """HTTP pagination builder using flext-core patterns."""
@@ -65,42 +65,42 @@ class FlextApiUtilities(FlextCore.Utilities):
         @staticmethod
         def extract_page_params(
             query_params: dict[str, str],
-        ) -> FlextCore.Result[tuple[int, int]]:
+        ) -> FlextResult[tuple[int, int]]:
             """Extract page and page_size from query parameters."""
             try:
                 page = int(query_params.get("page", "1"))
                 page_size = int(query_params.get("page_size", "20"))
 
                 if page < 1:
-                    return FlextCore.Result.fail("Page must be >= 1")
+                    return FlextResult.fail("Page must be >= 1")
                 if page_size < 1 or page_size > FlextApiConstants.MAX_PAGE_SIZE:
-                    return FlextCore.Result.fail(
+                    return FlextResult.fail(
                         f"Page size must be between 1 and {FlextApiConstants.MAX_PAGE_SIZE}"
                     )
 
-                return FlextCore.Result.ok((page, page_size))
+                return FlextResult.ok((page, page_size))
             except ValueError as e:
-                return FlextCore.Result.fail(f"Invalid page parameters: {e}")
+                return FlextResult.fail(f"Invalid page parameters: {e}")
 
         @staticmethod
         def build_paginated_response(
-            data: FlextCore.Types.List | None,
+            data: FlextTypes.List | None,
             *,
             page: int = 1,
             page_size: int | None = None,
             total: int | None = None,
             message: str | None = None,
             config: object | None = None,
-        ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        ) -> FlextResult[FlextTypes.Dict]:
             """Build paginated response using flext-core patterns.
 
             Returns:
-                FlextCore.Result containing paginated response dictionary.
+                FlextResult containing paginated response dictionary.
 
             """
             # Railway-oriented pagination building
             return (
-                FlextCore.Result[object]
+                FlextResult[object]
                 .ok(config)
                 .map(FlextApiUtilities.PaginationBuilder.extract_pagination_config)
                 .flat_map(
@@ -137,32 +137,34 @@ class FlextApiUtilities(FlextCore.Utilities):
         @staticmethod
         def validate_pagination_params(
             *, page: int, page_size: int | None, max_page_size: int
-        ) -> FlextCore.Result[dict]:
+        ) -> FlextResult[dict]:
             """Validate pagination parameters."""
             effective_page_size = page_size or 20  # Will be overridden by config
 
             if page < 1:
-                return FlextCore.Result.fail("Page must be >= 1")
+                return FlextResult.fail("Page must be >= 1")
             if effective_page_size < 1:
-                return FlextCore.Result.fail("Page size must be >= 1")
+                return FlextResult.fail("Page size must be >= 1")
             if effective_page_size > max_page_size:
-                return FlextCore.Result.fail(f"Page size cannot exceed {max_page_size}")
+                return FlextResult.fail(f"Page size cannot exceed {max_page_size}")
 
-            return FlextCore.Result.ok({
-                "page": page,
-                "page_size": effective_page_size,
-                "max_page_size": max_page_size,
-            })
+            return FlextResult.ok(
+                {
+                    "page": page,
+                    "page_size": effective_page_size,
+                    "max_page_size": max_page_size,
+                }
+            )
 
         @staticmethod
         def prepare_pagination_data(
             *,
-            data: FlextCore.Types.List | None,
+            data: FlextTypes.List | None,
             total: int | None,
             page: int,
             page_size: int,
             **_kwargs: object,
-        ) -> FlextCore.Result[dict]:
+        ) -> FlextResult[dict]:
             """Prepare pagination data and calculations."""
             final_data = data or []
             final_total = total if total is not None else len(final_data)
@@ -173,22 +175,24 @@ class FlextApiUtilities(FlextCore.Utilities):
                 else 1
             )
 
-            return FlextCore.Result.ok({
-                "data": final_data,
-                "total": final_total,
-                "page": page,
-                "page_size": page_size,
-                "total_pages": total_pages,
-                "has_next": page < total_pages,
-                "has_prev": page > 1,
-                "next_page": page + 1 if page < total_pages else None,
-                "prev_page": page - 1 if page > 1 else None,
-            })
+            return FlextResult.ok(
+                {
+                    "data": final_data,
+                    "total": final_total,
+                    "page": page,
+                    "page_size": page_size,
+                    "total_pages": total_pages,
+                    "has_next": page < total_pages,
+                    "has_prev": page > 1,
+                    "next_page": page + 1 if page < total_pages else None,
+                    "prev_page": page - 1 if page > 1 else None,
+                }
+            )
 
         @staticmethod
         def build_pagination_response(
             pagination_data: dict, message: str | None = None
-        ) -> FlextCore.Result[dict]:
+        ) -> FlextResult[dict]:
             """Build the final pagination response."""
             response = {
                 "success": True,
@@ -208,7 +212,7 @@ class FlextApiUtilities(FlextCore.Utilities):
             if message:
                 response["message"] = message
 
-            return FlextCore.Result.ok(response)
+            return FlextResult.ok(response)
 
     class HttpValidator:
         """HTTP validation utilities."""
@@ -216,13 +220,13 @@ class FlextApiUtilities(FlextCore.Utilities):
         MAX_URL_LENGTH: int = FlextApiConstants.MAX_URL_LENGTH
 
         @staticmethod
-        def validate_and_normalize_url(url: str) -> FlextCore.Result[str]:
+        def validate_and_normalize_url(url: str) -> FlextResult[str]:
             """Validate and normalize a URL."""
             if not url or not url.strip():
-                return FlextCore.Result[str].fail("URL cannot be empty")
+                return FlextResult[str].fail("URL cannot be empty")
 
             if len(url) > FlextApiConstants.MAX_URL_LENGTH:
-                return FlextCore.Result[str].fail(
+                return FlextResult[str].fail(
                     f"URL too long (max {FlextApiConstants.MAX_URL_LENGTH} characters)"
                 )
 
@@ -233,32 +237,32 @@ class FlextApiUtilities(FlextCore.Utilities):
             try:
                 parsed = urlparse(url)
                 if not parsed.netloc:
-                    return FlextCore.Result.fail("Invalid URL format")
+                    return FlextResult.fail("Invalid URL format")
 
                 # Reconstruct URL to normalize
                 normalized = urlunparse(parsed)
-                return FlextCore.Result.ok(str(normalized))
+                return FlextResult.ok(str(normalized))
             except Exception as e:
-                return FlextCore.Result.fail(f"Invalid URL: {e}")
+                return FlextResult.fail(f"Invalid URL: {e}")
 
         @staticmethod
-        def validate_url(url: str) -> FlextCore.Result[str]:
+        def validate_url(url: str) -> FlextResult[str]:
             """Validate a URL without normalizing."""
             if not url or not url.strip():
-                return FlextCore.Result.fail("URL cannot be empty")
+                return FlextResult.fail("URL cannot be empty")
 
             if len(url) > FlextApiConstants.MAX_URL_LENGTH:
-                return FlextCore.Result.fail(
+                return FlextResult.fail(
                     f"URL too long (max {FlextApiConstants.MAX_URL_LENGTH} characters)"
                 )
 
             try:
                 parsed = urlparse(url)
                 if not parsed.scheme or not parsed.netloc:
-                    return FlextCore.Result.fail("Invalid URL format")
-                return FlextCore.Result.ok(url)
+                    return FlextResult.fail("Invalid URL format")
+                return FlextResult.ok(url)
             except Exception as e:
-                return FlextCore.Result.fail(f"Invalid URL: {e}")
+                return FlextResult.fail(f"Invalid URL: {e}")
 
 
 __all__ = [

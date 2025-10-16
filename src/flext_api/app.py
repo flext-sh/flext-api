@@ -13,35 +13,35 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from fastapi import FastAPI
-from flext_core import FlextCore
+from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 from flext_api.config import FlextApiConfig
 from flext_api.server import FlextApiServer
 from flext_api.webhook import FlextWebhookHandler
 
 
-class FlextApiApp(FlextCore.Service[object]):
+class FlextApiApp(FlextService[object]):
     """FastAPI application factory with flext-core integration.
 
     Integrated with flext-core:
-    - Extends FlextCore.Service for application lifecycle management
-    - Uses FlextCore.Context for request context management (future enhancement)
-    - Uses FlextCore.Logger for structured logging
+    - Extends FlextService for application lifecycle management
+    - Uses FlextContext for request context management (future enhancement)
+    - Uses FlextLogger for structured logging
 
     Follows FLEXT pattern: one class per module with nested subclasses.
     """
 
-    def execute(self, *_args: object, **_kwargs: object) -> FlextCore.Result[object]:
+    def execute(self, *_args: object, **_kwargs: object) -> FlextResult[object]:
         """Execute app service lifecycle operations.
 
-        FlextCore.Service requires this method for service execution.
+        FlextService requires this method for service execution.
         For app factory, this is a no-op as app creation is static method-based.
 
         Returns:
-            FlextCore.Result[object]: Success result
+            FlextResult[object]: Success result
 
         """
-        return FlextCore.Result[object].ok(None)
+        return FlextResult[object].ok(None)
 
     class _Factory:
         """Nested factory for FastAPI instance creation."""
@@ -97,10 +97,10 @@ class FlextApiApp(FlextCore.Service[object]):
 
         """
         # Initialize flext-core services for application
-        logger = FlextCore.Logger(__name__)
-        # NOTE: FlextCore.Context will be used for request context
+        logger = FlextLogger(__name__)
+        # NOTE: FlextContext will be used for request context
         # management in future enhancement
-        # NOTE: FlextCore.Bus is a CQRS command/query bus, not an event emitter
+        # NOTE: FlextBus is a CQRS command/query bus, not an event emitter
 
         logger.info(
             "Creating FastAPI application",
@@ -119,7 +119,7 @@ class FlextApiApp(FlextCore.Service[object]):
 
         if hasattr(app, "get") and hasattr(app, "add_api_route"):
 
-            def health_check() -> FlextCore.Types.StringDict:
+            def health_check() -> FlextTypes.StringDict:
                 return {"status": "healthy", "service": "flext-api"}
 
             # Use add_api_route instead of decorator to avoid type issues
@@ -137,7 +137,7 @@ class FlextApiApp(FlextCore.Service[object]):
         port: int = 8000,
         title: str = "Flext API Server",
         version: str = "1.0.0",
-    ) -> FlextCore.Result[object]:
+    ) -> FlextResult[object]:
         """Create FlextApiServer instance with protocol handler support.
 
         This is the enhanced server creation method that supports
@@ -150,7 +150,7 @@ class FlextApiApp(FlextCore.Service[object]):
             version: API server version
 
         Returns:
-            FlextCore.Result containing FlextApiServer instance or error
+            FlextResult containing FlextApiServer instance or error
 
         """
         try:
@@ -161,20 +161,18 @@ class FlextApiApp(FlextCore.Service[object]):
                 version=version,
             )
 
-            return FlextCore.Result[object].ok(server)
+            return FlextResult[object].ok(server)
 
         except ImportError as e:
-            return FlextCore.Result[object].fail(
-                f"Failed to import FlextApiServer: {e}"
-            )
+            return FlextResult[object].fail(f"Failed to import FlextApiServer: {e}")
         except Exception as e:
-            return FlextCore.Result[object].fail(f"Failed to create server: {e}")
+            return FlextResult[object].fail(f"Failed to create server: {e}")
 
     @staticmethod
     def create_webhook_handler(
         secret: str | None = None,
         max_retries: int = 3,
-    ) -> FlextCore.Result[object]:
+    ) -> FlextResult[object]:
         """Create FlextWebhookHandler instance.
 
         Args:
@@ -182,7 +180,7 @@ class FlextApiApp(FlextCore.Service[object]):
             max_retries: Maximum retry attempts
 
         Returns:
-            FlextCore.Result containing FlextWebhookHandler instance or error
+            FlextResult containing FlextWebhookHandler instance or error
 
         """
         try:
@@ -191,16 +189,14 @@ class FlextApiApp(FlextCore.Service[object]):
                 max_retries=max_retries,
             )
 
-            return FlextCore.Result[object].ok(handler)
+            return FlextResult[object].ok(handler)
 
         except ImportError as e:
-            return FlextCore.Result[object].fail(
+            return FlextResult[object].fail(
                 f"Failed to import FlextWebhookHandler: {e}"
             )
         except Exception as e:
-            return FlextCore.Result[object].fail(
-                f"Failed to create webhook handler: {e}"
-            )
+            return FlextResult[object].fail(f"Failed to create webhook handler: {e}")
 
 
 __all__ = ["FlextApiApp"]

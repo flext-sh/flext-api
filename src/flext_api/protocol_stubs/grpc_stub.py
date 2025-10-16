@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextCore
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class GrpcChannel:
@@ -38,9 +38,7 @@ class GrpcChannel:
     - Load balancing
     """
 
-    def __init__(
-        self, target: str, options: FlextCore.Types.Dict | None = None
-    ) -> None:
+    def __init__(self, target: str, options: FlextTypes.Dict | None = None) -> None:
         """Initialize gRPC channel.
 
         Args:
@@ -48,7 +46,7 @@ class GrpcChannel:
             options: Channel options
 
         """
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
         self._target = target
         self._options = options or {}
 
@@ -57,15 +55,15 @@ class GrpcChannel:
             extra={"target": target},
         )
 
-    def close(self) -> FlextCore.Result[None]:
+    def close(self) -> FlextResult[None]:
         """Close gRPC channel.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         self.logger.info("gRPC channel stub closed (placeholder)")
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
 
 class GrpcStub:
@@ -88,7 +86,7 @@ class GrpcStub:
             channel: gRPC channel
 
         """
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
         self._channel = channel
 
         self.logger.info("gRPC stub created (placeholder)")
@@ -98,7 +96,7 @@ class GrpcStub:
         _method: str,
         _request: object,
         _timeout: float | None = None,
-    ) -> FlextCore.Result[object]:
+    ) -> FlextResult[object]:
         """Call unary gRPC method.
 
         Args:
@@ -107,14 +105,14 @@ class GrpcStub:
             timeout: Optional timeout
 
         Returns:
-            FlextCore.Result containing response or error
+            FlextResult containing response or error
 
         """
         self.logger.info(
             "gRPC unary call (placeholder)",
             extra={"method": _method},
         )
-        return FlextCore.Result[object].fail(
+        return FlextResult[object].fail(
             "gRPC stub placeholder - awaiting flext-grpc integration"
         )
 
@@ -135,7 +133,7 @@ class GrpcRequest:
         self,
         method: str,
         message: object,
-        metadata: FlextCore.Types.StringDict | None = None,
+        metadata: FlextTypes.StringDict | None = None,
     ) -> None:
         """Initialize gRPC request.
 
@@ -166,7 +164,7 @@ class GrpcResponse:
         self,
         message: object,
         status_code: int = 0,
-        metadata: FlextCore.Types.StringDict | None = None,
+        metadata: FlextTypes.StringDict | None = None,
     ) -> None:
         """Initialize gRPC response.
 
@@ -208,7 +206,7 @@ class GrpcServer:
         self,
         host: str = "127.0.0.1",
         port: int = 50051,
-        options: FlextCore.Types.Dict | None = None,
+        options: FlextTypes.Dict | None = None,
     ) -> None:
         """Initialize gRPC server.
 
@@ -218,7 +216,7 @@ class GrpcServer:
             options: Server options
 
         """
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
         self._host = host
         self._port = port
         self._options = options or {}
@@ -228,46 +226,46 @@ class GrpcServer:
             extra={"host": host, "port": port},
         )
 
-    def add_service(self, _service: object) -> FlextCore.Result[None]:
+    def add_service(self, _service: object) -> FlextResult[None]:
         """Add service to server.
 
         Args:
             service: Service implementation
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         self.logger.info("gRPC service added (placeholder)")
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def start(self) -> FlextCore.Result[None]:
+    def start(self) -> FlextResult[None]:
         """Start gRPC server.
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         self.logger.info(
             "gRPC server start (placeholder)",
             extra={"host": self._host, "port": self._port},
         )
-        return FlextCore.Result[None].fail(
+        return FlextResult[None].fail(
             "gRPC server placeholder - awaiting flext-grpc integration"
         )
 
-    def stop(self, _grace: float | None = None) -> FlextCore.Result[None]:
+    def stop(self, _grace: float | None = None) -> FlextResult[None]:
         """Stop gRPC server.
 
         Args:
             grace: Grace period for shutdown
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         self.logger.info("gRPC server stop (placeholder)")
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
 
 class GrpcMethod:
@@ -351,14 +349,14 @@ class GrpcServiceProtocol(Protocol):
     def handle_request(
         self,
         request: GrpcRequest,
-    ) -> FlextCore.Result[GrpcResponse]:
+    ) -> FlextResult[GrpcResponse]:
         """Handle gRPC request.
 
         Args:
             request: gRPC request
 
         Returns:
-            FlextCore.Result containing response or error
+            FlextResult containing response or error
 
         """
 

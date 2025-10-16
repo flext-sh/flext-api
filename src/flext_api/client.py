@@ -9,12 +9,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Mapping
-from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from collections.abc import AsyncIterator, Mapping
+from contextlib import asynccontextmanager
 from typing import Protocol
 
 import httpx
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextTypes
 
 from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
@@ -58,7 +58,7 @@ class FlextApiClient:
 
     The FlextApiClient serves as the foundation HTTP client for the entire FLEXT
     providing comprehensive HTTP operations, connection management, and error handling
-    through the FlextCore.Result railway pattern. This is the MANDATORY HTTP client for all
+    through the FlextResult railway pattern. This is the MANDATORY HTTP client for all
     FLEXT projects - NO custom HTTP implementations allowed.
     """
 
@@ -71,7 +71,7 @@ class FlextApiClient:
 
         def configure(
             self, config: FlextApiConfig | dict[str, object] | None = None
-        ) -> FlextCore.Result[None]:
+        ) -> FlextResult[None]:
             """Configure the HTTP client."""
             try:
                 if config is None:
@@ -107,39 +107,39 @@ class FlextApiClient:
                 elif isinstance(config, FlextApiConfig):
                     self._config = config
                 else:
-                    return FlextCore.Result[None].fail(
+                    return FlextResult[None].fail(
                         f"Invalid configuration type: {type(config)}"
                     )
 
                 return self._validate_configuration()
             except Exception as e:
-                return FlextCore.Result[None].fail(f"Configuration failed: {e}")
+                return FlextResult[None].fail(f"Configuration failed: {e}")
 
-        def _validate_configuration(self) -> FlextCore.Result[None]:
+        def _validate_configuration(self) -> FlextResult[None]:
             """Validate current configuration."""
             if self._config is None:
-                return FlextCore.Result[None].fail("No configuration set")
+                return FlextResult[None].fail("No configuration set")
 
-            if self._config.timeout <= 0:
-                return FlextCore.Result[None].fail("Timeout must be positive")
+            if self._config.api_timeout <= 0:
+                return FlextResult[None].fail("Timeout must be positive")
 
             if self._config.max_retries < 0:
-                return FlextCore.Result[None].fail("Max retries cannot be negative")
+                return FlextResult[None].fail("Max retries cannot be negative")
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
-        def get_client_config(self) -> FlextCore.Result[FlextApiModels.ClientConfig]:
+        def get_client_config(self) -> FlextResult[FlextApiModels.ClientConfig]:
             """Get client configuration."""
             if self._config is None:
-                return FlextCore.Result[FlextApiModels.ClientConfig].fail(
+                return FlextResult[FlextApiModels.ClientConfig].fail(
                     "No configuration set"
                 )
 
-            return FlextCore.Result[FlextApiModels.ClientConfig].ok(
+            return FlextResult[FlextApiModels.ClientConfig].ok(
                 FlextApiModels.ClientConfig(
                     base_url=self._config.base_url
                     or FlextApiConstants.DEFAULT_BASE_URL,
-                    timeout=self._config.timeout,
+                    timeout=self._config.api_timeout,
                     headers=self._config.get_default_headers()
                     if hasattr(self._config, "get_default_headers")
                     else {},
@@ -153,11 +153,11 @@ class FlextApiClient:
             self,
             url: str,
             *,
-            params: FlextCore.Types.Dict | None = None,
-            headers: FlextCore.Types.Dict | None = None,
+            params: FlextTypes.Dict | None = None,
+            headers: FlextTypes.Dict | None = None,
             timeout: float | None = None,
             **kwargs: object,
-        ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
+        ) -> FlextResult[FlextApiTypes.JsonValue]:
             """Perform HTTP GET request.
 
             Args:
@@ -168,11 +168,16 @@ class FlextApiClient:
                 **kwargs: Additional request options
 
             Returns:
-                FlextCore.Result containing response data or error
+                FlextResult containing response data or error
 
             """
             return self._execute_request(
-                "GET", url, params=params, headers=headers, timeout=timeout, **kwargs
+                "GET",
+                url,
+                params=params,
+                headers=headers,
+                timeout=timeout,
+                **kwargs,
             )
 
         def post(
@@ -181,11 +186,11 @@ class FlextApiClient:
             data: FlextApiTypes.JsonValue | None = None,
             *,
             json: FlextApiTypes.JsonValue | None = None,
-            params: FlextCore.Types.Dict | None = None,
-            headers: FlextCore.Types.Dict | None = None,
+            params: FlextTypes.Dict | None = None,
+            headers: FlextTypes.Dict | None = None,
             timeout: float | None = None,
             **kwargs: object,
-        ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
+        ) -> FlextResult[FlextApiTypes.JsonValue]:
             """Perform HTTP POST request.
 
             Args:
@@ -198,7 +203,7 @@ class FlextApiClient:
                 **kwargs: Additional request options
 
             Returns:
-                FlextCore.Result containing response data or error
+                FlextResult containing response data or error
 
             """
             if json is not None:
@@ -220,11 +225,11 @@ class FlextApiClient:
             data: FlextApiTypes.JsonValue | None = None,
             *,
             json: FlextApiTypes.JsonValue | None = None,
-            params: FlextCore.Types.Dict | None = None,
-            headers: FlextCore.Types.Dict | None = None,
+            params: FlextTypes.Dict | None = None,
+            headers: FlextTypes.Dict | None = None,
             timeout: float | None = None,
             **kwargs: object,
-        ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
+        ) -> FlextResult[FlextApiTypes.JsonValue]:
             """Perform HTTP PUT request.
 
             Args:
@@ -237,7 +242,7 @@ class FlextApiClient:
                 **kwargs: Additional request options
 
             Returns:
-                FlextCore.Result containing response data or error
+                FlextResult containing response data or error
 
             """
             if json is not None:
@@ -259,11 +264,11 @@ class FlextApiClient:
             data: FlextApiTypes.JsonValue | None = None,
             *,
             json: FlextApiTypes.JsonValue | None = None,
-            params: FlextCore.Types.Dict | None = None,
-            headers: FlextCore.Types.Dict | None = None,
+            params: FlextTypes.Dict | None = None,
+            headers: FlextTypes.Dict | None = None,
             timeout: float | None = None,
             **kwargs: object,
-        ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
+        ) -> FlextResult[FlextApiTypes.JsonValue]:
             """Perform HTTP PATCH request.
 
             Args:
@@ -276,7 +281,7 @@ class FlextApiClient:
                 **kwargs: Additional request options
 
             Returns:
-                FlextCore.Result containing response data or error
+                FlextResult containing response data or error
 
             """
             if json is not None:
@@ -296,11 +301,11 @@ class FlextApiClient:
             self,
             url: str,
             *,
-            params: FlextCore.Types.Dict | None = None,
-            headers: FlextCore.Types.Dict | None = None,
+            params: FlextTypes.Dict | None = None,
+            headers: FlextTypes.Dict | None = None,
             timeout: float | None = None,
             **kwargs: object,
-        ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
+        ) -> FlextResult[FlextApiTypes.JsonValue]:
             """Perform HTTP DELETE request.
 
             Args:
@@ -311,22 +316,27 @@ class FlextApiClient:
                 **kwargs: Additional request options
 
             Returns:
-                FlextCore.Result containing response data or error
+                FlextResult containing response data or error
 
             """
             return self._execute_request(
-                "DELETE", url, params=params, headers=headers, timeout=timeout, **kwargs
+                "DELETE",
+                url,
+                params=params,
+                headers=headers,
+                timeout=timeout,
+                **kwargs,
             )
 
         def head(
             self,
             url: str,
             *,
-            params: FlextCore.Types.Dict | None = None,
-            headers: FlextCore.Types.Dict | None = None,
+            params: FlextTypes.Dict | None = None,
+            headers: FlextTypes.Dict | None = None,
             timeout: float | None = None,
             **kwargs: object,
-        ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
+        ) -> FlextResult[FlextApiTypes.JsonValue]:
             """Perform HTTP HEAD request.
 
             Args:
@@ -337,22 +347,27 @@ class FlextApiClient:
                 **kwargs: Additional request options
 
             Returns:
-                FlextCore.Result containing response headers or error
+                FlextResult containing response headers or error
 
             """
             return self._execute_request(
-                "HEAD", url, params=params, headers=headers, timeout=timeout, **kwargs
+                "HEAD",
+                url,
+                params=params,
+                headers=headers,
+                timeout=timeout,
+                **kwargs,
             )
 
         def options(
             self,
             url: str,
             *,
-            params: FlextCore.Types.Dict | None = None,
-            headers: FlextCore.Types.Dict | None = None,
+            params: FlextTypes.Dict | None = None,
+            headers: FlextTypes.Dict | None = None,
             timeout: float | None = None,
             **kwargs: object,
-        ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
+        ) -> FlextResult[FlextApiTypes.JsonValue]:
             """Perform HTTP OPTIONS request.
 
             Args:
@@ -363,7 +378,7 @@ class FlextApiClient:
                 **kwargs: Additional request options
 
             Returns:
-                FlextCore.Result containing allowed methods or error
+                FlextResult containing allowed methods or error
 
             """
             return self._execute_request(
@@ -382,11 +397,11 @@ class FlextApiClient:
             *,
             data: FlextApiTypes.JsonValue | None = None,
             json: FlextApiTypes.JsonValue | None = None,
-            params: FlextCore.Types.Dict | None = None,
-            headers: FlextCore.Types.Dict | None = None,
+            params: FlextTypes.Dict | None = None,
+            headers: FlextTypes.Dict | None = None,
             timeout: float | None = None,
             **kwargs: object,
-        ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
+        ) -> FlextResult[FlextApiTypes.JsonValue]:
             """Perform generic HTTP request.
 
             Args:
@@ -400,7 +415,7 @@ class FlextApiClient:
                 **kwargs: Additional request options
 
             Returns:
-                FlextCore.Result containing response data or error
+                FlextResult containing response data or error
 
             """
             if json is not None:
@@ -422,11 +437,11 @@ class FlextApiClient:
             url: str,
             *,
             data: FlextApiTypes.JsonValue | None = None,
-            params: FlextCore.Types.Dict | None = None,
-            headers: FlextCore.Types.Dict | None = None,
+            params: FlextTypes.Dict | None = None,
+            headers: FlextTypes.Dict | None = None,
             timeout: float | None = None,
             **kwargs: object,
-        ) -> FlextCore.Result[FlextApiTypes.JsonValue]:
+        ) -> FlextResult[FlextApiTypes.JsonValue]:
             """Execute HTTP request (implemented by main client).
 
             This method should be implemented by the client class that inherits from HttpOperations.
@@ -463,19 +478,19 @@ class FlextApiClient:
 
         async def initialize(
             self, config: dict[str, object] | None = None
-        ) -> FlextCore.Result[None]:
+        ) -> FlextResult[None]:
             """Initialize the client lifecycle.
 
             Args:
                 config: Optional initialization configuration
 
             Returns:
-                FlextCore.Result indicating success or failure
+                FlextResult indicating success or failure
 
             """
             try:
                 if self._initialized:
-                    return FlextCore.Result[None].ok(None)  # Already initialized
+                    return FlextResult[None].ok(None)  # Already initialized
 
                 # Initialize registry
                 self._registry = FlextApiRegistry()
@@ -489,11 +504,11 @@ class FlextApiClient:
                 await self._initialize_resources(config)
 
                 self._initialized = True
-                return FlextCore.Result[None].ok(None)
+                return FlextResult[None].ok(None)
 
             except Exception as e:
                 await self._cleanup_resources()
-                return FlextCore.Result[None].fail(f"Initialization failed: {e}")
+                return FlextResult[None].fail(f"Initialization failed: {e}")
 
         async def _initialize_registry(self) -> None:
             """Initialize the protocol registry."""
@@ -537,16 +552,16 @@ class FlextApiClient:
             """Initialize additional resources."""
             # Initialize any additional resources needed
 
-        async def shutdown(self) -> FlextCore.Result[None]:
+        async def shutdown(self) -> FlextResult[None]:
             """Shutdown the client lifecycle and cleanup resources.
 
             Returns:
-                FlextCore.Result indicating success or failure
+                FlextResult indicating success or failure
 
             """
             try:
                 if not self._initialized:
-                    return FlextCore.Result[None].ok(None)  # Not initialized
+                    return FlextResult[None].ok(None)  # Not initialized
 
                 # Cleanup resources
                 await self._cleanup_resources()
@@ -557,10 +572,10 @@ class FlextApiClient:
                 self._resources.clear()
                 self._initialized = False
 
-                return FlextCore.Result[None].ok(None)
+                return FlextResult[None].ok(None)
 
             except Exception as e:
-                return FlextCore.Result[None].fail(f"Shutdown failed: {e}")
+                return FlextResult[None].fail(f"Shutdown failed: {e}")
 
         async def _cleanup_resources(self) -> None:
             """Cleanup all managed resources."""
@@ -604,7 +619,7 @@ class FlextApiClient:
         @asynccontextmanager
         async def lifecycle_context(
             self, config: dict[str, object] | None = None
-        ) -> AbstractAsyncContextManager[LifecycleManager]:
+        ) -> AsyncIterator[FlextApiClient.LifecycleManager]:
             """Context manager for lifecycle management.
 
             Args:
@@ -644,24 +659,24 @@ class FlextApiClient:
                 ),
             }
 
-        def health_check(self) -> FlextCore.Result[bool]:
+        def health_check(self) -> FlextResult[bool]:
             """Perform health check on lifecycle components.
 
             Returns:
-                FlextCore.Result with health status
+                FlextResult with health status
 
             """
             try:
                 if not self._initialized:
-                    return FlextCore.Result[bool].fail("Lifecycle not initialized")
+                    return FlextResult[bool].fail("Lifecycle not initialized")
 
                 # Check registry
                 if self._registry is None:
-                    return FlextCore.Result[bool].fail("Registry not available")
+                    return FlextResult[bool].fail("Registry not available")
 
                 # Check protocols
                 if self._protocols is None:
-                    return FlextCore.Result[bool].fail("Protocols not available")
+                    return FlextResult[bool].fail("Protocols not available")
 
                 # Check resources
                 unhealthy_resources = []
@@ -679,14 +694,14 @@ class FlextApiClient:
                                 unhealthy_resources.append(f"resource_{i}: {e}")
 
                 if unhealthy_resources:
-                    return FlextCore.Result[bool].fail(
+                    return FlextResult[bool].fail(
                         f"Unhealthy resources: {unhealthy_resources}"
                     )
 
-                return FlextCore.Result[bool].ok(True)
+                return FlextResult[bool].ok(True)
 
             except Exception as e:
-                return FlextCore.Result[bool].fail(f"Health check failed: {e}")
+                return FlextResult[bool].fail(f"Health check failed: {e}")
 
     def __init__(
         self,
@@ -698,25 +713,25 @@ class FlextApiClient:
     ) -> None:
         """Initialize FlextApiClient with configuration."""
         self._config_manager = self.ConfigurationManager()
-        self._config_manager.configure({
-            "base_url": base_url,
-            "timeout": timeout,
-            "max_retries": max_retries,
-            "headers": dict[str, object](headers) if headers else {},
-        })
+        self._config_manager.configure(
+            {
+                "base_url": base_url,
+                "timeout": timeout,
+                "max_retries": max_retries,
+                "headers": dict[str, object](headers) if headers else {},
+            }
+        )
 
     def request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP request."""
         config_result = self._config_manager.get_client_config()
         if config_result.is_failure:
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(
-                config_result.error
-            )
+            return FlextResult[FlextApiModels.HttpResponse].fail(config_result.error)
 
         try:
-            with httpx.Client(timeout=config_result.unwrap().timeout) as client:
+            with httpx.Client(timeout=config_result.unwrap().api_timeout) as client:
                 # Handle request body properly for httpx
                 content = None
                 if request.body is not None:
@@ -734,7 +749,7 @@ class FlextApiClient:
                     headers=request.headers,
                     content=content,
                 )
-                return FlextCore.Result[FlextApiModels.HttpResponse].ok(
+                return FlextResult[FlextApiModels.HttpResponse].ok(
                     FlextApiModels.HttpResponse(
                         status_code=response.status_code,
                         headers=dict(response.headers),
@@ -742,4 +757,4 @@ class FlextApiClient:
                     )
                 )
         except Exception as e:
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(str(e))
+            return FlextResult[FlextApiModels.HttpResponse].fail(str(e))

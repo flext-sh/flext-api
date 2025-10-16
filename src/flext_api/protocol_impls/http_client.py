@@ -11,7 +11,7 @@ import re
 from typing import Self
 
 import httpx
-from flext_core import FlextCore
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_api.models import FlextApiModels
 from flext_api.protocols import FlextApiProtocols
@@ -28,12 +28,12 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
         """
         self._config = client_config
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Create httpx client with configuration
         self._client = httpx.Client(
             timeout=httpx.Timeout(
-                timeout=client_config.timeout,
+                timeout=client_config.api_timeout,
                 connect=client_config.timeout,
                 read=client_config.timeout,
                 write=client_config.timeout,
@@ -52,7 +52,7 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
         method: str,
         url: str,
         **kwargs: object,
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute an HTTP request conforming to protocol."""
         try:
             # Build full URL
@@ -88,7 +88,7 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
                 request_headers.update(headers_value)
 
             # Prepare request parameters
-            request_kwargs: FlextCore.Types.Dict = {
+            request_kwargs: FlextTypes.Dict = {
                 "method": method,
                 "url": full_url,
                 "headers": request_headers,
@@ -96,9 +96,9 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
             # Add other parameters from kwargs
             allowed_keys = {"params", "data", "json", "content", "files"}
-            request_kwargs.update({
-                key: value for key, value in kwargs.items() if key in allowed_keys
-            })
+            request_kwargs.update(
+                {key: value for key, value in kwargs.items() if key in allowed_keys}
+            )
 
             # Make the HTTP request using httpx client
             httpx_response = self._client.request(**request_kwargs)
@@ -112,17 +112,17 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
                 method=method,
             )
 
-            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
+            return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
         except httpx.TimeoutException as e:
             error_msg = f"HTTP request timeout: {e}"
             self.logger.warning(error_msg)
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(error_msg)
+            return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
 
         except httpx.NetworkError as e:
             error_msg = f"HTTP network error: {e}"
             self.logger.warning(error_msg)
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(error_msg)
+            return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
 
         except httpx.HTTPStatusError as e:
             error_msg = f"HTTP error {e.response.status_code}: {e.response.text}"
@@ -135,12 +135,12 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
                 url=str(e.response.url),
                 method=method,
             )
-            return FlextCore.Result[FlextApiModels.HttpResponse].ok(response)
+            return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
         except Exception as e:
             error_msg = f"HTTP protocol request failed: {e}"
             self.logger.exception(error_msg)
-            return FlextCore.Result[FlextApiModels.HttpResponse].fail(error_msg)
+            return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
 
     def close(self) -> None:
         """Close the HTTP client and cleanup resources."""
@@ -159,7 +159,7 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
         self,
         url: str,
         **kwargs: object,
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP GET request."""
         return self.request("GET", url, **kwargs)
 
@@ -167,7 +167,7 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
         self,
         url: str,
         **kwargs: object,
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP POST request."""
         return self.request("POST", url, **kwargs)
 
@@ -175,7 +175,7 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
         self,
         url: str,
         **kwargs: object,
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP PUT request."""
         return self.request("PUT", url, **kwargs)
 
@@ -183,6 +183,6 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
         self,
         url: str,
         **kwargs: object,
-    ) -> FlextCore.Result[FlextApiModels.HttpResponse]:
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP DELETE request."""
         return self.request("DELETE", url, **kwargs)

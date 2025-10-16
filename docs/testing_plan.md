@@ -17,7 +17,7 @@
 
 **Current Issues**:
 
-- ❌ Client creation fails due to missing `FlextCore.Models.create_validated_http_url()`
+- ❌ Client creation fails due to missing `FlextModels.create_validated_http_url()`
 - ❌ Protocol plugin interface inconsistencies
 - ❌ Configuration API test failures
 
@@ -26,7 +26,7 @@
 ```python
 # Missing method causing failures
 @classmethod
-def create_validated_http_url(cls, url: str) -> FlextCore.Result[str]:
+def create_validated_http_url(cls, url: str) -> FlextResult[str]:
     """Validate and normalize HTTP URL."""
     # Implementation needed
 ```
@@ -126,7 +126,7 @@ def test_api_config_creation():
 
 #### 1. Model Validation Failures (4 tests failing)
 
-**Error**: `AttributeError: type object 'FlextCore.Models' has no attribute 'create_validated_http_url'`
+**Error**: `AttributeError: type object 'FlextModels' has no attribute 'create_validated_http_url'`
 
 **Impact**: Prevents model creation and validation testing
 **Solution**: Implement missing URL validation method in models.py
@@ -310,7 +310,7 @@ class TestModelValidation:
         ]
 
         for url in valid_urls:
-            result = FlextCore.Models.create_validated_http_url(url)
+            result = FlextModels.create_validated_http_url(url)
             assert result.is_success
 
         # Invalid URLs
@@ -321,7 +321,7 @@ class TestModelValidation:
         ]
 
         for url in invalid_urls:
-            result = FlextCore.Models.create_validated_http_url(url)
+            result = FlextModels.create_validated_http_url(url)
             assert result.is_failure
 ```
 

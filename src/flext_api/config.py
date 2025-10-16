@@ -7,17 +7,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextCore
+from flext_core import FlextConfig, FlextResult, FlextTypes
 from pydantic import Field, computed_field
 from pydantic_settings import SettingsConfigDict
 
 from flext_api.constants import FlextApiConstants
 
 
-class FlextApiConfig(FlextCore.Config):
-    """Single Pydantic Settings class for flext-api extending FlextCore.Config.
+class FlextApiConfig(FlextConfig):
+    """Single Pydantic Settings class for flext-api extending FlextConfig.
 
-    Uses enhanced FlextCore.Config features:
+    Uses enhanced FlextConfig features:
     - Protocol inheritance (Infrastructure.Configurable)
     - Computed fields for derived configuration
     - Enhanced validation with field_validator and model_validator
@@ -25,19 +25,19 @@ class FlextApiConfig(FlextCore.Config):
     - Business rule validation
     - Configuration persistence
 
-    All defaults from FlextApiConstants with FlextCore.Config enhancements.
+    All defaults from FlextApiConstants with FlextConfig enhancements.
     """
 
     model_config = SettingsConfigDict(
         case_sensitive=False,
         extra="allow",
-        # Enhanced Pydantic 2.11+ features from FlextCore.Config
+        # Enhanced Pydantic 2.11+ features from FlextConfig
         validate_assignment=True,
         str_strip_whitespace=True,
         str_to_lower=False,
         json_schema_extra={
             "title": "FLEXT API Configuration",
-            "description": "Enterprise API configuration with FlextCore.Config protocol support",
+            "description": "Enterprise API configuration with FlextConfig protocol support",
         },
     )
 
@@ -47,11 +47,11 @@ class FlextApiConfig(FlextCore.Config):
         description="Base URL for API requests",
     )
 
-    timeout: int = Field(
+    api_timeout: int = Field(
         default=FlextApiConstants.DEFAULT_TIMEOUT,
         ge=1,
         le=300,
-        description="Request timeout in seconds",
+        description="API request timeout in seconds",
     )
 
     max_retries: int = Field(
@@ -78,17 +78,17 @@ class FlextApiConfig(FlextCore.Config):
     )
 
     # CORS configuration
-    cors_origins: FlextCore.Types.StringList = Field(
+    cors_origins: FlextTypes.StringList = Field(
         default_factory=FlextApiConstants.DEFAULT_CORS_ORIGINS.copy,
         description="CORS allowed origins",
     )
 
-    cors_methods: FlextCore.Types.StringList = Field(
+    cors_methods: FlextTypes.StringList = Field(
         default_factory=FlextApiConstants.DEFAULT_CORS_METHODS.copy,
         description="CORS allowed methods",
     )
 
-    cors_headers: FlextCore.Types.StringList = Field(
+    cors_headers: FlextTypes.StringList = Field(
         default_factory=FlextApiConstants.DEFAULT_CORS_HEADERS.copy,
         description="CORS allowed headers",
     )
@@ -104,18 +104,31 @@ class FlextApiConfig(FlextCore.Config):
         description="Application version for API documentation",
     )
 
+    # Authentication configuration
+    jwt_expiry_minutes: int = Field(
+        default=60,
+        ge=1,
+        le=1440,  # Max 24 hours
+        description="JWT token expiry time in minutes",
+    )
+
+    # Performance configuration
+    track_performance: bool = Field(
+        default=True,
+        description="Enable performance tracking and metrics",
+    )
+
     @computed_field
-    @property
     def api_url(self) -> str:
         """Get complete API URL with version."""
         return f"{self.base_url}/api/{self.api_version}"
 
     @computed_field
-    def client_config(self) -> FlextCore.Types.Dict:
+    def client_config(self) -> FlextTypes.Dict:
         """Get HTTP client configuration with flext-core integration patterns."""
         return {
             "base_url": self.api_url,
-            "timeout": self.timeout,
+            "timeout": self.api_timeout,
             "max_retries": self.max_retries,
             "headers": {
                 "User-Agent": f"FlextApi/{self.api_version}",
@@ -135,7 +148,7 @@ class FlextApiConfig(FlextCore.Config):
         }
 
     @computed_field
-    def server_config(self) -> FlextCore.Types.Dict:
+    def server_config(self) -> FlextTypes.Dict:
         """Get HTTP server configuration with flext-core integration patterns."""
         return {
             "host": "127.0.0.1",
@@ -162,7 +175,7 @@ class FlextApiConfig(FlextCore.Config):
         }
 
     @computed_field
-    def middleware_config(self) -> FlextCore.Types.Dict:
+    def middleware_config(self) -> FlextTypes.Dict:
         """Get middleware configuration with flext-core integration patterns."""
         return {
             "cors": {
@@ -201,7 +214,7 @@ class FlextApiConfig(FlextCore.Config):
         }
 
     @computed_field
-    def monitoring_config(self) -> FlextCore.Types.Dict:
+    def monitoring_config(self) -> FlextTypes.Dict:
         """Get monitoring configuration with flext-core integration patterns."""
         return {
             "metrics": {
@@ -226,13 +239,13 @@ class FlextApiConfig(FlextCore.Config):
             },
         }
 
-    def validate_business_rules(self) -> FlextCore.Result[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate API-specific business rules for configuration consistency.
 
-        Extends Infrastructure.ConfigValidator protocol from FlextCore.Config.
+        Extends Infrastructure.ConfigValidator protocol from FlextConfig.
 
         Returns:
-            FlextCore.Result[None]: Success if valid, failure with error details
+            FlextResult[None]: Success if valid, failure with error details
 
         """
         # Call parent business rules validation first
@@ -240,7 +253,7 @@ class FlextApiConfig(FlextCore.Config):
         if parent_result.is_failure:
             return parent_result
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     # Factory methods removed - use direct instantiation only
     # ✅ CORRECT: config = FlextApiConfig()
@@ -257,12 +270,11 @@ class FlextApiConfig(FlextCore.Config):
     # Focus on core configuration functionality only
 
     @computed_field
-    @property
     def api_base_url(self) -> str:
         """Get the base URL for API requests (alias for base_url)."""
         return self.base_url
 
-    def to_dict(self) -> dict[str, FlextCore.Types.JsonValue]:
+    def to_dict(self) -> dict[str, FlextTypes.JsonValue]:
         """Convert configuration to dictionary for serialization."""
         return self.model_dump()
 

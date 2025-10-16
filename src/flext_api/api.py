@@ -10,7 +10,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextCore
+from flext_core import (
+    FlextBus,
+    FlextContainer,
+    FlextContext,
+    FlextDispatcher,
+    FlextProcessors,
+    FlextRegistry,
+    FlextResult,
+    FlextService,
+)
 
 import flext_api.client as client_module
 from flext_api.app import FlextApiApp
@@ -24,18 +33,18 @@ from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
 
 
-class FlextApi(FlextCore.Service[FlextApiConfig]):
+class FlextApi(FlextService[FlextApiConfig]):
     """Thin facade for HTTP foundation operations with complete FLEXT integration.
 
     Integrates:
-    - FlextCore.Bus: Event emission for HTTP operations, lifecycle events
-    - FlextCore.Container: Dependency injection and service management
-    - FlextCore.Context: Operation context and request tracing
-    - FlextCore.Dispatcher: Message routing for HTTP requests/responses
-    - FlextCore.Processors: Request/response processing pipeline
-    - FlextCore.Registry: Component registration and discovery
-    - FlextCore.Logger: Structured logging with correlation IDs
-    - FlextCore.Result: Railway-oriented error handling throughout
+    - FlextBus: Event emission for HTTP operations, lifecycle events
+    - FlextContainer: Dependency injection and service management
+    - FlextContext: Operation context and request tracing
+    - FlextDispatcher: Message routing for HTTP requests/responses
+    - FlextProcessors: Request/response processing pipeline
+    - FlextRegistry: Component registration and discovery
+    - FlextLogger: Structured logging with correlation IDs
+    - FlextResult: Railway-oriented error handling throughout
 
     Usage:
         ```python
@@ -43,17 +52,17 @@ class FlextApi(FlextCore.Service[FlextApiConfig]):
 
         # Create HTTP client with complete FLEXT ecosystem integration
         client = FlextApi().client(base_url="https://api.example.com", timeout=30.0)
-        # Integrates: FlextCore.Bus, Container, Context, Dispatcher,
-        # FlextCore.Processors, FlextCore.Registry, FlextCore.Logger
+        # Integrates: FlextBus, Container, Context, Dispatcher,
+        # FlextProcessors, FlextRegistry, FlextLogger
 
         # Create FastAPI app with event-driven lifecycle
         app = FlextApi().create_fastapi_app(title="My API", version="1.0.0")
-        # Emits lifecycle events via FlextCore.Bus (startup, shutdown, requests)
+        # Emits lifecycle events via FlextBus (startup, shutdown, requests)
 
         # Create storage with event emission and processing
         storage = FlextApi().storage()
-        # Uses FlextCore.Processors for data validation and transformation
-        # Emits events via FlextCore.Bus for all operations
+        # Uses FlextProcessors for data validation and transformation
+        # Emits events via FlextBus for all operations
 
         # Access domain modules
         status_code = FlextApi().constants.HTTP_OK
@@ -65,17 +74,17 @@ class FlextApi(FlextCore.Service[FlextApiConfig]):
         - **Domain Library**: Provides HTTP foundation for entire FLEXT ecosystem
         - **Mandatory Usage**: ALL HTTP operations in FLEXT use flext-api
           (NO direct httpx)
-        - **Event-Driven**: All operations emit events via FlextCore.Bus for monitoring
-        - **Context-Aware**: FlextCore.Context provides request tracing and correlation
+        - **Event-Driven**: All operations emit events via FlextBus for monitoring
+        - **Context-Aware**: FlextContext provides request tracing and correlation
         - **CQRS Pattern**: Commands (POST/PUT/DELETE) vs Queries (GET) separation
-        - **Processing Pipeline**: FlextCore.Processors handle validation,
+        - **Processing Pipeline**: FlextProcessors handle validation,
           transformation, caching
 
     Design Principles:
 
         - Thin facade: NO business logic, pure delegation to domain classes
         - Complete FLEXT integration: Uses ALL flext-core components appropriately
-        - Railway pattern: FlextCore.Result throughout for type-safe error handling
+        - Railway pattern: FlextResult throughout for type-safe error handling
         - Zero duplication: Direct access to specialized domain modules
         - Ecosystem compliance: Follows flext-core patterns exclusively
     """
@@ -91,24 +100,24 @@ class FlextApi(FlextCore.Service[FlextApiConfig]):
         self._config = config or FlextApiConfig()
 
         # Initialize FLEXT ecosystem components
-        self._bus = FlextCore.Bus()
-        self._container = FlextCore.Container.get_global()
-        self._context = FlextCore.Context()
-        self._dispatcher = FlextCore.Dispatcher()
-        self._processors = FlextCore.Processors()
-        self._registry = FlextCore.Registry(dispatcher=self._dispatcher)
+        self._bus = FlextBus()
+        self._container = FlextContainer.get_global()
+        self._context = FlextContext()
+        self._dispatcher = FlextDispatcher()
+        self._processors = FlextProcessors()
+        self._registry = FlextRegistry(dispatcher=self._dispatcher)
 
         # Register flext-api in global container
         self._container.register("flext_api", self)
 
-    def execute(self) -> FlextCore.Result[FlextApiConfig]:
-        """Execute main API operation (FlextCore.Service interface).
+    def execute(self) -> FlextResult[FlextApiConfig]:
+        """Execute main API operation (FlextService interface).
 
         Returns:
-            FlextCore.Result containing current configuration.
+            FlextResult containing current configuration.
 
         """
-        return FlextCore.Result[FlextApiConfig].ok(self._config)
+        return FlextResult[FlextApiConfig].ok(self._config)
 
     @property
     def config(self) -> FlextApiConfig:

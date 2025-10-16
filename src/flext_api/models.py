@@ -24,7 +24,7 @@ class FlextApiModels:
     """Flext API models - Pydantic models only.
 
     Contains all API-specific Pydantic models as nested classes.
-    Uses FlextCore patterns and types.
+    Uses Flextpatterns and types.
     """
 
     class HttpRequest(BaseModel):
