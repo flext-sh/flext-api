@@ -23,7 +23,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from flext_core import FlextConstants, FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextConstants, FlextLogger, FlextResult
 
 from flext_api.models import FlextApiModels
 
@@ -369,7 +369,7 @@ class FlextApiMiddleware:
         def __init__(self) -> None:
             """Initialize metrics middleware."""
             super().__init__("MetricsMiddleware")
-            self._metrics: FlextTypes.Dict = {
+            self._metrics: dict[str, object] = {
                 "request_count": 0,
                 "responses": 0,
                 "errors": 0,
@@ -424,7 +424,7 @@ class FlextApiMiddleware:
 
             return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
 
-        def get_metrics(self) -> FlextTypes.Dict:
+        def get_metrics(self) -> dict[str, object]:
             """Get current metrics.
 
             Returns:
@@ -465,7 +465,7 @@ class FlextApiMiddleware:
         """Authentication middleware for adding auth headers.
 
         .. deprecated:: 1.0.0
-            Use :class:`flext_auth.HttpAuthMiddleware` instead. This class is
+            Use :class:`flext_auth.FlextWebAuthMiddleware` instead. This class is
             maintained for backward compatibility and delegates to flext-auth.
 
             Migration example::
@@ -478,11 +478,11 @@ class FlextApiMiddleware:
                 )
 
                 # New (recommended):
-                from flext_auth import HttpAuthMiddleware
+                from flext_auth import FlextWebAuthMiddleware
                 from flext_auth.providers import FlextAuthApiKeyProvider
 
                 provider = FlextAuthApiKeyProvider(config={"api_key": "my-token"})
-                middleware = HttpAuthMiddleware(
+                middleware = FlextWebAuthMiddleware(
                     provider=provider, header_name="Authorization"
                 )
 
@@ -493,7 +493,7 @@ class FlextApiMiddleware:
         - Custom header authentication
         - Token refresh support via FlextAuth integration
 
-        This is now a thin wrapper around flext-auth HttpAuthMiddleware.
+        This is now a thin wrapper around flext-auth FlextWebAuthMiddleware.
         """
 
         def __init__(
@@ -506,7 +506,7 @@ class FlextApiMiddleware:
             """Initialize authentication middleware.
 
             .. deprecated:: 1.0.0
-                Use flext_auth.HttpAuthMiddleware with appropriate provider instead.
+                Use flext_auth.FlextWebAuthMiddleware with appropriate provider instead.
 
             Args:
                 auth_type: Authentication type (bearer, api_key, basic)
@@ -517,7 +517,7 @@ class FlextApiMiddleware:
             """
             warnings.warn(
                 "AuthenticationMiddleware is deprecated. "
-                "Use flext_auth.HttpAuthMiddleware with appropriate provider instead. "
+                "Use flext_auth.FlextWebAuthMiddleware with appropriate provider instead. "
                 "See https://docs.flext.dev/migration/auth-middleware",
                 DeprecationWarning,
                 stacklevel=2,
@@ -552,7 +552,7 @@ class FlextApiMiddleware:
                 # Legacy path - warn user
                 warnings.warn(
                     "AuthenticationMiddleware without auth_provider is deprecated. "
-                    "Use flext_auth.HttpAuthMiddleware instead.",
+                    "Use flext_auth.FlextWebAuthMiddleware instead.",
                     DeprecationWarning,
                     stacklevel=2,
                 )
@@ -610,7 +610,8 @@ class FlextApiMiddleware:
             """Handle HTTP errors if enabled."""
             if (
                 self._handle_httperrors
-                and response.status_code >= FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
+                and response.status_code
+                >= FlextConstants.FlextWeb.HTTP_CLIENT_ERROR_MIN
             ):
                 # Log HTTP error
                 self.logger.warning(
@@ -793,7 +794,7 @@ class FlextApiMiddleware:
             # No middleware provided recovery
             return FlextResult[FlextApiModels.HttpResponse | None].ok(None)
 
-        def list_middleware(self) -> FlextTypes.StringList:
+        def list_middleware(self) -> list[str]:
             """Get list of middleware names in pipeline.
 
             Returns:

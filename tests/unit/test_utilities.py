@@ -7,8 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextTypes
-
 from flext_api import FlextApiUtilities
 
 
@@ -55,12 +53,12 @@ class TestFlextApiUtilitiesReal:
         assert result.is_success
         response_obj = result.unwrap()
         assert isinstance(response_obj, dict)
-        response: FlextTypes.Dict = response_obj
+        response: dict[str, object] = response_obj
         assert response["success"] is True
         assert response["data"] == [1, 2, 3]
         pagination_obj = response["pagination"]
         assert isinstance(pagination_obj, dict)
-        pagination: FlextTypes.Dict = pagination_obj
+        pagination: dict[str, object] = pagination_obj
         assert pagination["page"] == 1
         assert pagination["total"] == 3
 
@@ -89,56 +87,60 @@ class TestFlextApiUtilitiesReal:
         assert result.error is not None and "Page size must be >= 1" in result.error
 
     def test_http_validator_url_valid(self) -> None:
-        """Test HttpValidator URL validation with valid URL."""
-        result = FlextApiUtilities.HttpValidator.validate_url("https://example.com")
+        """Test FlextWebValidator URL validation with valid URL."""
+        result = FlextApiUtilities.FlextWebValidator.validate_url("https://example.com")
         assert result.is_success
         assert result.unwrap() == "https://example.com"
 
     def test_http_validator_url_invalid(self) -> None:
-        """Test HttpValidator URL validation with invalid URL."""
-        result = FlextApiUtilities.HttpValidator.validate_url("not-a-url")
+        """Test FlextWebValidator URL validation with invalid URL."""
+        result = FlextApiUtilities.FlextWebValidator.validate_url("not-a-url")
         assert result.is_failure
 
     def test_http_validator_url_with_port(self) -> None:
-        """Test HttpValidator URL validation with port."""
-        result = FlextApiUtilities.HttpValidator.validate_url(
+        """Test FlextWebValidator URL validation with port."""
+        result = FlextApiUtilities.FlextWebValidator.validate_url(
             "https://example.com:8080",
         )
         assert result.is_success
 
     def test_http_validator_url_invalid_port(self) -> None:
-        """Test HttpValidator URL validation with invalid port."""
-        result = FlextApiUtilities.HttpValidator.validate_url("https://example.com:0")
+        """Test FlextWebValidator URL validation with invalid port."""
+        result = FlextApiUtilities.FlextWebValidator.validate_url(
+            "https://example.com:0"
+        )
         assert result.is_failure
         assert result.error is not None
         assert result.error is not None and "Invalid port 0" in result.error
 
     def test_http_validator_method_valid(self) -> None:
-        """Test HttpValidator HTTP method validation with valid method."""
-        result = FlextApiUtilities.HttpValidator.validate_http_method("GET")
+        """Test FlextWebValidator HTTP method validation with valid method."""
+        result = FlextApiUtilities.FlextWebValidator.validate_http_method("GET")
         assert result.is_success
         assert result.unwrap() == "GET"
 
     def test_http_validator_method_invalid(self) -> None:
-        """Test HttpValidator HTTP method validation with invalid method."""
-        result = FlextApiUtilities.HttpValidator.validate_http_method("INVALID")
+        """Test FlextWebValidator HTTP method validation with invalid method."""
+        result = FlextApiUtilities.FlextWebValidator.validate_http_method("INVALID")
         assert result.is_failure
 
     def test_http_validator_method_case_insensitive(self) -> None:
-        """Test HttpValidator HTTP method validation case insensitive."""
-        result = FlextApiUtilities.HttpValidator.validate_http_method("post")
+        """Test FlextWebValidator HTTP method validation case insensitive."""
+        result = FlextApiUtilities.FlextWebValidator.validate_http_method("post")
         assert result.is_success
         assert result.unwrap() == "POST"
 
     def test_http_validator_normalize_url(self) -> None:
-        """Test HttpValidator URL normalization."""
-        result = FlextApiUtilities.HttpValidator.normalize_url("https://example.com/")
+        """Test FlextWebValidator URL normalization."""
+        result = FlextApiUtilities.FlextWebValidator.normalize_url(
+            "https://example.com/"
+        )
         assert result.is_success
         assert result.unwrap() == "https://example.com"
 
     def test_http_validator_normalize_url_empty(self) -> None:
-        """Test HttpValidator URL normalization with empty URL."""
-        result = FlextApiUtilities.HttpValidator.normalize_url("")
+        """Test FlextWebValidator URL normalization with empty URL."""
+        result = FlextApiUtilities.FlextWebValidator.normalize_url("")
         assert result.is_failure
         assert result.error is not None
         assert result.error is not None and "Invalid URL" in result.error

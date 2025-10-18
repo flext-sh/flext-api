@@ -55,7 +55,7 @@
 
 **Completed**:
 
-- ✅ HttpRequest and HttpResponse Pydantic models
+- ✅ FlextApiModels.HttpRequest and FlextApiModels.HttpResponse Pydantic models
 - ✅ HTTP-specific exception hierarchy
 - ✅ Status code constants and validation
 - ✅ Basic model validation with FlextResult

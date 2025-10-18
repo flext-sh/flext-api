@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextConstants, FlextTypes
+from flext_core import FlextConstants
 
 from flext_api import (
     FlextApi,
@@ -72,7 +72,7 @@ def example_storage_usage() -> None:
 
     # Set data using FlextResult pattern
     # CacheValue as dict[str, object] for JSON compatibility
-    cache_value: FlextTypes.Dict = {
+    cache_value: dict[str, object] = {
         "data": {"message": "Hello FlextAPI!"},
         "headers": {},
         "status_code": 200,
@@ -97,7 +97,7 @@ def example_utilities_usage() -> None:
     print("\n=== Utilities Example ===")
 
     # URL validation using the refactored nested class
-    url_result = FlextApiUtilities.HttpValidator.validate_url(
+    url_result = FlextApiUtilities.FlextWebValidator.validate_url(
         "https://example.com/api/v1",
     )
 

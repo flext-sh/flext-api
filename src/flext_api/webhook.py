@@ -100,13 +100,13 @@ class FlextWebhookHandler(FlextService[object]):
         self._event_handlers: dict[str, list[Callable]] = {}
 
         # Event queue
-        self._event_queue: deque[FlextTypes.Dict] = deque(maxlen=1000)
+        self._event_queue: deque[dict[str, object]] = deque(maxlen=1000)
 
         # Delivery tracking
         self._delivery_confirmations: FlextTypes.NestedDict = {}
 
         # Retry queue
-        self._retry_queue: deque[FlextTypes.Dict] = deque(maxlen=500)
+        self._retry_queue: deque[dict[str, object]] = deque(maxlen=500)
 
     def execute(self, *_args: object, **_kwargs: object) -> FlextResult[object]:
         """Execute webhook service lifecycle operations.
@@ -150,8 +150,8 @@ class FlextWebhookHandler(FlextService[object]):
     def receive_webhook(
         self,
         payload: bytes | str,
-        headers: FlextTypes.StringDict,
-    ) -> FlextResult[FlextTypes.Dict]:
+        headers: dict[str, str],
+    ) -> FlextResult[dict[str, object]]:
         """Receive and process webhook request.
 
         Args:
@@ -166,7 +166,7 @@ class FlextWebhookHandler(FlextService[object]):
         if self._secret:
             signature_result = self._verify_signature(payload, headers)
             if signature_result.is_failure:
-                return FlextResult[FlextTypes.Dict].fail(
+                return FlextResult[dict[str, object]].fail(
                     f"Signature verification failed: {signature_result.error}"
                 )
 
@@ -179,12 +179,12 @@ class FlextWebhookHandler(FlextService[object]):
 
             event_data = json.loads(payload_str)
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(f"Failed to parse payload: {e}")
+            return FlextResult[dict[str, object]].fail(f"Failed to parse payload: {e}")
 
         # Extract event type
         event_type = event_data.get("type") or event_data.get("event_type")
         if not event_type:
-            return FlextResult[FlextTypes.Dict].fail("Missing event type in payload")
+            return FlextResult[dict[str, object]].fail("Missing event type in payload")
 
         # Generate event ID
         event_id = event_data.get("id") or self._generate_event_id()
@@ -215,7 +215,7 @@ class FlextWebhookHandler(FlextService[object]):
                 extra={"event_id": event_id, "event_type": event_type},
             )
 
-            return FlextResult[FlextTypes.Dict].ok({
+            return FlextResult[dict[str, object]].ok({
                 "event_id": event_id,
                 "status": "processed",
             })
@@ -233,7 +233,7 @@ class FlextWebhookHandler(FlextService[object]):
                 },
             )
 
-            return FlextResult[FlextTypes.Dict].ok({
+            return FlextResult[dict[str, object]].ok({
                 "event_id": event_id,
                 "status": "queued_for_retry",
             })
@@ -254,14 +254,14 @@ class FlextWebhookHandler(FlextService[object]):
             },
         )
 
-        return FlextResult[FlextTypes.Dict].fail(
+        return FlextResult[dict[str, object]].fail(
             f"Processing failed: {process_result.error}"
         )
 
     def _verify_signature(
         self,
         payload: bytes | str,
-        headers: FlextTypes.StringDict,
+        headers: dict[str, str],
     ) -> FlextResult[None]:
         """Verify webhook signature.
 
@@ -313,7 +313,7 @@ class FlextWebhookHandler(FlextService[object]):
 
     def _process_event(
         self,
-        event: FlextTypes.Dict,
+        event: dict[str, object],
     ) -> FlextResult[None]:
         """Process webhook event.
 
@@ -350,7 +350,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         return FlextResult[None].ok(None)
 
-    def process_retry_queue(self) -> FlextResult[FlextTypes.Dict]:
+    def process_retry_queue(self) -> FlextResult[dict[str, object]]:
         """Process events in retry queue.
 
         Returns:
@@ -404,7 +404,7 @@ class FlextWebhookHandler(FlextService[object]):
                     # Re-add to retry queue
                     self._retry_queue.append(event)
 
-        return FlextResult[FlextTypes.Dict].ok({
+        return FlextResult[dict[str, object]].ok({
             "processed": processed,
             "failed": failed,
         })
@@ -421,7 +421,7 @@ class FlextWebhookHandler(FlextService[object]):
     def get_delivery_status(
         self,
         event_id: str,
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[dict[str, object]]:
         """Get delivery status for event.
 
         Args:
@@ -432,11 +432,11 @@ class FlextWebhookHandler(FlextService[object]):
 
         """
         if event_id not in self._delivery_confirmations:
-            return FlextResult[FlextTypes.Dict].fail(f"Event not found: {event_id}")
+            return FlextResult[dict[str, object]].fail(f"Event not found: {event_id}")
 
-        return FlextResult[FlextTypes.Dict].ok(self._delivery_confirmations[event_id])
+        return FlextResult[dict[str, object]].ok(self._delivery_confirmations[event_id])
 
-    def get_queue_stats(self) -> FlextTypes.Dict:
+    def get_queue_stats(self) -> dict[str, object]:
         """Get event queue statistics.
 
         Returns:

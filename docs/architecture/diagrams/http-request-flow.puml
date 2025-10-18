@@ -17,7 +17,7 @@ FastAPI -> ClientLib: client.get("/api/users")
 activate ClientLib
 
 == Request Building ==
-ClientLib -> ClientLib: Build HttpRequest\n(method, url, headers)
+ClientLib -> ClientLib: Build FlextApiModels.HttpRequest\n(method, url, headers)
 ClientLib -> ClientLib: Apply authentication
 ClientLib -> ClientLib: Add middleware processing
 
@@ -40,7 +40,7 @@ HTTPX --> Protocol: Raw HTTP response
 deactivate HTTPX
 
 Protocol -> Protocol: Response validation\n& parsing
-Protocol --> ClientLib: FlextResult[HttpResponse]
+Protocol --> ClientLib: FlextResult[FlextApiModels.HttpResponse]
 deactivate Protocol
 
 == Result Processing ==

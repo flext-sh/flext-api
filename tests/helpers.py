@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import cast
 
 import pytest
-from flext_core import FlextConstants, FlextResult, FlextTypes, T
+from flext_core import FlextConstants, FlextResult, T
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 from flext_api.typings import FlextApiTypes
@@ -81,7 +81,7 @@ def assert_flext_result_failure[T](
 def create_test_request(
     method: str = "GET",
     url: str = "https://httpbin.org/get",
-    headers: FlextApiTypes.HttpHeaders | None = None,
+    headers: FlextApiTypes.FlextWebHeaders | None = None,
     params: FlextApiTypes.ResponseDict | None = None,
     timeout: float = 30.0,
 ) -> FlextApiTypes.ResponseDict:
@@ -111,7 +111,7 @@ def create_test_response(
     | str
     | bytes
     | None = None,
-    headers: FlextApiTypes.HttpHeaders | None = None,
+    headers: FlextApiTypes.FlextWebHeaders | None = None,
     elapsed_time: float = 0.5,
     request_id: str | None = None,
     *,
@@ -233,7 +233,7 @@ def assert_http_status(
 
 def assert_response_structure(
     response: FlextApiTypes.ResponseDict,
-    required_keys: FlextTypes.StringList | None = None,
+    required_keys: list[str] | None = None,
 ) -> None:
     """Assert response structure using FlextTestsMatchers patterns."""
     required_keys = required_keys or ["status_code", "data", "success"]
@@ -300,7 +300,7 @@ def validate_email_format(email: str) -> bool:
 def create_test_headers(
     content_type: str = "application/json",
     **additional_headers: str,
-) -> FlextTypes.StringDict:
+) -> dict[str, str]:
     """Create headers using FlextTestsDomains service data.
 
     Returns:

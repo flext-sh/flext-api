@@ -36,13 +36,13 @@ def create_validated_http_url(cls, url: str) -> FlextResult[str]:
 **Current Issues**:
 
 - ❌ 3 test failures due to missing URL validation method
-- ❌ HttpResponse 204 No Content validation errors
+- ❌ FlextApiModels.HttpResponse 204 No Content validation errors
 - ❌ Configuration factory test failures
 
 **Test Coverage Requirements**:
 
-- ✅ HttpRequest model validation
-- ✅ HttpResponse model validation
+- ✅ FlextApiModels.HttpRequest model validation
+- ✅ FlextApiModels.HttpResponse model validation
 - ✅ ClientConfig creation and validation
 - ✅ URL validation and normalization
 - ✅ Error response handling

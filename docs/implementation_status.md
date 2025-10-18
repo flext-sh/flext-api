@@ -27,7 +27,7 @@
 
 3. **Domain Models** (85%)
    - Pydantic v2 validation models
-   - HttpRequest and HttpResponse entities
+   - FlextApiModels.HttpRequest and FlextApiModels.HttpResponse entities
    - Configuration models with validation
 
 4. **FastAPI Integration** (80%)

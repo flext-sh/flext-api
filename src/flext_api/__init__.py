@@ -49,28 +49,38 @@ from __future__ import annotations
 
 from flext_api import client as _client_module
 from flext_api.__version__ import __version__, __version_info__
-from flext_api.api import FlextApi
+from flext_api.api import FlextWebApi
 from flext_api.app import FlextApiApp
 from flext_api.client import FlextApiClient
-from flext_api.config import FlextApiConfig
+from flext_api.config import FlextWebConfig
+from flext_api.config_manager import HttpConfigManager
 from flext_api.constants import FlextApiConstants
+from flext_api.exceptions import FlextApiExceptions
+from flext_api.http_operations import HttpOperations
+from flext_api.lifecycle_manager import HttpLifecycleManager
 from flext_api.models import FlextApiModels
-from flext_api.protocols import FlextApiProtocols
+from flext_api.protocols import HttpProtocols
+from flext_api.server_factory import FlextApiServerFactory
 from flext_api.storage import FlextApiStorage
 from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
 
 __all__ = [
-    "FlextApi",
     "FlextApiApp",
     "FlextApiClient",
-    "FlextApiConfig",
     "FlextApiConstants",
-    "FlextApiModels",
-    "FlextApiProtocols",
+    "FlextApiExceptions",
+    "FlextApiServerFactory",
     "FlextApiStorage",
     "FlextApiTypes",
     "FlextApiUtilities",
+    "FlextWebApi",
+    "FlextWebConfig",
+    "HttpConfigManager",
+    "HttpLifecycleManager",
+    "FlextApiModels",
+    "HttpOperations",
+    "HttpProtocols",
     "__version__",
     "__version_info__",
     "_client_module",

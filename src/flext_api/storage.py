@@ -80,7 +80,7 @@ class FlextApiStorage(FlextService[None]):
         self._default_ttl = default_ttl or config_dict.get("default_ttl")
 
         # Use simple dict[str, object] for storage since Registry is not available
-        self._storage: FlextTypes.Dict = {}
+        self._storage: dict[str, object] = {}
 
         # Backend configuration that tests expect (using private attribute to avoid Pydantic field issues)
         self._backend = str(config_dict.get("backend", "memory"))
@@ -319,21 +319,21 @@ class FlextApiStorage(FlextService[None]):
         """
         return self._backend
 
-    def keys(self) -> FlextResult[FlextTypes.StringList]:
+    def keys(self) -> FlextResult[list[str]]:
         """Get all keys in storage.
 
         Returns:
-            FlextResult[FlextTypes.StringList]: Success result with keys list or failure result.
+            FlextResult[list[str]]: Success result with keys list or failure result.
 
         """
         # Return only direct keys (not namespaced ones)
         direct_keys = [
             key for key in self._storage if not key.startswith(f"{self._namespace}:")
         ]
-        return FlextResult[FlextTypes.StringList].ok(direct_keys)
+        return FlextResult[list[str]].ok(direct_keys)
 
     @property
-    def _data(self) -> FlextTypes.Dict:
+    def _data(self) -> dict[str, object]:
         """Access direct data storage (for testing compatibility)."""
         return dict[str, object](self._storage.items())
 
@@ -346,14 +346,14 @@ class FlextApiStorage(FlextService[None]):
         """
         return FlextResult[list[tuple[str, object]]].ok(list(self._data.items()))
 
-    def values(self) -> FlextResult[FlextTypes.List]:
+    def values(self) -> FlextResult[list[object]]:
         """Get all values in storage.
 
         Returns:
-            FlextResult[FlextTypes.List]: Success result with values list or failure result.
+            FlextResult[list[object]]: Success result with values list or failure result.
 
         """
-        return FlextResult[FlextTypes.List].ok(list(self._storage.values()))
+        return FlextResult[list[object]].ok(list(self._storage.values()))
 
     def close(self) -> FlextResult[None]:
         """Close storage connection.
@@ -456,7 +456,7 @@ class FlextApiStorage(FlextService[None]):
             )
 
     def batch_set(
-        self, data: FlextTypes.Dict, ttl: int | None = None
+        self, data: dict[str, object], ttl: int | None = None
     ) -> FlextResult[None]:
         """Set multiple key-value pairs in a single operation.
 
@@ -477,7 +477,7 @@ class FlextApiStorage(FlextService[None]):
         except Exception as e:
             return FlextResult[None].fail(f"Batch set operation failed: {e}")
 
-    def batch_get(self, keys: FlextTypes.StringList) -> FlextResult[FlextTypes.Dict]:
+    def batch_get(self, keys: list[str]) -> FlextResult[dict[str, object]]:
         """Get multiple values in a single operation.
 
         Args:
@@ -488,7 +488,7 @@ class FlextApiStorage(FlextService[None]):
 
         """
         try:
-            result_data: FlextTypes.Dict = {}
+            result_data: dict[str, object] = {}
             for key in keys:
                 get_result = self.get(key)
                 if get_result.success:
@@ -496,11 +496,13 @@ class FlextApiStorage(FlextService[None]):
                 else:
                     # Include None for missing keys
                     result_data[key] = None
-            return FlextResult[FlextTypes.Dict].ok(result_data)
+            return FlextResult[dict[str, object]].ok(result_data)
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(f"Batch get operation failed: {e}")
+            return FlextResult[dict[str, object]].fail(
+                f"Batch get operation failed: {e}"
+            )
 
-    def batch_delete(self, keys: FlextTypes.StringList) -> FlextResult[None]:
+    def batch_delete(self, keys: list[str]) -> FlextResult[None]:
         """Delete multiple keys in a single operation.
 
         Args:

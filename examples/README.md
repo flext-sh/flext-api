@@ -104,7 +104,7 @@ else:
 ```python
 # Use REAL nested model classes
 request = FlextApiModels.ApiRequest(
-    method=FlextApiModels.HttpMethod.GET,
+    method=FlextApiModels.FlextWebMethod.GET,
     url="https://api.example.com/data"
 )
 

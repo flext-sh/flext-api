@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 from abc import abstractmethod
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextLogger, FlextResult
 
 from flext_api.typings import FlextApiTypes
 
@@ -144,7 +144,7 @@ class ProtocolPlugin(BasePlugin):
         """
         ...
 
-    def get_supported_protocols(self) -> FlextTypes.StringList:
+    def get_supported_protocols(self) -> list[str]:
         """Get list of supported protocols.
 
         Returns:
@@ -406,8 +406,8 @@ class AuthenticationPlugin(BasePlugin):
 
     def refresh_credentials(
         self,
-        _credentials: FlextTypes.Dict,
-    ) -> FlextResult[FlextTypes.Dict]:
+        _credentials: dict[str, object],
+    ) -> FlextResult[dict[str, object]]:
         """Refresh authentication credentials.
 
         Args:
@@ -417,7 +417,9 @@ class AuthenticationPlugin(BasePlugin):
             FlextResult containing refreshed credentials or error
 
         """
-        return FlextResult[FlextTypes.Dict].fail("Refresh not supported by this plugin")
+        return FlextResult[dict[str, object]].fail(
+            "Refresh not supported by this plugin"
+        )
 
 
 # Plugin Manager for discovery and loading
@@ -517,7 +519,7 @@ class PluginManager:
 
         return FlextResult[BasePlugin].ok(self._loaded_plugins[plugin_name])
 
-    def list_loaded_plugins(self) -> FlextTypes.StringList:
+    def list_loaded_plugins(self) -> list[str]:
         """Get list of loaded plugin names.
 
         Returns:
@@ -552,7 +554,7 @@ class PluginManager:
             FlextResult indicating success or failure
 
         """
-        failed_plugins: FlextTypes.StringList = []
+        failed_plugins: list[str] = []
 
         for plugin_name in list(self._loaded_plugins.keys()):
             result = self.unload_plugin(plugin_name)

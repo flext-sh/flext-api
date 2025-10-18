@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
@@ -107,7 +107,7 @@ class SSEProtocolPlugin(ProtocolPlugin):
         """
         return protocol.lower() in {"sse", "server-sent-events", "eventsource"}
 
-    def get_supported_protocols(self) -> FlextTypes.StringList:
+    def get_supported_protocols(self) -> list[str]:
         """Get list of supported protocols.
 
         Returns:

@@ -68,7 +68,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 
 ```python
 # HTTP-specific entity
-class HttpEndpoint(FlextModels.Entity):
+class FlextWebEndpoint(FlextModels.Entity):
     """HTTP endpoint with routing and validation."""
     path: str
     method: str
@@ -79,7 +79,7 @@ class HttpEndpoint(FlextModels.Entity):
 class EndpointService(FlextService):
     """Domain service for HTTP endpoint management."""
 
-    def validate_endpoint(self, endpoint: HttpEndpoint) -> FlextResult[None]:
+    def validate_endpoint(self, endpoint: FlextWebEndpoint) -> FlextResult[None]:
         """Validate HTTP endpoint configuration."""
         if not endpoint.path.startswith("/"):
             return FlextResult[None].fail("Path must start with /")
@@ -137,7 +137,7 @@ from flext_api.protocols import ProtocolRegistry
 
 # Register protocols
 registry = ProtocolRegistry()
-registry.register("http", HttpProtocol)
+registry.register("http", FlextWebProtocol)
 registry.register("graphql", GraphQLProtocol)
 registry.register("websocket", WebSocketProtocol)
 
@@ -191,13 +191,13 @@ class BaseProtocol(ABC):
         """Execute protocol-specific request."""
         pass
 
-class HttpProtocol(BaseProtocol):
+class FlextWebProtocol(BaseProtocol):
     """HTTP protocol implementation."""
 
     def create_client(self, config: dict) -> FlextApiClient:
         return FlextApiClient(**config)
 
-    async def execute_request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
+    async def execute_request(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
         # HTTP-specific implementation
         pass
 ```

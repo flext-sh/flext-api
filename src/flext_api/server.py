@@ -87,10 +87,10 @@ class FlextApiServer(FlextService[object]):
         self._routes: FlextTypes.NestedDict = {}
 
         # WebSocket connections
-        self._websocket_connections: FlextTypes.Dict = {}
+        self._websocket_connections: dict[str, object] = {}
 
         # SSE connections
-        self._sse_connections: FlextTypes.Dict = {}
+        self._sse_connections: dict[str, object] = {}
 
     def execute(self, *_args: object, **_kwargs: object) -> FlextResult[object]:
         """Execute server service lifecycle operations.
@@ -536,7 +536,7 @@ class FlextApiServer(FlextService[object]):
         return self._routes.copy()
 
     @property
-    def protocols(self) -> FlextTypes.StringList:
+    def protocols(self) -> list[str]:
         """Get registered protocols."""
         return list(self._protocol_handlers.keys())
 

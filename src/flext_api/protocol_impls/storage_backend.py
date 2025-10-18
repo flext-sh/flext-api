@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextLogger, FlextResult
 
 from flext_api.protocols import FlextApiProtocols
 from flext_api.typings import FlextApiTypes
@@ -94,12 +94,10 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
         except Exception as e:
             return FlextResult[None].fail(f"Clear operation failed: {e}")
 
-    def keys(self) -> FlextResult[FlextTypes.StringList]:
+    def keys(self) -> FlextResult[list[str]]:
         """Get all keys."""
         try:
-            storage_keys: FlextTypes.StringList = list(self._storage)
-            return FlextResult[FlextTypes.StringList].ok(storage_keys)
+            storage_keys: list[str] = list(self._storage)
+            return FlextResult[list[str]].ok(storage_keys)
         except Exception as e:
-            return FlextResult[FlextTypes.StringList].fail(
-                f"Keys operation failed: {e}"
-            )
+            return FlextResult[list[str]].fail(f"Keys operation failed: {e}")

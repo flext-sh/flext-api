@@ -23,7 +23,7 @@ from __future__ import annotations
 import json
 from typing import Protocol
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextLogger, FlextResult
 
 
 class ProtobufMessage:
@@ -39,7 +39,7 @@ class ProtobufMessage:
     - Field validation
     """
 
-    def __init__(self, data: FlextTypes.Dict | None = None) -> None:
+    def __init__(self, data: dict[str, object] | None = None) -> None:
         """Initialize Protobuf message.
 
         Args:
@@ -80,7 +80,7 @@ class ProtobufMessage:
             "Protobuf stub placeholder - awaiting flext-grpc integration"
         )
 
-    def to_dict(self) -> FlextTypes.Dict:
+    def to_dict(self) -> dict[str, object]:
         """Convert message to dictionary.
 
         Returns:
@@ -90,7 +90,7 @@ class ProtobufMessage:
         return self._data
 
     @classmethod
-    def from_dict(cls, data: FlextTypes.Dict) -> ProtobufMessage:
+    def from_dict(cls, data: dict[str, object]) -> ProtobufMessage:
         """Create message from dictionary.
 
         Args:
@@ -146,7 +146,7 @@ class ProtobufSerializer:
     - Compression
     """
 
-    def __init__(self, schema: FlextTypes.Dict | None = None) -> None:
+    def __init__(self, schema: dict[str, object] | None = None) -> None:
         """Initialize Protobuf serializer.
 
         Args:

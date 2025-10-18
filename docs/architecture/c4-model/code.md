@@ -30,11 +30,11 @@ package "flext_api" as flext_api {
 
     package "client.py" as client {
         class FlextApiClient
-        class HttpOperations
+        class FlextWebOperations
         class LifecycleManager
         class ConfigurationManager
 
-        FlextApiClient --> HttpOperations
+        FlextApiClient --> FlextWebOperations
         FlextApiClient --> LifecycleManager
         FlextApiClient --> ConfigurationManager
     }
@@ -48,14 +48,14 @@ package "flext_api" as flext_api {
 
     package "models.py" as models {
         class FlextApiModels
-        class HttpRequest
-        class HttpResponse
-        class HttpEndpoint
+        class FlextApiModels.HttpRequest
+        class FlextApiModels.HttpResponse
+        class FlextWebEndpoint
         class ApiConfiguration
 
-        FlextApiModels --> HttpRequest
-        FlextApiModels --> HttpResponse
-        FlextApiModels --> HttpEndpoint
+        FlextApiModels --> FlextApiModels.HttpRequest
+        FlextApiModels --> FlextApiModels.HttpResponse
+        FlextApiModels --> FlextWebEndpoint
         FlextApiModels --> ApiConfiguration
     }
 
@@ -81,8 +81,8 @@ package "flext_api" as flext_api {
         }
 
         package "http.py" {
-            class HttpProtocol
-            class HttpClientImplementation
+            class FlextWebProtocol
+            class FlextWebClientImplementation
         }
 
         package "graphql.py" {
@@ -95,7 +95,7 @@ package "flext_api" as flext_api {
             class WebSocketClient
         }
 
-        BaseProtocol <|-- HttpProtocol
+        BaseProtocol <|-- FlextWebProtocol
         BaseProtocol <|-- GraphQLProtocol
         BaseProtocol <|-- WebSocketProtocol
     }
@@ -114,7 +114,7 @@ package "flext_api" as flext_api {
 
     package "utilities.py" as utilities {
         class FlextApiUtilities
-        class HttpUtilities
+        class FlextWebUtilities
         class ValidationUtilities
         class EncodingUtilities
     }
@@ -161,7 +161,7 @@ FlextApiConfig --> BaseModel : extends
 FlextApi --> FlextService : extends
 FlextApiClient --> FlextService : extends
 
-HttpProtocol --> AsyncClient : uses
+FlextWebProtocol --> AsyncClient : uses
 WebSocketProtocol --> WebSocketClientProtocol : uses
 
 create_fastapi_app --> FastAPI : creates
@@ -223,23 +223,23 @@ class FlextApiClient(FlextService[None]):
     """Enterprise HTTP client with railway pattern integration."""
 
     # Core HTTP methods
-    def get(self, url: str, **kwargs) -> FlextResult[HttpResponse]:
+    def get(self, url: str, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
         """HTTP GET request."""
 
-    def post(self, url: str, data=None, **kwargs) -> FlextResult[HttpResponse]:
+    def post(self, url: str, data=None, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
         """HTTP POST request."""
 
-    def put(self, url: str, data=None, **kwargs) -> FlextResult[HttpResponse]:
+    def put(self, url: str, data=None, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
         """HTTP PUT request."""
 
-    def delete(self, url: str, **kwargs) -> FlextResult[HttpResponse]:
+    def delete(self, url: str, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
         """HTTP DELETE request."""
 
     # Advanced features
-    def request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
+    def request(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
         """Generic HTTP request."""
 
-    async def arequest(self, request: HttpRequest) -> FlextResult[HttpResponse]:
+    async def arequest(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
         """Async HTTP request."""
 ```
 
@@ -249,7 +249,7 @@ class FlextApiClient(FlextService[None]):
 class FlextApiModels(FlextModels):
     """Pydantic models extending flext-core base classes."""
 
-    class HttpRequest(FlextModels.HttpRequest):
+    class FlextApiModels.HttpRequest(FlextModels.FlextApiModels.HttpRequest):
         """HTTP request model with validation."""
         method: str
         url: str
@@ -265,7 +265,7 @@ class FlextApiModels(FlextModels):
         def request_size(self) -> int:
             """Request body size in bytes."""
 
-    class HttpResponse(FlextModels.HttpResponse):
+    class FlextApiModels.HttpResponse(FlextModels.FlextApiModels.HttpResponse):
         """HTTP response model with validation."""
         status_code: int
         headers: Dict[str, str]
@@ -301,14 +301,14 @@ class BaseProtocol(ABC):
         pass
 
 # HTTP Protocol Implementation
-class HttpProtocol(BaseProtocol):
+class FlextWebProtocol(BaseProtocol):
     """HTTP/REST protocol implementation."""
 
     def create_client(self, config: dict) -> FlextApiClient:
         """Create HTTP client instance."""
         return FlextApiClient(**config)
 
-    async def execute_request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
+    async def execute_request(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP request with error handling."""
         try:
             # HTTP-specific implementation
@@ -321,7 +321,7 @@ class HttpProtocol(BaseProtocol):
                     timeout=request.timeout
                 )
 
-                return FlextResult.ok(HttpResponse(
+                return FlextResult.ok(FlextApiModels.HttpResponse(
                     status_code=response.status_code,
                     headers=dict(response.headers),
                     body=response.text,
@@ -395,7 +395,7 @@ store = storage.unwrap()
 
 ```python
 # All public methods return FlextResult[T]
-def get(self, url: str, **kwargs) -> FlextResult[HttpResponse]:
+def get(self, url: str, **kwargs) -> FlextResult[FlextApiModels.HttpResponse]:
     """HTTP GET with comprehensive error handling."""
 
     # Input validation
@@ -662,7 +662,7 @@ class ResponseCache:
         async with self._lock:
             return self.cache.get(key)
 
-    async def set(self, key: str, response: HttpResponse, ttl: Optional[int] = None):
+    async def set(self, key: str, response: FlextApiModels.HttpResponse, ttl: Optional[int] = None):
         """Cache response with optional TTL."""
         async with self._lock:
             cached = CachedResponse(
@@ -704,9 +704,9 @@ class AuthenticationManager:
 
     async def authenticate_request(
         self,
-        request: HttpRequest,
+        request: FlextApiModels.HttpRequest,
         credentials: AuthCredentials
-    ) -> FlextResult[HttpRequest]:
+    ) -> FlextResult[FlextApiModels.HttpRequest]:
         """Add authentication to request."""
         handler = self.get_handler(credentials.scheme)
 

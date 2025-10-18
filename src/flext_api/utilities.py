@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from typing import TypeVar
 from urllib.parse import urlparse, urlunparse
 
-from flext_core import FlextResult, FlextTypes, FlextUtilities
+from flext_core import FlextResult, FlextUtilities
 
 from flext_api.constants import FlextApiConstants
 
@@ -25,10 +25,10 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def build_success_response(
-            data: FlextTypes.Dict | None = None,
+            data: dict[str, object] | None = None,
             message: str | None = None,
             status_code: int = 200,
-            headers: FlextTypes.Dict | None = None,
+            headers: dict[str, object] | None = None,
         ) -> FlextResult[dict[str, object]]:
             """Build a successful HTTP response."""
             response: dict[str, object] = {
@@ -45,8 +45,8 @@ class FlextApiUtilities(FlextUtilities):
         def build_error_response(
             error: str,
             status_code: int = 400,
-            data: FlextTypes.Dict | None = None,
-            headers: FlextTypes.Dict | None = None,
+            data: dict[str, object] | None = None,
+            headers: dict[str, object] | None = None,
         ) -> FlextResult[dict[str, object]]:
             """Build an error HTTP response."""
             response: dict[str, object] = {
@@ -84,14 +84,14 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def build_paginated_response(
-            data: FlextTypes.List | None,
+            data: list[object] | None,
             *,
             page: int = 1,
             page_size: int | None = None,
             total: int | None = None,
             message: str | None = None,
             config: object | None = None,
-        ) -> FlextResult[FlextTypes.Dict]:
+        ) -> FlextResult[dict[str, object]]:
             """Build paginated response using flext-core patterns.
 
             Returns:
@@ -157,7 +157,7 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def prepare_pagination_data(
             *,
-            data: FlextTypes.List | None,
+            data: list[object] | None,
             total: int | None,
             page: int,
             page_size: int,
@@ -210,10 +210,10 @@ class FlextApiUtilities(FlextUtilities):
 
             return FlextResult.ok(response)
 
-    class HttpValidator:
+    class FlextWebValidator:
         """HTTP validation utilities."""
 
-        MAX_URL_LENGTH: int = FlextApiConstants.MAX_URL_LENGTH
+        MAX_URL_LENGTH: int = FlextApiConstants.VALIDATION_LIMITS["MAX_URL_LENGTH"]
 
         @staticmethod
         def validate_and_normalize_url(url: str) -> FlextResult[str]:

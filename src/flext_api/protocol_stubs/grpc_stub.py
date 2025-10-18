@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextLogger, FlextResult
 
 
 class GrpcChannel:
@@ -38,7 +38,7 @@ class GrpcChannel:
     - Load balancing
     """
 
-    def __init__(self, target: str, options: FlextTypes.Dict | None = None) -> None:
+    def __init__(self, target: str, options: dict[str, object] | None = None) -> None:
         """Initialize gRPC channel.
 
         Args:
@@ -133,7 +133,7 @@ class GrpcRequest:
         self,
         method: str,
         message: object,
-        metadata: FlextTypes.StringDict | None = None,
+        metadata: dict[str, str] | None = None,
     ) -> None:
         """Initialize gRPC request.
 
@@ -164,7 +164,7 @@ class GrpcResponse:
         self,
         message: object,
         status_code: int = 0,
-        metadata: FlextTypes.StringDict | None = None,
+        metadata: dict[str, str] | None = None,
     ) -> None:
         """Initialize gRPC response.
 
@@ -206,7 +206,7 @@ class GrpcServer:
         self,
         host: str = "127.0.0.1",
         port: int = 50051,
-        options: FlextTypes.Dict | None = None,
+        options: dict[str, object] | None = None,
     ) -> None:
         """Initialize gRPC server.
 
