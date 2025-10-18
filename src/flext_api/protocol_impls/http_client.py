@@ -11,14 +11,14 @@ import re
 from typing import Self
 
 import httpx
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextLogger, FlextResult
 
 from flext_api.models import FlextApiModels
 from flext_api.protocols import FlextApiProtocols
 
 
-class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
-    """HTTP client implementation conforming to HttpClientProtocol."""
+class FlextWebClientImplementation(FlextApiProtocols.FlextWebClientProtocol):
+    """HTTP client implementation conforming to FlextWebClientProtocol."""
 
     def __init__(self, client_config: FlextApiModels.ClientConfig) -> None:
         """Initialize HTTP client protocol implementation.
@@ -88,7 +88,7 @@ class HttpClientImplementation(FlextApiProtocols.HttpClientProtocol):
                 request_headers.update(headers_value)
 
             # Prepare request parameters
-            request_kwargs: FlextTypes.Dict = {
+            request_kwargs: dict[str, object] = {
                 "method": method,
                 "url": full_url,
                 "headers": request_headers,

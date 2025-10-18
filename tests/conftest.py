@@ -24,10 +24,10 @@ from flext_core import FlextConstants, FlextContainer
 from flext_tests import FlextTestsDomains
 
 from flext_api import (
-    FlextApiClient,
-    FlextApiConfig,
     FlextApiStorage,
     FlextApiTypes,
+    FlextWebConfig,
+    FlextApiClient,
 )
 
 # Configure Faker for deterministic test data
@@ -125,9 +125,9 @@ def flext_api_client() -> FlextApiClient:
         else f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
     )
     timeout = (
-        int(timeout_val)
+        float(timeout_val)
         if isinstance(timeout_val, (int, float, str))
-        else FlextConstants.Network.DEFAULT_TIMEOUT
+        else float(FlextConstants.Network.DEFAULT_TIMEOUT)
     )
     max_retries = (
         int(retries_val)
@@ -143,14 +143,14 @@ def flext_api_client() -> FlextApiClient:
 
 
 @pytest.fixture
-def flext_api_config() -> FlextApiConfig:
-    """Provide FlextApiConfig using flext_tests configuration.
+def flext_api_config() -> FlextWebConfig:
+    """Provide FlextWebConfig using flext_tests configuration.
 
     Returns:
-        FlextApiConfig: Configuration instance.
+        FlextWebConfig: Configuration instance.
 
     """
-    return FlextApiConfig()
+    return FlextWebConfig()
 
 
 @pytest.fixture

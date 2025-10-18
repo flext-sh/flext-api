@@ -5,12 +5,12 @@ SPDX-License-Identifier: MIT
 
 """
 
-from flext_api.protocol_impls.http_client import HttpClientImplementation
+from flext_api.protocol_impls.http_client import FlextWebClientImplementation
 from flext_api.protocol_impls.logger import LoggerProtocolImplementation
 from flext_api.protocol_impls.storage_backend import StorageBackendImplementation
 
 __all__ = [
-    "HttpClientImplementation",
+    "FlextWebClientImplementation",
     "LoggerProtocolImplementation",
     "StorageBackendImplementation",
 ]

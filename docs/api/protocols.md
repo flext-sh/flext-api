@@ -21,12 +21,12 @@ Protocol Layer
 
 ## HTTP Protocol Implementation
 
-### HttpProtocol - HTTP/REST Implementation
+### FlextWebProtocol - HTTP/REST Implementation
 
 Primary protocol implementation for REST APIs and HTTP-based communication.
 
 ```python
-from flext_api.protocol_impls.http import HttpProtocol
+from flext_api.protocol_impls.http import FlextWebProtocol
 from flext_core import FlextBus
 from flext_core import FlextConfig
 from flext_core import FlextConstants
@@ -49,7 +49,7 @@ from flext_core import FlextTypes
 from flext_core import FlextUtilities
 
 # Create HTTP protocol instance
-http_protocol = HttpProtocol(
+http_protocol = FlextWebProtocol(
     base_url="https://api.example.com",
     timeout=30.0,
     headers={"User-Agent": "FLEXT-API/0.9.9"}
@@ -80,14 +80,14 @@ if result.is_success:
 
 ```python
 from flext_api.protocol_impls.http import (
-    HttpRequest,
-    HttpResponse,
-    HttpHeaders,
-    HttpCookies
+    FlextApiModels.HttpRequest,
+    FlextApiModels.HttpResponse,
+    FlextWebHeaders,
+    FlextWebCookies
 )
 
 # Create HTTP request
-request = HttpRequest(
+request = FlextApiModels.HttpRequest(
     method="POST",
     url="/users",
     headers={"Content-Type": "application/json"},
@@ -392,7 +392,7 @@ deserialized = protobuf_stub.deserialize(serialized, message_type="User")
 
 ```python
 from flext_api import FlextApiClient
-from flext_api.protocol_impls.http import HttpProtocol
+from flext_api.protocol_impls.http import FlextWebProtocol
 from flext_api.protocol_impls.graphql import GraphQLProtocol
 from flext_api.protocol_impls.websocket import WebSocketProtocol
 
@@ -400,7 +400,7 @@ class MultiProtocolClient:
     """Client supporting multiple protocols."""
 
     def __init__(self):
-        self.http = HttpProtocol(base_url="https://api.example.com")
+        self.http = FlextWebProtocol(base_url="https://api.example.com")
         self.graphql = GraphQLProtocol(endpoint="https://api.example.com/graphql")
         self.websocket = WebSocketProtocol(url="wss://api.example.com/ws")
 
@@ -454,12 +454,12 @@ print(f"GraphQL user: {user_graphql['name']}")
 
 ```python
 from flext_api.protocols import ProtocolRegistry
-from flext_api.protocol_impls.http import HttpProtocol
+from flext_api.protocol_impls.http import FlextWebProtocol
 from flext_api.protocol_impls.graphql import GraphQLProtocol
 
 # Register protocols
 registry = ProtocolRegistry()
-registry.register("http", HttpProtocol)
+registry.register("http", FlextWebProtocol)
 registry.register("graphql", GraphQLProtocol)
 
 # Use protocols dynamically

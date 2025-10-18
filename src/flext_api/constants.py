@@ -6,228 +6,134 @@ Only constants and enums - no functions or classes with behavior.
 
 from __future__ import annotations
 
-from typing import ClassVar, Final
+from typing import ClassVar
 
-from flext_core import FlextConstants, FlextTypes
+from flext_core import FlextConstants
 
 
-class FlextApiConstants(FlextConstants):
-    """Flext constants extending flext-core FlextConstants."""
+class FlextApiConstants:
+    """Flext constants for API domain functionality using advanced composition."""
 
-    # Client configuration
-    DEFAULT_TIMEOUT: ClassVar[int] = FlextConstants.Network.DEFAULT_TIMEOUT
-    DEFAULT_MAX_RETRIES: ClassVar[int] = FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+    # Core composition - inherit all core constants
+    CoreErrors = FlextConstants.Errors
+    CoreNetwork = FlextConstants.Network
+    CoreReliability = FlextConstants.Reliability
+    CorePlatform = FlextConstants.Platform
+    CoreProcessing = FlextConstants.Processing
+    CorePagination = FlextConstants.Pagination
+
+    # Client configuration with core composition
+    DEFAULT_TIMEOUT: ClassVar[int] = CoreNetwork.DEFAULT_TIMEOUT
+    DEFAULT_MAX_RETRIES: ClassVar[int] = CoreReliability.MAX_RETRY_ATTEMPTS
     DEFAULT_BASE_URL: ClassVar[str] = (
-        f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+        f"http://{CorePlatform.DEFAULT_HOST}:{CorePlatform.FLEXT_API_PORT}"
     )
     API_VERSION: ClassVar[str] = "v1"
 
-    # Example and test URLs
-    EXAMPLE_BASE_URL: ClassVar[str] = "https://api.example.com"
-    LOCALHOST_BASE_URL: ClassVar[str] = "https://localhost:8000"
+    # HTTP Methods - compact tuple definition
+    class Method:
+        """HTTP method constants."""
+
+        GET: ClassVar[str] = "GET"
+        POST: ClassVar[str] = "POST"
+        PUT: ClassVar[str] = "PUT"
+        DELETE: ClassVar[str] = "DELETE"
+        PATCH: ClassVar[str] = "PATCH"
+        HEAD: ClassVar[str] = "HEAD"
+        OPTIONS: ClassVar[str] = "OPTIONS"
+        CONNECT: ClassVar[str] = "CONNECT"
+        TRACE: ClassVar[str] = "TRACE"
+
+    # Content Types - compact definitions
+    class ContentType:
+        """Content type constants."""
+
+        JSON: ClassVar[str] = "application/json"
+        XML: ClassVar[str] = "application/xml"
+        TEXT: ClassVar[str] = "text/plain"
+        HTML: ClassVar[str] = "text/html"
+        FORM: ClassVar[str] = "application/x-www-form-urlencoded"
+        MULTIPART: ClassVar[str] = "multipart/form-data"
+        OCTET_STREAM: ClassVar[str] = "application/octet-stream"
+
+    # HTTP Headers - compact definitions
+    HEADER_CONTENT_TYPE: ClassVar[str] = "Content-Type"
+    HEADER_AUTHORIZATION: ClassVar[str] = "Authorization"
+    HEADER_USER_AGENT: ClassVar[str] = "User-Agent"
+    HEADER_ACCEPT: ClassVar[str] = "Accept"
+
+    # Combined constants using advanced patterns
+    DEFAULT_USER_AGENT: ClassVar[str] = f"FlextAPI/{API_VERSION}"
     DEFAULT_REQUEST_TIMEOUT: ClassVar[float] = 30.0
-
-    # Pagination constants
-    DEFAULT_PAGE_SIZE: ClassVar[int] = (
-        FlextConstants.Processing.DEFAULT_BATCH_SIZE // 5
-    )  # 200
-    MIN_PAGE_SIZE: ClassVar[int] = FlextConstants.Pagination.MIN_PAGE_SIZE
-    MAX_PAGE_SIZE: ClassVar[int] = FlextConstants.Pagination.MAX_PAGE_SIZE
-    MAX_PAGE_SIZE_PERFORMANCE: ClassVar[int] = FlextConstants.Pagination.MAX_PAGE_SIZE
-
-    # HTTP constants moved to flext-core.FlextConstants.Http
-    # Use FlextConstants.Http.HTTP_OK, FlextConstants.Http.HTTP_SUCCESS_MIN, etc.
-    # Use FlextConstants.Http.Method.GET, FlextConstants.Http.Method.POST, etc.
-    # Use FlextConstants.Http.ContentType.JSON, etc.
-
-    # CORS constants
-    DEFAULT_CORS_ORIGINS: ClassVar[FlextTypes.StringList] = ["*"]
-    DEFAULT_CORS_METHODS: ClassVar[FlextTypes.StringList] = [
-        FlextConstants.Http.Method.GET,
-        FlextConstants.Http.Method.POST,
-        FlextConstants.Http.Method.PUT,
-        FlextConstants.Http.Method.DELETE,
-    ]
-    DEFAULT_CORS_HEADERS: ClassVar[FlextTypes.StringList] = [
-        FlextConstants.Platform.HEADER_CONTENT_TYPE,
-        FlextConstants.Platform.HEADER_AUTHORIZATION,
-    ]
-
-    # API-specific header defaults (customize flext-core defaults)
-    DEFAULT_USER_AGENT: ClassVar[str] = "FlextAPI/0.9.0"
-    USER_AGENT_HEADER: ClassVar[str] = "User-Agent"
-
-    # Timeout constants
-    MIN_TIMEOUT: ClassVar[float] = 0.0
-    MAX_TIMEOUT: ClassVar[float] = 300.0
-
-    # Retry constants
-    MIN_RETRIES: ClassVar[int] = 0
-    MAX_RETRIES: ClassVar[int] = 10
     DEFAULT_RETRIES: ClassVar[int] = 3
 
-    # Rate limiting constants
-    RATE_LIMIT_REQUESTS: ClassVar[int] = 1000
-    RATE_LIMIT_WINDOW: ClassVar[int] = 3600  # 1 hour in seconds
+    # HTTP Status - compact ranges and codes
+    HTTP_SUCCESS_RANGE: ClassVar[tuple[int, int]] = (200, 300)
+    HTTP_SUCCESS_STATUSES: ClassVar[tuple[int, ...]] = (200, 201, 202, 204, 206, 304)
 
-    # URL validation
-    MAX_URL_LENGTH: ClassVar[int] = 2048
-    MAX_HOSTNAME_LENGTH: ClassVar[int] = 253  # RFC 1035 max hostname length
-    MIN_PORT: ClassVar[int] = 1
-    MAX_PORT: ClassVar[int] = 65535
-    HTTP_PORT: ClassVar[int] = 80
-    HTTPS_PORT: ClassVar[int] = 443
+    # Pagination - direct core composition
+    DEFAULT_PAGE_SIZE: ClassVar[int] = CoreProcessing.DEFAULT_BATCH_SIZE // 5
+    MIN_PAGE_SIZE: ClassVar[int] = CorePagination.MIN_PAGE_SIZE
+    MAX_PAGE_SIZE: ClassVar[int] = CorePagination.MAX_PAGE_SIZE
 
-    # Security constants
-    MASK_AUTH_THRESHOLD: ClassVar[int] = 8
+    # Validation limits - compact definitions
+    VALIDATION_LIMITS: ClassVar[dict[str, object]] = {
+        "MAX_URL_LENGTH": 2048,
+        "MIN_TIMEOUT": 0.0,
+        "MAX_TIMEOUT": 300.0,
+        "MIN_RETRIES": 0,
+        "MAX_RETRIES": 10,
+    }
 
-    # HTTP constants (API-specific extensions)
-    HTTP_DEFAULT_ACCEPT: ClassVar[str] = "application/json"
+    # Rate limiting - compact configuration
+    RATE_LIMIT_CONFIG: ClassVar[dict[str, int]] = {
+        "REQUESTS": 1000,
+        "WINDOW": 3600,
+        "BACKOFF_FACTOR": 0.3,
+    }
 
-    # HTTP Status Code Ranges (API-specific)
-    HTTP_SUCCESS_MIN: ClassVar[int] = 200
-    HTTP_SUCCESS_MAX: ClassVar[int] = 299
-    HTTP_SUCCESS_STATUSES: ClassVar[tuple[int, ...]] = (
-        200,  # OK
-        201,  # Created
-        202,  # Accepted
-        204,  # No Content
-        304,  # Not Modified
-        206,  # Partial Content
-    )
+    # CORS - compact configuration
+    CORS_CONFIG: ClassVar[dict[str, object]] = {
+        "ORIGINS": ["*"],
+        "METHODS": [Method.GET, Method.POST, Method.PUT, Method.DELETE],
+        "HEADERS": [HEADER_CONTENT_TYPE, HEADER_AUTHORIZATION],
+    }
 
-    # =============================================================================
-    # HTTP METHOD CONSTANTS - Moved to flext-core.FlextConstants.Http.Method
-    # Use FlextConstants.Http.Method.GET, etc.
-    # =============================================================================
+    # URLs - compact definitions
+    URL_CONFIG: ClassVar[dict[str, str]] = {
+        "EXAMPLE_BASE_URL": "https://api.example.com",
+        "LOCALHOST_BASE_URL": "https://localhost:8000",
+    }
 
-    # =============================================================================
-    # CLIENT STATUS CONSTANTS - Consolidated from single-class modules
-    # =============================================================================
+    # Response templates - compact definition
+    SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, object]] = {
+        "status": "success",
+        "data": None,
+        "message": None,
+    }
 
-    class ClientStatus:
-        """Client status constants for API operations."""
+    # Status constants - compact enum-style
+    class Status:
+        """Unified status constants."""
 
-        IDLE = "idle"
-        CONNECTING = "connecting"
-        CONNECTED = "connected"
-        DISCONNECTING = "disconnecting"
-        DISCONNECTED = "disconnected"
-        ERROR = "error"
+        IDLE: ClassVar[str] = "idle"
+        PENDING: ClassVar[str] = "pending"
+        RUNNING: ClassVar[str] = "running"
+        COMPLETED: ClassVar[str] = "completed"
+        FAILED: ClassVar[str] = "failed"
+        ERROR: ClassVar[str] = "error"
 
-    # =============================================================================
-    # REQUEST STATUS CONSTANTS - Consolidated from single-class modules
-    # =============================================================================
-
-    class RequestStatus:
-        """Request status constants for API operations."""
-
-        PENDING = "pending"
-        IN_PROGRESS = "in_progress"
-        COMPLETED = "completed"
-        FAILED = "failed"
-        CANCELLED = "cancelled"
-        TIMEOUT = "timeout"
-
-    # =============================================================================
-    # SERVICE STATUS CONSTANTS - Consolidated from single-class modules
-    # =============================================================================
-
-    class ServiceStatus:
-        """Service status constants for API operations."""
-
-        STARTING = "starting"
-        RUNNING = "running"
-        STOPPING = "stopping"
-        STOPPED = "stopped"
-        ERROR = "error"
-        MAINTENANCE = "maintenance"
-
-    # =============================================================================
-    # CONTENT TYPE CONSTANTS - Moved to flext-core.FlextConstants.Http.ContentType
-    # Use FlextConstants.Http.ContentType.JSON, etc.
-    # =============================================================================
-
-    # =============================================================================
-    # STORAGE BACKEND CONSTANTS - Consolidated from single-class modules
-    # =============================================================================
-
-    class StorageBackend:
-        """Storage backend constants for API operations."""
-
-        MEMORY = "memory"
-        REDIS = "redis"
-        DATABASE = "database"
-        FILE = "file"
-        CACHE = "cache"
-
-    # =============================================================================
-    # AUTHENTICATION TYPE CONSTANTS - Consolidated from single-class modules
-    # =============================================================================
-
-    class AuthenticationType:
-        """Authentication type constants for API operations."""
-
-        NONE = "none"
-        BASIC = "basic"
-        BEARER = "bearer"
-        API_KEY = "api_key"
-        OAUTH2 = "oauth2"
-        JWT = "jwt"
-
-    # =============================================================================
-    # CACHE STRATEGY CONSTANTS - Consolidated from single-class modules
-    # =============================================================================
-
-    class CacheStrategy:
-        """Cache strategy constants for API operations."""
-
-        NONE = "none"
-        MEMORY = "memory"
-        REDIS = "redis"
-        LRU = "lru"
-        TTL = "ttl"
-        WRITE_THROUGH = "write_through"
-        WRITE_BACK = "write_back"
-
-    # =============================================================================
-    # TIME CONSTANTS - HTTP-specific time calculations
-    # =============================================================================
-
-    class TimeConstants:
-        """Time-related constants for HTTP operations."""
-
-        SECONDS_PER_MINUTE: Final[int] = 60
-        SECONDS_PER_HOUR: Final[int] = 3600
-
-    # =============================================================================
-    # LOGGING CONSTANTS - Consolidated from single-class modules
-    # =============================================================================
-
-    class LoggingConstants:
-        """Logging constants for API operations."""
-
-        REQUEST_LOG_FORMAT = "Request: {method} {url} - Status: {status_code} - Duration: {duration_ms}ms"
-        RESPONSE_LOG_FORMAT = "Response: {status_code} - Size: {size_bytes} bytes"
-        ERROR_LOG_FORMAT = (
-            "Error: {error_type} - Message: {message} - Traceback: {traceback}"
-        )
-        DEBUG_LOG_FORMAT = "Debug: {component} - {message} - Data: {data}"
-
-    # =============================================================================
-    # ERROR CODES - API-specific error codes
-    # =============================================================================
-
-    class Errors:
+    # Error codes - extend core with API-specific
+    class Errors(CoreErrors):
         """API-specific error codes."""
 
-        MIDDLEWARE_ERROR = "MIDDLEWARE_ERROR"
-        PROTOCOL_ERROR = "PROTOCOL_ERROR"
-        HTTP_ERROR = "HTTP_ERROR"
-        CONNECTION_ERROR = "CONNECTION_ERROR"
-        TIMEOUT_ERROR = "TIMEOUT_ERROR"
-        VALIDATION_ERROR = "VALIDATION_ERROR"
-        CONFIG_ERROR = "CONFIG_ERROR"
+        MIDDLEWARE_ERROR: ClassVar[str] = "MIDDLEWARE_ERROR"
+        PROTOCOL_ERROR: ClassVar[str] = "PROTOCOL_ERROR"
+        HTTP_ERROR: ClassVar[str] = "HTTP_ERROR"
+        CONNECTION_ERROR: ClassVar[str] = "CONNECTION_ERROR"
+        TIMEOUT_ERROR: ClassVar[str] = "TIMEOUT_ERROR"
+        VALIDATION_ERROR: ClassVar[str] = "VALIDATION_ERROR"
+        CONFIG_ERROR: ClassVar[str] = "CONFIG_ERROR"
 
 
 __all__ = ["FlextApiConstants"]

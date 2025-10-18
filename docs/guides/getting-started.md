@@ -154,7 +154,7 @@ FLEXT-API supports multiple protocols through a plugin architecture:
 
 ```python
 # HTTP/REST APIs
-from flext_api.protocol_impls.http import HttpProtocol
+from flext_api.protocol_impls.http import FlextWebProtocol
 
 # GraphQL APIs
 from flext_api.protocol_impls.graphql import GraphQLProtocol

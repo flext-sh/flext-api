@@ -67,9 +67,11 @@ class OpenAPISchemaValidator(SchemaPlugin):
         self._validate_responses = validate_responses
 
         # Cached schemas
-        self._cached_schemas: dict[str, FlextTypes.Dict] = {}
+        self._cached_schemas: dict[str, dict[str, object]] = {}
 
-    def validate_schema(self, schema: FlextTypes.Dict) -> FlextResult[FlextTypes.Dict]:
+    def validate_schema(
+        self, schema: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         """Validate OpenAPI schema against OpenAPI specification.
 
         Args:
@@ -82,10 +84,12 @@ class OpenAPISchemaValidator(SchemaPlugin):
         # Validate OpenAPI version
         openapi_version = schema.get("openapi")
         if not openapi_version:
-            return FlextResult[FlextTypes.Dict].fail("Missing 'openapi' version field")
+            return FlextResult[dict[str, object]].fail(
+                "Missing 'openapi' version field"
+            )
 
         if not openapi_version.startswith("3."):
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"Unsupported OpenAPI version: {openapi_version}"
             )
 
@@ -93,7 +97,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
         required_fields = ["info", "paths"]
         missing_fields = [field for field in required_fields if field not in schema]
         if missing_fields:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"Missing required fields: {', '.join(missing_fields)}"
             )
 
@@ -102,14 +106,14 @@ class OpenAPISchemaValidator(SchemaPlugin):
         info_required = ["title", "version"]
         info_missing = [field for field in info_required if field not in info]
         if info_missing:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"Missing required info fields: {', '.join(info_missing)}"
             )
 
         # Validate paths
         paths_result = self._validate_paths(schema.get("paths", {}))
         if paths_result.is_failure:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"Path validation failed: {paths_result.error}"
             )
 
@@ -117,7 +121,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
         if "components" in schema:
             components_result = self._validate_components(schema["components"])
             if components_result.is_failure:
-                return FlextResult[FlextTypes.Dict].fail(
+                return FlextResult[dict[str, object]].fail(
                     f"Component validation failed: {components_result.error}"
                 )
 
@@ -127,7 +131,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
                 schema["components"]["securitySchemes"]
             )
             if security_result.is_failure:
-                return FlextResult[FlextTypes.Dict].fail(
+                return FlextResult[dict[str, object]].fail(
                     f"Security scheme validation failed: {security_result.error}"
                 )
 
@@ -140,14 +144,14 @@ class OpenAPISchemaValidator(SchemaPlugin):
             },
         )
 
-        return FlextResult[FlextTypes.Dict].ok({
+        return FlextResult[dict[str, object]].ok({
             "valid": True,
             "version": openapi_version,
             "title": info.get("title"),
             "paths": list(schema.get("paths", {}).keys()),
         })
 
-    def _validate_paths(self, paths: FlextTypes.Dict) -> FlextResult[None]:
+    def _validate_paths(self, paths: dict[str, object]) -> FlextResult[None]:
         """Validate OpenAPI paths object.
 
         Args:
@@ -189,7 +193,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
         return FlextResult[None].ok(None)
 
     def _validate_operation(
-        self, operation: FlextTypes.Dict, path: str, method: str
+        self, operation: dict[str, object], path: str, method: str
     ) -> FlextResult[None]:
         """Validate OpenAPI operation object.
 
@@ -227,7 +231,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
         return FlextResult[None].ok(None)
 
-    def _validate_components(self, components: FlextTypes.Dict) -> FlextResult[None]:
+    def _validate_components(self, components: dict[str, object]) -> FlextResult[None]:
         """Validate OpenAPI components object.
 
         Args:
@@ -265,7 +269,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
         return FlextResult[None].ok(None)
 
     def _validate_security_schemes(
-        self, security_schemes: FlextTypes.Dict
+        self, security_schemes: dict[str, object]
     ) -> FlextResult[None]:
         """Validate OpenAPI security schemes.
 
@@ -336,7 +340,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
         """
         return schema_type.lower() in {"openapi", "openapi3", "openapi-3"}
 
-    def get_supported_schemas(self) -> FlextTypes.StringList:
+    def get_supported_schemas(self) -> list[str]:
         """Get list of supported schema types.
 
         Returns:
@@ -361,7 +365,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
         """
         # Implementation would validate request against OpenAPI paths/operations
-        return FlextResult[FlextTypes.Dict].ok({"valid": True})
+        return FlextResult[dict[str, object]].ok({"valid": True})
 
     def validate_response(
         self,
@@ -379,12 +383,12 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
         """
         # Implementation would validate response against OpenAPI response schemas
-        return FlextResult[FlextTypes.Dict].ok({"valid": True})
+        return FlextResult[dict[str, object]].ok({"valid": True})
 
     def load_schema(
         self,
-        schema_source: str | FlextTypes.Dict,
-    ) -> FlextResult[FlextTypes.Dict]:
+        schema_source: str | dict[str, object],
+    ) -> FlextResult[dict[str, object]]:
         """Load OpenAPI schema from source.
 
         Args:
@@ -395,10 +399,10 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
         """
         if isinstance(schema_source, dict):
-            return FlextResult[FlextTypes.Dict].ok(schema_source)
+            return FlextResult[dict[str, object]].ok(schema_source)
 
         # For string paths, would load from file
-        return FlextResult[FlextTypes.Dict].fail("File loading not implemented yet")
+        return FlextResult[dict[str, object]].fail("File loading not implemented yet")
 
 
 __all__ = ["OpenAPISchemaValidator"]

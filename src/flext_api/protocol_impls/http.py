@@ -7,8 +7,6 @@ Enhanced HTTP/1.1, HTTP/2, and HTTP/3 protocol support with:
 - Request/response middleware
 - Comprehensive error handling
 
-See TRANSFORMATION_PLAN.md - Phase 2 for architecture details.
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 
@@ -19,14 +17,15 @@ from __future__ import annotations
 import time
 
 import httpx
-from flext_core import FlextConstants, FlextResult, FlextTypes
+from flext_core import FlextResult
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
 from flext_api.transports import FlextApiTransports
+from flext_api.typings import FlextApiTypes
 
 
-class HttpProtocolPlugin(ProtocolPlugin):
+class FlextWebProtocolPlugin(ProtocolPlugin):
     """HTTP protocol implementation with HTTP/1.1, HTTP/2, and HTTP/3 support.
 
     Features:
@@ -43,7 +42,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
     - Cookie management
 
     Usage:
-        plugin = HttpProtocolPlugin(http2=True, max_connections=100)
+        plugin = FlextWebProtocolPlugin(http2=True, max_connections=100)
         result = plugin.send_request(request)
         if result.is_success:
             response = result.unwrap()
@@ -55,35 +54,12 @@ class HttpProtocolPlugin(ProtocolPlugin):
         http2: bool = True,
         http3: bool = False,
         max_connections: int = 100,
-        max_keepalive_connections: int = 20,
-        keepalive_expiry: float = 5.0,
-        connect_timeout: float = 5.0,
-        read_timeout: float = 30.0,
-        write_timeout: float = 30.0,
-        pool_timeout: float = 5.0,
         max_retries: int = 3,
         retry_backoff_factor: float = 0.5,
         follow_redirects: bool = True,
         max_redirects: int = 20,
     ) -> None:
-        """Initialize HTTP protocol plugin.
-
-        Args:
-            http2: Enable HTTP/2 support
-            http3: Enable HTTP/3 support (experimental)
-            max_connections: Maximum total connections
-            max_keepalive_connections: Maximum keep-alive connections
-            keepalive_expiry: Keep-alive connection expiry time (seconds)
-            connect_timeout: Connection timeout (seconds)
-            read_timeout: Read timeout (seconds)
-            write_timeout: Write timeout (seconds)
-            pool_timeout: Pool timeout (seconds)
-            max_retries: Maximum retry attempts
-            retry_backoff_factor: Backoff factor for retries
-            follow_redirects: Automatically follow redirects
-            max_redirects: Maximum number of redirects to follow
-
-        """
+        """Initialize HTTP protocol plugin."""
         super().__init__(
             name="http",
             version="1.0.0",
@@ -98,20 +74,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
         self._max_redirects = max_redirects
 
         # Create HTTP transport with configuration
-        self._transport = FlextApiTransports.HttpTransport(
-            http2=http2,
-            pool_limits=httpx.Limits(
-                max_connections=max_connections,
-                max_keepalive_connections=max_keepalive_connections,
-                keepalive_expiry=keepalive_expiry,
-            ),
-            timeout=httpx.Timeout(
-                connect=connect_timeout,
-                read=read_timeout,
-                write=write_timeout,
-                pool=pool_timeout,
-            ),
-        )
+        self._transport = FlextApiTransports.FlextWebTransport()
 
         self.logger.info(
             "HTTP protocol initialized",
@@ -125,37 +88,28 @@ class HttpProtocolPlugin(ProtocolPlugin):
 
     def send_request(
         self,
-        request: FlextApiModels.HttpRequest,
-        **kwargs: float | str | bool,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
-        """Send HTTP request with retry logic and error handling.
+        request: FlextApiTypes.RequestData,
+        **kwargs: FlextApiTypes.JsonValue,
+    ) -> FlextResult[FlextApiTypes.ResponseData]:
+        """Send HTTP request with retry logic and error handling."""
+        # Convert to HTTP request model for type safety
+        if not isinstance(request, dict):
+            return FlextResult[FlextApiTypes.ResponseData].fail("Invalid request format")
 
-        Args:
-            request: HTTP request model
-            **kwargs: Additional request options
+        http_request = FlextApiModels.HttpRequest(
+            method=request.get("method", "GET"),
+            url=request.get("url", ""),
+            headers=request.get("headers", {}),
+            body=request.get("body"),
+            timeout=request.get("timeout", 30.0),
+        )
 
-        Returns:
-            FlextResult containing HTTP response or error
-
-        Features:
-            - Automatic retry on transient errors
-            - Exponential backoff between retries
-            - Connection pooling and reuse
-            - Streaming support
-            - Comprehensive error handling
-
-        """
         # Extract request parameters
-        method = request.method.upper()
-        url = str(request.url)
-        headers = dict[str, object](request.headers) if request.headers else {}
-        params = dict[str, object](request.params) if hasattr(request, "params") else {}
-        timeout = request.timeout if hasattr(request, "timeout") else None
-
-        # Prepare request body
-        body = None
-        if hasattr(request, "body") and request.body:
-            body = request.body
+        method = http_request.method.upper()
+        url = str(http_request.url)
+        headers = dict[str, object](http_request.headers) if http_request.headers else {}
+        timeout = http_request.timeout
+        body = http_request.body
 
         # Connect to endpoint (sync)
         conn_result = self._transport.connect(
@@ -165,55 +119,55 @@ class HttpProtocolPlugin(ProtocolPlugin):
         )
 
         if conn_result.is_failure:
-            return FlextResult[FlextApiModels.HttpResponse].fail(
+            return FlextResult[FlextApiTypes.ResponseData].fail(
                 f"Failed to establish connection: {conn_result.error}"
             )
 
         connection = conn_result.unwrap()
 
         # Execute request with retry logic
+        if isinstance(connection, httpx.Client):
+            result = self._execute_with_retry(
+                connection, method, url, headers, {}, timeout, body
+            )
+        else:
+            return FlextResult[FlextApiTypes.ResponseData].fail("Invalid connection type")
+
+        if result.is_success:
+            response = result.unwrap()
+            return FlextResult[FlextApiTypes.ResponseData].ok({
+                "status_code": response.status_code,
+                "headers": response.headers,
+                "body": response.body,
+            })
+
+        return FlextResult[FlextApiTypes.ResponseData].fail(result.error)
+
+    def _execute_with_retry(
+        self,
+        connection: httpx.Client,
+        method: str,
+        url: str,
+        headers: dict[str, object],
+        params: dict[str, object],
+        timeout: float | None,
+        body: object | None,
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """Execute HTTP request with retry logic."""
         last_error = None
+
         for attempt in range(self._max_retries + 1):
             try:
-                # Determine how to pass body based on Content-Type and body type
-                # For form data (dict with application/x-www-form-urlencoded), use data parameter
-                # For other content (str, bytes), use content parameter
-                request_kwargs: FlextTypes.Dict = {
-                    "method": method,
-                    "url": url,
-                    "headers": headers,
-                    "params": params,
-                    "timeout": timeout,
-                }
-
-                if body is not None:
-                    content_type = headers.get("Content-Type", "").lower()
-                    if (
-                        isinstance(body, dict)
-                        and "application/x-www-form-urlencoded" in content_type
-                    ):
-                        # Use data parameter for form encoding
-                        request_kwargs["data"] = body
-                    elif isinstance(body, dict):
-                        # Use json parameter for JSON encoding
-                        request_kwargs["json"] = body
-                    else:
-                        # Use content for str/bytes
-                        request_kwargs["content"] = body
-
-                # Make HTTP request (sync - no await)
+                request_kwargs = self._build_request_kwargs(
+                    method, url, headers, params, timeout, body
+                )
                 response = connection.request(**request_kwargs)
 
-                # Check if response is successful
-                if response.status_code < FlextConstants.Http.HTTP_CLIENT_ERROR_MIN:
-                    # Success - convert to FlextApiModels.HttpResponse
+                http_client_error_min = 400
+                if response.status_code < http_client_error_min:  # Success codes
                     return self._build_response(response, method)
 
-                # Client/server error
-                if (
-                    response.status_code >= FlextConstants.Http.HTTP_CLIENT_ERROR_MIN
-                    and not self._should_retry(response.status_code, attempt)
-                ):
+                if response.status_code >= http_client_error_min and not self._should_retry(response.status_code, attempt):
                     return FlextResult[FlextApiModels.HttpResponse].fail(
                         f"HTTP {response.status_code}: {response.text}"
                     )
@@ -224,66 +178,71 @@ class HttpProtocolPlugin(ProtocolPlugin):
                     f"Request timeout (attempt {attempt + 1}/{self._max_retries + 1})",
                     extra={"url": url, "method": method, "attempt": attempt + 1},
                 )
-
             except httpx.NetworkError as e:
                 last_error = f"Network error: {e}"
                 self.logger.warning(
                     f"Network error (attempt {attempt + 1}/{self._max_retries + 1})",
                     extra={"url": url, "method": method, "attempt": attempt + 1},
                 )
-
-            except httpx.HTTPError as e:
-                last_error = f"HTTP error: {e}"
-                self.logger.exception(
-                    "HTTP error",
-                    extra={"url": url, "method": method, "error": str(e)},
+            except httpx.HTTPError:
+                return FlextResult[FlextApiModels.HttpResponse].fail(
+                    f"HTTP error after {attempt + 1} attempts"
                 )
-                break  # Don't retry on HTTP errors
-
             except Exception as e:
                 last_error = f"Unexpected error: {e}"
-                self.logger.exception(
-                    "Unexpected error",
-                    extra={"url": url, "method": method},
-                )
-                break  # Don't retry on unexpected errors
+                self.logger.exception("Unexpected error", extra={"url": url, "method": method})
+                break
 
-            # Sleep before retry (sync)
             if attempt < self._max_retries:
                 backoff_time = self._retry_backoff_factor * (2**attempt)
                 time.sleep(backoff_time)
 
-        # All retries exhausted
         return FlextResult[FlextApiModels.HttpResponse].fail(
             f"Request failed after {self._max_retries + 1} attempts: {last_error}"
         )
 
+    def _build_request_kwargs(
+        self,
+        method: str,
+        url: str,
+        headers: dict[str, object],
+        params: dict[str, object],
+        timeout: float | None,
+        body: object | None,
+    ) -> dict[str, object]:
+        """Build request kwargs based on body type and content-type."""
+        request_kwargs: dict[str, object] = {
+            "method": method,
+            "url": url,
+            "headers": headers,
+            "params": params,
+            "timeout": timeout,
+        }
+
+        if body is not None:
+            content_type = str(headers.get("Content-Type", "")).lower()
+            if isinstance(body, dict) and "application/x-www-form-urlencoded" in content_type:
+                request_kwargs["data"] = body
+            elif isinstance(body, dict):
+                request_kwargs["json"] = body
+            else:
+                request_kwargs["content"] = body
+
+        return request_kwargs
+
     def _build_response(
         self,
         httpx_response: httpx.Response,
-        method: str,
+        _method: str,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
-        """Build FlextApiModels.HttpResponse from httpx.Response.
-
-        Args:
-            httpx_response: httpx Response object
-            method: HTTP method used for the request
-
-        Returns:
-            FlextResult containing FlextApiModels.HttpResponse
-
-        """
+        """Build FlextApiModels.HttpResponse from httpx.Response."""
         try:
-            # Read response content (sync - no await)
             content = httpx_response.read()
 
-            # Create response model
             response = FlextApiModels.HttpResponse(
                 status_code=httpx_response.status_code,
                 headers=dict(httpx_response.headers),
                 body=content,
-                url=str(httpx_response.url),
-                method=method,
             )
 
             return FlextResult[FlextApiModels.HttpResponse].ok(response)
@@ -294,55 +253,22 @@ class HttpProtocolPlugin(ProtocolPlugin):
             )
 
     def _should_retry(self, status_code: int, attempt: int) -> bool:
-        """Check if request should be retried based on status code.
-
-        Args:
-            status_code: HTTP status code
-            attempt: Current attempt number
-
-        Returns:
-            True if should retry
-
-        """
-        # Don't retry if max attempts reached
+        """Check if request should be retried based on status code."""
         if attempt >= self._max_retries:
             return False
 
-        # Retry on transient server errors
-        retryable_codes = {
-            408,  # Request Timeout
-            429,  # Too Many Requests
-            500,  # Internal Server Error
-            502,  # Bad Gateway
-            503,  # Service Unavailable
-            504,  # Gateway Timeout
-        }
-
+        retryable_codes = {408, 429, 500, 502, 503, 504}
         return status_code in retryable_codes
 
     def supports_protocol(self, protocol: str) -> bool:
-        """Check if this plugin supports the given protocol.
-
-        Args:
-            protocol: Protocol identifier
-
-        Returns:
-            True if protocol is supported
-
-        """
+        """Check if this plugin supports the given protocol."""
         supported = ["http", "https", "http/1.1", "http/2"]
         if self._http3:
             supported.append("http/3")
-
         return protocol.lower() in supported
 
-    def get_supported_protocols(self) -> FlextTypes.StringList:
-        """Get list of supported protocols.
-
-        Returns:
-            List of supported protocol identifiers
-
-        """
+    def get_supported_protocols(self) -> list[str]:
+        """Get list of supported protocols."""
         protocols = ["http", "https", "http/1.1", "http/2"]
         if self._http3:
             protocols.append("http/3")
@@ -353,20 +279,7 @@ class HttpProtocolPlugin(ProtocolPlugin):
         request: FlextApiModels.HttpRequest,
         chunk_size: int = 8192,
     ) -> FlextResult[object]:
-        """Send streaming HTTP request.
-
-        Args:
-            request: HTTP request model
-            chunk_size: Size of chunks for streaming (bytes)
-
-        Returns:
-            FlextResult containing iterator of response chunks
-
-        Note:
-            This is a stub for Phase 2. Full streaming implementation
-            will be added in future iterations.
-
-        """
+        """Send streaming HTTP request."""
         self.logger.info(
             "Streaming request",
             extra={
@@ -380,13 +293,8 @@ class HttpProtocolPlugin(ProtocolPlugin):
             "Streaming not yet implemented (Phase 2 enhancement)"
         )
 
-    def get_protocol_info(self) -> FlextTypes.Dict:
-        """Get protocol configuration information.
-
-        Returns:
-            Dictionary containing protocol configuration
-
-        """
+    def get_protocol_info(self) -> dict[str, object]:
+        """Get protocol configuration information."""
         return {
             "name": self.name,
             "version": self.version,
@@ -400,4 +308,4 @@ class HttpProtocolPlugin(ProtocolPlugin):
         }
 
 
-__all__ = ["HttpProtocolPlugin"]
+__all__ = ["FlextWebProtocolPlugin"]

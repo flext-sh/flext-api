@@ -175,7 +175,7 @@ class FlextApiClient(FlextService[None]):
     def _convert_to_protocol_request(self, method: str, url: str, kwargs) -> object:
         """Convert unified request to protocol-specific format."""
         if self._protocol_name == "http":
-            return HttpRequest(method=method, url=url, **kwargs)
+            return FlextApiModels.HttpRequest(method=method, url=url, **kwargs)
         elif self._protocol_name == "graphql":
             return GraphQLRequest(query=kwargs.get("query"), variables=kwargs.get("variables"))
         # ... other protocol conversions
@@ -191,13 +191,13 @@ class FlextApiClient(FlextService[None]):
 ### HTTP Protocol
 
 ```python
-class HttpProtocol(BaseProtocol):
+class FlextWebProtocol(BaseProtocol):
     """HTTP/REST protocol implementation."""
 
     def create_client(self, config: Dict[str, object]) -> httpx.AsyncClient:
         return httpx.AsyncClient(**config)
 
-    async def execute_request(self, request: HttpRequest) -> FlextResult[HttpResponse]:
+    async def execute_request(self, request: FlextApiModels.HttpRequest) -> FlextResult[FlextApiModels.HttpResponse]:
         client = self.create_client(request.config)
 
         try:
@@ -209,7 +209,7 @@ class HttpProtocol(BaseProtocol):
                 timeout=request.timeout
             )
 
-            return FlextResult.ok(HttpResponse(
+            return FlextResult.ok(FlextApiModels.HttpResponse(
                 status_code=response.status_code,
                 headers=dict(response.headers),
                 body=response.text,
@@ -309,7 +309,7 @@ await client.send({"type": "subscribe", "channel": "updates"})
 ```python
 @pytest.fixture
 def http_protocol():
-    return HttpProtocol()
+    return FlextWebProtocol()
 
 @pytest.mark.asyncio
 async def test_http_request_success(http_protocol):
@@ -323,7 +323,7 @@ async def test_http_request_success(http_protocol):
 
         mock_client.return_value.request.return_value = mock_response
 
-        request = HttpRequest(method="GET", url="https://api.example.com/test")
+        request = FlextApiModels.HttpRequest(method="GET", url="https://api.example.com/test")
         result = await http_protocol.execute_request(request)
 
         assert result.is_success

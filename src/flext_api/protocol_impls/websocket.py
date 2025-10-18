@@ -21,7 +21,7 @@ import time
 from collections.abc import Callable
 
 import websockets
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
@@ -103,7 +103,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
         self._connection: object | None = None
         self._connected = False
         self._url: str = ""
-        self._headers: FlextTypes.StringDict = {}
+        self._headers: dict[str, str] = {}
 
         # Event handlers
         self._on_message_handlers: list[Callable] = []
@@ -183,7 +183,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
         """
         return protocol.lower() in {"websocket", "ws", "wss"}
 
-    def get_supported_protocols(self) -> FlextTypes.StringList:
+    def get_supported_protocols(self) -> list[str]:
         """Get list of supported protocols.
 
         Returns:
@@ -195,7 +195,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
     def connect(
         self,
         url: str,
-        headers: FlextTypes.StringDict | None = None,
+        headers: dict[str, str] | None = None,
     ) -> FlextResult[None]:
         """Connect to WebSocket server.
 
@@ -304,7 +304,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
     def _connect(
         self,
         url: str,
-        headers: FlextTypes.StringDict,
+        headers: dict[str, str],
     ) -> FlextResult[None]:
         """Internal connection implementation.
 

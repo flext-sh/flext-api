@@ -23,7 +23,7 @@ from typing import Protocol
 import cbor2
 import msgpack
 import orjson
-from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
+from flext_core import FlextLogger, FlextResult, FlextService
 
 from flext_api.typings import FlextApiTypes
 
@@ -250,7 +250,7 @@ class FlextApiSerializers(FlextService[None]):
                         def __init__(self) -> None:
                             """Initialize serializer registry."""
                             self.logger = FlextLogger(__name__)
-                            self._serializers: FlextTypes.Dict = {}
+                            self._serializers: dict[str, object] = {}
                             self._default_format = (
                                 FlextApiTypes.Serialization.SerializationFormat.JSON
                             )

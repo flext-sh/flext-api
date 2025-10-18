@@ -14,138 +14,131 @@ import pytest
 from flext_core import FlextConstants
 from flext_tests import FlextTestsDomains
 
-from flext_api import FlextApiConfig
+from flext_api import FlextWebConfig
 
 
-class TestFlextApiConfigReal:
-    """Test FlextApiConfig using REAL functionality."""
+class TestHttpConfigReal:
+    """Test FlextWebConfig using REAL functionality."""
 
     def test_api_config_creation(self) -> None:
-        """Test FlextApiConfig creation with real functionality."""
-        config = FlextApiConfig()
+        """Test FlextWebConfig creation with real functionality."""
+        config = FlextWebConfig()
 
         # Test that config object is created with defaults
         assert config is not None
-        assert isinstance(config, FlextApiConfig)
-        assert (
-            config.api_base_url
-            == f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
-        )
-        assert config.api_timeout == FlextConstants.Network.DEFAULT_TIMEOUT
+        assert isinstance(config, FlextWebConfig)
+        assert config.base_url == ""
+        assert config.timeout == 30.0
 
     def test_client_config_creation(self) -> None:
-        """Test FlextApiConfig creation with custom client values."""
-        config = FlextApiConfig(
-            api_base_url="https://api.example.com",
-            api_timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
-            max_retries=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+        """Test FlextWebConfig creation with custom client values."""
+        config = FlextWebConfig(
+            base_url="https://api.example.com",
+            timeout=30.0,
+            max_retries=3,
         )
 
-        assert config.api_base_url == "https://api.example.com"
-        assert config.api_timeout == FlextConstants.Network.DEFAULT_TIMEOUT
-        assert config.max_retries == FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+        assert config.base_url == "https://api.example.com"
+        assert config.timeout == 30.0
+        assert config.max_retries == 3
 
     def test_server_config_creation(self) -> None:
-        """Test FlextApiConfig creation with custom server values."""
-        config = FlextApiConfig(
-            api_base_url=f"http://{FlextConstants.Platform.LOOPBACK_IP}:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
+        """Test FlextWebConfig creation with custom server values."""
+        config = FlextWebConfig(
+            base_url=f"http://127.0.0.1:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
         )
 
         assert (
-            config.api_base_url
-            == f"http://{FlextConstants.Platform.LOOPBACK_IP}:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
+            config.base_url
+            == f"http://127.0.0.1:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
         )
 
     def test_security_config_creation(self) -> None:
-        """Test security configuration with FlextApiConfig."""
+        """Test security configuration with FlextWebConfig."""
         # Test config with debug mode (closest to security settings available)
-        config = FlextApiConfig(
-            api_base_url="https://api.example.com",
+        config = FlextWebConfig(
+            base_url="https://api.example.com",
         )
 
-        assert config.api_base_url.startswith("https://")
+        assert config.base_url.startswith("https://")
 
     def test_env_config_creation(self) -> None:
-        """Test FlextApiConfig creation with environment-style values."""
-        config = FlextApiConfig(
-            api_base_url="https://api.example.com",
+        """Test FlextWebConfig creation with environment-style values."""
+        config = FlextWebConfig(
+            base_url="https://api.example.com",
         )
 
-        assert config.api_base_url == "https://api.example.com"
+        assert config.base_url == "https://api.example.com"
 
     def test_main_config_creation(self) -> None:
-        """Test main FlextApiConfig creation with multiple parameters."""
-        config = FlextApiConfig(
-            api_base_url="https://api.example.com",
+        """Test main FlextWebConfig creation with multiple parameters."""
+        config = FlextWebConfig(
+            base_url="https://api.example.com",
         )
 
-        assert config.api_base_url == "https://api.example.com"
+        assert config.base_url == "https://api.example.com"
         # Test that config was created successfully
 
     def test_config_validation(self) -> None:
         """Test configuration validation."""
         # Valid config
-        config = FlextApiConfig(api_base_url="http://localhost:8080")
-        assert config.api_base_url == "http://localhost:8080"
+        config = FlextWebConfig(base_url="http://localhost:8080")
+        assert config.base_url == "http://localhost:8080"
 
-        # Invalid port should raise error
-        # Test invalid URL should raise error
+        # Invalid timeout should raise error
         with pytest.raises(ValueError):
-            FlextApiConfig(api_base_url="invalid-url")
+            FlextWebConfig(timeout=-1.0)
 
     def test_config_serialization(self) -> None:
         """Test config serialization capabilities."""
-        config = FlextApiConfig(
-            api_base_url="https://test.example.com",
-            api_timeout=45,
+        config = FlextWebConfig(
+            base_url="https://test.example.com",
+            timeout=45.0,
         )
 
         # Should be serializable as dict
         config_dict = config.to_dict()
         assert isinstance(config_dict, dict)
-        assert config_dict["api_base_url"] == "https://test.example.com"
-        assert config_dict["api_timeout"] == 45.0
+        assert config_dict["base_url"] == "https://test.example.com"
+        assert config_dict["timeout"] == 45.0
 
     def test_config_negative_timeout(self) -> None:
         """Test config validation with invalid values."""
         # Test that validation works
         with pytest.raises(ValueError):
-            FlextApiConfig(
-                api_base_url="https://api.example.com",
-                api_timeout=-1,  # Invalid negative timeout
+            FlextWebConfig(
+                base_url="https://api.example.com",
+                timeout=-1.0,  # Invalid negative timeout
             )
 
     def test_config_defaults(self) -> None:
         """Test config default values."""
         # Create config with minimal fields
-        config = FlextApiConfig()
+        config = FlextWebConfig()
 
         # Should have sensible defaults
-        assert (
-            config.api_base_url
-            == f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
-        )
-        assert isinstance(config.api_timeout, (int, float))
-        assert config.api_timeout > 0
-        assert config.max_retries == FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+        assert config.base_url == ""
+        assert isinstance(config.timeout, (int, float))
+        assert config.timeout > 0
+        assert config.max_retries == 3
 
     def test_config_with_factory_data(self) -> None:
-        """Test FlextApiConfig creation with factory data."""
+        """Test FlextWebConfig creation with factory data."""
         # Use configuration data from FlextTestsDomains
         config_data = FlextTestsDomains.create_configuration()
 
         # Create config with some values from factory data
         config_data.get("port", FlextConstants.Platform.FLEXT_API_PORT)
-        config = FlextApiConfig(
-            api_base_url="https://api.example.com",
+        config = FlextWebConfig(
+            base_url="https://api.example.com",
         )
 
         assert config is not None
-        assert isinstance(config, FlextApiConfig)
+        assert isinstance(config, FlextWebConfig)
 
         # Verify serialization includes expected structure
         config_dict = config.to_dict()
-        required_keys = ["api_host", "api_port", "api_base_url", "api_timeout"]
+        required_keys = ["base_url", "timeout", "max_retries"]
 
         for key in required_keys:
             assert key in config_dict, f"Missing key {key} in config"

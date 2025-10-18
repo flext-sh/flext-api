@@ -16,7 +16,7 @@ from faker import Faker
 from flext_core import FlextResult, FlextTypes
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
-from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
+from flext_api import FlextApiStorage, FlextWebConfig, HttpClient
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
 
@@ -60,17 +60,17 @@ class FlextApiFactories:
         return cast("FlextApiTypes.ResponseDict", client_config)
 
     @staticmethod
-    def create_client(**overrides: object) -> FlextApiClient:
-        """Create FlextApiClient using FlextTestsDomains config.
+    def create_client(**overrides: object) -> HttpClient:
+        """Create HttpClient using FlextTestsDomains config.
 
         Returns:
-            FlextApiClient: Configured client instance.
+            HttpClient: Configured client instance.
 
         """
         config = FlextApiFactories.create_client_config(**overrides)
         timeout_val = config["timeout"]
         headers_val = config.get("headers", {})
-        return FlextApiClient(
+        return HttpClient(
             base_url=str(config["base_url"]),
             timeout=int(timeout_val) if isinstance(timeout_val, (int, float)) else 30,
             max_retries=cast("int", config["max_retries"]),
@@ -80,11 +80,11 @@ class FlextApiFactories:
         )
 
     @staticmethod
-    def create_api_config(**overrides: object) -> FlextApiConfig:
-        """Create FlextApiConfig using FlextTestsDomains - ABSOLUTE usage.
+    def create_api_config(**overrides: object) -> FlextWebConfig:
+        """Create FlextWebConfig using FlextTestsDomains - ABSOLUTE usage.
 
         Returns:
-            FlextApiConfig: Configured API config instance.
+            FlextWebConfig: Configured API config instance.
 
         """
         # Use FlextTestsDomains for realistic configuration
@@ -111,7 +111,7 @@ class FlextApiFactories:
             if key in defaults and isinstance(value, (str, int, float)):
                 defaults[key] = value
 
-        return FlextApiConfig(
+        return FlextWebConfig(
             base_url=cast("str", defaults["base_url"]),
             timeout=cast("int", defaults["timeout"]),
             max_retries=cast("int", defaults["max_retries"]),
@@ -164,7 +164,7 @@ class FlextApiFactories:
         # Use FlextTestsDomains for payload structure
         payload_data = FlextTestsDomains.create_payload()
 
-        base_request: FlextTypes.Dict = {
+        base_request: dict[str, object] = {
             "method": payload_data.get("method", "GET"),
             "url": payload_data.get("url", "https://httpbin.org/get"),
             "headers": payload_data.get(
@@ -327,7 +327,7 @@ class FlextApiFactories:
         return FlextTestsDomains.batch_users(count)
 
     @staticmethod
-    def get_valid_email_cases() -> FlextTypes.StringList:
+    def get_valid_email_cases() -> list[str]:
         """Get valid emails using FlextTestsDomains - ABSOLUTE.
 
         Returns:
@@ -337,7 +337,7 @@ class FlextApiFactories:
         return FlextTestsDomains.valid_email_cases()
 
     @staticmethod
-    def get_invalid_email_cases() -> FlextTypes.StringList:
+    def get_invalid_email_cases() -> list[str]:
         """Get invalid emails using FlextTestsDomains - ABSOLUTE.
 
         Returns:

@@ -32,7 +32,7 @@ class TestFlextApiModelsReal:
         assert parsed.hostname == "api.example.com"
 
     def test_http_response_creation_real(self) -> None:
-        """Test HttpResponse creation with real functionality."""
+        """Test FlextApiModels.HttpResponse creation with real functionality."""
         response = FlextApiModels.HttpResponse(
             status_code=200,
             body={"data": "test"},
@@ -52,7 +52,7 @@ class TestFlextApiModelsReal:
             assert response.headers["Content-Type"] == "application/json"
 
     def test_http_response_error_status(self) -> None:
-        """Test HttpResponse with error status codes."""
+        """Test FlextApiModels.HttpResponse with error status codes."""
         # 404 error
         response_404 = FlextApiModels.HttpResponse(
             status_code=404,
@@ -92,12 +92,12 @@ class TestFlextApiModelsReal:
         assert isinstance(builder, FlextApiModels.Builder)
 
     def test_http_query_real(self) -> None:
-        """Test HttpQuery with real functionality."""
-        query = FlextApiModels.HttpQuery()
+        """Test FlextWebQuery with real functionality."""
+        query = FlextApiModels.FlextWebQuery()
 
         # Test that query exists and can be instantiated
         assert query is not None
-        assert isinstance(query, FlextApiModels.HttpQuery)
+        assert isinstance(query, FlextApiModels.FlextWebQuery)
 
     def test_model_validation_with_factories(self) -> None:
         """Test model validation using factory data."""

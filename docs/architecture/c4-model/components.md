@@ -125,7 +125,7 @@ Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 
 **Key Classes**:
 
-- `HttpRequestBuilder` - Request construction
+- `FlextWebRequestBuilder` - Request construction
 - `RequestValidator` - Input validation
 - `HeaderManager` - HTTP header handling
 
@@ -140,7 +140,7 @@ Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 
 **Key Classes**:
 
-- `HttpResponseHandler` - Response processing
+- `FlextWebResponseHandler` - Response processing
 - `ResponseValidator` - Output validation
 - `ErrorTranslator` - Error message formatting
 
@@ -294,7 +294,7 @@ Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 
 **Key Classes**:
 
-- `HttpProtocolClient` - HTTP operations
+- `FlextWebProtocolClient` - HTTP operations
 - `ContentNegotiator` - Media type handling
 - `StatusCodeMapper` - HTTP status mapping
 

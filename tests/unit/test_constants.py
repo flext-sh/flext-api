@@ -38,8 +38,7 @@ class TestConstants:
 
     def test_backoff_factor_constant(self) -> None:
         """Test backoff factor constant."""
-        # Use a valid constant that exists
-        factor = FlextApiConstants.MIN_TIMEOUT
+        factor = FlextApiConstants.BACKOFF_FACTOR
         assert isinstance(factor, float)
         assert factor > 0
 

@@ -28,7 +28,6 @@ from flext_core import (
     FlextLogger,
     FlextResult,
     FlextService,
-    FlextTypes,
 )
 from pydantic import PrivateAttr
 
@@ -173,7 +172,7 @@ class FlextApiAdapters(FlextService[None]):
             )
 
     def adapt_graphql_query_to_http_request(
-        self, query: str, variables: FlextTypes.Dict | None = None
+        self, query: str, variables: dict[str, object] | None = None
     ) -> FlextResult[FlextApiModels.HttpRequest]:
         """Adapt GraphQL query to HTTP request.
 
@@ -214,7 +213,7 @@ class FlextApiAdapters(FlextService[None]):
 
     def adapt_http_response_to_graphql_result(
         self, response: FlextApiModels.HttpResponse
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[dict[str, object]]:
         """Adapt HTTP response to GraphQL result.
 
         Args:
@@ -226,8 +225,8 @@ class FlextApiAdapters(FlextService[None]):
         """
         try:
             # Extract GraphQL result from HTTP response
-            if response.status_code != FlextConstants.Http.HTTP_OK:
-                return FlextResult[FlextTypes.Dict].fail(
+            if response.status_code != FlextConstants.FlextWeb.HTTP_OK:
+                return FlextResult[dict[str, object]].fail(
                     f"GraphQL request failed with status {response.status_code}"
                 )
 
@@ -237,17 +236,17 @@ class FlextApiAdapters(FlextService[None]):
             if isinstance(result, dict) and "errors" in result:
                 errors = result["errors"]
                 error_messages = [e.get("message", "Unknown error") for e in errors]
-                return FlextResult[FlextTypes.Dict].fail(
+                return FlextResult[dict[str, object]].fail(
                     f"GraphQL errors: {', '.join(error_messages)}"
                 )
 
             self._logger.debug("HTTP response adapted to GraphQL result")
 
             data = result.get("data", {}) if isinstance(result, dict) else {}
-            return FlextResult[FlextTypes.Dict].ok(data)
+            return FlextResult[dict[str, object]].ok(data)
 
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"HTTP to GraphQL result adaptation failed: {e}"
             )
 
@@ -366,7 +365,7 @@ class FlextApiAdapters(FlextService[None]):
                     properties = schema_def.get("properties", {})
                     if not isinstance(properties, dict):
                         properties = {}
-                    fields: FlextTypes.StringList = []
+                    fields: list[str] = []
 
                     for prop_name, prop_def in properties.items():
                         if not isinstance(prop_def, dict):
@@ -421,9 +420,7 @@ class FlextApiAdapters(FlextService[None]):
                 f"OpenAPI to GraphQL schema conversion failed: {e}"
             )
 
-    def _adapt_headers_to_legacy(
-        self, headers: FlextTypes.StringDict
-    ) -> FlextTypes.StringDict:
+    def _adapt_headers_to_legacy(self, headers: dict[str, str]) -> dict[str, str]:
         """Adapt headers to legacy format.
 
         Args:
@@ -442,7 +439,7 @@ class FlextApiAdapters(FlextService[None]):
 
         return adapted
 
-    def _adapt_payload_to_legacy(self, payload: FlextTypes.Dict) -> bytes | None:
+    def _adapt_payload_to_legacy(self, payload: dict[str, object]) -> bytes | None:
         """Adapt payload to legacy format.
 
         Args:
@@ -465,7 +462,9 @@ class FlextApiAdapters(FlextService[None]):
 
         return json.dumps(adapted).encode("utf-8")
 
-    def _normalize_legacy_payload(self, payload: FlextTypes.Dict) -> FlextTypes.Dict:
+    def _normalize_legacy_payload(
+        self, payload: dict[str, object]
+    ) -> dict[str, object]:
         """Normalize legacy payload to modern format.
 
         Args:

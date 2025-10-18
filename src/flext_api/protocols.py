@@ -1,77 +1,90 @@
-"""Protocol definitions for flext-api domain.
+"""Generic protocol definitions for HTTP operations.
 
 All protocol interfaces are centralized here following FLEXT standards.
 Single unified class with nested protocol definitions - no multiple top-level classes.
+Domain-agnostic and reusable across any HTTP implementation.
 """
 
 from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextProtocols, FlextResult, FlextTypes
-
-from .models import FlextApiModels
-from .typings import FlextApiTypes
+from flext_core import FlextProtocols, FlextResult
 
 
-class FlextApiProtocols(FlextProtocols):
-    """Single unified API protocols class extending flext-core FlextProtocols.
+class HttpProtocols(FlextProtocols):
+    """Single unified HTTP protocols class extending flext-core FlextProtocols.
 
-    Contains all protocol definitions for API domain operations using nested classes.
+    Contains all protocol definitions for HTTP operations using nested classes.
     Follows FLEXT namespace class pattern - single class with nested protocol definitions.
+    Domain-agnostic and reusable across any HTTP client implementation.
     """
 
     # =========================================================================
-    # API-SPECIFIC PROTOCOLS - Nested classes within unified namespace
+    # GENERIC HTTP PROTOCOLS - Nested classes within unified namespace
     # =========================================================================
 
     @runtime_checkable
     class HttpClientProtocol(Protocol):
-        """Protocol for HTTP client implementations."""
+        """Protocol for generic HTTP client implementations."""
 
         def request(
             self,
             method: str,
             url: str,
-            **kwargs: object,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            data: object | None = None,
+            json: object | None = None,
+            params: dict[str, str] | None = None,
+            headers: dict[str, str] | None = None,
+            timeout: float | None = None,
+        ) -> FlextResult[dict[str, object]]:
             """Execute an HTTP request."""
 
         def get(
             self,
             url: str,
-            **kwargs: object,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            params: dict[str, str] | None = None,
+            headers: dict[str, str] | None = None,
+            timeout: float | None = None,
+        ) -> FlextResult[dict[str, object]]:
             """Execute HTTP GET request."""
 
         def post(
             self,
             url: str,
-            **kwargs: object,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            data: object | None = None,
+            json: object | None = None,
+            params: dict[str, str] | None = None,
+            headers: dict[str, str] | None = None,
+            timeout: float | None = None,
+        ) -> FlextResult[dict[str, object]]:
             """Execute HTTP POST request."""
 
         def put(
             self,
             url: str,
-            **kwargs: object,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            data: object | None = None,
+            json: object | None = None,
+            params: dict[str, str] | None = None,
+            headers: dict[str, str] | None = None,
+            timeout: float | None = None,
+        ) -> FlextResult[dict[str, object]]:
             """Execute HTTP PUT request."""
 
         def delete(
             self,
             url: str,
-            **kwargs: object,
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+            params: dict[str, str] | None = None,
+            headers: dict[str, str] | None = None,
+            timeout: float | None = None,
+        ) -> FlextResult[dict[str, object]]:
             """Execute HTTP DELETE request."""
 
     @runtime_checkable
     class StorageBackendProtocol(Protocol):
-        """Protocol for storage backend implementations."""
+        """Protocol for generic storage backend implementations."""
 
-        def get(
-            self, key: str, default: FlextApiTypes.JsonValue = None
-        ) -> FlextResult[FlextApiTypes.JsonValue]:
+        def get(self, key: str, default: object = None) -> FlextResult[object]:
             """Retrieve value by key."""
             ...
 
@@ -96,13 +109,13 @@ class FlextApiProtocols(FlextProtocols):
             """Clear all stored values."""
             ...
 
-        def keys(self) -> FlextResult[FlextTypes.StringList]:
+        def keys(self) -> FlextResult[list[str]]:
             """Get all keys."""
             ...
 
     @runtime_checkable
     class LoggerProtocol(Protocol):
-        """Protocol for logger implementations."""
+        """Protocol for generic logger implementations."""
 
         def info(self, message: str, **kwargs: object) -> None:
             """Log info message."""
@@ -118,5 +131,5 @@ class FlextApiProtocols(FlextProtocols):
 
 
 __all__ = [
-    "FlextApiProtocols",
+    "HttpProtocols",
 ]

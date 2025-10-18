@@ -36,7 +36,7 @@ class TransportPlugin(Protocol):
 class FlextApiTransports:
     """FLEXT API transport implementations."""
 
-    class HttpTransport(TransportPlugin):
+    class FlextWebTransport(TransportPlugin):
         """HTTP transport implementation using httpx."""
 
         def __init__(self) -> None:
