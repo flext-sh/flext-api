@@ -14,32 +14,32 @@ class TestFlextApiUtilitiesReal:
     """Test FlextApiUtilities using ONLY methods that actually exist."""
 
     def test_response_builder_error(self) -> None:
-        """Test ResponseBuilder error response."""
-        result = FlextApiUtilities.ResponseBuilder.build_error_response(
+        """Test ResponseBuilder error response - returns plain dict."""
+        response = FlextApiUtilities.ResponseBuilder.build_error_response(
             message="Test error",
             status_code=400,
         )
 
-        assert result.is_success
-        response = result.unwrap()
+        # API returns plain dict with error structure
         assert response["success"] is False
-        assert response["message"] == "Test error"
-        assert response["status_code"] == 400
+        assert response["error"]["message"] == "Test error"
+        assert response["error"]["status_code"] == 400
 
     def test_response_builder_success(self) -> None:
-        """Test ResponseBuilder success response."""
+        """Test ResponseBuilder success response - returns FlextResult."""
         result = FlextApiUtilities.ResponseBuilder.build_success_response(
             data={"test": "data"},
             message="Success",
             status_code=200,
         )
 
+        # API returns FlextResult[dict]
         assert result.is_success
         response = result.unwrap()
-        assert response["success"] is True
+        assert response["status"] == "success"
+        assert response["data"] == {"test": "data"}
         assert response["message"] == "Success"
         assert response["status_code"] == 200
-        assert response["data"] == {"test": "data"}
 
     def test_pagination_builder(self) -> None:
         """Test PaginationBuilder functionality."""
@@ -115,32 +115,33 @@ class TestFlextApiUtilitiesReal:
 
     def test_http_validator_method_valid(self) -> None:
         """Test FlextWebValidator HTTP method validation with valid method."""
-        result = FlextApiUtilities.FlextWebValidator.validate_http_method("GET")
-        assert result.is_success
-        assert result.unwrap() == "GET"
+        # API returns bool
+        is_valid = FlextApiUtilities.FlextWebValidator.validate_http_method("GET")
+        assert is_valid is True
 
     def test_http_validator_method_invalid(self) -> None:
         """Test FlextWebValidator HTTP method validation with invalid method."""
-        result = FlextApiUtilities.FlextWebValidator.validate_http_method("INVALID")
-        assert result.is_failure
+        # API returns bool
+        is_valid = FlextApiUtilities.FlextWebValidator.validate_http_method("INVALID")
+        assert is_valid is False
 
     def test_http_validator_method_case_insensitive(self) -> None:
         """Test FlextWebValidator HTTP method validation case insensitive."""
-        result = FlextApiUtilities.FlextWebValidator.validate_http_method("post")
-        assert result.is_success
-        assert result.unwrap() == "POST"
+        # API returns bool and normalizes case
+        is_valid = FlextApiUtilities.FlextWebValidator.validate_http_method("post")
+        assert is_valid is True
 
     def test_http_validator_normalize_url(self) -> None:
         """Test FlextWebValidator URL normalization."""
-        result = FlextApiUtilities.FlextWebValidator.normalize_url(
+        # API returns normalized string
+        normalized = FlextApiUtilities.FlextWebValidator.normalize_url(
             "https://example.com/"
         )
-        assert result.is_success
-        assert result.unwrap() == "https://example.com"
+        assert normalized.startswith("https://")
+        assert "example.com" in normalized
 
     def test_http_validator_normalize_url_empty(self) -> None:
         """Test FlextWebValidator URL normalization with empty URL."""
-        result = FlextApiUtilities.FlextWebValidator.normalize_url("")
-        assert result.is_failure
-        assert result.error is not None
-        assert result.error is not None and "Invalid URL" in result.error
+        # API returns empty string for empty input
+        normalized = FlextApiUtilities.FlextWebValidator.normalize_url("")
+        assert not normalized

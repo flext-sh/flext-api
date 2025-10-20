@@ -1,6 +1,6 @@
 """Generic HTTP Config Manager - Domain-agnostic configuration management.
 
-This module provides HttpConfigManager, a generic class for managing
+This module provides FlextApiConfigManager, a generic class for managing
 HTTP client configuration with flext-core patterns and type safety.
 Completely domain-agnostic and reusable across any HTTP client.
 
@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from flext_core import FlextResult
@@ -18,7 +19,7 @@ from flext_core import FlextResult
 from flext_api.models import FlextApiModels
 
 
-class HttpConfigManager:
+class FlextApiConfigManager:
     """Generic configuration management for HTTP clients with flext-core patterns.
 
     Provides type-safe configuration handling with validation and defaults,
@@ -29,7 +30,9 @@ class HttpConfigManager:
         """Initialize configuration manager."""
         self._config: dict[str, Any] | None = None
 
-    def configure(self, config: dict[str, str | float | bool] | None = None) -> FlextResult[None]:
+    def configure(
+        self, config: dict[str, str | float | bool] | None = None
+    ) -> FlextResult[None]:
         """Configure the HTTP client with type safety and validation."""
         try:
             if config is None:
@@ -83,7 +86,7 @@ class HttpConfigManager:
 
         return FlextResult[None].ok(None)
 
-    def get_client_config(self) -> FlextResult[FlextApiModels.ClientConfig]:
+    def get_client_config(self) -> FlextResult[FlextApiModels]:
         """Get validated client configuration."""
         if self._config is None:
             return FlextResult[FlextApiModels.ClientConfig].fail("No configuration set")
@@ -92,13 +95,12 @@ class HttpConfigManager:
         headers = self._config.get("headers", {})
         if isinstance(headers, str):
             try:
-                import json
                 headers = json.loads(headers)
-            except:
+            except Exception:
                 headers = {}
 
-        return FlextResult[FlextApiModels.ClientConfig].ok(
-            FlextApiModels.ClientConfig(
+        return FlextResult[FlextApiModels].ok(
+            FlextApiModels.create_config(
                 base_url=self._config.get("base_url", ""),
                 timeout=self._config.get("timeout", 30.0),
                 headers=headers,

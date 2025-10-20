@@ -6,7 +6,7 @@ Only constants and enums - no functions or classes with behavior.
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from flext_core import FlextConstants
 
@@ -43,6 +43,40 @@ class FlextApiConstants:
         OPTIONS: ClassVar[str] = "OPTIONS"
         CONNECT: ClassVar[str] = "CONNECT"
         TRACE: ClassVar[str] = "TRACE"
+
+    # URL and validation constants
+    MAX_URL_LENGTH: ClassVar[int] = 2048
+    MIN_URL_LENGTH: ClassVar[int] = 8
+
+    # Retry and reliability constants
+    BACKOFF_FACTOR: ClassVar[float] = 0.5
+    HTTP_SUCCESS_MIN: ClassVar[int] = 200
+    HTTP_SUCCESS_MAX: ClassVar[int] = 300
+    HTTP_REDIRECT_MIN: ClassVar[int] = 300
+    HTTP_REDIRECT_MAX: ClassVar[int] = 400
+    HTTP_CLIENT_ERROR_MIN: ClassVar[int] = 400
+    HTTP_CLIENT_ERROR_MAX: ClassVar[int] = 500
+    HTTP_SERVER_ERROR_MIN: ClassVar[int] = 500
+    HTTP_ERROR_MIN: ClassVar[int] = 400
+
+    # Rate limiting constants
+    RATE_LIMIT_REQUESTS: ClassVar[int] = 1000
+    RATE_LIMIT_WINDOW: ClassVar[int] = 3600
+
+    # Response templates
+    SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, Any]] = {
+        "status": "success",
+        "data": None,
+        "error": None,
+        "message": None,
+    }
+
+    ERROR_RESPONSE_TEMPLATE: ClassVar[dict[str, Any]] = {
+        "status": "error",
+        "data": None,
+        "error": None,
+        "message": None,
+    }
 
     # Content Types - compact definitions
     class ContentType:
@@ -86,7 +120,7 @@ class FlextApiConstants:
     }
 
     # Rate limiting - compact configuration
-    RATE_LIMIT_CONFIG: ClassVar[dict[str, int]] = {
+    RATE_LIMIT_CONFIG: ClassVar[dict[str, int | float]] = {
         "REQUESTS": 1000,
         "WINDOW": 3600,
         "BACKOFF_FACTOR": 0.3,
@@ -106,11 +140,6 @@ class FlextApiConstants:
     }
 
     # Response templates - compact definition
-    SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, object]] = {
-        "status": "success",
-        "data": None,
-        "message": None,
-    }
 
     # Status constants - compact enum-style
     class Status:
@@ -123,13 +152,20 @@ class FlextApiConstants:
         FAILED: ClassVar[str] = "failed"
         ERROR: ClassVar[str] = "error"
 
-    # Error codes - extend core with API-specific
-    class Errors(CoreErrors):
-        """API-specific error codes."""
+    # Error codes - API-specific (composition instead of inheritance to avoid final overrides)
+    class Errors:
+        """API-specific error codes.
 
+        Note: Does not extend CoreErrors to avoid conflicts with final parent attributes.
+        Includes both API-specific codes and common error references from FlextConstants.
+        """
+
+        # API-specific error codes
         MIDDLEWARE_ERROR: ClassVar[str] = "MIDDLEWARE_ERROR"
         PROTOCOL_ERROR: ClassVar[str] = "PROTOCOL_ERROR"
         HTTP_ERROR: ClassVar[str] = "HTTP_ERROR"
+
+        # API HTTP-specific error codes (referenced from core)
         CONNECTION_ERROR: ClassVar[str] = "CONNECTION_ERROR"
         TIMEOUT_ERROR: ClassVar[str] = "TIMEOUT_ERROR"
         VALIDATION_ERROR: ClassVar[str] = "VALIDATION_ERROR"

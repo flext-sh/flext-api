@@ -24,11 +24,12 @@ from flext_core import FlextConstants, FlextContainer
 from flext_tests import FlextTestsDomains
 
 from flext_api import (
+    FlextApiClient,
+    FlextApiConfig,
     FlextApiStorage,
     FlextApiTypes,
-    FlextWebConfig,
-    FlextApiClient,
 )
+from flext_api.typings import ResponseDict, WebHeaders
 
 # Configure Faker for deterministic test data
 fake = Faker()
@@ -101,56 +102,53 @@ def flext_api_storage() -> FlextApiStorage:
 
 @pytest.fixture
 def flext_api_client() -> FlextApiClient:
-    """Provide FlextApiClient using flext_tests configuration.
+    """Provide FlextApiClient using FlextApiConfig.
 
     Returns:
         FlextApiClient: Configured client instance.
 
     """
-    # Use FlextTestsDomains for realistic config values
     config_data = FlextTestsDomains.create_configuration()
 
-    base_url_val = config_data.get(
-        "base_url",
-        f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",
+    base_url = str(
+        config_data.get(
+            "base_url",
+            f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",
+        )
     )
-    timeout_val = config_data.get("timeout", FlextConstants.Network.DEFAULT_TIMEOUT)
-    retries_val = config_data.get(
-        "max_retries", FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+    timeout_value = config_data.get("timeout", FlextConstants.Network.DEFAULT_TIMEOUT)
+    timeout = float(
+        timeout_value
+        if isinstance(timeout_value, (int, float, str))
+        else FlextConstants.Network.DEFAULT_TIMEOUT
     )
 
-    base_url = (
-        str(base_url_val)
-        if base_url_val is not None
-        else f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+    max_retries_value = config_data.get(
+        "max_retries", FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
     )
-    timeout = (
-        float(timeout_val)
-        if isinstance(timeout_val, (int, float, str))
-        else float(FlextConstants.Network.DEFAULT_TIMEOUT)
-    )
-    max_retries = (
-        int(retries_val)
-        if isinstance(retries_val, (int, str))
+    max_retries = int(
+        max_retries_value
+        if isinstance(max_retries_value, (int, float, str))
         else FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
     )
 
-    return FlextApiClient(
+    config = FlextApiConfig(
         base_url=base_url,
         timeout=timeout,
         max_retries=max_retries,
     )
+    return FlextApiClient(config)
 
 
 @pytest.fixture
-def flext_api_config() -> FlextWebConfig:
-    """Provide FlextWebConfig using flext_tests configuration.
+def flext_api_config() -> FlextApiConfig:
+    """Provide FlextApiConfig using flext_tests configuration.
 
     Returns:
-        FlextWebConfig: Configuration instance.
+        FlextApiConfig: Configuration instance.
 
     """
-    return FlextWebConfig()
+    return FlextApiConfig()
 
 
 @pytest.fixture
@@ -201,18 +199,18 @@ def test_client(fastapi_app: FastAPI) -> TestClient:
 
 
 @pytest.fixture
-def sample_api_data() -> FlextApiTypes.ResponseDict:
+def sample_api_data() -> ResponseDict:
     """Sample API data using FlextTestsDomains.
 
     Returns:
         FlextApiTypes.ResponseDict: Sample API data.
 
     """
-    return cast("FlextApiTypes.ResponseDict", FlextTestsDomains.api_response_data())
+    return cast("ResponseDict", FlextTestsDomains.api_response_data())
 
 
 @pytest.fixture
-def sample_headers() -> FlextApiTypes.HttpHeaders:
+def sample_headers() -> WebHeaders:
     """Sample HTTP headers using flext_tests.
 
     Returns:
@@ -229,7 +227,7 @@ def sample_headers() -> FlextApiTypes.HttpHeaders:
 
 
 @pytest.fixture
-def sample_config_dict() -> FlextApiTypes.ResponseDict:
+def sample_config_dict() -> ResponseDict:
     """Sample config dictionary using FlextTestsDomains.
 
     Returns:
@@ -238,33 +236,33 @@ def sample_config_dict() -> FlextApiTypes.ResponseDict:
     """
     from typing import cast
 
-    return cast("FlextApiTypes.ResponseDict", FlextTestsDomains.create_configuration())
+    return cast("ResponseDict", FlextTestsDomains.create_configuration())
 
 
 @pytest.fixture
-def sample_user_data() -> FlextApiTypes.ResponseDict:
+def sample_user_data() -> ResponseDict:
     """Sample user data using FlextTestsDomains.
 
     Returns:
         FlextApiTypes.ResponseDict: Sample user data.
 
     """
-    return cast("FlextApiTypes.ResponseDict", FlextTestsDomains.create_user())
+    return cast("ResponseDict", FlextTestsDomains.create_user())
 
 
 @pytest.fixture
-def sample_service_data() -> FlextApiTypes.ResponseDict:
+def sample_service_data() -> ResponseDict:
     """Sample service data using FlextTestsDomains.
 
     Returns:
         FlextApiTypes.ResponseDict: Sample service data.
 
     """
-    return cast("FlextApiTypes.ResponseDict", FlextTestsDomains.create_service())
+    return cast("ResponseDict", FlextTestsDomains.create_service())
 
 
 @pytest.fixture
-def sample_payload_data() -> FlextApiTypes.ResponseDict:
+def sample_payload_data() -> ResponseDict:
     """Sample payload data using FlextTestsDomains.
 
     Returns:
@@ -286,7 +284,7 @@ def sample_configuration_data() -> FlextApiTypes.ResponseDict:
     """
     from typing import cast
 
-    return cast("FlextApiTypes.ResponseDict", FlextTestsDomains.create_configuration())
+    return cast("ResponseDict", FlextTestsDomains.create_configuration())
 
 
 # ============================================================================

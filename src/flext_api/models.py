@@ -1,7 +1,8 @@
-"""FLEXT API Models - Domain-agnostic HTTP models.
+"""FLEXT API Models - HTTP Domain Models extending flext-core.
 
-Generic Pydantic models for HTTP operations following flext-core patterns.
-Completely domain-agnostic and reusable across any HTTP application.
+Unified namespace class that extends flext-core FlextModels with HTTP-specific
+domain entities. Provides Pydantic v2 models for HTTP operations following
+Clean Architecture patterns.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -13,91 +14,380 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import ParseResult, urlparse
 
-from pydantic import BaseModel, Field
+from flext_core import FlextModels
+from pydantic import BaseModel, Field, computed_field
+
+from flext_api.constants import FlextApiConstants
 
 
 class FlextApiModels:
-    """Generic FLEXT API models with Pydantic validation.
+    """HTTP domain models for flext-api.
 
-    Domain-agnostic API models following flext-core patterns.
-    Uses advanced Pydantic patterns for validation and type safety.
+    Unified namespace class that aggregates all HTTP-specific domain models.
+    Uses nested classes following SOLID principles for maximum maintainability.
+    Provides Pydantic v2 value objects and entities for HTTP operations.
+
+    Fully compatible with Pydantic v2 with strict type safety and validation.
     """
 
-    class UrlModel(BaseModel):
-        """Generic URL model for validation and parsing."""
+    # =========================================================================
+    # HTTP REQUEST/RESPONSE VALUE OBJECTS (Immutable)
+    # =========================================================================
 
-        url: str = Field(..., description="Full URL string")
+    class HttpRequest(FlextModels.Value):
+        """Immutable HTTP request value object.
 
+        Represents a complete HTTP request with all necessary parameters.
+        Follows Value Object pattern: immutable, compared by value, no identity.
+        """
+
+        method: str = Field(
+            default="GET",
+            min_length=3,
+            max_length=8,
+            description="HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)",
+            pattern=r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$",
+        )
+        url: str = Field(..., min_length=1, max_length=2048, description="Request URL")
+        headers: dict[str, str] = Field(
+            default_factory=dict, description="HTTP request headers"
+        )
+        body: Any | None = Field(default=None, description="Request body")
+        query_params: dict[str, str | list[str]] | None = Field(
+            default=None, description="Query parameters"
+        )
+        timeout: float = Field(
+            default=30.0, ge=0.1, le=300.0, description="Request timeout in seconds"
+        )
+
+        @computed_field
         @property
-        def parsed_url(self) -> ParseResult:
+        def content_type(self) -> str | None:
+            """Get content type from headers."""
+            return self.headers.get("Content-Type") or self.headers.get("content-type")
+
+    class HttpResponse(FlextModels.Value):
+        """Immutable HTTP response value object.
+
+        Represents a complete HTTP response with all returned data.
+        Follows Value Object pattern: immutable, compared by value, no identity.
+        """
+
+        status_code: int = Field(
+            ..., ge=100, le=599, description="HTTP status code (100-599)"
+        )
+        headers: dict[str, str] = Field(
+            default_factory=dict, description="HTTP response headers"
+        )
+        body: Any | None = Field(default=None, description="Response body")
+        request_id: str | None = Field(
+            default=None, description="Associated request ID for tracking"
+        )
+
+        @computed_field
+        @property
+        def is_success(self) -> bool:
+            """Check if response indicates success (2xx status code)."""
+            return (
+                FlextApiConstants.HTTP_SUCCESS_MIN
+                <= self.status_code
+                < FlextApiConstants.HTTP_SUCCESS_MAX
+            )
+
+        @computed_field
+        @property
+        def is_redirect(self) -> bool:
+            """Check if response indicates redirect (3xx status code)."""
+            return (
+                FlextApiConstants.HTTP_REDIRECT_MIN
+                <= self.status_code
+                < FlextApiConstants.HTTP_REDIRECT_MAX
+            )
+
+        @computed_field
+        @property
+        def is_client_error(self) -> bool:
+            """Check if response indicates client error (4xx status code)."""
+            return (
+                FlextApiConstants.HTTP_CLIENT_ERROR_MIN
+                <= self.status_code
+                < FlextApiConstants.HTTP_CLIENT_ERROR_MAX
+            )
+
+        @computed_field
+        @property
+        def is_server_error(self) -> bool:
+            """Check if response indicates server error (5xx status code)."""
+            return self.status_code >= FlextApiConstants.HTTP_SERVER_ERROR_MIN
+
+        @computed_field
+        @property
+        def is_error(self) -> bool:
+            """Check if response indicates any error (4xx or 5xx status code)."""
+            return self.status_code >= FlextApiConstants.HTTP_ERROR_MIN
+
+    # =========================================================================
+    # URL AND PARSING MODELS
+    # =========================================================================
+
+    class Url(BaseModel):
+        """URL parsing and validation model."""
+
+        url: str = Field(
+            ..., min_length=1, max_length=2048, description="Full URL string"
+        )
+
+        @computed_field
+        @property
+        def parsed(self) -> ParseResult:
             """Parse the URL."""
             return urlparse(self.url)
 
+        @computed_field
         @property
-        def scheme(self) -> str:
-            """Get URL scheme."""
-            return self.parsed_url.scheme
+        def scheme(self) -> str | None:
+            """Get URL scheme (http, https, etc.)."""
+            return self.parsed.scheme or None
 
+        @computed_field
         @property
-        def netloc(self) -> str:
-            """Get network location."""
-            return self.parsed_url.netloc
+        def netloc(self) -> str | None:
+            """Get network location (host:port)."""
+            return self.parsed.netloc or None
 
+        @computed_field
         @property
-        def path(self) -> str:
+        def path(self) -> str | None:
             """Get URL path."""
-            return self.parsed_url.path
+            return self.parsed.path or None
 
+        @computed_field
         @property
-        def query(self) -> str:
-            """Get URL query."""
-            return self.parsed_url.query
+        def query(self) -> str | None:
+            """Get URL query string."""
+            return self.parsed.query or None
 
+        @computed_field
         @property
-        def fragment(self) -> str:
+        def fragment(self) -> str | None:
             """Get URL fragment."""
-            return self.parsed_url.fragment
+            return self.parsed.fragment or None
 
-    class HttpResponse(BaseModel):
-        """Generic HTTP response model with Pydantic validation."""
+        @computed_field
+        @property
+        def is_valid(self) -> bool:
+            """Check if URL is valid."""
+            return bool(self.url and self.scheme and self.netloc)
 
-        status_code: int = Field(..., ge=100, le=599, description="HTTP status code")
-        headers: dict[str, Any] = Field(default_factory=dict, description="Response headers")
-        body: Any | None = Field(default=None, description="Response body")
-        content_type: str | None = Field(default=None, description="Content type")
-
-    class HttpRequest(BaseModel):
-        """Generic HTTP request model with Pydantic validation."""
-
-        method: str = Field(..., min_length=3, max_length=8, description="HTTP method")
-        url: str = Field(..., description="Request URL")
-        headers: dict[str, Any] = Field(default_factory=dict, description="Request headers")
-        body: Any | None = Field(default=None, description="Request body")
-        timeout: float = Field(default=30.0, ge=0.1, le=300.0, description="Request timeout")
-
-    class HttpQuery(BaseModel):
-        """Generic HTTP query parameters model with Pydantic validation."""
-
-        filter_conditions: dict[str, Any] = Field(default_factory=dict, description="Filter conditions")
-        sort_fields: list[str] = Field(default_factory=list, description="Sort fields")
-        page_number: int = Field(default=1, ge=1, description="Page number")
-        page_size: int = Field(default=20, ge=1, le=100, description="Page size")
-
-        def to_query_params(self) -> dict[str, object]:
-            """Convert to query parameters dict."""
-            return {
-                "filters": self.filter_conditions,
-                "sort": self.sort_fields,
-                "page": self.page_number,
-                "size": self.page_size,
-            }
+    # =========================================================================
+    # CONFIGURATION MODELS
+    # =========================================================================
 
     class ClientConfig(BaseModel):
-        """Generic client configuration model with Pydantic validation."""
+        """HTTP client configuration model."""
 
-        base_url: str = Field(..., description="Base URL for HTTP requests")
-        timeout: float = Field(default=30.0, ge=0.1, le=300.0, description="Request timeout")
-        headers: dict[str, Any] = Field(default_factory=dict, description="Default HTTP headers")
+        base_url: str = Field(
+            default="", max_length=2048, description="Base URL for all requests"
+        )
+        timeout: float = Field(
+            default=30.0, ge=0.1, le=300.0, description="Request timeout in seconds"
+        )
+        max_retries: int = Field(
+            default=3, ge=0, le=10, description="Maximum retry attempts"
+        )
+        headers: dict[str, str] = Field(
+            default_factory=dict, description="Default headers for all requests"
+        )
+        verify_ssl: bool = Field(
+            default=True, description="Verify SSL certificates"
+        )
+
+        @computed_field
+        @property
+        def is_configured(self) -> bool:
+            """Check if configuration is valid."""
+            return bool(self.base_url and self.timeout > 0)
+
+    # =========================================================================
+    # PAGINATION MODELS
+    # =========================================================================
+
+    class Pagination(BaseModel):
+        """Pagination information model."""
+
+        page: int = Field(
+            default=1, ge=1, description="Current page number (1-based)"
+        )
+        page_size: int = Field(
+            default=20, ge=1, le=1000, description="Items per page"
+        )
+        total_items: int | None = Field(
+            default=None, ge=0, description="Total number of items"
+        )
+        total_pages: int | None = Field(
+            default=None, ge=0, description="Total number of pages"
+        )
+
+        @computed_field
+        @property
+        def has_next(self) -> bool:
+            """Check if there are more pages."""
+            if self.total_pages is None:
+                return True
+            return self.page < self.total_pages
+
+        @computed_field
+        @property
+        def has_previous(self) -> bool:
+            """Check if there are previous pages."""
+            return self.page > 1
+
+        @computed_field
+        @property
+        def offset(self) -> int:
+            """Calculate offset for database queries."""
+            return (self.page - 1) * self.page_size
+
+    # =========================================================================
+    # ERROR MODELS
+    # =========================================================================
+
+    class Error(BaseModel):
+        """HTTP error response model."""
+
+        message: str = Field(..., description="Human-readable error message")
+        error_code: str | None = Field(
+            default=None, description="Machine-readable error code"
+        )
+        status_code: int = Field(
+            default=500, ge=100, le=599, description="HTTP status code"
+        )
+        details: dict[str, Any] | None = Field(
+            default=None, description="Additional error details"
+        )
+        request_id: str | None = Field(
+            default=None, description="Associated request ID for tracking"
+        )
+
+        @computed_field
+        @property
+        def is_client_error(self) -> bool:
+            """Check if error is client-side (4xx)."""
+            return (
+                FlextApiConstants.HTTP_CLIENT_ERROR_MIN
+                <= self.status_code
+                < FlextApiConstants.HTTP_CLIENT_ERROR_MAX
+            )
+
+        @computed_field
+        @property
+        def is_server_error(self) -> bool:
+            """Check if error is server-side (5xx)."""
+            return self.status_code >= FlextApiConstants.HTTP_SERVER_ERROR_MIN
+
+    # =========================================================================
+    # QUERY/FILTER MODELS
+    # =========================================================================
+
+    class QueryParams(BaseModel):
+        """Query parameters model."""
+
+        params: dict[str, str | list[str]] = Field(
+            default_factory=dict, description="Query parameters"
+        )
+
+        def get_param(self, name: str) -> str | list[str] | None:
+            """Get query parameter value."""
+            return self.params.get(name)
+
+        def set_param(self, name: str, value: str | list[str]) -> None:
+            """Set query parameter value."""
+            self.params[name] = value
+
+    class Headers(BaseModel):
+        """HTTP headers model."""
+
+        headers: dict[str, str] = Field(
+            default_factory=dict, description="HTTP headers"
+        )
+
+        def get_header(self, name: str, default: str | None = None) -> str | None:
+            """Get header value (case-insensitive)."""
+            for key, value in self.headers.items():
+                if key.lower() == name.lower():
+                    return value
+            return default
+
+        def set_header(self, name: str, value: str) -> None:
+            """Set header value."""
+            self.headers[name] = value
+
+        def remove_header(self, name: str) -> None:
+            """Remove header by name (case-insensitive)."""
+            keys_to_remove = [k for k in self.headers if k.lower() == name.lower()]
+            for key in keys_to_remove:
+                del self.headers[key]
+
+    # =========================================================================
+    # FACTORY METHODS - Model creation utilities
+    # =========================================================================
+
+    @classmethod
+    def create_response(
+        cls,
+        status_code: int,
+        body: Any | None = None,
+        headers: dict[str, str] | None = None,
+        request_id: str | None = None,
+    ) -> "FlextApiModels.HttpResponse":
+        """Create HttpResponse from parameters.
+
+        Args:
+            status_code: HTTP status code
+            body: Response body (JSON, string, bytes, or None)
+            headers: Response headers dictionary
+            request_id: Associated request ID for tracking
+
+        Returns:
+            HttpResponse instance
+
+        """
+        return cls.HttpResponse(
+            status_code=status_code,
+            body=body,
+            headers=headers or {},
+            request_id=request_id,
+        )
+
+    @classmethod
+    def create_config(
+        cls,
+        base_url: str = "",
+        timeout: float = 30.0,
+        max_retries: int = 3,
+        headers: dict[str, str] | None = None,
+        verify_ssl: bool = True,
+    ) -> "FlextApiModels.ClientConfig":
+        """Create ClientConfig from parameters.
+
+        Args:
+            base_url: Base URL for all requests
+            timeout: Request timeout in seconds
+            max_retries: Maximum retry attempts
+            headers: Default headers for all requests
+            verify_ssl: Verify SSL certificates
+
+        Returns:
+            ClientConfig instance
+
+        """
+        return cls.ClientConfig(
+            base_url=base_url,
+            timeout=timeout,
+            max_retries=max_retries,
+            headers=headers or {},
+            verify_ssl=verify_ssl,
+        )
 
 
 __all__ = ["FlextApiModels"]
