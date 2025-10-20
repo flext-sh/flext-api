@@ -24,12 +24,12 @@
         "flext-web @ file:../flext-web",
         "gql (>=4.0.0)",
         "httpx>=0.28.1",
+        "msgpack (>=1.1.2)",
         "orjson (>=3.11.3)",
         "pydantic-settings>=2.10.1",
         "pydantic>=2.10.0",
-        "websockets (>=15.0.1)",
-        "msgpack (>=1.1.2)",
         "typing-extensions (>=4.15.0)",
+        "websockets (>=15.0.1)",
     ]
     description = "FLEXT API - High-Performance REST API with FastAPI"
     keywords = [
@@ -44,21 +44,22 @@
     readme = "README.md"
     requires-python = ">=3.13,<3.14"
     version = "0.9.0"
+
     [[project.authors]]
         email = "team@flext.sh"
-        name  = "FLEXT Team"
+        name = "FLEXT Team"
 
     [[project.maintainers]]
         email = "team@flext.sh"
-        name  = "FLEXT Team"
+        name = "FLEXT Team"
 
     [project.license]
         text = "MIT"
 
     [project.urls]
         Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
-        Homepage      = "https://github.com/flext-sh/flext"
-        Repository    = "https://github.com/flext-sh/flext"
+        Homepage = "https://github.com/flext-sh/flext"
+        Repository = "https://github.com/flext-sh/flext"
 
     [project.optional-dependencies]
         dev = [
@@ -109,65 +110,36 @@
         ]
 
 [tool]
+    [tool.deptry]
+        known_first_party = [
+            "flext_api",
+        ]
+
     [tool.poetry]
         [[tool.poetry.packages]]
-            from    = "src"
+            from = "src"
             include = "flext_api"
 
         [tool.poetry.dependencies]
             python = ">=3.13,<3.14"
 
-        [tool.poetry.group.dev.dependencies]
-            bandit       = "^1.8.6"
-            faker        = "^37.5.3"
-            pip-audit    = "^2.9.0"
-            pyrefly      = "^0.34.0"
-            pytest       = "^8.4.1"
-            pytest-cov   = "^6.2.1"
-            pytest-httpx = "^0.35.0"
+            [tool.poetry.dependencies.flext-core]
+                develop = true
+                path = "../flext-core"
 
-    [tool.bandit]
-        extend = "../.bandit-shared.toml"
-        skips = [
-            "B101",
-            "B104",
-            "B105",
-            "B601",
-        ]
+            [tool.poetry.dependencies.flext-web]
+                develop = true
+                path = "../flext-web"
 
-    [tool.coverage]
-        extend = "../.coverage-shared.toml"
-
-    [tool.deptry]
-        exclude = [
-            ".archive",
-            ".git",
-            ".meltano",
-            ".mypy_cache",
-            ".pyrefly_cache",
-            ".pytest_cache",
-            ".ruff_cache",
-            ".venv",
-            "__pycache__",
-            "build",
-            "dist",
-            "htmlcov",
-            "node_modules",
-            "reports",
-            "tests",
-            "tests",
-            "vendor",
-            "venv",
-        ]
-        known_first_party = [
-            "flext_api",
-        ]
-        pep621_dev_dependency_groups = [
-            "dev",
-            "security",
-            "test",
-            "typings",
-        ]
+        [tool.poetry.group]
+            [tool.poetry.group.dev.dependencies]
+                bandit = "^1.8.6"
+                faker = "^37.5.3"
+                pip-audit = "^2.9.0"
+                pyrefly = "^0.34.0"
+                pytest = "^8.4.1"
+                pytest-cov = "^6.2.1"
+                pytest-httpx = "^0.35.0"
 
     [tool.pytest.ini_options]
         addopts = [
@@ -225,40 +197,7 @@
     [tool.ruff]
         extend = "../ruff-shared.toml"
 
-    [tool.ruff.lint.isort]
-        known-first-party = [
-            "flext_api",
-        ]
-
-
-
-	[tool.pyrefly]
-		# NOTE: Pyrefly (MyPy successor) with Pydantic plugin properly handles:
-		#   - @computed_field + @property pattern (Pydantic 2.11+)
-		#   - dict[str, object] type annotations (legitimate generic usage)
-		#   - Field validators and serializers with proper type inference
-		permissive-ignores = true
-		project-excludes = [
-		    "**/.git",
-		    "**/.cache",
-		    "**/.claude",
-		    "**/__pycache__",
-		    "**/*.venv",
-		    "**/*dist",
-		    "**/*mypy_cache",
-		    "**/*pytest_cache",
-		    "**/*ruff_cache",
-		    "**/*venv/**",
-		    "**/node_modules/**",
-		    "**/*.pb2.py",
-		    "**/*.pb2_grpc.py",
-		    "**/build/**",
-		]
-		python-version = "3.13"
-
-		# SubConfig: Disable unknown-name error for all models.py files
-		# This handles forward references to classes defined later in the same file
-		[[tool.pyrefly.sub-config]]
-			matches = "**/*models.py"
-			[tool.pyrefly.sub-config.errors]
-				unknown-name = false
+        [tool.ruff.lint.isort]
+            known-first-party = [
+                "flext_api",
+            ]

@@ -60,7 +60,7 @@ def example_direct_client() -> None:
 
     print(f"✅ Client config: {config.base_url}")
     print(f"   Timeout: {config.timeout}")
-    print(f"   Default headers: {config.get_default_headers()}")
+    print(f"   Default headers: {config.headers}")
 
 
 def example_storage_usage() -> None:

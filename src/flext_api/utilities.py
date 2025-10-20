@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from typing import TypeVar
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse
 
 from flext_core import FlextResult, FlextUtilities
 
@@ -20,8 +20,91 @@ T = TypeVar("T")
 class FlextApiUtilities(FlextUtilities):
     """HTTP-specific utilities with complete flext-core integration."""
 
+    class FlextWebValidator:
+        """HTTP validation utilities for flext-api."""
+
+        @staticmethod
+        def validate_http_method(method: str) -> bool:
+            """Validate HTTP method."""
+            valid_methods = {
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "HEAD",
+                "OPTIONS",
+                "CONNECT",
+                "TRACE",
+            }
+            return method.upper() in valid_methods
+
+        @staticmethod
+        def normalize_url(url: str) -> str:
+            """Normalize URL format."""
+            if not url:
+                return ""
+
+            parsed = urlparse(url)
+            if not parsed.scheme:
+                return f"https://{url}"
+
+            return url
+
+        @staticmethod
+        def validate_url(url: str) -> FlextResult[str]:
+            """Validate URL with FlextResult pattern."""
+            if not url or not url.strip():
+                return FlextResult[str].fail("URL cannot be empty")
+
+            # Check max length
+            max_len: object = FlextApiConstants.VALIDATION_LIMITS.get(
+                "MAX_URL_LENGTH", 2048
+            )
+            if len(url) > int(max_len):
+                return FlextResult[str].fail(
+                    f"URL too long (max {max_len} characters)"
+                )
+
+            try:
+                parsed = urlparse(url)
+                # Validate URL components
+                if not parsed.scheme or not parsed.netloc:
+                    return FlextResult[str].fail("Invalid URL format")
+
+                # Validate port if present
+                if ":" in parsed.netloc:
+                    parts = parsed.netloc.rsplit(":", 1)
+                    try:
+                        port = int(parts[1])
+                        if port <= 0 or port > 65535:
+                            return FlextResult[str].fail(f"Invalid port {port}")
+                    except ValueError:
+                        return FlextResult[str].fail("Invalid port number")
+
+                return FlextResult[str].ok(url)
+            except Exception as e:
+                return FlextResult[str].fail(f"Invalid URL: {e}")
+
     class ResponseBuilder:
         """HTTP response builder using flext-core patterns."""
+
+        @staticmethod
+        def build_error_response(
+            *,
+            message: str,
+            status_code: int = 500,
+            error_code: str | None = None,
+        ) -> dict[str, object]:
+            """Build error response."""
+            return {
+                "success": False,
+                "error": {
+                    "message": message,
+                    "code": error_code or f"ERROR_{status_code}",
+                    "status_code": status_code,
+                },
+            }
 
         @staticmethod
         def build_success_response(
@@ -42,13 +125,13 @@ class FlextApiUtilities(FlextUtilities):
             return FlextResult.ok(response)
 
         @staticmethod
-        def build_error_response(
+        def build_error_result(
             error: str,
             status_code: int = 400,
             data: dict[str, object] | None = None,
             headers: dict[str, object] | None = None,
         ) -> FlextResult[dict[str, object]]:
-            """Build an error HTTP response."""
+            """Build an error HTTP response as FlextResult."""
             response: dict[str, object] = {
                 "status": "error",
                 "status_code": status_code,
@@ -139,7 +222,9 @@ class FlextApiUtilities(FlextUtilities):
             *, page: int, page_size: int | None, max_page_size: int
         ) -> FlextResult[dict]:
             """Validate pagination parameters."""
-            effective_page_size = page_size or 20  # Will be overridden by config
+            # If page_size is explicitly provided (not None), use it directly
+            # Otherwise, use default but don't override explicit 0
+            effective_page_size = page_size if page_size is not None else 20
 
             if page < 1:
                 return FlextResult.fail("Page must be >= 1")
@@ -209,56 +294,6 @@ class FlextApiUtilities(FlextUtilities):
                 response["message"] = message
 
             return FlextResult.ok(response)
-
-    class FlextWebValidator:
-        """HTTP validation utilities."""
-
-        MAX_URL_LENGTH: int = FlextApiConstants.VALIDATION_LIMITS["MAX_URL_LENGTH"]
-
-        @staticmethod
-        def validate_and_normalize_url(url: str) -> FlextResult[str]:
-            """Validate and normalize a URL."""
-            if not url or not url.strip():
-                return FlextResult[str].fail("URL cannot be empty")
-
-            if len(url) > FlextApiConstants.MAX_URL_LENGTH:
-                return FlextResult[str].fail(
-                    f"URL too long (max {FlextApiConstants.MAX_URL_LENGTH} characters)"
-                )
-
-            # Add http:// if no scheme
-            if not url.startswith(("http://", "https://")):
-                url = f"http://{url}"
-
-            try:
-                parsed = urlparse(url)
-                if not parsed.netloc:
-                    return FlextResult.fail("Invalid URL format")
-
-                # Reconstruct URL to normalize
-                normalized = urlunparse(parsed)
-                return FlextResult.ok(str(normalized))
-            except Exception as e:
-                return FlextResult.fail(f"Invalid URL: {e}")
-
-        @staticmethod
-        def validate_url(url: str) -> FlextResult[str]:
-            """Validate a URL without normalizing."""
-            if not url or not url.strip():
-                return FlextResult.fail("URL cannot be empty")
-
-            if len(url) > FlextApiConstants.MAX_URL_LENGTH:
-                return FlextResult.fail(
-                    f"URL too long (max {FlextApiConstants.MAX_URL_LENGTH} characters)"
-                )
-
-            try:
-                parsed = urlparse(url)
-                if not parsed.scheme or not parsed.netloc:
-                    return FlextResult.fail("Invalid URL format")
-                return FlextResult.ok(url)
-            except Exception as e:
-                return FlextResult.fail(f"Invalid URL: {e}")
 
 
 __all__ = [

@@ -13,10 +13,10 @@ import uuid
 from typing import cast
 
 from faker import Faker
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextConstants, FlextResult, FlextTypes
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
-from flext_api import FlextApiStorage, FlextWebConfig, HttpClient
+from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
 
@@ -60,17 +60,17 @@ class FlextApiFactories:
         return cast("FlextApiTypes.ResponseDict", client_config)
 
     @staticmethod
-    def create_client(**overrides: object) -> HttpClient:
-        """Create HttpClient using FlextTestsDomains config.
+    def create_client(**overrides: object) -> FlextApiClient:
+        """Create FlextApiClient using FlextTestsDomains config.
 
         Returns:
-            HttpClient: Configured client instance.
+            FlextApiClient: Configured client instance.
 
         """
         config = FlextApiFactories.create_client_config(**overrides)
         timeout_val = config["timeout"]
         headers_val = config.get("headers", {})
-        return HttpClient(
+        return FlextApiClient(
             base_url=str(config["base_url"]),
             timeout=int(timeout_val) if isinstance(timeout_val, (int, float)) else 30,
             max_retries=cast("int", config["max_retries"]),
@@ -80,11 +80,11 @@ class FlextApiFactories:
         )
 
     @staticmethod
-    def create_api_config(**overrides: object) -> FlextWebConfig:
-        """Create FlextWebConfig using FlextTestsDomains - ABSOLUTE usage.
+    def create_api_config(**overrides: object) -> FlextApiConfig:
+        """Create FlextApiConfig using FlextTestsDomains - ABSOLUTE usage.
 
         Returns:
-            FlextWebConfig: Configured API config instance.
+            FlextApiConfig: Configured API config instance.
 
         """
         # Use FlextTestsDomains for realistic configuration
@@ -99,7 +99,8 @@ class FlextApiFactories:
                 )
             ),
             "api_port": cast(
-                "int", config_data.get("port", FlextApiConstants.HTTP_PORT)
+                "int",
+                config_data.get("port", FlextConstants.Platform.DEFAULT_HTTP_PORT),
             ),
             "api_base_url": str(config_data.get("base_url", "https://httpbin.org")),
             "api_timeout": cast("float", config_data.get("default_timeout", 30.0)),
@@ -111,7 +112,7 @@ class FlextApiFactories:
             if key in defaults and isinstance(value, (str, int, float)):
                 defaults[key] = value
 
-        return FlextWebConfig(
+        return FlextApiConfig(
             base_url=cast("str", defaults["base_url"]),
             timeout=cast("int", defaults["timeout"]),
             max_retries=cast("int", defaults["max_retries"]),

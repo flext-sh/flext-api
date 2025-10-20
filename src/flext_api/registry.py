@@ -60,7 +60,7 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         super().__init__(dispatcher=dispatcher)
-        self.logger = FlextLogger(__name__)
+        # Logger inherited from parent FlextService - no assignment needed
 
         # Plugin storage by category
         self._protocols: dict[str, ProtocolPlugin] = {}

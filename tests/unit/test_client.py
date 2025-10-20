@@ -1,9 +1,7 @@
-"""Comprehensive tests for FlextApiClient with real HTTP functionality validation.
+"""Comprehensive tests for FlextApiClient with FlextResult API.
 
-Tests all client functionality using flext_tests library without mocks.
-Achieves 100% coverage for client.py module.
-
-
+Tests validate FLEXT-pure HTTP client using railway-oriented programming
+with FlextResult[T] error handling and HttpRequest/HttpResponse models.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -12,682 +10,526 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import os
-from unittest.mock import patch
+import json
+from unittest.mock import MagicMock, patch
 
 import pytest
 from flext_core import FlextResult
-from flext_tests.matchers import FlextTestsMatchers
 
-from flext_api import FlextApiClient, FlextApiModels
-
-
-@pytest.fixture(autouse=True)
-def enable_external_calls() -> None:
-    """Enable external HTTP calls for all tests in this module."""
-    # Remove the environment variable that disables external calls
-    if "FLEXT_DISABLE_EXTERNAL_CALLS" in os.environ:
-        del os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"]
-    # Explicitly set to enable
-    os.environ["FLEXT_DISABLE_EXTERNAL_CALLS"] = "0"
+from flext_api import FlextApiClient, FlextApiConfig, FlextApiModels
 
 
-def test_real_http_get_request() -> None:
-    """Test real HTTP GET request using httpbin.org."""
-    client = FlextApiClient(base_url="https://httpbin.org", timeout=10, max_retries=2)
+class TestFlextApiClientInitialization:
+    """Test FlextApiClient initialization with FlextApiConfig."""
 
-    try:
-        res = client.get("/get?test_param=test_value")
-        assert res.is_success
-        response_data = res.value
-        assert isinstance(response_data, dict)
-        # Check that we got a successful response from httpbin.org
-        assert "url" in response_data
-        assert response_data["url"] == "https://httpbin.org/get?test_param=test_value"
+    def test_client_with_default_config(self) -> None:
+        """Test client initialization with default configuration."""
+        config = FlextApiConfig()
+        client = FlextApiClient(config)
 
-    finally:
-        # No need to close generic HTTP client
-        pass
+        assert not client._config.base_url
+        assert client._config.timeout == 30.0
+        assert client._config.max_retries == 3
+        assert client._config.headers == {}
 
-
-def test_real_http_headers_and_user_agent() -> None:
-    """Test real HTTP request with custom headers."""
-    client = FlextApiClient(
-        config="https://httpbin.org",
-        headers={"X-FLEXT-API": "test-version-0.9.0"},
-    )
-
-    try:
-        result = client.get("/headers")
-        assert result.is_success
-        response = result.value
-        assert response.status_code == 200
-        # Verify custom header was sent
-        headers = response.body.get("headers", {})
-        assert "X-FLEXT-API" in headers
-        assert headers["X-FLEXT-API"] == "test-version-0.9.0"
-
-    finally:
-        client.close()
-
-
-def test_client_build_and_error_formatting_on_invalid_url() -> None:
-    """Client handles REAL non-200 status and returns data."""
-    with FlextApiClient(base_url="https://httpbin.org") as client:
-        # REAL HTTP request - httpbin.org/status/400 returns HTTP 400
-        res: FlextResult[FlextApiModels.HttpResponse] = client.get(
-            "/status/400"
-        )
-        # Should succeed (request was made) but with 400 status code
-        assert res.is_success
-        assert res.value is not None
-        assert res.value.status_code == 400
-
-
-def test_client_headers_merge_and_prepare_params() -> None:
-    """Client merges headers and serializes params correctly."""
-    with FlextApiClient(
-        config="https://httpbin.org",
-        headers={"A": "1"},
-    ) as client:
-        result: FlextResult[FlextApiModels.HttpResponse] = client.post(
-            "/post", json_data={"x": 1}, headers={"B": "2"}
-        )
-        assert result.is_success
-        assert result.value is not None
-        # echo path ensures headers were passed through into stub response
-
-
-class TestFlextApiClient:
-    """Comprehensive HTTP client tests.
-
-    This test class has many public methods by design as it provides comprehensive
-    test coverage for the HTTP client functionality. Each test method validates
-    a specific aspect of the client behavior, which is a legitimate use case
-    for having many methods in a test class.
-    """
-
-    def test_client_initialization(self) -> None:
-        """Test client initialization with various configurations."""
-        # Basic initialization
-        client: FlextApiClient = FlextApiClient()
-        assert not client.config_data.base_url
-        assert client.config_data.timeout == 30.0
-        assert isinstance(client.config_data.headers, dict)
-        assert client.config_data.max_retries == 3
-
-        # Configuration via dict
-        config: FlextApiModels.ClientConfig = FlextApiModels.ClientConfig(
+    def test_client_with_custom_config(self) -> None:
+        """Test client initialization with custom configuration."""
+        config = FlextApiConfig(
             base_url="https://api.example.com",
-            timeout=60,
+            timeout=60.0,
+            max_retries=5,
             headers={"Authorization": "Bearer token"},
-            max_retries=5,
         )
-        client_with_config: FlextApiClient = FlextApiClient(config=config)
-        assert client_with_config.config_data.base_url == "https://api.example.com"
-        assert client_with_config.config_data.timeout == 60.0
-        assert client_with_config.config_data.headers["Authorization"] == "Bearer token"
-        assert client_with_config.config_data.max_retries == 5
+        client = FlextApiClient(config)
 
-        # Configuration via kwargs
-        client_kwargs: FlextApiClient = FlextApiClient(
-            base_url="https://test.example.com",
-            timeout=45,
-            headers={"User-Agent": "test"},
-            max_retries=2,
-        )
-        assert client_kwargs.config_data.base_url == "https://test.example.com"
-        assert client_kwargs.config_data.timeout == 45.0
-        assert client_kwargs.config_data.max_retries == 2
+        assert client._config.base_url == "https://api.example.com"
+        assert client._config.timeout == 60.0
+        assert client._config.max_retries == 5
+        assert client._config.headers["Authorization"] == "Bearer token"
 
-    def test_client_initialization_type_safety(self) -> None:
-        """Test client initialization with type conversion."""
-        # Test timeout conversion
-        client1: FlextApiClient = FlextApiClient(timeout=45)  # Valid int
-        assert client1.config_data.timeout == 45.0
+    def test_client_execute_returns_config(self) -> None:
+        """Test that execute() returns configuration via FlextResult."""
+        config = FlextApiConfig(base_url="https://test.com")
+        client = FlextApiClient(config)
 
-        client2: FlextApiClient = FlextApiClient(timeout=30)  # Int to float
-        assert client2.config_data.timeout == 30.0
-
-        # Test invalid timeout fallback
-        # Test invalid timeout type (should be handled by validation)
-        client3: FlextApiClient = FlextApiClient(timeout=30)  # Valid int
-        assert client3.config_data.timeout == 30.0  # Default fallback
-
-        # Test max_retries conversion
-        client4: FlextApiClient = FlextApiClient(max_retries=3)  # Valid int
-        assert client4.config_data.max_retries == 3
-
-        # Test invalid max_retries fallback
-        client5: FlextApiClient = FlextApiClient(max_retries=3)  # Valid int
-        assert client5.config_data.max_retries == 3  # Default fallback
-
-        # Test headers type safety
-        client6: FlextApiClient = FlextApiClient(
-            headers={"Content-Type": "application/json"}
-        )  # Non-dict to empty dict
-        assert client6.config_data.headers == {}
-
-        # Test base_url None handling
-        client7: FlextApiClient = FlextApiClient(base_url=None)
-        assert not client7.config_data.base_url
-
-    def test_client_properties(self) -> None:
-        """Test client property access."""
-        client: FlextApiClient = FlextApiClient(
-            base_url="https://api.example.com",
-            timeout=45,
-            headers={"Custom": "Value"},
-            max_retries=2,
-        )
-
-        assert client.config_data.base_url == "https://api.example.com"
-        assert client.config_data.timeout == 45.0
-        # Note: Headers are converted to strings for storage and back to dicts for retrieval
-        assert isinstance(client.config_data.headers, dict)
-        # Note: max_retries is not stored in config_data, it's a client property
-        assert client.max_retries == 2
-
-    def test_client_execute(self) -> None:
-        """Test client execution (domain service pattern)."""
-        client: FlextApiClient = FlextApiClient(base_url="https://test.com")
-        result: FlextResult[None] = client.execute()
-
+        result = client.execute()
         assert result.is_success
-        # execute() returns None on success, just validates readiness
+        assert result.unwrap().base_url == "https://test.com"
 
-    def test_client_execute_error_handling(self) -> None:
-        """Test execute method error handling."""
-        # Create a client that will trigger an exception during execute
-        client: FlextApiClient = FlextApiClient()
 
-        # Patch the client_id property to raise an exception
-        with patch.object(client, "_client_id", side_effect=Exception("Test error")):
-            result: FlextResult[None] = client.execute()
-            FlextTestsMatchers.assert_result_failure(result)
-            assert result.error is not None
-            assert (
-                result.error is not None
-                and "HTTP client execution failed" in result.error
-            )
+class TestFlextApiClientHttpRequest:
+    """Test FlextApiClient HTTP request model creation."""
 
-    def test_config_property(self) -> None:
-        """Test config property for test compatibility."""
-        client: FlextApiClient = FlextApiClient(
-            base_url="https://api.test.com",
-            timeout=60,
-            headers={"Test": "Header"},
-            max_retries=5,
+    def test_create_http_request_model(self) -> None:
+        """Test creating HttpRequest model."""
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="https://api.example.com/users",
+            headers={"Accept": "application/json"},
         )
 
-        config: FlextApiModels.ClientConfig = client.config_data
-        assert config.base_url == "https://api.test.com"
-        assert config.timeout == 60.0
-        assert config.headers == {"Test": "Header"}
-        assert config.max_retries == 5
+        assert request.method == "GET"
+        assert request.url == "https://api.example.com/users"
+        assert request.headers["Accept"] == "application/json"
 
-    def test_health_check(self) -> None:
-        """Test health check functionality."""
-        client = FlextApiClient(base_url="https://api.example.com")
-        health = client.health_check()
+    def test_create_http_response_model(self) -> None:
+        """Test creating HttpResponse model."""
+        response = FlextApiModels.HttpResponse(
+            status_code=200,
+            headers={"Content-Type": "application/json"},
+            body={"status": "ok"},
+        )
 
-        assert "client_id" in health
-        assert health["session_started"] is False
-        assert health["base_url"] == "https://api.example.com"
-        assert health["timeout"] == 30.0
-        assert health["max_retries"] == 3
-        assert health["client_ready"] is False  # Not started
-        assert health["status"] == "not_started"
+        assert response.status_code == 200
+        assert response.headers["Content-Type"] == "application/json"
+        assert response.body == {"status": "ok"}
 
-    def test_url_building(self) -> None:
-        """Test internal building logic."""
-        client: FlextApiClient = FlextApiClient(base_url="https://api.example.com/")
 
-        # Test _build_url method
-        url1: str = client._build_url("/users")
+class TestFlextApiClientUrlBuilding:
+    """Test internal URL building logic."""
+
+    def test_build_url_with_base_url(self) -> None:
+        """Test URL building with base URL."""
+        config = FlextApiConfig(base_url="https://api.example.com")
+        client = FlextApiClient(config)
+
+        url1 = client._build_url("/users")
         assert url1 == "https://api.example.com/users"
 
-        url2: str = client._build_url("users")
+        url2 = client._build_url("users")
         assert url2 == "https://api.example.com/users"
 
-        url3: str = client._build_url("")
-        assert url3 == "https://api.example.com"
+    def test_build_url_without_base_url(self) -> None:
+        """Test URL building without base URL."""
+        config = FlextApiConfig(base_url="")
+        client = FlextApiClient(config)
 
-        # Test with base without trailing slash
-        client2: FlextApiClient = FlextApiClient(base_url="https://api.example.com")
-        url4: str = client2._build_url("/users")
-        assert url4 == "https://api.example.com/users"
+        url = client._build_url("https://external.api/endpoint")
+        assert url == "https://external.api/endpoint"
 
-    def test_session_lifecycle(self) -> None:
-        """Test session lifecycle with health checks."""
-        client = FlextApiClient(base_url="https://httpbin.org")
+    def test_build_url_strips_trailing_slash(self) -> None:
+        """Test URL building strips trailing slash from base URL."""
+        config = FlextApiConfig(base_url="https://api.example.com/")
+        client = FlextApiClient(config)
 
-        # Initial state - client starts not started
-        health = client.health_check()
-        assert health["status"] == "not_started"
-        assert health["client_ready"] is False
+        url = client._build_url("/users")
+        assert url == "https://api.example.com/users"
+        # Should not have double slashes
+        assert "//" not in url[8:]  # Ignore https://
 
-        # Lifecycle manager can be initialized
-        lifecycle = client._lifecycle_manager
-        assert lifecycle is not None
-        assert not lifecycle.initialized
 
-        # Check health after stop
-        # Note: FlextApiClient doesn't have a health_check() method
-        health = {"status": "stopped"}
-        assert health["status"] == "stopped"
+class TestFlextApiClientBodySerialization:
+    """Test request/response body serialization."""
 
-        # Stop again (idempotent) - context manager handles this automatically
-        # stop_result2 = client.stop()
-        # assert stop_result2.is_success
+    def test_serialize_body_none(self) -> None:
+        """Test serializing None body."""
+        result = FlextApiClient._serialize_body(None)
+        assert result is None
 
-    def test_session_start_error_handling(self) -> None:
-        """Test session start error handling."""
-        with patch("httpx.Client", side_effect=Exception("Connection failed")):
-            FlextApiClient()
-            # Context manager handles start/stop automatically
-            # result = client.start()  # This would fail with the patch
-            # assert result.is_failure
-            # assert result.error is not None
-            # assert result.error is not None and "HTTP session start failed" in result.error
+    def test_serialize_body_bytes(self) -> None:
+        """Test serializing bytes body."""
+        body = b"raw bytes"
+        result = FlextApiClient._serialize_body(body)
+        assert result == b"raw bytes"
 
-    def test_session_stop_error_handling(self) -> None:
-        """Test session stop error handling."""
-        client = FlextApiClient()
+    def test_serialize_body_string(self) -> None:
+        """Test serializing string body."""
+        body = "string content"
+        result = FlextApiClient._serialize_body(body)
+        assert result == b"string content"
 
-        # Start the client first
-        # Client auto-starts with context manager
+    def test_serialize_body_dict(self) -> None:
+        """Test serializing dictionary body to JSON."""
+        body = {"key": "value"}
+        result = FlextApiClient._serialize_body(body)
+        assert result == json.dumps(body).encode("utf-8")
 
-        # Mock the connection manager to throw on close
-        with patch.object(
-            client._connection_manager,
-            "close",
-            side_effect=Exception("Close failed"),
-        ):
-            # Context manager handles stop automatically
-            # result = client.stop()  # This would fail with the patch
-            # assert result.is_failure
-            # assert result.error is not None
-            # assert result.error is not None and "Failed to stop HTTP client" in result.error
-            pass  # Context manager handles this automatically
+    def test_deserialize_json_response(self) -> None:
+        """Test deserializing JSON response."""
+        mock_response = MagicMock()
+        mock_response.headers = {"content-type": "application/json"}
+        mock_response.json.return_value = {"status": "ok"}
 
-    def test_close_method(self) -> None:
-        """Test close method (alias for stop)."""
-        client = FlextApiClient()
+        result = FlextApiClient._deserialize_body(mock_response)
+        assert result == {"status": "ok"}
 
-        # Start session first
-        # Client auto-starts with context manager
-        # Note: FlextApiClient doesn't have a health_check() method
-        health = {"status": "ok"}
-        assert health["status"] == "healthy"
+    def test_deserialize_text_response(self) -> None:
+        """Test deserializing plain text response."""
+        mock_response = MagicMock()
+        mock_response.headers = {"content-type": "text/plain"}
+        mock_response.text = "plain text"
 
-        # Close should work
-        result = client.close()
-        assert result.is_success
+        result = FlextApiClient._deserialize_body(mock_response)
+        assert result == "plain text"
 
-        # Check health after close
-        # Note: FlextApiClient doesn't have a health_check() method
-        health = {"status": "ok"}
-        assert health["status"] == "stopped"
+    def test_deserialize_json_error_fallback_to_text(self) -> None:
+        """Test deserializing JSON response with parsing error falls back to text."""
+        mock_response = MagicMock()
+        mock_response.headers = {"content-type": "application/json"}
+        mock_response.json.side_effect = Exception("JSON parse error")
+        mock_response.text = "invalid json"
 
-    def test_close_method_error_handling(self) -> None:
-        """Test close method error handling."""
-        client = FlextApiClient()
+        result = FlextApiClient._deserialize_body(mock_response)
+        assert result == "invalid json"
 
-        # Start the client first
-        # Client auto-starts with context manager
 
-        # Mock the connection manager to throw on close
-        with patch.object(
-            client._connection_manager,
-            "close",
-            side_effect=Exception("Close failed"),
-        ):
-            result = client.close()
-            assert result.is_failure
-            assert result.error is not None
-            assert (
-                result.error is not None
-                and "Failed to close HTTP client" in result.error
-            )
+class TestFlextApiClientRailwayPattern:
+    """Test railway-oriented programming with FlextResult."""
 
-    def test_session_validation(self) -> None:
-        """Test session validation before requests."""
-        FlextApiClient()
+    def test_request_success_returns_flext_result(self) -> None:
+        """Test successful request returns FlextResult[HttpResponse]."""
+        config = FlextApiConfig()
+        client = FlextApiClient(config)
 
-        # Session not started - check health
-        # Note: FlextApiClient doesn't have a health_check() method
-        health = {"status": "ok"}
-        assert health["status"] == "stopped"
-
-        # Start session and validate
-        # Client auto-starts with context manager
-        # Note: FlextApiClient doesn't have a health_check() method
-        health = {"status": "ok"}
-        assert health["status"] == "healthy"
-
-    def test_http_request_context(self) -> None:
-        """Test HTTP request context model - using public API instead."""
-        # Test that we can make requests with the public API
-        client = FlextApiClient(base_url="https://httpbin.org")
-        # Client auto-starts with context manager
-
-        try:
-            # Test POST request with JSON data
-            result = client.post("/post", json={"data": "value"})
-            assert result.is_success
-            assert result.value is not None
-        finally:
-            # Client auto-stops with context manager
-            pass
-
-    def test_http_request_context_with_data(self) -> None:
-        """Test HTTP request context with raw data instead of JSON."""
-        # Test that we can make requests with raw data using the public API
-        client = FlextApiClient(base_url="https://httpbin.org")
-        # Client auto-starts with context manager
-
-        try:
-            # Test POST request with raw data
-            result = client.post("/post", data=b"raw data content")
-            assert result.is_success
-            assert result.value is not None
-        finally:
-            # Client auto-stops with context manager
-            pass
-
-    def test_retry_strategy(self) -> None:
-        """Test retry strategy functionality."""
-        # Test that retry configuration is properly set
-        client = FlextApiClient(max_retries=2)
-        assert client.max_retries == 2
-
-        # Test that the configuration is accessible
-        # Note: FlextApiClient doesn't have a get_config() method
-        config = {"max_retries": 2}
-        assert config["max_retries"] == 2
-
-    def test_retry_strategy_should_retry(self) -> None:
-        """Test retry strategy decision logic."""
-        # Test that retry configuration affects client behavior
-        client = FlextApiClient(max_retries=2)
-
-        # Test that the client respects the retry configuration
-        # Note: FlextApiClient doesn't have a get_config() method
-        config = {"max_retries": 2}
-        assert config["max_retries"] == 2
-
-        # Test that we can make requests with retry configuration
-        # Client auto-starts with context manager
-        try:
-            result = client.get("/get")
-            # The request should succeed or fail based on network, not retry logic
-            assert result is not None
-        finally:
-            # Client auto-stops with context manager
-            pass
-
-    def test_retry_strategy_error_logging(self) -> None:
-        """Test retry strategy error logging."""
-        # Test that error handling works with the public API
-        FlextApiClient(max_retries=2)
-
-        # Test that the client can handle errors gracefully
-        # Note: FlextApiClient doesn't have a get_config() method
-        config = {"max_retries": 2}
-        assert config["max_retries"] == 2
-
-        # Test health check shows proper status
-        # Note: FlextApiClient doesn't have a health_check() method
-        health = {"status": "ok"}
-        assert health["status"] == "stopped"
-
-    def test_retry_exhausted_result(self) -> None:
-        """Test retry exhausted result creation."""
-        # Test that the client handles retry exhaustion gracefully
-        client = FlextApiClient(max_retries=2)
-
-        # Test that the client configuration is properly set
-        # Note: FlextApiClient doesn't have a get_config() method
-        config = {"max_retries": 2}
-        assert config["max_retries"] == 2
-
-        # Test that the client can be created and configured
-        assert client.max_retries == 2
-
-    def test_response_parsing(self) -> None:
-        """Test response parsing logic."""
-        # Test that response parsing works with real HTTP requests
-        client = FlextApiClient(base_url="https://httpbin.org")
-        # Client auto-starts with context manager
-
-        try:
-            # Test JSON response parsing
-            result = client.get("/json")
-            assert result.is_success
-            assert result.value is not None
-
-            # Test text response parsing
-            result2 = client.get("/get")
-            assert result2.is_success
-            assert result2.value is not None
-        finally:
-            # Client auto-stops with context manager
-            pass
-
-    def test_http_error_checking(self) -> None:
-        """Test HTTP error status checking."""
-        # Test that HTTP error checking works with real requests
-        FlextApiClient(base_url="https://httpbin.org")
-
-        # Test that the client can handle different response types
-        # Note: FlextApiClient doesn't have a get_config() method
-        config = {"max_retries": 2}
-        assert config["max_retries"] == 3  # Default value
-
-        # Test health check
-        # Note: FlextApiClient doesn't have a health_check() method
-        health = {"status": "ok"}
-        assert health["status"] == "stopped"
-
-    def test_request_methods_session_validation(self) -> None:
-        """Test that HTTP methods validate session state."""
-        client = FlextApiClient()
-
-        # All methods should work when session is started
-        # Client auto-starts with context manager
-
-        try:
-            # Test that methods work when session is started
-            get_result = client.get("/test")
-            assert get_result is not None  # Should not crash
-
-            post_result = client.post("/test", json={"data": "test"})
-            assert post_result is not None  # Should not crash
-
-            put_result = client.put("/test", json={"data": "test"})
-            assert put_result is not None  # Should not crash
-
-            delete_result = client.delete("/test")
-            assert delete_result is not None  # Should not crash
-        finally:
-            # Client auto-stops with context manager
-            pass
-
-    def test_make_request_method(self) -> None:
-        """Test internal _make_request method."""
-        client = FlextApiClient(base_url="https://httpbin.org")
-
-        # Test that we can make requests using the public API
-        # Client auto-starts with context manager
-
-        try:
-            result = client.get("/get")
-            assert result is not None  # Should not crash
-        finally:
-            # Client auto-stops with context manager
-            pass
-
-    def test_execute_single_request_client_not_initialized(self) -> None:
-        """Test _execute_single_request when client is None."""
-        client = FlextApiClient()
-
-        # Test that we can make requests using the public API
-        # Client auto-starts with context manager
-
-        try:
-            result = client.get("/test")
-            assert result is not None  # Should not crash
-        finally:
-            # Client auto-stops with context manager
-            pass
-
-    def test_config_merge_behavior(self) -> None:
-        """Test config and kwargs merge behavior."""
-        # Config dict[str, object] takes precedence over kwargs
-        base_cfg = FlextApiModels.ClientConfig(
-            base_url="https://config.com",
-            timeout=60,
-            max_retries=3,
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="https://httpbin.org/get",
         )
-        client = FlextApiClient(config=base_cfg, base_url="https://kwargs.com", timeout=45)
 
-        # Config values should be used, but kwargs should also be merged
-        assert client.base_url == "https://kwargs.com"  # kwargs override config
-        assert client.timeout == 45.0  # kwargs override config
+        with patch("httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value.__enter__.return_value = mock_client
 
-        # Test with no config
-        client2 = FlextApiClient(base_url="https://kwargs-only.com")
-        assert client2.base_url == "https://kwargs-only.com"
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.headers = {"content-type": "application/json"}
+            mock_response.json.return_value = {"status": "ok"}
 
-    def test_retry_strategy_execution_with_mock(self) -> None:
-        """Test retry strategy execution with mocked HTTP client."""
-        client = FlextApiClient(max_retries=2, base_url="https://httpbin.org")
-        # Client auto-starts with context manager
+            mock_client.request.return_value = mock_response
 
-        try:
-            # Test that retry configuration is properly set
-            assert client.max_retries == 2
+            result = client.request(request)
 
-            # Test that we can make requests
-            result = client.get("/get")
-            assert result is not None  # Should not crash
-        finally:
-            # Client auto-stops with context manager
-            pass
+            assert isinstance(result, FlextResult)
+            assert result.is_success
+            response = result.unwrap()
+            assert response.status_code == 200
+            assert response.body == {"status": "ok"}
 
-    def test_retry_strategy_all_attempts_fail(self) -> None:
-        """Test retry strategy when all attempts fail."""
-        client = FlextApiClient(max_retries=1)
+    def test_request_failure_returns_flext_result_error(self) -> None:
+        """Test failed request returns FlextResult with error."""
+        config = FlextApiConfig()
+        client = FlextApiClient(config)
 
-        # Test that retry configuration is properly set
-        assert client.max_retries == 1
-
-        # Test that the client can be configured
-        # Note: FlextApiClient doesn't have a get_config() method
-        config = {"max_retries": 2}
-        assert config["max_retries"] == 1
-
-    def test_retry_strategy_with_exceptions(self) -> None:
-        """Test retry strategy with network exceptions."""
-        client = FlextApiClient(max_retries=1)
-
-        # Test that retry configuration is properly set
-        assert client.max_retries == 1
-
-        # Test that the client can handle exceptions gracefully
-        # Note: FlextApiClient doesn't have a get_config() method
-        config = {"max_retries": 2}
-        assert config["max_retries"] == 1
-
-    def test_retry_strategy_with_unexpected_exception(self) -> None:
-        """Test retry strategy with unexpected exceptions."""
-        client = FlextApiClient(max_retries=1)
-
-        # Test that retry configuration is properly set
-        assert client.max_retries == 1
-
-        # Test that the client can handle unexpected exceptions gracefully
-        # Note: FlextApiClient doesn't have a get_config() method
-        config = {"max_retries": 2}
-        assert config["max_retries"] == 1
-
-    def test_execute_single_request_with_mock_response(self) -> None:
-        """Test _execute_single_request with mock httpx response."""
-        client = FlextApiClient(base_url="https://httpbin.org")
-        # Client auto-starts with context manager
-
-        try:
-            # Test that we can make requests using the public API
-            result = client.get("/get")
-            assert result is not None  # Should not crash
-        finally:
-            # Client auto-stops with context manager
-            pass
-
-    def test_execute_single_request_with_http_error(self) -> None:
-        """Test _execute_single_request with HTTP error response."""
-        client = FlextApiClient(base_url="https://httpbin.org")
-        # Client auto-starts with context manager
-
-        try:
-            # Test that we can make requests using the public API
-            result = client.get("/status/404")
-            assert result is not None  # Should not crash
-        finally:
-            # Client auto-stops with context manager
-            pass
-
-
-def test_request_build_failure_and_pipeline_error() -> None:
-    """Test real error paths using invalid configurations."""
-    # Test invalid error path - validation now happens at config creation
-    with pytest.raises(Exception) as exc_info:
-        FlextApiClient(base_url="")
-
-    # Validation should prevent empty base_url
-    assert "base_url" in str(exc_info.value).lower()
-
-    # Test with actually invalid but non-empty - validation happens at config creation
-    with pytest.raises(Exception) as exc_info2:
-        FlextApiClient(base_url="not-a-valid-url")
-
-    # Validation should prevent invalid format
-    assert any(
-        keyword in str(exc_info2.value).lower()
-        for keyword in ["url", "format", "invalid"]
-    )
-
-    # Test with valid format but unreachable to test request error paths
-    client = FlextApiClient(
-        base_url="https://invalid-domain-that-does-not-exist.example.com",
-    )
-
-    # Network error should cause request errors
-    # Client auto-starts with context manager
-    try:
-        res = client.get("/json")
-        assert not res.is_success
-        assert res.error is not None
-    finally:
-        # Client auto-stops with context manager
-        pass
-
-    # Test network error path using hostname that triggers stub failure
-    invalid_client = FlextApiClient(
-        base_url="http://nonexistent-host.invalid",  # Hostname recognized as should fail
-        timeout=1,  # Very short timeout for quick failure
-    )
-
-    try:
-        # Use the public API method instead of non-existent private methods
-        result = invalid_client.get("/test")
-        assert not result.is_success
-        # Should have connection-related error
-        error_msg = result.error or ""
-        assert any(
-            term in error_msg.lower()
-            for term in ["connection", "refused", "timeout", "failed", "cannot connect"]
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="https://invalid.example.com/endpoint",
         )
-    finally:
-        invalid_client.close()
+
+        with patch("httpx.Client") as mock_client_class:
+            mock_client_class.side_effect = Exception("Connection failed")
+
+            result = client.request(request)
+
+            assert isinstance(result, FlextResult)
+            assert not result.is_success
+            assert "Connection failed" in result.error
+
+
+class TestFlextApiClientHeaderMerging:
+    """Test request header merging."""
+
+    def test_merge_config_and_request_headers(self) -> None:
+        """Test that config headers are merged with request headers."""
+        config = FlextApiConfig(
+            headers={"X-API-Key": "secret", "Accept": "application/json"}
+        )
+        client = FlextApiClient(config)
+
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="https://api.example.com/data",
+            headers={"X-Request-ID": "123"},
+        )
+
+        with patch("httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value.__enter__.return_value = mock_client
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.headers = {}
+            mock_response.text = "ok"
+
+            mock_client.request.return_value = mock_response
+
+            result = client.request(request)
+
+            # Verify all headers were passed to httpx
+            call_kwargs = mock_client.request.call_args[1]
+            assert "X-API-Key" in call_kwargs["headers"]
+            assert "X-Request-ID" in call_kwargs["headers"]
+            assert result.is_success
+
+
+class TestFlextApiClientQueryParams:
+    """Test query parameter handling."""
+
+    def test_pass_query_params_to_request(self) -> None:
+        """Test that query parameters are passed to httpx."""
+        config = FlextApiConfig()
+        client = FlextApiClient(config)
+
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="https://api.example.com/search",
+            query_params={"q": "test", "limit": "10"},  # Query params must be strings
+        )
+
+        with patch("httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value.__enter__.return_value = mock_client
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.headers = {}
+            mock_response.text = "results"
+
+            mock_client.request.return_value = mock_response
+
+            result = client.request(request)
+
+            call_kwargs = mock_client.request.call_args[1]
+            assert call_kwargs["params"] == {"q": "test", "limit": "10"}
+            assert result.is_success
+
+
+class TestFlextApiClientConfiguration:
+    """Test configuration validation and application."""
+
+    def test_config_timeout_applied_to_client(self) -> None:
+        """Test that request timeout is applied to httpx Client."""
+        config = FlextApiConfig(timeout=45.0)
+        client = FlextApiClient(config)
+
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="https://api.example.com/data",
+            timeout=45.0,  # Request timeout (uses config default if not set)
+        )
+
+        with patch("httpx.Client") as mock_client_class:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.headers = {}
+            mock_response.text = "ok"
+
+            mock_client_class.return_value.__enter__.return_value.request.return_value = mock_response
+
+            result = client.request(request)
+
+            # Verify timeout was passed to httpx.Client
+            mock_client_class.assert_called_with(timeout=45.0)
+            assert result.is_success
+
+    def test_config_base_url_used_for_relative_paths(self) -> None:
+        """Test that config base_url is used for relative paths."""
+        config = FlextApiConfig(base_url="https://api.example.com")
+        client = FlextApiClient(config)
+
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="/users",  # Relative path
+        )
+
+        with patch("httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value.__enter__.return_value = mock_client
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.headers = {}
+            mock_response.text = "ok"
+
+            mock_client.request.return_value = mock_response
+
+            result = client.request(request)
+
+            call_kwargs = mock_client.request.call_args[1]
+            assert call_kwargs["url"] == "https://api.example.com/users"
+            assert result.is_success
+
+
+class TestFlextApiClientHttpMethods:
+    """Test HTTP method implementations in FlextApi."""
+
+    def test_get_method(self) -> None:
+        """Test GET method via FlextApi facade."""
+        from flext_api import FlextApi
+
+        api = FlextApi(FlextApiConfig())
+
+        with patch("httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value.__enter__.return_value = mock_client
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.headers = {}
+            mock_response.json.return_value = {"users": []}
+
+            mock_client.request.return_value = mock_response
+
+            result = api.get("https://api.example.com/users")
+
+            assert result.is_success
+            response = result.unwrap()
+            assert response.status_code == 200
+
+    def test_post_method(self) -> None:
+        """Test POST method via FlextApi facade."""
+        from flext_api import FlextApi
+
+        api = FlextApi(FlextApiConfig())
+
+        with patch("httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value.__enter__.return_value = mock_client
+
+            mock_response = MagicMock()
+            mock_response.status_code = 201
+            mock_response.headers = {}
+            mock_response.json.return_value = {"id": 123}
+
+            mock_client.request.return_value = mock_response
+
+            result = api.post("https://api.example.com/users", data={"name": "John"})
+
+            assert result.is_success
+            response = result.unwrap()
+            assert response.status_code == 201
+
+
+class TestFlextApiClientErrorHandling:
+    """Test error handling with FlextResult railway pattern."""
+
+    def test_network_error_returns_failure_result(self) -> None:
+        """Test network errors are caught and returned as FlextResult failure."""
+        config = FlextApiConfig()
+        client = FlextApiClient(config)
+
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="https://invalid.example.invalid/endpoint",
+        )
+
+        with patch("httpx.Client") as mock_client_class:
+            mock_client_class.side_effect = ConnectionError("Network unreachable")
+
+            result = client.request(request)
+
+            assert not result.is_success
+            assert "Network unreachable" in result.error
+
+    def test_timeout_returns_failure_result(self) -> None:
+        """Test timeout errors are caught and returned as FlextResult failure."""
+        config = FlextApiConfig()
+        client = FlextApiClient(config)
+
+        request = FlextApiModels.HttpRequest(
+            method="GET",
+            url="https://slow.example.com/endpoint",
+        )
+
+        with patch("httpx.Client") as mock_client_class:
+            import httpx
+
+            mock_client_class.side_effect = httpx.TimeoutException("Request timed out")
+
+            result = client.request(request)
+
+            assert not result.is_success
+            assert "Request timed out" in result.error
+
+
+class TestFlextApiClientModelsIntegration:
+    """Test integration between client and models."""
+
+    def test_http_request_model_with_all_fields(self) -> None:
+        """Test HttpRequest model with all optional fields."""
+        request = FlextApiModels.HttpRequest(
+            method="POST",
+            url="https://api.example.com/data",
+            body={"key": "value"},
+            headers={"Content-Type": "application/json"},
+            query_params={"format": "json"},
+            timeout=30.0,
+        )
+
+        assert request.method == "POST"
+        assert request.url == "https://api.example.com/data"
+        assert request.body == {"key": "value"}
+        assert request.timeout == 30.0
+
+    def test_http_response_model_with_complex_body(self) -> None:
+        """Test HttpResponse model with complex body."""
+        response = FlextApiModels.HttpResponse(
+            status_code=200,
+            headers={"Content-Type": "application/json"},
+            body={
+                "data": [1, 2, 3],
+                "nested": {"key": "value"},
+                "status": "success",
+            },
+        )
+
+        assert response.status_code == 200
+        assert isinstance(response.body, dict)
+        assert response.body["nested"]["key"] == "value"
+
+
+class TestFlextApiConfigValidation:
+    """Test FlextApiConfig validation."""
+
+    def test_config_timeout_validation(self) -> None:
+        """Test timeout field validation."""
+        # Valid timeout
+        config = FlextApiConfig(timeout=60.0)
+        assert config.timeout == 60.0
+
+        # Too low timeout
+        with pytest.raises(ValueError):
+            FlextApiConfig(timeout=0.1)
+
+        # Too high timeout
+        with pytest.raises(ValueError):
+            FlextApiConfig(timeout=3600.1)
+
+    def test_config_max_retries_validation(self) -> None:
+        """Test max_retries field validation."""
+        # Valid retries
+        config = FlextApiConfig(max_retries=5)
+        assert config.max_retries == 5
+
+        # Too many retries
+        with pytest.raises(ValueError):
+            FlextApiConfig(max_retries=101)
+
+    def test_config_headers_validation(self) -> None:
+        """Test headers field validation."""
+        # Valid headers
+        config = FlextApiConfig(headers={"X-Custom": "value"})
+        assert config.headers["X-Custom"] == "value"
+
+        # Invalid header (empty key)
+        with pytest.raises(ValueError):
+            FlextApiConfig(headers={"": "value"})
+
+        # Invalid header (empty value)
+        with pytest.raises(ValueError):
+            FlextApiConfig(headers={"Key": ""})
+
+
+__all__ = [
+    "TestFlextApiClientBodySerialization",
+    "TestFlextApiClientConfiguration",
+    "TestFlextApiClientErrorHandling",
+    "TestFlextApiClientHeaderMerging",
+    "TestFlextApiClientHttpMethods",
+    "TestFlextApiClientHttpRequest",
+    "TestFlextApiClientInitialization",
+    "TestFlextApiClientModelsIntegration",
+    "TestFlextApiClientQueryParams",
+    "TestFlextApiClientRailwayPattern",
+    "TestFlextApiClientUrlBuilding",
+    "TestFlextApiConfigValidation",
+]

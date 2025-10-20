@@ -1,9 +1,7 @@
-"""Generic HTTP Operations - Domain-agnostic HTTP method implementations.
+"""Generic HTTP Operations following SOLID principles.
 
-This module provides HttpOperations, containing all HTTP method
-implementations (GET, POST, PUT, DELETE, etc.) with flext-core patterns
-and railway-oriented error handling. Completely generic and reusable
-across any domain.
+Domain-agnostic HTTP method implementations using flext-core patterns.
+Single responsibility: HTTP method execution with railway error handling.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -12,184 +10,77 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TypeVar
+from typing import Any
 
 from flext_core import FlextResult
 
-T = TypeVar("T")
 
+class FlextApiOperations:
+    """Generic HTTP operation methods following SOLID principles.
 
-class HttpOperations[T]:
-    """Generic HTTP operation methods with flext-core railway patterns.
-
-    Provides all standard HTTP methods (GET, POST, PUT, DELETE, etc.) with
-    consistent error handling and type safety. Each method follows the
-    railway pattern, returning FlextResult for composable error handling.
-    Completely domain-agnostic and reusable across any HTTP client implementation.
+    Single responsibility: HTTP method execution with railway error handling.
+    Uses flext-core patterns for type safety and composability.
     """
 
-    def get(
-        self,
+    @staticmethod
+    def execute_get(
         url: str,
         *,
         params: dict[str, str] | None = None,
         headers: dict[str, str] | None = None,
         timeout: float | None = None,
-    ) -> FlextResult[T]:
-        """Perform HTTP GET request with railway error handling."""
-        return self._execute_request(
-            "GET", url, params=params, headers=headers, timeout=timeout
-        )
-
-    def post(
-        self,
-        url: str,
-        data: object | None = None,
-        *,
-        json: object | None = None,
-        json_data: object | None = None,
-        params: dict[str, str] | None = None,
-        headers: dict[str, str] | None = None,
-        timeout: float | None = None,
-    ) -> FlextResult[T]:
-        """Perform HTTP POST request with JSON/data support."""
-        # Support both json and json_data parameters for backward compatibility
-        request_data = json_data if json_data is not None else (json if json is not None else data)
-
-        # Use the json_data parameter if available (newer API)
-        if json_data is not None:
-            return self._execute_request(
-                "POST",
-                url,
-                data=request_data,
-                params=params,
-                headers=headers,
-                timeout=timeout,
-                json_data=json_data,
-            )
-        else:
-            return self._execute_request(
-                "POST",
-                url,
-                data=request_data,
-                params=params,
-                headers=headers,
-                timeout=timeout,
-            )
-
-    def put(
-        self,
-        url: str,
-        data: object | None = None,
-        *,
-        json: object | None = None,
-        params: dict[str, str] | None = None,
-        headers: dict[str, str] | None = None,
-        timeout: float | None = None,
-    ) -> FlextResult[T]:
-        """Perform HTTP PUT request with JSON/data support."""
-        request_data = json if json is not None else data
-        return self._execute_request(
-            "PUT",
-            url,
-            data=request_data,
-            params=params,
-            headers=headers,
-            timeout=timeout,
-        )
-
-    def patch(
-        self,
-        url: str,
-        data: object | None = None,
-        *,
-        json: object | None = None,
-        params: dict[str, str] | None = None,
-        headers: dict[str, str] | None = None,
-        timeout: float | None = None,
-    ) -> FlextResult[T]:
-        """Perform HTTP PATCH request with JSON/data support."""
-        request_data = json if json is not None else data
-        return self._execute_request(
-            "PATCH",
-            url,
-            data=request_data,
-            params=params,
-            headers=headers,
-            timeout=timeout,
-        )
-
-    def delete(
-        self,
-        url: str,
-        *,
-        params: dict[str, str] | None = None,
-        headers: dict[str, str] | None = None,
-        timeout: float | None = None,
-    ) -> FlextResult[T]:
-        """Perform HTTP DELETE request."""
-        return self._execute_request(
-            "DELETE", url, params=params, headers=headers, timeout=timeout
-        )
-
-    def head(
-        self,
-        url: str,
-        *,
-        params: dict[str, str] | None = None,
-        headers: dict[str, str] | None = None,
-        timeout: float | None = None,
-    ) -> FlextResult[T]:
-        """Perform HTTP HEAD request."""
-        return self._execute_request(
-            "HEAD", url, params=params, headers=headers, timeout=timeout
-        )
-
-    def options(
-        self,
-        url: str,
-        *,
-        params: dict[str, str] | None = None,
-        headers: dict[str, str] | None = None,
-        timeout: float | None = None,
-    ) -> FlextResult[T]:
-        """Perform HTTP OPTIONS request."""
-        return self._execute_request(
-            "OPTIONS", url, params=params, headers=headers, timeout=timeout
-        )
-
-    def request(
-        self,
-        method: str,
-        url: str,
-        *,
-        data: object | None = None,
-        json: object | None = None,
-        params: dict[str, str] | None = None,
-        headers: dict[str, str] | None = None,
-        timeout: float | None = None,
-    ) -> FlextResult[T]:
-        """Perform generic HTTP request with full parameter support."""
-        request_data = json if json is not None else data
-        return self._execute_request(
-            method,
-            url,
-            data=request_data,
-            params=params,
-            headers=headers,
-            timeout=timeout,
-        )
-
-    def _execute_request(
-        self,
-        method: str,
-        url: str,
-        *,
-        data: object | None = None,
-        params: dict[str, str] | None = None,
-        headers: dict[str, str] | None = None,
-        timeout: float | None = None,
-    ) -> FlextResult[T]:
-        """Execute HTTP request - implemented by concrete client classes."""
-        msg = "HTTP request execution must be implemented by concrete client"
+    ) -> FlextResult[dict[str, Any]]:
+        """Execute HTTP GET request with railway error handling."""
+        # This method delegates to the actual HTTP client implementation
+        # The HTTP client should implement this method
+        msg = "HTTP client must implement execute_get"
         raise NotImplementedError(msg)
+
+    @staticmethod
+    def execute_post(
+        url: str,
+        data: Any | None = None,
+        *,
+        json_data: Any | None = None,
+        params: dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> FlextResult[dict[str, Any]]:
+        """Execute HTTP POST request with JSON/data support."""
+        # This method delegates to the actual HTTP client implementation
+        # The HTTP client should implement this method
+        msg = "HTTP client must implement execute_post"
+        raise NotImplementedError(msg)
+
+    @staticmethod
+    def execute_put(
+        url: str,
+        data: Any | None = None,
+        *,
+        json_data: Any | None = None,
+        params: dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> FlextResult[dict[str, Any]]:
+        """Execute HTTP PUT request with JSON/data support."""
+        # This method delegates to the actual HTTP client implementation
+        # The HTTP client should implement this method
+        msg = "HTTP client must implement execute_put"
+        raise NotImplementedError(msg)
+
+    @staticmethod
+    def execute_delete(
+        url: str,
+        *,
+        params: dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> FlextResult[dict[str, Any]]:
+        """Execute HTTP DELETE request with railway error handling."""
+        # This method delegates to the actual HTTP client implementation
+        # The HTTP client should implement this method
+        msg = "HTTP client must implement execute_delete"
+        raise NotImplementedError(msg)
+
+
+__all__ = ["FlextApiOperations"]

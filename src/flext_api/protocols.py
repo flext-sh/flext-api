@@ -12,7 +12,7 @@ from typing import Protocol, runtime_checkable
 from flext_core import FlextProtocols, FlextResult
 
 
-class HttpProtocols(FlextProtocols):
+class FlextApiProtocols(FlextProtocols):
     """Single unified HTTP protocols class extending flext-core FlextProtocols.
 
     Contains all protocol definitions for HTTP operations using nested classes.
@@ -131,5 +131,5 @@ class HttpProtocols(FlextProtocols):
 
 
 __all__ = [
-    "HttpProtocols",
+    "FlextApiProtocols",
 ]

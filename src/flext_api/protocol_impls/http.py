@@ -94,7 +94,9 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
         """Send HTTP request with retry logic and error handling."""
         # Convert to HTTP request model for type safety
         if not isinstance(request, dict):
-            return FlextResult[FlextApiTypes.ResponseData].fail("Invalid request format")
+            return FlextResult[FlextApiTypes.ResponseData].fail(
+                "Invalid request format"
+            )
 
         http_request = FlextApiModels.HttpRequest(
             method=request.get("method", "GET"),
@@ -107,7 +109,9 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
         # Extract request parameters
         method = http_request.method.upper()
         url = str(http_request.url)
-        headers = dict[str, object](http_request.headers) if http_request.headers else {}
+        headers = (
+            dict[str, object](http_request.headers) if http_request.headers else {}
+        )
         timeout = http_request.timeout
         body = http_request.body
 
@@ -131,7 +135,9 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
                 connection, method, url, headers, {}, timeout, body
             )
         else:
-            return FlextResult[FlextApiTypes.ResponseData].fail("Invalid connection type")
+            return FlextResult[FlextApiTypes.ResponseData].fail(
+                "Invalid connection type"
+            )
 
         if result.is_success:
             response = result.unwrap()
@@ -167,7 +173,10 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
                 if response.status_code < http_client_error_min:  # Success codes
                     return self._build_response(response, method)
 
-                if response.status_code >= http_client_error_min and not self._should_retry(response.status_code, attempt):
+                if (
+                    response.status_code >= http_client_error_min
+                    and not self._should_retry(response.status_code, attempt)
+                ):
                     return FlextResult[FlextApiModels.HttpResponse].fail(
                         f"HTTP {response.status_code}: {response.text}"
                     )
@@ -190,7 +199,9 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
                 )
             except Exception as e:
                 last_error = f"Unexpected error: {e}"
-                self.logger.exception("Unexpected error", extra={"url": url, "method": method})
+                self.logger.exception(
+                    "Unexpected error", extra={"url": url, "method": method}
+                )
                 break
 
             if attempt < self._max_retries:
@@ -221,7 +232,10 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
 
         if body is not None:
             content_type = str(headers.get("Content-Type", "")).lower()
-            if isinstance(body, dict) and "application/x-www-form-urlencoded" in content_type:
+            if (
+                isinstance(body, dict)
+                and "application/x-www-form-urlencoded" in content_type
+            ):
                 request_kwargs["data"] = body
             elif isinstance(body, dict):
                 request_kwargs["json"] = body

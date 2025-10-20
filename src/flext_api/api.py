@@ -1,7 +1,7 @@
-"""Generic HTTP API - Minimal facade for HTTP foundation.
+"""FLEXT API - Unified HTTP Facade.
 
-Thin entry point providing access to generic HTTP modules.
-Follows flext-core patterns with minimal complexity. Domain-agnostic.
+Single entry point for all HTTP operations. Delegates to FlextApiClient for
+actual HTTP work, to FlextApiModels for data validation. 100% GENERIC.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -10,78 +10,116 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Any, ClassVar
+
 from flext_core import FlextResult, FlextService
 
-import flext_api.client as client_module
-from flext_api.app import FlextApiApp
 from flext_api.client import FlextApiClient
-from flext_api.config import FlextWebConfig
-from flext_api.constants import FlextApiConstants
-from flext_api.exceptions import FlextApiExceptions
+from flext_api.config import FlextApiConfig
 from flext_api.models import FlextApiModels
-from flext_api.protocols import HttpProtocols
-from flext_api.typings import FlextApiTypes
-from flext_api.utilities import FlextApiUtilities
 
 
-class FlextWebApi(FlextService[FlextWebConfig]):
-    """Minimal facade for generic HTTP foundation.
+class FlextApi(FlextService[FlextApiConfig]):
+    """Unified HTTP API facade - pure delegation pattern.
 
-    Provides access to all generic HTTP modules without domain coupling.
-    Follows railway-oriented error handling and single responsibility principle.
+    Single responsibility: Delegate HTTP operations to FlextApiClient.
+    All configuration through FlextApiConfig model.
+    All data validation through FlextApiModels.
+    100% GENERIC - no domain coupling.
     """
 
-    def __init__(self, config: FlextWebConfig | None = None) -> None:
-        """Initialize with optional configuration."""
+    # Unified namespace - direct access to FLEXT components
+    Models: ClassVar = FlextApiModels
+    Config: ClassVar = FlextApiConfig
+
+    def __init__(self, config: FlextApiConfig | None = None) -> None:
+        """Initialize with optional config.
+
+        Args:
+            config: FlextApiConfig model or None for defaults.
+
+        """
         super().__init__()
-        self._config = config or FlextWebConfig()
+        self._config = config or FlextApiConfig()
+        self._client = FlextApiClient(self._config)
 
-    def execute(self) -> FlextResult[FlextWebConfig]:
-        """Execute main operation (FlextService interface)."""
-        return FlextResult[FlextWebConfig].ok(self._config)
+    def execute(self) -> FlextResult[FlextApiConfig]:
+        """Execute FlextService interface."""
+        return FlextResult[FlextApiConfig].ok(self._config)
 
-    # Generic module access properties (type-safe)
-    @property
-    def client(self) -> type[FlextApiClient]:
-        """Generic HTTP client functionality."""
-        return client_module.FlextApiClient
+    def request(
+        self, request: FlextApiModels.HttpRequest
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """Execute HTTP request - pure delegation to client.
 
-    @property
-    def app(self) -> type[FlextApiApp]:
-        """FastAPI application factory."""
-        return FlextApiApp
+        Args:
+            request: HttpRequest model.
 
-    @property
-    def models(self) -> type[HttpModels]:
-        """Generic HTTP data models."""
-        return HttpModels
+        Returns:
+            FlextResult[HttpResponse]: Response or error.
 
-    @property
-    def constants(self) -> type[FlextApiConstants]:
-        """HTTP constants."""
-        return FlextApiConstants
+        """
+        return self._client.request(request)
 
-    @property
-    def config_class(self) -> type[FlextWebConfig]:
-        """Generic configuration class."""
-        return FlextWebConfig
+    def _http_method(
+        self,
+        method: str,
+        url: str,
+        data: Any = None,
+        headers: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """Generic HTTP method executor - eliminates code duplication.
 
-    @property
-    def exceptions(self) -> type[FlextApiExceptions]:
-        """HTTP exceptions."""
-        return FlextApiExceptions
+        Args:
+            method: HTTP method (GET, POST, etc.).
+            url: Request URL.
+            data: Optional body.
+            headers: Optional headers.
+            **kwargs: Additional parameters.
 
-    @property
-    def protocols(self) -> type[HttpProtocols]:
-        """Generic protocol definitions."""
-        return HttpProtocols
+        Returns:
+            FlextResult[HttpResponse]: Response or error.
 
-    @property
-    def types(self) -> type[FlextApiTypes]:
-        """Type definitions."""
-        return FlextApiTypes
+        """
+        req = FlextApiModels.HttpRequest(
+            method=method,
+            url=url,
+            body=data,
+            headers=headers or {},
+            **kwargs,
+        )
+        return self.request(req)
 
-    @property
-    def utilities(self) -> type[FlextApiUtilities]:
-        """Utility functions."""
-        return FlextApiUtilities
+    def get(
+        self, url: str, headers: dict[str, str] | None = None, **kwargs: Any
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """HTTP GET - delegates to generic method."""
+        return self._http_method("GET", url, headers=headers, **kwargs)
+
+    def post(
+        self, url: str, data: Any = None, headers: dict[str, str] | None = None, **kwargs: Any
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """HTTP POST - delegates to generic method."""
+        return self._http_method("POST", url, data, headers, **kwargs)
+
+    def put(
+        self, url: str, data: Any = None, headers: dict[str, str] | None = None, **kwargs: Any
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """HTTP PUT - delegates to generic method."""
+        return self._http_method("PUT", url, data, headers, **kwargs)
+
+    def delete(
+        self, url: str, headers: dict[str, str] | None = None, **kwargs: Any
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """HTTP DELETE - delegates to generic method."""
+        return self._http_method("DELETE", url, headers=headers, **kwargs)
+
+    def patch(
+        self, url: str, data: Any = None, headers: dict[str, str] | None = None, **kwargs: Any
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """HTTP PATCH - delegates to generic method."""
+        return self._http_method("PATCH", url, data, headers, **kwargs)
+
+
+__all__ = ["FlextApi"]

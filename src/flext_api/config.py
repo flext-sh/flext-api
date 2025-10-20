@@ -1,7 +1,7 @@
-"""Generic HTTP Configuration - Pure Pydantic settings.
+"""Generic HTTP Configuration - Pure Pydantic v2.
 
-This module provides FlextWebConfig, a generic Pydantic configuration class
-for HTTP operations. Completely domain-agnostic and reusable.
+Minimal HTTP configuration using Pydantic v2 with flext-core constants.
+100% GENERIC - no domain coupling. Single responsibility.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -10,82 +10,71 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
+import json
 
-from pydantic import BaseModel, Field
+from flext_core import FlextConstants
+from pydantic import BaseModel, Field, field_validator
 
 
-class FlextWebConfig(BaseModel):
-    """Generic HTTP configuration using pure Pydantic patterns.
+class FlextApiConfig(BaseModel):
+    """HTTP configuration using Pydantic v2.
 
-    Domain-agnostic configuration for HTTP operations with type safety.
-    Uses advanced Pydantic features for validation and defaults.
+    Pure configuration model with validation using flext-core constants.
+    No wrappers - use Pydantic directly.
     """
 
-    # Core HTTP configuration
-    base_url: str = Field(default="", description="Base URL for HTTP requests")
+    base_url: str = Field(
+        default="",
+        max_length=2048,
+        description="Base URL for HTTP requests",
+    )
 
     timeout: float = Field(
-        default=30.0,
-        ge=0.1,
-        le=300.0,
-        description="HTTP request timeout in seconds",
+        default=FlextConstants.Container.TIMEOUT_SECONDS,
+        ge=FlextConstants.Container.MIN_TIMEOUT_SECONDS,
+        le=FlextConstants.Container.MAX_TIMEOUT_SECONDS,
+        description="HTTP request timeout (seconds)",
     )
 
     max_retries: int = Field(
-        default=3,
-        ge=0,
-        le=10,
-        description="Maximum number of retries for failed requests",
+        default=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+        ge=FlextConstants.Cqrs.MIN_RETRIES,
+        le=FlextConstants.Cqrs.MAX_RETRIES,
+        description="Maximum retry attempts",
     )
 
-    # Request configuration
-    headers: dict[str, Any] = Field(
+    headers: dict[str, str] = Field(
         default_factory=dict,
-        description="Default HTTP headers for requests",
+        description="Default HTTP headers",
     )
 
-    # Logging configuration
-    log_requests: bool = Field(default=True, description="Enable request logging")
-    log_responses: bool = Field(default=True, description="Enable response logging")
+    @field_validator("headers")
+    @classmethod
+    def validate_headers(cls, v: dict[str, str]) -> dict[str, str]:
+        """Validate headers."""
+        for key, value in v.items():
+            if not key.strip() or not value:
+                msg = f"Invalid header: '{key}': '{value}'"
+                raise ValueError(msg)
+        return v
 
-    # Performance configuration
-    track_performance: bool = Field(default=True, description="Enable performance tracking")
-
-    def get_client_config(self) -> dict[str, Any]:
-        """Get HTTP client configuration."""
-        return {
-            "base_url": self.base_url,
-            "timeout": self.timeout,
-            "max_retries": self.max_retries,
-            "headers": self.headers,
-        }
-
-    def get_server_config(self) -> dict[str, Any]:
-        """Get HTTP server configuration."""
-        return {
-            "host": "127.0.0.1",
-            "port": 8000,
-            "timeout": self.timeout,
-            "logging": {
-                "request_logging": self.log_requests,
-                "response_logging": self.log_responses,
-            },
-        }
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert configuration to dictionary for serialization."""
-        return self.model_dump()
-
-    def get_default_headers(self) -> dict[str, str]:
-        """Get default headers for HTTP requests."""
+    @property
+    def default_headers(self) -> dict[str, str]:
+        """Default headers with MIME type."""
         return {
             "Accept": "application/json",
             "Content-Type": "application/json",
             **self.headers,
         }
 
+    def to_json(self) -> str:
+        """Convert to JSON."""
+        return json.dumps(self.model_dump(), indent=2)
 
-__all__ = [
-    "FlextWebConfig",
-]
+    @classmethod
+    def from_json(cls, data: str) -> FlextApiConfig:
+        """Create from JSON."""
+        return cls.model_validate(json.loads(data))
+
+
+__all__ = ["FlextApiConfig"]
