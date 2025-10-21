@@ -24,9 +24,6 @@ from typing import Any
 from fastapi import FastAPI
 from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
-from flext_api.middleware import FlextApiMiddleware
-from flext_api.plugins import ProtocolPlugin
-
 
 class FlextApiServer(FlextService[object]):
     """Generic API server with protocol handler support using Clean Architecture.
@@ -47,7 +44,7 @@ class FlextApiServer(FlextService[object]):
             """Initialize route registry.
 
             Args:
-                logger: Logger instance for audit trail
+            logger: Logger instance for audit trail
 
             """
             self._routes: dict[str, Any] = {}
@@ -60,7 +57,7 @@ class FlextApiServer(FlextService[object]):
             handler: Callable,
             prefix: str = "",
             schema: object | None = None,
-            **options: Any,
+            **options: object,
         ) -> FlextResult[None]:
             """Register endpoint with unified interface (DRY - eliminates duplication).
 
@@ -116,7 +113,7 @@ class FlextApiServer(FlextService[object]):
             """Initialize connection manager.
 
             Args:
-                logger: Logger instance
+            logger: Logger instance
 
             """
             self._websocket_connections: dict[str, Any] = {}
@@ -130,9 +127,7 @@ class FlextApiServer(FlextService[object]):
                     if hasattr(connection, "close"):
                         connection.close()
                 except Exception as e:
-                    self._logger.warning(
-                        f"Failed to close WebSocket {conn_id}: {e}"
-                    )
+                    self._logger.warning(f"Failed to close WebSocket {conn_id}: {e}")
 
             for conn_id, connection in self._sse_connections.items():
                 try:
@@ -160,11 +155,11 @@ class FlextApiServer(FlextService[object]):
             """Initialize lifecycle manager.
 
             Args:
-                host: Server host
-                port: Server port
-                title: App title
-                version: App version
-                logger: Logger instance
+            host: Server host
+            port: Server port
+            title: App title
+            version: App version
+            logger: Logger instance
 
             """
             self._host = host
@@ -306,13 +301,13 @@ class FlextApiServer(FlextService[object]):
     ) -> None:
         """Initialize API server."""
         super().__init__()
-        _logger = FlextLogger(__name__)
+        logger = FlextLogger(__name__)
 
         # Delegate to specialized managers (Composition over inheritance)
-        self._route_registry = self.RouteRegistry(_logger)
-        self._connection_manager = self.ConnectionManager(_logger)
+        self._route_registry = self.RouteRegistry(logger)
+        self._connection_manager = self.ConnectionManager(logger)
         self._lifecycle_manager = self.LifecycleManager(
-            host, port, title, version, _logger
+            host, port, title, version, logger
         )
 
         # Protocol and middleware
@@ -326,7 +321,7 @@ class FlextApiServer(FlextService[object]):
     def register_protocol_handler(
         self,
         protocol: str,
-        handler: Any,
+        handler: object,
     ) -> FlextResult[None]:
         """Register protocol handler."""
         if protocol in self._protocol_handlers:
@@ -343,7 +338,7 @@ class FlextApiServer(FlextService[object]):
 
     def add_middleware(
         self,
-        middleware: Any,
+        middleware: object,
     ) -> FlextResult[None]:
         """Add middleware to pipeline."""
         self._middleware_pipeline.append(middleware)
@@ -360,7 +355,7 @@ class FlextApiServer(FlextService[object]):
         path: str,
         method: str,
         handler: Callable,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Register HTTP route (delegates to RouteRegistry)."""
         return self._route_registry.register(method, path, handler, **options)
@@ -369,7 +364,7 @@ class FlextApiServer(FlextService[object]):
         self,
         path: str,
         handler: Callable,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(
@@ -380,7 +375,7 @@ class FlextApiServer(FlextService[object]):
         self,
         path: str,
         handler: Callable,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(
@@ -391,7 +386,7 @@ class FlextApiServer(FlextService[object]):
         self,
         path: str = "/graphql",
         schema: object | None = None,
-        **options: Any,
+        **options: object,
     ) -> FlextResult[None]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(

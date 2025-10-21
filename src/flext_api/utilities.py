@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import TypeVar
+from typing import Any, TypeVar
 from urllib.parse import urlparse
 
 from flext_core import FlextResult, FlextUtilities
@@ -62,9 +62,7 @@ class FlextApiUtilities(FlextUtilities):
                 "MAX_URL_LENGTH", 2048
             )
             if len(url) > int(max_len):
-                return FlextResult[str].fail(
-                    f"URL too long (max {max_len} characters)"
-                )
+                return FlextResult[str].fail(f"URL too long (max {max_len} characters)")
 
             try:
                 parsed = urlparse(url)
@@ -95,7 +93,7 @@ class FlextApiUtilities(FlextUtilities):
             message: str,
             status_code: int = 500,
             error_code: str | None = None,
-        ) -> dict[str, object]:
+        ) -> dict[str, Any]:
             """Build error response."""
             return {
                 "success": False,
@@ -108,13 +106,13 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def build_success_response(
-            data: dict[str, object] | None = None,
+            data: dict[str, Any] | None = None,
             message: str | None = None,
             status_code: int = 200,
-            headers: dict[str, object] | None = None,
-        ) -> FlextResult[dict[str, object]]:
+            headers: dict[str, Any] | None = None,
+        ) -> FlextResult[dict[str, Any]]:
             """Build a successful HTTP response."""
-            response: dict[str, object] = {
+            response: dict[str, Any] = {
                 "status": "success",
                 "status_code": status_code,
                 "data": data or {},
@@ -128,11 +126,11 @@ class FlextApiUtilities(FlextUtilities):
         def build_error_result(
             error: str,
             status_code: int = 400,
-            data: dict[str, object] | None = None,
-            headers: dict[str, object] | None = None,
-        ) -> FlextResult[dict[str, object]]:
+            data: dict[str, Any] | None = None,
+            headers: dict[str, Any] | None = None,
+        ) -> FlextResult[dict[str, Any]]:
             """Build an error HTTP response as FlextResult."""
-            response: dict[str, object] = {
+            response: dict[str, Any] = {
                 "status": "error",
                 "status_code": status_code,
                 "error": error,
@@ -174,11 +172,11 @@ class FlextApiUtilities(FlextUtilities):
             total: int | None = None,
             message: str | None = None,
             config: object | None = None,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[dict[str, Any]]:
             """Build paginated response using flext-core patterns.
 
             Returns:
-                FlextResult containing paginated response dictionary.
+            FlextResult containing paginated response dictionary.
 
             """
             # Railway-oriented pagination building
@@ -206,7 +204,7 @@ class FlextApiUtilities(FlextUtilities):
             )
 
         @staticmethod
-        def extract_pagination_config(config: object | None) -> dict[str, object]:
+        def extract_pagination_config(config: object | None) -> dict[str, Any]:
             """Extract pagination configuration values."""
             default_page_size = (
                 getattr(config, "default_page_size", 20) if config else 20

@@ -12,7 +12,7 @@ from flext_core import FlextConstants
 
 
 class FlextApiConstants:
-    """Flext constants for API domain functionality using advanced composition."""
+    """Flext constants for API domain functionality using composition."""
 
     # Core composition - inherit all core constants
     CoreErrors = FlextConstants.Errors
@@ -96,7 +96,7 @@ class FlextApiConstants:
     HEADER_USER_AGENT: ClassVar[str] = "User-Agent"
     HEADER_ACCEPT: ClassVar[str] = "Accept"
 
-    # Combined constants using advanced patterns
+    # Combined constants using patterns
     DEFAULT_USER_AGENT: ClassVar[str] = f"FlextAPI/{API_VERSION}"
     DEFAULT_REQUEST_TIMEOUT: ClassVar[float] = 30.0
     DEFAULT_RETRIES: ClassVar[int] = 3
@@ -111,7 +111,7 @@ class FlextApiConstants:
     MAX_PAGE_SIZE: ClassVar[int] = CorePagination.MAX_PAGE_SIZE
 
     # Validation limits - compact definitions
-    VALIDATION_LIMITS: ClassVar[dict[str, object]] = {
+    VALIDATION_LIMITS: ClassVar[dict[str, Any]] = {
         "MAX_URL_LENGTH": 2048,
         "MIN_TIMEOUT": 0.0,
         "MAX_TIMEOUT": 300.0,
@@ -127,7 +127,7 @@ class FlextApiConstants:
     }
 
     # CORS - compact configuration
-    CORS_CONFIG: ClassVar[dict[str, object]] = {
+    CORS_CONFIG: ClassVar[dict[str, Any]] = {
         "ORIGINS": ["*"],
         "METHODS": [Method.GET, Method.POST, Method.PUT, Method.DELETE],
         "HEADERS": [HEADER_CONTENT_TYPE, HEADER_AUTHORIZATION],

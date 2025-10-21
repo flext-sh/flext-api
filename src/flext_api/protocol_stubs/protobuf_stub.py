@@ -21,7 +21,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from typing import Protocol
+from typing import Any, Protocol
 
 from flext_core import FlextLogger, FlextResult
 
@@ -39,11 +39,11 @@ class ProtobufMessage:
     - Field validation
     """
 
-    def __init__(self, data: dict[str, object] | None = None) -> None:
+    def __init__(self, data: dict[str, Any] | None = None) -> None:
         """Initialize Protobuf message.
 
         Args:
-            data: Message data
+        data: Message data
 
         """
         self.logger = FlextLogger(__name__)
@@ -55,7 +55,7 @@ class ProtobufMessage:
         """Serialize message to bytes.
 
         Returns:
-            FlextResult containing serialized bytes or error
+        FlextResult containing serialized bytes or error
 
         """
         self.logger.debug("Protobuf serialization (placeholder)")
@@ -68,10 +68,10 @@ class ProtobufMessage:
         """Deserialize message from bytes.
 
         Args:
-            data: Serialized message bytes
+        data: Serialized message bytes
 
         Returns:
-            FlextResult containing message or error
+        FlextResult containing message or error
 
         """
         logger = FlextLogger(__name__)
@@ -80,24 +80,24 @@ class ProtobufMessage:
             "Protobuf stub placeholder - awaiting flext-grpc integration"
         )
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert message to dictionary.
 
         Returns:
-            Dictionary representation
+        Dictionary representation
 
         """
         return self._data
 
     @classmethod
-    def from_dict(cls, data: dict[str, object]) -> ProtobufMessage:
+    def from_dict(cls, data: dict[str, Any]) -> ProtobufMessage:
         """Create message from dictionary.
 
         Args:
-            data: Dictionary data
+        data: Dictionary data
 
         Returns:
-            Protobuf message
+        Protobuf message
 
         """
         return cls(data)
@@ -106,7 +106,7 @@ class ProtobufMessage:
         """Convert message to JSON string.
 
         Returns:
-            FlextResult containing JSON string or error
+        FlextResult containing JSON string or error
 
         """
         try:
@@ -120,10 +120,10 @@ class ProtobufMessage:
         """Create message from JSON string.
 
         Args:
-            json_str: JSON string
+        json_str: JSON string
 
         Returns:
-            FlextResult containing message or error
+        FlextResult containing message or error
 
         """
         try:
@@ -146,11 +146,11 @@ class ProtobufSerializer:
     - Compression
     """
 
-    def __init__(self, schema: dict[str, object] | None = None) -> None:
+    def __init__(self, schema: dict[str, Any] | None = None) -> None:
         """Initialize Protobuf serializer.
 
         Args:
-            schema: Protobuf schema definition
+        schema: Protobuf schema definition
 
         """
         self.logger = FlextLogger(__name__)
@@ -162,10 +162,10 @@ class ProtobufSerializer:
         """Serialize message to bytes.
 
         Args:
-            message: Protobuf message
+        message: Protobuf message
 
         Returns:
-            FlextResult containing serialized bytes or error
+        FlextResult containing serialized bytes or error
 
         """
         self.logger.debug("Protobuf serialization (placeholder)")
@@ -183,10 +183,10 @@ class ProtobufSerializer:
         """Deserialize message from bytes.
 
         Args:
-            data: Serialized message bytes
+        data: Serialized message bytes
 
         Returns:
-            FlextResult containing message or error
+        FlextResult containing message or error
 
         """
         self.logger.debug("Protobuf deserialization (placeholder)")
@@ -198,10 +198,10 @@ class ProtobufSerializer:
         """Validate message against schema.
 
         Args:
-            message: Message to validate
+        message: Message to validate
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
 
         """
         if not self._schema:
@@ -216,7 +216,7 @@ class ProtobufSerializer:
         """Get content type for Protobuf.
 
         Returns:
-            Content type string
+        Content type string
 
         """
         return "application/protobuf"
@@ -248,12 +248,12 @@ class ProtobufField:
         """Initialize Protobuf field.
 
         Args:
-            name: Field name
-            field_number: Field number in schema
-            field_type: Field data type
-            required: Whether field is required
-            repeated: Whether field is repeated
-            default: Default value
+        name: Field name
+        field_number: Field number in schema
+        field_type: Field data type
+        required: Whether field is required
+        repeated: Whether field is repeated
+        default: Default value
 
         """
         self._name = name
@@ -287,10 +287,10 @@ class ProtobufField:
         """Validate field value.
 
         Args:
-            value: Value to validate
+        value: Value to validate
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
 
         """
         # Required check (do this first, before type checking)
@@ -328,7 +328,7 @@ class ProtobufSchema:
         """Initialize Protobuf schema.
 
         Args:
-            name: Schema name
+        name: Schema name
 
         """
         self.logger = FlextLogger(__name__)
@@ -344,10 +344,10 @@ class ProtobufSchema:
         """Add field to schema.
 
         Args:
-            field: Field to add
+        field: Field to add
 
         Returns:
-            FlextResult indicating success or failure
+        FlextResult indicating success or failure
 
         """
         if field.name in self._fields:
@@ -366,10 +366,10 @@ class ProtobufSchema:
         """Validate message against schema.
 
         Args:
-            message: Message to validate
+        message: Message to validate
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
 
         """
         data = message.to_dict()
@@ -406,10 +406,10 @@ class ProtobufServiceProtocol(Protocol):
         """Get request schema for method.
 
         Args:
-            method: Method name
+        method: Method name
 
         Returns:
-            FlextResult containing schema or error
+        FlextResult containing schema or error
 
         """
 
@@ -417,10 +417,10 @@ class ProtobufServiceProtocol(Protocol):
         """Get response schema for method.
 
         Args:
-            method: Method name
+        method: Method name
 
         Returns:
-            FlextResult containing schema or error
+        FlextResult containing schema or error
 
         """
 

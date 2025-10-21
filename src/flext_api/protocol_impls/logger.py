@@ -21,20 +21,20 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def info(self, message: str, **kwargs: object) -> None:
         """Log info message."""
-        # ✅ Use direct kwargs instead of extra={} to prevent global context binding
+        # Use direct kwargs instead of extra={} to prevent global context binding
         self.logger.info(message, **kwargs)
 
     def error(self, message: str, **kwargs: object) -> None:
         """Log error message."""
-        # ✅ Use direct kwargs instead of extra={} to prevent global context binding
+        # Use direct kwargs instead of extra={} to prevent global context binding
         self.logger.error(message, **kwargs)
 
     def debug(self, message: str, **kwargs: object) -> None:
         """Log debug message."""
-        # ✅ Use direct kwargs instead of extra={} to prevent global context binding
+        # Use direct kwargs instead of extra={} to prevent global context binding
         self.logger.debug(message, **kwargs)
 
     def warning(self, message: str, **kwargs: object) -> None:
         """Log warning message."""
-        # ✅ Use direct kwargs instead of extra={} to prevent global context binding
+        # Use direct kwargs instead of extra={} to prevent global context binding
         self.logger.warning(message, **kwargs)

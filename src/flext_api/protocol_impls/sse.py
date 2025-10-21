@@ -33,8 +33,8 @@ class SSEProtocolPlugin(ProtocolPlugin):
     - Error recovery and resilience
 
     Note:
-        This is a stub implementation. All methods return errors indicating
-        the feature is not yet implemented.
+    This is a stub implementation. All methods return errors indicating
+    the feature is not yet implemented.
 
     """
 
@@ -51,12 +51,12 @@ class SSEProtocolPlugin(ProtocolPlugin):
         """Initialize SSE protocol plugin stub.
 
         Args:
-            retry_timeout: Default retry timeout in milliseconds (unused in stub)
-            connect_timeout: Connection timeout in seconds (unused in stub)
-            read_timeout: Read timeout in seconds (unused in stub)
-            auto_reconnect: Enable automatic reconnection (unused in stub)
-            reconnect_max_attempts: Maximum reconnection attempts (unused in stub)
-            reconnect_backoff_factor: Reconnection backoff multiplier (unused in stub)
+        retry_timeout: Default retry timeout in milliseconds (unused in stub)
+        connect_timeout: Connection timeout in seconds (unused in stub)
+        read_timeout: Read timeout in seconds (unused in stub)
+        auto_reconnect: Enable automatic reconnection (unused in stub)
+        reconnect_max_attempts: Maximum reconnection attempts (unused in stub)
+        reconnect_backoff_factor: Reconnection backoff multiplier (unused in stub)
 
         """
         super().__init__(
@@ -84,11 +84,11 @@ class SSEProtocolPlugin(ProtocolPlugin):
         """Send SSE request (stub - not implemented).
 
         Args:
-            request: HTTP request model (unused in stub)
-            **kwargs: Additional SSE-specific parameters (unused in stub)
+        request: HTTP request model (unused in stub)
+        **kwargs: Additional SSE-specific parameters (unused in stub)
 
         Returns:
-            FlextResult with error indicating not implemented
+        FlextResult with error indicating not implemented
 
         """
         return FlextResult[FlextApiModels.HttpResponse].fail(
@@ -99,10 +99,10 @@ class SSEProtocolPlugin(ProtocolPlugin):
         """Check if this plugin supports the given protocol.
 
         Args:
-            protocol: Protocol identifier
+        protocol: Protocol identifier
 
         Returns:
-            True if protocol is SSE variant
+        True if protocol is SSE variant
 
         """
         return protocol.lower() in {"sse", "server-sent-events", "eventsource"}
@@ -111,7 +111,7 @@ class SSEProtocolPlugin(ProtocolPlugin):
         """Get list of supported protocols.
 
         Returns:
-            List of supported protocol identifiers
+        List of supported protocol identifiers
 
         """
         return ["sse", "server-sent-events", "eventsource"]

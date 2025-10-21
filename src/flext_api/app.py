@@ -36,19 +36,19 @@ class FlextApiApp:
         """Create FastAPI application with flext-core integration.
 
         Args:
-            _config: Application configuration
-            title: Application title
-            version: Application version
-            description: Application description
-            docs_url: Documentation URL
-            redoc_url: ReDoc URL
-            openapi_url: OpenAPI JSON URL
+        _config: Application configuration
+        title: Application title
+        version: Application version
+        description: Application description
+        docs_url: Documentation URL
+        redoc_url: ReDoc URL
+        openapi_url: OpenAPI JSON URL
 
         Returns:
-            FastAPI application instance.
+        FastAPI application instance.
 
         Raises:
-            ImportError: If FastAPI is not installed.
+        ImportError: If FastAPI is not installed.
 
         """
         try:

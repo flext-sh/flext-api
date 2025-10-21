@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import re
 from typing import Self
 
 import httpx
@@ -24,7 +23,7 @@ class FlextWebClientImplementation(FlextApiProtocols.FlextWebClientProtocol):
         """Initialize HTTP client protocol implementation.
 
         Args:
-            client_config: HTTP client configuration
+        client_config: HTTP client configuration
 
         """
         self._config = client_config
@@ -33,7 +32,7 @@ class FlextWebClientImplementation(FlextApiProtocols.FlextWebClientProtocol):
         # Create httpx client with configuration
         self._client = httpx.Client(
             timeout=httpx.Timeout(
-                timeout=client_config.api_timeout,
+                timeout=client_config.timeout,
                 connect=client_config.timeout,
                 read=client_config.timeout,
                 write=client_config.timeout,
@@ -44,7 +43,7 @@ class FlextWebClientImplementation(FlextApiProtocols.FlextWebClientProtocol):
                 max_keepalive_connections=20,
             ),
             follow_redirects=True,
-            verify=True,  # SSL verification enabled by default
+            verify=client_config.verify_ssl,
         )
 
     def request(
@@ -56,60 +55,35 @@ class FlextWebClientImplementation(FlextApiProtocols.FlextWebClientProtocol):
         """Execute an HTTP request conforming to protocol."""
         try:
             # Build full URL
-            if url.startswith(("http://", "https://")):
-                full_url = url
-            else:
-                # Ensure base_url is a proper string
-                base_url_str = str(self._config.base_url)
-                if base_url_str.startswith("ParseResult("):
-                    # Handle case where base_url is stored as ParseResult string representation
-                    # Extract the actual URL from the string representation
-                    match = re.search(
-                        r"scheme='([^']*)'.*netloc='([^']*)'", base_url_str
-                    )
-                    if match:
-                        scheme, netloc = match.groups()
-                        base_url_str = f"{scheme}://{netloc}"
-                    else:
-                        base_url_str = "http://localhost:8000"  # fallback
+            full_url = self._build_full_url(url)
 
-                base_url_clean = base_url_str.rstrip("/")
-                url_clean = url.lstrip("/")
-                full_url = (
-                    f"{base_url_clean}/{url_clean}" if url_clean else base_url_clean
-                )
-
-            # Prepare headers
-            request_headers: dict[str, str] = dict[str, object](
-                self._config.headers or {}
-            )
-            headers_value = kwargs.get("headers")
-            if headers_value and isinstance(headers_value, dict):
-                request_headers.update(headers_value)
-
-            # Prepare request parameters
-            request_kwargs: dict[str, object] = {
-                "method": method,
-                "url": full_url,
-                "headers": request_headers,
+            # Prepare headers (merge config headers with request headers)
+            request_headers: dict[str, str] = {
+                **self._config.headers,
+                **{
+                    k: v
+                    for k, v in (kwargs.get("headers") or {}).items()
+                    if isinstance(v, str)
+                },
             }
 
-            # Add other parameters from kwargs
-            allowed_keys = {"params", "data", "json", "content", "files"}
-            request_kwargs.update({
-                key: value for key, value in kwargs.items() if key in allowed_keys
-            })
-
-            # Make the HTTP request using httpx client
-            httpx_response = self._client.request(**request_kwargs)
+            # Make the HTTP request using httpx client with properly typed arguments
+            httpx_response = self._client.request(
+                method=method,
+                url=full_url,
+                headers=request_headers,
+                params=kwargs.get("params"),
+                json=kwargs.get("json"),
+                content=kwargs.get("content"),
+                data=kwargs.get("data"),
+                files=kwargs.get("files"),
+            )
 
             # Convert httpx response to FlextApiModels.HttpResponse
             response = FlextApiModels.HttpResponse(
                 status_code=httpx_response.status_code,
                 headers=dict(httpx_response.headers),
                 body=httpx_response.content,
-                url=str(httpx_response.url),
-                method=method,
             )
 
             return FlextResult[FlextApiModels.HttpResponse].ok(response)
@@ -132,8 +106,6 @@ class FlextWebClientImplementation(FlextApiProtocols.FlextWebClientProtocol):
                 status_code=e.response.status_code,
                 headers=dict(e.response.headers),
                 body=e.response.content,
-                url=str(e.response.url),
-                method=method,
             )
             return FlextResult[FlextApiModels.HttpResponse].ok(response)
 
@@ -141,6 +113,23 @@ class FlextWebClientImplementation(FlextApiProtocols.FlextWebClientProtocol):
             error_msg = f"HTTP protocol request failed: {e}"
             self.logger.exception(error_msg)
             return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
+
+    def _build_full_url(self, url: str) -> str:
+        """Build full URL from configuration base_url and provided path.
+
+        Args:
+        url: The URL path or full URL
+
+        Returns:
+        Full URL string
+
+        """
+        if url.startswith(("http://", "https://")):
+            return url
+
+        base_url = str(self._config.base_url or "http://localhost:8000").rstrip("/")
+        path = str(url).lstrip("/")
+        return f"{base_url}/{path}" if path else base_url
 
     def close(self) -> None:
         """Close the HTTP client and cleanup resources."""

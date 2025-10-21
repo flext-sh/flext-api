@@ -5,7 +5,7 @@ Enhanced HTTP/1.1, HTTP/2, and HTTP/3 protocol support with:
 - Retry logic with exponential backoff
 - Streaming support
 - Request/response middleware
-- Comprehensive error handling
+- Complete error handling
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -15,6 +15,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
+from typing import Any
 
 import httpx
 from flext_core import FlextResult
@@ -22,7 +23,6 @@ from flext_core import FlextResult
 from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
 from flext_api.transports import FlextApiTransports
-from flext_api.typings import FlextApiTypes
 
 
 class FlextWebProtocolPlugin(ProtocolPlugin):
@@ -42,10 +42,10 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
     - Cookie management
 
     Usage:
-        plugin = FlextWebProtocolPlugin(http2=True, max_connections=100)
-        result = plugin.send_request(request)
-        if result.is_success:
-            response = result.unwrap()
+    plugin = FlextWebProtocolPlugin(http2=True, max_connections=100)
+    result = plugin.send_request(request)
+    if result.is_success:
+    response = result.unwrap()
     """
 
     def __init__(
@@ -88,15 +88,13 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
 
     def send_request(
         self,
-        request: FlextApiTypes.RequestData,
-        **kwargs: FlextApiTypes.JsonValue,
-    ) -> FlextResult[FlextApiTypes.ResponseData]:
+        request: dict[str, object],
+        **kwargs: object,
+    ) -> FlextResult[dict[str, object]]:
         """Send HTTP request with retry logic and error handling."""
         # Convert to HTTP request model for type safety
         if not isinstance(request, dict):
-            return FlextResult[FlextApiTypes.ResponseData].fail(
-                "Invalid request format"
-            )
+            return FlextResult[dict[str, object]].fail("Invalid request format")
 
         http_request = FlextApiModels.HttpRequest(
             method=request.get("method", "GET"),
@@ -109,9 +107,7 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
         # Extract request parameters
         method = http_request.method.upper()
         url = str(http_request.url)
-        headers = (
-            dict[str, object](http_request.headers) if http_request.headers else {}
-        )
+        headers = dict[str, Any](http_request.headers) if http_request.headers else {}
         timeout = http_request.timeout
         body = http_request.body
 
@@ -123,7 +119,7 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
         )
 
         if conn_result.is_failure:
-            return FlextResult[FlextApiTypes.ResponseData].fail(
+            return FlextResult[dict[str, Any]].fail(
                 f"Failed to establish connection: {conn_result.error}"
             )
 
@@ -135,27 +131,25 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
                 connection, method, url, headers, {}, timeout, body
             )
         else:
-            return FlextResult[FlextApiTypes.ResponseData].fail(
-                "Invalid connection type"
-            )
+            return FlextResult[dict[str, Any]].fail("Invalid connection type")
 
         if result.is_success:
             response = result.unwrap()
-            return FlextResult[FlextApiTypes.ResponseData].ok({
+            return FlextResult[dict[str, Any]].ok({
                 "status_code": response.status_code,
                 "headers": response.headers,
                 "body": response.body,
             })
 
-        return FlextResult[FlextApiTypes.ResponseData].fail(result.error)
+        return FlextResult[dict[str, Any]].fail(result.error)
 
     def _execute_with_retry(
         self,
         connection: httpx.Client,
         method: str,
         url: str,
-        headers: dict[str, object],
-        params: dict[str, object],
+        headers: dict[str, Any],
+        params: dict[str, Any],
         timeout: float | None,
         body: object | None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
@@ -216,13 +210,13 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
         self,
         method: str,
         url: str,
-        headers: dict[str, object],
-        params: dict[str, object],
+        headers: dict[str, Any],
+        params: dict[str, Any],
         timeout: float | None,
         body: object | None,
-    ) -> dict[str, object]:
+    ) -> dict[str, Any]:
         """Build request kwargs based on body type and content-type."""
-        request_kwargs: dict[str, object] = {
+        request_kwargs: dict[str, Any] = {
             "method": method,
             "url": url,
             "headers": headers,
@@ -307,7 +301,7 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
             "Streaming not yet implemented (Phase 2 enhancement)"
         )
 
-    def get_protocol_info(self) -> dict[str, object]:
+    def get_protocol_info(self) -> dict[str, Any]:
         """Get protocol configuration information."""
         return {
             "name": self.name,

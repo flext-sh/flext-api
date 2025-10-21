@@ -36,13 +36,13 @@ class FlextApiServerFactory:
         Delegates error handling to railway pattern.
 
         Args:
-            host: Server host address
-            port: Server port
-            title: API server title
-            version: API server version
+        host: Server host address
+        port: Server port
+        title: API server title
+        version: API server version
 
         Returns:
-            FlextResult containing FlextApiServer instance or error
+        FlextResult containing FlextApiServer instance or error
 
         """
         try:
@@ -69,11 +69,11 @@ class FlextApiServerFactory:
         Delegates error handling to railway pattern.
 
         Args:
-            secret: Webhook signing secret
-            max_retries: Maximum retry attempts
+        secret: Webhook signing secret
+        max_retries: Maximum retry attempts
 
         Returns:
-            FlextResult containing FlextWebhookHandler instance or error
+        FlextResult containing FlextWebhookHandler instance or error
 
         """
         try:
