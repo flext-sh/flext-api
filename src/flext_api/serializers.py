@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from typing import Protocol
+from typing import Any, Protocol
 
 import cbor2
 import msgpack
@@ -42,10 +42,10 @@ class FlextApiSerializers(FlextService[None]):
             """Serialize data to bytes.
 
             Args:
-                data: Data to serialize
+            data: Data to serialize
 
             Returns:
-                Serialized bytes
+            Serialized bytes
 
             """
             ...  # Protocol method
@@ -54,10 +54,10 @@ class FlextApiSerializers(FlextService[None]):
             """Deserialize bytes to data.
 
             Args:
-                data: Bytes to deserialize
+            data: Bytes to deserialize
 
             Returns:
-                Deserialized data
+            Deserialized data
 
             """
             ...  # Protocol method
@@ -82,7 +82,7 @@ class FlextApiSerializers(FlextService[None]):
                 """Initialize JSON serializer.
 
                 Args:
-                    pretty: Enable pretty printing
+                pretty: Enable pretty printing
 
                 """
                 self.logger = FlextLogger(__name__)
@@ -100,10 +100,10 @@ class FlextApiSerializers(FlextService[None]):
                 """Serialize data to JSON bytes.
 
                 Args:
-                    data: Data to serialize
+                data: Data to serialize
 
                 Returns:
-                    JSON bytes
+                JSON bytes
 
                 """
                 if self._use_orjson:
@@ -118,10 +118,10 @@ class FlextApiSerializers(FlextService[None]):
                 """Deserialize JSON bytes to data.
 
                 Args:
-                    data: JSON bytes
+                data: JSON bytes
 
                 Returns:
-                    Deserialized data
+                Deserialized data
 
                 """
                 if self._use_orjson:
@@ -154,13 +154,13 @@ class FlextApiSerializers(FlextService[None]):
                     """Serialize data to MessagePack bytes.
 
                     Args:
-                        data: Data to serialize
+                    data: Data to serialize
 
                     Returns:
-                        MessagePack bytes
+                    MessagePack bytes
 
                     Raises:
-                        No exceptions raised - msgpack is mandatory dependency
+                    No exceptions raised - msgpack is mandatory dependency
 
                     """
                     return self._msgpack.packb(data, use_bin_type=True)
@@ -169,13 +169,13 @@ class FlextApiSerializers(FlextService[None]):
                     """Deserialize MessagePack bytes to data.
 
                     Args:
-                        data: MessagePack bytes
+                    data: MessagePack bytes
 
                     Returns:
-                        Deserialized data
+                    Deserialized data
 
                     Raises:
-                        No exceptions raised - msgpack is mandatory dependency
+                    No exceptions raised - msgpack is mandatory dependency
 
                     """
                     return self._msgpack.unpackb(data, raw=False)
@@ -206,10 +206,10 @@ class FlextApiSerializers(FlextService[None]):
                         """Serialize data to CBOR bytes.
 
                         Args:
-                            data: Data to serialize
+                        data: Data to serialize
 
                         Returns:
-                            CBOR bytes
+                        CBOR bytes
 
                         Raises:
                         No exceptions raised - cbor2 is mandatory dependency
@@ -221,10 +221,10 @@ class FlextApiSerializers(FlextService[None]):
                         """Deserialize CBOR bytes to data.
 
                         Args:
-                            data: CBOR bytes
+                        data: CBOR bytes
 
                         Returns:
-                            Deserialized data
+                        Deserialized data
 
                         Raises:
                         No exceptions raised - cbor2 is mandatory dependency
@@ -250,7 +250,7 @@ class FlextApiSerializers(FlextService[None]):
                         def __init__(self) -> None:
                             """Initialize serializer registry."""
                             self.logger = FlextLogger(__name__)
-                            self._serializers: dict[str, object] = {}
+                            self._serializers: dict[str, Any] = {}
                             self._default_format = (
                                 FlextApiTypes.Serialization.SerializationFormat.JSON
                             )
@@ -278,11 +278,11 @@ class FlextApiSerializers(FlextService[None]):
                             """Register serializer for format.
 
                             Args:
-                                format_type: Serialization format
-                                serializer: Serializer instance
+                            format_type: Serialization format
+                            serializer: Serializer instance
 
                             Returns:
-                                FlextResult indicating success or failure
+                            FlextResult indicating success or failure
 
                             """
                             format_key = (
@@ -319,10 +319,10 @@ class FlextApiSerializers(FlextService[None]):
                             """Get serializer for format.
 
                             Args:
-                                format_type: Serialization format
+                            format_type: Serialization format
 
                             Returns:
-                                FlextResult containing serializer or error
+                            FlextResult containing serializer or error
 
                             """
                             format_key = (
@@ -382,11 +382,11 @@ class FlextApiSerializers(FlextService[None]):
                             """Serialize data using specified format.
 
                             Args:
-                                data: Data to serialize
-                                format_type: Serialization format (uses default if None)
+                            data: Data to serialize
+                            format_type: Serialization format (uses default if None)
 
                             Returns:
-                                FlextResult containing serialized bytes or error
+                            FlextResult containing serialized bytes or error
 
                             """
                             format_key = (
@@ -424,11 +424,11 @@ class FlextApiSerializers(FlextService[None]):
                             """Deserialize data using specified format.
 
                             Args:
-                                data: Data to deserialize
-                                format_type: Serialization format (uses default if None)
+                            data: Data to deserialize
+                            format_type: Serialization format (uses default if None)
 
                             Returns:
-                                FlextResult containing deserialized data or error
+                            FlextResult containing deserialized data or error
 
                             """
                             format_key = (
@@ -461,10 +461,10 @@ class FlextApiSerializers(FlextService[None]):
                             """Set default serialization format.
 
                             Args:
-                                format_type: Default format
+                            format_type: Default format
 
                             Returns:
-                                FlextResult indicating success
+                            FlextResult indicating success
 
                             """
                             self._default_format = format_type

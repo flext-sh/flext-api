@@ -72,7 +72,7 @@ class FlextApiConfigManager:
             return value
 
     def _validate_configuration(self) -> FlextResult[None]:
-        """Validate current configuration with comprehensive checks."""
+        """Validate current configuration with complete checks."""
         if self._config is None:
             return FlextResult[None].fail("No configuration set")
 
@@ -86,7 +86,7 @@ class FlextApiConfigManager:
 
         return FlextResult[None].ok(None)
 
-    def get_client_config(self) -> FlextResult[FlextApiModels]:
+    def get_client_config(self) -> FlextResult[FlextApiModels.ClientConfig]:
         """Get validated client configuration."""
         if self._config is None:
             return FlextResult[FlextApiModels.ClientConfig].fail("No configuration set")
@@ -99,7 +99,7 @@ class FlextApiConfigManager:
             except Exception:
                 headers = {}
 
-        return FlextResult[FlextApiModels].ok(
+        return FlextResult[FlextApiModels.ClientConfig].ok(
             FlextApiModels.create_config(
                 base_url=self._config.get("base_url", ""),
                 timeout=self._config.get("timeout", 30.0),

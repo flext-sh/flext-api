@@ -20,7 +20,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import Any, Protocol
 
 from flext_core import FlextLogger, FlextResult
 
@@ -38,12 +38,12 @@ class GrpcChannel:
     - Load balancing
     """
 
-    def __init__(self, target: str, options: dict[str, object] | None = None) -> None:
+    def __init__(self, target: str, options: dict[str, Any] | None = None) -> None:
         """Initialize gRPC channel.
 
         Args:
-            target: Target server address
-            options: Channel options
+        target: Target server address
+        options: Channel options
 
         """
         self.logger = FlextLogger(__name__)
@@ -59,7 +59,7 @@ class GrpcChannel:
         """Close gRPC channel.
 
         Returns:
-            FlextResult indicating success or failure
+        FlextResult indicating success or failure
 
         """
         self.logger.info("gRPC channel stub closed (placeholder)")
@@ -83,7 +83,7 @@ class GrpcStub:
         """Initialize gRPC stub.
 
         Args:
-            channel: gRPC channel
+        channel: gRPC channel
 
         """
         self.logger = FlextLogger(__name__)
@@ -100,12 +100,12 @@ class GrpcStub:
         """Call unary gRPC method.
 
         Args:
-            method: Method name
-            request: Request message
-            timeout: Optional timeout
+        method: Method name
+        request: Request message
+        timeout: Optional timeout
 
         Returns:
-            FlextResult containing response or error
+        FlextResult containing response or error
 
         """
         self.logger.info(
@@ -138,9 +138,9 @@ class GrpcRequest:
         """Initialize gRPC request.
 
         Args:
-            method: gRPC method name
-            message: Request message
-            metadata: Optional metadata
+        method: gRPC method name
+        message: Request message
+        metadata: Optional metadata
 
         """
         self._method = method
@@ -169,9 +169,9 @@ class GrpcResponse:
         """Initialize gRPC response.
 
         Args:
-            message: Response message
-            status_code: gRPC status code
-            metadata: Response metadata
+        message: Response message
+        status_code: gRPC status code
+        metadata: Response metadata
 
         """
         self._message = message
@@ -206,14 +206,14 @@ class GrpcServer:
         self,
         host: str = "127.0.0.1",
         port: int = 50051,
-        options: dict[str, object] | None = None,
+        options: dict[str, Any] | None = None,
     ) -> None:
         """Initialize gRPC server.
 
         Args:
-            host: Server host
-            port: Server port
-            options: Server options
+        host: Server host
+        port: Server port
+        options: Server options
 
         """
         self.logger = FlextLogger(__name__)
@@ -230,10 +230,10 @@ class GrpcServer:
         """Add service to server.
 
         Args:
-            service: Service implementation
+        service: Service implementation
 
         Returns:
-            FlextResult indicating success or failure
+        FlextResult indicating success or failure
 
         """
         self.logger.info("gRPC service added (placeholder)")
@@ -243,7 +243,7 @@ class GrpcServer:
         """Start gRPC server.
 
         Returns:
-            FlextResult indicating success or failure
+        FlextResult indicating success or failure
 
         """
         self.logger.info(
@@ -258,10 +258,10 @@ class GrpcServer:
         """Stop gRPC server.
 
         Args:
-            grace: Grace period for shutdown
+        grace: Grace period for shutdown
 
         Returns:
-            FlextResult indicating success or failure
+        FlextResult indicating success or failure
 
         """
         self.logger.info("gRPC server stop (placeholder)")
@@ -292,11 +292,11 @@ class GrpcMethod:
         """Initialize gRPC method.
 
         Args:
-            name: Method name
-            request_type: Request message type
-            response_type: Response message type
-            request_streaming: Whether request is streaming
-            response_streaming: Whether response is streaming
+        name: Method name
+        request_type: Request message type
+        response_type: Response message type
+        request_streaming: Whether request is streaming
+        response_streaming: Whether response is streaming
 
         """
         self._name = name
@@ -342,7 +342,7 @@ class GrpcServiceProtocol(Protocol):
         """Register service methods.
 
         Returns:
-            List of method descriptors
+        List of method descriptors
 
         """
 
@@ -353,10 +353,10 @@ class GrpcServiceProtocol(Protocol):
         """Handle gRPC request.
 
         Args:
-            request: gRPC request
+        request: gRPC request
 
         Returns:
-            FlextResult containing response or error
+        FlextResult containing response or error
 
         """
 

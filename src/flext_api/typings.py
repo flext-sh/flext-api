@@ -131,37 +131,23 @@ class FlextApiTypes(FlextTypes):
     class RequestData:
         """Placeholder for request data type definitions."""
 
-        pass
-
     class ResponseData:
         """Placeholder for response data type definitions."""
-
-        pass
 
     class Schema:
         """Schema-related types for validation and introspection."""
 
-        JsonSchema: type = dict[str, FlextTypes.JsonValue]
-
     class Protocol:
         """Protocol-related types for multi-protocol support."""
-
-        ProtocolMessage: type = JsonObject | str | bytes
 
     class Transport:
         """Transport-related types for connection management."""
 
-        ConnectionInfo: type = dict[str, str | int | bool | JsonObject]
-
     class Authentication:
         """Authentication-related types for credential management."""
 
-        AuthCredentials: type = dict[str, str | JsonObject]
-
     class Serialization:
         """Serialization-related types."""
-
-        Serialization: type = SerializationFormat
 
 
 __all__ = ["FlextApiTypes"]

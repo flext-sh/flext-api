@@ -37,11 +37,13 @@ class FlextApiAdapters:
             try:
                 # Convert body to string if bytes, otherwise use as-is
                 body_value: str | dict[str, Any] | list[Any] | None = None
-                if hasattr(request, "body") and request.body is not None:
-                    try:
-                        body_value = request.body.decode("utf-8")
-                    except UnicodeDecodeError:
-                        body_value = "<binary data>"
+                if hasattr(request, "body"):
+                    body = getattr(request, "body", None)
+                    if body is not None:
+                        try:
+                            body_value = body.decode("utf-8")  # type: ignore[union-attr]
+                        except (UnicodeDecodeError, AttributeError):
+                            body_value = "<binary data>"
 
                 message: dict[str, Any] = {
                     "type": "request",
@@ -51,22 +53,24 @@ class FlextApiAdapters:
                     "body": body_value,
                 }
 
-                return FlextResult.ok(message)
+                return FlextResult[dict[str, Any]].ok(message)
 
             except Exception as e:
-                return FlextResult.fail(f"HTTP to WebSocket adaptation failed: {e}")
+                return FlextResult[dict[str, Any]].fail(
+                    f"HTTP to WebSocket adaptation failed: {e}"
+                )
 
         @staticmethod
         def adapt_websocket_message_to_http_response(
             message: dict[str, Any],
-        ) -> FlextResult[object]:
+        ) -> FlextResult[FlextApiModels.HttpResponse]:
             """Adapt WebSocket message to HTTP response."""
             try:
                 # Convert WebSocket message to HTTP response
                 status_code = message.get("status", 200)
                 body = message.get("body", {})
 
-                return FlextResult.ok(
+                return FlextResult[FlextApiModels.HttpResponse].ok(
                     FlextApiModels.create_response(
                         status_code=status_code,
                         body=body,
@@ -75,7 +79,9 @@ class FlextApiAdapters:
                 )
 
             except Exception as e:
-                return FlextResult.fail(f"WebSocket to HTTP adaptation failed: {e}")
+                return FlextResult[FlextApiModels.HttpResponse].fail(
+                    f"WebSocket to HTTP adaptation failed: {e}"
+                )
 
     class Schema:
         """Schema adaptation following SOLID principles.
@@ -143,15 +149,16 @@ class FlextApiAdapters:
             """Transform request for specific protocol."""
             try:
                 if target_protocol == "websocket":
-                    return (
-                        FlextApiAdapters.HttpProtocol.adapt_http_request_to_websocket(
-                            request
-                        )
+                    result = FlextApiAdapters.HttpProtocol.adapt_http_request_to_websocket(
+                        request
                     )
-                return FlextResult.ok(request)
+                    if result.is_success:
+                        return FlextResult[object].ok(result.value)
+                    return FlextResult[object].fail(result.error or "Adaptation failed")
+                return FlextResult[object].ok(request)
 
             except Exception as e:
-                return FlextResult.fail(f"Request transformation failed: {e}")
+                return FlextResult[object].fail(f"Request transformation failed: {e}")
 
         @staticmethod
         def transform_response_for_protocol(
@@ -159,14 +166,17 @@ class FlextApiAdapters:
         ) -> FlextResult[object]:
             """Transform response for specific protocol."""
             try:
-                if source_protocol == "websocket":
-                    return FlextApiAdapters.HttpProtocol.adapt_websocket_message_to_http_response(
+                if source_protocol == "websocket" and isinstance(response, dict):
+                    result = FlextApiAdapters.HttpProtocol.adapt_websocket_message_to_http_response(
                         response
                     )
-                return FlextResult.ok(response)
+                    if result.is_success:
+                        return FlextResult[object].ok(result.value)
+                    return FlextResult[object].fail(result.error or "Adaptation failed")
+                return FlextResult[object].ok(response)
 
             except Exception as e:
-                return FlextResult.fail(f"Response transformation failed: {e}")
+                return FlextResult[object].fail(f"Response transformation failed: {e}")
 
 
 __all__ = [

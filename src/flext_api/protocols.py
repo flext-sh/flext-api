@@ -7,7 +7,7 @@ Domain-agnostic and reusable across any HTTP implementation.
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from flext_core import FlextProtocols, FlextResult
 
@@ -37,7 +37,7 @@ class FlextApiProtocols(FlextProtocols):
             params: dict[str, str] | None = None,
             headers: dict[str, str] | None = None,
             timeout: float | None = None,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[dict[str, Any]]:
             """Execute an HTTP request."""
 
         def get(
@@ -46,7 +46,7 @@ class FlextApiProtocols(FlextProtocols):
             params: dict[str, str] | None = None,
             headers: dict[str, str] | None = None,
             timeout: float | None = None,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[dict[str, Any]]:
             """Execute HTTP GET request."""
 
         def post(
@@ -57,7 +57,7 @@ class FlextApiProtocols(FlextProtocols):
             params: dict[str, str] | None = None,
             headers: dict[str, str] | None = None,
             timeout: float | None = None,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[dict[str, Any]]:
             """Execute HTTP POST request."""
 
         def put(
@@ -68,7 +68,7 @@ class FlextApiProtocols(FlextProtocols):
             params: dict[str, str] | None = None,
             headers: dict[str, str] | None = None,
             timeout: float | None = None,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[dict[str, Any]]:
             """Execute HTTP PUT request."""
 
         def delete(
@@ -77,7 +77,7 @@ class FlextApiProtocols(FlextProtocols):
             params: dict[str, str] | None = None,
             headers: dict[str, str] | None = None,
             timeout: float | None = None,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[dict[str, Any]]:
             """Execute HTTP DELETE request."""
 
     @runtime_checkable

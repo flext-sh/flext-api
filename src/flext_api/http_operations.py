@@ -10,8 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
 from flext_core import FlextResult
 
 
@@ -29,7 +27,7 @@ class FlextApiOperations:
         params: dict[str, str] | None = None,
         headers: dict[str, str] | None = None,
         timeout: float | None = None,
-    ) -> FlextResult[dict[str, Any]]:
+    ) -> FlextResult[dict[str, object]]:
         """Execute HTTP GET request with railway error handling."""
         # This method delegates to the actual HTTP client implementation
         # The HTTP client should implement this method
@@ -39,13 +37,13 @@ class FlextApiOperations:
     @staticmethod
     def execute_post(
         url: str,
-        data: Any | None = None,
+        data: object | None = None,
         *,
-        json_data: Any | None = None,
+        json_data: object | None = None,
         params: dict[str, str] | None = None,
         headers: dict[str, str] | None = None,
         timeout: float | None = None,
-    ) -> FlextResult[dict[str, Any]]:
+    ) -> FlextResult[dict[str, object]]:
         """Execute HTTP POST request with JSON/data support."""
         # This method delegates to the actual HTTP client implementation
         # The HTTP client should implement this method
@@ -55,13 +53,13 @@ class FlextApiOperations:
     @staticmethod
     def execute_put(
         url: str,
-        data: Any | None = None,
+        data: object | None = None,
         *,
-        json_data: Any | None = None,
+        json_data: object | None = None,
         params: dict[str, str] | None = None,
         headers: dict[str, str] | None = None,
         timeout: float | None = None,
-    ) -> FlextResult[dict[str, Any]]:
+    ) -> FlextResult[dict[str, object]]:
         """Execute HTTP PUT request with JSON/data support."""
         # This method delegates to the actual HTTP client implementation
         # The HTTP client should implement this method
@@ -75,7 +73,7 @@ class FlextApiOperations:
         params: dict[str, str] | None = None,
         headers: dict[str, str] | None = None,
         timeout: float | None = None,
-    ) -> FlextResult[dict[str, Any]]:
+    ) -> FlextResult[dict[str, object]]:
         """Execute HTTP DELETE request with railway error handling."""
         # This method delegates to the actual HTTP client implementation
         # The HTTP client should implement this method

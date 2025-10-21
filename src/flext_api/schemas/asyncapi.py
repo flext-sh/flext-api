@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast, override
+from typing import Any, cast, override
 
 from flext_core import FlextResult
 
@@ -53,9 +53,9 @@ class AsyncAPISchemaValidator(SchemaPlugin):
         """Initialize AsyncAPI schema validator.
 
         Args:
-            strict_mode: Enable strict AsyncAPI validation
-            validate_messages: Validate message schemas
-            validate_bindings: Validate protocol bindings
+        strict_mode: Enable strict AsyncAPI validation
+        validate_messages: Validate message schemas
+        validate_bindings: Validate protocol bindings
 
         """
         super().__init__(
@@ -83,27 +83,23 @@ class AsyncAPISchemaValidator(SchemaPlugin):
             "amqps",
         ]
 
-    def validate_schema(
-        self, schema: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+    def validate_schema(self, schema: dict[str, Any]) -> FlextResult[dict[str, Any]]:
         """Validate AsyncAPI schema against AsyncAPI specification.
 
         Args:
-            schema: AsyncAPI schema dictionary
+        schema: AsyncAPI schema dictionary
 
         Returns:
-            FlextResult containing validation result or error
+        FlextResult containing validation result or error
 
         """
         # Validate AsyncAPI version
         asyncapi_version = schema.get("asyncapi")
         if not asyncapi_version or not isinstance(asyncapi_version, str):
-            return FlextResult[dict[str, object]].fail(
-                "Missing 'asyncapi' version field"
-            )
+            return FlextResult[dict[str, Any]].fail("Missing 'asyncapi' version field")
 
         if not (asyncapi_version.startswith(("2.", "3."))):
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict[str, Any]].fail(
                 f"Unsupported AsyncAPI version: {asyncapi_version}"
             )
 
@@ -114,45 +110,45 @@ class AsyncAPISchemaValidator(SchemaPlugin):
 
         missing_fields = [field for field in required_fields if field not in schema]
         if missing_fields:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict[str, Any]].fail(
                 f"Missing required fields: {', '.join(missing_fields)}"
             )
 
         # Validate info object
-        info = cast("dict[str, object]", schema.get("info", {}))
+        info = cast("dict[str, Any]", schema.get("info", {}))
         info_required = ["title", "version"]
         info_missing = [field for field in info_required if field not in info]
         if info_missing:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict[str, Any]].fail(
                 f"Missing required info fields: {', '.join(info_missing)}"
             )
 
         # Validate channels
         channels_result = self._validate_channels(
-            cast("dict[str, object]", schema.get("channels", {})), asyncapi_version
+            cast("dict[str, Any]", schema.get("channels", {})), asyncapi_version
         )
         if channels_result.is_failure:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict[str, Any]].fail(
                 f"Channel validation failed: {channels_result.error}"
             )
 
         # Validate servers if present
         if "servers" in schema:
             servers_result = self._validate_servers(
-                cast("dict[str, object]", schema["servers"])
+                cast("dict[str, Any]", schema["servers"])
             )
             if servers_result.is_failure:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict[str, Any]].fail(
                     f"Server validation failed: {servers_result.error}"
                 )
 
         # Validate components if present
         if "components" in schema:
             components_result = self._validate_components(
-                cast("dict[str, object]", schema["components"])
+                cast("dict[str, Any]", schema["components"])
             )
             if components_result.is_failure:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict[str, Any]].fail(
                     f"Component validation failed: {components_result.error}"
                 )
 
@@ -162,31 +158,29 @@ class AsyncAPISchemaValidator(SchemaPlugin):
                 "version": asyncapi_version,
                 "title": str(info.get("title", "")),
                 "channels_count": len(
-                    cast("dict[str, object]", schema.get("channels", {}))
+                    cast("dict[str, Any]", schema.get("channels", {}))
                 ),
             },
         )
 
-        return FlextResult[dict[str, object]].ok({
+        return FlextResult[dict[str, Any]].ok({
             "valid": True,
             "version": asyncapi_version,
             "title": str(info.get("title", "")),
-            "channels": list(
-                cast("dict[str, object]", schema.get("channels", {})).keys()
-            ),
+            "channels": list(cast("dict[str, Any]", schema.get("channels", {})).keys()),
         })
 
     def _validate_channels(
-        self, channels: dict[str, object], version: str
+        self, channels: dict[str, Any], version: str
     ) -> FlextResult[None]:
         """Validate AsyncAPI channels.
 
         Args:
-            channels: Channels dictionary from AsyncAPI schema
-            version: AsyncAPI version
+        channels: Channels dictionary from AsyncAPI schema
+        version: AsyncAPI version
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
 
         """
         # Allow empty channels for minimal schemas
@@ -204,7 +198,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
                 # AsyncAPI 2.x uses publish/subscribe at channel level
                 if "publish" in channel:
                     pub_result = self._validate_operation(
-                        cast("dict[str, object]", channel["publish"]),
+                        cast("dict[str, Any]", channel["publish"]),
                         channel_name,
                         "publish",
                     )
@@ -213,7 +207,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
 
                 if "subscribe" in channel:
                     sub_result = self._validate_operation(
-                        cast("dict[str, object]", channel["subscribe"]),
+                        cast("dict[str, Any]", channel["subscribe"]),
                         channel_name,
                         "subscribe",
                     )
@@ -231,7 +225,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
             # Validate messages if present
             if self._validate_messages and "messages" in channel:
                 messages_result = self._validate_messages_object(
-                    cast("dict[str, object]", channel["messages"]), channel_name
+                    cast("dict[str, Any]", channel["messages"]), channel_name
                 )
                 if messages_result.is_failure:
                     return messages_result
@@ -239,17 +233,17 @@ class AsyncAPISchemaValidator(SchemaPlugin):
         return FlextResult[None].ok(None)
 
     def _validate_operation(
-        self, operation: dict[str, object], channel_name: str, op_type: str
+        self, operation: dict[str, Any], channel_name: str, op_type: str
     ) -> FlextResult[None]:
         """Validate AsyncAPI operation (publish/subscribe).
 
         Args:
-            operation: Operation dictionary
-            channel_name: Channel name
-            op_type: Operation type (publish/subscribe)
+        operation: Operation dictionary
+        channel_name: Channel name
+        op_type: Operation type (publish/subscribe)
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
 
         """
         # Validate message if present
@@ -257,7 +251,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
             message = operation["message"]
             if isinstance(message, dict):
                 message_result = self._validate_message(
-                    cast("dict[str, object]", message), channel_name, op_type
+                    cast("dict[str, Any]", message), channel_name, op_type
                 )
                 if message_result.is_failure:
                     return message_result
@@ -265,17 +259,17 @@ class AsyncAPISchemaValidator(SchemaPlugin):
         return FlextResult[None].ok(None)
 
     def _validate_message(
-        self, message: dict[str, object], channel_name: str, op_type: str
+        self, message: dict[str, Any], channel_name: str, op_type: str
     ) -> FlextResult[None]:
         """Validate AsyncAPI message.
 
         Args:
-            message: Message dictionary
-            channel_name: Channel name
-            op_type: Operation type
+        message: Message dictionary
+        channel_name: Channel name
+        op_type: Operation type
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
 
         """
         # Validate payload schema if present
@@ -289,36 +283,36 @@ class AsyncAPISchemaValidator(SchemaPlugin):
         return FlextResult[None].ok(None)
 
     def _validate_messages_object(
-        self, messages: dict[str, object], channel_name: str
+        self, messages: dict[str, Any], channel_name: str
     ) -> FlextResult[None]:
         """Validate AsyncAPI messages object.
 
         Args:
-            messages: Messages dictionary
-            channel_name: Channel name
+        messages: Messages dictionary
+        channel_name: Channel name
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
 
         """
         for message_name, message in messages.items():
             if isinstance(message, dict):
                 message_result = self._validate_message(
-                    cast("dict[str, object]", message), channel_name, message_name
+                    cast("dict[str, Any]", message), channel_name, message_name
                 )
                 if message_result.is_failure:
                     return message_result
 
         return FlextResult[None].ok(None)
 
-    def _validate_servers(self, servers: dict[str, object]) -> FlextResult[None]:
+    def _validate_servers(self, servers: dict[str, Any]) -> FlextResult[None]:
         """Validate AsyncAPI servers.
 
         Args:
-            servers: Servers dictionary from AsyncAPI schema
+        servers: Servers dictionary from AsyncAPI schema
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
 
         """
         for server_name, server in servers.items():
@@ -347,14 +341,14 @@ class AsyncAPISchemaValidator(SchemaPlugin):
 
         return FlextResult[None].ok(None)
 
-    def _validate_components(self, components: dict[str, object]) -> FlextResult[None]:
+    def _validate_components(self, components: dict[str, Any]) -> FlextResult[None]:
         """Validate AsyncAPI components.
 
         Args:
-            components: Components dictionary from AsyncAPI schema
+        components: Components dictionary from AsyncAPI schema
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
 
         """
         # Validate component sections
@@ -387,10 +381,10 @@ class AsyncAPISchemaValidator(SchemaPlugin):
         """Check if this validator supports the given schema type.
 
         Args:
-            schema_type: Schema type identifier
+        schema_type: Schema type identifier
 
         Returns:
-            True if schema type is supported
+        True if schema type is supported
 
         """
         return schema_type.lower() in {
@@ -404,7 +398,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
         """Get list of supported schema types.
 
         Returns:
-            List of supported schema type identifiers
+        List of supported schema type identifiers
 
         """
         return ["asyncapi", "async-api", "asyncapi2", "asyncapi3"]
@@ -418,11 +412,11 @@ class AsyncAPISchemaValidator(SchemaPlugin):
         """Validate request against AsyncAPI schema.
 
         Args:
-            request: Request to validate
-            schema: AsyncAPI schema
+        request: Request to validate
+        schema: AsyncAPI schema
 
         Returns:
-            FlextResult containing validation result or error
+        FlextResult containing validation result or error
 
         """
         # Basic AsyncAPI request validation
@@ -466,11 +460,11 @@ class AsyncAPISchemaValidator(SchemaPlugin):
         """Validate response against AsyncAPI schema.
 
         Args:
-            response: Response to validate
-            schema: AsyncAPI schema
+        response: Response to validate
+        schema: AsyncAPI schema
 
         Returns:
-            FlextResult containing validation result or error
+        FlextResult containing validation result or error
 
         """
         # Basic AsyncAPI response validation
@@ -517,22 +511,22 @@ class AsyncAPISchemaValidator(SchemaPlugin):
     @override
     def load_schema(
         self,
-        schema_source: str | dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
+        schema_source: str | dict[str, Any],
+    ) -> FlextResult[dict[str, Any]]:
         """Load AsyncAPI schema from source.
 
         Args:
-            schema_source: Schema file path or schema dict
+        schema_source: Schema file path or schema dict
 
         Returns:
-            FlextResult containing loaded schema or error
+        FlextResult containing loaded schema or error
 
         """
         _ = schema_source
-        return FlextResult[dict[str, object]].ok({})
+        return FlextResult[dict[str, Any]].ok({})
 
         # For string paths, would load from file
-        return FlextResult[dict[str, object]].fail("File loading not implemented yet")
+        return FlextResult[dict[str, Any]].fail("File loading not implemented yet")
 
 
 __all__ = ["AsyncAPISchemaValidator"]

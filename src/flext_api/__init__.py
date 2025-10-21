@@ -1,38 +1,34 @@
-"""FLEXT API - HTTP Foundation Library for Enterprise Integration.
+"""FLEXT API - HTTP Foundation Library.
 
-==============================================================================
-UNIFIED HTTP API FACADE - FLEXT ECOSYSTEM FOUNDATION
-==============================================================================
+Unified HTTP API facade for FLEXT ecosystem.
 
-FlextApi is the unified HTTP operations foundation for the entire FLEXT
-ecosystem. It serves as the single entry point for enterprise-grade HTTP
-functionality across 33+ projects, eliminating implementation duplication
-while maintaining consistent enterprise-grade patterns.
+Provides unified HTTP operations serving as single entry point for
+HTTP functionality across projects with consistent patterns.
 
-**Architecture Layer**: Application API Layer (Layer 3+)
-- **Single Entry Point**: FlextApi unified facade
-- **Models**: FlextApiModels extending flext-core FlextModels
-- **Foundation**: Uses flext-core FlextResult, FlextService, FlextModels
+Architecture Layer: Application API Layer (Layer 3+)
+- Single Entry Point: FlextApi unified facade
+- Models: FlextApiModels extending flext-core FlextModels
+- Foundation: Uses flext-core FlextResult, FlextService, FlextModels
 
-**Core Features**:
-    ✅ Unified FlextApi facade (single entry point)
-    ✅ Railway-oriented error handling (FlextResult[T])
-    ✅ HTTP client abstraction with retry/timeout
-    ✅ Pydantic v2 models with validation (Value Objects)
-    ✅ Clean Architecture with domain-driven design
-    ✅ FastAPI application factory
-    ✅ Zero tolerance for custom HTTP implementations
+Core Features:
+    - Unified FlextApi facade (single entry point)
+    - Railway-oriented error handling (FlextResult[T])
+    - HTTP client abstraction with retry/timeout
+    Pydantic v2 models with validation (Value Objects)
+    Clean Architecture with domain-driven design
+    FastAPI application factory
+    Zero tolerance for custom HTTP implementations
 
-**CRITICAL RULE - ZERO TOLERANCE**:
+Critical Rule - Zero Tolerance:
     🔴 NO direct httpx imports outside flext-api infrastructure
     🔴 NO custom HTTP implementations in ecosystem
     🔴 🟢 ALL HTTP operations through FlextApi facade
     🟢 ALL models use FlextApiModels (extends FlextModels)
     🟢 ALL errors return FlextResult[T] (railway pattern)
 
-**IMPORT PATTERN** (Root imports only):
+Import Pattern (Root imports only):
 
-✅ CORRECT - Always use root imports:
+Correct - Always use root imports:
     from flext_api import (
         FlextApi,              # Main facade
         FlextApiModels,        # HTTP domain models
@@ -41,14 +37,14 @@ while maintaining consistent enterprise-grade patterns.
         FlextApiProtocols,     # Protocol definitions
     )
 
-❌ FORBIDDEN - Never use internal imports:
+Forbidden - Never use internal imports:
     from flext_api.api import FlextApi  # Wrong - use root import
     from flext_api.models import FlextApiModels  # Wrong - use root import
 
 Why: 33+ ecosystem projects rely on root imports. Internal imports break
 the entire ecosystem by creating circular dependencies and import order issues.
 
-**USAGE EXAMPLES**:
+USAGE EXAMPLES:
 
 Example 1: Simple HTTP GET:
     >>> from flext_api import FlextApi
@@ -62,26 +58,22 @@ Example 2: HTTP POST with data:
     >>> result = api.post(
     ...     "https://api.example.com/users",
     ...     data={"name": "John", "email": "john@example.com"},
-    ...     headers={"Content-Type": "application/json"}
+    ...     headers={"Content-Type": "application/json"},
     ... )
 
 Example 3: Using models with validation:
     >>> request = api.Models.HttpRequest(
-    ...     method="GET",
-    ...     url="https://api.example.com/users",
-    ...     timeout=30.0
+    ...     method="GET", url="https://api.example.com/users", timeout=30.0
     ... )
     >>> result = api.request(request)
 
 Example 4: Configuration:
     >>> config = api.Models.ClientConfig(
-    ...     base_url="https://api.example.com",
-    ...     timeout=30.0,
-    ...     max_retries=3
+    ...     base_url="https://api.example.com", timeout=30.0, max_retries=3
     ... )
     >>> api.reconfigure(api.Config(base_url="https://api.example.com"))
 
-**FLEXT ECOSYSTEM INTEGRATION**:
+FLEXT ECOSYSTEM INTEGRATION:
     - Foundation: FlextApi (unified facade)
     - Models: FlextApiModels extending flext-core
     - Patterns: Railway-oriented (FlextResult[T])
@@ -89,18 +81,18 @@ Example 4: Configuration:
 
 **19 EXPORTED CLASSES** (organized by responsibility):
 
-1. **Main Facade**:
+1. Main Facade:
    - FlextApi - Unified HTTP API entry point
 
-2. **Domain Models**:
+2. Domain Models:
    - FlextApiModels - HTTP domain models (Value Objects)
 
-3. **Configuration**:
+3. Configuration:
    - FlextApiConfig - HTTP configuration
    - FlextApiConstants - HTTP constants
    - FlextApiConfigManager - Configuration management
 
-4. **Infrastructure**:
+4. Infrastructure:
    - FlextApiClient - HTTP client implementation
    - FlextApiApp - FastAPI application factory
    - FlextApiLifecycleManager - Resource lifecycle
@@ -108,14 +100,14 @@ Example 4: Configuration:
    - FlextApiStorage - Storage abstraction
    - FlextApiAdapters - Protocol adapters
 
-5. **Type System**:
+5. Type System:
    - FlextApiTypes - Type definitions
    - FlextApiProtocols - Protocol definitions
 
-6. **Utilities**:
+6. Utilities:
    - FlextApiUtilities - HTTP utilities
 
-7. **Exceptions**:
+7. Exceptions:
    - FlextHttpError - HTTP exceptions
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.

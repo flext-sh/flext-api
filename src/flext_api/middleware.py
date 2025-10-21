@@ -26,8 +26,7 @@ class FlextApiMiddleware:
 
     @staticmethod
     def apply_pipeline(
-        request: Any,
-        middleware_list: list[Callable[[Any], Any]]
+        request: Any, middleware_list: list[Callable[[Any], Any]]
     ) -> Any:
         """Apply middleware pipeline to request."""
         for middleware in middleware_list:

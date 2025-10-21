@@ -12,7 +12,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from typing import Any
 
 import httpx
 from flext_core import FlextResult, FlextService
@@ -35,7 +34,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         """Initialize with configuration model.
 
         Args:
-            config: FlextApiConfig model with base_url, timeout, headers, etc.
+        config: FlextApiConfig model with base_url, timeout, headers, etc.
 
         """
         super().__init__()
@@ -51,10 +50,10 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         """Execute HTTP request from model.
 
         Args:
-            request: HttpRequest Value Object with method, url, headers, body.
+        request: HttpRequest Value Object with method, url, headers, body.
 
         Returns:
-            FlextResult[HttpResponse]: Success with HttpResponse or error message.
+        FlextResult[HttpResponse]: Success with HttpResponse or error message.
 
         """
         try:
@@ -89,7 +88,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         return f"{base}{path}" if path.startswith("/") else f"{base}/{path}"
 
     @staticmethod
-    def _serialize_body(body: Any) -> bytes | None:
+    def _serialize_body(body: object) -> bytes | None:
         """Serialize request body to bytes."""
         if body is None:
             return None
@@ -100,7 +99,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         return json.dumps(body).encode("utf-8")
 
     @staticmethod
-    def _deserialize_body(response: httpx.Response) -> Any:
+    def _deserialize_body(response: httpx.Response) -> object:
         """Deserialize response body based on content-type."""
         content_type = response.headers.get("content-type", "")
         if "application/json" in content_type:

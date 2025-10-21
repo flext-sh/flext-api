@@ -41,10 +41,10 @@ class FlextApiLifecycleManager:
         try:
             yield resource
         finally:
-            if hasattr(resource, "aclose"):
-                await resource.aclose()
-            elif hasattr(resource, "close"):
-                resource.close()
+            if hasattr(resource, "aclose") and callable(getattr(resource, "aclose", None)):
+                await getattr(resource, "aclose")()
+            elif hasattr(resource, "close") and callable(getattr(resource, "close", None)):
+                getattr(resource, "close")()
 
     @staticmethod
     def manage_sync_http_resource(resource: object) -> object:
@@ -52,8 +52,8 @@ class FlextApiLifecycleManager:
         try:
             return resource
         finally:
-            if hasattr(resource, "close"):
-                resource.close()
+            if hasattr(resource, "close") and callable(getattr(resource, "close", None)):
+                getattr(resource, "close")()
 
 
 __all__ = [

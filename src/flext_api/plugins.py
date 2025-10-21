@@ -11,11 +11,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import ClassVar
+from typing import Any
 
 from flext_core import FlextLogger, FlextResult
-
-from flext_api.typings import FlextApiTypes
 
 
 class FlextApiPlugins:
@@ -46,9 +44,7 @@ class FlextApiPlugins:
         def shutdown(self) -> FlextResult[None]:
             """Shutdown plugin and release resources."""
             if not self._initialized:
-                return FlextResult[None].fail(
-                    f"Plugin '{self.name}' not initialized"
-                )
+                return FlextResult[None].fail(f"Plugin '{self.name}' not initialized")
             self.logger.debug(f"Shutting down plugin: {self.name}")
             self._initialized = False
             return FlextResult[None].ok(None)
@@ -58,7 +54,7 @@ class FlextApiPlugins:
             """Check if plugin is initialized."""
             return self._initialized
 
-        def get_metadata(self) -> dict[str, object]:
+        def get_metadata(self) -> dict[str, Any]:
             """Get plugin metadata."""
             return {
                 "name": self.name,
@@ -73,9 +69,9 @@ class FlextApiPlugins:
         @abstractmethod
         def send_request(
             self,
-            request: FlextApiTypes.RequestData,
-            **kwargs: FlextApiTypes.JsonValue,
-        ) -> FlextResult[FlextApiTypes.ResponseData]:
+            request: dict[str, object],
+            **kwargs: object,
+        ) -> FlextResult[dict[str, object]]:
             """Send request using this protocol."""
             ...
 
@@ -84,7 +80,7 @@ class FlextApiPlugins:
             """Check if this plugin supports the given protocol."""
             ...
 
-        def get_supported_protocols(self) -> list[str]:  # noqa: PLR6301
+        def get_supported_protocols(self) -> list[str]:
             """Get list of supported protocols."""
             return []
 
@@ -94,8 +90,8 @@ class FlextApiPlugins:
         @abstractmethod
         def validate_request(
             self,
-            request: FlextApiTypes.RequestData,
-            schema: FlextApiTypes.Schema.JsonSchema,
+            request: dict[str, Any],
+            schema: dict[str, Any],
         ) -> FlextResult[bool]:
             """Validate request against schema."""
             ...
@@ -103,8 +99,8 @@ class FlextApiPlugins:
         @abstractmethod
         def validate_response(
             self,
-            response: FlextApiTypes.ResponseData,
-            schema: FlextApiTypes.Schema.JsonSchema,
+            response: dict[str, Any],
+            schema: dict[str, Any],
         ) -> FlextResult[bool]:
             """Validate response against schema."""
             ...
@@ -114,11 +110,11 @@ class FlextApiPlugins:
             """Load schema from source."""
             ...
 
-        def supports_schema_type(self) -> bool:  # noqa: PLR6301
+        def supports_schema_type(self) -> bool:
             """Check if this plugin supports the given schema type."""
             return False
 
-        def get_schema_version(self) -> str:  # noqa: PLR6301
+        def get_schema_version(self) -> str:
             """Get schema specification version."""
             return "unknown"
 
@@ -126,9 +122,7 @@ class FlextApiPlugins:
         """Abstract transport plugin for network communication."""
 
         @abstractmethod
-        def connect(
-            self, url: str, **options: FlextApiTypes.JsonValue
-        ) -> FlextResult[bool]:
+        def connect(self, url: str, **options: object) -> FlextResult[bool]:
             """Establish connection to endpoint."""
             ...
 
@@ -141,24 +135,24 @@ class FlextApiPlugins:
         def send(
             self,
             connection: object,
-            data: FlextApiTypes.Protocol.ProtocolMessage,
-            **options: FlextApiTypes.JsonValue,
+            data: dict[str, object] | str | bytes,
+            **options: object,
         ) -> FlextResult[bool]:
             """Send data through connection."""
             ...
 
         @abstractmethod
         def receive(
-            self, connection: object, **options: FlextApiTypes.JsonValue
-        ) -> FlextResult[FlextApiTypes.Protocol.ProtocolMessage]:
+            self, connection: object, **options: object
+        ) -> FlextResult[dict[str, object] | str | bytes]:
             """Receive data from connection."""
             ...
 
-        def supports_streaming(self) -> bool:  # noqa: PLR6301
+        def supports_streaming(self) -> bool:
             """Check if transport supports streaming."""
             return False
 
-        def get_connection_info(self) -> FlextApiTypes.Transport.ConnectionInfo:  # noqa: PLR6301
+        def get_connection_info(self) -> dict[str, Any]:
             """Get connection information."""
             return {}
 
@@ -168,32 +162,32 @@ class FlextApiPlugins:
         @abstractmethod
         def authenticate(
             self,
-            request: FlextApiTypes.RequestData,
-            credentials: FlextApiTypes.Authentication.AuthCredentials,
-        ) -> FlextResult[FlextApiTypes.RequestData]:
+            request: dict[str, Any],
+            credentials: dict[str, Any],
+        ) -> FlextResult[dict[str, Any]]:
             """Add authentication to request."""
             ...
 
         @abstractmethod
         def validate_credentials(
-            self, credentials: FlextApiTypes.Authentication.AuthCredentials
+            self, credentials: dict[str, Any]
         ) -> FlextResult[bool]:
             """Validate authentication credentials."""
             ...
 
-        def get_auth_scheme(self) -> str:  # noqa: PLR6301
+        def get_auth_scheme(self) -> str:
             """Get authentication scheme name."""
             return "Unknown"
 
-        def requires_refresh(self) -> bool:  # noqa: PLR6301
+        def requires_refresh(self) -> bool:
             """Check if credentials need refresh."""
             return False
 
         def refresh_credentials(
-            self, _credentials: dict[str, object]  # noqa: PLR6301
-        ) -> FlextResult[dict[str, object]]:
+            self, _credentials: dict[str, Any]
+        ) -> FlextResult[dict[str, Any]]:
             """Refresh authentication credentials."""
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict[str, Any]].fail(
                 "Refresh not supported by this plugin"
             )
 
@@ -282,9 +276,9 @@ PluginManager = FlextApiPlugins.Manager
 __all__ = [
     "AuthenticationPlugin",
     "BasePlugin",
+    "FlextApiPlugins",
     "PluginManager",
     "ProtocolPlugin",
     "SchemaPlugin",
     "TransportPlugin",
-    "FlextApiPlugins",
 ]

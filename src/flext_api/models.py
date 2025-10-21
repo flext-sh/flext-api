@@ -198,9 +198,7 @@ class FlextApiModels:
         headers: dict[str, str] = Field(
             default_factory=dict, description="Default headers for all requests"
         )
-        verify_ssl: bool = Field(
-            default=True, description="Verify SSL certificates"
-        )
+        verify_ssl: bool = Field(default=True, description="Verify SSL certificates")
 
         @computed_field
         @property
@@ -215,12 +213,8 @@ class FlextApiModels:
     class Pagination(BaseModel):
         """Pagination information model."""
 
-        page: int = Field(
-            default=1, ge=1, description="Current page number (1-based)"
-        )
-        page_size: int = Field(
-            default=20, ge=1, le=1000, description="Items per page"
-        )
+        page: int = Field(default=1, ge=1, description="Current page number (1-based)")
+        page_size: int = Field(default=20, ge=1, le=1000, description="Items per page")
         total_items: int | None = Field(
             default=None, ge=0, description="Total number of items"
         )
@@ -339,17 +333,17 @@ class FlextApiModels:
         body: Any | None = None,
         headers: dict[str, str] | None = None,
         request_id: str | None = None,
-    ) -> "FlextApiModels.HttpResponse":
+    ) -> FlextApiModels.HttpResponse:
         """Create HttpResponse from parameters.
 
         Args:
-            status_code: HTTP status code
-            body: Response body (JSON, string, bytes, or None)
-            headers: Response headers dictionary
-            request_id: Associated request ID for tracking
+        status_code: HTTP status code
+        body: Response body (JSON, string, bytes, or None)
+        headers: Response headers dictionary
+        request_id: Associated request ID for tracking
 
         Returns:
-            HttpResponse instance
+        HttpResponse instance
 
         """
         return cls.HttpResponse(
@@ -366,19 +360,19 @@ class FlextApiModels:
         timeout: float = 30.0,
         max_retries: int = 3,
         headers: dict[str, str] | None = None,
-        verify_ssl: bool = True,
-    ) -> "FlextApiModels.ClientConfig":
+        verify_ssl: bool | None = None,
+    ) -> FlextApiModels.ClientConfig:
         """Create ClientConfig from parameters.
 
         Args:
-            base_url: Base URL for all requests
-            timeout: Request timeout in seconds
-            max_retries: Maximum retry attempts
-            headers: Default headers for all requests
-            verify_ssl: Verify SSL certificates
+        base_url: Base URL for all requests
+        timeout: Request timeout in seconds
+        max_retries: Maximum retry attempts
+        headers: Default headers for all requests
+        verify_ssl: Verify SSL certificates
 
         Returns:
-            ClientConfig instance
+        ClientConfig instance
 
         """
         return cls.ClientConfig(
@@ -386,7 +380,7 @@ class FlextApiModels:
             timeout=timeout,
             max_retries=max_retries,
             headers=headers or {},
-            verify_ssl=verify_ssl,
+            verify_ssl=verify_ssl if verify_ssl is not None else True,
         )
 
 
