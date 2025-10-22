@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Self
+from typing import Any, Self
 
 import httpx
 from flext_core import FlextLogger, FlextResult
@@ -16,7 +16,7 @@ from flext_api.models import FlextApiModels
 from flext_api.protocols import FlextApiProtocols
 
 
-class FlextWebClientImplementation(FlextApiProtocols.FlextWebClientProtocol):
+class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
     """HTTP client implementation conforming to FlextWebClientProtocol."""
 
     def __init__(self, client_config: FlextApiModels.ClientConfig) -> None:
@@ -60,23 +60,47 @@ class FlextWebClientImplementation(FlextApiProtocols.FlextWebClientProtocol):
             # Prepare headers (merge config headers with request headers)
             request_headers: dict[str, str] = {
                 **self._config.headers,
-                **{
-                    k: v
-                    for k, v in (kwargs.get("headers") or {}).items()
-                    if isinstance(v, str)
-                },
             }
+
+            kwargs_headers = kwargs.get("headers")
+            if isinstance(kwargs_headers, dict):
+                request_headers.update({
+                    k: v
+                    for k, v in kwargs_headers.items()
+                    if isinstance(v, str)
+                })
+
+            # Extract typed parameters from kwargs with safe casting
+            params: dict[str, str] | None = None
+            if isinstance(kwargs.get("params"), dict):
+                params = kwargs.get("params")  # type: ignore[assignment]
+
+            json_data: Any = None
+            if "json" in kwargs:
+                json_data = kwargs.get("json")
+
+            content_data: Any = None
+            if "content" in kwargs:
+                content_data = kwargs.get("content")
+
+            form_data: Any = None
+            if "data" in kwargs:
+                form_data = kwargs.get("data")
+
+            files_data: Any = None
+            if "files" in kwargs:
+                files_data = kwargs.get("files")
 
             # Make the HTTP request using httpx client with properly typed arguments
             httpx_response = self._client.request(
                 method=method,
                 url=full_url,
                 headers=request_headers,
-                params=kwargs.get("params"),
-                json=kwargs.get("json"),
-                content=kwargs.get("content"),
-                data=kwargs.get("data"),
-                files=kwargs.get("files"),
+                params=params,  # type: ignore[arg-type]
+                json=json_data,
+                content=content_data,  # type: ignore[arg-type]
+                data=form_data,  # type: ignore[arg-type]
+                files=files_data,  # type: ignore[arg-type]
             )
 
             # Convert httpx response to FlextApiModels.HttpResponse

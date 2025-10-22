@@ -85,7 +85,9 @@ class FlextWebhookHandler(FlextService[object]):
 
         # Initialize flext-core components
         self._container = FlextContainer.get_global()
-        self._flext_context = FlextContext()  # Named differently to avoid parent's _context
+        self._flext_context = (
+            FlextContext()
+        )  # Named differently to avoid parent's _context
         self._bus = FlextBus()
         self._dispatcher = FlextDispatcher()
 

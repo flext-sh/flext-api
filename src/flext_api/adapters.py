@@ -97,16 +97,16 @@ class FlextApiAdapters:
             """Convert OpenAPI specification to GraphQL schema."""
             try:
                 # Simplified OpenAPI to GraphQL conversion
-                graphql_schema = {
+                graphql_schema: dict[str, Any] = {
                     "type": "schema",
                     "query": "Query",
                     "mutation": "Mutation",
                 }
 
-                return FlextResult.ok(graphql_schema)
+                return FlextResult[dict[str, Any]].ok(graphql_schema)
 
             except Exception as e:
-                return FlextResult.fail(f"OpenAPI to GraphQL conversion failed: {e}")
+                return FlextResult[dict[str, Any]].fail(f"OpenAPI to GraphQL conversion failed: {e}")
 
     class FormatConverter:
         """Format conversion following SOLID principles.
@@ -120,21 +120,24 @@ class FlextApiAdapters:
             """Convert JSON data to MessagePack format."""
             try:
                 # msgpack.packb returns bytes for valid input
-                packed = msgpack.packb(data)
-                return FlextResult.ok(packed)
+                packed_data = msgpack.packb(data)
+                if not isinstance(packed_data, bytes):
+                    return FlextResult[bytes].fail("msgpack.packb did not return bytes")
+                # msgpack.packb always returns bytes for valid input
+                return FlextResult[bytes].ok(packed_data)
 
             except Exception as e:
-                return FlextResult.fail(f"JSON to MessagePack conversion failed: {e}")
+                return FlextResult[bytes].fail(f"JSON to MessagePack conversion failed: {e}")
 
         @staticmethod
         def convert_json_to_cbor(data: dict[str, Any]) -> FlextResult[bytes]:
             """Convert JSON data to CBOR format."""
             try:
-                packed = cbor2.dumps(data)
-                return FlextResult.ok(packed)
+                packed: bytes = cbor2.dumps(data)
+                return FlextResult[bytes].ok(packed)
 
             except Exception as e:
-                return FlextResult.fail(f"JSON to CBOR conversion failed: {e}")
+                return FlextResult[bytes].fail(f"JSON to CBOR conversion failed: {e}")
 
     class RequestTransformer:
         """Request/response transformation following SOLID principles.

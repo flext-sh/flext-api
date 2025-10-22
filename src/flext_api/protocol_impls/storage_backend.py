@@ -10,7 +10,6 @@ from __future__ import annotations
 from flext_core import FlextLogger, FlextResult
 
 from flext_api.protocols import FlextApiProtocols
-from flext_api.typings import FlextApiTypes
 
 
 class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
@@ -18,29 +17,29 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
 
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
-        self._storage: dict[str, FlextApiTypes.JsonValue] = {}
+        self._storage: dict[str, object] = {}
         self.logger = FlextLogger(__name__)
 
     def get(
-        self, key: str, default: FlextApiTypes.JsonValue = None
-    ) -> FlextResult[FlextApiTypes.JsonValue]:
+        self, key: str, default: object = None
+    ) -> FlextResult[object]:
         """Retrieve value by key."""
         try:
             if not key:
-                return FlextResult[FlextApiTypes.JsonValue].fail(
+                return FlextResult[object].fail(
                     "Storage key cannot be empty"
                 )
 
             if key in self._storage:
                 value = self._storage[key]
                 self.logger.debug(f"Retrieved data with key: {key}")
-                return FlextResult[FlextApiTypes.JsonValue].ok(value)
+                return FlextResult[object].ok(value)
             if default is not None:
-                return FlextResult[FlextApiTypes.JsonValue].ok(default)
-            return FlextResult[FlextApiTypes.JsonValue].fail(f"Key not found: {key}")
+                return FlextResult[object].ok(default)
+            return FlextResult[object].fail(f"Key not found: {key}")
 
         except Exception as e:
-            return FlextResult[FlextApiTypes.JsonValue].fail(
+            return FlextResult[object].fail(
                 f"Retrieval operation failed: {e}"
             )
 
@@ -48,7 +47,7 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
         self,
         key: str,
         value: object,
-        _timeout: int | None = None,
+        timeout: int | None = None,  # noqa: ARG002
     ) -> FlextResult[None]:
         """Store value with optional timeout."""
         try:

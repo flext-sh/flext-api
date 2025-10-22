@@ -360,7 +360,9 @@ class FlextApiServer(FlextService[object]):
         **options: object,
     ) -> FlextResult[None]:
         """Register HTTP route (delegates to RouteRegistry)."""
-        return self._route_registry.register(method, path, handler, prefix="", **options)
+        return self._route_registry.register(
+            method, path, handler, prefix="", **options
+        )
 
     def register_websocket_endpoint(
         self,

@@ -32,56 +32,40 @@ class FlextApiProtocols(FlextProtocols):
             self,
             method: str,
             url: str,
-            data: object | None = None,
-            json: object | None = None,
-            params: dict[str, str] | None = None,
-            headers: dict[str, str] | None = None,
-            timeout: float | None = None,
-        ) -> FlextResult[dict[str, Any]]:
+            **kwargs: object,
+        ) -> FlextResult[Any]:
             """Execute an HTTP request."""
             ...
 
         def get(
             self,
             url: str,
-            params: dict[str, str] | None = None,
-            headers: dict[str, str] | None = None,
-            timeout: float | None = None,
-        ) -> FlextResult[dict[str, Any]]:
+            **kwargs: object,
+        ) -> FlextResult[Any]:
             """Execute HTTP GET request."""
             ...
 
         def post(
             self,
             url: str,
-            data: object | None = None,
-            json: object | None = None,
-            params: dict[str, str] | None = None,
-            headers: dict[str, str] | None = None,
-            timeout: float | None = None,
-        ) -> FlextResult[dict[str, Any]]:
+            **kwargs: object,
+        ) -> FlextResult[Any]:
             """Execute HTTP POST request."""
             ...
 
         def put(
             self,
             url: str,
-            data: object | None = None,
-            json: object | None = None,
-            params: dict[str, str] | None = None,
-            headers: dict[str, str] | None = None,
-            timeout: float | None = None,
-        ) -> FlextResult[dict[str, Any]]:
+            **kwargs: object,
+        ) -> FlextResult[Any]:
             """Execute HTTP PUT request."""
             ...
 
         def delete(
             self,
             url: str,
-            params: dict[str, str] | None = None,
-            headers: dict[str, str] | None = None,
-            timeout: float | None = None,
-        ) -> FlextResult[dict[str, Any]]:
+            **kwargs: object,
+        ) -> FlextResult[Any]:
             """Execute HTTP DELETE request."""
             ...
 

@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 
 from flext_api.plugins import SchemaPlugin
 
@@ -349,27 +349,32 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
     def validate_request(
         self,
-        _request: FlextTypes.JsonValue,
-        _schema: dict[str, FlextTypes.JsonValue],
-    ) -> FlextResult[dict[str, FlextTypes.JsonValue]]:
+        request: dict[str, Any],  # noqa: ARG002
+        schema: dict[str, Any],
+    ) -> FlextResult[bool]:
         """Validate request against OpenAPI schema.
 
         Args:
-        request: Request to validate
+        _request: Request to validate
         schema: OpenAPI schema
 
         Returns:
         FlextResult containing validation result or error
 
         """
+        # Validate the schema first
+        schema_result = self.validate_schema(schema)
+        if schema_result.is_failure:
+            return FlextResult[bool].fail(f"Invalid schema: {schema_result.error}")
+
         # Implementation would validate request against OpenAPI paths/operations
-        return FlextResult[dict[str, Any]].ok({"valid": True})
+        return FlextResult[bool].ok(True)
 
     def validate_response(
         self,
-        _response: FlextTypes.JsonValue,
-        _schema: dict[str, FlextTypes.JsonValue],
-    ) -> FlextResult[dict[str, FlextTypes.JsonValue]]:
+        response: dict[str, Any],  # noqa: ARG002
+        schema: dict[str, Any],
+    ) -> FlextResult[bool]:
         """Validate response against OpenAPI schema.
 
         Args:
@@ -380,27 +385,29 @@ class OpenAPISchemaValidator(SchemaPlugin):
         FlextResult containing validation result or error
 
         """
+        # Validate the schema first
+        schema_result = self.validate_schema(schema)
+        if schema_result.is_failure:
+            return FlextResult[bool].fail(f"Invalid schema: {schema_result.error}")
+
         # Implementation would validate response against OpenAPI response schemas
-        return FlextResult[dict[str, Any]].ok({"valid": True})
+        return FlextResult[bool].ok(True)
 
     def load_schema(
         self,
-        schema_source: str | dict[str, Any],
-    ) -> FlextResult[dict[str, Any]]:
+        schema_source: str,  # noqa: ARG002
+    ) -> FlextResult[object]:
         """Load OpenAPI schema from source.
 
         Args:
-        schema_source: Schema file path or schema dict
+        schema_source: Schema file path
 
         Returns:
         FlextResult containing loaded schema or error
 
         """
-        if isinstance(schema_source, dict):
-            return FlextResult[dict[str, Any]].ok(schema_source)
-
         # For string paths, would load from file
-        return FlextResult[dict[str, Any]].fail("File loading not implemented yet")
+        return FlextResult[object].fail("File loading not implemented yet")
 
 
 __all__ = ["OpenAPISchemaValidator"]
