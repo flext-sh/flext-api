@@ -130,7 +130,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
 
         """
         # Extract WebSocket-specific parameters
-        message = kwargs.get("message", request.body)
+        message = kwargs.get("message", request.get("body") if isinstance(request, dict) else "")
         message_type = kwargs.get("message_type", "text")
 
         # Convert message to appropriate type
@@ -223,8 +223,8 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
             # Simplified sync disconnect - no async tasks to cancel
 
             # Close connection
-            if self._connection:
-                self._connection.close()
+            if self._connection and hasattr(self._connection, "close"):
+                self._connection.close()  # type: ignore[attr-defined]
 
             self._connected = False
             self._connection = None
@@ -387,11 +387,13 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
             if message_type == "text":
                 if isinstance(message, bytes):
                     message = message.decode("utf-8")
-                self._connection.send(message)
+                if hasattr(self._connection, "send"):
+                    self._connection.send(message)  # type: ignore[attr-defined]
             elif message_type == "binary":
                 if isinstance(message, str):
                     message = message.encode("utf-8")
-                self._connection.send(message)
+                if hasattr(self._connection, "send"):
+                    self._connection.send(message)  # type: ignore[attr-defined]
             else:
                 return FlextResult[None].fail(f"Invalid message type: {message_type}")
 
@@ -409,7 +411,10 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
         """Background task to receive messages."""
         while self._connected and self._connection:
             try:
-                message = self._connection.recv()
+                if hasattr(self._connection, "recv"):
+                    message = self._connection.recv()  # type: ignore[attr-defined]
+                else:
+                    message = None
 
                 # Notify message handlers
                 for handler in self._on_message_handlers:

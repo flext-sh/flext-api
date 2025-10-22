@@ -83,6 +83,7 @@
             "factory-boy>=3.3.1",
             "faker>=37.4.0",
             "hypothesis>=6.125.0",
+            "pytest-asyncio>=0.25.0",
             "pytest-benchmark>=5.1.0",
             "pytest-clarity>=1.0.1",
             "pytest-cov>=6.2.0",
@@ -138,6 +139,7 @@
                 pip-audit = "^2.9.0"
                 pyrefly = "^0.34.0"
                 pytest = "^8.4.1"
+                pytest-asyncio = "^0.25.0"
                 pytest-cov = "^6.2.1"
                 pytest-httpx = "^0.35.0"
 
@@ -158,6 +160,7 @@
         markers = [
             "api: FastAPI endpoint tests",
             "architecture: Architectural pattern tests",
+            "asyncio: Async tests",
             "benchmark: Performance benchmark tests",
             "builder: Builder pattern tests",
             "client: HTTP client tests",

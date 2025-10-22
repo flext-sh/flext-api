@@ -58,6 +58,10 @@ class FlextApiRegistry(FlextRegistry):
             dispatcher: Optional FlextDispatcher for event emission
 
         """
+        # Create default dispatcher if not provided
+        if dispatcher is None:
+            dispatcher = FlextDispatcher()
+
         super().__init__(dispatcher=dispatcher)
         # Logger inherited from parent FlextService - no assignment needed
 
@@ -397,7 +401,7 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if name not in self._auth_providers:
-            return FlextResult[AuthenticationPlugin].fail(
+            return FlextResult[None].fail(
                 f"Auth provider '{name}' not registered"
             )
 

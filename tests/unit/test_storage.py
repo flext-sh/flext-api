@@ -176,3 +176,179 @@ def test_performance_scenario() -> None:
     cleared_size_result = storage.size()
     assert cleared_size_result.is_success
     assert cleared_size_result.value == 0
+
+
+def test_batch_set_operation() -> None:
+    """Test batch set operation."""
+    storage = FlextApiStorage()
+
+    batch_data = {
+        "batch_key_1": "batch_value_1",
+        "batch_key_2": "batch_value_2",
+        "batch_key_3": "batch_value_3",
+    }
+
+    batch_result = storage.batch_set(batch_data)
+    assert batch_result.is_success
+
+    # Verify all keys were set
+    for key, value in batch_data.items():
+        get_result = storage.get(key)
+        assert get_result.is_success
+        assert get_result.value == value
+
+
+def test_batch_get_operation() -> None:
+    """Test batch get operation."""
+    storage = FlextApiStorage()
+
+    # Set up test data
+    test_data = {"get_1": "value_1", "get_2": "value_2", "get_3": "value_3"}
+    for key, value in test_data.items():
+        storage.set(key, value)
+
+    # Batch get
+    batch_get_result = storage.batch_get(["get_1", "get_2", "get_3"])
+    assert batch_get_result.is_success
+    assert batch_get_result.value == test_data
+
+
+def test_batch_delete_operation() -> None:
+    """Test batch delete operation."""
+    storage = FlextApiStorage()
+
+    # Set up test data
+    keys = ["del_1", "del_2", "del_3"]
+    for key in keys:
+        storage.set(key, f"value_for_{key}")
+
+    # Verify all exist
+    for key in keys:
+        exists_result = storage.exists(key)
+        assert exists_result.is_success
+        assert exists_result.value is True
+
+    # Batch delete
+    batch_delete_result = storage.batch_delete(keys)
+    assert batch_delete_result.is_success
+
+    # Verify all deleted
+    for key in keys:
+        get_result = storage.get(key)
+        assert get_result.is_success
+        assert get_result.value is None
+
+
+def test_values_operation() -> None:
+    """Test getting all values from storage."""
+    storage = FlextApiStorage()
+
+    test_values = ["val1", "val2", "val3"]
+    for i, val in enumerate(test_values):
+        storage.set(f"val_key_{i}", val)
+
+    values_result = storage.values()
+    assert values_result.is_success
+    assert values_result.value is not None
+    assert len(values_result.value) > 0
+
+
+def test_items_operation() -> None:
+    """Test getting all key-value pairs from storage."""
+    storage = FlextApiStorage()
+
+    test_items = {"item_1": "value_1", "item_2": "value_2"}
+    for key, value in test_items.items():
+        storage.set(key, value)
+
+    items_result = storage.items()
+    assert items_result.is_success
+    assert items_result.value is not None
+    assert len(items_result.value) > 0
+
+
+def test_json_serialization() -> None:
+    """Test JSON serialization functionality."""
+    storage = FlextApiStorage()
+
+    test_data = {"key": "value", "number": 42, "list": [1, 2, 3]}
+
+    serialize_result = storage.serialize_json(test_data)
+    assert serialize_result.is_success
+    assert isinstance(serialize_result.value, str)
+
+
+def test_json_deserialization() -> None:
+    """Test JSON deserialization functionality."""
+    storage = FlextApiStorage()
+
+    json_str = '{"key": "value", "number": 42}'
+
+    deserialize_result = storage.deserialize_json(json_str)
+    assert deserialize_result.is_success
+    assert deserialize_result.value is not None
+
+
+def test_default_value_retrieval() -> None:
+    """Test getting a non-existent key returns default value."""
+    storage = FlextApiStorage()
+
+    default_value = "default_return_value"
+    get_result = storage.get("nonexistent_key", default=default_value)
+    assert get_result.is_success
+    assert get_result.value == default_value
+
+
+def test_invalid_key_set() -> None:
+    """Test that invalid keys are rejected."""
+    storage = FlextApiStorage()
+
+    # Empty key should fail
+    set_result = storage.set("", "value")
+    assert set_result.is_failure
+
+    # Non-string key should fail
+    set_result = storage.set(None, "value")  # type: ignore[arg-type]
+    assert set_result.is_failure
+
+
+def test_batch_set_with_ttl() -> None:
+    """Test batch set with TTL parameter."""
+    storage = FlextApiStorage()
+
+    batch_data = {"ttl_1": "value_1", "ttl_2": "value_2"}
+
+    batch_result = storage.batch_set(batch_data, ttl=300)
+    assert batch_result.is_success
+
+    # Verify all keys were set
+    for key in batch_data:
+        exists_result = storage.exists(key)
+        assert exists_result.is_success
+
+
+def test_timeout_parameter_precedence() -> None:
+    """Test that timeout parameter takes precedence over ttl."""
+    storage = FlextApiStorage()
+
+    # Set with both timeout and ttl (timeout should be used)
+    set_result = storage.set("timeout_test", "value", timeout=100, ttl=200)
+    assert set_result.is_success
+
+    # Verify key exists
+    exists_result = storage.exists("timeout_test")
+    assert exists_result.is_success
+    assert exists_result.value is True
+
+
+def test_batch_get_empty_list() -> None:
+    """Test batch get with empty key list."""
+    storage = FlextApiStorage()
+
+    # Set some data first
+    storage.set("key_1", "value_1")
+
+    # Get with empty list
+    batch_result = storage.batch_get([])
+    assert batch_result.is_success
+    assert batch_result.value == {}

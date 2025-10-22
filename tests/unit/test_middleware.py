@@ -88,7 +88,8 @@ class TestFlextApiMiddleware:
             return req
 
         result = FlextApiMiddleware.apply_pipeline(
-            request, [increment_middleware_1, increment_middleware_2, increment_middleware_3]
+            request,
+            [increment_middleware_1, increment_middleware_2, increment_middleware_3],
         )
         assert result["count"] == 3
 
@@ -110,7 +111,9 @@ class TestFlextApiMiddleware:
             req["timestamp"] = "2025-01-22T00:00:00Z"
             return req
 
-        result = FlextApiMiddleware.apply_pipeline(request, [add_request_id, add_timestamp])
+        result = FlextApiMiddleware.apply_pipeline(
+            request, [add_request_id, add_timestamp]
+        )
         assert result["request_id"] == "12345"
         assert result["timestamp"] == "2025-01-22T00:00:00Z"
         assert result["body"]["name"] == "John"

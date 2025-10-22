@@ -16,7 +16,6 @@ from collections.abc import Callable
 
 from flext_core import FlextResult
 
-from flext_api.models import FlextApiModels
 from flext_api.plugins import ProtocolPlugin
 
 
@@ -78,20 +77,20 @@ class SSEProtocolPlugin(ProtocolPlugin):
 
     def send_request(
         self,
-        _request: FlextApiModels.HttpRequest,
-        **_kwargs: float | str | bool,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        request: dict[str, object],  # noqa: ARG002
+        **kwargs: object,  # noqa: ARG002
+    ) -> FlextResult[dict[str, object]]:
         """Send SSE request (stub - not implemented).
 
         Args:
-        request: HTTP request model (unused in stub)
+        request: HTTP request dictionary (unused in stub)
         **kwargs: Additional SSE-specific parameters (unused in stub)
 
         Returns:
         FlextResult with error indicating not implemented
 
         """
-        return FlextResult[FlextApiModels.HttpResponse].fail(
+        return FlextResult[dict[str, object]].fail(
             "SSE protocol not yet implemented (Phase 3)"
         )
 

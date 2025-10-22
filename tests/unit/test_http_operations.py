@@ -12,12 +12,16 @@ class TestFlextApiOperations:
 
     def test_execute_get_raises_not_implemented(self) -> None:
         """Test that execute_get raises NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="HTTP client must implement execute_get"):
+        with pytest.raises(
+            NotImplementedError, match="HTTP client must implement execute_get"
+        ):
             FlextApiOperations.execute_get("https://api.example.com/users")
 
     def test_execute_get_with_params(self) -> None:
         """Test that execute_get with params raises NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="HTTP client must implement execute_get"):
+        with pytest.raises(
+            NotImplementedError, match="HTTP client must implement execute_get"
+        ):
             FlextApiOperations.execute_get(
                 "https://api.example.com/users",
                 params={"page": "1", "limit": "10"},
@@ -27,12 +31,16 @@ class TestFlextApiOperations:
 
     def test_execute_post_raises_not_implemented(self) -> None:
         """Test that execute_post raises NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="HTTP client must implement execute_post"):
+        with pytest.raises(
+            NotImplementedError, match="HTTP client must implement execute_post"
+        ):
             FlextApiOperations.execute_post("https://api.example.com/users")
 
     def test_execute_post_with_data(self) -> None:
         """Test that execute_post with data raises NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="HTTP client must implement execute_post"):
+        with pytest.raises(
+            NotImplementedError, match="HTTP client must implement execute_post"
+        ):
             FlextApiOperations.execute_post(
                 "https://api.example.com/users",
                 json_data={"name": "John", "email": "john@example.com"},
@@ -42,12 +50,16 @@ class TestFlextApiOperations:
 
     def test_execute_put_raises_not_implemented(self) -> None:
         """Test that execute_put raises NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="HTTP client must implement execute_put"):
+        with pytest.raises(
+            NotImplementedError, match="HTTP client must implement execute_put"
+        ):
             FlextApiOperations.execute_put("https://api.example.com/users/1")
 
     def test_execute_put_with_data(self) -> None:
         """Test that execute_put with data raises NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="HTTP client must implement execute_put"):
+        with pytest.raises(
+            NotImplementedError, match="HTTP client must implement execute_put"
+        ):
             FlextApiOperations.execute_put(
                 "https://api.example.com/users/1",
                 json_data={"name": "Jane", "email": "jane@example.com"},
@@ -56,12 +68,16 @@ class TestFlextApiOperations:
 
     def test_execute_delete_raises_not_implemented(self) -> None:
         """Test that execute_delete raises NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="HTTP client must implement execute_delete"):
+        with pytest.raises(
+            NotImplementedError, match="HTTP client must implement execute_delete"
+        ):
             FlextApiOperations.execute_delete("https://api.example.com/users/1")
 
     def test_execute_delete_with_params(self) -> None:
         """Test that execute_delete with params raises NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="HTTP client must implement execute_delete"):
+        with pytest.raises(
+            NotImplementedError, match="HTTP client must implement execute_delete"
+        ):
             FlextApiOperations.execute_delete(
                 "https://api.example.com/users/1",
                 params={"force": "true"},

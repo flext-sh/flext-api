@@ -21,7 +21,6 @@ from typing import Any, cast, override
 from flext_core import FlextResult
 
 from flext_api.plugins import SchemaPlugin
-from flext_api.typings import FlextApiTypes
 
 
 class AsyncAPISchemaValidator(SchemaPlugin):
@@ -406,8 +405,8 @@ class AsyncAPISchemaValidator(SchemaPlugin):
     @override
     def validate_request(
         self,
-        request: FlextApiTypes.RequestData,
-        schema: FlextApiTypes.Schema.JsonSchema,
+        request: dict[str, Any],
+        schema: dict[str, Any],
     ) -> FlextResult[bool]:
         """Validate request against AsyncAPI schema.
 
@@ -454,8 +453,8 @@ class AsyncAPISchemaValidator(SchemaPlugin):
     @override
     def validate_response(
         self,
-        response: FlextApiTypes.ResponseData,
-        schema: FlextApiTypes.Schema.JsonSchema,
+        response: dict[str, Any],
+        schema: dict[str, Any],
     ) -> FlextResult[bool]:
         """Validate response against AsyncAPI schema.
 
@@ -511,22 +510,19 @@ class AsyncAPISchemaValidator(SchemaPlugin):
     @override
     def load_schema(
         self,
-        schema_source: str | dict[str, Any],
-    ) -> FlextResult[dict[str, Any]]:
+        schema_source: str,
+    ) -> FlextResult[object]:
         """Load AsyncAPI schema from source.
 
         Args:
-        schema_source: Schema file path or schema dict
+        schema_source: Schema file path
 
         Returns:
         FlextResult containing loaded schema or error
 
         """
-        _ = schema_source
-        return FlextResult[dict[str, Any]].ok({})
-
         # For string paths, would load from file
-        return FlextResult[dict[str, Any]].fail("File loading not implemented yet")
+        return FlextResult[object].fail("File loading not implemented yet")
 
 
 __all__ = ["AsyncAPISchemaValidator"]
