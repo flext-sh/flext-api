@@ -47,6 +47,8 @@ class FlextApiConstants:
     # URL and validation constants
     MAX_URL_LENGTH: ClassVar[int] = 2048
     MIN_URL_LENGTH: ClassVar[int] = 8
+    MIN_PORT: ClassVar[int] = 1
+    MAX_PORT: ClassVar[int] = 65535
 
     # Retry and reliability constants
     BACKOFF_FACTOR: ClassVar[float] = 0.5

@@ -133,7 +133,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
                     f"Security scheme validation failed: {security_result.error}"
                 )
 
-        self._logger.info(
+        self.logger.info(
             "OpenAPI schema validation successful",
             extra={
                 "version": openapi_version,

@@ -383,5 +383,40 @@ class FlextApiModels:
             verify_ssl=verify_ssl if verify_ssl is not None else True,
         )
 
+    class HttpPagination(FlextModels.Value):
+        """HTTP pagination value object for list responses.
+
+        Immutable pagination metadata for paginated API responses.
+        """
+
+        page: int = Field(default=1, ge=1, description="Current page number")
+        page_size: int = Field(default=20, ge=1, le=1000, description="Items per page")
+        total_items: int | None = Field(
+            default=None, ge=0, description="Total number of items"
+        )
+        total_pages: int | None = Field(
+            default=None, ge=0, description="Total number of pages"
+        )
+
+        @computed_field
+        @property
+        def offset(self) -> int:
+            """Calculate offset from page and page_size."""
+            return (self.page - 1) * self.page_size
+
+        @computed_field
+        @property
+        def has_next(self) -> bool:
+            """Check if next page exists."""
+            if self.total_pages is None:
+                return False
+            return self.page < self.total_pages
+
+        @computed_field
+        @property
+        def has_previous(self) -> bool:
+            """Check if previous page exists."""
+            return self.page > 1
+
 
 __all__ = ["FlextApiModels"]

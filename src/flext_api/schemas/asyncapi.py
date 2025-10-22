@@ -152,7 +152,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
                     f"Component validation failed: {components_result.error}"
                 )
 
-        self._logger.info(
+        self.logger.info(
             "AsyncAPI schema validation successful",
             extra={
                 "version": asyncapi_version,
@@ -448,7 +448,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
                 # Has message structure - consider valid for now
                 pass
 
-        self._logger.debug("AsyncAPI request validation completed")
+        self.logger.debug("AsyncAPI request validation completed")
         return FlextResult[bool].ok(True)
 
     @override
@@ -505,7 +505,7 @@ class AsyncAPISchemaValidator(SchemaPlugin):
                 ):
                     return FlextResult[bool].fail("Invalid status code")
 
-        self._logger.debug("AsyncAPI response validation completed")
+        self.logger.debug("AsyncAPI response validation completed")
         return FlextResult[bool].ok(True)
 
     @override

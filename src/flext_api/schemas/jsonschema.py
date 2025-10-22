@@ -174,7 +174,7 @@ class JSONSchemaValidator(SchemaPlugin):
                     f"Unsupported format: {format_value}"
                 )
 
-        self._logger.info(
+        self.logger.info(
             "JSON Schema validation successful",
             extra={
                 "draft": self._draft_version,

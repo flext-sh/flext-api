@@ -92,12 +92,18 @@ class FlextApiStorage(FlextService[None]):
 
         # Store config with type validation
         self._namespace: str = str(config_dict.get("namespace", "flext_api"))
-        self._max_size: int | None = kwargs.get("max_size") or config_dict.get(
-            "max_size"
+
+        # Type-safe extraction of optional integer values
+        max_size_val = kwargs.get("max_size") or config_dict.get("max_size")
+        self._max_size: int | None = (
+            int(str(max_size_val)) if max_size_val is not None else None
         )
-        self._default_ttl: int | None = kwargs.get("default_ttl") or config_dict.get(
-            "default_ttl"
+
+        ttl_val = kwargs.get("default_ttl") or config_dict.get("default_ttl")
+        self._default_ttl: int | None = (
+            int(str(ttl_val)) if ttl_val is not None else None
         )
+
         self._backend: str = str(config_dict.get("backend", "memory"))
 
         # Flexible storage tracking
@@ -190,7 +196,8 @@ class FlextApiStorage(FlextService[None]):
                     # Clean up expired entry
                     self._storage.pop(self._key(key), None)
                     self._expiry_times.pop(key, None)
-            except Exception:
+            except Exception:  # noqa: S110
+                # Intentionally ignore cleanup errors - cache continues to function
                 pass
 
         self._stats.cache_misses += 1
@@ -387,12 +394,8 @@ class FlextApiStorage(FlextService[None]):
         except Exception as e:
             return FlextResult[dict[str, float]].fail(str(e))
 
-    # Properties for config access
-    @property
-    def config(self) -> FlextApiTypes.StorageDict:
-        """Get config."""
-        return {"namespace": self._namespace}
-
+    # Properties for namespace and backend access
+    # Note: config property inherited from FlextService base class
     @property
     def namespace(self) -> str:
         """Get namespace."""
