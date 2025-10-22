@@ -119,6 +119,7 @@ class FlextApiAdapters:
         def convert_json_to_messagepack(data: dict[str, Any]) -> FlextResult[bytes]:
             """Convert JSON data to MessagePack format."""
             try:
+                # msgpack.packb returns bytes for valid input
                 packed = msgpack.packb(data)
                 return FlextResult.ok(packed)
 
@@ -149,8 +150,10 @@ class FlextApiAdapters:
             """Transform request for specific protocol."""
             try:
                 if target_protocol == "websocket":
-                    result = FlextApiAdapters.HttpProtocol.adapt_http_request_to_websocket(
-                        request
+                    result = (
+                        FlextApiAdapters.HttpProtocol.adapt_http_request_to_websocket(
+                            request
+                        )
                     )
                     if result.is_success:
                         return FlextResult[object].ok(result.value)

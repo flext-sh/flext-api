@@ -58,10 +58,11 @@ class FlextApiUtilities(FlextUtilities):
                 return FlextResult[str].fail("URL cannot be empty")
 
             # Check max length
-            max_len: object = FlextApiConstants.VALIDATION_LIMITS.get(
+            max_len_val = FlextApiConstants.VALIDATION_LIMITS.get(
                 "MAX_URL_LENGTH", 2048
             )
-            if len(url) > int(max_len):
+            max_len: int = int(str(max_len_val)) if max_len_val is not None else 2048
+            if len(url) > max_len:
                 return FlextResult[str].fail(f"URL too long (max {max_len} characters)")
 
             try:
@@ -75,7 +76,10 @@ class FlextApiUtilities(FlextUtilities):
                     parts = parsed.netloc.rsplit(":", 1)
                     try:
                         port = int(parts[1])
-                        if port <= 0 or port > 65535:
+                        if (
+                            port < FlextApiConstants.MIN_PORT
+                            or port > FlextApiConstants.MAX_PORT
+                        ):
                             return FlextResult[str].fail(f"Invalid port {port}")
                     except ValueError:
                         return FlextResult[str].fail("Invalid port number")

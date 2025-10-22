@@ -170,7 +170,7 @@ class FlextApiServer(FlextService[object]):
             self._is_running = False
             self._app: FastAPI | None = None
 
-        def create_app(self) -> FlextResult[object]:
+        def create_app(self) -> FlextResult[FastAPI]:
             """Create FastAPI application."""
             try:
                 app = FastAPI(
@@ -180,9 +180,9 @@ class FlextApiServer(FlextService[object]):
                     redoc_url="/redoc",
                     openapi_url="/openapi.json",
                 )
-                return FlextResult[object].ok(app)
+                return FlextResult[FastAPI].ok(app)
             except Exception as e:
-                return FlextResult[object].fail(f"Failed to create app: {e}")
+                return FlextResult[FastAPI].fail(f"Failed to create app: {e}")
 
         def apply_middleware(
             self,
@@ -204,6 +204,8 @@ class FlextApiServer(FlextService[object]):
             if not self._app:
                 return FlextResult[None].fail("Application not created")
 
+            # Type narrowing: assign to local variable for type checker
+            app = self._app
             try:
                 for route_config in routes.values():
                     method: str = route_config["method"]
@@ -211,15 +213,15 @@ class FlextApiServer(FlextService[object]):
                     handler: Callable = route_config["handler"]
 
                     if method == "WS":
-                        self._app.websocket(path)(handler)
+                        app.websocket(path)(handler)
                     elif method == "SSE":
-                        self._app.get(path)(handler)
+                        app.get(path)(handler)
                     elif method == "GRAPHQL":
-                        self._app.post(path)(handler)
+                        app.post(path)(handler)
                     else:
                         method_lower = method.lower()
-                        if hasattr(self._app, method_lower):
-                            getattr(self._app, method_lower)(path)(handler)
+                        if hasattr(app, method_lower):
+                            getattr(app, method_lower)(path)(handler)
 
                     self._logger.debug(
                         "Route registered",
@@ -329,7 +331,7 @@ class FlextApiServer(FlextService[object]):
 
         self._protocol_handlers[protocol] = handler
 
-        self._lifecycle_manager._logger.info(
+        self._lifecycle_manager._logger.info(  # noqa: SLF001
             "Protocol handler registered",
             extra={"protocol": protocol, "handler": getattr(handler, "name", "")},
         )
@@ -343,7 +345,7 @@ class FlextApiServer(FlextService[object]):
         """Add middleware to pipeline."""
         self._middleware_pipeline.append(middleware)
 
-        self._lifecycle_manager._logger.info(
+        self._lifecycle_manager._logger.info(  # noqa: SLF001
             "Middleware added",
             extra={"middleware": middleware.__class__.__name__},
         )
@@ -358,7 +360,7 @@ class FlextApiServer(FlextService[object]):
         **options: object,
     ) -> FlextResult[None]:
         """Register HTTP route (delegates to RouteRegistry)."""
-        return self._route_registry.register(method, path, handler, **options)
+        return self._route_registry.register(method, path, handler, prefix="", **options)
 
     def register_websocket_endpoint(
         self,
@@ -437,12 +439,12 @@ class FlextApiServer(FlextService[object]):
     @property
     def host(self) -> str:
         """Get server host."""
-        return self._lifecycle_manager._host
+        return self._lifecycle_manager._host  # noqa: SLF001
 
     @property
     def port(self) -> int:
         """Get server port."""
-        return self._lifecycle_manager._port
+        return self._lifecycle_manager._port  # noqa: SLF001
 
     @property
     def routes(self) -> dict[str, Any]:

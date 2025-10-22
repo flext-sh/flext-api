@@ -345,6 +345,7 @@ class GrpcServiceProtocol(Protocol):
         List of method descriptors
 
         """
+        ...
 
     def handle_request(
         self,
@@ -359,6 +360,7 @@ class GrpcServiceProtocol(Protocol):
         FlextResult containing response or error
 
         """
+        ...
 
 
 __all__ = [

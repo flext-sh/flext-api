@@ -34,6 +34,7 @@ class FlextApiTypes(FlextTypes):
     type WebHeaders = dict[str, str | list[str]]
     type WebParams = dict[str, str | list[str]]
     type ResponseList = list[JsonObject]
+    type ResponseDict = dict[str, FlextTypes.JsonValue]
 
     # =========================================================================
     # HTTP REQUEST/RESPONSE TYPES - Unified request/response types
@@ -81,6 +82,14 @@ class FlextApiTypes(FlextTypes):
         timeout: NotRequired[float | None]
 
     # =========================================================================
+    # STORAGE & CACHE TYPES - Storage backend configuration and metrics
+    # =========================================================================
+
+    type StorageDict = dict[str, str | int | bool | None]
+    type CacheDict = dict[str, str | int]
+    type MetricsDict = dict[str, int]
+
+    # =========================================================================
     # PROTOCOL & SCHEMA TYPES - Multi-protocol support
     # =========================================================================
 
@@ -100,7 +109,7 @@ class FlextApiTypes(FlextTypes):
     type RequestPipeline = list[JsonObject]
     type ResponsePipeline = list[JsonObject]
     type ProcessingResult = dict[str, bool | list[str] | JsonObject]
-    type MiddlewareConfig = dict[str, str | JsonObject]
+    # Note: MiddlewareConfig inherited from FlextTypes (dict[str, object])
 
     # =========================================================================
     # ERROR HANDLING TYPES - Error management and recovery
@@ -111,18 +120,6 @@ class FlextApiTypes(FlextTypes):
     type ErrorRecovery = dict[str, str | float | JsonObject]
     type RetryStrategy = dict[str, int | float | str]
     type CircuitBreaker = dict[str, bool | int | float | str]
-
-    # =========================================================================
-    # SERIALIZATION FORMAT - Supported formats
-    # =========================================================================
-
-    class SerializationFormat(StrEnum):
-        """Supported serialization formats."""
-
-        JSON = "json"
-        MSGPACK = "msgpack"
-        CBOR = "cbor"
-        CUSTOM = "custom"
 
     # =========================================================================
     # NESTED NAMESPACE CLASSES FOR MISSING TYPES
@@ -148,6 +145,14 @@ class FlextApiTypes(FlextTypes):
 
     class Serialization:
         """Serialization-related types."""
+
+        class SerializationFormat(StrEnum):
+            """Supported serialization formats."""
+
+            JSON = "json"
+            MSGPACK = "msgpack"
+            CBOR = "cbor"
+            CUSTOM = "custom"
 
 
 __all__ = ["FlextApiTypes"]

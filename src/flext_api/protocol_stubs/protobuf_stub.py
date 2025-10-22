@@ -412,6 +412,7 @@ class ProtobufServiceProtocol(Protocol):
         FlextResult containing schema or error
 
         """
+        ...
 
     def get_response_schema(self, method: str) -> FlextResult[ProtobufSchema]:
         """Get response schema for method.
@@ -423,6 +424,7 @@ class ProtobufServiceProtocol(Protocol):
         FlextResult containing schema or error
 
         """
+        ...
 
 
 __all__ = [

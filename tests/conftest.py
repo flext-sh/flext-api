@@ -29,7 +29,12 @@ from flext_api import (
     FlextApiStorage,
     FlextApiTypes,
 )
-from flext_api.typings import ResponseDict, WebHeaders
+
+# Type aliases for testing - use expanded types directly
+# Note: FlextApiTypes.ResponseDict and .WebHeaders are PEP 695 type aliases
+# They don't exist at runtime, so we use the expanded types
+ResponseDict = dict[str, object]  # Matches FlextApiTypes.ResponseDict
+WebHeaders = dict[str, str | list[str]]  # Matches FlextApiTypes.WebHeaders
 
 # Configure Faker for deterministic test data
 fake = Faker()

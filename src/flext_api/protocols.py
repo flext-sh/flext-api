@@ -39,6 +39,7 @@ class FlextApiProtocols(FlextProtocols):
             timeout: float | None = None,
         ) -> FlextResult[dict[str, Any]]:
             """Execute an HTTP request."""
+            ...
 
         def get(
             self,
@@ -48,6 +49,7 @@ class FlextApiProtocols(FlextProtocols):
             timeout: float | None = None,
         ) -> FlextResult[dict[str, Any]]:
             """Execute HTTP GET request."""
+            ...
 
         def post(
             self,
@@ -59,6 +61,7 @@ class FlextApiProtocols(FlextProtocols):
             timeout: float | None = None,
         ) -> FlextResult[dict[str, Any]]:
             """Execute HTTP POST request."""
+            ...
 
         def put(
             self,
@@ -70,6 +73,7 @@ class FlextApiProtocols(FlextProtocols):
             timeout: float | None = None,
         ) -> FlextResult[dict[str, Any]]:
             """Execute HTTP PUT request."""
+            ...
 
         def delete(
             self,
@@ -79,6 +83,7 @@ class FlextApiProtocols(FlextProtocols):
             timeout: float | None = None,
         ) -> FlextResult[dict[str, Any]]:
             """Execute HTTP DELETE request."""
+            ...
 
     @runtime_checkable
     class StorageBackendProtocol(Protocol):

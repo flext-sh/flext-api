@@ -142,3 +142,45 @@ class TestHttpConfigReal:
 
         for key in required_keys:
             assert key in config_dict, f"Missing key {key} in config"
+
+    def test_default_headers(self) -> None:
+        """Test default_headers property."""
+        config = FlextApiConfig(
+            base_url="https://api.example.com",
+            headers={"X-Custom": "test"},
+        )
+
+        # Test default headers include both defaults and custom headers
+        default_headers = config.default_headers
+        assert "Accept" in default_headers
+        assert default_headers["Accept"] == "application/json"
+        assert "Content-Type" in default_headers
+        assert default_headers["Content-Type"] == "application/json"
+        assert "X-Custom" in default_headers
+        assert default_headers["X-Custom"] == "test"
+
+    def test_to_json(self) -> None:
+        """Test to_json() method."""
+        config = FlextApiConfig(
+            base_url="https://api.example.com",
+            timeout=45.0,
+            max_retries=5,
+        )
+
+        # Test JSON serialization
+        json_str = config.to_json()
+        assert isinstance(json_str, str)
+        assert "https://api.example.com" in json_str
+        assert "45.0" in json_str or "45" in json_str
+        assert "5" in json_str
+
+    def test_from_json(self) -> None:
+        """Test from_json() classmethod."""
+        json_str = '{"base_url": "https://test.com", "timeout": 60.0, "max_retries": 2}'
+
+        # Test JSON deserialization
+        config = FlextApiConfig.from_json(json_str)
+        assert isinstance(config, FlextApiConfig)
+        assert config.base_url == "https://test.com"
+        assert config.timeout == 60.0
+        assert config.max_retries == 2
