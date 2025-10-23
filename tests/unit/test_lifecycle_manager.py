@@ -83,6 +83,7 @@ class TestFlextApiLifecycleManager:
 
     def test_manage_sync_http_resource_non_callable_close(self) -> None:
         """Test managing sync resource with non-callable close attribute."""
+
         class ResourceWithNonCallableClose:
             close = "not_callable"
 
@@ -109,6 +110,7 @@ class TestFlextApiLifecycleManager:
 
     def test_manage_sync_http_resource_with_close_dict(self) -> None:
         """Test managing resource that is a dict with close method."""
+
         class DictWithClose(UserDict):
             def close(self) -> None:
                 pass

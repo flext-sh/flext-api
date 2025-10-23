@@ -134,7 +134,9 @@ class TestFlextApiGenericHttpMethod:
 
         try:
             body = {"name": "test"}
-            result = api._http_method("POST", "https://example.com/api/users", data=body)
+            result = api._http_method(
+                "POST", "https://example.com/api/users", data=body
+            )
             assert result.is_success
         finally:
             api._client = original_client
@@ -151,7 +153,9 @@ class TestFlextApiGenericHttpMethod:
         )
 
         try:
-            result = api._http_method("GET", "https://example.com/api/test", timeout=60.0)
+            result = api._http_method(
+                "GET", "https://example.com/api/test", timeout=60.0
+            )
             assert result.is_success
             # Verify the client was called
             api._client.request.assert_called_once()
@@ -280,9 +284,7 @@ class TestFlextApiRequest:
         original_client = api._client
         api._client = MagicMock()
 
-        error_result = FlextResult[FlextApiModels.HttpResponse].fail(
-            "Connection error"
-        )
+        error_result = FlextResult[FlextApiModels.HttpResponse].fail("Connection error")
         api._client.request = MagicMock(return_value=error_result)
 
         try:

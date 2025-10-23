@@ -106,7 +106,9 @@ class FlextApiAdapters:
                 return FlextResult[dict[str, Any]].ok(graphql_schema)
 
             except Exception as e:
-                return FlextResult[dict[str, Any]].fail(f"OpenAPI to GraphQL conversion failed: {e}")
+                return FlextResult[dict[str, Any]].fail(
+                    f"OpenAPI to GraphQL conversion failed: {e}"
+                )
 
     class FormatConverter:
         """Format conversion following SOLID principles.
@@ -127,7 +129,9 @@ class FlextApiAdapters:
                 return FlextResult[bytes].ok(packed_data)
 
             except Exception as e:
-                return FlextResult[bytes].fail(f"JSON to MessagePack conversion failed: {e}")
+                return FlextResult[bytes].fail(
+                    f"JSON to MessagePack conversion failed: {e}"
+                )
 
         @staticmethod
         def convert_json_to_cbor(data: dict[str, Any]) -> FlextResult[bytes]:

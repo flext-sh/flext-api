@@ -206,9 +206,7 @@ class TestFlextApiModelsFlextPure:
 
     def test_query_params_missing_param(self) -> None:
         """Test QueryParams with missing parameter."""
-        query = FlextApiModels.QueryParams(
-            params={"search": "test"}
-        )
+        query = FlextApiModels.QueryParams(params={"search": "test"})
 
         assert query.get_param("search") == "test"
         assert query.get_param("missing") is None
@@ -227,9 +225,7 @@ class TestFlextApiModelsFlextPure:
 
     def test_client_config_defaults(self) -> None:
         """Test ClientConfig default values."""
-        config = FlextApiModels.ClientConfig(
-            base_url="https://api.example.com"
-        )
+        config = FlextApiModels.ClientConfig(base_url="https://api.example.com")
 
         assert config.base_url == "https://api.example.com"
         assert isinstance(config.timeout, (int, float))
@@ -478,9 +474,7 @@ class TestFlextApiModelsFlextPure:
 
     def test_headers_default_values(self) -> None:
         """Test Headers with various default values."""
-        headers1 = FlextApiModels.Headers(
-            headers={"Content-Type": "text/plain"}
-        )
+        headers1 = FlextApiModels.Headers(headers={"Content-Type": "text/plain"})
         assert headers1.get_header("missing-header") is None
 
     def test_query_params_special_characters(self) -> None:

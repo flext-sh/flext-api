@@ -65,9 +65,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             kwargs_headers = kwargs.get("headers")
             if isinstance(kwargs_headers, dict):
                 request_headers.update({
-                    k: v
-                    for k, v in kwargs_headers.items()
-                    if isinstance(v, str)
+                    k: v for k, v in kwargs_headers.items() if isinstance(v, str)
                 })
 
             # Extract typed parameters from kwargs with safe casting
