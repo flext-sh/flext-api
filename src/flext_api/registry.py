@@ -401,9 +401,7 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if name not in self._auth_providers:
-            return FlextResult[None].fail(
-                f"Auth provider '{name}' not registered"
-            )
+            return FlextResult[None].fail(f"Auth provider '{name}' not registered")
 
         del self._auth_providers[name]
         self.logger.info(

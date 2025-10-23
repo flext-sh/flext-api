@@ -20,15 +20,11 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
         self._storage: dict[str, object] = {}
         self.logger = FlextLogger(__name__)
 
-    def get(
-        self, key: str, default: object = None
-    ) -> FlextResult[object]:
+    def get(self, key: str, default: object = None) -> FlextResult[object]:
         """Retrieve value by key."""
         try:
             if not key:
-                return FlextResult[object].fail(
-                    "Storage key cannot be empty"
-                )
+                return FlextResult[object].fail("Storage key cannot be empty")
 
             if key in self._storage:
                 value = self._storage[key]
@@ -39,9 +35,7 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
             return FlextResult[object].fail(f"Key not found: {key}")
 
         except Exception as e:
-            return FlextResult[object].fail(
-                f"Retrieval operation failed: {e}"
-            )
+            return FlextResult[object].fail(f"Retrieval operation failed: {e}")
 
     def set(
         self,

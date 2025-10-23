@@ -236,7 +236,9 @@ class JSONSchemaValidator(SchemaPlugin):
                     if prop_name in properties_field:
                         prop_schema = properties_field[prop_name]
                         if isinstance(prop_schema, dict):
-                            prop_result = self.validate_instance(prop_value, prop_schema)  # type: ignore[arg-type]
+                            prop_result = self.validate_instance(
+                                prop_value, prop_schema
+                            )  # type: ignore[arg-type]
                             if prop_result.is_failure:
                                 return FlextResult[dict[str, Any]].fail(
                                     f"Invalid property '{prop_name}': {prop_result.error}"

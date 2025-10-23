@@ -148,27 +148,56 @@ class TestFlextApiUtilitiesReal:
 
     def test_http_validator_all_methods(self) -> None:
         """Test FlextWebValidator with all valid HTTP methods."""
-        methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT", "TRACE"]
+        methods = [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH",
+            "HEAD",
+            "OPTIONS",
+            "CONNECT",
+            "TRACE",
+        ]
         for method in methods:
-            assert FlextApiUtilities.FlextWebValidator.validate_http_method(method) is True
+            assert (
+                FlextApiUtilities.FlextWebValidator.validate_http_method(method) is True
+            )
 
     def test_http_validator_method_lowercase_all(self) -> None:
         """Test FlextWebValidator with all valid HTTP methods in lowercase."""
-        methods = ["get", "post", "put", "delete", "patch", "head", "options", "connect", "trace"]
+        methods = [
+            "get",
+            "post",
+            "put",
+            "delete",
+            "patch",
+            "head",
+            "options",
+            "connect",
+            "trace",
+        ]
         for method in methods:
-            assert FlextApiUtilities.FlextWebValidator.validate_http_method(method) is True
+            assert (
+                FlextApiUtilities.FlextWebValidator.validate_http_method(method) is True
+            )
 
     def test_http_validator_method_mixed_case(self) -> None:
         """Test FlextWebValidator with mixed case HTTP methods."""
         mixed_methods = ["Get", "PoSt", "PaTcH"]
         for method in mixed_methods:
-            assert FlextApiUtilities.FlextWebValidator.validate_http_method(method) is True
+            assert (
+                FlextApiUtilities.FlextWebValidator.validate_http_method(method) is True
+            )
 
     def test_http_validator_method_invalid_variations(self) -> None:
         """Test FlextWebValidator with various invalid methods."""
         invalid = ["INVALID", "HTTP", "FAKE", "CUSTOM", "", " "]
         for method in invalid:
-            assert FlextApiUtilities.FlextWebValidator.validate_http_method(method) is False
+            assert (
+                FlextApiUtilities.FlextWebValidator.validate_http_method(method)
+                is False
+            )
 
     def test_http_validator_normalize_url_without_scheme(self) -> None:
         """Test FlextWebValidator URL normalization without scheme adds https."""
@@ -177,7 +206,9 @@ class TestFlextApiUtilitiesReal:
 
     def test_http_validator_normalize_url_with_http(self) -> None:
         """Test FlextWebValidator URL normalization preserves http scheme."""
-        normalized = FlextApiUtilities.FlextWebValidator.normalize_url("http://example.com")
+        normalized = FlextApiUtilities.FlextWebValidator.normalize_url(
+            "http://example.com"
+        )
         assert normalized == "http://example.com"
 
     def test_http_validator_normalize_url_with_path(self) -> None:
@@ -205,12 +236,16 @@ class TestFlextApiUtilitiesReal:
 
     def test_url_validation_localhost(self) -> None:
         """Test URL validation with localhost."""
-        result = FlextApiUtilities.FlextWebValidator.validate_url("http://localhost:8080")
+        result = FlextApiUtilities.FlextWebValidator.validate_url(
+            "http://localhost:8080"
+        )
         assert result.is_success
 
     def test_url_validation_ip_address(self) -> None:
         """Test URL validation with IP address."""
-        result = FlextApiUtilities.FlextWebValidator.validate_url("https://192.168.1.1:8443")
+        result = FlextApiUtilities.FlextWebValidator.validate_url(
+            "https://192.168.1.1:8443"
+        )
         assert result.is_success
 
     def test_url_validation_valid_ports(self) -> None:
@@ -269,7 +304,9 @@ class TestFlextApiUtilitiesReal:
         """Test ResponseBuilder success with various status codes."""
         codes = [200, 201, 202, 204]
         for code in codes:
-            result = FlextApiUtilities.ResponseBuilder.build_success_response(status_code=code)
+            result = FlextApiUtilities.ResponseBuilder.build_success_response(
+                status_code=code
+            )
             assert result.is_success
             response = result.unwrap()
             assert response["status_code"] == code
@@ -307,6 +344,7 @@ class TestFlextApiUtilitiesReal:
         assert "timestamp" in response
         # Verify ISO format
         from datetime import datetime
+
         datetime.fromisoformat(response["timestamp"])
 
     def test_pagination_extract_page_params_valid_high_page(self) -> None:
@@ -337,10 +375,13 @@ class TestFlextApiUtilitiesReal:
 
     def test_pagination_extract_config_partial(self) -> None:
         """Test extracting pagination config with partial config."""
+
         class PartialConfig:
             default_page_size = 15
 
-        config = FlextApiUtilities.PaginationBuilder.extract_pagination_config(PartialConfig())
+        config = FlextApiUtilities.PaginationBuilder.extract_pagination_config(
+            PartialConfig()
+        )
         # Should have default_page_size from config and max_page_size default
         assert config["default_page_size"] == 15
 
@@ -400,7 +441,9 @@ class TestFlextApiUtilitiesReal:
             "next_page": 3,
             "prev_page": 1,
         }
-        result = FlextApiUtilities.PaginationBuilder.build_pagination_response(pagination_data)
+        result = FlextApiUtilities.PaginationBuilder.build_pagination_response(
+            pagination_data
+        )
         assert result.is_success
         response = result.unwrap()
         assert "pagination" in response

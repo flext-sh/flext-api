@@ -130,7 +130,9 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
 
         """
         # Extract WebSocket-specific parameters
-        message = kwargs.get("message", request.get("body") if isinstance(request, dict) else "")
+        message = kwargs.get(
+            "message", request.get("body") if isinstance(request, dict) else ""
+        )
         message_type = kwargs.get("message_type", "text")
 
         # Convert message to appropriate type
