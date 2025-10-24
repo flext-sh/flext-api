@@ -41,7 +41,7 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
         self,
         key: str,
         value: object,
-        timeout: int | None = None,  # noqa: ARG002
+        timeout: int | None = None,
     ) -> FlextResult[None]:
         """Store value with optional timeout."""
         try:

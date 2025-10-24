@@ -41,7 +41,7 @@ class FlextApiAdapters:
                     body = getattr(request, "body", None)
                     if body is not None:
                         try:
-                            body_value = body.decode("utf-8")  # type: ignore[union-attr]
+                            body_value = body.decode("utf-8")
                         except (UnicodeDecodeError, AttributeError):
                             body_value = "<binary data>"
 

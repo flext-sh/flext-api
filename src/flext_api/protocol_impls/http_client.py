@@ -71,7 +71,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             # Extract typed parameters from kwargs with safe casting
             params: dict[str, str] | None = None
             if isinstance(kwargs.get("params"), dict):
-                params = kwargs.get("params")  # type: ignore[assignment]
+                params = kwargs.get("params")
 
             json_data: Any = None
             if "json" in kwargs:
@@ -94,11 +94,11 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
                 method=method,
                 url=full_url,
                 headers=request_headers,
-                params=params,  # type: ignore[arg-type]
+                params=params,
                 json=json_data,
-                content=content_data,  # type: ignore[arg-type]
-                data=form_data,  # type: ignore[arg-type]
-                files=files_data,  # type: ignore[arg-type]
+                content=content_data,
+                data=form_data,
+                files=files_data,
             )
 
             # Convert httpx response to FlextApiModels.HttpResponse

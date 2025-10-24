@@ -331,7 +331,7 @@ class FlextApiServer(FlextService[object]):
 
         self._protocol_handlers[protocol] = handler
 
-        self._lifecycle_manager._logger.info(  # noqa: SLF001
+        self._lifecycle_manager._logger.info(
             "Protocol handler registered",
             extra={"protocol": protocol, "handler": getattr(handler, "name", "")},
         )
@@ -345,7 +345,7 @@ class FlextApiServer(FlextService[object]):
         """Add middleware to pipeline."""
         self._middleware_pipeline.append(middleware)
 
-        self._lifecycle_manager._logger.info(  # noqa: SLF001
+        self._lifecycle_manager._logger.info(
             "Middleware added",
             extra={"middleware": middleware.__class__.__name__},
         )
@@ -441,12 +441,12 @@ class FlextApiServer(FlextService[object]):
     @property
     def host(self) -> str:
         """Get server host."""
-        return self._lifecycle_manager._host  # noqa: SLF001
+        return self._lifecycle_manager._host
 
     @property
     def port(self) -> int:
         """Get server port."""
-        return self._lifecycle_manager._port  # noqa: SLF001
+        return self._lifecycle_manager._port
 
     @property
     def routes(self) -> dict[str, Any]:

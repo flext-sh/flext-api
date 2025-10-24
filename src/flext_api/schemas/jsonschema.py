@@ -238,7 +238,7 @@ class JSONSchemaValidator(SchemaPlugin):
                         if isinstance(prop_schema, dict):
                             prop_result = self.validate_instance(
                                 prop_value, prop_schema
-                            )  # type: ignore[arg-type]
+                            )
                             if prop_result.is_failure:
                                 return FlextResult[dict[str, Any]].fail(
                                     f"Invalid property '{prop_name}': {prop_result.error}"
@@ -249,7 +249,7 @@ class JSONSchemaValidator(SchemaPlugin):
             items_field = schema.get("items")
             if isinstance(items_field, dict):
                 for i, item in enumerate(instance):
-                    item_result = self.validate_instance(item, items_field)  # type: ignore[arg-type]
+                    item_result = self.validate_instance(item, items_field)
                     if item_result.is_failure:
                         return FlextResult[dict[str, Any]].fail(
                             f"Invalid array item[{i}]: {item_result.error}"
@@ -342,7 +342,7 @@ class JSONSchemaValidator(SchemaPlugin):
         }
 
         if isinstance(type_value, str):
-            expected_type = type_map.get(type_value)  # type: ignore[arg-type]
+            expected_type = type_map.get(type_value)
             if expected_type and not isinstance(instance, expected_type):
                 return FlextResult[None].fail(
                     f"Expected type {type_value}, got {type(instance).__name__}"
@@ -350,7 +350,7 @@ class JSONSchemaValidator(SchemaPlugin):
         elif isinstance(type_value, list):
             valid = False
             for t in type_value:
-                expected_type = type_map.get(t)  # type: ignore[arg-type]
+                expected_type = type_map.get(t)
                 if expected_type and isinstance(instance, expected_type):
                     valid = True
                     break
@@ -438,7 +438,7 @@ class JSONSchemaValidator(SchemaPlugin):
 
     def load_schema(
         self,
-        schema_source: str,  # noqa: ARG002
+        schema_source: str,
     ) -> FlextResult[object]:
         """Load JSON Schema from source.
 
