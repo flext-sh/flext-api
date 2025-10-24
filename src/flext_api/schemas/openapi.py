@@ -349,7 +349,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
     def validate_request(
         self,
-        request: dict[str, Any],  # noqa: ARG002
+        request: dict[str, Any],
         schema: dict[str, Any],
     ) -> FlextResult[bool]:
         """Validate request against OpenAPI schema.
@@ -372,7 +372,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
     def validate_response(
         self,
-        response: dict[str, Any],  # noqa: ARG002
+        response: dict[str, Any],
         schema: dict[str, Any],
     ) -> FlextResult[bool]:
         """Validate response against OpenAPI schema.
@@ -395,7 +395,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
     def load_schema(
         self,
-        schema_source: str,  # noqa: ARG002
+        schema_source: str,
     ) -> FlextResult[object]:
         """Load OpenAPI schema from source.
 

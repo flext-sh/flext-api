@@ -226,7 +226,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
 
             # Close connection
             if self._connection and hasattr(self._connection, "close"):
-                self._connection.close()  # type: ignore[attr-defined]
+                self._connection.close()
 
             self._connected = False
             self._connection = None
@@ -390,12 +390,12 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
                 if isinstance(message, bytes):
                     message = message.decode("utf-8")
                 if hasattr(self._connection, "send"):
-                    self._connection.send(message)  # type: ignore[attr-defined]
+                    self._connection.send(message)
             elif message_type == "binary":
                 if isinstance(message, str):
                     message = message.encode("utf-8")
                 if hasattr(self._connection, "send"):
-                    self._connection.send(message)  # type: ignore[attr-defined]
+                    self._connection.send(message)
             else:
                 return FlextResult[None].fail(f"Invalid message type: {message_type}")
 
@@ -414,7 +414,7 @@ class WebSocketProtocolPlugin(ProtocolPlugin):
         while self._connected and self._connection:
             try:
                 if hasattr(self._connection, "recv"):
-                    message = self._connection.recv()  # type: ignore[attr-defined]
+                    message = self._connection.recv()
                 else:
                     message = None
 

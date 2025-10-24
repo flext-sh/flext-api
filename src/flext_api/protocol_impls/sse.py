@@ -77,8 +77,8 @@ class SSEProtocolPlugin(ProtocolPlugin):
 
     def send_request(
         self,
-        request: dict[str, object],  # noqa: ARG002
-        **kwargs: object,  # noqa: ARG002
+        request: dict[str, object],
+        **kwargs: object,
     ) -> FlextResult[dict[str, object]]:
         """Send SSE request (stub - not implemented).
 

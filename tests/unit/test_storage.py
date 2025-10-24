@@ -308,7 +308,7 @@ def test_invalid_key_set() -> None:
     assert set_result.is_failure
 
     # Non-string key should fail
-    set_result = storage.set(None, "value")  # type: ignore[arg-type]
+    set_result = storage.set(None, "value")
     assert set_result.is_failure
 
 

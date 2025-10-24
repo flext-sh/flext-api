@@ -196,7 +196,7 @@ class FlextApiStorage(FlextService[None]):
                     # Clean up expired entry
                     self._storage.pop(self._key(key), None)
                     self._expiry_times.pop(key, None)
-            except Exception:  # noqa: S110 # nosec: B110
+            except Exception:
                 # Intentionally ignore cleanup errors - cache continues to function
                 pass
 
