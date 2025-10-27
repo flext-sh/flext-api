@@ -84,7 +84,7 @@ class FlextApiStorage(FlextService[None]):
             config_dict: FlextApiTypes.StorageDict = config
         elif hasattr(config, "model_dump"):
             try:
-                config_dict = getattr(config, "model_dump")()
+                config_dict = config.model_dump()
             except Exception:
                 config_dict = {}
         else:
