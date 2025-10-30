@@ -28,7 +28,6 @@ from collections.abc import Callable
 from typing import Any
 
 from flext_core import (
-    FlextBus,
     FlextContainer,
     FlextContext,
     FlextDispatcher,
@@ -88,7 +87,6 @@ class FlextWebhookHandler(FlextService[object]):
         self._flext_context = (
             FlextContext()
         )  # Named differently to avoid parent's _context
-        self._bus = FlextBus()
         self._dispatcher = FlextDispatcher()
 
         # Webhook configuration
