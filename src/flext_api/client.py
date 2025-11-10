@@ -18,6 +18,7 @@ from flext_core import FlextResult, FlextService
 
 from flext_api.config import FlextApiConfig
 from flext_api.models import FlextApiModels
+from flext_api.typings import FlextApiTypes
 
 
 class FlextApiClient(FlextService[FlextApiConfig]):
@@ -30,15 +31,16 @@ class FlextApiClient(FlextService[FlextApiConfig]):
     Uses httpx for HTTP operations, delegates to models for data validation.
     """
 
-    def __init__(self, config: FlextApiConfig) -> None:
-        """Initialize with configuration model.
+    def __init__(self, config: FlextApiConfig | None = None) -> None:
+        """Initialize with optional configuration model.
 
         Args:
-        config: FlextApiConfig model with base_url, timeout, headers, etc.
+        config: Optional FlextApiConfig model with base_url, timeout, headers, etc.
+                If None, uses default configuration.
 
         """
         super().__init__()
-        self._config = config
+        self._config = config or FlextApiConfig()
 
     def execute(self) -> FlextResult[FlextApiConfig]:
         """Execute FlextService interface - return configuration."""
@@ -57,7 +59,10 @@ class FlextApiClient(FlextService[FlextApiConfig]):
 
         """
         try:
-            headers = {**self._config.headers, **request.headers}
+            headers: dict[str, str] = {
+                **self._config.default_headers,
+                **request.headers,
+            }
             url = self._build_url(request.url)
 
             with httpx.Client(timeout=request.timeout) as client:
@@ -76,9 +81,8 @@ class FlextApiClient(FlextService[FlextApiConfig]):
                     body=self._deserialize_body(response),
                 )
             )
-
-        except Exception as e:
-            return FlextResult[FlextApiModels.HttpResponse].fail(str(e))
+        except Exception as exc:
+            return FlextResult[FlextApiModels.HttpResponse].fail(str(exc))
 
     def _build_url(self, path: str) -> str:
         """Build full URL from base_url and path."""
@@ -88,7 +92,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         return f"{base}{path}" if path.startswith("/") else f"{base}/{path}"
 
     @staticmethod
-    def _serialize_body(body: object) -> bytes | None:
+    def _serialize_body(body: FlextApiTypes.RequestBody | None) -> bytes | None:
         """Serialize request body to bytes."""
         if body is None:
             return None
@@ -99,7 +103,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         return json.dumps(body).encode("utf-8")
 
     @staticmethod
-    def _deserialize_body(response: httpx.Response) -> object:
+    def _deserialize_body(response: httpx.Response) -> FlextApiTypes.ResponseBody:
         """Deserialize response body based on content-type."""
         content_type = response.headers.get("content-type", "")
         if "application/json" in content_type:
