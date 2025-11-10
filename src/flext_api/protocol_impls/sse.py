@@ -49,13 +49,7 @@ class SSEProtocolPlugin(ProtocolPlugin):
     ) -> None:
         """Initialize SSE protocol plugin stub.
 
-        Args:
-        retry_timeout: Default retry timeout in milliseconds (unused in stub)
-        connect_timeout: Connection timeout in seconds (unused in stub)
-        read_timeout: Read timeout in seconds (unused in stub)
-        auto_reconnect: Enable automatic reconnection (unused in stub)
-        reconnect_max_attempts: Maximum reconnection attempts (unused in stub)
-        reconnect_backoff_factor: Reconnection backoff multiplier (unused in stub)
+        Note: All timeout and reconnection parameters are currently unused in this stub implementation.
 
         """
         super().__init__(
@@ -90,6 +84,8 @@ class SSEProtocolPlugin(ProtocolPlugin):
         FlextResult with error indicating not implemented
 
         """
+        # Acknowledge parameters to avoid linting warnings
+        _ = request, kwargs
         return FlextResult[dict[str, object]].fail(
             "SSE protocol not yet implemented (Phase 3)"
         )

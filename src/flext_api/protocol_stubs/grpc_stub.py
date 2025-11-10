@@ -99,10 +99,7 @@ class GrpcStub:
     ) -> FlextResult[object]:
         """Call unary gRPC method.
 
-        Args:
-        method: Method name
-        request: Request message
-        timeout: Optional timeout
+        Note: This is a stub implementation. All parameters are unused.
 
         Returns:
         FlextResult containing response or error
@@ -229,8 +226,7 @@ class GrpcServer:
     def add_service(self, _service: object) -> FlextResult[None]:
         """Add service to server.
 
-        Args:
-        service: Service implementation
+        Note: This is a stub implementation. Parameters are unused.
 
         Returns:
         FlextResult indicating success or failure
@@ -257,8 +253,7 @@ class GrpcServer:
     def stop(self, _grace: float | None = None) -> FlextResult[None]:
         """Stop gRPC server.
 
-        Args:
-        grace: Grace period for shutdown
+        Note: This is a stub implementation. Parameters are unused.
 
         Returns:
         FlextResult indicating success or failure

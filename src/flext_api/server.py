@@ -22,16 +22,29 @@ from collections.abc import Callable
 from typing import Any
 
 from fastapi import FastAPI
-from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
+from flext_core import (
+    FlextConstants,
+    FlextDecorators,
+    FlextExceptions,
+    FlextLogger,
+    FlextMixins,
+    FlextResult,
+    FlextService,
+    FlextTypes,
+)
 
 
-class FlextApiServer(FlextService[object]):
+@FlextDecorators.track_operation
+class FlextApiServer(FlextService[object], FlextMixins.Validation):
     """Generic API server with protocol handler support using Clean Architecture.
 
     Single responsibility: Orchestrate server components (RouteRegistry,
     ConnectionManager, LifecycleManager). All endpoint types delegated to
     unified RouteRegistry for consistency. Connection lifecycle delegated to
     ConnectionManager. Server lifecycle delegated to LifecycleManager.
+
+    Uses Flext patterns: Service lifecycle decorator, logging/validation mixins,
+    railway pattern results, and dependency injection.
     """
 
     class RouteRegistry:
@@ -170,6 +183,21 @@ class FlextApiServer(FlextService[object]):
             self._is_running = False
             self._app: FastAPI | None = None
 
+        @property
+        def logger(self) -> FlextLogger:
+            """Get the logger instance."""
+            return self._logger
+
+        @property
+        def host(self) -> str:
+            """Get the server host."""
+            return self._host
+
+        @property
+        def port(self) -> int:
+            """Get the server port."""
+            return self._port
+
         def create_app(self) -> FlextResult[FastAPI]:
             """Create FastAPI application."""
             try:
@@ -301,9 +329,17 @@ class FlextApiServer(FlextService[object]):
         title: str = "Flext API Server",
         version: str = "1.0.0",
     ) -> None:
-        """Initialize API server."""
+        """Initialize API server with Flext patterns."""
         super().__init__()
+
+        # Enhanced logging with FlextLogger
         logger = FlextLogger(__name__)
+
+        # Validate configuration using Flext validation patterns
+        config_validation = self._validate_server_config(host, port, title, version)
+        if config_validation.is_failure:
+            error_msg = f"Invalid server configuration: {config_validation.error}"
+            raise FlextExceptions.ConfigurationError(error_msg)
 
         # Delegate to specialized managers (Composition over inheritance)
         self._route_registry = self.RouteRegistry(logger)
@@ -312,26 +348,63 @@ class FlextApiServer(FlextService[object]):
             host, port, title, version, logger
         )
 
-        # Protocol and middleware
+        # Protocol and middleware with FlextConstants defaults
         self._protocol_handlers: dict[str, Any] = {}
         self._middleware_pipeline: list[Any] = []
+
+    def _validate_server_config(
+        self, host: str, port: int, title: str, version: str
+    ) -> FlextResult[None]:
+        """Validate server configuration using Flext validation patterns."""
+        # Use FlextTypes for domain-specific validation
+        if not isinstance(host, str) or not host.strip():
+            return FlextResult[None].fail("Host must be a non-empty string")
+
+        max_port = getattr(FlextConstants, "MAX_PORT_NUMBER", 65535)
+        if not isinstance(port, int) or not (1 <= port <= max_port):
+            return FlextResult[None].fail(
+                f"Port must be an integer between 1 and {max_port}"
+            )
+
+        if not isinstance(title, str) or not title.strip():
+            return FlextResult[None].fail("Title must be a non-empty string")
+
+        if not isinstance(version, str) or not version.strip():
+            return FlextResult[None].fail("Version must be a non-empty string")
+
+        # Use FlextConstants for semantic validation
+        if port in FlextConstants.NETWORK_RESERVED_PORTS:
+            self.logger.warning(f"Using reserved port: {port}")
+
+        return FlextResult[None].ok(None)
 
     def execute(self, *_args: object, **_kwargs: object) -> FlextResult[object]:
         """Execute server service (required by FlextService)."""
         return FlextResult[object].ok(None)
 
+    @FlextDecorators.track_operation
     def register_protocol_handler(
         self,
         protocol: str,
         handler: object,
     ) -> FlextResult[None]:
-        """Register protocol handler."""
+        """Register protocol handler with Flext validation."""
+        # Use Flext validation mixin
+        protocol_valid = self.validate_required(protocol, "protocol name")
+        if not protocol_valid:
+            return FlextResult[None].fail("Protocol name is required")
+
         if protocol in self._protocol_handlers:
             return FlextResult[None].fail(f"Protocol already registered: {protocol}")
 
+        # Validate handler using Flext protocols
+        if not hasattr(handler, "supports_protocol"):
+            return FlextResult[None].fail(f"Invalid protocol handler: {type(handler)}")
+
         self._protocol_handlers[protocol] = handler
 
-        self._lifecycle_manager._logger.info(
+        # Use logger from lifecycle manager
+        self._lifecycle_manager.logger.info(
             "Protocol handler registered",
             extra={"protocol": protocol, "handler": getattr(handler, "name", "")},
         )
@@ -345,7 +418,7 @@ class FlextApiServer(FlextService[object]):
         """Add middleware to pipeline."""
         self._middleware_pipeline.append(middleware)
 
-        self._lifecycle_manager._logger.info(
+        self._lifecycle_manager.logger.info(
             "Middleware added",
             extra={"middleware": middleware.__class__.__name__},
         )
@@ -441,12 +514,12 @@ class FlextApiServer(FlextService[object]):
     @property
     def host(self) -> str:
         """Get server host."""
-        return self._lifecycle_manager._host
+        return self._lifecycle_manager.host
 
     @property
     def port(self) -> int:
         """Get server port."""
-        return self._lifecycle_manager._port
+        return self._lifecycle_manager.port
 
     @property
     def routes(self) -> dict[str, Any]:

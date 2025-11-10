@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from flext_core import FlextResult
 
@@ -266,6 +266,65 @@ class OpenAPISchemaValidator(SchemaPlugin):
 
         return FlextResult[None].ok(None)
 
+    def _validate_security_schemes_structure(
+        self, security_schemes: object
+    ) -> FlextResult[dict[str, Any]]:
+        """Validate basic structure of security schemes."""
+        if not isinstance(security_schemes, dict):
+            return FlextResult[dict[str, Any]].fail(
+                "Security schemes must be a dictionary"
+            )
+        return FlextResult[dict[str, Any]].ok(cast("dict[str, Any]", security_schemes))
+
+    def _validate_single_security_scheme(
+        self, scheme_name: str, scheme: dict[str, Any]
+    ) -> FlextResult[None]:
+        """Validate a single security scheme."""
+        if not isinstance(scheme, dict):
+            return FlextResult[None].fail(
+                f"Security scheme must be a dictionary: {scheme_name}"
+            )
+
+        scheme_type = scheme.get("type")
+        if not scheme_type:
+            return FlextResult[None].fail(
+                f"Missing 'type' field in security scheme: {scheme_name}"
+            )
+
+        valid_types = ["apiKey", "http", "oauth2", "openIdConnect"]
+        if scheme_type not in valid_types:
+            return FlextResult[None].fail(
+                f"Invalid security scheme type '{scheme_type}': {scheme_name}"
+            )
+
+        # Validate type-specific requirements
+        return self._validate_scheme_type_requirements(scheme_name, scheme, scheme_type)
+
+    def _validate_scheme_type_requirements(
+        self, scheme_name: str, scheme: dict[str, Any], scheme_type: str
+    ) -> FlextResult[None]:
+        """Validate type-specific requirements for security schemes."""
+        if scheme_type == "apiKey":
+            if "name" not in scheme or "in" not in scheme:
+                return FlextResult[None].fail(
+                    f"apiKey scheme missing 'name' or 'in': {scheme_name}"
+                )
+        elif scheme_type == "http":
+            if "scheme" not in scheme:
+                return FlextResult[None].fail(
+                    f"http scheme missing 'scheme': {scheme_name}"
+                )
+        elif scheme_type == "oauth2":
+            if "flows" not in scheme:
+                return FlextResult[None].fail(
+                    f"oauth2 scheme missing 'flows': {scheme_name}"
+                )
+        elif scheme_type == "openIdConnect" and "openIdConnectUrl" not in scheme:
+            return FlextResult[None].fail(
+                f"openIdConnect scheme missing 'openIdConnectUrl': {scheme_name}"
+            )
+        return FlextResult[None].ok(None)
+
     def _validate_security_schemes(
         self, security_schemes: dict[str, Any]
     ) -> FlextResult[None]:
@@ -278,51 +337,20 @@ class OpenAPISchemaValidator(SchemaPlugin):
         FlextResult indicating validation success or failure
 
         """
-        if not isinstance(security_schemes, dict):
-            return FlextResult[None].fail("Security schemes must be a dictionary")
+        # Validate basic structure
+        schemes_dict_result = self._validate_security_schemes_structure(
+            security_schemes
+        )
+        if schemes_dict_result.is_failure:
+            return FlextResult[None].fail(schemes_dict_result.error)
 
-        valid_types = ["apiKey", "http", "oauth2", "openIdConnect"]
+        schemes_dict = schemes_dict_result.unwrap()
 
-        for scheme_name, scheme in security_schemes.items():
-            if not isinstance(scheme, dict):
-                return FlextResult[None].fail(
-                    f"Security scheme must be a dictionary: {scheme_name}"
-                )
-
-            scheme_type = scheme.get("type")
-            if not scheme_type:
-                return FlextResult[None].fail(
-                    f"Missing 'type' field in security scheme: {scheme_name}"
-                )
-
-            if scheme_type not in valid_types:
-                return FlextResult[None].fail(
-                    f"Invalid security scheme type '{scheme_type}': {scheme_name}"
-                )
-
-            # Validate type-specific requirements
-            if scheme_type == "apiKey":
-                if "name" not in scheme or "in" not in scheme:
-                    return FlextResult[None].fail(
-                        f"apiKey scheme missing 'name' or 'in': {scheme_name}"
-                    )
-
-            elif scheme_type == "http":
-                if "scheme" not in scheme:
-                    return FlextResult[None].fail(
-                        f"http scheme missing 'scheme': {scheme_name}"
-                    )
-
-            elif scheme_type == "oauth2":
-                if "flows" not in scheme:
-                    return FlextResult[None].fail(
-                        f"oauth2 scheme missing 'flows': {scheme_name}"
-                    )
-
-            elif scheme_type == "openIdConnect" and "openIdConnectUrl" not in scheme:
-                return FlextResult[None].fail(
-                    f"openIdConnect scheme missing 'openIdConnectUrl': {scheme_name}"
-                )
+        # Validate each security scheme
+        for scheme_name, scheme in schemes_dict.items():
+            scheme_result = self._validate_single_security_scheme(scheme_name, scheme)
+            if scheme_result.is_failure:
+                return scheme_result
 
         return FlextResult[None].ok(None)
 
@@ -355,7 +383,7 @@ class OpenAPISchemaValidator(SchemaPlugin):
         """Validate request against OpenAPI schema.
 
         Args:
-        _request: Request to validate
+        request: Request to validate
         schema: OpenAPI schema
 
         Returns:
@@ -367,6 +395,8 @@ class OpenAPISchemaValidator(SchemaPlugin):
         if schema_result.is_failure:
             return FlextResult[bool].fail(f"Invalid schema: {schema_result.error}")
 
+        # Acknowledge unused parameters (stub implementation)
+        _ = request, schema
         # Implementation would validate request against OpenAPI paths/operations
         return FlextResult[bool].ok(True)
 
@@ -390,6 +420,8 @@ class OpenAPISchemaValidator(SchemaPlugin):
         if schema_result.is_failure:
             return FlextResult[bool].fail(f"Invalid schema: {schema_result.error}")
 
+        # Acknowledge unused parameters (stub implementation)
+        _ = response, schema
         # Implementation would validate response against OpenAPI response schemas
         return FlextResult[bool].ok(True)
 
@@ -406,6 +438,8 @@ class OpenAPISchemaValidator(SchemaPlugin):
         FlextResult containing loaded schema or error
 
         """
+        # Acknowledge unused parameter (stub implementation)
+        _ = schema_source
         # For string paths, would load from file
         return FlextResult[object].fail("File loading not implemented yet")
 
