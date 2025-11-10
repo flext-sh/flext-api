@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from flext_core import FlextResult, FlextService
 
@@ -18,9 +18,6 @@ from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
-
-# Type for HTTP method kwargs (common httpx parameters)
-HttpMethodKwargs = dict[str, Any]
 
 
 class FlextApi(FlextService[FlextApiConfig]):
@@ -71,7 +68,7 @@ class FlextApi(FlextService[FlextApiConfig]):
         url: str,
         data: FlextApiTypes.RequestBody | None = None,
         headers: dict[str, str] | None = None,
-        **kwargs: HttpMethodKwargs,
+        request_kwargs: FlextApiTypes.RequestKwargs | None = None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Generic HTTP method executor - eliminates code duplication.
 
@@ -80,75 +77,169 @@ class FlextApi(FlextService[FlextApiConfig]):
         url: Request URL.
         data: Optional body.
         headers: Optional headers.
-        **kwargs: Additional parameters.
+        request_kwargs: Additional parameters aligned with FlextApiModels.HttpRequest.
 
         Returns:
         FlextResult[HttpResponse]: Response or error.
 
         """
-        # Extract only HttpRequest-compatible parameters from kwargs
-        timeout_value = None
-        if "timeout" in kwargs:
-            timeout_val = kwargs["timeout"]
-            if isinstance(timeout_val, (int, float)):
-                timeout_value = float(timeout_val)
-
-        req = FlextApiModels.HttpRequest(
+        http_request = self._build_http_request(
             method=method,
             url=url,
-            body=data,
-            headers=headers or {},
-            timeout=timeout_value or 30.0,
+            explicit_body=data,
+            explicit_headers=headers,
+            request_kwargs=request_kwargs,
         )
-        return self.request(req)
+        return self.request(http_request)
+
+    def _build_http_request(
+        self,
+        method: str,
+        url: str,
+        explicit_body: FlextApiTypes.RequestBody | None,
+        explicit_headers: dict[str, str] | None,
+        request_kwargs: FlextApiTypes.RequestKwargs | None,
+    ) -> FlextApiModels.HttpRequest:
+        body = self._resolve_body(explicit_body, request_kwargs)
+        headers = self._resolve_headers(explicit_headers, request_kwargs)
+        timeout_value = self._resolve_timeout(request_kwargs)
+        query_params = self._resolve_query_params(request_kwargs)
+
+        return FlextApiModels.HttpRequest(
+            method=method,
+            url=url,
+            body=body,
+            headers=headers,
+            query_params=query_params,
+            timeout=timeout_value,
+        )
+
+    def _resolve_body(
+        self,
+        explicit_body: FlextApiTypes.RequestBody | None,
+        request_kwargs: FlextApiTypes.RequestKwargs | None,
+    ) -> FlextApiTypes.RequestBody | None:
+        if explicit_body is not None:
+            return explicit_body
+        if not request_kwargs:
+            return None
+        json_payload = request_kwargs.get("json")
+        if json_payload is not None:
+            return json_payload
+        data_payload = request_kwargs.get("data")
+        if data_payload is not None:
+            return data_payload
+        return None
+
+    def _resolve_headers(
+        self,
+        explicit_headers: dict[str, str] | None,
+        request_kwargs: FlextApiTypes.RequestKwargs | None,
+    ) -> dict[str, str]:
+        combined_headers: dict[str, str] = {}
+        if request_kwargs:
+            kw_headers = request_kwargs.get("headers")
+            if kw_headers:
+                combined_headers.update(kw_headers)
+        if explicit_headers:
+            combined_headers.update(explicit_headers)
+        return combined_headers
+
+    def _resolve_timeout(
+        self, request_kwargs: FlextApiTypes.RequestKwargs | None
+    ) -> float:
+        if request_kwargs:
+            timeout_value = request_kwargs.get("timeout")
+            if timeout_value is not None:
+                return float(timeout_value)
+        return self._config.timeout
+
+    @staticmethod
+    def _resolve_query_params(
+        request_kwargs: FlextApiTypes.RequestKwargs | None,
+    ) -> FlextApiTypes.WebParams | None:
+        if not request_kwargs:
+            return None
+        params = request_kwargs.get("params")
+        if params is None:
+            return None
+        return params
 
     def get(
         self,
         url: str,
         headers: dict[str, str] | None = None,
-        **kwargs: HttpMethodKwargs,
+        request_kwargs: FlextApiTypes.RequestKwargs | None = None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """HTTP GET - delegates to generic method."""
-        return self._http_method("GET", url, headers=headers, **kwargs)
+        return self._http_method(
+            method="GET",
+            url=url,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        )
 
     def post(
         self,
         url: str,
         data: FlextApiTypes.RequestBody | None = None,
         headers: dict[str, str] | None = None,
-        **kwargs: HttpMethodKwargs,
+        request_kwargs: FlextApiTypes.RequestKwargs | None = None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """HTTP POST - delegates to generic method."""
-        return self._http_method("POST", url, data, headers, **kwargs)
+        return self._http_method(
+            method="POST",
+            url=url,
+            data=data,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        )
 
     def put(
         self,
         url: str,
         data: FlextApiTypes.RequestBody | None = None,
         headers: dict[str, str] | None = None,
-        **kwargs: HttpMethodKwargs,
+        request_kwargs: FlextApiTypes.RequestKwargs | None = None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """HTTP PUT - delegates to generic method."""
-        return self._http_method("PUT", url, data, headers, **kwargs)
+        return self._http_method(
+            method="PUT",
+            url=url,
+            data=data,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        )
 
     def delete(
         self,
         url: str,
         headers: dict[str, str] | None = None,
-        **kwargs: HttpMethodKwargs,
+        request_kwargs: FlextApiTypes.RequestKwargs | None = None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """HTTP DELETE - delegates to generic method."""
-        return self._http_method("DELETE", url, headers=headers, **kwargs)
+        return self._http_method(
+            method="DELETE",
+            url=url,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        )
 
     def patch(
         self,
         url: str,
         data: FlextApiTypes.RequestBody | None = None,
         headers: dict[str, str] | None = None,
-        **kwargs: HttpMethodKwargs,
+        request_kwargs: FlextApiTypes.RequestKwargs | None = None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """HTTP PATCH - delegates to generic method."""
-        return self._http_method("PATCH", url, data, headers, **kwargs)
+        return self._http_method(
+            method="PATCH",
+            url=url,
+            data=data,
+            headers=headers,
+            request_kwargs=request_kwargs,
+        )
 
 
 __all__ = ["FlextApi"]

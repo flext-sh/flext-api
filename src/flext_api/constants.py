@@ -6,9 +6,11 @@ Only constants and enums - no functions or classes with behavior.
 
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from flext_core import FlextConstants
+
+from flext_api.typings import FlextApiTypes
 
 
 class FlextApiConstants:
@@ -66,14 +68,14 @@ class FlextApiConstants:
     RATE_LIMIT_WINDOW: ClassVar[int] = 3600
 
     # Response templates
-    SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, Any]] = {
+    SUCCESS_RESPONSE_TEMPLATE: ClassVar[FlextApiTypes.JsonObject] = {
         "status": "success",
         "data": None,
         "error": None,
         "message": None,
     }
 
-    ERROR_RESPONSE_TEMPLATE: ClassVar[dict[str, Any]] = {
+    ERROR_RESPONSE_TEMPLATE: ClassVar[FlextApiTypes.JsonObject] = {
         "status": "error",
         "data": None,
         "error": None,
@@ -113,7 +115,7 @@ class FlextApiConstants:
     MAX_PAGE_SIZE: ClassVar[int] = CorePagination.MAX_PAGE_SIZE
 
     # Validation limits - compact definitions
-    VALIDATION_LIMITS: ClassVar[dict[str, Any]] = {
+    VALIDATION_LIMITS: ClassVar[dict[str, int | float]] = {
         "MAX_URL_LENGTH": 2048,
         "MIN_TIMEOUT": 0.0,
         "MAX_TIMEOUT": 300.0,
@@ -129,7 +131,7 @@ class FlextApiConstants:
     }
 
     # CORS - compact configuration
-    CORS_CONFIG: ClassVar[dict[str, Any]] = {
+    CORS_CONFIG: ClassVar[dict[str, list[str]]] = {
         "ORIGINS": ["*"],
         "METHODS": [Method.GET, Method.POST, Method.PUT, Method.DELETE],
         "HEADERS": [HEADER_CONTENT_TYPE, HEADER_AUTHORIZATION],

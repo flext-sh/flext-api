@@ -11,13 +11,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels
 from pydantic import BaseModel, Field, computed_field
 
 from flext_api.constants import FlextApiConstants
+from flext_api.typings import FlextApiTypes
 
 
 class FlextApiModels:
@@ -52,8 +52,10 @@ class FlextApiModels:
         headers: dict[str, str] = Field(
             default_factory=dict, description="HTTP request headers"
         )
-        body: Any | None = Field(default=None, description="Request body")
-        query_params: dict[str, str | list[str]] | None = Field(
+        body: FlextApiTypes.RequestBody | None = Field(
+            default=None, description="Request body"
+        )
+        query_params: FlextApiTypes.WebParams | None = Field(
             default=None, description="Query parameters"
         )
         timeout: float = Field(
@@ -79,7 +81,9 @@ class FlextApiModels:
         headers: dict[str, str] = Field(
             default_factory=dict, description="HTTP response headers"
         )
-        body: Any | None = Field(default=None, description="Response body")
+        body: FlextApiTypes.ResponseBody | None = Field(
+            default=None, description="Response body"
+        )
         request_id: str | None = Field(
             default=None, description="Associated request ID for tracking"
         )
@@ -256,7 +260,7 @@ class FlextApiModels:
         status_code: int = Field(
             default=500, ge=100, le=599, description="HTTP status code"
         )
-        details: dict[str, Any] | None = Field(
+        details: FlextApiTypes.JsonObject | None = Field(
             default=None, description="Additional error details"
         )
         request_id: str | None = Field(
@@ -286,7 +290,7 @@ class FlextApiModels:
     class QueryParams(BaseModel):
         """Query parameters model."""
 
-        params: dict[str, str | list[str]] = Field(
+        params: FlextApiTypes.WebParams = Field(
             default_factory=dict, description="Query parameters"
         )
 
@@ -330,7 +334,7 @@ class FlextApiModels:
     def create_response(
         cls,
         status_code: int,
-        body: Any | None = None,
+        body: FlextApiTypes.ResponseBody | None = None,
         headers: dict[str, str] | None = None,
         request_id: str | None = None,
     ) -> FlextApiModels.HttpResponse:
