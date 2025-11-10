@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from flext_core import FlextResult, FlextTypes
 
@@ -89,6 +89,91 @@ class JSONSchemaValidator(SchemaPlugin):
             "regex",
         ]
 
+    def _validate_schema_basic_structure(
+        self, schema: object
+    ) -> FlextResult[dict[str, Any]]:
+        """Validate basic schema structure."""
+        if not isinstance(schema, dict):
+            return FlextResult[dict[str, Any]].fail("Schema must be a dictionary")
+        return FlextResult[dict[str, Any]].ok(cast("dict[str, Any]", schema))
+
+    def _validate_schema_uri_field(self, schema: dict[str, Any]) -> FlextResult[None]:
+        """Validate $schema URI field if present."""
+        schema_uri = schema.get("$schema")
+        if schema_uri:
+            draft_result = self._validate_schema_uri(schema_uri)
+            if draft_result.is_failure:
+                return FlextResult[None].fail(draft_result.error)
+        return FlextResult[None].ok(None)
+
+    def _validate_schema_type_field(self, schema: dict[str, Any]) -> FlextResult[None]:
+        """Validate type field if present."""
+        if "type" in schema:
+            type_result = self._validate_type_field(schema["type"])
+            if type_result.is_failure:
+                return FlextResult[None].fail(
+                    f"Invalid type field: {type_result.error}"
+                )
+        return FlextResult[None].ok(None)
+
+    def _validate_schema_properties(self, schema: dict[str, Any]) -> FlextResult[None]:
+        """Validate properties field and nested schemas."""
+        if "properties" in schema:
+            if not isinstance(schema["properties"], dict):
+                return FlextResult[None].fail("Properties must be a dictionary")
+
+            # Recursively validate property schemas
+            for prop_name, prop_schema in schema["properties"].items():
+                if isinstance(prop_schema, dict):
+                    prop_result = self.validate_schema(prop_schema)
+                    if prop_result.is_failure:
+                        return FlextResult[None].fail(
+                            f"Invalid property schema '{prop_name}': {prop_result.error}"
+                        )
+        return FlextResult[None].ok(None)
+
+    def _validate_schema_items(self, schema: dict[str, Any]) -> FlextResult[None]:
+        """Validate items field for arrays."""
+        if "items" in schema:
+            items = schema["items"]
+            if isinstance(items, dict):
+                items_result = self.validate_schema(items)
+                if items_result.is_failure:
+                    return FlextResult[None].fail(
+                        f"Invalid items schema: {items_result.error}"
+                    )
+            elif isinstance(items, list):
+                for i, item_schema in enumerate(items):
+                    if isinstance(item_schema, dict):
+                        item_result = self.validate_schema(item_schema)
+                        if item_result.is_failure:
+                            return FlextResult[None].fail(
+                                f"Invalid items[{i}] schema: {item_result.error}"
+                            )
+        return FlextResult[None].ok(None)
+
+    def _validate_schema_required(self, schema: dict[str, Any]) -> FlextResult[None]:
+        """Validate required field."""
+        if "required" in schema:
+            if not isinstance(schema["required"], list):
+                return FlextResult[None].fail("Required must be an array")
+
+            for req in schema["required"]:
+                if not isinstance(req, str):
+                    return FlextResult[None].fail("Required items must be strings")
+        return FlextResult[None].ok(None)
+
+    def _validate_schema_format(self, schema: dict[str, Any]) -> FlextResult[None]:
+        """Validate format field if present."""
+        if "format" in schema and self._validate_formats:
+            format_value = schema["format"]
+            if not isinstance(format_value, str):
+                return FlextResult[None].fail("Format must be a string")
+
+            if format_value not in self._supported_formats and self._strict_mode:
+                return FlextResult[None].fail(f"Unsupported format: {format_value}")
+        return FlextResult[None].ok(None)
+
     def validate_schema(self, schema: dict[str, Any]) -> FlextResult[dict[str, Any]]:
         """Validate JSON Schema against meta-schema.
 
@@ -99,96 +184,109 @@ class JSONSchemaValidator(SchemaPlugin):
         FlextResult containing validation result or error
 
         """
-        # Check if schema is a dictionary
-        if not isinstance(schema, dict):
-            return FlextResult[dict[str, Any]].fail("Schema must be a dictionary")
+        # Validate basic structure
+        schema_dict_result = self._validate_schema_basic_structure(schema)
+        if schema_dict_result.is_failure:
+            return FlextResult[dict[str, Any]].fail(schema_dict_result.error)
 
-        # Validate $schema field if present
-        schema_uri = schema.get("$schema")
-        if schema_uri:
-            draft_result = self._validate_schema_uri(schema_uri)
-            if draft_result.is_failure:
-                return FlextResult[dict[str, Any]].fail(draft_result.error)
+        schema_dict = schema_dict_result.unwrap()
 
-        # Validate type if present
-        if "type" in schema:
-            type_result = self._validate_type_field(schema["type"])
-            if type_result.is_failure:
-                return FlextResult[dict[str, Any]].fail(
-                    f"Invalid type field: {type_result.error}"
-                )
+        # Validate individual components
+        validations = [
+            self._validate_schema_uri_field(schema_dict),
+            self._validate_schema_type_field(schema_dict),
+            self._validate_schema_properties(schema_dict),
+            self._validate_schema_items(schema_dict),
+            self._validate_schema_required(schema_dict),
+            self._validate_schema_format(schema_dict),
+        ]
 
-        # Validate properties if present
-        if "properties" in schema:
-            if not isinstance(schema["properties"], dict):
-                return FlextResult[dict[str, Any]].fail(
-                    "Properties must be a dictionary"
-                )
-
-            # Recursively validate property schemas
-            for prop_name, prop_schema in schema["properties"].items():
-                if isinstance(prop_schema, dict):
-                    prop_result = self.validate_schema(prop_schema)
-                    if prop_result.is_failure:
-                        return FlextResult[dict[str, Any]].fail(
-                            f"Invalid property schema '{prop_name}': {prop_result.error}"
-                        )
-
-        # Validate items if present (for arrays)
-        if "items" in schema:
-            items = schema["items"]
-            if isinstance(items, dict):
-                items_result = self.validate_schema(items)
-                if items_result.is_failure:
-                    return FlextResult[dict[str, Any]].fail(
-                        f"Invalid items schema: {items_result.error}"
-                    )
-            elif isinstance(items, list):
-                for i, item_schema in enumerate(items):
-                    if isinstance(item_schema, dict):
-                        item_result = self.validate_schema(item_schema)
-                        if item_result.is_failure:
-                            return FlextResult[dict[str, Any]].fail(
-                                f"Invalid items[{i}] schema: {item_result.error}"
-                            )
-
-        # Validate required field if present
-        if "required" in schema:
-            if not isinstance(schema["required"], list):
-                return FlextResult[dict[str, Any]].fail("Required must be an array")
-
-            for req in schema["required"]:
-                if not isinstance(req, str):
-                    return FlextResult[dict[str, Any]].fail(
-                        "Required items must be strings"
-                    )
-
-        # Validate format if present
-        if "format" in schema and self._validate_formats:
-            format_value = schema["format"]
-            if not isinstance(format_value, str):
-                return FlextResult[dict[str, Any]].fail("Format must be a string")
-
-            if format_value not in self._supported_formats and self._strict_mode:
-                return FlextResult[dict[str, Any]].fail(
-                    f"Unsupported format: {format_value}"
-                )
+        for validation_result in validations:
+            if validation_result.is_failure:
+                return FlextResult[dict[str, Any]].fail(validation_result.error)
 
         self.logger.info(
             "JSON Schema validation successful",
             extra={
                 "draft": self._draft_version,
-                "has_properties": "properties" in schema,
-                "has_required": "required" in schema,
+                "has_properties": "properties" in schema_dict,
+                "has_required": "required" in schema_dict,
             },
         )
 
         return FlextResult[dict[str, Any]].ok({
             "valid": True,
             "draft": self._draft_version,
-            "type": schema.get("type"),
-            "properties": list(schema.get("properties", {}).keys()),
+            "properties": list(schema_dict.get("properties", {}).keys()),
         })
+
+    def _validate_instance_schema(
+        self, schema: dict[str, FlextTypes.JsonValue]
+    ) -> FlextResult[None]:
+        """Validate that the schema itself is valid."""
+        schema_result = self.validate_schema(schema)
+        if schema_result.is_failure:
+            return FlextResult[None].fail(f"Invalid schema: {schema_result.error}")
+        return FlextResult[None].ok(None)
+
+    def _validate_instance_type(
+        self, instance: FlextTypes.JsonValue, schema: dict[str, FlextTypes.JsonValue]
+    ) -> FlextResult[None]:
+        """Validate instance type if specified in schema."""
+        if "type" in schema:
+            type_result = self._validate_instance_type(instance, schema["type"])
+            if type_result.is_failure:
+                return FlextResult[None].fail(type_result.error)
+        return FlextResult[None].ok(None)
+
+    def _validate_required_properties(
+        self, instance: FlextTypes.JsonValue, schema: dict[str, FlextTypes.JsonValue]
+    ) -> FlextResult[None]:
+        """Validate required properties for object instances."""
+        if isinstance(instance, dict) and "required" in schema:
+            required_field = schema.get("required")
+            if isinstance(required_field, list):
+                for required_prop in required_field:
+                    if isinstance(required_prop, str) and required_prop not in instance:
+                        return FlextResult[None].fail(
+                            f"Missing required property: {required_prop}"
+                        )
+        return FlextResult[None].ok(None)
+
+    def _validate_object_properties(
+        self, instance: FlextTypes.JsonValue, schema: dict[str, FlextTypes.JsonValue]
+    ) -> FlextResult[None]:
+        """Validate properties for object instances."""
+        if isinstance(instance, dict) and "properties" in schema:
+            properties_field = schema.get("properties")
+            if isinstance(properties_field, dict):
+                for prop_name, prop_value in instance.items():
+                    if prop_name in properties_field:
+                        prop_schema = properties_field[prop_name]
+                        if isinstance(prop_schema, dict):
+                            prop_result = self.validate_instance(
+                                prop_value, prop_schema
+                            )
+                            if prop_result.is_failure:
+                                return FlextResult[None].fail(
+                                    f"Invalid property '{prop_name}': {prop_result.error}"
+                                )
+        return FlextResult[None].ok(None)
+
+    def _validate_array_items(
+        self, instance: FlextTypes.JsonValue, schema: dict[str, FlextTypes.JsonValue]
+    ) -> FlextResult[None]:
+        """Validate array items."""
+        if isinstance(instance, list) and "items" in schema:
+            items_field = schema.get("items")
+            if isinstance(items_field, dict):
+                for i, item in enumerate(instance):
+                    item_result = self.validate_instance(item, items_field)
+                    if item_result.is_failure:
+                        return FlextResult[None].fail(
+                            f"Invalid array item[{i}]: {item_result.error}"
+                        )
+        return FlextResult[None].ok(None)
 
     def validate_instance(
         self,
@@ -205,55 +303,22 @@ class JSONSchemaValidator(SchemaPlugin):
         FlextResult containing validation result or error
 
         """
-        # First validate the schema itself
-        schema_result = self.validate_schema(schema)
-        if schema_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(
-                f"Invalid schema: {schema_result.error}"
-            )
+        # Validate schema first
+        schema_validation = self._validate_instance_schema(schema)
+        if schema_validation.is_failure:
+            return FlextResult[dict[str, Any]].fail(schema_validation.error)
 
-        # Validate type if specified
-        if "type" in schema:
-            type_result = self._validate_instance_type(instance, schema["type"])
-            if type_result.is_failure:
-                return FlextResult[dict[str, Any]].fail(type_result.error)
+        # Run all validations
+        validations = [
+            self._validate_instance_type(instance, schema),
+            self._validate_required_properties(instance, schema),
+            self._validate_object_properties(instance, schema),
+            self._validate_array_items(instance, schema),
+        ]
 
-        # Validate required properties for objects
-        if isinstance(instance, dict) and "required" in schema:
-            required_field = schema.get("required")
-            if isinstance(required_field, list):
-                for required_prop in required_field:
-                    if isinstance(required_prop, str) and required_prop not in instance:
-                        return FlextResult[dict[str, Any]].fail(
-                            f"Missing required property: {required_prop}"
-                        )
-
-        # Validate properties for objects
-        if isinstance(instance, dict) and "properties" in schema:
-            properties_field = schema.get("properties")
-            if isinstance(properties_field, dict):
-                for prop_name, prop_value in instance.items():
-                    if prop_name in properties_field:
-                        prop_schema = properties_field[prop_name]
-                        if isinstance(prop_schema, dict):
-                            prop_result = self.validate_instance(
-                                prop_value, prop_schema
-                            )
-                            if prop_result.is_failure:
-                                return FlextResult[dict[str, Any]].fail(
-                                    f"Invalid property '{prop_name}': {prop_result.error}"
-                                )
-
-        # Validate array items
-        if isinstance(instance, list) and "items" in schema:
-            items_field = schema.get("items")
-            if isinstance(items_field, dict):
-                for i, item in enumerate(instance):
-                    item_result = self.validate_instance(item, items_field)
-                    if item_result.is_failure:
-                        return FlextResult[dict[str, Any]].fail(
-                            f"Invalid array item[{i}]: {item_result.error}"
-                        )
+        for validation_result in validations:
+            if validation_result.is_failure:
+                return FlextResult[dict[str, Any]].fail(validation_result.error)
 
         return FlextResult[dict[str, Any]].ok({
             "valid": True,
@@ -449,6 +514,8 @@ class JSONSchemaValidator(SchemaPlugin):
         FlextResult containing loaded schema or error
 
         """
+        # Acknowledge unused parameter (stub implementation)
+        _ = schema_source
         # For string paths, would load from file
         return FlextResult[object].fail("File loading not implemented yet")
 

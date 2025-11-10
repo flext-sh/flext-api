@@ -46,6 +46,58 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             verify=client_config.verify_ssl,
         )
 
+    def _prepare_request_headers(self, kwargs: dict[str, object]) -> dict[str, str]:
+        """Prepare merged headers from config and request."""
+        headers = dict(self._config.headers)
+        kwargs_headers = kwargs.get("headers")
+        if isinstance(kwargs_headers, dict):
+            headers.update({
+                k: v for k, v in kwargs_headers.items() if isinstance(v, str)
+            })
+        return headers
+
+    def _extract_request_data(self, kwargs: dict[str, object]) -> dict[str, Any]:
+        """Extract and type request data parameters."""
+        return {
+            "params": kwargs.get("params")
+            if isinstance(kwargs.get("params"), dict)
+            else None,
+            "json": kwargs.get("json"),
+            "content": kwargs.get("content"),
+            "data": kwargs.get("data"),
+            "files": kwargs.get("files"),
+        }
+
+    def _create_response_from_httpx(
+        self, httpx_response: httpx.Response
+    ) -> FlextApiModels.HttpResponse:
+        """Convert httpx response to FlextApiModels.HttpResponse."""
+        return FlextApiModels.HttpResponse(
+            status_code=httpx_response.status_code,
+            headers=dict(httpx_response.headers),
+            body=httpx_response.content,
+        )
+
+    def _handle_http_error(
+        self, e: httpx.HTTPStatusError
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """Handle HTTP status errors."""
+        error_msg = f"HTTP error {e.response.status_code}: {e.response.text}"
+        self.logger.warning(error_msg)
+        response = self._create_response_from_httpx(e.response)
+        return FlextResult[FlextApiModels.HttpResponse].ok(response)
+
+    def _handle_request_exception(
+        self, e: Exception, error_prefix: str
+    ) -> FlextResult[FlextApiModels.HttpResponse]:
+        """Handle general request exceptions."""
+        error_msg = f"{error_prefix}: {e}"
+        if isinstance(e, (httpx.TimeoutException, httpx.NetworkError)):
+            self.logger.warning(error_msg)
+        else:
+            self.logger.error(error_msg)
+        return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
+
     def request(
         self,
         method: str,
@@ -54,87 +106,32 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute an HTTP request conforming to protocol."""
         try:
-            # Build full URL
             full_url = self._build_full_url(url)
+            headers = self._prepare_request_headers(kwargs)
+            request_data = self._extract_request_data(kwargs)
 
-            # Prepare headers (merge config headers with request headers)
-            request_headers: dict[str, str] = {
-                **self._config.headers,
-            }
-
-            kwargs_headers = kwargs.get("headers")
-            if isinstance(kwargs_headers, dict):
-                request_headers.update({
-                    k: v for k, v in kwargs_headers.items() if isinstance(v, str)
-                })
-
-            # Extract typed parameters from kwargs with safe casting
-            params: dict[str, str] | None = None
-            if isinstance(kwargs.get("params"), dict):
-                params = kwargs.get("params")
-
-            json_data: Any = None
-            if "json" in kwargs:
-                json_data = kwargs.get("json")
-
-            content_data: Any = None
-            if "content" in kwargs:
-                content_data = kwargs.get("content")
-
-            form_data: Any = None
-            if "data" in kwargs:
-                form_data = kwargs.get("data")
-
-            files_data: Any = None
-            if "files" in kwargs:
-                files_data = kwargs.get("files")
-
-            # Make the HTTP request using httpx client with properly typed arguments
+            # Make the HTTP request
             httpx_response = self._client.request(
                 method=method,
                 url=full_url,
-                headers=request_headers,
-                params=params,
-                json=json_data,
-                content=content_data,
-                data=form_data,
-                files=files_data,
+                headers=headers,
+                **request_data,
             )
 
-            # Convert httpx response to FlextApiModels.HttpResponse
-            response = FlextApiModels.HttpResponse(
-                status_code=httpx_response.status_code,
-                headers=dict(httpx_response.headers),
-                body=httpx_response.content,
-            )
-
+            response = self._create_response_from_httpx(httpx_response)
             return FlextResult[FlextApiModels.HttpResponse].ok(response)
-
-        except httpx.TimeoutException as e:
-            error_msg = f"HTTP request timeout: {e}"
-            self.logger.warning(error_msg)
-            return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
-
-        except httpx.NetworkError as e:
-            error_msg = f"HTTP network error: {e}"
-            self.logger.warning(error_msg)
-            return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
 
         except httpx.HTTPStatusError as e:
-            error_msg = f"HTTP error {e.response.status_code}: {e.response.text}"
-            self.logger.warning(error_msg)
-            # Still return a response for HTTP errors
-            response = FlextApiModels.HttpResponse(
-                status_code=e.response.status_code,
-                headers=dict(e.response.headers),
-                body=e.response.content,
+            return self._handle_http_error(e)
+        except (httpx.TimeoutException, httpx.NetworkError, Exception) as e:
+            error_prefix = (
+                "HTTP request timeout"
+                if isinstance(e, httpx.TimeoutException)
+                else "HTTP network error"
+                if isinstance(e, httpx.NetworkError)
+                else "HTTP protocol request failed"
             )
-            return FlextResult[FlextApiModels.HttpResponse].ok(response)
-
-        except Exception as e:
-            error_msg = f"HTTP protocol request failed: {e}"
-            self.logger.exception(error_msg)
-            return FlextResult[FlextApiModels.HttpResponse].fail(error_msg)
+            return self._handle_request_exception(e, error_prefix)
 
     def _build_full_url(self, url: str) -> str:
         """Build full URL from configuration base_url and provided path.

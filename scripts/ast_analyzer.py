@@ -230,97 +230,82 @@ class ASTAnalyzer:
             self.analyze_file(file_path)
             print(" ✓")
 
+    def _format_section_header(self, title: str, items: list) -> list[str]:
+        """Format section header with count."""
+        return [
+            f"{title.upper()} ({len(items)}):",
+            "-" * 80,
+        ]
+
+    def _format_item_details(
+        self, item: UnusedItem, *, include_context: bool = False
+    ) -> list[str]:
+        """Format item details."""
+        lines = [
+            f"  {item.file_path}:{item.line_number}",
+            f"    Name: {item.name}",
+        ]
+        if include_context:
+            lines.append(f"    Context: {item.context}")
+        return lines
+
+    def _format_section(
+        self, items: list[UnusedItem], title: str, *, include_context: bool = False
+    ) -> list[str]:
+        """Format a complete section."""
+        if not items:
+            return []
+        lines = self._format_section_header(title, items)
+        for item in sorted(items, key=lambda x: x.file_path):
+            lines.extend(
+                self._format_item_details(item, include_context=include_context)
+            )
+        lines.append("")
+        return lines
+
     def generate_report(self) -> str:
         """Generate formatted analysis report."""
-        lines: list[str] = []
-
-        lines.extend([
+        lines = [
             "=" * 80,
             "AST DEAD CODE ANALYSIS REPORT",
             "=" * 80,
             "",
-        ])
-
-        # Summary
-        lines.extend([
             f"Total unused items found: {self.analysis.total_items()}",
             "",
-        ])
+        ]
 
-        # Unused imports
-        if self.analysis.unused_imports:
-            lines.extend((
-                f"UNUSED IMPORTS ({len(self.analysis.unused_imports)}):",
-                "-" * 80,
-            ))
-            for item in sorted(self.analysis.unused_imports, key=lambda x: x.file_path):
-                lines.extend((
-                    f"  {item.file_path}:{item.line_number}",
-                    f"    Name: {item.name}",
-                    f"    Context: {item.context}",
-                ))
-            lines.append("")
-
-        # Unused functions
-        if self.analysis.unused_functions:
-            lines.extend((
-                f"UNUSED FUNCTIONS ({len(self.analysis.unused_functions)}):",
-                "-" * 80,
-            ))
-            for item in sorted(
-                self.analysis.unused_functions, key=lambda x: x.file_path
-            ):
-                lines.extend((
-                    f"  {item.file_path}:{item.line_number}",
-                    f"    Name: {item.name}",
-                ))
-            lines.append("")
-
-        # Unused classes
-        if self.analysis.unused_classes:
-            lines.extend((
-                f"UNUSED CLASSES ({len(self.analysis.unused_classes)}):",
-                "-" * 80,
-            ))
-            for item in sorted(self.analysis.unused_classes, key=lambda x: x.file_path):
-                lines.extend((
-                    f"  {item.file_path}:{item.line_number}",
-                    f"    Name: {item.name}",
-                ))
-            lines.append("")
-
-        # Unused variables (placeholder for future enhancement)
-        if self.analysis.unused_variables:
-            lines.extend((
-                f"UNUSED VARIABLES ({len(self.analysis.unused_variables)}):",
-                "-" * 80,
-            ))
-            for item in sorted(
-                self.analysis.unused_variables, key=lambda x: x.file_path
-            ):
-                lines.extend((
-                    f"  {item.file_path}:{item.line_number}",
-                    f"    Name: {item.name}",
-                ))
-            lines.append("")
-
-        # Unreachable code (placeholder for future enhancement)
-        if self.analysis.unreachable_code:
-            lines.extend((
-                f"UNREACHABLE CODE ({len(self.analysis.unreachable_code)}):",
-                "-" * 80,
-            ))
-            for item in sorted(
-                self.analysis.unreachable_code, key=lambda x: x.file_path
-            ):
-                lines.extend((
-                    f"  {item.file_path}:{item.line_number}",
-                    f"    Context: {item.context}",
-                ))
-            lines.append("")
+        # Add all sections
+        lines.extend(
+            self._format_section(
+                self.analysis.unused_imports, "unused imports", include_context=True
+            )
+        )
+        lines.extend(
+            self._format_section(
+                self.analysis.unused_functions,
+                "unused functions",
+                include_context=False,
+            )
+        )
+        lines.extend(
+            self._format_section(
+                self.analysis.unused_classes, "unused classes", include_context=False
+            )
+        )
+        lines.extend(
+            self._format_section(
+                self.analysis.unused_variables,
+                "unused variables",
+                include_context=False,
+            )
+        )
+        lines.extend(
+            self._format_section(
+                self.analysis.unreachable_code, "unreachable code", include_context=True
+            )
+        )
 
         lines.extend(("=" * 80, "ANALYSIS COMPLETE", "=" * 80))
-
         return "\n".join(lines)
 
     def save_report(self, output_file: Path) -> None:

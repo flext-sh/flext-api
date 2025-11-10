@@ -40,6 +40,8 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         FlextResult with error indicating not implemented
 
         """
+        # Acknowledge parameters to avoid linting warnings
+        _ = request, kwargs
         return FlextResult[dict[str, object]].fail(
             "GraphQL protocol not yet implemented (Phase 2+)"
         )

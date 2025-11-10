@@ -67,8 +67,7 @@ class ProtobufMessage:
     def deserialize(cls, _data: bytes) -> FlextResult[ProtobufMessage]:
         """Deserialize message from bytes.
 
-        Args:
-        data: Serialized message bytes
+        Note: This is a stub implementation. Parameters are unused.
 
         Returns:
         FlextResult containing message or error
@@ -182,8 +181,7 @@ class ProtobufSerializer:
     def deserialize(self, _data: bytes) -> FlextResult[ProtobufMessage]:
         """Deserialize message from bytes.
 
-        Args:
-        data: Serialized message bytes
+        Note: This is a stub implementation. Parameters are unused.
 
         Returns:
         FlextResult containing message or error
@@ -197,8 +195,7 @@ class ProtobufSerializer:
     def _validate_message(self, _message: ProtobufMessage) -> FlextResult[None]:
         """Validate message against schema.
 
-        Args:
-        message: Message to validate
+        Note: This is a stub implementation. Parameters are unused.
 
         Returns:
         FlextResult indicating validation success or failure

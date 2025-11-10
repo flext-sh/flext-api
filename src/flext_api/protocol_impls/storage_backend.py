@@ -48,6 +48,8 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
             if not key:
                 return FlextResult[None].fail("Storage key cannot be empty")
 
+            # Acknowledge timeout parameter (not implemented in this simple backend)
+            _ = timeout
             self._storage[str(key)] = value
             self.logger.debug(f"Stored data with key: {key}")
             return FlextResult[None].ok(None)
