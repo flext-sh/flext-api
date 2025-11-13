@@ -222,7 +222,7 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def validate_pagination_params(
             *, page: int, page_size: int | None, max_page_size: int
-        ) -> FlextResult[dict]:
+        ) -> FlextResult[dict[str, object]]:
             """Validate pagination parameters."""
             # If page_size is explicitly provided (not None), use it directly
             # Otherwise, use default but don't override explicit 0
@@ -249,7 +249,7 @@ class FlextApiUtilities(FlextUtilities):
             page: int,
             page_size: int,
             **_kwargs: object,
-        ) -> FlextResult[dict]:
+        ) -> FlextResult[dict[str, object]]:
             """Prepare pagination data and calculations."""
             final_data = data or []
             final_total = total if total is not None else len(final_data)
@@ -275,7 +275,7 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def build_pagination_response(
             pagination_data: dict, message: str | None = None
-        ) -> FlextResult[dict]:
+        ) -> FlextResult[dict[str, object]]:
             """Build the final pagination response."""
             response = {
                 "success": True,
