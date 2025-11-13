@@ -105,7 +105,7 @@ class FlextApiModels:
                 < FlextApiConstants.HTTP_REDIRECT_MAX
             )
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def is_client_error(self) -> bool:
             """Check if response indicates client error (4xx status code)."""
@@ -115,13 +115,13 @@ class FlextApiModels:
                 < FlextApiConstants.HTTP_CLIENT_ERROR_MAX
             )
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def is_server_error(self) -> bool:
             """Check if response indicates server error (5xx status code)."""
             return self.status_code >= FlextApiConstants.HTTP_SERVER_ERROR_MIN
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def is_error(self) -> bool:
             """Check if response indicates any error (4xx or 5xx status code)."""
@@ -138,43 +138,43 @@ class FlextApiModels:
             ..., min_length=1, max_length=2048, description="Full URL string"
         )
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def parsed(self) -> ParseResult:
             """Parse the URL."""
             return urlparse(self.url)
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def scheme(self) -> str | None:
             """Get URL scheme (http, https, etc.)."""
             return self.parsed.scheme or None
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def netloc(self) -> str | None:
             """Get network location (host:port)."""
             return self.parsed.netloc or None
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def path(self) -> str | None:
             """Get URL path."""
             return self.parsed.path or None
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def query(self) -> str | None:
             """Get URL query string."""
             return self.parsed.query or None
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def fragment(self) -> str | None:
             """Get URL fragment."""
             return self.parsed.fragment or None
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def is_valid(self) -> bool:
             """Check if URL is valid."""
@@ -201,7 +201,7 @@ class FlextApiModels:
         )
         verify_ssl: bool = Field(default=True, description="Verify SSL certificates")
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def is_configured(self) -> bool:
             """Check if configuration is valid."""
@@ -223,7 +223,7 @@ class FlextApiModels:
             default=None, ge=0, description="Total number of pages"
         )
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def has_next(self) -> bool:
             """Check if there are more pages."""
@@ -231,13 +231,13 @@ class FlextApiModels:
                 return True
             return self.page < self.total_pages
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def has_previous(self) -> bool:
             """Check if there are previous pages."""
             return self.page > 1
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def offset(self) -> int:
             """Calculate offset for database queries."""
@@ -264,7 +264,7 @@ class FlextApiModels:
             default=None, description="Associated request ID for tracking"
         )
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def is_client_error(self) -> bool:
             """Check if error is client-side (4xx)."""
@@ -274,7 +274,7 @@ class FlextApiModels:
                 < FlextApiConstants.HTTP_CLIENT_ERROR_MAX
             )
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def is_server_error(self) -> bool:
             """Check if error is server-side (5xx)."""
@@ -399,13 +399,13 @@ class FlextApiModels:
             default=None, ge=0, description="Total number of pages"
         )
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def offset(self) -> int:
             """Calculate offset from page and page_size."""
             return (self.page - 1) * self.page_size
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def has_next(self) -> bool:
             """Check if next page exists."""
@@ -413,7 +413,7 @@ class FlextApiModels:
                 return False
             return self.page < self.total_pages
 
-        @computed_field
+        @computed_field  # type: ignore[prop-decorator]
         @property
         def has_previous(self) -> bool:
             """Check if previous page exists."""
