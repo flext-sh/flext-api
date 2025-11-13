@@ -63,7 +63,6 @@ class FlextApiModels:
         )
 
         @computed_field
-        @property
         def content_type(self) -> str | None:
             """Get content type from headers."""
             return self.headers.get("Content-Type") or self.headers.get("content-type")
@@ -89,7 +88,6 @@ class FlextApiModels:
         )
 
         @computed_field
-        @property
         def is_success(self) -> bool:
             """Check if response indicates success (2xx status code)."""
             return (
@@ -99,7 +97,6 @@ class FlextApiModels:
             )
 
         @computed_field
-        @property
         def is_redirect(self) -> bool:
             """Check if response indicates redirect (3xx status code)."""
             return (

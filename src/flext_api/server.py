@@ -30,7 +30,6 @@ from flext_core import (
     FlextMixins,
     FlextResult,
     FlextService,
-    FlextTypes,
 )
 
 
@@ -67,7 +66,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             self,
             method: str,
             path: str,
-            handler: Callable,
+            handler: Callable[..., object],
             prefix: str = "",
             schema: object | None = None,
             **options: object,
@@ -110,7 +109,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             return FlextResult[None].ok(None)
 
         @property
-        def routes(self) -> FlextTypes.NestedDict:
+        def routes(self) -> dict[str, object]:
             """Get all registered routes."""
             return self._routes.copy()
 

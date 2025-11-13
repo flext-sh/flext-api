@@ -33,7 +33,6 @@ from flext_core import (
     FlextDispatcher,
     FlextResult,
     FlextService,
-    FlextTypes,
 )
 
 
@@ -98,13 +97,13 @@ class FlextWebhookHandler(FlextService[object]):
         self._retry_backoff = retry_backoff
 
         # Event handlers
-        self._event_handlers: dict[str, list[Callable]] = {}
+        self._event_handlers: dict[str, list[Callable[..., None]]] = {}
 
         # Event queue
         self._event_queue: deque[dict[str, Any]] = deque(maxlen=1000)
 
         # Delivery tracking
-        self._delivery_confirmations: FlextTypes.NestedDict = {}
+        self._delivery_confirmations: dict[str, object] = {}
 
         # Retry queue
         self._retry_queue: deque[dict[str, Any]] = deque(maxlen=500)
