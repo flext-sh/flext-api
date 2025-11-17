@@ -1,98 +1,91 @@
-"""Tests for FlextAPI HTTP operations using real API.
+"""Tests for FlextAPI HTTP operations using REAL HTTP.
 
-Tests use FlextApi directly instead of removed FlextApiOperations stub.
+ALL TESTS USE REAL HTTP REQUESTS - NO MOCKS, NO PATCHES, NO BYPASSES.
+Tests use httpbin.org for real HTTP endpoint testing.
 """
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+import pytest
 
-from flext_core import FlextResult
-
-from flext_api import FlextApi, FlextApiModels
+from flext_api import FlextApi
 
 
 class TestFlextApiHttpOperations:
-    """Test HTTP operations using FlextApi directly."""
+    """Test HTTP operations using FlextApi with REAL HTTP requests."""
 
+    @pytest.mark.network
     def test_get_request_using_api(self) -> None:
-        """Test GET request using FlextApi directly."""
+        """Test GET request using FlextApi with real HTTP."""
         api = FlextApi()
-        original_client = api._client
-        api._client = MagicMock()
-        api._client.request = MagicMock(
-            return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=200, body={"data": "test"})
-            )
-        )
+        result = api.get("https://httpbin.org/get")
 
-        try:
-            result = api.get("https://api.example.com/users")
-            assert result.is_success
-            response = result.unwrap()
-            assert response.status_code == 200
-        finally:
-            api._client = original_client
+        # If httpbin is unavailable, skip test but verify error handling works
+        if not result.is_success and (
+            "connection" in result.error.lower() or "refused" in result.error.lower()
+        ):
+            pytest.skip(f"httpbin.org unavailable: {result.error}")
 
+        assert result.is_success, f"Request failed: {result.error}"
+        response = result.unwrap()
+        assert response.status_code == 200
+        assert isinstance(response.body, dict)
+
+    @pytest.mark.network
     def test_post_request_using_api(self) -> None:
-        """Test POST request using FlextApi directly."""
+        """Test POST request using FlextApi with real HTTP."""
         api = FlextApi()
-        original_client = api._client
-        api._client = MagicMock()
-        api._client.request = MagicMock(
-            return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=201, body={"id": "123"})
-            )
+        result = api.post(
+            "https://httpbin.org/post",
+            data={"name": "John", "email": "john@example.com"},
         )
 
-        try:
-            result = api.post(
-                "https://api.example.com/users",
-                data={"name": "John", "email": "john@example.com"},
-            )
-            assert result.is_success
-            response = result.unwrap()
-            assert response.status_code == 201
-        finally:
-            api._client = original_client
+        if not result.is_success and (
+            "connection" in result.error.lower() or "refused" in result.error.lower()
+        ):
+            pytest.skip(f"httpbin.org unavailable: {result.error}")
 
+        assert result.is_success, f"Request failed: {result.error}"
+        response = result.unwrap()
+        assert response.status_code == 200
+        assert isinstance(response.body, dict)
+        # httpbin returns posted data in json field
+        posted_data = response.body.get("json", {})
+        assert posted_data.get("name") == "John"
+        assert posted_data.get("email") == "john@example.com"
+
+    @pytest.mark.network
     def test_put_request_using_api(self) -> None:
-        """Test PUT request using FlextApi directly."""
+        """Test PUT request using FlextApi with real HTTP."""
         api = FlextApi()
-        original_client = api._client
-        api._client = MagicMock()
-        api._client.request = MagicMock(
-            return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=200, body={"updated": True})
-            )
+        result = api.put(
+            "https://httpbin.org/put",
+            data={"name": "Jane", "email": "jane@example.com"},
         )
 
-        try:
-            result = api.put(
-                "https://api.example.com/users/1",
-                data={"name": "Jane", "email": "jane@example.com"},
-            )
-            assert result.is_success
-            response = result.unwrap()
-            assert response.status_code == 200
-        finally:
-            api._client = original_client
+        if not result.is_success and (
+            "connection" in result.error.lower() or "refused" in result.error.lower()
+        ):
+            pytest.skip(f"httpbin.org unavailable: {result.error}")
 
+        assert result.is_success, f"Request failed: {result.error}"
+        response = result.unwrap()
+        assert response.status_code == 200
+        assert isinstance(response.body, dict)
+
+    @pytest.mark.network
     def test_delete_request_using_api(self) -> None:
-        """Test DELETE request using FlextApi directly."""
+        """Test DELETE request using FlextApi with real HTTP."""
         api = FlextApi()
-        original_client = api._client
-        api._client = MagicMock()
-        api._client.request = MagicMock(
-            return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=204, body=None)
-            )
-        )
+        result = api.delete("https://httpbin.org/delete")
 
-        try:
-            result = api.delete("https://api.example.com/users/1")
-            assert result.is_success
-            response = result.unwrap()
-            assert response.status_code == 204
-        finally:
-            api._client = original_client
+        if not result.is_success and (
+            "connection" in result.error.lower() or "refused" in result.error.lower()
+        ):
+            pytest.skip(f"httpbin.org unavailable: {result.error}")
+
+        assert result.is_success, f"Request failed: {result.error}"
+        response = result.unwrap()
+        assert response.status_code == 200
+        # DELETE may return empty body or None
+        assert response.body is None or isinstance(response.body, dict)

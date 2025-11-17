@@ -146,6 +146,19 @@ class FlextApiStorage(FlextService[bool]):
                 return field_value
         return None
 
+    def _convert_to_int(self, value: object) -> int | None:
+        """Convert value to int or return None if conversion fails."""
+        if value is None:
+            return None
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                return None
+        return None
+
     def _normalize_config(self, config_obj: object | None) -> FlextApiTypes.StorageDict:
         """Normalize config object to dictionary."""
         if isinstance(config_obj, dict):
@@ -160,32 +173,11 @@ class FlextApiStorage(FlextService[bool]):
                 config_obj, "default_ttl"
             )
 
-            # Convert optional fields to correct types for StorageDict
-            max_size_converted: int | None = None
-            if max_size_val is not None:
-                if isinstance(max_size_val, int):
-                    max_size_converted = max_size_val
-                elif isinstance(max_size_val, str):
-                    try:
-                        max_size_converted = int(max_size_val)
-                    except ValueError:
-                        max_size_converted = None
-            
-            default_ttl_converted: int | None = None
-            if default_ttl_val is not None:
-                if isinstance(default_ttl_val, int):
-                    default_ttl_converted = default_ttl_val
-                elif isinstance(default_ttl_val, str):
-                    try:
-                        default_ttl_converted = int(default_ttl_val)
-                    except ValueError:
-                        default_ttl_converted = None
-            
             return {
                 "namespace": namespace_str,
                 "backend": backend_str,
-                "max_size": max_size_converted,
-                "default_ttl": default_ttl_converted,
+                "max_size": self._convert_to_int(max_size_val),
+                "default_ttl": self._convert_to_int(default_ttl_val),
             }
         return {}
 
@@ -201,7 +193,7 @@ class FlextApiStorage(FlextService[bool]):
             error_msg = f"Failed to extract namespace: {namespace_result.error}"
             raise ValueError(error_msg)
         self._namespace = namespace_result.unwrap()
-        
+
         max_size_result = self._extract_max_size(config_dict, max_size_val)
         if max_size_result.is_failure:
             error_msg = f"Failed to extract max_size: {max_size_result.error}"
@@ -209,7 +201,7 @@ class FlextApiStorage(FlextService[bool]):
         max_size_value = max_size_result.unwrap()
         # Convert sentinel value (-1) to None for optional max_size
         self._max_size = None if max_size_value == -1 else max_size_value
-        
+
         default_ttl_result = self._extract_default_ttl(config_dict, default_ttl_val)
         if default_ttl_result.is_failure:
             error_msg = f"Failed to extract default_ttl: {default_ttl_result.error}"
@@ -217,14 +209,16 @@ class FlextApiStorage(FlextService[bool]):
         default_ttl_value = default_ttl_result.unwrap()
         # Convert sentinel value (-1) to None for optional default_ttl
         self._default_ttl = None if default_ttl_value == -1 else default_ttl_value
-        
+
         backend_result = self._extract_backend(config_dict)
         if backend_result.is_failure:
             error_msg = f"Failed to extract backend: {backend_result.error}"
             raise ValueError(error_msg)
         self._backend = backend_result.unwrap()
 
-    def _extract_namespace(self, config_dict: FlextApiTypes.StorageDict) -> FlextResult[str]:
+    def _extract_namespace(
+        self, config_dict: FlextApiTypes.StorageDict
+    ) -> FlextResult[str]:
         """Extract namespace from config with validation - uses default if not specified."""
         if "namespace" in config_dict:
             namespace_val = config_dict["namespace"]
@@ -232,7 +226,9 @@ class FlextApiStorage(FlextService[bool]):
                 if namespace_val:
                     return FlextResult[str].ok(namespace_val)
                 return FlextResult[str].fail("Namespace cannot be empty")
-            return FlextResult[str].fail(f"Invalid namespace type: {type(namespace_val)}")
+            return FlextResult[str].fail(
+                f"Invalid namespace type: {type(namespace_val)}"
+            )
         # Use default namespace (this is OK - it's a valid default, not a fallback)
         return FlextResult[str].ok("flext_api")
 
@@ -240,7 +236,7 @@ class FlextApiStorage(FlextService[bool]):
         self, config_dict: FlextApiTypes.StorageDict, max_size_val: object | None
     ) -> FlextResult[int]:
         """Extract max_size preferring parameter over config - no fallbacks.
-        
+
         Returns FlextResult[int] with a sentinel value (-1) when max_size is not specified.
         The caller should check for -1 to determine if max_size was not set.
         """
@@ -249,7 +245,9 @@ class FlextApiStorage(FlextService[bool]):
                 max_size_int = int(str(max_size_val))
                 if max_size_int > 0:
                     return FlextResult[int].ok(max_size_int)
-                return FlextResult[int].fail(f"Max size must be positive, got: {max_size_int}")
+                return FlextResult[int].fail(
+                    f"Max size must be positive, got: {max_size_int}"
+                )
             except (ValueError, TypeError) as e:
                 return FlextResult[int].fail(f"Invalid max_size value: {e}")
         if "max_size" in config_dict:
@@ -259,7 +257,9 @@ class FlextApiStorage(FlextService[bool]):
                     max_size_int = int(str(max_size_config))
                     if max_size_int > 0:
                         return FlextResult[int].ok(max_size_int)
-                    return FlextResult[int].fail(f"Max size must be positive, got: {max_size_int}")
+                    return FlextResult[int].fail(
+                        f"Max size must be positive, got: {max_size_int}"
+                    )
                 except (ValueError, TypeError) as e:
                     return FlextResult[int].fail(f"Invalid max_size value: {e}")
         # Return sentinel value (-1) when max_size is not specified (not a fallback - max_size is optional)
@@ -269,7 +269,7 @@ class FlextApiStorage(FlextService[bool]):
         self, config_dict: FlextApiTypes.StorageDict, default_ttl_val: object | None
     ) -> FlextResult[int]:
         """Extract default_ttl preferring parameter over config - no fallbacks.
-        
+
         Returns FlextResult[int] with a sentinel value (-1) when default_ttl is not specified.
         The caller should check for -1 to determine if default_ttl was not set.
         """
@@ -278,7 +278,9 @@ class FlextApiStorage(FlextService[bool]):
                 ttl_int = int(str(default_ttl_val))
                 if ttl_int > 0:
                     return FlextResult[int].ok(ttl_int)
-                return FlextResult[int].fail(f"Default TTL must be positive, got: {ttl_int}")
+                return FlextResult[int].fail(
+                    f"Default TTL must be positive, got: {ttl_int}"
+                )
             except (ValueError, TypeError) as e:
                 return FlextResult[int].fail(f"Invalid default_ttl value: {e}")
         if "default_ttl" in config_dict:
@@ -288,13 +290,17 @@ class FlextApiStorage(FlextService[bool]):
                     ttl_int = int(str(default_ttl_config))
                     if ttl_int > 0:
                         return FlextResult[int].ok(ttl_int)
-                    return FlextResult[int].fail(f"Default TTL must be positive, got: {ttl_int}")
+                    return FlextResult[int].fail(
+                        f"Default TTL must be positive, got: {ttl_int}"
+                    )
                 except (ValueError, TypeError) as e:
                     return FlextResult[int].fail(f"Invalid default_ttl value: {e}")
         # Return sentinel value (-1) when default_ttl is not specified (not a fallback - default_ttl is optional)
         return FlextResult[int].ok(-1)
 
-    def _extract_backend(self, config_dict: FlextApiTypes.StorageDict) -> FlextResult[str]:
+    def _extract_backend(
+        self, config_dict: FlextApiTypes.StorageDict
+    ) -> FlextResult[str]:
         """Extract backend from config with validation - uses default if not specified."""
         if "backend" in config_dict:
             backend_val = config_dict["backend"]

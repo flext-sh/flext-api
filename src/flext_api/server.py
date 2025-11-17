@@ -23,8 +23,6 @@ from typing import Any
 
 from fastapi import FastAPI
 from flext_core import (
-    FlextConstants,
-    FlextDecorators,
     FlextExceptions,
     FlextLogger,
     FlextMixins,
@@ -415,9 +413,9 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
 
         return FlextResult[bool].ok(True)
 
-    def execute(self) -> FlextResult[bool]:
+    def execute(self) -> FlextResult[object]:
         """Execute server service (required by FlextService)."""
-        return FlextResult[bool].ok(True)
+        return FlextResult[object].ok(True)
 
     def register_protocol_handler(
         self,
@@ -544,6 +542,11 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         app = self._lifecycle_manager.app
         if not app:
             msg = "Application not created. Call start() first."
+            return FlextResult[FastAPI].fail(msg)
+
+        # Type check to ensure app is FastAPI instance
+        if not isinstance(app, FastAPI):
+            msg = f"Application is not FastAPI instance, got {type(app)}"
             return FlextResult[FastAPI].fail(msg)
 
         return FlextResult[FastAPI].ok(app)
