@@ -20,12 +20,13 @@ from typing import Any
 import httpx
 from flext_core import FlextResult
 
+from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
-from flext_api.plugins import ProtocolPlugin
+from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 from flext_api.transports import FlextApiTransports
 
 
-class FlextWebProtocolPlugin(ProtocolPlugin):
+class FlextWebProtocolPlugin(RFCProtocolImplementation):
     """HTTP protocol implementation with HTTP/1.1, HTTP/2, and HTTP/3 support.
 
     Features:
@@ -54,8 +55,8 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
         http2: bool = True,
         http3: bool = False,
         max_connections: int = 100,
-        max_retries: int = 3,
-        retry_backoff_factor: float = 0.5,
+        max_retries: int | None = None,
+        retry_backoff_factor: float | None = None,
         follow_redirects: bool = True,
         max_redirects: int = 20,
     ) -> None:
@@ -68,13 +69,28 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
 
         self._http2 = http2
         self._http3 = http3
-        self._max_retries = max_retries
-        self._retry_backoff_factor = retry_backoff_factor
+        self._max_retries = (
+            max_retries
+            if max_retries is not None
+            else int(FlextApiConstants.DEFAULT_MAX_RETRIES)
+        )
+        self._retry_backoff_factor = (
+            retry_backoff_factor
+            if retry_backoff_factor is not None
+            else FlextApiConstants.BACKOFF_FACTOR
+        )
         self._follow_redirects = follow_redirects
         self._max_redirects = max_redirects
 
         # Create HTTP transport with configuration
         self._transport = FlextApiTransports.FlextWebTransport()
+
+        # Initialize protocol
+        init_result = self.initialize()
+        if init_result.is_failure:
+            self.logger.error(
+                f"Failed to initialize HTTP protocol: {init_result.error}"
+            )
 
         self.logger.info(
             "HTTP protocol initialized",
@@ -82,9 +98,49 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
                 "http2": http2,
                 "http3": http3,
                 "max_connections": max_connections,
-                "max_retries": max_retries,
+                "max_retries": self._max_retries,
             },
         )
+
+    def _build_http_request_from_dict(
+        self, request: dict[str, object]
+    ) -> FlextResult[FlextApiModels.HttpRequest]:
+        """Build HttpRequest from dictionary using RFC methods."""
+        # Validate request using base class method
+        validation_result = self._validate_request(request)
+        if validation_result.is_failure:
+            return FlextResult[FlextApiModels.HttpRequest].fail(validation_result.error)
+
+        # Extract method using RFC method
+        method_result = self._extract_method(request)
+        if method_result.is_failure:
+            return FlextResult[FlextApiModels.HttpRequest].fail(method_result.error)
+        method_str = method_result.unwrap()
+
+        # Extract URL using RFC method
+        url_result = self._extract_url(request)
+        if url_result.is_failure:
+            return FlextResult[FlextApiModels.HttpRequest].fail(url_result.error)
+        url = url_result.unwrap()
+
+        # Extract headers using RFC method
+        headers = self._extract_headers(request)
+
+        # Extract body using RFC method
+        body = self._extract_body(request)
+
+        # Extract timeout using RFC method
+        timeout_value = self._extract_timeout(request)
+
+        http_request = FlextApiModels.HttpRequest(
+            method=method_str,
+            url=url,
+            headers=headers,
+            body=body,
+            timeout=timeout_value,
+        )
+
+        return FlextResult[FlextApiModels.HttpRequest].ok(http_request)
 
     def send_request(
         self,
@@ -92,22 +148,20 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
         **kwargs: object,
     ) -> FlextResult[dict[str, object]]:
         """Send HTTP request with retry logic and error handling."""
-        # Convert to HTTP request model for type safety
-        if not isinstance(request, dict):
-            return FlextResult[dict[str, object]].fail("Invalid request format")
+        # Build HTTP request model
+        request_result = self._build_http_request_from_dict(request)
+        if request_result.is_failure:
+            return FlextResult[dict[str, object]].fail(request_result.error)
 
-        http_request = FlextApiModels.HttpRequest(
-            method=request.get("method", "GET"),
-            url=request.get("url", ""),
-            headers=request.get("headers", {}),
-            body=request.get("body"),
-            timeout=request.get("timeout", 30.0),
-        )
+        http_request = request_result.unwrap()
 
         # Extract request parameters
         method = http_request.method.upper()
         url = str(http_request.url)
-        headers = dict[str, Any](http_request.headers) if http_request.headers else {}
+        headers_result = self._extract_headers_from_model(http_request)
+        if headers_result.is_failure:
+            return FlextResult[dict[str, Any]].fail(headers_result.error)
+        headers = headers_result.unwrap()
         timeout = http_request.timeout
         body = http_request.body
 
@@ -154,7 +208,7 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
         body: object | None,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP request with retry logic."""
-        last_error = None
+        last_error = "Unknown error"
 
         for attempt in range(self._max_retries + 1):
             try:
@@ -163,13 +217,13 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
                 )
                 response = connection.request(**request_kwargs)
 
-                http_client_error_min = 400
-                if response.status_code < http_client_error_min:  # Success codes
+                # Use RFC method to check if success
+                if self._is_success_status(response.status_code):
                     return self._build_response(response, method)
 
-                if (
-                    response.status_code >= http_client_error_min
-                    and not self._should_retry(response.status_code, attempt)
+                # Check if should retry using RFC method
+                if not self._should_retry(
+                    response.status_code, attempt, self._max_retries
                 ):
                     return FlextResult[FlextApiModels.HttpResponse].fail(
                         f"HTTP {response.status_code}: {response.text}"
@@ -187,16 +241,18 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
                     f"Network error (attempt {attempt + 1}/{self._max_retries + 1})",
                     extra={"url": url, "method": method, "attempt": attempt + 1},
                 )
-            except httpx.HTTPError:
-                return FlextResult[FlextApiModels.HttpResponse].fail(
-                    f"HTTP error after {attempt + 1} attempts"
+            except httpx.HTTPError as e:
+                last_error = f"HTTP error: {e}"
+                self.logger.warning(
+                    f"HTTP error (attempt {attempt + 1}/{self._max_retries + 1})",
+                    extra={"url": url, "method": method, "attempt": attempt + 1},
                 )
             except Exception as e:
                 last_error = f"Unexpected error: {e}"
                 self.logger.exception(
                     "Unexpected error", extra={"url": url, "method": method}
                 )
-                break
+                return FlextResult[FlextApiModels.HttpResponse].fail(last_error)
 
             if attempt < self._max_retries:
                 backoff_time = self._retry_backoff_factor * (2**attempt)
@@ -205,6 +261,16 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
         return FlextResult[FlextApiModels.HttpResponse].fail(
             f"Request failed after {self._max_retries + 1} attempts: {last_error}"
         )
+
+    def _extract_headers_from_model(
+        self, request: FlextApiModels.HttpRequest
+    ) -> FlextResult[dict[str, Any]]:
+        """Extract headers from HttpRequest model without fallback."""
+        if request.headers is None:
+            return FlextResult[dict[str, Any]].fail("Headers cannot be None")
+        if not isinstance(request.headers, dict):
+            return FlextResult[dict[str, Any]].fail("Headers must be a dictionary")
+        return FlextResult[dict[str, Any]].ok(dict(request.headers))
 
     def _build_request_kwargs(
         self,
@@ -225,10 +291,12 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
         }
 
         if body is not None:
-            content_type = str(headers.get("Content-Type", "")).lower()
+            # Use RFC method to get content type
+            content_type = self._get_content_type(headers)
+
             if (
                 isinstance(body, dict)
-                and "application/x-www-form-urlencoded" in content_type
+                and FlextApiConstants.ContentType.FORM in content_type
             ):
                 request_kwargs["data"] = body
             elif isinstance(body, dict):
@@ -260,27 +328,19 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
                 f"Failed to build response: {e}"
             )
 
-    def _should_retry(self, status_code: int, attempt: int) -> bool:
-        """Check if request should be retried based on status code."""
-        if attempt >= self._max_retries:
-            return False
-
-        retryable_codes = {408, 429, 500, 502, 503, 504}
-        return status_code in retryable_codes
-
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol."""
-        supported = ["http", "https", "http/1.1", "http/2"]
         if self._http3:
-            supported.append("http/3")
+            supported = FlextApiConstants.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3
+        else:
+            supported = FlextApiConstants.HTTP.SUPPORTED_PROTOCOLS
         return protocol.lower() in supported
 
     def get_supported_protocols(self) -> list[str]:
         """Get list of supported protocols."""
-        protocols = ["http", "https", "http/1.1", "http/2"]
         if self._http3:
-            protocols.append("http/3")
-        return protocols
+            return FlextApiConstants.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3.copy()
+        return FlextApiConstants.HTTP.SUPPORTED_PROTOCOLS.copy()
 
     def stream_request(
         self,
@@ -303,17 +363,16 @@ class FlextWebProtocolPlugin(ProtocolPlugin):
 
     def get_protocol_info(self) -> dict[str, Any]:
         """Get protocol configuration information."""
-        return {
-            "name": self.name,
-            "version": self.version,
+        base_info = super().get_protocol_info()
+        base_info.update({
             "http2_enabled": self._http2,
             "http3_enabled": self._http3,
             "max_retries": self._max_retries,
             "retry_backoff_factor": self._retry_backoff_factor,
             "follow_redirects": self._follow_redirects,
             "max_redirects": self._max_redirects,
-            "supported_protocols": self.get_supported_protocols(),
-        }
+        })
+        return base_info
 
 
 __all__ = ["FlextWebProtocolPlugin"]

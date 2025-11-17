@@ -16,6 +16,8 @@ from typing import Protocol
 import httpx
 from flext_core import FlextResult
 
+from flext_api.constants import FlextApiConstants
+
 
 class TransportPlugin(Protocol):
     """Protocol for transport plugins."""
@@ -24,7 +26,7 @@ class TransportPlugin(Protocol):
         """Connect to endpoint."""
         ...
 
-    def disconnect(self, connection: object) -> FlextResult[None]:
+    def disconnect(self, connection: object) -> FlextResult[bool]:
         """Disconnect from endpoint."""
         ...
 
@@ -62,15 +64,60 @@ class FlextApiTransports:
             except Exception as e:
                 return FlextResult[object].fail(f"HTTP connect failed: {e}")
 
-        def disconnect(self, connection: object) -> FlextResult[None]:
+        def disconnect(self, connection: object) -> FlextResult[bool]:
             """Disconnect HTTP connection."""
             try:
                 if isinstance(connection, httpx.Client):
                     connection.close()
                 self._client = None
-                return FlextResult[None].ok(None)
+                return FlextResult[bool].ok(True)
             except Exception as e:
-                return FlextResult[None].fail(f"HTTP disconnect failed: {e}")
+                return FlextResult[bool].fail(f"HTTP disconnect failed: {e}")
+
+        def _extract_request_params(
+            self, data: dict[str, object]
+        ) -> FlextResult[tuple[str, str, dict[str, str], object, object, object]]:
+            """Extract and validate request parameters from data."""
+            method_str = FlextApiConstants.Method.GET
+            if "method" in data:
+                method_value = data["method"]
+                if isinstance(method_value, str):
+                    method_str = method_value
+
+            if "url" not in data:
+                return FlextResult[
+                    tuple[str, str, dict[str, str], object, object, object]
+                ].fail("URL is required for HTTP request")
+
+            url_value = data["url"]
+            if not isinstance(url_value, str) or not url_value:
+                return FlextResult[
+                    tuple[str, str, dict[str, str], object, object, object]
+                ].fail("URL must be a non-empty string")
+
+            url: str = url_value
+
+            headers: dict[str, str] = {}
+            if "headers" in data:
+                headers_value = data["headers"]
+                if isinstance(headers_value, dict):
+                    headers = headers_value
+
+            params = None
+            if "params" in data:
+                params = data["params"]
+
+            json_data = None
+            if "json" in data:
+                json_data = data["json"]
+
+            content = None
+            if "content" in data:
+                content = data["content"]
+
+            return FlextResult[
+                tuple[str, str, dict[str, str], object, object, object]
+            ].ok((method_str, url, headers, params, json_data, content))
 
         def send(self, connection: object, data: object) -> FlextResult[object]:
             """Send HTTP request."""
@@ -83,20 +130,17 @@ class FlextApiTransports:
                 if not isinstance(data, dict):
                     return FlextResult[object].fail("HTTP send data must be a dict")
 
-                # Extract request parameters from data
-                method = data.get("method", "GET")
-                url = data.get("url", "")
-                headers = data.get("headers", {})
-                params = data.get("params")
-                json_data = data.get("json")
-                content = data.get("content")
+                params_result = self._extract_request_params(data)
+                if params_result.is_failure:
+                    return FlextResult[object].fail(params_result.error)
 
-                if not url:
-                    return FlextResult[object].fail("URL is required for HTTP request")
+                method_str, url, headers, params, json_data, content = (
+                    params_result.unwrap()
+                )
 
                 # Make the request
                 response = connection.request(
-                    method=method,
+                    method=method_str,
                     url=url,
                     headers=headers,
                     params=params,
@@ -129,12 +173,12 @@ class FlextApiTransports:
                 "WebSocket transport not implemented (Phase 3)"
             )
 
-        def disconnect(self, connection: object) -> FlextResult[None]:
+        def disconnect(self, connection: object) -> FlextResult[bool]:
             """Disconnect WebSocket."""
             # Parameter validation for future implementation
             if connection is None:
-                return FlextResult[None].fail("Connection object is required")
-            return FlextResult[None].fail(
+                return FlextResult[bool].fail("Connection object is required")
+            return FlextResult[bool].fail(
                 "WebSocket transport not implemented (Phase 3)"
             )
 
@@ -161,12 +205,12 @@ class FlextApiTransports:
             _ = _options  # Reserved for future use
             return FlextResult[object].fail("SSE transport not implemented (Phase 3)")
 
-        def disconnect(self, connection: object) -> FlextResult[None]:
+        def disconnect(self, connection: object) -> FlextResult[bool]:
             """Disconnect SSE."""
             # Parameter validation for future implementation
             if connection is None:
-                return FlextResult[None].fail("Connection object is required")
-            return FlextResult[None].fail("SSE transport not implemented (Phase 3)")
+                return FlextResult[bool].fail("Connection object is required")
+            return FlextResult[bool].fail("SSE transport not implemented (Phase 3)")
 
         def send(self, connection: object, data: object) -> FlextResult[object]:
             """Send SSE data."""
@@ -191,12 +235,12 @@ class FlextApiTransports:
                 "GraphQL transport not implemented (Phase 3)"
             )
 
-        def disconnect(self, connection: object) -> FlextResult[None]:
+        def disconnect(self, connection: object) -> FlextResult[bool]:
             """Disconnect GraphQL."""
             # Parameter validation for future implementation
             if connection is None:
-                return FlextResult[None].fail("Connection object is required")
-            return FlextResult[None].fail("GraphQL transport not implemented (Phase 3)")
+                return FlextResult[bool].fail("Connection object is required")
+            return FlextResult[bool].fail("GraphQL transport not implemented (Phase 3)")
 
         def send(self, connection: object, data: object) -> FlextResult[object]:
             """Send GraphQL query."""
@@ -220,12 +264,12 @@ class FlextApiTransports:
             # options parameter is used for future gRPC connection options
             return FlextResult[object].fail("gRPC transport not implemented (Phase 3)")
 
-        def disconnect(self, connection: object) -> FlextResult[None]:
+        def disconnect(self, connection: object) -> FlextResult[bool]:
             """Disconnect gRPC."""
             # Parameter validation for future implementation
             if connection is None:
-                return FlextResult[None].fail("Connection object is required")
-            return FlextResult[None].fail("gRPC transport not implemented (Phase 3)")
+                return FlextResult[bool].fail("Connection object is required")
+            return FlextResult[bool].fail("gRPC transport not implemented (Phase 3)")
 
         def send(self, connection: object, data: object) -> FlextResult[object]:
             """Send gRPC request."""

@@ -29,25 +29,33 @@ class FlextApiPlugins:
             self.name = name
             self.version = version
             self.description = description
-            self.logger = FlextLogger(f"{__name__}.{name}")
+            # Set logger only if not already a property (from FlextMixins via FlextService)
+            # Use object.__setattr__ to bypass property if it exists
+            try:
+                object.__setattr__(self, "logger", FlextLogger(f"{__name__}.{name}"))
+            except (AttributeError, TypeError):
+                # Logger is a property, use _plugin_logger instead
+                object.__setattr__(
+                    self, "_plugin_logger", FlextLogger(f"{__name__}.{name}")
+                )
             self._initialized = False
 
-        def initialize(self) -> FlextResult[None]:
+        def initialize(self) -> FlextResult[bool]:
             """Initialize plugin resources."""
             if self._initialized:
                 msg = f"Plugin '{self.name}' already initialized"
-                return FlextResult[None].fail(msg)
+                return FlextResult[bool].fail(msg)
             self.logger.debug(f"Initializing plugin: {self.name}")
             self._initialized = True
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
-        def shutdown(self) -> FlextResult[None]:
+        def shutdown(self) -> FlextResult[bool]:
             """Shutdown plugin and release resources."""
             if not self._initialized:
-                return FlextResult[None].fail(f"Plugin '{self.name}' not initialized")
+                return FlextResult[bool].fail(f"Plugin '{self.name}' not initialized")
             self.logger.debug(f"Shutting down plugin: {self.name}")
             self._initialized = False
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
         @property
         def is_initialized(self) -> bool:
@@ -199,23 +207,23 @@ class FlextApiPlugins:
             self.logger = FlextLogger(__name__)
             self._loaded_plugins: dict[str, FlextApiPlugins.Plugin] = {}
 
-        def load_plugin(self, plugin: FlextApiPlugins.Plugin) -> FlextResult[None]:
+        def load_plugin(self, plugin: FlextApiPlugins.Plugin) -> FlextResult[bool]:
             """Load and initialize a plugin."""
             if plugin.name in self._loaded_plugins:
-                return FlextResult[None].fail(f"Plugin '{plugin.name}' already loaded")
+                return FlextResult[bool].fail(f"Plugin '{plugin.name}' already loaded")
             init_result = plugin.initialize()
             if init_result.is_failure:
-                return FlextResult[None].fail(
+                return FlextResult[bool].fail(
                     f"Failed to initialize plugin '{plugin.name}': {init_result.error}"
                 )
             self._loaded_plugins[plugin.name] = plugin
             self.logger.info(f"Loaded plugin: {plugin.name} v{plugin.version}")
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
-        def unload_plugin(self, plugin_name: str) -> FlextResult[None]:
+        def unload_plugin(self, plugin_name: str) -> FlextResult[bool]:
             """Unload and shutdown a plugin."""
             if plugin_name not in self._loaded_plugins:
-                return FlextResult[None].fail(f"Plugin '{plugin_name}' not loaded")
+                return FlextResult[bool].fail(f"Plugin '{plugin_name}' not loaded")
             plugin = self._loaded_plugins[plugin_name]
             shutdown_result = plugin.shutdown()
             if shutdown_result.is_failure:
@@ -225,7 +233,7 @@ class FlextApiPlugins:
                 )
             del self._loaded_plugins[plugin_name]
             self.logger.info(f"Unloaded plugin: {plugin_name}")
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
         def get_plugin(self, plugin_name: str) -> FlextResult[FlextApiPlugins.Plugin]:
             """Get loaded plugin by name."""
@@ -251,7 +259,7 @@ class FlextApiPlugins:
                 if isinstance(plugin, plugin_type)
             ]
 
-        def shutdown_all(self) -> FlextResult[None]:
+        def shutdown_all(self) -> FlextResult[bool]:
             """Shutdown and unload all plugins."""
             failed_plugins: list[str] = []
             for plugin_name in list(self._loaded_plugins.keys()):
@@ -259,26 +267,21 @@ class FlextApiPlugins:
                 if result.is_failure:
                     failed_plugins.append(plugin_name)
             if failed_plugins:
-                return FlextResult[None].fail(
+                return FlextResult[bool].fail(
                     f"Failed to unload plugins: {', '.join(failed_plugins)}"
                 )
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
 
-# Backward compatibility exports (type aliases for convenience)
-BasePlugin = FlextApiPlugins.Plugin
-ProtocolPlugin = FlextApiPlugins.Protocol
-SchemaPlugin = FlextApiPlugins.Schema
-TransportPlugin = FlextApiPlugins.Transport
-AuthenticationPlugin = FlextApiPlugins.Authentication
-PluginManager = FlextApiPlugins.Manager
+# Note: Compatibility aliases removed - use FlextApiPlugins.* directly
+# Previous aliases (removed):
+# - BasePlugin -> FlextApiPlugins.Plugin
+# - ProtocolPlugin -> FlextApiPlugins.Protocol
+# - SchemaPlugin -> FlextApiPlugins.Schema
+# - TransportPlugin -> FlextApiPlugins.Transport
+# - AuthenticationPlugin -> FlextApiPlugins.Authentication
+# - PluginManager -> FlextApiPlugins.Manager
 
 __all__ = [
-    "AuthenticationPlugin",
-    "BasePlugin",
     "FlextApiPlugins",
-    "PluginManager",
-    "ProtocolPlugin",
-    "SchemaPlugin",
-    "TransportPlugin",
 ]

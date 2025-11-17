@@ -47,9 +47,20 @@ class ProtobufMessage:
 
         """
         self.logger = FlextLogger(__name__)
-        self._data = data or {}
+        self._data: dict[str, Any] = {}
+        if data is not None:
+            self._data = data
 
         self.logger.debug("Protobuf message stub created (placeholder)")
+
+    def get_data(self) -> dict[str, Any]:
+        """Get message data.
+
+        Returns:
+        Dictionary with message data
+
+        """
+        return self._data
 
     def serialize(self) -> FlextResult[bytes]:
         """Serialize message to bytes.
@@ -78,15 +89,6 @@ class ProtobufMessage:
         return FlextResult[ProtobufMessage].fail(
             "Protobuf stub placeholder - awaiting flext-grpc integration"
         )
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert message to dictionary.
-
-        Returns:
-        Dictionary representation
-
-        """
-        return self._data
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ProtobufMessage:
@@ -153,7 +155,9 @@ class ProtobufSerializer:
 
         """
         self.logger = FlextLogger(__name__)
-        self._schema = schema or {}
+        self._schema: dict[str, Any] = {}
+        if schema is not None:
+            self._schema = schema
 
         self.logger.info("Protobuf serializer stub created (placeholder)")
 
@@ -192,7 +196,7 @@ class ProtobufSerializer:
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def _validate_message(self, _message: ProtobufMessage) -> FlextResult[None]:
+    def _validate_message(self, _message: ProtobufMessage) -> FlextResult[bool]:
         """Validate message against schema.
 
         Note: This is a stub implementation. Parameters are unused.
@@ -203,10 +207,10 @@ class ProtobufSerializer:
         """
         if not self._schema:
             self.logger.warning("No schema defined for validation")
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
         # Schema validation would happen here with flext-grpc
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     @property
     def content_type(self) -> str:
@@ -280,7 +284,7 @@ class ProtobufField:
         """Check if field is repeated."""
         return self._repeated
 
-    def validate(self, value: object) -> FlextResult[None]:
+    def validate(self, value: object) -> FlextResult[bool]:
         """Validate field value.
 
         Args:
@@ -292,20 +296,20 @@ class ProtobufField:
         """
         # Required check (do this first, before type checking)
         if self._required and value is None:
-            return FlextResult[None].fail(f"Required field {self._name} is missing")
+            return FlextResult[bool].fail(f"Required field {self._name} is missing")
 
         # Repeated check (do this before type checking for repeated fields)
         if self._repeated and not isinstance(value, list):
-            return FlextResult[None].fail(f"Repeated field {self._name} must be a list")
+            return FlextResult[bool].fail(f"Repeated field {self._name} must be a list")
 
         # Type checking (do this last, after repeated/required checks)
         if not isinstance(value, self._field_type) and value is not None:
-            return FlextResult[None].fail(
+            return FlextResult[bool].fail(
                 f"Field {self._name} expects {self._field_type.__name__}, "
                 f"got {type(value).__name__}"
             )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
 
 class ProtobufSchema:
@@ -337,7 +341,7 @@ class ProtobufSchema:
             extra={"schema_name": name},
         )
 
-    def add_field(self, field: ProtobufField) -> FlextResult[None]:
+    def add_field(self, field: ProtobufField) -> FlextResult[bool]:
         """Add field to schema.
 
         Args:
@@ -348,7 +352,7 @@ class ProtobufSchema:
 
         """
         if field.name in self._fields:
-            return FlextResult[None].fail(f"Field {field.name} already exists")
+            return FlextResult[bool].fail(f"Field {field.name} already exists")
 
         self._fields[field.name] = field
 
@@ -357,9 +361,9 @@ class ProtobufSchema:
             extra={"field": field.name},
         )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
-    def validate_message(self, message: ProtobufMessage) -> FlextResult[None]:
+    def validate_message(self, message: ProtobufMessage) -> FlextResult[bool]:
         """Validate message against schema.
 
         Args:
@@ -369,17 +373,24 @@ class ProtobufSchema:
         FlextResult indicating validation success or failure
 
         """
-        data = message.to_dict()
+        # Access message data using public method
+        if not isinstance(message, ProtobufMessage):
+            return FlextResult[bool].fail("Message must be a ProtobufMessage instance")
+
+        # Access data using public method
+        message_data = message.get_data()
+        if not isinstance(message_data, dict):
+            return FlextResult[bool].fail("Message data must be a dictionary")
 
         # Validate each field
         for field_name, field in self._fields.items():
-            value = data.get(field_name)
+            value = message_data.get(field_name)
             validation_result = field.validate(value)
 
             if validation_result.is_failure:
                 return validation_result
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     @property
     def name(self) -> str:

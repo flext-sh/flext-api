@@ -11,10 +11,11 @@ from __future__ import annotations
 
 from flext_core import FlextResult
 
-from flext_api.plugins import ProtocolPlugin
+from flext_api.constants import FlextApiConstants
+from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
 
-class GraphQLProtocolPlugin(ProtocolPlugin):
+class GraphQLProtocolPlugin(RFCProtocolImplementation):
     """GraphQL protocol plugin stub (to be implemented in Phase 2+)."""
 
     def __init__(self) -> None:
@@ -24,6 +25,13 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
             version="1.0.0",
             description="GraphQL protocol plugin (stub)",
         )
+
+        # Initialize protocol
+        init_result = self.initialize()
+        if init_result.is_failure:
+            self.logger.error(
+                f"Failed to initialize GraphQL protocol: {init_result.error}"
+            )
 
     def send_request(
         self,
@@ -40,8 +48,13 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         FlextResult with error indicating not implemented
 
         """
-        # Acknowledge parameters to avoid linting warnings
-        _ = request, kwargs
+        # Validate request using base class method
+        validation_result = self._validate_request(request)
+        if validation_result.is_failure:
+            return FlextResult[dict[str, object]].fail(validation_result.error)
+
+        # Acknowledge kwargs to avoid linting warnings
+        _ = kwargs
         return FlextResult[dict[str, object]].fail(
             "GraphQL protocol not yet implemented (Phase 2+)"
         )
@@ -56,7 +69,11 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         True if protocol is supported
 
         """
-        return protocol.lower() in {"graphql", "gql"}
+        protocol_lower = protocol.lower()
+        return protocol_lower in {
+            FlextApiConstants.GraphQL.PROTOCOL_GRAPHQL,
+            FlextApiConstants.GraphQL.PROTOCOL_GQL,
+        }
 
     def get_supported_protocols(self) -> list[str]:
         """Get list of supported protocols.
@@ -65,7 +82,10 @@ class GraphQLProtocolPlugin(ProtocolPlugin):
         List of supported protocol identifiers
 
         """
-        return ["graphql", "gql"]
+        return [
+            FlextApiConstants.GraphQL.PROTOCOL_GRAPHQL,
+            FlextApiConstants.GraphQL.PROTOCOL_GQL,
+        ]
 
 
 __all__ = ["GraphQLProtocolPlugin"]

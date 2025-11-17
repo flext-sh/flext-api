@@ -96,7 +96,7 @@ FLEXT ECOSYSTEM INTEGRATION:
    - FlextApiClient - HTTP client implementation
    - FlextApiApp - FastAPI application factory
    - FlextApiLifecycleManager - Resource lifecycle
-   - FlextApiOperations - HTTP operations
+   - (FlextApiOperations removed - use FlextApi or FlextApiClient directly)
    - FlextApiStorage - Storage abstraction
    - FlextApiAdapters - Protocol adapters
 
@@ -124,9 +124,10 @@ from flext_api.app import FlextApiApp
 from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig
 from flext_api.config_manager import FlextApiConfigManager
-from flext_api.constants import FlextApiConstants
+from flext_api.constants import FlextApiConstants, Unit
 from flext_api.exceptions import HttpError
-from flext_api.http_operations import FlextApiOperations
+
+# FlextApiOperations removed - use FlextApi or FlextApiClient directly
 from flext_api.lifecycle_manager import FlextApiLifecycleManager
 from flext_api.models import FlextApiModels
 from flext_api.protocols import FlextApiProtocols
@@ -145,13 +146,13 @@ __all__ = [
     "FlextApiConstants",
     "FlextApiLifecycleManager",
     "FlextApiModels",
-    "FlextApiOperations",
     "FlextApiProtocols",
     "FlextApiServerFactory",
     "FlextApiStorage",
     "FlextApiTypes",
     "FlextApiUtilities",
     "HttpError",
+    "Unit",
     "__version__",
     "__version_info__",
 ]

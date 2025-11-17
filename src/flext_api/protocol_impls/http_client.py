@@ -12,6 +12,7 @@ from typing import Any, Self
 import httpx
 from flext_core import FlextLogger, FlextResult
 
+from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
 from flext_api.protocols import FlextApiProtocols
 
@@ -39,8 +40,10 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
                 pool=client_config.timeout,
             ),
             limits=httpx.Limits(
-                max_connections=100,  # Connection pooling
-                max_keepalive_connections=20,
+                max_connections=FlextApiConstants.HTTPClient.DEFAULT_MAX_CONNECTIONS,
+                max_keepalive_connections=(
+                    FlextApiConstants.HTTPClient.DEFAULT_MAX_KEEPALIVE_CONNECTIONS
+                ),
             ),
             follow_redirects=True,
             verify=client_config.verify_ssl,
@@ -49,23 +52,44 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
     def _prepare_request_headers(self, kwargs: dict[str, object]) -> dict[str, str]:
         """Prepare merged headers from config and request."""
         headers = dict(self._config.headers)
-        kwargs_headers = kwargs.get("headers")
-        if isinstance(kwargs_headers, dict):
-            headers.update({
-                k: v for k, v in kwargs_headers.items() if isinstance(v, str)
-            })
+        if "headers" in kwargs:
+            kwargs_headers = kwargs["headers"]
+            if isinstance(kwargs_headers, dict):
+                headers.update({
+                    k: v for k, v in kwargs_headers.items() if isinstance(v, str)
+                })
         return headers
 
     def _extract_request_data(self, kwargs: dict[str, object]) -> dict[str, Any]:
         """Extract and type request data parameters."""
+        params = None
+        if "params" in kwargs:
+            params_value = kwargs["params"]
+            if isinstance(params_value, dict):
+                params = params_value
+
+        json_data = None
+        if "json" in kwargs:
+            json_data = kwargs["json"]
+
+        content = None
+        if "content" in kwargs:
+            content = kwargs["content"]
+
+        data = None
+        if "data" in kwargs:
+            data = kwargs["data"]
+
+        files = None
+        if "files" in kwargs:
+            files = kwargs["files"]
+
         return {
-            "params": kwargs.get("params")
-            if isinstance(kwargs.get("params"), dict)
-            else None,
-            "json": kwargs.get("json"),
-            "content": kwargs.get("content"),
-            "data": kwargs.get("data"),
-            "files": kwargs.get("files"),
+            "params": params,
+            "json": json_data,
+            "content": content,
+            "data": data,
+            "files": files,
         }
 
     def _create_response_from_httpx(
@@ -106,7 +130,13 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute an HTTP request conforming to protocol."""
         try:
-            full_url = self._build_full_url(url)
+            full_url_result = self._build_full_url(url)
+            if full_url_result.is_failure:
+                return FlextResult[FlextApiModels.HttpResponse].fail(
+                    full_url_result.error
+                )
+            full_url = full_url_result.unwrap()
+
             headers = self._prepare_request_headers(kwargs)
             request_data = self._extract_request_data(kwargs)
 
@@ -133,22 +163,32 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             )
             return self._handle_request_exception(e, error_prefix)
 
-    def _build_full_url(self, url: str) -> str:
+    def _build_full_url(self, url: str) -> FlextResult[str]:
         """Build full URL from configuration base_url and provided path.
 
         Args:
         url: The URL path or full URL
 
         Returns:
-        Full URL string
+        FlextResult with full URL string or error
 
         """
         if url.startswith(("http://", "https://")):
-            return url
+            return FlextResult[str].ok(url)
 
-        base_url = str(self._config.base_url or "http://localhost:8000").rstrip("/")
+        if not self._config.base_url:
+            return FlextResult[str].fail(
+                "base_url is required when URL is not absolute"
+            )
+
+        base_url_value = self._config.base_url
+        if not isinstance(base_url_value, str) or not base_url_value:
+            return FlextResult[str].fail("base_url must be a non-empty string")
+
+        base_url = str(base_url_value).rstrip("/")
         path = str(url).lstrip("/")
-        return f"{base_url}/{path}" if path else base_url
+        full_url = f"{base_url}/{path}" if path else base_url
+        return FlextResult[str].ok(full_url)
 
     def close(self) -> None:
         """Close the HTTP client and cleanup resources."""
@@ -169,7 +209,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         **kwargs: object,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP GET request."""
-        return self.request("GET", url, **kwargs)
+        return self.request(FlextApiConstants.Method.GET, url, **kwargs)
 
     def post(
         self,
@@ -177,7 +217,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         **kwargs: object,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP POST request."""
-        return self.request("POST", url, **kwargs)
+        return self.request(FlextApiConstants.Method.POST, url, **kwargs)
 
     def put(
         self,
@@ -185,7 +225,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         **kwargs: object,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP PUT request."""
-        return self.request("PUT", url, **kwargs)
+        return self.request(FlextApiConstants.Method.PUT, url, **kwargs)
 
     def delete(
         self,
@@ -193,4 +233,4 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         **kwargs: object,
     ) -> FlextResult[FlextApiModels.HttpResponse]:
         """Execute HTTP DELETE request."""
-        return self.request("DELETE", url, **kwargs)
+        return self.request(FlextApiConstants.Method.DELETE, url, **kwargs)
