@@ -44,7 +44,7 @@ class FlextApiTypes(FlextTypes):
     type RequestConfig = dict[str, str | int | bool | list[str] | JsonObject]
     type ResponseConfig = dict[str, FlextTypes.JsonValue | JsonObject]
     type RequestBody = JsonObject | str | bytes
-    type ResponseBody = JsonObject | str | bytes
+    type ResponseBody = JsonObject | str | bytes | None
     type ValidationResult = dict[str, bool | list[str] | JsonObject]
 
     # =========================================================================

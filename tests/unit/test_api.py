@@ -193,7 +193,10 @@ class TestFlextApiGenericHttpMethod:
             "GET", "https://example.com/api/test", timeout="invalid"
         )
         assert result.is_failure
-        assert "Invalid timeout value" in result.error or "Invalid timeout type" in result.error
+        assert (
+            "Invalid timeout value" in result.error
+            or "Invalid timeout type" in result.error
+        )
 
     def test_http_method_with_headers(self) -> None:
         """Test _http_method passes headers correctly."""

@@ -24,10 +24,11 @@ class TestHttpConfigReal:
         """Test FlextApiConfig creation with real functionality."""
         config = FlextApiConfig()
 
-        # Test that config object is created with defaults
+        # Test that config object is created with defaults from Constants
         assert config is not None
         assert isinstance(config, FlextApiConfig)
-        assert not config.base_url
+        # base_url now has default from Constants (not empty)
+        assert config.base_url  # Should have default value from Constants
         assert config.timeout == 30.0
 
     def test_client_config_creation(self) -> None:
@@ -116,8 +117,8 @@ class TestHttpConfigReal:
         # Create config with minimal fields
         config = FlextApiConfig()
 
-        # Should have sensible defaults
-        assert not config.base_url
+        # Should have sensible defaults from Constants
+        assert config.base_url  # Should have default value from Constants
         assert isinstance(config.timeout, (int, float))
         assert config.timeout > 0
         assert config.max_retries == 3

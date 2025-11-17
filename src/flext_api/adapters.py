@@ -37,7 +37,7 @@ class FlextApiAdapters:
             try:
                 # Convert body to string if bytes, otherwise use as-is
                 body_value: str | dict[str, Any] | list[Any] | None = None
-                if request.body is not None:
+                if request.body:
                     if isinstance(request.body, bytes):
                         try:
                             body_value = request.body.decode("utf-8")

@@ -12,34 +12,36 @@ from __future__ import annotations
 
 import json
 
-from flext_core import FlextConstants
 from pydantic import BaseModel, Field, field_validator
+
+from flext_api.constants import FlextApiConstants
 
 
 class FlextApiConfig(BaseModel):
     """HTTP configuration using Pydantic v2.
 
-    Pure configuration model with validation using flext-core constants.
+    Pure configuration model with validation using FlextApiConstants.
+    Config has priority over Constants, but uses Constants as defaults.
     No wrappers - use Pydantic directly.
     """
 
     base_url: str = Field(
-        default="",
-        max_length=2048,
+        default=FlextApiConstants.DEFAULT_BASE_URL,
+        max_length=FlextApiConstants.MAX_URL_LENGTH,
         description="Base URL for HTTP requests",
     )
 
     timeout: float = Field(
-        default=FlextConstants.Container.TIMEOUT_SECONDS,
-        ge=FlextConstants.Container.MIN_TIMEOUT_SECONDS,
-        le=FlextConstants.Container.MAX_TIMEOUT_SECONDS,
+        default=float(FlextApiConstants.DEFAULT_TIMEOUT),
+        ge=float(FlextApiConstants.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+        le=float(FlextApiConstants.VALIDATION_LIMITS["MAX_TIMEOUT"]),
         description="HTTP request timeout (seconds)",
     )
 
     max_retries: int = Field(
-        default=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
-        ge=FlextConstants.Cqrs.MIN_RETRIES,
-        le=FlextConstants.Cqrs.MAX_RETRIES,
+        default=FlextApiConstants.DEFAULT_MAX_RETRIES,
+        ge=int(FlextApiConstants.VALIDATION_LIMITS["MIN_RETRIES"]),
+        le=int(FlextApiConstants.VALIDATION_LIMITS["MAX_RETRIES"]),
         description="Maximum retry attempts",
     )
 
@@ -64,10 +66,10 @@ class FlextApiConfig(BaseModel):
 
     @property
     def default_headers(self) -> dict[str, str]:
-        """Default headers with MIME type."""
+        """Default headers with MIME type from Constants."""
         return {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
+            FlextApiConstants.HEADER_ACCEPT: FlextApiConstants.ContentType.JSON,
+            FlextApiConstants.HEADER_CONTENT_TYPE: FlextApiConstants.ContentType.JSON,
             **self.headers,
         }
 

@@ -14,7 +14,7 @@ from __future__ import annotations
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, field_validator
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
@@ -52,28 +52,49 @@ class FlextApiModels:
         headers: dict[str, str] = Field(
             default_factory=dict, description="HTTP request headers"
         )
-        body: FlextApiTypes.RequestBody | None = Field(
-            default=None, description="Request body"
+        body: FlextApiTypes.RequestBody = Field(
+            default_factory=dict, description="Request body"
         )
-        query_params: FlextApiTypes.WebParams | None = Field(
-            default=None, description="Query parameters"
+
+        @field_validator("body", mode="before")
+        @classmethod
+        def normalize_body(cls, v: object) -> FlextApiTypes.RequestBody:
+            """Normalize body - empty dict is valid."""
+            if v is None:
+                return {}
+            if isinstance(v, dict):
+                return v
+            if isinstance(v, (str, bytes)):
+                return v
+            return {}
+
+        query_params: FlextApiTypes.WebParams = Field(
+            default_factory=dict, description="Query parameters"
         )
         timeout: float = Field(
-            default=30.0, ge=0.1, le=300.0, description="Request timeout in seconds"
+            default=float(FlextApiConstants.DEFAULT_TIMEOUT),
+            ge=float(FlextApiConstants.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+            le=float(FlextApiConstants.VALIDATION_LIMITS["MAX_TIMEOUT"]),
+            description="Request timeout in seconds",
         )
 
         @computed_field
-        def content_type(self) -> str | None:
+        def content_type(self) -> str:
             """Get content type from headers."""
-            if "Content-Type" in self.headers:
-                content_type_value = self.headers["Content-Type"]
+            # Check Content-Type header (case-insensitive)
+            header_content_type = FlextApiConstants.HEADER_CONTENT_TYPE
+            if header_content_type in self.headers:
+                content_type_value = self.headers[header_content_type]
                 if isinstance(content_type_value, str):
                     return content_type_value
-            if "content-type" in self.headers:
-                content_type_value = self.headers["content-type"]
+            # Check lowercase variant
+            header_lower = header_content_type.lower()
+            if header_lower in self.headers:
+                content_type_value = self.headers[header_lower]
                 if isinstance(content_type_value, str):
                     return content_type_value
-            return None
+            # Default from Constants
+            return FlextApiConstants.ContentType.JSON
 
     class HttpResponse(FlextModels.Value):
         """Immutable HTTP response value object.
@@ -88,11 +109,26 @@ class FlextApiModels:
         headers: dict[str, str] = Field(
             default_factory=dict, description="HTTP response headers"
         )
-        body: FlextApiTypes.ResponseBody | None = Field(
-            default=None, description="Response body"
+        body: FlextApiTypes.ResponseBody = Field(
+            default_factory=dict,
+            description="Response body (empty dict by default, None allowed for 204)",
         )
-        request_id: str | None = Field(
-            default=None, description="Associated request ID for tracking"
+
+        @field_validator("body", mode="before")
+        @classmethod
+        def normalize_body(cls, v: object) -> FlextApiTypes.ResponseBody:
+            """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
+            if v is None:
+                return None  # Explicit None is valid (e.g., for 204 responses)
+            if isinstance(v, dict):
+                return v
+            if isinstance(v, (str, bytes)):
+                return v
+            # Default to empty dict if not specified
+            return {}
+
+        request_id: str = Field(
+            default="", description="Associated request ID for tracking"
         )
 
         @computed_field
@@ -149,51 +185,56 @@ class FlextApiModels:
             return urlparse(self.url)
 
         @computed_field
-        def scheme(self) -> str | None:
+        def scheme(self) -> str:
             """Get URL scheme (http, https, etc.)."""
-            parsed_result = self.parsed
+            parsed_result = urlparse(self.url)
             parsed_scheme = parsed_result.scheme
             if parsed_scheme:
                 return parsed_scheme
-            return None
+            return FlextApiConstants.HTTP.PROTOCOL_HTTPS
 
         @computed_field
-        def netloc(self) -> str | None:
+        def netloc(self) -> str:
             """Get network location (host:port)."""
-            parsed_netloc = self.parsed.netloc
+            parsed_result = urlparse(self.url)
+            parsed_netloc = parsed_result.netloc
             if parsed_netloc:
                 return parsed_netloc
-            return None
+            return f"{FlextApiConstants.Server.DEFAULT_HOST}:{FlextApiConstants.Server.DEFAULT_PORT}"
 
         @computed_field
-        def path(self) -> str | None:
+        def path(self) -> str:
             """Get URL path."""
-            parsed_path = self.parsed.path
+            parsed_result = urlparse(self.url)
+            parsed_path = parsed_result.path
             if parsed_path:
                 return parsed_path
-            return None
+            return "/"
 
         @computed_field
-        def query(self) -> str | None:
+        def query(self) -> str:
             """Get URL query string."""
-            parsed_query = self.parsed.query
+            parsed_result = urlparse(self.url)
+            parsed_query = parsed_result.query
             if parsed_query:
                 return parsed_query
-            return None
+            return ""
 
         @computed_field
-        def fragment(self) -> str | None:
+        def fragment(self) -> str:
             """Get URL fragment."""
-            parsed_fragment = self.parsed.fragment
+            parsed_result = urlparse(self.url)
+            parsed_fragment = parsed_result.fragment
             if parsed_fragment:
                 return parsed_fragment
-            return None
+            return ""
 
         @computed_field
         def is_valid(self) -> bool:
             """Check if URL is valid."""
-            scheme_value = self.scheme
-            netloc_value = self.netloc
+            parsed_result = urlparse(self.url)
+            scheme_value = parsed_result.scheme
+            netloc_value = parsed_result.netloc
             return bool(scheme_value and netloc_value)
 
     # =========================================================================
@@ -204,13 +245,21 @@ class FlextApiModels:
         """HTTP client configuration model."""
 
         base_url: str = Field(
-            default="", max_length=2048, description="Base URL for all requests"
+            default=FlextApiConstants.DEFAULT_BASE_URL,
+            max_length=FlextApiConstants.MAX_URL_LENGTH,
+            description="Base URL for all requests",
         )
         timeout: float = Field(
-            default=30.0, ge=0.1, le=300.0, description="Request timeout in seconds"
+            default=float(FlextApiConstants.DEFAULT_TIMEOUT),
+            ge=float(FlextApiConstants.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+            le=float(FlextApiConstants.VALIDATION_LIMITS["MAX_TIMEOUT"]),
+            description="Request timeout in seconds",
         )
         max_retries: int = Field(
-            default=3, ge=0, le=10, description="Maximum retry attempts"
+            default=FlextApiConstants.DEFAULT_MAX_RETRIES,
+            ge=int(FlextApiConstants.VALIDATION_LIMITS["MIN_RETRIES"]),
+            le=int(FlextApiConstants.VALIDATION_LIMITS["MAX_RETRIES"]),
+            description="Maximum retry attempts",
         )
         headers: dict[str, str] = Field(
             default_factory=dict, description="Default headers for all requests"
@@ -231,20 +280,25 @@ class FlextApiModels:
     class Pagination(BaseModel):
         """Pagination information model."""
 
-        page: int = Field(default=1, ge=1, description="Current page number (1-based)")
-        page_size: int = Field(default=20, ge=1, le=1000, description="Items per page")
-        total_items: int | None = Field(
-            default=None, ge=0, description="Total number of items"
+        page: int = Field(
+            default=1,
+            ge=1,
+            description="Current page number (1-based)",
         )
-        total_pages: int | None = Field(
-            default=None, ge=0, description="Total number of pages"
+        page_size: int = Field(
+            default=FlextApiConstants.DEFAULT_PAGE_SIZE,
+            ge=FlextApiConstants.MIN_PAGE_SIZE,
+            le=FlextApiConstants.MAX_PAGE_SIZE,
+            description="Items per page",
         )
+        total_items: int = Field(default=0, ge=0, description="Total number of items")
+        total_pages: int = Field(default=0, ge=0, description="Total number of pages")
 
         @computed_field
         def has_next(self) -> bool:
             """Check if there are more pages."""
-            if self.total_pages is None:
-                return True
+            if self.total_pages == 0:
+                return False
             return self.page < self.total_pages
 
         @computed_field
@@ -265,17 +319,15 @@ class FlextApiModels:
         """HTTP error response model."""
 
         message: str = Field(..., description="Human-readable error message")
-        error_code: str | None = Field(
-            default=None, description="Machine-readable error code"
-        )
+        error_code: str = Field(default="", description="Machine-readable error code")
         status_code: int = Field(
             default=500, ge=100, le=599, description="HTTP status code"
         )
-        details: FlextApiTypes.JsonObject | None = Field(
-            default=None, description="Additional error details"
+        details: FlextApiTypes.JsonObject = Field(
+            default_factory=dict, description="Additional error details"
         )
-        request_id: str | None = Field(
-            default=None, description="Associated request ID for tracking"
+        request_id: str = Field(
+            default="", description="Associated request ID for tracking"
         )
 
         @computed_field
@@ -303,11 +355,13 @@ class FlextApiModels:
             default_factory=dict, description="Query parameters"
         )
 
-        def get_param(self, name: str) -> str | list[str] | None:
+        def get_param(self, name: str) -> str | list[str]:
             """Get query parameter value."""
             if name in self.params:
-                return self.params[name]
-            return None
+                param_value = self.params[name]
+                if isinstance(param_value, (str, list)):
+                    return param_value
+            return ""
 
         def set_param(self, name: str, value: str | list[str]) -> None:
             """Set query parameter value."""
@@ -320,13 +374,13 @@ class FlextApiModels:
             default_factory=dict, description="HTTP headers"
         )
 
-        def get_header(self, name: str) -> str | None:
+        def get_header(self, name: str) -> str:
             """Get header value (case-insensitive)."""
             name_lower = name.lower()
             for key, value in self.headers.items():
                 if key.lower() == name_lower and isinstance(value, str):
                     return value
-            return None
+            return ""
 
         def set_header(self, name: str, value: str) -> None:
             """Set header value."""
@@ -354,63 +408,71 @@ class FlextApiModels:
 
         Args:
         status_code: HTTP status code
-        body: Response body (JSON, string, bytes, or None)
-        headers: Response headers dictionary
-        request_id: Associated request ID for tracking
+        body: Response body (JSON, string, bytes, or None for empty dict)
+        headers: Response headers dictionary (None for empty dict)
+        request_id: Associated request ID for tracking (None for empty string)
 
         Returns:
-        HttpResponse instance
+        HttpResponse instance with defaults from model
 
         """
-        # Use model defaults - no fallbacks
-        response_headers: dict[str, str] = {}
-        if headers is not None:
-            response_headers = headers
+        # Use model defaults - body defaults to empty dict, not None
+        response_body: FlextApiTypes.ResponseBody = body if body is not None else {}
+        response_headers: dict[str, str] = headers if headers is not None else {}
+        response_id: str = request_id if request_id is not None else ""
 
         return cls.HttpResponse(
             status_code=status_code,
-            body=body,
+            body=response_body,
             headers=response_headers,
-            request_id=request_id,
+            request_id=response_id,
         )
 
     @classmethod
     def create_config(
         cls,
-        base_url: str = "",
-        timeout: float = 30.0,
-        max_retries: int = 3,
+        base_url: str | None = None,
+        timeout: float | None = None,
+        max_retries: int | None = None,
         headers: dict[str, str] | None = None,
-        verify_ssl: bool | None = None,
+        *,
+        verify_ssl: bool = True,
     ) -> FlextApiModels.ClientConfig:
         """Create ClientConfig from parameters.
 
         Args:
-        base_url: Base URL for all requests
-        timeout: Request timeout in seconds
-        max_retries: Maximum retry attempts
-        headers: Default headers for all requests
+        base_url: Base URL for all requests (uses Constants default if None)
+        timeout: Request timeout in seconds (uses Constants default if None)
+        max_retries: Maximum retry attempts (uses Constants default if None)
+        headers: Default headers for all requests (None for empty dict)
         verify_ssl: Verify SSL certificates
 
         Returns:
-        ClientConfig instance
+        ClientConfig instance with defaults from Constants
 
         """
-        # Use model defaults - no fallbacks
-        config_headers: dict[str, str] = {}
-        if headers is not None:
-            config_headers = headers
-
-        config_verify_ssl = True
-        if verify_ssl is not None:
-            config_verify_ssl = verify_ssl
+        # Use Constants defaults when None - Config has priority but uses Constants as base
+        config_base_url = (
+            base_url if base_url is not None else FlextApiConstants.DEFAULT_BASE_URL
+        )
+        config_timeout = (
+            float(timeout)
+            if timeout is not None
+            else float(FlextApiConstants.DEFAULT_TIMEOUT)
+        )
+        config_max_retries = (
+            max_retries
+            if max_retries is not None
+            else FlextApiConstants.DEFAULT_MAX_RETRIES
+        )
+        config_headers: dict[str, str] = headers if headers is not None else {}
 
         return cls.ClientConfig(
-            base_url=base_url,
-            timeout=timeout,
-            max_retries=max_retries,
+            base_url=config_base_url,
+            timeout=config_timeout,
+            max_retries=config_max_retries,
             headers=config_headers,
-            verify_ssl=config_verify_ssl,
+            verify_ssl=verify_ssl,
         )
 
     class HttpPagination(FlextModels.Value):
@@ -420,13 +482,14 @@ class FlextApiModels:
         """
 
         page: int = Field(default=1, ge=1, description="Current page number")
-        page_size: int = Field(default=20, ge=1, le=1000, description="Items per page")
-        total_items: int | None = Field(
-            default=None, ge=0, description="Total number of items"
+        page_size: int = Field(
+            default=FlextApiConstants.DEFAULT_PAGE_SIZE,
+            ge=FlextApiConstants.MIN_PAGE_SIZE,
+            le=FlextApiConstants.MAX_PAGE_SIZE,
+            description="Items per page",
         )
-        total_pages: int | None = Field(
-            default=None, ge=0, description="Total number of pages"
-        )
+        total_items: int = Field(default=0, ge=0, description="Total number of items")
+        total_pages: int = Field(default=0, ge=0, description="Total number of pages")
 
         @computed_field
         def offset(self) -> int:
@@ -436,7 +499,7 @@ class FlextApiModels:
         @computed_field
         def has_next(self) -> bool:
             """Check if next page exists."""
-            if self.total_pages is None:
+            if self.total_pages == 0:
                 return False
             return self.page < self.total_pages
 

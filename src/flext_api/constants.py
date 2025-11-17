@@ -48,6 +48,19 @@ class FlextApiConstants:
         CONNECT: ClassVar[str] = "CONNECT"
         TRACE: ClassVar[str] = "TRACE"
 
+        # Valid HTTP methods set for validation
+        VALID_METHODS: ClassVar[set[str]] = {
+            GET,
+            POST,
+            PUT,
+            DELETE,
+            PATCH,
+            HEAD,
+            OPTIONS,
+            CONNECT,
+            TRACE,
+        }
+
     # URL and validation constants
     MAX_URL_LENGTH: ClassVar[int] = 2048
     MIN_URL_LENGTH: ClassVar[int] = 8
@@ -267,6 +280,14 @@ class FlextApiConstants:
 
         DEFAULT_MAX_CONNECTIONS: ClassVar[int] = 100
         DEFAULT_MAX_KEEPALIVE_CONNECTIONS: ClassVar[int] = 20
+
+    # Pagination defaults - moved from utilities
+    class PaginationDefaults:
+        """Pagination default values."""
+
+        DEFAULT_PAGE: ClassVar[int] = 1
+        DEFAULT_PAGE_SIZE_STRING: ClassVar[str] = "20"
+        DEFAULT_MAX_PAGE_SIZE_FALLBACK: ClassVar[int] = 1000
 
 
 __all__ = ["FlextApiConstants", "Unit"]

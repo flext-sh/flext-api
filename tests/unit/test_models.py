@@ -209,7 +209,7 @@ class TestFlextApiModelsFlextPure:
         query = FlextApiModels.QueryParams(params={"search": "test"})
 
         assert query.get_param("search") == "test"
-        assert query.get_param("missing") is None
+        assert query.get_param("missing") == ""  # Returns empty string, not None
 
     def test_headers_case_insensitive(self) -> None:
         """Test Headers model case-insensitive access."""
@@ -261,7 +261,7 @@ class TestFlextApiModelsFlextPure:
         assert request.method == "GET"
         assert request.url == "https://api.example.com"
         assert request.headers == {}
-        assert request.body is None
+        assert request.body == {}  # Empty dict, not None
 
     def test_http_request_all_parameters(self) -> None:
         """Test HttpRequest with all parameters."""
@@ -286,7 +286,7 @@ class TestFlextApiModelsFlextPure:
         assert response.status_code == 200
         assert response.is_success is True
         assert response.headers == {}
-        assert response.body is None
+        assert response.body == {}  # Empty dict, not None
 
     def test_http_response_all_parameters(self) -> None:
         """Test HttpResponse with all parameters."""
@@ -356,7 +356,7 @@ class TestFlextApiModelsFlextPure:
         """Test QueryParams with empty parameters."""
         query = FlextApiModels.QueryParams(params={})
 
-        assert query.get_param("any_key") is None
+        assert query.get_param("any_key") == ""  # Returns empty string, not None
 
     def test_query_params_multiple_values(self) -> None:
         """Test QueryParams with multiple values per key."""
@@ -384,7 +384,7 @@ class TestFlextApiModelsFlextPure:
         """Test Headers with empty headers."""
         headers = FlextApiModels.Headers(headers={})
 
-        assert headers.get_header("any_header") is None
+        assert headers.get_header("any_header") == ""  # Returns empty string, not None
 
     def test_headers_multiple_values(self) -> None:
         """Test Headers model with multiple headers."""
@@ -475,7 +475,9 @@ class TestFlextApiModelsFlextPure:
     def test_headers_default_values(self) -> None:
         """Test Headers with various default values."""
         headers1 = FlextApiModels.Headers(headers={"Content-Type": "text/plain"})
-        assert headers1.get_header("missing-header") is None
+        assert (
+            headers1.get_header("missing-header") == ""
+        )  # Returns empty string, not None
 
     def test_query_params_special_characters(self) -> None:
         """Test QueryParams with special characters."""

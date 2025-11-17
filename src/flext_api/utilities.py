@@ -26,18 +26,7 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def validate_http_method(method: str) -> bool:
             """Validate HTTP method using constants."""
-            valid_methods = {
-                FlextApiConstants.Method.GET,
-                FlextApiConstants.Method.POST,
-                FlextApiConstants.Method.PUT,
-                FlextApiConstants.Method.DELETE,
-                FlextApiConstants.Method.PATCH,
-                FlextApiConstants.Method.HEAD,
-                FlextApiConstants.Method.OPTIONS,
-                FlextApiConstants.Method.CONNECT,
-                FlextApiConstants.Method.TRACE,
-            }
-            return method.upper() in valid_methods
+            return method.upper() in FlextApiConstants.Method.VALID_METHODS
 
         @staticmethod
         def normalize_url(url: str) -> str:
@@ -172,13 +161,15 @@ class FlextApiUtilities(FlextUtilities):
             query_params: dict[str, str],
         ) -> FlextResult[tuple[int, int]]:
             """Extract page and page_size from query parameters."""
-            page_str = "1"
+            page_str = str(FlextApiConstants.PaginationDefaults.DEFAULT_PAGE)
             if "page" in query_params:
                 page_value = query_params["page"]
                 if isinstance(page_value, str):
                     page_str = page_value
 
-            page_size_str = "20"
+            page_size_str = (
+                FlextApiConstants.PaginationDefaults.DEFAULT_PAGE_SIZE_STRING
+            )
             if "page_size" in query_params:
                 page_size_value = query_params["page_size"]
                 if isinstance(page_size_value, str):
@@ -247,24 +238,24 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def extract_pagination_config(config: object | None) -> dict[str, Any]:
-            """Extract pagination configuration values."""
-            if config is None:
-                return {
-                    "default_page_size": 20,
-                    "max_page_size": 1000,
-                }
+            """Extract pagination configuration values - no fallbacks."""
+            # Use Constants defaults when config is None
+            default_page_size = FlextApiConstants.DEFAULT_PAGE_SIZE
+            max_page_size = FlextApiConstants.MAX_PAGE_SIZE
 
-            default_page_size = 20
-            if hasattr(config, "default_page_size"):
-                default_page_size_value = config.default_page_size
-                if isinstance(default_page_size_value, int):
-                    default_page_size = default_page_size_value
+            if config is not None:
+                if hasattr(config, "default_page_size"):
+                    default_page_size_value = config.default_page_size
+                    if (
+                        isinstance(default_page_size_value, int)
+                        and default_page_size_value > 0
+                    ):
+                        default_page_size = default_page_size_value
 
-            max_page_size = 1000
-            if hasattr(config, "max_page_size"):
-                max_page_size_value = config.max_page_size
-                if isinstance(max_page_size_value, int):
-                    max_page_size = max_page_size_value
+                if hasattr(config, "max_page_size"):
+                    max_page_size_value = config.max_page_size
+                    if isinstance(max_page_size_value, int) and max_page_size_value > 0:
+                        max_page_size = max_page_size_value
 
             return {
                 "default_page_size": default_page_size,
@@ -304,11 +295,11 @@ class FlextApiUtilities(FlextUtilities):
             page_size: int,
             **_kwargs: object,
         ) -> FlextResult[dict[str, object]]:
-            """Prepare pagination data and calculations."""
-            final_data: list[object] = []
-            if data is not None:
-                final_data = data
-            final_total = total if total is not None else len(final_data)
+            """Prepare pagination data and calculations - no fallbacks."""
+            # data can be None (empty list) or actual list
+            final_data: list[object] = data if data is not None else []
+            # total must be provided or calculated from data length
+            final_total: int = total if total is not None else len(final_data)
 
             total_pages = (
                 max(1, (final_total + page_size - 1) // page_size)
