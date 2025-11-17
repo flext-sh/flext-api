@@ -22,7 +22,11 @@ __description__ = _metadata["Summary"]
 __author__ = _metadata["Author"]
 __author_email__ = _metadata["Author-Email"]
 __license__ = _metadata["License"]
-__url__ = _metadata.get("Home-Page", "")
+__url__ = ""
+if "Home-Page" in _metadata:
+    url_value = _metadata["Home-Page"]
+    if isinstance(url_value, str):
+        __url__ = url_value
 
 __all__ = [
     "__author__",

@@ -56,10 +56,10 @@ def test_basic_operations() -> None:
     """Test basic storage operations."""
     storage = FlextApiStorage()
 
-    # Test set operation
+    # Test set operation - returns FlextResult[bool] with True on success
     set_result = storage.set("key1", "value1")
     assert set_result.is_success
-    assert set_result.value is None
+    assert set_result.value is True
 
     # Test get operation
     get_result = storage.get("key1")
@@ -71,14 +71,15 @@ def test_basic_operations() -> None:
     assert exists_result.is_success
     assert exists_result.value is True
 
-    # Test delete operation (idempotent - succeeds even if not exists)
+    # Test delete operation - returns error if key not found (no fallback)
     delete_result = storage.delete("key1")
     assert delete_result.is_success
+    assert delete_result.value is True
 
-    # Verify deleted - get returns default (None)
+    # Verify deleted - get returns error (no fallback)
     get_after_delete = storage.get("key1")
-    assert get_after_delete.is_success
-    assert get_after_delete.value is None  # Default value returned
+    assert get_after_delete.is_failure
+    assert "not found" in get_after_delete.error.lower()
 
 
 def test_ttl_functionality() -> None:
@@ -134,13 +135,15 @@ def test_error_recovery_scenario() -> None:
     """Test error recovery scenarios."""
     storage = FlextApiStorage()
 
-    # Delete non-existent key succeeds (idempotent)
+    # Delete non-existent key returns error (no fallback - fast fail)
     result = storage.delete("nonexistent")
-    assert result.is_success
+    assert result.is_failure
+    assert "not found" in result.error.lower()
 
-    # Test operations after delete
+    # Test operations after delete error
     result = storage.set("recovery_key", "recovery_value")
     assert result.is_success
+    assert result.value is True
 
     recovery_result = storage.get("recovery_key")
     assert recovery_result.is_success
@@ -232,11 +235,11 @@ def test_batch_delete_operation() -> None:
     batch_delete_result = storage.batch_delete(keys)
     assert batch_delete_result.is_success
 
-    # Verify all deleted
+    # Verify all deleted (no fallback - should return error)
     for key in keys:
         get_result = storage.get(key)
-        assert get_result.is_success
-        assert get_result.value is None
+        assert get_result.is_failure
+        assert "not found" in get_result.error.lower()
 
 
 def test_values_operation() -> None:
@@ -290,13 +293,12 @@ def test_json_deserialization() -> None:
 
 
 def test_default_value_retrieval() -> None:
-    """Test getting a non-existent key returns default value."""
+    """Test getting a non-existent key returns error (no fallback)."""
     storage = FlextApiStorage()
 
-    default_value = "default_return_value"
-    get_result = storage.get("nonexistent_key", default=default_value)
-    assert get_result.is_success
-    assert get_result.value == default_value
+    get_result = storage.get("nonexistent_key")
+    assert get_result.is_failure
+    assert "not found" in get_result.error.lower()
 
 
 def test_invalid_key_set() -> None:

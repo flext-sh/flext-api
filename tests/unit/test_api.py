@@ -185,25 +185,15 @@ class TestFlextApiGenericHttpMethod:
             api._client = original_client
 
     def test_http_method_default_timeout(self) -> None:
-        """Test _http_method uses default timeout for invalid values."""
+        """Test _http_method fails fast for invalid timeout values - no fallbacks."""
         api = FlextApi()
-        original_client = api._client
-        api._client = MagicMock()
-        api._client.request = MagicMock(
-            return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=200, body={})
-            )
-        )
 
-        try:
-            result = api._http_method(
-                "GET", "https://example.com/api/test", timeout="invalid"
-            )
-            assert result.is_success
-            request_arg = api._client.request.call_args[0][0]
-            assert request_arg.timeout == 30.0
-        finally:
-            api._client = original_client
+        # Invalid timeout should fail fast - no fallback to default
+        result = api._http_method(
+            "GET", "https://example.com/api/test", timeout="invalid"
+        )
+        assert result.is_failure
+        assert "Invalid timeout value" in result.error or "Invalid timeout type" in result.error
 
     def test_http_method_with_headers(self) -> None:
         """Test _http_method passes headers correctly."""

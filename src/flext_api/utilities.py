@@ -25,62 +25,65 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def validate_http_method(method: str) -> bool:
-            """Validate HTTP method."""
+            """Validate HTTP method using constants."""
             valid_methods = {
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "PATCH",
-                "HEAD",
-                "OPTIONS",
-                "CONNECT",
-                "TRACE",
+                FlextApiConstants.Method.GET,
+                FlextApiConstants.Method.POST,
+                FlextApiConstants.Method.PUT,
+                FlextApiConstants.Method.DELETE,
+                FlextApiConstants.Method.PATCH,
+                FlextApiConstants.Method.HEAD,
+                FlextApiConstants.Method.OPTIONS,
+                FlextApiConstants.Method.CONNECT,
+                FlextApiConstants.Method.TRACE,
             }
             return method.upper() in valid_methods
 
         @staticmethod
         def normalize_url(url: str) -> str:
-            """Normalize URL format."""
+            """Normalize URL format using constants."""
             if not url:
                 return ""
 
             parsed = urlparse(url)
             if not parsed.scheme:
-                return f"https://{url}"
+                # Use HTTPS constant as default scheme
+                return f"{FlextApiConstants.HTTP.PROTOCOL_HTTPS}://{url}"
 
             return url
 
         @staticmethod
         def validate_url(url: str) -> FlextResult[str]:
             """Validate URL with FlextResult pattern."""
-            if not url or not url.strip():
+            if not url.strip():
                 return FlextResult[str].fail("URL cannot be empty")
 
-            # Check max length
-            max_len_val = FlextApiConstants.VALIDATION_LIMITS.get(
-                "MAX_URL_LENGTH", 2048
-            )
-            max_len: int = int(str(max_len_val)) if max_len_val is not None else 2048
+            # Check max length using constant directly
+            max_len = FlextApiConstants.MAX_URL_LENGTH
             if len(url) > max_len:
                 return FlextResult[str].fail(f"URL too long (max {max_len} characters)")
 
             try:
                 parsed = urlparse(url)
                 # Validate URL components
-                if not parsed.scheme or not parsed.netloc:
-                    return FlextResult[str].fail("Invalid URL format")
+                if not parsed.scheme:
+                    return FlextResult[str].fail("Invalid URL format: missing scheme")
+                if not parsed.netloc:
+                    return FlextResult[str].fail("Invalid URL format: missing netloc")
 
                 # Validate port if present
                 if ":" in parsed.netloc:
                     parts = parsed.netloc.rsplit(":", 1)
                     try:
                         port = int(parts[1])
-                        if (
-                            port < FlextApiConstants.MIN_PORT
-                            or port > FlextApiConstants.MAX_PORT
-                        ):
-                            return FlextResult[str].fail(f"Invalid port {port}")
+                        if port < FlextApiConstants.MIN_PORT:
+                            return FlextResult[str].fail(
+                                f"Invalid port {port}: below minimum {FlextApiConstants.MIN_PORT}"
+                            )
+                        if port > FlextApiConstants.MAX_PORT:
+                            return FlextResult[str].fail(
+                                f"Invalid port {port}: above maximum {FlextApiConstants.MAX_PORT}"
+                            )
                     except ValueError:
                         return FlextResult[str].fail("Invalid port number")
 
@@ -99,11 +102,16 @@ class FlextApiUtilities(FlextUtilities):
             error_code: str | None = None,
         ) -> dict[str, Any]:
             """Build error response."""
+            code_value: str
+            if error_code is not None:
+                code_value = error_code
+            else:
+                code_value = f"ERROR_{status_code}"
             return {
                 "success": False,
                 "error": {
                     "message": message,
-                    "code": error_code or f"ERROR_{status_code}",
+                    "code": code_value,
                     "status_code": status_code,
                 },
             }
@@ -116,12 +124,18 @@ class FlextApiUtilities(FlextUtilities):
             headers: dict[str, Any] | None = None,
         ) -> FlextResult[dict[str, Any]]:
             """Build a successful HTTP response."""
+            response_data: dict[str, Any] = {}
+            if data is not None:
+                response_data = data
+            response_headers: dict[str, Any] = {}
+            if headers is not None:
+                response_headers = headers
             response: dict[str, Any] = {
                 "status": "success",
                 "status_code": status_code,
-                "data": data or {},
+                "data": response_data,
                 "message": message,
-                "headers": headers or {},
+                "headers": response_headers,
                 "timestamp": datetime.now(UTC).isoformat(),
             }
             return FlextResult.ok(response)
@@ -134,12 +148,18 @@ class FlextApiUtilities(FlextUtilities):
             headers: dict[str, Any] | None = None,
         ) -> FlextResult[dict[str, Any]]:
             """Build an error HTTP response as FlextResult."""
+            error_data: dict[str, Any] = {}
+            if data is not None:
+                error_data = data
+            error_headers: dict[str, Any] = {}
+            if headers is not None:
+                error_headers = headers
             response: dict[str, Any] = {
                 "status": "error",
                 "status_code": status_code,
                 "error": error,
-                "data": data or {},
-                "headers": headers or {},
+                "data": error_data,
+                "headers": error_headers,
                 "timestamp": datetime.now(UTC).isoformat(),
             }
             return FlextResult.ok(response)
@@ -152,15 +172,29 @@ class FlextApiUtilities(FlextUtilities):
             query_params: dict[str, str],
         ) -> FlextResult[tuple[int, int]]:
             """Extract page and page_size from query parameters."""
+            page_str = "1"
+            if "page" in query_params:
+                page_value = query_params["page"]
+                if isinstance(page_value, str):
+                    page_str = page_value
+
+            page_size_str = "20"
+            if "page_size" in query_params:
+                page_size_value = query_params["page_size"]
+                if isinstance(page_size_value, str):
+                    page_size_str = page_size_value
+
             try:
-                page = int(query_params.get("page", "1"))
-                page_size = int(query_params.get("page_size", "20"))
+                page = int(page_str)
+                page_size = int(page_size_str)
 
                 if page < 1:
                     return FlextResult.fail("Page must be >= 1")
-                if page_size < 1 or page_size > FlextApiConstants.MAX_PAGE_SIZE:
+                if page_size < 1:
+                    return FlextResult.fail("Page size must be >= 1")
+                if page_size > FlextApiConstants.MAX_PAGE_SIZE:
                     return FlextResult.fail(
-                        f"Page size must be between 1 and {FlextApiConstants.MAX_PAGE_SIZE}"
+                        f"Page size must be <= {FlextApiConstants.MAX_PAGE_SIZE}"
                     )
 
                 return FlextResult.ok((page, page_size))
@@ -183,11 +217,15 @@ class FlextApiUtilities(FlextUtilities):
             FlextResult containing paginated response dictionary.
 
             """
+            # Extract config first (handle None case)
+            config_dict = FlextApiUtilities.PaginationBuilder.extract_pagination_config(
+                config
+            )
+
             # Railway-oriented pagination building
             return (
-                FlextResult[object]
-                .ok(config)
-                .map(FlextApiUtilities.PaginationBuilder.extract_pagination_config)
+                FlextResult[dict[str, object]]
+                .ok(config_dict)
                 .flat_map(
                     lambda cfg_dict: FlextApiUtilities.PaginationBuilder.validate_pagination_params(
                         page=page,
@@ -210,10 +248,24 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def extract_pagination_config(config: object | None) -> dict[str, Any]:
             """Extract pagination configuration values."""
-            default_page_size = (
-                getattr(config, "default_page_size", 20) if config else 20
-            )
-            max_page_size = getattr(config, "max_page_size", 1000) if config else 1000
+            if config is None:
+                return {
+                    "default_page_size": 20,
+                    "max_page_size": 1000,
+                }
+
+            default_page_size = 20
+            if hasattr(config, "default_page_size"):
+                default_page_size_value = config.default_page_size
+                if isinstance(default_page_size_value, int):
+                    default_page_size = default_page_size_value
+
+            max_page_size = 1000
+            if hasattr(config, "max_page_size"):
+                max_page_size_value = config.max_page_size
+                if isinstance(max_page_size_value, int):
+                    max_page_size = max_page_size_value
+
             return {
                 "default_page_size": default_page_size,
                 "max_page_size": max_page_size,
@@ -224,9 +276,11 @@ class FlextApiUtilities(FlextUtilities):
             *, page: int, page_size: int | None, max_page_size: int
         ) -> FlextResult[dict[str, object]]:
             """Validate pagination parameters."""
-            # If page_size is explicitly provided (not None), use it directly
-            # Otherwise, use default but don't override explicit 0
-            effective_page_size = page_size if page_size is not None else 20
+            # Use default from constants if page_size is None
+            if page_size is None:
+                effective_page_size = FlextApiConstants.DEFAULT_PAGE_SIZE
+            else:
+                effective_page_size = page_size
 
             if page < 1:
                 return FlextResult.fail("Page must be >= 1")
@@ -251,7 +305,9 @@ class FlextApiUtilities(FlextUtilities):
             **_kwargs: object,
         ) -> FlextResult[dict[str, object]]:
             """Prepare pagination data and calculations."""
-            final_data = data or []
+            final_data: list[object] = []
+            if data is not None:
+                final_data = data
             final_total = total if total is not None else len(final_data)
 
             total_pages = (

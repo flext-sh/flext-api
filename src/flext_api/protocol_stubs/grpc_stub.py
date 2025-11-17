@@ -48,14 +48,16 @@ class GrpcChannel:
         """
         self.logger = FlextLogger(__name__)
         self._target = target
-        self._options = options or {}
+        self._options: dict[str, Any] = {}
+        if options is not None:
+            self._options = options
 
         self.logger.info(
             "gRPC channel stub created (placeholder)",
             extra={"target": target},
         )
 
-    def close(self) -> FlextResult[None]:
+    def close(self) -> FlextResult[bool]:
         """Close gRPC channel.
 
         Returns:
@@ -63,7 +65,7 @@ class GrpcChannel:
 
         """
         self.logger.info("gRPC channel stub closed (placeholder)")
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
 
 class GrpcStub:
@@ -142,7 +144,9 @@ class GrpcRequest:
         """
         self._method = method
         self._message = message
-        self._metadata = metadata or {}
+        self._metadata: dict[str, str] = {}
+        if metadata is not None:
+            self._metadata = metadata
 
 
 class GrpcResponse:
@@ -173,7 +177,9 @@ class GrpcResponse:
         """
         self._message = message
         self._status_code = status_code
-        self._metadata = metadata or {}
+        self._metadata: dict[str, str] = {}
+        if metadata is not None:
+            self._metadata = metadata
 
     @property
     def message(self) -> object:
@@ -216,14 +222,16 @@ class GrpcServer:
         self.logger = FlextLogger(__name__)
         self._host = host
         self._port = port
-        self._options = options or {}
+        self._options: dict[str, Any] = {}
+        if options is not None:
+            self._options = options
 
         self.logger.info(
             "gRPC server stub created (placeholder)",
             extra={"host": host, "port": port},
         )
 
-    def add_service(self, _service: object) -> FlextResult[None]:
+    def add_service(self, _service: object) -> FlextResult[bool]:
         """Add service to server.
 
         Note: This is a stub implementation. Parameters are unused.
@@ -233,9 +241,9 @@ class GrpcServer:
 
         """
         self.logger.info("gRPC service added (placeholder)")
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
-    def start(self) -> FlextResult[None]:
+    def start(self) -> FlextResult[bool]:
         """Start gRPC server.
 
         Returns:
@@ -246,11 +254,11 @@ class GrpcServer:
             "gRPC server start (placeholder)",
             extra={"host": self._host, "port": self._port},
         )
-        return FlextResult[None].fail(
+        return FlextResult[bool].fail(
             "gRPC server placeholder - awaiting flext-grpc integration"
         )
 
-    def stop(self, _grace: float | None = None) -> FlextResult[None]:
+    def stop(self, _grace: float | None = None) -> FlextResult[bool]:
         """Stop gRPC server.
 
         Note: This is a stub implementation. Parameters are unused.
@@ -260,7 +268,7 @@ class GrpcServer:
 
         """
         self.logger.info("gRPC server stop (placeholder)")
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
 
 class GrpcMethod:

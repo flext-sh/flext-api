@@ -10,11 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from enum import StrEnum
 from typing import NotRequired
 
 from flext_core import FlextTypes
 from typing_extensions import TypedDict
+
+from flext_api.constants import Unit
 
 
 class FlextApiTypes(FlextTypes):
@@ -144,15 +145,10 @@ class FlextApiTypes(FlextTypes):
         """Authentication-related types for credential management."""
 
     class Serialization:
-        """Serialization-related types."""
+        """Serialization-related types.
 
-        class SerializationFormat(StrEnum):
-            """Supported serialization formats."""
-
-            JSON = "json"
-            MSGPACK = "msgpack"
-            CBOR = "cbor"
-            CUSTOM = "custom"
+        Note: SerializationFormat enum moved to FlextApiConstants for consistency.
+        """
 
 
-__all__ = ["FlextApiTypes"]
+__all__ = ["FlextApiTypes", "Unit"]

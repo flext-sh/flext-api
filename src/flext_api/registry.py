@@ -18,12 +18,7 @@ from flext_core import (
     FlextResult,
 )
 
-from flext_api.plugins import (
-    AuthenticationPlugin,
-    ProtocolPlugin,
-    SchemaPlugin,
-    TransportPlugin,
-)
+from flext_api.plugins import FlextApiPlugins
 
 
 class FlextApiRegistry(FlextRegistry):
@@ -37,7 +32,7 @@ class FlextApiRegistry(FlextRegistry):
 
     Usage:
         registry = FlextApiRegistry.get_global()
-        registry.register_protocol("http", FlextWebProtocolPlugin())
+        registry.register_protocol(FlextApiConstants.HTTP.PROTOCOL_HTTP, FlextWebProtocolPlugin())
         registry.register_schema("openapi", OpenApiSchemaPlugin())
         registry.register_transport("httpx", FlextWebxTransport())
 
@@ -66,10 +61,10 @@ class FlextApiRegistry(FlextRegistry):
         # Logger inherited from parent FlextService - no assignment needed
 
         # Plugin storage by category
-        self._protocols: dict[str, ProtocolPlugin] = {}
-        self._schemas: dict[str, SchemaPlugin] = {}
-        self._transports: dict[str, TransportPlugin] = {}
-        self._auth_providers: dict[str, AuthenticationPlugin] = {}
+        self._protocols: dict[str, FlextApiPlugins.Protocol] = {}
+        self._schemas: dict[str, FlextApiPlugins.Schema] = {}
+        self._transports: dict[str, FlextApiPlugins.Transport] = {}
+        self._auth_providers: dict[str, FlextApiPlugins.Authentication] = {}
 
         self.logger.debug("FlextApiRegistry initialized")
 
@@ -95,8 +90,8 @@ class FlextApiRegistry(FlextRegistry):
     def register_protocol(
         self,
         name: str,
-        plugin: ProtocolPlugin,
-    ) -> FlextResult[None]:
+        plugin: FlextApiPlugins.Protocol,
+    ) -> FlextResult[bool]:
         """Register a protocol plugin.
 
         Args:
@@ -113,7 +108,7 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if not name:
-            return FlextResult[None].fail("Protocol name cannot be empty")
+            return FlextResult[bool].fail("Protocol name cannot be empty")
 
         if name in self._protocols:
             self.logger.warning(
@@ -127,9 +122,9 @@ class FlextApiRegistry(FlextRegistry):
             extra={"protocol": name, "plugin_type": type(plugin).__name__},
         )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
-    def get_protocol(self, name: str) -> FlextResult[ProtocolPlugin]:
+    def get_protocol(self, name: str) -> FlextResult[FlextApiPlugins.Protocol]:
         """Get registered protocol plugin by name.
 
         Args:
@@ -140,12 +135,12 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if name not in self._protocols:
-            return FlextResult[ProtocolPlugin].fail(
+            return FlextResult[FlextApiPlugins.Protocol].fail(
                 f"Protocol '{name}' not registered. "
                 f"Available: {', '.join(self._protocols.keys())}"
             )
 
-        return FlextResult[ProtocolPlugin].ok(self._protocols[name])
+        return FlextResult[FlextApiPlugins.Protocol].ok(self._protocols[name])
 
     def list_protocols(self) -> FlextResult[list[str]]:
         """List all registered protocol names.
@@ -156,7 +151,7 @@ class FlextApiRegistry(FlextRegistry):
         """
         return FlextResult[list[str]].ok(list(self._protocols.keys()))
 
-    def unregister_protocol(self, name: str) -> FlextResult[None]:
+    def unregister_protocol(self, name: str) -> FlextResult[bool]:
         """Unregister a protocol plugin.
 
         Args:
@@ -167,19 +162,19 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if name not in self._protocols:
-            return FlextResult[None].fail(f"Protocol '{name}' not registered")
+            return FlextResult[bool].fail(f"Protocol '{name}' not registered")
 
         del self._protocols[name]
         self.logger.info(f"Unregistered protocol: {name}", protocol=name)
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     # Schema Registration
 
     def register_schema(
         self,
         name: str,
-        plugin: SchemaPlugin,
-    ) -> FlextResult[None]:
+        plugin: FlextApiPlugins.Schema,
+    ) -> FlextResult[bool]:
         """Register a schema plugin.
 
         Args:
@@ -191,7 +186,7 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if not name:
-            return FlextResult[None].fail("Schema name cannot be empty")
+            return FlextResult[bool].fail("Schema name cannot be empty")
 
         if name in self._schemas:
             self.logger.warning(
@@ -205,9 +200,9 @@ class FlextApiRegistry(FlextRegistry):
             extra={"schema": name, "plugin_type": type(plugin).__name__},
         )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
-    def get_schema(self, name: str) -> FlextResult[SchemaPlugin]:
+    def get_schema(self, name: str) -> FlextResult[FlextApiPlugins.Schema]:
         """Get registered schema plugin by name.
 
         Args:
@@ -218,12 +213,12 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if name not in self._schemas:
-            return FlextResult[SchemaPlugin].fail(
+            return FlextResult[FlextApiPlugins.Schema].fail(
                 f"Schema '{name}' not registered. "
                 f"Available: {', '.join(self._schemas.keys())}"
             )
 
-        return FlextResult[SchemaPlugin].ok(self._schemas[name])
+        return FlextResult[FlextApiPlugins.Schema].ok(self._schemas[name])
 
     def list_schemas(self) -> FlextResult[list[str]]:
         """List all registered schema system names.
@@ -234,7 +229,7 @@ class FlextApiRegistry(FlextRegistry):
         """
         return FlextResult[list[str]].ok(list(self._schemas.keys()))
 
-    def unregister_schema(self, name: str) -> FlextResult[None]:
+    def unregister_schema(self, name: str) -> FlextResult[bool]:
         """Unregister a schema plugin.
 
         Args:
@@ -245,19 +240,19 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if name not in self._schemas:
-            return FlextResult[None].fail(f"Schema '{name}' not registered")
+            return FlextResult[bool].fail(f"Schema '{name}' not registered")
 
         del self._schemas[name]
         self.logger.info(f"Unregistered schema: {name}", schema=name)
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     # Transport Registration
 
     def register_transport(
         self,
         name: str,
-        plugin: TransportPlugin,
-    ) -> FlextResult[None]:
+        plugin: FlextApiPlugins.Transport,
+    ) -> FlextResult[bool]:
         """Register a transport plugin.
 
         Args:
@@ -269,7 +264,7 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if not name:
-            return FlextResult[None].fail("Transport name cannot be empty")
+            return FlextResult[bool].fail("Transport name cannot be empty")
 
         if name in self._transports:
             self.logger.warning(
@@ -283,9 +278,9 @@ class FlextApiRegistry(FlextRegistry):
             extra={"transport": name, "plugin_type": type(plugin).__name__},
         )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
-    def get_transport(self, name: str) -> FlextResult[TransportPlugin]:
+    def get_transport(self, name: str) -> FlextResult[FlextApiPlugins.Transport]:
         """Get registered transport plugin by name.
 
         Args:
@@ -296,12 +291,12 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if name not in self._transports:
-            return FlextResult[TransportPlugin].fail(
+            return FlextResult[FlextApiPlugins.Transport].fail(
                 f"Transport '{name}' not registered. "
                 f"Available: {', '.join(self._transports.keys())}"
             )
 
-        return FlextResult[TransportPlugin].ok(self._transports[name])
+        return FlextResult[FlextApiPlugins.Transport].ok(self._transports[name])
 
     def list_transports(self) -> FlextResult[list[str]]:
         """List all registered transport names.
@@ -312,7 +307,7 @@ class FlextApiRegistry(FlextRegistry):
         """
         return FlextResult[list[str]].ok(list(self._transports.keys()))
 
-    def unregister_transport(self, name: str) -> FlextResult[None]:
+    def unregister_transport(self, name: str) -> FlextResult[bool]:
         """Unregister a transport plugin.
 
         Args:
@@ -323,19 +318,19 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if name not in self._transports:
-            return FlextResult[None].fail(f"Transport '{name}' not registered")
+            return FlextResult[bool].fail(f"Transport '{name}' not registered")
 
         del self._transports[name]
         self.logger.info(f"Unregistered transport: {name}", transport=name)
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     # Authentication Provider Registration
 
     def register_auth_provider(
         self,
         name: str,
-        plugin: AuthenticationPlugin,
-    ) -> FlextResult[None]:
+        plugin: FlextApiPlugins.Authentication,
+    ) -> FlextResult[bool]:
         """Register an authentication provider plugin.
 
         Args:
@@ -347,7 +342,7 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if not name:
-            return FlextResult[None].fail("Auth provider name cannot be empty")
+            return FlextResult[bool].fail("Auth provider name cannot be empty")
 
         if name in self._auth_providers:
             self.logger.warning(
@@ -361,9 +356,11 @@ class FlextApiRegistry(FlextRegistry):
             extra={"auth_provider": name, "plugin_type": type(plugin).__name__},
         )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
-    def get_auth_provider(self, name: str) -> FlextResult[AuthenticationPlugin]:
+    def get_auth_provider(
+        self, name: str
+    ) -> FlextResult[FlextApiPlugins.Authentication]:
         """Get registered authentication provider by name.
 
         Args:
@@ -374,12 +371,14 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if name not in self._auth_providers:
-            return FlextResult[AuthenticationPlugin].fail(
+            return FlextResult[FlextApiPlugins.Authentication].fail(
                 f"Auth provider '{name}' not registered. "
                 f"Available: {', '.join(self._auth_providers.keys())}"
             )
 
-        return FlextResult[AuthenticationPlugin].ok(self._auth_providers[name])
+        return FlextResult[FlextApiPlugins.Authentication].ok(
+            self._auth_providers[name]
+        )
 
     def list_auth_providers(self) -> FlextResult[list[str]]:
         """List all registered authentication provider names.
@@ -390,7 +389,7 @@ class FlextApiRegistry(FlextRegistry):
         """
         return FlextResult[list[str]].ok(list(self._auth_providers.keys()))
 
-    def unregister_auth_provider(self, name: str) -> FlextResult[None]:
+    def unregister_auth_provider(self, name: str) -> FlextResult[bool]:
         """Unregister an authentication provider.
 
         Args:
@@ -401,13 +400,13 @@ class FlextApiRegistry(FlextRegistry):
 
         """
         if name not in self._auth_providers:
-            return FlextResult[None].fail(f"Auth provider '{name}' not registered")
+            return FlextResult[bool].fail(f"Auth provider '{name}' not registered")
 
         del self._auth_providers[name]
         self.logger.info(
             f"Unregistered auth provider: {name}", extra={"auth_provider": name}
         )
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     # Utility Methods
 
@@ -431,7 +430,7 @@ class FlextApiRegistry(FlextRegistry):
 
         return FlextResult[dict[str, int]].ok(status)
 
-    def clear_all(self) -> FlextResult[None]:
+    def clear_all(self) -> FlextResult[bool]:
         """Clear all registered plugins (mainly for testing).
 
         Returns:
@@ -444,7 +443,7 @@ class FlextApiRegistry(FlextRegistry):
         self._auth_providers.clear()
 
         self.logger.info("Cleared all registry plugins")
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
 
 __all__ = ["FlextApiRegistry"]

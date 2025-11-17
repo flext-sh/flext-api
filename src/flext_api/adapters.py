@@ -31,25 +31,28 @@ class FlextApiAdapters:
 
         @staticmethod
         def adapt_http_request_to_websocket(
-            request: object,
+            request: FlextApiModels.HttpRequest,
         ) -> FlextResult[dict[str, Any]]:
             """Convert HTTP request to WebSocket message format."""
             try:
                 # Convert body to string if bytes, otherwise use as-is
                 body_value: str | dict[str, Any] | list[Any] | None = None
-                if hasattr(request, "body"):
-                    body = getattr(request, "body", None)
-                    if body is not None:
+                if request.body is not None:
+                    if isinstance(request.body, bytes):
                         try:
-                            body_value = body.decode("utf-8")
-                        except (UnicodeDecodeError, AttributeError):
+                            body_value = request.body.decode("utf-8")
+                        except UnicodeDecodeError:
                             body_value = "<binary data>"
+                    elif isinstance(request.body, (str, dict, list)):
+                        body_value = request.body
 
                 message: dict[str, Any] = {
                     "type": "request",
-                    "method": getattr(request, "method", "GET"),
-                    "url": str(getattr(request, "url", "")),
-                    "headers": dict(getattr(request, "headers", {})),
+                    "method": request.method,
+                    "url": str(request.url),
+                    "headers": (
+                        dict(request.headers) if request.headers is not None else {}
+                    ),
                     "body": body_value,
                 }
 
@@ -67,14 +70,29 @@ class FlextApiAdapters:
             """Adapt WebSocket message to HTTP response."""
             try:
                 # Convert WebSocket message to HTTP response
-                status_code = message.get("status", 200)
-                body = message.get("body", {})
+                status_code_value: int = 200
+                if "status" in message:
+                    status_raw = message["status"]
+                    if isinstance(status_raw, int):
+                        status_code_value = status_raw
+
+                body: dict[str, Any] = {}
+                if "body" in message:
+                    body_value = message["body"]
+                    if isinstance(body_value, dict):
+                        body = body_value
+
+                headers: dict[str, str] = {}
+                if "headers" in message:
+                    headers_value = message["headers"]
+                    if isinstance(headers_value, dict):
+                        headers = headers_value
 
                 return FlextResult[FlextApiModels.HttpResponse].ok(
                     FlextApiModels.create_response(
-                        status_code=status_code,
+                        status_code=status_code_value,
                         body=body,
-                        headers=message.get("headers", {}),
+                        headers=headers,
                     )
                 )
 
@@ -152,8 +170,8 @@ class FlextApiAdapters:
 
         @staticmethod
         def transform_request_for_protocol(
-            request: object, target_protocol: str
-        ) -> FlextResult[object]:
+            request: FlextApiModels.HttpRequest, target_protocol: str
+        ) -> FlextResult[dict[str, Any] | FlextApiModels.HttpRequest]:
             """Transform request for specific protocol."""
             try:
                 if target_protocol == "websocket":
@@ -163,17 +181,23 @@ class FlextApiAdapters:
                         )
                     )
                     if result.is_success:
-                        return FlextResult[object].ok(result.value)
-                    return FlextResult[object].fail(result.error or "Adaptation failed")
-                return FlextResult[object].ok(request)
+                        return result
+                    return FlextResult[
+                        dict[str, Any] | FlextApiModels.HttpRequest
+                    ].fail(result.error or "Adaptation failed")
+                return FlextResult[dict[str, Any] | FlextApiModels.HttpRequest].ok(
+                    request
+                )
 
             except Exception as e:
-                return FlextResult[object].fail(f"Request transformation failed: {e}")
+                return FlextResult[dict[str, Any] | FlextApiModels.HttpRequest].fail(
+                    f"Request transformation failed: {e}"
+                )
 
         @staticmethod
         def transform_response_for_protocol(
-            response: object, source_protocol: str
-        ) -> FlextResult[object]:
+            response: dict[str, Any] | FlextApiModels.HttpResponse, source_protocol: str
+        ) -> FlextResult[FlextApiModels.HttpResponse | dict[str, Any]]:
             """Transform response for specific protocol."""
             try:
                 if source_protocol == "websocket" and isinstance(response, dict):
@@ -181,12 +205,22 @@ class FlextApiAdapters:
                         response
                     )
                     if result.is_success:
-                        return FlextResult[object].ok(result.value)
-                    return FlextResult[object].fail(result.error or "Adaptation failed")
-                return FlextResult[object].ok(response)
+                        return result
+                    return FlextResult[
+                        FlextApiModels.HttpResponse | dict[str, Any]
+                    ].fail(result.error or "Adaptation failed")
+                if isinstance(response, FlextApiModels.HttpResponse):
+                    return FlextResult[FlextApiModels.HttpResponse | dict[str, Any]].ok(
+                        response
+                    )
+                return FlextResult[FlextApiModels.HttpResponse | dict[str, Any]].fail(
+                    "Invalid response type"
+                )
 
             except Exception as e:
-                return FlextResult[object].fail(f"Response transformation failed: {e}")
+                return FlextResult[FlextApiModels.HttpResponse | dict[str, Any]].fail(
+                    f"Response transformation failed: {e}"
+                )
 
 
 __all__ = [

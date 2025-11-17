@@ -6,11 +6,13 @@ Only constants and enums - no functions or classes with behavior.
 
 from __future__ import annotations
 
-from typing import ClassVar
+from enum import StrEnum
+from typing import ClassVar, Literal
 
 from flext_core import FlextConstants
 
-from flext_api.typings import FlextApiTypes
+# Unit type for operations that return no data (replaces None in FlextResult)
+Unit = Literal[True]
 
 
 class FlextApiConstants:
@@ -68,14 +70,14 @@ class FlextApiConstants:
     RATE_LIMIT_WINDOW: ClassVar[int] = 3600
 
     # Response templates
-    SUCCESS_RESPONSE_TEMPLATE: ClassVar[FlextApiTypes.JsonObject] = {
+    SUCCESS_RESPONSE_TEMPLATE: ClassVar[dict[str, str | None]] = {
         "status": "success",
         "data": None,
         "error": None,
         "message": None,
     }
 
-    ERROR_RESPONSE_TEMPLATE: ClassVar[FlextApiTypes.JsonObject] = {
+    ERROR_RESPONSE_TEMPLATE: ClassVar[dict[str, str | None]] = {
         "status": "error",
         "data": None,
         "error": None,
@@ -143,6 +145,13 @@ class FlextApiConstants:
         "LOCALHOST_BASE_URL": "https://localhost:8000",
     }
 
+    # Server constants
+    class Server:
+        """Server configuration constants."""
+
+        DEFAULT_HOST: ClassVar[str] = "127.0.0.1"
+        DEFAULT_PORT: ClassVar[int] = 8000
+
     # Response templates - compact definition
 
     # Status constants - compact enum-style
@@ -175,5 +184,89 @@ class FlextApiConstants:
         VALIDATION_ERROR: ClassVar[str] = "VALIDATION_ERROR"
         CONFIG_ERROR: ClassVar[str] = "CONFIG_ERROR"
 
+    # Serialization formats - moved from typings.py
+    class SerializationFormat(StrEnum):
+        """Supported serialization formats."""
 
-__all__ = ["FlextApiConstants"]
+        JSON = "json"
+        MSGPACK = "msgpack"
+        CBOR = "cbor"
+        CUSTOM = "custom"
+
+    # WebSocket constants
+    class WebSocket:
+        """WebSocket protocol constants."""
+
+        DEFAULT_PING_INTERVAL: ClassVar[float] = 20.0
+        DEFAULT_PING_TIMEOUT: ClassVar[float] = 20.0
+        DEFAULT_CLOSE_TIMEOUT: ClassVar[float] = 10.0
+        DEFAULT_MAX_SIZE: ClassVar[int] = 10 * 1024 * 1024  # 10MB
+        DEFAULT_MAX_QUEUE: ClassVar[int] = 32
+        DEFAULT_RECONNECT_MAX_ATTEMPTS: ClassVar[int] = 5
+        DEFAULT_RECONNECT_BACKOFF_FACTOR: ClassVar[float] = 1.5
+        COMPRESSION_DEFLATE: ClassVar[str] = "deflate"
+        MESSAGE_TYPE_TEXT: ClassVar[str] = "text"
+        MESSAGE_TYPE_BINARY: ClassVar[str] = "binary"
+        PROTOCOL_WS: ClassVar[str] = "ws"
+        PROTOCOL_WSS: ClassVar[str] = "wss"
+        PROTOCOL_WEBSOCKET: ClassVar[str] = "websocket"
+        STATUS_SWITCHING_PROTOCOLS: ClassVar[int] = 101
+
+    # SSE constants
+    class SSE:
+        """Server-Sent Events protocol constants."""
+
+        DEFAULT_RETRY_TIMEOUT: ClassVar[int] = 3000
+        DEFAULT_CONNECT_TIMEOUT: ClassVar[float] = 30.0
+        DEFAULT_READ_TIMEOUT: ClassVar[float] = 300.0
+        DEFAULT_RECONNECT_MAX_ATTEMPTS: ClassVar[int] = 10
+        DEFAULT_RECONNECT_BACKOFF_FACTOR: ClassVar[float] = 1.5
+        PROTOCOL_SSE: ClassVar[str] = "sse"
+        PROTOCOL_SERVER_SENT_EVENTS: ClassVar[str] = "server-sent-events"
+        PROTOCOL_EVENTSOURCE: ClassVar[str] = "eventsource"
+
+    # GraphQL constants
+    class GraphQL:
+        """GraphQL protocol constants."""
+
+        PROTOCOL_GRAPHQL: ClassVar[str] = "graphql"
+        PROTOCOL_GQL: ClassVar[str] = "gql"
+
+    # HTTP Protocol constants
+    class HTTP:
+        """HTTP protocol-specific constants."""
+
+        PROTOCOL_HTTP: ClassVar[str] = "http"
+        PROTOCOL_HTTPS: ClassVar[str] = "https"
+        PROTOCOL_HTTP_1_1: ClassVar[str] = "http/1.1"
+        PROTOCOL_HTTP_2: ClassVar[str] = "http/2"
+        PROTOCOL_HTTP_3: ClassVar[str] = "http/3"
+        SUPPORTED_PROTOCOLS: ClassVar[list[str]] = [
+            PROTOCOL_HTTP,
+            PROTOCOL_HTTPS,
+            PROTOCOL_HTTP_1_1,
+            PROTOCOL_HTTP_2,
+        ]
+        SUPPORTED_PROTOCOLS_WITH_HTTP3: ClassVar[list[str]] = [
+            PROTOCOL_HTTP,
+            PROTOCOL_HTTPS,
+            PROTOCOL_HTTP_1_1,
+            PROTOCOL_HTTP_2,
+            PROTOCOL_HTTP_3,
+        ]
+
+    # HTTP Retry constants
+    class HTTPRetry:
+        """HTTP retry status codes."""
+
+        RETRYABLE_STATUS_CODES: ClassVar[set[int]] = {408, 429, 500, 502, 503, 504}
+
+    # HTTP Client constants
+    class HTTPClient:
+        """HTTP client connection constants."""
+
+        DEFAULT_MAX_CONNECTIONS: ClassVar[int] = 100
+        DEFAULT_MAX_KEEPALIVE_CONNECTIONS: ClassVar[int] = 20
+
+
+__all__ = ["FlextApiConstants", "Unit"]

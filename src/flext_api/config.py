@@ -53,8 +53,12 @@ class FlextApiConfig(BaseModel):
     def validate_headers(cls, v: dict[str, str]) -> dict[str, str]:
         """Validate headers."""
         for key, value in v.items():
-            if not key.strip() or not value:
-                msg = f"Invalid header: '{key}': '{value}'"
+            key_stripped = key.strip()
+            if not key_stripped:
+                msg = f"Invalid header key: '{key}'"
+                raise ValueError(msg)
+            if not value:
+                msg = f"Invalid header value for '{key}': '{value}'"
                 raise ValueError(msg)
         return v
 

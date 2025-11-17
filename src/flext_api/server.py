@@ -32,8 +32,9 @@ from flext_core import (
     FlextService,
 )
 
+from flext_api.constants import FlextApiConstants
 
-@FlextDecorators.track_operation
+
 class FlextApiServer(FlextService[object], FlextMixins.Validation):
     """Generic API server with protocol handler support using Clean Architecture.
 
@@ -70,7 +71,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             prefix: str = "",
             schema: object | None = None,
             **options: object,
-        ) -> FlextResult[None]:
+        ) -> FlextResult[bool]:
             """Register endpoint with unified interface (DRY - eliminates duplication).
 
             Args:
@@ -88,7 +89,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             route_key = f"{prefix}{method}:{path}" if prefix else f"{method}:{path}"
 
             if route_key in self._routes:
-                return FlextResult[None].fail(f"Route already registered: {route_key}")
+                return FlextResult[bool].fail(f"Route already registered: {route_key}")
 
             route_data: dict[str, Any] = {
                 "path": path,
@@ -106,7 +107,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
                 extra={"method": method, "path": path, "key": route_key},
             )
 
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
         @property
         def routes(self) -> dict[str, object]:
@@ -132,7 +133,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             self._sse_connections: dict[str, Any] = {}
             self._logger = logger
 
-        def close_all(self) -> FlextResult[None]:
+        def close_all(self) -> FlextResult[bool]:
             """Close all active connections gracefully."""
             for conn_id, connection in self._websocket_connections.items():
                 try:
@@ -151,7 +152,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             self._websocket_connections.clear()
             self._sse_connections.clear()
 
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
     class LifecycleManager:
         """Manage server startup, shutdown, and restart logic."""
@@ -214,7 +215,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         def apply_middleware(
             self,
             middleware_pipeline: list[Any],
-        ) -> FlextResult[None]:
+        ) -> FlextResult[bool]:
             """Apply middleware to application."""
             try:
                 for middleware in middleware_pipeline:
@@ -222,14 +223,14 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
                         "Middleware applied",
                         extra={"middleware": middleware.__class__.__name__},
                     )
-                return FlextResult[None].ok(None)
+                return FlextResult[bool].ok(True)
             except Exception as e:
-                return FlextResult[None].fail(f"Failed to apply middleware: {e}")
+                return FlextResult[bool].fail(f"Failed to apply middleware: {e}")
 
-        def register_routes(self, routes: dict[str, Any]) -> FlextResult[None]:
+        def register_routes(self, routes: dict[str, Any]) -> FlextResult[bool]:
             """Register routes with FastAPI application."""
             if not self._app:
-                return FlextResult[None].fail("Application not created")
+                return FlextResult[bool].fail("Application not created")
 
             # Type narrowing: assign to local variable for type checker
             app = self._app
@@ -255,23 +256,23 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
                         extra={"method": method, "path": path},
                     )
 
-                return FlextResult[None].ok(None)
+                return FlextResult[bool].ok(True)
             except Exception as e:
-                return FlextResult[None].fail(f"Failed to register routes: {e}")
+                return FlextResult[bool].fail(f"Failed to register routes: {e}")
 
         def start(
             self,
             middleware_pipeline: list[Any],
             routes: dict[str, Any],
             protocol_handlers: dict[str, Any],
-        ) -> FlextResult[None]:
+        ) -> FlextResult[bool]:
             """Start server with complete initialization pipeline."""
             if self._is_running:
-                return FlextResult[None].fail("Server already running")
+                return FlextResult[bool].fail("Server already running")
 
             app_result = self.create_app()
             if app_result.is_failure:
-                return FlextResult[None].fail(
+                return FlextResult[bool].fail(
                     f"Failed to create app: {app_result.error}"
                 )
 
@@ -297,19 +298,19 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
                 },
             )
 
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
-        def stop(self) -> FlextResult[None]:
+        def stop(self) -> FlextResult[bool]:
             """Stop server and cleanup resources."""
             if not self._is_running:
-                return FlextResult[None].fail("Server not running")
+                return FlextResult[bool].fail("Server not running")
 
             self._is_running = False
             self._app = None
 
             self._logger.info("Server stopped")
 
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
         @property
         def is_running(self) -> bool:
@@ -323,8 +324,8 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
 
     def __init__(
         self,
-        host: str = "127.0.0.1",
-        port: int = 8000,
+        host: str | None = None,
+        port: int | None = None,
         title: str = "Flext API Server",
         version: str = "1.0.0",
     ) -> None:
@@ -334,8 +335,18 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         # Enhanced logging with FlextLogger
         logger = FlextLogger(__name__)
 
+        # Use constants for defaults
+        server_host = (
+            host if host is not None else FlextApiConstants.Server.DEFAULT_HOST
+        )
+        server_port = (
+            port if port is not None else FlextApiConstants.Server.DEFAULT_PORT
+        )
+
         # Validate configuration using Flext validation patterns
-        config_validation = self._validate_server_config(host, port, title, version)
+        config_validation = self._validate_server_config(
+            server_host, server_port, title, version
+        )
         if config_validation.is_failure:
             error_msg = f"Invalid server configuration: {config_validation.error}"
             raise FlextExceptions.ConfigurationError(error_msg)
@@ -344,76 +355,108 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         self._route_registry = self.RouteRegistry(logger)
         self._connection_manager = self.ConnectionManager(logger)
         self._lifecycle_manager = self.LifecycleManager(
-            host, port, title, version, logger
+            server_host, server_port, title, version, logger
         )
 
         # Protocol and middleware with FlextConstants defaults
         self._protocol_handlers: dict[str, Any] = {}
         self._middleware_pipeline: list[Any] = []
 
+    def _validate_host(self, host: str) -> FlextResult[str]:
+        """Validate host string."""
+        if not isinstance(host, str):
+            return FlextResult[str].fail("Host must be a string")
+        host_stripped = host.strip()
+        if not host_stripped:
+            return FlextResult[str].fail("Host must be a non-empty string")
+        return FlextResult[str].ok(host_stripped)
+
+    def _validate_port(self, port: int) -> FlextResult[int]:
+        """Validate port number."""
+        max_port = FlextApiConstants.MAX_PORT
+
+        if not isinstance(port, int):
+            return FlextResult[int].fail("Port must be an integer")
+        if not (1 <= port <= max_port):
+            return FlextResult[int].fail(f"Port must be between 1 and {max_port}")
+
+        # Port validation - reserved ports check removed (not available in flext-core constants)
+
+        return FlextResult[int].ok(port)
+
+    def _validate_string_field(self, value: str, field_name: str) -> FlextResult[str]:
+        """Validate string field."""
+        if not isinstance(value, str):
+            return FlextResult[str].fail(f"{field_name} must be a string")
+        value_stripped = value.strip()
+        if not value_stripped:
+            return FlextResult[str].fail(f"{field_name} must be a non-empty string")
+        return FlextResult[str].ok(value_stripped)
+
     def _validate_server_config(
         self, host: str, port: int, title: str, version: str
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Validate server configuration using Flext validation patterns."""
-        # Use FlextTypes for domain-specific validation
-        if not isinstance(host, str) or not host.strip():
-            return FlextResult[None].fail("Host must be a non-empty string")
+        host_result = self._validate_host(host)
+        if host_result.is_failure:
+            return FlextResult[bool].fail(host_result.error)
 
-        max_port = getattr(FlextConstants, "MAX_PORT_NUMBER", 65535)
-        if not isinstance(port, int) or not (1 <= port <= max_port):
-            return FlextResult[None].fail(
-                f"Port must be an integer between 1 and {max_port}"
-            )
+        port_result = self._validate_port(port)
+        if port_result.is_failure:
+            return FlextResult[bool].fail(port_result.error)
 
-        if not isinstance(title, str) or not title.strip():
-            return FlextResult[None].fail("Title must be a non-empty string")
+        title_result = self._validate_string_field(title, "Title")
+        if title_result.is_failure:
+            return FlextResult[bool].fail(title_result.error)
 
-        if not isinstance(version, str) or not version.strip():
-            return FlextResult[None].fail("Version must be a non-empty string")
+        version_result = self._validate_string_field(version, "Version")
+        if version_result.is_failure:
+            return FlextResult[bool].fail(version_result.error)
 
-        # Use FlextConstants for semantic validation
-        if port in FlextConstants.NETWORK_RESERVED_PORTS:
-            self.logger.warning(f"Using reserved port: {port}")
+        return FlextResult[bool].ok(True)
 
-        return FlextResult[None].ok(None)
-
-    def execute(self, *_args: object, **_kwargs: object) -> FlextResult[object]:
+    def execute(self) -> FlextResult[bool]:
         """Execute server service (required by FlextService)."""
-        return FlextResult[object].ok(None)
+        return FlextResult[bool].ok(True)
 
-    @FlextDecorators.track_operation
     def register_protocol_handler(
         self,
         protocol: str,
         handler: object,
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Register protocol handler with Flext validation."""
-        # Use Flext validation mixin
-        protocol_valid = self.validate_required(protocol, "protocol name")
-        if not protocol_valid:
-            return FlextResult[None].fail("Protocol name is required")
+        # Validate protocol name using Flext validation patterns
+        protocol_validation = self._validate_string_field(protocol, "protocol")
+        if protocol_validation.is_failure:
+            return FlextResult[bool].fail(protocol_validation.error)
 
         if protocol in self._protocol_handlers:
-            return FlextResult[None].fail(f"Protocol already registered: {protocol}")
+            return FlextResult[bool].fail(f"Protocol already registered: {protocol}")
 
         # Validate handler using Flext protocols
         if not hasattr(handler, "supports_protocol"):
-            return FlextResult[None].fail(f"Invalid protocol handler: {type(handler)}")
+            return FlextResult[bool].fail(f"Invalid protocol handler: {type(handler)}")
 
         self._protocol_handlers[protocol] = handler
 
         # Use logger from lifecycle manager
+        handler_name = ""
+        if hasattr(handler, "name"):
+            name_value = handler.name
+            if isinstance(name_value, str):
+                handler_name = name_value
+
         self._lifecycle_manager.logger.info(
             "Protocol handler registered",
-            extra={"protocol": protocol, "handler": getattr(handler, "name", "")},
+            extra={"protocol": protocol, "handler": handler_name},
         )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     def add_middleware(
         self,
         middleware: object,
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Add middleware to pipeline."""
         self._middleware_pipeline.append(middleware)
 
@@ -422,7 +465,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             extra={"middleware": middleware.__class__.__name__},
         )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     def register_route(
         self,
@@ -430,7 +473,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         method: str,
         handler: Callable,
         **options: object,
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
         return self._route_registry.register(
             method, path, handler, prefix="", **options
@@ -441,7 +484,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         path: str,
         handler: Callable,
         **options: object,
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(
             "WS", path, handler, prefix="WS", **options
@@ -452,7 +495,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         path: str,
         handler: Callable,
         **options: object,
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(
             "SSE", path, handler, prefix="SSE", **options
@@ -463,13 +506,13 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         path: str = "/graphql",
         schema: object | None = None,
         **options: object,
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(
             "GRAPHQL", path, lambda: None, prefix="GRAPHQL", schema=schema, **options
         )
 
-    def start(self) -> FlextResult[None]:
+    def start(self) -> FlextResult[bool]:
         """Start server (delegates to LifecycleManager)."""
         return self._lifecycle_manager.start(
             self._middleware_pipeline,
@@ -477,33 +520,33 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             self._protocol_handlers,
         )
 
-    def stop(self) -> FlextResult[None]:
+    def stop(self) -> FlextResult[bool]:
         """Stop server (delegates to ConnectionManager and LifecycleManager)."""
         self._connection_manager.close_all()
         return self._lifecycle_manager.stop()
 
-    def restart(self) -> FlextResult[None]:
+    def restart(self) -> FlextResult[bool]:
         """Restart server (orchestrate stop/start)."""
         stop_result = self.stop()
         if stop_result.is_failure:
-            return FlextResult[None].fail(f"Failed to stop: {stop_result.error}")
+            return FlextResult[bool].fail(f"Failed to stop: {stop_result.error}")
 
         start_result = self.start()
         if start_result.is_failure:
-            return FlextResult[None].fail(f"Failed to start: {start_result.error}")
+            return FlextResult[bool].fail(f"Failed to start: {start_result.error}")
 
         self.logger.info("Server restarted")
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
-    def get_app(self) -> FlextResult[object]:
+    def get_app(self) -> FlextResult[FastAPI]:
         """Get FastAPI application instance."""
         app = self._lifecycle_manager.app
         if not app:
             msg = "Application not created. Call start() first."
-            return FlextResult[object].fail(msg)
+            return FlextResult[FastAPI].fail(msg)
 
-        return FlextResult[object].ok(app)
+        return FlextResult[FastAPI].ok(app)
 
     @property
     def is_running(self) -> bool:

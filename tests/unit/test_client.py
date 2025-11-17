@@ -93,26 +93,31 @@ class TestFlextApiClientUrlBuilding:
         config = FlextApiConfig(base_url="https://api.example.com")
         client = FlextApiClient(config)
 
-        url1 = client._build_url("/users")
-        assert url1 == "https://api.example.com/users"
+        url1_result = client._build_url("/users")
+        assert url1_result.is_success
+        assert url1_result.unwrap() == "https://api.example.com/users"
 
-        url2 = client._build_url("users")
-        assert url2 == "https://api.example.com/users"
+        url2_result = client._build_url("users")
+        assert url2_result.is_success
+        assert url2_result.unwrap() == "https://api.example.com/users"
 
     def test_build_url_without_base_url(self) -> None:
         """Test URL building without base URL."""
         config = FlextApiConfig(base_url="")
         client = FlextApiClient(config)
 
-        url = client._build_url("https://external.api/endpoint")
-        assert url == "https://external.api/endpoint"
+        url_result = client._build_url("https://external.api/endpoint")
+        assert url_result.is_success
+        assert url_result.unwrap() == "https://external.api/endpoint"
 
     def test_build_url_strips_trailing_slash(self) -> None:
         """Test URL building strips trailing slash from base URL."""
         config = FlextApiConfig(base_url="https://api.example.com/")
         client = FlextApiClient(config)
 
-        url = client._build_url("/users")
+        url_result = client._build_url("/users")
+        assert url_result.is_success
+        url = url_result.unwrap()
         assert url == "https://api.example.com/users"
         # Should not have double slashes
         assert "//" not in url[8:]  # Ignore https://
@@ -122,27 +127,31 @@ class TestFlextApiClientBodySerialization:
     """Test request/response body serialization."""
 
     def test_serialize_body_none(self) -> None:
-        """Test serializing None body."""
+        """Test serializing None body returns empty bytes."""
         result = FlextApiClient._serialize_body(None)
-        assert result is None
+        assert result.is_success
+        assert result.unwrap() == b""
 
     def test_serialize_body_bytes(self) -> None:
         """Test serializing bytes body."""
         body = b"raw bytes"
         result = FlextApiClient._serialize_body(body)
-        assert result == b"raw bytes"
+        assert result.is_success
+        assert result.unwrap() == b"raw bytes"
 
     def test_serialize_body_string(self) -> None:
         """Test serializing string body."""
         body = "string content"
         result = FlextApiClient._serialize_body(body)
-        assert result == b"string content"
+        assert result.is_success
+        assert result.unwrap() == b"string content"
 
     def test_serialize_body_dict(self) -> None:
         """Test serializing dictionary body to JSON."""
         body = {"key": "value"}
         result = FlextApiClient._serialize_body(body)
-        assert result == json.dumps(body).encode("utf-8")
+        assert result.is_success
+        assert result.unwrap() == json.dumps(body).encode("utf-8")
 
     def test_deserialize_json_response(self) -> None:
         """Test deserializing JSON response."""
@@ -151,26 +160,32 @@ class TestFlextApiClientBodySerialization:
         mock_response.json.return_value = {"status": "ok"}
 
         result = FlextApiClient._deserialize_body(mock_response)
-        assert result == {"status": "ok"}
+        assert result.is_success
+        assert result.unwrap() == {"status": "ok"}
 
     def test_deserialize_text_response(self) -> None:
         """Test deserializing plain text response."""
         mock_response = MagicMock()
         mock_response.headers = {"content-type": "text/plain"}
         mock_response.text = "plain text"
+        # Mock json() to raise exception so it falls back to text
+        mock_response.json.side_effect = ValueError("Not JSON")
 
         result = FlextApiClient._deserialize_body(mock_response)
-        assert result == "plain text"
+        assert result.is_success
+        assert result.unwrap() == "plain text"
 
     def test_deserialize_json_error_fallback_to_text(self) -> None:
-        """Test deserializing JSON response with parsing error falls back to text."""
+        """Test deserializing JSON response with parsing error tries text (no fallback)."""
         mock_response = MagicMock()
         mock_response.headers = {"content-type": "application/json"}
         mock_response.json.side_effect = Exception("JSON parse error")
         mock_response.text = "invalid json"
 
         result = FlextApiClient._deserialize_body(mock_response)
-        assert result == "invalid json"
+        # Should try JSON first (fail), then try text (succeed)
+        assert result.is_success
+        assert result.unwrap() == "invalid json"
 
 
 class TestFlextApiClientRailwayPattern:
@@ -216,7 +231,9 @@ class TestFlextApiClientRailwayPattern:
         )
 
         with patch("httpx.Client") as mock_client_class:
-            mock_client_class.side_effect = Exception("Connection failed")
+            mock_client = MagicMock()
+            mock_client_class.return_value.__enter__.return_value = mock_client
+            mock_client.request.side_effect = Exception("Connection failed")
 
             result = client.request(request)
 
@@ -254,11 +271,14 @@ class TestFlextApiClientHeaderMerging:
 
             result = client.request(request)
 
+            assert result.is_success
+            assert mock_client.request.called, (
+                "mock_client.request should have been called"
+            )
             # Verify all headers were passed to httpx
-            call_kwargs = mock_client.request.call_args[1]
+            call_kwargs = mock_client.request.call_args.kwargs
             assert "X-API-Key" in call_kwargs["headers"]
             assert "X-Request-ID" in call_kwargs["headers"]
-            assert result.is_success
 
 
 class TestFlextApiClientQueryParams:
@@ -288,9 +308,12 @@ class TestFlextApiClientQueryParams:
 
             result = client.request(request)
 
-            call_kwargs = mock_client.request.call_args[1]
-            assert call_kwargs["params"] == {"q": "test", "limit": "10"}
             assert result.is_success
+            assert mock_client.request.called, (
+                "mock_client.request should have been called"
+            )
+            call_kwargs = mock_client.request.call_args.kwargs
+            assert call_kwargs["params"] == {"q": "test", "limit": "10"}
 
 
 class TestFlextApiClientConfiguration:
@@ -308,12 +331,15 @@ class TestFlextApiClientConfiguration:
         )
 
         with patch("httpx.Client") as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value.__enter__.return_value = mock_client
+
             mock_response = MagicMock()
             mock_response.status_code = 200
             mock_response.headers = {}
             mock_response.text = "ok"
 
-            mock_client_class.return_value.__enter__.return_value.request.return_value = mock_response
+            mock_client.request.return_value = mock_response
 
             result = client.request(request)
 
@@ -344,9 +370,12 @@ class TestFlextApiClientConfiguration:
 
             result = client.request(request)
 
-            call_kwargs = mock_client.request.call_args[1]
-            assert call_kwargs["url"] == "https://api.example.com/users"
             assert result.is_success
+            assert mock_client.request.called, (
+                "mock_client.request should have been called"
+            )
+            call_kwargs = mock_client.request.call_args.kwargs
+            assert call_kwargs["url"] == "https://api.example.com/users"
 
 
 class TestFlextApiClientHttpMethods:
@@ -413,7 +442,9 @@ class TestFlextApiClientErrorHandling:
         )
 
         with patch("httpx.Client") as mock_client_class:
-            mock_client_class.side_effect = ConnectionError("Network unreachable")
+            mock_client = MagicMock()
+            mock_client_class.return_value.__enter__.return_value = mock_client
+            mock_client.request.side_effect = ConnectionError("Network unreachable")
 
             result = client.request(request)
 
@@ -433,7 +464,11 @@ class TestFlextApiClientErrorHandling:
         with patch("httpx.Client") as mock_client_class:
             import httpx
 
-            mock_client_class.side_effect = httpx.TimeoutException("Request timed out")
+            mock_client = MagicMock()
+            mock_client_class.return_value.__enter__.return_value = mock_client
+            mock_client.request.side_effect = httpx.TimeoutException(
+                "Request timed out"
+            )
 
             result = client.request(request)
 

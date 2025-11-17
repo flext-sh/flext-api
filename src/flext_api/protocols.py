@@ -73,8 +73,8 @@ class FlextApiProtocols(FlextProtocols):
     class StorageBackendProtocol(Protocol):
         """Protocol for generic storage backend implementations."""
 
-        def get(self, key: str, default: object = None) -> FlextResult[object]:
-            """Retrieve value by key."""
+        def get(self, key: str) -> FlextResult[object]:
+            """Retrieve value by key. Returns error if key not found (no fallback)."""
             ...
 
         def set(
@@ -82,11 +82,11 @@ class FlextApiProtocols(FlextProtocols):
             key: str,
             value: object,
             timeout: int | None = None,
-        ) -> FlextResult[None]:
+        ) -> FlextResult[bool]:
             """Store value with optional timeout."""
             ...
 
-        def delete(self, key: str) -> FlextResult[None]:
+        def delete(self, key: str) -> FlextResult[bool]:
             """Delete value by key."""
             ...
 
@@ -94,7 +94,7 @@ class FlextApiProtocols(FlextProtocols):
             """Check if key exists."""
             ...
 
-        def clear(self) -> FlextResult[None]:
+        def clear(self) -> FlextResult[bool]:
             """Clear all stored values."""
             ...
 
