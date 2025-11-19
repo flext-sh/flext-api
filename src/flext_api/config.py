@@ -12,12 +12,14 @@ from __future__ import annotations
 
 import json
 
-from pydantic import BaseModel, Field, field_validator
+from flext_core import FlextConfig
+from pydantic import Field, field_validator
 
 from flext_api.constants import FlextApiConstants
 
 
-class FlextApiConfig(BaseModel):
+@FlextConfig.auto_register("api")
+class FlextApiConfig(FlextConfig.AutoConfig):
     """HTTP configuration using Pydantic v2.
 
     Pure configuration model with validation using FlextApiConstants.
