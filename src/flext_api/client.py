@@ -69,6 +69,16 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         """Execute FlextService interface - return configuration."""
         return FlextResult[FlextApiConfig].ok(self._config)
 
+    @property
+    def base_url(self) -> str:
+        """Access base_url from configuration."""
+        return self._config.base_url
+
+    @property
+    def timeout(self) -> float:
+        """Access timeout from configuration."""
+        return self._config.timeout
+
     def request(
         self, request: FlextApiModels.HttpRequest
     ) -> FlextResult[FlextApiModels.HttpResponse]:
