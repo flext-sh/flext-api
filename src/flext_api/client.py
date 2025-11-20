@@ -215,7 +215,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         # Try JSON for any content (may succeed)
         json_result = FlextApiClient._deserialize_json(response)
         if json_result.is_success:
-            return json_result.map(lambda v: v)  # Type: ResponseBody
+            return json_result.map(lambda v: v)
 
         # Try text for text content types
         if "text/" in content_type:
@@ -226,12 +226,12 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         # Try text as fallback
         text_result = FlextApiClient._deserialize_text(response)
         if text_result.is_success:
-            return text_result.map(lambda v: v)  # Type: ResponseBody (str is valid)
+            return text_result.map(lambda v: v)
 
         # Try bytes as last resort
         bytes_result = FlextApiClient._deserialize_bytes(response)
         if bytes_result.is_success:
-            return bytes_result.map(lambda v: v)  # Type: ResponseBody (bytes is valid)
+            return bytes_result.map(lambda v: v)
 
         return FlextResult[FlextApiTypes.ResponseBody].fail(
             "Failed to deserialize response body: no valid format found"
