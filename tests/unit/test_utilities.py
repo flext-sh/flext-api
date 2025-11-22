@@ -7,6 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from flext_api import FlextApiUtilities
 
 
@@ -343,8 +345,6 @@ class TestFlextApiUtilitiesReal:
         response = result.unwrap()
         assert "timestamp" in response
         # Verify ISO format
-        from datetime import datetime
-
         datetime.fromisoformat(response["timestamp"])
 
     def test_pagination_extract_page_params_valid_high_page(self) -> None:

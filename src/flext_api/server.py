@@ -413,7 +413,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
 
         return FlextResult[bool].ok(True)
 
-    def execute(self) -> FlextResult[object]:
+    def execute(self, **_kwargs: object) -> FlextResult[object]:
         """Execute server service (required by FlextService)."""
         return FlextResult[object].ok(True)
 

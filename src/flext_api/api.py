@@ -67,7 +67,7 @@ class FlextApi(FlextService[FlextApiConfig]):
             self._config = FlextApiConfig()
         self._client = FlextApiClient(config=self._config)
 
-    def execute(self) -> FlextResult[FlextApiConfig]:
+    def execute(self, **_kwargs: object) -> FlextResult[FlextApiConfig]:
         """Execute FlextService interface."""
         return FlextResult[FlextApiConfig].ok(self._config)
 
@@ -233,17 +233,23 @@ class FlextApi(FlextService[FlextApiConfig]):
         # Extract body using monadic pattern
         body_result = self._extract_body_from_kwargs(data, request_kwargs)
         if body_result.is_failure:
-            return FlextResult[FlextApiModels.HttpResponse].fail(body_result.error)
+            return FlextResult[FlextApiModels.HttpResponse].fail(
+                body_result.error or "Body extraction failed"
+            )
 
         # Merge headers using monadic pattern
         headers_result = self._merge_headers(headers, request_kwargs)
         if headers_result.is_failure:
-            return FlextResult[FlextApiModels.HttpResponse].fail(headers_result.error)
+            return FlextResult[FlextApiModels.HttpResponse].fail(
+                headers_result.error or "Header extraction failed"
+            )
 
         # Validate timeout using monadic pattern
         timeout_result = self._validate_and_extract_timeout(timeout, request_kwargs)
         if timeout_result.is_failure:
-            return FlextResult[FlextApiModels.HttpResponse].fail(timeout_result.error)
+            return FlextResult[FlextApiModels.HttpResponse].fail(
+                timeout_result.error or "Timeout extraction failed"
+            )
 
         # Extract query params - use empty dict if not present
         query_params: FlextApiTypes.WebParams = {}

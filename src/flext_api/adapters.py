@@ -32,7 +32,7 @@ class FlextApiAdapters:
         @staticmethod
         def adapt_http_request_to_websocket(
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[dict[str, Any]]:
+        ) -> FlextResult[dict[str, Any] | FlextApiModels.HttpRequest]:
             """Convert HTTP request to WebSocket message format."""
             try:
                 # Convert body to string if bytes, otherwise use as-is
@@ -66,7 +66,7 @@ class FlextApiAdapters:
         @staticmethod
         def adapt_websocket_message_to_http_response(
             message: dict[str, Any],
-        ) -> FlextResult[FlextApiModels.HttpResponse]:
+        ) -> FlextResult[FlextApiModels.HttpResponse | dict[str, Any]]:
             """Adapt WebSocket message to HTTP response."""
             try:
                 # Convert WebSocket message to HTTP response

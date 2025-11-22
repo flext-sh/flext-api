@@ -17,7 +17,7 @@ import httpx
 import pytest
 from flext_core import FlextResult
 
-from flext_api import FlextApiClient, FlextApiConfig, FlextApiModels
+from flext_api import FlextApi, FlextApiClient, FlextApiConfig, FlextApiModels
 
 
 class TestFlextApiClientInitialization:
@@ -380,8 +380,6 @@ class TestFlextApiClientHttpMethods:
     @pytest.mark.network
     def test_get_method(self) -> None:
         """Test GET method via FlextApi facade using real HTTP."""
-        from flext_api import FlextApi
-
         api = FlextApi(FlextApiConfig(base_url="https://httpbin.org"))
 
         result = api.get("/get")
@@ -394,8 +392,6 @@ class TestFlextApiClientHttpMethods:
     @pytest.mark.network
     def test_post_method(self) -> None:
         """Test POST method via FlextApi facade using real HTTP."""
-        from flext_api import FlextApi
-
         api = FlextApi(FlextApiConfig(base_url="https://httpbin.org"))
 
         result = api.post("/post", data={"name": "John"})

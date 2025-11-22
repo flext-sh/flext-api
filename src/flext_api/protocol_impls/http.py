@@ -109,18 +109,24 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         # Validate request using base class method
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return FlextResult[FlextApiModels.HttpRequest].fail(validation_result.error)
+            return FlextResult[FlextApiModels.HttpRequest].fail(
+                validation_result.error or "Request validation failed"
+            )
 
         # Extract method using RFC method
         method_result = self._extract_method(request)
         if method_result.is_failure:
-            return FlextResult[FlextApiModels.HttpRequest].fail(method_result.error)
+            return FlextResult[FlextApiModels.HttpRequest].fail(
+                method_result.error or "Method extraction failed"
+            )
         method_str = method_result.unwrap()
 
         # Extract URL using RFC method
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return FlextResult[FlextApiModels.HttpRequest].fail(url_result.error)
+            return FlextResult[FlextApiModels.HttpRequest].fail(
+                url_result.error or "URL extraction failed"
+            )
         url = url_result.unwrap()
 
         # Extract headers using RFC method
@@ -151,7 +157,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         # Build HTTP request model
         request_result = self._build_http_request_from_dict(request)
         if request_result.is_failure:
-            return FlextResult[dict[str, object]].fail(request_result.error)
+            return FlextResult[dict[str, object]].fail(
+                request_result.error or "Request building failed"
+            )
 
         http_request = request_result.unwrap()
 
@@ -160,7 +168,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         url = str(http_request.url)
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(headers_result.error)
+            return FlextResult[dict[str, Any]].fail(
+                headers_result.error or "Headers extraction failed"
+            )
         headers = headers_result.unwrap()
         timeout = http_request.timeout
         body = http_request.body
@@ -195,7 +205,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 "body": response.body,
             })
 
-        return FlextResult[dict[str, Any]].fail(result.error)
+        return FlextResult[dict[str, Any]].fail(
+            result.error or "Request execution failed"
+        )
 
     def _execute_with_retry(
         self,

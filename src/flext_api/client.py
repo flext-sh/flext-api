@@ -65,7 +65,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         else:
             self._config = FlextApiConfig()
 
-    def execute(self) -> FlextResult[FlextApiConfig]:
+    def execute(self, **_kwargs: object) -> FlextResult[FlextApiConfig]:
         """Execute FlextService interface - return configuration."""
         return FlextResult[FlextApiConfig].ok(self._config)
 
@@ -94,11 +94,15 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         # Build URL and serialize body using monadic patterns
         url_result = self._build_url(request.url)
         if url_result.is_failure:
-            return FlextResult[FlextApiModels.HttpResponse].fail(url_result.error)
+            return FlextResult[FlextApiModels.HttpResponse].fail(
+                url_result.error or "URL validation failed"
+            )
 
         body_result = self._serialize_body(request.body)
         if body_result.is_failure:
-            return FlextResult[FlextApiModels.HttpResponse].fail(body_result.error)
+            return FlextResult[FlextApiModels.HttpResponse].fail(
+                body_result.error or "Body serialization failed"
+            )
 
         # Execute request with validated URL and body
         return self._execute_http_request(

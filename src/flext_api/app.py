@@ -47,22 +47,15 @@ class FlextApiApp:
         Returns:
         FastAPI application instance.
 
-        Raises:
-        ImportError: If FastAPI is not installed.
-
         """
-        try:
-            return FastAPI(
-                title=title or "FlextAPI",
-                version=version or "1.0.0",
-                description=description or "FlextAPI Application",
-                docs_url=docs_url or "/docs",
-                redoc_url=redoc_url or "/redoc",
-                openapi_url=openapi_url or "/openapi.json",
-            )
-        except ImportError as e:
-            error_msg = "FastAPI is required for FlextAPI application creation"
-            raise ImportError(error_msg) from e
+        return FastAPI(
+            title=title or "FlextAPI",
+            version=version or "1.0.0",
+            description=description or "FlextAPI Application",
+            docs_url=docs_url or "/docs",
+            redoc_url=redoc_url or "/redoc",
+            openapi_url=openapi_url or "/openapi.json",
+        )
 
 
 __all__ = ["FlextApiApp"]

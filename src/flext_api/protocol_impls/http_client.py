@@ -133,7 +133,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             full_url_result = self._build_full_url(url)
             if full_url_result.is_failure:
                 return FlextResult[FlextApiModels.HttpResponse].fail(
-                    full_url_result.error
+                    full_url_result.error or "URL building failed"
                 )
             full_url = full_url_result.unwrap()
 

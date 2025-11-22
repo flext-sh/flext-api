@@ -40,7 +40,9 @@ class FlextApiConfigManager:
             else:
                 process_result = self._process_config(config)
                 if process_result.is_failure:
-                    return FlextResult[bool].fail(process_result.error)
+                    return FlextResult[bool].fail(
+                        process_result.error or "Configuration processing failed"
+                    )
                 self._config = process_result.unwrap()
 
             return self._validate_configuration()
@@ -56,7 +58,9 @@ class FlextApiConfigManager:
             if value is not None:
                 normalize_result = self._normalize_value(key, value)
                 if normalize_result.is_failure:
-                    return FlextResult[dict[str, Any]].fail(normalize_result.error)
+                    return FlextResult[dict[str, Any]].fail(
+                        normalize_result.error or "Value normalization failed"
+                    )
                 processed[key] = normalize_result.unwrap()
 
         return FlextResult[dict[str, Any]].ok(processed)
@@ -149,11 +153,15 @@ class FlextApiConfigManager:
 
         timeout_result = self._extract_timeout()
         if timeout_result.is_failure:
-            return FlextResult[bool].fail(timeout_result.error)
+            return FlextResult[bool].fail(
+                timeout_result.error or "Timeout extraction failed"
+            )
 
         max_retries_result = self._extract_max_retries()
         if max_retries_result.is_failure:
-            return FlextResult[bool].fail(max_retries_result.error)
+            return FlextResult[bool].fail(
+                max_retries_result.error or "Max retries extraction failed"
+            )
 
         return FlextResult[bool].ok(True)
 
@@ -230,15 +238,21 @@ class FlextApiConfigManager:
 
         headers_result = self._extract_headers()
         if headers_result.is_failure:
-            return FlextResult[FlextApiModels.ClientConfig].fail(headers_result.error)
+            return FlextResult[FlextApiModels.ClientConfig].fail(
+                headers_result.error or "Headers extraction failed"
+            )
 
         base_url_result = self._extract_base_url()
         if base_url_result.is_failure:
-            return FlextResult[FlextApiModels.ClientConfig].fail(base_url_result.error)
+            return FlextResult[FlextApiModels.ClientConfig].fail(
+                base_url_result.error or "Base URL extraction failed"
+            )
 
         timeout_result = self._extract_timeout_for_config()
         if timeout_result.is_failure:
-            return FlextResult[FlextApiModels.ClientConfig].fail(timeout_result.error)
+            return FlextResult[FlextApiModels.ClientConfig].fail(
+                timeout_result.error or "Timeout extraction failed"
+            )
 
         return FlextResult[FlextApiModels.ClientConfig].ok(
             FlextApiModels.create_config(

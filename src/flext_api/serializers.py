@@ -34,7 +34,7 @@ class FlextApiSerializers(FlextService[bool]):
     Follows FLEXT standards with FlextResult error handling.
     """
 
-    def execute(self) -> FlextResult[bool]:
+    def execute(self, **_kwargs: object) -> FlextResult[bool]:
         """Execute FlextService interface - serializers are always ready."""
         return FlextResult[bool].ok(True)
 
@@ -394,7 +394,9 @@ class FlextApiSerializers(FlextService[bool]):
 
             serializer_result = self.get_serializer(format_key)
             if serializer_result.is_failure:
-                return FlextResult[bytes].fail(serializer_result.error)
+                return FlextResult[bytes].fail(
+                    serializer_result.error or "Serializer retrieval failed"
+                )
 
             serializer = serializer_result.unwrap()
 
@@ -432,7 +434,9 @@ class FlextApiSerializers(FlextService[bool]):
 
             serializer_result = self.get_serializer(format_key)
             if serializer_result.is_failure:
-                return FlextResult[object].fail(serializer_result.error)
+                return FlextResult[object].fail(
+                    serializer_result.error or "Serializer retrieval failed"
+                )
 
             serializer = serializer_result.unwrap()
 

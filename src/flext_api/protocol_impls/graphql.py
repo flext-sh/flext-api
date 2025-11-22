@@ -51,7 +51,9 @@ class GraphQLProtocolPlugin(RFCProtocolImplementation):
         # Validate request using base class method
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return FlextResult[dict[str, object]].fail(validation_result.error)
+            return FlextResult[dict[str, object]].fail(
+                validation_result.error or "Request validation failed"
+            )
 
         # Acknowledge kwargs to avoid linting warnings
         _ = kwargs
