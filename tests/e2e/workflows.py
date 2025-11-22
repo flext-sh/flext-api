@@ -12,6 +12,7 @@ import pytest
 from flext_api import (
     FlextApiClient,
 )
+from flext_api.config import FlextApiConfig
 
 
 @pytest.mark.e2e
@@ -21,8 +22,6 @@ class TestApiWorkflowE2E:
     def test_complete_api_workflow(self) -> None:
         """Test complete workflow from API creation to HTTP operations."""
         # Simple e2e test
-        from flext_api.config import FlextApiConfig
-
         api_config = FlextApiConfig()
         api_instance = FlextApiClient(api_config)
         assert api_instance is not None
@@ -30,8 +29,6 @@ class TestApiWorkflowE2E:
     def test_http_client_workflow(self) -> None:
         """Test HTTP client workflow."""
         # Simple client workflow test
-        from flext_api.config import FlextApiConfig
-
         api_config = FlextApiConfig(base_url="https://httpbin.org")
         client = FlextApiClient(api_config)
         assert client is not None

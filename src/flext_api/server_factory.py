@@ -45,18 +45,13 @@ class FlextApiServerFactory:
         FlextResult containing FlextApiServer instance or error
 
         """
-        try:
-            server = FlextApiServer(
-                host=host,
-                port=port,
-                title=title,
-                version=version,
-            )
-            return FlextResult[object].ok(server)
-        except ImportError as e:
-            return FlextResult[object].fail(f"Failed to import FlextApiServer: {e}")
-        except Exception as e:
-            return FlextResult[object].fail(f"Failed to create server: {e}")
+        server = FlextApiServer(
+            host=host,
+            port=port,
+            title=title,
+            version=version,
+        )
+        return FlextResult[object].ok(server)
 
     @staticmethod
     def create_webhook_handler(
@@ -76,18 +71,11 @@ class FlextApiServerFactory:
         FlextResult containing FlextWebhookHandler instance or error
 
         """
-        try:
-            handler = FlextWebhookHandler(
-                secret=secret,
-                max_retries=max_retries,
-            )
-            return FlextResult[object].ok(handler)
-        except ImportError as e:
-            return FlextResult[object].fail(
-                f"Failed to import FlextWebhookHandler: {e}"
-            )
-        except Exception as e:
-            return FlextResult[object].fail(f"Failed to create webhook handler: {e}")
+        handler = FlextWebhookHandler(
+            secret=secret,
+            max_retries=max_retries,
+        )
+        return FlextResult[object].ok(handler)
 
 
 __all__ = ["FlextApiServerFactory"]

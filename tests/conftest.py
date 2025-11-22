@@ -239,8 +239,6 @@ def sample_config_dict() -> ResponseDict:
         FlextApiTypes.ResponseDict: Sample configuration data.
 
     """
-    from typing import cast
-
     return cast("ResponseDict", FlextTestsDomains.create_configuration())
 
 
@@ -274,8 +272,6 @@ def sample_payload_data() -> ResponseDict:
         FlextApiTypes.ResponseDict: Sample payload data.
 
     """
-    from typing import cast
-
     return cast("FlextApiTypes.ResponseDict", FlextTestsDomains.create_payload())
 
 
@@ -287,8 +283,6 @@ def sample_configuration_data() -> FlextApiTypes.ResponseDict:
         FlextApiTypes.ResponseDict: Sample configuration data.
 
     """
-    from typing import cast
-
     return cast("ResponseDict", FlextTestsDomains.create_configuration())
 
 

@@ -108,17 +108,17 @@ class FlextWebhookHandler(FlextService[object]):
         # Retry queue
         self._retry_queue: deque[dict[str, Any]] = deque(maxlen=500)
 
-    def execute(self) -> FlextResult[bool]:
+    def execute(self, **_kwargs: object) -> FlextResult[object]:
         """Execute webhook service lifecycle operations.
 
         FlextService requires this method for service execution.
         For webhook handler, this is a no-op as webhook processing is event-driven.
 
         Returns:
-        FlextResult[bool]: Success result
+        FlextResult[object]: Success result
 
         """
-        return FlextResult[bool].ok(True)
+        return FlextResult[object].ok(True)
 
     def register_event_handler(
         self,

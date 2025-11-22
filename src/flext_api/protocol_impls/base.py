@@ -67,7 +67,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         # Protocol state
         self._initialized = False
 
-    def execute(self) -> FlextResult[bool]:
+    def execute(self, **_kwargs: object) -> FlextResult[bool]:
         """Execute FlextService interface - return success if initialized."""
         if not self._initialized:
             return FlextResult[bool].fail("Protocol not initialized")

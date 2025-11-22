@@ -12,6 +12,7 @@ from __future__ import annotations
 import pytest
 
 from flext_api import FlextApiClient
+from flext_api.config import FlextApiConfig
 
 
 @pytest.mark.integration
@@ -21,8 +22,6 @@ class TestHttpClientIntegration:
     def test_real_http_request_with_httpbin(self) -> None:
         """Test real HTTP request with httpbin.org."""
         # Create client using modern API
-        from flext_api.config import FlextApiConfig
-
         api_config = FlextApiConfig()
         api = FlextApiClient(api_config)
         client_result = api.create_client(
@@ -45,8 +44,6 @@ class TestHttpClientIntegration:
 
     def test_basic_client_configuration(self) -> None:
         """Test client configuration without optional plugins."""
-        from flext_api.config import FlextApiConfig
-
         api_config = FlextApiConfig()
         api = FlextApiClient(api_config)
         client_result = api.create_client(
@@ -66,8 +63,6 @@ class TestHttpClientIntegration:
     def test_post_request_with_json_data(self) -> None:
         """Test POST request with JSON data."""
         # Create client using modern API
-        from flext_api.config import FlextApiConfig
-
         api_config = FlextApiConfig()
         api = FlextApiClient(api_config)
         client_result = api.create_client(
@@ -91,8 +86,6 @@ class TestHttpClientIntegration:
     def test_client_context_manager(self) -> None:
         """Test client as context manager."""
         # Create client using modern API
-        from flext_api.config import FlextApiConfig
-
         api_config = FlextApiConfig()
         api = FlextApiClient(api_config)
         client_result = api.create_client(
