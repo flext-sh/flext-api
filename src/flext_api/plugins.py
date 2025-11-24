@@ -40,6 +40,13 @@ class FlextApiPlugins:
                 )
             self._initialized = False
 
+        @property
+        def logger(self) -> FlextLogger:
+            """Get the plugin logger."""
+            return getattr(
+                self, "_plugin_logger", FlextLogger(f"{__name__}.{self.name}")
+            )
+
         def initialize(self) -> FlextResult[bool]:
             """Initialize plugin resources."""
             if self._initialized:

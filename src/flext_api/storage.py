@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Self, override
+from typing import Self, cast, override
 
 from flext_core import FlextResult, FlextService, FlextUtilities
 from pydantic import BaseModel, Field
@@ -79,9 +79,9 @@ class FlextApiStorage(FlextService[bool]):
         """Intercept config argument and convert to kwargs for FlextService V2."""
         instance = super().__new__(cls)
         if config is not None:
-            instance._flext_storage_config = config
+            object.__setattr__(instance, "_flext_storage_config", config)
         if kwargs:
-            instance._flext_storage_kwargs = kwargs
+            object.__setattr__(instance, "_flext_storage_kwargs", kwargs)
         return instance
 
     def __init__(self, config: object | None = None, **kwargs: object) -> None:
@@ -373,12 +373,12 @@ class FlextApiStorage(FlextService[bool]):
 
         self._storage[key] = json_value
         metadata_dict: dict[str, FlextApiTypes.JsonValue] = {
-            "value": metadata.value,
-            "timestamp": metadata.timestamp,
-            "ttl": metadata.ttl,
-            "created_at": metadata.created_at,
+            "value": cast("FlextApiTypes.JsonValue", metadata.value),
+            "timestamp": cast("FlextApiTypes.JsonValue", metadata.timestamp),
+            "ttl": cast("FlextApiTypes.JsonValue", metadata.ttl),
+            "created_at": cast("FlextApiTypes.JsonValue", metadata.created_at),
         }
-        self._storage[self._key(key)] = metadata_dict
+        self._storage[self._key(key)] = cast("FlextApiTypes.JsonValue", metadata_dict)
 
         if ttl_val is not None:
             self._expiry_times[key] = time.time() + ttl_val

@@ -186,7 +186,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         # Use RFC method to extract URL
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return FlextResult[bool].fail(url_result.error)
+            return FlextResult[bool].fail(url_result.error or "URL extraction failed")
 
         url = url_result.unwrap()
 
@@ -216,7 +216,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         # Extract WebSocket-specific parameters
         message_result = self._extract_message(request, kwargs)
         if message_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(message_result.error)
+            return FlextResult[dict[str, Any]].fail(
+                message_result.error or "Message extraction failed"
+            )
         message = message_result.unwrap()
 
         message_type = self._extract_message_type(kwargs)

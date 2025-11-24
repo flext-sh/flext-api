@@ -21,6 +21,9 @@ from flext_api.config import FlextApiConfig
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
 
+# HTTP status codes
+HTTP_STATUS_ERROR_MIN = 400
+
 
 class FlextApiClient(FlextService[FlextApiConfig]):
     """Generic HTTP client using FLEXT patterns.
@@ -147,6 +150,11 @@ class FlextApiClient(FlextService[FlextApiConfig]):
                         headers=request_headers,
                         params=request_params,
                     )
+
+            if response.status_code >= HTTP_STATUS_ERROR_MIN:
+                return FlextResult[FlextApiModels.HttpResponse].fail(
+                    f"HTTP {response.status_code}: {response.reason_phrase}"
+                )
 
             return self._deserialize_body(response).map(
                 lambda body: FlextApiModels.HttpResponse(

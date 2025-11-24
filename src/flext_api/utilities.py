@@ -226,7 +226,9 @@ class FlextApiUtilities(FlextUtilities):
                 )
                 .flat_map(
                     lambda params: FlextApiUtilities.PaginationBuilder.prepare_pagination_data(
-                        data=data, total=total, **params
+                        data=data,
+                        total=total,
+                        **params,
                     )
                 )
                 .flat_map(

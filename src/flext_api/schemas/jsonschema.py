@@ -16,6 +16,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 from flext_core import FlextResult, FlextTypes
 
 from flext_api.plugins import FlextApiPlugins
@@ -116,7 +118,9 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             return FlextResult[bool].fail("$schema must be a string")
         draft_result = self._validate_schema_uri(schema_uri)
         if draft_result.is_failure:
-            return FlextResult[bool].fail(draft_result.error)
+            return FlextResult[bool].fail(
+                draft_result.error or "Schema URI validation failed"
+            )
         return FlextResult[bool].ok(True)
 
     def _validate_schema_type_field(
@@ -216,7 +220,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         schema_dict_result = self._validate_schema_basic_structure(schema)
         if schema_dict_result.is_failure:
             return FlextResult[FlextApiTypes.SchemaDefinition].fail(
-                schema_dict_result.error
+                schema_dict_result.error or "Schema basic structure validation failed"
             )
 
         schema_dict = schema_dict_result.unwrap()
@@ -234,7 +238,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         for validation_result in validations:
             if validation_result.is_failure:
                 return FlextResult[FlextApiTypes.SchemaDefinition].fail(
-                    validation_result.error
+                    validation_result.error or "Schema validation failed"
                 )
 
         self.logger.info(
@@ -264,7 +268,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             return FlextResult[bool].fail(f"Invalid schema: {schema_result.error}")
         return FlextResult[bool].ok(True)
 
-    def _validate_instance_type(
+    def _validate_type_in_schema(
         self, instance: FlextTypes.JsonValue, schema: dict[str, FlextTypes.JsonValue]
     ) -> FlextResult[bool]:
         """Validate instance type if specified in schema."""
@@ -272,7 +276,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             return FlextResult[bool].ok(True)
         type_result = self._validate_instance_type(instance, schema["type"])
         if type_result.is_failure:
-            return FlextResult[bool].fail(type_result.error)
+            return FlextResult[bool].fail(type_result.error or "Type validation failed")
         return FlextResult[bool].ok(True)
 
     def _validate_required_properties(
@@ -304,7 +308,10 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             if prop_name in properties_field:
                 prop_schema = properties_field[prop_name]
                 if isinstance(prop_schema, dict):
-                    prop_result = self.validate_instance(prop_value, prop_schema)
+                    prop_result = self.validate_instance(
+                        cast("FlextTypes.JsonValue", prop_value),
+                        cast("dict[str, FlextTypes.JsonValue]", prop_schema),
+                    )
                     if prop_result.is_failure:
                         return FlextResult[bool].fail(
                             f"Invalid property '{prop_name}': {prop_result.error}"
@@ -321,7 +328,10 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         if not isinstance(items_field, dict):
             return FlextResult[bool].fail("Items field must be a dictionary")
         for i, item in enumerate(instance):
-            item_result = self.validate_instance(item, items_field)
+            item_result = self.validate_instance(
+                cast("FlextTypes.JsonValue", item),
+                cast("dict[str, FlextTypes.JsonValue]", items_field),
+            )
             if item_result.is_failure:
                 return FlextResult[bool].fail(
                     f"Invalid array item[{i}]: {item_result.error}"
@@ -347,12 +357,12 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         schema_validation = self._validate_instance_schema(schema)
         if schema_validation.is_failure:
             return FlextResult[FlextApiTypes.SchemaDefinition].fail(
-                schema_validation.error
+                schema_validation.error or "Schema basic structure validation failed"
             )
 
         # Run all validations
         validations = [
-            self._validate_instance_type(instance, schema),
+            self._validate_type_in_schema(instance, schema),
             self._validate_required_properties(instance, schema),
             self._validate_object_properties(instance, schema),
             self._validate_array_items(instance, schema),
@@ -361,7 +371,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         for validation_result in validations:
             if validation_result.is_failure:
                 return FlextResult[FlextApiTypes.SchemaDefinition].fail(
-                    validation_result.error
+                    validation_result.error or "Schema validation failed"
                 )
 
         return FlextResult[FlextApiTypes.SchemaDefinition].ok({
@@ -524,9 +534,13 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             return FlextResult[bool].fail(f"Invalid schema: {schema_result.error}")
 
         # Validate request body against JSON Schema
-        instance_result = self.validate_instance(request, schema)
+        instance_result = self.validate_instance(
+            cast("FlextTypes.JsonValue", request), schema
+        )
         if instance_result.is_failure:
-            return FlextResult[bool].fail(instance_result.error)
+            return FlextResult[bool].fail(
+                instance_result.error or "Schema validation failed"
+            )
 
         return FlextResult[bool].ok(True)
 
@@ -551,9 +565,13 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             return FlextResult[bool].fail(f"Invalid schema: {schema_result.error}")
 
         # Validate response body against JSON Schema
-        instance_result = self.validate_instance(response, schema)
+        instance_result = self.validate_instance(
+            cast("FlextTypes.JsonValue", response), schema
+        )
         if instance_result.is_failure:
-            return FlextResult[bool].fail(instance_result.error)
+            return FlextResult[bool].fail(
+                instance_result.error or "Schema validation failed"
+            )
 
         return FlextResult[bool].ok(True)
 

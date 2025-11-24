@@ -397,19 +397,23 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         """Validate server configuration using Flext validation patterns."""
         host_result = self._validate_host(host)
         if host_result.is_failure:
-            return FlextResult[bool].fail(host_result.error)
+            return FlextResult[bool].fail(host_result.error or "Host validation failed")
 
         port_result = self._validate_port(port)
         if port_result.is_failure:
-            return FlextResult[bool].fail(port_result.error)
+            return FlextResult[bool].fail(port_result.error or "Port validation failed")
 
         title_result = self._validate_string_field(title, "Title")
         if title_result.is_failure:
-            return FlextResult[bool].fail(title_result.error)
+            return FlextResult[bool].fail(
+                title_result.error or "Title validation failed"
+            )
 
         version_result = self._validate_string_field(version, "Version")
         if version_result.is_failure:
-            return FlextResult[bool].fail(version_result.error)
+            return FlextResult[bool].fail(
+                version_result.error or "Version validation failed"
+            )
 
         return FlextResult[bool].ok(True)
 
@@ -426,7 +430,9 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         # Validate protocol name using Flext validation patterns
         protocol_validation = self._validate_string_field(protocol, "protocol")
         if protocol_validation.is_failure:
-            return FlextResult[bool].fail(protocol_validation.error)
+            return FlextResult[bool].fail(
+                protocol_validation.error or "Protocol validation failed"
+            )
 
         if protocol in self._protocol_handlers:
             return FlextResult[bool].fail(f"Protocol already registered: {protocol}")

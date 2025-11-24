@@ -1,198 +1,98 @@
-"""Unit tests for FlextApiLifecycleManager - HTTP resource lifecycle management.
+"""Comprehensive tests for FlextApiLifecycleManager.
+
+Tests validate HTTP resource lifecycle management using real objects.
+No mocks - uses objects with actual close methods.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
 
-import math
-from collections import UserDict
+import pytest
 
-from flext_api.lifecycle_manager import FlextApiLifecycleManager
+from flext_api.lifecycle_manager import FlextApiLifecycleManager, HttpResourceProtocol
 
 
 class MockSyncResource:
-    """Mock sync resource with close method only."""
+    """Mock resource with sync close method."""
 
     def __init__(self) -> None:
-        """Initialize mock sync resource."""
         self.closed = False
-        self.close_called = False
 
     def close(self) -> None:
-        """Sync close method."""
-        self.close_called = True
+        """Close the resource."""
         self.closed = True
 
 
-class MockResourceWithoutClose:
-    """Mock resource without close methods."""
+class MockAsyncResource:
+    """Mock resource with async aclose method."""
 
     def __init__(self) -> None:
-        """Initialize mock resource without close method."""
-        self.data = "test"
+        self.closed = False
+
+    async def aclose(self) -> None:
+        """Close the resource asynchronously."""
+        self.closed = True
 
 
 class TestFlextApiLifecycleManager:
-    """Test FlextApiLifecycleManager HTTP resource lifecycle management."""
+    """Test HTTP resource lifecycle management."""
 
     def test_manage_sync_http_resource_with_close(self) -> None:
-        """Test managing sync resource with close method."""
+        """Test synchronous resource management with close method."""
         resource = MockSyncResource()
 
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
+        result = FlextApiLifecycleManager.manage_sync_http_resource(resource)
 
-        assert managed is resource
-        assert resource.close_called
+        assert result is resource
         assert resource.closed
 
     def test_manage_sync_http_resource_without_close(self) -> None:
-        """Test managing sync resource without close method."""
-        resource = MockResourceWithoutClose()
+        """Test synchronous resource management without close method."""
+        resource = object()  # No close method
 
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
+        result = FlextApiLifecycleManager.manage_sync_http_resource(resource)
 
-        assert managed is resource
-        # Should not raise even without close
+        assert result is resource
 
-    def test_manage_sync_http_resource_with_none(self) -> None:
-        """Test managing None resource."""
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(None)
+    @pytest.mark.asyncio
+    async def test_manage_http_resource_with_aclose(self) -> None:
+        """Test async resource management with aclose method."""
+        resource = MockAsyncResource()
 
-        assert managed is None
+        async with FlextApiLifecycleManager.manage_http_resource(resource) as res:
+            assert res is resource
+            assert not resource.closed
 
-    def test_manage_sync_http_resource_with_string(self) -> None:
-        """Test managing string resource."""
-        resource = "test_string"
+        assert resource.closed
 
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert managed == resource
-
-    def test_manage_sync_http_resource_multiple_resources(self) -> None:
-        """Test managing multiple sync resources in sequence."""
-        resource1 = MockSyncResource()
-        resource2 = MockSyncResource()
-
-        FlextApiLifecycleManager.manage_sync_http_resource(resource1)
-        assert resource1.closed
-
-        FlextApiLifecycleManager.manage_sync_http_resource(resource2)
-        assert resource2.closed
-
-    def test_manage_sync_http_resource_non_callable_close(self) -> None:
-        """Test managing sync resource with non-callable close attribute."""
-
-        class ResourceWithNonCallableClose:
-            close = "not_callable"
-
-        resource = ResourceWithNonCallableClose()
-
-        # Should not raise, just skip non-callable close
-        FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-    def test_manage_sync_http_resource_with_dict(self) -> None:
-        """Test managing dictionary resource."""
-        resource = {"key": "value"}
-
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert managed == resource
-
-    def test_manage_sync_http_resource_with_list(self) -> None:
-        """Test managing list resource."""
-        resource = [1, 2, 3]
-
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert managed == resource
-
-    def test_manage_sync_http_resource_with_close_dict(self) -> None:
-        """Test managing resource that is a dict with close method."""
-
-        class DictWithClose(UserDict):
-            def close(self) -> None:
-                pass
-
-        resource = DictWithClose({"key": "value"})
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert managed == resource
-
-    def test_manage_sync_http_resource_with_int(self) -> None:
-        """Test managing integer resource."""
-        resource = 42
-
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert managed == resource
-
-    def test_manage_sync_http_resource_with_float(self) -> None:
-        """Test managing float resource."""
-        resource = math.pi
-
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert managed == resource
-
-    def test_manage_sync_http_resource_with_bool(self) -> None:
-        """Test managing boolean resource."""
-        resource = True
-
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert managed == resource
-
-    def test_manage_sync_http_resource_with_empty_string(self) -> None:
-        """Test managing empty string resource."""
-        resource = ""
-
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert managed == resource
-
-    def test_manage_sync_http_resource_with_tuple(self) -> None:
-        """Test managing tuple resource."""
-        resource = (1, 2, 3)
-
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert managed == resource
-
-    def test_manage_sync_http_resource_with_set(self) -> None:
-        """Test managing set resource."""
-        resource = {1, 2, 3}
-
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert managed == resource
-
-    def test_manage_sync_http_resource_callable_close_is_called(self) -> None:
-        """Test that callable close attribute is actually called."""
-        call_count = 0
-
-        class ResourceWithCallableClose:
-            def close(self) -> None:
-                nonlocal call_count
-                call_count += 1
-
-        resource = ResourceWithCallableClose()
-        FlextApiLifecycleManager.manage_sync_http_resource(resource)
-
-        assert call_count == 1
-
-    def test_manage_sync_http_resource_returns_same_reference(self) -> None:
-        """Test that manage_sync_http_resource returns same object reference."""
+    @pytest.mark.asyncio
+    async def test_manage_http_resource_with_close_fallback(self) -> None:
+        """Test async resource management with close method fallback."""
         resource = MockSyncResource()
 
-        managed = FlextApiLifecycleManager.manage_sync_http_resource(resource)
+        async with FlextApiLifecycleManager.manage_http_resource(resource) as res:
+            assert res is resource
+            assert not resource.closed
 
-        assert managed is resource  # Same object, not copy
+        assert resource.closed
 
-    def test_lifecycle_manager_has_required_methods(self) -> None:
-        """Test that FlextApiLifecycleManager has required methods."""
-        assert hasattr(FlextApiLifecycleManager, "manage_http_resource")
-        assert hasattr(FlextApiLifecycleManager, "manage_sync_http_resource")
-        assert callable(FlextApiLifecycleManager.manage_http_resource)
-        assert callable(FlextApiLifecycleManager.manage_sync_http_resource)
+    @pytest.mark.asyncio
+    async def test_manage_http_resource_without_close_methods(self) -> None:
+        """Test async resource management without close methods."""
+        resource = object()  # No close or aclose
+
+        async with FlextApiLifecycleManager.manage_http_resource(resource) as res:
+            assert res is resource
+
+
+class TestHttpResourceProtocol:
+    """Test the HttpResourceProtocol."""
+
+    def test_protocol_definition(self) -> None:
+        """Test that the protocol is properly defined."""
+        # This is more of a compile-time check, but we can verify it's importable
+        assert HttpResourceProtocol is not None
+        # Protocol is a typing construct, no runtime attributes

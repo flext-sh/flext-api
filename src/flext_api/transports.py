@@ -132,7 +132,9 @@ class FlextApiTransports:
 
                 params_result = self._extract_request_params(data)
                 if params_result.is_failure:
-                    return FlextResult[object].fail(params_result.error)
+                    return FlextResult[object].fail(
+                        params_result.error or "Parameter extraction failed"
+                    )
 
                 method_str, url, headers, params, json_data, content = (
                     params_result.unwrap()
