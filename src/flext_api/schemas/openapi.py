@@ -169,7 +169,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         # Validate OpenAPI version
         version_result = self._validate_openapi_version(schema)
         if version_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(version_result.error)
+            return FlextResult[dict[str, Any]].fail(
+                version_result.error or "Version validation failed"
+            )
         openapi_version = version_result.unwrap()
 
         # Validate required fields
@@ -195,7 +197,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         # Validate optional components
         components_result = self._validate_optional_components(schema)
         if components_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(components_result.error)
+            return FlextResult[dict[str, Any]].fail(
+                components_result.error or "Components validation failed"
+            )
 
         title_str = ""
         if "title" in info:
@@ -426,7 +430,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             security_schemes
         )
         if schemes_dict_result.is_failure:
-            return FlextResult[bool].fail(schemes_dict_result.error)
+            return FlextResult[bool].fail(
+                schemes_dict_result.error or "Schemes validation failed"
+            )
 
         schemes_dict = schemes_dict_result.unwrap()
 

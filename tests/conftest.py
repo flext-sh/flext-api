@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 import tempfile
 import uuid
+import warnings
 from collections.abc import Generator
 from pathlib import Path
 from typing import cast
@@ -21,13 +22,12 @@ from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from flext_core import FlextConstants, FlextContainer
-from flext_tests import FlextTestsDomains
+from flext_tests import FlextTestDocker, FlextTestsDomains
 
 from flext_api import (
     FlextApiClient,
     FlextApiConfig,
     FlextApiStorage,
-    FlextApiTypes,
 )
 
 # Type aliases for testing - use expanded types directly
@@ -211,7 +211,7 @@ def sample_api_data() -> ResponseDict:
         FlextApiTypes.ResponseDict: Sample API data.
 
     """
-    return cast("ResponseDict", FlextTestsDomains.api_response_data())
+    return FlextTestsDomains.api_response_data()
 
 
 @pytest.fixture
@@ -239,7 +239,7 @@ def sample_config_dict() -> ResponseDict:
         FlextApiTypes.ResponseDict: Sample configuration data.
 
     """
-    return cast("ResponseDict", FlextTestsDomains.create_configuration())
+    return FlextTestsDomains.create_configuration()
 
 
 @pytest.fixture
@@ -261,29 +261,29 @@ def sample_service_data() -> ResponseDict:
         FlextApiTypes.ResponseDict: Sample service data.
 
     """
-    return cast("ResponseDict", FlextTestsDomains.create_service())
+    return FlextTestsDomains.create_service()
 
 
 @pytest.fixture
-def sample_payload_data() -> ResponseDict:
+def sample_payload_data() -> dict[str, object]:
     """Sample payload data using FlextTestsDomains.
 
     Returns:
         FlextApiTypes.ResponseDict: Sample payload data.
 
     """
-    return cast("FlextApiTypes.ResponseDict", FlextTestsDomains.create_payload())
+    return FlextTestsDomains.create_payload()
 
 
 @pytest.fixture
-def sample_configuration_data() -> FlextApiTypes.ResponseDict:
+def sample_configuration_data() -> dict[str, object]:
     """Sample configuration data using FlextTestsDomains.
 
     Returns:
         FlextApiTypes.ResponseDict: Sample configuration data.
 
     """
-    return cast("ResponseDict", FlextTestsDomains.create_configuration())
+    return FlextTestsDomains.create_configuration()
 
 
 # ============================================================================
@@ -337,3 +337,81 @@ def temp_dir() -> Generator[Path]:
 # FlextTestsMatchers.assert_result_success(result)
 # FlextTestsDomains.create_user()
 # FlextTestsUtilities.create_test_result(success=True, data=data)
+
+
+# ============================================================================
+# DOCKER TEST FIXTURES - FlextTestDocker integration
+# ============================================================================
+
+
+@pytest.fixture(scope="session")
+def docker_manager() -> Generator[FlextTestDocker]:
+    """Provide FlextTestDocker instance for containerized testing.
+
+    This fixture provides access to FlextTestDocker for managing test containers.
+    Containers are automatically cleaned up after test session.
+
+    Yields:
+        FlextTestDocker: Configured docker manager instance
+
+    Note:
+        Uses session scope to avoid recreating containers for each test.
+        Containers remain running between tests but are cleaned up at session end.
+
+    """
+    manager = FlextTestDocker()
+
+    # Register pytest fixtures that wrap FlextTestDocker operations
+    # This provides backward compatibility and easier testing
+    try:
+        yield manager
+    finally:
+        # Cleanup: stop all test containers at session end
+        try:
+            cleanup_result = manager.cleanup_all_test_containers()
+            if not cleanup_result.is_success:
+                warnings.warn(
+                    f"Docker cleanup failed: {cleanup_result.error}",
+                    UserWarning,
+                    stacklevel=2,
+                )
+        except Exception as e:
+            warnings.warn(f"Docker cleanup error: {e}", UserWarning, stacklevel=2)
+
+
+@pytest.fixture
+def httpbin_container(docker_manager: FlextTestDocker) -> Generator[str]:
+    """Provide httpbin test container for HTTP testing.
+
+    Starts httpbin container if not already running, yields container name.
+    Container remains running for the test but is not stopped afterward.
+
+    Args:
+        docker_manager: FlextTestDocker instance
+
+    Yields:
+        str: Container name for use in tests
+
+    Note:
+        Container persists between tests for performance but is cleaned up
+        at session end by docker_manager fixture.
+
+    """
+    container_name = "flext-api-httpbin-test"
+
+    # Start httpbin container
+    start_result = docker_manager.start_container(
+        name=container_name,
+        image="kennethreitz/httpbin:latest",
+        ports={"80/tcp": 8080},  # Map container port 80 to host port 8080
+    )
+
+    if start_result.is_failure:
+        pytest.skip(f"Could not start httpbin container: {start_result.error}")
+
+    try:
+        yield container_name
+    finally:
+        # Container remains running for other tests
+        # Will be cleaned up by session-scoped docker_manager fixture
+        pass

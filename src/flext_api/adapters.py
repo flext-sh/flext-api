@@ -56,10 +56,12 @@ class FlextApiAdapters:
                     "body": body_value,
                 }
 
-                return FlextResult[dict[str, Any]].ok(message)
+                return FlextResult[dict[str, Any] | FlextApiModels.HttpRequest].ok(
+                    message
+                )
 
             except Exception as e:
-                return FlextResult[dict[str, Any]].fail(
+                return FlextResult[dict[str, Any] | FlextApiModels.HttpRequest].fail(
                     f"HTTP to WebSocket adaptation failed: {e}"
                 )
 
@@ -88,7 +90,7 @@ class FlextApiAdapters:
                     if isinstance(headers_value, dict):
                         headers = headers_value
 
-                return FlextResult[FlextApiModels.HttpResponse].ok(
+                return FlextResult[FlextApiModels.HttpResponse | dict[str, Any]].ok(
                     FlextApiModels.create_response(
                         status_code=status_code_value,
                         body=body,
@@ -97,7 +99,7 @@ class FlextApiAdapters:
                 )
 
             except Exception as e:
-                return FlextResult[FlextApiModels.HttpResponse].fail(
+                return FlextResult[FlextApiModels.HttpResponse | dict[str, Any]].fail(
                     f"WebSocket to HTTP adaptation failed: {e}"
                 )
 

@@ -174,19 +174,25 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         # Validate AsyncAPI version
         version_result = self._validate_asyncapi_version(schema)
         if version_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(version_result.error)
+            return FlextResult[dict[str, Any]].fail(
+                version_result.error or "AsyncAPI version validation failed"
+            )
 
         asyncapi_version = version_result.unwrap()
 
         # Validate required fields
         fields_result = self._validate_required_fields(schema, asyncapi_version)
         if fields_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(fields_result.error)
+            return FlextResult[dict[str, Any]].fail(
+                fields_result.error or "Required fields validation failed"
+            )
 
         # Validate info object
         info_result = self._validate_info_object(schema)
         if info_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(info_result.error)
+            return FlextResult[dict[str, Any]].fail(
+                info_result.error or "Info object validation failed"
+            )
 
         info = info_result.unwrap()
 
@@ -211,7 +217,9 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         # Validate optional components
         components_result = self._validate_optional_components(schema)
         if components_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(components_result.error)
+            return FlextResult[dict[str, Any]].fail(
+                components_result.error or "Components validation failed"
+            )
 
         channels_value = schema["channels"]
         if not isinstance(channels_value, dict):
@@ -353,7 +361,9 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                 channel_name, channel
             )
             if channel_dict_result.is_failure:
-                return FlextResult[bool].fail(channel_dict_result.error)
+                return FlextResult[bool].fail(
+                    channel_dict_result.error or "Channel dictionary validation failed"
+                )
 
             channel_dict = channel_dict_result.unwrap()
 

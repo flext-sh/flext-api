@@ -15,6 +15,7 @@ import json
 
 import httpx
 import pytest
+import pytest_httpx
 from flext_core import FlextResult
 
 from flext_api import FlextApi, FlextApiClient, FlextApiConfig, FlextApiModels
@@ -210,9 +211,18 @@ class TestFlextApiClientBodySerialization:
 class TestFlextApiClientRailwayPattern:
     """Test railway-oriented programming with FlextResult using REAL HTTP."""
 
-    @pytest.mark.network
-    def test_request_success_returns_flext_result(self) -> None:
-        """Test successful request returns FlextResult[HttpResponse] using real HTTP."""
+    def test_request_success_returns_flext_result(
+        self, httpx_mock: pytest_httpx.HTTPXMock
+    ) -> None:
+        """Test successful request returns FlextResult[HttpResponse] using mocked HTTP."""
+        # Mock the HTTP response
+        httpx_mock.add_response(
+            method="GET",
+            url="https://httpbin.org/get",
+            json={"url": "https://httpbin.org/get", "args": {}},
+            status_code=200,
+        )
+
         config = FlextApiConfig(base_url="https://httpbin.org")
         client = FlextApiClient(config)
 
@@ -230,17 +240,24 @@ class TestFlextApiClientRailwayPattern:
         assert isinstance(response.body, dict)
         assert "url" in response.body
 
-    @pytest.mark.network
-    def test_request_failure_returns_flext_result_error(self) -> None:
-        """Test failed request returns FlextResult with error using real HTTP."""
-        config = FlextApiConfig()
+    def test_request_failure_returns_flext_result_error(
+        self, httpx_mock: pytest_httpx.HTTPXMock
+    ) -> None:
+        """Test failed request returns FlextResult with error using mocked HTTP."""
+        # Mock a server error response
+        httpx_mock.add_response(
+            method="GET",
+            url="https://httpbin.org/status/500",
+            status_code=500,
+            json={"error": "Internal Server Error"},
+        )
+
+        config = FlextApiConfig(base_url="https://httpbin.org")
         client = FlextApiClient(config)
 
-        # Use invalid domain that will fail
         request = FlextApiModels.HttpRequest(
             method="GET",
-            url="https://invalid-domain-that-does-not-exist-12345.example.com/endpoint",
-            timeout=1.0,  # Short timeout for faster failure
+            url="/status/500",
         )
 
         result = client.request(request)

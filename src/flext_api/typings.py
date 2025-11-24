@@ -70,7 +70,6 @@ class FlextApiTypes(FlextTypes):
 
     type ClientConfig = dict[str, str | int | JsonObject]
     type ConnectionPool = dict[str, int | bool | dict[str, int | bool]]
-    type RetryConfig = dict[str, int | float | list[str] | bool]
     type TimeoutConfig = dict[str, int | float | dict[str, int | float]]
 
     class RequestKwargs(TypedDict):
@@ -103,7 +102,6 @@ class FlextApiTypes(FlextTypes):
     # SERVICE & PROCESSING TYPES - Service management and pipelines
     # =========================================================================
 
-    type ServiceRegistry = dict[str, str | JsonObject]
     type ServiceConfig = dict[str, dict[str, int | float | str]]
     type ServiceHealth = dict[str, bool | str | int]
 

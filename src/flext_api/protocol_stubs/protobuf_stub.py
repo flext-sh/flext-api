@@ -176,7 +176,9 @@ class ProtobufSerializer:
         # Validate message against schema
         validation_result = self._validate_message(message)
         if validation_result.is_failure:
-            return FlextResult[bytes].fail(validation_result.error)
+            return FlextResult[bytes].fail(
+                validation_result.error or "Message validation failed"
+            )
 
         return FlextResult[bytes].fail(
             "Protobuf serializer placeholder - awaiting flext-grpc integration"

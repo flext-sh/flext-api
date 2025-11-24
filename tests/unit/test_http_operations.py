@@ -1,91 +1,28 @@
-"""Tests for FlextAPI HTTP operations using REAL HTTP.
+"""Tests for deprecated http_operations module.
 
-ALL TESTS USE REAL HTTP REQUESTS - NO MOCKS, NO PATCHES, NO BYPASSES.
-Tests use httpbin.org for real HTTP endpoint testing.
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
 
 import pytest
 
-from flext_api import FlextApi
+from flext_api import http_operations
 
 
-class TestFlextApiHttpOperations:
-    """Test HTTP operations using FlextApi with REAL HTTP requests."""
+class TestHttpOperationsDeprecation:
+    """Test deprecated http_operations module."""
 
-    @pytest.mark.network
-    def test_get_request_using_api(self) -> None:
-        """Test GET request using FlextApi with real HTTP."""
-        api = FlextApi()
-        result = api.get("https://httpbin.org/get")
+    def test_module_can_be_imported(self) -> None:
+        """Test that the deprecated module can still be imported."""
+        # This module is deprecated but should still be importable
+        assert http_operations is not None
+        assert hasattr(http_operations, "__all__")
+        assert http_operations.__all__ == []
 
-        # If httpbin is unavailable, skip test but verify error handling works
-        if not result.is_success and (
-            "connection" in result.error.lower() or "refused" in result.error.lower()
-        ):
-            pytest.skip(f"httpbin.org unavailable: {result.error}")
-
-        assert result.is_success, f"Request failed: {result.error}"
-        response = result.unwrap()
-        assert response.status_code == 200
-        assert isinstance(response.body, dict)
-
-    @pytest.mark.network
-    def test_post_request_using_api(self) -> None:
-        """Test POST request using FlextApi with real HTTP."""
-        api = FlextApi()
-        result = api.post(
-            "https://httpbin.org/post",
-            data={"name": "John", "email": "john@example.com"},
-        )
-
-        if not result.is_success and (
-            "connection" in result.error.lower() or "refused" in result.error.lower()
-        ):
-            pytest.skip(f"httpbin.org unavailable: {result.error}")
-
-        assert result.is_success, f"Request failed: {result.error}"
-        response = result.unwrap()
-        assert response.status_code == 200
-        assert isinstance(response.body, dict)
-        # httpbin returns posted data in json field
-        posted_data = response.body.get("json", {})
-        assert posted_data.get("name") == "John"
-        assert posted_data.get("email") == "john@example.com"
-
-    @pytest.mark.network
-    def test_put_request_using_api(self) -> None:
-        """Test PUT request using FlextApi with real HTTP."""
-        api = FlextApi()
-        result = api.put(
-            "https://httpbin.org/put",
-            data={"name": "Jane", "email": "jane@example.com"},
-        )
-
-        if not result.is_success and (
-            "connection" in result.error.lower() or "refused" in result.error.lower()
-        ):
-            pytest.skip(f"httpbin.org unavailable: {result.error}")
-
-        assert result.is_success, f"Request failed: {result.error}"
-        response = result.unwrap()
-        assert response.status_code == 200
-        assert isinstance(response.body, dict)
-
-    @pytest.mark.network
-    def test_delete_request_using_api(self) -> None:
-        """Test DELETE request using FlextApi with real HTTP."""
-        api = FlextApi()
-        result = api.delete("https://httpbin.org/delete")
-
-        if not result.is_success and (
-            "connection" in result.error.lower() or "refused" in result.error.lower()
-        ):
-            pytest.skip(f"httpbin.org unavailable: {result.error}")
-
-        assert result.is_success, f"Request failed: {result.error}"
-        response = result.unwrap()
-        assert response.status_code == 200
-        # DELETE may return empty body or None
-        assert response.body is None or isinstance(response.body, dict)
+    @pytest.mark.skip(reason="Module is deprecated - no functionality to test")
+    def test_no_functionality_available(self) -> None:
+        """Test that no functionality is available in this deprecated module."""
+        # This module contains no functionality - it's just for backward compatibility

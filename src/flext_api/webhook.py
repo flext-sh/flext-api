@@ -289,7 +289,9 @@ class FlextWebhookHandler(FlextService[object]):
         # Extract event type
         event_type_result = self._extract_event_type(event_data)
         if event_type_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(event_type_result.error)
+            return FlextResult[dict[str, Any]].fail(
+                event_type_result.error or "Event type extraction failed"
+            )
         event_type = event_type_result.unwrap()
 
         # Generate event ID
@@ -530,12 +532,13 @@ class FlextWebhookHandler(FlextService[object]):
             "successful_deliveries": sum(
                 1
                 for conf in self._delivery_confirmations.values()
-                if conf["status"] in {"delivered", "delivered_after_retry"}
+                if isinstance(conf, dict)
+                and conf["status"] in {"delivered", "delivered_after_retry"}
             ),
             "failed_deliveries": sum(
                 1
                 for conf in self._delivery_confirmations.values()
-                if conf["status"] == "failed"
+                if isinstance(conf, dict) and conf["status"] == "failed"
             ),
         }
 
