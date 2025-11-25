@@ -19,6 +19,7 @@ class MockSyncResource:
     """Mock resource with sync close method."""
 
     def __init__(self) -> None:
+        """Initialize mock sync resource."""
         self.closed = False
 
     def close(self) -> None:
@@ -30,6 +31,7 @@ class MockAsyncResource:
     """Mock resource with async aclose method."""
 
     def __init__(self) -> None:
+        """Initialize mock async resource."""
         self.closed = False
 
     async def aclose(self) -> None:
