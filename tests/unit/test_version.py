@@ -10,7 +10,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api import __version__
+from flext_api import __version__, __version_info__
+from flext_api.__version__ import (
+    __version__ as version_module_version,
+    __version_info__ as version_module_version_info,
+)
 
 
 class TestFlextApiVersion:
@@ -27,8 +31,6 @@ class TestFlextApiVersion:
 
     def test_version_info_tuple(self) -> None:
         """Test that __version_info__ is a tuple."""
-        from flext_api import __version_info__
-
         assert isinstance(__version_info__, tuple)
         assert len(__version_info__) >= 2  # At least major.minor
 
@@ -38,16 +40,12 @@ class TestFlextApiVersion:
 
     def test_all_exports_exist(self) -> None:
         """Test that all __all__ exports are available."""
-        from flext_api import __version__, __version_info__
-
         # Exported version info should be accessible
         assert __version__ is not None
         assert __version_info__ is not None
 
     def test_version_module_internals(self) -> None:
         """Test version module internal functionality."""
-        from flext_api.__version__ import __version__, __version_info__
-
         # Test that version module works internally
-        assert isinstance(__version__, str)
-        assert isinstance(__version_info__, tuple)
+        assert isinstance(version_module_version, str)
+        assert isinstance(version_module_version_info, tuple)
