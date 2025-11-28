@@ -7,9 +7,12 @@ Domain-agnostic and reusable across any HTTP implementation.
 
 from __future__ import annotations
 
-from typing import Any, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from flext_core import FlextProtocols, FlextResult
+
+from flext_api.constants import FlextApiConstants
+from flext_api.typings import FlextApiTypes
 
 
 class FlextApiProtocols(FlextProtocols):
@@ -30,10 +33,10 @@ class FlextApiProtocols(FlextProtocols):
 
         def request(
             self,
-            method: str,
+            method: FlextApiConstants.Method | str,
             url: str,
             **kwargs: object,
-        ) -> FlextResult[Any]:
+        ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
             """Execute an HTTP request."""
             ...
 
@@ -41,7 +44,7 @@ class FlextApiProtocols(FlextProtocols):
             self,
             url: str,
             **kwargs: object,
-        ) -> FlextResult[Any]:
+        ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
             """Execute HTTP GET request."""
             ...
 
@@ -49,7 +52,7 @@ class FlextApiProtocols(FlextProtocols):
             self,
             url: str,
             **kwargs: object,
-        ) -> FlextResult[Any]:
+        ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
             """Execute HTTP POST request."""
             ...
 
@@ -57,7 +60,7 @@ class FlextApiProtocols(FlextProtocols):
             self,
             url: str,
             **kwargs: object,
-        ) -> FlextResult[Any]:
+        ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
             """Execute HTTP PUT request."""
             ...
 
@@ -65,7 +68,7 @@ class FlextApiProtocols(FlextProtocols):
             self,
             url: str,
             **kwargs: object,
-        ) -> FlextResult[Any]:
+        ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
             """Execute HTTP DELETE request."""
             ...
 

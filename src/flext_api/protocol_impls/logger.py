@@ -8,6 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import FlextLogger
+from flext_core.typings import FlextTypes
 
 from flext_api.protocols import FlextApiProtocols
 
@@ -21,20 +22,45 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def info(self, message: str, **kwargs: object) -> None:
         """Log info message."""
-        # Use direct kwargs instead of extra={} to prevent global context binding
-        self.logger.info(message, return_result=False, **kwargs)
+        # Convert kwargs to GeneralValueType for logger compatibility
+        context: dict[str, FlextTypes.GeneralValueType] = {}
+        for key, value in kwargs.items():
+            # GeneralValueType accepts most object types
+            if isinstance(value, (str, int, float, bool, type(None), list, dict)):
+                context[key] = value
+            else:
+                context[key] = str(value)
+        self.logger.info(message, return_result=False, **context)
 
     def error(self, message: str, **kwargs: object) -> None:
         """Log error message."""
-        # Use direct kwargs instead of extra={} to prevent global context binding
-        self.logger.error(message, return_result=False, **kwargs)
+        # Convert kwargs to GeneralValueType for logger compatibility
+        context: dict[str, FlextTypes.GeneralValueType] = {}
+        for key, value in kwargs.items():
+            if isinstance(value, (str, int, float, bool, type(None), list, dict)):
+                context[key] = value
+            else:
+                context[key] = str(value)
+        self.logger.error(message, return_result=False, **context)
 
     def debug(self, message: str, **kwargs: object) -> None:
         """Log debug message."""
-        # Use direct kwargs instead of extra={} to prevent global context binding
-        self.logger.debug(message, return_result=False, **kwargs)
+        # Convert kwargs to GeneralValueType for logger compatibility
+        context: dict[str, FlextTypes.GeneralValueType] = {}
+        for key, value in kwargs.items():
+            if isinstance(value, (str, int, float, bool, type(None), list, dict)):
+                context[key] = value
+            else:
+                context[key] = str(value)
+        self.logger.debug(message, return_result=False, **context)
 
     def warning(self, message: str, **kwargs: object) -> None:
         """Log warning message."""
-        # Use direct kwargs instead of extra={} to prevent global context binding
-        self.logger.warning(message, return_result=False, **kwargs)
+        # Convert kwargs to GeneralValueType for logger compatibility
+        context: dict[str, FlextTypes.GeneralValueType] = {}
+        for key, value in kwargs.items():
+            if isinstance(value, (str, int, float, bool, type(None), list, dict)):
+                context[key] = value
+            else:
+                context[key] = str(value)
+        self.logger.warning(message, return_result=False, **context)

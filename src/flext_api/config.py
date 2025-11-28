@@ -14,18 +14,27 @@ import json
 
 from flext_core import FlextConfig
 from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from flext_api.constants import FlextApiConstants
 
 
 @FlextConfig.auto_register("api")
-class FlextApiConfig(FlextConfig.AutoConfig):
+class FlextApiConfig(BaseSettings):
     """HTTP configuration using Pydantic v2.
 
     Pure configuration model with validation using FlextApiConstants.
     Config has priority over Constants, but uses Constants as defaults.
     No wrappers - use Pydantic directly.
     """
+
+    model_config = SettingsConfigDict(
+        env_prefix="FLEXT_API_",
+        env_file=FlextConfig.resolve_env_file(),
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
     base_url: str = Field(
         default=FlextApiConstants.DEFAULT_BASE_URL,

@@ -15,6 +15,7 @@ from flext_core import FlextResult
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.base import BaseProtocolImplementation
+from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
 
 
@@ -189,11 +190,13 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         RFC-compliant error response dictionary
 
         """
-        return FlextApiUtilities.ResponseBuilder.build_error_response(
+        error_response = FlextApiUtilities.ResponseBuilder.build_error_response(
             message=error,
             status_code=status_code,
             error_code=error_code,
         )
+        # Convert JsonObject to dict[str, object] for compatibility
+        return dict(error_response.items())
 
     def _build_rfc_success_response(
         self,
@@ -212,10 +215,41 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         FlextResult with RFC-compliant success response
 
         """
-        return FlextApiUtilities.ResponseBuilder.build_success_response(
-            data=data,
+        # Convert dict[str, object] to JsonObject and dict[str, str] to WebHeaders
+        # JsonObject is dict[str, JsonValue] where JsonValue includes compatible types
+        json_data: FlextApiTypes.JsonObject | None = None
+        if data is not None:
+            # Create new dict with compatible types
+            # JsonValue is str | int | float | bool | None | Sequence[JsonValue] | Mapping[str, JsonValue]
+            # Most object values are compatible, but we need to filter/convert if needed
+            json_data = {}
+            for key, value in data.items():
+                # JsonValue accepts these types, so we can assign directly
+                # If value is not compatible, it will be caught at runtime
+                if isinstance(value, (str, int, float, bool, type(None), list, dict)):
+                    json_data[key] = value
+                else:
+                    # Convert other types to string representation
+                    json_data[key] = str(value)
+
+        web_headers: FlextApiTypes.WebHeaders | None = None
+        if headers is not None:
+            # WebHeaders is dict[str, str | list[str]], convert dict[str, str]
+            web_headers = dict(headers)
+
+        result = FlextApiUtilities.ResponseBuilder.build_success_response(
+            data=json_data,
             status_code=status_code,
-            headers=headers,
+            headers=web_headers,
+        )
+        # Convert JsonObject result back to dict[str, object] for compatibility
+        if result.is_success:
+            response_value = result.value
+            # Convert JsonObject (dict[str, JsonValue]) to dict[str, object]
+            converted_response: dict[str, object] = dict(response_value.items())
+            return FlextResult[dict[str, object]].ok(converted_response)
+        return FlextResult[dict[str, object]].fail(
+            result.error or "Failed to build success response"
         )
 
     def _validate_status_code(self, status_code: int) -> FlextResult[int]:

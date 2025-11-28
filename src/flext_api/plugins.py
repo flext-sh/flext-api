@@ -11,9 +11,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any
 
 from flext_core import FlextLogger, FlextResult
+
+from flext_api.typings import FlextApiTypes
 
 
 class FlextApiPlugins:
@@ -69,7 +70,7 @@ class FlextApiPlugins:
             """Check if plugin is initialized."""
             return self._initialized
 
-        def get_metadata(self) -> dict[str, Any]:
+        def get_metadata(self) -> FlextApiTypes.JsonObject:
             """Get plugin metadata."""
             return {
                 "name": self.name,
@@ -105,8 +106,8 @@ class FlextApiPlugins:
         @abstractmethod
         def validate_request(
             self,
-            request: dict[str, Any],
-            schema: dict[str, Any],
+            request: FlextApiTypes.JsonObject,
+            schema: FlextApiTypes.JsonObject,
         ) -> FlextResult[bool]:
             """Validate request against schema."""
             ...
@@ -114,8 +115,8 @@ class FlextApiPlugins:
         @abstractmethod
         def validate_response(
             self,
-            response: dict[str, Any],
-            schema: dict[str, Any],
+            response: FlextApiTypes.JsonObject,
+            schema: FlextApiTypes.JsonObject,
         ) -> FlextResult[bool]:
             """Validate response against schema."""
             ...
@@ -167,7 +168,7 @@ class FlextApiPlugins:
             """Check if transport supports streaming."""
             return False
 
-        def get_connection_info(self) -> dict[str, Any]:
+        def get_connection_info(self) -> FlextApiTypes.JsonObject:
             """Get connection information."""
             return {}
 
@@ -177,15 +178,15 @@ class FlextApiPlugins:
         @abstractmethod
         def authenticate(
             self,
-            request: dict[str, Any],
-            credentials: dict[str, Any],
-        ) -> FlextResult[dict[str, Any]]:
+            request: FlextApiTypes.JsonObject,
+            credentials: FlextApiTypes.JsonObject,
+        ) -> FlextResult[FlextApiTypes.JsonObject]:
             """Add authentication to request."""
             ...
 
         @abstractmethod
         def validate_credentials(
-            self, credentials: dict[str, Any]
+            self, credentials: FlextApiTypes.JsonObject
         ) -> FlextResult[bool]:
             """Validate authentication credentials."""
             ...
@@ -199,10 +200,10 @@ class FlextApiPlugins:
             return False
 
         def refresh_credentials(
-            self, _credentials: dict[str, Any]
-        ) -> FlextResult[dict[str, Any]]:
+            self, _credentials: FlextApiTypes.JsonObject
+        ) -> FlextResult[FlextApiTypes.JsonObject]:
             """Refresh authentication credentials."""
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[FlextApiTypes.JsonObject].fail(
                 "Refresh not supported by this plugin"
             )
 

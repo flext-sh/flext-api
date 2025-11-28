@@ -127,9 +127,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         """
         protocol_lower = protocol.lower()
         return protocol_lower in {
-            FlextApiConstants.SSE.PROTOCOL_SSE,
-            FlextApiConstants.SSE.PROTOCOL_SERVER_SENT_EVENTS,
-            FlextApiConstants.SSE.PROTOCOL_EVENTSOURCE,
+            FlextApiConstants.SSE.Protocol.SSE,
+            FlextApiConstants.SSE.Protocol.SERVER_SENT_EVENTS,
+            FlextApiConstants.SSE.Protocol.EVENTSOURCE,
         }
 
     def get_supported_protocols(self) -> list[str]:
@@ -140,9 +140,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
         """
         return [
-            FlextApiConstants.SSE.PROTOCOL_SSE,
-            FlextApiConstants.SSE.PROTOCOL_SERVER_SENT_EVENTS,
-            FlextApiConstants.SSE.PROTOCOL_EVENTSOURCE,
+            FlextApiConstants.SSE.Protocol.SSE,
+            FlextApiConstants.SSE.Protocol.SERVER_SENT_EVENTS,
+            FlextApiConstants.SSE.Protocol.EVENTSOURCE,
         ]
 
     def on_event(self, event_type: str, handler: Callable[..., None]) -> None:

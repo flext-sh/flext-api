@@ -19,7 +19,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
 
 from fastapi import FastAPI
 from flext_core import (
@@ -28,9 +27,12 @@ from flext_core import (
     FlextMixins,
     FlextResult,
     FlextService,
+    FlextTypes,
 )
 
 from flext_api.constants import FlextApiConstants
+from flext_api.typings import FlextApiTypes
+from flext_api.utilities import FlextApiUtilities
 
 
 class FlextApiServer(FlextService[object], FlextMixins.Validation):
@@ -58,17 +60,17 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             logger: Logger instance for audit trail
 
             """
-            self._routes: dict[str, Any] = {}
+            self._routes: dict[str, FlextApiTypes.RouteData] = {}
             self._logger = logger
 
         def register(
             self,
-            method: str,
+            method: FlextApiConstants.Method | str,
             path: str,
             handler: Callable[..., object],
             prefix: str = "",
-            schema: object | None = None,
-            **options: object,
+            schema: FlextApiTypes.SchemaValue | None = None,
+            **options: FlextApiTypes.JsonValue | str | int | bool,
         ) -> FlextResult[bool]:
             """Register endpoint with unified interface (DRY - eliminates duplication).
 
@@ -89,14 +91,30 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             if route_key in self._routes:
                 return FlextResult[bool].fail(f"Route already registered: {route_key}")
 
-            route_data: dict[str, Any] = {
+            # Convert options to JsonValue-compatible types
+            options_json: dict[str, FlextTypes.JsonValue] = {}
+            for k, v in options.items():
+                if isinstance(v, (str, int, float, bool, type(None))):
+                    options_json[k] = v
+                elif isinstance(v, (list, dict)):
+                    # Recursively convert nested structures
+                    options_json[k] = (
+                        FlextApiUtilities.JsonUtils.normalize_to_json_value(v)
+                    )
+                else:
+                    options_json[k] = str(v)
+
+            route_data: FlextApiTypes.RouteData = {
                 "path": path,
                 "method": method,
                 "handler": handler,
-                "options": options,
+                "options": options_json,
             }
             if schema is not None:
-                route_data["schema"] = schema
+                schema_json = FlextApiUtilities.JsonUtils.normalize_to_json_value(
+                    schema
+                )
+                route_data["schema"] = schema_json
 
             self._routes[route_key] = route_data
 
@@ -108,7 +126,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             return FlextResult[bool].ok(True)
 
         @property
-        def routes(self) -> dict[str, object]:
+        def routes(self) -> dict[str, FlextApiTypes.RouteData]:
             """Get all registered routes."""
             return self._routes.copy()
 
@@ -127,8 +145,8 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             logger: Logger instance
 
             """
-            self._websocket_connections: dict[str, Any] = {}
-            self._sse_connections: dict[str, Any] = {}
+            self._websocket_connections: dict[str, object] = {}
+            self._sse_connections: dict[str, object] = {}
             self._logger = logger
 
         def close_all(self) -> FlextResult[bool]:
@@ -212,7 +230,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
 
         def apply_middleware(
             self,
-            middleware_pipeline: list[Any],
+            middleware_pipeline: list[Callable[..., object]],
         ) -> FlextResult[bool]:
             """Apply middleware to application."""
             try:
@@ -225,7 +243,9 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             except Exception as e:
                 return FlextResult[bool].fail(f"Failed to apply middleware: {e}")
 
-        def register_routes(self, routes: dict[str, Any]) -> FlextResult[bool]:
+        def register_routes(
+            self, routes: dict[str, FlextApiTypes.RouteData]
+        ) -> FlextResult[bool]:
             """Register routes with FastAPI application."""
             if not self._app:
                 return FlextResult[bool].fail("Application not created")
@@ -260,9 +280,9 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
 
         def start(
             self,
-            middleware_pipeline: list[Any],
-            routes: dict[str, Any],
-            protocol_handlers: dict[str, Any],
+            middleware_pipeline: list[Callable[..., object]],
+            routes: dict[str, FlextApiTypes.RouteData],
+            protocol_handlers: dict[str, FlextApiTypes.ProtocolHandler],
         ) -> FlextResult[bool]:
             """Start server with complete initialization pipeline."""
             if self._is_running:
@@ -316,7 +336,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
             return self._is_running
 
         @property
-        def app(self) -> object | None:
+        def app(self) -> FastAPI | None:
             """Get FastAPI application instance."""
             return self._app
 
@@ -357,59 +377,32 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         )
 
         # Protocol and middleware with FlextConstants defaults
-        self._protocol_handlers: dict[str, Any] = {}
-        self._middleware_pipeline: list[Any] = []
-
-    def _validate_host(self, host: str) -> FlextResult[str]:
-        """Validate host string."""
-        if not isinstance(host, str):
-            return FlextResult[str].fail("Host must be a string")
-        host_stripped = host.strip()
-        if not host_stripped:
-            return FlextResult[str].fail("Host must be a non-empty string")
-        return FlextResult[str].ok(host_stripped)
-
-    def _validate_port(self, port: int) -> FlextResult[int]:
-        """Validate port number."""
-        max_port = FlextApiConstants.MAX_PORT
-
-        if not isinstance(port, int):
-            return FlextResult[int].fail("Port must be an integer")
-        if not (1 <= port <= max_port):
-            return FlextResult[int].fail(f"Port must be between 1 and {max_port}")
-
-        # Port validation - reserved ports check removed (not available in flext-core constants)
-
-        return FlextResult[int].ok(port)
-
-    def _validate_string_field(self, value: str, field_name: str) -> FlextResult[str]:
-        """Validate string field."""
-        if not isinstance(value, str):
-            return FlextResult[str].fail(f"{field_name} must be a string")
-        value_stripped = value.strip()
-        if not value_stripped:
-            return FlextResult[str].fail(f"{field_name} must be a non-empty string")
-        return FlextResult[str].ok(value_stripped)
+        self._protocol_handlers: dict[str, FlextApiTypes.ProtocolHandler] = {}
+        self._middleware_pipeline: list[Callable[..., object]] = []
 
     def _validate_server_config(
         self, host: str, port: int, title: str, version: str
     ) -> FlextResult[bool]:
-        """Validate server configuration using Flext validation patterns."""
-        host_result = self._validate_host(host)
+        """Validate server configuration using utilities directly."""
+        host_result = FlextApiUtilities.ValidationUtils.validate_host(host)
         if host_result.is_failure:
             return FlextResult[bool].fail(host_result.error or "Host validation failed")
 
-        port_result = self._validate_port(port)
+        port_result = FlextApiUtilities.ValidationUtils.validate_port(port)
         if port_result.is_failure:
             return FlextResult[bool].fail(port_result.error or "Port validation failed")
 
-        title_result = self._validate_string_field(title, "Title")
+        title_result = FlextApiUtilities.ValidationUtils.validate_string_field(
+            title, "Title"
+        )
         if title_result.is_failure:
             return FlextResult[bool].fail(
                 title_result.error or "Title validation failed"
             )
 
-        version_result = self._validate_string_field(version, "Version")
+        version_result = FlextApiUtilities.ValidationUtils.validate_string_field(
+            version, "Version"
+        )
         if version_result.is_failure:
             return FlextResult[bool].fail(
                 version_result.error or "Version validation failed"
@@ -417,18 +410,20 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
 
         return FlextResult[bool].ok(True)
 
-    def execute(self, **_kwargs: object) -> FlextResult[object]:
+    def execute(self) -> FlextResult[object]:
         """Execute server service (required by FlextService)."""
         return FlextResult[object].ok(True)
 
     def register_protocol_handler(
         self,
         protocol: str,
-        handler: object,
+        handler: FlextApiTypes.ProtocolHandler,
     ) -> FlextResult[bool]:
         """Register protocol handler with Flext validation."""
-        # Validate protocol name using Flext validation patterns
-        protocol_validation = self._validate_string_field(protocol, "protocol")
+        # Validate protocol name using utilities directly
+        protocol_validation = FlextApiUtilities.ValidationUtils.validate_string_field(
+            protocol, "protocol"
+        )
         if protocol_validation.is_failure:
             return FlextResult[bool].fail(
                 protocol_validation.error or "Protocol validation failed"
@@ -459,7 +454,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
 
     def add_middleware(
         self,
-        middleware: object,
+        middleware: Callable[..., object],
     ) -> FlextResult[bool]:
         """Add middleware to pipeline."""
         self._middleware_pipeline.append(middleware)
@@ -474,13 +469,13 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
     def register_route(
         self,
         path: str,
-        method: str,
+        method: FlextApiConstants.Method | str,
         handler: Callable,
         **options: object,
     ) -> FlextResult[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
         return self._route_registry.register(
-            method, path, handler, prefix="", **options
+            method, path, handler, prefix="", schema=None, **options
         )
 
     def register_websocket_endpoint(
@@ -491,7 +486,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
     ) -> FlextResult[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(
-            "WS", path, handler, prefix="WS", **options
+            "WS", path, handler, prefix="WS", schema=None, **options
         )
 
     def register_sse_endpoint(
@@ -502,13 +497,13 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
     ) -> FlextResult[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(
-            "SSE", path, handler, prefix="SSE", **options
+            "SSE", path, handler, prefix="SSE", schema=None, **options
         )
 
     def register_graphql_endpoint(
         self,
         path: str = "/graphql",
-        schema: object | None = None,
+        schema: FlextApiTypes.SchemaValue | None = None,
         **options: object,
     ) -> FlextResult[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
@@ -573,7 +568,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
         return self._lifecycle_manager.port
 
     @property
-    def routes(self) -> dict[str, Any]:
+    def routes(self) -> dict[str, FlextApiTypes.RouteData]:
         """Get registered routes."""
         return self._route_registry.routes
 

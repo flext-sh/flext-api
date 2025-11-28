@@ -48,7 +48,11 @@ class FlextApi(FlextService[FlextApiConfig]):
             object.__setattr__(instance, "_flext_api_config", config)
         return instance
 
-    def __init__(self, config: FlextApiConfig | None = None, **kwargs: object) -> None:
+    def __init__(
+        self,
+        config: FlextApiConfig | None = None,
+        **kwargs: FlextApiTypes.JsonValue | str | int | bool,
+    ) -> None:
         """Initialize with optional config.
 
         Args:
@@ -67,7 +71,9 @@ class FlextApi(FlextService[FlextApiConfig]):
             self._config = FlextApiConfig()
         self._client = FlextApiClient(config=self._config)
 
-    def execute(self, **_kwargs: object) -> FlextResult[FlextApiConfig]:
+    def execute(
+        self, **_kwargs: FlextApiTypes.JsonValue | str | int | bool
+    ) -> FlextResult[FlextApiConfig]:
         """Execute FlextService interface."""
         return FlextResult[FlextApiConfig].ok(self._config)
 
@@ -86,10 +92,10 @@ class FlextApi(FlextService[FlextApiConfig]):
         return self._client.request(request)
 
     def _validate_request_body(
-        self, body: object
+        self, body: FlextApiTypes.RequestBody | None
     ) -> FlextResult[FlextApiTypes.RequestBody]:
         """Validate request body type - helper to reduce complexity."""
-        if isinstance(body, (dict, str, bytes)):
+        if body is not None and isinstance(body, (dict, str, bytes)):
             return FlextResult[FlextApiTypes.RequestBody].ok(body)
         return FlextResult[FlextApiTypes.RequestBody].fail(
             f"Invalid body type: {type(body)}"

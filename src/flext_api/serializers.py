@@ -17,7 +17,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any, Protocol
+from typing import Protocol
 
 import cbor2
 import msgpack
@@ -252,7 +252,7 @@ class FlextApiSerializers(FlextService[bool]):
         def __init__(self) -> None:
             """Initialize serializer registry."""
             self.logger = FlextLogger(__name__)
-            self._serializers: dict[str, Any] = {}
+            self._serializers: dict[str, FlextApiSerializers.SerializerProtocol] = {}
             self._default_format = FlextApiConstants.SerializationFormat.JSON
 
             # Register default serializers

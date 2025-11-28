@@ -10,24 +10,27 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import NotRequired
+from collections.abc import Callable, Mapping
+from typing import Protocol, TypeVar, runtime_checkable
 
 from flext_core import FlextTypes
-from typing_extensions import TypedDict
 
-from flext_api.constants import Unit
+# TypeVar for generic operations
+T = TypeVar("T")
+U = TypeVar("U")
 
 
 class FlextApiTypes(FlextTypes):
-    """Unified API type definitions with aggressive consolidation.
+    """Unified API type definitions extending FlextTypes with composition.
 
     Single namespace containing ALL API types.
     NO module-level aliases, NO weak types.
     Python 3.13+ syntax with maximum code reduction.
+    Only TypeVar loose outside class.
     """
 
     # =========================================================================
-    # CORE WEB TYPES - Generic HTTP types (use directly everywhere)
+    # CORE WEB TYPES - Generic HTTP types using Mapping for immutability
     # =========================================================================
 
     type JsonObject = dict[str, FlextTypes.JsonValue]
@@ -35,7 +38,7 @@ class FlextApiTypes(FlextTypes):
     type WebHeaders = dict[str, str | list[str]]
     type WebParams = dict[str, str | list[str]]
     type ResponseList = list[JsonObject]
-    type ResponseDict = dict[str, FlextTypes.JsonValue]
+    type ResponseDict = Mapping[str, FlextTypes.JsonValue]
 
     # =========================================================================
     # HTTP REQUEST/RESPONSE TYPES - Unified request/response types
@@ -45,6 +48,8 @@ class FlextApiTypes(FlextTypes):
     type ResponseConfig = dict[str, FlextTypes.JsonValue | JsonObject]
     type RequestBody = JsonObject | str | bytes
     type ResponseBody = JsonObject | str | bytes | None
+    type HttpResponseDict = dict[str, int | str | dict[str, str] | ResponseBody]
+    """HTTP response as dictionary (status_code, headers, body, request_id)."""
     type ValidationResult = dict[str, bool | list[str] | JsonObject]
 
     # =========================================================================
@@ -55,31 +60,52 @@ class FlextApiTypes(FlextTypes):
     type EndpointMetadata = dict[str, str | int | list[str] | JsonObject]
     type RouteConfig = dict[str, str | list[str] | JsonObject]
 
+    type RouteData = dict[
+        str,
+        str
+        | Callable[..., object]
+        | dict[str, FlextTypes.JsonValue]
+        | FlextTypes.JsonValue
+        | None,
+    ]
+    """Route registration data structure."""
+
+    @runtime_checkable
+    class ProtocolHandler(Protocol):
+        """Protocol handler interface for server registration."""
+
+        def supports_protocol(self, protocol: str) -> bool:
+            """Check if handler supports protocol."""
+            ...
+
+    # Schema types for GraphQL/OpenAPI
+    type SchemaValue = JsonObject | str  # GraphQL schema string or OpenAPI dict
+
     # =========================================================================
     # AUTHENTICATION TYPES - Auth and security configuration
     # =========================================================================
 
-    type AuthConfig = dict[str, str | JsonObject]
-    type AuthCredentials = dict[str, str | JsonObject]
-    type AuthTokenData = dict[str, FlextTypes.JsonValue | int | bool]
-    type SecurityConfig = dict[str, bool | str | list[str] | JsonObject]
+    type AuthConfig = Mapping[str, str | JsonObject]
+    type AuthCredentials = Mapping[str, str | JsonObject]
+    type AuthTokenData = Mapping[str, FlextTypes.JsonValue | int | bool]
+    type SecurityConfig = Mapping[str, bool | str | list[str] | JsonObject]
 
     # =========================================================================
     # CLIENT TYPES - HTTP client configuration with kwargs
     # =========================================================================
 
-    type ClientConfig = dict[str, str | int | JsonObject]
-    type ConnectionPool = dict[str, int | bool | dict[str, int | bool]]
-    type TimeoutConfig = dict[str, int | float | dict[str, int | float]]
+    type ClientConfig = Mapping[str, str | int | JsonObject]
+    type ConnectionPool = Mapping[str, int | bool | Mapping[str, int | bool]]
+    type TimeoutConfig = Mapping[str, int | float | Mapping[str, int | float]]
 
-    class RequestKwargs(TypedDict):
-        """HTTP request kwargs with modern types."""
-
-        params: NotRequired[dict[str, str] | None]
-        data: NotRequired[dict[str, str] | None]
-        json: NotRequired[dict[str, FlextTypes.JsonValue] | None]
-        headers: NotRequired[dict[str, str | list[str]] | None]
-        timeout: NotRequired[float | None]
+    type RequestKwargs = Mapping[
+        str,
+        Mapping[str, str]
+        | Mapping[str, FlextTypes.JsonValue]
+        | Mapping[str, str | list[str]]
+        | float
+        | None,
+    ]
 
     # =========================================================================
     # STORAGE & CACHE TYPES - Storage backend configuration and metrics
@@ -149,4 +175,4 @@ class FlextApiTypes(FlextTypes):
         """
 
 
-__all__ = ["FlextApiTypes", "Unit"]
+__all__ = ["FlextApiTypes"]
