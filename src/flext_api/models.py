@@ -41,7 +41,7 @@ class FlextApiModels:
         Follows Value Object pattern: immutable, compared by value, no identity.
         """
 
-        method: str = Field(
+        method: FlextApiConstants.Method | str = Field(
             default=FlextApiConstants.Method.GET,
             min_length=3,
             max_length=8,
@@ -191,7 +191,7 @@ class FlextApiModels:
             parsed_scheme = parsed_result.scheme
             if parsed_scheme:
                 return parsed_scheme
-            return FlextApiConstants.HTTP.PROTOCOL_HTTPS
+            return FlextApiConstants.HTTP.Protocol.HTTPS
 
         @computed_field
         def netloc(self) -> str:

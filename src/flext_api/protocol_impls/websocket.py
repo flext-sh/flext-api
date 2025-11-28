@@ -19,13 +19,13 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
-from typing import Any
 
 import websockets
 from flext_core import FlextResult
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
+from flext_api.typings import FlextApiTypes
 
 # Asyncio utilities
 # Synchronous alternatives for async functionality
@@ -150,7 +150,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             )
 
     def _extract_message(
-        self, request: dict[str, Any], kwargs: dict[str, object]
+        self, request: FlextApiTypes.JsonObject, kwargs: dict[str, object]
     ) -> FlextResult[str | bytes]:
         """Extract message from request or kwargs."""
         if "message" in kwargs:
@@ -176,9 +176,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 return message_type_value
             if message_type_value is not None:
                 return str(message_type_value)
-        return FlextApiConstants.WebSocket.MESSAGE_TYPE_TEXT
+        return FlextApiConstants.WebSocket.MessageType.TEXT
 
-    def _ensure_connected(self, request: dict[str, Any]) -> FlextResult[bool]:
+    def _ensure_connected(self, request: FlextApiTypes.JsonObject) -> FlextResult[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
             return FlextResult[bool].ok(True)
@@ -197,9 +197,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     def send_request(
         self,
-        request: dict[str, Any],
+        request: FlextApiTypes.JsonObject,
         **kwargs: object,
-    ) -> FlextResult[dict[str, Any]]:
+    ) -> FlextResult[FlextApiTypes.JsonObject]:
         """Send WebSocket request (connect and send message).
 
         Args:
@@ -211,12 +211,14 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         if not isinstance(request, dict):
-            return FlextResult[dict[str, Any]].fail("Request must be a dictionary")
+            return FlextResult[FlextApiTypes.JsonObject].fail(
+                "Request must be a dictionary"
+            )
 
         # Extract WebSocket-specific parameters
         message_result = self._extract_message(request, kwargs)
         if message_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[FlextApiTypes.JsonObject].fail(
                 message_result.error or "Message extraction failed"
             )
         message = message_result.unwrap()
@@ -226,26 +228,26 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         # Connect if not connected
         connect_result = self._ensure_connected(request)
         if connect_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[FlextApiTypes.JsonObject].fail(
                 f"WebSocket connection failed: {connect_result.error}"
             )
 
         # Send message
         send_result = self._send_message(message, message_type)
         if send_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[FlextApiTypes.JsonObject].fail(
                 f"WebSocket send failed: {send_result.error}"
             )
 
         # Create response (WebSocket doesn't have traditional responses)
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[FlextApiTypes.JsonObject].fail(
                 f"Failed to extract URL: {url_result.error}"
             )
         url_str = url_result.unwrap()
 
-        response: dict[str, Any] = {
+        response: FlextApiTypes.JsonObject = {
             "status_code": FlextApiConstants.WebSocket.STATUS_SWITCHING_PROTOCOLS,
             "url": url_str,
             "method": "WEBSOCKET",
@@ -253,7 +255,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             "body": {"status": "message_sent", "message_type": message_type},
         }
 
-        return FlextResult[dict[str, Any]].ok(response)
+        return FlextResult[FlextApiTypes.JsonObject].ok(response)
 
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol.
@@ -267,9 +269,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """
         protocol_lower = protocol.lower()
         return protocol_lower in {
-            FlextApiConstants.WebSocket.PROTOCOL_WEBSOCKET,
-            FlextApiConstants.WebSocket.PROTOCOL_WS,
-            FlextApiConstants.WebSocket.PROTOCOL_WSS,
+            FlextApiConstants.WebSocket.Protocol.WEBSOCKET,
+            FlextApiConstants.WebSocket.Protocol.WS,
+            FlextApiConstants.WebSocket.Protocol.WSS,
         }
 
     def get_supported_protocols(self) -> list[str]:
@@ -280,9 +282,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         return [
-            FlextApiConstants.WebSocket.PROTOCOL_WEBSOCKET,
-            FlextApiConstants.WebSocket.PROTOCOL_WS,
-            FlextApiConstants.WebSocket.PROTOCOL_WSS,
+            FlextApiConstants.WebSocket.Protocol.WEBSOCKET,
+            FlextApiConstants.WebSocket.Protocol.WS,
+            FlextApiConstants.WebSocket.Protocol.WSS,
         ]
 
     def connect(
@@ -482,12 +484,12 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return FlextResult[bool].fail("WebSocket connection is None")
 
         try:
-            if message_type == FlextApiConstants.WebSocket.MESSAGE_TYPE_TEXT:
+            if message_type == FlextApiConstants.WebSocket.MessageType.TEXT:
                 if isinstance(message, bytes):
                     message = message.decode("utf-8")
                 if hasattr(self._connection, "send"):
                     self._connection.send(message)
-            elif message_type == FlextApiConstants.WebSocket.MESSAGE_TYPE_BINARY:
+            elif message_type == FlextApiConstants.WebSocket.MessageType.BINARY:
                 if isinstance(message, str):
                     message = message.encode("utf-8")
                 if hasattr(self._connection, "send"):

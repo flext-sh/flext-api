@@ -10,11 +10,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
 from flext_core import FlextResult, FlextService
 
 from flext_api.plugins import FlextApiPlugins
+from flext_api.typings import FlextApiTypes
 
 
 class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
@@ -146,7 +145,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         """
         return []
 
-    def get_protocol_info(self) -> dict[str, Any]:
+    def get_protocol_info(self) -> FlextApiTypes.JsonObject:
         """Get protocol configuration information.
 
         Returns:

@@ -78,7 +78,7 @@ class FlextApiTransports:
             self, data: dict[str, object]
         ) -> FlextResult[tuple[str, str, dict[str, str], object, object, object]]:
             """Extract and validate request parameters from data."""
-            method_str = FlextApiConstants.Method.GET
+            method_str: str = FlextApiConstants.Method.GET
             if "method" in data:
                 method_value = data["method"]
                 if isinstance(method_value, str):
@@ -140,15 +140,44 @@ class FlextApiTransports:
                     params_result.unwrap()
                 )
 
-                # Make the request
-                response = connection.request(
-                    method=method_str,
-                    url=url,
-                    headers=headers,
-                    params=params,
-                    json=json_data,
-                    content=content,
-                )
+                # Make the request with explicit parameter passing
+                # httpx.request requires specific types, so we pass parameters directly
+                if params is not None and isinstance(params, dict):
+                    if json_data is not None:
+                        response = connection.request(
+                            method=method_str,
+                            url=url,
+                            headers=headers,
+                            params=params,
+                            json=json_data,
+                        )
+                    elif content is not None and isinstance(content, (str, bytes)):
+                        response = connection.request(
+                            method=method_str,
+                            url=url,
+                            headers=headers,
+                            params=params,
+                            content=content,
+                        )
+                    else:
+                        response = connection.request(
+                            method=method_str, url=url, headers=headers, params=params
+                        )
+                elif json_data is not None:
+                    response = connection.request(
+                        method=method_str, url=url, headers=headers, json=json_data
+                    )
+                elif content is not None and isinstance(content, (str, bytes)):
+                    response = connection.request(
+                        method=method_str,
+                        url=url,
+                        headers=headers,
+                        content=content,
+                    )
+                else:
+                    response = connection.request(
+                        method=method_str, url=url, headers=headers
+                    )
 
                 # Return response data
                 return FlextResult[object].ok({

@@ -12,11 +12,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from typing import Any
+from collections.abc import Mapping
 
 from flext_core import FlextResult
 
 from flext_api.models import FlextApiModels
+from flext_api.typings import FlextApiTypes
 
 
 class FlextApiConfigManager:
@@ -28,10 +29,10 @@ class FlextApiConfigManager:
 
     def __init__(self) -> None:
         """Initialize configuration manager."""
-        self._config: dict[str, Any] | None = None
+        self._config: FlextApiTypes.JsonObject | None = None
 
     def configure(
-        self, config: dict[str, str | float | bool] | None = None
+        self, config: Mapping[str, str | float | bool] | None = None
     ) -> FlextResult[bool]:
         """Configure the HTTP client with type safety and validation - no fallbacks."""
         try:
@@ -50,24 +51,26 @@ class FlextApiConfigManager:
             error_msg = f"Configuration failed: {e}"
             return FlextResult[bool].fail(error_msg)
 
-    def _process_config(self, config: dict[str, Any]) -> FlextResult[dict[str, Any]]:
+    def _process_config(
+        self, config: Mapping[str, str | float | bool]
+    ) -> FlextResult[FlextApiTypes.JsonObject]:
         """Process and normalize configuration values - no fallbacks."""
-        processed = {}
+        processed: FlextApiTypes.JsonObject = {}
 
         for key, value in config.items():
             if value is not None:
-                normalize_result = self._normalize_value(key, value)
+                normalize_result = self._normalize_value(key, value=value)
                 if normalize_result.is_failure:
-                    return FlextResult[dict[str, Any]].fail(
+                    return FlextResult[FlextApiTypes.JsonObject].fail(
                         normalize_result.error or "Value normalization failed"
                     )
                 processed[key] = normalize_result.unwrap()
 
-        return FlextResult[dict[str, Any]].ok(processed)
+        return FlextResult[FlextApiTypes.JsonObject].ok(processed)
 
     def _normalize_value(
-        self, key: str, value: str | float
-    ) -> FlextResult[str | float]:
+        self, key: str, *, value: str | float | bool
+    ) -> FlextResult[str | float | bool]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "timeout" and isinstance(value, str):
             try:
@@ -263,6 +266,6 @@ class FlextApiConfigManager:
         )
 
     @property
-    def config(self) -> dict[str, Any] | None:
+    def config(self) -> FlextApiTypes.JsonObject | None:
         """Get current configuration."""
         return self._config

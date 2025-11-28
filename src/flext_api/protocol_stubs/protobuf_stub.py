@@ -21,7 +21,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from typing import Any, Protocol
+from typing import Protocol
 
 from flext_core import FlextLogger, FlextResult
 
@@ -39,7 +39,7 @@ class ProtobufMessage:
     - Field validation
     """
 
-    def __init__(self, data: dict[str, Any] | None = None) -> None:
+    def __init__(self, data: dict[str, object] | None = None) -> None:
         """Initialize Protobuf message.
 
         Args:
@@ -47,13 +47,13 @@ class ProtobufMessage:
 
         """
         self.logger = FlextLogger(__name__)
-        self._data: dict[str, Any] = {}
+        self._data: dict[str, object] = {}
         if data is not None:
             self._data = data
 
         self.logger.debug("Protobuf message stub created (placeholder)")
 
-    def get_data(self) -> dict[str, Any]:
+    def get_data(self) -> dict[str, object]:
         """Get message data.
 
         Returns:
@@ -91,7 +91,7 @@ class ProtobufMessage:
         )
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> ProtobufMessage:
+    def from_dict(cls, data: dict[str, object]) -> ProtobufMessage:
         """Create message from dictionary.
 
         Args:
@@ -147,7 +147,7 @@ class ProtobufSerializer:
     - Compression
     """
 
-    def __init__(self, schema: dict[str, Any] | None = None) -> None:
+    def __init__(self, schema: dict[str, object] | None = None) -> None:
         """Initialize Protobuf serializer.
 
         Args:
@@ -155,7 +155,7 @@ class ProtobufSerializer:
 
         """
         self.logger = FlextLogger(__name__)
-        self._schema: dict[str, Any] = {}
+        self._schema: dict[str, object] = {}
         if schema is not None:
             self._schema = schema
 

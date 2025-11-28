@@ -575,7 +575,7 @@ class FlextApiStorage(FlextService[bool]):
         try:
             return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok({
                 "status": "healthy",
-                "timestamp": FlextUtilities.Generators.generate_timestamp(),
+                "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
                 "storage_accessible": True,
                 "size": len(self._storage),
                 "operations_count": self._operations_count,

@@ -124,7 +124,7 @@ from flext_api.app import FlextApiApp
 from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig
 from flext_api.config_manager import FlextApiConfigManager
-from flext_api.constants import FlextApiConstants, Unit
+from flext_api.constants import FlextApiConstants
 from flext_api.exceptions import HttpError
 
 # FlextApiOperations removed - use FlextApi or FlextApiClient directly

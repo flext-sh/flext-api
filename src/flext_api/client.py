@@ -49,7 +49,11 @@ class FlextApiClient(FlextService[FlextApiConfig]):
             object.__setattr__(instance, "_flext_api_config", config)
         return instance
 
-    def __init__(self, config: FlextApiConfig | None = None, **kwargs: object) -> None:
+    def __init__(
+        self,
+        config: FlextApiConfig | None = None,
+        **kwargs: FlextApiTypes.JsonValue | str | int | bool,
+    ) -> None:
         """Initialize with optional configuration model.
 
         Args:
@@ -68,7 +72,9 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         else:
             self._config = FlextApiConfig()
 
-    def execute(self, **_kwargs: object) -> FlextResult[FlextApiConfig]:
+    def execute(
+        self, **_kwargs: FlextApiTypes.JsonValue | str | int | bool
+    ) -> FlextResult[FlextApiConfig]:
         """Execute FlextService interface - return configuration."""
         return FlextResult[FlextApiConfig].ok(self._config)
 

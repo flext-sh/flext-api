@@ -12,7 +12,8 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from typing import Any
+
+from flext_api.models import FlextApiModels
 
 _logger = logging.getLogger(__name__)
 
@@ -26,8 +27,11 @@ class FlextApiMiddleware:
 
     @staticmethod
     def apply_pipeline(
-        request: Any, middleware_list: list[Callable[[Any], Any]]
-    ) -> Any:
+        request: FlextApiModels.HttpRequest,
+        middleware_list: list[
+            Callable[[FlextApiModels.HttpRequest], FlextApiModels.HttpRequest]
+        ],
+    ) -> FlextApiModels.HttpRequest:
         """Apply middleware pipeline to request."""
         for middleware in middleware_list:
             try:
@@ -39,12 +43,14 @@ class FlextApiMiddleware:
         return request
 
     @staticmethod
-    def log_request(request: Any) -> Any:
+    def log_request(request: FlextApiModels.HttpRequest) -> FlextApiModels.HttpRequest:
         """Log HTTP request."""
         return request
 
     @staticmethod
-    def validate_request(request: Any) -> Any:
+    def validate_request(
+        request: FlextApiModels.HttpRequest,
+    ) -> FlextApiModels.HttpRequest:
         """Validate HTTP request."""
         return request
 
