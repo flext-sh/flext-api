@@ -1,92 +1,85 @@
-"""Constants and enumerations for flext-api domain.
+"""FlextApi constants - Advanced type-safe constants using StrEnum + Pydantic 2 patterns.
 
-All constant values, literals, and enums are centralized here following FLEXT standards.
-Only constants and enums - no functions or classes with behavior.
+FLEXT-API domain constants with FlextCore integration. Uses advanced Python 3.13+ features:
+- StrEnum for type-safe enumerations with Pydantic 2 validation
+- PEP 695 type aliases for strict Literal types
+- Nested classes for logical grouping
+- Collections.abc for immutable collections
+- TypeIs and TypeGuard for advanced type narrowing
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Set as AbstractSet
+from collections.abc import Callable, Mapping, Set as AbstractSet
 from enum import StrEnum
-from typing import ClassVar, Final, Literal
+from types import MappingProxyType
+from typing import Final, Literal, TypeGuard, TypeIs
 
-from flext_core import FlextConstants
+from flext_core import FlextConstants, FlextResult, FlextUtilities
 
-# Unit type for operations that return no data (replaces None in FlextResult)
-# Python 3.13+ PEP 695 best practice: Use type keyword for type aliases
-type UnitLiteral = Literal[True]
-"""Unit type literal - represents operations that return no data (replaces None in FlextResult)."""
+# ═══════════════════════════════════════════════════════════════════════════
+# STRENUM + PYDANTIC 2: PADRÃO DEFINITIVO PARA FLEXT-API
+# ═══════════════════════════════════════════════════════════════════════════
+
+# PRINCÍPIO FUNDAMENTAL: StrEnum + Pydantic 2 = Validação Automática!
+# - NÃO precisa criar Literal separado para validação
+# - NÃO precisa criar frozenset para validação
+# - NÃO precisa criar AfterValidator
+# - Pydantic valida automaticamente contra o StrEnum
+
+# SUBSETS: Use Literal[Status.MEMBER] para aceitar apenas ALGUNS valores.
+# Isso referencia o enum member, não duplica strings!
 
 
-class FlextApiConstants:
-    """Flext constants for API domain functionality using composition."""
+class FlextApiConstants(FlextConstants):
+    """FlextApi domain constants extending FlextConstants.
 
-    # Core composition - inherit all core constants
-    CoreErrors = FlextConstants.Errors
-    CoreNetwork = FlextConstants.Network
-    CoreReliability = FlextConstants.Reliability
-    CorePlatform = FlextConstants.Platform
-    CoreProcessing = FlextConstants.Processing
-    CorePagination = FlextConstants.Pagination
+    Architecture: Layer 1 (Domain Constants - Extends Core)
+    =========================================================
+    Provides domain-specific constants for HTTP operations using advanced patterns:
+    - StrEnum for type-safe enumerations with automatic Pydantic validation
+    - PEP 695 type aliases for strict Literal unions
+    - Nested classes for logical grouping (Methods, Status, ContentType)
+    - TypeIs/TypeGuard methods for advanced type narrowing
+    - Collections.abc for immutable validation sets
 
-    # Validation mappings for runtime validation
-    class ValidationMappings:
-        """Validation mappings for runtime checks using advanced collections.abc."""
+    Integration with FlextProtocols:
+    This class provides the constant registry that FlextApiProtocols depend on.
+    Structural typing ensures protocol compliance without explicit inheritance.
 
-        # HTTP Methods validation mapping
-        HTTP_METHOD_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
-            "GET": "GET",
-            "POST": "POST",
-            "PUT": "PUT",
-            "DELETE": "DELETE",
-            "PATCH": "PATCH",
-            "HEAD": "HEAD",
-            "OPTIONS": "OPTIONS",
-            "CONNECT": "CONNECT",
-            "TRACE": "TRACE",
-        }
-        HTTP_METHOD_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
-            HTTP_METHOD_VALIDATION_MAP.keys()
-        )
+    Usage Patterns:
+        # Direct access (recommended)
+        >>> from flext_api.constants import FlextApiConstants as ApiConst
+        >>> method = ApiConst.Method.GET
+        >>> status = ApiConst.Status.SUCCESS
 
-        # Content Types validation mapping
-        CONTENT_TYPE_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
-            "application/json": "application/json",
-            "application/xml": "application/xml",
-            "text/plain": "text/plain",
-            "text/html": "text/html",
-            "application/x-www-form-urlencoded": "application/x-www-form-urlencoded",
-            "multipart/form-data": "multipart/form-data",
-            "application/octet-stream": "application/octet-stream",
-        }
-        CONTENT_TYPE_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
-            CONTENT_TYPE_VALIDATION_MAP.keys()
-        )
+        # Type-safe validation
+        >>> ApiConst.Method.is_valid_method("GET")  # True
+        >>> ApiConst.Status.is_success_status("success")  # True
 
-        # Status validation mapping
-        STATUS_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
-            "idle": "idle",
-            "pending": "pending",
-            "running": "running",
-            "completed": "completed",
-            "failed": "failed",
-            "error": "error",
-        }
-        STATUS_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
-            STATUS_VALIDATION_MAP.keys()
-        )
+        # Literal types for Pydantic models
+        >>> status: ApiConst.StatusLiteral  # Type-safe: "idle" | "pending" | ...
+    """
 
-    # Client configuration with core composition
-    DEFAULT_TIMEOUT: ClassVar[int] = FlextConstants.Network.DEFAULT_TIMEOUT
-    DEFAULT_MAX_RETRIES: ClassVar[int] = FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
-    DEFAULT_BASE_URL: ClassVar[str] = (
-        f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
-    )
-    API_VERSION: ClassVar[str] = "v1"
+    # ═══════════════════════════════════════════════════════════════════
+    # STRENUM: Única declaração necessária para validação automática
+    # ═══════════════════════════════════════════════════════════════════
 
-    # HTTP Methods - StrEnum for type safety and Pydantic compatibility
     class Method(StrEnum):
-        """HTTP method enumeration."""
+        """HTTP method enumeration - automatic Pydantic validation.
+
+        PYDANTIC MODELS:
+            model_config = ConfigDict(use_enum_values=True)
+            method: FlextApiConstants.Method
+
+        Resultado:
+            - Aceita "GET", "POST", etc. ou Method.GET
+            - Serializa como string
+            - Valida automaticamente (rejeita valores inválidos)
+        """
 
         GET = "GET"
         POST = "POST"
@@ -98,48 +91,17 @@ class FlextApiConstants:
         CONNECT = "CONNECT"
         TRACE = "TRACE"
 
-    # Valid HTTP methods set for validation (derived from enum)
-    VALID_METHODS: Final[AbstractSet[str]] = (
-        ValidationMappings.HTTP_METHOD_VALIDATION_SET
-    )
+    class Status(StrEnum):
+        """HTTP status enumeration for operations."""
 
-    # URL and validation constants
-    MAX_URL_LENGTH: ClassVar[int] = 2048
-    MIN_URL_LENGTH: ClassVar[int] = 8
-    MIN_PORT: ClassVar[int] = 1
-    MAX_PORT: ClassVar[int] = 65535
+        IDLE = "idle"
+        PENDING = "pending"
+        RUNNING = "running"
+        COMPLETED = "completed"
+        FAILED = "failed"
+        ERROR = "error"
+        SUCCESS = "success"
 
-    # Retry and reliability constants
-    BACKOFF_FACTOR: ClassVar[float] = 0.5
-    HTTP_SUCCESS_MIN: ClassVar[int] = 200
-    HTTP_SUCCESS_MAX: ClassVar[int] = 300
-    HTTP_REDIRECT_MIN: ClassVar[int] = 300
-    HTTP_REDIRECT_MAX: ClassVar[int] = 400
-    HTTP_CLIENT_ERROR_MIN: ClassVar[int] = 400
-    HTTP_CLIENT_ERROR_MAX: ClassVar[int] = 500
-    HTTP_SERVER_ERROR_MIN: ClassVar[int] = 500
-    HTTP_ERROR_MIN: ClassVar[int] = 400
-
-    # Rate limiting constants
-    RATE_LIMIT_REQUESTS: ClassVar[int] = 1000
-    RATE_LIMIT_WINDOW: ClassVar[int] = 3600
-
-    # Response templates - using Mapping for immutability
-    SUCCESS_RESPONSE_TEMPLATE: ClassVar[Mapping[str, str | None]] = {
-        "status": "success",
-        "data": None,
-        "error": None,
-        "message": None,
-    }
-
-    ERROR_RESPONSE_TEMPLATE: ClassVar[Mapping[str, str | None]] = {
-        "status": "error",
-        "data": None,
-        "error": None,
-        "message": None,
-    }
-
-    # Content Types - StrEnum for type safety and Pydantic compatibility
     class ContentType(StrEnum):
         """Content type enumeration."""
 
@@ -151,98 +113,6 @@ class FlextApiConstants:
         MULTIPART = "multipart/form-data"
         OCTET_STREAM = "application/octet-stream"
 
-    # HTTP Headers - compact definitions
-    HEADER_CONTENT_TYPE: ClassVar[str] = "Content-Type"
-    HEADER_AUTHORIZATION: ClassVar[str] = "Authorization"
-    HEADER_USER_AGENT: ClassVar[str] = "User-Agent"
-    HEADER_ACCEPT: ClassVar[str] = "Accept"
-
-    # Combined constants using patterns
-    DEFAULT_USER_AGENT: ClassVar[str] = f"FlextAPI/{API_VERSION}"
-    DEFAULT_REQUEST_TIMEOUT: ClassVar[float] = 30.0
-    DEFAULT_RETRIES: ClassVar[int] = 3
-
-    # HTTP Status - compact ranges and codes
-    HTTP_SUCCESS_RANGE: ClassVar[tuple[int, int]] = (200, 300)
-    HTTP_SUCCESS_STATUSES: ClassVar[tuple[int, ...]] = (200, 201, 202, 204, 206, 304)
-
-    # Pagination - direct core composition
-    DEFAULT_PAGE_SIZE: ClassVar[int] = FlextConstants.Processing.DEFAULT_BATCH_SIZE // 5
-    MIN_PAGE_SIZE: ClassVar[int] = FlextConstants.Pagination.MIN_PAGE_SIZE
-    MAX_PAGE_SIZE: ClassVar[int] = FlextConstants.Pagination.MAX_PAGE_SIZE
-
-    # Validation limits - using Mapping for immutability
-    VALIDATION_LIMITS: ClassVar[Mapping[str, int | float]] = {
-        "MAX_URL_LENGTH": 2048,
-        "MIN_TIMEOUT": 0.0,
-        "MAX_TIMEOUT": 300.0,
-        "MIN_RETRIES": 0,
-        "MAX_RETRIES": 10,
-    }
-
-    # Rate limiting - using Mapping for immutability
-    RATE_LIMIT_CONFIG: ClassVar[Mapping[str, int | float]] = {
-        "REQUESTS": 1000,
-        "WINDOW": 3600,
-        "BACKOFF_FACTOR": 0.3,
-    }
-
-    # CORS - using Mapping for immutability
-    CORS_CONFIG: ClassVar[Mapping[str, list[str]]] = {
-        "ORIGINS": ["*"],
-        "METHODS": [Method.GET, Method.POST, Method.PUT, Method.DELETE],
-        "HEADERS": [HEADER_CONTENT_TYPE, HEADER_AUTHORIZATION],
-    }
-
-    # URLs - using Mapping for immutability
-    URL_CONFIG: ClassVar[Mapping[str, str]] = {
-        "EXAMPLE_BASE_URL": "https://api.example.com",
-        "LOCALHOST_BASE_URL": "https://localhost:8000",
-    }
-
-    # Server constants
-    class Server:
-        """Server configuration constants."""
-
-        DEFAULT_HOST: ClassVar[str] = "127.0.0.1"
-        DEFAULT_PORT: ClassVar[int] = 8000
-
-    # Response templates - compact definition
-
-    # Status constants - StrEnum for type safety and Pydantic compatibility
-    class Status(StrEnum):
-        """Unified status enumeration."""
-
-        IDLE = "idle"
-        PENDING = "pending"
-        RUNNING = "running"
-        COMPLETED = "completed"
-        FAILED = "failed"
-        ERROR = "error"
-
-    # Valid statuses set for validation
-    VALID_STATUSES: Final[AbstractSet[str]] = ValidationMappings.STATUS_VALIDATION_SET
-
-    # Error codes - API-specific (composition instead of inheritance to avoid final overrides)
-    class Errors:
-        """API-specific error codes.
-
-        Note: Does not extend CoreErrors to avoid conflicts with final parent attributes.
-        Includes both API-specific codes and common error references from FlextConstants.
-        """
-
-        # API-specific error codes
-        MIDDLEWARE_ERROR: ClassVar[str] = "MIDDLEWARE_ERROR"
-        PROTOCOL_ERROR: ClassVar[str] = "PROTOCOL_ERROR"
-        HTTP_ERROR: ClassVar[str] = "HTTP_ERROR"
-
-        # API HTTP-specific error codes (referenced from core)
-        CONNECTION_ERROR: ClassVar[str] = "CONNECTION_ERROR"
-        TIMEOUT_ERROR: ClassVar[str] = "TIMEOUT_ERROR"
-        VALIDATION_ERROR: ClassVar[str] = "VALIDATION_ERROR"
-        CONFIG_ERROR: ClassVar[str] = "CONFIG_ERROR"
-
-    # Serialization formats - moved from typings.py
     class SerializationFormat(StrEnum):
         """Supported serialization formats."""
 
@@ -251,61 +121,320 @@ class FlextApiConstants:
         CBOR = "cbor"
         CUSTOM = "custom"
 
-    # WebSocket constants
-    class WebSocket:
-        """WebSocket protocol constants."""
+    # ═══════════════════════════════════════════════════════════════════
+    # SUBSETS: Literal referenciando membros do StrEnum
+    # ═══════════════════════════════════════════════════════════════════
+    # Use para aceitar apenas ALGUNS valores do enum em métodos
+    # Isso NÃO duplica strings - referencia o enum member!
 
-        DEFAULT_PING_INTERVAL: Final[float] = 20.0
-        DEFAULT_PING_TIMEOUT: Final[float] = 20.0
-        DEFAULT_CLOSE_TIMEOUT: Final[float] = 10.0
-        DEFAULT_MAX_SIZE: Final[int] = 10 * 1024 * 1024  # 10MB
-        DEFAULT_MAX_QUEUE: Final[int] = 32
-        DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
-        DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
-        COMPRESSION_DEFLATE: Final[str] = "deflate"
-        STATUS_SWITCHING_PROTOCOLS: Final[int] = 101
+    type ActiveMethods = Literal[Method.GET, Method.POST, Method.PUT, Method.DELETE]
+    """Active HTTP methods for operations."""
+    type SafeMethods = Literal[Method.GET, Method.HEAD, Method.OPTIONS, Method.TRACE]
+    """Safe HTTP methods (no side effects)."""
+    type TerminalStatuses = Literal[Status.COMPLETED, Status.FAILED, Status.ERROR]
+    """Terminal operation statuses."""
+    type SuccessStatuses = Literal[Status.SUCCESS, Status.COMPLETED]
+    """Success operation statuses."""
+    type JsonCompatibleTypes = Literal[ContentType.JSON, ContentType.TEXT]
+    """Content types compatible with JSON serialization."""
 
-        class MessageType(StrEnum):
-            """WebSocket message type enumeration."""
+    # ═══════════════════════════════════════════════════════════════════
+    # TYPEIS + TYPEGUARD: Advanced type narrowing (Python 3.13+ PEP 742)
+    # ═══════════════════════════════════════════════════════════════════
 
-            TEXT = "text"
-            BINARY = "binary"
+    @classmethod
+    def is_valid_method(cls, value: str) -> TypeIs[Method]:
+        """TypeIs for HTTP Method validation - narrowing in if/else."""
+        return value in cls.Method._value2member_map_
 
-        class Protocol(StrEnum):
-            """WebSocket protocol enumeration."""
+    @classmethod
+    def is_active_method(cls, value: str) -> TypeGuard[ActiveMethods]:
+        """TypeGuard for active method subset."""
+        return value in {
+            cls.Method.GET.value,
+            cls.Method.POST.value,
+            cls.Method.PUT.value,
+            cls.Method.DELETE.value,
+        }
 
-            WS = "ws"
-            WSS = "wss"
-            WEBSOCKET = "websocket"
+    @classmethod
+    def is_safe_method(cls, value: str) -> TypeGuard[SafeMethods]:
+        """TypeGuard for safe method subset."""
+        return value in {
+            cls.Method.GET.value,
+            cls.Method.HEAD.value,
+            cls.Method.OPTIONS.value,
+            cls.Method.TRACE.value,
+        }
 
-    # SSE constants
-    class SSE:
-        """Server-Sent Events protocol constants."""
+    @classmethod
+    def is_terminal_status(cls, value: str) -> TypeIs[Status]:
+        """TypeIs for terminal status validation."""
+        if isinstance(value, cls.Status):
+            return value in {cls.Status.COMPLETED, cls.Status.FAILED, cls.Status.ERROR}
+        return value in {"completed", "failed", "error"}
 
-        DEFAULT_RETRY_TIMEOUT: Final[int] = 3000
-        DEFAULT_CONNECT_TIMEOUT: Final[float] = 30.0
-        DEFAULT_READ_TIMEOUT: Final[float] = 300.0
-        DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 10
-        DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
+    @classmethod
+    def is_success_status(cls, value: str) -> TypeGuard[SuccessStatuses]:
+        """TypeGuard for success status subset."""
+        return value in {cls.Status.SUCCESS.value, cls.Status.COMPLETED.value}
 
-        class Protocol(StrEnum):
-            """SSE protocol enumeration."""
+    @classmethod
+    def is_json_compatible(cls, value: str) -> TypeGuard[JsonCompatibleTypes]:
+        """TypeGuard for JSON-compatible content types."""
+        return value in {cls.ContentType.JSON.value, cls.ContentType.TEXT.value}
 
-            SSE = "sse"
-            SERVER_SENT_EVENTS = "server-sent-events"
-            EVENTSOURCE = "eventsource"
+    # ═══════════════════════════════════════════════════════════════════
+    # IMMUTABLE COLLECTIONS: frozenset para O(1) validação
+    # ═══════════════════════════════════════════════════════════════════
 
-    # GraphQL constants
-    class GraphQL:
-        """GraphQL protocol constants."""
+    VALID_METHODS: Final[AbstractSet[str]] = frozenset(
+        member.value for member in Method.__members__.values()
+    )
+    """Immutable set of all valid HTTP methods for O(1) validation."""
 
-        class Protocol(StrEnum):
-            """GraphQL protocol enumeration."""
+    VALID_STATUSES: Final[AbstractSet[str]] = frozenset(
+        member.value for member in Status.__members__.values()
+    )
+    """Immutable set of all valid operation statuses."""
 
-            GRAPHQL = "graphql"
-            GQL = "gql"
+    VALID_CONTENT_TYPES: Final[AbstractSet[str]] = frozenset(
+        member.value for member in ContentType.__members__.values()
+    )
+    """Immutable set of all valid content types."""
 
-    # HTTP Protocol constants
+    ACTIVE_METHODS_SET: Final[AbstractSet[str]] = frozenset(
+        member.value for member in [Method.GET, Method.POST, Method.PUT, Method.DELETE]
+    )
+    """Active HTTP methods for validation."""
+
+    SAFE_METHODS_SET: Final[AbstractSet[str]] = frozenset(
+        member.value
+        for member in [Method.GET, Method.HEAD, Method.OPTIONS, Method.TRACE]
+    )
+    """Safe HTTP methods for validation."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # CONFIGURATION CONSTANTS: Valores padrão e limites
+    # ═══════════════════════════════════════════════════════════════════
+
+    DEFAULT_TIMEOUT: Final[float] = 30.0
+    """Default request timeout in seconds."""
+
+    DEFAULT_MAX_RETRIES: Final[int] = 3
+    """Default maximum retry attempts."""
+
+    DEFAULT_BASE_URL: Final[str] = (
+        f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+    )
+    """Default base URL for API operations."""
+
+    API_VERSION: Final[str] = "v1"
+    """API version string."""
+
+    MAX_URL_LENGTH: Final[int] = 2048
+    """Maximum URL length."""
+
+    MIN_URL_LENGTH: Final[int] = 8
+    """Minimum URL length."""
+
+    MIN_PORT: Final[int] = 1
+    """Minimum port number."""
+
+    MAX_PORT: Final[int] = 65535
+    """Maximum port number."""
+
+    BACKOFF_FACTOR: Final[float] = 0.5
+    """Exponential backoff factor."""
+
+    HTTP_SUCCESS_MIN: Final[int] = 200
+    """Minimum HTTP success status code."""
+
+    HTTP_SUCCESS_MAX: Final[int] = 300
+    """Maximum HTTP success status code."""
+
+    HTTP_REDIRECT_MIN: Final[int] = 300
+    """Minimum HTTP redirect status code."""
+
+    HTTP_REDIRECT_MAX: Final[int] = 400
+    """Maximum HTTP redirect status code."""
+
+    HTTP_CLIENT_ERROR_MIN: Final[int] = 400
+    """Minimum HTTP client error status code."""
+
+    HTTP_CLIENT_ERROR_MAX: Final[int] = 500
+    """Maximum HTTP client error status code."""
+
+    HTTP_SERVER_ERROR_MIN: Final[int] = 500
+    """Minimum HTTP server error status code."""
+
+    HTTP_ERROR_MIN: Final[int] = 400
+    """Minimum HTTP error status code."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # RESPONSE TEMPLATES: Mappings imutáveis
+    # ═══════════════════════════════════════════════════════════════════
+
+    SUCCESS_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = MappingProxyType({
+        "status": "success",
+        "data": None,
+        "error": None,
+        "message": None,
+    })
+    """Template for successful API responses."""
+
+    ERROR_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = MappingProxyType({
+        "status": "error",
+        "data": None,
+        "error": None,
+        "message": None,
+    })
+    """Template for error API responses."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # HEADER CONSTANTS: HTTP headers padronizados
+    # ═══════════════════════════════════════════════════════════════════
+
+    HEADER_CONTENT_TYPE: Final[str] = "Content-Type"
+    """Content-Type header name."""
+
+    HEADER_AUTHORIZATION: Final[str] = "Authorization"
+    """Authorization header name."""
+
+    HEADER_USER_AGENT: Final[str] = "User-Agent"
+    """User-Agent header name."""
+
+    HEADER_ACCEPT: Final[str] = "Accept"
+    """Accept header name."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # DERIVED CONSTANTS: Constantes derivadas de outras
+    # ═══════════════════════════════════════════════════════════════════
+
+    DEFAULT_USER_AGENT: Final[str] = f"FlextAPI/{API_VERSION}"
+    """Default User-Agent string."""
+
+    DEFAULT_RETRIES: Final[int] = 3
+    """Default retry count."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # RATE LIMITING: Configuração de limites
+    # ═══════════════════════════════════════════════════════════════════
+
+    RATE_LIMIT_REQUESTS: Final[int] = 1000
+    """Rate limit requests per window."""
+
+    RATE_LIMIT_WINDOW: Final[int] = 3600
+    """Rate limit window in seconds."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # PAGINATION: Configurações padrão
+    # ═══════════════════════════════════════════════════════════════════
+
+    DEFAULT_PAGE_SIZE: Final[int] = FlextConstants.Processing.DEFAULT_BATCH_SIZE // 5
+    """Default page size for API responses."""
+
+    MIN_PAGE_SIZE: Final[int] = FlextConstants.Pagination.MIN_PAGE_SIZE
+    """Minimum page size."""
+
+    MAX_PAGE_SIZE: Final[int] = FlextConstants.Pagination.MAX_PAGE_SIZE
+    """Maximum page size."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # VALIDATION LIMITS: Mappings imutáveis para validação
+    # ═══════════════════════════════════════════════════════════════════
+
+    VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
+        "MAX_URL_LENGTH": MAX_URL_LENGTH,
+        "MIN_TIMEOUT": 0.1,
+        "MAX_TIMEOUT": 300.0,
+        "MIN_RETRIES": 0,
+        "MAX_RETRIES": 10,
+    })
+    """Validation limits mapping."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # CORS CONFIGURATION: Configuração CORS
+    # ═══════════════════════════════════════════════════════════════════
+
+    CORS_CONFIG: Final[Mapping[str, list[str]]] = MappingProxyType({
+        "origins": ["*"],
+        "methods": [Method.GET, Method.POST, Method.PUT, Method.DELETE],
+        "headers": [HEADER_CONTENT_TYPE, HEADER_AUTHORIZATION],
+    })
+    """CORS configuration."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # URL CONFIGURATION: URLs padrão
+    # ═══════════════════════════════════════════════════════════════════
+
+    URL_CONFIG: Final[Mapping[str, str]] = MappingProxyType({
+        "EXAMPLE_BASE_URL": "https://api.example.com",
+        "LOCALHOST_BASE_URL": "https://localhost:8000",
+    })
+    """URL configuration mapping."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # UTILITY METHODS: Validação avançada com FlextUtilities
+    # ═══════════════════════════════════════════════════════════════════
+
+    @classmethod
+    def validate_method_with_result(cls, value: str) -> FlextResult[Method]:
+        """Validate HTTP method using FlextUtilities.Enum.parse."""
+        return FlextUtilities.Enum.parse(cls.Method, value)
+
+    @classmethod
+    def validate_status_with_result(cls, value: str) -> FlextResult[Status]:
+        """Validate status using FlextUtilities.Enum.parse."""
+        return FlextUtilities.Enum.parse(cls.Status, value)
+
+    @classmethod
+    def validate_content_type_with_result(cls, value: str) -> FlextResult[ContentType]:
+        """Validate content type using FlextUtilities.Enum.parse."""
+        return FlextUtilities.Enum.parse(cls.ContentType, value)
+
+    @classmethod
+    def create_method_validator(cls) -> Callable[[str], Method]:
+        """Create BeforeValidator for HTTP Method in Pydantic models."""
+        return FlextUtilities.Enum.coerce_validator(cls.Method)
+
+    @classmethod
+    def create_status_validator(cls) -> Callable[[str], Status]:
+        """Create BeforeValidator for Status in Pydantic models."""
+        return FlextUtilities.Enum.coerce_validator(cls.Status)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
+    # ═══════════════════════════════════════════════════════════════════
+
+    type MethodLiteral = Literal[
+        "GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT", "TRACE"
+    ]
+    """HTTP method literal - matches Method StrEnum values exactly."""
+
+    type StatusLiteral = Literal[
+        "idle", "pending", "running", "completed", "failed", "error", "success"
+    ]
+    """Status literal - matches Status StrEnum values exactly."""
+
+    type ContentTypeLiteral = Literal[
+        "application/json",
+        "application/xml",
+        "text/plain",
+        "text/html",
+        "application/x-www-form-urlencoded",
+        "multipart/form-data",
+        "application/octet-stream",
+    ]
+    """Content type literal - matches ContentType StrEnum values exactly."""
+
+    type SerializationFormatLiteral = Literal["json", "msgpack", "cbor", "custom"]
+    """Serialization format literal - matches SerializationFormat StrEnum values exactly."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # ADDITIONAL DOMAIN CLASSES: HTTP, Server, etc. (restaurados)
+    # ═══════════════════════════════════════════════════════════════════
+
     class HTTP:
         """HTTP protocol-specific constants."""
 
@@ -333,11 +462,67 @@ class FlextApiConstants:
             Protocol.HTTP_3,
         })
 
-    # HTTP Retry constants
+    class Server:
+        """Server configuration constants."""
+
+        DEFAULT_HOST: Final[str] = "127.0.0.1"
+        DEFAULT_PORT: Final[int] = 8000
+
+    class WebSocket:
+        """WebSocket protocol constants."""
+
+        DEFAULT_PING_INTERVAL: Final[float] = 20.0
+        DEFAULT_PING_TIMEOUT: Final[float] = 20.0
+        DEFAULT_CLOSE_TIMEOUT: Final[float] = 10.0
+        DEFAULT_MAX_SIZE: Final[int] = 10 * 1024 * 1024  # 10MB
+        DEFAULT_MAX_QUEUE: Final[int] = 32
+        DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 5
+        DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
+        COMPRESSION_DEFLATE: Final[str] = "deflate"
+        STATUS_SWITCHING_PROTOCOLS: Final[int] = 101
+
+        class MessageType(StrEnum):
+            """WebSocket message type enumeration."""
+
+            TEXT = "text"
+            BINARY = "binary"
+
+        class Protocol(StrEnum):
+            """WebSocket protocol enumeration."""
+
+            WS = "ws"
+            WSS = "wss"
+            WEBSOCKET = "websocket"
+
+    class SSE:
+        """Server-Sent Events protocol constants."""
+
+        DEFAULT_RETRY_TIMEOUT: Final[int] = 3000
+        DEFAULT_CONNECT_TIMEOUT: Final[float] = 30.0
+        DEFAULT_READ_TIMEOUT: Final[float] = 300.0
+        DEFAULT_RECONNECT_MAX_ATTEMPTS: Final[int] = 10
+        DEFAULT_RECONNECT_BACKOFF_FACTOR: Final[float] = 1.5
+
+        class Protocol(StrEnum):
+            """SSE protocol enumeration."""
+
+            SSE = "sse"
+            SERVER_SENT_EVENTS = "server-sent-events"
+            EVENTSOURCE = "eventsource"
+
+    class GraphQL:
+        """GraphQL protocol constants."""
+
+        class Protocol(StrEnum):
+            """GraphQL protocol enumeration."""
+
+            GRAPHQL = "graphql"
+            GQL = "gql"
+
     class HTTPRetry:
         """HTTP retry status codes."""
 
-        RETRYABLE_STATUS_CODES: ClassVar[AbstractSet[int]] = frozenset({
+        RETRYABLE_STATUS_CODES: Final[AbstractSet[int]] = frozenset({
             408,
             429,
             500,
@@ -346,102 +531,18 @@ class FlextApiConstants:
             504,
         })
 
-    # HTTP Client constants
     class HTTPClient:
         """HTTP client connection constants."""
 
-        DEFAULT_MAX_CONNECTIONS: ClassVar[int] = 100
-        DEFAULT_MAX_KEEPALIVE_CONNECTIONS: ClassVar[int] = 20
+        DEFAULT_MAX_CONNECTIONS: Final[int] = 100
+        DEFAULT_MAX_KEEPALIVE_CONNECTIONS: Final[int] = 20
 
-    # Pagination defaults - moved from utilities
     class PaginationDefaults:
         """Pagination default values."""
 
-        DEFAULT_PAGE: ClassVar[int] = 1
-        DEFAULT_PAGE_SIZE_STRING: ClassVar[str] = "20"
-        DEFAULT_MAX_PAGE_SIZE_FALLBACK: ClassVar[int] = 1000
-
-    # Validation methods using ValidationMappings
-    @classmethod
-    def validate_http_method(cls, method: str) -> str | None:
-        """Validate HTTP method against allowed values."""
-        return cls.ValidationMappings.HTTP_METHOD_VALIDATION_MAP.get(method)
-
-    @classmethod
-    def validate_content_type(cls, content_type: str) -> str | None:
-        """Validate content type against allowed values."""
-        return cls.ValidationMappings.CONTENT_TYPE_VALIDATION_MAP.get(content_type)
-
-    @classmethod
-    def validate_status(cls, status: str) -> str | None:
-        """Validate status against allowed values."""
-        return cls.ValidationMappings.STATUS_VALIDATION_MAP.get(status)
-
-    @classmethod
-    def get_valid_http_methods(cls) -> AbstractSet[str]:
-        """Get all valid HTTP methods."""
-        return cls.ValidationMappings.HTTP_METHOD_VALIDATION_SET
-
-    @classmethod
-    def get_valid_content_types(cls) -> AbstractSet[str]:
-        """Get all valid content types."""
-        return cls.ValidationMappings.CONTENT_TYPE_VALIDATION_SET
-
-    @classmethod
-    def get_valid_statuses(cls) -> AbstractSet[str]:
-        """Get all valid statuses."""
-        return cls.ValidationMappings.STATUS_VALIDATION_SET
-
-    # =========================================================================
-    # LITERAL TYPES - Type-safe annotations (Python 3.13+ PEP 695 best practices)
-    # =========================================================================
-
-    # HTTP method literal (derived from Method StrEnum)
-    type HttpMethodLiteral = Literal[
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "HEAD",
-        "OPTIONS",
-        "CONNECT",
-        "TRACE",
-    ]
-
-    # Content type literal (derived from ContentType StrEnum)
-    type ContentTypeLiteral = Literal[
-        "application/json",
-        "application/xml",
-        "text/plain",
-        "text/html",
-        "application/x-www-form-urlencoded",
-        "multipart/form-data",
-        "application/octet-stream",
-    ]
-
-    # Status literal (derived from Status StrEnum)
-    type StatusLiteral = Literal[
-        "idle", "pending", "running", "completed", "failed", "error"
-    ]
-
-    # Serialization format literal (derived from SerializationFormat StrEnum)
-    type SerializationFormatLiteral = Literal["json", "msgpack", "cbor", "custom"]
-
-    # WebSocket message type literal (derived from WebSocket.MessageType StrEnum)
-    type WebSocketMessageTypeLiteral = Literal["text", "binary"]
-
-    # WebSocket protocol literal (derived from WebSocket.Protocol StrEnum)
-    type WebSocketProtocolLiteral = Literal["ws", "wss", "websocket"]
-
-    # HTTP protocol literal (derived from HTTP.Protocol StrEnum)
-    type HttpProtocolLiteral = Literal["http", "https", "http/1.1", "http/2", "http/3"]
-
-    # SSE protocol literal (derived from SSE.Protocol StrEnum)
-    type SseProtocolLiteral = Literal["sse", "server-sent-events", "eventsource"]
-
-    # GraphQL protocol literal (derived from GraphQL.Protocol StrEnum)
-    type GraphQLProtocolLiteral = Literal["graphql", "gql"]
+        DEFAULT_PAGE: Final[int] = 1
+        DEFAULT_PAGE_SIZE_STRING: Final[str] = "20"
+        DEFAULT_MAX_PAGE_SIZE_FALLBACK: Final[int] = 1000
 
 
-__all__ = ["FlextApiConstants", "UnitLiteral"]
+__all__ = ["FlextApiConstants"]

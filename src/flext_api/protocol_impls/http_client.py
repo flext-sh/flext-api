@@ -203,7 +203,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             httpx_kwargs = self._build_httpx_kwargs(
                 method, full_url, headers, request_data
             )
-            httpx_response = self._client.request(**httpx_kwargs)  # type: ignore[arg-type]
+            httpx_response = self._client.request(**httpx_kwargs)
 
             response = self._create_response_from_httpx(httpx_response)
             return FlextResult[FlextApiTypes.HttpResponseDict].ok(

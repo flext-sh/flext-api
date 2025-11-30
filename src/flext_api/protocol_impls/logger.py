@@ -22,10 +22,10 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def info(self, message: str, **kwargs: object) -> None:
         """Log info message."""
-        # Convert kwargs to GeneralValueType for logger compatibility
+        # Convert kwargs to FlextTypes.GeneralValueType for logger compatibility
         context: dict[str, FlextTypes.GeneralValueType] = {}
         for key, value in kwargs.items():
-            # GeneralValueType accepts most object types
+            # FlextTypes.GeneralValueType accepts most object types
             if isinstance(value, (str, int, float, bool, type(None), list, dict)):
                 context[key] = value
             else:
@@ -34,7 +34,7 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def error(self, message: str, **kwargs: object) -> None:
         """Log error message."""
-        # Convert kwargs to GeneralValueType for logger compatibility
+        # Convert kwargs to FlextTypes.GeneralValueType for logger compatibility
         context: dict[str, FlextTypes.GeneralValueType] = {}
         for key, value in kwargs.items():
             if isinstance(value, (str, int, float, bool, type(None), list, dict)):
@@ -45,7 +45,7 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def debug(self, message: str, **kwargs: object) -> None:
         """Log debug message."""
-        # Convert kwargs to GeneralValueType for logger compatibility
+        # Convert kwargs to FlextTypes.GeneralValueType for logger compatibility
         context: dict[str, FlextTypes.GeneralValueType] = {}
         for key, value in kwargs.items():
             if isinstance(value, (str, int, float, bool, type(None), list, dict)):
@@ -56,7 +56,7 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def warning(self, message: str, **kwargs: object) -> None:
         """Log warning message."""
-        # Convert kwargs to GeneralValueType for logger compatibility
+        # Convert kwargs to FlextTypes.GeneralValueType for logger compatibility
         context: dict[str, FlextTypes.GeneralValueType] = {}
         for key, value in kwargs.items():
             if isinstance(value, (str, int, float, bool, type(None), list, dict)):
