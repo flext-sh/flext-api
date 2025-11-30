@@ -19,6 +19,7 @@ from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
+from flext_api.utilities import FlextApiUtilities
 
 
 class FlextApi(FlextService[FlextApiConfig]):
@@ -91,128 +92,6 @@ class FlextApi(FlextService[FlextApiConfig]):
         """
         return self._client.request(request)
 
-    def _validate_request_body(
-        self, body: FlextApiTypes.RequestBody | None
-    ) -> FlextResult[FlextApiTypes.RequestBody]:
-        """Validate request body type - helper to reduce complexity."""
-        if body is not None and isinstance(body, (dict, str, bytes)):
-            return FlextResult[FlextApiTypes.RequestBody].ok(body)
-        return FlextResult[FlextApiTypes.RequestBody].fail(
-            f"Invalid body type: {type(body)}"
-        )
-
-    def _extract_body_from_kwargs(
-        self,
-        data: FlextApiTypes.RequestBody | None,
-        request_kwargs: FlextApiTypes.RequestKwargs | None,
-    ) -> FlextResult[FlextApiTypes.RequestBody]:
-        """Extract body from explicit data or request_kwargs - no fallbacks."""
-        # Priority 1: Explicit data parameter
-        if data is not None:
-            return self._validate_request_body(data)
-
-        # Priority 2: request_kwargs
-        if request_kwargs is None:
-            return FlextResult[FlextApiTypes.RequestBody].ok({})
-
-        # Check json in kwargs (priority over data)
-        if "json" in request_kwargs and request_kwargs["json"] is not None:
-            json_value = request_kwargs["json"]
-            if isinstance(json_value, dict):
-                return FlextResult[FlextApiTypes.RequestBody].ok(json_value)
-            return FlextResult[FlextApiTypes.RequestBody].fail(
-                f"Invalid json type: {type(json_value)}"
-            )
-
-        # Check data in kwargs
-        if "data" in request_kwargs and request_kwargs["data"] is not None:
-            return self._validate_request_body(request_kwargs["data"])
-
-        # No body provided - empty dict is valid
-        return FlextResult[FlextApiTypes.RequestBody].ok({})
-
-    def _merge_headers(
-        self,
-        explicit_headers: dict[str, str] | None,
-        request_kwargs: FlextApiTypes.RequestKwargs | None,
-    ) -> FlextResult[dict[str, str]]:
-        """Merge headers from kwargs and explicit headers - no fallbacks."""
-        combined_headers: dict[str, str] = {}
-        if request_kwargs is not None and "headers" in request_kwargs:
-            kw_headers_value = request_kwargs["headers"]
-            if isinstance(kw_headers_value, dict):
-                # Convert WebHeaders (dict[str, str | list[str]]) to dict[str, str]
-                for key, value in kw_headers_value.items():
-                    if isinstance(value, str):
-                        combined_headers[key] = value
-                    elif isinstance(value, list):
-                        # Convert list to comma-separated string
-                        combined_headers[key] = ", ".join(str(v) for v in value)
-                    else:
-                        combined_headers[key] = str(value)
-            elif kw_headers_value is not None:
-                return FlextResult[dict[str, str]].fail(
-                    f"Invalid headers type: {type(kw_headers_value)}"
-                )
-        if explicit_headers is not None:
-            combined_headers.update(explicit_headers)
-        return FlextResult[dict[str, str]].ok(combined_headers)
-
-    def _validate_timeout_value(
-        self, timeout_value: object, timeout_min: float, timeout_max: float
-    ) -> FlextResult[float]:
-        """Validate a single timeout value - helper to reduce complexity."""
-        if isinstance(timeout_value, (int, float)):
-            timeout_float = float(timeout_value)
-            if timeout_min <= timeout_float <= timeout_max:
-                return FlextResult[float].ok(timeout_float)
-            return FlextResult[float].fail(
-                f"Timeout {timeout_float} out of range [{timeout_min}, {timeout_max}]"
-            )
-        if isinstance(timeout_value, str):
-            try:
-                timeout_float = float(timeout_value)
-                if timeout_min <= timeout_float <= timeout_max:
-                    return FlextResult[float].ok(timeout_float)
-                return FlextResult[float].fail(
-                    f"Timeout {timeout_float} out of range [{timeout_min}, {timeout_max}]"
-                )
-            except ValueError:
-                return FlextResult[float].fail(
-                    f"Invalid timeout value: {timeout_value}"
-                )
-        if timeout_value is not None:
-            return FlextResult[float].fail(
-                f"Invalid timeout type: {type(timeout_value)}"
-            )
-        return FlextResult[float].fail("Timeout value is None")
-
-    def _validate_and_extract_timeout(
-        self,
-        timeout: float | None,
-        request_kwargs: FlextApiTypes.RequestKwargs | None,
-    ) -> FlextResult[float]:
-        """Extract and validate timeout value - no fallbacks."""
-        timeout_min = 0.1
-        timeout_max = FlextApiConstants.VALIDATION_LIMITS["MAX_TIMEOUT"]
-
-        # Check explicit timeout first
-        if timeout is not None:
-            return self._validate_timeout_value(timeout, timeout_min, timeout_max)
-
-        # Check request_kwargs
-        if request_kwargs is not None and "timeout" in request_kwargs:
-            timeout_kwarg = request_kwargs["timeout"]
-            if timeout_kwarg is not None:
-                return self._validate_timeout_value(
-                    timeout_kwarg, timeout_min, timeout_max
-                )
-
-        # Use config timeout as default (this is OK - it's a valid default from config)
-        # Ensure it's a float
-        config_timeout = float(self._config.timeout)
-        return FlextResult[float].ok(config_timeout)
-
     def _http_method(
         self,
         method: str,
@@ -237,21 +116,27 @@ class FlextApi(FlextService[FlextApiConfig]):
 
         """
         # Extract body using monadic pattern
-        body_result = self._extract_body_from_kwargs(data, request_kwargs)
+        body_result = FlextApiUtilities.RequestUtils.extract_body_from_kwargs(
+            data, request_kwargs
+        )
         if body_result.is_failure:
             return FlextResult[FlextApiModels.HttpResponse].fail(
                 body_result.error or "Body extraction failed"
             )
 
         # Merge headers using monadic pattern
-        headers_result = self._merge_headers(headers, request_kwargs)
+        headers_result = FlextApiUtilities.RequestUtils.merge_headers(
+            headers, request_kwargs
+        )
         if headers_result.is_failure:
             return FlextResult[FlextApiModels.HttpResponse].fail(
                 headers_result.error or "Header extraction failed"
             )
 
         # Validate timeout using monadic pattern
-        timeout_result = self._validate_and_extract_timeout(timeout, request_kwargs)
+        timeout_result = FlextApiUtilities.RequestUtils.validate_and_extract_timeout(
+            timeout, request_kwargs
+        )
         if timeout_result.is_failure:
             return FlextResult[FlextApiModels.HttpResponse].fail(
                 timeout_result.error or "Timeout extraction failed"

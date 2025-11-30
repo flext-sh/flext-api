@@ -20,6 +20,17 @@ from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
 
 
+class FlextApiBaseModel(BaseModel):
+    """Base model for FlextApi with standard Pydantic v2 configuration."""
+
+    model_config = ConfigDict(
+        use_enum_values=True,
+        validate_default=True,
+        str_strip_whitespace=True,
+        extra="forbid",
+    )
+
+
 class FlextApiModels:
     """HTTP domain models for flext-api.
 
@@ -509,4 +520,4 @@ class FlextApiModels:
             return self.page > 1
 
 
-__all__ = ["FlextApiModels"]
+__all__ = ["FlextApiBaseModel", "FlextApiModels"]
