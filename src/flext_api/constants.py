@@ -431,6 +431,16 @@ class FlextApiConstants(FlextConstants):
     type SerializationFormatLiteral = Literal["json", "msgpack", "cbor", "custom"]
     """Serialization format literal - matches SerializationFormat StrEnum values exactly."""
 
+    # Protocol Literals for type-safe protocol usage
+    type HttpProtocolLiteral = Literal["http", "https", "http/1.1", "http/2", "http/3"]
+    """HTTP protocol literal - matches HTTP.Protocol StrEnum values."""
+    type WebSocketProtocolLiteral = Literal["ws", "wss"]
+    """WebSocket protocol literal - matches WebSocket.Protocol StrEnum values."""
+    type SseProtocolLiteral = Literal["sse"]
+    """SSE protocol literal - matches SSE.Protocol StrEnum values."""
+    type GraphQLProtocolLiteral = Literal["graphql", "graphql-ws"]
+    """GraphQL protocol literal - matches GraphQL.Protocol StrEnum values."""
+
     # ═══════════════════════════════════════════════════════════════════
     # ADDITIONAL DOMAIN CLASSES: HTTP, Server, etc. (restaurados)
     # ═══════════════════════════════════════════════════════════════════

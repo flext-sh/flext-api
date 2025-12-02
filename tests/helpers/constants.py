@@ -70,7 +70,7 @@ class TestConstants:
 
         # Reuse production Literals for consistency (Python 3.13+ best practices)
         # HTTP method literal (reusing production type)
-        HttpMethodLiteral: TypeAlias = FlextApiConstants.HttpMethodLiteral
+        HttpMethodLiteral: TypeAlias = FlextApiConstants.MethodLiteral
 
         # Content type literal (reusing production type)
         ContentTypeLiteral: TypeAlias = FlextApiConstants.ContentTypeLiteral
