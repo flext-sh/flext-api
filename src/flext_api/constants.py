@@ -18,7 +18,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal, TypeGuard, TypeIs
 
-from flext_core import FlextConstants, FlextResult, FlextUtilities
+from flext_core import FlextConstants, FlextResult, u
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: PADRÃO DEFINITIVO PARA FLEXT-API
@@ -46,7 +46,7 @@ class FlextApiConstants(FlextConstants):
     - TypeIs/TypeGuard methods for advanced type narrowing
     - Collections.abc for immutable validation sets
 
-    Integration with FlextProtocols:
+    Integration with p:
     This class provides the constant registry that FlextApiProtocols depend on.
     Structural typing ensures protocol compliance without explicit inheritance.
 
@@ -375,33 +375,33 @@ class FlextApiConstants(FlextConstants):
     """URL configuration mapping."""
 
     # ═══════════════════════════════════════════════════════════════════
-    # UTILITY METHODS: Validação avançada com FlextUtilities
+    # UTILITY METHODS: Validação avançada com u
     # ═══════════════════════════════════════════════════════════════════
 
     @classmethod
     def validate_method_with_result(cls, value: str) -> FlextResult[Method]:
-        """Validate HTTP method using FlextUtilities.Enum.parse."""
-        return FlextUtilities.Enum.parse(cls.Method, value)
+        """Validate HTTP method using u.Enum.parse."""
+        return u.Enum.parse(cls.Method, value)
 
     @classmethod
     def validate_status_with_result(cls, value: str) -> FlextResult[Status]:
-        """Validate status using FlextUtilities.Enum.parse."""
-        return FlextUtilities.Enum.parse(cls.Status, value)
+        """Validate status using u.Enum.parse."""
+        return u.Enum.parse(cls.Status, value)
 
     @classmethod
     def validate_content_type_with_result(cls, value: str) -> FlextResult[ContentType]:
-        """Validate content type using FlextUtilities.Enum.parse."""
-        return FlextUtilities.Enum.parse(cls.ContentType, value)
+        """Validate content type using u.Enum.parse."""
+        return u.Enum.parse(cls.ContentType, value)
 
     @classmethod
     def create_method_validator(cls) -> Callable[[str], Method]:
         """Create BeforeValidator for HTTP Method in Pydantic models."""
-        return FlextUtilities.Enum.coerce_validator(cls.Method)
+        return uvalidator(cls.Method)
 
     @classmethod
     def create_status_validator(cls) -> Callable[[str], Status]:
         """Create BeforeValidator for Status in Pydantic models."""
-        return FlextUtilities.Enum.coerce_validator(cls.Status)
+        return uvalidator(cls.Status)
 
     # ═══════════════════════════════════════════════════════════════════
     # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)

@@ -7,14 +7,14 @@ from enum import StrEnum
 from functools import cache, wraps
 from typing import Annotated, TypeIs, TypeVar, get_type_hints
 
-from flext_core import FlextResult, FlextUtilities
+from flext_core import FlextResult, u
 from flext_core.typings import P, R
 from pydantic import BaseModel, BeforeValidator, ConfigDict, validate_call
 
 T = TypeVar("T")
 
 
-class FlextApiUtilities(FlextUtilities):
+class FlextApiUtilities(u):
     """TypeIs (PEP 742), BeforeValidator, validate_call, collections.abc, ParamSpec."""
 
     class Enum:
@@ -23,12 +23,12 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def is_member[E: StrEnum](value: object, enum_cls: type[E]) -> TypeIs[E]:
             """TypeIs narrowing em AMBAS branches if/else.
-            
+
             Business Rule: TypeIs[E] returns bool but narrows value to type E when True.
             This allows type narrowing in if/else branches without explicit casts.
             Uses isinstance check first, then string membership check for StrEnum compatibility.
             Note: value must be first parameter for TypeIs to narrow correctly.
-            
+
             Audit Implication: Type-safe enum validation without runtime overhead.
             """
             # TypeIs[E] narrows the first positional parameter (value)
@@ -44,12 +44,12 @@ class FlextApiUtilities(FlextUtilities):
             value: object, enum_cls: type[E], valid: frozenset[E]
         ) -> TypeIs[E]:
             """Check if value is subset of valid enum values.
-            
+
             Business Rule: TypeIs[E] returns bool but narrows value to type E when True.
             Validates that value is both a valid enum member AND in the valid subset.
             Uses isinstance check first, then string parsing for StrEnum compatibility.
             Note: value must be first parameter for TypeIs to narrow correctly.
-            
+
             Audit Implication: Type-safe subset validation for enum values.
             """
             # TypeIs[E] narrows the first positional parameter (value)
@@ -66,10 +66,10 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def parse[E: StrEnum](enum_cls: type[E], value: str | E) -> FlextResult[E]:
             """Parse string or enum value to enum instance.
-            
+
             Business Rule: Accepts both string and enum values, converting strings
             to enum instances. Returns FlextResult for railway-oriented error handling.
-            
+
             Audit Implication: Type-safe enum parsing with automatic conversion.
             """
             if isinstance(value, enum_cls):
@@ -82,13 +82,14 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def coerce_validator[E: StrEnum](enum_cls: type[E]) -> Callable[[object], E]:
             """BeforeValidator factory para Pydantic.
-            
+
             Business Rule: Creates a validator function for Pydantic's BeforeValidator
             that accepts both enum instances and string values, converting strings
             to enum instances automatically.
-            
+
             Audit Implication: Enables automatic enum coercion in Pydantic models.
             """
+
             def _coerce(v: object) -> E:
                 if isinstance(v, enum_cls):
                     return v
@@ -106,10 +107,10 @@ class FlextApiUtilities(FlextUtilities):
         @cache
         def values[E: StrEnum](enum_cls: type[E]) -> frozenset[str]:
             """Get all enum values as a frozenset.
-            
+
             Business Rule: Returns all enum member values as an immutable set
             for efficient membership testing and validation.
-            
+
             Audit Implication: Cached for performance - same enum class returns
             same frozenset instance.
             """
@@ -123,11 +124,11 @@ class FlextApiUtilities(FlextUtilities):
             enum_cls: type[E], values: Iterable[str | E]
         ) -> FlextResult[tuple[E, ...]]:
             """Parse sequence of string or enum values to tuple of enum instances.
-            
+
             Business Rule: Accepts iterable of strings or enum values, converting
             all to enum instances. Returns FlextResult with tuple of parsed enums
             or failure with list of invalid values.
-            
+
             Audit Implication: Type-safe sequence parsing with detailed error reporting.
             """
             parsed, errors = [], []
@@ -150,13 +151,14 @@ class FlextApiUtilities(FlextUtilities):
             enum_cls: type[E],
         ) -> Callable[[object], list[E]]:
             """Create BeforeValidator for list of enum values.
-            
+
             Business Rule: Creates a validator function for Pydantic's BeforeValidator
             that accepts sequences (list, tuple, set) and converts all items to enum
             instances. Raises TypeError for invalid types, ValueError for invalid enum values.
-            
+
             Audit Implication: Enables automatic enum list coercion in Pydantic models.
             """
+
             def _coerce(value: object) -> list[E]:
                 if not isinstance(value, (list, tuple, set)):
                     msg = "Expected sequence"
@@ -184,12 +186,12 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def validated(func: Callable[P, R]) -> Callable[P, R]:
             """Decorator com validate_call - aceita str OU enum, converte auto.
-            
+
             Business Rule: Uses Pydantic validate_call to automatically convert
             string values to StrEnum types and validate all parameters according
             to their type annotations. Preserves ParamSpec signature for correct
             type checking.
-            
+
             Audit Implication: Zero boilerplate validation - parameters are
             automatically validated and converted at call time.
             """
@@ -205,11 +207,11 @@ class FlextApiUtilities(FlextUtilities):
             func: Callable[P, FlextResult[R]],
         ) -> Callable[P, FlextResult[R]]:
             """ValidationError → FlextResult.fail().
-            
+
             Business Rule: Wraps validate_call to convert ValidationError exceptions
             into FlextResult.fail() responses. Preserves ParamSpec signature for
             correct type checking.
-            
+
             Audit Implication: Railway-oriented error handling - validation errors
             become FlextResult failures instead of exceptions.
             """
@@ -236,11 +238,11 @@ class FlextApiUtilities(FlextUtilities):
             kwargs: Mapping[str, object], enum_fields: Mapping[str, type[E]]
         ) -> FlextResult[dict[str, object]]:
             """Parse kwargs converting specific fields to StrEnums.
-            
+
             Business Rule: Accepts kwargs dictionary and enum_fields mapping,
             converting string values in specified fields to enum instances.
             Returns FlextResult with parsed dict or failure with list of invalid fields.
-            
+
             Audit Implication: Type-safe kwargs parsing with selective enum conversion.
             """
             parsed, errors = dict(kwargs), []
@@ -261,10 +263,10 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def get_enum_params(func: Callable[..., object]) -> dict[str, type[StrEnum]]:
             """Extrai parâmetros StrEnum da signature.
-            
+
             Business Rule: Extracts parameters from function signature that are
             StrEnum types. Returns empty dict if type hints cannot be retrieved.
-            
+
             Audit Implication: Enables automatic enum parameter discovery for validation.
             """
             try:
@@ -287,10 +289,10 @@ class FlextApiUtilities(FlextUtilities):
             model_cls: type[M], data: Mapping[str, object], *, strict: bool = False
         ) -> FlextResult[M]:
             """Create model instance from dictionary.
-            
+
             Business Rule: Validates dictionary data against Pydantic model schema
             and returns FlextResult with model instance or validation error.
-            
+
             Audit Implication: Type-safe model creation with railway-oriented error handling.
             """
             try:
@@ -305,10 +307,10 @@ class FlextApiUtilities(FlextUtilities):
             overrides: Mapping[str, object],
         ) -> FlextResult[M]:
             """Merge defaults and overrides into model instance.
-            
+
             Business Rule: Combines defaults and overrides dictionaries (overrides
             take precedence) and creates model instance using from_dict.
-            
+
             Audit Implication: Type-safe model creation with default value merging.
             """
             return FlextApiUtilities.Model.from_dict(
@@ -318,11 +320,11 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def update[M: BaseModel](instance: M, **updates: object) -> FlextResult[M]:
             """Update model instance with new field values.
-            
+
             Business Rule: Updates model instance by merging current values with
             updates dictionary and re-validating. Returns FlextResult with updated
             instance or validation error.
-            
+
             Audit Implication: Type-safe model updates with validation.
             """
             try:
@@ -338,13 +340,13 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def coerced_enum[E: StrEnum](enum_cls: type[E]) -> object:
             """Create Annotated type with automatic enum coercion.
-            
+
             Business Rule: Returns an Annotated type that automatically converts
             string values to enum instances using BeforeValidator. This enables
             Pydantic models to accept both string and enum values for enum fields.
             Returns `object` type annotation because Annotated is a special typing
             form that cannot be expressed as a regular type annotation.
-            
+
             Audit Implication: Type-safe enum coercion in Pydantic models without
             manual validation code. The returned value is an Annotated type that
             Pydantic recognizes for automatic validation.

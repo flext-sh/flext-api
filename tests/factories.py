@@ -13,7 +13,7 @@ import uuid
 from typing import cast
 
 from faker import Faker
-from flext_core import FlextConstants, FlextResult, FlextTypes
+from flext_core import FlextConstants, FlextResult, t
 from flext_tests import FlextTestsDomains, FlextTestsUtilities
 
 from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
@@ -347,7 +347,7 @@ class FlextApiFactories:
         return FlextTestsDomains.invalid_email_cases()
 
     @staticmethod
-    def get_valid_ages() -> FlextTypes.IntList:
+    def get_valid_ages() -> t.IntList:
         """Get valid ages using FlextTestsDomains - ABSOLUTE.
 
         Returns:
@@ -357,7 +357,7 @@ class FlextApiFactories:
         return FlextTestsDomains.valid_ages()
 
     @staticmethod
-    def get_invalid_ages() -> FlextTypes.IntList:
+    def get_invalid_ages() -> t.IntList:
         """Get invalid ages using FlextTestsDomains - ABSOLUTE.
 
         Returns:

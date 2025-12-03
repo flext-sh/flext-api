@@ -9,14 +9,14 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextProtocols, FlextResult
+from flext_core import FlextResult, p
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
 
 
-class FlextApiProtocols(FlextProtocols):
-    """Single unified HTTP protocols class extending flext-core FlextProtocols.
+class FlextApiProtocols(p):
+    """Single unified HTTP protocols class extending flext-core p.
 
     Contains all protocol definitions for HTTP operations using nested classes.
     Follows FLEXT namespace class pattern - single class with nested protocol definitions.

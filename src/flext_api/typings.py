@@ -13,15 +13,15 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from typing import Protocol, TypeVar, runtime_checkable
 
-from flext_core import FlextTypes
+from flext_core import t
 
 # TypeVar for generic operations
 T = TypeVar("T")
 U = TypeVar("U")
 
 
-class FlextApiTypes(FlextTypes):
-    """Unified API type definitions extending FlextTypes with composition.
+class FlextApiTypes(t):
+    """Unified API type definitions extending t with composition.
 
     Single namespace containing ALL API types.
     NO module-level aliases, NO weak types.
@@ -34,7 +34,7 @@ class FlextApiTypes(FlextTypes):
     # =========================================================================
 
     # Direct alias for compatibility
-    type JsonValue = FlextTypes.Json.JsonValue
+    type JsonValue = t.Json.JsonValue
 
     type JsonObject = dict[str, JsonValue]
     type WebData = str | bytes | JsonObject
@@ -133,7 +133,7 @@ class FlextApiTypes(FlextTypes):
     type RequestPipeline = list[JsonObject]
     type ResponsePipeline = list[JsonObject]
     type ProcessingResult = dict[str, bool | list[str] | JsonObject]
-    # Note: MiddlewareConfig inherited from FlextTypes (dict[str, object])
+    # Note: MiddlewareConfig inherited from t (dict[str, object])
 
     # =========================================================================
     # ERROR HANDLING TYPES - Error management and recovery
