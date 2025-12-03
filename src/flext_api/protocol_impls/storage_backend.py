@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextResult
+from flext_core import r
 
 from flext_api.protocols import FlextApiProtocols
 
@@ -20,77 +20,77 @@ class StorageBackendImplementation(FlextApiProtocols.StorageBackendProtocol):
         self._storage: dict[str, object] = {}
         self.logger = FlextLogger(__name__)
 
-    def get(self, key: str) -> FlextResult[object]:
+    def get(self, key: str) -> r[object]:
         """Retrieve value by key."""
         try:
             if not key:
-                return FlextResult[object].fail("Storage key cannot be empty")
+                return r[object].fail("Storage key cannot be empty")
 
             if key in self._storage:
                 value = self._storage[key]
                 self.logger.debug(f"Retrieved data with key: {key}")
-                return FlextResult[object].ok(value)
-            return FlextResult[object].fail(f"Key not found: {key}")
+                return r[object].ok(value)
+            return r[object].fail(f"Key not found: {key}")
 
         except Exception as e:
-            return FlextResult[object].fail(f"Retrieval operation failed: {e}")
+            return r[object].fail(f"Retrieval operation failed: {e}")
 
     def set(
         self,
         key: str,
         value: object,
         timeout: int | None = None,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Store value with optional timeout."""
         try:
             if not key:
-                return FlextResult[bool].fail("Storage key cannot be empty")
+                return r[bool].fail("Storage key cannot be empty")
 
             # Acknowledge timeout parameter (not implemented in this simple backend)
             _ = timeout
             self._storage[str(key)] = value
             self.logger.debug(f"Stored data with key: {key}")
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
         except Exception as e:
-            return FlextResult[bool].fail(f"Storage operation failed: {e}")
+            return r[bool].fail(f"Storage operation failed: {e}")
 
-    def delete(self, key: str) -> FlextResult[bool]:
+    def delete(self, key: str) -> r[bool]:
         """Delete value by key."""
         try:
             if not key:
-                return FlextResult[bool].fail("Storage key cannot be empty")
+                return r[bool].fail("Storage key cannot be empty")
 
             if key in self._storage:
                 del self._storage[key]
                 self.logger.debug(f"Deleted data with key: {key}")
-                return FlextResult[bool].ok(True)
-            return FlextResult[bool].fail(f"Key not found: {key}")
+                return r[bool].ok(True)
+            return r[bool].fail(f"Key not found: {key}")
 
         except Exception as e:
-            return FlextResult[bool].fail(f"Delete operation failed: {e}")
+            return r[bool].fail(f"Delete operation failed: {e}")
 
-    def exists(self, key: str) -> FlextResult[bool]:
+    def exists(self, key: str) -> r[bool]:
         """Check if key exists."""
         try:
             exists = str(key) in self._storage
-            return FlextResult[bool].ok(exists)
+            return r[bool].ok(exists)
         except Exception as e:
-            return FlextResult[bool].fail(f"Exists check failed: {e}")
+            return r[bool].fail(f"Exists check failed: {e}")
 
-    def clear(self) -> FlextResult[bool]:
+    def clear(self) -> r[bool]:
         """Clear all stored values."""
         try:
             self._storage.clear()
             self.logger.debug("Cleared all storage data")
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
         except Exception as e:
-            return FlextResult[bool].fail(f"Clear operation failed: {e}")
+            return r[bool].fail(f"Clear operation failed: {e}")
 
-    def keys(self) -> FlextResult[list[str]]:
+    def keys(self) -> r[list[str]]:
         """Get all keys."""
         try:
             storage_keys: list[str] = list(self._storage)
-            return FlextResult[list[str]].ok(storage_keys)
+            return r[list[str]].ok(storage_keys)
         except Exception as e:
-            return FlextResult[list[str]].fail(f"Keys operation failed: {e}")
+            return r[list[str]].fail(f"Keys operation failed: {e}")

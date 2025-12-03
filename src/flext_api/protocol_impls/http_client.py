@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Self
 
 import httpx
-from flext_core import FlextLogger, FlextResult
+from flext_core import r
 
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
@@ -118,25 +118,25 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
     def _handle_http_error(
         self, e: httpx.HTTPStatusError
-    ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
+    ) -> r[FlextApiTypes.HttpResponseDict]:
         """Handle HTTP status errors."""
         error_msg = f"HTTP error {e.response.status_code}: {e.response.text}"
         self.logger.warning(error_msg)
         response = self._create_response_from_httpx(e.response)
-        return FlextResult[FlextApiTypes.HttpResponseDict].ok(
+        return r[FlextApiTypes.HttpResponseDict].ok(
             self._response_to_dict(response)
         )
 
     def _handle_request_exception(
         self, e: Exception, error_prefix: str
-    ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
+    ) -> r[FlextApiTypes.HttpResponseDict]:
         """Handle general request exceptions."""
         error_msg = f"{error_prefix}: {e}"
         if isinstance(e, (httpx.TimeoutException, httpx.NetworkError)):
             self.logger.warning(error_msg)
         else:
             self.logger.error(error_msg)
-        return FlextResult[FlextApiTypes.HttpResponseDict].fail(error_msg)
+        return r[FlextApiTypes.HttpResponseDict].fail(error_msg)
 
     def _build_httpx_kwargs(
         self,
@@ -187,12 +187,12 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         method: str,
         url: str,
         **kwargs: object,
-    ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
+    ) -> r[FlextApiTypes.HttpResponseDict]:
         """Execute an HTTP request conforming to protocol."""
         try:
             full_url_result = self._build_full_url(url)
             if full_url_result.is_failure:
-                return FlextResult[FlextApiTypes.HttpResponseDict].fail(
+                return r[FlextApiTypes.HttpResponseDict].fail(
                     full_url_result.error or "URL building failed"
                 )
             full_url = full_url_result.unwrap()
@@ -206,7 +206,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             httpx_response = self._client.request(**httpx_kwargs)
 
             response = self._create_response_from_httpx(httpx_response)
-            return FlextResult[FlextApiTypes.HttpResponseDict].ok(
+            return r[FlextApiTypes.HttpResponseDict].ok(
                 self._response_to_dict(response)
             )
 
@@ -222,7 +222,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             )
             return self._handle_request_exception(e, error_prefix)
 
-    def _build_full_url(self, url: str) -> FlextResult[str]:
+    def _build_full_url(self, url: str) -> r[str]:
         """Build full URL from configuration base_url and provided path.
 
         Args:
@@ -233,21 +233,21 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
         """
         if url.startswith(("http://", "https://")):
-            return FlextResult[str].ok(url)
+            return r[str].ok(url)
 
         if not self._config.base_url:
-            return FlextResult[str].fail(
+            return r[str].fail(
                 "base_url is required when URL is not absolute"
             )
 
         base_url_value = self._config.base_url
         if not isinstance(base_url_value, str) or not base_url_value:
-            return FlextResult[str].fail("base_url must be a non-empty string")
+            return r[str].fail("base_url must be a non-empty string")
 
         base_url = str(base_url_value).rstrip("/")
         path = str(url).lstrip("/")
         full_url = f"{base_url}/{path}" if path else base_url
-        return FlextResult[str].ok(full_url)
+        return r[str].ok(full_url)
 
     def close(self) -> None:
         """Close the HTTP client and cleanup resources."""
@@ -266,7 +266,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         self,
         url: str,
         **kwargs: object,
-    ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
+    ) -> r[FlextApiTypes.HttpResponseDict]:
         """Execute HTTP GET request."""
         return self.request(FlextApiConstants.Method.GET, url, **kwargs)
 
@@ -274,7 +274,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         self,
         url: str,
         **kwargs: object,
-    ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
+    ) -> r[FlextApiTypes.HttpResponseDict]:
         """Execute HTTP POST request."""
         return self.request(FlextApiConstants.Method.POST, url, **kwargs)
 
@@ -282,7 +282,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         self,
         url: str,
         **kwargs: object,
-    ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
+    ) -> r[FlextApiTypes.HttpResponseDict]:
         """Execute HTTP PUT request."""
         return self.request(FlextApiConstants.Method.PUT, url, **kwargs)
 
@@ -290,6 +290,6 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         self,
         url: str,
         **kwargs: object,
-    ) -> FlextResult[FlextApiTypes.HttpResponseDict]:
+    ) -> r[FlextApiTypes.HttpResponseDict]:
         """Execute HTTP DELETE request."""
         return self.request(FlextApiConstants.Method.DELETE, url, **kwargs)

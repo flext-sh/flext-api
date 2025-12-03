@@ -24,7 +24,7 @@ import json
 import time
 from typing import Self, cast, override
 
-from flext_core import FlextResult, FlextService
+from flext_core import FlextService, r
 from pydantic import BaseModel, Field
 
 from flext_api.typings import FlextApiTypes
@@ -218,104 +218,104 @@ class FlextApiStorage(FlextService[bool]):
 
     def _extract_namespace(
         self, config_dict: FlextApiTypes.StorageDict
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Extract namespace from config with validation - uses default if not specified."""
         if "namespace" in config_dict:
             namespace_val = config_dict["namespace"]
             if isinstance(namespace_val, str):
                 if namespace_val:
-                    return FlextResult[str].ok(namespace_val)
-                return FlextResult[str].fail("Namespace cannot be empty")
-            return FlextResult[str].fail(
+                    return r[str].ok(namespace_val)
+                return r[str].fail("Namespace cannot be empty")
+            return r[str].fail(
                 f"Invalid namespace type: {type(namespace_val)}"
             )
         # Use default namespace (this is OK - it's a valid default, not a fallback)
-        return FlextResult[str].ok("flext_api")
+        return r[str].ok("flext_api")
 
     def _extract_max_size(
         self, config_dict: FlextApiTypes.StorageDict, max_size_val: object | None
-    ) -> FlextResult[int]:
+    ) -> r[int]:
         """Extract max_size preferring parameter over config - no fallbacks.
 
-        Returns FlextResult[int] with a sentinel value (-1) when max_size is not specified.
+        Returns r[int] with a sentinel value (-1) when max_size is not specified.
         The caller should check for -1 to determine if max_size was not set.
         """
         if max_size_val is not None:
             try:
                 max_size_int = int(str(max_size_val))
                 if max_size_int > 0:
-                    return FlextResult[int].ok(max_size_int)
-                return FlextResult[int].fail(
+                    return r[int].ok(max_size_int)
+                return r[int].fail(
                     f"Max size must be positive, got: {max_size_int}"
                 )
             except (ValueError, TypeError) as e:
-                return FlextResult[int].fail(f"Invalid max_size value: {e}")
+                return r[int].fail(f"Invalid max_size value: {e}")
         if "max_size" in config_dict:
             max_size_config = config_dict["max_size"]
             if max_size_config is not None:
                 try:
                     max_size_int = int(str(max_size_config))
                     if max_size_int > 0:
-                        return FlextResult[int].ok(max_size_int)
-                    return FlextResult[int].fail(
+                        return r[int].ok(max_size_int)
+                    return r[int].fail(
                         f"Max size must be positive, got: {max_size_int}"
                     )
                 except (ValueError, TypeError) as e:
-                    return FlextResult[int].fail(f"Invalid max_size value: {e}")
+                    return r[int].fail(f"Invalid max_size value: {e}")
         # Return sentinel value (-1) when max_size is not specified (not a fallback - max_size is optional)
-        return FlextResult[int].ok(-1)
+        return r[int].ok(-1)
 
     def _extract_default_ttl(
         self, config_dict: FlextApiTypes.StorageDict, default_ttl_val: object | None
-    ) -> FlextResult[int]:
+    ) -> r[int]:
         """Extract default_ttl preferring parameter over config - no fallbacks.
 
-        Returns FlextResult[int] with a sentinel value (-1) when default_ttl is not specified.
+        Returns r[int] with a sentinel value (-1) when default_ttl is not specified.
         The caller should check for -1 to determine if default_ttl was not set.
         """
         if default_ttl_val is not None:
             try:
                 ttl_int = int(str(default_ttl_val))
                 if ttl_int > 0:
-                    return FlextResult[int].ok(ttl_int)
-                return FlextResult[int].fail(
+                    return r[int].ok(ttl_int)
+                return r[int].fail(
                     f"Default TTL must be positive, got: {ttl_int}"
                 )
             except (ValueError, TypeError) as e:
-                return FlextResult[int].fail(f"Invalid default_ttl value: {e}")
+                return r[int].fail(f"Invalid default_ttl value: {e}")
         if "default_ttl" in config_dict:
             default_ttl_config = config_dict["default_ttl"]
             if default_ttl_config is not None:
                 try:
                     ttl_int = int(str(default_ttl_config))
                     if ttl_int > 0:
-                        return FlextResult[int].ok(ttl_int)
-                    return FlextResult[int].fail(
+                        return r[int].ok(ttl_int)
+                    return r[int].fail(
                         f"Default TTL must be positive, got: {ttl_int}"
                     )
                 except (ValueError, TypeError) as e:
-                    return FlextResult[int].fail(f"Invalid default_ttl value: {e}")
+                    return r[int].fail(f"Invalid default_ttl value: {e}")
         # Return sentinel value (-1) when default_ttl is not specified (not a fallback - default_ttl is optional)
-        return FlextResult[int].ok(-1)
+        return r[int].ok(-1)
 
     def _extract_backend(
         self, config_dict: FlextApiTypes.StorageDict
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Extract backend from config with validation - uses default if not specified."""
         if "backend" in config_dict:
             backend_val = config_dict["backend"]
             if isinstance(backend_val, str):
                 if backend_val:
-                    return FlextResult[str].ok(backend_val)
-                return FlextResult[str].fail("Backend cannot be empty")
-            return FlextResult[str].fail(f"Invalid backend type: {type(backend_val)}")
+                    return r[str].ok(backend_val)
+                return r[str].fail("Backend cannot be empty")
+            return r[str].fail(f"Invalid backend type: {type(backend_val)}")
         # Use default backend (this is OK - it's a valid default, not a fallback)
-        return FlextResult[str].ok("memory")
+        return r[str].ok("memory")
 
     @override
-    def execute(self, *_args: object, **_kwargs: object) -> FlextResult[bool]:
+    def execute(self, *_args: object, **_kwargs: object) -> r[bool]:
         """Service lifecycle execution."""
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def _key(self, key: str) -> str:
         """Create namespaced key."""
@@ -339,12 +339,12 @@ class FlextApiStorage(FlextService[bool]):
         value: object,
         timeout: int | None = None,
         ttl: int | None = None,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Store value with TTL using Pydantic metadata."""
         if not isinstance(key, str):
-            return FlextResult[bool].fail("Key must be a string")
+            return r[bool].fail("Key must be a string")
         if not key:
-            return FlextResult[bool].fail("Key must be non-empty string")
+            return r[bool].fail("Key must be non-empty string")
 
         ttl_val = (
             timeout
@@ -360,7 +360,7 @@ class FlextApiStorage(FlextService[bool]):
                 ttl=ttl_val,
             )
         except Exception as e:
-            return FlextResult[bool].fail(f"Metadata validation failed: {e}")
+            return r[bool].fail(f"Metadata validation failed: {e}")
 
         # Store with expiry tracking - direct field access
         # Convert value to JsonValue for type safety
@@ -385,14 +385,14 @@ class FlextApiStorage(FlextService[bool]):
 
         self._operations_count += 1
         self._stats.total_operations = self._operations_count
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
-    def get(self, key: str) -> FlextResult[object]:
+    def get(self, key: str) -> r[object]:
         """Retrieve value with expiration checking."""
         if not isinstance(key, str):
-            return FlextResult[object].fail("Key must be a string")
+            return r[object].fail("Key must be a string")
         if not key:
-            return FlextResult[object].fail("Key must be non-empty string")
+            return r[object].fail("Key must be non-empty string")
 
         self._cleanup_expired()
         self._operations_count += 1
@@ -401,7 +401,7 @@ class FlextApiStorage(FlextService[bool]):
         if key in self._storage:
             value = self._storage[key]
             self._stats.cache_hits += 1
-            return FlextResult[object].ok(value)
+            return r[object].ok(value)
 
         # Try namespaced key
         namespaced_key = self._key(key)
@@ -413,7 +413,7 @@ class FlextApiStorage(FlextService[bool]):
                     metadata = _StorageMetadata(**data)
                     if not metadata.is_expired():
                         self._stats.cache_hits += 1
-                        return FlextResult[object].ok(metadata.value)
+                        return r[object].ok(metadata.value)
                     # Clean up expired entry
                     if namespaced_key in self._storage:
                         del self._storage[namespaced_key]
@@ -424,9 +424,9 @@ class FlextApiStorage(FlextService[bool]):
                 self.logger.warning(f"Failed to cleanup expired cache entry: {e}")
 
         self._stats.cache_misses += 1
-        return FlextResult[object].fail(f"Key not found: {key}")
+        return r[object].fail(f"Key not found: {key}")
 
-    def delete(self, key: str) -> FlextResult[bool]:
+    def delete(self, key: str) -> r[bool]:
         """Delete key from storage."""
         key_deleted = key in self._storage
         namespaced_key = self._key(key)
@@ -441,63 +441,63 @@ class FlextApiStorage(FlextService[bool]):
         self._operations_count += 1
 
         if key_deleted or namespaced_deleted:
-            return FlextResult[bool].ok(True)
-        return FlextResult[bool].fail(f"Key not found: {key}")
+            return r[bool].ok(True)
+        return r[bool].fail(f"Key not found: {key}")
 
-    def exists(self, key: str) -> FlextResult[bool]:
+    def exists(self, key: str) -> r[bool]:
         """Check if key exists and not expired."""
         self._cleanup_expired()
         direct_exists = key in self._storage
         if direct_exists:
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
         namespaced_exists = self._key(key) in self._storage
-        return FlextResult[bool].ok(namespaced_exists)
+        return r[bool].ok(namespaced_exists)
 
-    def clear(self) -> FlextResult[bool]:
+    def clear(self) -> r[bool]:
         """Clear all storage."""
         self._storage.clear()
         self._expiry_times.clear()
         self._operations_count = 0
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
-    def size(self) -> FlextResult[int]:
+    def size(self) -> r[int]:
         """Get storage size with expiration cleanup."""
         self._cleanup_expired()
-        return FlextResult[int].ok(len(self._storage))
+        return r[int].ok(len(self._storage))
 
-    def keys(self) -> FlextResult[list[str]]:
+    def keys(self) -> r[list[str]]:
         """Get all non-namespaced keys."""
         self._cleanup_expired()
-        return FlextResult[list[str]].ok([
+        return r[list[str]].ok([
             k for k in self._storage if not k.startswith(f"{self._namespace}:")
         ])
 
-    def items(self) -> FlextResult[list[tuple[str, object]]]:
+    def items(self) -> r[list[tuple[str, object]]]:
         """Get all key-value pairs."""
         self._cleanup_expired()
-        return FlextResult[list[tuple[str, object]]].ok(list(self._storage.items()))
+        return r[list[tuple[str, object]]].ok(list(self._storage.items()))
 
-    def values(self) -> FlextResult[list[object]]:
+    def values(self) -> r[list[object]]:
         """Get all values."""
         self._cleanup_expired()
-        return FlextResult[list[object]].ok(list(self._storage.values()))
+        return r[list[object]].ok(list(self._storage.values()))
 
     def batch_set(
         self, data: dict[str, FlextApiTypes.JsonValue], ttl: int | None = None
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Set multiple keys efficiently using Pydantic validation."""
         try:
             for key, value in data.items():
                 result = self.set(key, value, ttl=ttl)
                 if result.is_failure:
                     return result
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
         except Exception as e:
-            return FlextResult[bool].fail(str(e))
+            return r[bool].fail(str(e))
 
     def batch_get(
         self, keys: list[str]
-    ) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+    ) -> r[dict[str, FlextApiTypes.JsonValue]]:
         """Get multiple keys efficiently."""
         try:
             result_dict: dict[str, FlextApiTypes.JsonValue] = {}
@@ -511,11 +511,11 @@ class FlextApiStorage(FlextService[bool]):
                         result_dict[key] = unwrapped
                     else:
                         result_dict[key] = str(unwrapped)
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(result_dict)
+            return r[dict[str, FlextApiTypes.JsonValue]].ok(result_dict)
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(str(e))
+            return r[dict[str, FlextApiTypes.JsonValue]].fail(str(e))
 
-    def batch_delete(self, keys: list[str]) -> FlextResult[bool]:
+    def batch_delete(self, keys: list[str]) -> r[bool]:
         """Delete multiple keys efficiently."""
         try:
             all_deleted = True
@@ -524,41 +524,41 @@ class FlextApiStorage(FlextService[bool]):
                 if delete_result.is_failure:
                     all_deleted = False
             if all_deleted:
-                return FlextResult[bool].ok(True)
-            return FlextResult[bool].fail("Some keys could not be deleted")
+                return r[bool].ok(True)
+            return r[bool].fail("Some keys could not be deleted")
         except Exception as e:
-            return FlextResult[bool].fail(str(e))
+            return r[bool].fail(str(e))
 
-    def serialize_json(self, data: object) -> FlextResult[str]:
+    def serialize_json(self, data: object) -> r[str]:
         """Serialize to JSON using json library."""
         try:
-            return FlextResult[str].ok(json.dumps(data, default=str))
+            return r[str].ok(json.dumps(data, default=str))
         except Exception as e:
-            return FlextResult[str].fail(f"JSON serialization failed: {e}")
+            return r[str].fail(f"JSON serialization failed: {e}")
 
-    def deserialize_json(self, json_str: str) -> FlextResult[FlextApiTypes.JsonValue]:
+    def deserialize_json(self, json_str: str) -> r[FlextApiTypes.JsonValue]:
         """Deserialize from JSON using json library."""
         try:
-            return FlextResult[FlextApiTypes.JsonValue].ok(json.loads(json_str))
+            return r[FlextApiTypes.JsonValue].ok(json.loads(json_str))
         except Exception as e:
-            return FlextResult[FlextApiTypes.JsonValue].fail(
+            return r[FlextApiTypes.JsonValue].fail(
                 f"JSON deserialization failed: {e}"
             )
 
-    def cleanup_expired(self) -> FlextResult[int]:
+    def cleanup_expired(self) -> r[int]:
         """Clean up expired entries (TTL management)."""
         try:
             initial_size = len(self._storage)
             self._cleanup_expired()
             removed = initial_size - len(self._storage)
-            return FlextResult[int].ok(removed)
+            return r[int].ok(removed)
         except Exception as e:
-            return FlextResult[int].fail(f"Cleanup failed: {e}")
+            return r[int].fail(f"Cleanup failed: {e}")
 
-    def info(self) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+    def info(self) -> r[dict[str, FlextApiTypes.JsonValue]]:
         """Get storage information using Pydantic model."""
         try:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok({
+            return r[dict[str, FlextApiTypes.JsonValue]].ok({
                 "namespace": self._namespace,
                 "backend": self._backend,
                 "size": len(self._storage),
@@ -568,12 +568,12 @@ class FlextApiStorage(FlextService[bool]):
                 "operations_count": self._operations_count,
             })
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(str(e))
+            return r[dict[str, FlextApiTypes.JsonValue]].fail(str(e))
 
-    def health_check(self) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+    def health_check(self) -> r[dict[str, FlextApiTypes.JsonValue]]:
         """Perform health check with metrics."""
         try:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok({
+            return r[dict[str, FlextApiTypes.JsonValue]].ok({
                 "status": "healthy",
                 "timestamp": uenerate_iso_timestamp(),
                 "storage_accessible": True,
@@ -581,9 +581,9 @@ class FlextApiStorage(FlextService[bool]):
                 "operations_count": self._operations_count,
             })
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(str(e))
+            return r[dict[str, FlextApiTypes.JsonValue]].fail(str(e))
 
-    def metrics(self) -> FlextResult[dict[str, FlextApiTypes.JsonValue]]:
+    def metrics(self) -> r[dict[str, FlextApiTypes.JsonValue]]:
         """Get storage metrics using Pydantic stats model."""
         try:
             # Update stats using Pydantic model
@@ -604,34 +604,34 @@ class FlextApiStorage(FlextService[bool]):
                 "memory_usage": self._stats.memory_usage,
                 "namespace": self._stats.namespace,
             }
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok(stats_dict)
+            return r[dict[str, FlextApiTypes.JsonValue]].ok(stats_dict)
         except Exception as e:
-            return FlextResult[dict[str, FlextApiTypes.JsonValue]].fail(str(e))
+            return r[dict[str, FlextApiTypes.JsonValue]].fail(str(e))
 
-    def get_cache_stats(self) -> FlextResult[FlextApiTypes.CacheDict]:
+    def get_cache_stats(self) -> r[FlextApiTypes.CacheDict]:
         """Get cache statistics using Pydantic validation."""
         try:
-            return FlextResult[FlextApiTypes.CacheDict].ok({
+            return r[FlextApiTypes.CacheDict].ok({
                 "size": len(self._storage),
                 "backend": self._backend,
                 "hits": self._stats.cache_hits,
                 "misses": self._stats.cache_misses,
             })
         except Exception as e:
-            return FlextResult[FlextApiTypes.CacheDict].fail(str(e))
+            return r[FlextApiTypes.CacheDict].fail(str(e))
 
-    def get_storage_metrics(self) -> FlextResult[FlextApiTypes.MetricsDict]:
+    def get_storage_metrics(self) -> r[FlextApiTypes.MetricsDict]:
         """Get complete storage metrics."""
         try:
-            return FlextResult[FlextApiTypes.MetricsDict].ok({
+            return r[FlextApiTypes.MetricsDict].ok({
                 "total_operations": self._operations_count,
                 "cache_hits": self._stats.cache_hits,
                 "cache_misses": self._stats.cache_misses,
             })
         except Exception as e:
-            return FlextResult[FlextApiTypes.MetricsDict].fail(str(e))
+            return r[FlextApiTypes.MetricsDict].fail(str(e))
 
-    def get_storage_statistics(self) -> FlextResult[dict[str, float]]:
+    def get_storage_statistics(self) -> r[dict[str, float]]:
         """Get storage statistics with hit ratio calculation."""
         try:
             hit_ratio = (
@@ -639,7 +639,7 @@ class FlextApiStorage(FlextService[bool]):
                 if self._stats.total_operations > 0
                 else 0.0
             )
-            return FlextResult[dict[str, float]].ok({
+            return r[dict[str, float]].ok({
                 "total_operations": float(self._operations_count),
                 "cache_hits": float(self._stats.cache_hits),
                 "cache_misses": float(self._stats.cache_misses),
@@ -648,7 +648,7 @@ class FlextApiStorage(FlextService[bool]):
                 "memory_usage": float(len(str(self._storage))),
             })
         except Exception as e:
-            return FlextResult[dict[str, float]].fail(str(e))
+            return r[dict[str, float]].fail(str(e))
 
     # Properties for namespace and backend access
     # Note: config property inherited from FlextService base class

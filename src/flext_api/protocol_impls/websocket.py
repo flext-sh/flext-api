@@ -21,7 +21,7 @@ import time
 from collections.abc import Callable
 
 import websockets
-from flext_core import FlextResult
+from flext_core import r
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
@@ -151,22 +151,22 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     def _extract_message(
         self, request: FlextApiTypes.JsonObject, kwargs: dict[str, object]
-    ) -> FlextResult[str | bytes]:
+    ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
         if "message" in kwargs:
             message_value = kwargs["message"]
             if isinstance(message_value, (str, bytes)):
-                return FlextResult[str | bytes].ok(message_value)
+                return r[str | bytes].ok(message_value)
             if message_value is not None:
-                return FlextResult[str | bytes].ok(str(message_value))
+                return r[str | bytes].ok(str(message_value))
 
         body = self._extract_body(request)
         if body is not None:
             if isinstance(body, (str, bytes)):
-                return FlextResult[str | bytes].ok(body)
-            return FlextResult[str | bytes].ok(str(body))
+                return r[str | bytes].ok(body)
+            return r[str | bytes].ok(str(body))
 
-        return FlextResult[str | bytes].fail("Message or body is required")
+        return r[str | bytes].fail("Message or body is required")
 
     def _extract_message_type(self, kwargs: dict[str, object]) -> str:
         """Extract message type from kwargs."""
@@ -178,15 +178,15 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 return str(message_type_value)
         return FlextApiConstants.WebSocket.MessageType.TEXT
 
-    def _ensure_connected(self, request: FlextApiTypes.JsonObject) -> FlextResult[bool]:
+    def _ensure_connected(self, request: FlextApiTypes.JsonObject) -> r[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
         # Use RFC method to extract URL
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return FlextResult[bool].fail(url_result.error or "URL extraction failed")
+            return r[bool].fail(url_result.error or "URL extraction failed")
 
         url = url_result.unwrap()
 
@@ -199,7 +199,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         self,
         request: FlextApiTypes.JsonObject,
         **kwargs: object,
-    ) -> FlextResult[FlextApiTypes.JsonObject]:
+    ) -> r[FlextApiTypes.JsonObject]:
         """Send WebSocket request (connect and send message).
 
         Args:
@@ -211,14 +211,14 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         if not isinstance(request, dict):
-            return FlextResult[FlextApiTypes.JsonObject].fail(
+            return r[FlextApiTypes.JsonObject].fail(
                 "Request must be a dictionary"
             )
 
         # Extract WebSocket-specific parameters
         message_result = self._extract_message(request, kwargs)
         if message_result.is_failure:
-            return FlextResult[FlextApiTypes.JsonObject].fail(
+            return r[FlextApiTypes.JsonObject].fail(
                 message_result.error or "Message extraction failed"
             )
         message = message_result.unwrap()
@@ -228,21 +228,21 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         # Connect if not connected
         connect_result = self._ensure_connected(request)
         if connect_result.is_failure:
-            return FlextResult[FlextApiTypes.JsonObject].fail(
+            return r[FlextApiTypes.JsonObject].fail(
                 f"WebSocket connection failed: {connect_result.error}"
             )
 
         # Send message
         send_result = self._send_message(message, message_type)
         if send_result.is_failure:
-            return FlextResult[FlextApiTypes.JsonObject].fail(
+            return r[FlextApiTypes.JsonObject].fail(
                 f"WebSocket send failed: {send_result.error}"
             )
 
         # Create response (WebSocket doesn't have traditional responses)
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return FlextResult[FlextApiTypes.JsonObject].fail(
+            return r[FlextApiTypes.JsonObject].fail(
                 f"Failed to extract URL: {url_result.error}"
             )
         url_str = url_result.unwrap()
@@ -255,7 +255,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             "body": {"status": "message_sent", "message_type": message_type},
         }
 
-        return FlextResult[FlextApiTypes.JsonObject].ok(response)
+        return r[FlextApiTypes.JsonObject].ok(response)
 
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol.
@@ -291,7 +291,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         self,
         url: str,
         headers: dict[str, str] | None = None,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Connect to WebSocket server.
 
         Args:
@@ -307,7 +307,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             connect_headers = headers
         return self._connect(url, connect_headers)
 
-    def disconnect(self) -> FlextResult[bool]:
+    def disconnect(self) -> r[bool]:
         """Disconnect from WebSocket server.
 
         Returns:
@@ -315,7 +315,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         if not self._connected:
-            return FlextResult[bool].fail("Not connected to WebSocket server")
+            return r[bool].fail("Not connected to WebSocket server")
 
         try:
             # Simplified sync disconnect - no async tasks to cancel
@@ -336,16 +336,16 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
             self.logger.info("WebSocket disconnected", url=self._url)
 
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
         except Exception as e:
-            return FlextResult[bool].fail(f"WebSocket disconnect failed: {e}")
+            return r[bool].fail(f"WebSocket disconnect failed: {e}")
 
     def send_message(
         self,
         message: str | bytes,
         message_type: str = "text",
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Send message over WebSocket.
 
         Args:
@@ -403,7 +403,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         self,
         url: str,
         headers: dict[str, str],
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Internal connection implementation.
 
         Args:
@@ -416,7 +416,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """
         # Check if websockets library is available
         if websockets is None:
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 "websockets library not installed. Install with: pip install websockets"
             )
 
@@ -456,18 +456,18 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 },
             )
 
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
         except Exception as e:
             self._connected = False
             self._connection = None
-            return FlextResult[bool].fail(f"WebSocket connection error: {e}")
+            return r[bool].fail(f"WebSocket connection error: {e}")
 
     def _send_message(
         self,
         message: str | bytes,
         message_type: str,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Internal send message implementation.
 
         Args:
@@ -479,9 +479,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         if not self._connected:
-            return FlextResult[bool].fail("Not connected to WebSocket server")
+            return r[bool].fail("Not connected to WebSocket server")
         if not self._connection:
-            return FlextResult[bool].fail("WebSocket connection is None")
+            return r[bool].fail("WebSocket connection is None")
 
         try:
             if message_type == FlextApiConstants.WebSocket.MessageType.TEXT:
@@ -495,17 +495,17 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 if hasattr(self._connection, "send"):
                     self._connection.send(message)
             else:
-                return FlextResult[bool].fail(f"Invalid message type: {message_type}")
+                return r[bool].fail(f"Invalid message type: {message_type}")
 
             self.logger.debug(
                 "WebSocket message sent",
                 extra={"message_type": message_type, "size": len(message)},
             )
 
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
         except Exception as e:
-            return FlextResult[bool].fail(f"WebSocket send error: {e}")
+            return r[bool].fail(f"WebSocket send error: {e}")
 
     def _receive_loop(self) -> None:
         """Background task to receive messages."""
@@ -556,7 +556,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 self.logger.exception("Heartbeat error")
                 break
 
-    def _reconnect(self) -> FlextResult[bool]:
+    def _reconnect(self) -> r[bool]:
         """Attempt to reconnect with exponential backoff.
 
         Returns:
@@ -579,7 +579,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 self.logger.info("WebSocket reconnected successfully")
                 return connect_result
 
-        return FlextResult[bool].fail(
+        return r[bool].fail(
             f"Failed to reconnect after {self._reconnect_max_attempts} attempts"
         )
 

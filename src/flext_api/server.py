@@ -71,7 +71,7 @@ class FlextApiServer(FlextService[object], x.Validation):
             prefix: str = "",
             schema: FlextApiTypes.SchemaValue | None = None,
             **options: FlextApiTypes.JsonValue | str | int | bool,
-        ) -> FlextResult[bool]:
+        ) -> r[bool]:
             """Register endpoint with unified interface (DRY - eliminates duplication).
 
             Args:
@@ -89,7 +89,7 @@ class FlextApiServer(FlextService[object], x.Validation):
             route_key = f"{prefix}{method}:{path}" if prefix else f"{method}:{path}"
 
             if route_key in self._routes:
-                return FlextResult[bool].fail(f"Route already registered: {route_key}")
+                return r[bool].fail(f"Route already registered: {route_key}")
 
             # Convert options to JsonValue-compatible types
             options_json: dict[str, t.JsonValue] = {}
@@ -123,7 +123,7 @@ class FlextApiServer(FlextService[object], x.Validation):
                 extra={"method": method, "path": path, "key": route_key},
             )
 
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
         @property
         def routes(self) -> dict[str, FlextApiTypes.RouteData]:
@@ -149,7 +149,7 @@ class FlextApiServer(FlextService[object], x.Validation):
             self._sse_connections: dict[str, object] = {}
             self._logger = logger
 
-        def close_all(self) -> FlextResult[bool]:
+        def close_all(self) -> r[bool]:
             """Close all active connections gracefully."""
             for conn_id, connection in self._websocket_connections.items():
                 try:
@@ -168,7 +168,7 @@ class FlextApiServer(FlextService[object], x.Validation):
             self._websocket_connections.clear()
             self._sse_connections.clear()
 
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
     class LifecycleManager:
         """Manage server startup, shutdown, and restart logic."""
@@ -214,7 +214,7 @@ class FlextApiServer(FlextService[object], x.Validation):
             """Get the server port."""
             return self._port
 
-        def create_app(self) -> FlextResult[FastAPI]:
+        def create_app(self) -> r[FastAPI]:
             """Create FastAPI application."""
             try:
                 app = FastAPI(
@@ -224,14 +224,14 @@ class FlextApiServer(FlextService[object], x.Validation):
                     redoc_url="/redoc",
                     openapi_url="/openapi.json",
                 )
-                return FlextResult[FastAPI].ok(app)
+                return r[FastAPI].ok(app)
             except Exception as e:
-                return FlextResult[FastAPI].fail(f"Failed to create app: {e}")
+                return r[FastAPI].fail(f"Failed to create app: {e}")
 
         def apply_middleware(
             self,
             middleware_pipeline: list[Callable[..., object]],
-        ) -> FlextResult[bool]:
+        ) -> r[bool]:
             """Apply middleware to application."""
             try:
                 for middleware in middleware_pipeline:
@@ -239,16 +239,16 @@ class FlextApiServer(FlextService[object], x.Validation):
                         "Middleware applied",
                         extra={"middleware": middleware.__class__.__name__},
                     )
-                return FlextResult[bool].ok(True)
+                return r[bool].ok(True)
             except Exception as e:
-                return FlextResult[bool].fail(f"Failed to apply middleware: {e}")
+                return r[bool].fail(f"Failed to apply middleware: {e}")
 
         def register_routes(
             self, routes: dict[str, FlextApiTypes.RouteData]
-        ) -> FlextResult[bool]:
+        ) -> r[bool]:
             """Register routes with FastAPI application."""
             if not self._app:
-                return FlextResult[bool].fail("Application not created")
+                return r[bool].fail("Application not created")
 
             # Type narrowing: assign to local variable for type checker
             app = self._app
@@ -274,23 +274,23 @@ class FlextApiServer(FlextService[object], x.Validation):
                         extra={"method": method, "path": path},
                     )
 
-                return FlextResult[bool].ok(True)
+                return r[bool].ok(True)
             except Exception as e:
-                return FlextResult[bool].fail(f"Failed to register routes: {e}")
+                return r[bool].fail(f"Failed to register routes: {e}")
 
         def start(
             self,
             middleware_pipeline: list[Callable[..., object]],
             routes: dict[str, FlextApiTypes.RouteData],
             protocol_handlers: dict[str, FlextApiTypes.ProtocolHandler],
-        ) -> FlextResult[bool]:
+        ) -> r[bool]:
             """Start server with complete initialization pipeline."""
             if self._is_running:
-                return FlextResult[bool].fail("Server already running")
+                return r[bool].fail("Server already running")
 
             app_result = self.create_app()
             if app_result.is_failure:
-                return FlextResult[bool].fail(
+                return r[bool].fail(
                     f"Failed to create app: {app_result.error}"
                 )
 
@@ -316,19 +316,19 @@ class FlextApiServer(FlextService[object], x.Validation):
                 },
             )
 
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
-        def stop(self) -> FlextResult[bool]:
+        def stop(self) -> r[bool]:
             """Stop server and cleanup resources."""
             if not self._is_running:
-                return FlextResult[bool].fail("Server not running")
+                return r[bool].fail("Server not running")
 
             self._is_running = False
             self._app = None
 
             self._logger.info("Server stopped")
 
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
         @property
         def is_running(self) -> bool:
@@ -367,7 +367,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         )
         if config_validation.is_failure:
             error_msg = f"Invalid server configuration: {config_validation.error}"
-            raise FlextExceptions.ConfigurationError(error_msg)
+            raise e.ConfigurationError(error_msg)
 
         # Delegate to specialized managers (Composition over inheritance)
         self._route_registry = self.RouteRegistry(logger)
@@ -382,21 +382,21 @@ class FlextApiServer(FlextService[object], x.Validation):
 
     def _validate_server_config(
         self, host: str, port: int, title: str, version: str
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Validate server configuration using utilities directly."""
         host_result = FlextApiUtilities.ValidationUtils.validate_host(host)
         if host_result.is_failure:
-            return FlextResult[bool].fail(host_result.error or "Host validation failed")
+            return r[bool].fail(host_result.error or "Host validation failed")
 
         port_result = FlextApiUtilities.ValidationUtils.validate_port(port)
         if port_result.is_failure:
-            return FlextResult[bool].fail(port_result.error or "Port validation failed")
+            return r[bool].fail(port_result.error or "Port validation failed")
 
         title_result = FlextApiUtilities.ValidationUtils.validate_string_field(
             title, "Title"
         )
         if title_result.is_failure:
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 title_result.error or "Title validation failed"
             )
 
@@ -404,37 +404,37 @@ class FlextApiServer(FlextService[object], x.Validation):
             version, "Version"
         )
         if version_result.is_failure:
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 version_result.error or "Version validation failed"
             )
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
-    def execute(self) -> FlextResult[object]:
+    def execute(self) -> r[object]:
         """Execute server service (required by FlextService)."""
-        return FlextResult[object].ok(True)
+        return r[object].ok(True)
 
     def register_protocol_handler(
         self,
         protocol: str,
         handler: FlextApiTypes.ProtocolHandler,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Register protocol handler with Flext validation."""
         # Validate protocol name using utilities directly
         protocol_validation = FlextApiUtilities.ValidationUtils.validate_string_field(
             protocol, "protocol"
         )
         if protocol_validation.is_failure:
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 protocol_validation.error or "Protocol validation failed"
             )
 
         if protocol in self._protocol_handlers:
-            return FlextResult[bool].fail(f"Protocol already registered: {protocol}")
+            return r[bool].fail(f"Protocol already registered: {protocol}")
 
         # Validate handler using Flext protocols
         if not hasattr(handler, "supports_protocol"):
-            return FlextResult[bool].fail(f"Invalid protocol handler: {type(handler)}")
+            return r[bool].fail(f"Invalid protocol handler: {type(handler)}")
 
         self._protocol_handlers[protocol] = handler
 
@@ -450,12 +450,12 @@ class FlextApiServer(FlextService[object], x.Validation):
             extra={"protocol": protocol, "handler": handler_name},
         )
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def add_middleware(
         self,
         middleware: Callable[..., object],
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Add middleware to pipeline."""
         self._middleware_pipeline.append(middleware)
 
@@ -464,7 +464,7 @@ class FlextApiServer(FlextService[object], x.Validation):
             extra={"middleware": middleware.__class__.__name__},
         )
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def register_route(
         self,
@@ -472,7 +472,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         method: FlextApiConstants.Method | str,
         handler: Callable,
         **options: object,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
         return self._route_registry.register(
             method, path, handler, prefix="", schema=None, **options
@@ -483,7 +483,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         path: str,
         handler: Callable,
         **options: object,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(
             "WS", path, handler, prefix="WS", schema=None, **options
@@ -494,7 +494,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         path: str,
         handler: Callable,
         **options: object,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(
             "SSE", path, handler, prefix="SSE", schema=None, **options
@@ -505,13 +505,13 @@ class FlextApiServer(FlextService[object], x.Validation):
         path: str = "/graphql",
         schema: FlextApiTypes.SchemaValue | None = None,
         **options: object,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
         return self._route_registry.register(
             "GRAPHQL", path, lambda: None, prefix="GRAPHQL", schema=schema, **options
         )
 
-    def start(self) -> FlextResult[bool]:
+    def start(self) -> r[bool]:
         """Start server (delegates to LifecycleManager)."""
         return self._lifecycle_manager.start(
             self._middleware_pipeline,
@@ -519,38 +519,38 @@ class FlextApiServer(FlextService[object], x.Validation):
             self._protocol_handlers,
         )
 
-    def stop(self) -> FlextResult[bool]:
+    def stop(self) -> r[bool]:
         """Stop server (delegates to ConnectionManager and LifecycleManager)."""
         self._connection_manager.close_all()
         return self._lifecycle_manager.stop()
 
-    def restart(self) -> FlextResult[bool]:
+    def restart(self) -> r[bool]:
         """Restart server (orchestrate stop/start)."""
         stop_result = self.stop()
         if stop_result.is_failure:
-            return FlextResult[bool].fail(f"Failed to stop: {stop_result.error}")
+            return r[bool].fail(f"Failed to stop: {stop_result.error}")
 
         start_result = self.start()
         if start_result.is_failure:
-            return FlextResult[bool].fail(f"Failed to start: {start_result.error}")
+            return r[bool].fail(f"Failed to start: {start_result.error}")
 
         self.logger.info("Server restarted")
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
-    def get_app(self) -> FlextResult[FastAPI]:
+    def get_app(self) -> r[FastAPI]:
         """Get FastAPI application instance."""
         app = self._lifecycle_manager.app
         if not app:
             msg = "Application not created. Call start() first."
-            return FlextResult[FastAPI].fail(msg)
+            return r[FastAPI].fail(msg)
 
         # Type check to ensure app is FastAPI instance
         if not isinstance(app, FastAPI):
             msg = f"Application is not FastAPI instance, got {type(app)}"
-            return FlextResult[FastAPI].fail(msg)
+            return r[FastAPI].fail(msg)
 
-        return FlextResult[FastAPI].ok(app)
+        return r[FastAPI].ok(app)
 
     @property
     def is_running(self) -> bool:

@@ -15,7 +15,7 @@ import json
 from typing import Self
 
 import httpx
-from flext_core import FlextResult, FlextService
+from flext_core import r, FlextService
 
 from flext_api.config import FlextApiConfig
 from flext_api.models import FlextApiModels
@@ -74,9 +74,9 @@ class FlextApiClient(FlextService[FlextApiConfig]):
 
     def execute(
         self, **_kwargs: FlextApiTypes.JsonValue | str | int | bool
-    ) -> FlextResult[FlextApiConfig]:
+    ) -> r[FlextApiConfig]:
         """Execute FlextService interface - return configuration."""
-        return FlextResult[FlextApiConfig].ok(self._config)
+        return r[FlextApiConfig].ok(self._config)
 
     @property
     def base_url(self) -> str:
@@ -90,26 +90,26 @@ class FlextApiClient(FlextService[FlextApiConfig]):
 
     def request(
         self, request: FlextApiModels.HttpRequest
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> r[FlextApiModels.HttpResponse]:
         """Execute HTTP request from model using monadic patterns.
 
         Args:
         request: HttpRequest Value Object with method, url, headers, body.
 
         Returns:
-        FlextResult[HttpResponse]: Success with HttpResponse or error message.
+        r[HttpResponse]: Success with HttpResponse or error message.
 
         """
         # Build URL and serialize body using monadic patterns
         url_result = self._build_url(request.url)
         if url_result.is_failure:
-            return FlextResult[FlextApiModels.HttpResponse].fail(
+            return r[FlextApiModels.HttpResponse].fail(
                 url_result.error or "URL validation failed"
             )
 
         body_result = self._serialize_body(request.body)
         if body_result.is_failure:
-            return FlextResult[FlextApiModels.HttpResponse].fail(
+            return r[FlextApiModels.HttpResponse].fail(
                 body_result.error or "Body serialization failed"
             )
 
@@ -125,7 +125,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         request: FlextApiModels.HttpRequest,
         url: str,
         serialized_body: bytes,
-    ) -> FlextResult[FlextApiModels.HttpResponse]:
+    ) -> r[FlextApiModels.HttpResponse]:
         """Execute HTTP request using httpx client."""
         try:
             headers: dict[str, str] = {
@@ -158,7 +158,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
                     )
 
             if response.status_code >= HTTP_STATUS_ERROR_MIN:
-                return FlextResult[FlextApiModels.HttpResponse].fail(
+                return r[FlextApiModels.HttpResponse].fail(
                     f"HTTP {response.status_code}: {response.reason_phrase}"
                 )
 
@@ -170,50 +170,50 @@ class FlextApiClient(FlextService[FlextApiConfig]):
                 )
             )
         except Exception as exc:
-            return FlextResult[FlextApiModels.HttpResponse].fail(str(exc))
+            return r[FlextApiModels.HttpResponse].fail(str(exc))
 
-    def _build_url(self, path: str) -> FlextResult[str]:
+    def _build_url(self, path: str) -> r[str]:
         """Build full URL from base_url and path."""
         if not path:
-            return FlextResult[str].fail("URL path cannot be empty")
+            return r[str].fail("URL path cannot be empty")
 
         path_stripped = path.strip()
         if not path_stripped:
-            return FlextResult[str].fail("URL path cannot be empty")
+            return r[str].fail("URL path cannot be empty")
 
         base_url_stripped = self._config.base_url.strip()
         if not base_url_stripped:
-            return FlextResult[str].ok(path_stripped)
+            return r[str].ok(path_stripped)
 
         base = base_url_stripped.rstrip("/")
         if path_stripped.startswith("/"):
-            return FlextResult[str].ok(f"{base}{path_stripped}")
-        return FlextResult[str].ok(f"{base}/{path_stripped}")
+            return r[str].ok(f"{base}{path_stripped}")
+        return r[str].ok(f"{base}/{path_stripped}")
 
     @staticmethod
     def _serialize_body(
         body: FlextApiTypes.RequestBody,
-    ) -> FlextResult[bytes]:
+    ) -> r[bytes]:
         """Serialize request body to bytes - no None, empty dict is valid."""
         # Empty dict serializes to empty bytes
         if isinstance(body, dict) and len(body) == 0:
-            return FlextResult[bytes].ok(b"")
+            return r[bytes].ok(b"")
         if isinstance(body, bytes):
-            return FlextResult[bytes].ok(body)
+            return r[bytes].ok(body)
         if isinstance(body, str):
-            return FlextResult[bytes].ok(body.encode("utf-8"))
+            return r[bytes].ok(body.encode("utf-8"))
         if isinstance(body, dict):
             try:
                 serialized = json.dumps(body).encode("utf-8")
-                return FlextResult[bytes].ok(serialized)
+                return r[bytes].ok(serialized)
             except (TypeError, ValueError) as e:
-                return FlextResult[bytes].fail(f"Failed to serialize body: {e}")
-        return FlextResult[bytes].fail(f"Invalid body type: {type(body)}")
+                return r[bytes].fail(f"Failed to serialize body: {e}")
+        return r[bytes].fail(f"Invalid body type: {type(body)}")
 
     @staticmethod
     def _deserialize_body(
         response: httpx.Response,
-    ) -> FlextResult[FlextApiTypes.ResponseBody]:
+    ) -> r[FlextApiTypes.ResponseBody]:
         """Deserialize response body based on content-type."""
         # Check content-type to prioritize deserialization
         content_type = response.headers.get("content-type", "").lower()
@@ -251,62 +251,62 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         if bytes_result.is_success:
             return bytes_result.map(lambda v: v)
 
-        return FlextResult[FlextApiTypes.ResponseBody].fail(
+        return r[FlextApiTypes.ResponseBody].fail(
             "Failed to deserialize response body: no valid format found"
         )
 
     @staticmethod
     def _deserialize_json(
         response: httpx.Response,
-    ) -> FlextResult[FlextApiTypes.ResponseBody]:
+    ) -> r[FlextApiTypes.ResponseBody]:
         """Deserialize response as JSON."""
         try:
             json_data = response.json()
             # ResponseBody = JsonObject | str | bytes
             if isinstance(json_data, dict):
-                return FlextResult[FlextApiTypes.ResponseBody].ok(json_data)
+                return r[FlextApiTypes.ResponseBody].ok(json_data)
             if isinstance(json_data, str):
-                return FlextResult[FlextApiTypes.ResponseBody].ok(json_data)
+                return r[FlextApiTypes.ResponseBody].ok(json_data)
             if isinstance(json_data, bytes):
-                return FlextResult[FlextApiTypes.ResponseBody].ok(json_data)
+                return r[FlextApiTypes.ResponseBody].ok(json_data)
             # Convert other types to dict (JsonObject)
-            return FlextResult[FlextApiTypes.ResponseBody].ok({"value": json_data})
+            return r[FlextApiTypes.ResponseBody].ok({"value": json_data})
         except (AttributeError, ValueError, TypeError, Exception) as e:
-            return FlextResult[FlextApiTypes.ResponseBody].fail(
+            return r[FlextApiTypes.ResponseBody].fail(
                 f"JSON deserialization failed: {e}"
             )
 
     @staticmethod
     def _deserialize_text(
         response: httpx.Response,
-    ) -> FlextResult[FlextApiTypes.ResponseBody]:
+    ) -> r[FlextApiTypes.ResponseBody]:
         """Deserialize response as text."""
         if not hasattr(response, "text"):
-            return FlextResult[FlextApiTypes.ResponseBody].fail(
+            return r[FlextApiTypes.ResponseBody].fail(
                 "Response does not have text attribute"
             )
         response_text = response.text
         if not isinstance(response_text, str):
-            return FlextResult[FlextApiTypes.ResponseBody].fail(
+            return r[FlextApiTypes.ResponseBody].fail(
                 f"Response text is not a string: {type(response_text)}"
             )
-        return FlextResult[FlextApiTypes.ResponseBody].ok(response_text)
+        return r[FlextApiTypes.ResponseBody].ok(response_text)
 
     @staticmethod
     def _deserialize_bytes(
         response: httpx.Response,
-    ) -> FlextResult[FlextApiTypes.ResponseBody]:
+    ) -> r[FlextApiTypes.ResponseBody]:
         """Deserialize response as bytes."""
         if not hasattr(response, "content"):
-            return FlextResult[FlextApiTypes.ResponseBody].fail(
+            return r[FlextApiTypes.ResponseBody].fail(
                 "Response does not have content attribute"
             )
         response_content = response.content
         if not isinstance(response_content, bytes):
-            return FlextResult[FlextApiTypes.ResponseBody].fail(
+            return r[FlextApiTypes.ResponseBody].fail(
                 f"Response content is not bytes: {type(response_content)}"
             )
-        return FlextResult[FlextApiTypes.ResponseBody].ok(response_content)
+        return r[FlextApiTypes.ResponseBody].ok(response_content)
 
 
 __all__ = ["FlextApiClient"]

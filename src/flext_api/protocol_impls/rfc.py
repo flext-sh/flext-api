@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextResult
+from flext_core import r
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.base import BaseProtocolImplementation
@@ -65,7 +65,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         super().__init__(name=name, version=version, description=description, **kwargs)
 
-    def _extract_url(self, request: dict[str, object]) -> FlextResult[str]:
+    def _extract_url(self, request: dict[str, object]) -> r[str]:
         """Extract and validate URL from request (RFC 7230 compliant).
 
         Args:
@@ -76,19 +76,19 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         if "url" not in request:
-            return FlextResult[str].fail("URL is required in request (RFC 7230)")
+            return r[str].fail("URL is required in request (RFC 7230)")
 
         url_value = request["url"]
         if not isinstance(url_value, str):
-            return FlextResult[str].fail("URL must be a string (RFC 7230)")
+            return r[str].fail("URL must be a string (RFC 7230)")
 
         if not url_value.strip():
-            return FlextResult[str].fail("URL cannot be empty (RFC 7230)")
+            return r[str].fail("URL cannot be empty (RFC 7230)")
 
         # Validate URL format using utilities
         return FlextApiUtilities.FlextWebValidator.validate_url(url_value)
 
-    def _extract_method(self, request: dict[str, object]) -> FlextResult[str]:
+    def _extract_method(self, request: dict[str, object]) -> r[str]:
         """Extract and validate HTTP method from request (RFC 7231 compliant).
 
         Args:
@@ -99,21 +99,21 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         if "method" not in request:
-            return FlextResult[str].ok(
+            return r[str].ok(
                 FlextApiConstants.Method.GET
             )  # Default method per RFC 7231
 
         method_value = request["method"]
         if not isinstance(method_value, str):
-            return FlextResult[str].fail("Method must be a string (RFC 7231)")
+            return r[str].fail("Method must be a string (RFC 7231)")
 
         method_upper = method_value.upper()
         if not FlextApiUtilities.FlextWebValidator.validate_http_method(method_upper):
-            return FlextResult[str].fail(
+            return r[str].fail(
                 f"Invalid HTTP method: {method_upper} (RFC 7231)"
             )
 
-        return FlextResult[str].ok(method_upper)
+        return r[str].ok(method_upper)
 
     def _extract_headers(self, request: dict[str, object]) -> dict[str, str]:
         """Extract headers from request (RFC 7230 compliant).
@@ -203,7 +203,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         data: dict[str, object] | None = None,
         status_code: int = 200,
         headers: dict[str, str] | None = None,
-    ) -> FlextResult[dict[str, object]]:
+    ) -> r[dict[str, object]]:
         """Build RFC-compliant success response (RFC 7231).
 
         Args:
@@ -247,12 +247,12 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             response_value = result.value
             # Convert JsonObject (dict[str, JsonValue]) to dict[str, object]
             converted_response: dict[str, object] = dict(response_value.items())
-            return FlextResult[dict[str, object]].ok(converted_response)
-        return FlextResult[dict[str, object]].fail(
+            return r[dict[str, object]].ok(converted_response)
+        return r[dict[str, object]].fail(
             result.error or "Failed to build success response"
         )
 
-    def _validate_status_code(self, status_code: int) -> FlextResult[int]:
+    def _validate_status_code(self, status_code: int) -> r[int]:
         """Validate HTTP status code (RFC 7231).
 
         Args:
@@ -263,17 +263,17 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         if not isinstance(status_code, int):
-            return FlextResult[int].fail("Status code must be an integer (RFC 7231)")
+            return r[int].fail("Status code must be an integer (RFC 7231)")
 
         if (
             status_code < FlextApiConstants.HTTP_SUCCESS_MIN - 100
             or status_code > FlextApiConstants.HTTP_SERVER_ERROR_MIN + 99
         ):
-            return FlextResult[int].fail(
+            return r[int].fail(
                 f"Status code must be between 100 and 599 (RFC 7231): {status_code}"
             )
 
-        return FlextResult[int].ok(status_code)
+        return r[int].ok(status_code)
 
     def _is_success_status(self, status_code: int) -> bool:
         """Check if status code indicates success (RFC 7231).

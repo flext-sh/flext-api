@@ -18,7 +18,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal, TypeGuard, TypeIs
 
-from flext_core import FlextConstants, FlextResult, u
+from flext_core import r, u
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: PADRÃO DEFINITIVO PARA FLEXT-API
@@ -379,17 +379,17 @@ class FlextApiConstants(FlextConstants):
     # ═══════════════════════════════════════════════════════════════════
 
     @classmethod
-    def validate_method_with_result(cls, value: str) -> FlextResult[Method]:
+    def validate_method_with_result(cls, value: str) -> r[Method]:
         """Validate HTTP method using u.Enum.parse."""
         return u.Enum.parse(cls.Method, value)
 
     @classmethod
-    def validate_status_with_result(cls, value: str) -> FlextResult[Status]:
+    def validate_status_with_result(cls, value: str) -> r[Status]:
         """Validate status using u.Enum.parse."""
         return u.Enum.parse(cls.Status, value)
 
     @classmethod
-    def validate_content_type_with_result(cls, value: str) -> FlextResult[ContentType]:
+    def validate_content_type_with_result(cls, value: str) -> r[ContentType]:
         """Validate content type using u.Enum.parse."""
         return u.Enum.parse(cls.ContentType, value)
 
