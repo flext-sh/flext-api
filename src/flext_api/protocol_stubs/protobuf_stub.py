@@ -23,7 +23,7 @@ from __future__ import annotations
 import json
 from typing import Protocol
 
-from flext_core import FlextLogger, FlextResult
+from flext_core import r
 
 
 class ProtobufMessage:
@@ -62,7 +62,7 @@ class ProtobufMessage:
         """
         return self._data
 
-    def serialize(self) -> FlextResult[bytes]:
+    def serialize(self) -> r[bytes]:
         """Serialize message to bytes.
 
         Returns:
@@ -70,12 +70,12 @@ class ProtobufMessage:
 
         """
         self.logger.debug("Protobuf serialization (placeholder)")
-        return FlextResult[bytes].fail(
+        return r[bytes].fail(
             "Protobuf stub placeholder - awaiting flext-grpc integration"
         )
 
     @classmethod
-    def deserialize(cls, _data: bytes) -> FlextResult[ProtobufMessage]:
+    def deserialize(cls, _data: bytes) -> r[ProtobufMessage]:
         """Deserialize message from bytes.
 
         Note: This is a stub implementation. Parameters are unused.
@@ -86,7 +86,7 @@ class ProtobufMessage:
         """
         logger = FlextLogger(__name__)
         logger.debug("Protobuf deserialization (placeholder)")
-        return FlextResult[ProtobufMessage].fail(
+        return r[ProtobufMessage].fail(
             "Protobuf stub placeholder - awaiting flext-grpc integration"
         )
 
@@ -103,7 +103,7 @@ class ProtobufMessage:
         """
         return cls(data)
 
-    def to_json(self) -> FlextResult[str]:
+    def to_json(self) -> r[str]:
         """Convert message to JSON string.
 
         Returns:
@@ -112,12 +112,12 @@ class ProtobufMessage:
         """
         try:
             json_str = json.dumps(self._data)
-            return FlextResult[str].ok(json_str)
+            return r[str].ok(json_str)
         except Exception as e:
-            return FlextResult[str].fail(f"JSON conversion failed: {e}")
+            return r[str].fail(f"JSON conversion failed: {e}")
 
     @classmethod
-    def from_json(cls, json_str: str) -> FlextResult[ProtobufMessage]:
+    def from_json(cls, json_str: str) -> r[ProtobufMessage]:
         """Create message from JSON string.
 
         Args:
@@ -129,9 +129,9 @@ class ProtobufMessage:
         """
         try:
             data = json.loads(json_str)
-            return FlextResult[ProtobufMessage].ok(cls(data))
+            return r[ProtobufMessage].ok(cls(data))
         except Exception as e:
-            return FlextResult[ProtobufMessage].fail(f"JSON parsing failed: {e}")
+            return r[ProtobufMessage].fail(f"JSON parsing failed: {e}")
 
 
 class ProtobufSerializer:
@@ -161,7 +161,7 @@ class ProtobufSerializer:
 
         self.logger.info("Protobuf serializer stub created (placeholder)")
 
-    def serialize(self, message: ProtobufMessage) -> FlextResult[bytes]:
+    def serialize(self, message: ProtobufMessage) -> r[bytes]:
         """Serialize message to bytes.
 
         Args:
@@ -176,15 +176,15 @@ class ProtobufSerializer:
         # Validate message against schema
         validation_result = self._validate_message(message)
         if validation_result.is_failure:
-            return FlextResult[bytes].fail(
+            return r[bytes].fail(
                 validation_result.error or "Message validation failed"
             )
 
-        return FlextResult[bytes].fail(
+        return r[bytes].fail(
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def deserialize(self, _data: bytes) -> FlextResult[ProtobufMessage]:
+    def deserialize(self, _data: bytes) -> r[ProtobufMessage]:
         """Deserialize message from bytes.
 
         Note: This is a stub implementation. Parameters are unused.
@@ -194,11 +194,11 @@ class ProtobufSerializer:
 
         """
         self.logger.debug("Protobuf deserialization (placeholder)")
-        return FlextResult[ProtobufMessage].fail(
+        return r[ProtobufMessage].fail(
             "Protobuf serializer placeholder - awaiting flext-grpc integration"
         )
 
-    def _validate_message(self, _message: ProtobufMessage) -> FlextResult[bool]:
+    def _validate_message(self, _message: ProtobufMessage) -> r[bool]:
         """Validate message against schema.
 
         Note: This is a stub implementation. Parameters are unused.
@@ -209,10 +209,10 @@ class ProtobufSerializer:
         """
         if not self._schema:
             self.logger.warning("No schema defined for validation")
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
         # Schema validation would happen here with flext-grpc
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     @property
     def content_type(self) -> str:
@@ -286,7 +286,7 @@ class ProtobufField:
         """Check if field is repeated."""
         return self._repeated
 
-    def validate(self, value: object) -> FlextResult[bool]:
+    def validate(self, value: object) -> r[bool]:
         """Validate field value.
 
         Args:
@@ -298,20 +298,20 @@ class ProtobufField:
         """
         # Required check (do this first, before type checking)
         if self._required and value is None:
-            return FlextResult[bool].fail(f"Required field {self._name} is missing")
+            return r[bool].fail(f"Required field {self._name} is missing")
 
         # Repeated check (do this before type checking for repeated fields)
         if self._repeated and not isinstance(value, list):
-            return FlextResult[bool].fail(f"Repeated field {self._name} must be a list")
+            return r[bool].fail(f"Repeated field {self._name} must be a list")
 
         # Type checking (do this last, after repeated/required checks)
         if not isinstance(value, self._field_type) and value is not None:
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 f"Field {self._name} expects {self._field_type.__name__}, "
                 f"got {type(value).__name__}"
             )
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
 
 class ProtobufSchema:
@@ -343,7 +343,7 @@ class ProtobufSchema:
             extra={"schema_name": name},
         )
 
-    def add_field(self, field: ProtobufField) -> FlextResult[bool]:
+    def add_field(self, field: ProtobufField) -> r[bool]:
         """Add field to schema.
 
         Args:
@@ -354,7 +354,7 @@ class ProtobufSchema:
 
         """
         if field.name in self._fields:
-            return FlextResult[bool].fail(f"Field {field.name} already exists")
+            return r[bool].fail(f"Field {field.name} already exists")
 
         self._fields[field.name] = field
 
@@ -363,9 +363,9 @@ class ProtobufSchema:
             extra={"field": field.name},
         )
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
-    def validate_message(self, message: ProtobufMessage) -> FlextResult[bool]:
+    def validate_message(self, message: ProtobufMessage) -> r[bool]:
         """Validate message against schema.
 
         Args:
@@ -377,12 +377,12 @@ class ProtobufSchema:
         """
         # Access message data using public method
         if not isinstance(message, ProtobufMessage):
-            return FlextResult[bool].fail("Message must be a ProtobufMessage instance")
+            return r[bool].fail("Message must be a ProtobufMessage instance")
 
         # Access data using public method
         message_data = message.get_data()
         if not isinstance(message_data, dict):
-            return FlextResult[bool].fail("Message data must be a dictionary")
+            return r[bool].fail("Message data must be a dictionary")
 
         # Validate each field
         for field_name, field in self._fields.items():
@@ -392,7 +392,7 @@ class ProtobufSchema:
             if validation_result.is_failure:
                 return validation_result
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     @property
     def name(self) -> str:
@@ -412,7 +412,7 @@ class ProtobufServiceProtocol(Protocol):
     when flext-grpc is integrated.
     """
 
-    def get_request_schema(self, method: str) -> FlextResult[ProtobufSchema]:
+    def get_request_schema(self, method: str) -> r[ProtobufSchema]:
         """Get request schema for method.
 
         Args:
@@ -424,7 +424,7 @@ class ProtobufServiceProtocol(Protocol):
         """
         ...
 
-    def get_response_schema(self, method: str) -> FlextResult[ProtobufSchema]:
+    def get_response_schema(self, method: str) -> r[ProtobufSchema]:
         """Get response schema for method.
 
         Args:

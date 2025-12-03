@@ -7,7 +7,7 @@ from enum import StrEnum
 from functools import cache, wraps
 from typing import Annotated, TypeIs, TypeVar, get_type_hints
 
-from flext_core import FlextResult, u
+from flext_core import r, u
 from flext_core.typings import P, R
 from pydantic import BaseModel, BeforeValidator, ConfigDict, validate_call
 
@@ -64,7 +64,7 @@ class FlextApiUtilities(u):
             return False
 
         @staticmethod
-        def parse[E: StrEnum](enum_cls: type[E], value: str | E) -> FlextResult[E]:
+        def parse[E: StrEnum](enum_cls: type[E], value: str | E) -> r[E]:
             """Parse string or enum value to enum instance.
 
             Business Rule: Accepts both string and enum values, converting strings
@@ -122,7 +122,7 @@ class FlextApiUtilities(u):
         @staticmethod
         def parse_sequence[E: StrEnum](
             enum_cls: type[E], values: Iterable[str | E]
-        ) -> FlextResult[tuple[E, ...]]:
+        ) -> r[tuple[E, ...]]:
             """Parse sequence of string or enum values to tuple of enum instances.
 
             Business Rule: Accepts iterable of strings or enum values, converting
@@ -204,8 +204,8 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def validated_with_result(
-            func: Callable[P, FlextResult[R]],
-        ) -> Callable[P, FlextResult[R]]:
+            func: Callable[P, r[R]],
+        ) -> Callable[P, r[R]]:
             """ValidationError → FlextResult.fail().
 
             Business Rule: Wraps validate_call to convert ValidationError exceptions
@@ -225,7 +225,7 @@ class FlextApiUtilities(u):
             )(func)
 
             @wraps(func)
-            def wrapper(*args: P.args, **kwargs: P.kwargs) -> FlextResult[R]:
+            def wrapper(*args: P.args, **kwargs: P.kwargs) -> r[R]:
                 try:
                     return validated_func(*args, **kwargs)
                 except Exception as e:
@@ -236,7 +236,7 @@ class FlextApiUtilities(u):
         @staticmethod
         def parse_kwargs[E: StrEnum](
             kwargs: Mapping[str, object], enum_fields: Mapping[str, type[E]]
-        ) -> FlextResult[dict[str, object]]:
+        ) -> r[dict[str, object]]:
             """Parse kwargs converting specific fields to StrEnums.
 
             Business Rule: Accepts kwargs dictionary and enum_fields mapping,
@@ -287,7 +287,7 @@ class FlextApiUtilities(u):
         @staticmethod
         def from_dict[M: BaseModel](
             model_cls: type[M], data: Mapping[str, object], *, strict: bool = False
-        ) -> FlextResult[M]:
+        ) -> r[M]:
             """Create model instance from dictionary.
 
             Business Rule: Validates dictionary data against Pydantic model schema
@@ -305,7 +305,7 @@ class FlextApiUtilities(u):
             model_cls: type[M],
             defaults: Mapping[str, object],
             overrides: Mapping[str, object],
-        ) -> FlextResult[M]:
+        ) -> r[M]:
             """Merge defaults and overrides into model instance.
 
             Business Rule: Combines defaults and overrides dictionaries (overrides
@@ -318,7 +318,7 @@ class FlextApiUtilities(u):
             )
 
         @staticmethod
-        def update[M: BaseModel](instance: M, **updates: object) -> FlextResult[M]:
+        def update[M: BaseModel](instance: M, **updates: object) -> r[M]:
             """Update model instance with new field values.
 
             Business Rule: Updates model instance by merging current values with

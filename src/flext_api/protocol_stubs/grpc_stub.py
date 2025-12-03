@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextLogger, FlextResult
+from flext_core import r
 
 
 class GrpcChannel:
@@ -57,7 +57,7 @@ class GrpcChannel:
             extra={"target": target},
         )
 
-    def close(self) -> FlextResult[bool]:
+    def close(self) -> r[bool]:
         """Close gRPC channel.
 
         Returns:
@@ -65,7 +65,7 @@ class GrpcChannel:
 
         """
         self.logger.info("gRPC channel stub closed (placeholder)")
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
 
 class GrpcStub:
@@ -98,7 +98,7 @@ class GrpcStub:
         _method: str,
         _request: object,
         _timeout: float | None = None,
-    ) -> FlextResult[object]:
+    ) -> r[object]:
         """Call unary gRPC method.
 
         Note: This is a stub implementation. All parameters are unused.
@@ -111,7 +111,7 @@ class GrpcStub:
             "gRPC unary call (placeholder)",
             extra={"method": _method},
         )
-        return FlextResult[object].fail(
+        return r[object].fail(
             "gRPC stub placeholder - awaiting flext-grpc integration"
         )
 
@@ -231,7 +231,7 @@ class GrpcServer:
             extra={"host": host, "port": port},
         )
 
-    def add_service(self, _service: object) -> FlextResult[bool]:
+    def add_service(self, _service: object) -> r[bool]:
         """Add service to server.
 
         Note: This is a stub implementation. Parameters are unused.
@@ -241,9 +241,9 @@ class GrpcServer:
 
         """
         self.logger.info("gRPC service added (placeholder)")
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
-    def start(self) -> FlextResult[bool]:
+    def start(self) -> r[bool]:
         """Start gRPC server.
 
         Returns:
@@ -254,11 +254,11 @@ class GrpcServer:
             "gRPC server start (placeholder)",
             extra={"host": self._host, "port": self._port},
         )
-        return FlextResult[bool].fail(
+        return r[bool].fail(
             "gRPC server placeholder - awaiting flext-grpc integration"
         )
 
-    def stop(self, _grace: float | None = None) -> FlextResult[bool]:
+    def stop(self, _grace: float | None = None) -> r[bool]:
         """Stop gRPC server.
 
         Note: This is a stub implementation. Parameters are unused.
@@ -268,7 +268,7 @@ class GrpcServer:
 
         """
         self.logger.info("gRPC server stop (placeholder)")
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
 
 class GrpcMethod:
@@ -353,7 +353,7 @@ class GrpcServiceProtocol(Protocol):
     def handle_request(
         self,
         request: GrpcRequest,
-    ) -> FlextResult[GrpcResponse]:
+    ) -> r[GrpcResponse]:
         """Handle gRPC request.
 
         Args:

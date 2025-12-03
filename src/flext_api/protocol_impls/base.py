@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextResult, FlextService
+from flext_core import r, FlextService
 
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import FlextApiTypes
@@ -66,29 +66,29 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         # Protocol state
         self._initialized = False
 
-    def execute(self, **_kwargs: object) -> FlextResult[bool]:
+    def execute(self, **_kwargs: object) -> r[bool]:
         """Execute FlextService interface - return success if initialized."""
         if not self._initialized:
-            return FlextResult[bool].fail("Protocol not initialized")
-        return FlextResult[bool].ok(True)
+            return r[bool].fail("Protocol not initialized")
+        return r[bool].ok(True)
 
-    def initialize(self) -> FlextResult[bool]:
+    def initialize(self) -> r[bool]:
         """Initialize protocol resources."""
         if self._initialized:
-            return FlextResult[bool].fail(f"Protocol '{self.name}' already initialized")
+            return r[bool].fail(f"Protocol '{self.name}' already initialized")
 
         self.logger.debug(f"Initializing protocol: {self.name}")
         self._initialized = True
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
-    def shutdown(self) -> FlextResult[bool]:
+    def shutdown(self) -> r[bool]:
         """Shutdown protocol and release resources."""
         if not self._initialized:
-            return FlextResult[bool].fail(f"Protocol '{self.name}' not initialized")
+            return r[bool].fail(f"Protocol '{self.name}' not initialized")
 
         self.logger.debug(f"Shutting down protocol: {self.name}")
         self._initialized = False
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     @property
     def is_initialized(self) -> bool:
@@ -99,7 +99,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         self,
         request: dict[str, object],
         **kwargs: object,
-    ) -> FlextResult[dict[str, object]]:
+    ) -> r[dict[str, object]]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -116,7 +116,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         # Acknowledge parameters to avoid linting warnings
         _ = request
         _ = kwargs
-        return FlextResult[dict[str, object]].fail(
+        return r[dict[str, object]].fail(
             f"send_request() must be implemented by {self.__class__.__name__}"
         )
 
@@ -162,7 +162,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
 
     def _validate_request(
         self, request: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+    ) -> r[dict[str, object]]:
         """Validate request dictionary.
 
         Args:
@@ -173,12 +173,12 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
 
         """
         if not isinstance(request, dict):
-            return FlextResult[dict[str, object]].fail("Request must be a dictionary")
+            return r[dict[str, object]].fail("Request must be a dictionary")
 
         if not request:
-            return FlextResult[dict[str, object]].fail("Request cannot be empty")
+            return r[dict[str, object]].fail("Request cannot be empty")
 
-        return FlextResult[dict[str, object]].ok(request)
+        return r[dict[str, object]].ok(request)
 
     def _build_error_response(
         self,

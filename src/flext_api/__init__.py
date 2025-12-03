@@ -8,11 +8,11 @@ HTTP functionality across projects with consistent patterns.
 Architecture Layer: Application API Layer (Layer 3+)
 - Single Entry Point: FlextApi unified facade
 - Models: FlextApiModels extending flext-core FlextModels
-- Foundation: Uses flext-core FlextResult, FlextService, FlextModels
+- Foundation: Uses flext-core r, FlextService, FlextModels
 
 Core Features:
     - Unified FlextApi facade (single entry point)
-    - Railway-oriented error handling (FlextResult[T])
+    - Railway-oriented error handling (r[T])
     - HTTP client abstraction with retry/timeout
     Pydantic v2 models with validation (Value Objects)
     Clean Architecture with domain-driven design
@@ -24,7 +24,7 @@ Critical Rule - Zero Tolerance:
     🔴 NO custom HTTP implementations in ecosystem
     🔴 🟢 ALL HTTP operations through FlextApi facade
     🟢 ALL models use FlextApiModels (extends FlextModels)
-    🟢 ALL errors return FlextResult[T] (railway pattern)
+    🟢 ALL errors return r[T] (railway pattern)
 
 Import Pattern (Root imports only):
 
@@ -76,7 +76,7 @@ Example 4: Configuration:
 FLEXT ECOSYSTEM INTEGRATION:
     - Foundation: FlextApi (unified facade)
     - Models: FlextApiModels extending flext-core
-    - Patterns: Railway-oriented (FlextResult[T])
+    - Patterns: Railway-oriented (r[T])
     - Architecture: Clean Architecture, SOLID principles
 
 **19 EXPORTED CLASSES** (organized by responsibility):

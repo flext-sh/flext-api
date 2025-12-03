@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from flext_core import FlextResult
+from flext_core import r
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
@@ -91,7 +91,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         self,
         request: dict[str, object],
         **kwargs: object,
-    ) -> FlextResult[dict[str, object]]:
+    ) -> r[dict[str, object]]:
         """Send SSE request (stub - not implemented).
 
         Args:
@@ -105,13 +105,13 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         # Validate request using base class method
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return FlextResult[dict[str, object]].fail(
+            return r[dict[str, object]].fail(
                 validation_result.error or "Request validation failed"
             )
 
         # Acknowledge kwargs to avoid linting warnings
         _ = kwargs
-        return FlextResult[dict[str, object]].fail(
+        return r[dict[str, object]].fail(
             "SSE protocol not yet implemented (Phase 3)"
         )
 

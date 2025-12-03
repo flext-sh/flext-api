@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import cbor2
 import msgpack
-from flext_core import FlextResult
+from flext_core import r
 
 from flext_api.models import FlextApiModels
 from flext_api.typings import FlextApiTypes
@@ -31,7 +31,7 @@ class FlextApiAdapters:
         @staticmethod
         def adapt_http_request_to_websocket(
             request: FlextApiModels.HttpRequest,
-        ) -> FlextResult[FlextApiTypes.JsonObject | FlextApiModels.HttpRequest]:
+        ) -> r[FlextApiTypes.JsonObject | FlextApiModels.HttpRequest]:
             """Convert HTTP request to WebSocket message format."""
             try:
                 # Convert body to string if bytes, otherwise use as-is
@@ -55,19 +55,19 @@ class FlextApiAdapters:
                     "body": body_value,
                 }
 
-                return FlextResult[
+                return r[
                     FlextApiTypes.JsonObject | FlextApiModels.HttpRequest
                 ].ok(message)
 
             except Exception as e:
-                return FlextResult[
+                return r[
                     FlextApiTypes.JsonObject | FlextApiModels.HttpRequest
                 ].fail(f"HTTP to WebSocket adaptation failed: {e}")
 
         @staticmethod
         def adapt_websocket_message_to_http_response(
             message: FlextApiTypes.JsonObject,
-        ) -> FlextResult[FlextApiModels.HttpResponse | FlextApiTypes.JsonObject]:
+        ) -> r[FlextApiModels.HttpResponse | FlextApiTypes.JsonObject]:
             """Adapt WebSocket message to HTTP response."""
             try:
                 # Convert WebSocket message to HTTP response
@@ -89,7 +89,7 @@ class FlextApiAdapters:
                     if isinstance(headers_value, dict):
                         headers = headers_value
 
-                return FlextResult[
+                return r[
                     FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
                 ].ok(
                     FlextApiModels.create_response(
@@ -100,7 +100,7 @@ class FlextApiAdapters:
                 )
 
             except Exception as e:
-                return FlextResult[
+                return r[
                     FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
                 ].fail(f"WebSocket to HTTP adaptation failed: {e}")
 
@@ -114,7 +114,7 @@ class FlextApiAdapters:
         @staticmethod
         def adapt_openapi_to_graphql_schema(
             _openapi_spec: FlextApiTypes.JsonObject,
-        ) -> FlextResult[FlextApiTypes.JsonObject]:
+        ) -> r[FlextApiTypes.JsonObject]:
             """Convert OpenAPI specification to GraphQL schema."""
             try:
                 # Simplified OpenAPI to GraphQL conversion
@@ -124,10 +124,10 @@ class FlextApiAdapters:
                     "mutation": "Mutation",
                 }
 
-                return FlextResult[FlextApiTypes.JsonObject].ok(graphql_schema)
+                return r[FlextApiTypes.JsonObject].ok(graphql_schema)
 
             except Exception as e:
-                return FlextResult[FlextApiTypes.JsonObject].fail(
+                return r[FlextApiTypes.JsonObject].fail(
                     f"OpenAPI to GraphQL conversion failed: {e}"
                 )
 
@@ -141,30 +141,30 @@ class FlextApiAdapters:
         @staticmethod
         def convert_json_to_messagepack(
             data: FlextApiTypes.JsonObject,
-        ) -> FlextResult[bytes]:
+        ) -> r[bytes]:
             """Convert JSON data to MessagePack format."""
             try:
                 # msgpack.packb returns bytes for valid input
                 packed_data = msgpack.packb(data)
                 if not isinstance(packed_data, bytes):
-                    return FlextResult[bytes].fail("msgpack.packb did not return bytes")
+                    return r[bytes].fail("msgpack.packb did not return bytes")
                 # msgpack.packb always returns bytes for valid input
-                return FlextResult[bytes].ok(packed_data)
+                return r[bytes].ok(packed_data)
 
             except Exception as e:
-                return FlextResult[bytes].fail(
+                return r[bytes].fail(
                     f"JSON to MessagePack conversion failed: {e}"
                 )
 
         @staticmethod
-        def convert_json_to_cbor(data: FlextApiTypes.JsonObject) -> FlextResult[bytes]:
+        def convert_json_to_cbor(data: FlextApiTypes.JsonObject) -> r[bytes]:
             """Convert JSON data to CBOR format."""
             try:
                 packed: bytes = cbor2.dumps(data)
-                return FlextResult[bytes].ok(packed)
+                return r[bytes].ok(packed)
 
             except Exception as e:
-                return FlextResult[bytes].fail(f"JSON to CBOR conversion failed: {e}")
+                return r[bytes].fail(f"JSON to CBOR conversion failed: {e}")
 
     class RequestTransformer:
         """Request/response transformation following SOLID principles.
@@ -176,7 +176,7 @@ class FlextApiAdapters:
         @staticmethod
         def transform_request_for_protocol(
             request: FlextApiModels.HttpRequest, target_protocol: str
-        ) -> FlextResult[FlextApiTypes.JsonObject | FlextApiModels.HttpRequest]:
+        ) -> r[FlextApiTypes.JsonObject | FlextApiModels.HttpRequest]:
             """Transform request for specific protocol."""
             try:
                 if target_protocol == "websocket":
@@ -187,15 +187,15 @@ class FlextApiAdapters:
                     )
                     if result.is_success:
                         return result
-                    return FlextResult[
+                    return r[
                         FlextApiTypes.JsonObject | FlextApiModels.HttpRequest
                     ].fail(result.error or "Adaptation failed")
-                return FlextResult[
+                return r[
                     FlextApiTypes.JsonObject | FlextApiModels.HttpRequest
                 ].ok(request)
 
             except Exception as e:
-                return FlextResult[
+                return r[
                     FlextApiTypes.JsonObject | FlextApiModels.HttpRequest
                 ].fail(f"Request transformation failed: {e}")
 
@@ -203,7 +203,7 @@ class FlextApiAdapters:
         def transform_response_for_protocol(
             response: FlextApiTypes.JsonObject | FlextApiModels.HttpResponse,
             source_protocol: str,
-        ) -> FlextResult[FlextApiModels.HttpResponse | FlextApiTypes.JsonObject]:
+        ) -> r[FlextApiModels.HttpResponse | FlextApiTypes.JsonObject]:
             """Transform response for specific protocol."""
             try:
                 if source_protocol == "websocket" and isinstance(response, dict):
@@ -212,19 +212,19 @@ class FlextApiAdapters:
                     )
                     if result.is_success:
                         return result
-                    return FlextResult[
+                    return r[
                         FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
                     ].fail(result.error or "Adaptation failed")
                 if isinstance(response, FlextApiModels.HttpResponse):
-                    return FlextResult[
+                    return r[
                         FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
                     ].ok(response)
-                return FlextResult[
+                return r[
                     FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
                 ].fail("Invalid response type")
 
             except Exception as e:
-                return FlextResult[
+                return r[
                     FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
                 ].fail(f"Response transformation failed: {e}")
 
