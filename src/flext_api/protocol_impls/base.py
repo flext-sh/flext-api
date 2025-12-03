@@ -55,7 +55,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         **kwargs: Additional configuration parameters
 
         """
-        # Initialize FlextService first (establishes logger property from FlextMixins)
+        # Initialize FlextService first (establishes logger property from x)
         super().__init__(**kwargs)
 
         # Initialize ProtocolPlugin (Plugin.logger will be set as attribute, not property)

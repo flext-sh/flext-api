@@ -30,7 +30,7 @@ class FlextApiPlugins:
             self.name = name
             self.version = version
             self.description = description
-            # Set logger only if not already a property (from FlextMixins via FlextService)
+            # Set logger only if not already a property (from x via FlextService)
             # Use object.__setattr__ to bypass property if it exists
             try:
                 object.__setattr__(self, "logger", FlextLogger(f"{__name__}.{name}"))

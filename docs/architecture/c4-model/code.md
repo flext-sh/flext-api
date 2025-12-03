@@ -352,7 +352,7 @@ class ProtocolRegistry:
 
         return self._protocols[name]()
 
-    def list_protocols(self) -> FlextTypes.StringList:
+    def list_protocols(self) -> t.StringList:
         """List all registered protocols."""
         return list(self._protocols.keys())
 ```

@@ -24,7 +24,7 @@ import json
 import time
 from typing import Self, cast, override
 
-from flext_core import FlextResult, FlextService, FlextUtilities
+from flext_core import FlextResult, FlextService
 from pydantic import BaseModel, Field
 
 from flext_api.typings import FlextApiTypes
@@ -99,7 +99,7 @@ class FlextApiStorage(FlextService[bool]):
         # Metrics using Pydantic model
         self._stats = _StorageStats(namespace=self._namespace)
         self._operations_count: int = 0
-        self._created_at: str = FlextUtilities.Generators.generate_iso_timestamp()
+        self._created_at: str = uenerate_iso_timestamp()
 
     def _extract_init_params(
         self, config: object | None, kwargs: dict[str, object]
@@ -356,7 +356,7 @@ class FlextApiStorage(FlextService[bool]):
         try:
             metadata = _StorageMetadata(
                 value=value,
-                timestamp=FlextUtilities.Generators.generate_iso_timestamp(),
+                timestamp=uenerate_iso_timestamp(),
                 ttl=ttl_val,
             )
         except Exception as e:
@@ -575,7 +575,7 @@ class FlextApiStorage(FlextService[bool]):
         try:
             return FlextResult[dict[str, FlextApiTypes.JsonValue]].ok({
                 "status": "healthy",
-                "timestamp": FlextUtilities.Generators.generate_iso_timestamp(),
+                "timestamp": uenerate_iso_timestamp(),
                 "storage_accessible": True,
                 "size": len(self._storage),
                 "operations_count": self._operations_count,

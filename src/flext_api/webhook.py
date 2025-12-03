@@ -50,14 +50,14 @@ class FlextWebhookHandler(FlextService[object]):
     - Webhook registration and lifecycle
 
     Integration:
-    - Complete flext-core integration (FlextBus, FlextContainer, FlextContext, FlextDispatcher, FlextUtilities)
+    - Complete flext-core integration (FlextBus, FlextContainer, FlextContext, FlextDispatcher, u)
     - Signature verification using HMAC
     - Event routing to registered handlers
     - Retry queue with configurable attempts
     - FlextResult for railway-oriented error handling
     - FlextLogger for structured audit logging
     - FlextService for service lifecycle management
-    - FlextUtilities for additional utility functions
+    - ual utility functions
     """
 
     def __init__(

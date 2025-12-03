@@ -24,10 +24,10 @@ from fastapi import FastAPI
 from flext_core import (
     FlextExceptions,
     FlextLogger,
-    FlextMixins,
     FlextResult,
     FlextService,
-    FlextTypes,
+    t,
+    x,
 )
 
 from flext_api.constants import FlextApiConstants
@@ -35,7 +35,7 @@ from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
 
 
-class FlextApiServer(FlextService[object], FlextMixins.Validation):
+class FlextApiServer(FlextService[object], x.Validation):
     """Generic API server with protocol handler support using Clean Architecture.
 
     Single responsibility: Orchestrate server components (RouteRegistry,
@@ -92,7 +92,7 @@ class FlextApiServer(FlextService[object], FlextMixins.Validation):
                 return FlextResult[bool].fail(f"Route already registered: {route_key}")
 
             # Convert options to JsonValue-compatible types
-            options_json: dict[str, FlextTypes.JsonValue] = {}
+            options_json: dict[str, t.JsonValue] = {}
             for k, v in options.items():
                 if isinstance(v, (str, int, float, bool, type(None))):
                     options_json[k] = v

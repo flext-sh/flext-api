@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import FlextLogger
-from flext_core.typings import FlextTypes
+from flext_core.typings import t
 
 from flext_api.protocols import FlextApiProtocols
 
@@ -22,10 +22,10 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def info(self, message: str, **kwargs: object) -> None:
         """Log info message."""
-        # Convert kwargs to FlextTypes.GeneralValueType for logger compatibility
-        context: dict[str, FlextTypes.GeneralValueType] = {}
+        # Convert kwargs to t.GeneralValueType for logger compatibility
+        context: dict[str, t.GeneralValueType] = {}
         for key, value in kwargs.items():
-            # FlextTypes.GeneralValueType accepts most object types
+            # t.GeneralValueType accepts most object types
             if isinstance(value, (str, int, float, bool, type(None), list, dict)):
                 context[key] = value
             else:
@@ -34,8 +34,8 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def error(self, message: str, **kwargs: object) -> None:
         """Log error message."""
-        # Convert kwargs to FlextTypes.GeneralValueType for logger compatibility
-        context: dict[str, FlextTypes.GeneralValueType] = {}
+        # Convert kwargs to t.GeneralValueType for logger compatibility
+        context: dict[str, t.GeneralValueType] = {}
         for key, value in kwargs.items():
             if isinstance(value, (str, int, float, bool, type(None), list, dict)):
                 context[key] = value
@@ -45,8 +45,8 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def debug(self, message: str, **kwargs: object) -> None:
         """Log debug message."""
-        # Convert kwargs to FlextTypes.GeneralValueType for logger compatibility
-        context: dict[str, FlextTypes.GeneralValueType] = {}
+        # Convert kwargs to t.GeneralValueType for logger compatibility
+        context: dict[str, t.GeneralValueType] = {}
         for key, value in kwargs.items():
             if isinstance(value, (str, int, float, bool, type(None), list, dict)):
                 context[key] = value
@@ -56,8 +56,8 @@ class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
 
     def warning(self, message: str, **kwargs: object) -> None:
         """Log warning message."""
-        # Convert kwargs to FlextTypes.GeneralValueType for logger compatibility
-        context: dict[str, FlextTypes.GeneralValueType] = {}
+        # Convert kwargs to t.GeneralValueType for logger compatibility
+        context: dict[str, t.GeneralValueType] = {}
         for key, value in kwargs.items():
             if isinstance(value, (str, int, float, bool, type(None), list, dict)):
                 context[key] = value
