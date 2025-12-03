@@ -109,9 +109,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         method_upper = method_value.upper()
         if not FlextApiUtilities.FlextWebValidator.validate_http_method(method_upper):
-            return r[str].fail(
-                f"Invalid HTTP method: {method_upper} (RFC 7231)"
-            )
+            return r[str].fail(f"Invalid HTTP method: {method_upper} (RFC 7231)")
 
         return r[str].ok(method_upper)
 

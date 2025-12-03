@@ -50,9 +50,7 @@ class FlextApiTransports:
             try:
                 # Validate URL parameter
                 if not url:
-                    return r[object].fail(
-                        "URL is required for HTTP connection"
-                    )
+                    return r[object].fail("URL is required for HTTP connection")
 
                 # Create a basic httpx client - options can be used by subclasses
                 # The url parameter is validated but not directly used in client creation
@@ -85,15 +83,15 @@ class FlextApiTransports:
                     method_str = method_value
 
             if "url" not in data:
-                return r[
-                    tuple[str, str, dict[str, str], object, object, object]
-                ].fail("URL is required for HTTP request")
+                return r[tuple[str, str, dict[str, str], object, object, object]].fail(
+                    "URL is required for HTTP request"
+                )
 
             url_value = data["url"]
             if not isinstance(url_value, str) or not url_value:
-                return r[
-                    tuple[str, str, dict[str, str], object, object, object]
-                ].fail("URL must be a non-empty string")
+                return r[tuple[str, str, dict[str, str], object, object, object]].fail(
+                    "URL must be a non-empty string"
+                )
 
             url: str = url_value
 
@@ -115,17 +113,20 @@ class FlextApiTransports:
             if "content" in data:
                 content = data["content"]
 
-            return r[
-                tuple[str, str, dict[str, str], object, object, object]
-            ].ok((method_str, url, headers, params, json_data, content))
+            return r[tuple[str, str, dict[str, str], object, object, object]].ok((
+                method_str,
+                url,
+                headers,
+                params,
+                json_data,
+                content,
+            ))
 
         def send(self, connection: object, data: object) -> r[object]:
             """Send HTTP request."""
             try:
                 if not isinstance(connection, httpx.Client):
-                    return r[object].fail(
-                        "Connection must be an httpx.Client"
-                    )
+                    return r[object].fail("Connection must be an httpx.Client")
 
                 if not isinstance(data, dict):
                     return r[object].fail("HTTP send data must be a dict")
@@ -200,18 +201,14 @@ class FlextApiTransports:
                 return r[object].fail("WebSocket URL is required")
             # options parameter is reserved for future WebSocket connection options (e.g., headers, protocols)
             _ = _options  # Reserved for future use
-            return r[object].fail(
-                "WebSocket transport not implemented (Phase 3)"
-            )
+            return r[object].fail("WebSocket transport not implemented (Phase 3)")
 
         def disconnect(self, connection: object) -> r[bool]:
             """Disconnect WebSocket."""
             # Parameter validation for future implementation
             if connection is None:
                 return r[bool].fail("Connection object is required")
-            return r[bool].fail(
-                "WebSocket transport not implemented (Phase 3)"
-            )
+            return r[bool].fail("WebSocket transport not implemented (Phase 3)")
 
         def send(self, connection: object, data: object) -> r[object]:
             """Send WebSocket message."""
@@ -220,9 +217,7 @@ class FlextApiTransports:
                 return r[object].fail("Connection object is required")
             if data is None:
                 return r[object].fail("Data is required")
-            return r[object].fail(
-                "WebSocket transport not implemented (Phase 3)"
-            )
+            return r[object].fail("WebSocket transport not implemented (Phase 3)")
 
     class SseTransport(TransportPlugin):
         """Server-Sent Events transport implementation."""
@@ -262,9 +257,7 @@ class FlextApiTransports:
                 return r[object].fail("GraphQL URL is required")
             # options parameter is reserved for future GraphQL connection options (e.g., headers, schema)
             _ = _options  # Reserved for future use
-            return r[object].fail(
-                "GraphQL transport not implemented (Phase 3)"
-            )
+            return r[object].fail("GraphQL transport not implemented (Phase 3)")
 
         def disconnect(self, connection: object) -> r[bool]:
             """Disconnect GraphQL."""
@@ -280,9 +273,7 @@ class FlextApiTransports:
                 return r[object].fail("Connection object is required")
             if data is None:
                 return r[object].fail("Query data is required")
-            return r[object].fail(
-                "GraphQL transport not implemented (Phase 3)"
-            )
+            return r[object].fail("GraphQL transport not implemented (Phase 3)")
 
     class GrpcTransport(TransportPlugin):
         """gRPC transport implementation."""

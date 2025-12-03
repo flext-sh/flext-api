@@ -24,6 +24,7 @@ import json
 from typing import Protocol
 
 from flext_core import r
+from flext_core.loggings import FlextLogger
 
 
 class ProtobufMessage:
@@ -176,9 +177,7 @@ class ProtobufSerializer:
         # Validate message against schema
         validation_result = self._validate_message(message)
         if validation_result.is_failure:
-            return r[bytes].fail(
-                validation_result.error or "Message validation failed"
-            )
+            return r[bytes].fail(validation_result.error or "Message validation failed")
 
         return r[bytes].fail(
             "Protobuf serializer placeholder - awaiting flext-grpc integration"

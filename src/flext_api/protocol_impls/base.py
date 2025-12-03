@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r, FlextService
+from flext_core import FlextService, r
 
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import FlextApiTypes
@@ -160,9 +160,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
             "supported_protocols": self.get_supported_protocols(),
         }
 
-    def _validate_request(
-        self, request: dict[str, object]
-    ) -> r[dict[str, object]]:
+    def _validate_request(self, request: dict[str, object]) -> r[dict[str, object]]:
         """Validate request dictionary.
 
         Args:

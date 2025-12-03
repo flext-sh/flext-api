@@ -15,7 +15,7 @@ from __future__ import annotations
 from flext_core import (
     FlextDispatcher,
     FlextRegistry,
-    FlextResult,
+    r,
 )
 
 from flext_api.plugins import FlextApiPlugins
@@ -358,9 +358,7 @@ class FlextApiRegistry(FlextRegistry):
 
         return r[bool].ok(True)
 
-    def get_auth_provider(
-        self, name: str
-    ) -> r[FlextApiPlugins.Authentication]:
+    def get_auth_provider(self, name: str) -> r[FlextApiPlugins.Authentication]:
         """Get registered authentication provider by name.
 
         Args:
@@ -376,9 +374,7 @@ class FlextApiRegistry(FlextRegistry):
                 f"Available: {', '.join(self._auth_providers.keys())}"
             )
 
-        return r[FlextApiPlugins.Authentication].ok(
-            self._auth_providers[name]
-        )
+        return r[FlextApiPlugins.Authentication].ok(self._auth_providers[name])
 
     def list_auth_providers(self) -> r[list[str]]:
         """List all registered authentication provider names.

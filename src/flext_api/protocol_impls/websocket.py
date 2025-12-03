@@ -211,9 +211,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         """
         if not isinstance(request, dict):
-            return r[FlextApiTypes.JsonObject].fail(
-                "Request must be a dictionary"
-            )
+            return r[FlextApiTypes.JsonObject].fail("Request must be a dictionary")
 
         # Extract WebSocket-specific parameters
         message_result = self._extract_message(request, kwargs)

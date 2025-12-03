@@ -22,7 +22,7 @@ from typing import Protocol
 import cbor2
 import msgpack
 import orjson
-from flext_core import r, FlextService
+from flext_core import FlextService, r
 
 from flext_api.constants import FlextApiConstants
 
@@ -358,9 +358,7 @@ class FlextApiSerializers(FlextService[bool]):
 
             for serializer in self._serializers.values():
                 if serializer.content_type == normalized:
-                    return r[FlextApiSerializers.SerializerProtocol].ok(
-                        serializer
-                    )
+                    return r[FlextApiSerializers.SerializerProtocol].ok(serializer)
 
             return r[FlextApiSerializers.SerializerProtocol].fail(
                 f"No serializer found for content type: {content_type}"

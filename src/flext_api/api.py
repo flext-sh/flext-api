@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import ClassVar, Self
 
-from flext_core import r, FlextService
+from flext_core import FlextService, r
 
 from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig

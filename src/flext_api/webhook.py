@@ -30,7 +30,6 @@ from flext_core import (
     FlextContainer,
     FlextContext,
     FlextDispatcher,
-    FlextResult,
     FlextService,
 )
 
@@ -149,9 +148,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         return r[bool].ok(True)
 
-    def _parse_payload(
-        self, payload: bytes | str
-    ) -> r[FlextApiTypes.JsonObject]:
+    def _parse_payload(self, payload: bytes | str) -> r[FlextApiTypes.JsonObject]:
         """Parse webhook payload."""
         try:
             if isinstance(payload, bytes):
@@ -161,9 +158,7 @@ class FlextWebhookHandler(FlextService[object]):
 
             event_data = json.loads(payload_str)
             if not isinstance(event_data, dict):
-                return r[FlextApiTypes.JsonObject].fail(
-                    "Payload must be a JSON object"
-                )
+                return r[FlextApiTypes.JsonObject].fail("Payload must be a JSON object")
             # Convert to JsonObject (dict[str, JsonValue])
             json_object: FlextApiTypes.JsonObject = {}
             for key, value in event_data.items():
@@ -173,13 +168,9 @@ class FlextWebhookHandler(FlextService[object]):
                     json_object[key] = str(value)
             return r[FlextApiTypes.JsonObject].ok(json_object)
         except Exception as e:
-            return r[FlextApiTypes.JsonObject].fail(
-                f"Failed to parse payload: {e}"
-            )
+            return r[FlextApiTypes.JsonObject].fail(f"Failed to parse payload: {e}")
 
-    def _extract_event_type(
-        self, event_data: FlextApiTypes.JsonObject
-    ) -> r[str]:
+    def _extract_event_type(self, event_data: FlextApiTypes.JsonObject) -> r[str]:
         """Extract event type from event data."""
         event_type: str | None = None
         if "type" in event_data:
@@ -354,9 +345,7 @@ class FlextWebhookHandler(FlextService[object]):
         """
         # Get signature from headers
         if self._signature_header not in headers:
-            return r[bool].fail(
-                f"Missing signature header: {self._signature_header}"
-            )
+            return r[bool].fail(f"Missing signature header: {self._signature_header}")
 
         signature_value = headers[self._signature_header]
         if not isinstance(signature_value, str) or not signature_value:
@@ -384,9 +373,7 @@ class FlextWebhookHandler(FlextService[object]):
                     secret_bytes, payload_bytes, hashlib.sha512
                 ).hexdigest()
             else:
-                return r[bool].fail(
-                    f"Unsupported algorithm: {self._algorithm}"
-                )
+                return r[bool].fail(f"Unsupported algorithm: {self._algorithm}")
 
             # Compare signatures (constant-time comparison)
             if not hmac.compare_digest(signature, expected):
@@ -548,13 +535,9 @@ class FlextWebhookHandler(FlextService[object]):
 
         """
         if event_id not in self._delivery_confirmations:
-            return r[FlextApiTypes.JsonObject].fail(
-                f"Event not found: {event_id}"
-            )
+            return r[FlextApiTypes.JsonObject].fail(f"Event not found: {event_id}")
 
-        return r[FlextApiTypes.JsonObject].ok(
-            self._delivery_confirmations[event_id]
-        )
+        return r[FlextApiTypes.JsonObject].ok(self._delivery_confirmations[event_id])
 
     def get_queue_stats(self) -> FlextApiTypes.JsonObject:
         """Get event queue statistics.

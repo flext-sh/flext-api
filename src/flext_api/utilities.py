@@ -68,16 +68,16 @@ class FlextApiUtilities(u):
             """Parse string or enum value to enum instance.
 
             Business Rule: Accepts both string and enum values, converting strings
-            to enum instances. Returns FlextResult for railway-oriented error handling.
+            to enum instances. Returns r for railway-oriented error handling.
 
             Audit Implication: Type-safe enum parsing with automatic conversion.
             """
             if isinstance(value, enum_cls):
-                return FlextResult.ok(value)
+                return r.ok(value)
             try:
-                return FlextResult.ok(enum_cls(value))
+                return r.ok(enum_cls(value))
             except ValueError:
-                return FlextResult.fail(f"Invalid {enum_cls.__name__}: '{value}'")
+                return r.fail(f"Invalid {enum_cls.__name__}: '{value}'")
 
         @staticmethod
         def coerce_validator[E: StrEnum](enum_cls: type[E]) -> Callable[[object], E]:
@@ -126,7 +126,7 @@ class FlextApiUtilities(u):
             """Parse sequence of string or enum values to tuple of enum instances.
 
             Business Rule: Accepts iterable of strings or enum values, converting
-            all to enum instances. Returns FlextResult with tuple of parsed enums
+            all to enum instances. Returns r with tuple of parsed enums
             or failure with list of invalid values.
 
             Audit Implication: Type-safe sequence parsing with detailed error reporting.
@@ -140,11 +140,7 @@ class FlextApiUtilities(u):
                         parsed.append(enum_cls(v))
                     except ValueError:
                         errors.append(f"[{i}]: '{v}'")
-            return (
-                FlextResult.fail(f"Invalid: {errors}")
-                if errors
-                else FlextResult.ok(tuple(parsed))
-            )
+            return r.fail(f"Invalid: {errors}") if errors else r.ok(tuple(parsed))
 
         @staticmethod
         def coerce_list_validator[E: StrEnum](
@@ -206,10 +202,10 @@ class FlextApiUtilities(u):
         def validated_with_result(
             func: Callable[P, r[R]],
         ) -> Callable[P, r[R]]:
-            """ValidationError → FlextResult.fail().
+            """ValidationError → r.fail().
 
             Business Rule: Wraps validate_call to convert ValidationError exceptions
-            into FlextResult.fail() responses. Preserves ParamSpec signature for
+            into r.fail() responses. Preserves ParamSpec signature for
             correct type checking.
 
             Audit Implication: Railway-oriented error handling - validation errors
@@ -229,7 +225,7 @@ class FlextApiUtilities(u):
                 try:
                     return validated_func(*args, **kwargs)
                 except Exception as e:
-                    return FlextResult.fail(f"Validation failed: {e}")
+                    return r.fail(f"Validation failed: {e}")
 
             return wrapper
 
@@ -254,11 +250,7 @@ class FlextApiUtilities(u):
                             parsed[field] = enum_cls(field_value)
                         except ValueError:
                             errors.append(f"{field}: '{field_value}'")
-            return (
-                FlextResult.fail(f"Invalid: {errors}")
-                if errors
-                else FlextResult.ok(parsed)
-            )
+            return r.fail(f"Invalid: {errors}") if errors else r.ok(parsed)
 
         @staticmethod
         def get_enum_params(func: Callable[..., object]) -> dict[str, type[StrEnum]]:
@@ -291,14 +283,14 @@ class FlextApiUtilities(u):
             """Create model instance from dictionary.
 
             Business Rule: Validates dictionary data against Pydantic model schema
-            and returns FlextResult with model instance or validation error.
+            and returns r with model instance or validation error.
 
             Audit Implication: Type-safe model creation with railway-oriented error handling.
             """
             try:
-                return FlextResult.ok(model_cls.model_validate(data, strict=strict))
+                return r.ok(model_cls.model_validate(data, strict=strict))
             except Exception as e:
-                return FlextResult.fail(f"Validation failed: {e}")
+                return r.fail(f"Validation failed: {e}")
 
         @staticmethod
         def merge_defaults[M: BaseModel](
@@ -322,7 +314,7 @@ class FlextApiUtilities(u):
             """Update model instance with new field values.
 
             Business Rule: Updates model instance by merging current values with
-            updates dictionary and re-validating. Returns FlextResult with updated
+            updates dictionary and re-validating. Returns r with updated
             instance or validation error.
 
             Audit Implication: Type-safe model updates with validation.
@@ -330,9 +322,9 @@ class FlextApiUtilities(u):
             try:
                 current = instance.model_dump()
                 current.update(updates)
-                return FlextResult.ok(type(instance).model_validate(current))
+                return r.ok(type(instance).model_validate(current))
             except Exception as e:
-                return FlextResult.fail(f"Update failed: {e}")
+                return r.fail(f"Update failed: {e}")
 
     class Pydantic:
         """Fábricas de Annotated types."""
@@ -358,6 +350,49 @@ class FlextApiUtilities(u):
                 enum_cls,
                 BeforeValidator(FlextApiUtilities.Enum.coerce_validator(enum_cls)),
             ]
+
+    class RequestUtils:
+        """Request utilities for extracting and validating HTTP request components."""
+
+        @staticmethod
+        def extract_body_from_kwargs(
+            data: object | None, kwargs: dict[str, object] | None
+        ) -> r[object | None]:
+            """Extract body from data or kwargs."""
+            if data is not None:
+                return r.ok(data)
+            if kwargs is not None and "data" in kwargs:
+                return r.ok(kwargs["data"])
+            if kwargs is not None and "json" in kwargs:
+                return r.ok(kwargs["json"])
+            return r.ok(None)
+
+        @staticmethod
+        def merge_headers(
+            headers: dict[str, str] | None, kwargs: dict[str, object] | None
+        ) -> r[dict[str, str]]:
+            """Merge headers from headers dict and kwargs."""
+            merged: dict[str, str] = {}
+            if headers:
+                merged.update(headers)
+            if kwargs and "headers" in kwargs:
+                headers_value = kwargs["headers"]
+                if isinstance(headers_value, dict):
+                    merged.update({k: str(v) for k, v in headers_value.items()})
+            return r.ok(merged)
+
+        @staticmethod
+        def validate_and_extract_timeout(
+            timeout: float | None, kwargs: dict[str, object] | None
+        ) -> r[float]:
+            """Validate and extract timeout from timeout value or kwargs."""
+            if timeout is not None and timeout > 0:
+                return r.ok(timeout)
+            if kwargs and "timeout" in kwargs:
+                timeout_value = kwargs["timeout"]
+                if isinstance(timeout_value, (int, float)) and timeout_value > 0:
+                    return r.ok(float(timeout_value))
+            return r.fail("Timeout must be a positive number")
 
 
 __all__ = [

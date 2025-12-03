@@ -23,6 +23,7 @@ from __future__ import annotations
 from typing import Protocol
 
 from flext_core import r
+from flext_core.loggings import FlextLogger
 
 
 class GrpcChannel:
@@ -111,9 +112,7 @@ class GrpcStub:
             "gRPC unary call (placeholder)",
             extra={"method": _method},
         )
-        return r[object].fail(
-            "gRPC stub placeholder - awaiting flext-grpc integration"
-        )
+        return r[object].fail("gRPC stub placeholder - awaiting flext-grpc integration")
 
 
 class GrpcRequest:
@@ -254,9 +253,7 @@ class GrpcServer:
             "gRPC server start (placeholder)",
             extra={"host": self._host, "port": self._port},
         )
-        return r[bool].fail(
-            "gRPC server placeholder - awaiting flext-grpc integration"
-        )
+        return r[bool].fail("gRPC server placeholder - awaiting flext-grpc integration")
 
     def stop(self, _grace: float | None = None) -> r[bool]:
         """Stop gRPC server.

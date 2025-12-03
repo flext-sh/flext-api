@@ -22,9 +22,7 @@ from collections.abc import Callable
 
 from fastapi import FastAPI
 from flext_core import (
-    FlextExceptions,
     FlextLogger,
-    FlextResult,
     FlextService,
     t,
     x,
@@ -290,9 +288,7 @@ class FlextApiServer(FlextService[object], x.Validation):
 
             app_result = self.create_app()
             if app_result.is_failure:
-                return r[bool].fail(
-                    f"Failed to create app: {app_result.error}"
-                )
+                return r[bool].fail(f"Failed to create app: {app_result.error}")
 
             self._app = app_result.unwrap()
 
@@ -396,17 +392,13 @@ class FlextApiServer(FlextService[object], x.Validation):
             title, "Title"
         )
         if title_result.is_failure:
-            return r[bool].fail(
-                title_result.error or "Title validation failed"
-            )
+            return r[bool].fail(title_result.error or "Title validation failed")
 
         version_result = FlextApiUtilities.ValidationUtils.validate_string_field(
             version, "Version"
         )
         if version_result.is_failure:
-            return r[bool].fail(
-                version_result.error or "Version validation failed"
-            )
+            return r[bool].fail(version_result.error or "Version validation failed")
 
         return r[bool].ok(True)
 

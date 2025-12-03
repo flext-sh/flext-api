@@ -11,9 +11,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
 from urllib.parse import ParseResult, urlparse
 
-from flext_core import FlextModels
+from flext_core import FlextModels, u
 from pydantic import BaseModel, Field, computed_field, field_validator
 
 from flext_api.constants import FlextApiConstants
@@ -399,9 +400,16 @@ class FlextApiModels:
 
         def remove_header(self, name: str) -> None:
             """Remove header by name (case-insensitive)."""
-            keys_to_remove = [k for k in self.headers if k.lower() == name.lower()]
-            for key in keys_to_remove:
-                del self.headers[key]
+            # Use u.filter() for unified filtering (DSL pattern)
+            keys_to_remove = cast(
+                "list[str]",
+                u.filter(self.headers.keys(), lambda k: k.lower() == name.lower()),
+            )
+            u.process(
+                keys_to_remove,
+                processor=lambda key: self.headers.pop(key, None),
+                on_error="skip",
+            )
 
     # =========================================================================
     # FACTORY METHODS - Model creation utilities
