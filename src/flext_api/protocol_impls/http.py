@@ -213,9 +213,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 "body": response.body,
             })
 
-        return r[dict[str, object]].fail(
-            result.error or "Request execution failed"
-        )
+        return r[dict[str, object]].fail(result.error or "Request execution failed")
 
     def _build_request_kwargs(
         self,
@@ -393,9 +391,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return r[FlextApiModels.HttpResponse].ok(response)
 
         except Exception as e:
-            return r[FlextApiModels.HttpResponse].fail(
-                f"Failed to build response: {e}"
-            )
+            return r[FlextApiModels.HttpResponse].fail(f"Failed to build response: {e}")
 
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol."""
@@ -427,9 +423,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             },
         )
 
-        return r[object].fail(
-            "Streaming not yet implemented (Phase 2 enhancement)"
-        )
+        return r[object].fail("Streaming not yet implemented (Phase 2 enhancement)")
 
     def get_protocol_info(self) -> dict[str, object]:
         """Get protocol configuration information."""

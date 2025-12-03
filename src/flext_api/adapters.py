@@ -55,14 +55,14 @@ class FlextApiAdapters:
                     "body": body_value,
                 }
 
-                return r[
-                    FlextApiTypes.JsonObject | FlextApiModels.HttpRequest
-                ].ok(message)
+                return r[FlextApiTypes.JsonObject | FlextApiModels.HttpRequest].ok(
+                    message
+                )
 
             except Exception as e:
-                return r[
-                    FlextApiTypes.JsonObject | FlextApiModels.HttpRequest
-                ].fail(f"HTTP to WebSocket adaptation failed: {e}")
+                return r[FlextApiTypes.JsonObject | FlextApiModels.HttpRequest].fail(
+                    f"HTTP to WebSocket adaptation failed: {e}"
+                )
 
         @staticmethod
         def adapt_websocket_message_to_http_response(
@@ -89,9 +89,7 @@ class FlextApiAdapters:
                     if isinstance(headers_value, dict):
                         headers = headers_value
 
-                return r[
-                    FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
-                ].ok(
+                return r[FlextApiModels.HttpResponse | FlextApiTypes.JsonObject].ok(
                     FlextApiModels.create_response(
                         status_code=status_code_value,
                         body=body,
@@ -100,9 +98,9 @@ class FlextApiAdapters:
                 )
 
             except Exception as e:
-                return r[
-                    FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
-                ].fail(f"WebSocket to HTTP adaptation failed: {e}")
+                return r[FlextApiModels.HttpResponse | FlextApiTypes.JsonObject].fail(
+                    f"WebSocket to HTTP adaptation failed: {e}"
+                )
 
     class Schema:
         """Schema adaptation following SOLID principles.
@@ -152,9 +150,7 @@ class FlextApiAdapters:
                 return r[bytes].ok(packed_data)
 
             except Exception as e:
-                return r[bytes].fail(
-                    f"JSON to MessagePack conversion failed: {e}"
-                )
+                return r[bytes].fail(f"JSON to MessagePack conversion failed: {e}")
 
         @staticmethod
         def convert_json_to_cbor(data: FlextApiTypes.JsonObject) -> r[bytes]:
@@ -190,14 +186,14 @@ class FlextApiAdapters:
                     return r[
                         FlextApiTypes.JsonObject | FlextApiModels.HttpRequest
                     ].fail(result.error or "Adaptation failed")
-                return r[
-                    FlextApiTypes.JsonObject | FlextApiModels.HttpRequest
-                ].ok(request)
+                return r[FlextApiTypes.JsonObject | FlextApiModels.HttpRequest].ok(
+                    request
+                )
 
             except Exception as e:
-                return r[
-                    FlextApiTypes.JsonObject | FlextApiModels.HttpRequest
-                ].fail(f"Request transformation failed: {e}")
+                return r[FlextApiTypes.JsonObject | FlextApiModels.HttpRequest].fail(
+                    f"Request transformation failed: {e}"
+                )
 
         @staticmethod
         def transform_response_for_protocol(
@@ -216,17 +212,17 @@ class FlextApiAdapters:
                         FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
                     ].fail(result.error or "Adaptation failed")
                 if isinstance(response, FlextApiModels.HttpResponse):
-                    return r[
-                        FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
-                    ].ok(response)
-                return r[
-                    FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
-                ].fail("Invalid response type")
+                    return r[FlextApiModels.HttpResponse | FlextApiTypes.JsonObject].ok(
+                        response
+                    )
+                return r[FlextApiModels.HttpResponse | FlextApiTypes.JsonObject].fail(
+                    "Invalid response type"
+                )
 
             except Exception as e:
-                return r[
-                    FlextApiModels.HttpResponse | FlextApiTypes.JsonObject
-                ].fail(f"Response transformation failed: {e}")
+                return r[FlextApiModels.HttpResponse | FlextApiTypes.JsonObject].fail(
+                    f"Response transformation failed: {e}"
+                )
 
 
 __all__ = [

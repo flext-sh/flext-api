@@ -18,7 +18,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal, TypeGuard, TypeIs
 
-from flext_core import r, u
+from flext_core import FlextConstants, r, u
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: PADRÃO DEFINITIVO PARA FLEXT-API
@@ -396,12 +396,16 @@ class FlextApiConstants(FlextConstants):
     @classmethod
     def create_method_validator(cls) -> Callable[[str], Method]:
         """Create BeforeValidator for HTTP Method in Pydantic models."""
-        return uvalidator(cls.Method)
+        from flext_api.utilities import FlextApiUtilities  # Avoid circular import
+
+        return FlextApiUtilities.Enum.coerce_validator(cls.Method)
 
     @classmethod
     def create_status_validator(cls) -> Callable[[str], Status]:
         """Create BeforeValidator for Status in Pydantic models."""
-        return uvalidator(cls.Status)
+        from flext_api.utilities import FlextApiUtilities  # Avoid circular import
+
+        return FlextApiUtilities.Enum.coerce_validator(cls.Status)
 
     # ═══════════════════════════════════════════════════════════════════
     # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)

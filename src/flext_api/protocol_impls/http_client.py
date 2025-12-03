@@ -11,6 +11,7 @@ from typing import Self
 
 import httpx
 from flext_core import r
+from flext_core.loggings import FlextLogger
 
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
@@ -123,9 +124,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         error_msg = f"HTTP error {e.response.status_code}: {e.response.text}"
         self.logger.warning(error_msg)
         response = self._create_response_from_httpx(e.response)
-        return r[FlextApiTypes.HttpResponseDict].ok(
-            self._response_to_dict(response)
-        )
+        return r[FlextApiTypes.HttpResponseDict].ok(self._response_to_dict(response))
 
     def _handle_request_exception(
         self, e: Exception, error_prefix: str
@@ -236,9 +235,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             return r[str].ok(url)
 
         if not self._config.base_url:
-            return r[str].fail(
-                "base_url is required when URL is not absolute"
-            )
+            return r[str].fail("base_url is required when URL is not absolute")
 
         base_url_value = self._config.base_url
         if not isinstance(base_url_value, str) or not base_url_value:

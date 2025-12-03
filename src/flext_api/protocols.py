@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import r, p
+from flext_core import p, r
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes

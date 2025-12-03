@@ -13,6 +13,7 @@ from __future__ import annotations
 from abc import abstractmethod
 
 from flext_core import r
+from flext_core.loggings import FlextLogger
 
 from flext_api.typings import FlextApiTypes
 
@@ -249,9 +250,7 @@ class FlextApiPlugins:
                 return r[FlextApiPlugins.Plugin].fail(
                     f"Plugin '{plugin_name}' not loaded"
                 )
-            return r[FlextApiPlugins.Plugin].ok(
-                self._loaded_plugins[plugin_name]
-            )
+            return r[FlextApiPlugins.Plugin].ok(self._loaded_plugins[plugin_name])
 
         def list_loaded_plugins(self) -> list[str]:
             """Get list of loaded plugin names."""

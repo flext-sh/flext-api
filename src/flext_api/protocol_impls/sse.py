@@ -111,9 +111,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
         # Acknowledge kwargs to avoid linting warnings
         _ = kwargs
-        return r[dict[str, object]].fail(
-            "SSE protocol not yet implemented (Phase 3)"
-        )
+        return r[dict[str, object]].fail("SSE protocol not yet implemented (Phase 3)")
 
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol.

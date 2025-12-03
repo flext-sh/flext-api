@@ -15,7 +15,7 @@ import json
 from typing import Self
 
 import httpx
-from flext_core import r, FlextService
+from flext_core import FlextService, r
 
 from flext_api.config import FlextApiConfig
 from flext_api.models import FlextApiModels

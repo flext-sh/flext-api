@@ -81,9 +81,7 @@ class FlextApiConfigManager:
             try:
                 return r[str | float].ok(int(value))
             except ValueError:
-                return r[str | float].fail(
-                    f"Invalid max_retries value: {value}"
-                )
+                return r[str | float].fail(f"Invalid max_retries value: {value}")
         elif key in {"log_requests", "log_responses"}:
             if isinstance(value, (str, int, float)):
                 return r[str | float].ok(bool(value))
@@ -109,14 +107,10 @@ class FlextApiConfigManager:
                     f"Timeout must be a valid number: {timeout_value_raw}"
                 )
         else:
-            return r[float].fail(
-                f"Invalid timeout type: {type(timeout_value_raw)}"
-            )
+            return r[float].fail(f"Invalid timeout type: {type(timeout_value_raw)}")
 
         if timeout_value <= 0:
-            return r[float].fail(
-                f"Timeout must be positive, got: {timeout_value}"
-            )
+            return r[float].fail(f"Timeout must be positive, got: {timeout_value}")
 
         return r[float].ok(timeout_value)
 
@@ -138,9 +132,7 @@ class FlextApiConfigManager:
                     f"Max retries must be a valid integer: {max_retries_raw}"
                 )
         else:
-            return r[int].fail(
-                f"Invalid max_retries type: {type(max_retries_raw)}"
-            )
+            return r[int].fail(f"Invalid max_retries type: {type(max_retries_raw)}")
 
         if max_retries_value < 0:
             return r[int].fail(
@@ -156,9 +148,7 @@ class FlextApiConfigManager:
 
         timeout_result = self._extract_timeout()
         if timeout_result.is_failure:
-            return r[bool].fail(
-                timeout_result.error or "Timeout extraction failed"
-            )
+            return r[bool].fail(timeout_result.error or "Timeout extraction failed")
 
         max_retries_result = self._extract_max_retries()
         if max_retries_result.is_failure:
@@ -187,9 +177,7 @@ class FlextApiConfigManager:
                     f"Parsed headers must be dict, got: {type(parsed_headers)}"
                 )
             except (json.JSONDecodeError, TypeError) as e:
-                return r[dict[str, str]].fail(
-                    f"Failed to parse headers JSON: {e}"
-                )
+                return r[dict[str, str]].fail(f"Failed to parse headers JSON: {e}")
         else:
             return r[dict[str, str]].fail(
                 f"Invalid headers type: {type(headers_value)}"
@@ -221,16 +209,12 @@ class FlextApiConfigManager:
             try:
                 timeout_value = float(timeout_raw)
             except ValueError:
-                return r[float].fail(
-                    f"Timeout must be a valid number: {timeout_raw}"
-                )
+                return r[float].fail(f"Timeout must be a valid number: {timeout_raw}")
         else:
             return r[float].fail(f"Invalid timeout type: {type(timeout_raw)}")
 
         if timeout_value <= 0:
-            return r[float].fail(
-                f"Timeout must be positive, got: {timeout_value}"
-            )
+            return r[float].fail(f"Timeout must be positive, got: {timeout_value}")
 
         return r[float].ok(timeout_value)
 
