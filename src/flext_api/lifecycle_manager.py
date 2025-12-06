@@ -42,11 +42,11 @@ class FlextApiLifecycleManager:
             yield resource
         finally:
             if hasattr(resource, "aclose") and callable(
-                getattr(resource, "aclose", None)
+                getattr(resource, "aclose", None),
             ):
                 await resource.aclose()
             elif hasattr(resource, "close") and callable(
-                getattr(resource, "close", None)
+                getattr(resource, "close", None),
             ):
                 resource.close()
 
@@ -57,7 +57,7 @@ class FlextApiLifecycleManager:
             return resource
         finally:
             if hasattr(resource, "close") and callable(
-                getattr(resource, "close", None)
+                getattr(resource, "close", None),
             ):
                 resource.close()
 

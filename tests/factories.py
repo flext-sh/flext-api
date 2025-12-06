@@ -95,7 +95,7 @@ class FlextApiFactories:
                 config_data.get(
                     "host",
                     FlextApiConstants.DEFAULT_BASE_URL.split("://")[1].split(":")[0],
-                )
+                ),
             ),
             "api_port": cast(
                 "int",
@@ -204,7 +204,8 @@ class FlextApiFactories:
         # Update with overrides, ensuring type compatibility
         for key, value in overrides.items():
             if key in response_data and isinstance(
-                value, (str, int, float, bool, dict, list)
+                value,
+                (str, int, float, bool, dict, list),
             ):
                 response_data[key] = value
 

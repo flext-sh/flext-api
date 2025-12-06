@@ -14,8 +14,12 @@ from typing import Final, TypeAlias
 from flext_api.constants import FlextApiConstants
 
 
-class TestConstants:
-    """Centralized test constants following flext-core nested class pattern."""
+class TestsConstants(FlextApiConstants):
+    """Test constants extending FlextApiConstants.
+
+    Provides test-specific constants without duplicating parent functionality.
+    All parent constants are accessible via inheritance hierarchy.
+    """
 
     class Paths:
         """Test path constants."""
@@ -90,4 +94,7 @@ class TestConstants:
         GraphQLProtocolLiteral: TypeAlias = FlextApiConstants.GraphQLProtocolLiteral
 
 
-__all__ = ["TestConstants"]
+# Standardized short name for use in tests (same pattern as flext-core)
+c = TestsConstants
+
+__all__ = ["TestsConstants", "c"]

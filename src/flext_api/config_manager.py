@@ -32,7 +32,8 @@ class FlextApiConfigManager:
         self._config: FlextApiTypes.JsonObject | None = None
 
     def configure(
-        self, config: Mapping[str, str | float | bool] | None = None
+        self,
+        config: Mapping[str, str | float | bool] | None = None,
     ) -> r[bool]:
         """Configure the HTTP client with type safety and validation - no fallbacks."""
         try:
@@ -42,7 +43,7 @@ class FlextApiConfigManager:
                 process_result = self._process_config(config)
                 if process_result.is_failure:
                     return r[bool].fail(
-                        process_result.error or "Configuration processing failed"
+                        process_result.error or "Configuration processing failed",
                     )
                 self._config = process_result.unwrap()
 
@@ -52,7 +53,8 @@ class FlextApiConfigManager:
             return r[bool].fail(error_msg)
 
     def _process_config(
-        self, config: Mapping[str, str | float | bool]
+        self,
+        config: Mapping[str, str | float | bool],
     ) -> r[FlextApiTypes.JsonObject]:
         """Process and normalize configuration values - no fallbacks."""
         processed: FlextApiTypes.JsonObject = {}
@@ -62,14 +64,17 @@ class FlextApiConfigManager:
                 normalize_result = self._normalize_value(key, value=value)
                 if normalize_result.is_failure:
                     return r[FlextApiTypes.JsonObject].fail(
-                        normalize_result.error or "Value normalization failed"
+                        normalize_result.error or "Value normalization failed",
                     )
                 processed[key] = normalize_result.unwrap()
 
         return r[FlextApiTypes.JsonObject].ok(processed)
 
     def _normalize_value(
-        self, key: str, *, value: str | float | bool
+        self,
+        key: str,
+        *,
+        value: str | float | bool,
     ) -> r[str | float | bool]:
         """Normalize configuration value based on key type - no fallbacks."""
         if key == "timeout" and isinstance(value, str):
@@ -104,7 +109,7 @@ class FlextApiConfigManager:
                 timeout_value = float(timeout_value_raw)
             except ValueError:
                 return r[float].fail(
-                    f"Timeout must be a valid number: {timeout_value_raw}"
+                    f"Timeout must be a valid number: {timeout_value_raw}",
                 )
         else:
             return r[float].fail(f"Invalid timeout type: {type(timeout_value_raw)}")
@@ -129,14 +134,14 @@ class FlextApiConfigManager:
                 max_retries_value = int(max_retries_raw)
             except (ValueError, TypeError):
                 return r[int].fail(
-                    f"Max retries must be a valid integer: {max_retries_raw}"
+                    f"Max retries must be a valid integer: {max_retries_raw}",
                 )
         else:
             return r[int].fail(f"Invalid max_retries type: {type(max_retries_raw)}")
 
         if max_retries_value < 0:
             return r[int].fail(
-                f"Max retries cannot be negative, got: {max_retries_value}"
+                f"Max retries cannot be negative, got: {max_retries_value}",
             )
 
         return r[int].ok(max_retries_value)
@@ -153,7 +158,7 @@ class FlextApiConfigManager:
         max_retries_result = self._extract_max_retries()
         if max_retries_result.is_failure:
             return r[bool].fail(
-                max_retries_result.error or "Max retries extraction failed"
+                max_retries_result.error or "Max retries extraction failed",
             )
 
         return r[bool].ok(True)
@@ -174,13 +179,13 @@ class FlextApiConfigManager:
                 if isinstance(parsed_headers, dict):
                     return r[dict[str, str]].ok(parsed_headers)
                 return r[dict[str, str]].fail(
-                    f"Parsed headers must be dict, got: {type(parsed_headers)}"
+                    f"Parsed headers must be dict, got: {type(parsed_headers)}",
                 )
             except (json.JSONDecodeError, TypeError) as e:
                 return r[dict[str, str]].fail(f"Failed to parse headers JSON: {e}")
         else:
             return r[dict[str, str]].fail(
-                f"Invalid headers type: {type(headers_value)}"
+                f"Invalid headers type: {type(headers_value)}",
             )
 
     def _extract_base_url(self) -> r[str]:
@@ -226,19 +231,19 @@ class FlextApiConfigManager:
         headers_result = self._extract_headers()
         if headers_result.is_failure:
             return r[FlextApiModels.ClientConfig].fail(
-                headers_result.error or "Headers extraction failed"
+                headers_result.error or "Headers extraction failed",
             )
 
         base_url_result = self._extract_base_url()
         if base_url_result.is_failure:
             return r[FlextApiModels.ClientConfig].fail(
-                base_url_result.error or "Base URL extraction failed"
+                base_url_result.error or "Base URL extraction failed",
             )
 
         timeout_result = self._extract_timeout_for_config()
         if timeout_result.is_failure:
             return r[FlextApiModels.ClientConfig].fail(
-                timeout_result.error or "Timeout extraction failed"
+                timeout_result.error or "Timeout extraction failed",
             )
 
         return r[FlextApiModels.ClientConfig].ok(
@@ -246,7 +251,7 @@ class FlextApiConfigManager:
                 base_url=base_url_result.unwrap(),
                 timeout=timeout_result.unwrap(),
                 headers=headers_result.unwrap(),
-            )
+            ),
         )
 
     @property

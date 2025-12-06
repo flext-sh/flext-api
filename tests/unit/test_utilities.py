@@ -109,7 +109,7 @@ class TestFlextApiUtilitiesReal:
     def test_http_validator_url_invalid_port(self) -> None:
         """Test FlextWebValidator URL validation with invalid port."""
         result = FlextApiUtilities.FlextWebValidator.validate_url(
-            "https://example.com:0"
+            "https://example.com:0",
         )
         assert result.is_failure
         assert result.error is not None
@@ -137,7 +137,7 @@ class TestFlextApiUtilitiesReal:
         """Test FlextWebValidator URL normalization."""
         # API returns normalized string
         normalized = FlextApiUtilities.FlextWebValidator.normalize_url(
-            "https://example.com/"
+            "https://example.com/",
         )
         assert normalized.startswith("https://")
         assert "example.com" in normalized
@@ -209,7 +209,7 @@ class TestFlextApiUtilitiesReal:
     def test_http_validator_normalize_url_with_http(self) -> None:
         """Test FlextWebValidator URL normalization preserves http scheme."""
         normalized = FlextApiUtilities.FlextWebValidator.normalize_url(
-            "http://example.com"
+            "http://example.com",
         )
         assert normalized == "http://example.com"
 
@@ -239,14 +239,14 @@ class TestFlextApiUtilitiesReal:
     def test_url_validation_localhost(self) -> None:
         """Test URL validation with localhost."""
         result = FlextApiUtilities.FlextWebValidator.validate_url(
-            "http://localhost:8080"
+            "http://localhost:8080",
         )
         assert result.is_success
 
     def test_url_validation_ip_address(self) -> None:
         """Test URL validation with IP address."""
         result = FlextApiUtilities.FlextWebValidator.validate_url(
-            "https://192.168.1.1:8443"
+            "https://192.168.1.1:8443",
         )
         assert result.is_success
 
@@ -307,7 +307,7 @@ class TestFlextApiUtilitiesReal:
         codes = [200, 201, 202, 204]
         for code in codes:
             result = FlextApiUtilities.ResponseBuilder.build_success_response(
-                status_code=code
+                status_code=code,
             )
             assert result.is_success
             response = result.unwrap()
@@ -380,7 +380,7 @@ class TestFlextApiUtilitiesReal:
             default_page_size = 15
 
         config = FlextApiUtilities.PaginationBuilder.extract_pagination_config(
-            PartialConfig()
+            PartialConfig(),
         )
         # Should have default_page_size from config and max_page_size default
         assert config["default_page_size"] == 15
@@ -442,7 +442,7 @@ class TestFlextApiUtilitiesReal:
             "prev_page": 1,
         }
         result = FlextApiUtilities.PaginationBuilder.build_pagination_response(
-            pagination_data
+            pagination_data,
         )
         assert result.is_success
         response = result.unwrap()
@@ -492,13 +492,13 @@ class TestFlextApiUtilitiesReal:
     def test_url_validation_subdomain(self) -> None:
         """Test URL validation with subdomains."""
         result = FlextApiUtilities.FlextWebValidator.validate_url(
-            "https://api.v2.example.com/data"
+            "https://api.v2.example.com/data",
         )
         assert result.is_success
 
     def test_url_validation_international_domain(self) -> None:
         """Test URL validation with international domain."""
         result = FlextApiUtilities.FlextWebValidator.validate_url(
-            "https://例え.jp/path"
+            "https://例え.jp/path",
         )
         assert result.is_success or result.is_failure  # Depends on implementation

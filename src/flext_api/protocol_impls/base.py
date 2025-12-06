@@ -10,13 +10,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 from flext_core import FlextService, r
 
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import FlextApiTypes
 
 
-class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
+class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):  # type: ignore[misc]
     """Base class for all protocol implementations.
 
     Defines the standard interface and patterns that all protocol implementations
@@ -55,13 +57,26 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         **kwargs: Additional configuration parameters
 
         """
+        # Type narrowing: convert kwargs to expected type
+        from flext_core import FlextRuntime, t  # noqa: PLC0415
+
+        kwargs_typed: dict[str, t.GeneralValueType] = {
+            k: cast("t.GeneralValueType", FlextRuntime.normalize_to_general_value(v))
+            for k, v in kwargs.items()
+        }
         # Initialize FlextService first (establishes logger property from x)
-        super().__init__(**kwargs)
+        super().__init__(**kwargs_typed)
 
         # Initialize ProtocolPlugin (Plugin.logger will be set as attribute, not property)
+        # Use object.__setattr__ to avoid conflict with property from FlextMixins
         FlextApiPlugins.Protocol.__init__(
-            self, name=name, version=version, description=description
+            self,
+            name=name,
+            version=version,
+            description=description,
         )
+        # Ensure logger is accessible - Plugin sets _plugin_logger, but we use logger property from x
+        # The logger property from x takes precedence
 
         # Protocol state
         self._initialized = False
@@ -117,7 +132,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         _ = request
         _ = kwargs
         return r[dict[str, object]].fail(
-            f"send_request() must be implemented by {self.__class__.__name__}"
+            f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
     def supports_protocol(self, protocol: str) -> bool:

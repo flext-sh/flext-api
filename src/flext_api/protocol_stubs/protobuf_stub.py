@@ -72,7 +72,7 @@ class ProtobufMessage:
         """
         self.logger.debug("Protobuf serialization (placeholder)")
         return r[bytes].fail(
-            "Protobuf stub placeholder - awaiting flext-grpc integration"
+            "Protobuf stub placeholder - awaiting flext-grpc integration",
         )
 
     @classmethod
@@ -88,7 +88,7 @@ class ProtobufMessage:
         logger = FlextLogger(__name__)
         logger.debug("Protobuf deserialization (placeholder)")
         return r[ProtobufMessage].fail(
-            "Protobuf stub placeholder - awaiting flext-grpc integration"
+            "Protobuf stub placeholder - awaiting flext-grpc integration",
         )
 
     @classmethod
@@ -180,7 +180,7 @@ class ProtobufSerializer:
             return r[bytes].fail(validation_result.error or "Message validation failed")
 
         return r[bytes].fail(
-            "Protobuf serializer placeholder - awaiting flext-grpc integration"
+            "Protobuf serializer placeholder - awaiting flext-grpc integration",
         )
 
     def deserialize(self, _data: bytes) -> r[ProtobufMessage]:
@@ -194,7 +194,7 @@ class ProtobufSerializer:
         """
         self.logger.debug("Protobuf deserialization (placeholder)")
         return r[ProtobufMessage].fail(
-            "Protobuf serializer placeholder - awaiting flext-grpc integration"
+            "Protobuf serializer placeholder - awaiting flext-grpc integration",
         )
 
     def _validate_message(self, _message: ProtobufMessage) -> r[bool]:
@@ -307,7 +307,7 @@ class ProtobufField:
         if not isinstance(value, self._field_type) and value is not None:
             return r[bool].fail(
                 f"Field {self._name} expects {self._field_type.__name__}, "
-                f"got {type(value).__name__}"
+                f"got {type(value).__name__}",
             )
 
         return r[bool].ok(True)

@@ -212,7 +212,8 @@ class TestFlextApiClientRailwayPattern:
     """Test railway-oriented programming with FlextResult using REAL HTTP."""
 
     def test_request_success_returns_flext_result(
-        self, httpx_mock: pytest_httpx.HTTPXMock
+        self,
+        httpx_mock: pytest_httpx.HTTPXMock,
     ) -> None:
         """Test successful request returns FlextResult[HttpResponse] using mocked HTTP."""
         # Mock the HTTP response
@@ -241,7 +242,8 @@ class TestFlextApiClientRailwayPattern:
         assert "url" in response.body
 
     def test_request_failure_returns_flext_result_error(
-        self, httpx_mock: pytest_httpx.HTTPXMock
+        self,
+        httpx_mock: pytest_httpx.HTTPXMock,
     ) -> None:
         """Test failed request returns FlextResult with error using mocked HTTP."""
         # Mock a server error response

@@ -12,7 +12,14 @@ from __future__ import annotations
 
 from flext_core import e
 
-# Re-export for convenience - but use FlextExceptions directly
-HttpError = e.BaseError
+
+class HttpError(e.BaseError):
+    """HTTP error exception - real inheritance from e.BaseError.
+
+    Provides HTTP-specific error handling with status_code context.
+    Uses real inheritance to expose e.BaseError functionality through
+    the HttpError namespace for HTTP operations.
+    """
+
 
 __all__ = ["HttpError"]

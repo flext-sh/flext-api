@@ -156,7 +156,7 @@ class PydanticV2Auditor:
                     line=0,
                     code="",
                     detail="No src/ directory found in project",
-                )
+                ),
             )
             return self.result
 
@@ -205,7 +205,7 @@ class PydanticV2Auditor:
                         line=line_num + 1,
                         code=lines[line_num].strip() if line_num < len(lines) else "",
                         detail="Pydantic v1 pattern detected",
-                    )
+                    ),
                 )
 
         # Check for removed validators (should not exist in codebase)
@@ -242,7 +242,7 @@ class PydanticV2Auditor:
                         line=line_num + 1,
                         code=lines[line_num].strip(),
                         detail="This validator was removed in Phase 3 and should not be re-added. Use Pydantic v2 native types instead.",
-                    )
+                    ),
                 )
 
     def _find_pattern(

@@ -98,7 +98,7 @@ class UnusedImportDetector(ast.NodeVisitor):
                         name=name,
                         line_number=line,
                         context=context,
-                    )
+                    ),
                 )
         return self.unused
 
@@ -160,7 +160,7 @@ class UnusedDefinitionDetector(ast.NodeVisitor):
                         item_type="function",
                         name=name,
                         line_number=line,
-                    )
+                    ),
                 )
 
         for name, line in self.defined_classes.items():
@@ -171,7 +171,7 @@ class UnusedDefinitionDetector(ast.NodeVisitor):
                         item_type="class",
                         name=name,
                         line_number=line,
-                    )
+                    ),
                 )
 
         return unused_funcs, unused_classes
@@ -238,7 +238,10 @@ class ASTAnalyzer:
         ]
 
     def _format_item_details(
-        self, item: UnusedItem, *, include_context: bool = False
+        self,
+        item: UnusedItem,
+        *,
+        include_context: bool = False,
     ) -> list[str]:
         """Format item details."""
         lines = [
@@ -250,7 +253,11 @@ class ASTAnalyzer:
         return lines
 
     def _format_section(
-        self, items: list[UnusedItem], title: str, *, include_context: bool = False
+        self,
+        items: list[UnusedItem],
+        title: str,
+        *,
+        include_context: bool = False,
     ) -> list[str]:
         """Format a complete section."""
         if not items:
@@ -258,7 +265,7 @@ class ASTAnalyzer:
         lines = self._format_section_header(title, items)
         for item in sorted(items, key=lambda x: x.file_path):
             lines.extend(
-                self._format_item_details(item, include_context=include_context)
+                self._format_item_details(item, include_context=include_context),
             )
         lines.append("")
         return lines
@@ -277,32 +284,38 @@ class ASTAnalyzer:
         # Add all sections
         lines.extend(
             self._format_section(
-                self.analysis.unused_imports, "unused imports", include_context=True
-            )
+                self.analysis.unused_imports,
+                "unused imports",
+                include_context=True,
+            ),
         )
         lines.extend(
             self._format_section(
                 self.analysis.unused_functions,
                 "unused functions",
                 include_context=False,
-            )
+            ),
         )
         lines.extend(
             self._format_section(
-                self.analysis.unused_classes, "unused classes", include_context=False
-            )
+                self.analysis.unused_classes,
+                "unused classes",
+                include_context=False,
+            ),
         )
         lines.extend(
             self._format_section(
                 self.analysis.unused_variables,
                 "unused variables",
                 include_context=False,
-            )
+            ),
         )
         lines.extend(
             self._format_section(
-                self.analysis.unreachable_code, "unreachable code", include_context=True
-            )
+                self.analysis.unreachable_code,
+                "unreachable code",
+                include_context=True,
+            ),
         )
 
         lines.extend(("=" * 80, "ANALYSIS COMPLETE", "=" * 80))

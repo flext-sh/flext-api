@@ -98,7 +98,9 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         return r[str].ok(asyncapi_version)
 
     def _validate_required_fields(
-        self, schema: dict[str, object], version: str
+        self,
+        schema: dict[str, object],
+        version: str,
     ) -> r[bool]:
         """Validate required fields based on AsyncAPI version."""
         required_fields = ["info"]
@@ -108,7 +110,9 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         # Use u.filter() for unified filtering (DSL pattern)
         missing_fields = cast(
             "list[str]",
-            u.filter(required_fields, lambda field: field not in schema),
+            u.Collection.filter(
+                list(required_fields), lambda field: field not in schema
+            ),
         )
         if missing_fields:
             return r[bool].fail(f"Missing required fields: {', '.join(missing_fields)}")
@@ -128,11 +132,11 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         # Use u.filter() for unified filtering (DSL pattern)
         info_missing = cast(
             "list[str]",
-            u.filter(info_required, lambda field: field not in info),
+            u.Collection.filter(list(info_required), lambda field: field not in info),
         )
         if info_missing:
             return r[dict[str, object]].fail(
-                f"Missing required info fields: {', '.join(info_missing)}"
+                f"Missing required info fields: {', '.join(info_missing)}",
             )
         return r[dict[str, object]].ok(info)
 
@@ -157,7 +161,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             components_result = self._validate_components(components_value)
             if components_result.is_failure:
                 return r[bool].fail(
-                    f"Component validation failed: {components_result.error}"
+                    f"Component validation failed: {components_result.error}",
                 )
         return r[bool].ok(True)
 
@@ -175,7 +179,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         version_result = self._validate_asyncapi_version(schema)
         if version_result.is_failure:
             return r[dict[str, object]].fail(
-                version_result.error or "AsyncAPI version validation failed"
+                version_result.error or "AsyncAPI version validation failed",
             )
 
         asyncapi_version = version_result.unwrap()
@@ -184,14 +188,14 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         fields_result = self._validate_required_fields(schema, asyncapi_version)
         if fields_result.is_failure:
             return r[dict[str, object]].fail(
-                fields_result.error or "Required fields validation failed"
+                fields_result.error or "Required fields validation failed",
             )
 
         # Validate info object
         info_result = self._validate_info_object(schema)
         if info_result.is_failure:
             return r[dict[str, object]].fail(
-                info_result.error or "Info object validation failed"
+                info_result.error or "Info object validation failed",
             )
 
         info = info_result.unwrap()
@@ -207,14 +211,14 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         channels_result = self._validate_channels(channels_value, asyncapi_version)
         if channels_result.is_failure:
             return r[dict[str, object]].fail(
-                f"Channel validation failed: {channels_result.error}"
+                f"Channel validation failed: {channels_result.error}",
             )
 
         # Validate optional components
         components_result = self._validate_optional_components(schema)
         if components_result.is_failure:
             return r[dict[str, object]].fail(
-                components_result.error or "Components validation failed"
+                components_result.error or "Components validation failed",
             )
 
         channels_value = schema["channels"]
@@ -243,24 +247,28 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         })
 
     def _validate_channel_structure(
-        self, channel_name: str, channel: object
+        self,
+        channel_name: str,
+        channel: object,
     ) -> r[dict[str, object]]:
         """Validate basic channel structure."""
         if not isinstance(channel, dict):
             return r[dict[str, object]].fail(
-                f"Channel must be a dictionary: {channel_name}"
+                f"Channel must be a dictionary: {channel_name}",
             )
         return r[dict[str, object]].ok(channel)
 
     def _validate_asyncapi_2_operations(
-        self, channel: dict[str, object], channel_name: str
+        self,
+        channel: dict[str, object],
+        channel_name: str,
     ) -> r[bool]:
         """Validate AsyncAPI 2.x publish/subscribe operations."""
         if "publish" in channel:
             publish_value = channel["publish"]
             if not isinstance(publish_value, dict):
                 return r[bool].fail(
-                    f"'publish' must be a dictionary in channel: {channel_name}"
+                    f"'publish' must be a dictionary in channel: {channel_name}",
                 )
 
             pub_result = self._validate_operation(
@@ -275,7 +283,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             subscribe_value = channel["subscribe"]
             if not isinstance(subscribe_value, dict):
                 return r[bool].fail(
-                    f"'subscribe' must be a dictionary in channel: {channel_name}"
+                    f"'subscribe' must be a dictionary in channel: {channel_name}",
                 )
 
             sub_result = self._validate_operation(
@@ -288,7 +296,9 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(True)
 
     def _validate_asyncapi_3_structure(
-        self, channel: dict[str, object], channel_name: str
+        self,
+        channel: dict[str, object],
+        channel_name: str,
     ) -> r[bool]:
         """Validate AsyncAPI 3.x channel structure."""
         if "address" not in channel and self._strict_mode:
@@ -296,25 +306,31 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(True)
 
     def _validate_channel_messages(
-        self, channel: dict[str, object], channel_name: str
+        self,
+        channel: dict[str, object],
+        channel_name: str,
     ) -> r[bool]:
         """Validate channel messages if present."""
         if self._validate_messages and "messages" in channel:
             messages_value = channel["messages"]
             if not isinstance(messages_value, dict):
                 return r[bool].fail(
-                    f"'messages' must be a dictionary in channel: {channel_name}"
+                    f"'messages' must be a dictionary in channel: {channel_name}",
                 )
 
             messages_result = self._validate_messages_object(
-                messages_value, channel_name
+                messages_value,
+                channel_name,
             )
             if messages_result.is_failure:
                 return messages_result
         return r[bool].ok(True)
 
     def _validate_single_channel(
-        self, channel_name: str, channel: dict[str, object], version: str
+        self,
+        channel_name: str,
+        channel: dict[str, object],
+        version: str,
     ) -> r[bool]:
         """Validate a single channel."""
         # Validate operations based on version
@@ -348,18 +364,21 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         for channel_name, channel in channels.items():
             # Validate basic structure
             channel_dict_result = self._validate_channel_structure(
-                channel_name, channel
+                channel_name,
+                channel,
             )
             if channel_dict_result.is_failure:
                 return r[bool].fail(
-                    channel_dict_result.error or "Channel dictionary validation failed"
+                    channel_dict_result.error or "Channel dictionary validation failed",
                 )
 
             channel_dict = channel_dict_result.unwrap()
 
             # Validate channel content
             validation_result = self._validate_single_channel(
-                channel_name, channel_dict, version
+                channel_name,
+                channel_dict,
+                version,
             )
             if validation_result.is_failure:
                 return validation_result
@@ -367,7 +386,10 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(True)
 
     def _validate_operation(
-        self, operation: dict[str, object], channel_name: str, op_type: str
+        self,
+        operation: dict[str, object],
+        channel_name: str,
+        op_type: str,
     ) -> r[bool]:
         """Validate AsyncAPI operation (publish/subscribe).
 
@@ -385,7 +407,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             message = operation["message"]
             if not isinstance(message, dict):
                 return r[bool].fail(
-                    f"'message' must be a dictionary in {op_type} operation of channel: {channel_name}"
+                    f"'message' must be a dictionary in {op_type} operation of channel: {channel_name}",
                 )
 
             message_result = self._validate_message(message, channel_name, op_type)
@@ -395,7 +417,10 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(True)
 
     def _validate_message(
-        self, message: dict[str, object], channel_name: str, op_type: str
+        self,
+        message: dict[str, object],
+        channel_name: str,
+        op_type: str,
     ) -> r[bool]:
         """Validate AsyncAPI message.
 
@@ -413,13 +438,15 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             payload = message["payload"]
             if not isinstance(payload, dict):
                 return r[bool].fail(
-                    f"Message payload must be a dictionary: {op_type} in {channel_name}"
+                    f"Message payload must be a dictionary: {op_type} in {channel_name}",
                 )
 
         return r[bool].ok(True)
 
     def _validate_messages_object(
-        self, messages: dict[str, object], channel_name: str
+        self,
+        messages: dict[str, object],
+        channel_name: str,
     ) -> r[bool]:
         """Validate AsyncAPI messages object.
 
@@ -434,7 +461,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         for message_name, message in messages.items():
             if not isinstance(message, dict):
                 return r[bool].fail(
-                    f"Message must be a dictionary: {message_name} in {channel_name}"
+                    f"Message must be a dictionary: {message_name} in {channel_name}",
                 )
 
             message_result = self._validate_message(message, channel_name, message_name)
@@ -468,7 +495,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             protocol_value = server["protocol"]
             if not isinstance(protocol_value, str):
                 return r[bool].fail(
-                    f"Server 'protocol' must be a string: {server_name}"
+                    f"Server 'protocol' must be a string: {server_name}",
                 )
 
             protocol: str = protocol_value
@@ -508,7 +535,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
             if not isinstance(section_value, dict):
                 return r[bool].fail(
-                    f"Component section must be a dictionary: {section_name}"
+                    f"Component section must be a dictionary: {section_name}",
                 )
 
         return r[bool].ok(True)

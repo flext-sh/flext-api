@@ -77,7 +77,7 @@ class TestFlextApiAdaptersHttpProtocol:
         }
 
         result = FlextApiAdapters.HttpProtocol.adapt_websocket_message_to_http_response(
-            websocket_message
+            websocket_message,
         )
 
         assert result.is_success
@@ -92,7 +92,7 @@ class TestFlextApiAdaptersHttpProtocol:
         websocket_message = {"body": {"message": "simple response"}}
 
         result = FlextApiAdapters.HttpProtocol.adapt_websocket_message_to_http_response(
-            websocket_message
+            websocket_message,
         )
 
         assert result.is_success
@@ -151,11 +151,14 @@ class TestFlextApiAdaptersRequestTransformer:
     def test_transform_request_for_websocket_success(self) -> None:
         """Test successful request transformation for WebSocket."""
         request = FlextApiModels.HttpRequest(
-            method="GET", url="https://api.example.com/test", body={"key": "value"}
+            method="GET",
+            url="https://api.example.com/test",
+            body={"key": "value"},
         )
 
         result = FlextApiAdapters.RequestTransformer.transform_request_for_protocol(
-            request, "websocket"
+            request,
+            "websocket",
         )
 
         assert result.is_success
@@ -167,11 +170,13 @@ class TestFlextApiAdaptersRequestTransformer:
     def test_transform_request_for_unknown_protocol(self) -> None:
         """Test request transformation for unknown protocol returns original."""
         request = FlextApiModels.HttpRequest(
-            method="GET", url="https://api.example.com/test"
+            method="GET",
+            url="https://api.example.com/test",
         )
 
         result = FlextApiAdapters.RequestTransformer.transform_request_for_protocol(
-            request, "unknown"
+            request,
+            "unknown",
         )
 
         assert result.is_success
@@ -186,7 +191,8 @@ class TestFlextApiAdaptersRequestTransformer:
         }
 
         result = FlextApiAdapters.RequestTransformer.transform_response_for_protocol(
-            websocket_response, "websocket"
+            websocket_response,
+            "websocket",
         )
 
         assert result.is_success
@@ -198,11 +204,13 @@ class TestFlextApiAdaptersRequestTransformer:
     def test_transform_response_for_unknown_protocol(self) -> None:
         """Test response transformation for unknown protocol returns original."""
         response = FlextApiModels.HttpResponse(
-            status_code=200, body={"result": "success"}
+            status_code=200,
+            body={"result": "success"},
         )
 
         result = FlextApiAdapters.RequestTransformer.transform_response_for_protocol(
-            response, "unknown"
+            response,
+            "unknown",
         )
 
         assert result.is_success

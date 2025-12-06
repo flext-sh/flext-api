@@ -13,14 +13,14 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from typing import Protocol, TypeVar, runtime_checkable
 
-from flext_core import t
+from flext_core import t as _flext_core_t
 
 # TypeVar for generic operations
 T = TypeVar("T")
 U = TypeVar("U")
 
 
-class FlextApiTypes(t):
+class FlextApiTypes(_flext_core_t):
     """Unified API type definitions extending t with composition.
 
     Single namespace containing ALL API types.
@@ -34,7 +34,7 @@ class FlextApiTypes(t):
     # =========================================================================
 
     # Direct alias for compatibility
-    type JsonValue = t.Json.JsonValue
+    type JsonValue = _flext_core_t.Json.JsonValue
 
     type JsonObject = dict[str, JsonValue]
     type WebData = str | bytes | JsonObject
@@ -174,4 +174,7 @@ class FlextApiTypes(t):
         """
 
 
-__all__ = ["FlextApiTypes"]
+# Runtime alias - use type annotation to avoid mypy error
+t: type[FlextApiTypes] = FlextApiTypes
+
+__all__ = ["FlextApiTypes", "t"]

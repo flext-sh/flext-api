@@ -15,7 +15,8 @@ from typing import cast
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels, u
-from pydantic import BaseModel, Field, computed_field, field_validator
+from flext_core.models import FlextModels as FlextModelsBase
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
@@ -32,7 +33,7 @@ class FlextApiBaseModel(BaseModel):
     )
 
 
-class FlextApiModels:
+class FlextApiModels(FlextModelsBase):
     """HTTP domain models for flext-api.
 
     Unified namespace class that aggregates all HTTP-specific domain models.
@@ -62,10 +63,12 @@ class FlextApiModels:
         )
         url: str = Field(..., min_length=1, max_length=2048, description="Request URL")
         headers: dict[str, str] = Field(
-            default_factory=dict, description="HTTP request headers"
+            default_factory=dict,
+            description="HTTP request headers",
         )
         body: FlextApiTypes.RequestBody = Field(
-            default_factory=dict, description="Request body"
+            default_factory=dict,
+            description="Request body",
         )
 
         @field_validator("body", mode="before")
@@ -81,7 +84,8 @@ class FlextApiModels:
             return {}
 
         query_params: FlextApiTypes.WebParams = Field(
-            default_factory=dict, description="Query parameters"
+            default_factory=dict,
+            description="Query parameters",
         )
         timeout: float = Field(
             default=float(FlextApiConstants.DEFAULT_TIMEOUT),
@@ -116,10 +120,14 @@ class FlextApiModels:
         """
 
         status_code: int = Field(
-            ..., ge=100, le=599, description="HTTP status code (100-599)"
+            ...,
+            ge=100,
+            le=599,
+            description="HTTP status code (100-599)",
         )
         headers: dict[str, str] = Field(
-            default_factory=dict, description="HTTP response headers"
+            default_factory=dict,
+            description="HTTP response headers",
         )
         body: FlextApiTypes.ResponseBody = Field(
             default_factory=dict,
@@ -140,7 +148,8 @@ class FlextApiModels:
             return {}
 
         request_id: str = Field(
-            default="", description="Associated request ID for tracking"
+            default="",
+            description="Associated request ID for tracking",
         )
 
         @computed_field
@@ -188,7 +197,10 @@ class FlextApiModels:
         """URL parsing and validation model."""
 
         url: str = Field(
-            ..., min_length=1, max_length=2048, description="Full URL string"
+            ...,
+            min_length=1,
+            max_length=2048,
+            description="Full URL string",
         )
 
         @computed_field
@@ -274,7 +286,8 @@ class FlextApiModels:
             description="Maximum retry attempts",
         )
         headers: dict[str, str] = Field(
-            default_factory=dict, description="Default headers for all requests"
+            default_factory=dict,
+            description="Default headers for all requests",
         )
         verify_ssl: bool = Field(default=True, description="Verify SSL certificates")
 
@@ -333,13 +346,18 @@ class FlextApiModels:
         message: str = Field(..., description="Human-readable error message")
         error_code: str = Field(default="", description="Machine-readable error code")
         status_code: int = Field(
-            default=500, ge=100, le=599, description="HTTP status code"
+            default=500,
+            ge=100,
+            le=599,
+            description="HTTP status code",
         )
         details: FlextApiTypes.JsonObject = Field(
-            default_factory=dict, description="Additional error details"
+            default_factory=dict,
+            description="Additional error details",
         )
         request_id: str = Field(
-            default="", description="Associated request ID for tracking"
+            default="",
+            description="Associated request ID for tracking",
         )
 
         @computed_field
@@ -364,7 +382,8 @@ class FlextApiModels:
         """Query parameters model."""
 
         params: FlextApiTypes.WebParams = Field(
-            default_factory=dict, description="Query parameters"
+            default_factory=dict,
+            description="Query parameters",
         )
 
         def get_param(self, name: str) -> str | list[str]:
@@ -383,7 +402,8 @@ class FlextApiModels:
         """HTTP headers model."""
 
         headers: dict[str, str] = Field(
-            default_factory=dict, description="HTTP headers"
+            default_factory=dict,
+            description="HTTP headers",
         )
 
         def get_header(self, name: str) -> str:
@@ -403,9 +423,11 @@ class FlextApiModels:
             # Use u.filter() for unified filtering (DSL pattern)
             keys_to_remove = cast(
                 "list[str]",
-                u.filter(self.headers.keys(), lambda k: k.lower() == name.lower()),
+                u.Collection.filter(
+                    list(self.headers.keys()), lambda k: k.lower() == name.lower()
+                ),
             )
-            u.process(
+            u.Collection.process(
                 keys_to_remove,
                 processor=lambda key: self.headers.pop(key, None),
                 on_error="skip",
@@ -528,4 +550,6 @@ class FlextApiModels:
             return self.page > 1
 
 
-__all__ = ["FlextApiBaseModel", "FlextApiModels"]
+m = FlextApiModels  # Runtime alias (not TypeAlias to avoid PYI042)
+
+__all__ = ["FlextApiBaseModel", "FlextApiModels", "m"]

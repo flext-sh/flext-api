@@ -223,7 +223,8 @@ def example_batch_operations() -> None:
         keys = ["key1", "key2", "key3"]
         for i, key in enumerate(keys):
             result = storage.set(
-                key, {"id": i + 1, "name": f"item_{i + 1}", "status_code": 200}
+                key,
+                {"id": i + 1, "name": f"item_{i + 1}", "status_code": 200},
             )
             if result.is_success:
                 print(f"✅ Set {key} successfully")

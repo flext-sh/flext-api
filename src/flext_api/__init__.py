@@ -117,6 +117,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import (
+    FlextDecorators,
+    FlextExceptions,
+    FlextHandlers,
+    FlextMixins,
+    FlextResult,
+    FlextService,
+)
+
 from flext_api.__version__ import __version__, __version_info__
 from flext_api.adapters import FlextApiAdapters
 from flext_api.api import FlextApi
@@ -135,6 +144,20 @@ from flext_api.server_factory import FlextApiServerFactory
 from flext_api.storage import FlextApiStorage
 from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
+
+# Domain-specific aliases (extending flext-core base classes)
+u = FlextApiUtilities  # Utilities (FlextApiUtilities extends FlextUtilities)
+m = FlextApiModels  # Models (FlextApiModels extends FlextModels)
+c = FlextApiConstants  # Constants (FlextApiConstants extends FlextConstants)
+t = FlextApiTypes  # Types (FlextApiTypes extends FlextTypes)
+p = FlextApiProtocols  # Protocols (FlextApiProtocols extends FlextProtocols)
+
+r = FlextResult  # Shared from flext-core
+e = FlextExceptions  # Shared from flext-core
+d = FlextDecorators  # Shared from flext-core
+s = FlextService  # Shared from flext-core
+x = FlextMixins  # Shared from flext-core
+h = FlextHandlers  # Shared from flext-core
 
 __all__ = [
     "FlextApi",
@@ -155,4 +178,17 @@ __all__ = [
     "Unit",
     "__version__",
     "__version_info__",
+    # Domain-specific aliases
+    "c",
+    # Global aliases
+    "d",
+    "e",
+    "h",
+    "m",
+    "p",
+    "r",
+    "s",
+    "t",
+    "u",
+    "x",
 ]

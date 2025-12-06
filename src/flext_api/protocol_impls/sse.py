@@ -106,7 +106,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
             return r[dict[str, object]].fail(
-                validation_result.error or "Request validation failed"
+                validation_result.error or "Request validation failed",
             )
 
         # Acknowledge kwargs to avoid linting warnings

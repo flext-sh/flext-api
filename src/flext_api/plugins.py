@@ -25,7 +25,10 @@ class FlextApiPlugins:
         """Base plugin with lifecycle management and metadata."""
 
         def __init__(
-            self, name: str, version: str = "1.0.0", description: str = ""
+            self,
+            name: str,
+            version: str = "1.0.0",
+            description: str = "",
         ) -> None:
             """Initialize plugin with metadata."""
             self.name = name
@@ -38,7 +41,9 @@ class FlextApiPlugins:
             except (AttributeError, TypeError):
                 # Logger is a property, use _plugin_logger instead
                 object.__setattr__(
-                    self, "_plugin_logger", FlextLogger(f"{__name__}.{name}")
+                    self,
+                    "_plugin_logger",
+                    FlextLogger(f"{__name__}.{name}"),
                 )
             self._initialized = False
 
@@ -46,7 +51,9 @@ class FlextApiPlugins:
         def logger(self) -> FlextLogger:
             """Get the plugin logger."""
             return getattr(
-                self, "_plugin_logger", FlextLogger(f"{__name__}.{self.name}")
+                self,
+                "_plugin_logger",
+                FlextLogger(f"{__name__}.{self.name}"),
             )
 
         def initialize(self) -> r[bool]:
@@ -160,7 +167,9 @@ class FlextApiPlugins:
 
         @abstractmethod
         def receive(
-            self, connection: object, **options: object
+            self,
+            connection: object,
+            **options: object,
         ) -> r[dict[str, object] | str | bytes]:
             """Receive data from connection."""
             ...
@@ -187,7 +196,8 @@ class FlextApiPlugins:
 
         @abstractmethod
         def validate_credentials(
-            self, credentials: FlextApiTypes.JsonObject
+            self,
+            credentials: FlextApiTypes.JsonObject,
         ) -> r[bool]:
             """Validate authentication credentials."""
             ...
@@ -201,11 +211,12 @@ class FlextApiPlugins:
             return False
 
         def refresh_credentials(
-            self, _credentials: FlextApiTypes.JsonObject
+            self,
+            _credentials: FlextApiTypes.JsonObject,
         ) -> r[FlextApiTypes.JsonObject]:
             """Refresh authentication credentials."""
             return r[FlextApiTypes.JsonObject].fail(
-                "Refresh not supported by this plugin"
+                "Refresh not supported by this plugin",
             )
 
     class Manager:
@@ -223,7 +234,7 @@ class FlextApiPlugins:
             init_result = plugin.initialize()
             if init_result.is_failure:
                 return r[bool].fail(
-                    f"Failed to initialize plugin '{plugin.name}': {init_result.error}"
+                    f"Failed to initialize plugin '{plugin.name}': {init_result.error}",
                 )
             self._loaded_plugins[plugin.name] = plugin
             self.logger.info(f"Loaded plugin: {plugin.name} v{plugin.version}")
@@ -241,14 +252,14 @@ class FlextApiPlugins:
                     extra={"plugin": plugin_name},
                 )
             del self._loaded_plugins[plugin_name]
-            self.logger.info(f"Unloaded plugin: {plugin_name}")
+            self.logger.info("Unloaded plugin: %s", plugin_name)
             return r[bool].ok(True)
 
         def get_plugin(self, plugin_name: str) -> r[FlextApiPlugins.Plugin]:
             """Get loaded plugin by name."""
             if plugin_name not in self._loaded_plugins:
                 return r[FlextApiPlugins.Plugin].fail(
-                    f"Plugin '{plugin_name}' not loaded"
+                    f"Plugin '{plugin_name}' not loaded",
                 )
             return r[FlextApiPlugins.Plugin].ok(self._loaded_plugins[plugin_name])
 
@@ -257,7 +268,8 @@ class FlextApiPlugins:
             return list(self._loaded_plugins.keys())
 
         def get_plugins_by_type(
-            self, plugin_type: type[FlextApiPlugins.Plugin]
+            self,
+            plugin_type: type[FlextApiPlugins.Plugin],
         ) -> list[FlextApiPlugins.Plugin]:
             """Get all loaded plugins of specific type."""
             return [
@@ -275,7 +287,7 @@ class FlextApiPlugins:
                     failed_plugins.append(plugin_name)
             if failed_plugins:
                 return r[bool].fail(
-                    f"Failed to unload plugins: {', '.join(failed_plugins)}"
+                    f"Failed to unload plugins: {', '.join(failed_plugins)}",
                 )
             return r[bool].ok(True)
 

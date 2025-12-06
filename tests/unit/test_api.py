@@ -111,8 +111,8 @@ class TestFlextApiGenericHttpMethod:
         api._client = MagicMock()
         api._client.request = MagicMock(
             return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=200, body={})
-            )
+                FlextApiModels.HttpResponse(status_code=200, body={}),
+            ),
         )
 
         try:
@@ -128,14 +128,16 @@ class TestFlextApiGenericHttpMethod:
         api._client = MagicMock()
         api._client.request = MagicMock(
             return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=201, body={})
-            )
+                FlextApiModels.HttpResponse(status_code=201, body={}),
+            ),
         )
 
         try:
             body = {"name": "test"}
             result = api._http_method(
-                "POST", "https://example.com/api/users", data=body
+                "POST",
+                "https://example.com/api/users",
+                data=body,
             )
             assert result.is_success
         finally:
@@ -148,13 +150,15 @@ class TestFlextApiGenericHttpMethod:
         api._client = MagicMock()
         api._client.request = MagicMock(
             return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=200, body={})
-            )
+                FlextApiModels.HttpResponse(status_code=200, body={}),
+            ),
         )
 
         try:
             result = api._http_method(
-                "GET", "https://example.com/api/test", timeout=60.0
+                "GET",
+                "https://example.com/api/test",
+                timeout=60.0,
             )
             assert result.is_success
             # Verify the client was called
@@ -171,8 +175,8 @@ class TestFlextApiGenericHttpMethod:
         api._client = MagicMock()
         api._client.request = MagicMock(
             return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=200, body={})
-            )
+                FlextApiModels.HttpResponse(status_code=200, body={}),
+            ),
         )
 
         try:
@@ -190,7 +194,9 @@ class TestFlextApiGenericHttpMethod:
 
         # Invalid timeout should fail fast - no fallback to default
         result = api._http_method(
-            "GET", "https://example.com/api/test", timeout="invalid"
+            "GET",
+            "https://example.com/api/test",
+            timeout="invalid",
         )
         assert result.is_failure
         assert (
@@ -205,8 +211,8 @@ class TestFlextApiGenericHttpMethod:
         api._client = MagicMock()
         api._client.request = MagicMock(
             return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=200, body={})
-            )
+                FlextApiModels.HttpResponse(status_code=200, body={}),
+            ),
         )
 
         try:
@@ -230,8 +236,8 @@ class TestFlextApiGenericHttpMethod:
         api._client = MagicMock()
         api._client.request = MagicMock(
             return_value=FlextResult[FlextApiModels.HttpResponse].ok(
-                FlextApiModels.HttpResponse(status_code=200, body={})
-            )
+                FlextApiModels.HttpResponse(status_code=200, body={}),
+            ),
         )
 
         try:
@@ -253,15 +259,17 @@ class TestFlextApiRequest:
         api._client = MagicMock()
 
         mock_response = FlextApiModels.HttpResponse(
-            status_code=200, body={"status": "ok"}
+            status_code=200,
+            body={"status": "ok"},
         )
         api._client.request = MagicMock(
-            return_value=FlextResult[FlextApiModels.HttpResponse].ok(mock_response)
+            return_value=FlextResult[FlextApiModels.HttpResponse].ok(mock_response),
         )
 
         try:
             request = FlextApiModels.HttpRequest(
-                method="GET", url="https://example.com/api/test"
+                method="GET",
+                url="https://example.com/api/test",
             )
             result = api.request(request)
 
@@ -282,7 +290,8 @@ class TestFlextApiRequest:
 
         try:
             request = FlextApiModels.HttpRequest(
-                method="GET", url="https://example.com/api/test"
+                method="GET",
+                url="https://example.com/api/test",
             )
             result = api.request(request)
 

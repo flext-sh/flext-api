@@ -100,7 +100,7 @@ class TestFlextApiModelsFlextPure:
     def test_query_params_model(self) -> None:
         """Test QueryParams model."""
         query = FlextApiModels.QueryParams(
-            params={"search": "test", "limit": ["10", "20"]}
+            params={"search": "test", "limit": ["10", "20"]},
         )
 
         assert query.get_param("search") == "test"
@@ -109,7 +109,7 @@ class TestFlextApiModelsFlextPure:
     def test_headers_model(self) -> None:
         """Test Headers model."""
         headers = FlextApiModels.Headers(
-            headers={"Content-Type": "application/json", "Authorization": "Bearer"}
+            headers={"Content-Type": "application/json", "Authorization": "Bearer"},
         )
 
         assert headers.get_header("content-type") == "application/json"
@@ -214,7 +214,7 @@ class TestFlextApiModelsFlextPure:
     def test_headers_case_insensitive(self) -> None:
         """Test Headers model case-insensitive access."""
         headers = FlextApiModels.Headers(
-            headers={"Content-Type": "application/json", "X-Custom": "value"}
+            headers={"Content-Type": "application/json", "X-Custom": "value"},
         )
 
         assert headers.get_header("CONTENT-TYPE") == "application/json"
@@ -242,7 +242,7 @@ class TestFlextApiModelsFlextPure:
                         {"id": 2, "name": "Bob"},
                     ],
                     "meta": {"total": 2, "page": 1},
-                }
+                },
             },
         )
 
@@ -361,7 +361,7 @@ class TestFlextApiModelsFlextPure:
     def test_query_params_multiple_values(self) -> None:
         """Test QueryParams with multiple values per key."""
         query = FlextApiModels.QueryParams(
-            params={"tags": ["python", "testing", "api"]}
+            params={"tags": ["python", "testing", "api"]},
         )
 
         assert query.get_param("tags") == ["python", "testing", "api"]
@@ -373,7 +373,7 @@ class TestFlextApiModelsFlextPure:
                 "name": "test",
                 "ids": ["1", "2", "3"],
                 "active": "true",
-            }
+            },
         )
 
         assert query.get_param("name") == "test"
@@ -394,7 +394,7 @@ class TestFlextApiModelsFlextPure:
                 "Content-Length": "1234",
                 "Cache-Control": "no-cache",
                 "X-Request-ID": "req-123",
-            }
+            },
         )
 
         assert headers.get_header("content-type") == "application/json"
@@ -486,7 +486,7 @@ class TestFlextApiModelsFlextPure:
                 "search": "hello world",
                 "filter": "name=john&age=30",
                 "url": "https://example.com",
-            }
+            },
         )
 
         assert "hello world" in query.get_param("search")

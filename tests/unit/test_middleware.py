@@ -69,7 +69,8 @@ class TestFlextApiMiddleware:
             return req
 
         result = FlextApiMiddleware.apply_pipeline(
-            request, [failing_middleware, succeeding_middleware]
+            request,
+            [failing_middleware, succeeding_middleware],
         )
 
         assert result is request
