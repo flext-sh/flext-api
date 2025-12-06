@@ -20,9 +20,10 @@ from __future__ import annotations
 from typing import Protocol
 
 import cbor2
-import msgpack
+import msgpack  # type: ignore[import-untyped]
 import orjson
 from flext_core import FlextService, r
+from flext_core.loggings import FlextLogger
 
 from flext_api.constants import FlextApiConstants
 
@@ -295,7 +296,8 @@ class FlextApiSerializers(FlextService[bool]):
 
             if format_key in self._serializers:
                 self.logger.warning(
-                    f"Serializer already registered for format: {format_key}"
+                    "Serializer already registered for format: %s",
+                    format_key,
                 )
 
             self._serializers[format_key] = serializer
@@ -334,15 +336,16 @@ class FlextApiSerializers(FlextService[bool]):
 
             if format_key not in self._serializers:
                 return r[FlextApiSerializers.SerializerProtocol].fail(
-                    f"No serializer registered for format: {format_key}"
+                    f"No serializer registered for format: {format_key}",
                 )
 
             return r[FlextApiSerializers.SerializerProtocol].ok(
-                self._serializers[format_key]
+                self._serializers[format_key],
             )
 
         def get_serializer_by_content_type(
-            self, content_type: str
+            self,
+            content_type: str,
         ) -> r[FlextApiSerializers.SerializerProtocol]:
             """Get serializer by content type.
 
@@ -361,7 +364,7 @@ class FlextApiSerializers(FlextService[bool]):
                     return r[FlextApiSerializers.SerializerProtocol].ok(serializer)
 
             return r[FlextApiSerializers.SerializerProtocol].fail(
-                f"No serializer found for content type: {content_type}"
+                f"No serializer found for content type: {content_type}",
             )
 
         def serialize(
@@ -393,7 +396,7 @@ class FlextApiSerializers(FlextService[bool]):
             serializer_result = self.get_serializer(format_key)
             if serializer_result.is_failure:
                 return r[bytes].fail(
-                    serializer_result.error or "Serializer retrieval failed"
+                    serializer_result.error or "Serializer retrieval failed",
                 )
 
             serializer = serializer_result.unwrap()
@@ -433,7 +436,7 @@ class FlextApiSerializers(FlextService[bool]):
             serializer_result = self.get_serializer(format_key)
             if serializer_result.is_failure:
                 return r[object].fail(
-                    serializer_result.error or "Serializer retrieval failed"
+                    serializer_result.error or "Serializer retrieval failed",
                 )
 
             serializer = serializer_result.unwrap()
@@ -459,7 +462,7 @@ class FlextApiSerializers(FlextService[bool]):
             """
             self._default_format = format_type
             self.logger.info(
-                f"Default serialization format set to: {format_type.value}"
+                f"Default serialization format set to: {format_type.value}",
             )
             return r[bool].ok(True)
 

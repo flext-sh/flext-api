@@ -10,9 +10,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, Self
+from typing import ClassVar, Self, cast
 
-from flext_core import FlextService, r
+from flext_core import FlextRuntime, FlextService, r, t
 
 from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig
@@ -61,25 +61,39 @@ class FlextApi(FlextService[FlextApiConfig]):
         **kwargs: Additional Pydantic model fields (ignored for this service).
 
         """
-        super().__init__(**kwargs)
+        # Type narrowing: convert kwargs to expected type
+        kwargs_typed: dict[str, t.GeneralValueType] = {
+            k: cast("t.GeneralValueType", FlextRuntime.normalize_to_general_value(v))
+            for k, v in kwargs.items()
+        }
+        super().__init__(**kwargs_typed)
         api_config = getattr(self, "_flext_api_config", None)
         if api_config is not None:
-            self._config = api_config
+            # Override _config from base class with FlextApiConfig
+            object.__setattr__(self, "_config", api_config)
             delattr(self, "_flext_api_config")
         elif config is not None:
-            self._config = config
+            # Override _config from base class with FlextApiConfig
+            object.__setattr__(self, "_config", config)
         else:
-            self._config = FlextApiConfig()
-        self._client = FlextApiClient(config=self._config)
+            # Override _config from base class with FlextApiConfig
+            object.__setattr__(self, "_config", FlextApiConfig())
+        # Type narrowing: _config is now FlextApiConfig
+        config_typed: FlextApiConfig = cast("FlextApiConfig", self._config)
+        self._client = FlextApiClient(config=config_typed)
 
     def execute(
-        self, **_kwargs: FlextApiTypes.JsonValue | str | int | bool
+        self,
+        **_kwargs: FlextApiTypes.JsonValue | str | int | bool,
     ) -> r[FlextApiConfig]:
         """Execute FlextService interface."""
-        return r[FlextApiConfig].ok(self._config)
+        # Type narrowing: _config is FlextApiConfig
+        config_typed: FlextApiConfig = cast("FlextApiConfig", self._config)
+        return r[FlextApiConfig].ok(config_typed)
 
     def request(
-        self, request: FlextApiModels.HttpRequest
+        self,
+        request: FlextApiModels.HttpRequest,
     ) -> r[FlextApiModels.HttpResponse]:
         """Execute HTTP request - pure delegation to client.
 
@@ -115,31 +129,38 @@ class FlextApi(FlextService[FlextApiConfig]):
         r[HttpResponse]: Response or error.
 
         """
+        # Type narrowing: convert RequestKwargs to dict[str, object] | None
+        request_kwargs_dict: dict[str, object] | None = (
+            dict(request_kwargs.items()) if request_kwargs is not None else None
+        )
         # Extract body using monadic pattern
         body_result = FlextApiUtilities.RequestUtils.extract_body_from_kwargs(
-            data, request_kwargs
+            data,
+            request_kwargs_dict,
         )
         if body_result.is_failure:
             return r[FlextApiModels.HttpResponse].fail(
-                body_result.error or "Body extraction failed"
+                body_result.error or "Body extraction failed",
             )
 
         # Merge headers using monadic pattern
         headers_result = FlextApiUtilities.RequestUtils.merge_headers(
-            headers, request_kwargs
+            headers,
+            request_kwargs_dict,
         )
         if headers_result.is_failure:
             return r[FlextApiModels.HttpResponse].fail(
-                headers_result.error or "Header extraction failed"
+                headers_result.error or "Header extraction failed",
             )
 
         # Validate timeout using monadic pattern
         timeout_result = FlextApiUtilities.RequestUtils.validate_and_extract_timeout(
-            timeout, request_kwargs
+            timeout,
+            request_kwargs_dict,
         )
         if timeout_result.is_failure:
             return r[FlextApiModels.HttpResponse].fail(
-                timeout_result.error or "Timeout extraction failed"
+                timeout_result.error or "Timeout extraction failed",
             )
 
         # Extract query params - use empty dict if not present
@@ -155,12 +176,18 @@ class FlextApi(FlextService[FlextApiConfig]):
                     }
                 else:
                     return r[FlextApiModels.HttpResponse].fail(
-                        f"Invalid params type: {type(params_value)}"
+                        f"Invalid params type: {type(params_value)}",
                     )
 
         # Use body value directly (HttpRequest accepts empty dict or actual body)
         body_value = body_result.unwrap()
-        body_final: FlextApiTypes.RequestBody = body_value
+        # Type narrowing: ensure RequestBody compatibility
+        if isinstance(body_value, (str, bytes)):
+            body_final: FlextApiTypes.RequestBody = body_value
+        elif isinstance(body_value, dict):
+            body_final = body_value  # type: ignore[assignment]
+        else:
+            body_final = str(body_value)
 
         # Create request model
         http_request = FlextApiModels.HttpRequest(

@@ -22,7 +22,7 @@ from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from flext_core import FlextConstants, FlextContainer
-from flext_tests import FlextTestDocker, FlextTestsDomains
+from flext_tests import FlextTestsDocker, FlextTestsDomains
 
 from flext_api import (
     FlextApiClient,
@@ -119,22 +119,23 @@ def flext_api_client() -> FlextApiClient:
         config_data.get(
             "base_url",
             f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}",
-        )
+        ),
     )
     timeout_value = config_data.get("timeout", FlextConstants.Network.DEFAULT_TIMEOUT)
     timeout = float(
         timeout_value
         if isinstance(timeout_value, (int, float, str))
-        else FlextConstants.Network.DEFAULT_TIMEOUT
+        else FlextConstants.Network.DEFAULT_TIMEOUT,
     )
 
     max_retries_value = config_data.get(
-        "max_retries", FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+        "max_retries",
+        FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
     )
     max_retries = int(
         max_retries_value
         if isinstance(max_retries_value, (int, float, str))
-        else FlextConstants.Reliability.MAX_RETRY_ATTEMPTS
+        else FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
     )
 
     config = FlextApiConfig(
@@ -340,28 +341,28 @@ def temp_dir() -> Generator[Path]:
 
 
 # ============================================================================
-# DOCKER TEST FIXTURES - FlextTestDocker integration
+# DOCKER TEST FIXTURES - FlextTestsDocker integration
 # ============================================================================
 
 
 @pytest.fixture(scope="session")
-def docker_manager() -> Generator[FlextTestDocker]:
-    """Provide FlextTestDocker instance for containerized testing.
+def docker_manager() -> Generator[FlextTestsDocker]:
+    """Provide FlextTestsDocker instance for containerized testing.
 
-    This fixture provides access to FlextTestDocker for managing test containers.
+    This fixture provides access to FlextTestsDocker for managing test containers.
     Containers are automatically cleaned up after test session.
 
     Yields:
-        FlextTestDocker: Configured docker manager instance
+        FlextTestsDocker: Configured docker manager instance
 
     Note:
         Uses session scope to avoid recreating containers for each test.
         Containers remain running between tests but are cleaned up at session end.
 
     """
-    manager = FlextTestDocker()
+    manager = FlextTestsDocker()
 
-    # Register pytest fixtures that wrap FlextTestDocker operations
+    # Register pytest fixtures that wrap FlextTestsDocker operations
     # This provides backward compatibility and easier testing
     try:
         yield manager
@@ -380,14 +381,14 @@ def docker_manager() -> Generator[FlextTestDocker]:
 
 
 @pytest.fixture
-def httpbin_container(docker_manager: FlextTestDocker) -> Generator[str]:
+def httpbin_container(docker_manager: FlextTestsDocker) -> Generator[str]:
     """Provide httpbin test container for HTTP testing.
 
     Starts httpbin container if not already running, yields container name.
     Container remains running for the test but is not stopped afterward.
 
     Args:
-        docker_manager: FlextTestDocker instance
+        docker_manager: FlextTestsDocker instance
 
     Yields:
         str: Container name for use in tests

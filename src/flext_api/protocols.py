@@ -9,13 +9,13 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import p, r
+from flext_core import p as _flext_core_p, r
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
 
 
-class FlextApiProtocols(p):
+class FlextApiProtocols(_flext_core_p):
     """Single unified HTTP protocols class extending flext-core p.
 
     Contains all protocol definitions for HTTP operations using nested classes.
@@ -121,6 +121,10 @@ class FlextApiProtocols(p):
         def warning(self, message: str, **kwargs: object) -> None:
             """Log warning message."""
 
+
+# Runtime alias - use type annotation to avoid mypy error
+# Note: p is already imported from flext_core, so we use a different name
+flext_api_p: type[FlextApiProtocols] = FlextApiProtocols
 
 __all__ = [
     "FlextApiProtocols",

@@ -46,7 +46,7 @@ class TestHttpConfigReal:
     def test_server_config_creation(self) -> None:
         """Test FlextApiConfig creation with custom server values."""
         config = FlextApiConfig(
-            base_url=f"http://127.0.0.1:{FlextConstants.Platform.DEFAULT_HTTP_PORT}"
+            base_url=f"http://127.0.0.1:{FlextConstants.Platform.DEFAULT_HTTP_PORT}",
         )
 
         assert (

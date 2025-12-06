@@ -20,6 +20,8 @@ from typing import Final, Literal, TypeGuard, TypeIs
 
 from flext_core import FlextConstants, r, u
 
+from flext_api.utilities import FlextApiUtilities
+
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: PADRÃO DEFINITIVO PARA FLEXT-API
 # ═══════════════════════════════════════════════════════════════════════════
@@ -330,15 +332,8 @@ class FlextApiConstants(FlextConstants):
     # ═══════════════════════════════════════════════════════════════════
     # PAGINATION: Configurações padrão
     # ═══════════════════════════════════════════════════════════════════
-
-    DEFAULT_PAGE_SIZE: Final[int] = FlextConstants.Processing.DEFAULT_BATCH_SIZE // 5
-    """Default page size for API responses."""
-
-    MIN_PAGE_SIZE: Final[int] = FlextConstants.Pagination.MIN_PAGE_SIZE
-    """Minimum page size."""
-
-    MAX_PAGE_SIZE: Final[int] = FlextConstants.Pagination.MAX_PAGE_SIZE
-    """Maximum page size."""
+    # Note: DEFAULT_PAGE_SIZE, MIN_PAGE_SIZE, MAX_PAGE_SIZE are Final in base class
+    # Use FlextConstants.Pagination.* for access instead of overriding
 
     # ═══════════════════════════════════════════════════════════════════
     # VALIDATION LIMITS: Mappings imutáveis para validação
@@ -396,15 +391,11 @@ class FlextApiConstants(FlextConstants):
     @classmethod
     def create_method_validator(cls) -> Callable[[str], Method]:
         """Create BeforeValidator for HTTP Method in Pydantic models."""
-        from flext_api.utilities import FlextApiUtilities  # Avoid circular import
-
         return FlextApiUtilities.Enum.coerce_validator(cls.Method)
 
     @classmethod
     def create_status_validator(cls) -> Callable[[str], Status]:
         """Create BeforeValidator for Status in Pydantic models."""
-        from flext_api.utilities import FlextApiUtilities  # Avoid circular import
-
         return FlextApiUtilities.Enum.coerce_validator(cls.Status)
 
     # ═══════════════════════════════════════════════════════════════════
@@ -412,12 +403,26 @@ class FlextApiConstants(FlextConstants):
     # ═══════════════════════════════════════════════════════════════════
 
     type MethodLiteral = Literal[
-        "GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT", "TRACE"
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+        "CONNECT",
+        "TRACE",
     ]
     """HTTP method literal - matches Method StrEnum values exactly."""
 
     type StatusLiteral = Literal[
-        "idle", "pending", "running", "completed", "failed", "error", "success"
+        "idle",
+        "pending",
+        "running",
+        "completed",
+        "failed",
+        "error",
+        "success",
     ]
     """Status literal - matches Status StrEnum values exactly."""
 
@@ -557,6 +562,14 @@ class FlextApiConstants(FlextConstants):
         DEFAULT_PAGE: Final[int] = 1
         DEFAULT_PAGE_SIZE_STRING: Final[str] = "20"
         DEFAULT_MAX_PAGE_SIZE_FALLBACK: Final[int] = 1000
+
+
+c = FlextApiConstants  # Runtime alias (not TypeAlias to avoid PYI042)
+
+__all__ = [
+    "FlextApiConstants",
+    "c",
+]
 
 
 __all__ = ["FlextApiConstants"]

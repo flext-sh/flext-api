@@ -38,7 +38,7 @@ class FlextApiMiddleware:
                 request = middleware(request)
             except Exception as e:
                 # Log exception and continue with other middleware
-                _logger.warning(f"Middleware failed: {e}")
+                _logger.warning("Middleware failed: %s", e)
                 continue
         return request
 

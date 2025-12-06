@@ -30,7 +30,7 @@ class GraphQLProtocolPlugin(RFCProtocolImplementation):
         init_result = self.initialize()
         if init_result.is_failure:
             self.logger.error(
-                f"Failed to initialize GraphQL protocol: {init_result.error}"
+                f"Failed to initialize GraphQL protocol: {init_result.error}",
             )
 
     def send_request(
@@ -52,13 +52,13 @@ class GraphQLProtocolPlugin(RFCProtocolImplementation):
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
             return r[dict[str, object]].fail(
-                validation_result.error or "Request validation failed"
+                validation_result.error or "Request validation failed",
             )
 
         # Acknowledge kwargs to avoid linting warnings
         _ = kwargs
         return r[dict[str, object]].fail(
-            "GraphQL protocol not yet implemented (Phase 2+)"
+            "GraphQL protocol not yet implemented (Phase 2+)",
         )
 
     def supports_protocol(self, protocol: str) -> bool:

@@ -23,14 +23,17 @@ from collections.abc import Callable
 from fastapi import FastAPI
 from flext_core import (
     FlextLogger,
+    FlextRuntime,
     FlextService,
+    e,
+    r,
     t,
+    u,
     x,
 )
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
-from flext_api.utilities import FlextApiUtilities
 
 
 class FlextApiServer(FlextService[object], x.Validation):
@@ -96,9 +99,17 @@ class FlextApiServer(FlextService[object], x.Validation):
                     options_json[k] = v
                 elif isinstance(v, (list, dict)):
                     # Recursively convert nested structures
-                    options_json[k] = (
-                        FlextApiUtilities.JsonUtils.normalize_to_json_value(v)
-                    )
+                    # Use FlextRuntime to normalize to GeneralValueType (compatible with JsonValue)
+                    normalized_value = FlextRuntime.normalize_to_general_value(v)
+                    # Type narrowing: ensure JsonValue compatibility
+                    if isinstance(
+                        normalized_value, (str, int, float, bool, type(None))
+                    ):
+                        options_json[k] = normalized_value
+                    elif isinstance(normalized_value, (list, dict)):
+                        options_json[k] = normalized_value  # type: ignore[assignment]
+                    else:
+                        options_json[k] = str(normalized_value)
                 else:
                     options_json[k] = str(v)
 
@@ -109,10 +120,16 @@ class FlextApiServer(FlextService[object], x.Validation):
                 "options": options_json,
             }
             if schema is not None:
-                schema_json = FlextApiUtilities.JsonUtils.normalize_to_json_value(
-                    schema
-                )
-                route_data["schema"] = schema_json
+                # Use FlextRuntime to normalize to GeneralValueType (compatible with JsonValue)
+                normalized_value = FlextRuntime.normalize_to_general_value(v)
+                schema_normalized = FlextRuntime.normalize_to_general_value(schema)
+                # Type narrowing: ensure JsonValue compatibility
+                if isinstance(
+                    schema_normalized, (str, int, float, bool, type(None), list, dict)
+                ):
+                    route_data["schema"] = schema_normalized  # type: ignore[assignment]
+                else:
+                    route_data["schema"] = str(schema_normalized)
 
             self._routes[route_key] = route_data
 
@@ -154,14 +171,14 @@ class FlextApiServer(FlextService[object], x.Validation):
                     if hasattr(connection, "close"):
                         connection.close()
                 except Exception as e:
-                    self._logger.warning(f"Failed to close WebSocket {conn_id}: {e}")
+                    self._logger.warning("Failed to close WebSocket %s: %s", conn_id, str(e))
 
             for conn_id, connection in self._sse_connections.items():
                 try:
                     if hasattr(connection, "close"):
                         connection.close()
                 except Exception as e:
-                    self._logger.warning(f"Failed to close SSE {conn_id}: {e}")
+                    self._logger.warning("Failed to close SSE %s: %s", conn_id, str(e))
 
             self._websocket_connections.clear()
             self._sse_connections.clear()
@@ -242,7 +259,8 @@ class FlextApiServer(FlextService[object], x.Validation):
                 return r[bool].fail(f"Failed to apply middleware: {e}")
 
         def register_routes(
-            self, routes: dict[str, FlextApiTypes.RouteData]
+            self,
+            routes: dict[str, FlextApiTypes.RouteData],
         ) -> r[bool]:
             """Register routes with FastAPI application."""
             if not self._app:
@@ -252,9 +270,19 @@ class FlextApiServer(FlextService[object], x.Validation):
             app = self._app
             try:
                 for route_config in routes.values():
-                    method: str = route_config["method"]
-                    path: str = route_config["path"]
-                    handler: Callable = route_config["handler"]
+                    # Type narrowing: RouteData has specific types
+                    method_raw = route_config.get("method")
+                    path_raw = route_config.get("path")
+                    handler_raw = route_config.get("handler")
+                    if (
+                        not isinstance(method_raw, str)
+                        or not isinstance(path_raw, str)
+                        or not callable(handler_raw)
+                    ):
+                        continue
+                    method: str = method_raw
+                    path: str = path_raw
+                    handler: Callable = handler_raw
 
                     if method == "WS":
                         app.websocket(path)(handler)
@@ -359,7 +387,10 @@ class FlextApiServer(FlextService[object], x.Validation):
 
         # Validate configuration using Flext validation patterns
         config_validation = self._validate_server_config(
-            server_host, server_port, title, version
+            server_host,
+            server_port,
+            title,
+            version,
         )
         if config_validation.is_failure:
             error_msg = f"Invalid server configuration: {config_validation.error}"
@@ -369,7 +400,11 @@ class FlextApiServer(FlextService[object], x.Validation):
         self._route_registry = self.RouteRegistry(logger)
         self._connection_manager = self.ConnectionManager(logger)
         self._lifecycle_manager = self.LifecycleManager(
-            server_host, server_port, title, version, logger
+            server_host,
+            server_port,
+            title,
+            version,
+            logger,
         )
 
         # Protocol and middleware with FlextConstants defaults
@@ -377,26 +412,34 @@ class FlextApiServer(FlextService[object], x.Validation):
         self._middleware_pipeline: list[Callable[..., object]] = []
 
     def _validate_server_config(
-        self, host: str, port: int, title: str, version: str
+        self,
+        host: str,
+        port: int,
+        title: str,
+        version: str,
     ) -> r[bool]:
         """Validate server configuration using utilities directly."""
-        host_result = FlextApiUtilities.ValidationUtils.validate_host(host)
+        host_result = u.Validation.validate_hostname(host)
         if host_result.is_failure:
             return r[bool].fail(host_result.error or "Host validation failed")
 
-        port_result = FlextApiUtilities.ValidationUtils.validate_port(port)
+        port_result = u.Validation.validate_port_number(port)
         if port_result.is_failure:
             return r[bool].fail(port_result.error or "Port validation failed")
 
-        title_result = FlextApiUtilities.ValidationUtils.validate_string_field(
-            title, "Title"
-        )
+        # Validate string field - check non-empty
+        if not isinstance(title, str) or not title.strip():
+            title_result = r[str].fail("Title cannot be empty")
+        else:
+            title_result = r[str].ok(title)
         if title_result.is_failure:
             return r[bool].fail(title_result.error or "Title validation failed")
 
-        version_result = FlextApiUtilities.ValidationUtils.validate_string_field(
-            version, "Version"
-        )
+        # Validate string field - check non-empty
+        if not isinstance(version, str) or not version.strip():
+            version_result = r[str].fail("Version cannot be empty")
+        else:
+            version_result = r[str].ok(version)
         if version_result.is_failure:
             return r[bool].fail(version_result.error or "Version validation failed")
 
@@ -413,12 +456,14 @@ class FlextApiServer(FlextService[object], x.Validation):
     ) -> r[bool]:
         """Register protocol handler with Flext validation."""
         # Validate protocol name using utilities directly
-        protocol_validation = FlextApiUtilities.ValidationUtils.validate_string_field(
-            protocol, "protocol"
-        )
+        # Validate string field - check non-empty
+        if not isinstance(protocol, str) or not protocol.strip():
+            protocol_validation = r[str].fail("Protocol cannot be empty")
+        else:
+            protocol_validation = r[str].ok(protocol)
         if protocol_validation.is_failure:
             return r[bool].fail(
-                protocol_validation.error or "Protocol validation failed"
+                protocol_validation.error or "Protocol validation failed",
             )
 
         if protocol in self._protocol_handlers:
@@ -466,8 +511,21 @@ class FlextApiServer(FlextService[object], x.Validation):
         **options: object,
     ) -> r[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
+        # Type narrowing: convert options to expected type
+        options_typed: dict[str, FlextApiTypes.JsonValue | str | int | bool] = {}
+        for k, v in options.items():
+            normalized = FlextRuntime.normalize_to_general_value(v)
+            if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
+                options_typed[k] = normalized  # type: ignore[assignment]
+            else:
+                options_typed[k] = str(normalized)
         return self._route_registry.register(
-            method, path, handler, prefix="", schema=None, **options
+            method,
+            path,
+            handler,
+            prefix="",
+            schema=None,
+            **options_typed,
         )
 
     def register_websocket_endpoint(
@@ -477,8 +535,21 @@ class FlextApiServer(FlextService[object], x.Validation):
         **options: object,
     ) -> r[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
+        # Type narrowing: convert options to expected type
+        options_typed: dict[str, FlextApiTypes.JsonValue | str | int | bool] = {}
+        for k, v in options.items():
+            normalized = FlextRuntime.normalize_to_general_value(v)
+            if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
+                options_typed[k] = normalized  # type: ignore[assignment]
+            else:
+                options_typed[k] = str(normalized)
         return self._route_registry.register(
-            "WS", path, handler, prefix="WS", schema=None, **options
+            "WS",
+            path,
+            handler,
+            prefix="WS",
+            schema=None,
+            **options_typed,
         )
 
     def register_sse_endpoint(
@@ -488,8 +559,21 @@ class FlextApiServer(FlextService[object], x.Validation):
         **options: object,
     ) -> r[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
+        # Type narrowing: convert options to expected type
+        options_typed: dict[str, FlextApiTypes.JsonValue | str | int | bool] = {}
+        for k, v in options.items():
+            normalized = FlextRuntime.normalize_to_general_value(v)
+            if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
+                options_typed[k] = normalized  # type: ignore[assignment]
+            else:
+                options_typed[k] = str(normalized)
         return self._route_registry.register(
-            "SSE", path, handler, prefix="SSE", schema=None, **options
+            "SSE",
+            path,
+            handler,
+            prefix="SSE",
+            schema=None,
+            **options_typed,
         )
 
     def register_graphql_endpoint(
@@ -499,8 +583,21 @@ class FlextApiServer(FlextService[object], x.Validation):
         **options: object,
     ) -> r[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
+        # Type narrowing: convert options to expected type
+        options_typed: dict[str, FlextApiTypes.JsonValue | str | int | bool] = {}
+        for k, v in options.items():
+            normalized = FlextRuntime.normalize_to_general_value(v)
+            if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
+                options_typed[k] = normalized  # type: ignore[assignment]
+            else:
+                options_typed[k] = str(normalized)
         return self._route_registry.register(
-            "GRAPHQL", path, lambda: None, prefix="GRAPHQL", schema=schema, **options
+            "GRAPHQL",
+            path,
+            lambda: None,
+            prefix="GRAPHQL",
+            schema=schema,
+            **options_typed,
         )
 
     def start(self) -> r[bool]:

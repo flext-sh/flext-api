@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from typing import Self
+from typing import Self, cast
 
 import httpx
 from flext_core import FlextService, r
@@ -34,6 +34,8 @@ class FlextApiClient(FlextService[FlextApiConfig]):
 
     Uses httpx for HTTP operations, delegates to models for data validation.
     """
+
+    _api_config: FlextApiConfig  # Override base class _config type (set in __init__)
 
     def __new__(cls, config: FlextApiConfig | None = None) -> Self:
         """Intercept positional config argument and convert to kwargs.
@@ -62,34 +64,46 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         **kwargs: Additional Pydantic model fields (ignored for this service).
 
         """
-        super().__init__(**kwargs)
+        # Type narrowing: convert kwargs to expected type
+        from flext_core import FlextRuntime, t  # noqa: PLC0415
+
+        kwargs_typed: dict[str, t.GeneralValueType] = {
+            k: cast("t.GeneralValueType", FlextRuntime.normalize_to_general_value(v))
+            for k, v in kwargs.items()
+        }
+        super().__init__(**kwargs_typed)
         api_config = getattr(self, "_flext_api_config", None)
         if api_config is not None:
-            self._config = api_config
+            # Set _api_config (separate from base class _config)
+            object.__setattr__(self, "_api_config", api_config)
             delattr(self, "_flext_api_config")
         elif config is not None:
-            self._config = config
+            # Set _api_config (separate from base class _config)
+            object.__setattr__(self, "_api_config", config)
         else:
-            self._config = FlextApiConfig()
+            # Set _api_config (separate from base class _config)
+            object.__setattr__(self, "_api_config", FlextApiConfig())
 
     def execute(
-        self, **_kwargs: FlextApiTypes.JsonValue | str | int | bool
+        self,
+        **_kwargs: FlextApiTypes.JsonValue | str | int | bool,
     ) -> r[FlextApiConfig]:
         """Execute FlextService interface - return configuration."""
-        return r[FlextApiConfig].ok(self._config)
+        return r[FlextApiConfig].ok(self._api_config)
 
     @property
     def base_url(self) -> str:
         """Access base_url from configuration."""
-        return self._config.base_url
+        return self._api_config.base_url
 
     @property
     def timeout(self) -> float:
         """Access timeout from configuration."""
-        return self._config.timeout
+        return self._api_config.timeout
 
     def request(
-        self, request: FlextApiModels.HttpRequest
+        self,
+        request: FlextApiModels.HttpRequest,
     ) -> r[FlextApiModels.HttpResponse]:
         """Execute HTTP request from model using monadic patterns.
 
@@ -104,13 +118,13 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         url_result = self._build_url(request.url)
         if url_result.is_failure:
             return r[FlextApiModels.HttpResponse].fail(
-                url_result.error or "URL validation failed"
+                url_result.error or "URL validation failed",
             )
 
         body_result = self._serialize_body(request.body)
         if body_result.is_failure:
             return r[FlextApiModels.HttpResponse].fail(
-                body_result.error or "Body serialization failed"
+                body_result.error or "Body serialization failed",
             )
 
         # Execute request with validated URL and body
@@ -129,7 +143,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         """Execute HTTP request using httpx client."""
         try:
             headers: dict[str, str] = {
-                **self._config.default_headers,
+                **self._api_config.default_headers,
                 **request.headers,
             }
 
@@ -159,7 +173,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
 
             if response.status_code >= HTTP_STATUS_ERROR_MIN:
                 return r[FlextApiModels.HttpResponse].fail(
-                    f"HTTP {response.status_code}: {response.reason_phrase}"
+                    f"HTTP {response.status_code}: {response.reason_phrase}",
                 )
 
             return self._deserialize_body(response).map(
@@ -167,7 +181,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
                     status_code=response.status_code,
                     headers=dict(response.headers),
                     body=body,
-                )
+                ),
             )
         except Exception as exc:
             return r[FlextApiModels.HttpResponse].fail(str(exc))
@@ -181,7 +195,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         if not path_stripped:
             return r[str].fail("URL path cannot be empty")
 
-        base_url_stripped = self._config.base_url.strip()
+        base_url_stripped = self._api_config.base_url.strip()
         if not base_url_stripped:
             return r[str].ok(path_stripped)
 
@@ -252,7 +266,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
             return bytes_result.map(lambda v: v)
 
         return r[FlextApiTypes.ResponseBody].fail(
-            "Failed to deserialize response body: no valid format found"
+            "Failed to deserialize response body: no valid format found",
         )
 
     @staticmethod
@@ -273,7 +287,7 @@ class FlextApiClient(FlextService[FlextApiConfig]):
             return r[FlextApiTypes.ResponseBody].ok({"value": json_data})
         except (AttributeError, ValueError, TypeError, Exception) as e:
             return r[FlextApiTypes.ResponseBody].fail(
-                f"JSON deserialization failed: {e}"
+                f"JSON deserialization failed: {e}",
             )
 
     @staticmethod
@@ -283,12 +297,12 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         """Deserialize response as text."""
         if not hasattr(response, "text"):
             return r[FlextApiTypes.ResponseBody].fail(
-                "Response does not have text attribute"
+                "Response does not have text attribute",
             )
         response_text = response.text
         if not isinstance(response_text, str):
             return r[FlextApiTypes.ResponseBody].fail(
-                f"Response text is not a string: {type(response_text)}"
+                f"Response text is not a string: {type(response_text)}",
             )
         return r[FlextApiTypes.ResponseBody].ok(response_text)
 
@@ -299,12 +313,12 @@ class FlextApiClient(FlextService[FlextApiConfig]):
         """Deserialize response as bytes."""
         if not hasattr(response, "content"):
             return r[FlextApiTypes.ResponseBody].fail(
-                "Response does not have content attribute"
+                "Response does not have content attribute",
             )
         response_content = response.content
         if not isinstance(response_content, bytes):
             return r[FlextApiTypes.ResponseBody].fail(
-                f"Response content is not bytes: {type(response_content)}"
+                f"Response content is not bytes: {type(response_content)}",
             )
         return r[FlextApiTypes.ResponseBody].ok(response_content)
 

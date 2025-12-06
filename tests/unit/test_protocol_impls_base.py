@@ -104,7 +104,9 @@ class TestBaseProtocolImplementation:
     def test_get_protocol_info(self) -> None:
         """Test get_protocol_info method."""
         protocol = BaseProtocolImplementation(
-            name="test_protocol", version="1.0.0", description="Test protocol"
+            name="test_protocol",
+            version="1.0.0",
+            description="Test protocol",
         )
         info = protocol.get_protocol_info()
         assert isinstance(info, dict)

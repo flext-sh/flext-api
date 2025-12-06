@@ -73,7 +73,8 @@ class FlextApiTransports:
                 return r[bool].fail(f"HTTP disconnect failed: {e}")
 
         def _extract_request_params(
-            self, data: dict[str, object]
+            self,
+            data: dict[str, object],
         ) -> r[tuple[str, str, dict[str, str], object, object, object]]:
             """Extract and validate request parameters from data."""
             method_str: str = FlextApiConstants.Method.GET
@@ -84,13 +85,13 @@ class FlextApiTransports:
 
             if "url" not in data:
                 return r[tuple[str, str, dict[str, str], object, object, object]].fail(
-                    "URL is required for HTTP request"
+                    "URL is required for HTTP request",
                 )
 
             url_value = data["url"]
             if not isinstance(url_value, str) or not url_value:
                 return r[tuple[str, str, dict[str, str], object, object, object]].fail(
-                    "URL must be a non-empty string"
+                    "URL must be a non-empty string",
                 )
 
             url: str = url_value
@@ -134,7 +135,7 @@ class FlextApiTransports:
                 params_result = self._extract_request_params(data)
                 if params_result.is_failure:
                     return r[object].fail(
-                        params_result.error or "Parameter extraction failed"
+                        params_result.error or "Parameter extraction failed",
                     )
 
                 method_str, url, headers, params, json_data, content = (
@@ -162,11 +163,17 @@ class FlextApiTransports:
                         )
                     else:
                         response = connection.request(
-                            method=method_str, url=url, headers=headers, params=params
+                            method=method_str,
+                            url=url,
+                            headers=headers,
+                            params=params,
                         )
                 elif json_data is not None:
                     response = connection.request(
-                        method=method_str, url=url, headers=headers, json=json_data
+                        method=method_str,
+                        url=url,
+                        headers=headers,
+                        json=json_data,
                     )
                 elif content is not None and isinstance(content, (str, bytes)):
                     response = connection.request(
@@ -177,7 +184,9 @@ class FlextApiTransports:
                     )
                 else:
                     response = connection.request(
-                        method=method_str, url=url, headers=headers
+                        method=method_str,
+                        url=url,
+                        headers=headers,
                     )
 
                 # Return response data

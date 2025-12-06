@@ -7,14 +7,15 @@ from enum import StrEnum
 from functools import cache, wraps
 from typing import Annotated, TypeIs, TypeVar, get_type_hints
 
-from flext_core import r, u
+from flext_core import r
 from flext_core.typings import P, R
+from flext_core.utilities import FlextUtilities
 from pydantic import BaseModel, BeforeValidator, ConfigDict, validate_call
 
 T = TypeVar("T")
 
 
-class FlextApiUtilities(u):
+class FlextApiUtilities(FlextUtilities):
     """TypeIs (PEP 742), BeforeValidator, validate_call, collections.abc, ParamSpec."""
 
     class Enum:
@@ -41,7 +42,9 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def is_subset[E: StrEnum](
-            value: object, enum_cls: type[E], valid: frozenset[E]
+            value: object,
+            enum_cls: type[E],
+            valid: frozenset[E],
         ) -> TypeIs[E]:
             """Check if value is subset of valid enum values.
 
@@ -121,7 +124,8 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def parse_sequence[E: StrEnum](
-            enum_cls: type[E], values: Iterable[str | E]
+            enum_cls: type[E],
+            values: Iterable[str | E],
         ) -> r[tuple[E, ...]]:
             """Parse sequence of string or enum values to tuple of enum instances.
 
@@ -231,7 +235,8 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def parse_kwargs[E: StrEnum](
-            kwargs: Mapping[str, object], enum_fields: Mapping[str, type[E]]
+            kwargs: Mapping[str, object],
+            enum_fields: Mapping[str, type[E]],
         ) -> r[dict[str, object]]:
             """Parse kwargs converting specific fields to StrEnums.
 
@@ -278,7 +283,10 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def from_dict[M: BaseModel](
-            model_cls: type[M], data: Mapping[str, object], *, strict: bool = False
+            model_cls: type[M],
+            data: Mapping[str, object],
+            *,
+            strict: bool = False,
         ) -> r[M]:
             """Create model instance from dictionary.
 
@@ -306,7 +314,8 @@ class FlextApiUtilities(u):
             Audit Implication: Type-safe model creation with default value merging.
             """
             return FlextApiUtilities.Model.from_dict(
-                model_cls, {**defaults, **overrides}
+                model_cls,
+                {**defaults, **overrides},
             )
 
         @staticmethod
@@ -356,7 +365,8 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def extract_body_from_kwargs(
-            data: object | None, kwargs: dict[str, object] | None
+            data: object | None,
+            kwargs: dict[str, object] | None,
         ) -> r[object | None]:
             """Extract body from data or kwargs."""
             if data is not None:
@@ -369,7 +379,8 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def merge_headers(
-            headers: dict[str, str] | None, kwargs: dict[str, object] | None
+            headers: dict[str, str] | None,
+            kwargs: dict[str, object] | None,
         ) -> r[dict[str, str]]:
             """Merge headers from headers dict and kwargs."""
             merged: dict[str, str] = {}
@@ -383,7 +394,8 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def validate_and_extract_timeout(
-            timeout: float | None, kwargs: dict[str, object] | None
+            timeout: float | None,
+            kwargs: dict[str, object] | None,
         ) -> r[float]:
             """Validate and extract timeout from timeout value or kwargs."""
             if timeout is not None and timeout > 0:
@@ -395,6 +407,9 @@ class FlextApiUtilities(u):
             return r.fail("Timeout must be a positive number")
 
 
+u = FlextApiUtilities  # Runtime alias (not TypeAlias to avoid PYI042)
+
 __all__ = [
     "FlextApiUtilities",
+    "u",
 ]

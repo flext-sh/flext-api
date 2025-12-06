@@ -16,7 +16,6 @@ from flext_core import r
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.base import BaseProtocolImplementation
 from flext_api.typings import FlextApiTypes
-from flext_api.utilities import FlextApiUtilities
 
 
 class RFCProtocolImplementation(BaseProtocolImplementation):
@@ -85,8 +84,11 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if not url_value.strip():
             return r[str].fail("URL cannot be empty (RFC 7230)")
 
-        # Validate URL format using utilities
-        return FlextApiUtilities.FlextWebValidator.validate_url(url_value)
+        # Validate URL format - basic validation
+        # Note: Full URL validation should use flext-core URL utilities when available
+        if not url_value.startswith(("http://", "https://")):
+            return r[str].fail("URL must start with http:// or https://")
+        return r[str].ok(url_value)
 
     def _extract_method(self, request: dict[str, object]) -> r[str]:
         """Extract and validate HTTP method from request (RFC 7231 compliant).
@@ -100,7 +102,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if "method" not in request:
             return r[str].ok(
-                FlextApiConstants.Method.GET
+                FlextApiConstants.Method.GET,
             )  # Default method per RFC 7231
 
         method_value = request["method"]
@@ -108,7 +110,19 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             return r[str].fail("Method must be a string (RFC 7231)")
 
         method_upper = method_value.upper()
-        if not FlextApiUtilities.FlextWebValidator.validate_http_method(method_upper):
+        # Validate HTTP method - RFC 7231 compliant methods
+        valid_methods = {
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH",
+            "HEAD",
+            "OPTIONS",
+            "TRACE",
+            "CONNECT",
+        }
+        if method_upper not in valid_methods:
             return r[str].fail(f"Invalid HTTP method: {method_upper} (RFC 7231)")
 
         return r[str].ok(method_upper)
@@ -169,7 +183,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
                 return float(timeout_value)
 
         # Use default timeout from constants
-        return float(FlextApiConstants.DEFAULT_REQUEST_TIMEOUT)
+        return float(FlextApiConstants.DEFAULT_TIMEOUT)
 
     def _build_rfc_error_response(
         self,
@@ -188,13 +202,14 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         RFC-compliant error response dictionary
 
         """
-        error_response = FlextApiUtilities.ResponseBuilder.build_error_response(
-            message=error,
-            status_code=status_code,
-            error_code=error_code,
-        )
-        # Convert JsonObject to dict[str, object] for compatibility
-        return dict(error_response.items())
+        # Build error response manually
+        error_response: dict[str, object] = {
+            "error": error,
+            "status_code": status_code,
+        }
+        if error_code:
+            error_response["error_code"] = error_code
+        return error_response
 
     def _build_rfc_success_response(
         self,
@@ -235,20 +250,15 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             # WebHeaders is dict[str, str | list[str]], convert dict[str, str]
             web_headers = dict(headers)
 
-        result = FlextApiUtilities.ResponseBuilder.build_success_response(
-            data=json_data,
-            status_code=status_code,
-            headers=web_headers,
-        )
-        # Convert JsonObject result back to dict[str, object] for compatibility
-        if result.is_success:
-            response_value = result.value
-            # Convert JsonObject (dict[str, JsonValue]) to dict[str, object]
-            converted_response: dict[str, object] = dict(response_value.items())
-            return r[dict[str, object]].ok(converted_response)
-        return r[dict[str, object]].fail(
-            result.error or "Failed to build success response"
-        )
+        # Build success response manually
+        success_response: dict[str, object] = {
+            "status_code": status_code,
+        }
+        if json_data is not None:
+            success_response["data"] = json_data
+        if web_headers is not None:
+            success_response["headers"] = web_headers
+        return r[dict[str, object]].ok(success_response)
 
     def _validate_status_code(self, status_code: int) -> r[int]:
         """Validate HTTP status code (RFC 7231).
@@ -268,7 +278,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             or status_code > FlextApiConstants.HTTP_SERVER_ERROR_MIN + 99
         ):
             return r[int].fail(
-                f"Status code must be between 100 and 599 (RFC 7231): {status_code}"
+                f"Status code must be between 100 and 599 (RFC 7231): {status_code}",
             )
 
         return r[int].ok(status_code)

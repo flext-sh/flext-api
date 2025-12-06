@@ -63,7 +63,8 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         return headers
 
     def _extract_request_data(
-        self, kwargs: dict[str, object]
+        self,
+        kwargs: dict[str, object],
     ) -> dict[str, object | None]:
         """Extract and type request data parameters."""
         params: dict[str, str] | None = None
@@ -97,7 +98,8 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         }
 
     def _create_response_from_httpx(
-        self, httpx_response: httpx.Response
+        self,
+        httpx_response: httpx.Response,
     ) -> FlextApiModels.HttpResponse:
         """Convert httpx response to FlextApiModels.HttpResponse."""
         return FlextApiModels.HttpResponse(
@@ -107,7 +109,8 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         )
 
     def _response_to_dict(
-        self, response: FlextApiModels.HttpResponse
+        self,
+        response: FlextApiModels.HttpResponse,
     ) -> FlextApiTypes.HttpResponseDict:
         """Convert HttpResponse model to HttpResponseDict for protocol compliance."""
         return {
@@ -118,7 +121,8 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         }
 
     def _handle_http_error(
-        self, e: httpx.HTTPStatusError
+        self,
+        e: httpx.HTTPStatusError,
     ) -> r[FlextApiTypes.HttpResponseDict]:
         """Handle HTTP status errors."""
         error_msg = f"HTTP error {e.response.status_code}: {e.response.text}"
@@ -127,7 +131,9 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
         return r[FlextApiTypes.HttpResponseDict].ok(self._response_to_dict(response))
 
     def _handle_request_exception(
-        self, e: Exception, error_prefix: str
+        self,
+        e: Exception,
+        error_prefix: str,
     ) -> r[FlextApiTypes.HttpResponseDict]:
         """Handle general request exceptions."""
         error_msg = f"{error_prefix}: {e}"
@@ -153,29 +159,34 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
 
         # Add optional parameters with type validation
         if (params := request_data.get("params")) is not None and isinstance(
-            params, dict
+            params,
+            dict,
         ):
             kwargs["params"] = params
             if (json_value := request_data.get("json")) is not None:
                 kwargs["json"] = json_value
             elif (content := request_data.get("content")) is not None and isinstance(
-                content, (str, bytes)
+                content,
+                (str, bytes),
             ):
                 kwargs["content"] = content
             elif (data := request_data.get("data")) is not None and isinstance(
-                data, dict
+                data,
+                dict,
             ):
                 kwargs["data"] = data
         elif (json_value := request_data.get("json")) is not None:
             kwargs["json"] = json_value
         elif (content := request_data.get("content")) is not None and isinstance(
-            content, (str, bytes)
+            content,
+            (str, bytes),
         ):
             kwargs["content"] = content
         elif (data := request_data.get("data")) is not None and isinstance(data, dict):
             kwargs["data"] = data
         elif (files := request_data.get("files")) is not None and isinstance(
-            files, dict
+            files,
+            dict,
         ):
             kwargs["files"] = files
 
@@ -192,7 +203,7 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             full_url_result = self._build_full_url(url)
             if full_url_result.is_failure:
                 return r[FlextApiTypes.HttpResponseDict].fail(
-                    full_url_result.error or "URL building failed"
+                    full_url_result.error or "URL building failed",
                 )
             full_url = full_url_result.unwrap()
 
@@ -200,13 +211,56 @@ class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
             request_data = self._extract_request_data(kwargs)
 
             httpx_kwargs = self._build_httpx_kwargs(
-                method, full_url, headers, request_data
+                method,
+                full_url,
+                headers,
+                request_data,
             )
-            httpx_response = self._client.request(**httpx_kwargs)
+            # Type narrowing: extract specific parameters for httpx.request
+            method_raw = httpx_kwargs.get("method", "GET")
+            method_str: str = method_raw if isinstance(method_raw, str) else "GET"
+            url_raw = httpx_kwargs.get("url", "")
+            url_str: str = url_raw if isinstance(url_raw, str) else ""
+            if not url_str:
+                return r[FlextApiTypes.HttpResponseDict].fail("Invalid URL type")
+            headers_raw = httpx_kwargs.get("headers", {})
+            headers_dict: dict[str, str] = (
+                headers_raw if isinstance(headers_raw, dict) else {}
+            )
+            # Extract optional parameters with type narrowing
+            params_raw = httpx_kwargs.get("params")
+            params = (
+                params_raw
+                if isinstance(params_raw, (dict, list, tuple, str, type(None)))
+                else None
+            )
+            json_data = httpx_kwargs.get("json")
+            content_raw = httpx_kwargs.get("content")
+            content = (
+                content_raw
+                if isinstance(content_raw, (str, bytes, type(None)))
+                else None
+            )
+            timeout_raw = httpx_kwargs.get("timeout")
+            timeout = (
+                timeout_raw
+                if isinstance(timeout_raw, (float, tuple, type(None)))
+                else None
+            )
+            # Call httpx.request with explicit typed parameters
+            httpx_response = self._client.request(
+                method=method_str,
+                url=url_str,
+                headers=headers_dict,
+                params=params,  # type: ignore[arg-type]
+                json=json_data,  # type: ignore[arg-type]
+                content=content,  # type: ignore[arg-type]
+                timeout=timeout,  # type: ignore[arg-type]
+            )
 
             response = self._create_response_from_httpx(httpx_response)
             return r[FlextApiTypes.HttpResponseDict].ok(
-                self._response_to_dict(response)
+                self._response_to_dict(response),
             )
 
         except httpx.HTTPStatusError as e:
