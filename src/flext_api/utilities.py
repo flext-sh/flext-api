@@ -7,15 +7,14 @@ from enum import StrEnum
 from functools import cache, wraps
 from typing import Annotated, TypeIs, TypeVar, get_type_hints
 
-from flext_core import r
+from flext_core import r, u as u_core
 from flext_core.typings import P, R
-from flext_core.utilities import FlextUtilities
 from pydantic import BaseModel, BeforeValidator, ConfigDict, validate_call
 
 T = TypeVar("T")
 
 
-class FlextApiUtilities(FlextUtilities):
+class FlextApiUtilities(u_core):
     """TypeIs (PEP 742), BeforeValidator, validate_call, collections.abc, ParamSpec."""
 
     class Enum:

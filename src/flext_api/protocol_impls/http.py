@@ -326,10 +326,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 headers_dict = headers_raw if isinstance(headers_raw, dict) else {}  # type: ignore[assignment]
                 # Extract optional parameters with type narrowing
                 params_raw = request_kwargs.get("params")
-                params = (
-                    params_raw
-                    if isinstance(params_raw, (dict, list, tuple, str, type(None)))
-                    else None
+                # httpx.request accepts dict[str, str | list[str]] | None for params
+                request_params: dict[str, str] | None = (
+                    params_raw if isinstance(params_raw, dict) else None
                 )
                 json_data = request_kwargs.get("json")
                 content_raw = request_kwargs.get("content")
@@ -339,20 +338,19 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                     else None
                 )
                 timeout_raw = request_kwargs.get("timeout")
-                timeout = (
-                    timeout_raw
-                    if isinstance(timeout_raw, (float, tuple, type(None)))
-                    else None
-                )  # type: ignore[assignment]
+                # httpx.request accepts float | tuple | None, but method expects float | None
+                request_timeout: float | None = (
+                    timeout_raw if isinstance(timeout_raw, float) else None
+                )
                 # Call httpx.request with explicit typed parameters
                 response = connection.request(
                     method=method_str,
                     url=url_str,
                     headers=headers_dict,
-                    params=params,  # type: ignore[arg-type]
-                    json=json_data,  # type: ignore[arg-type]
-                    content=content,  # type: ignore[arg-type]
-                    timeout=timeout,  # type: ignore[arg-type]
+                    params=request_params,
+                    json=json_data,
+                    content=content,
+                    timeout=request_timeout,
                 )
 
                 if self._is_success_status(response.status_code):
@@ -400,40 +398,6 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             if isinstance(value, str)
         }
         return r[dict[str, str]].ok(headers_dict)
-
-    def _build_request_kwargs(
-        self,
-        method: str,
-        url: str,
-        headers: dict[str, str],
-        params: dict[str, str],
-        timeout: float | None,
-        body: FlextApiTypes.RequestBody | None,
-    ) -> dict[str, object]:
-        """Build request kwargs based on body type and content-type."""
-        request_kwargs: dict[str, object] = {
-            "method": method,
-            "url": url,
-            "headers": headers,
-            "params": params,
-            "timeout": timeout,
-        }
-
-        if body is not None:
-            # Use RFC method to get content type
-            content_type = self._get_content_type(headers)
-
-            if (
-                isinstance(body, dict)
-                and FlextApiConstants.ContentType.FORM in content_type
-            ):
-                request_kwargs["data"] = body
-            elif isinstance(body, dict):
-                request_kwargs["json"] = body
-            else:
-                request_kwargs["content"] = body
-
-        return request_kwargs
 
     def _build_response(
         self,

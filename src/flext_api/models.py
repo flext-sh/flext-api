@@ -14,8 +14,7 @@ from __future__ import annotations
 from typing import cast
 from urllib.parse import ParseResult, urlparse
 
-from flext_core import FlextModels, u
-from flext_core.models import FlextModels as FlextModelsBase
+from flext_core import m as m_core, u
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 from flext_api.constants import FlextApiConstants
@@ -33,7 +32,7 @@ class FlextApiBaseModel(BaseModel):
     )
 
 
-class FlextApiModels(FlextModelsBase):
+class FlextApiModels(m_core):
     """HTTP domain models for flext-api.
 
     Unified namespace class that aggregates all HTTP-specific domain models.
@@ -47,7 +46,7 @@ class FlextApiModels(FlextModelsBase):
     # HTTP REQUEST/RESPONSE VALUE OBJECTS (Immutable)
     # =========================================================================
 
-    class HttpRequest(FlextModels.Value):
+    class HttpRequest(m_core.Value):
         """Immutable HTTP request value object.
 
         Represents a complete HTTP request with all necessary parameters.
@@ -112,7 +111,7 @@ class FlextApiModels(FlextModelsBase):
             # Default from Constants
             return FlextApiConstants.ContentType.JSON
 
-    class HttpResponse(FlextModels.Value):
+    class HttpResponse(m_core.Value):
         """Immutable HTTP response value object.
 
         Represents a complete HTTP response with all returned data.
@@ -516,7 +515,7 @@ class FlextApiModels(FlextModelsBase):
             verify_ssl=verify_ssl,
         )
 
-    class HttpPagination(FlextModels.Value):
+    class HttpPagination(m_core.Value):
         """HTTP pagination value object for list responses.
 
         Immutable pagination metadata for paginated API responses.

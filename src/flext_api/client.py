@@ -15,7 +15,7 @@ import json
 from typing import Self, cast
 
 import httpx
-from flext_core import FlextService, r
+from flext_core import r, s
 
 from flext_api.config import FlextApiConfig
 from flext_api.models import FlextApiModels
@@ -25,7 +25,7 @@ from flext_api.typings import FlextApiTypes
 HTTP_STATUS_ERROR_MIN = 400
 
 
-class FlextApiClient(FlextService[FlextApiConfig]):
+class FlextApiClient(s[FlextApiConfig]):
     """Generic HTTP client using FLEXT patterns.
 
     Single responsibility: Execute HTTP requests with FlextResult error handling.

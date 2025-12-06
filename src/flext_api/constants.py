@@ -18,7 +18,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal, TypeGuard, TypeIs
 
-from flext_core import FlextConstants, r, u
+from flext_core import c as c_core, r, u
 
 from flext_api.utilities import FlextApiUtilities
 
@@ -36,7 +36,7 @@ from flext_api.utilities import FlextApiUtilities
 # Isso referencia o enum member, não duplica strings!
 
 
-class FlextApiConstants(FlextConstants):
+class FlextApiConstants(c_core):
     """FlextApi domain constants extending FlextConstants.
 
     Architecture: Layer 1 (Domain Constants - Extends Core)
@@ -227,7 +227,7 @@ class FlextApiConstants(FlextConstants):
     """Default maximum retry attempts."""
 
     DEFAULT_BASE_URL: Final[str] = (
-        f"http://{FlextConstants.Platform.DEFAULT_HOST}:{FlextConstants.Platform.FLEXT_API_PORT}"
+        f"http://{c_core.Platform.DEFAULT_HOST}:{c_core.Platform.FLEXT_API_PORT}"
     )
     """Default base URL for API operations."""
 

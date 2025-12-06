@@ -171,14 +171,14 @@ class FlextApiServer(FlextService[object], x.Validation):
                     if hasattr(connection, "close"):
                         connection.close()
                 except Exception as e:
-                    self._logger.warning("Failed to close WebSocket %s: %s", conn_id, str(e))
+                    self._logger.warning(f"Failed to close WebSocket {conn_id}: {e}")
 
             for conn_id, connection in self._sse_connections.items():
                 try:
                     if hasattr(connection, "close"):
                         connection.close()
                 except Exception as e:
-                    self._logger.warning("Failed to close SSE %s: %s", conn_id, str(e))
+                    self._logger.warning(f"Failed to close SSE {conn_id}: {e}")
 
             self._websocket_connections.clear()
             self._sse_connections.clear()
