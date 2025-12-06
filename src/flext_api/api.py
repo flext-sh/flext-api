@@ -12,7 +12,8 @@ from __future__ import annotations
 
 from typing import ClassVar, Self, cast
 
-from flext_core import FlextRuntime, FlextService, r, t
+from flext_core import r, s, t
+from flext_core.runtime import FlextRuntime
 
 from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig
@@ -22,7 +23,7 @@ from flext_api.typings import FlextApiTypes
 from flext_api.utilities import FlextApiUtilities
 
 
-class FlextApi(FlextService[FlextApiConfig]):
+class FlextApi(s[FlextApiConfig]):
     """Unified HTTP API facade - pure delegation pattern.
 
     Single responsibility: Delegate HTTP operations to FlextApiClient.

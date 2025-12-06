@@ -428,7 +428,7 @@ class FlextApiStorage(FlextService[bool]):
                         del self._expiry_times[key]
             except Exception as e:
                 # Log cleanup errors but continue - cache functionality is preserved
-                self.logger.warning("Failed to cleanup expired cache entry: %s", str(e))
+                self.logger.warning(f"Failed to cleanup expired cache entry: {e}")
 
         self._stats.cache_misses += 1
         return r[object].fail(f"Key not found: {key}")

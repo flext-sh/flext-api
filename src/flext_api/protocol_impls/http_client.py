@@ -13,13 +13,10 @@ import httpx
 from flext_core import r
 from flext_core.loggings import FlextLogger
 
-from flext_api.constants import FlextApiConstants
-from flext_api.models import FlextApiModels
-from flext_api.protocols import FlextApiProtocols
-from flext_api.typings import FlextApiTypes
+from flext_api import FlextApiConstants, FlextApiModels, FlextApiTypes, p
 
 
-class FlextWebClientImplementation(FlextApiProtocols.HttpClientProtocol):
+class FlextWebClientImplementation(p.HttpClientProtocol):
     """HTTP client implementation conforming to FlextWebClientProtocol."""
 
     def __init__(self, client_config: FlextApiModels.ClientConfig) -> None:

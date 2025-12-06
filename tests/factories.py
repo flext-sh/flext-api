@@ -14,7 +14,8 @@ from typing import cast
 
 from faker import Faker
 from flext_core import FlextConstants, FlextResult, t
-from flext_tests import FlextTestsDomains, FlextTestsUtilities
+from flext_tests import FlextTestsDomains
+from flext_tests.utilities import FlextTestsUtilities
 
 from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
 from flext_api.constants import FlextApiConstants
@@ -239,7 +240,7 @@ class FlextApiFactories:
         """
         return cast(
             "FlextResult[FlextApiTypes.ResponseDict]",
-            FlextTestsUtilities.create_test_result(success=False, error=error_message),
+            FlextTestsUtilities.Tests.ResultHelpers.create_failure_result(error_message),
         )
 
     @staticmethod
@@ -256,7 +257,7 @@ class FlextApiFactories:
             data = {"success": True, "message": "Test operation successful"}
         return cast(
             "FlextResult[FlextApiTypes.ResponseDict]",
-            FlextTestsUtilities.create_test_result(success=True, data=data),
+            FlextTestsUtilities.Tests.ResultHelpers.create_success_result(data),
         )
 
     @staticmethod

@@ -22,7 +22,8 @@ from typing import cast
 
 import pytest
 from flext_core import FlextConstants, FlextResult, T
-from flext_tests import FlextTestsDomains, FlextTestsUtilities
+from flext_tests import FlextTestsDomains
+from flext_tests.utilities import FlextTestsUtilities
 
 from flext_api.typings import FlextApiTypes
 
@@ -359,7 +360,9 @@ def create_test_result_success(data: object = None) -> FlextResult[object]:
         Successful FlextResult object.
 
     """
-    return FlextTestsUtilities.create_test_result(success=True, data=data)
+    if data is None:
+        data = {"success": True, "message": "Test operation successful"}
+    return FlextTestsUtilities.Tests.ResultHelpers.create_success_result(data)
 
 
 def create_test_result_failure(error: str = "Test error") -> FlextResult[object]:
