@@ -10,8 +10,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 import cbor2
-import msgpack  # type: ignore[import-untyped]
+import msgpack
 from flext_core import r
 
 from flext_api.models import FlextApiModels
@@ -81,13 +83,20 @@ class FlextApiAdapters:
                 if "body" in message:
                     body_value = message["body"]
                     if isinstance(body_value, dict):
-                        body = body_value
+                        # Type narrowing: build dict with proper iteration
+                        for k, v in body_value.items():
+                            # Cast to JsonValue to match dict value type
+                            body[k] = cast("FlextApiTypes.JsonValue", v)
 
                 headers: dict[str, str] = {}
                 if "headers" in message:
                     headers_value = message["headers"]
                     if isinstance(headers_value, dict):
-                        headers = headers_value
+                        # Type narrowing: convert dict values to str
+                        headers = {
+                            k: str(v) if not isinstance(v, str) else v
+                            for k, v in headers_value.items()
+                        }
 
                 return r[FlextApiModels.HttpResponse | FlextApiTypes.JsonObject].ok(
                     FlextApiModels.create_response(

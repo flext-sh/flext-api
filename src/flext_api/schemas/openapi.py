@@ -73,7 +73,8 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         self._cached_schemas: dict[str, dict[str, object]] = {}
 
     def _validate_openapi_version(
-        self, schema: dict[str, FlextApiTypes.JsonValue]
+        self,
+        schema: dict[str, FlextApiTypes.JsonValue],
     ) -> r[str]:
         """Validate OpenAPI version field."""
         if "openapi" not in schema:
@@ -90,7 +91,8 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return r[str].ok(openapi_version)
 
     def _validate_info_field(
-        self, schema: dict[str, FlextApiTypes.JsonValue]
+        self,
+        schema: dict[str, FlextApiTypes.JsonValue],
     ) -> r[FlextApiTypes.JsonObject]:
         """Validate info field in schema."""
         if "info" not in schema:
@@ -100,17 +102,16 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         if not isinstance(info_value, dict):
             return r[FlextApiTypes.JsonObject].fail("'info' field must be a dictionary")
 
-        # Type narrowing: info_value is dict, convert to JsonObject
-        info_dict: FlextApiTypes.JsonObject = cast(
-            "FlextApiTypes.JsonObject", info_value
-        )
+        # Type narrowing: after isinstance check, build as JsonObject
+        info_dict: FlextApiTypes.JsonObject = {}
+        for k, v in info_value.items():
+            # Cast to JsonValue to match dict value type
+            info_dict[k] = cast("FlextApiTypes.JsonValue", v)
         info_required = ["title", "version"]
         # Use u.filter() for unified filtering (DSL pattern)
-        info_missing = cast(
-            "list[str]",
-            u.Collection.filter(
-                list(info_required), lambda field: field not in info_dict
-            ),
+        info_missing = u.Collection.filter(
+            list(info_required),
+            lambda field: field not in info_dict,
         )
         if info_missing:
             return r[FlextApiTypes.JsonObject].fail(
@@ -120,7 +121,8 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return r[FlextApiTypes.JsonObject].ok(info_dict)
 
     def _validate_paths_field(
-        self, schema: dict[str, FlextApiTypes.JsonValue]
+        self,
+        schema: dict[str, FlextApiTypes.JsonValue],
     ) -> r[FlextApiTypes.JsonObject]:
         """Validate paths field in schema."""
         if "paths" not in schema:
@@ -129,23 +131,27 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         paths_value = schema["paths"]
         if not isinstance(paths_value, dict):
             return r[FlextApiTypes.JsonObject].fail(
-                "'paths' field must be a dictionary"
+                "'paths' field must be a dictionary",
             )
 
-        paths_result = self._validate_paths(paths_value)
+        # Type reconstruction: convert JsonValue dict to object dict for method call
+        paths_as_obj: dict[str, object] = dict(paths_value.items())
+        paths_result = self._validate_paths(paths_as_obj)
         if paths_result.is_failure:
             return r[FlextApiTypes.JsonObject].fail(
                 f"Path validation failed: {paths_result.error}",
             )
 
-        # Type narrowing: paths_value is dict, convert to JsonObject
-        paths_dict: FlextApiTypes.JsonObject = cast(
-            "FlextApiTypes.JsonObject", paths_value
-        )
+        # Type narrowing: iterative assignment avoids dict() constructor overload issues
+        paths_dict: FlextApiTypes.JsonObject = {}
+        for k, v in paths_value.items():
+            # Cast to JsonValue to match dict value type
+            paths_dict[k] = cast("FlextApiTypes.JsonValue", v)
         return r[FlextApiTypes.JsonObject].ok(paths_dict)
 
     def _validate_optional_components(
-        self, schema: dict[str, FlextApiTypes.JsonValue]
+        self,
+        schema: dict[str, FlextApiTypes.JsonValue],
     ) -> r[bool]:
         """Validate optional components and security schemes."""
         if "components" not in schema:
@@ -155,7 +161,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         if not isinstance(components_value, dict):
             return r[bool].fail("'components' field must be a dictionary")
 
-        components_result = self._validate_components(components_value)
+        # Type reconstruction: convert JsonValue dict to object dict for method call
+        components_as_obj: dict[str, object] = dict(components_value.items())
+        components_result = self._validate_components(components_as_obj)
         if components_result.is_failure:
             return components_result
 
@@ -194,11 +202,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         # Validate required fields
         required_fields = ["info", "paths"]
         # Use u.filter() for unified filtering (DSL pattern)
-        missing_fields = cast(
-            "list[str]",
-            u.Collection.filter(
-                list(required_fields), lambda field: field not in schema
-            ),
+        missing_fields = u.Collection.filter(
+            list(required_fields),
+            lambda field: field not in schema,
         )
         if missing_fields:
             return r[FlextApiTypes.JsonObject].fail(

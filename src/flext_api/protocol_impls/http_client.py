@@ -16,7 +16,7 @@ from flext_core.loggings import FlextLogger
 from flext_api import FlextApiConstants, FlextApiModels, FlextApiTypes, p
 
 
-class FlextWebClientImplementation(p.HttpClientProtocol):
+class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
     """HTTP client implementation conforming to FlextWebClientProtocol."""
 
     def __init__(self, client_config: FlextApiModels.ClientConfig) -> None:
@@ -249,10 +249,10 @@ class FlextWebClientImplementation(p.HttpClientProtocol):
                 method=method_str,
                 url=url_str,
                 headers=headers_dict,
-                params=params,  # type: ignore[arg-type]
-                json=json_data,  # type: ignore[arg-type]
-                content=content,  # type: ignore[arg-type]
-                timeout=timeout,  # type: ignore[arg-type]
+                params=params,
+                json=json_data,
+                content=content,
+                timeout=timeout,
             )
 
             response = self._create_response_from_httpx(httpx_response)

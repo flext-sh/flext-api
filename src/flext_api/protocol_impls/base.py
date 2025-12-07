@@ -10,15 +10,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
-
-from flext_core import FlextService, r
+from flext_core import FlextRuntime, FlextService, r, t
 
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import FlextApiTypes
 
 
-class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):  # type: ignore[misc]
+class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
     """Base class for all protocol implementations.
 
     Defines the standard interface and patterns that all protocol implementations
@@ -58,11 +56,8 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol): 
 
         """
         # Type narrowing: convert kwargs to expected type
-        from flext_core import FlextRuntime, t  # noqa: PLC0415
-
         kwargs_typed: dict[str, t.GeneralValueType] = {
-            k: cast("t.GeneralValueType", FlextRuntime.normalize_to_general_value(v))
-            for k, v in kwargs.items()
+            k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
         }
         # Initialize FlextService first (establishes logger property from x)
         super().__init__(**kwargs_typed)

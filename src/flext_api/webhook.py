@@ -60,6 +60,22 @@ class FlextWebhookHandler(FlextService[object]):
     - ual utility functions
     """
 
+    # Declare attributes to satisfy type checkers
+    # These are initialized directly in __init__() (no PrivateAttr needed)
+    # Note: _container type matches parent FlextService (optional type)
+    _flext_context: FlextContext
+    _dispatcher: FlextDispatcher
+    _secret: str | None
+    _signature_header: str
+    _algorithm: str
+    _max_retries: int
+    _retry_delay: float
+    _retry_backoff: float
+    _event_handlers: dict[str, list[Callable[..., None]]]
+    _event_queue: deque[FlextApiTypes.JsonObject]
+    _delivery_confirmations: dict[str, FlextApiTypes.JsonObject]
+    _retry_queue: deque[FlextApiTypes.JsonObject]
+
     def __init__(
         self,
         secret: str | None = None,
@@ -84,10 +100,9 @@ class FlextWebhookHandler(FlextService[object]):
 
         # Initialize flext-core components
         # FlextContainer() returns singleton via __new__
+        # Set attributes directly (no PrivateAttr needed, compatible with FlextService)
         self._container = FlextContainer()
-        self._flext_context = (
-            FlextContext()
-        )  # Named differently to avoid parent's _context
+        self._flext_context = FlextContext()
         self._dispatcher = FlextDispatcher()
 
         # Webhook configuration
@@ -99,16 +114,16 @@ class FlextWebhookHandler(FlextService[object]):
         self._retry_backoff = retry_backoff
 
         # Event handlers
-        self._event_handlers: dict[str, list[Callable[..., None]]] = {}
+        self._event_handlers = {}
 
         # Event queue
-        self._event_queue: deque[FlextApiTypes.JsonObject] = deque(maxlen=1000)
+        self._event_queue = deque(maxlen=1000)
 
         # Delivery tracking
-        self._delivery_confirmations: dict[str, FlextApiTypes.JsonObject] = {}
+        self._delivery_confirmations = {}
 
         # Retry queue
-        self._retry_queue: deque[FlextApiTypes.JsonObject] = deque(maxlen=500)
+        self._retry_queue = deque(maxlen=500)
 
     def execute(self, **_kwargs: object) -> r[object]:
         """Execute webhook service lifecycle operations.

@@ -5,16 +5,14 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Mapping
 from enum import StrEnum
 from functools import cache, wraps
-from typing import Annotated, TypeIs, TypeVar, get_type_hints
+from typing import Annotated, TypeIs, get_type_hints
 
-from flext_core import r, u as u_core
+from flext_core import r
 from flext_core.typings import P, R
 from pydantic import BaseModel, BeforeValidator, ConfigDict, validate_call
 
-T = TypeVar("T")
 
-
-class FlextApiUtilities(u_core):
+class FlextApiUtilities:
     """TypeIs (PEP 742), BeforeValidator, validate_call, collections.abc, ParamSpec."""
 
     class Enum:
@@ -36,7 +34,8 @@ class FlextApiUtilities(u_core):
             if isinstance(value, enum_cls):
                 return True
             if isinstance(value, str):
-                return value in enum_cls._value2member_map_
+                members_dict = getattr(enum_cls, "__members__", {})
+                return value in members_dict
             return False
 
         @staticmethod
@@ -79,7 +78,8 @@ class FlextApiUtilities(u_core):
             try:
                 return r.ok(enum_cls(value))
             except ValueError:
-                return r.fail(f"Invalid {enum_cls.__name__}: '{value}'")
+                enum_name = getattr(enum_cls, "__name__", "Enum")
+                return r.fail(f"Invalid {enum_name}: '{value}'")
 
         @staticmethod
         def coerce_validator[E: StrEnum](enum_cls: type[E]) -> Callable[[object], E]:
@@ -91,6 +91,7 @@ class FlextApiUtilities(u_core):
 
             Audit Implication: Enables automatic enum coercion in Pydantic models.
             """
+            enum_name = getattr(enum_cls, "__name__", "Enum")
 
             def _coerce(v: object) -> E:
                 if isinstance(v, enum_cls):
@@ -100,7 +101,7 @@ class FlextApiUtilities(u_core):
                         return enum_cls(v)
                     except ValueError:
                         pass
-                msg = f"Invalid {enum_cls.__name__}: {v!r}"
+                msg = f"Invalid {enum_name}: {v!r}"
                 raise ValueError(msg)
 
             return _coerce
@@ -116,7 +117,8 @@ class FlextApiUtilities(u_core):
             Audit Implication: Cached for performance - same enum class returns
             same frozenset instance.
             """
-            return frozenset(m.value for m in enum_cls)
+            members_dict = getattr(enum_cls, "__members__", {})
+            return frozenset(str(member.value) for member in members_dict.values())
 
     class Collection:
         """Parsing de Sequence/Mapping com StrEnums."""
@@ -330,7 +332,7 @@ class FlextApiUtilities(u_core):
             try:
                 current = instance.model_dump()
                 current.update(updates)
-                return r.ok(type(instance).model_validate(current))
+                return r.ok(instance.__class__.model_validate(current))
             except Exception as e:
                 return r.fail(f"Update failed: {e}")
 

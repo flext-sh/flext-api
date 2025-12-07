@@ -175,7 +175,6 @@ __all__ = [
     "FlextApiTypes",
     "FlextApiUtilities",
     "HttpError",
-    "Unit",
     "__version__",
     "__version_info__",
     # Domain-specific aliases

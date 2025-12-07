@@ -17,7 +17,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import cast, override
+from typing import override
 
 from flext_core import r, u
 
@@ -108,11 +108,9 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             required_fields.append("channels")
 
         # Use u.filter() for unified filtering (DSL pattern)
-        missing_fields = cast(
-            "list[str]",
-            u.Collection.filter(
-                list(required_fields), lambda field: field not in schema
-            ),
+        missing_fields = u.Collection.filter(
+            list(required_fields),
+            lambda field: field not in schema,
         )
         if missing_fields:
             return r[bool].fail(f"Missing required fields: {', '.join(missing_fields)}")
@@ -130,9 +128,8 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         info: dict[str, object] = info_value
         info_required = ["title", "version"]
         # Use u.filter() for unified filtering (DSL pattern)
-        info_missing = cast(
-            "list[str]",
-            u.Collection.filter(list(info_required), lambda field: field not in info),
+        info_missing = u.Collection.filter(
+            list(info_required), lambda field: field not in info
         )
         if info_missing:
             return r[dict[str, object]].fail(
@@ -601,7 +598,9 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         if not isinstance(channels_value, dict):
             return r[bool].fail("'channels' field must be a dictionary")
 
-        channels: dict[str, object] = channels_value
+        # Type reconstruction: narrow dict and assign to explicit object type
+        channels_typed: dict[str, object] = dict(channels_value.items())
+        channels = channels_typed
         if not channels:
             return r[bool].ok(True)  # No channels to validate against
 

@@ -22,10 +22,10 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Self, cast, override
+from typing import Self, override
 
 from flext_core import FlextService, r, t, u
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from flext_api.typings import FlextApiTypes
 
@@ -75,6 +75,16 @@ class FlextApiStorage(FlextService[bool]):
     - Event tracking
     """
 
+    # Override frozen constraint from FlextService - storage needs mutable state
+    model_config = ConfigDict(frozen=False, arbitrary_types_allowed=True)
+
+    # Type annotations for dynamically-set fields
+    _storage: dict[str, FlextApiTypes.JsonValue]
+    _expiry_times: dict[str, float]
+    _stats: _StorageStats
+    _operations_count: int
+    _created_at: str
+
     def __new__(cls, config: object | None = None, **kwargs: object) -> Self:
         """Intercept config argument and convert to kwargs for FlextService V2."""
         instance = super().__new__(cls)
@@ -90,20 +100,23 @@ class FlextApiStorage(FlextService[bool]):
         max_size_val, default_ttl_val = self._extract_storage_kwargs(storage_kwargs)
         # Type narrowing: convert dict[str, object] to dict[str, t.GeneralValueType]
         storage_kwargs_typed: dict[str, t.GeneralValueType] = {
-            k: cast("t.GeneralValueType", v) for k, v in storage_kwargs.items()
+            k: v
+            for k, v in storage_kwargs.items()
+            if isinstance(v, (str, int, float, bool, type(None), dict, list))
         }
         super().__init__(**storage_kwargs_typed)
         config_dict = self._normalize_config(config_obj)
         self._apply_config(config_dict, max_size_val, default_ttl_val)
 
         # Flexible storage tracking - use JsonValue for type safety
-        self._storage: dict[str, FlextApiTypes.JsonValue] = {}
-        self._expiry_times: dict[str, float] = {}
+        # Use object.__setattr__ to bypass frozen constraint from FlextService parent
+        object.__setattr__(self, "_storage", {})
+        object.__setattr__(self, "_expiry_times", {})
 
         # Metrics using Pydantic model
-        self._stats = _StorageStats(namespace=self._namespace)
-        self._operations_count: int = 0
-        self._created_at: str = u.Generators.generate_iso_timestamp()
+        object.__setattr__(self, "_stats", _StorageStats(namespace=self._namespace))
+        object.__setattr__(self, "_operations_count", 0)
+        object.__setattr__(self, "_created_at", u.Generators.generate_iso_timestamp())
 
     def _extract_init_params(
         self,
@@ -379,13 +392,24 @@ class FlextApiStorage(FlextService[bool]):
             json_value = str(value)
 
         self._storage[key] = json_value
+        # Convert metadata fields to JsonValue with proper type narrowing
+        value_json: FlextApiTypes.JsonValue = (
+            metadata.value
+            if isinstance(
+                metadata.value, (str, int, float, bool, type(None), dict, list)
+            )
+            else str(metadata.value)
+        )
+        ttl_json: FlextApiTypes.JsonValue = (
+            metadata.ttl if metadata.ttl is not None else None
+        )
         metadata_dict: dict[str, FlextApiTypes.JsonValue] = {
-            "value": cast("FlextApiTypes.JsonValue", metadata.value),
-            "timestamp": cast("FlextApiTypes.JsonValue", metadata.timestamp),
-            "ttl": cast("FlextApiTypes.JsonValue", metadata.ttl),
-            "created_at": cast("FlextApiTypes.JsonValue", metadata.created_at),
+            "value": value_json,
+            "timestamp": metadata.timestamp,
+            "ttl": ttl_json,
+            "created_at": metadata.created_at,
         }
-        self._storage[self._key(key)] = cast("FlextApiTypes.JsonValue", metadata_dict)
+        self._storage[self._key(key)] = metadata_dict
 
         if ttl_val is not None:
             self._expiry_times[key] = time.time() + ttl_val
@@ -428,7 +452,10 @@ class FlextApiStorage(FlextService[bool]):
                         del self._expiry_times[key]
             except Exception as e:
                 # Log cleanup errors but continue - cache functionality is preserved
-                self.logger.warning(f"Failed to cleanup expired cache entry: {e}")
+                self.logger.warning(
+                    f"Failed to cleanup expired cache entry: {e}",
+                    error=str(e),
+                )
 
         self._stats.cache_misses += 1
         return r[object].fail(f"Key not found: {key}")
@@ -480,7 +507,7 @@ class FlextApiStorage(FlextService[bool]):
             lambda k: not k.startswith(f"{self._namespace}:"),
         )
         return r[list[str]].ok(
-            list(filtered_keys) if isinstance(filtered_keys, (list, tuple)) else []
+            list(filtered_keys) if isinstance(filtered_keys, (list, tuple)) else [],
         )
 
     def items(self) -> r[list[tuple[str, object]]]:

@@ -12,10 +12,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from typing import Self, cast
+from typing import Self
 
 import httpx
-from flext_core import r, s
+from flext_core import FlextRuntime, r, s, t
 
 from flext_api.config import FlextApiConfig
 from flext_api.models import FlextApiModels
@@ -65,11 +65,8 @@ class FlextApiClient(s[FlextApiConfig]):
 
         """
         # Type narrowing: convert kwargs to expected type
-        from flext_core import FlextRuntime, t  # noqa: PLC0415
-
         kwargs_typed: dict[str, t.GeneralValueType] = {
-            k: cast("t.GeneralValueType", FlextRuntime.normalize_to_general_value(v))
-            for k, v in kwargs.items()
+            k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
         }
         super().__init__(**kwargs_typed)
         api_config = getattr(self, "_flext_api_config", None)

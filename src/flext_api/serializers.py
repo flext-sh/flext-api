@@ -20,7 +20,7 @@ from __future__ import annotations
 from typing import Protocol
 
 import cbor2
-import msgpack  # type: ignore[import-untyped]
+import msgpack
 import orjson
 from flext_core import FlextService, r
 from flext_core.loggings import FlextLogger
@@ -254,25 +254,25 @@ class FlextApiSerializers(FlextService[bool]):
             """Initialize serializer registry."""
             self.logger = FlextLogger(__name__)
             self._serializers: dict[str, FlextApiSerializers.SerializerProtocol] = {}
-            self._default_format = FlextApiConstants.SerializationFormat.JSON
+            self._default_format = FlextApiConstants.HttpSerializationFormat.JSON
 
             # Register default serializers
             self.register_serializer(
-                FlextApiConstants.SerializationFormat.JSON,
+                FlextApiConstants.HttpSerializationFormat.JSON,
                 FlextApiSerializers.JSONSerializer(),
             )
             self.register_serializer(
-                FlextApiConstants.SerializationFormat.MSGPACK,
+                FlextApiConstants.HttpSerializationFormat.MSGPACK,
                 FlextApiSerializers.MessagePackSerializer(),
             )
             self.register_serializer(
-                FlextApiConstants.SerializationFormat.CBOR,
+                FlextApiConstants.HttpSerializationFormat.CBOR,
                 FlextApiSerializers.CBORSerializer(),
             )
 
         def register_serializer(
             self,
-            format_type: FlextApiConstants.SerializationFormat | str,
+            format_type: FlextApiConstants.HttpSerializationFormat | str,
             serializer: FlextApiSerializers.SerializerProtocol,
         ) -> r[bool]:
             """Register serializer for format.
@@ -289,7 +289,7 @@ class FlextApiSerializers(FlextService[bool]):
                 format_type.value
                 if isinstance(
                     format_type,
-                    FlextApiConstants.SerializationFormat,
+                    FlextApiConstants.HttpSerializationFormat,
                 )
                 else format_type
             )
@@ -314,7 +314,7 @@ class FlextApiSerializers(FlextService[bool]):
 
         def get_serializer(
             self,
-            format_type: FlextApiConstants.SerializationFormat | str,
+            format_type: FlextApiConstants.HttpSerializationFormat | str,
         ) -> r[FlextApiSerializers.SerializerProtocol]:
             """Get serializer for format.
 
@@ -329,7 +329,7 @@ class FlextApiSerializers(FlextService[bool]):
                 format_type.value
                 if isinstance(
                     format_type,
-                    FlextApiConstants.SerializationFormat,
+                    FlextApiConstants.HttpSerializationFormat,
                 )
                 else format_type
             )
@@ -370,7 +370,7 @@ class FlextApiSerializers(FlextService[bool]):
         def serialize(
             self,
             data: object,
-            format_type: FlextApiConstants.SerializationFormat | str | None = None,
+            format_type: FlextApiConstants.HttpSerializationFormat | str | None = None,
         ) -> r[bytes]:
             """Serialize data using specified format.
 
@@ -386,7 +386,7 @@ class FlextApiSerializers(FlextService[bool]):
                 format_type.value
                 if isinstance(
                     format_type,
-                    FlextApiConstants.SerializationFormat,
+                    FlextApiConstants.HttpSerializationFormat,
                 )
                 else format_type
             )
@@ -410,7 +410,7 @@ class FlextApiSerializers(FlextService[bool]):
         def deserialize(
             self,
             data: bytes,
-            format_type: FlextApiConstants.SerializationFormat | str | None = None,
+            format_type: FlextApiConstants.HttpSerializationFormat | str | None = None,
         ) -> r[object]:  # Returns deserialized object, can be any type
             """Deserialize data using specified format.
 
@@ -426,7 +426,7 @@ class FlextApiSerializers(FlextService[bool]):
                 format_type.value
                 if isinstance(
                     format_type,
-                    FlextApiConstants.SerializationFormat,
+                    FlextApiConstants.HttpSerializationFormat,
                 )
                 else format_type
             )
@@ -449,7 +449,7 @@ class FlextApiSerializers(FlextService[bool]):
 
         def set_default_format(
             self,
-            format_type: FlextApiConstants.SerializationFormat,
+            format_type: FlextApiConstants.HttpSerializationFormat,
         ) -> r[bool]:
             """Set default serialization format.
 
