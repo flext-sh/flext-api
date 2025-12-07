@@ -11,13 +11,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from typing import Protocol, TypeVar, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from flext_core import t as _flext_core_t
-
-# TypeVar for generic operations
-T = TypeVar("T")
-U = TypeVar("U")
 
 
 class FlextApiTypes(_flext_core_t):
@@ -33,22 +29,22 @@ class FlextApiTypes(_flext_core_t):
     # CORE WEB TYPES - Generic HTTP types using Mapping for immutability
     # =========================================================================
 
-    # Direct alias for compatibility
-    type JsonValue = _flext_core_t.Json.JsonValue
+    # Use parent's JsonValue via inheritance - no alias needed
+    # Access via t.Json.JsonValue or use directly from parent
 
-    type JsonObject = dict[str, JsonValue]
+    type JsonObject = dict[str, _flext_core_t.Json.JsonValue]
     type WebData = str | bytes | JsonObject
     type WebHeaders = dict[str, str | list[str]]
     type WebParams = dict[str, str | list[str]]
     type ResponseList = list[JsonObject]
-    type ResponseDict = Mapping[str, JsonValue]
+    type ResponseDict = Mapping[str, _flext_core_t.Json.JsonValue]
 
     # =========================================================================
     # HTTP REQUEST/RESPONSE TYPES - Unified request/response types
     # =========================================================================
 
     type RequestConfig = dict[str, str | int | bool | list[str] | JsonObject]
-    type ResponseConfig = dict[str, JsonValue | JsonObject]
+    type ResponseConfig = dict[str, _flext_core_t.Json.JsonValue | JsonObject]
     type RequestBody = JsonObject | str | bytes
     type ResponseBody = JsonObject | str | bytes | None
     type HttpResponseDict = dict[str, int | str | dict[str, str] | ResponseBody]
@@ -59,13 +55,19 @@ class FlextApiTypes(_flext_core_t):
     # ENDPOINT MANAGEMENT TYPES - Route and endpoint configuration
     # =========================================================================
 
-    type EndpointConfig = dict[str, JsonValue | list[str] | JsonObject]
+    type EndpointConfig = dict[
+        str, _flext_core_t.Json.JsonValue | list[str] | JsonObject
+    ]
     type EndpointMetadata = dict[str, str | int | list[str] | JsonObject]
     type RouteConfig = dict[str, str | list[str] | JsonObject]
 
     type RouteData = dict[
         str,
-        str | Callable[..., object] | dict[str, JsonValue] | JsonValue | None,
+        str
+        | Callable[..., object]
+        | dict[str, _flext_core_t.Json.JsonValue]
+        | _flext_core_t.Json.JsonValue
+        | None,
     ]
     """Route registration data structure."""
 
@@ -86,7 +88,7 @@ class FlextApiTypes(_flext_core_t):
 
     type AuthConfig = Mapping[str, str | JsonObject]
     type AuthCredentials = Mapping[str, str | JsonObject]
-    type AuthTokenData = Mapping[str, JsonValue | int | bool]
+    type AuthTokenData = Mapping[str, _flext_core_t.Json.JsonValue | int | bool]
     type SecurityConfig = Mapping[str, bool | str | list[str] | JsonObject]
 
     # =========================================================================
@@ -100,7 +102,7 @@ class FlextApiTypes(_flext_core_t):
     type RequestKwargs = Mapping[
         str,
         Mapping[str, str]
-        | Mapping[str, JsonValue]
+        | Mapping[str, _flext_core_t.Json.JsonValue]
         | Mapping[str, str | list[str]]
         | float
         | None,
@@ -120,8 +122,8 @@ class FlextApiTypes(_flext_core_t):
 
     type ProtocolConfig = dict[str, bool | int | str | JsonObject]
     type ProtocolMessage = JsonObject | str | bytes
-    type SchemaDefinition = dict[str, JsonValue]
-    type ValidationErrors = list[dict[str, str | JsonValue]]
+    type SchemaDefinition = dict[str, _flext_core_t.Json.JsonValue]
+    type ValidationErrors = list[dict[str, str | _flext_core_t.Json.JsonValue]]
 
     # =========================================================================
     # SERVICE & PROCESSING TYPES - Service management and pipelines
@@ -173,8 +175,33 @@ class FlextApiTypes(_flext_core_t):
         Note: SerializationFormat enum moved to FlextApiConstants for consistency.
         """
 
+    class Api:
+        """API types namespace for cross-project access.
 
-# Runtime alias - use type annotation to avoid mypy error
-t: type[FlextApiTypes] = FlextApiTypes
+        Provides organized access to all API types for other FLEXT projects.
+        Usage: Other projects can reference `t.Api.RequestData`, `t.Api.ResponseData`, etc.
+        This enables consistent namespace patterns for cross-project type access.
+
+        Examples:
+            from flext_api.typings import t
+            request_data: t.Api.RequestData = ...
+            response_data: t.Api.ResponseData = ...
+
+        Note: Namespace composition via inheritance - no aliases needed.
+        Access parent namespaces directly through inheritance.
+
+        """
+
+
+# Alias for simplified usage
+t = FlextApiTypes
+
+# Namespace composition via class inheritance
+# Api namespace provides access to nested classes through inheritance
+# Access patterns:
+# - t.Api.* for API-specific types
+# - t.RequestData.* for request data types
+# - t.ResponseData.* for response data types
+# - t.Core.* for core types (inherited from parent)
 
 __all__ = ["FlextApiTypes", "t"]

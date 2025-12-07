@@ -323,7 +323,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 if not url_str:
                     return r[FlextApiModels.HttpResponse].fail("Invalid URL type")
                 headers_raw = request_kwargs.get("headers", {})
-                headers_dict = headers_raw if isinstance(headers_raw, dict) else {}  # type: ignore[assignment]
+                headers_dict = headers_raw if isinstance(headers_raw, dict) else {}
                 # Extract optional parameters with type narrowing
                 params_raw = request_kwargs.get("params")
                 # httpx.request accepts dict[str, str | list[str]] | None for params

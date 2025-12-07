@@ -38,6 +38,18 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
     """
 
+    # Declare attributes to satisfy type checkers
+    # These are initialized via object.__setattr__() in __init__()
+    is_connected: bool
+    last_event_id: str
+    _connected: bool
+    _on_event_handlers: dict[str, list[Callable]]
+    _on_connect_handlers: list[Callable]
+    _on_disconnect_handlers: list[Callable]
+    _on_error_handlers: list[Callable]
+    _retry_timeout: int
+    _auto_reconnect: bool
+
     def __init__(
         self,
         retry_timeout: int | None = None,
@@ -68,19 +80,24 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         )
 
         # Initialize stub attributes for testing - use constants if not provided
-        self.is_connected = False
-        self._connected = False
-        self.last_event_id = ""
-        self._on_event_handlers: dict[str, list[Callable]] = {}
-        self._on_connect_handlers: list[Callable] = []
-        self._on_disconnect_handlers: list[Callable] = []
-        self._on_error_handlers: list[Callable] = []
-        self._retry_timeout = (
-            retry_timeout
-            if retry_timeout is not None
-            else FlextApiConstants.SSE.DEFAULT_RETRY_TIMEOUT
+        # Use object.__setattr__() to bypass frozen Pydantic model constraints
+        object.__setattr__(self, "is_connected", False)
+        object.__setattr__(self, "_connected", False)
+        object.__setattr__(self, "last_event_id", "")
+        object.__setattr__(self, "_on_event_handlers", {})
+        object.__setattr__(self, "_on_connect_handlers", [])
+        object.__setattr__(self, "_on_disconnect_handlers", [])
+        object.__setattr__(self, "_on_error_handlers", [])
+        object.__setattr__(
+            self,
+            "_retry_timeout",
+            (
+                retry_timeout
+                if retry_timeout is not None
+                else FlextApiConstants.SSE.DEFAULT_RETRY_TIMEOUT
+            ),
         )
-        self._auto_reconnect = auto_reconnect
+        object.__setattr__(self, "_auto_reconnect", auto_reconnect)
 
         # Initialize protocol
         init_result = self.initialize()

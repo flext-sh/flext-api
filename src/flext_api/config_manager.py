@@ -172,12 +172,22 @@ class FlextApiConfigManager:
 
         headers_value = self._config["headers"]
         if isinstance(headers_value, dict):
-            return r[dict[str, str]].ok(headers_value)
+            # Type narrowing: convert dict values to str
+            headers_dict: dict[str, str] = {
+                k: str(v) if not isinstance(v, str) else v
+                for k, v in headers_value.items()
+            }
+            return r[dict[str, str]].ok(headers_dict)
         if isinstance(headers_value, str):
             try:
                 parsed_headers = json.loads(headers_value)
                 if isinstance(parsed_headers, dict):
-                    return r[dict[str, str]].ok(parsed_headers)
+                    # Type narrowing: convert dict values to str
+                    headers_dict = {
+                        k: str(v) if not isinstance(v, str) else v
+                        for k, v in parsed_headers.items()
+                    }
+                    return r[dict[str, str]].ok(headers_dict)
                 return r[dict[str, str]].fail(
                     f"Parsed headers must be dict, got: {type(parsed_headers)}",
                 )

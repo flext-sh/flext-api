@@ -10,10 +10,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, Self, cast
+from typing import ClassVar, Self
 
 from flext_core import r, s, t
 from flext_core.runtime import FlextRuntime
+from pydantic import PrivateAttr
 
 from flext_api.client import FlextApiClient
 from flext_api.config import FlextApiConfig
@@ -36,6 +37,9 @@ class FlextApi(s[FlextApiConfig]):
     Models: ClassVar = FlextApiModels
     Config: ClassVar = FlextApiConfig
 
+    # API-specific configuration storage (avoids type override of parent _config)
+    _api_config: FlextApiConfig | None = PrivateAttr(default=None)
+
     def __new__(cls, config: FlextApiConfig | None = None) -> Self:
         """Intercept positional config argument and convert to kwargs.
 
@@ -45,9 +49,8 @@ class FlextApi(s[FlextApiConfig]):
         """
         instance = super().__new__(cls)
         if config is not None:
-            # Type-safe attribute assignment for __new__ pattern
-            # Use object.__setattr__ to bypass type checker for dynamic attribute
-            object.__setattr__(instance, "_flext_api_config", config)
+            # Store config for use in __init__
+            object.__setattr__(instance, "_init_config", config)
         return instance
 
     def __init__(
@@ -64,33 +67,29 @@ class FlextApi(s[FlextApiConfig]):
         """
         # Type narrowing: convert kwargs to expected type
         kwargs_typed: dict[str, t.GeneralValueType] = {
-            k: cast("t.GeneralValueType", FlextRuntime.normalize_to_general_value(v))
-            for k, v in kwargs.items()
+            k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
         }
         super().__init__(**kwargs_typed)
-        api_config = getattr(self, "_flext_api_config", None)
-        if api_config is not None:
-            # Override _config from base class with FlextApiConfig
-            object.__setattr__(self, "_config", api_config)
-            delattr(self, "_flext_api_config")
+
+        # Determine which config to use
+        init_config = getattr(self, "_init_config", None)
+        if init_config is not None:
+            self._api_config = init_config
         elif config is not None:
-            # Override _config from base class with FlextApiConfig
-            object.__setattr__(self, "_config", config)
+            self._api_config = config
         else:
-            # Override _config from base class with FlextApiConfig
-            object.__setattr__(self, "_config", FlextApiConfig())
-        # Type narrowing: _config is now FlextApiConfig
-        config_typed: FlextApiConfig = cast("FlextApiConfig", self._config)
-        self._client = FlextApiClient(config=config_typed)
+            self._api_config = FlextApiConfig()
+
+        # Initialize HTTP client with API config
+        self._client = FlextApiClient(config=self._api_config)
 
     def execute(
         self,
         **_kwargs: FlextApiTypes.JsonValue | str | int | bool,
     ) -> r[FlextApiConfig]:
         """Execute FlextService interface."""
-        # Type narrowing: _config is FlextApiConfig
-        config_typed: FlextApiConfig = cast("FlextApiConfig", self._config)
-        return r[FlextApiConfig].ok(config_typed)
+        config = self._api_config if self._api_config is not None else FlextApiConfig()
+        return r[FlextApiConfig].ok(config)
 
     def request(
         self,
@@ -106,6 +105,65 @@ class FlextApi(s[FlextApiConfig]):
 
         """
         return self._client.request(request)
+
+    def _extract_query_params(
+        self,
+        request_kwargs: FlextApiTypes.RequestKwargs | None,
+    ) -> r[FlextApiTypes.WebParams]:
+        """Extract and validate query parameters from request_kwargs.
+
+        Args:
+            request_kwargs: Optional request kwargs containing params.
+
+        Returns:
+            r[WebParams]: Query params dict or error.
+
+        """
+        query_params: FlextApiTypes.WebParams = {}
+        if request_kwargs is None or "params" not in request_kwargs:
+            return r[FlextApiTypes.WebParams].ok(query_params)
+
+        params_value = request_kwargs["params"]
+        if params_value is None:
+            return r[FlextApiTypes.WebParams].ok(query_params)
+
+        if not isinstance(params_value, dict):
+            return r[FlextApiTypes.WebParams].fail(
+                f"Invalid params type: {type(params_value)}",
+            )
+
+        # Type reconstruction: build params dict with proper narrowing
+        params_result: dict[str, str | list[str]] = {}
+        for k, v in params_value.items():
+            if isinstance(v, str):
+                params_result[k] = v
+            elif isinstance(v, list):
+                # Convert list elements to strings if needed
+                str_list: list[str] = [str(item) for item in v]
+                params_result[k] = str_list
+            else:
+                params_result[k] = str(v)
+        return r[FlextApiTypes.WebParams].ok(params_result)
+
+    def _finalize_body(
+        self,
+        body_value: object,
+    ) -> FlextApiTypes.RequestBody:
+        """Finalize body value to RequestBody type.
+
+        Args:
+            body_value: Raw body value from extraction.
+
+        Returns:
+            RequestBody: Finalized body value.
+
+        """
+        if isinstance(body_value, (str, bytes)):
+            return body_value
+        if isinstance(body_value, dict):
+            # dict is compatible with JsonObject which is part of RequestBody
+            return body_value
+        return str(body_value)
 
     def _http_method(
         self,
@@ -164,31 +222,16 @@ class FlextApi(s[FlextApiConfig]):
                 timeout_result.error or "Timeout extraction failed",
             )
 
-        # Extract query params - use empty dict if not present
-        query_params: FlextApiTypes.WebParams = {}
-        if request_kwargs is not None and "params" in request_kwargs:
-            params_value = request_kwargs["params"]
-            if params_value is not None:
-                # Convert dict[str, str] to WebParams (dict[str, str | list[str]])
-                if isinstance(params_value, dict):
-                    query_params = {
-                        k: (v if isinstance(v, (str, list)) else str(v))
-                        for k, v in params_value.items()
-                    }
-                else:
-                    return r[FlextApiModels.HttpResponse].fail(
-                        f"Invalid params type: {type(params_value)}",
-                    )
+        # Extract query params
+        query_params_result = self._extract_query_params(request_kwargs)
+        if query_params_result.is_failure:
+            return r[FlextApiModels.HttpResponse].fail(
+                query_params_result.error or "Query params extraction failed",
+            )
 
-        # Use body value directly (HttpRequest accepts empty dict or actual body)
+        # Finalize body value
         body_value = body_result.unwrap()
-        # Type narrowing: ensure RequestBody compatibility
-        if isinstance(body_value, (str, bytes)):
-            body_final: FlextApiTypes.RequestBody = body_value
-        elif isinstance(body_value, dict):
-            body_final = body_value  # type: ignore[assignment]
-        else:
-            body_final = str(body_value)
+        body_final = self._finalize_body(body_value)
 
         # Create request model
         http_request = FlextApiModels.HttpRequest(
@@ -196,7 +239,7 @@ class FlextApi(s[FlextApiConfig]):
             url=url,
             body=body_final,
             headers=headers_result.unwrap(),
-            query_params=query_params,
+            query_params=query_params_result.unwrap(),
             timeout=timeout_result.unwrap(),
         )
         return self.request(http_request)

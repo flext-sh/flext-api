@@ -11,25 +11,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
+from typing import Self
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import m as m_core, u
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
+from pydantic import Field, computed_field, field_validator
 
 from flext_api.constants import FlextApiConstants
 from flext_api.typings import FlextApiTypes
-
-
-class FlextApiBaseModel(BaseModel):
-    """Base model for FlextApi with standard Pydantic v2 configuration."""
-
-    model_config = ConfigDict(
-        use_enum_values=True,
-        validate_default=True,
-        str_strip_whitespace=True,
-        extra="forbid",
-    )
 
 
 class FlextApiModels(m_core):
@@ -192,8 +181,8 @@ class FlextApiModels(m_core):
     # URL AND PARSING MODELS
     # =========================================================================
 
-    class Url(BaseModel):
-        """URL parsing and validation model."""
+    class Url(m_core.Value):
+        """URL parsing and validation model (immutable value object)."""
 
         url: str = Field(
             ...,
@@ -264,8 +253,8 @@ class FlextApiModels(m_core):
     # CONFIGURATION MODELS
     # =========================================================================
 
-    class ClientConfig(BaseModel):
-        """HTTP client configuration model."""
+    class ClientConfig(m_core.Value):
+        """HTTP client configuration model (immutable value object)."""
 
         base_url: str = Field(
             default=FlextApiConstants.DEFAULT_BASE_URL,
@@ -301,8 +290,8 @@ class FlextApiModels(m_core):
     # PAGINATION MODELS
     # =========================================================================
 
-    class Pagination(BaseModel):
-        """Pagination information model."""
+    class PaginationInfo(m_core.Value):
+        """Pagination information model for HTTP operations (immutable value object)."""
 
         page: int = Field(
             default=1,
@@ -339,8 +328,8 @@ class FlextApiModels(m_core):
     # ERROR MODELS
     # =========================================================================
 
-    class Error(BaseModel):
-        """HTTP error response model."""
+    class Error(m_core.Value):
+        """HTTP error response model (immutable value object)."""
 
         message: str = Field(..., description="Human-readable error message")
         error_code: str = Field(default="", description="Machine-readable error code")
@@ -377,8 +366,8 @@ class FlextApiModels(m_core):
     # QUERY/FILTER MODELS
     # =========================================================================
 
-    class QueryParams(BaseModel):
-        """Query parameters model."""
+    class QueryParams(m_core.Value):
+        """Query parameters model (immutable value object)."""
 
         params: FlextApiTypes.WebParams = Field(
             default_factory=dict,
@@ -393,12 +382,13 @@ class FlextApiModels(m_core):
                     return param_value
             return ""
 
-        def set_param(self, name: str, value: str | list[str]) -> None:
-            """Set query parameter value."""
-            self.params[name] = value
+        def with_param(self, name: str, value: str | list[str]) -> Self:
+            """Return new instance with updated parameter (functional pattern)."""
+            updated_params = {**self.params, name: value}
+            return self.model_copy(update={"params": updated_params})
 
-    class Headers(BaseModel):
-        """HTTP headers model."""
+    class Headers(m_core.Value):
+        """HTTP headers model (immutable value object)."""
 
         headers: dict[str, str] = Field(
             default_factory=dict,
@@ -413,24 +403,22 @@ class FlextApiModels(m_core):
                     return value
             return ""
 
-        def set_header(self, name: str, value: str) -> None:
-            """Set header value."""
-            self.headers[name] = value
+        def with_header(self, name: str, value: str) -> Self:
+            """Return new instance with updated header (functional pattern)."""
+            updated_headers = {**self.headers, name: value}
+            return self.model_copy(update={"headers": updated_headers})
 
-        def remove_header(self, name: str) -> None:
-            """Remove header by name (case-insensitive)."""
+        def without_header(self, name: str) -> Self:
+            """Return new instance without header (case-insensitive, functional pattern)."""
             # Use u.filter() for unified filtering (DSL pattern)
-            keys_to_remove = cast(
-                "list[str]",
-                u.Collection.filter(
-                    list(self.headers.keys()), lambda k: k.lower() == name.lower()
-                ),
+            keys_to_remove = u.Collection.filter(
+                list(self.headers.keys()),
+                lambda k: k.lower() == name.lower(),
             )
-            u.Collection.process(
-                keys_to_remove,
-                processor=lambda key: self.headers.pop(key, None),
-                on_error="skip",
-            )
+            updated_headers = {
+                k: v for k, v in self.headers.items() if k not in keys_to_remove
+            }
+            return self.model_copy(update={"headers": updated_headers})
 
     # =========================================================================
     # FACTORY METHODS - Model creation utilities
@@ -551,4 +539,31 @@ class FlextApiModels(m_core):
 
 m = FlextApiModels  # Runtime alias (not TypeAlias to avoid PYI042)
 
-__all__ = ["FlextApiBaseModel", "FlextApiModels", "m"]
+# =============================================================================
+# POPULATE FlextModels.Api NAMESPACE
+# =============================================================================
+# Copy all models from FlextApiModels to FlextModels.Api namespace
+# This allows access via both:
+# - FlextApiModels.* (backward compatibility, deprecated)
+# - FlextModels.Api.* (new namespace pattern)
+# - m.Api.* (convenience alias)
+# =============================================================================
+
+# Get all attributes from FlextApiModels that are models, classes, or type aliases
+# Exclude private attributes and special methods
+_api_model_attrs = {
+    name: attr
+    for name, attr in vars(FlextApiModels).items()
+    if not name.startswith("_")
+    and (
+        isinstance(attr, type)
+        or hasattr(attr, "__origin__")  # TypeAlias
+        or (callable(attr) and not isinstance(attr, type(FlextApiModels.__init__)))
+    )
+}
+
+# Populate FlextModels.Api namespace
+for name, attr in _api_model_attrs.items():
+    setattr(m_core.Api, name, attr)
+
+__all__ = ["FlextApiModels", "m"]

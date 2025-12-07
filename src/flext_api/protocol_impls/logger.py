@@ -13,7 +13,7 @@ from flext_core.typings import t
 from flext_api.protocols import FlextApiProtocols
 
 
-class LoggerProtocolImplementation(FlextApiProtocols.LoggerProtocol):
+class LoggerProtocolImplementation(FlextApiProtocols.Api.Logger.LoggerProtocol):
     """Logger implementation conforming to LoggerProtocol."""
 
     def __init__(self) -> None:

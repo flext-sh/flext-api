@@ -48,6 +48,10 @@ class FlextApiServer(FlextService[object], x.Validation):
     railway pattern results, and dependency injection.
     """
 
+    # Type annotations for dynamically-set fields (using object.__setattr__)
+    _protocol_handlers: dict[str, FlextApiTypes.ProtocolHandler]
+    _middleware_pipeline: list[Callable[..., object]]
+
     class RouteRegistry:
         """Handle all endpoint registration with unified interface.
 
@@ -103,11 +107,10 @@ class FlextApiServer(FlextService[object], x.Validation):
                     normalized_value = FlextRuntime.normalize_to_general_value(v)
                     # Type narrowing: ensure JsonValue compatibility
                     if isinstance(
-                        normalized_value, (str, int, float, bool, type(None))
+                        normalized_value,
+                        (str, int, float, bool, type(None), list, dict),
                     ):
                         options_json[k] = normalized_value
-                    elif isinstance(normalized_value, (list, dict)):
-                        options_json[k] = normalized_value  # type: ignore[assignment]
                     else:
                         options_json[k] = str(normalized_value)
                 else:
@@ -125,9 +128,10 @@ class FlextApiServer(FlextService[object], x.Validation):
                 schema_normalized = FlextRuntime.normalize_to_general_value(schema)
                 # Type narrowing: ensure JsonValue compatibility
                 if isinstance(
-                    schema_normalized, (str, int, float, bool, type(None), list, dict)
+                    schema_normalized,
+                    (str, int, float, bool, type(None), list, dict),
                 ):
-                    route_data["schema"] = schema_normalized  # type: ignore[assignment]
+                    route_data["schema"] = schema_normalized
                 else:
                     route_data["schema"] = str(schema_normalized)
 
@@ -171,14 +175,22 @@ class FlextApiServer(FlextService[object], x.Validation):
                     if hasattr(connection, "close"):
                         connection.close()
                 except Exception as e:
-                    self._logger.warning(f"Failed to close WebSocket {conn_id}: {e}")
+                    self._logger.warning(
+                        f"Failed to close WebSocket {conn_id}: {e}",
+                        conn_id=str(conn_id),
+                        error=str(e),
+                    )
 
             for conn_id, connection in self._sse_connections.items():
                 try:
                     if hasattr(connection, "close"):
                         connection.close()
                 except Exception as e:
-                    self._logger.warning(f"Failed to close SSE {conn_id}: {e}")
+                    self._logger.warning(
+                        f"Failed to close SSE {conn_id}: {e}",
+                        conn_id=str(conn_id),
+                        error=str(e),
+                    )
 
             self._websocket_connections.clear()
             self._sse_connections.clear()
@@ -408,8 +420,8 @@ class FlextApiServer(FlextService[object], x.Validation):
         )
 
         # Protocol and middleware with FlextConstants defaults
-        self._protocol_handlers: dict[str, FlextApiTypes.ProtocolHandler] = {}
-        self._middleware_pipeline: list[Callable[..., object]] = []
+        object.__setattr__(self, "_protocol_handlers", {})
+        object.__setattr__(self, "_middleware_pipeline", [])
 
     def _validate_server_config(
         self,
@@ -516,7 +528,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         for k, v in options.items():
             normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
-                options_typed[k] = normalized  # type: ignore[assignment]
+                options_typed[k] = normalized
             else:
                 options_typed[k] = str(normalized)
         return self._route_registry.register(
@@ -540,7 +552,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         for k, v in options.items():
             normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
-                options_typed[k] = normalized  # type: ignore[assignment]
+                options_typed[k] = normalized
             else:
                 options_typed[k] = str(normalized)
         return self._route_registry.register(
@@ -564,7 +576,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         for k, v in options.items():
             normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
-                options_typed[k] = normalized  # type: ignore[assignment]
+                options_typed[k] = normalized
             else:
                 options_typed[k] = str(normalized)
         return self._route_registry.register(
@@ -588,7 +600,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         for k, v in options.items():
             normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
-                options_typed[k] = normalized  # type: ignore[assignment]
+                options_typed[k] = normalized
             else:
                 options_typed[k] = str(normalized)
         return self._route_registry.register(

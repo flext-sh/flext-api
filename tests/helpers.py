@@ -22,8 +22,8 @@ from typing import cast
 
 import pytest
 from flext_core import FlextConstants, FlextResult, T
-from flext_tests import FlextTestsDomains
-from flext_tests.utilities import FlextTestsUtilities
+from flext_tests import FlextTestsDomains, u
+from flext_tests.domains import FlextTestsDomains as d
 
 from flext_api.typings import FlextApiTypes
 
@@ -362,7 +362,7 @@ def create_test_result_success(data: object = None) -> FlextResult[object]:
     """
     if data is None:
         data = {"success": True, "message": "Test operation successful"}
-    return FlextTestsUtilities.Tests.ResultHelpers.create_success_result(data)
+    return u.Tests.Result.create_success_result(data)
 
 
 def create_test_result_failure(error: str = "Test error") -> FlextResult[object]:
@@ -372,7 +372,7 @@ def create_test_result_failure(error: str = "Test error") -> FlextResult[object]
         Failed FlextResult object.
 
     """
-    return FlextTestsUtilities.create_test_result(success=False, error=error)
+    return u.Tests.Result.create_failure_result(error)
 
 
 def create_functional_test_service(
@@ -385,7 +385,7 @@ def create_functional_test_service(
         Functional service object.
 
     """
-    return FlextTestsUtilities.functional_service(service_type=service_type, **config)
+    return d.create_service(service_type=service_type, **config)
 
 
 def create_test_context(
@@ -400,7 +400,11 @@ def create_test_context(
         Test context object.
 
     """
-    return FlextTestsUtilities.test_context(target, attribute, new_value, **options)
+    # Create test context and set attribute if provided
+    context = u.Tests.ContextHelpers.create_test_context()
+    if attribute and new_value is not None:
+        context.set(attribute, new_value)
+    return context
 
 
 def assert_result_with_utilities[T](result: FlextResult[T]) -> T:
@@ -410,7 +414,7 @@ def assert_result_with_utilities[T](result: FlextResult[T]) -> T:
         The unwrapped result data.
 
     """
-    return FlextTestsUtilities.TestUtilities.assert_result_success(result)
+    return u.Tests.Result.assert_result_success(result)
 
 
 def assert_failure_with_utilities[T](result: FlextResult[T]) -> str:
@@ -420,7 +424,7 @@ def assert_failure_with_utilities[T](result: FlextResult[T]) -> str:
         The error message from the failed result.
 
     """
-    return FlextTestsUtilities.TestUtilities.assert_result_failure(result)
+    return u.Tests.Result.assert_result_failure(result)
 
 
 # ============================================================================

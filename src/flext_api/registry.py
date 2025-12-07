@@ -17,9 +17,9 @@ from typing import cast
 from flext_core import (
     FlextDispatcher,
     FlextRegistry,
-    p,
     r,
 )
+from flext_core.protocols import p
 
 from flext_api.plugins import FlextApiPlugins
 
@@ -61,10 +61,12 @@ class FlextApiRegistry(FlextRegistry):
             dispatcher = FlextDispatcher()
 
         # Type narrowing: FlextDispatcher implements p.Application.CommandBus
-        dispatcher_typed: p.Application.CommandBus = cast(
-            "p.Application.CommandBus", dispatcher
+        # Cast needed for type compatibility
+        dispatcher_cmd_bus: p.Application.CommandBus | None = cast(
+            "p.Application.CommandBus | None",
+            dispatcher,
         )
-        super().__init__(dispatcher=dispatcher_typed)
+        super().__init__(dispatcher=dispatcher_cmd_bus)
         # Logger inherited from parent FlextService - no assignment needed
 
         # Plugin storage by category

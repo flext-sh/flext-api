@@ -19,9 +19,11 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
+from typing import cast
 
 import websockets
 from flext_core import r
+from pydantic import ConfigDict
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
@@ -51,6 +53,29 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     - FlextLogger for structured logging
     - Event callbacks for message handling
     """
+
+    # Override frozen constraint from RFCProtocolImplementation - WebSocket needs mutable state
+    model_config = ConfigDict(frozen=False, arbitrary_types_allowed=True)
+
+    # Declare attributes to satisfy type checkers
+    # These are initialized via object.__setattr__() in __init__()
+    _ping_interval: float
+    _ping_timeout: float
+    _close_timeout: float
+    _max_size: int
+    _max_queue: int
+    _compression: str
+    _auto_reconnect: bool
+    _reconnect_max_attempts: int
+    _reconnect_backoff_factor: float
+    _connection: object | None
+    _connected: bool
+    _url: str
+    _headers: dict[str, str]
+    _on_message_handlers: list[Callable]
+    _on_connect_handlers: list[Callable]
+    _on_disconnect_handlers: list[Callable]
+    _on_error_handlers: list[Callable]
 
     def __init__(
         self,
@@ -85,62 +110,95 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             description="WebSocket protocol support with event-driven architecture",
         )
 
+        # Use object.__setattr__() to bypass frozen Pydantic model constraints
         # WebSocket configuration - use constants if not provided
-        self._ping_interval = (
-            ping_interval
-            if ping_interval is not None
-            else FlextApiConstants.WebSocket.DEFAULT_PING_INTERVAL
+        object.__setattr__(
+            self,
+            "_ping_interval",
+            (
+                ping_interval
+                if ping_interval is not None
+                else FlextApiConstants.WebSocket.DEFAULT_PING_INTERVAL
+            ),
         )
-        self._ping_timeout = (
-            ping_timeout
-            if ping_timeout is not None
-            else FlextApiConstants.WebSocket.DEFAULT_PING_TIMEOUT
+        object.__setattr__(
+            self,
+            "_ping_timeout",
+            (
+                ping_timeout
+                if ping_timeout is not None
+                else FlextApiConstants.WebSocket.DEFAULT_PING_TIMEOUT
+            ),
         )
-        self._close_timeout = (
-            close_timeout
-            if close_timeout is not None
-            else FlextApiConstants.WebSocket.DEFAULT_CLOSE_TIMEOUT
+        object.__setattr__(
+            self,
+            "_close_timeout",
+            (
+                close_timeout
+                if close_timeout is not None
+                else FlextApiConstants.WebSocket.DEFAULT_CLOSE_TIMEOUT
+            ),
         )
-        self._max_size = (
-            max_size
-            if max_size is not None
-            else FlextApiConstants.WebSocket.DEFAULT_MAX_SIZE
+        object.__setattr__(
+            self,
+            "_max_size",
+            (
+                max_size
+                if max_size is not None
+                else FlextApiConstants.WebSocket.DEFAULT_MAX_SIZE
+            ),
         )
-        self._max_queue = (
-            max_queue
-            if max_queue is not None
-            else FlextApiConstants.WebSocket.DEFAULT_MAX_QUEUE
+        object.__setattr__(
+            self,
+            "_max_queue",
+            (
+                max_queue
+                if max_queue is not None
+                else FlextApiConstants.WebSocket.DEFAULT_MAX_QUEUE
+            ),
         )
-        self._compression = (
-            compression
-            if compression is not None
-            else FlextApiConstants.WebSocket.COMPRESSION_DEFLATE
+        object.__setattr__(
+            self,
+            "_compression",
+            (
+                compression
+                if compression is not None
+                else FlextApiConstants.WebSocket.COMPRESSION_DEFLATE
+            ),
         )
 
         # Reconnection configuration - use constants if not provided
-        self._auto_reconnect = auto_reconnect
-        self._reconnect_max_attempts = (
-            reconnect_max_attempts
-            if reconnect_max_attempts is not None
-            else FlextApiConstants.WebSocket.DEFAULT_RECONNECT_MAX_ATTEMPTS
+        object.__setattr__(self, "_auto_reconnect", auto_reconnect)
+        object.__setattr__(
+            self,
+            "_reconnect_max_attempts",
+            (
+                reconnect_max_attempts
+                if reconnect_max_attempts is not None
+                else FlextApiConstants.WebSocket.DEFAULT_RECONNECT_MAX_ATTEMPTS
+            ),
         )
-        self._reconnect_backoff_factor = (
-            reconnect_backoff_factor
-            if reconnect_backoff_factor is not None
-            else FlextApiConstants.WebSocket.DEFAULT_RECONNECT_BACKOFF_FACTOR
+        object.__setattr__(
+            self,
+            "_reconnect_backoff_factor",
+            (
+                reconnect_backoff_factor
+                if reconnect_backoff_factor is not None
+                else FlextApiConstants.WebSocket.DEFAULT_RECONNECT_BACKOFF_FACTOR
+            ),
         )
 
         # Connection state
-        self._connection: object | None = None
-        self._connected = False
-        self._url = ""
-        self._headers: dict[str, str] = {}
+        object.__setattr__(self, "_connection", None)
+        object.__setattr__(self, "_connected", False)
+        object.__setattr__(self, "_url", "")
+        object.__setattr__(self, "_headers", {})
 
         # Event handlers
-        self._on_message_handlers: list[Callable] = []
-        self._on_connect_handlers: list[Callable] = []
-        self._on_disconnect_handlers: list[Callable] = []
-        self._on_error_handlers: list[Callable] = []
+        object.__setattr__(self, "_on_message_handlers", [])
+        object.__setattr__(self, "_on_connect_handlers", [])
+        object.__setattr__(self, "_on_disconnect_handlers", [])
+        object.__setattr__(self, "_on_error_handlers", [])
 
         # Initialize protocol
         init_result = self.initialize()
@@ -205,7 +263,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         self,
         request: dict[str, object],
         **kwargs: object,
-    ) -> r[dict[str, object]]:  # type: ignore[override]
+    ) -> r[dict[str, object]]:
         """Send WebSocket request (connect and send message).
 
         Args:
@@ -220,7 +278,11 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[dict[str, object]].fail("Request must be a dictionary")
 
         # Extract WebSocket-specific parameters
-        message_result = self._extract_message(request, kwargs)  # type: ignore[arg-type]
+        # Cast request to JsonValue dict to match method signature
+        message_result = self._extract_message(
+            cast("dict[str, FlextApiTypes.JsonValue]", request),
+            kwargs,
+        )
         if message_result.is_failure:
             return r[dict[str, object]].fail(
                 message_result.error or "Message extraction failed",
@@ -230,7 +292,10 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         message_type = self._extract_message_type(kwargs)
 
         # Connect if not connected
-        connect_result = self._ensure_connected(request)  # type: ignore[arg-type]
+        # Cast request to JsonValue dict to match method signature
+        connect_result = self._ensure_connected(
+            cast("dict[str, FlextApiTypes.JsonValue]", request)
+        )
         if connect_result.is_failure:
             return r[dict[str, object]].fail(
                 f"WebSocket connection failed: {connect_result.error}",
@@ -429,7 +494,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             self._headers = headers
 
             # Connect to WebSocket server
-            self._connection = websockets.connect(
+            connection_obj = websockets.connect(
                 url,
                 extra_headers=headers,
                 ping_interval=self._ping_interval,
@@ -440,6 +505,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 compression=self._compression,
             )
 
+            self._connection = connection_obj
             self._connected = True
 
             # Simplified sync implementation - no background tasks needed

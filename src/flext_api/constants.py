@@ -115,8 +115,8 @@ class FlextApiConstants(c_core):
         MULTIPART = "multipart/form-data"
         OCTET_STREAM = "application/octet-stream"
 
-    class SerializationFormat(StrEnum):
-        """Supported serialization formats."""
+    class HttpSerializationFormat(StrEnum):
+        """HTTP-specific serialization formats (extends parent SerializationFormat)."""
 
         JSON = "json"
         MSGPACK = "msgpack"
