@@ -429,7 +429,6 @@ flext-api/
 - **[Getting Started](./docs/guides/getting-started.md)**: Installation and basic usage
 - **[API Reference](./docs/api-reference/)**: Complete API documentation
 - **[Architecture Overview](./docs/architecture/overview.md)**: Architecture and patterns
-- **[Development Guide](./docs/development/contributing.md)**: Contributing guidelines
 
 ### **Enterprise Context**
 
@@ -494,7 +493,7 @@ make type-check
 
 ### **Getting Help**
 
-- **Documentation**: See [Troubleshooting Guide](docs/troubleshooting.md)
+- **Documentation**: See [Troubleshooting Guide](docs/guides/troubleshooting.md)
 - **Development**: Run `make help` for all commands
 - **FLEXT Context**: Part of enterprise platform - see [root README](../README.md)
 

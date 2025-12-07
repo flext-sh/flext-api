@@ -94,7 +94,7 @@ FLEXT-API will have a **mandatory dependency on flext-core** and will fully inte
 
 ## References
 
-- [FLEXT-Core Documentation](../flext-core/)
+- [FLEXT-Core Documentation](https://github.com/organization/flext/tree/main/flext-core/)
 - [Railway Pattern Implementation](002-railway-pattern.md)
 - [Ecosystem Architecture Overview](../../overview.md)
 - GitHub Issue: #123 - Ecosystem HTTP Standardization

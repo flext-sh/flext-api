@@ -453,15 +453,13 @@ logger.error("HTTP request failed", extra={
 
 1. **Explore Examples**: Check `examples/` directory for working examples
 2. **API Reference**: See [API Reference](../api-reference/) for complete documentation
-3. **Protocol Guide**: Learn about supported protocols in [Protocols](../api-reference/protocols.md)
+3. **Protocol Guide**: Learn about supported protocols in [Protocols](../api/protocols.md)
 4. **Testing Guide**: See [Testing Guide](./testing.md) for comprehensive testing strategies
-5. **Contributing**: See [Development Guide](../development/contributing.md) for contribution guidelines
 
 ## 📖 Related Documentation
 
-- **[FLEXT-Core Documentation](../../flext-core/docs/)**: Foundation library documentation
+- **[FLEXT-Core Documentation](https://github.com/organization/flext/tree/main/flext-core/docs/)**: Foundation library documentation
 - **[HTTP Client Guide](./http-client.md)**: Detailed HTTP client usage
-- **[FastAPI Guide](./fastapi-apps.md)**: FastAPI application development
 - **[Configuration Guide](./configuration.md)**: Configuration management
 - **[Testing Guide](./testing.md)**: Testing strategies and patterns
 

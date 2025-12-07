@@ -206,7 +206,7 @@ FlextResult.fail("Something went wrong")  # Not helpful
 
 ## References
 
-- [FLEXT-Core FlextResult Documentation](../../../flext-core/docs/flext_result.md)
+- [FLEXT-Core Railway-Oriented Programming](https://github.com/organization/flext/tree/main/flext-core/docs/guides/railway-oriented-programming.md)
 - [Railway-Oriented Programming](https://fsharpforfunandprofit.com/rop/)
 - [Error Handling in Scala](https://typelevel.org/cats/datatypes/either.html)
 - GitHub Issue: #156 - Railway Pattern Implementation

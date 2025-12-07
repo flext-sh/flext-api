@@ -70,7 +70,7 @@ class FlextApiServer(FlextService[object], x.Validation):
 
         def register(
             self,
-            method: FlextApiConstants.Method | str,
+            method: FlextApiConstants.Api.Method | str,
             path: str,
             handler: Callable[..., object],
             prefix: str = "",
@@ -391,10 +391,10 @@ class FlextApiServer(FlextService[object], x.Validation):
 
         # Use constants for defaults
         server_host = (
-            host if host is not None else FlextApiConstants.Server.DEFAULT_HOST
+            host if host is not None else FlextApiConstants.Api.Server.DEFAULT_HOST
         )
         server_port = (
-            port if port is not None else FlextApiConstants.Server.DEFAULT_PORT
+            port if port is not None else FlextApiConstants.Api.Server.DEFAULT_PORT
         )
 
         # Validate configuration using Flext validation patterns
@@ -518,7 +518,7 @@ class FlextApiServer(FlextService[object], x.Validation):
     def register_route(
         self,
         path: str,
-        method: FlextApiConstants.Method | str,
+        method: FlextApiConstants.Api.Method | str,
         handler: Callable,
         **options: object,
     ) -> r[bool]:

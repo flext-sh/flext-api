@@ -11,11 +11,11 @@ from __future__ import annotations
 
 from typing import Final, TypeAlias
 
-from flext_api.constants import FlextApiConstants
+from flext_api.constants import c
 
 
-class TestsConstants(FlextApiConstants):
-    """Test constants extending FlextApiConstants.
+class TestsConstants(c):
+    """Test constants extending c.
 
     Provides test-specific constants without duplicating parent functionality.
     All parent constants are accessible via inheritance hierarchy.
@@ -68,30 +68,28 @@ class TestsConstants(FlextApiConstants):
     class Literals:
         """Literal type aliases for test constants (Python 3.13 pattern).
 
-        These type aliases reuse production Literals from FlextApiConstants
+        These type aliases reuse production Literals from c
         to ensure consistency between tests and production code.
         """
 
         # Reuse production Literals for consistency (Python 3.13+ best practices)
         # HTTP method literal (reusing production type)
-        HttpMethodLiteral: TypeAlias = FlextApiConstants.MethodLiteral
+        HttpMethodLiteral: TypeAlias = c.Api.MethodLiteral
 
         # Content type literal (reusing production type)
-        ContentTypeLiteral: TypeAlias = FlextApiConstants.ContentTypeLiteral
+        ContentTypeLiteral: TypeAlias = c.Api.ContentTypeLiteral
 
         # Status literal (reusing production type)
-        StatusLiteral: TypeAlias = FlextApiConstants.StatusLiteral
+        StatusLiteral: TypeAlias = c.Api.StatusLiteral
 
         # Serialization format literal (reusing production type)
-        SerializationFormatLiteral: TypeAlias = (
-            FlextApiConstants.SerializationFormatLiteral
-        )
+        SerializationFormatLiteral: TypeAlias = c.Api.SerializationFormatLiteral
 
         # Protocol literals (reusing production types)
-        WebSocketProtocolLiteral: TypeAlias = FlextApiConstants.WebSocketProtocolLiteral
-        HttpProtocolLiteral: TypeAlias = FlextApiConstants.HttpProtocolLiteral
-        SseProtocolLiteral: TypeAlias = FlextApiConstants.SseProtocolLiteral
-        GraphQLProtocolLiteral: TypeAlias = FlextApiConstants.GraphQLProtocolLiteral
+        WebSocketProtocolLiteral: TypeAlias = c.Api.WebSocketProtocolLiteral
+        HttpProtocolLiteral: TypeAlias = c.Api.HttpProtocolLiteral
+        SseProtocolLiteral: TypeAlias = c.Api.SseProtocolLiteral
+        GraphQLProtocolLiteral: TypeAlias = c.Api.GraphQLProtocolLiteral
 
 
 # Standardized short name for use in tests (same pattern as flext-core)

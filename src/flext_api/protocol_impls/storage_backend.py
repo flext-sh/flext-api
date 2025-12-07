@@ -10,12 +10,10 @@ from __future__ import annotations
 from flext_core import r
 from flext_core.loggings import FlextLogger
 
-from flext_api.protocols import FlextApiProtocols
+from flext_api.protocols import p
 
 
-class StorageBackendImplementation(
-    FlextApiProtocols.Api.Storage.StorageBackendProtocol
-):
+class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
     """Storage backend implementation conforming to StorageBackendProtocol."""
 
     def __init__(self) -> None:

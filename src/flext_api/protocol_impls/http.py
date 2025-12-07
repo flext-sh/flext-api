@@ -72,7 +72,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         self._max_retries = (
             max_retries
             if max_retries is not None
-            else int(FlextApiConstants.DEFAULT_MAX_RETRIES)
+            else int(FlextApiConstants.Api.DEFAULT_MAX_RETRIES)
         )
         self._retry_backoff_factor = (
             retry_backoff_factor
@@ -246,7 +246,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         content_type = self._get_content_type(headers)
         if (
             isinstance(body, dict)
-            and FlextApiConstants.ContentType.FORM in content_type
+            and FlextApiConstants.Api.ContentType.FORM in content_type
         ):
             kwargs["data"] = body
         elif isinstance(body, dict):
@@ -422,17 +422,17 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol."""
         if self._http3:
-            supported = FlextApiConstants.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3
+            supported = FlextApiConstants.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3
         else:
-            supported = FlextApiConstants.HTTP.SUPPORTED_PROTOCOLS
+            supported = FlextApiConstants.Api.HTTP.SUPPORTED_PROTOCOLS
         return protocol.lower() in supported
 
     def get_supported_protocols(self) -> list[str]:
         """Get list of supported protocols."""
         if self._http3:
             # Convert tuple to list (tuples don't have copy method)
-            return list(FlextApiConstants.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3)
-        return list(FlextApiConstants.HTTP.SUPPORTED_PROTOCOLS)
+            return list(FlextApiConstants.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3)
+        return list(FlextApiConstants.Api.HTTP.SUPPORTED_PROTOCOLS)
 
     def stream_request(
         self,
