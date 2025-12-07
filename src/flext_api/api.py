@@ -193,7 +193,7 @@ class FlextApi(s[FlextApiConfig]):
             dict(request_kwargs.items()) if request_kwargs is not None else None
         )
         # Extract body using monadic pattern
-        body_result = FlextApiUtilities.RequestUtils.extract_body_from_kwargs(
+        body_result = FlextApiUtilities.Api.RequestUtils.extract_body_from_kwargs(
             data,
             request_kwargs_dict,
         )
@@ -203,7 +203,7 @@ class FlextApi(s[FlextApiConfig]):
             )
 
         # Merge headers using monadic pattern
-        headers_result = FlextApiUtilities.RequestUtils.merge_headers(
+        headers_result = FlextApiUtilities.Api.RequestUtils.merge_headers(
             headers,
             request_kwargs_dict,
         )
@@ -213,9 +213,11 @@ class FlextApi(s[FlextApiConfig]):
             )
 
         # Validate timeout using monadic pattern
-        timeout_result = FlextApiUtilities.RequestUtils.validate_and_extract_timeout(
-            timeout,
-            request_kwargs_dict,
+        timeout_result = (
+            FlextApiUtilities.Api.RequestUtils.validate_and_extract_timeout(
+                timeout,
+                request_kwargs_dict,
+            )
         )
         if timeout_result.is_failure:
             return r[FlextApiModels.HttpResponse].fail(
@@ -252,7 +254,7 @@ class FlextApi(s[FlextApiConfig]):
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP GET - delegates to generic method."""
         return self._http_method(
-            method=FlextApiConstants.Method.GET,
+            method=FlextApiConstants.Api.Method.GET,
             url=url,
             headers=headers,
             request_kwargs=request_kwargs,
@@ -267,7 +269,7 @@ class FlextApi(s[FlextApiConfig]):
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP POST - delegates to generic method."""
         return self._http_method(
-            method=FlextApiConstants.Method.POST,
+            method=FlextApiConstants.Api.Method.POST,
             url=url,
             data=data,
             headers=headers,
@@ -283,7 +285,7 @@ class FlextApi(s[FlextApiConfig]):
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP PUT - delegates to generic method."""
         return self._http_method(
-            method=FlextApiConstants.Method.PUT,
+            method=FlextApiConstants.Api.Method.PUT,
             url=url,
             data=data,
             headers=headers,
@@ -298,7 +300,7 @@ class FlextApi(s[FlextApiConfig]):
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP DELETE - delegates to generic method."""
         return self._http_method(
-            method=FlextApiConstants.Method.DELETE,
+            method=FlextApiConstants.Api.Method.DELETE,
             url=url,
             headers=headers,
             request_kwargs=request_kwargs,
@@ -313,7 +315,7 @@ class FlextApi(s[FlextApiConfig]):
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP PATCH - delegates to generic method."""
         return self._http_method(
-            method=FlextApiConstants.Method.PATCH,
+            method=FlextApiConstants.Api.Method.PATCH,
             url=url,
             data=data,
             headers=headers,

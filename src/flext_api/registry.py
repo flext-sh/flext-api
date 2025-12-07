@@ -35,7 +35,7 @@ class FlextApiRegistry(FlextRegistry):
 
     Usage:
         registry = FlextApiRegistry.get_global()
-        registry.register_protocol(FlextApiConstants.HTTP.PROTOCOL_HTTP, FlextWebProtocolPlugin())
+        registry.register_protocol(FlextApiConstants.Api.HTTP.Protocol.HTTP, FlextWebProtocolPlugin())
         registry.register_schema("openapi", OpenApiSchemaPlugin())
         registry.register_transport("httpx", FlextWebxTransport())
 

@@ -37,22 +37,22 @@ class FlextApiConfig(BaseSettings):
     )
 
     base_url: str = Field(
-        default=FlextApiConstants.DEFAULT_BASE_URL,
-        max_length=FlextApiConstants.MAX_URL_LENGTH,
+        default=FlextApiConstants.Api.DEFAULT_BASE_URL,
+        max_length=FlextApiConstants.Api.MAX_URL_LENGTH,
         description="Base URL for HTTP requests",
     )
 
     timeout: float = Field(
-        default=float(FlextApiConstants.DEFAULT_TIMEOUT),
-        ge=float(FlextApiConstants.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-        le=float(FlextApiConstants.VALIDATION_LIMITS["MAX_TIMEOUT"]),
+        default=float(FlextApiConstants.Api.DEFAULT_TIMEOUT),
+        ge=float(FlextApiConstants.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+        le=float(FlextApiConstants.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
         description="HTTP request timeout (seconds)",
     )
 
     max_retries: int = Field(
-        default=FlextApiConstants.DEFAULT_MAX_RETRIES,
-        ge=int(FlextApiConstants.VALIDATION_LIMITS["MIN_RETRIES"]),
-        le=int(FlextApiConstants.VALIDATION_LIMITS["MAX_RETRIES"]),
+        default=FlextApiConstants.Api.DEFAULT_MAX_RETRIES,
+        ge=int(FlextApiConstants.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
+        le=int(FlextApiConstants.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
         description="Maximum retry attempts",
     )
 
@@ -79,8 +79,8 @@ class FlextApiConfig(BaseSettings):
     def default_headers(self) -> dict[str, str]:
         """Default headers with MIME type from Constants."""
         return {
-            FlextApiConstants.HEADER_ACCEPT: FlextApiConstants.ContentType.JSON,
-            FlextApiConstants.HEADER_CONTENT_TYPE: FlextApiConstants.ContentType.JSON,
+            FlextApiConstants.Api.HEADER_ACCEPT: FlextApiConstants.Api.ContentType.JSON,
+            FlextApiConstants.Api.HEADER_CONTENT_TYPE: FlextApiConstants.Api.ContentType.JSON,
             **self.headers,
         }
 

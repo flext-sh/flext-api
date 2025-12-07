@@ -77,7 +77,7 @@ class FlextApiTransports:
             data: dict[str, object],
         ) -> r[tuple[str, str, dict[str, str], object, object, object]]:
             """Extract and validate request parameters from data."""
-            method_str: str = FlextApiConstants.Method.GET
+            method_str: str = FlextApiConstants.Api.Method.GET
             if "method" in data:
                 method_value = data["method"]
                 if isinstance(method_value, str):

@@ -102,7 +102,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         if "method" not in request:
             return r[str].ok(
-                FlextApiConstants.Method.GET,
+                FlextApiConstants.Api.Method.GET,
             )  # Default method per RFC 7231
 
         method_value = request["method"]
@@ -183,7 +183,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
                 return float(timeout_value)
 
         # Use default timeout from constants
-        return float(FlextApiConstants.DEFAULT_TIMEOUT)
+        return float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
 
     def _build_rfc_error_response(
         self,
@@ -274,8 +274,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             return r[int].fail("Status code must be an integer (RFC 7231)")
 
         if (
-            status_code < FlextApiConstants.HTTP_SUCCESS_MIN - 100
-            or status_code > FlextApiConstants.HTTP_SERVER_ERROR_MIN + 99
+            status_code < FlextApiConstants.Api.HTTP_SUCCESS_MIN - 100
+            or status_code > FlextApiConstants.Api.HTTP_SERVER_ERROR_MIN + 99
         ):
             return r[int].fail(
                 f"Status code must be between 100 and 599 (RFC 7231): {status_code}",
@@ -294,8 +294,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         return (
-            status_code >= FlextApiConstants.HTTP_SUCCESS_MIN
-            and status_code < FlextApiConstants.HTTP_SUCCESS_MAX
+            status_code >= FlextApiConstants.Api.HTTP_SUCCESS_MIN
+            and status_code < FlextApiConstants.Api.HTTP_SUCCESS_MAX
         )
 
     def _is_client_error(self, status_code: int) -> bool:
@@ -357,7 +357,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         if content_type_key in headers:
             return headers[content_type_key]
 
-        return FlextApiConstants.ContentType.JSON
+        return FlextApiConstants.Api.ContentType.JSON
 
     def _normalize_header_name(self, header_name: str) -> str:
         """Normalize header name to lowercase (RFC 7230).

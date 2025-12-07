@@ -316,7 +316,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         **kwargs: object,
     ) -> r[FlextApiTypes.HttpResponseDict]:
         """Execute HTTP GET request."""
-        return self.request(FlextApiConstants.Method.GET, url, **kwargs)
+        return self.request(FlextApiConstants.Api.Method.GET, url, **kwargs)
 
     def post(
         self,
@@ -324,7 +324,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         **kwargs: object,
     ) -> r[FlextApiTypes.HttpResponseDict]:
         """Execute HTTP POST request."""
-        return self.request(FlextApiConstants.Method.POST, url, **kwargs)
+        return self.request(FlextApiConstants.Api.Method.POST, url, **kwargs)
 
     def put(
         self,
@@ -332,7 +332,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         **kwargs: object,
     ) -> r[FlextApiTypes.HttpResponseDict]:
         """Execute HTTP PUT request."""
-        return self.request(FlextApiConstants.Method.PUT, url, **kwargs)
+        return self.request(FlextApiConstants.Api.Method.PUT, url, **kwargs)
 
     def delete(
         self,
@@ -340,4 +340,4 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         **kwargs: object,
     ) -> r[FlextApiTypes.HttpResponseDict]:
         """Execute HTTP DELETE request."""
-        return self.request(FlextApiConstants.Method.DELETE, url, **kwargs)
+        return self.request(FlextApiConstants.Api.Method.DELETE, url, **kwargs)

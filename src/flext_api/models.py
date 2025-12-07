@@ -14,7 +14,7 @@ from __future__ import annotations
 from typing import Self
 from urllib.parse import ParseResult, urlparse
 
-from flext_core import m as m_core, u
+from flext_core import c as c_core, m as m_core, u
 from pydantic import Field, computed_field, field_validator
 
 from flext_api.constants import FlextApiConstants
@@ -42,8 +42,8 @@ class FlextApiModels(m_core):
         Follows Value Object pattern: immutable, compared by value, no identity.
         """
 
-        method: FlextApiConstants.Method | str = Field(
-            default=FlextApiConstants.Method.GET,
+        method: FlextApiConstants.Api.Method | str = Field(
+            default="GET",
             min_length=3,
             max_length=8,
             description="HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)",
@@ -76,9 +76,9 @@ class FlextApiModels(m_core):
             description="Query parameters",
         )
         timeout: float = Field(
-            default=float(FlextApiConstants.DEFAULT_TIMEOUT),
-            ge=float(FlextApiConstants.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-            le=float(FlextApiConstants.VALIDATION_LIMITS["MAX_TIMEOUT"]),
+            default=float(FlextApiConstants.Api.DEFAULT_TIMEOUT),
+            ge=float(FlextApiConstants.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+            le=float(FlextApiConstants.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
             description="Request timeout in seconds",
         )
 
@@ -86,7 +86,7 @@ class FlextApiModels(m_core):
         def content_type(self) -> str:
             """Get content type from headers."""
             # Check Content-Type header (case-insensitive)
-            header_content_type = FlextApiConstants.HEADER_CONTENT_TYPE
+            header_content_type = FlextApiConstants.Api.HEADER_CONTENT_TYPE
             if header_content_type in self.headers:
                 content_type_value = self.headers[header_content_type]
                 if isinstance(content_type_value, str):
@@ -98,7 +98,7 @@ class FlextApiModels(m_core):
                 if isinstance(content_type_value, str):
                     return content_type_value
             # Default from Constants
-            return FlextApiConstants.ContentType.JSON
+            return FlextApiConstants.Api.ContentType.JSON
 
     class HttpResponse(m_core.Value):
         """Immutable HTTP response value object.
@@ -144,38 +144,38 @@ class FlextApiModels(m_core):
         def is_success(self) -> bool:
             """Check if response indicates success (2xx status code)."""
             return (
-                FlextApiConstants.HTTP_SUCCESS_MIN
+                FlextApiConstants.Api.HTTP_SUCCESS_MIN
                 <= self.status_code
-                < FlextApiConstants.HTTP_SUCCESS_MAX
+                < FlextApiConstants.Api.HTTP_SUCCESS_MAX
             )
 
         @computed_field
         def is_redirect(self) -> bool:
             """Check if response indicates redirect (3xx status code)."""
             return (
-                FlextApiConstants.HTTP_REDIRECT_MIN
+                FlextApiConstants.Api.HTTP_REDIRECT_MIN
                 <= self.status_code
-                < FlextApiConstants.HTTP_REDIRECT_MAX
+                < FlextApiConstants.Api.HTTP_REDIRECT_MAX
             )
 
         @computed_field
         def is_client_error(self) -> bool:
             """Check if response indicates client error (4xx status code)."""
             return (
-                FlextApiConstants.HTTP_CLIENT_ERROR_MIN
+                FlextApiConstants.Api.HTTP_CLIENT_ERROR_MIN
                 <= self.status_code
-                < FlextApiConstants.HTTP_CLIENT_ERROR_MAX
+                < FlextApiConstants.Api.HTTP_CLIENT_ERROR_MAX
             )
 
         @computed_field
         def is_server_error(self) -> bool:
             """Check if response indicates server error (5xx status code)."""
-            return self.status_code >= FlextApiConstants.HTTP_SERVER_ERROR_MIN
+            return self.status_code >= FlextApiConstants.Api.HTTP_SERVER_ERROR_MIN
 
         @computed_field
         def is_error(self) -> bool:
             """Check if response indicates any error (4xx or 5xx status code)."""
-            return self.status_code >= FlextApiConstants.HTTP_ERROR_MIN
+            return self.status_code >= FlextApiConstants.Api.HTTP_ERROR_MIN
 
     # =========================================================================
     # URL AND PARSING MODELS
@@ -203,7 +203,7 @@ class FlextApiModels(m_core):
             parsed_scheme = parsed_result.scheme
             if parsed_scheme:
                 return parsed_scheme
-            return FlextApiConstants.HTTP.Protocol.HTTPS
+            return FlextApiConstants.Api.HTTP.Protocol.HTTPS
 
         @computed_field
         def netloc(self) -> str:
@@ -212,7 +212,7 @@ class FlextApiModels(m_core):
             parsed_netloc = parsed_result.netloc
             if parsed_netloc:
                 return parsed_netloc
-            return f"{FlextApiConstants.Server.DEFAULT_HOST}:{FlextApiConstants.Server.DEFAULT_PORT}"
+            return f"{FlextApiConstants.Api.Server.DEFAULT_HOST}:{FlextApiConstants.Api.Server.DEFAULT_PORT}"
 
         @computed_field
         def path(self) -> str:
@@ -257,20 +257,20 @@ class FlextApiModels(m_core):
         """HTTP client configuration model (immutable value object)."""
 
         base_url: str = Field(
-            default=FlextApiConstants.DEFAULT_BASE_URL,
-            max_length=FlextApiConstants.MAX_URL_LENGTH,
+            default=FlextApiConstants.Api.DEFAULT_BASE_URL,
+            max_length=FlextApiConstants.Api.MAX_URL_LENGTH,
             description="Base URL for all requests",
         )
         timeout: float = Field(
-            default=float(FlextApiConstants.DEFAULT_TIMEOUT),
-            ge=float(FlextApiConstants.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-            le=float(FlextApiConstants.VALIDATION_LIMITS["MAX_TIMEOUT"]),
+            default=float(FlextApiConstants.Api.DEFAULT_TIMEOUT),
+            ge=float(FlextApiConstants.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+            le=float(FlextApiConstants.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
             description="Request timeout in seconds",
         )
         max_retries: int = Field(
-            default=FlextApiConstants.DEFAULT_MAX_RETRIES,
-            ge=int(FlextApiConstants.VALIDATION_LIMITS["MIN_RETRIES"]),
-            le=int(FlextApiConstants.VALIDATION_LIMITS["MAX_RETRIES"]),
+            default=FlextApiConstants.Api.DEFAULT_MAX_RETRIES,
+            ge=int(FlextApiConstants.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
+            le=int(FlextApiConstants.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
             description="Maximum retry attempts",
         )
         headers: dict[str, str] = Field(
@@ -299,9 +299,9 @@ class FlextApiModels(m_core):
             description="Current page number (1-based)",
         )
         page_size: int = Field(
-            default=FlextApiConstants.DEFAULT_PAGE_SIZE,
-            ge=FlextApiConstants.MIN_PAGE_SIZE,
-            le=FlextApiConstants.MAX_PAGE_SIZE,
+            default=c_core.Pagination.DEFAULT_PAGE_SIZE,
+            ge=c_core.Pagination.MIN_PAGE_SIZE,
+            le=c_core.Pagination.MAX_PAGE_SIZE,
             description="Items per page",
         )
         total_items: int = Field(default=0, ge=0, description="Total number of items")
@@ -352,15 +352,15 @@ class FlextApiModels(m_core):
         def is_client_error(self) -> bool:
             """Check if error is client-side (4xx)."""
             return (
-                FlextApiConstants.HTTP_CLIENT_ERROR_MIN
+                FlextApiConstants.Api.HTTP_CLIENT_ERROR_MIN
                 <= self.status_code
-                < FlextApiConstants.HTTP_CLIENT_ERROR_MAX
+                < FlextApiConstants.Api.HTTP_CLIENT_ERROR_MAX
             )
 
         @computed_field
         def is_server_error(self) -> bool:
             """Check if error is server-side (5xx)."""
-            return self.status_code >= FlextApiConstants.HTTP_SERVER_ERROR_MIN
+            return self.status_code >= FlextApiConstants.Api.HTTP_SERVER_ERROR_MIN
 
     # =========================================================================
     # QUERY/FILTER MODELS
@@ -481,17 +481,17 @@ class FlextApiModels(m_core):
         """
         # Use Constants defaults when None - Config has priority but uses Constants as base
         config_base_url = (
-            base_url if base_url is not None else FlextApiConstants.DEFAULT_BASE_URL
+            base_url if base_url is not None else FlextApiConstants.Api.DEFAULT_BASE_URL
         )
         config_timeout = (
             float(timeout)
             if timeout is not None
-            else float(FlextApiConstants.DEFAULT_TIMEOUT)
+            else float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
         )
         config_max_retries = (
             max_retries
             if max_retries is not None
-            else FlextApiConstants.DEFAULT_MAX_RETRIES
+            else FlextApiConstants.Api.DEFAULT_MAX_RETRIES
         )
         config_headers: dict[str, str] = headers if headers is not None else {}
 
@@ -511,9 +511,9 @@ class FlextApiModels(m_core):
 
         page: int = Field(default=1, ge=1, description="Current page number")
         page_size: int = Field(
-            default=FlextApiConstants.DEFAULT_PAGE_SIZE,
-            ge=FlextApiConstants.MIN_PAGE_SIZE,
-            le=FlextApiConstants.MAX_PAGE_SIZE,
+            default=c_core.Pagination.DEFAULT_PAGE_SIZE,
+            ge=c_core.Pagination.MIN_PAGE_SIZE,
+            le=c_core.Pagination.MAX_PAGE_SIZE,
             description="Items per page",
         )
         total_items: int = Field(default=0, ge=0, description="Total number of items")
@@ -539,31 +539,53 @@ class FlextApiModels(m_core):
 
 m = FlextApiModels  # Runtime alias (not TypeAlias to avoid PYI042)
 
-# =============================================================================
-# POPULATE FlextModels.Api NAMESPACE
-# =============================================================================
-# Copy all models from FlextApiModels to FlextModels.Api namespace
-# This allows access via both:
-# - FlextApiModels.* (backward compatibility, deprecated)
-# - FlextModels.Api.* (new namespace pattern)
-# - m.Api.* (convenience alias)
-# =============================================================================
 
-# Get all attributes from FlextApiModels that are models, classes, or type aliases
-# Exclude private attributes and special methods
-_api_model_attrs = {
-    name: attr
-    for name, attr in vars(FlextApiModels).items()
-    if not name.startswith("_")
-    and (
-        isinstance(attr, type)
-        or hasattr(attr, "__origin__")  # TypeAlias
-        or (callable(attr) and not isinstance(attr, type(FlextApiModels.__init__)))
+# =============================================================================
+# CREATE AND POPULATE FlextModels.Api NAMESPACE
+# =============================================================================
+# Create namespace if it doesn't exist (no empty class in flext-core)
+# Use lazy import to avoid circular dependency
+def _populate_api_namespace() -> None:
+    """Populate FlextModels.Api namespace dynamically."""
+    from flext_core import (
+        FlextModels,  # Lazy import to avoid circular dependency
     )
-}
 
-# Populate FlextModels.Api namespace
-for name, attr in _api_model_attrs.items():
-    setattr(m_core.Api, name, attr)
+    if not hasattr(FlextModels, "Api"):
+
+        class Api:
+            """Api project namespace - populated by flext-api.
+
+            This namespace contains all API-specific models from flext-api.
+            Access via: FlextModels.Api.HttpRequest, FlextModels.Api.HttpResponse, etc.
+            Populated by: flext-api/src/flext_api/models.py
+            """
+
+        FlextModels.Api = Api  # type: ignore[assignment]  # Dynamic namespace creation
+
+    # Get all attributes from FlextApiModels that are models, classes, or type aliases
+    # Exclude private attributes and special methods
+    api_model_attrs = {
+        name: attr
+        for name, attr in vars(FlextApiModels).items()
+        if not name.startswith("_")
+        and (
+            isinstance(attr, type)
+            or hasattr(attr, "__origin__")  # TypeAlias
+            or (callable(attr) and not isinstance(attr, type(FlextApiModels.__init__)))
+        )
+    }
+
+    # Populate FlextModels.Api namespace with direct declarations
+    for name, attr in api_model_attrs.items():
+        setattr(FlextModels.Api, name, attr)  # type: ignore[attr-defined]  # Dynamic namespace population
+
+
+# Lazy initialization: populate namespace only when FlextModels is fully loaded
+# This avoids circular import issues during module initialization
+import sys  # Import at module level for lazy initialization check
+
+if "flext_core" in sys.modules:
+    _populate_api_namespace()
 
 __all__ = ["FlextApiModels", "m"]

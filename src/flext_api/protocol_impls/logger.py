@@ -10,10 +10,10 @@ from __future__ import annotations
 from flext_core import FlextLogger
 from flext_core.typings import t
 
-from flext_api.protocols import FlextApiProtocols
+from flext_api.protocols import p
 
 
-class LoggerProtocolImplementation(FlextApiProtocols.Api.Logger.LoggerProtocol):
+class LoggerProtocolImplementation(p.Api.Logger.LoggerProtocol):
     """Logger implementation conforming to LoggerProtocol."""
 
     def __init__(self) -> None:
