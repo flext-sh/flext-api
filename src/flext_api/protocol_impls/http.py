@@ -19,11 +19,11 @@ import time
 import httpx
 from flext_core import r
 
-from flext_api.constants import FlextApiConstants
+from flext_api.constants import c
 from flext_api.models import FlextApiModels
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 from flext_api.transports import FlextApiTransports
-from flext_api.typings import FlextApiTypes
+from flext_api.typings import t as t_api
 
 
 class FlextWebProtocolPlugin(RFCProtocolImplementation):
@@ -70,14 +70,12 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         self._http2 = http2
         self._http3 = http3
         self._max_retries = (
-            max_retries
-            if max_retries is not None
-            else int(FlextApiConstants.Api.DEFAULT_MAX_RETRIES)
+            max_retries if max_retries is not None else int(c.Api.DEFAULT_MAX_RETRIES)
         )
         self._retry_backoff_factor = (
             retry_backoff_factor
             if retry_backoff_factor is not None
-            else FlextApiConstants.BACKOFF_FACTOR
+            else c.BACKOFF_FACTOR
         )
         self._follow_redirects = follow_redirects
         self._max_redirects = max_redirects
@@ -136,7 +134,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         # Extract body using RFC method with type narrowing
         body_value = self._extract_body(request)
         # HttpRequest.body expects RequestBody type (JsonObject | str | bytes)
-        body: FlextApiTypes.RequestBody = {}
+        body: t_api.RequestBody = {}
         if body_value is not None:
             if isinstance(body_value, (dict, str, bytes)):
                 body = body_value
@@ -229,7 +227,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         headers: dict[str, str],
         params: dict[str, str],
         timeout: float | None,
-        body: FlextApiTypes.RequestBody | None,
+        body: t_api.RequestBody | None,
     ) -> dict[str, object]:
         """Build request kwargs based on body type."""
         kwargs: dict[str, object] = {
@@ -244,10 +242,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return kwargs
 
         content_type = self._get_content_type(headers)
-        if (
-            isinstance(body, dict)
-            and FlextApiConstants.Api.ContentType.FORM in content_type
-        ):
+        if isinstance(body, dict) and c.Api.ContentType.FORM in content_type:
             kwargs["data"] = body
         elif isinstance(body, dict):
             kwargs["json"] = body
@@ -300,7 +295,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         headers: dict[str, str],
         params: dict[str, str],
         timeout: float | None,
-        body: FlextApiTypes.RequestBody | None,
+        body: t_api.RequestBody | None,
     ) -> r[FlextApiModels.HttpResponse]:
         """Execute HTTP request with retry logic."""
         last_error = "Unknown error"
@@ -422,17 +417,17 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol."""
         if self._http3:
-            supported = FlextApiConstants.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3
+            supported = c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3
         else:
-            supported = FlextApiConstants.Api.HTTP.SUPPORTED_PROTOCOLS
+            supported = c.Api.HTTP.SUPPORTED_PROTOCOLS
         return protocol.lower() in supported
 
     def get_supported_protocols(self) -> list[str]:
         """Get list of supported protocols."""
         if self._http3:
             # Convert tuple to list (tuples don't have copy method)
-            return list(FlextApiConstants.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3)
-        return list(FlextApiConstants.Api.HTTP.SUPPORTED_PROTOCOLS)
+            return list(c.Api.HTTP.SUPPORTED_PROTOCOLS_WITH_HTTP3)
+        return list(c.Api.HTTP.SUPPORTED_PROTOCOLS)
 
     def stream_request(
         self,
@@ -451,11 +446,11 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         return r[object].fail("Streaming not yet implemented (Phase 2 enhancement)")
 
-    def get_protocol_info(self) -> FlextApiTypes.JsonObject:
+    def get_protocol_info(self) -> t_api.JsonObject:
         """Get protocol configuration information."""
         base_info = super().get_protocol_info()
         # Type narrowing: base_info is JsonObject, update with compatible values
-        updated_info: FlextApiTypes.JsonObject = {
+        updated_info: t_api.JsonObject = {
             **base_info,
             "http2_enabled": self._http2,
             "http3_enabled": self._http3,

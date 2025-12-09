@@ -13,7 +13,7 @@ from __future__ import annotations
 from flext_core import FlextRuntime, FlextService, r, t
 
 from flext_api.plugins import FlextApiPlugins
-from flext_api.typings import FlextApiTypes
+from flext_api.typings import t as t_api
 
 
 class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
@@ -155,7 +155,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         """
         return []
 
-    def get_protocol_info(self) -> FlextApiTypes.JsonObject:
+    def get_protocol_info(self) -> t_api.JsonObject:
         """Get protocol configuration information.
 
         Returns:

@@ -27,7 +27,7 @@ from pydantic import ConfigDict
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
-from flext_api.typings import FlextApiTypes
+from flext_api.typings import t as t_api
 
 # Asyncio utilities
 # Synchronous alternatives for async functionality
@@ -209,7 +209,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     def _extract_message(
         self,
-        request: FlextApiTypes.JsonObject,
+        request: t_api.JsonObject,
         kwargs: dict[str, object],
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
@@ -240,7 +240,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 return str(message_type_value)
         return FlextApiConstants.WebSocket.MessageType.TEXT
 
-    def _ensure_connected(self, request: FlextApiTypes.JsonObject) -> r[bool]:
+    def _ensure_connected(self, request: t_api.JsonObject) -> r[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
             return r[bool].ok(True)
@@ -280,7 +280,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         # Extract WebSocket-specific parameters
         # Cast request to JsonValue dict to match method signature
         message_result = self._extract_message(
-            cast("dict[str, FlextApiTypes.JsonValue]", request),
+            cast("dict[str, t_api.JsonValue]", request),
             kwargs,
         )
         if message_result.is_failure:
@@ -294,7 +294,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         # Connect if not connected
         # Cast request to JsonValue dict to match method signature
         connect_result = self._ensure_connected(
-            cast("dict[str, FlextApiTypes.JsonValue]", request)
+            cast("dict[str, t_api.JsonValue]", request)
         )
         if connect_result.is_failure:
             return r[dict[str, object]].fail(

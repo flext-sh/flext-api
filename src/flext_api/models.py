@@ -14,11 +14,13 @@ from __future__ import annotations
 from typing import Self
 from urllib.parse import ParseResult, urlparse
 
-from flext_core import c as c_core, m as m_core, u
+from flext_core import FlextModels, c as c_core, m as m_core
+from flext_core.utilities import u as flext_u
 from pydantic import Field, computed_field, field_validator
 
+from flext_api import u
 from flext_api.constants import FlextApiConstants
-from flext_api.typings import FlextApiTypes
+from flext_api.typings import t
 
 
 class FlextApiModels(m_core):
@@ -30,6 +32,14 @@ class FlextApiModels(m_core):
 
     Fully compatible with Pydantic v2 with strict type safety and validation.
     """
+
+    def __init_subclass__(cls, **kwargs: object) -> None:
+        """Warn when FlextApiModels is subclassed directly."""
+        super().__init_subclass__(**kwargs)
+        flext_u.Deprecation.warn_once(
+            f"subclass:{cls.__name__}",
+            "Subclassing FlextApiModels is deprecated. Use FlextModels.Api instead.",
+        )
 
     # =========================================================================
     # HTTP REQUEST/RESPONSE VALUE OBJECTS (Immutable)
@@ -54,14 +64,14 @@ class FlextApiModels(m_core):
             default_factory=dict,
             description="HTTP request headers",
         )
-        body: FlextApiTypes.RequestBody = Field(
+        body: t.RequestBody = Field(
             default_factory=dict,
             description="Request body",
         )
 
         @field_validator("body", mode="before")
         @classmethod
-        def normalize_body(cls, v: object) -> FlextApiTypes.RequestBody:
+        def normalize_body(cls, v: object) -> t.RequestBody:
             """Normalize body - empty dict is valid."""
             if v is None:
                 return {}
@@ -71,7 +81,7 @@ class FlextApiModels(m_core):
                 return v
             return {}
 
-        query_params: FlextApiTypes.WebParams = Field(
+        query_params: t.WebParams = Field(
             default_factory=dict,
             description="Query parameters",
         )
@@ -117,14 +127,14 @@ class FlextApiModels(m_core):
             default_factory=dict,
             description="HTTP response headers",
         )
-        body: FlextApiTypes.ResponseBody = Field(
+        body: t.ResponseBody = Field(
             default_factory=dict,
             description="Response body (empty dict by default, None allowed for 204)",
         )
 
         @field_validator("body", mode="before")
         @classmethod
-        def normalize_body(cls, v: object) -> FlextApiTypes.ResponseBody:
+        def normalize_body(cls, v: object) -> t.ResponseBody:
             """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
             if v is None:
                 return None  # Explicit None is valid (e.g., for 204 responses)
@@ -339,7 +349,7 @@ class FlextApiModels(m_core):
             le=599,
             description="HTTP status code",
         )
-        details: FlextApiTypes.JsonObject = Field(
+        details: t.JsonObject = Field(
             default_factory=dict,
             description="Additional error details",
         )
@@ -369,7 +379,7 @@ class FlextApiModels(m_core):
     class QueryParams(m_core.Value):
         """Query parameters model (immutable value object)."""
 
-        params: FlextApiTypes.WebParams = Field(
+        params: t.WebParams = Field(
             default_factory=dict,
             description="Query parameters",
         )
@@ -428,7 +438,7 @@ class FlextApiModels(m_core):
     def create_response(
         cls,
         status_code: int,
-        body: FlextApiTypes.ResponseBody | None = None,
+        body: t.ResponseBody | None = None,
         headers: dict[str, str] | None = None,
         request_id: str | None = None,
     ) -> FlextApiModels.HttpResponse:
@@ -445,7 +455,7 @@ class FlextApiModels(m_core):
 
         """
         # Use model defaults - body defaults to empty dict, not None
-        response_body: FlextApiTypes.ResponseBody = body if body is not None else {}
+        response_body: t.ResponseBody = body if body is not None else {}
         response_headers: dict[str, str] = headers if headers is not None else {}
         response_id: str = request_id if request_id is not None else ""
 
@@ -538,54 +548,34 @@ class FlextApiModels(m_core):
 
 
 m = FlextApiModels  # Runtime alias (not TypeAlias to avoid PYI042)
+m_api = FlextApiModels
 
 
 # =============================================================================
-# CREATE AND POPULATE FlextModels.Api NAMESPACE
+# POPULATE FlextModels.Api NAMESPACE - Direct assignment pattern
 # =============================================================================
-# Create namespace if it doesn't exist (no empty class in flext-core)
-# Use lazy import to avoid circular dependency
-def _populate_api_namespace() -> None:
-    """Populate FlextModels.Api namespace dynamically."""
-    from flext_core import (
-        FlextModels,  # Lazy import to avoid circular dependency
-    )
+# Create Api namespace class with direct re-exports (no automation functions, no setattr loops)
+# All models are re-exported directly via class attributes
+class Api:
+    """Api project namespace for cross-project access.
 
-    if not hasattr(FlextModels, "Api"):
+    This namespace contains all API-specific models from flext-api.
+    Access via: FlextModels.Api.HttpRequest, FlextModels.Api.HttpResponse, etc.
+    """
 
-        class Api:
-            """Api project namespace - populated by flext-api.
-
-            This namespace contains all API-specific models from flext-api.
-            Access via: FlextModels.Api.HttpRequest, FlextModels.Api.HttpResponse, etc.
-            Populated by: flext-api/src/flext_api/models.py
-            """
-
-        FlextModels.Api = Api  # type: ignore[assignment]  # Dynamic namespace creation
-
-    # Get all attributes from FlextApiModels that are models, classes, or type aliases
-    # Exclude private attributes and special methods
-    api_model_attrs = {
-        name: attr
-        for name, attr in vars(FlextApiModels).items()
-        if not name.startswith("_")
-        and (
-            isinstance(attr, type)
-            or hasattr(attr, "__origin__")  # TypeAlias
-            or (callable(attr) and not isinstance(attr, type(FlextApiModels.__init__)))
-        )
-    }
-
-    # Populate FlextModels.Api namespace with direct declarations
-    for name, attr in api_model_attrs.items():
-        setattr(FlextModels.Api, name, attr)  # type: ignore[attr-defined]  # Dynamic namespace population
+    # Re-export all models directly (no loops, no automation)
+    HttpRequest = FlextApiModels.HttpRequest
+    HttpResponse = FlextApiModels.HttpResponse
+    Url = FlextApiModels.Url
+    ClientConfig = FlextApiModels.ClientConfig
+    PaginationInfo = FlextApiModels.PaginationInfo
+    Error = FlextApiModels.Error
+    QueryParams = FlextApiModels.QueryParams
+    Headers = FlextApiModels.Headers
+    HttpPagination = FlextApiModels.HttpPagination
 
 
-# Lazy initialization: populate namespace only when FlextModels is fully loaded
-# This avoids circular import issues during module initialization
-import sys  # Import at module level for lazy initialization check
+# Direct namespace assignment (no automation functions)
+FlextModels.Api = Api
 
-if "flext_core" in sys.modules:
-    _populate_api_namespace()
-
-__all__ = ["FlextApiModels", "m"]
+__all__ = ["FlextApiModels", "m", "m_api"]

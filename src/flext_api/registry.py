@@ -60,10 +60,10 @@ class FlextApiRegistry(FlextRegistry):
         if dispatcher is None:
             dispatcher = FlextDispatcher()
 
-        # Type narrowing: FlextDispatcher implements p.Application.CommandBus
+        # Type narrowing: FlextDispatcher implements p.CommandBus
         # Cast needed for type compatibility
-        dispatcher_cmd_bus: p.Application.CommandBus | None = cast(
-            "p.Application.CommandBus | None",
+        dispatcher_cmd_bus: p.CommandBus | None = cast(
+            "p.CommandBus | None",
             dispatcher,
         )
         super().__init__(dispatcher=dispatcher_cmd_bus)

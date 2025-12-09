@@ -30,11 +30,13 @@ from flext_api import (
     FlextApiStorage,
 )
 
+# Type aliases for testing - use t from typings
+
 # Type aliases for testing - use expanded types directly
-# Note: FlextApiTypes.ResponseDict and .WebHeaders are PEP 695 type aliases
+# Note: t_api.ResponseDict and .WebHeaders are PEP 695 type aliases
 # They don't exist at runtime, so we use the expanded types
-ResponseDict = dict[str, object]  # Matches FlextApiTypes.ResponseDict
-WebHeaders = dict[str, str | list[str]]  # Matches FlextApiTypes.WebHeaders
+ResponseDict = dict[str, object]  # Matches t_api.ResponseDict
+WebHeaders = dict[str, str | list[str]]  # Matches t_api.WebHeaders
 
 # Configure Faker for deterministic test data
 fake = Faker()
@@ -209,7 +211,7 @@ def sample_api_data() -> ResponseDict:
     """Sample API data using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.ResponseDict: Sample API data.
+        t_api.ResponseDict: Sample API data.
 
     """
     return FlextTestsDomains.api_response_data()
@@ -220,7 +222,7 @@ def sample_headers() -> WebHeaders:
     """Sample HTTP headers using flext_tests.
 
     Returns:
-        FlextApiTypes.HttpHeaders: Sample HTTP headers.
+        t_api.HttpHeaders: Sample HTTP headers.
 
     """
     service_data = FlextTestsDomains.create_service()
@@ -237,7 +239,7 @@ def sample_config_dict() -> ResponseDict:
     """Sample config dictionary using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.ResponseDict: Sample configuration data.
+        t_api.ResponseDict: Sample configuration data.
 
     """
     return FlextTestsDomains.create_configuration()
@@ -248,7 +250,7 @@ def sample_user_data() -> ResponseDict:
     """Sample user data using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.ResponseDict: Sample user data.
+        t_api.ResponseDict: Sample user data.
 
     """
     return cast("ResponseDict", FlextTestsDomains.create_user())
@@ -259,7 +261,7 @@ def sample_service_data() -> ResponseDict:
     """Sample service data using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.ResponseDict: Sample service data.
+        t_api.ResponseDict: Sample service data.
 
     """
     return FlextTestsDomains.create_service()
@@ -270,7 +272,7 @@ def sample_payload_data() -> dict[str, object]:
     """Sample payload data using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.ResponseDict: Sample payload data.
+        t_api.ResponseDict: Sample payload data.
 
     """
     return FlextTestsDomains.create_payload()
@@ -281,7 +283,7 @@ def sample_configuration_data() -> dict[str, object]:
     """Sample configuration data using FlextTestsDomains.
 
     Returns:
-        FlextApiTypes.ResponseDict: Sample configuration data.
+        t_api.ResponseDict: Sample configuration data.
 
     """
     return FlextTestsDomains.create_configuration()

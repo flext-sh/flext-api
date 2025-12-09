@@ -17,7 +17,9 @@ from flext_core import FlextResult, r
 from flext_tests import FlextTestsDomains, u
 
 from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
-from flext_api.typings import FlextApiTypes
+from flext_api.typings import t as t_api
+
+# Replace all t_api. with t_api. throughout this file
 
 # Configure Faker for consistent test data
 fake = Faker()
@@ -33,11 +35,11 @@ class FlextApiFactories:
     """
 
     @staticmethod
-    def create_client_config(**overrides: object) -> FlextApiTypes.ResponseDict:
+    def create_client_config(**overrides: object) -> t_api.ResponseDict:
         """Create client config using FlextTestsDomains - ABSOLUTE usage.
 
         Returns:
-            FlextApiTypes.ResponseDict: Client configuration dictionary.
+            t_api.ResponseDict: Client configuration dictionary.
 
         """
         # Use FlextTestsDomains for base configuration
@@ -49,7 +51,7 @@ class FlextApiFactories:
         max_retries_val = base_config.get("max_retries", 3)
         headers_val = base_config.get("headers", {"User-Agent": "FlextAPI-Test/0.9.0"})
 
-        client_config: dict[str, FlextApiTypes.JsonValue] = {
+        client_config: dict[str, t_api.JsonValue] = {
             "base_url": str(base_url_val)
             if base_url_val is not None
             else "https://httpbin.org",
@@ -211,11 +213,11 @@ class FlextApiFactories:
         return FlextApiStorage(config)
 
     @staticmethod
-    def create_request_data(**overrides: object) -> FlextApiTypes.ResponseDict:
+    def create_request_data(**overrides: object) -> t_api.ResponseDict:
         """Create HTTP request data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            FlextApiTypes.ResponseDict: Request data dictionary.
+            t_api.ResponseDict: Request data dictionary.
 
         """
         # Use FlextTestsDomains for payload structure
@@ -237,7 +239,7 @@ class FlextApiFactories:
             float(timeout_val) if isinstance(timeout_val, (int, float, str)) else 30.0
         )
 
-        base_request: dict[str, FlextApiTypes.JsonValue] = {
+        base_request: dict[str, t_api.JsonValue] = {
             "method": str(payload_data.get("method", "GET")),
             "url": str(payload_data.get("url", "https://httpbin.org/get")),
             "headers": {
@@ -265,11 +267,11 @@ class FlextApiFactories:
         return base_request
 
     @staticmethod
-    def create_response_data(**overrides: object) -> FlextApiTypes.ResponseDict:
+    def create_response_data(**overrides: object) -> t_api.ResponseDict:
         """Create HTTP response data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            FlextApiTypes.ResponseDict: Response data dictionary.
+            t_api.ResponseDict: Response data dictionary.
 
         """
         # Use FlextTestsDomains for API response structure
@@ -277,7 +279,7 @@ class FlextApiFactories:
 
         # Build response with proper type narrowing
         data_val = api_response.get("data", {})
-        data_dict: dict[str, FlextApiTypes.JsonValue] = (
+        data_dict: dict[str, t_api.JsonValue] = (
             dict(data_val.items()) if isinstance(data_val, dict) else {}
         )
 
@@ -303,7 +305,7 @@ class FlextApiFactories:
         from_cache_val = api_response.get("from_cache", False)
         from_cache_bool = bool(from_cache_val) if from_cache_val is not None else False
 
-        response_data: dict[str, FlextApiTypes.JsonValue] = {
+        response_data: dict[str, t_api.JsonValue] = {
             "status_code": 200,
             "data": data_dict,
             "headers": {
@@ -345,11 +347,11 @@ class FlextApiFactories:
         return response_data
 
     @staticmethod
-    def create_user_data(**overrides: object) -> FlextApiTypes.ResponseDict:
+    def create_user_data(**overrides: object) -> t_api.ResponseDict:
         """Create user data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            FlextApiTypes.ResponseDict: User data dictionary.
+            t_api.ResponseDict: User data dictionary.
 
         """
         # Filter overrides to only str | bool as required by create_user
@@ -364,65 +366,65 @@ class FlextApiFactories:
     @staticmethod
     def create_error_result(
         error_message: str = "Test error",
-    ) -> FlextResult[FlextApiTypes.ResponseDict]:
+    ) -> FlextResult[t_api.ResponseDict]:
         """Create error FlextResult using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            FlextResult[FlextApiTypes.ResponseDict]: Error result instance.
+            FlextResult[t_api.ResponseDict]: Error result instance.
 
         """
-        return r[FlextApiTypes.ResponseDict].fail(error_message)
+        return r[t_api.ResponseDict].fail(error_message)
 
     @staticmethod
     def create_success_result(
-        data: FlextApiTypes.ResponseDict | None = None,
-    ) -> FlextResult[FlextApiTypes.ResponseDict]:
+        data: t_api.ResponseDict | None = None,
+    ) -> FlextResult[t_api.ResponseDict]:
         """Create success FlextResult using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            FlextResult[FlextApiTypes.ResponseDict]: Success result instance.
+            FlextResult[t_api.ResponseDict]: Success result instance.
 
         """
         if data is None:
             data = {"success": True, "message": "Test operation successful"}
-        return r[FlextApiTypes.ResponseDict].ok(data)
+        return r[t_api.ResponseDict].ok(data)
 
     @staticmethod
-    def batch_request_data(count: int = 5) -> list[FlextApiTypes.ResponseDict]:
+    def batch_request_data(count: int = 5) -> list[t_api.ResponseDict]:
         """Create batch requests using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            list[FlextApiTypes.ResponseDict]: List of request data dictionaries.
+            list[t_api.ResponseDict]: List of request data dictionaries.
 
         """
         return [FlextApiFactories.create_request_data() for _ in range(count)]
 
     @staticmethod
-    def batch_response_data(count: int = 5) -> list[FlextApiTypes.ResponseDict]:
+    def batch_response_data(count: int = 5) -> list[t_api.ResponseDict]:
         """Create batch responses using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            list[FlextApiTypes.ResponseDict]: List of response data dictionaries.
+            list[t_api.ResponseDict]: List of response data dictionaries.
 
         """
         return [FlextApiFactories.create_response_data() for _ in range(count)]
 
     @staticmethod
-    def create_service_data(**overrides: object) -> FlextApiTypes.ResponseDict:
+    def create_service_data(**overrides: object) -> t_api.ResponseDict:
         """Create service data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            FlextApiTypes.ResponseDict: Service data dictionary.
+            t_api.ResponseDict: Service data dictionary.
 
         """
         service_data = FlextTestsDomains.create_service()
         # Apply overrides with type filtering
-        filtered_overrides: dict[str, FlextApiTypes.JsonValue] = {
+        filtered_overrides: dict[str, t_api.JsonValue] = {
             k: v
             for k, v in overrides.items()
             if isinstance(v, (str, int, float, bool, type(None), dict, list))
         }
-        result: dict[str, FlextApiTypes.JsonValue] = {
+        result: dict[str, t_api.JsonValue] = {
             k: str(v)
             if not isinstance(v, (str, int, float, bool, type(None), dict, list))
             else v
@@ -431,21 +433,21 @@ class FlextApiFactories:
         return result
 
     @staticmethod
-    def create_payload_data(**overrides: object) -> FlextApiTypes.ResponseDict:
+    def create_payload_data(**overrides: object) -> t_api.ResponseDict:
         """Create payload data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            FlextApiTypes.ResponseDict: Payload data dictionary.
+            t_api.ResponseDict: Payload data dictionary.
 
         """
         payload_data = FlextTestsDomains.create_payload()
         # Apply overrides with type filtering
-        filtered_overrides: dict[str, FlextApiTypes.JsonValue] = {
+        filtered_overrides: dict[str, t_api.JsonValue] = {
             k: v
             for k, v in overrides.items()
             if isinstance(v, (str, int, float, bool, type(None), dict, list))
         }
-        result: dict[str, FlextApiTypes.JsonValue] = {
+        result: dict[str, t_api.JsonValue] = {
             k: str(v)
             if not isinstance(v, (str, int, float, bool, type(None), dict, list))
             else v
@@ -456,21 +458,21 @@ class FlextApiFactories:
     @staticmethod
     def create_configuration_data(
         **overrides: object,
-    ) -> FlextApiTypes.ResponseDict:
+    ) -> t_api.ResponseDict:
         """Create configuration data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            FlextApiTypes.ResponseDict: Configuration data dictionary.
+            t_api.ResponseDict: Configuration data dictionary.
 
         """
         config_data = FlextTestsDomains.create_configuration()
         # Apply overrides with type filtering
-        filtered_overrides: dict[str, FlextApiTypes.JsonValue] = {
+        filtered_overrides: dict[str, t_api.JsonValue] = {
             k: v
             for k, v in overrides.items()
             if isinstance(v, (str, int, float, bool, type(None), dict, list))
         }
-        result: dict[str, FlextApiTypes.JsonValue] = {
+        result: dict[str, t_api.JsonValue] = {
             k: str(v)
             if not isinstance(v, (str, int, float, bool, type(None), dict, list))
             else v
@@ -479,7 +481,7 @@ class FlextApiFactories:
         return result
 
     @staticmethod
-    def batch_users(count: int = 5) -> list[FlextApiTypes.ResponseDict]:
+    def batch_users(count: int = 5) -> list[t_api.ResponseDict]:
         """Create batch users using FlextTestsDomains - ABSOLUTE.
 
         Returns:
@@ -546,14 +548,14 @@ class FlextApiFactories:
     def create_test_data(
         count: int = 10,
         prefix: str = "flext_api",
-    ) -> list[FlextApiTypes.ResponseDict]:
+    ) -> list[t_api.ResponseDict]:
         """Create test data using flext_tests API.
 
         Returns:
             List of test data dictionaries.
 
         """
-        result: list[FlextApiTypes.ResponseDict] = []
+        result: list[t_api.ResponseDict] = []
         for i in range(count):
             data = u.Tests.Factory.create_test_data(
                 id=f"{prefix}_{i}",
@@ -561,7 +563,7 @@ class FlextApiFactories:
                 value=f"test_value_{i}",
             )
             # Convert ConfigurationDict to ResponseDict with proper type narrowing
-            typed_data: dict[str, FlextApiTypes.JsonValue] = {
+            typed_data: dict[str, t_api.JsonValue] = {
                 k: str(v)
                 if not isinstance(v, (str, int, float, bool, type(None), dict, list))
                 else v
@@ -597,7 +599,7 @@ class FlextApiFactories:
         *,
         success: bool = True,
         data: object = None,
-    ) -> FlextApiTypes.ResponseDict:
+    ) -> t_api.ResponseDict:
         """Create API response using flext_tests API.
 
         Returns:
@@ -616,7 +618,7 @@ class FlextApiFactories:
             else:
                 response["data"] = str(data)
         # Convert ConfigurationDict to ResponseDict with proper type narrowing
-        result: dict[str, FlextApiTypes.JsonValue] = {
+        result: dict[str, t_api.JsonValue] = {
             k: str(v)
             if not isinstance(v, (str, int, float, bool, type(None), dict, list))
             else v

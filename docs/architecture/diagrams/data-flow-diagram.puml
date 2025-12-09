@@ -38,7 +38,7 @@ frame "Request Processing" as processing #lightgreen {
 }
 
 frame "Business Logic" as business #lightyellow {
-    node "Domain Services" as domain
+    node "Services" as domain
     node "Business Rules" as rules
     node "Data Transformation" as transform
     node "Workflow Orchestration" as workflow

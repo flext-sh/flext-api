@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from flext_core import r
 
-from flext_api.constants import FlextApiConstants
+from flext_api.constants import c
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 
 
@@ -73,8 +73,8 @@ class GraphQLProtocolPlugin(RFCProtocolImplementation):
         """
         protocol_lower = protocol.lower()
         return protocol_lower in {
-            FlextApiConstants.GraphQL.Protocol.GRAPHQL,
-            FlextApiConstants.GraphQL.Protocol.GQL,
+            c.GraphQL.Protocol.GRAPHQL,
+            c.GraphQL.Protocol.GQL,
         }
 
     def get_supported_protocols(self) -> list[str]:
@@ -85,8 +85,8 @@ class GraphQLProtocolPlugin(RFCProtocolImplementation):
 
         """
         return [
-            FlextApiConstants.GraphQL.Protocol.GRAPHQL,
-            FlextApiConstants.GraphQL.Protocol.GQL,
+            c.GraphQL.Protocol.GRAPHQL,
+            c.GraphQL.Protocol.GQL,
         ]
 
 
