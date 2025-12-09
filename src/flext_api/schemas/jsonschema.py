@@ -259,16 +259,14 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             },
         )
 
-        return r[t_api.SchemaDefinition].ok(
-            {
-                "valid": True,
-                "draft": self._draft_version,
-                "properties": list(schema_dict["properties"].keys())
-                if "properties" in schema_dict
-                and isinstance(schema_dict["properties"], dict)
-                else [],
-            }
-        )
+        return r[t_api.SchemaDefinition].ok({
+            "valid": True,
+            "draft": self._draft_version,
+            "properties": list(schema_dict["properties"].keys())
+            if "properties" in schema_dict
+            and isinstance(schema_dict["properties"], dict)
+            else [],
+        })
 
     def _validate_instance_schema(self, schema: dict[str, t.JsonValue]) -> r[bool]:
         """Validate that the schema itself is valid."""
@@ -396,12 +394,10 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                     validation_result.error or "Schema validation failed",
                 )
 
-        return r[t_api.SchemaDefinition].ok(
-            {
-                "valid": True,
-                "type": type(instance).__name__,
-            }
-        )
+        return r[t_api.SchemaDefinition].ok({
+            "valid": True,
+            "type": type(instance).__name__,
+        })
 
     def _validate_schema_uri(self, schema_uri: str) -> r[bool]:
         """Validate $schema URI.

@@ -594,32 +594,28 @@ class FlextApiStorage(FlextService[bool]):
     def info(self) -> r[dict[str, t_api.JsonValue]]:
         """Get storage information using Pydantic model."""
         try:
-            return r[dict[str, t_api.JsonValue]].ok(
-                {
-                    "namespace": self._namespace,
-                    "backend": self._backend,
-                    "size": len(self._storage),
-                    "created_at": self._created_at,
-                    "max_size": self._max_size,
-                    "default_ttl": self._default_ttl,
-                    "operations_count": self._operations_count,
-                }
-            )
+            return r[dict[str, t_api.JsonValue]].ok({
+                "namespace": self._namespace,
+                "backend": self._backend,
+                "size": len(self._storage),
+                "created_at": self._created_at,
+                "max_size": self._max_size,
+                "default_ttl": self._default_ttl,
+                "operations_count": self._operations_count,
+            })
         except Exception as e:
             return r[dict[str, t_api.JsonValue]].fail(str(e))
 
     def health_check(self) -> r[dict[str, t_api.JsonValue]]:
         """Perform health check with metrics."""
         try:
-            return r[dict[str, t_api.JsonValue]].ok(
-                {
-                    "status": "healthy",
-                    "timestamp": u.Generators.generate_iso_timestamp(),
-                    "storage_accessible": True,
-                    "size": len(self._storage),
-                    "operations_count": self._operations_count,
-                }
-            )
+            return r[dict[str, t_api.JsonValue]].ok({
+                "status": "healthy",
+                "timestamp": u.Generators.generate_iso_timestamp(),
+                "storage_accessible": True,
+                "size": len(self._storage),
+                "operations_count": self._operations_count,
+            })
         except Exception as e:
             return r[dict[str, t_api.JsonValue]].fail(str(e))
 
@@ -651,27 +647,23 @@ class FlextApiStorage(FlextService[bool]):
     def get_cache_stats(self) -> r[t_api.CacheDict]:
         """Get cache statistics using Pydantic validation."""
         try:
-            return r[t_api.CacheDict].ok(
-                {
-                    "size": len(self._storage),
-                    "backend": self._backend,
-                    "hits": self._stats.cache_hits,
-                    "misses": self._stats.cache_misses,
-                }
-            )
+            return r[t_api.CacheDict].ok({
+                "size": len(self._storage),
+                "backend": self._backend,
+                "hits": self._stats.cache_hits,
+                "misses": self._stats.cache_misses,
+            })
         except Exception as e:
             return r[t_api.CacheDict].fail(str(e))
 
     def get_storage_metrics(self) -> r[t_api.MetricsDict]:
         """Get complete storage metrics."""
         try:
-            return r[t_api.MetricsDict].ok(
-                {
-                    "total_operations": self._operations_count,
-                    "cache_hits": self._stats.cache_hits,
-                    "cache_misses": self._stats.cache_misses,
-                }
-            )
+            return r[t_api.MetricsDict].ok({
+                "total_operations": self._operations_count,
+                "cache_hits": self._stats.cache_hits,
+                "cache_misses": self._stats.cache_misses,
+            })
         except Exception as e:
             return r[t_api.MetricsDict].fail(str(e))
 
@@ -683,16 +675,14 @@ class FlextApiStorage(FlextService[bool]):
                 if self._stats.total_operations > 0
                 else 0.0
             )
-            return r[dict[str, float]].ok(
-                {
-                    "total_operations": float(self._operations_count),
-                    "cache_hits": float(self._stats.cache_hits),
-                    "cache_misses": float(self._stats.cache_misses),
-                    "hit_ratio": hit_ratio,
-                    "storage_size": float(len(self._storage)),
-                    "memory_usage": float(len(str(self._storage))),
-                }
-            )
+            return r[dict[str, float]].ok({
+                "total_operations": float(self._operations_count),
+                "cache_hits": float(self._stats.cache_hits),
+                "cache_misses": float(self._stats.cache_misses),
+                "hit_ratio": hit_ratio,
+                "storage_size": float(len(self._storage)),
+                "memory_usage": float(len(str(self._storage))),
+            })
         except Exception as e:
             return r[dict[str, float]].fail(str(e))
 
