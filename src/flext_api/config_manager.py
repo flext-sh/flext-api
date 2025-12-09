@@ -17,7 +17,7 @@ from collections.abc import Mapping
 from flext_core import r
 
 from flext_api.models import FlextApiModels
-from flext_api.typings import FlextApiTypes
+from flext_api.typings import t as t_api
 
 
 class FlextApiConfigManager:
@@ -29,7 +29,7 @@ class FlextApiConfigManager:
 
     def __init__(self) -> None:
         """Initialize configuration manager."""
-        self._config: FlextApiTypes.JsonObject | None = None
+        self._config: t_api.JsonObject | None = None
 
     def configure(
         self,
@@ -55,20 +55,20 @@ class FlextApiConfigManager:
     def _process_config(
         self,
         config: Mapping[str, str | float | bool],
-    ) -> r[FlextApiTypes.JsonObject]:
+    ) -> r[t_api.JsonObject]:
         """Process and normalize configuration values - no fallbacks."""
-        processed: FlextApiTypes.JsonObject = {}
+        processed: t_api.JsonObject = {}
 
         for key, value in config.items():
             if value is not None:
                 normalize_result = self._normalize_value(key, value=value)
                 if normalize_result.is_failure:
-                    return r[FlextApiTypes.JsonObject].fail(
+                    return r[t_api.JsonObject].fail(
                         normalize_result.error or "Value normalization failed",
                     )
                 processed[key] = normalize_result.unwrap()
 
-        return r[FlextApiTypes.JsonObject].ok(processed)
+        return r[t_api.JsonObject].ok(processed)
 
     def _normalize_value(
         self,
@@ -265,6 +265,6 @@ class FlextApiConfigManager:
         )
 
     @property
-    def config(self) -> FlextApiTypes.JsonObject | None:
+    def config(self) -> t_api.JsonObject | None:
         """Get current configuration."""
         return self._config

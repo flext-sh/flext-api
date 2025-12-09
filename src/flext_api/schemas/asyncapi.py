@@ -19,10 +19,11 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import override
 
-from flext_core import r, u
+from flext_core import r
 
+from flext_api import u
 from flext_api.plugins import FlextApiPlugins
-from flext_api.typings import FlextApiTypes
+from flext_api.typings import t as t_api
 
 
 class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
@@ -566,8 +567,8 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
     @override
     def validate_request(
         self,
-        request: FlextApiTypes.JsonObject,
-        schema: FlextApiTypes.JsonObject,
+        request: t_api.JsonObject,
+        schema: t_api.JsonObject,
     ) -> r[bool]:
         """Validate request against AsyncAPI schema.
 
@@ -648,8 +649,8 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
     @override
     def validate_response(
         self,
-        response: FlextApiTypes.JsonObject,
-        schema: FlextApiTypes.JsonObject,
+        response: t_api.JsonObject,
+        schema: t_api.JsonObject,
     ) -> r[bool]:
         """Validate response against AsyncAPI schema.
 
