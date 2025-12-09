@@ -114,16 +114,14 @@ class FlextApiTransports:
             if "content" in data:
                 content = data["content"]
 
-            return r[tuple[str, str, dict[str, str], object, object, object]].ok(
-                (
-                    method_str,
-                    url,
-                    headers,
-                    params,
-                    json_data,
-                    content,
-                )
-            )
+            return r[tuple[str, str, dict[str, str], object, object, object]].ok((
+                method_str,
+                url,
+                headers,
+                params,
+                json_data,
+                content,
+            ))
 
         def send(self, connection: object, data: object) -> r[object]:
             """Send HTTP request."""
@@ -192,15 +190,13 @@ class FlextApiTransports:
                     )
 
                 # Return response data
-                return r[object].ok(
-                    {
-                        "status_code": response.status_code,
-                        "headers": dict(response.headers),
-                        "content": response.content,
-                        "text": response.text,
-                        "url": str(response.url),
-                    }
-                )
+                return r[object].ok({
+                    "status_code": response.status_code,
+                    "headers": dict(response.headers),
+                    "content": response.content,
+                    "text": response.text,
+                    "url": str(response.url),
+                })
             except Exception as e:
                 return r[object].fail(f"HTTP send failed: {e}")
 

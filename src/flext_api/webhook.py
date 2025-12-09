@@ -227,12 +227,10 @@ class FlextWebhookHandler(FlextService[object]):
             extra={"event_id": event_id, "event_type": event_type},
         )
 
-        return r[t_api.JsonObject].ok(
-            {
-                "event_id": event_id,
-                "status": "processed",
-            }
-        )
+        return r[t_api.JsonObject].ok({
+            "event_id": event_id,
+            "status": "processed",
+        })
 
     def _handle_processing_failure(
         self,
@@ -260,12 +258,10 @@ class FlextWebhookHandler(FlextService[object]):
                 },
             )
 
-            return r[t_api.JsonObject].ok(
-                {
-                    "event_id": event_id,
-                    "status": "queued_for_retry",
-                }
-            )
+            return r[t_api.JsonObject].ok({
+                "event_id": event_id,
+                "status": "queued_for_retry",
+            })
 
         # Max retries exceeded
         failure_confirmation: t_api.JsonObject = {
@@ -539,12 +535,10 @@ class FlextWebhookHandler(FlextService[object]):
             else:
                 failed += 1
 
-        return r[t_api.JsonObject].ok(
-            {
-                "processed": processed,
-                "failed": failed,
-            }
-        )
+        return r[t_api.JsonObject].ok({
+            "processed": processed,
+            "failed": failed,
+        })
 
     def _generate_event_id(self) -> str:
         """Generate unique event ID.

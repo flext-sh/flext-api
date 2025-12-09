@@ -349,31 +349,25 @@ class TestFlextApiUtilitiesReal:
 
     def test_pagination_extract_page_params_valid_high_page(self) -> None:
         """Test extracting page params with high page number."""
-        result = FlextApiUtilities.PaginationBuilder.extract_page_params(
-            {
-                "page": "100",
-                "page_size": "10",
-            }
-        )
+        result = FlextApiUtilities.PaginationBuilder.extract_page_params({
+            "page": "100",
+            "page_size": "10",
+        })
         assert result.is_success
 
     def test_pagination_extract_page_params_min_page_size(self) -> None:
         """Test extracting page params with minimum valid page size."""
-        result = FlextApiUtilities.PaginationBuilder.extract_page_params(
-            {
-                "page_size": "1",
-            }
-        )
+        result = FlextApiUtilities.PaginationBuilder.extract_page_params({
+            "page_size": "1",
+        })
         assert result.is_success
 
     def test_pagination_extract_page_params_string_numbers(self) -> None:
         """Test extracting page params from string numbers."""
-        result = FlextApiUtilities.PaginationBuilder.extract_page_params(
-            {
-                "page": "2",
-                "page_size": "50",
-            }
-        )
+        result = FlextApiUtilities.PaginationBuilder.extract_page_params({
+            "page": "2",
+            "page_size": "50",
+        })
         assert result.is_success
         page, page_size = result.value
         assert page == 2
@@ -471,12 +465,10 @@ class TestFlextApiUtilitiesReal:
 
     def test_pagination_extract_page_params_boundary(self) -> None:
         """Test extracting page params at boundary values."""
-        result = FlextApiUtilities.PaginationBuilder.extract_page_params(
-            {
-                "page": "1",
-                "page_size": "1",
-            }
-        )
+        result = FlextApiUtilities.PaginationBuilder.extract_page_params({
+            "page": "1",
+            "page_size": "1",
+        })
         assert result.is_success
 
     def test_pagination_negative_page(self) -> None:
