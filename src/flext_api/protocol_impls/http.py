@@ -212,11 +212,13 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         if result.is_success:
             response = result.unwrap()
-            return r[dict[str, object]].ok({
-                "status_code": response.status_code,
-                "headers": response.headers,
-                "body": response.body,
-            })
+            return r[dict[str, object]].ok(
+                {
+                    "status_code": response.status_code,
+                    "headers": response.headers,
+                    "body": response.body,
+                }
+            )
 
         return r[dict[str, object]].fail(result.error or "Request execution failed")
 

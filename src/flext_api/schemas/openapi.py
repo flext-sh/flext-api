@@ -249,12 +249,14 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             },
         )
 
-        return r[t_api.JsonObject].ok({
-            "valid": True,
-            "version": openapi_version,
-            "title": title_str,
-            "paths": list(paths_dict.keys()),
-        })
+        return r[t_api.JsonObject].ok(
+            {
+                "valid": True,
+                "version": openapi_version,
+                "title": title_str,
+                "paths": list(paths_dict.keys()),
+            }
+        )
 
     def _validate_paths(self, paths: dict[str, object]) -> r[bool]:
         """Validate OpenAPI paths object.

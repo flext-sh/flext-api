@@ -264,20 +264,24 @@ class FlextApiConstants(FlextConstants):
         )
         """Immutable set of all valid content types."""
 
-        ACTIVE_METHODS_SET: Final[AbstractSet[str]] = frozenset({
-            Method.GET.value,
-            Method.POST.value,
-            Method.PUT.value,
-            Method.DELETE.value,
-        })
+        ACTIVE_METHODS_SET: Final[AbstractSet[str]] = frozenset(
+            {
+                Method.GET.value,
+                Method.POST.value,
+                Method.PUT.value,
+                Method.DELETE.value,
+            }
+        )
         """Active HTTP methods for validation - references Method enum members."""
 
-        SAFE_METHODS_SET: Final[AbstractSet[str]] = frozenset({
-            Method.GET.value,
-            Method.HEAD.value,
-            Method.OPTIONS.value,
-            Method.TRACE.value,
-        })
+        SAFE_METHODS_SET: Final[AbstractSet[str]] = frozenset(
+            {
+                Method.GET.value,
+                Method.HEAD.value,
+                Method.OPTIONS.value,
+                Method.TRACE.value,
+            }
+        )
         """Safe HTTP methods for validation - references Method enum members."""
 
         # ═══════════════════════════════════════════════════════════════════
@@ -341,20 +345,24 @@ class FlextApiConstants(FlextConstants):
         # RESPONSE TEMPLATES: Immutable mappings
         # ═══════════════════════════════════════════════════════════════════
 
-        SUCCESS_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = MappingProxyType({
-            "status": "success",
-            "data": None,
-            "error": None,
-            "message": None,
-        })
+        SUCCESS_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = MappingProxyType(
+            {
+                "status": "success",
+                "data": None,
+                "error": None,
+                "message": None,
+            }
+        )
         """Template for successful API responses."""
 
-        ERROR_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = MappingProxyType({
-            "status": "error",
-            "data": None,
-            "error": None,
-            "message": None,
-        })
+        ERROR_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = MappingProxyType(
+            {
+                "status": "error",
+                "data": None,
+                "error": None,
+                "message": None,
+            }
+        )
         """Template for error API responses."""
 
         # ═══════════════════════════════════════════════════════════════════
@@ -403,39 +411,45 @@ class FlextApiConstants(FlextConstants):
         # VALIDATION LIMITS: Immutable mappings for validation
         # ═══════════════════════════════════════════════════════════════════
 
-        VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
-            "MAX_URL_LENGTH": MAX_URL_LENGTH,
-            "MIN_TIMEOUT": 0.1,
-            "MAX_TIMEOUT": 300.0,
-            "MIN_RETRIES": 0,
-            "MAX_RETRIES": 10,
-        })
+        VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType(
+            {
+                "MAX_URL_LENGTH": MAX_URL_LENGTH,
+                "MIN_TIMEOUT": 0.1,
+                "MAX_TIMEOUT": 300.0,
+                "MIN_RETRIES": 0,
+                "MAX_RETRIES": 10,
+            }
+        )
         """Validation limits mapping."""
 
         # ═══════════════════════════════════════════════════════════════════
         # CORS CONFIGURATION: Configuração CORS
         # ═══════════════════════════════════════════════════════════════════
 
-        CORS_CONFIG: Final[Mapping[str, list[str]]] = MappingProxyType({
-            "origins": ["*"],
-            "methods": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-            ],
-            "headers": [HEADER_CONTENT_TYPE, HEADER_AUTHORIZATION],
-        })
+        CORS_CONFIG: Final[Mapping[str, list[str]]] = MappingProxyType(
+            {
+                "origins": ["*"],
+                "methods": [
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE",
+                ],
+                "headers": [HEADER_CONTENT_TYPE, HEADER_AUTHORIZATION],
+            }
+        )
         """CORS configuration."""
 
         # ═══════════════════════════════════════════════════════════════════
         # URL CONFIGURATION: Default URLs
         # ═══════════════════════════════════════════════════════════════════
 
-        URL_CONFIG: Final[Mapping[str, str]] = MappingProxyType({
-            "EXAMPLE_BASE_URL": "https://api.example.com",
-            "LOCALHOST_BASE_URL": "https://localhost:8000",
-        })
+        URL_CONFIG: Final[Mapping[str, str]] = MappingProxyType(
+            {
+                "EXAMPLE_BASE_URL": "https://api.example.com",
+                "LOCALHOST_BASE_URL": "https://localhost:8000",
+            }
+        )
         """URL configuration mapping."""
 
         # ═══════════════════════════════════════════════════════════════════
@@ -538,20 +552,24 @@ class FlextApiConstants(FlextConstants):
 
             # Supported protocols - using frozenset for immutability
             # DRY Pattern: References Protocol enum members - NO string duplication!
-            SUPPORTED_PROTOCOLS: Final[AbstractSet[str]] = frozenset({
-                Protocol.HTTP.value,
-                Protocol.HTTPS.value,
-                Protocol.HTTP_1_1.value,
-                Protocol.HTTP_2.value,
-            })
+            SUPPORTED_PROTOCOLS: Final[AbstractSet[str]] = frozenset(
+                {
+                    Protocol.HTTP.value,
+                    Protocol.HTTPS.value,
+                    Protocol.HTTP_1_1.value,
+                    Protocol.HTTP_2.value,
+                }
+            )
             """Supported HTTP protocols - references Protocol enum members."""
-            SUPPORTED_PROTOCOLS_WITH_HTTP3: Final[AbstractSet[str]] = frozenset({
-                Protocol.HTTP.value,
-                Protocol.HTTPS.value,
-                Protocol.HTTP_1_1.value,
-                Protocol.HTTP_2.value,
-                Protocol.HTTP_3.value,
-            })
+            SUPPORTED_PROTOCOLS_WITH_HTTP3: Final[AbstractSet[str]] = frozenset(
+                {
+                    Protocol.HTTP.value,
+                    Protocol.HTTPS.value,
+                    Protocol.HTTP_1_1.value,
+                    Protocol.HTTP_2.value,
+                    Protocol.HTTP_3.value,
+                }
+            )
             """Supported HTTP protocols including HTTP/3 - references Protocol enum members."""
 
         class Server:
@@ -634,14 +652,16 @@ class FlextApiConstants(FlextConstants):
         class HTTPRetry:
             """HTTP retry status codes."""
 
-            RETRYABLE_STATUS_CODES: Final[AbstractSet[int]] = frozenset({
-                408,
-                429,
-                500,
-                502,
-                503,
-                504,
-            })
+            RETRYABLE_STATUS_CODES: Final[AbstractSet[int]] = frozenset(
+                {
+                    408,
+                    429,
+                    500,
+                    502,
+                    503,
+                    504,
+                }
+            )
 
         class HTTPClient:
             """HTTP client connection constants."""
