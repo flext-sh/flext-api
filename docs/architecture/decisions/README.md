@@ -47,13 +47,13 @@ Date: [YYYY-MM-DD]
 ## Current ADRs
 
 | ADR                                     | Title                             | Status   | Date       |
-| --------------------------------------- | --------------------------------- | -------- | ---------- |
+| --------------------------------------- | --------------------------------- | -------- | ---------- | --------------------------- |
 | [ADR-001](001-flext-core-dependency.md) | Mandatory FLEXT-Core Dependency   | Accepted | 2025-01-01 |
 | [ADR-002](002-railway-pattern.md)       | Railway-Oriented Error Handling   | Accepted | 2025-01-01 |
 | [ADR-003](003-protocol-abstraction.md)  | Protocol Plugin Architecture      | Accepted | 2025-01-01 |
-| ADR-004                                 | Pydantic v2 Adoption              | Accepted | 2025-01-15 | *Documentation coming soon* |
-| ADR-005                                 | HTTPX as HTTP Client              | Accepted | 2025-01-15 | *Documentation coming soon* |
-| ADR-006                                 | Clean Architecture Implementation | Accepted | 2025-01-20 | *Documentation coming soon* |
+| ADR-004                                 | Pydantic v2 Adoption              | Accepted | 2025-01-15 | _Documentation coming soon_ |
+| ADR-005                                 | HTTPX as HTTP Client              | Accepted | 2025-01-15 | _Documentation coming soon_ |
+| ADR-006                                 | Clean Architecture Implementation | Accepted | 2025-01-20 | _Documentation coming soon_ |
 
 ## ADR Workflow
 

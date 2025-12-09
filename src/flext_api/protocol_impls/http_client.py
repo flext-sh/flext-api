@@ -55,9 +55,9 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         if "headers" in kwargs:
             kwargs_headers = kwargs["headers"]
             if isinstance(kwargs_headers, dict):
-                headers.update({
-                    k: v for k, v in kwargs_headers.items() if isinstance(v, str)
-                })
+                headers.update(
+                    {k: v for k, v in kwargs_headers.items() if isinstance(v, str)}
+                )
         return headers
 
     def _extract_request_data(

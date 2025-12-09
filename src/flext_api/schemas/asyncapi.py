@@ -237,12 +237,14 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             },
         )
 
-        return r[dict[str, object]].ok({
-            "valid": True,
-            "version": asyncapi_version,
-            "title": title_str,
-            "channels": list(channels_value.keys()),
-        })
+        return r[dict[str, object]].ok(
+            {
+                "valid": True,
+                "version": asyncapi_version,
+                "title": title_str,
+                "channels": list(channels_value.keys()),
+            }
+        )
 
     def _validate_channel_structure(
         self,
