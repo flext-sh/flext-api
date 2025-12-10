@@ -64,7 +64,7 @@ class TestBaseProtocolImplementation:
         protocol.initialize()
         result = protocol.execute()
         assert result.is_success
-        assert result.unwrap() is True
+        assert result.value is True
 
     def test_shutdown_success(self) -> None:
         """Test successful shutdown."""
@@ -128,7 +128,7 @@ class TestBaseProtocolImplementation:
         protocol = BaseProtocolImplementation(name="test")
         result = protocol._validate_request({"method": "GET", "url": "/test"})
         assert result.is_success
-        assert result.unwrap() == {"method": "GET", "url": "/test"}
+        assert result.value == {"method": "GET", "url": "/test"}
 
     def test_validate_request_not_dict(self) -> None:
         """Test _validate_request with non-dict request."""

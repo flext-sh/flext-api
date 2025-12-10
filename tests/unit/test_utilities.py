@@ -37,7 +37,7 @@ class TestFlextApiUtilitiesReal:
 
         # API returns FlextResult[dict]
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response["status"] == "success"
         assert response["data"] == {"test": "data"}
         assert response["message"] == "Success"
@@ -53,7 +53,7 @@ class TestFlextApiUtilitiesReal:
         )
 
         assert result.is_success
-        response_obj = result.unwrap()
+        response_obj = result.value
         assert isinstance(response_obj, dict)
         response: dict[str, object] = response_obj
         assert response["success"] is True
@@ -92,7 +92,7 @@ class TestFlextApiUtilitiesReal:
         """Test FlextWebValidator URL validation with valid URL."""
         result = FlextApiUtilities.FlextWebValidator.validate_url("https://example.com")
         assert result.is_success
-        assert result.unwrap() == "https://example.com"
+        assert result.value == "https://example.com"
 
     def test_http_validator_url_invalid(self) -> None:
         """Test FlextWebValidator URL validation with invalid URL."""
@@ -282,7 +282,7 @@ class TestFlextApiUtilitiesReal:
         """Test ResponseBuilder success with empty data dict."""
         result = FlextApiUtilities.ResponseBuilder.build_success_response(data={})
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response["data"] == {}
 
     def test_response_builder_success_with_all_params(self) -> None:
@@ -296,7 +296,7 @@ class TestFlextApiUtilitiesReal:
             headers=headers,
         )
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response["data"] == data
         assert response["message"] == "Created"
         assert response["status_code"] == 201
@@ -310,14 +310,14 @@ class TestFlextApiUtilitiesReal:
                 status_code=code,
             )
             assert result.is_success
-            response = result.unwrap()
+            response = result.value
             assert response["status_code"] == code
 
     def test_response_builder_error_result_minimal(self) -> None:
         """Test ResponseBuilder error result with minimal parameters."""
         result = FlextApiUtilities.ResponseBuilder.build_error_result("Error message")
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response["error"] == "Error message"
         assert response["status_code"] == 400
 
@@ -332,7 +332,7 @@ class TestFlextApiUtilitiesReal:
             headers=headers,
         )
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response["error"] == "Validation failed"
         assert response["status_code"] == 422
         assert response["data"] == data
@@ -342,7 +342,7 @@ class TestFlextApiUtilitiesReal:
         """Test that ResponseBuilder includes timestamps."""
         result = FlextApiUtilities.ResponseBuilder.build_success_response()
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert "timestamp" in response
         # Verify ISO format
         datetime.fromisoformat(response["timestamp"])
@@ -445,7 +445,7 @@ class TestFlextApiUtilitiesReal:
             pagination_data,
         )
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert "pagination" in response
         pagination = response["pagination"]
         assert pagination["page"] == 2

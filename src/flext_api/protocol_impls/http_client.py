@@ -203,7 +203,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
                 return r[t.HttpResponseDict].fail(
                     full_url_result.error or "URL building failed",
                 )
-            full_url = full_url_result.unwrap()
+            full_url = full_url_result.value
 
             headers = self._prepare_request_headers(kwargs)
             request_data = self._extract_request_data(kwargs)

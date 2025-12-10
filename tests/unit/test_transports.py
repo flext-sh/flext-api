@@ -33,7 +33,7 @@ class TestFlextApiTransportsFlextWebTransport:
         result = transport.connect("https://httpbin.org", timeout=10)
 
         assert result.is_success
-        client = result.unwrap()
+        client = result.value
         assert hasattr(client, "request")
         assert hasattr(client, "close")
 
@@ -90,7 +90,7 @@ class TestFlextApiTransportsFlextWebTransport:
         # Connect first
         connect_result = transport.connect("https://httpbin.org", timeout=10)
         assert connect_result.is_success
-        client = connect_result.unwrap()
+        client = connect_result.value
 
         try:
             # Send GET request
@@ -104,7 +104,7 @@ class TestFlextApiTransportsFlextWebTransport:
             )
 
             assert send_result.is_success
-            response = send_result.unwrap()
+            response = send_result.value
             assert isinstance(response, dict)
             assert response["status_code"] == 200
             assert "content" in response

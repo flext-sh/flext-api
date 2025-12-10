@@ -57,7 +57,7 @@ class TestFlextApiClientInitialization:
 
         result = client.execute()
         assert result.is_success
-        assert result.unwrap().base_url == "https://test.com"
+        assert result.value.base_url == "https://test.com"
 
 
 class TestFlextApiClientHttpRequest:
@@ -98,11 +98,11 @@ class TestFlextApiClientUrlBuilding:
 
         url1_result = client._build_url("/users")
         assert url1_result.is_success
-        assert url1_result.unwrap() == "https://api.example.com/users"
+        assert url1_result.value == "https://api.example.com/users"
 
         url2_result = client._build_url("users")
         assert url2_result.is_success
-        assert url2_result.unwrap() == "https://api.example.com/users"
+        assert url2_result.value == "https://api.example.com/users"
 
     def test_build_url_without_base_url(self) -> None:
         """Test URL building without base URL."""
@@ -111,7 +111,7 @@ class TestFlextApiClientUrlBuilding:
 
         url_result = client._build_url("https://external.api/endpoint")
         assert url_result.is_success
-        assert url_result.unwrap() == "https://external.api/endpoint"
+        assert url_result.value == "https://external.api/endpoint"
 
     def test_build_url_strips_trailing_slash(self) -> None:
         """Test URL building strips trailing slash from base URL."""
@@ -120,7 +120,7 @@ class TestFlextApiClientUrlBuilding:
 
         url_result = client._build_url("/users")
         assert url_result.is_success
-        url = url_result.unwrap()
+        url = url_result.value
         assert url == "https://api.example.com/users"
         # Should not have double slashes
         assert "//" not in url[8:]  # Ignore https://
@@ -133,28 +133,28 @@ class TestFlextApiClientBodySerialization:
         """Test serializing empty dict body returns empty bytes."""
         result = FlextApiClient._serialize_body({})
         assert result.is_success
-        assert result.unwrap() == b""
+        assert result.value == b""
 
     def test_serialize_body_bytes(self) -> None:
         """Test serializing bytes body."""
         body = b"raw bytes"
         result = FlextApiClient._serialize_body(body)
         assert result.is_success
-        assert result.unwrap() == b"raw bytes"
+        assert result.value == b"raw bytes"
 
     def test_serialize_body_string(self) -> None:
         """Test serializing string body."""
         body = "string content"
         result = FlextApiClient._serialize_body(body)
         assert result.is_success
-        assert result.unwrap() == b"string content"
+        assert result.value == b"string content"
 
     def test_serialize_body_dict(self) -> None:
         """Test serializing dictionary body to JSON."""
         body = {"key": "value"}
         result = FlextApiClient._serialize_body(body)
         assert result.is_success
-        assert result.unwrap() == json.dumps(body).encode("utf-8")
+        assert result.value == json.dumps(body).encode("utf-8")
 
     def test_deserialize_json_response(self) -> None:
         """Test deserializing JSON response using real httpx.Response."""
@@ -171,7 +171,7 @@ class TestFlextApiClientBodySerialization:
 
         result = FlextApiClient._deserialize_body(real_response)
         assert result.is_success
-        body = result.unwrap()
+        body = result.value
         assert isinstance(body, dict)
         assert body == {"status": "ok"}
 
@@ -187,7 +187,7 @@ class TestFlextApiClientBodySerialization:
 
         result = FlextApiClient._deserialize_body(real_response)
         assert result.is_success
-        body = result.unwrap()
+        body = result.value
         assert isinstance(body, str)
         assert body == "plain text"
 
@@ -203,7 +203,7 @@ class TestFlextApiClientBodySerialization:
 
         result = FlextApiClient._deserialize_body(real_response)
         assert result.is_success
-        body = result.unwrap()
+        body = result.value
         assert isinstance(body, bytes)
         assert body == binary_content
 
@@ -236,7 +236,7 @@ class TestFlextApiClientRailwayPattern:
 
         assert isinstance(result, FlextResult)
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response.status_code == 200
         assert isinstance(response.body, dict)
         assert "url" in response.body
@@ -290,7 +290,7 @@ class TestFlextApiClientHeaderMerging:
         result = client.request(request)
 
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response.status_code == 200
         # httpbin.org/headers returns all headers sent
         assert isinstance(response.body, dict)
@@ -333,7 +333,7 @@ class TestFlextApiClientQueryParams:
         result = client.request(request)
 
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response.status_code == 200
         # httpbin.org/get returns query params in response
         assert isinstance(response.body, dict)
@@ -367,7 +367,7 @@ class TestFlextApiClientConfiguration:
             or "timed out" in result.error.lower()
         )
         if result.is_success:
-            response = result.unwrap()
+            response = result.value
             assert response.status_code == 200
 
     @pytest.mark.network
@@ -384,7 +384,7 @@ class TestFlextApiClientConfiguration:
         result = client.request(request)
 
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response.status_code == 200
         # Verify URL was built correctly by checking response
         assert isinstance(response.body, dict)
@@ -404,7 +404,7 @@ class TestFlextApiClientHttpMethods:
         result = api.get("/get")
 
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response.status_code == 200
         assert isinstance(response.body, dict)
 
@@ -416,7 +416,7 @@ class TestFlextApiClientHttpMethods:
         result = api.post("/post", data={"name": "John"})
 
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response.status_code == 200
         # httpbin.org/post returns the data sent
         assert isinstance(response.body, dict)

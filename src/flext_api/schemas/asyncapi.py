@@ -180,7 +180,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                 version_result.error or "AsyncAPI version validation failed",
             )
 
-        asyncapi_version = version_result.unwrap()
+        asyncapi_version = version_result.value
 
         # Validate required fields
         fields_result = self._validate_required_fields(schema, asyncapi_version)
@@ -196,7 +196,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                 info_result.error or "Info object validation failed",
             )
 
-        info = info_result.unwrap()
+        info = info_result.value
 
         # Validate channels
         if "channels" not in schema:
@@ -370,7 +370,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                     channel_dict_result.error or "Channel dictionary validation failed",
                 )
 
-            channel_dict = channel_dict_result.unwrap()
+            channel_dict = channel_dict_result.value
 
             # Validate channel content
             validation_result = self._validate_single_channel(

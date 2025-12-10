@@ -221,13 +221,13 @@ class FlextApiStorage(FlextService[bool]):
         if namespace_result.is_failure:
             error_msg = f"Failed to extract namespace: {namespace_result.error}"
             raise ValueError(error_msg)
-        self._namespace = namespace_result.unwrap()
+        self._namespace = namespace_result.value
 
         max_size_result = self._extract_max_size(config_dict, max_size_val)
         if max_size_result.is_failure:
             error_msg = f"Failed to extract max_size: {max_size_result.error}"
             raise ValueError(error_msg)
-        max_size_value = max_size_result.unwrap()
+        max_size_value = max_size_result.value
         # Convert sentinel value (-1) to None for optional max_size
         self._max_size = None if max_size_value == -1 else max_size_value
 
@@ -235,7 +235,7 @@ class FlextApiStorage(FlextService[bool]):
         if default_ttl_result.is_failure:
             error_msg = f"Failed to extract default_ttl: {default_ttl_result.error}"
             raise ValueError(error_msg)
-        default_ttl_value = default_ttl_result.unwrap()
+        default_ttl_value = default_ttl_result.value
         # Convert sentinel value (-1) to None for optional default_ttl
         self._default_ttl = None if default_ttl_value == -1 else default_ttl_value
 
@@ -243,7 +243,7 @@ class FlextApiStorage(FlextService[bool]):
         if backend_result.is_failure:
             error_msg = f"Failed to extract backend: {backend_result.error}"
             raise ValueError(error_msg)
-        self._backend = backend_result.unwrap()
+        self._backend = backend_result.value
 
     def _extract_namespace(self, config_dict: t_api.StorageDict) -> r[str]:
         """Extract namespace from config with validation - uses default if not specified."""
@@ -541,7 +541,7 @@ class FlextApiStorage(FlextService[bool]):
             for key in keys:
                 get_result = self.get(key)
                 if get_result.is_success:
-                    unwrapped = get_result.unwrap()
+                    unwrapped = get_result.value
                     if isinstance(
                         unwrapped,
                         (str, int, float, bool, type(None), list, dict),

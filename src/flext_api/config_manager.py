@@ -45,7 +45,7 @@ class FlextApiConfigManager:
                     return r[bool].fail(
                         process_result.error or "Configuration processing failed",
                     )
-                self._config = process_result.unwrap()
+                self._config = process_result.value
 
             return self._validate_configuration()
         except Exception as e:
@@ -66,7 +66,7 @@ class FlextApiConfigManager:
                     return r[t_api.JsonObject].fail(
                         normalize_result.error or "Value normalization failed",
                     )
-                processed[key] = normalize_result.unwrap()
+                processed[key] = normalize_result.value
 
         return r[t_api.JsonObject].ok(processed)
 
@@ -258,9 +258,9 @@ class FlextApiConfigManager:
 
         return r[FlextApiModels.ClientConfig].ok(
             FlextApiModels.create_config(
-                base_url=base_url_result.unwrap(),
-                timeout=timeout_result.unwrap(),
-                headers=headers_result.unwrap(),
+                base_url=base_url_result.value,
+                timeout=timeout_result.value,
+                headers=headers_result.value,
             ),
         )
 

@@ -46,13 +46,13 @@ class TestFlextApiPluginsPlugin:
         # Test initialization
         init_result = plugin.initialize()
         assert init_result.is_success
-        assert init_result.unwrap() is True
+        assert init_result.value is True
         assert plugin._initialized
 
         # Test shutdown
         shutdown_result = plugin.shutdown()
         assert shutdown_result.is_success
-        assert shutdown_result.unwrap() is True
+        assert shutdown_result.value is True
         assert not plugin._initialized
 
     def test_plugin_double_initialization(self) -> None:

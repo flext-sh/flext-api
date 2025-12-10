@@ -330,7 +330,7 @@ class FlextApiServer(FlextService[object], x.Validation):
             if app_result.is_failure:
                 return r[bool].fail(f"Failed to create app: {app_result.error}")
 
-            self._app = app_result.unwrap()
+            self._app = app_result.value
 
             middleware_result = self.apply_middleware(middleware_pipeline)
             if middleware_result.is_failure:

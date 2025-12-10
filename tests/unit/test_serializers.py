@@ -21,7 +21,7 @@ class TestFlextApiSerializers:
         serializers = FlextApiSerializers()
         result = serializers.execute()
         assert result.is_success
-        assert result.unwrap() is True
+        assert result.value is True
 
     def test_json_serialize_success(self) -> None:
         """Test JSON serialization."""
@@ -79,7 +79,7 @@ class TestFlextApiSerializers:
         registry = FlextApiSerializers.SerializerRegistry()
         result = registry.get_serializer("application/json")
         assert result.is_success
-        serializer = result.unwrap()
+        serializer = result.value
         assert hasattr(serializer, "serialize")
 
     def test_serializer_registry_get_msgpack(self) -> None:
@@ -87,7 +87,7 @@ class TestFlextApiSerializers:
         registry = FlextApiSerializers.SerializerRegistry()
         result = registry.get_serializer("application/x-msgpack")
         assert result.is_success
-        serializer = result.unwrap()
+        serializer = result.value
         assert hasattr(serializer, "serialize")
 
     def test_serializer_registry_get_cbor(self) -> None:
@@ -95,7 +95,7 @@ class TestFlextApiSerializers:
         registry = FlextApiSerializers.SerializerRegistry()
         result = registry.get_serializer("application/cbor")
         assert result.is_success
-        serializer = result.unwrap()
+        serializer = result.value
         assert hasattr(serializer, "serialize")
 
     def test_serializer_registry_get_unknown(self) -> None:

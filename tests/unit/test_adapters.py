@@ -32,7 +32,7 @@ class TestFlextApiAdaptersHttpProtocol:
 
         # Verify success
         assert result.is_success
-        message = result.unwrap()
+        message = result.value
         assert isinstance(message, dict)
         assert message["type"] == "request"
         assert message["method"] == "GET"
@@ -51,7 +51,7 @@ class TestFlextApiAdaptersHttpProtocol:
         result = FlextApiAdapters.HttpProtocol.adapt_http_request_to_websocket(request)
 
         assert result.is_success
-        message = result.unwrap()
+        message = result.value
         assert message["body"] == "plain text body"
 
     def test_adapt_http_request_to_websocket_with_dict_body(self) -> None:
@@ -65,7 +65,7 @@ class TestFlextApiAdaptersHttpProtocol:
         result = FlextApiAdapters.HttpProtocol.adapt_http_request_to_websocket(request)
 
         assert result.is_success
-        message = result.unwrap()
+        message = result.value
         assert message["body"] == {"nested": {"data": True}}
 
     def test_adapt_websocket_message_to_http_response_success(self) -> None:
@@ -81,7 +81,7 @@ class TestFlextApiAdaptersHttpProtocol:
         )
 
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert isinstance(response, FlextApiModels.HttpResponse)
         assert response.status_code == 201
         assert response.headers == {"Content-Type": "application/json"}
@@ -96,7 +96,7 @@ class TestFlextApiAdaptersHttpProtocol:
         )
 
         assert result.is_success
-        response = result.unwrap()
+        response = result.value
         assert response.status_code == 200
         assert response.headers == {}
         assert response.body == {"message": "simple response"}
@@ -112,7 +112,7 @@ class TestFlextApiAdaptersFormatConverter:
         result = FlextApiAdapters.FormatConverter.convert_json_to_messagepack(data)
 
         assert result.is_success
-        packed = result.unwrap()
+        packed = result.value
         assert isinstance(packed, bytes)
         assert len(packed) > 0
 
@@ -123,7 +123,7 @@ class TestFlextApiAdaptersFormatConverter:
         result = FlextApiAdapters.FormatConverter.convert_json_to_cbor(data)
 
         assert result.is_success
-        packed = result.unwrap()
+        packed = result.value
         assert isinstance(packed, bytes)
         assert len(packed) > 0
 
@@ -138,7 +138,7 @@ class TestFlextApiAdaptersSchema:
         result = FlextApiAdapters.Schema.adapt_openapi_to_graphql_schema(openapi_spec)
 
         assert result.is_success
-        schema = result.unwrap()
+        schema = result.value
         assert isinstance(schema, dict)
         assert "type" in schema
         assert "query" in schema
@@ -162,7 +162,7 @@ class TestFlextApiAdaptersRequestTransformer:
         )
 
         assert result.is_success
-        transformed = result.unwrap()
+        transformed = result.value
         assert isinstance(transformed, dict)
         assert transformed["type"] == "request"
         assert transformed["method"] == "GET"
@@ -180,7 +180,7 @@ class TestFlextApiAdaptersRequestTransformer:
         )
 
         assert result.is_success
-        assert result.unwrap() is request
+        assert result.value is request
 
     def test_transform_response_for_websocket_success(self) -> None:
         """Test successful response transformation from WebSocket."""
@@ -196,7 +196,7 @@ class TestFlextApiAdaptersRequestTransformer:
         )
 
         assert result.is_success
-        transformed = result.unwrap()
+        transformed = result.value
         assert isinstance(transformed, FlextApiModels.HttpResponse)
         assert transformed.status_code == 200
         assert transformed.body == {"result": "success"}
@@ -214,4 +214,4 @@ class TestFlextApiAdaptersRequestTransformer:
         )
 
         assert result.is_success
-        assert result.unwrap() is response
+        assert result.value is response
