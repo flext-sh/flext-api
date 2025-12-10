@@ -127,8 +127,8 @@ class FlextApiClient(s[FlextApiConfig]):
         # Execute request with validated URL and body
         return self._execute_http_request(
             request=request,
-            url=url_result.unwrap(),
-            serialized_body=body_result.unwrap(),
+            url=url_result.value,
+            serialized_body=body_result.value,
         )
 
     def _execute_http_request(

@@ -399,7 +399,7 @@ class FlextApiSerializers(FlextService[bool]):
                     serializer_result.error or "Serializer retrieval failed",
                 )
 
-            serializer = serializer_result.unwrap()
+            serializer = serializer_result.value
 
             try:
                 serialized = serializer.serialize(data)
@@ -439,7 +439,7 @@ class FlextApiSerializers(FlextService[bool]):
                     serializer_result.error or "Serializer retrieval failed",
                 )
 
-            serializer = serializer_result.unwrap()
+            serializer = serializer_result.value
 
             try:
                 deserialized = serializer.deserialize(data)

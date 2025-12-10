@@ -232,7 +232,7 @@ class FlextApi(s[FlextApiConfig]):
             )
 
         # Finalize body value
-        body_value = body_result.unwrap()
+        body_value = body_result.value
         body_final = self._finalize_body(body_value)
 
         # Create request model
@@ -240,9 +240,9 @@ class FlextApi(s[FlextApiConfig]):
             method=method,
             url=url,
             body=body_final,
-            headers=headers_result.unwrap(),
-            query_params=query_params_result.unwrap(),
-            timeout=timeout_result.unwrap(),
+            headers=headers_result.value,
+            query_params=query_params_result.value,
+            timeout=timeout_result.value,
         )
         return self.request(http_request)
 

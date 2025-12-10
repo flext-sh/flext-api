@@ -198,7 +198,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             return r[t_api.JsonObject].fail(
                 version_result.error or "Version validation failed",
             )
-        openapi_version = version_result.unwrap()
+        openapi_version = version_result.value
 
         # Validate required fields
         required_fields = ["info", "paths"]
@@ -216,13 +216,13 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         info_result = self._validate_info_field(schema)
         if info_result.is_failure:
             return info_result
-        info = info_result.unwrap()
+        info = info_result.value
 
         # Validate paths
         paths_result = self._validate_paths_field(schema)
         if paths_result.is_failure:
             return paths_result
-        paths_dict = paths_result.unwrap()
+        paths_dict = paths_result.value
 
         # Validate optional components
         components_result = self._validate_optional_components(schema)
@@ -462,7 +462,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                 schemes_dict_result.error or "Schemes validation failed",
             )
 
-        schemes_dict = schemes_dict_result.unwrap()
+        schemes_dict = schemes_dict_result.value
 
         # Validate each security scheme
         for scheme_name, scheme in schemes_dict.items():

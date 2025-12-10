@@ -232,7 +232,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                 schema_dict_result.error or "Schema basic structure validation failed",
             )
 
-        schema_dict = schema_dict_result.unwrap()
+        schema_dict = schema_dict_result.value
 
         # Validate individual components
         validations = [

@@ -313,7 +313,7 @@ class FlextWebhookHandler(FlextService[object]):
         parse_result = self._parse_payload(payload)
         if parse_result.is_failure:
             return parse_result
-        event_data = parse_result.unwrap()
+        event_data = parse_result.value
 
         # Extract event type
         event_type_result = self._extract_event_type(event_data)
@@ -321,7 +321,7 @@ class FlextWebhookHandler(FlextService[object]):
             return r[t_api.JsonObject].fail(
                 event_type_result.error or "Event type extraction failed",
             )
-        event_type = event_type_result.unwrap()
+        event_type = event_type_result.value
 
         # Generate event ID
         event_id = self._extract_event_id(event_data)

@@ -51,7 +51,7 @@ Example 1: Simple HTTP GET:
     >>> api = FlextApi()
     >>> result = api.get("https://api.example.com/users")
     >>> if result.is_success:
-    ...     response = result.unwrap()
+    ...     response = result.value
     ...     print(f"Status: {response.status_code}")
 
 Example 2: HTTP POST with data:

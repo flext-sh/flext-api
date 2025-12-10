@@ -46,7 +46,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
     plugin = FlextWebProtocolPlugin(http2=True, max_connections=100)
     result = plugin.send_request(request)
     if result.is_success:
-    response = result.unwrap()
+    response = result.value
     """
 
     def __init__(
@@ -118,7 +118,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return r[FlextApiModels.HttpRequest].fail(
                 method_result.error or "Method extraction failed",
             )
-        method_str = method_result.unwrap()
+        method_str = method_result.value
 
         # Extract URL using RFC method
         url_result = self._extract_url(request)
@@ -126,7 +126,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return r[FlextApiModels.HttpRequest].fail(
                 url_result.error or "URL extraction failed",
             )
-        url = url_result.unwrap()
+        url = url_result.value
 
         # Extract headers using RFC method
         headers = self._extract_headers(request)
@@ -168,7 +168,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 request_result.error or "Request building failed",
             )
 
-        http_request = request_result.unwrap()
+        http_request = request_result.value
 
         # Extract request parameters
         method = http_request.method.upper()
@@ -178,7 +178,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return r[dict[str, object]].fail(
                 headers_result.error or "Headers extraction failed",
             )
-        headers_dict = headers_result.unwrap()
+        headers_dict = headers_result.value
         timeout = http_request.timeout
         body = http_request.body
 
@@ -194,7 +194,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 f"Failed to establish connection: {conn_result.error}",
             )
 
-        connection = conn_result.unwrap()
+        connection = conn_result.value
 
         # Execute request with retry logic
         if isinstance(connection, httpx.Client):
@@ -211,7 +211,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return r[dict[str, object]].fail("Invalid connection type")
 
         if result.is_success:
-            response = result.unwrap()
+            response = result.value
             return r[dict[str, object]].ok({
                 "status_code": response.status_code,
                 "headers": response.headers,

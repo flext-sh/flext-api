@@ -55,7 +55,7 @@ class TestFlextApiExecute:
         result = api.execute()
 
         assert result.is_success
-        assert result.unwrap() is config
+        assert result.value is config
 
     def test_execute_with_custom_config(self) -> None:
         """Test execute with custom config."""
@@ -64,7 +64,7 @@ class TestFlextApiExecute:
         result = api.execute()
 
         assert result.is_success
-        unwrapped = result.unwrap()
+        unwrapped = result.value
         assert unwrapped.timeout == 45.0
 
 
@@ -274,7 +274,7 @@ class TestFlextApiRequest:
             result = api.request(request)
 
             assert result.is_success
-            assert result.unwrap().status_code == 200
+            assert result.value.status_code == 200
             api._client.request.assert_called_once_with(request)
         finally:
             api._client = original_client

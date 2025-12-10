@@ -252,7 +252,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         if url_result.is_failure:
             return r[bool].fail(url_result.error or "URL extraction failed")
 
-        url = url_result.unwrap()
+        url = url_result.value
 
         # Use RFC method to extract headers
         headers = self._extract_headers(req_dict)
@@ -287,7 +287,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[dict[str, object]].fail(
                 message_result.error or "Message extraction failed",
             )
-        message = message_result.unwrap()
+        message = message_result.value
 
         message_type = self._extract_message_type(kwargs)
 
@@ -314,7 +314,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[dict[str, object]].fail(
                 f"Failed to extract URL: {url_result.error}",
             )
-        url_str = url_result.unwrap()
+        url_str = url_result.value
 
         response: dict[str, object] = {
             "status_code": FlextApiConstants.WebSocket.STATUS_SWITCHING_PROTOCOLS,

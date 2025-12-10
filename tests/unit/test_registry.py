@@ -53,7 +53,7 @@ class TestFlextApiRegistry:
         # Get it back
         result = registry.get_protocol("http")
         assert result.is_success
-        protocol = result.unwrap()
+        protocol = result.value
         assert protocol.get_name() == "mock_protocol"
 
     def test_register_schema_success(self) -> None:
@@ -78,7 +78,7 @@ class TestFlextApiRegistry:
         registry.register_schema("json", MockSchema())
         result = registry.get_schema("json")
         assert result.is_success
-        schema = result.unwrap()
+        schema = result.value
         assert schema.get_name() == "mock_schema"
 
     def test_register_transport_success(self) -> None:
@@ -103,5 +103,5 @@ class TestFlextApiRegistry:
         registry.register_transport("httpx", MockTransport())
         result = registry.get_transport("httpx")
         assert result.is_success
-        transport = result.unwrap()
+        transport = result.value
         assert transport.get_name() == "mock_transport"

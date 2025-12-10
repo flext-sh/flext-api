@@ -139,7 +139,7 @@ class FlextApiTransports:
                     )
 
                 method_str, url, headers, params, json_data, content = (
-                    params_result.unwrap()
+                    params_result.value
                 )
 
                 # Make the request with explicit parameter passing
