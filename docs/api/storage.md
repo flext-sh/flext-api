@@ -11,7 +11,7 @@ Main storage interface for handling file uploads, downloads, and metadata operat
 ```python
 from flext_api.storage import FlextApiStorage
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

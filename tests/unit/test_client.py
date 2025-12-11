@@ -18,15 +18,15 @@ import pytest
 import pytest_httpx
 from flext_core import FlextResult
 
-from flext_api import FlextApi, FlextApiClient, FlextApiConfig, FlextApiModels
+from flext_api import FlextApi, FlextApiClient, FlextApiModels, FlextApiSettings
 
 
 class TestFlextApiClientInitialization:
-    """Test FlextApiClient initialization with FlextApiConfig."""
+    """Test FlextApiClient initialization with FlextApiSettings."""
 
     def test_client_with_default_config(self) -> None:
         """Test client initialization with default configuration."""
-        config = FlextApiConfig()
+        config = FlextApiSettings()
         client = FlextApiClient(config)
 
         # base_url now has default from Constants
@@ -37,7 +37,7 @@ class TestFlextApiClientInitialization:
 
     def test_client_with_custom_config(self) -> None:
         """Test client initialization with custom configuration."""
-        config = FlextApiConfig(
+        config = FlextApiSettings(
             base_url="https://api.example.com",
             timeout=60.0,
             max_retries=5,
@@ -52,7 +52,7 @@ class TestFlextApiClientInitialization:
 
     def test_client_execute_returns_config(self) -> None:
         """Test that execute() returns configuration via FlextResult."""
-        config = FlextApiConfig(base_url="https://test.com")
+        config = FlextApiSettings(base_url="https://test.com")
         client = FlextApiClient(config)
 
         result = client.execute()
@@ -93,7 +93,7 @@ class TestFlextApiClientUrlBuilding:
 
     def test_build_url_with_base_url(self) -> None:
         """Test URL building with base URL."""
-        config = FlextApiConfig(base_url="https://api.example.com")
+        config = FlextApiSettings(base_url="https://api.example.com")
         client = FlextApiClient(config)
 
         url1_result = client._build_url("/users")
@@ -106,7 +106,7 @@ class TestFlextApiClientUrlBuilding:
 
     def test_build_url_without_base_url(self) -> None:
         """Test URL building without base URL."""
-        config = FlextApiConfig(base_url="")
+        config = FlextApiSettings(base_url="")
         client = FlextApiClient(config)
 
         url_result = client._build_url("https://external.api/endpoint")
@@ -115,7 +115,7 @@ class TestFlextApiClientUrlBuilding:
 
     def test_build_url_strips_trailing_slash(self) -> None:
         """Test URL building strips trailing slash from base URL."""
-        config = FlextApiConfig(base_url="https://api.example.com/")
+        config = FlextApiSettings(base_url="https://api.example.com/")
         client = FlextApiClient(config)
 
         url_result = client._build_url("/users")
@@ -224,7 +224,7 @@ class TestFlextApiClientRailwayPattern:
             status_code=200,
         )
 
-        config = FlextApiConfig(base_url="https://httpbin.org")
+        config = FlextApiSettings(base_url="https://httpbin.org")
         client = FlextApiClient(config)
 
         request = FlextApiModels.HttpRequest(
@@ -254,7 +254,7 @@ class TestFlextApiClientRailwayPattern:
             json={"error": "Internal Server Error"},
         )
 
-        config = FlextApiConfig(base_url="https://httpbin.org")
+        config = FlextApiSettings(base_url="https://httpbin.org")
         client = FlextApiClient(config)
 
         request = FlextApiModels.HttpRequest(
@@ -275,7 +275,7 @@ class TestFlextApiClientHeaderMerging:
     @pytest.mark.network
     def test_merge_config_and_request_headers(self) -> None:
         """Test that config headers are merged with request headers using real HTTP."""
-        config = FlextApiConfig(
+        config = FlextApiSettings(
             base_url="https://httpbin.org",
             headers={"X-API-Key": "secret", "Accept": "application/json"},
         )
@@ -321,7 +321,7 @@ class TestFlextApiClientQueryParams:
     @pytest.mark.network
     def test_pass_query_params_to_request(self) -> None:
         """Test that query parameters are passed correctly using real HTTP."""
-        config = FlextApiConfig(base_url="https://httpbin.org")
+        config = FlextApiSettings(base_url="https://httpbin.org")
         client = FlextApiClient(config)
 
         request = FlextApiModels.HttpRequest(
@@ -342,13 +342,13 @@ class TestFlextApiClientQueryParams:
         assert args.get("limit") == "10"
 
 
-class TestFlextApiClientConfiguration:
+class TestFlextApiClientSettingsuration:
     """Test configuration validation and application using REAL HTTP."""
 
     @pytest.mark.network
     def test_config_timeout_applied_to_client(self) -> None:
         """Test that request timeout is applied using real HTTP."""
-        config = FlextApiConfig(base_url="https://httpbin.org", timeout=45.0)
+        config = FlextApiSettings(base_url="https://httpbin.org", timeout=45.0)
         client = FlextApiClient(config)
 
         request = FlextApiModels.HttpRequest(
@@ -373,7 +373,7 @@ class TestFlextApiClientConfiguration:
     @pytest.mark.network
     def test_config_base_url_used_for_relative_paths(self) -> None:
         """Test that config base_url is used for relative paths using real HTTP."""
-        config = FlextApiConfig(base_url="https://httpbin.org")
+        config = FlextApiSettings(base_url="https://httpbin.org")
         client = FlextApiClient(config)
 
         request = FlextApiModels.HttpRequest(
@@ -399,7 +399,7 @@ class TestFlextApiClientHttpMethods:
     @pytest.mark.network
     def test_get_method(self) -> None:
         """Test GET method via FlextApi facade using real HTTP."""
-        api = FlextApi(FlextApiConfig(base_url="https://httpbin.org"))
+        api = FlextApi(FlextApiSettings(base_url="https://httpbin.org"))
 
         result = api.get("/get")
 
@@ -411,7 +411,7 @@ class TestFlextApiClientHttpMethods:
     @pytest.mark.network
     def test_post_method(self) -> None:
         """Test POST method via FlextApi facade using real HTTP."""
-        api = FlextApi(FlextApiConfig(base_url="https://httpbin.org"))
+        api = FlextApi(FlextApiSettings(base_url="https://httpbin.org"))
 
         result = api.post("/post", data={"name": "John"})
 
@@ -430,7 +430,7 @@ class TestFlextApiClientErrorHandling:
     @pytest.mark.network
     def test_network_error_returns_failure_result(self) -> None:
         """Test network errors are caught and returned as FlextResult failure using real HTTP."""
-        config = FlextApiConfig()
+        config = FlextApiSettings()
         client = FlextApiClient(config)
 
         request = FlextApiModels.HttpRequest(
@@ -447,7 +447,7 @@ class TestFlextApiClientErrorHandling:
     @pytest.mark.network
     def test_timeout_returns_failure_result(self) -> None:
         """Test timeout errors are caught using real HTTP with short timeout."""
-        config = FlextApiConfig(base_url="https://httpbin.org")
+        config = FlextApiSettings(base_url="https://httpbin.org")
         client = FlextApiClient(config)
 
         # Use httpbin delay endpoint with very short timeout
@@ -500,51 +500,50 @@ class TestFlextApiClientModelsIntegration:
         assert response.body["nested"]["key"] == "value"
 
 
-class TestFlextApiConfigValidation:
-    """Test FlextApiConfig validation."""
+class TestFlextApiSettingsValidation:
+    """Test FlextApiSettings validation."""
 
     def test_config_timeout_validation(self) -> None:
         """Test timeout field validation."""
         # Valid timeout
-        config = FlextApiConfig(timeout=60.0)
+        config = FlextApiSettings(timeout=60.0)
         assert config.timeout == 60.0
 
         # Too low timeout (below MIN_TIMEOUT from Constants)
         with pytest.raises(ValueError):
-            FlextApiConfig(timeout=-1.0)
+            FlextApiSettings(timeout=-1.0)
 
         # Too high timeout (above MAX_TIMEOUT from Constants)
         with pytest.raises(ValueError):
-            FlextApiConfig(timeout=301.0)  # MAX_TIMEOUT is 300.0
+            FlextApiSettings(timeout=301.0)  # MAX_TIMEOUT is 300.0
 
     def test_config_max_retries_validation(self) -> None:
         """Test max_retries field validation."""
         # Valid retries
-        config = FlextApiConfig(max_retries=5)
+        config = FlextApiSettings(max_retries=5)
         assert config.max_retries == 5
 
         # Too many retries
         with pytest.raises(ValueError):
-            FlextApiConfig(max_retries=101)
+            FlextApiSettings(max_retries=101)
 
     def test_config_headers_validation(self) -> None:
         """Test headers field validation."""
         # Valid headers
-        config = FlextApiConfig(headers={"X-Custom": "value"})
+        config = FlextApiSettings(headers={"X-Custom": "value"})
         assert config.headers["X-Custom"] == "value"
 
         # Invalid header (empty key)
         with pytest.raises(ValueError):
-            FlextApiConfig(headers={"": "value"})
+            FlextApiSettings(headers={"": "value"})
 
         # Invalid header (empty value)
         with pytest.raises(ValueError):
-            FlextApiConfig(headers={"Key": ""})
+            FlextApiSettings(headers={"Key": ""})
 
 
 __all__ = [
     "TestFlextApiClientBodySerialization",
-    "TestFlextApiClientConfiguration",
     "TestFlextApiClientErrorHandling",
     "TestFlextApiClientHeaderMerging",
     "TestFlextApiClientHttpMethods",
@@ -553,6 +552,7 @@ __all__ = [
     "TestFlextApiClientModelsIntegration",
     "TestFlextApiClientQueryParams",
     "TestFlextApiClientRailwayPattern",
+    "TestFlextApiClientSettingsuration",
     "TestFlextApiClientUrlBuilding",
-    "TestFlextApiConfigValidation",
+    "TestFlextApiSettingsValidation",
 ]

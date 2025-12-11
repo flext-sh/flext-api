@@ -14,16 +14,15 @@ from __future__ import annotations
 from typing import Self
 from urllib.parse import ParseResult, urlparse
 
-from flext_core import FlextModels, c as c_core, m as m_core
-from flext_core.utilities import u as flext_u
+from flext_core import FlextModels
 from pydantic import Field, computed_field, field_validator
 
-from flext_api import u
-from flext_api.constants import FlextApiConstants
+from flext_api.constants import c
 from flext_api.typings import t
+from flext_api.utilities import u
 
 
-class FlextApiModels(m_core):
+class FlextApiModels(FlextModels):
     """HTTP domain models for flext-api.
 
     Unified namespace class that aggregates all HTTP-specific domain models.
@@ -36,7 +35,7 @@ class FlextApiModels(m_core):
     def __init_subclass__(cls, **kwargs: object) -> None:
         """Warn when FlextApiModels is subclassed directly."""
         super().__init_subclass__(**kwargs)
-        flext_u.Deprecation.warn_once(
+        u.Deprecation.warn_once(
             f"subclass:{cls.__name__}",
             "Subclassing FlextApiModels is deprecated. Use FlextModels.Api instead.",
         )
@@ -45,14 +44,14 @@ class FlextApiModels(m_core):
     # HTTP REQUEST/RESPONSE VALUE OBJECTS (Immutable)
     # =========================================================================
 
-    class HttpRequest(m_core.Value):
+    class HttpRequest(FlextModels.Value):
         """Immutable HTTP request value object.
 
         Represents a complete HTTP request with all necessary parameters.
         Follows Value Object pattern: immutable, compared by value, no identity.
         """
 
-        method: FlextApiConstants.Api.Method | str = Field(
+        method: c.Api.Method | str = Field(
             default="GET",
             min_length=3,
             max_length=8,
@@ -64,14 +63,14 @@ class FlextApiModels(m_core):
             default_factory=dict,
             description="HTTP request headers",
         )
-        body: t.RequestBody = Field(
+        body: t.Api.RequestBody = Field(
             default_factory=dict,
             description="Request body",
         )
 
         @field_validator("body", mode="before")
         @classmethod
-        def normalize_body(cls, v: object) -> t.RequestBody:
+        def normalize_body(cls, v: object) -> t.Api.RequestBody:
             """Normalize body - empty dict is valid."""
             if v is None:
                 return {}
@@ -81,14 +80,14 @@ class FlextApiModels(m_core):
                 return v
             return {}
 
-        query_params: t.WebParams = Field(
+        query_params: t.Api.WebParams = Field(
             default_factory=dict,
             description="Query parameters",
         )
         timeout: float = Field(
-            default=float(FlextApiConstants.Api.DEFAULT_TIMEOUT),
-            ge=float(FlextApiConstants.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-            le=float(FlextApiConstants.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
+            default=float(c.Api.DEFAULT_TIMEOUT),
+            ge=float(c.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+            le=float(c.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
             description="Request timeout in seconds",
         )
 
@@ -96,7 +95,7 @@ class FlextApiModels(m_core):
         def content_type(self) -> str:
             """Get content type from headers."""
             # Check Content-Type header (case-insensitive)
-            header_content_type = FlextApiConstants.Api.HEADER_CONTENT_TYPE
+            header_content_type = c.Api.HEADER_CONTENT_TYPE
             if header_content_type in self.headers:
                 content_type_value = self.headers[header_content_type]
                 if isinstance(content_type_value, str):
@@ -108,9 +107,9 @@ class FlextApiModels(m_core):
                 if isinstance(content_type_value, str):
                     return content_type_value
             # Default from Constants
-            return FlextApiConstants.Api.ContentType.JSON
+            return c.Api.ContentType.JSON
 
-    class HttpResponse(m_core.Value):
+    class HttpResponse(FlextModels.Value):
         """Immutable HTTP response value object.
 
         Represents a complete HTTP response with all returned data.
@@ -127,14 +126,14 @@ class FlextApiModels(m_core):
             default_factory=dict,
             description="HTTP response headers",
         )
-        body: t.ResponseBody = Field(
+        body: t.Api.ResponseBody = Field(
             default_factory=dict,
             description="Response body (empty dict by default, None allowed for 204)",
         )
 
         @field_validator("body", mode="before")
         @classmethod
-        def normalize_body(cls, v: object) -> t.ResponseBody:
+        def normalize_body(cls, v: object) -> t.Api.ResponseBody:
             """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
             if v is None:
                 return None  # Explicit None is valid (e.g., for 204 responses)
@@ -153,45 +152,37 @@ class FlextApiModels(m_core):
         @computed_field
         def is_success(self) -> bool:
             """Check if response indicates success (2xx status code)."""
-            return (
-                FlextApiConstants.Api.HTTP_SUCCESS_MIN
-                <= self.status_code
-                < FlextApiConstants.Api.HTTP_SUCCESS_MAX
-            )
+            return c.Api.HTTP_SUCCESS_MIN <= self.status_code < c.Api.HTTP_SUCCESS_MAX
 
         @computed_field
         def is_redirect(self) -> bool:
             """Check if response indicates redirect (3xx status code)."""
-            return (
-                FlextApiConstants.Api.HTTP_REDIRECT_MIN
-                <= self.status_code
-                < FlextApiConstants.Api.HTTP_REDIRECT_MAX
-            )
+            return c.Api.HTTP_REDIRECT_MIN <= self.status_code < c.Api.HTTP_REDIRECT_MAX
 
         @computed_field
         def is_client_error(self) -> bool:
             """Check if response indicates client error (4xx status code)."""
             return (
-                FlextApiConstants.Api.HTTP_CLIENT_ERROR_MIN
+                c.Api.HTTP_CLIENT_ERROR_MIN
                 <= self.status_code
-                < FlextApiConstants.Api.HTTP_CLIENT_ERROR_MAX
+                < c.Api.HTTP_CLIENT_ERROR_MAX
             )
 
         @computed_field
         def is_server_error(self) -> bool:
             """Check if response indicates server error (5xx status code)."""
-            return self.status_code >= FlextApiConstants.Api.HTTP_SERVER_ERROR_MIN
+            return self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
 
         @computed_field
         def is_error(self) -> bool:
             """Check if response indicates any error (4xx or 5xx status code)."""
-            return self.status_code >= FlextApiConstants.Api.HTTP_ERROR_MIN
+            return self.status_code >= c.Api.HTTP_ERROR_MIN
 
     # =========================================================================
     # URL AND PARSING MODELS
     # =========================================================================
 
-    class Url(m_core.Value):
+    class Url(FlextModels.Value):
         """URL parsing and validation model (immutable value object)."""
 
         url: str = Field(
@@ -213,7 +204,7 @@ class FlextApiModels(m_core):
             parsed_scheme = parsed_result.scheme
             if parsed_scheme:
                 return parsed_scheme
-            return FlextApiConstants.Api.HTTP.Protocol.HTTPS
+            return c.Api.HTTP.Protocol.HTTPS
 
         @computed_field
         def netloc(self) -> str:
@@ -222,7 +213,7 @@ class FlextApiModels(m_core):
             parsed_netloc = parsed_result.netloc
             if parsed_netloc:
                 return parsed_netloc
-            return f"{FlextApiConstants.Api.Server.DEFAULT_HOST}:{FlextApiConstants.Api.Server.DEFAULT_PORT}"
+            return f"{c.Api.Server.DEFAULT_HOST}:{c.Api.Server.DEFAULT_PORT}"
 
         @computed_field
         def path(self) -> str:
@@ -263,24 +254,24 @@ class FlextApiModels(m_core):
     # CONFIGURATION MODELS
     # =========================================================================
 
-    class ClientConfig(m_core.Value):
+    class ClientConfig(FlextModels.Value):
         """HTTP client configuration model (immutable value object)."""
 
         base_url: str = Field(
-            default=FlextApiConstants.Api.DEFAULT_BASE_URL,
-            max_length=FlextApiConstants.Api.MAX_URL_LENGTH,
+            default=c.Api.DEFAULT_BASE_URL,
+            max_length=c.Api.MAX_URL_LENGTH,
             description="Base URL for all requests",
         )
         timeout: float = Field(
-            default=float(FlextApiConstants.Api.DEFAULT_TIMEOUT),
-            ge=float(FlextApiConstants.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-            le=float(FlextApiConstants.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
+            default=float(c.Api.DEFAULT_TIMEOUT),
+            ge=float(c.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+            le=float(c.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
             description="Request timeout in seconds",
         )
         max_retries: int = Field(
-            default=FlextApiConstants.Api.DEFAULT_MAX_RETRIES,
-            ge=int(FlextApiConstants.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
-            le=int(FlextApiConstants.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
+            default=c.Api.DEFAULT_MAX_RETRIES,
+            ge=int(c.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
+            le=int(c.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
             description="Maximum retry attempts",
         )
         headers: dict[str, str] = Field(
@@ -300,7 +291,7 @@ class FlextApiModels(m_core):
     # PAGINATION MODELS
     # =========================================================================
 
-    class PaginationInfo(m_core.Value):
+    class PaginationInfo(FlextModels.Value):
         """Pagination information model for HTTP operations (immutable value object)."""
 
         page: int = Field(
@@ -309,9 +300,9 @@ class FlextApiModels(m_core):
             description="Current page number (1-based)",
         )
         page_size: int = Field(
-            default=c_core.Pagination.DEFAULT_PAGE_SIZE,
-            ge=c_core.Pagination.MIN_PAGE_SIZE,
-            le=c_core.Pagination.MAX_PAGE_SIZE,
+            default=c.Pagination.DEFAULT_PAGE_SIZE,
+            ge=c.Pagination.MIN_PAGE_SIZE,
+            le=c.Pagination.MAX_PAGE_SIZE,
             description="Items per page",
         )
         total_items: int = Field(default=0, ge=0, description="Total number of items")
@@ -338,7 +329,7 @@ class FlextApiModels(m_core):
     # ERROR MODELS
     # =========================================================================
 
-    class Error(m_core.Value):
+    class Error(FlextModels.Value):
         """HTTP error response model (immutable value object)."""
 
         message: str = Field(..., description="Human-readable error message")
@@ -349,7 +340,7 @@ class FlextApiModels(m_core):
             le=599,
             description="HTTP status code",
         )
-        details: t.JsonObject = Field(
+        details: t.Api.JsonObject = Field(
             default_factory=dict,
             description="Additional error details",
         )
@@ -362,24 +353,24 @@ class FlextApiModels(m_core):
         def is_client_error(self) -> bool:
             """Check if error is client-side (4xx)."""
             return (
-                FlextApiConstants.Api.HTTP_CLIENT_ERROR_MIN
+                c.Api.HTTP_CLIENT_ERROR_MIN
                 <= self.status_code
-                < FlextApiConstants.Api.HTTP_CLIENT_ERROR_MAX
+                < c.Api.HTTP_CLIENT_ERROR_MAX
             )
 
         @computed_field
         def is_server_error(self) -> bool:
             """Check if error is server-side (5xx)."""
-            return self.status_code >= FlextApiConstants.Api.HTTP_SERVER_ERROR_MIN
+            return self.status_code >= c.Api.HTTP_SERVER_ERROR_MIN
 
     # =========================================================================
     # QUERY/FILTER MODELS
     # =========================================================================
 
-    class QueryParams(m_core.Value):
+    class QueryParams(FlextModels.Value):
         """Query parameters model (immutable value object)."""
 
-        params: t.WebParams = Field(
+        params: t.Api.WebParams = Field(
             default_factory=dict,
             description="Query parameters",
         )
@@ -397,7 +388,7 @@ class FlextApiModels(m_core):
             updated_params = {**self.params, name: value}
             return self.model_copy(update={"params": updated_params})
 
-    class Headers(m_core.Value):
+    class Headers(FlextModels.Value):
         """HTTP headers model (immutable value object)."""
 
         headers: dict[str, str] = Field(
@@ -438,7 +429,7 @@ class FlextApiModels(m_core):
     def create_response(
         cls,
         status_code: int,
-        body: t.ResponseBody | None = None,
+        body: t.Api.ResponseBody | None = None,
         headers: dict[str, str] | None = None,
         request_id: str | None = None,
     ) -> FlextApiModels.HttpResponse:
@@ -455,7 +446,7 @@ class FlextApiModels(m_core):
 
         """
         # Use model defaults - body defaults to empty dict, not None
-        response_body: t.ResponseBody = body if body is not None else {}
+        response_body: t.Api.ResponseBody = body if body is not None else {}
         response_headers: dict[str, str] = headers if headers is not None else {}
         response_id: str = request_id if request_id is not None else ""
 
@@ -490,18 +481,12 @@ class FlextApiModels(m_core):
 
         """
         # Use Constants defaults when None - Config has priority but uses Constants as base
-        config_base_url = (
-            base_url if base_url is not None else FlextApiConstants.Api.DEFAULT_BASE_URL
-        )
+        config_base_url = base_url if base_url is not None else c.Api.DEFAULT_BASE_URL
         config_timeout = (
-            float(timeout)
-            if timeout is not None
-            else float(FlextApiConstants.Api.DEFAULT_TIMEOUT)
+            float(timeout) if timeout is not None else float(c.Api.DEFAULT_TIMEOUT)
         )
         config_max_retries = (
-            max_retries
-            if max_retries is not None
-            else FlextApiConstants.Api.DEFAULT_MAX_RETRIES
+            max_retries if max_retries is not None else c.Api.DEFAULT_MAX_RETRIES
         )
         config_headers: dict[str, str] = headers if headers is not None else {}
 
@@ -513,7 +498,7 @@ class FlextApiModels(m_core):
             verify_ssl=verify_ssl,
         )
 
-    class HttpPagination(m_core.Value):
+    class HttpPagination(FlextModels.Value):
         """HTTP pagination value object for list responses.
 
         Immutable pagination metadata for paginated API responses.
@@ -521,9 +506,9 @@ class FlextApiModels(m_core):
 
         page: int = Field(default=1, ge=1, description="Current page number")
         page_size: int = Field(
-            default=c_core.Pagination.DEFAULT_PAGE_SIZE,
-            ge=c_core.Pagination.MIN_PAGE_SIZE,
-            le=c_core.Pagination.MAX_PAGE_SIZE,
+            default=c.Pagination.DEFAULT_PAGE_SIZE,
+            ge=c.Pagination.MIN_PAGE_SIZE,
+            le=c.Pagination.MAX_PAGE_SIZE,
             description="Items per page",
         )
         total_items: int = Field(default=0, ge=0, description="Total number of items")
@@ -550,32 +535,5 @@ class FlextApiModels(m_core):
 m = FlextApiModels  # Runtime alias (not TypeAlias to avoid PYI042)
 m_api = FlextApiModels
 
-
-# =============================================================================
-# POPULATE FlextModels.Api NAMESPACE - Direct assignment pattern
-# =============================================================================
-# Create Api namespace class with direct re-exports (no automation functions, no setattr loops)
-# All models are re-exported directly via class attributes
-class Api:
-    """Api project namespace for cross-project access.
-
-    This namespace contains all API-specific models from flext-api.
-    Access via: FlextModels.Api.HttpRequest, FlextModels.Api.HttpResponse, etc.
-    """
-
-    # Re-export all models directly (no loops, no automation)
-    HttpRequest = FlextApiModels.HttpRequest
-    HttpResponse = FlextApiModels.HttpResponse
-    Url = FlextApiModels.Url
-    ClientConfig = FlextApiModels.ClientConfig
-    PaginationInfo = FlextApiModels.PaginationInfo
-    Error = FlextApiModels.Error
-    QueryParams = FlextApiModels.QueryParams
-    Headers = FlextApiModels.Headers
-    HttpPagination = FlextApiModels.HttpPagination
-
-
-# Direct namespace assignment (no automation functions)
-FlextModels.Api = Api
 
 __all__ = ["FlextApiModels", "m", "m_api"]

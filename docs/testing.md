@@ -133,7 +133,7 @@ def test_api_config_creation():
 
 #### 2. Configuration API Failures (4 tests failing)
 
-**Error**: `AttributeError: 'FlextApiConfig' object has no attribute 'to_dict'`
+**Error**: `AttributeError: 'FlextApiSettings' object has no attribute 'to_dict'`
 
 **Impact**: Configuration serialization not working
 **Solution**: Add to_dict() method to configuration classes

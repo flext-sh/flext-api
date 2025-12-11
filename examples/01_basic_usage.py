@@ -14,8 +14,8 @@ from flext_core import FlextConstants
 
 from flext_api import (
     FlextApi,
-    FlextApiConfig,
     FlextApiModels,
+    FlextApiSettings,
     FlextApiStorage,
     FlextApiUtilities,
 )
@@ -38,7 +38,7 @@ def example_client_creation() -> None:
     FlextApi()
 
     # Create client config using direct instantiation
-    client_config = FlextApiConfig(
+    client_config = FlextApiSettings(
         base_url="https://httpbin.org",
         timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
     )
@@ -53,7 +53,7 @@ def example_direct_client() -> None:
     print("\n=== Direct Client Example ===")
 
     # Create client configuration using direct instantiation
-    config = FlextApiConfig(
+    config = FlextApiSettings(
         base_url="https://httpbin.org",
         timeout=FlextConstants.Network.DEFAULT_TIMEOUT,
     )

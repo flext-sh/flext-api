@@ -14,26 +14,26 @@ import pytest
 from flext_core import FlextConstants
 from flext_tests import FlextTestsDomains
 
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 
 
 class TestHttpConfigReal:
-    """Test FlextApiConfig using REAL functionality."""
+    """Test FlextApiSettings using REAL functionality."""
 
     def test_api_config_creation(self) -> None:
-        """Test FlextApiConfig creation with real functionality."""
-        config = FlextApiConfig()
+        """Test FlextApiSettings creation with real functionality."""
+        config = FlextApiSettings()
 
         # Test that config object is created with defaults from Constants
         assert config is not None
-        assert isinstance(config, FlextApiConfig)
+        assert isinstance(config, FlextApiSettings)
         # base_url now has default from Constants (not empty)
         assert config.base_url  # Should have default value from Constants
         assert config.timeout == 30.0
 
     def test_client_config_creation(self) -> None:
-        """Test FlextApiConfig creation with custom client values."""
-        config = FlextApiConfig(
+        """Test FlextApiSettings creation with custom client values."""
+        config = FlextApiSettings(
             base_url="https://api.example.com",
             timeout=30.0,
             max_retries=3,
@@ -44,8 +44,8 @@ class TestHttpConfigReal:
         assert config.max_retries == 3
 
     def test_server_config_creation(self) -> None:
-        """Test FlextApiConfig creation with custom server values."""
-        config = FlextApiConfig(
+        """Test FlextApiSettings creation with custom server values."""
+        config = FlextApiSettings(
             base_url=f"http://127.0.0.1:{FlextConstants.Platform.DEFAULT_HTTP_PORT}",
         )
 
@@ -55,25 +55,25 @@ class TestHttpConfigReal:
         )
 
     def test_security_config_creation(self) -> None:
-        """Test security configuration with FlextApiConfig."""
+        """Test security configuration with FlextApiSettings."""
         # Test config with debug mode (closest to security settings available)
-        config = FlextApiConfig(
+        config = FlextApiSettings(
             base_url="https://api.example.com",
         )
 
         assert config.base_url.startswith("https://")
 
     def test_env_config_creation(self) -> None:
-        """Test FlextApiConfig creation with environment-style values."""
-        config = FlextApiConfig(
+        """Test FlextApiSettings creation with environment-style values."""
+        config = FlextApiSettings(
             base_url="https://api.example.com",
         )
 
         assert config.base_url == "https://api.example.com"
 
     def test_main_config_creation(self) -> None:
-        """Test main FlextApiConfig creation with multiple parameters."""
-        config = FlextApiConfig(
+        """Test main FlextApiSettings creation with multiple parameters."""
+        config = FlextApiSettings(
             base_url="https://api.example.com",
         )
 
@@ -83,16 +83,16 @@ class TestHttpConfigReal:
     def test_config_validation(self) -> None:
         """Test configuration validation."""
         # Valid config
-        config = FlextApiConfig(base_url="http://localhost:8080")
+        config = FlextApiSettings(base_url="http://localhost:8080")
         assert config.base_url == "http://localhost:8080"
 
         # Invalid timeout should raise error
         with pytest.raises(ValueError):
-            FlextApiConfig(timeout=-1.0)
+            FlextApiSettings(timeout=-1.0)
 
     def test_config_serialization(self) -> None:
         """Test config serialization capabilities."""
-        config = FlextApiConfig(
+        config = FlextApiSettings(
             base_url="https://test.example.com",
             timeout=45.0,
         )
@@ -107,7 +107,7 @@ class TestHttpConfigReal:
         """Test config validation with invalid values."""
         # Test that validation works
         with pytest.raises(ValueError):
-            FlextApiConfig(
+            FlextApiSettings(
                 base_url="https://api.example.com",
                 timeout=-1.0,  # Invalid negative timeout
             )
@@ -115,7 +115,7 @@ class TestHttpConfigReal:
     def test_config_defaults(self) -> None:
         """Test config default values."""
         # Create config with minimal fields
-        config = FlextApiConfig()
+        config = FlextApiSettings()
 
         # Should have sensible defaults from Constants
         assert config.base_url  # Should have default value from Constants
@@ -124,18 +124,18 @@ class TestHttpConfigReal:
         assert config.max_retries == 3
 
     def test_config_with_factory_data(self) -> None:
-        """Test FlextApiConfig creation with factory data."""
+        """Test FlextApiSettings creation with factory data."""
         # Use configuration data from FlextTestsDomains
         config_data = FlextTestsDomains.create_configuration()
 
         # Create config with some values from factory data
         config_data.get("port", FlextConstants.Platform.FLEXT_API_PORT)
-        config = FlextApiConfig(
+        config = FlextApiSettings(
             base_url="https://api.example.com",
         )
 
         assert config is not None
-        assert isinstance(config, FlextApiConfig)
+        assert isinstance(config, FlextApiSettings)
 
         # Verify serialization includes expected structure
         config_dict = config.model_dump()
@@ -146,7 +146,7 @@ class TestHttpConfigReal:
 
     def test_default_headers(self) -> None:
         """Test default_headers property."""
-        config = FlextApiConfig(
+        config = FlextApiSettings(
             base_url="https://api.example.com",
             headers={"X-Custom": "test"},
         )
@@ -162,7 +162,7 @@ class TestHttpConfigReal:
 
     def test_to_json(self) -> None:
         """Test to_json() method."""
-        config = FlextApiConfig(
+        config = FlextApiSettings(
             base_url="https://api.example.com",
             timeout=45.0,
             max_retries=5,
@@ -180,8 +180,8 @@ class TestHttpConfigReal:
         json_str = '{"base_url": "https://test.com", "timeout": 60.0, "max_retries": 2}'
 
         # Test JSON deserialization
-        config = FlextApiConfig.from_json(json_str)
-        assert isinstance(config, FlextApiConfig)
+        config = FlextApiSettings.from_json(json_str)
+        assert isinstance(config, FlextApiSettings)
         assert config.base_url == "https://test.com"
         assert config.timeout == 60.0
         assert config.max_retries == 2

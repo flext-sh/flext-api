@@ -2,7 +2,7 @@
 
 Pure HTTP client wrapper with FLEXT patterns. Single responsibility:
 Execute HTTP requests and return FlextResult. All retry, timeout, and
-configuration handled via FlextApiConfig model passed at construction.
+configuration handled via FlextApiSettings model passed at construction.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -17,31 +17,31 @@ from typing import Self
 import httpx
 from flext_core import FlextRuntime, r, s, t
 
-from flext_api.config import FlextApiConfig
 from flext_api.models import FlextApiModels
+from flext_api.settings import FlextApiSettings
 from flext_api.typings import t as t_api
 
 # HTTP status codes
 HTTP_STATUS_ERROR_MIN = 400
 
 
-class FlextApiClient(s[FlextApiConfig]):
+class FlextApiClient(s[FlextApiSettings]):
     """Generic HTTP client using FLEXT patterns.
 
     Single responsibility: Execute HTTP requests with FlextResult error handling.
-    All configuration through FlextApiConfig model (Pydantic v2).
+    All configuration through FlextApiSettings model (Pydantic v2).
     Domain-agnostic - works with any HTTP endpoint.
 
     Uses httpx for HTTP operations, delegates to models for data validation.
     """
 
-    _api_config: FlextApiConfig  # Override base class _config type (set in __init__)
+    _api_config: FlextApiSettings  # Override base class _config type (set in __init__)
 
-    def __new__(cls, config: FlextApiConfig | None = None) -> Self:
+    def __new__(cls, config: FlextApiSettings | None = None) -> Self:
         """Intercept positional config argument and convert to kwargs.
 
         Args:
-            config: Optional FlextApiConfig (passed to __init__ via attribute).
+            config: Optional FlextApiSettings (passed to __init__ via attribute).
 
         """
         instance = super().__new__(cls)
@@ -53,13 +53,13 @@ class FlextApiClient(s[FlextApiConfig]):
 
     def __init__(
         self,
-        config: FlextApiConfig | None = None,
+        config: FlextApiSettings | None = None,
         **kwargs: t_api.JsonValue | str | int | bool,
     ) -> None:
         """Initialize with optional configuration model.
 
         Args:
-        config: Optional FlextApiConfig model with base_url, timeout, headers, etc.
+        config: Optional FlextApiSettings model with base_url, timeout, headers, etc.
                 If None, uses default configuration.
         **kwargs: Additional Pydantic model fields (ignored for this service).
 
@@ -79,14 +79,14 @@ class FlextApiClient(s[FlextApiConfig]):
             object.__setattr__(self, "_api_config", config)
         else:
             # Set _api_config (separate from base class _config)
-            object.__setattr__(self, "_api_config", FlextApiConfig())
+            object.__setattr__(self, "_api_config", FlextApiSettings())
 
     def execute(
         self,
         **_kwargs: t_api.JsonValue | str | int | bool,
-    ) -> r[FlextApiConfig]:
+    ) -> r[FlextApiSettings]:
         """Execute FlextService interface - return configuration."""
-        return r[FlextApiConfig].ok(self._api_config)
+        return r[FlextApiSettings].ok(self._api_config)
 
     @property
     def base_url(self) -> str:

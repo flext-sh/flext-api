@@ -223,10 +223,10 @@ pip install -e .
 # Symptom: CORS policy errors in browser
 # Solution: Configure CORS properly
 
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 
 # Configure CORS in application
-config = FlextApiConfig(
+config = FlextApiSettings(
     cors_origins=[
         "http://localhost:3000",      # React dev server
         "http://localhost:8080",     # Vue dev server
@@ -294,7 +294,7 @@ if result.is_failure:
 # Solution: Check environment variables and provide defaults
 
 import os
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 
 # Check required environment variables
 required_vars = [
@@ -312,7 +312,7 @@ if missing_vars:
     raise ValueError(f"Missing required environment variables: {missing_vars}")
 
 # Provide sensible defaults
-config = FlextApiConfig(
+config = FlextApiSettings(
     database_url=os.getenv("DATABASE_URL", "sqlite:///app.db"),
     jwt_secret=os.getenv("JWT_SECRET", "development-secret"),
     debug=os.getenv("DEBUG", "false").lower() == "true"
@@ -330,7 +330,7 @@ config = FlextApiConfig(
 # Solution: Check connection parameters and database status
 
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -418,7 +418,7 @@ except Exception as e:
 # Solution: Check logging configuration
 
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

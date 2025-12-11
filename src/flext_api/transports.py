@@ -16,7 +16,7 @@ from typing import Protocol
 import httpx
 from flext_core import r
 
-from flext_api.constants import FlextApiConstants
+from flext_api.constants import c
 
 
 class TransportPlugin(Protocol):
@@ -77,7 +77,7 @@ class FlextApiTransports:
             data: dict[str, object],
         ) -> r[tuple[str, str, dict[str, str], object, object, object]]:
             """Extract and validate request parameters from data."""
-            method_str: str = FlextApiConstants.Api.Method.GET
+            method_str: str = c.Api.Method.GET
             if "method" in data:
                 method_value = data["method"]
                 if isinstance(method_value, str):

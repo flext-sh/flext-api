@@ -70,7 +70,7 @@ python -c "from flext_api import __version__; print(f'FLEXT-API {__version__}')"
 ```python
 from flext_api import FlextApiClient
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -116,11 +116,11 @@ if result.is_success:
 ### 2. FastAPI Application
 
 ```python
-from flext_api import create_fastapi_app, FlextApiConfig
+from flext_api import create_fastapi_app, FlextApiSettings
 from fastapi import FastAPI
 
 # Create configuration
-config = FlextApiConfig(
+config = FlextApiSettings(
     title="My API",
     version="1.0.0",
     description="My awesome API built with FLEXT-API",
@@ -207,14 +207,14 @@ FLEXT-API follows a clean, layered architecture with clear separation of concern
 FLEXT-API supports configuration through multiple sources:
 
 ```python
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 
 # Create configuration for different environments
-dev_config = FlextApiConfig()
-prod_config = FlextApiConfig()
+dev_config = FlextApiSettings()
+prod_config = FlextApiSettings()
 
 # Custom configuration
-custom_config = FlextApiConfig(
+custom_config = FlextApiSettings(
     title="Custom API",
     version="2.0.0",
     debug=True,
@@ -288,7 +288,7 @@ FLEXT-API provides comprehensive testing utilities:
 import pytest
 from flext_api.testing import FlextApiTestClient
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -358,7 +358,7 @@ pytest tests/unit/test_client.py -v
 ```bash
 # Ensure flext-core is available
 python -c "from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -387,8 +387,8 @@ python --version  # Should be 3.13+
 ```bash
 # Validate configuration loading
 python -c "
-from flext_api import FlextApiConfig
-config = FlextApiConfig()
+from flext_api import FlextApiSettings
+config = FlextApiSettings()
 print(f'Config loaded: {config.title}')
 "
 ```
@@ -412,7 +412,7 @@ FLEXT-API integrates with FLEXT-Core's structured logging:
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

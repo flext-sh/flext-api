@@ -17,7 +17,7 @@ package "flext_api" as flext_api {
         class FlextApi
         class FlextApiClient
         class FlextApiApp
-        class FlextApiConfig
+        class FlextApiSettings
         class FlextApiConstants
         class FlextApiModels
         class FlextApiUtilities
@@ -60,12 +60,12 @@ package "flext_api" as flext_api {
     }
 
     package "config.py" as config {
-        class FlextApiConfig
+        class FlextApiSettings
         class EnvironmentConfig
         class FileConfig
 
-        FlextApiConfig --> EnvironmentConfig
-        FlextApiConfig --> FileConfig
+        FlextApiSettings --> EnvironmentConfig
+        FlextApiSettings --> FileConfig
     }
 
     package "constants.py" as constants {
@@ -157,7 +157,7 @@ package "External Libraries" as external {
 FlextApiClient --> FlextResult : uses
 FlextApiClient --> AsyncClient : uses
 FlextApiModels --> BaseModel : extends
-FlextApiConfig --> BaseModel : extends
+FlextApiSettings --> BaseModel : extends
 FlextApi --> FlextService : extends
 FlextApiClient --> FlextService : extends
 
@@ -193,7 +193,7 @@ flext_api/
 #### FlextApi (api.py)
 
 ```python
-class FlextApi(FlextService[FlextApiConfig]):
+class FlextApi(FlextService[FlextApiSettings]):
     """Thin facade providing access to all FLEXT-API functionality."""
 
     # Main entry points
@@ -369,7 +369,7 @@ container = FlextContainer.get_global()
 container.register("http_client", lambda: FlextApiClient())
 container.register("fastapi_app_factory", lambda: create_fastapi_app)
 container.register("storage_backend", lambda: FlextApiStorage())
-container.register("config_manager", lambda: FlextApiConfig())
+container.register("config_manager", lambda: FlextApiSettings())
 
 # Usage in application code
 http_client = container.get("http_client")
@@ -440,7 +440,7 @@ if user_data.is_success:
 ### Pydantic-based Configuration
 
 ```python
-class FlextApiConfig(BaseModel):
+class FlextApiSettings(BaseModel):
     """Configuration model with validation."""
 
     model_config = ConfigDict(
@@ -599,7 +599,7 @@ def mock_http_client():
 @pytest.fixture
 def test_config():
     """Test configuration fixture."""
-    return FlextApiConfig(
+    return FlextApiSettings(
         base_url="https://httpbin.org",
         timeout=10.0,
         max_retries=1

@@ -11,7 +11,7 @@ Base class for implementing HTTP middleware with FLEXT patterns.
 ```python
 from flext_api.middleware import FlextApiMiddleware
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -105,7 +105,7 @@ Middleware for handling user authentication and authorization.
 ```python
 from flext_api.middleware import AuthenticationMiddleware
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -417,7 +417,7 @@ app.middleware("http")(middleware_pipeline.process_request)
 ```python
 from flext_api.middleware import FlextApiMiddleware
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -462,7 +462,7 @@ app.add_middleware(custom_middleware)
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

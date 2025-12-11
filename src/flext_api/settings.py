@@ -12,47 +12,47 @@ from __future__ import annotations
 
 import json
 
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from flext_api.constants import FlextApiConstants
+from flext_api.constants import c
 
 
-@FlextConfig.auto_register("api")
-class FlextApiConfig(BaseSettings):
+@FlextSettings.auto_register("api")
+class FlextApiSettings(BaseSettings):
     """HTTP configuration using Pydantic v2.
 
-    Pure configuration model with validation using FlextApiConstants.
+    Pure configuration model with validation using c.
     Config has priority over Constants, but uses Constants as defaults.
     No wrappers - use Pydantic directly.
     """
 
     model_config = SettingsConfigDict(
         env_prefix="FLEXT_API_",
-        env_file=FlextConfig.resolve_env_file(),
+        env_file=FlextSettings.resolve_env_file(),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
     )
 
     base_url: str = Field(
-        default=FlextApiConstants.Api.DEFAULT_BASE_URL,
-        max_length=FlextApiConstants.Api.MAX_URL_LENGTH,
+        default=c.Api.DEFAULT_BASE_URL,
+        max_length=c.Api.MAX_URL_LENGTH,
         description="Base URL for HTTP requests",
     )
 
     timeout: float = Field(
-        default=float(FlextApiConstants.Api.DEFAULT_TIMEOUT),
-        ge=float(FlextApiConstants.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
-        le=float(FlextApiConstants.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
+        default=float(c.Api.DEFAULT_TIMEOUT),
+        ge=float(c.Api.VALIDATION_LIMITS["MIN_TIMEOUT"]),
+        le=float(c.Api.VALIDATION_LIMITS["MAX_TIMEOUT"]),
         description="HTTP request timeout (seconds)",
     )
 
     max_retries: int = Field(
-        default=FlextApiConstants.Api.DEFAULT_MAX_RETRIES,
-        ge=int(FlextApiConstants.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
-        le=int(FlextApiConstants.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
+        default=c.Api.DEFAULT_MAX_RETRIES,
+        ge=int(c.Api.VALIDATION_LIMITS["MIN_RETRIES"]),
+        le=int(c.Api.VALIDATION_LIMITS["MAX_RETRIES"]),
         description="Maximum retry attempts",
     )
 
@@ -79,8 +79,8 @@ class FlextApiConfig(BaseSettings):
     def default_headers(self) -> dict[str, str]:
         """Default headers with MIME type from Constants."""
         return {
-            FlextApiConstants.Api.HEADER_ACCEPT: FlextApiConstants.Api.ContentType.JSON,
-            FlextApiConstants.Api.HEADER_CONTENT_TYPE: FlextApiConstants.Api.ContentType.JSON,
+            c.Api.HEADER_ACCEPT: c.Api.ContentType.JSON,
+            c.Api.HEADER_CONTENT_TYPE: c.Api.ContentType.JSON,
             **self.headers,
         }
 
@@ -89,9 +89,9 @@ class FlextApiConfig(BaseSettings):
         return json.dumps(self.model_dump(), indent=2)
 
     @classmethod
-    def from_json(cls, data: str) -> FlextApiConfig:
+    def from_json(cls, data: str) -> FlextApiSettings:
         """Create from JSON."""
         return cls.model_validate(json.loads(data))
 
 
-__all__ = ["FlextApiConfig"]
+__all__ = ["FlextApiSettings"]

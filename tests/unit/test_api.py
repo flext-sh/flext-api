@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 from flext_core import FlextResult
 
 from flext_api.api import FlextApi
-from flext_api.config import FlextApiConfig
 from flext_api.models import FlextApiModels
+from flext_api.settings import FlextApiSettings
 
 
 class TestFlextApiInitialization:
@@ -18,12 +18,12 @@ class TestFlextApiInitialization:
         """Test FlextApi initialization with default config."""
         api = FlextApi()
         assert api._config is not None
-        assert isinstance(api._config, FlextApiConfig)
+        assert isinstance(api._config, FlextApiSettings)
         assert api._client is not None
 
     def test_init_with_custom_config(self) -> None:
         """Test FlextApi initialization with custom config."""
-        config = FlextApiConfig(
+        config = FlextApiSettings(
             timeout=60.0,
             max_retries=3,
             base_url="https://api.example.com",
@@ -42,7 +42,7 @@ class TestFlextApiInitialization:
 
     def test_unified_namespace_config(self) -> None:
         """Test unified namespace access to Config."""
-        assert FlextApi.Config is FlextApiConfig
+        assert FlextApi.Config is FlextApiSettings
 
 
 class TestFlextApiExecute:
@@ -50,7 +50,7 @@ class TestFlextApiExecute:
 
     def test_execute_returns_config(self) -> None:
         """Test execute returns FlextResult with config."""
-        config = FlextApiConfig()
+        config = FlextApiSettings()
         api = FlextApi(config)
         result = api.execute()
 
@@ -59,7 +59,7 @@ class TestFlextApiExecute:
 
     def test_execute_with_custom_config(self) -> None:
         """Test execute with custom config."""
-        config = FlextApiConfig(timeout=45.0)
+        config = FlextApiSettings(timeout=45.0)
         api = FlextApi(config)
         result = api.execute()
 
@@ -306,7 +306,7 @@ class TestFlextApiIntegration:
 
     def test_config_persistence(self) -> None:
         """Test config is maintained across multiple method calls."""
-        config = FlextApiConfig(timeout=60.0, max_retries=3)
+        config = FlextApiSettings(timeout=60.0, max_retries=3)
         api = FlextApi(config)
 
         assert api._config is config
@@ -347,7 +347,7 @@ class TestFlextApiIntegration:
         api = FlextApi()
 
         # Access through instance
-        assert api.Config is FlextApiConfig
+        assert api.Config is FlextApiSettings
 
         # Access through class
-        assert FlextApi.Config is FlextApiConfig
+        assert FlextApi.Config is FlextApiSettings

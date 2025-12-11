@@ -27,13 +27,12 @@ from flext_core import (
     FlextService,
     e,
     r,
-    t,
-    u,
     x,
 )
 
-from flext_api.constants import FlextApiConstants
-from flext_api.typings import t as t_api
+from flext_api.constants import c
+from flext_api.typings import t
+from flext_api.utilities import u
 
 
 class FlextApiServer(FlextService[object], x.Validation):
@@ -49,7 +48,7 @@ class FlextApiServer(FlextService[object], x.Validation):
     """
 
     # Type annotations for dynamically-set fields (using object.__setattr__)
-    _protocol_handlers: dict[str, t_api.ProtocolHandler]
+    _protocol_handlers: dict[str, t.Api.ProtocolHandler]
     _middleware_pipeline: list[Callable[..., object]]
 
     class RouteRegistry:
@@ -65,17 +64,17 @@ class FlextApiServer(FlextService[object], x.Validation):
             logger: Logger instance for audit trail
 
             """
-            self._routes: dict[str, t_api.RouteData] = {}
+            self._routes: dict[str, t.Api.RouteData] = {}
             self._logger = logger
 
         def register(
             self,
-            method: FlextApiConstants.Api.Method | str,
+            method: c.Api.Method | str,
             path: str,
             handler: Callable[..., object],
             prefix: str = "",
-            schema: t_api.SchemaValue | None = None,
-            **options: t_api.JsonValue | str | int | bool,
+            schema: t.Api.SchemaValue | None = None,
+            **options: t.GeneralValueType,
         ) -> r[bool]:
             """Register endpoint with unified interface (DRY - eliminates duplication).
 
@@ -97,13 +96,13 @@ class FlextApiServer(FlextService[object], x.Validation):
                 return r[bool].fail(f"Route already registered: {route_key}")
 
             # Convert options to JsonValue-compatible types
-            options_json: dict[str, t.JsonValue] = {}
+            options_json: dict[str, t.GeneralValueType] = {}
             for k, v in options.items():
                 if isinstance(v, (str, int, float, bool, type(None))):
                     options_json[k] = v
                 elif isinstance(v, (list, dict)):
                     # Recursively convert nested structures
-                    # Use FlextRuntime to normalize to GeneralValueType (compatible with JsonValue)
+                    # Use FlextRuntime to normalize to t.GeneralValueType (compatible with JsonValue)
                     normalized_value = FlextRuntime.normalize_to_general_value(v)
                     # Type narrowing: ensure JsonValue compatibility
                     if isinstance(
@@ -116,14 +115,14 @@ class FlextApiServer(FlextService[object], x.Validation):
                 else:
                     options_json[k] = str(v)
 
-            route_data: t_api.RouteData = {
+            route_data: t.Api.RouteData = {
                 "path": path,
                 "method": method,
                 "handler": handler,
                 "options": options_json,
             }
             if schema is not None:
-                # Use FlextRuntime to normalize to GeneralValueType (compatible with JsonValue)
+                # Use FlextRuntime to normalize to t.GeneralValueType (compatible with JsonValue)
                 normalized_value = FlextRuntime.normalize_to_general_value(v)
                 schema_normalized = FlextRuntime.normalize_to_general_value(schema)
                 # Type narrowing: ensure JsonValue compatibility
@@ -145,7 +144,7 @@ class FlextApiServer(FlextService[object], x.Validation):
             return r[bool].ok(True)
 
         @property
-        def routes(self) -> dict[str, t_api.RouteData]:
+        def routes(self) -> dict[str, t.Api.RouteData]:
             """Get all registered routes."""
             return self._routes.copy()
 
@@ -272,7 +271,7 @@ class FlextApiServer(FlextService[object], x.Validation):
 
         def register_routes(
             self,
-            routes: dict[str, t_api.RouteData],
+            routes: dict[str, t.Api.RouteData],
         ) -> r[bool]:
             """Register routes with FastAPI application."""
             if not self._app:
@@ -319,8 +318,8 @@ class FlextApiServer(FlextService[object], x.Validation):
         def start(
             self,
             middleware_pipeline: list[Callable[..., object]],
-            routes: dict[str, t_api.RouteData],
-            protocol_handlers: dict[str, t_api.ProtocolHandler],
+            routes: dict[str, t.Api.RouteData],
+            protocol_handlers: dict[str, t.ProtocolHandler],
         ) -> r[bool]:
             """Start server with complete initialization pipeline."""
             if self._is_running:
@@ -390,12 +389,8 @@ class FlextApiServer(FlextService[object], x.Validation):
         logger = FlextLogger(__name__)
 
         # Use constants for defaults
-        server_host = (
-            host if host is not None else FlextApiConstants.Api.Server.DEFAULT_HOST
-        )
-        server_port = (
-            port if port is not None else FlextApiConstants.Api.Server.DEFAULT_PORT
-        )
+        server_host = host if host is not None else c.Api.Server.DEFAULT_HOST
+        server_port = port if port is not None else c.Api.Server.DEFAULT_PORT
 
         # Validate configuration using Flext validation patterns
         config_validation = self._validate_server_config(
@@ -464,7 +459,7 @@ class FlextApiServer(FlextService[object], x.Validation):
     def register_protocol_handler(
         self,
         protocol: str,
-        handler: t_api.ProtocolHandler,
+        handler: t.ProtocolHandler,
     ) -> r[bool]:
         """Register protocol handler with Flext validation."""
         # Validate protocol name using utilities directly
@@ -518,13 +513,13 @@ class FlextApiServer(FlextService[object], x.Validation):
     def register_route(
         self,
         path: str,
-        method: FlextApiConstants.Api.Method | str,
+        method: c.Api.Method | str,
         handler: Callable,
         **options: object,
     ) -> r[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type
-        options_typed: dict[str, t_api.JsonValue | str | int | bool] = {}
+        options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
             normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
@@ -548,7 +543,7 @@ class FlextApiServer(FlextService[object], x.Validation):
     ) -> r[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type
-        options_typed: dict[str, t_api.JsonValue | str | int | bool] = {}
+        options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
             normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
@@ -572,7 +567,7 @@ class FlextApiServer(FlextService[object], x.Validation):
     ) -> r[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type
-        options_typed: dict[str, t_api.JsonValue | str | int | bool] = {}
+        options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
             normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
@@ -591,12 +586,12 @@ class FlextApiServer(FlextService[object], x.Validation):
     def register_graphql_endpoint(
         self,
         path: str = "/graphql",
-        schema: t_api.SchemaValue | None = None,
+        schema: t.SchemaValue | None = None,
         **options: object,
     ) -> r[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type
-        options_typed: dict[str, t_api.JsonValue | str | int | bool] = {}
+        options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
             normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
@@ -669,7 +664,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         return self._lifecycle_manager.port
 
     @property
-    def routes(self) -> dict[str, t_api.RouteData]:
+    def routes(self) -> dict[str, t.RouteData]:
         """Get registered routes."""
         return self._route_registry.routes
 

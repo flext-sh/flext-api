@@ -128,10 +128,10 @@ pip install flext-api
 
 ```python
 from flext_api import FlextApiClient
-from flext_api.config import FlextApiConfig
+from flext_api.settings import FlextApiSettings
 
 # Configure client
-config = FlextApiConfig(base_url="https://api.example.com")
+config = FlextApiSettings(base_url="https://api.example.com")
 client = FlextApiClient(config)
 
 # Make requests with automatic error handling
@@ -148,10 +148,10 @@ else:
 
 ```python
 from flext_api import create_fastapi_app
-from flext_api.config import FlextApiConfig
+from flext_api.settings import FlextApiSettings
 
 # Create FastAPI application
-config = FlextApiConfig(title="My API", version="1.0.0")
+config = FlextApiSettings(title="My API", version="1.0.0")
 app = create_fastapi_app(config)
 
 # Add your routes
