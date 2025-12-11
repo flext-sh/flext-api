@@ -22,7 +22,7 @@ FLEXT-API follows a comprehensive testing strategy that ensures reliability, mai
 import pytest
 from flext_api import FlextApiClient
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -96,7 +96,7 @@ class TestFlextApiClient:
 import pytest
 from flext_api.middleware import LoggingMiddleware, AuthenticationMiddleware
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -151,11 +151,11 @@ class TestLoggingMiddleware:
 ```python
 import pytest
 from fastapi.testclient import TestClient
-from flext_api import create_fastapi_app, FlextApiConfig
+from flext_api import create_fastapi_app, FlextApiSettings
 
 class TestUserAPI:
     def setup_method(self):
-        config = FlextApiConfig(
+        config = FlextApiSettings(
             title="Test API",
             version="1.0.0",
             debug=True
@@ -201,7 +201,7 @@ class TestUserAPI:
 import pytest
 from flext_api import FlextApiClient
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -486,7 +486,7 @@ class TestInputValidation:
 import pytest
 from flext_api import FlextApiClient
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

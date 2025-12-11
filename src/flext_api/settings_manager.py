@@ -1,6 +1,6 @@
 """Generic HTTP Config Manager - Domain-agnostic configuration management.
 
-This module provides FlextApiConfigManager, a generic class for managing
+This module provides FlextApiSettingsManager, a generic class for managing
 HTTP client configuration with flext-core patterns and type safety.
 Completely domain-agnostic and reusable across any HTTP client.
 
@@ -16,11 +16,11 @@ from collections.abc import Mapping
 
 from flext_core import r
 
-from flext_api.models import FlextApiModels
-from flext_api.typings import t as t_api
+from flext_api.models import m
+from flext_api.typings import t
 
 
-class FlextApiConfigManager:
+class FlextApiSettingsManager:
     """Generic configuration management for HTTP clients with flext-core patterns.
 
     Provides type-safe configuration handling with validation and defaults,
@@ -29,7 +29,7 @@ class FlextApiConfigManager:
 
     def __init__(self) -> None:
         """Initialize configuration manager."""
-        self._config: t_api.JsonObject | None = None
+        self._config: t.JsonObject | None = None
 
     def configure(
         self,
@@ -55,20 +55,20 @@ class FlextApiConfigManager:
     def _process_config(
         self,
         config: Mapping[str, str | float | bool],
-    ) -> r[t_api.JsonObject]:
+    ) -> r[t.JsonObject]:
         """Process and normalize configuration values - no fallbacks."""
-        processed: t_api.JsonObject = {}
+        processed: t.JsonObject = {}
 
         for key, value in config.items():
             if value is not None:
                 normalize_result = self._normalize_value(key, value=value)
                 if normalize_result.is_failure:
-                    return r[t_api.JsonObject].fail(
+                    return r[t.JsonObject].fail(
                         normalize_result.error or "Value normalization failed",
                     )
                 processed[key] = normalize_result.value
 
-        return r[t_api.JsonObject].ok(processed)
+        return r[t.JsonObject].ok(processed)
 
     def _normalize_value(
         self,
@@ -233,31 +233,31 @@ class FlextApiConfigManager:
 
         return r[float].ok(timeout_value)
 
-    def get_client_config(self) -> r[FlextApiModels.ClientConfig]:
+    def get_client_config(self) -> r[m.ClientConfig]:
         """Get validated client configuration - no fallbacks."""
         if self._config is None:
-            return r[FlextApiModels.ClientConfig].fail("No configuration set")
+            return r[m.ClientConfig].fail("No configuration set")
 
         headers_result = self._extract_headers()
         if headers_result.is_failure:
-            return r[FlextApiModels.ClientConfig].fail(
+            return r[m.ClientConfig].fail(
                 headers_result.error or "Headers extraction failed",
             )
 
         base_url_result = self._extract_base_url()
         if base_url_result.is_failure:
-            return r[FlextApiModels.ClientConfig].fail(
+            return r[m.ClientConfig].fail(
                 base_url_result.error or "Base URL extraction failed",
             )
 
         timeout_result = self._extract_timeout_for_config()
         if timeout_result.is_failure:
-            return r[FlextApiModels.ClientConfig].fail(
+            return r[m.ClientConfig].fail(
                 timeout_result.error or "Timeout extraction failed",
             )
 
-        return r[FlextApiModels.ClientConfig].ok(
-            FlextApiModels.create_config(
+        return r[m.ClientConfig].ok(
+            m.create_config(
                 base_url=base_url_result.value,
                 timeout=timeout_result.value,
                 headers=headers_result.value,
@@ -265,6 +265,6 @@ class FlextApiConfigManager:
         )
 
     @property
-    def config(self) -> t_api.JsonObject | None:
+    def config(self) -> t.JsonObject | None:
         """Get current configuration."""
         return self._config

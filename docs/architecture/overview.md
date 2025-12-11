@@ -42,7 +42,7 @@ FLEXT-API follows a **Protocol-Based Clean Architecture** with clear separation 
 **Key Components:**
 
 - **FlextApiClient**: HTTP client with railway pattern integration
-- **FlextApiConfig**: Configuration management for API settings
+- **FlextApiSettings**: Configuration management for API settings
 - **FlextApiModels**: HTTP-specific models and validation
 - **FlextApiUtilities**: HTTP utility functions and helpers
 
@@ -158,7 +158,7 @@ registry.register("custom", CustomProtocol)
 ```python
 from abc import ABC, abstractmethod
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -263,7 +263,7 @@ async def request_pipeline(request, call_next):
 ### Application Factory Pattern
 
 ```python
-def create_fastapi_app(config: FlextApiConfig = None) -> FastAPI:
+def create_fastapi_app(config: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
 
 
@@ -877,7 +877,7 @@ def create_app(config: dict) -> FastAPI:
     # Legacy implementation
 
 # New API (introduced in 0.9.x)
-def create_fastapi_app(config: FlextApiConfig = None) -> FastAPI:
+def create_fastapi_app(config: FlextApiSettings = None) -> FastAPI:
     """Create FastAPI application with FLEXT patterns."""
     # New implementation
 ```

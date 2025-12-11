@@ -126,7 +126,7 @@ else:
 
 ```python
 # Application factory pattern
-app = create_fastapi_app(FlextApiConfig(
+app = create_fastapi_app(FlextApiSettings(
     title="My Enterprise API",
     version="1.0.0",
     description="Enterprise data integration API"

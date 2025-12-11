@@ -26,7 +26,7 @@ from flext_tests import FlextTestsDocker, FlextTestsDomains
 
 from flext_api import (
     FlextApiClient,
-    FlextApiConfig,
+    FlextApiSettings,
     FlextApiStorage,
 )
 
@@ -109,7 +109,7 @@ def flext_api_storage() -> FlextApiStorage:
 
 @pytest.fixture
 def flext_api_client() -> FlextApiClient:
-    """Provide FlextApiClient using FlextApiConfig.
+    """Provide FlextApiClient using FlextApiSettings.
 
     Returns:
         FlextApiClient: Configured client instance.
@@ -140,7 +140,7 @@ def flext_api_client() -> FlextApiClient:
         else FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
     )
 
-    config = FlextApiConfig(
+    config = FlextApiSettings(
         base_url=base_url,
         timeout=timeout,
         max_retries=max_retries,
@@ -149,14 +149,14 @@ def flext_api_client() -> FlextApiClient:
 
 
 @pytest.fixture
-def flext_api_config() -> FlextApiConfig:
-    """Provide FlextApiConfig using flext_tests configuration.
+def flext_api_config() -> FlextApiSettings:
+    """Provide FlextApiSettings using flext_tests configuration.
 
     Returns:
-        FlextApiConfig: Configuration instance.
+        FlextApiSettings: Configuration instance.
 
     """
-    return FlextApiConfig()
+    return FlextApiSettings()
 
 
 @pytest.fixture

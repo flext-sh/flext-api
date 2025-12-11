@@ -16,7 +16,7 @@ from faker import Faker
 from flext_core import FlextResult, r
 from flext_tests import FlextTestsDomains, u
 
-from flext_api import FlextApiClient, FlextApiConfig, FlextApiStorage
+from flext_api import FlextApiClient, FlextApiSettings, FlextApiStorage
 from flext_api.typings import t as t_api
 
 # Replace all t_api. with t_api. throughout this file
@@ -89,7 +89,7 @@ class FlextApiFactories:
 
         """
         config = FlextApiFactories.create_client_config(**overrides)
-        # Create FlextApiConfig from dictionary values with proper type narrowing
+        # Create FlextApiSettings from dictionary values with proper type narrowing
         base_url_val = config.get("base_url", "https://httpbin.org")
         timeout_val = config.get("timeout", 30.0)
         max_retries_val = config.get("max_retries", 3)
@@ -105,7 +105,7 @@ class FlextApiFactories:
         )
         headers_dict = headers_val if isinstance(headers_val, dict) else {}
 
-        api_config = FlextApiConfig(
+        api_config = FlextApiSettings(
             base_url=str(base_url_val)
             if base_url_val is not None
             else "https://httpbin.org",
@@ -120,11 +120,11 @@ class FlextApiFactories:
         return FlextApiClient(config=api_config)
 
     @staticmethod
-    def create_api_config(**overrides: object) -> FlextApiConfig:
-        """Create FlextApiConfig using FlextTestsDomains - ABSOLUTE usage.
+    def create_api_config(**overrides: object) -> FlextApiSettings:
+        """Create FlextApiSettings using FlextTestsDomains - ABSOLUTE usage.
 
         Returns:
-            FlextApiConfig: Configured API config instance.
+            FlextApiSettings: Configured API config instance.
 
         """
         # Use FlextTestsDomains for realistic configuration
@@ -164,7 +164,7 @@ class FlextApiFactories:
             else 3
         )
 
-        return FlextApiConfig(
+        return FlextApiSettings(
             base_url=base_url_val,
             timeout=timeout_val,
             max_retries=max_retries_val,

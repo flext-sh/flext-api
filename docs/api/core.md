@@ -11,7 +11,7 @@ The primary HTTP client for all HTTP operations within the FLEXT ecosystem, prov
 ```python
 from flext_api import FlextApiClient
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -120,11 +120,11 @@ result = client.delete("/users/123", json={"reason": "User requested deletion"})
 Creates FastAPI applications with FLEXT patterns and configuration.
 
 ```python
-from flext_api import create_fastapi_app, FlextApiConfig
+from flext_api import create_fastapi_app, FlextApiSettings
 from fastapi import FastAPI
 
 # Create configuration
-config = FlextApiConfig(
+config = FlextApiSettings(
     title="Enterprise API",
     version="2.0.0",
     description="Enterprise-grade REST API",
@@ -150,14 +150,14 @@ async def health_check():
 - `redoc_url`: ReDoc URL
 - `openapi_url`: OpenAPI schema URL
 
-### FlextApiConfig - Configuration Model
+### FlextApiSettings - Configuration Model
 
 Pydantic model for API configuration with validation.
 
 ```python
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 
-class MyApiConfig(FlextApiConfig):
+class MyApiConfig(FlextApiSettings):
     """Custom API configuration."""
     custom_setting: str = "default_value"
     feature_flags: dict[str, object] = {}
@@ -277,9 +277,9 @@ clean_data = FlextApiUtilities.sanitize_response_data(data)
 ### Complete HTTP Client Example
 
 ```python
-from flext_api import FlextApiClient, FlextApiConfig
+from flext_api import FlextApiClient, FlextApiSettings
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -354,9 +354,9 @@ if error_result.is_failure:
 ### FastAPI Application Example
 
 ```python
-from flext_api import create_fastapi_app, FlextApiConfig
+from flext_api import create_fastapi_app, FlextApiSettings
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -378,7 +378,7 @@ from flext_core import u
 from fastapi import HTTPException, Depends
 
 # Configuration
-config = FlextApiConfig(
+config = FlextApiSettings(
     title="User Management API",
     version="1.0.0",
     description="API for managing users in the system",

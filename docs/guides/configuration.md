@@ -90,10 +90,10 @@ rate_limit:
 ### Programmatic Configuration
 
 ```python
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 
 # Create configuration programmatically
-config = FlextApiConfig(
+config = FlextApiSettings(
     title="My Custom API",
     version="1.0.0",
     description="API configured at runtime",
@@ -143,10 +143,10 @@ app = create_fastapi_app(config=config)
 ### Custom Configuration Classes
 
 ```python
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 from pydantic import Field
 
-class CustomApiConfig(FlextApiConfig):
+class CustomApiConfig(FlextApiSettings):
     """Custom API configuration with additional fields."""
 
     # Core API settings (inherited)
@@ -187,10 +187,10 @@ except ValidationError as e:
 ### FastAPI Integration
 
 ```python
-from flext_api import create_fastapi_app, FlextApiConfig
+from flext_api import create_fastapi_app, FlextApiSettings
 
 # Load configuration
-config = FlextApiConfig())
+config = FlextApiSettings())
 
 # Create application with configuration
 app = create_fastapi_app(config=config)
@@ -211,7 +211,7 @@ async def get_config():
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -255,20 +255,20 @@ class UserService(FlextService):
 ### Environment Detection
 
 ```python
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 
 # Automatic environment detection
-config = FlextApiConfig()
+config = FlextApiSettings()
 ```
 
 ### Environment Variables
 
 ```python
 import os
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 
 # Environment variable configuration
-config = FlextApiConfig(
+config = FlextApiSettings(
     title=os.getenv("API_TITLE", "Default API"),
     version=os.getenv("API_VERSION", "1.0.0"),
     debug=os.getenv("API_DEBUG", "false").lower() == "true",
@@ -283,7 +283,7 @@ config = FlextApiConfig(
 
 ```python
 # Sensitive configuration (use environment variables or secrets management)
-config = FlextApiConfig(
+config = FlextApiSettings(
     database_url=os.getenv("DATABASE_URL"),  # Required env var
     jwt_secret=os.getenv("JWT_SECRET"),     # Required env var
     api_key=os.getenv("API_KEY"),           # Required env var
@@ -300,7 +300,7 @@ for var in required_vars:
 
 ```python
 # Production-ready configuration
-prod_config = FlextApiConfig(
+prod_config = FlextApiSettings(
     title="Production API",
     version="1.0.0",
     description="Production enterprise API",
@@ -319,7 +319,7 @@ prod_config = FlextApiConfig(
 ### Runtime Validation
 
 ```python
-def validate_configuration(config: FlextApiConfig):
+def validate_configuration(config: FlextApiSettings):
     """Validate configuration at runtime."""
     errors = []
 
@@ -350,12 +350,12 @@ def validate_configuration(config: FlextApiConfig):
 
 ```python
 import pytest
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 
 def test_configuration_validation():
     """Test configuration validation."""
     # Valid configuration
-    config = FlextApiConfig(
+    config = FlextApiSettings(
         title="Test API",
         version="1.0.0",
         cors_origins=["https://example.com"]
@@ -364,7 +364,7 @@ def test_configuration_validation():
     assert validate_configuration(config)
 
     # Invalid configuration
-    invalid_config = FlextApiConfig(
+    invalid_config = FlextApiSettings(
         title="",  # Empty title
         version="1.0.0"
     )
@@ -378,7 +378,7 @@ def test_configuration_validation():
 ### Configuration Reloading
 
 ```python
-from flext_api import FlextApiConfig
+from flext_api import FlextApiSettings
 import threading
 import time
 
@@ -386,14 +386,14 @@ class ConfigurationManager:
     """Manage configuration with hot reloading."""
 
     def __init__(self):
-        self.config = FlextApiConfig()
+        self.config = FlextApiSettings()
         self.last_modified = time.time()
         self.lock = threading.Lock()
 
     def reload_config(self):
         """Reload configuration from files."""
         with self.lock:
-            new_config = FlextApiConfig()
+            new_config = FlextApiSettings()
 
             # Validate new configuration
             if self._validate_config_change(new_config):
@@ -401,12 +401,12 @@ class ConfigurationManager:
                 self.last_modified = time.time()
                 print("Configuration reloaded successfully")
 
-    def get_config(self) -> FlextApiConfig:
+    def get_config(self) -> FlextApiSettings:
         """Get current configuration."""
         with self.lock:
             return self.config
 
-    def _validate_config_change(self, new_config: FlextApiConfig) -> bool:
+    def _validate_config_change(self, new_config: FlextApiSettings) -> bool:
         """Validate configuration changes."""
         # Ensure critical settings don't change unexpectedly
         critical_fields = ["title", "version", "debug"]

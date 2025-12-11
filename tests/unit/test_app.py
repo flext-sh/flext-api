@@ -13,7 +13,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from flext_api.app import FlextApiApp
-from flext_api.config import FlextApiConfig
+from flext_api.settings import FlextApiSettings
 
 
 class TestFlextApiApp:
@@ -21,7 +21,7 @@ class TestFlextApiApp:
 
     def test_create_default_app(self) -> None:
         """Test creating FastAPI app with default configuration."""
-        config = FlextApiConfig(base_url="http://test.com")
+        config = FlextApiSettings(base_url="http://test.com")
 
         app = FlextApiApp.create(config)
 
@@ -35,7 +35,7 @@ class TestFlextApiApp:
 
     def test_create_custom_app(self) -> None:
         """Test creating FastAPI app with custom parameters."""
-        config = FlextApiConfig(base_url="http://test.com")
+        config = FlextApiSettings(base_url="http://test.com")
 
         app = FlextApiApp.create(
             config,

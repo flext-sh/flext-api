@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from flext_api.config import FlextApiConfig
+from flext_api.settings import FlextApiSettings
 
 
 class FlextApiApp:
@@ -24,7 +24,7 @@ class FlextApiApp:
 
     @staticmethod
     def create(
-        _config: FlextApiConfig,
+        _config: FlextApiSettings,
         *,
         title: str | None = None,
         version: str | None = None,

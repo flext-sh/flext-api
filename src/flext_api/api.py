@@ -17,34 +17,34 @@ from flext_core.runtime import FlextRuntime
 from pydantic import PrivateAttr
 
 from flext_api.client import FlextApiClient
-from flext_api.config import FlextApiConfig
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
+from flext_api.settings import FlextApiSettings
 from flext_api.typings import t as t_api
 from flext_api.utilities import FlextApiUtilities
 
 
-class FlextApi(s[FlextApiConfig]):
+class FlextApi(s[FlextApiSettings]):
     """Unified HTTP API facade - pure delegation pattern.
 
     Single responsibility: Delegate HTTP operations to FlextApiClient.
-    All configuration through FlextApiConfig model.
+    All configuration through FlextApiSettings model.
     All data validation through FlextApiModels.
     100% GENERIC - no domain coupling.
     """
 
     # Unified namespace - direct access to FLEXT components
     Models: ClassVar = FlextApiModels
-    Config: ClassVar = FlextApiConfig
+    Config: ClassVar = FlextApiSettings
 
     # API-specific configuration storage (avoids type override of parent _config)
-    _api_config: FlextApiConfig | None = PrivateAttr(default=None)
+    _api_config: FlextApiSettings | None = PrivateAttr(default=None)
 
-    def __new__(cls, config: FlextApiConfig | None = None) -> Self:
+    def __new__(cls, config: FlextApiSettings | None = None) -> Self:
         """Intercept positional config argument and convert to kwargs.
 
         Args:
-            config: Optional FlextApiConfig (passed to __init__ via attribute).
+            config: Optional FlextApiSettings (passed to __init__ via attribute).
 
         """
         instance = super().__new__(cls)
@@ -55,13 +55,13 @@ class FlextApi(s[FlextApiConfig]):
 
     def __init__(
         self,
-        config: FlextApiConfig | None = None,
+        config: FlextApiSettings | None = None,
         **kwargs: t_api.JsonValue | str | int | bool,
     ) -> None:
         """Initialize with optional config.
 
         Args:
-        config: FlextApiConfig model or None for defaults.
+        config: FlextApiSettings model or None for defaults.
         **kwargs: Additional Pydantic model fields (ignored for this service).
 
         """
@@ -78,7 +78,7 @@ class FlextApi(s[FlextApiConfig]):
         elif config is not None:
             self._api_config = config
         else:
-            self._api_config = FlextApiConfig()
+            self._api_config = FlextApiSettings()
 
         # Initialize HTTP client with API config
         self._client = FlextApiClient(config=self._api_config)
@@ -86,10 +86,12 @@ class FlextApi(s[FlextApiConfig]):
     def execute(
         self,
         **_kwargs: t_api.JsonValue | str | int | bool,
-    ) -> r[FlextApiConfig]:
+    ) -> r[FlextApiSettings]:
         """Execute FlextService interface."""
-        config = self._api_config if self._api_config is not None else FlextApiConfig()
-        return r[FlextApiConfig].ok(config)
+        config = (
+            self._api_config if self._api_config is not None else FlextApiSettings()
+        )
+        return r[FlextApiSettings].ok(config)
 
     def request(
         self,

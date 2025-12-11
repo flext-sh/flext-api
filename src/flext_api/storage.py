@@ -24,11 +24,11 @@ import json
 import time
 from typing import Self, override
 
-from flext_core import FlextService, r, t
+from flext_core import FlextService, r
 from pydantic import BaseModel, ConfigDict, Field
 
-from flext_api import u
-from flext_api.typings import t as t_api
+from flext.utilities import u
+from flext_api.typings import t
 
 
 class _StorageMetadata(BaseModel):
@@ -56,7 +56,7 @@ class _StorageStats(BaseModel):
     hit_ratio: float = 0.0
     storage_size: int = 0
     memory_usage: int = 0
-    namespace: str = "flext_api"
+    namespace: str = "flext"
 
 
 class FlextApiStorage(FlextService[bool]):
@@ -80,7 +80,7 @@ class FlextApiStorage(FlextService[bool]):
     model_config = ConfigDict(frozen=False, arbitrary_types_allowed=True)
 
     # Type annotations for dynamically-set fields
-    _storage: dict[str, t_api.JsonValue]
+    _storage: dict[str, t.JsonValue]
     _expiry_times: dict[str, float]
     _stats: _StorageStats
     _operations_count: int
@@ -185,7 +185,7 @@ class FlextApiStorage(FlextService[bool]):
                 return None
         return None
 
-    def _normalize_config(self, config_obj: object | None) -> t_api.StorageDict:
+    def _normalize_config(self, config_obj: object | None) -> t.Api.StorageDict:
         """Normalize config object to dictionary."""
         if isinstance(config_obj, dict):
             return config_obj
@@ -193,7 +193,7 @@ class FlextApiStorage(FlextService[bool]):
             namespace_str = self._extract_config_field(
                 config_obj,
                 "namespace",
-                "flext_api",
+                "flext",
             )
             backend_str = self._extract_config_field(config_obj, "backend", "memory")
             max_size_val = self._extract_optional_config_field(config_obj, "max_size")
@@ -212,7 +212,7 @@ class FlextApiStorage(FlextService[bool]):
 
     def _apply_config(
         self,
-        config_dict: t_api.StorageDict,
+        config_dict: t.Api.StorageDict,
         max_size_val: object | None,
         default_ttl_val: object | None,
     ) -> None:
@@ -245,7 +245,7 @@ class FlextApiStorage(FlextService[bool]):
             raise ValueError(error_msg)
         self._backend = backend_result.value
 
-    def _extract_namespace(self, config_dict: t_api.StorageDict) -> r[str]:
+    def _extract_namespace(self, config_dict: t.Api.StorageDict) -> r[str]:
         """Extract namespace from config with validation - uses default if not specified."""
         if "namespace" in config_dict:
             namespace_val = config_dict["namespace"]
@@ -255,11 +255,11 @@ class FlextApiStorage(FlextService[bool]):
                 return r[str].fail("Namespace cannot be empty")
             return r[str].fail(f"Invalid namespace type: {type(namespace_val)}")
         # Use default namespace (this is OK - it's a valid default, not a fallback)
-        return r[str].ok("flext_api")
+        return r[str].ok("flext")
 
     def _extract_max_size(
         self,
-        config_dict: t_api.StorageDict,
+        config_dict: t.Api.StorageDict,
         max_size_val: object | None,
     ) -> r[int]:
         """Extract max_size preferring parameter over config - no fallbacks.
@@ -292,7 +292,7 @@ class FlextApiStorage(FlextService[bool]):
 
     def _extract_default_ttl(
         self,
-        config_dict: t_api.StorageDict,
+        config_dict: t.Api.StorageDict,
         default_ttl_val: object | None,
     ) -> r[int]:
         """Extract default_ttl preferring parameter over config - no fallbacks.
@@ -321,7 +321,7 @@ class FlextApiStorage(FlextService[bool]):
         # Return sentinel value (-1) when default_ttl is not specified (not a fallback - default_ttl is optional)
         return r[int].ok(-1)
 
-    def _extract_backend(self, config_dict: t_api.StorageDict) -> r[str]:
+    def _extract_backend(self, config_dict: t.Api.StorageDict) -> r[str]:
         """Extract backend from config with validation - uses default if not specified."""
         if "backend" in config_dict:
             backend_val = config_dict["backend"]
@@ -385,7 +385,7 @@ class FlextApiStorage(FlextService[bool]):
 
         # Store with expiry tracking - direct field access
         # Convert value to JsonValue for type safety
-        json_value: t_api.JsonValue
+        json_value: t.JsonValue
         if isinstance(value, (str, int, float, bool, type(None), list, dict)):
             json_value = value
         else:
@@ -394,15 +394,15 @@ class FlextApiStorage(FlextService[bool]):
 
         self._storage[key] = json_value
         # Convert metadata fields to JsonValue with proper type narrowing
-        value_json: t_api.JsonValue = (
+        value_json: t.JsonValue = (
             metadata.value
             if isinstance(
                 metadata.value, (str, int, float, bool, type(None), dict, list)
             )
             else str(metadata.value)
         )
-        ttl_json: t_api.JsonValue = metadata.ttl if metadata.ttl is not None else None
-        metadata_dict: dict[str, t_api.JsonValue] = {
+        ttl_json: t.JsonValue = metadata.ttl if metadata.ttl is not None else None
+        metadata_dict: dict[str, t.JsonValue] = {
             "value": value_json,
             "timestamp": metadata.timestamp,
             "ttl": ttl_json,
@@ -521,7 +521,7 @@ class FlextApiStorage(FlextService[bool]):
 
     def batch_set(
         self,
-        data: dict[str, t_api.JsonValue],
+        data: dict[str, t.JsonValue],
         ttl: int | None = None,
     ) -> r[bool]:
         """Set multiple keys efficiently using Pydantic validation."""
@@ -534,10 +534,10 @@ class FlextApiStorage(FlextService[bool]):
         except Exception as e:
             return r[bool].fail(str(e))
 
-    def batch_get(self, keys: list[str]) -> r[dict[str, t_api.JsonValue]]:
+    def batch_get(self, keys: list[str]) -> r[dict[str, t.JsonValue]]:
         """Get multiple keys efficiently."""
         try:
-            result_dict: dict[str, t_api.JsonValue] = {}
+            result_dict: dict[str, t.JsonValue] = {}
             for key in keys:
                 get_result = self.get(key)
                 if get_result.is_success:
@@ -549,9 +549,9 @@ class FlextApiStorage(FlextService[bool]):
                         result_dict[key] = unwrapped
                     else:
                         result_dict[key] = str(unwrapped)
-            return r[dict[str, t_api.JsonValue]].ok(result_dict)
+            return r[dict[str, t.JsonValue]].ok(result_dict)
         except Exception as e:
-            return r[dict[str, t_api.JsonValue]].fail(str(e))
+            return r[dict[str, t.JsonValue]].fail(str(e))
 
     def batch_delete(self, keys: list[str]) -> r[bool]:
         """Delete multiple keys efficiently."""
@@ -574,12 +574,12 @@ class FlextApiStorage(FlextService[bool]):
         except Exception as e:
             return r[str].fail(f"JSON serialization failed: {e}")
 
-    def deserialize_json(self, json_str: str) -> r[t_api.JsonValue]:
+    def deserialize_json(self, json_str: str) -> r[t.JsonValue]:
         """Deserialize from JSON using json library."""
         try:
-            return r[t_api.JsonValue].ok(json.loads(json_str))
+            return r[t.JsonValue].ok(json.loads(json_str))
         except Exception as e:
-            return r[t_api.JsonValue].fail(f"JSON deserialization failed: {e}")
+            return r[t.JsonValue].fail(f"JSON deserialization failed: {e}")
 
     def cleanup_expired(self) -> r[int]:
         """Clean up expired entries (TTL management)."""
@@ -591,10 +591,10 @@ class FlextApiStorage(FlextService[bool]):
         except Exception as e:
             return r[int].fail(f"Cleanup failed: {e}")
 
-    def info(self) -> r[dict[str, t_api.JsonValue]]:
+    def info(self) -> r[dict[str, t.JsonValue]]:
         """Get storage information using Pydantic model."""
         try:
-            return r[dict[str, t_api.JsonValue]].ok({
+            return r[dict[str, t.JsonValue]].ok({
                 "namespace": self._namespace,
                 "backend": self._backend,
                 "size": len(self._storage),
@@ -604,12 +604,12 @@ class FlextApiStorage(FlextService[bool]):
                 "operations_count": self._operations_count,
             })
         except Exception as e:
-            return r[dict[str, t_api.JsonValue]].fail(str(e))
+            return r[dict[str, t.JsonValue]].fail(str(e))
 
-    def health_check(self) -> r[dict[str, t_api.JsonValue]]:
+    def health_check(self) -> r[dict[str, t.JsonValue]]:
         """Perform health check with metrics."""
         try:
-            return r[dict[str, t_api.JsonValue]].ok({
+            return r[dict[str, t.JsonValue]].ok({
                 "status": "healthy",
                 "timestamp": u.Generators.generate_iso_timestamp(),
                 "storage_accessible": True,
@@ -617,9 +617,9 @@ class FlextApiStorage(FlextService[bool]):
                 "operations_count": self._operations_count,
             })
         except Exception as e:
-            return r[dict[str, t_api.JsonValue]].fail(str(e))
+            return r[dict[str, t.JsonValue]].fail(str(e))
 
-    def metrics(self) -> r[dict[str, t_api.JsonValue]]:
+    def metrics(self) -> r[dict[str, t.JsonValue]]:
         """Get storage metrics using Pydantic stats model."""
         try:
             # Update stats using Pydantic model
@@ -631,7 +631,7 @@ class FlextApiStorage(FlextService[bool]):
             self._stats.memory_usage = len(str(self._storage))
 
             # Direct field access instead of model_dump
-            stats_dict: dict[str, t_api.JsonValue] = {
+            stats_dict: dict[str, t.JsonValue] = {
                 "total_operations": self._stats.total_operations,
                 "cache_hits": self._stats.cache_hits,
                 "cache_misses": self._stats.cache_misses,
@@ -640,32 +640,32 @@ class FlextApiStorage(FlextService[bool]):
                 "memory_usage": self._stats.memory_usage,
                 "namespace": self._stats.namespace,
             }
-            return r[dict[str, t_api.JsonValue]].ok(stats_dict)
+            return r[dict[str, t.JsonValue]].ok(stats_dict)
         except Exception as e:
-            return r[dict[str, t_api.JsonValue]].fail(str(e))
+            return r[dict[str, t.JsonValue]].fail(str(e))
 
-    def get_cache_stats(self) -> r[t_api.CacheDict]:
+    def get_cache_stats(self) -> r[t.CacheDict]:
         """Get cache statistics using Pydantic validation."""
         try:
-            return r[t_api.CacheDict].ok({
+            return r[t.CacheDict].ok({
                 "size": len(self._storage),
                 "backend": self._backend,
                 "hits": self._stats.cache_hits,
                 "misses": self._stats.cache_misses,
             })
         except Exception as e:
-            return r[t_api.CacheDict].fail(str(e))
+            return r[t.CacheDict].fail(str(e))
 
-    def get_storage_metrics(self) -> r[t_api.MetricsDict]:
+    def get_storage_metrics(self) -> r[t.MetricsDict]:
         """Get complete storage metrics."""
         try:
-            return r[t_api.MetricsDict].ok({
+            return r[t.MetricsDict].ok({
                 "total_operations": self._operations_count,
                 "cache_hits": self._stats.cache_hits,
                 "cache_misses": self._stats.cache_misses,
             })
         except Exception as e:
-            return r[t_api.MetricsDict].fail(str(e))
+            return r[t.MetricsDict].fail(str(e))
 
     def get_storage_statistics(self) -> r[dict[str, float]]:
         """Get storage statistics with hit ratio calculation."""

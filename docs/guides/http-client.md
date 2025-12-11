@@ -9,7 +9,7 @@ Comprehensive guide for using the FLEXT-API HTTP client with railway patterns, e
 ```python
 from flext_api import FlextApiClient
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -100,7 +100,7 @@ Add custom logic before and after HTTP requests.
 ```python
 from flext_api import FlextApiClient
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -203,7 +203,7 @@ FLEXT-API uses the railway pattern for type-safe error handling.
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -463,7 +463,7 @@ print(f"Total users: {len(users)}")
 ```python
 from flext_api import FlextApiClient
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

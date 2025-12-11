@@ -45,7 +45,7 @@ class FlextApiProtocols(FlextProtocols):
 
         All API domain-specific protocols are organized here to enable
         proper namespace separation. Parent protocols from flext-core are
-        accessible via parent class (e.g., `p.Foundation.Result`).
+        accessible via parent class (e.g., `p.Result`).
         """
 
         class Client:
