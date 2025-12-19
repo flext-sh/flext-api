@@ -25,6 +25,9 @@ class FlextApiTypes(FlextTypes):
     Only TypeVar loose outside class.
     """
 
+    # Core type aliases for forward reference resolution
+    type JsonObject = dict[str, FlextTypes.JsonValue]
+
     class Api:
         """API types namespace for cross-project access.
 
@@ -49,7 +52,8 @@ class FlextApiTypes(FlextTypes):
         # Use parent's JsonValue via inheritance - no alias needed
         # Access via t.JsonValue or use directly from parent
 
-        type JsonObject = dict[str, FlextTypes.JsonValue]
+        # Reference to top-level JsonObject for namespace consistency
+        type JsonObject = FlextApiTypes.JsonObject
         type WebData = str | bytes | JsonObject
         type WebHeaders = dict[str, str | list[str]]
         type WebParams = dict[str, str | list[str]]

@@ -24,10 +24,9 @@ import json
 import time
 from typing import Self, override
 
-from flext_core import FlextService, r
+from flext_core import FlextService, r, u
 from pydantic import BaseModel, ConfigDict, Field
 
-from flext.utilities import u
 from flext_api.typings import t
 
 
@@ -362,8 +361,6 @@ class FlextApiStorage(FlextService[bool]):
         ttl: int | None = None,
     ) -> r[bool]:
         """Store value with TTL using Pydantic metadata."""
-        if not isinstance(key, str):
-            return r[bool].fail("Key must be a string")
         if not key:
             return r[bool].fail("Key must be non-empty string")
 
@@ -419,8 +416,6 @@ class FlextApiStorage(FlextService[bool]):
 
     def get(self, key: str) -> r[object]:
         """Retrieve value with expiration checking."""
-        if not isinstance(key, str):
-            return r[object].fail("Key must be a string")
         if not key:
             return r[object].fail("Key must be non-empty string")
 
@@ -436,28 +431,63 @@ class FlextApiStorage(FlextService[bool]):
         # Try namespaced key
         namespaced_key = self._key(key)
         if namespaced_key in self._storage:
-            data = self._storage[namespaced_key]
-            try:
-                # Validate using Pydantic model
-                if isinstance(data, dict):
-                    metadata = _StorageMetadata(**data)
-                    if not metadata.is_expired():
-                        self._stats.cache_hits += 1
-                        return r[object].ok(metadata.value)
-                    # Clean up expired entry
-                    if namespaced_key in self._storage:
-                        del self._storage[namespaced_key]
-                    if key in self._expiry_times:
-                        del self._expiry_times[key]
-            except Exception as e:
-                # Log cleanup errors but continue - cache functionality is preserved
-                self.logger.warning(
-                    f"Failed to cleanup expired cache entry: {e}",
-                    error=str(e),
-                )
+            result = self._process_namespaced_entry(namespaced_key, key)
+            if result.is_success:
+                return result
 
         self._stats.cache_misses += 1
         return r[object].fail(f"Key not found: {key}")
+
+    def _process_namespaced_entry(self, namespaced_key: str, key: str) -> r[object]:
+        """Process a namespaced storage entry with metadata validation."""
+        data = self._storage[namespaced_key]
+        try:
+            # Validate using Pydantic model
+            if not isinstance(data, dict):
+                return r[object].fail(f"Invalid data format for key: {key}")
+
+            # Cast to expected types for Pydantic model construction
+            # Runtime validation ensures type safety
+            ttl_value = data.get("ttl")
+            ttl_int: int | None = None
+            if ttl_value is not None and isinstance(ttl_value, (int, str, float)):
+                try:
+                    ttl_int = int(ttl_value)
+                except (ValueError, TypeError):
+                    ttl_int = None
+
+            created_at_value = data.get("created_at", 0.0)
+            created_at_float = 0.0
+            if isinstance(created_at_value, (int, float, str)):
+                try:
+                    created_at_float = float(created_at_value)
+                except (ValueError, TypeError):
+                    created_at_float = 0.0
+
+            metadata = _StorageMetadata(
+                value=data.get("value"),
+                timestamp=str(data.get("timestamp", "")),
+                ttl=ttl_int,
+                created_at=created_at_float,
+            )
+            if not metadata.is_expired():
+                self._stats.cache_hits += 1
+                return r[object].ok(metadata.value)
+
+            # Clean up expired entry
+            if namespaced_key in self._storage:
+                del self._storage[namespaced_key]
+            if key in self._expiry_times:
+                del self._expiry_times[key]
+            return r[object].fail(f"Key expired: {key}")
+
+        except Exception as e:
+            # Log cleanup errors but continue - cache functionality is preserved
+            self.logger.warning(
+                f"Failed to cleanup expired cache entry: {e}",
+                error=str(e),
+            )
+            return r[object].fail(f"Error processing key: {key}")
 
     def delete(self, key: str) -> r[bool]:
         """Delete key from storage."""
@@ -501,13 +531,15 @@ class FlextApiStorage(FlextService[bool]):
     def keys(self) -> r[list[str]]:
         """Get all non-namespaced keys."""
         self._cleanup_expired()
+
+        def key_not_namespaced(k: str) -> bool:
+            return not k.startswith(f"{self._namespace}:")
+
         filtered_keys = u.Collection.filter(
             list(self._storage.keys()),
-            lambda k: not k.startswith(f"{self._namespace}:"),
+            key_not_namespaced,
         )
-        return r[list[str]].ok(
-            list(filtered_keys) if isinstance(filtered_keys, (list, tuple)) else [],
-        )
+        return r[list[str]].ok(list(filtered_keys))
 
     def items(self) -> r[list[tuple[str, object]]]:
         """Get all key-value pairs."""
@@ -644,28 +676,28 @@ class FlextApiStorage(FlextService[bool]):
         except Exception as e:
             return r[dict[str, t.JsonValue]].fail(str(e))
 
-    def get_cache_stats(self) -> r[t.CacheDict]:
+    def get_cache_stats(self) -> r[t.Api.CacheDict]:
         """Get cache statistics using Pydantic validation."""
         try:
-            return r[t.CacheDict].ok({
+            return r[t.Api.CacheDict].ok({
                 "size": len(self._storage),
                 "backend": self._backend,
                 "hits": self._stats.cache_hits,
                 "misses": self._stats.cache_misses,
             })
         except Exception as e:
-            return r[t.CacheDict].fail(str(e))
+            return r[t.Api.CacheDict].fail(str(e))
 
-    def get_storage_metrics(self) -> r[t.MetricsDict]:
+    def get_storage_metrics(self) -> r[t.Api.MetricsDict]:
         """Get complete storage metrics."""
         try:
-            return r[t.MetricsDict].ok({
+            return r[t.Api.MetricsDict].ok({
                 "total_operations": self._operations_count,
                 "cache_hits": self._stats.cache_hits,
                 "cache_misses": self._stats.cache_misses,
             })
         except Exception as e:
-            return r[t.MetricsDict].fail(str(e))
+            return r[t.Api.MetricsDict].fail(str(e))
 
     def get_storage_statistics(self) -> r[dict[str, float]]:
         """Get storage statistics with hit ratio calculation."""
