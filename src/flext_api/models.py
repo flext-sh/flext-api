@@ -97,15 +97,11 @@ class FlextApiModels(FlextModels):
             # Check Content-Type header (case-insensitive)
             header_content_type = c.Api.HEADER_CONTENT_TYPE
             if header_content_type in self.headers:
-                content_type_value = self.headers[header_content_type]
-                if isinstance(content_type_value, str):
-                    return content_type_value
+                return self.headers[header_content_type]
             # Check lowercase variant
             header_lower = header_content_type.lower()
             if header_lower in self.headers:
-                content_type_value = self.headers[header_lower]
-                if isinstance(content_type_value, str):
-                    return content_type_value
+                return self.headers[header_lower]
             # Default from Constants
             return c.Api.ContentType.JSON
 
@@ -378,9 +374,7 @@ class FlextApiModels(FlextModels):
         def get_param(self, name: str) -> str | list[str]:
             """Get query parameter value."""
             if name in self.params:
-                param_value = self.params[name]
-                if isinstance(param_value, (str, list)):
-                    return param_value
+                return self.params[name]
             return ""
 
         def with_param(self, name: str, value: str | list[str]) -> Self:
@@ -400,7 +394,7 @@ class FlextApiModels(FlextModels):
             """Get header value (case-insensitive)."""
             name_lower = name.lower()
             for key, value in self.headers.items():
-                if key.lower() == name_lower and isinstance(value, str):
+                if key.lower() == name_lower:
                     return value
             return ""
 
@@ -411,10 +405,14 @@ class FlextApiModels(FlextModels):
 
         def without_header(self, name: str) -> Self:
             """Return new instance without header (case-insensitive, functional pattern)."""
+
             # Use u.filter() for unified filtering (DSL pattern)
+            def matches_header_key(k: str) -> bool:
+                return k.lower() == name.lower()
+
             keys_to_remove = u.Collection.filter(
                 list(self.headers.keys()),
-                lambda k: k.lower() == name.lower(),
+                matches_header_key,
             )
             updated_headers = {
                 k: v for k, v in self.headers.items() if k not in keys_to_remove
