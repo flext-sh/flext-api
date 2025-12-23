@@ -18,7 +18,6 @@ import uuid
 from collections.abc import Awaitable, Callable
 from datetime import datetime
 from pathlib import Path
-from typing import cast
 
 import pytest
 from flext_core import FlextConstants, FlextResult, T
@@ -42,7 +41,7 @@ def create_test_storage_config(**overrides: object) -> dict[str, str | int | boo
         "backend": str(base_config.get("storage_backend", "memory")),
         "namespace": f"test_{base_config.get('namespace', 'storage')!s}",
         "enable_caching": bool(base_config.get("enable_caching", True)),
-        "cache_ttl_seconds": cast("int", base_config.get("cache_ttl", 300)),
+        "cache_ttl_seconds": int(base_config.get("cache_ttl", 300)),
     }
     # Apply overrides with type filtering
     storage_config.update({

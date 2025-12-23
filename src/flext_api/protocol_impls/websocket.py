@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
-from typing import cast
 
 import websockets
 from flext_core import r
@@ -27,12 +26,10 @@ from pydantic import ConfigDict
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
-from flext_api.typings import t as t_api
+from flext_api.typings import t
 
 # Asyncio utilities
 # Synchronous alternatives for async functionality
-CancelledError = Exception
-sleep = time.sleep
 
 
 class WebSocketProtocolPlugin(RFCProtocolImplementation):
@@ -209,7 +206,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     def _extract_message(
         self,
-        request: t_api.JsonObject,
+        request: t.JsonObject,
         kwargs: dict[str, object],
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
@@ -240,7 +237,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 return str(message_type_value)
         return FlextApiConstants.WebSocket.MessageType.TEXT
 
-    def _ensure_connected(self, request: t_api.JsonObject) -> r[bool]:
+    def _ensure_connected(self, request: t.JsonObject) -> r[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
             return r[bool].ok(True)
@@ -252,12 +249,10 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         if url_result.is_failure:
             return r[bool].fail(url_result.error or "URL extraction failed")
 
-        url = url_result.value
-
         # Use RFC method to extract headers
         headers = self._extract_headers(req_dict)
 
-        return self._connect(url, headers)
+        return self._connect(url_result.value, headers)
 
     def send_request(
         self,
@@ -278,31 +273,29 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[dict[str, object]].fail("Request must be a dictionary")
 
         # Extract WebSocket-specific parameters
-        # Cast request to JsonValue dict to match method signature
+        # Convert request to JsonValue dict to match method signature
+        json_request = dict(request.items())
         message_result = self._extract_message(
-            cast("dict[str, t_api.JsonValue]", request),
+            json_request,  # type: ignore[arg-type]
             kwargs,
         )
         if message_result.is_failure:
             return r[dict[str, object]].fail(
                 message_result.error or "Message extraction failed",
             )
-        message = message_result.value
 
         message_type = self._extract_message_type(kwargs)
 
         # Connect if not connected
-        # Cast request to JsonValue dict to match method signature
-        connect_result = self._ensure_connected(
-            cast("dict[str, t_api.JsonValue]", request)
-        )
+        # Convert request to JsonValue dict to match method signature
+        connect_result = self._ensure_connected(json_request)  # type: ignore[arg-type]
         if connect_result.is_failure:
             return r[dict[str, object]].fail(
                 f"WebSocket connection failed: {connect_result.error}",
             )
 
         # Send message
-        send_result = self._send_message(message, message_type)
+        send_result = self._send_message(message_result.value, message_type)
         if send_result.is_failure:
             return r[dict[str, object]].fail(
                 f"WebSocket send failed: {send_result.error}",
@@ -314,11 +307,10 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[dict[str, object]].fail(
                 f"Failed to extract URL: {url_result.error}",
             )
-        url_str = url_result.value
 
         response: dict[str, object] = {
             "status_code": FlextApiConstants.WebSocket.STATUS_SWITCHING_PROTOCOLS,
-            "url": url_str,
+            "url": url_result.value,
             "method": "WEBSOCKET",
             "headers": {"Connection": "Upgrade", "Upgrade": "websocket"},
             "body": {"status": "message_sent", "message_type": message_type},
@@ -336,8 +328,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         True if protocol is supported
 
         """
-        protocol_lower = protocol.lower()
-        return protocol_lower in {
+        return protocol.lower() in {
             FlextApiConstants.WebSocket.Protocol.WEBSOCKET,
             FlextApiConstants.WebSocket.Protocol.WS,
             FlextApiConstants.WebSocket.Protocol.WSS,
@@ -391,7 +382,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
             # Close connection
             if self._connection and hasattr(self._connection, "close"):
-                self._connection.close()
+                getattr(self._connection, "close")()
 
             self._connected = False
             self._connection = None
@@ -558,12 +549,12 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 if isinstance(message, bytes):
                     message = message.decode("utf-8")
                 if hasattr(self._connection, "send"):
-                    self._connection.send(message)
+                    getattr(self._connection, "send")(message)
             elif message_type == FlextApiConstants.WebSocket.MessageType.BINARY:
                 if isinstance(message, str):
                     message = message.encode("utf-8")
                 if hasattr(self._connection, "send"):
-                    self._connection.send(message)
+                    getattr(self._connection, "send")(message)
             else:
                 return r[bool].fail(f"Invalid message type: {message_type}")
 
@@ -582,7 +573,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         while self._connected and self._connection:
             try:
                 if hasattr(self._connection, "recv"):
-                    message = self._connection.recv()
+                    message = getattr(self._connection, "recv")()
                 else:
                     message = None
 
@@ -593,9 +584,10 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                     except Exception:
                         self.logger.exception("Message handler error")
 
-            except CancelledError:
-                break
             except Exception as e:
+                if isinstance(e, Exception):
+                    break
+                self.logger.exception("WebSocket receive error")
                 self.logger.exception("WebSocket receive error")
 
                 # Notify error handlers
@@ -620,9 +612,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                     # Ping is handled automatically by websockets library
                     self.logger.debug("WebSocket heartbeat")
 
-            except CancelledError:
-                break
-            except Exception:
+            except Exception as e:
+                if isinstance(e, Exception):
+                    break
                 self.logger.exception("Heartbeat error")
                 break
 

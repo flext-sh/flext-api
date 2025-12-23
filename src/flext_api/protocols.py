@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
+from flext_core import FlextResult as r
 from flext_core.protocols import FlextProtocols
 
 from flext_api.constants import FlextApiConstants
@@ -60,7 +61,7 @@ class FlextApiProtocols(FlextProtocols):
                     method: FlextApiConstants.Api.Method | str,
                     url: str,
                     **kwargs: object,
-                ) -> FlextProtocols.Result[t.HttpResponseDict]:
+                ) -> r[t.HttpResponseDict]:
                     """Execute an HTTP request."""
                     ...
 
@@ -68,7 +69,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> FlextProtocols.Result[t.HttpResponseDict]:
+                ) -> r[t.HttpResponseDict]:
                     """Execute HTTP GET request."""
                     ...
 
@@ -76,7 +77,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> FlextProtocols.Result[t.HttpResponseDict]:
+                ) -> r[t.HttpResponseDict]:
                     """Execute HTTP POST request."""
                     ...
 
@@ -84,7 +85,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> FlextProtocols.Result[t.HttpResponseDict]:
+                ) -> r[t.HttpResponseDict]:
                     """Execute HTTP PUT request."""
                     ...
 
@@ -92,7 +93,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> FlextProtocols.Result[t.HttpResponseDict]:
+                ) -> r[t.HttpResponseDict]:
                     """Execute HTTP DELETE request."""
                     ...
 
@@ -103,7 +104,7 @@ class FlextApiProtocols(FlextProtocols):
             class StorageBackendProtocol(Protocol):
                 """Protocol for generic storage backend implementations."""
 
-                def get(self, key: str) -> FlextProtocols.Result[object]:
+                def get(self, key: str) -> r[object]:
                     """Retrieve value by key. Returns error if key not found (no fallback)."""
                     ...
 
@@ -112,23 +113,23 @@ class FlextApiProtocols(FlextProtocols):
                     key: str,
                     value: object,
                     timeout: int | None = None,
-                ) -> FlextProtocols.Result[bool]:
+                ) -> r[bool]:
                     """Store value with optional timeout."""
                     ...
 
-                def delete(self, key: str) -> FlextProtocols.Result[bool]:
+                def delete(self, key: str) -> r[bool]:
                     """Delete value by key."""
                     ...
 
-                def exists(self, key: str) -> FlextProtocols.Result[bool]:
+                def exists(self, key: str) -> r[bool]:
                     """Check if key exists."""
                     ...
 
-                def clear(self) -> FlextProtocols.Result[bool]:
+                def clear(self) -> r[bool]:
                     """Clear all stored values."""
                     ...
 
-                def keys(self) -> FlextProtocols.Result[list[str]]:
+                def keys(self) -> r[list[str]]:
                     """Get all keys."""
                     ...
 

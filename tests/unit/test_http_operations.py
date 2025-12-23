@@ -1,4 +1,6 @@
-"""Tests for deprecated http_operations module.
+"""Unit tests for HTTP operations module.
+
+Tests deprecated http_operations module for backward compatibility.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -7,22 +9,24 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
 
-from flext_api import http_operations
+def test_http_operations_module_imports() -> None:
+    """Test that http_operations module can be imported without errors."""
+    # This module is deprecated but should still be importable for backward compatibility
+    import flext_api.http_operations
+
+    # Verify __all__ is empty as expected
+    assert flext_api.http_operations.__all__ == []
 
 
-class TestHttpOperationsDeprecation:
-    """Test deprecated http_operations module."""
+def test_http_operations_backward_compatibility() -> None:
+    """Test backward compatibility of http_operations module."""
+    # Ensure the module exists and has expected attributes
+    import flext_api.http_operations as http_ops
 
-    def test_module_can_be_imported(self) -> None:
-        """Test that the deprecated module can still be imported."""
-        # This module is deprecated but should still be importable
-        assert http_operations is not None
-        assert hasattr(http_operations, "__all__")
-        assert http_operations.__all__ == []
+    # Should have docstring
+    assert "Generic HTTP Operations" in http_ops.__doc__
 
-    @pytest.mark.skip(reason="Module is deprecated - no functionality to test")
-    def test_no_functionality_available(self) -> None:
-        """Test that no functionality is available in this deprecated module."""
-        # This module contains no functionality - it's just for backward compatibility
+    # Should have empty __all__
+    assert hasattr(http_ops, "__all__")
+    assert http_ops.__all__ == []

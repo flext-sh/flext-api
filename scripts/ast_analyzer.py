@@ -188,8 +188,7 @@ class ASTAnalyzer:
     def analyze_file(self, file_path: Path) -> None:
         """Analyze a single Python file for dead code."""
         try:
-            with Path(file_path).open("r", encoding="utf-8") as f:
-                source = f.read()
+            source = Path(file_path).read_text(encoding="utf-8")
 
             tree = ast.parse(source, filename=str(file_path))
 
@@ -324,8 +323,7 @@ class ASTAnalyzer:
     def save_report(self, output_file: Path) -> None:
         """Save report to file."""
         report = self.generate_report()
-        with Path(output_file).open("w", encoding="utf-8") as f:
-            f.write(report)
+        Path(output_file).write_text(report, encoding="utf-8")
         print(f"\nReport saved to {output_file}")
 
 

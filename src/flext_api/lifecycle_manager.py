@@ -2,10 +2,8 @@
 
 Generic lifecycle management for HTTP resources using flext-core patterns.
 Single responsibility: HTTP resource lifecycle management.
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
@@ -24,7 +22,6 @@ class HttpResourceProtocol(Protocol):
 
     async def aclose(self) -> None:
         """Close the resource asynchronously."""
-        ...
 
 
 class FlextApiLifecycleManager:
@@ -42,13 +39,13 @@ class FlextApiLifecycleManager:
             yield resource
         finally:
             if hasattr(resource, "aclose") and callable(
-                getattr(resource, "aclose", None),
+                getattr(resource, "aclose", None)
             ):
-                await resource.aclose()
+                await getattr(resource, "aclose")()
             elif hasattr(resource, "close") and callable(
-                getattr(resource, "close", None),
+                getattr(resource, "close", None)
             ):
-                resource.close()
+                getattr(resource, "close")()
 
     @staticmethod
     def manage_sync_http_resource(resource: object) -> object:
@@ -57,9 +54,9 @@ class FlextApiLifecycleManager:
             return resource
         finally:
             if hasattr(resource, "close") and callable(
-                getattr(resource, "close", None),
+                getattr(resource, "close", None)
             ):
-                resource.close()
+                getattr(resource, "close")()
 
 
 __all__ = [

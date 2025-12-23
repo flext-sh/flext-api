@@ -99,9 +99,8 @@ class FlextApiModels(FlextModels):
             if header_content_type in self.headers:
                 return self.headers[header_content_type]
             # Check lowercase variant
-            header_lower = header_content_type.lower()
-            if header_lower in self.headers:
-                return self.headers[header_lower]
+            if header_content_type.lower() in self.headers:
+                return self.headers[header_content_type.lower()]
             # Default from Constants
             return c.Api.ContentType.JSON
 
@@ -188,16 +187,20 @@ class FlextApiModels(FlextModels):
             description="Full URL string",
         )
 
+        @property
+        def _parsed_url(self) -> ParseResult:
+            """Parse URL on demand (immutable, no caching needed)."""
+            return urlparse(self.url)
+
         @computed_field
         def parsed(self) -> ParseResult:
             """Parse the URL."""
-            return urlparse(self.url)
+            return self._parsed_url
 
         @computed_field
         def scheme(self) -> str:
             """Get URL scheme (http, https, etc.)."""
-            parsed_result = urlparse(self.url)
-            parsed_scheme = parsed_result.scheme
+            parsed_scheme = self._parsed_url.scheme
             if parsed_scheme:
                 return parsed_scheme
             return c.Api.HTTP.Protocol.HTTPS
@@ -205,8 +208,7 @@ class FlextApiModels(FlextModels):
         @computed_field
         def netloc(self) -> str:
             """Get network location (host:port)."""
-            parsed_result = urlparse(self.url)
-            parsed_netloc = parsed_result.netloc
+            parsed_netloc = self._parsed_url.netloc
             if parsed_netloc:
                 return parsed_netloc
             return f"{c.Api.Server.DEFAULT_HOST}:{c.Api.Server.DEFAULT_PORT}"
@@ -214,8 +216,7 @@ class FlextApiModels(FlextModels):
         @computed_field
         def path(self) -> str:
             """Get URL path."""
-            parsed_result = urlparse(self.url)
-            parsed_path = parsed_result.path
+            parsed_path = self._parsed_url.path
             if parsed_path:
                 return parsed_path
             return "/"
@@ -223,8 +224,7 @@ class FlextApiModels(FlextModels):
         @computed_field
         def query(self) -> str:
             """Get URL query string."""
-            parsed_result = urlparse(self.url)
-            parsed_query = parsed_result.query
+            parsed_query = self._parsed_url.query
             if parsed_query:
                 return parsed_query
             return ""
@@ -232,8 +232,7 @@ class FlextApiModels(FlextModels):
         @computed_field
         def fragment(self) -> str:
             """Get URL fragment."""
-            parsed_result = urlparse(self.url)
-            parsed_fragment = parsed_result.fragment
+            parsed_fragment = self._parsed_url.fragment
             if parsed_fragment:
                 return parsed_fragment
             return ""
@@ -241,9 +240,8 @@ class FlextApiModels(FlextModels):
         @computed_field
         def is_valid(self) -> bool:
             """Check if URL is valid."""
-            parsed_result = urlparse(self.url)
-            scheme_value = parsed_result.scheme
-            netloc_value = parsed_result.netloc
+            scheme_value = self._parsed_url.scheme
+            netloc_value = self._parsed_url.netloc
             return bool(scheme_value and netloc_value)
 
     # =========================================================================
@@ -392,9 +390,8 @@ class FlextApiModels(FlextModels):
 
         def get_header(self, name: str) -> str:
             """Get header value (case-insensitive)."""
-            name_lower = name.lower()
             for key, value in self.headers.items():
-                if key.lower() == name_lower:
+                if key.lower() == name.lower():
                     return value
             return ""
 
@@ -411,8 +408,8 @@ class FlextApiModels(FlextModels):
                 return k.lower() == name.lower()
 
             keys_to_remove = u.Collection.filter(
-                list(self.headers.keys()),
-                matches_header_key,
+                list(self.headers.keys()),  # type: ignore[arg-type]
+                matches_header_key,  # type: ignore[arg-type]
             )
             updated_headers = {
                 k: v for k, v in self.headers.items() if k not in keys_to_remove
@@ -531,7 +528,6 @@ class FlextApiModels(FlextModels):
 
 
 m = FlextApiModels  # Runtime alias (not TypeAlias to avoid PYI042)
-m_api = FlextApiModels
 
 
-__all__ = ["FlextApiModels", "m", "m_api"]
+__all__ = ["FlextApiModels", "m"]

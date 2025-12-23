@@ -10,13 +10,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextRuntime, FlextService, r, t
+from flext_core import FlextRuntime, FlextService, r
 
 from flext_api.plugins import FlextApiPlugins
-from flext_api.typings import t as t_api
+from flext_api.typings import t
 
 
-class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
+class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):  # type: ignore[misc]
     """Base class for all protocol implementations.
 
     Defines the standard interface and patterns that all protocol implementations
@@ -55,31 +55,32 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         **kwargs: Additional configuration parameters
 
         """
-        # Type narrowing: convert kwargs to expected type
-        kwargs_typed: dict[str, t.GeneralValueType] = {
-            k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
-        }
-        # Initialize FlextService first (establishes logger property from x)
-        super().__init__(**kwargs_typed)
+        # Filter out protocol-specific params before calling FlextService
+        # FlextService (Pydantic model) doesn't accept name/version/description
+        service_kwargs: dict[str, t.GeneralValueType] = {}
+        for k, v in kwargs.items():
+            if k not in {"name", "version", "description"}:
+                service_kwargs[k] = FlextRuntime.normalize_to_general_value(v)  # type: ignore[arg-type]
 
-        # Initialize ProtocolPlugin (Plugin.logger will be set as attribute, not property)
-        # Use object.__setattr__ to avoid conflict with property from FlextMixins
-        FlextApiPlugins.Protocol.__init__(
-            self,
-            name=name,
-            version=version,
-            description=description,
-        )
-        # Ensure logger is accessible - Plugin sets _plugin_logger, but we use logger property from x
-        # The logger property from x takes precedence
+        # Initialize FlextService first (establishes logger property from x)
+        FlextService.__init__(self, **service_kwargs)
+
+        # Store protocol metadata as instance attributes
+        object.__setattr__(self, "name", name)
+        object.__setattr__(self, "version", version)
+        object.__setattr__(self, "description", description)
 
         # Protocol state
-        self._initialized = False
+        object.__setattr__(self, "_initialized", False)
 
-    def execute(self, **_kwargs: object) -> r[bool]:
+    def execute(self, **kwargs: object) -> r[bool]:
         """Execute FlextService interface - return success if initialized."""
         if not self._initialized:
             return r[bool].fail("Protocol not initialized")
+        if kwargs:
+            self.logger.debug(
+                f"Protocol.execute received kwargs: {list(kwargs.keys())}"
+            )
         return r[bool].ok(True)
 
     def initialize(self) -> r[bool]:
@@ -155,7 +156,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
         """
         return []
 
-    def get_protocol_info(self) -> t_api.JsonObject:
+    def get_protocol_info(self) -> t.JsonObject:
         """Get protocol configuration information.
 
         Returns:

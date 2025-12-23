@@ -15,7 +15,6 @@ import uuid
 import warnings
 from collections.abc import Generator
 from pathlib import Path
-from typing import cast
 
 import pytest
 from faker import Faker
@@ -253,7 +252,7 @@ def sample_user_data() -> ResponseDict:
         t_api.ResponseDict: Sample user data.
 
     """
-    return cast("ResponseDict", FlextTestsDomains.create_user())
+    return FlextTestsDomains.create_user()
 
 
 @pytest.fixture
