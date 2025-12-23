@@ -21,7 +21,6 @@ import hashlib
 import hmac
 import json
 import time
-import time as time_module
 import uuid
 from collections import deque
 from collections.abc import Callable
@@ -34,7 +33,7 @@ from flext_core import (
     r,
 )
 
-from flext_api.typings import t as t_api
+from flext_api.typings import t
 
 
 class FlextWebhookHandler(FlextService[object]):
@@ -72,9 +71,9 @@ class FlextWebhookHandler(FlextService[object]):
     _retry_delay: float
     _retry_backoff: float
     _event_handlers: dict[str, list[Callable[..., None]]]
-    _event_queue: deque[t_api.JsonObject]
-    _delivery_confirmations: dict[str, t_api.JsonObject]
-    _retry_queue: deque[t_api.JsonObject]
+    _event_queue: deque[t.JsonObject]
+    _delivery_confirmations: dict[str, t.JsonObject]
+    _retry_queue: deque[t.JsonObject]
 
     def __init__(
         self,
@@ -125,7 +124,7 @@ class FlextWebhookHandler(FlextService[object]):
         # Retry queue
         self._retry_queue = deque(maxlen=500)
 
-    def execute(self, **_kwargs: object) -> r[object]:
+    def execute(self, **kwargs: object) -> r[object]:
         """Execute webhook service lifecycle operations.
 
         FlextService requires this method for service execution.
@@ -135,6 +134,8 @@ class FlextWebhookHandler(FlextService[object]):
         r[object]: Success result
 
         """
+        if kwargs:
+            self.logger.info(f"Execute called with kwargs: {kwargs}")
         return r[object].ok(True)
 
     def register_event_handler(
@@ -164,7 +165,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         return r[bool].ok(True)
 
-    def _parse_payload(self, payload: bytes | str) -> r[t_api.JsonObject]:
+    def _parse_payload(self, payload: bytes | str) -> r[t.JsonObject]:
         """Parse webhook payload."""
         try:
             if isinstance(payload, bytes):
@@ -174,19 +175,19 @@ class FlextWebhookHandler(FlextService[object]):
 
             event_data = json.loads(payload_str)
             if not isinstance(event_data, dict):
-                return r[t_api.JsonObject].fail("Payload must be a JSON object")
+                return r[t.JsonObject].fail("Payload must be a JSON object")
             # Convert to JsonObject (dict[str, JsonValue])
-            json_object: t_api.JsonObject = {}
+            json_object: t.JsonObject = {}
             for key, value in event_data.items():
                 if isinstance(value, (str, int, float, bool, type(None), list, dict)):
                     json_object[key] = value
                 else:
                     json_object[key] = str(value)
-            return r[t_api.JsonObject].ok(json_object)
+            return r[t.JsonObject].ok(json_object)
         except Exception as e:
-            return r[t_api.JsonObject].fail(f"Failed to parse payload: {e}")
+            return r[t.JsonObject].fail(f"Failed to parse payload: {e}")
 
-    def _extract_event_type(self, event_data: t_api.JsonObject) -> r[str]:
+    def _extract_event_type(self, event_data: t.JsonObject) -> r[str]:
         """Extract event type from event data."""
         event_type: str | None = None
         if "type" in event_data:
@@ -201,7 +202,7 @@ class FlextWebhookHandler(FlextService[object]):
             return r[str].fail("Missing event type in payload")
         return r[str].ok(event_type)
 
-    def _extract_event_id(self, event_data: t_api.JsonObject) -> str:
+    def _extract_event_id(self, event_data: t.JsonObject) -> str:
         """Extract or generate event ID."""
         if "id" in event_data:
             id_value = event_data["id"]
@@ -213,9 +214,9 @@ class FlextWebhookHandler(FlextService[object]):
         self,
         event_id: str,
         event_type: str,
-    ) -> r[t_api.JsonObject]:
+    ) -> r[t.JsonObject]:
         """Handle successful event processing."""
-        confirmation: t_api.JsonObject = {
+        confirmation: t.JsonObject = {
             "event_type": event_type,
             "timestamp": time.time(),
             "status": "delivered",
@@ -227,18 +228,18 @@ class FlextWebhookHandler(FlextService[object]):
             extra={"event_id": event_id, "event_type": event_type},
         )
 
-        return r[t_api.JsonObject].ok({
+        return r[t.JsonObject].ok({
             "event_id": event_id,
             "status": "processed",
         })
 
     def _handle_processing_failure(
         self,
-        event: t_api.JsonObject,
+        event: t.JsonObject,
         event_id: str,
         event_type: str,
         process_result: r[bool],
-    ) -> r[t_api.JsonObject]:
+    ) -> r[t.JsonObject]:
         """Handle failed event processing."""
         attempts_value: int = 0
         if "attempts" in event:
@@ -258,13 +259,13 @@ class FlextWebhookHandler(FlextService[object]):
                 },
             )
 
-            return r[t_api.JsonObject].ok({
+            return r[t.JsonObject].ok({
                 "event_id": event_id,
                 "status": "queued_for_retry",
             })
 
         # Max retries exceeded
-        failure_confirmation: t_api.JsonObject = {
+        failure_confirmation: t.JsonObject = {
             "event_type": event_type,
             "timestamp": time.time(),
             "status": "failed",
@@ -282,7 +283,7 @@ class FlextWebhookHandler(FlextService[object]):
             },
         )
 
-        return r[t_api.JsonObject].fail(
+        return r[t.JsonObject].fail(
             f"Processing failed: {process_result.error}",
         )
 
@@ -290,7 +291,7 @@ class FlextWebhookHandler(FlextService[object]):
         self,
         payload: bytes | str,
         headers: dict[str, str],
-    ) -> r[t_api.JsonObject]:
+    ) -> r[t.JsonObject]:
         """Receive and process webhook request.
 
         Args:
@@ -305,7 +306,7 @@ class FlextWebhookHandler(FlextService[object]):
         if self._secret:
             signature_result = self._verify_signature(payload, headers)
             if signature_result.is_failure:
-                return r[t_api.JsonObject].fail(
+                return r[t.JsonObject].fail(
                     f"Signature verification failed: {signature_result.error}",
                 )
 
@@ -318,7 +319,7 @@ class FlextWebhookHandler(FlextService[object]):
         # Extract event type
         event_type_result = self._extract_event_type(event_data)
         if event_type_result.is_failure:
-            return r[t_api.JsonObject].fail(
+            return r[t.JsonObject].fail(
                 event_type_result.error or "Event type extraction failed",
             )
         event_type = event_type_result.value
@@ -327,7 +328,7 @@ class FlextWebhookHandler(FlextService[object]):
         event_id = self._extract_event_id(event_data)
 
         # Add to event queue
-        event: t_api.JsonObject = {
+        event: t.JsonObject = {
             "id": event_id,
             "type": event_type,
             "data": event_data,
@@ -411,7 +412,7 @@ class FlextWebhookHandler(FlextService[object]):
 
     def _process_event(
         self,
-        event: t_api.JsonObject,
+        event: t.JsonObject,
     ) -> r[bool]:
         """Process webhook event.
 
@@ -455,7 +456,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         return r[bool].ok(True)
 
-    def _get_attempts_count(self, event: t_api.JsonObject) -> int:
+    def _get_attempts_count(self, event: t.JsonObject) -> int:
         """Extract attempts count from event with type safety."""
         if (attempts_raw := event.get("attempts")) is not None and isinstance(
             attempts_raw,
@@ -464,7 +465,7 @@ class FlextWebhookHandler(FlextService[object]):
             return attempts_raw
         return 0
 
-    def _handle_successful_retry(self, event: t_api.JsonObject) -> None:
+    def _handle_successful_retry(self, event: t.JsonObject) -> None:
         """Handle successful retry delivery."""
         if (event_id := event.get("id")) is not None and isinstance(event_id, str):
             event_type = "unknown"
@@ -482,13 +483,13 @@ class FlextWebhookHandler(FlextService[object]):
                 "attempts": attempts_count,
             }
 
-    def _should_retry_event(self, event: t_api.JsonObject) -> bool:
+    def _should_retry_event(self, event: t.JsonObject) -> bool:
         """Determine if event should be retried."""
         return self._get_attempts_count(event) < self._max_retries
 
     def _process_single_retry(
         self,
-        event: t_api.JsonObject,
+        event: t.JsonObject,
     ) -> tuple[bool, bool]:
         """Process a single retry event. Returns (success, should_retry)."""
         attempts_value = self._get_attempts_count(event)
@@ -504,7 +505,7 @@ class FlextWebhookHandler(FlextService[object]):
             },
         )
 
-        time_module.sleep(delay)
+        time.sleep(delay)
         process_result = self._process_event(event)
 
         if process_result.is_success:
@@ -517,7 +518,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         return (False, should_retry)
 
-    def process_retry_queue(self) -> r[t_api.JsonObject]:
+    def process_retry_queue(self) -> r[t.JsonObject]:
         """Process events in retry queue.
 
         Returns:
@@ -535,7 +536,7 @@ class FlextWebhookHandler(FlextService[object]):
             else:
                 failed += 1
 
-        return r[t_api.JsonObject].ok({
+        return r[t.JsonObject].ok({
             "processed": processed,
             "failed": failed,
         })
@@ -552,7 +553,7 @@ class FlextWebhookHandler(FlextService[object]):
     def get_delivery_status(
         self,
         event_id: str,
-    ) -> r[t_api.JsonObject]:
+    ) -> r[t.JsonObject]:
         """Get delivery status for event.
 
         Args:
@@ -563,11 +564,11 @@ class FlextWebhookHandler(FlextService[object]):
 
         """
         if event_id not in self._delivery_confirmations:
-            return r[t_api.JsonObject].fail(f"Event not found: {event_id}")
+            return r[t.JsonObject].fail(f"Event not found: {event_id}")
 
-        return r[t_api.JsonObject].ok(self._delivery_confirmations[event_id])
+        return r[t.JsonObject].ok(self._delivery_confirmations[event_id])
 
-    def get_queue_stats(self) -> t_api.JsonObject:
+    def get_queue_stats(self) -> t.JsonObject:
         """Get event queue statistics.
 
         Returns:

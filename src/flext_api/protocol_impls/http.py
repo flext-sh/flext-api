@@ -23,7 +23,7 @@ from flext_api.constants import c
 from flext_api.models import FlextApiModels
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 from flext_api.transports import FlextApiTransports
-from flext_api.typings import t as t_api
+from flext_api.typings import t
 
 
 class FlextWebProtocolPlugin(RFCProtocolImplementation):
@@ -118,7 +118,6 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return r[FlextApiModels.HttpRequest].fail(
                 method_result.error or "Method extraction failed",
             )
-        method_str = method_result.value
 
         # Extract URL using RFC method
         url_result = self._extract_url(request)
@@ -126,7 +125,6 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return r[FlextApiModels.HttpRequest].fail(
                 url_result.error or "URL extraction failed",
             )
-        url = url_result.value
 
         # Extract headers using RFC method
         headers = self._extract_headers(request)
@@ -134,23 +132,22 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         # Extract body using RFC method with type narrowing
         body_value = self._extract_body(request)
         # HttpRequest.body expects RequestBody type (JsonObject | str | bytes)
-        body: t_api.RequestBody = {}
+        body: t.RequestBody
         if body_value is not None:
             if isinstance(body_value, (dict, str, bytes)):
                 body = body_value
             else:
                 # Convert other types to string
                 body = str(body_value)
-
-        # Extract timeout using RFC method
-        timeout_value = self._extract_timeout(request)
+        else:
+            body = {}
 
         http_request = FlextApiModels.HttpRequest(
-            method=method_str,
-            url=url,
+            method=method_result.value,
+            url=url_result.value,
             headers=headers,
             body=body,
-            timeout=timeout_value,
+            timeout=self._extract_timeout(request),
         )
 
         return r[FlextApiModels.HttpRequest].ok(http_request)
@@ -227,7 +224,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         headers: dict[str, str],
         params: dict[str, str],
         timeout: float | None,
-        body: t_api.RequestBody | None,
+        body: t.RequestBody | None,
     ) -> dict[str, object]:
         """Build request kwargs based on body type."""
         kwargs: dict[str, object] = {
@@ -295,7 +292,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         headers: dict[str, str],
         params: dict[str, str],
         timeout: float | None,
-        body: t_api.RequestBody | None,
+        body: t.RequestBody | None,
     ) -> r[FlextApiModels.HttpResponse]:
         """Execute HTTP request with retry logic."""
         last_error = "Unknown error"
@@ -446,11 +443,11 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         return r[object].fail("Streaming not yet implemented (Phase 2 enhancement)")
 
-    def get_protocol_info(self) -> t_api.JsonObject:
+    def get_protocol_info(self) -> t.JsonObject:
         """Get protocol configuration information."""
         base_info = super().get_protocol_info()
         # Type narrowing: base_info is JsonObject, update with compatible values
-        updated_info: t_api.JsonObject = {
+        updated_info: t.JsonObject = {
             **base_info,
             "http2_enabled": self._http2,
             "http3_enabled": self._http3,

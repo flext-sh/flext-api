@@ -15,7 +15,7 @@ from flext_core import r
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.base import BaseProtocolImplementation
-from flext_api.typings import t as t_api
+from flext_api.typings import t
 
 
 class RFCProtocolImplementation(BaseProtocolImplementation):
@@ -230,7 +230,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         # Convert dict[str, object] to JsonObject and dict[str, str] to WebHeaders
         # JsonObject is dict[str, JsonValue] where JsonValue includes compatible types
-        json_data: t_api.JsonObject | None = None
+        json_data: t.JsonObject | None = None
         if data is not None:
             # Create new dict with compatible types
             # JsonValue is str | int | float | bool | None | Sequence[JsonValue] | Mapping[str, JsonValue]
@@ -245,7 +245,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
                     # Convert other types to string representation
                     json_data[key] = str(value)
 
-        web_headers: t_api.WebHeaders | None = None
+        web_headers: t.WebHeaders | None = None
         if headers is not None:
             # WebHeaders is dict[str, str | list[str]], convert dict[str, str]
             web_headers = dict(headers)

@@ -536,10 +536,10 @@ class FlextApiStorage(FlextService[bool]):
             return not k.startswith(f"{self._namespace}:")
 
         filtered_keys = u.Collection.filter(
-            list(self._storage.keys()),
-            key_not_namespaced,
+            list(self._storage.keys()),  # type: ignore[arg-type]
+            key_not_namespaced,  # type: ignore[arg-type]
         )
-        return r[list[str]].ok(list(filtered_keys))
+        return r[list[str]].ok(list(filtered_keys))  # type: ignore[arg-type]
 
     def items(self) -> r[list[tuple[str, object]]]:
         """Get all key-value pairs."""

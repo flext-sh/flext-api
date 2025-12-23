@@ -27,12 +27,12 @@ from flext_core import (
     FlextService,
     e,
     r,
+    u,
     x,
 )
 
 from flext_api.constants import c
 from flext_api.typings import t
-from flext_api.utilities import u
 
 
 class FlextApiServer(FlextService[object], x.Validation):
@@ -426,15 +426,16 @@ class FlextApiServer(FlextService[object], x.Validation):
         version: str,
     ) -> r[bool]:
         """Validate server configuration using utilities directly."""
-        host_result = u.Validation.validate_hostname(host)
+        host_result = u.Validation.Network.validate_hostname(host)
         if host_result.is_failure:
             return r[bool].fail(host_result.error or "Host validation failed")
 
-        port_result = u.Validation.validate_port_number(port)
+        port_result = u.Validation.Network.validate_port_number(port)
         if port_result.is_failure:
             return r[bool].fail(port_result.error or "Port validation failed")
 
         # Validate string field - check non-empty
+        title_result: r[str]
         if not isinstance(title, str) or not title.strip():
             title_result = r[str].fail("Title cannot be empty")
         else:
@@ -443,6 +444,7 @@ class FlextApiServer(FlextService[object], x.Validation):
             return r[bool].fail(title_result.error or "Title validation failed")
 
         # Validate string field - check non-empty
+        version_result: r[str]
         if not isinstance(version, str) or not version.strip():
             version_result = r[str].fail("Version cannot be empty")
         else:
@@ -464,6 +466,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         """Register protocol handler with Flext validation."""
         # Validate protocol name using utilities directly
         # Validate string field - check non-empty
+        protocol_validation: r[str]
         if not isinstance(protocol, str) or not protocol.strip():
             protocol_validation = r[str].fail("Protocol cannot be empty")
         else:
@@ -521,7 +524,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)
+            normalized = FlextRuntime.normalize_to_general_value(v)  # type: ignore[arg-type]
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:
@@ -545,7 +548,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)
+            normalized = FlextRuntime.normalize_to_general_value(v)  # type: ignore[arg-type]
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:
@@ -569,7 +572,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)
+            normalized = FlextRuntime.normalize_to_general_value(v)  # type: ignore[arg-type]
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:
@@ -593,7 +596,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)
+            normalized = FlextRuntime.normalize_to_general_value(v)  # type: ignore[arg-type]
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:

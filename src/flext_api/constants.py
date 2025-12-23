@@ -13,14 +13,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Set as AbstractSet
+from collections.abc import Callable, Mapping
 from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal, TypeGuard, TypeIs
 
-from flext_core import FlextConstants, r
+from flext_core import FlextConstants, FlextUtilities, r
 
-from flext_api.utilities import u
+# Use FlextUtilities directly (not flext_api.utilities.u) to avoid circular import
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: DEFINITIVE PATTERN FOR FLEXT-API
@@ -202,7 +202,7 @@ class FlextApiConstants(FlextConstants):
         @classmethod
         def is_valid_method(cls, value: str) -> TypeIs[Method]:
             """TypeIs for HTTP Method validation - narrowing in if/else."""
-            return u.Enum.is_member(cls.Method, value)
+            return FlextUtilities.Enum.is_member(cls.Method, value)
 
         @classmethod
         def is_active_method(cls, value: str) -> TypeGuard[ActiveMethods]:
@@ -249,22 +249,22 @@ class FlextApiConstants(FlextConstants):
         # IMMUTABLE COLLECTIONS: frozenset for O(1) validation
         # ═══════════════════════════════════════════════════════════════════
 
-        VALID_METHODS: Final[AbstractSet[str]] = frozenset(
+        VALID_METHODS: Final[frozenset[str]] = frozenset(
             member.value for member in Method.__members__.values()
         )
         """Immutable set of all valid HTTP methods for O(1) validation."""
 
-        VALID_STATUSES: Final[AbstractSet[str]] = frozenset(
+        VALID_STATUSES: Final[frozenset[str]] = frozenset(
             member.value for member in Status.__members__.values()
         )
         """Immutable set of all valid operation statuses."""
 
-        VALID_CONTENT_TYPES: Final[AbstractSet[str]] = frozenset(
+        VALID_CONTENT_TYPES: Final[frozenset[str]] = frozenset(
             member.value for member in ContentType.__members__.values()
         )
         """Immutable set of all valid content types."""
 
-        ACTIVE_METHODS_SET: Final[AbstractSet[str]] = frozenset({
+        ACTIVE_METHODS_SET: Final[frozenset[str]] = frozenset({
             Method.GET.value,
             Method.POST.value,
             Method.PUT.value,
@@ -272,7 +272,7 @@ class FlextApiConstants(FlextConstants):
         })
         """Active HTTP methods for validation - references Method enum members."""
 
-        SAFE_METHODS_SET: Final[AbstractSet[str]] = frozenset({
+        SAFE_METHODS_SET: Final[frozenset[str]] = frozenset({
             Method.GET.value,
             Method.HEAD.value,
             Method.OPTIONS.value,
@@ -444,28 +444,28 @@ class FlextApiConstants(FlextConstants):
 
         @classmethod
         def validate_method_with_result(cls, value: str) -> r[Method]:
-            """Validate HTTP method using u.Enum.parse."""
-            return u.Enum.parse(cls.Method, value)
+            """Validate HTTP method using FlextUtilities.Enum.parse."""
+            return FlextUtilities.Enum.parse(cls.Method, value)
 
         @classmethod
         def validate_status_with_result(cls, value: str) -> r[Status]:
-            """Validate status using u.Enum.parse."""
-            return u.Enum.parse(cls.Status, value)
+            """Validate status using FlextUtilities.Enum.parse."""
+            return FlextUtilities.Enum.parse(cls.Status, value)
 
         @classmethod
         def validate_content_type_with_result(cls, value: str) -> r[ContentType]:
-            """Validate content type using u.Enum.parse."""
-            return u.Enum.parse(cls.ContentType, value)
+            """Validate content type using FlextUtilities.Enum.parse."""
+            return FlextUtilities.Enum.parse(cls.ContentType, value)
 
         @classmethod
         def create_method_validator(cls) -> Callable[[str], Method]:
             """Create BeforeValidator for HTTP Method in Pydantic models."""
-            return u.Enum.coerce_validator(cls.Method)
+            return FlextUtilities.Enum.coerce_validator(cls.Method)
 
         @classmethod
         def create_status_validator(cls) -> Callable[[str], Status]:
             """Create BeforeValidator for Status in Pydantic models."""
-            return u.Enum.coerce_validator(cls.Status)
+            return FlextUtilities.Enum.coerce_validator(cls.Status)
 
         # ═══════════════════════════════════════════════════════════════════
         # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
@@ -538,14 +538,14 @@ class FlextApiConstants(FlextConstants):
 
             # Supported protocols - using frozenset for immutability
             # DRY Pattern: References Protocol enum members - NO string duplication!
-            SUPPORTED_PROTOCOLS: Final[AbstractSet[str]] = frozenset({
+            SUPPORTED_PROTOCOLS: Final[frozenset[str]] = frozenset({
                 Protocol.HTTP.value,
                 Protocol.HTTPS.value,
                 Protocol.HTTP_1_1.value,
                 Protocol.HTTP_2.value,
             })
             """Supported HTTP protocols - references Protocol enum members."""
-            SUPPORTED_PROTOCOLS_WITH_HTTP3: Final[AbstractSet[str]] = frozenset({
+            SUPPORTED_PROTOCOLS_WITH_HTTP3: Final[frozenset[str]] = frozenset({
                 Protocol.HTTP.value,
                 Protocol.HTTPS.value,
                 Protocol.HTTP_1_1.value,
@@ -634,7 +634,7 @@ class FlextApiConstants(FlextConstants):
         class HTTPRetry:
             """HTTP retry status codes."""
 
-            RETRYABLE_STATUS_CODES: Final[AbstractSet[int]] = frozenset({
+            RETRYABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({
                 408,
                 429,
                 500,
@@ -662,6 +662,48 @@ class FlextApiConstants(FlextConstants):
     # Note: HTTP, WebSocket, SSE, and GraphQL protocol Literals are defined
     # after the class definition to avoid forward reference issues.
     # The StrEnum types themselves provide type safety and can be used directly.
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # ROOT-LEVEL ALIASES - Compatibility with tests expecting direct access
+    # ═══════════════════════════════════════════════════════════════════════════
+    # These provide direct access to commonly used constants without requiring .Api namespace
+
+    # Configuration constants
+    DEFAULT_TIMEOUT: Final[float] = Api.DEFAULT_TIMEOUT
+    DEFAULT_MAX_RETRIES: Final[int] = Api.DEFAULT_MAX_RETRIES
+    DEFAULT_RETRIES: Final[int] = Api.DEFAULT_RETRIES
+    DEFAULT_USER_AGENT: Final[str] = Api.DEFAULT_USER_AGENT
+    BACKOFF_FACTOR: Final[float] = Api.BACKOFF_FACTOR
+
+    # HTTP status code ranges
+    HTTP_SUCCESS_MIN: Final[int] = Api.HTTP_SUCCESS_MIN
+    HTTP_SUCCESS_MAX: Final[int] = Api.HTTP_SUCCESS_MAX
+    HTTP_REDIRECT_MIN: Final[int] = Api.HTTP_REDIRECT_MIN
+    HTTP_REDIRECT_MAX: Final[int] = Api.HTTP_REDIRECT_MAX
+    HTTP_CLIENT_ERROR_MIN: Final[int] = Api.HTTP_CLIENT_ERROR_MIN
+    HTTP_CLIENT_ERROR_MAX: Final[int] = Api.HTTP_CLIENT_ERROR_MAX
+    HTTP_SERVER_ERROR_MIN: Final[int] = Api.HTTP_SERVER_ERROR_MIN
+    HTTP_ERROR_MIN: Final[int] = Api.HTTP_ERROR_MIN
+
+    # Response templates
+    SUCCESS_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = (
+        Api.SUCCESS_RESPONSE_TEMPLATE
+    )
+    ERROR_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = (
+        Api.ERROR_RESPONSE_TEMPLATE
+    )
+
+    # Rate limiting
+    RATE_LIMIT_REQUESTS: Final[int] = Api.RATE_LIMIT_REQUESTS
+    RATE_LIMIT_WINDOW: Final[int] = Api.RATE_LIMIT_WINDOW
+
+    # Protocol classes aliases for direct access
+    HTTPRetry = Api.HTTPRetry
+    SSE = Api.SSE
+    WebSocket = Api.WebSocket
+    GraphQL = Api.GraphQL
+    HTTPClient = Api.HTTPClient
+    HTTP = Api.HTTP
 
 
 c = FlextApiConstants  # Runtime alias (not TypeAlias to avoid PYI042)

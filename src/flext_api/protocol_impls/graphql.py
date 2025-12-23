@@ -73,8 +73,8 @@ class GraphQLProtocolPlugin(RFCProtocolImplementation):
         """
         protocol_lower = protocol.lower()
         return protocol_lower in {
-            c.GraphQL.Protocol.GRAPHQL,
-            c.GraphQL.Protocol.GQL,
+            c.Api.GraphQL.Protocol.GRAPHQL,
+            c.Api.GraphQL.Protocol.GQL,
         }
 
     def get_supported_protocols(self) -> list[str]:
@@ -85,8 +85,8 @@ class GraphQLProtocolPlugin(RFCProtocolImplementation):
 
         """
         return [
-            c.GraphQL.Protocol.GRAPHQL,
-            c.GraphQL.Protocol.GQL,
+            c.Api.GraphQL.Protocol.GRAPHQL,
+            c.Api.GraphQL.Protocol.GQL,
         ]
 
 

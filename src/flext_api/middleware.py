@@ -15,8 +15,6 @@ from collections.abc import Callable
 
 from flext_api.models import FlextApiModels
 
-_logger = logging.getLogger(__name__)
-
 
 class FlextApiMiddleware:
     """FlextAPI HTTP middleware following FLEXT patterns.
@@ -38,7 +36,7 @@ class FlextApiMiddleware:
                 request = middleware(request)
             except Exception as e:
                 # Log exception and continue with other middleware
-                _logger.warning("Middleware failed: %s", e)
+                logging.getLogger(__name__).warning("Middleware failed: %s", e)
                 continue
         return request
 

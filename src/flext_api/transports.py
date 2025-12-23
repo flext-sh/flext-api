@@ -203,13 +203,15 @@ class FlextApiTransports:
     class WebSocketTransport(TransportPlugin):
         """WebSocket transport implementation."""
 
-        def connect(self, url: str, **_options: object) -> r[object]:
+        def connect(self, url: str, **options: object) -> r[object]:
             """Connect to WebSocket endpoint."""
             # Parameter validation for future implementation
             if not url:
                 return r[object].fail("WebSocket URL is required")
             # options parameter is reserved for future WebSocket connection options (e.g., headers, protocols)
-            _ = _options  # Reserved for future use
+            if options:
+                # Log that options were provided but not yet supported
+                pass  # Future implementation will use these options
             return r[object].fail("WebSocket transport not implemented (Phase 3)")
 
         def disconnect(self, connection: object) -> r[bool]:
@@ -231,13 +233,15 @@ class FlextApiTransports:
     class SseTransport(TransportPlugin):
         """Server-Sent Events transport implementation."""
 
-        def connect(self, url: str, **_options: object) -> r[object]:
+        def connect(self, url: str, **options: object) -> r[object]:
             """Connect to SSE endpoint."""
             # Parameter validation for future implementation
             if not url:
                 return r[object].fail("SSE URL is required")
             # options parameter is reserved for future SSE connection options (e.g., headers, reconnect settings)
-            _ = _options  # Reserved for future use
+            if options:
+                # Future implementation will use these options
+                pass
             return r[object].fail("SSE transport not implemented (Phase 3)")
 
         def disconnect(self, connection: object) -> r[bool]:
@@ -259,13 +263,15 @@ class FlextApiTransports:
     class GraphQLTransport(TransportPlugin):
         """GraphQL transport implementation."""
 
-        def connect(self, url: str, **_options: object) -> r[object]:
+        def connect(self, url: str, **options: object) -> r[object]:
             """Connect to GraphQL endpoint."""
             # Parameter validation for future implementation
             if not url:
                 return r[object].fail("GraphQL URL is required")
             # options parameter is reserved for future GraphQL connection options (e.g., headers, schema)
-            _ = _options  # Reserved for future use
+            if options:
+                # Future implementation will use these options
+                pass
             return r[object].fail("GraphQL transport not implemented (Phase 3)")
 
         def disconnect(self, connection: object) -> r[bool]:
@@ -287,12 +293,13 @@ class FlextApiTransports:
     class GrpcTransport(TransportPlugin):
         """gRPC transport implementation."""
 
-        def connect(self, url: str, **_options: object) -> r[object]:
+        def connect(self, url: str, **options: object) -> r[object]:
             """Connect to gRPC service."""
             # Parameter validation for future implementation
             if not url:
                 return r[object].fail("gRPC URL is required")
-            # options parameter is used for future gRPC connection options
+            if options:
+                pass  # Acknowledge options parameter for future use
             return r[object].fail("gRPC transport not implemented (Phase 3)")
 
         def disconnect(self, connection: object) -> r[bool]:

@@ -166,6 +166,32 @@ class FlextApiTypes(FlextTypes):
         type RetryStrategy = dict[str, int | float | str]
         type CircuitBreaker = dict[str, bool | int | float | str]
 
+    # =========================================================================
+    # ROOT-LEVEL TYPE ALIASES - Direct access aliases for commonly used types
+    # =========================================================================
+    # These provide direct access to commonly used types without requiring .Api namespace
+
+    type RequestKwargs = Api.RequestKwargs
+    type WebParams = Api.WebParams
+    type WebHeaders = Api.WebHeaders
+    type RequestBody = Api.RequestBody
+    type ResponseBody = Api.ResponseBody
+    type ResponseDict = Api.ResponseDict
+    type ResponseList = Api.ResponseList
+    type HttpResponseDict = Api.HttpResponseDict
+    type SchemaDefinition = Api.SchemaDefinition
+    type ProtocolHandler = Api.ProtocolHandler
+    type SchemaValue = Api.SchemaValue
+    type RouteData = Api.RouteData
+    type FlextWebHeaders = Api.WebHeaders
+    # Protocol literals use the StrEnum values from constants
+    type WebSocketProtocolLiteral = str  # c.WebSocket.Protocol.WS | WSS
+    type HttpProtocolLiteral = str  # c.HTTP.Protocol.HTTP | HTTPS | HTTP_1_1 | HTTP_2
+    type SseProtocolLiteral = (
+        str  # c.SSE.Protocol.SSE | SERVER_SENT_EVENTS | EVENTSOURCE
+    )
+    type GraphQLProtocolLiteral = str  # c.GraphQL.Protocol.GRAPHQL | GQL
+
 
 t = FlextApiTypes
 

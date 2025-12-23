@@ -12,15 +12,14 @@ from __future__ import annotations
 
 from typing import ClassVar, Self
 
-from flext_core import r, s, t
+from flext_core import r, s
 from flext_core.runtime import FlextRuntime
-from pydantic import PrivateAttr
 
 from flext_api.client import FlextApiClient
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
 from flext_api.settings import FlextApiSettings
-from flext_api.typings import t as t_api
+from flext_api.typings import t
 from flext_api.utilities import FlextApiUtilities
 
 
@@ -36,9 +35,6 @@ class FlextApi(s[FlextApiSettings]):
     # Unified namespace - direct access to FLEXT components
     Models: ClassVar = FlextApiModels
     Config: ClassVar = FlextApiSettings
-
-    # API-specific configuration storage (avoids type override of parent _config)
-    _api_config: FlextApiSettings | None = PrivateAttr(default=None)
 
     def __new__(cls, config: FlextApiSettings | None = None) -> Self:
         """Intercept positional config argument and convert to kwargs.
@@ -56,7 +52,7 @@ class FlextApi(s[FlextApiSettings]):
     def __init__(
         self,
         config: FlextApiSettings | None = None,
-        **kwargs: t_api.JsonValue | str | int | bool,
+        **kwargs: t.JsonValue | str | int | bool,
     ) -> None:
         """Initialize with optional config.
 
@@ -65,31 +61,38 @@ class FlextApi(s[FlextApiSettings]):
         **kwargs: Additional Pydantic model fields (ignored for this service).
 
         """
+        # Determine which config to use
+        init_config = getattr(self, "_init_config", None)
+        if init_config is not None:
+            api_config = init_config
+        elif config is not None:
+            api_config = config
+        else:
+            api_config = FlextApiSettings()
+
         # Type narrowing: convert kwargs to expected type
         kwargs_typed: dict[str, t.GeneralValueType] = {
             k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
         }
         super().__init__(**kwargs_typed)
 
-        # Determine which config to use
-        init_config = getattr(self, "_init_config", None)
-        if init_config is not None:
-            self._api_config = init_config
-        elif config is not None:
-            self._api_config = config
-        else:
-            self._api_config = FlextApiSettings()
+        # Set the _config to the API-specific settings
+        object.__setattr__(self, "_config", api_config)
 
         # Initialize HTTP client with API config
-        self._client = FlextApiClient(config=self._api_config)
+        self._client = FlextApiClient(config=api_config)
 
     def execute(
         self,
-        **_kwargs: t_api.JsonValue | str | int | bool,
+        **kwargs: t.JsonValue | str | int | bool,
     ) -> r[FlextApiSettings]:
         """Execute FlextService interface."""
+        if kwargs:
+            self.logger.info(f"Execute called with kwargs: {kwargs}")
         config = (
-            self._api_config if self._api_config is not None else FlextApiSettings()
+            self._config
+            if isinstance(self._config, FlextApiSettings)
+            else FlextApiSettings()
         )
         return r[FlextApiSettings].ok(config)
 
@@ -110,8 +113,8 @@ class FlextApi(s[FlextApiSettings]):
 
     def _extract_query_params(
         self,
-        request_kwargs: t_api.RequestKwargs | None,
-    ) -> r[t_api.WebParams]:
+        request_kwargs: t.RequestKwargs | None,
+    ) -> r[t.WebParams]:
         """Extract and validate query parameters from request_kwargs.
 
         Args:
@@ -121,16 +124,16 @@ class FlextApi(s[FlextApiSettings]):
             r[WebParams]: Query params dict or error.
 
         """
-        query_params: t_api.WebParams = {}
+        query_params: t.WebParams = {}
         if request_kwargs is None or "params" not in request_kwargs:
-            return r[t_api.WebParams].ok(query_params)
+            return r[t.WebParams].ok(query_params)
 
         params_value = request_kwargs["params"]
         if params_value is None:
-            return r[t_api.WebParams].ok(query_params)
+            return r[t.WebParams].ok(query_params)
 
         if not isinstance(params_value, dict):
-            return r[t_api.WebParams].fail(
+            return r[t.WebParams].fail(
                 f"Invalid params type: {type(params_value)}",
             )
 
@@ -145,12 +148,12 @@ class FlextApi(s[FlextApiSettings]):
                 params_result[k] = str_list
             else:
                 params_result[k] = str(v)
-        return r[t_api.WebParams].ok(params_result)
+        return r[t.WebParams].ok(params_result)
 
     def _finalize_body(
         self,
         body_value: object,
-    ) -> t_api.RequestBody:
+    ) -> t.RequestBody:
         """Finalize body value to RequestBody type.
 
         Args:
@@ -171,9 +174,9 @@ class FlextApi(s[FlextApiSettings]):
         self,
         method: str,
         url: str,
-        data: t_api.RequestBody | None = None,
+        data: t.RequestBody | None = None,
         headers: dict[str, str] | None = None,
-        request_kwargs: t_api.RequestKwargs | None = None,
+        request_kwargs: t.RequestKwargs | None = None,
         timeout: float | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """Generic HTTP method executor using monadic patterns - no fallbacks.
@@ -252,7 +255,7 @@ class FlextApi(s[FlextApiSettings]):
         self,
         url: str,
         headers: dict[str, str] | None = None,
-        request_kwargs: t_api.RequestKwargs | None = None,
+        request_kwargs: t.RequestKwargs | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP GET - delegates to generic method."""
         return self._http_method(
@@ -265,9 +268,9 @@ class FlextApi(s[FlextApiSettings]):
     def post(
         self,
         url: str,
-        data: t_api.RequestBody | None = None,
+        data: t.RequestBody | None = None,
         headers: dict[str, str] | None = None,
-        request_kwargs: t_api.RequestKwargs | None = None,
+        request_kwargs: t.RequestKwargs | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP POST - delegates to generic method."""
         return self._http_method(
@@ -281,9 +284,9 @@ class FlextApi(s[FlextApiSettings]):
     def put(
         self,
         url: str,
-        data: t_api.RequestBody | None = None,
+        data: t.RequestBody | None = None,
         headers: dict[str, str] | None = None,
-        request_kwargs: t_api.RequestKwargs | None = None,
+        request_kwargs: t.RequestKwargs | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP PUT - delegates to generic method."""
         return self._http_method(
@@ -298,7 +301,7 @@ class FlextApi(s[FlextApiSettings]):
         self,
         url: str,
         headers: dict[str, str] | None = None,
-        request_kwargs: t_api.RequestKwargs | None = None,
+        request_kwargs: t.RequestKwargs | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP DELETE - delegates to generic method."""
         return self._http_method(
@@ -311,9 +314,9 @@ class FlextApi(s[FlextApiSettings]):
     def patch(
         self,
         url: str,
-        data: t_api.RequestBody | None = None,
+        data: t.RequestBody | None = None,
         headers: dict[str, str] | None = None,
-        request_kwargs: t_api.RequestKwargs | None = None,
+        request_kwargs: t.RequestKwargs | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP PATCH - delegates to generic method."""
         return self._http_method(
