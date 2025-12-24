@@ -14,7 +14,8 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 
-from flext import r
+from flext_core import r
+
 from flext_api.models import m
 from flext_api.typings import t
 

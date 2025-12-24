@@ -20,7 +20,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal
 
-from flext import FlextConstants
+from flext_core import FlextConstants
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: DEFINITIVE PATTERN FOR FLEXT-API

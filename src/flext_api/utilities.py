@@ -8,9 +8,8 @@ from enum import StrEnum
 from typing import Annotated, TypeIs
 from urllib.parse import urlparse
 
+from flext_core import r, u
 from pydantic import BeforeValidator
-
-from flext import r, u
 
 # Local constants to avoid circular import with constants.py
 MAX_HOSTNAME_LENGTH: int = 253

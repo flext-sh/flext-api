@@ -14,9 +14,11 @@ from __future__ import annotations
 
 from typing import cast
 
-from flext import FlextDispatcher,
+from flext_core import (
+    FlextDispatcher,
     FlextRegistry,
     r,
+)
 from flext_core.protocols import p
 
 from flext_api.plugins import FlextApiPlugins
