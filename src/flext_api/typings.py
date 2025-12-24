@@ -27,7 +27,8 @@ class FlextApiTypes(FlextTypes):
     """
 
     # Core type aliases for forward reference resolution
-    type JsonObject = dict[str, FlextTypes.JsonValue]
+    type JsonValue = str | int | float | bool | None | Sequence[object] | Mapping[str, object]
+    type JsonObject = dict[str, JsonValue]
 
     class Api:
         """API types namespace for cross-project access.
