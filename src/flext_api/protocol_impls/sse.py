@@ -14,7 +14,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from flext import r
+from flext_core import r
+
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 

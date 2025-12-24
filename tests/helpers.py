@@ -20,10 +20,10 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
+from flext_core import FlextConstants, FlextResult, T
 from flext_tests import FlextTestsDomains, u
 from flext_tests.domains import FlextTestsDomains as d
 
-from flext import FlextConstants, FlextResult, T
 from flext_api.typings import t as t_api
 
 

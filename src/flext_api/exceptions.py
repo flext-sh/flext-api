@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext import e
+from flext_core import e
 
 
 class HttpError(e.BaseError):

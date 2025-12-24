@@ -25,12 +25,13 @@ import uuid
 from collections import deque
 from collections.abc import Callable
 
-from flext import FlextContainer,
+from flext import (
+    FlextContainer,
     FlextContext,
     FlextDispatcher,
     FlextService,
-    r
-
+    r,
+)
 from flext_api.typings import t
 
 

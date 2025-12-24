@@ -12,9 +12,9 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
+from flext_core import r
 from flext_core.loggings import FlextLogger
 
-from flext import r
 from flext_api.typings import t
 
 

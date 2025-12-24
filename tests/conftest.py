@@ -20,9 +20,9 @@ import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from flext_core import FlextConstants, FlextContainer
 from flext_tests import FlextTestsDocker, FlextTestsDomains
 
-from flext import FlextConstants, FlextContainer
 from flext_api import (
     FlextApiClient,
     FlextApiSettings,

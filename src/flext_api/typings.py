@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
-from flext import FlextTypes
+from flext_core import FlextTypes
 
 
 class FlextApiTypes(FlextTypes):
@@ -27,7 +27,9 @@ class FlextApiTypes(FlextTypes):
     """
 
     # Core type aliases for forward reference resolution
-    type JsonValue = str | int | float | bool | None | Sequence[object] | Mapping[str, object]
+    type JsonValue = (
+        str | int | float | bool | None | Sequence[object] | Mapping[str, object]
+    )
     type JsonObject = dict[str, JsonValue]
 
     class Api:

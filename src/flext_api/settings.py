@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import json
 
+from flext_core import FlextSettings
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from flext import FlextSettings
 from flext_api.constants import c
 
 
