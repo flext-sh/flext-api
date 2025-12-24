@@ -3,6 +3,8 @@
 Single class namespace with NO aliases, NO weak types.
 All types consolidated within FlextApiTypes using Python 3.13+ syntax.
 
+Note: Protocols are in protocols.py, not here. Use p.Api.* for protocols.
+
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 
@@ -11,9 +13,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from typing import Protocol, runtime_checkable
 
-from flext_core import FlextTypes
+from flext import FlextTypes
 
 
 class FlextApiTypes(FlextTypes):
@@ -90,13 +91,7 @@ class FlextApiTypes(FlextTypes):
         ]
         """Route registration data structure."""
 
-        @runtime_checkable
-        class ProtocolHandler(Protocol):
-            """Protocol handler interface for server registration."""
-
-            def supports_protocol(self, protocol: str) -> bool:
-                """Check if handler supports protocol."""
-                ...
+        # Note: ProtocolHandler moved to protocols.py -> p.Api.Server.ProtocolHandler
 
         # Schema types for GraphQL/OpenAPI
         type SchemaValue = JsonObject | str  # GraphQL schema string or OpenAPI dict
@@ -165,32 +160,6 @@ class FlextApiTypes(FlextTypes):
         type ErrorRecovery = dict[str, str | float | JsonObject]
         type RetryStrategy = dict[str, int | float | str]
         type CircuitBreaker = dict[str, bool | int | float | str]
-
-    # =========================================================================
-    # ROOT-LEVEL TYPE ALIASES - Direct access aliases for commonly used types
-    # =========================================================================
-    # These provide direct access to commonly used types without requiring .Api namespace
-
-    type RequestKwargs = Api.RequestKwargs
-    type WebParams = Api.WebParams
-    type WebHeaders = Api.WebHeaders
-    type RequestBody = Api.RequestBody
-    type ResponseBody = Api.ResponseBody
-    type ResponseDict = Api.ResponseDict
-    type ResponseList = Api.ResponseList
-    type HttpResponseDict = Api.HttpResponseDict
-    type SchemaDefinition = Api.SchemaDefinition
-    type ProtocolHandler = Api.ProtocolHandler
-    type SchemaValue = Api.SchemaValue
-    type RouteData = Api.RouteData
-    type FlextWebHeaders = Api.WebHeaders
-    # Protocol literals use the StrEnum values from constants
-    type WebSocketProtocolLiteral = str  # c.WebSocket.Protocol.WS | WSS
-    type HttpProtocolLiteral = str  # c.HTTP.Protocol.HTTP | HTTPS | HTTP_1_1 | HTTP_2
-    type SseProtocolLiteral = (
-        str  # c.SSE.Protocol.SSE | SERVER_SENT_EVENTS | EVENTSOURCE
-    )
-    type GraphQLProtocolLiteral = str  # c.GraphQL.Protocol.GRAPHQL | GQL
 
 
 t = FlextApiTypes

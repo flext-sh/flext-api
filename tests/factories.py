@@ -13,9 +13,9 @@ from __future__ import annotations
 import uuid
 
 from faker import Faker
-from flext_core import FlextResult, r
 from flext_tests import FlextTestsDomains, u
 
+from flext import FlextResult, r
 from flext_api import FlextApiClient, FlextApiSettings, FlextApiStorage
 from flext_api.typings import t as t_api
 
@@ -139,7 +139,7 @@ class FlextApiFactories:
         base_url_override = overrides.get("base_url")
         base_url_from_config = config_data.get("base_url", "https://httpbin.org")
         base_url_val = str(
-            base_url_override if base_url_override is not None else base_url_from_config
+            base_url_override if base_url_override is not None else base_url_from_config,
         )
 
         timeout_override = overrides.get("timeout")

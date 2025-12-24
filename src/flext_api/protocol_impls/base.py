@@ -10,8 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextRuntime, FlextService, r
-
+from flext import FlextRuntime, FlextService, r
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import t
 
@@ -79,7 +78,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol): 
             return r[bool].fail("Protocol not initialized")
         if kwargs:
             self.logger.debug(
-                f"Protocol.execute received kwargs: {list(kwargs.keys())}"
+                f"Protocol.execute received kwargs: {list(kwargs.keys())}",
             )
         return r[bool].ok(True)
 

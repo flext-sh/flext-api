@@ -12,11 +12,10 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextResult as r
 from flext_core.protocols import FlextProtocols
 
+from flext import FlextResult as r
 from flext_api.constants import FlextApiConstants
-from flext_api.typings import t
 
 
 class FlextApiProtocols(FlextProtocols):
@@ -61,7 +60,7 @@ class FlextApiProtocols(FlextProtocols):
                     method: FlextApiConstants.Api.Method | str,
                     url: str,
                     **kwargs: object,
-                ) -> r[t.HttpResponseDict]:
+                ) -> r[dict[str, object]]:
                     """Execute an HTTP request."""
                     ...
 
@@ -69,7 +68,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> r[t.HttpResponseDict]:
+                ) -> r[dict[str, object]]:
                     """Execute HTTP GET request."""
                     ...
 
@@ -77,7 +76,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> r[t.HttpResponseDict]:
+                ) -> r[dict[str, object]]:
                     """Execute HTTP POST request."""
                     ...
 
@@ -85,7 +84,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> r[t.HttpResponseDict]:
+                ) -> r[dict[str, object]]:
                     """Execute HTTP PUT request."""
                     ...
 
@@ -93,7 +92,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> r[t.HttpResponseDict]:
+                ) -> r[dict[str, object]]:
                     """Execute HTTP DELETE request."""
                     ...
 
@@ -151,6 +150,164 @@ class FlextApiProtocols(FlextProtocols):
 
                 def warning(self, message: str, **kwargs: object) -> None:
                     """Log warning message."""
+
+        class Serialization:
+            """Serialization protocols."""
+
+            @runtime_checkable
+            class SerializerProtocol(Protocol):
+                """Protocol for custom serializers.
+
+                Defines the interface for serialization implementations
+                including JSON, MessagePack, CBOR, etc.
+                """
+
+                def serialize(self, data: object) -> bytes:
+                    """Serialize data to bytes.
+
+                    Args:
+                        data: Data to serialize
+
+                    Returns:
+                        Serialized bytes
+
+                    """
+                    ...
+
+                def deserialize(self, data: bytes) -> object:
+                    """Deserialize bytes to data.
+
+                    Args:
+                        data: Bytes to deserialize
+
+                    Returns:
+                        Deserialized data
+
+                    """
+                    ...
+
+                @property
+                def content_type(self) -> str:
+                    """Get content type for this serializer."""
+                    ...
+
+        class Lifecycle:
+            """HTTP resource lifecycle protocols."""
+
+            @runtime_checkable
+            class HttpResourceProtocol(Protocol):
+                """Protocol for HTTP resources that can be managed."""
+
+                def close(self) -> None:
+                    """Close the resource synchronously."""
+                    ...
+
+                async def aclose(self) -> None:
+                    """Close the resource asynchronously."""
+
+        class Transport:
+            """Transport layer protocols."""
+
+            @runtime_checkable
+            class TransportPlugin(Protocol):
+                """Protocol for transport plugins.
+
+                Defines the interface for transport implementations
+                including HTTP, WebSocket, SSE, GraphQL, and gRPC.
+                """
+
+                def connect(self, url: str, **options: object) -> r[object]:
+                    """Connect to endpoint."""
+                    ...
+
+                def disconnect(self, connection: object) -> r[bool]:
+                    """Disconnect from endpoint."""
+                    ...
+
+                def send(self, connection: object, data: object) -> r[object]:
+                    """Send data through connection."""
+                    ...
+
+        class Server:
+            """Server registration protocols."""
+
+            @runtime_checkable
+            class ProtocolHandler(Protocol):
+                """Protocol handler interface for server registration."""
+
+                def supports_protocol(self, protocol: str) -> bool:
+                    """Check if handler supports protocol."""
+                    ...
+
+        class Grpc:
+            """gRPC-related protocols (stubs until flext-grpc integration)."""
+
+            @runtime_checkable
+            class GrpcServiceProtocol(Protocol):
+                """Protocol for gRPC service implementations.
+
+                This protocol defines the interface that gRPC services should
+                implement when flext-grpc is integrated.
+                """
+
+                def register_methods(self) -> list[object]:
+                    """Register service methods.
+
+                    Returns:
+                        List of method descriptors (GrpcMethod when integrated)
+
+                    """
+                    ...
+
+                def handle_request(
+                    self,
+                    request: object,
+                ) -> r[object]:
+                    """Handle gRPC request.
+
+                    Args:
+                        request: gRPC request
+
+                    Returns:
+                        FlextResult containing response or error
+
+                    """
+                    ...
+
+        class Protobuf:
+            """Protobuf-related protocols (stubs until flext-grpc integration)."""
+
+            @runtime_checkable
+            class ProtobufServiceProtocol(Protocol):
+                """Protocol for Protobuf service definitions.
+
+                This protocol defines the interface for Protobuf-based services
+                when flext-grpc is integrated.
+                """
+
+                def get_request_schema(self, method: str) -> r[object]:
+                    """Get request schema for method.
+
+                    Args:
+                        method: Method name
+
+                    Returns:
+                        FlextResult containing schema or error
+
+                    """
+                    ...
+
+                def get_response_schema(self, method: str) -> r[object]:
+                    """Get response schema for method.
+
+                    Args:
+                        method: Method name
+
+                    Returns:
+                        FlextResult containing schema or error
+
+                    """
+                    ...
 
 
 # Alias for simplified usage - exported for domain usage

@@ -25,13 +25,11 @@ import uuid
 from collections import deque
 from collections.abc import Callable
 
-from flext_core import (
-    FlextContainer,
+from flext import FlextContainer,
     FlextContext,
     FlextDispatcher,
     FlextService,
-    r,
-)
+    r
 
 from flext_api.typings import t
 
@@ -135,7 +133,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         """
         if kwargs:
-            self.logger.info(f"Execute called with kwargs: {kwargs}")
+            self.logger.info("Execute called with kwargs: %s", kwargs)
         return r[object].ok(True)
 
     def register_event_handler(

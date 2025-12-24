@@ -16,8 +16,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r, u
-
+from flext import r, t, u
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import t
 
@@ -108,12 +107,12 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         info_required = ["title", "version"]
         # Use u.filter() for unified filtering (DSL pattern)
         info_missing = u.Collection.filter(
-            list(info_required),  # type: ignore[arg-type]
-            lambda field: field not in info_dict,  # type: ignore[arg-type]
+            list(info_required),
+            lambda field: field not in info_dict,
         )
         if info_missing:
             return r[t.JsonObject].fail(
-                f"Missing required info fields: {', '.join(info_missing)}",  # type: ignore[arg-type]
+                f"Missing required info fields: {', '.join(info_missing)}",
             )
 
         return r[t.JsonObject].ok(info_dict)
@@ -200,12 +199,12 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         required_fields = ["info", "paths"]
         # Use u.filter() for unified filtering (DSL pattern)
         missing_fields = u.Collection.filter(
-            list(required_fields),  # type: ignore[arg-type]
-            lambda field: field not in schema,  # type: ignore[arg-type]
+            list(required_fields),
+            lambda field: field not in schema,
         )
         if missing_fields:
             return r[t.JsonObject].fail(
-                f"Missing required fields: {', '.join(missing_fields)}",  # type: ignore[arg-type]
+                f"Missing required fields: {', '.join(missing_fields)}",
             )
 
         # Validate info object

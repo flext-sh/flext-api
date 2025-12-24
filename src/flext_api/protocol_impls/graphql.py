@@ -9,8 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r
-
+from flext import r
 from flext_api.constants import c
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 

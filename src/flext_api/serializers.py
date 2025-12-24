@@ -17,15 +17,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Protocol
-
 import cbor2
 import msgpack  # type: ignore[import-untyped]
 import orjson
-from flext_core import FlextService, r
 from flext_core.loggings import FlextLogger
 
+from flext import FlextService, r
 from flext_api.constants import FlextApiConstants
+from flext_api.protocols import p
 
 
 class FlextApiSerializers(FlextService[bool]):
@@ -33,47 +32,21 @@ class FlextApiSerializers(FlextService[bool]):
 
     Provides JSON, MessagePack, and CBOR serialization through nested classes.
     Follows FLEXT standards with FlextResult error handling.
+
+    Protocols:
+        Use p.Api.Serialization.SerializerProtocol for custom serializers.
     """
 
     def execute(self, **kwargs: object) -> r[bool]:
         """Execute FlextService interface - serializers are always ready."""
         if kwargs:
             self.logger.info(
-                f"Serializer.execute received kwargs: {list(kwargs.keys())}"
+                f"Serializer.execute received kwargs: {list(kwargs.keys())}",
             )
         return r[bool].ok(True)
 
-    class SerializerProtocol(Protocol):
-        """Protocol for custom serializers."""
-
-        def serialize(self, data: object) -> bytes:
-            """Serialize data to bytes.
-
-            Args:
-            data: Data to serialize
-
-            Returns:
-            Serialized bytes
-
-            """
-            ...  # Protocol method
-
-        def deserialize(self, data: bytes) -> object:
-            """Deserialize bytes to data.
-
-            Args:
-            data: Bytes to deserialize
-
-            Returns:
-            Deserialized data
-
-            """
-            ...  # Protocol method
-
-        @property
-        def content_type(self) -> str:
-            """Get content type for this serializer."""
-            ...  # Protocol property
+    # Protocol reference for backward compatibility
+    SerializerProtocol = p.Api.Serialization.SerializerProtocol
 
     class JSONSerializer:
         """JSON serializer using orjson for performance.

@@ -11,12 +11,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import time
 from typing import Self
 from urllib.parse import ParseResult, urlparse
 
-from flext_core import FlextModels
 from pydantic import Field, computed_field, field_validator
 
+from flext import FlextModels
 from flext_api.constants import c
 from flext_api.typings import t
 from flext_api.utilities import u
@@ -525,6 +526,39 @@ class FlextApiModels(FlextModels):
         def has_previous(self) -> bool:
             """Check if previous page exists."""
             return self.page > 1
+
+    # =========================================================================
+    # STORAGE MODELS
+    # =========================================================================
+
+    class Storage:
+        """Storage-related models namespace."""
+
+        class Metadata(FlextModels.Value):
+            """Internal metadata for stored values (using Pydantic for validation)."""
+
+            value: object
+            timestamp: str
+            ttl: int | None = None
+            created_at: float = Field(default_factory=time.time)
+
+            def is_expired(self) -> bool:
+                """Check if entry has expired using Pydantic-validated TTL."""
+                if self.ttl is None:
+                    return False
+                elapsed = time.time() - self.created_at
+                return elapsed > self.ttl
+
+        class Stats(FlextModels.Value):
+            """Storage statistics using Pydantic (automatic validation)."""
+
+            total_operations: int = 0
+            cache_hits: int = 0
+            cache_misses: int = 0
+            hit_ratio: float = 0.0
+            storage_size: int = 0
+            memory_usage: int = 0
+            namespace: str = "flext"
 
 
 m = FlextApiModels  # Runtime alias (not TypeAlias to avoid PYI042)

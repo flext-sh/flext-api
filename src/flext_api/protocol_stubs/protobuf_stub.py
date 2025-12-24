@@ -11,6 +11,8 @@ Features (Placeholder):
 - Type conversion
 - JSON interop
 
+Note: Protocols are centralized in protocols.py -> p.Api.Protobuf.*
+
 See TRANSFORMATION_PLAN.md - Phase 8 for implementation details.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -21,10 +23,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
-from typing import Protocol
 
-from flext_core import r
-from flext_core.loggings import FlextLogger
+from flext import FlextLogger
+
+from flext import r
+from flext_api.protocols import p
 
 
 class ProtobufMessage:
@@ -404,36 +407,8 @@ class ProtobufSchema:
         return self._fields.copy()
 
 
-class ProtobufServiceProtocol(Protocol):
-    """Protocol for Protobuf service definitions.
-
-    This protocol defines the interface for Protobuf-based services
-    when flext-grpc is integrated.
-    """
-
-    def get_request_schema(self, method: str) -> r[ProtobufSchema]:
-        """Get request schema for method.
-
-        Args:
-        method: Method name
-
-        Returns:
-        FlextResult containing schema or error
-
-        """
-        ...
-
-    def get_response_schema(self, method: str) -> r[ProtobufSchema]:
-        """Get response schema for method.
-
-        Args:
-        method: Method name
-
-        Returns:
-        FlextResult containing schema or error
-
-        """
-        ...
+# Protocol reference from centralized protocols.py for backward compatibility
+ProtobufServiceProtocol = p.Api.Protobuf.ProtobufServiceProtocol
 
 
 __all__ = [

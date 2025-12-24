@@ -11,28 +11,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Protocol
-
 import httpx
-from flext_core import r
 
+from flext import r
 from flext_api.constants import c
+from flext_api.protocols import p
 
-
-class TransportPlugin(Protocol):
-    """Protocol for transport plugins."""
-
-    def connect(self, url: str, **options: object) -> r[object]:
-        """Connect to endpoint."""
-        ...
-
-    def disconnect(self, connection: object) -> r[bool]:
-        """Disconnect from endpoint."""
-        ...
-
-    def send(self, connection: object, data: object) -> r[object]:
-        """Send data through connection."""
-        ...
+# Protocol reference for backward compatibility
+TransportPlugin = p.Api.Transport.TransportPlugin
 
 
 class FlextApiTransports:

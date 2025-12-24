@@ -1,8 +1,8 @@
 # FLEXT-API
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
-[![Production Ready](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](#)
-[![HTTP Foundation](https://img.shields.io/badge/http-foundation-green.svg)](#)
+[![Production Ready](https://img.shields.io/badge/status-production--ready-brightgreen.svg)]
+[![HTTP Foundation](https://img.shields.io/badge/http-foundation-green.svg)]
 [![Documentation](https://img.shields.io/badge/docs-organized-blue.svg)](./docs/)
 [![GitHub](https://img.shields.io/badge/github-flext--api-black.svg)](https://github.com/flext/flext-api)
 

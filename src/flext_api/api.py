@@ -12,9 +12,9 @@ from __future__ import annotations
 
 from typing import ClassVar, Self
 
-from flext_core import r, s
 from flext_core.runtime import FlextRuntime
 
+from flext import r, s
 from flext_api.client import FlextApiClient
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
@@ -88,7 +88,7 @@ class FlextApi(s[FlextApiSettings]):
     ) -> r[FlextApiSettings]:
         """Execute FlextService interface."""
         if kwargs:
-            self.logger.info(f"Execute called with kwargs: {kwargs}")
+            self.logger.info("Execute called with kwargs: %s", kwargs)
         config = (
             self._config
             if isinstance(self._config, FlextApiSettings)

@@ -6,9 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger
-from flext_core.typings import t
+from flext import t
 
+from flext import FlextLogger
 from flext_api.protocols import FlextApiProtocols as api_protocols
 
 
@@ -20,7 +20,7 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
         self.logger = FlextLogger(__name__)
 
     def _convert_kwargs_to_context(
-        self, kwargs: dict[str, object]
+        self, kwargs: dict[str, object],
     ) -> dict[str, t.GeneralValueType]:
         """Convert kwargs to context dict for logger compatibility."""
         context: dict[str, t.GeneralValueType] = {}
