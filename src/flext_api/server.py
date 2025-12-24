@@ -21,13 +21,15 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from fastapi import FastAPI
-from flext import FlextLogger,
+from flext_core import (
+    FlextLogger,
     FlextRuntime,
     FlextService,
     e,
     r,
     u,
-    x
+    x,
+)
 
 from flext_api.constants import c
 from flext_api.protocols import p
@@ -174,7 +176,9 @@ class FlextApiServer(FlextService[object], x.Validation):
                         connection.close()
                 except Exception as e:
                     self._logger.warning(
-                        "Failed to close WebSocket %s: %s", conn_id, e,
+                        "Failed to close WebSocket %s: %s",
+                        conn_id,
+                        e,
                         conn_id=str(conn_id),
                         error=str(e),
                     )
@@ -185,7 +189,9 @@ class FlextApiServer(FlextService[object], x.Validation):
                         connection.close()
                 except Exception as e:
                     self._logger.warning(
-                        "Failed to close SSE %s: %s", conn_id, e,
+                        "Failed to close SSE %s: %s",
+                        conn_id,
+                        e,
                         conn_id=str(conn_id),
                         error=str(e),
                     )
@@ -523,7 +529,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)  # type: ignore[arg-type]
+            normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:
@@ -547,7 +553,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)  # type: ignore[arg-type]
+            normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:
@@ -571,7 +577,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)  # type: ignore[arg-type]
+            normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:
@@ -595,7 +601,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)  # type: ignore[arg-type]
+            normalized = FlextRuntime.normalize_to_general_value(v)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:

@@ -15,9 +15,9 @@ import time
 from typing import Self
 from urllib.parse import ParseResult, urlparse
 
+from flext_core import FlextModels
 from pydantic import Field, computed_field, field_validator
 
-from flext import FlextModels
 from flext_api.constants import c
 from flext_api.typings import t
 from flext_api.utilities import u
@@ -409,8 +409,8 @@ class FlextApiModels(FlextModels):
                 return k.lower() == name.lower()
 
             keys_to_remove = u.Collection.filter(
-                list(self.headers.keys()),  # type: ignore[arg-type]
-                matches_header_key,  # type: ignore[arg-type]
+                list(self.headers.keys()),
+                matches_header_key,
             )
             updated_headers = {
                 k: v for k, v in self.headers.items() if k not in keys_to_remove

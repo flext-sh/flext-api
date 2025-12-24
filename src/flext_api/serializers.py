@@ -18,11 +18,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import cbor2
-import msgpack  # type: ignore[import-untyped]
+import msgpack
 import orjson
+from flext_core import FlextService, r
 from flext_core.loggings import FlextLogger
 
-from flext import FlextService, r
 from flext_api.constants import FlextApiConstants
 from flext_api.protocols import p
 
