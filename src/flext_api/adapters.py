@@ -12,8 +12,8 @@ from __future__ import annotations
 
 import cbor2
 import msgpack  # type: ignore[import-untyped]
-from flext_core import r
 
+from flext import r
 from flext_api.models import FlextApiModels
 from flext_api.typings import t
 
@@ -192,7 +192,7 @@ class FlextApiAdapters:
                     if result.is_success:
                         return result
                     return r[t.JsonObject | FlextApiModels.HttpRequest].fail(
-                        result.error or "Adaptation failed"
+                        result.error or "Adaptation failed",
                     )
                 return r[t.JsonObject | FlextApiModels.HttpRequest].ok(
                     request,
@@ -217,7 +217,7 @@ class FlextApiAdapters:
                     if result.is_success:
                         return result
                     return r[FlextApiModels.HttpResponse | t.JsonObject].fail(
-                        result.error or "Adaptation failed"
+                        result.error or "Adaptation failed",
                     )
                 if isinstance(response, FlextApiModels.HttpResponse):
                     return r[FlextApiModels.HttpResponse | t.JsonObject].ok(

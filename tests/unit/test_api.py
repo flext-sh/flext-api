@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from flext_core import FlextResult
+from flext import FlextResult
 
 from flext_api.api import FlextApi
 from flext_api.models import FlextApiModels

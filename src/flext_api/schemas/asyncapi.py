@@ -19,8 +19,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import override
 
-from flext_core import r, u
-
+from flext import r, u
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import t
 

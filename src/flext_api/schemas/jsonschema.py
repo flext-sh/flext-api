@@ -18,8 +18,7 @@ from __future__ import annotations
 
 from typing import cast
 
-from flext_core import r, t
-
+from flext import r, t
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import t as t_api
 
@@ -346,7 +345,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         # Type reconstruction: narrow and assign to explicit type
         # Cast to JsonValue to match type signature
         items_field_typed: dict[str, t.JsonValue] = cast(
-            "dict[str, t.JsonValue]", items_field
+            "dict[str, t.JsonValue]", items_field,
         )
         for i, item in enumerate(instance):
             # Cast to JsonValue to match validate_instance signature

@@ -8,8 +8,9 @@ from enum import StrEnum
 from typing import Annotated, TypeIs
 from urllib.parse import urlparse
 
-from flext_core import r, u
 from pydantic import BeforeValidator
+
+from flext import r, u
 
 # Local constants to avoid circular import with constants.py
 MAX_HOSTNAME_LENGTH: int = 253
@@ -260,12 +261,12 @@ class FlextApiUtilities(u):
             result: dict[str, object] = {}
 
             if hasattr(config, "default_page_size"):
-                result["default_page_size"] = getattr(config, "default_page_size")
+                result["default_page_size"] = config.default_page_size
             else:
                 result["default_page_size"] = 20
 
             if hasattr(config, "max_page_size"):
-                result["max_page_size"] = getattr(config, "max_page_size")
+                result["max_page_size"] = config.max_page_size
             else:
                 result["max_page_size"] = 1000
 

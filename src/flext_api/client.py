@@ -15,8 +15,8 @@ import json
 from typing import Self
 
 import httpx
-from flext_core import FlextRuntime, r, s
 
+from flext import FlextRuntime, r, s
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
 from flext_api.settings import FlextApiSettings
@@ -94,7 +94,7 @@ class FlextApiClient(s[FlextApiSettings]):
     ) -> r[FlextApiSettings]:
         """Execute FlextService interface - return configuration."""
         if kwargs:
-            self.logger.info(f"Execute called with kwargs: {kwargs}")
+            self.logger.info("Execute called with kwargs: %s", kwargs)
         return r[FlextApiSettings].ok(self._get_config())
 
     @property

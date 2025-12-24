@@ -16,7 +16,7 @@ import json
 import httpx
 import pytest
 import pytest_httpx
-from flext_core import FlextResult
+from flext import FlextResult
 
 from flext_api import FlextApi, FlextApiClient, FlextApiModels, FlextApiSettings
 

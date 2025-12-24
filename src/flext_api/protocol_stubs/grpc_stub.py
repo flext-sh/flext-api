@@ -11,6 +11,8 @@ Features (Placeholder):
 - Server implementation
 - Streaming support
 
+Note: Protocols are centralized in protocols.py -> p.Api.Grpc.*
+
 See TRANSFORMATION_PLAN.md - Phase 8 for implementation details.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -20,10 +22,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Protocol
+from flext import FlextLogger
 
-from flext_core import r
-from flext_core.loggings import FlextLogger
+from flext import r
+from flext_api.protocols import p
 
 
 class GrpcChannel:
@@ -331,36 +333,8 @@ class GrpcMethod:
         return self._request_streaming and self._response_streaming
 
 
-class GrpcServiceProtocol(Protocol):
-    """Protocol for gRPC service implementations.
-
-    This protocol defines the interface that gRPC services should implement
-    when flext-grpc is integrated.
-    """
-
-    def register_methods(self) -> list[GrpcMethod]:
-        """Register service methods.
-
-        Returns:
-        List of method descriptors
-
-        """
-        ...
-
-    def handle_request(
-        self,
-        request: GrpcRequest,
-    ) -> r[GrpcResponse]:
-        """Handle gRPC request.
-
-        Args:
-        request: gRPC request
-
-        Returns:
-        FlextResult containing response or error
-
-        """
-        ...
+# Protocol reference from centralized protocols.py for backward compatibility
+GrpcServiceProtocol = p.Api.Grpc.GrpcServiceProtocol
 
 
 __all__ = [

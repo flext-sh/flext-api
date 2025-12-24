@@ -10,18 +10,11 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Protocol
 
+from flext_api.protocols import p
 
-class HttpResourceProtocol(Protocol):
-    """Protocol for HTTP resources that can be managed."""
-
-    def close(self) -> None:
-        """Close the resource synchronously."""
-        ...
-
-    async def aclose(self) -> None:
-        """Close the resource asynchronously."""
+# Protocol reference for backward compatibility
+HttpResourceProtocol = p.Api.Lifecycle.HttpResourceProtocol
 
 
 class FlextApiLifecycleManager:
@@ -39,13 +32,13 @@ class FlextApiLifecycleManager:
             yield resource
         finally:
             if hasattr(resource, "aclose") and callable(
-                getattr(resource, "aclose", None)
+                getattr(resource, "aclose", None),
             ):
-                await getattr(resource, "aclose")()
+                await resource.aclose()
             elif hasattr(resource, "close") and callable(
-                getattr(resource, "close", None)
+                getattr(resource, "close", None),
             ):
-                getattr(resource, "close")()
+                resource.close()
 
     @staticmethod
     def manage_sync_http_resource(resource: object) -> object:
@@ -54,9 +47,9 @@ class FlextApiLifecycleManager:
             return resource
         finally:
             if hasattr(resource, "close") and callable(
-                getattr(resource, "close", None)
+                getattr(resource, "close", None),
             ):
-                getattr(resource, "close")()
+                resource.close()
 
 
 __all__ = [

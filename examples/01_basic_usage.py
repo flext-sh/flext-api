@@ -10,8 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextConstants
-
+from flext import FlextConstants
 from flext_api import (
     FlextApi,
     FlextApiModels,

@@ -21,17 +21,16 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from fastapi import FastAPI
-from flext_core import (
-    FlextLogger,
+from flext import FlextLogger,
     FlextRuntime,
     FlextService,
     e,
     r,
     u,
-    x,
-)
+    x
 
 from flext_api.constants import c
+from flext_api.protocols import p
 from flext_api.typings import t
 
 
@@ -48,7 +47,7 @@ class FlextApiServer(FlextService[object], x.Validation):
     """
 
     # Type annotations for dynamically-set fields (using object.__setattr__)
-    _protocol_handlers: dict[str, t.Api.ProtocolHandler]
+    _protocol_handlers: dict[str, p.Api.Server.ProtocolHandler]
     _middleware_pipeline: list[Callable[..., object]]
 
     class RouteRegistry:
@@ -175,7 +174,7 @@ class FlextApiServer(FlextService[object], x.Validation):
                         connection.close()
                 except Exception as e:
                     self._logger.warning(
-                        f"Failed to close WebSocket {conn_id}: {e}",
+                        "Failed to close WebSocket %s: %s", conn_id, e,
                         conn_id=str(conn_id),
                         error=str(e),
                     )
@@ -186,7 +185,7 @@ class FlextApiServer(FlextService[object], x.Validation):
                         connection.close()
                 except Exception as e:
                     self._logger.warning(
-                        f"Failed to close SSE {conn_id}: {e}",
+                        "Failed to close SSE %s: %s", conn_id, e,
                         conn_id=str(conn_id),
                         error=str(e),
                     )
@@ -319,7 +318,7 @@ class FlextApiServer(FlextService[object], x.Validation):
             self,
             middleware_pipeline: list[Callable[..., object]],
             routes: dict[str, t.Api.RouteData],
-            protocol_handlers: dict[str, t.ProtocolHandler],
+            protocol_handlers: dict[str, p.Api.Server.ProtocolHandler],
         ) -> r[bool]:
             """Start server with complete initialization pipeline."""
             if self._is_running:
@@ -461,7 +460,7 @@ class FlextApiServer(FlextService[object], x.Validation):
     def register_protocol_handler(
         self,
         protocol: str,
-        handler: t.ProtocolHandler,
+        handler: p.Api.Server.ProtocolHandler,
     ) -> r[bool]:
         """Register protocol handler with Flext validation."""
         # Validate protocol name using utilities directly

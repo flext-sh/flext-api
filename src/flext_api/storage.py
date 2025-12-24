@@ -24,38 +24,11 @@ import json
 import time
 from typing import Self, override
 
-from flext_core import FlextService, r, u
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
+from flext import FlextService, r, u
+from flext_api.models import m
 from flext_api.typings import t
-
-
-class _StorageMetadata(BaseModel):
-    """Internal metadata for stored values (using Pydantic for validation)."""
-
-    value: object
-    timestamp: str
-    ttl: int | None = None
-    created_at: float = Field(default_factory=time.time)
-
-    def is_expired(self) -> bool:
-        """Check if entry has expired using Pydantic-validated TTL."""
-        if self.ttl is None:
-            return False
-        elapsed = time.time() - self.created_at
-        return elapsed > self.ttl
-
-
-class _StorageStats(BaseModel):
-    """Storage statistics using Pydantic (automatic validation)."""
-
-    total_operations: int = 0
-    cache_hits: int = 0
-    cache_misses: int = 0
-    hit_ratio: float = 0.0
-    storage_size: int = 0
-    memory_usage: int = 0
-    namespace: str = "flext"
 
 
 class FlextApiStorage(FlextService[bool]):
@@ -81,7 +54,7 @@ class FlextApiStorage(FlextService[bool]):
     # Type annotations for dynamically-set fields
     _storage: dict[str, t.JsonValue]
     _expiry_times: dict[str, float]
-    _stats: _StorageStats
+    _stats: m.Storage.Stats
     _operations_count: int
     _created_at: str
 
@@ -114,7 +87,7 @@ class FlextApiStorage(FlextService[bool]):
         object.__setattr__(self, "_expiry_times", {})
 
         # Metrics using Pydantic model
-        object.__setattr__(self, "_stats", _StorageStats(namespace=self._namespace))
+        object.__setattr__(self, "_stats", m.Storage.Stats(namespace=self._namespace))
         object.__setattr__(self, "_operations_count", 0)
         object.__setattr__(self, "_created_at", u.Generators.generate_iso_timestamp())
 
@@ -372,7 +345,7 @@ class FlextApiStorage(FlextService[bool]):
 
         # Use Pydantic model for metadata validation
         try:
-            metadata = _StorageMetadata(
+            metadata = m.Storage.Metadata(
                 value=value,
                 timestamp=u.Generators.generate_iso_timestamp(),
                 ttl=ttl_val,
@@ -394,7 +367,7 @@ class FlextApiStorage(FlextService[bool]):
         value_json: t.JsonValue = (
             metadata.value
             if isinstance(
-                metadata.value, (str, int, float, bool, type(None), dict, list)
+                metadata.value, (str, int, float, bool, type(None), dict, list),
             )
             else str(metadata.value)
         )
@@ -464,7 +437,7 @@ class FlextApiStorage(FlextService[bool]):
                 except (ValueError, TypeError):
                     created_at_float = 0.0
 
-            metadata = _StorageMetadata(
+            metadata = m.Storage.Metadata(
                 value=data.get("value"),
                 timestamp=str(data.get("timestamp", "")),
                 ttl=ttl_int,
@@ -484,7 +457,7 @@ class FlextApiStorage(FlextService[bool]):
         except Exception as e:
             # Log cleanup errors but continue - cache functionality is preserved
             self.logger.warning(
-                f"Failed to cleanup expired cache entry: {e}",
+                "Failed to cleanup expired cache entry: %s", e,
                 error=str(e),
             )
             return r[object].fail(f"Error processing key: {key}")

@@ -1,11 +1,13 @@
-"""FlextApi constants - Advanced type-safe constants using StrEnum + Pydantic 2 patterns.
+"""FlextApi constants - Pure constants using StrEnum + Pydantic 2 patterns.
 
 FLEXT-API domain constants with FlextCore integration. Uses advanced Python 3.13+ features:
 - StrEnum for type-safe enumerations with Pydantic 2 validation
 - PEP 695 type aliases for strict Literal types
 - Nested classes for logical grouping
 - Collections.abc for immutable collections
-- TypeIs and TypeGuard for advanced type narrowing
+
+NOTE: Validation/TypeGuard methods are in utilities.py, not here.
+Constants classes contain ONLY pure constant definitions.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -13,14 +15,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from enum import StrEnum
 from types import MappingProxyType
-from typing import Final, Literal, TypeGuard, TypeIs
+from typing import Final, Literal
 
-from flext_core import FlextConstants, FlextUtilities, r
-
-# Use FlextUtilities directly (not flext_api.utilities.u) to avoid circular import
+from flext import FlextConstants
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: DEFINITIVE PATTERN FOR FLEXT-API
@@ -194,56 +194,6 @@ class FlextApiConstants(FlextConstants):
             ContentType.TEXT,
         ]
         """Content types compatible with JSON serialization."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # TYPEIS + TYPEGUARD: Advanced type narrowing (Python 3.13+ PEP 742)
-        # ═══════════════════════════════════════════════════════════════════
-
-        @classmethod
-        def is_valid_method(cls, value: str) -> TypeIs[Method]:
-            """TypeIs for HTTP Method validation - narrowing in if/else."""
-            return FlextUtilities.Enum.is_member(cls.Method, value)
-
-        @classmethod
-        def is_active_method(cls, value: str) -> TypeGuard[ActiveMethods]:
-            """TypeGuard for active method subset."""
-            return value in {
-                cls.Method.GET.value,
-                cls.Method.POST.value,
-                cls.Method.PUT.value,
-                cls.Method.DELETE.value,
-            }
-
-        @classmethod
-        def is_safe_method(cls, value: str) -> TypeGuard[SafeMethods]:
-            """TypeGuard for safe method subset."""
-            return value in {
-                cls.Method.GET.value,
-                cls.Method.HEAD.value,
-                cls.Method.OPTIONS.value,
-                cls.Method.TRACE.value,
-            }
-
-        @classmethod
-        def is_terminal_status(cls, value: str) -> TypeIs[Status]:
-            """TypeIs for terminal status validation."""
-            if isinstance(value, cls.Status):
-                return value in {
-                    cls.Status.COMPLETED,
-                    cls.Status.FAILED,
-                    cls.Status.ERROR,
-                }
-            return value in {"completed", "failed", "error"}
-
-        @classmethod
-        def is_success_status(cls, value: str) -> TypeGuard[SuccessStatuses]:
-            """TypeGuard for success status subset."""
-            return value in {cls.Status.SUCCESS.value, cls.Status.COMPLETED.value}
-
-        @classmethod
-        def is_json_compatible(cls, value: str) -> TypeGuard[JsonCompatibleTypes]:
-            """TypeGuard for JSON-compatible content types."""
-            return value in {cls.ContentType.JSON.value, cls.ContentType.TEXT.value}
 
         # ═══════════════════════════════════════════════════════════════════
         # IMMUTABLE COLLECTIONS: frozenset for O(1) validation
@@ -437,35 +387,6 @@ class FlextApiConstants(FlextConstants):
             "LOCALHOST_BASE_URL": "https://localhost:8000",
         })
         """URL configuration mapping."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # UTILITY METHODS: Advanced validation with u
-        # ═══════════════════════════════════════════════════════════════════
-
-        @classmethod
-        def validate_method_with_result(cls, value: str) -> r[Method]:
-            """Validate HTTP method using FlextUtilities.Enum.parse."""
-            return FlextUtilities.Enum.parse(cls.Method, value)
-
-        @classmethod
-        def validate_status_with_result(cls, value: str) -> r[Status]:
-            """Validate status using FlextUtilities.Enum.parse."""
-            return FlextUtilities.Enum.parse(cls.Status, value)
-
-        @classmethod
-        def validate_content_type_with_result(cls, value: str) -> r[ContentType]:
-            """Validate content type using FlextUtilities.Enum.parse."""
-            return FlextUtilities.Enum.parse(cls.ContentType, value)
-
-        @classmethod
-        def create_method_validator(cls) -> Callable[[str], Method]:
-            """Create BeforeValidator for HTTP Method in Pydantic models."""
-            return FlextUtilities.Enum.coerce_validator(cls.Method)
-
-        @classmethod
-        def create_status_validator(cls) -> Callable[[str], Status]:
-            """Create BeforeValidator for Status in Pydantic models."""
-            return FlextUtilities.Enum.coerce_validator(cls.Status)
 
         # ═══════════════════════════════════════════════════════════════════
         # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)

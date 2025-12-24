@@ -21,9 +21,9 @@ import time
 from collections.abc import Callable
 
 import websockets
-from flext_core import r
 from pydantic import ConfigDict
 
+from flext import r
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 from flext_api.typings import t
@@ -382,7 +382,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
             # Close connection
             if self._connection and hasattr(self._connection, "close"):
-                getattr(self._connection, "close")()
+                self._connection.close()
 
             self._connected = False
             self._connection = None
@@ -549,12 +549,12 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 if isinstance(message, bytes):
                     message = message.decode("utf-8")
                 if hasattr(self._connection, "send"):
-                    getattr(self._connection, "send")(message)
+                    self._connection.send(message)
             elif message_type == FlextApiConstants.WebSocket.MessageType.BINARY:
                 if isinstance(message, str):
                     message = message.encode("utf-8")
                 if hasattr(self._connection, "send"):
-                    getattr(self._connection, "send")(message)
+                    self._connection.send(message)
             else:
                 return r[bool].fail(f"Invalid message type: {message_type}")
 
@@ -573,7 +573,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         while self._connected and self._connection:
             try:
                 if hasattr(self._connection, "recv"):
-                    message = getattr(self._connection, "recv")()
+                    message = self._connection.recv()
                 else:
                     message = None
 
