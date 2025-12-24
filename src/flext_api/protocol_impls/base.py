@@ -10,12 +10,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext import FlextRuntime, FlextService, r
+from flext_core import FlextRuntime, FlextService, r
+
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import t
 
 
-class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):  # type: ignore[misc]
+class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
     """Base class for all protocol implementations.
 
     Defines the standard interface and patterns that all protocol implementations
@@ -59,7 +60,7 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol): 
         service_kwargs: dict[str, t.GeneralValueType] = {}
         for k, v in kwargs.items():
             if k not in {"name", "version", "description"}:
-                service_kwargs[k] = FlextRuntime.normalize_to_general_value(v)  # type: ignore[arg-type]
+                service_kwargs[k] = FlextRuntime.normalize_to_general_value(v)
 
         # Initialize FlextService first (establishes logger property from x)
         FlextService.__init__(self, **service_kwargs)

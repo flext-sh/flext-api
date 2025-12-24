@@ -11,9 +11,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import cbor2
-import msgpack  # type: ignore[import-untyped]
+import msgpack
+from flext_core import r
 
-from flext import r
 from flext_api.models import FlextApiModels
 from flext_api.typings import t
 

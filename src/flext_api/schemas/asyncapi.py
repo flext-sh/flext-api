@@ -19,7 +19,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import override
 
-from flext import r, u
+from flext_core import r, u
+
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import t
 
@@ -108,11 +109,11 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
         # Use u.filter() for unified filtering (DSL pattern)
         missing_fields = u.Collection.filter(
-            list(required_fields),  # type: ignore[arg-type]
-            lambda field: field not in schema,  # type: ignore[arg-type]
+            list(required_fields),
+            lambda field: field not in schema,
         )
         if missing_fields:
-            return r[bool].fail(f"Missing required fields: {', '.join(missing_fields)}")  # type: ignore[arg-type]
+            return r[bool].fail(f"Missing required fields: {', '.join(missing_fields)}")
         return r[bool].ok(True)
 
     def _validate_info_object(self, schema: dict[str, object]) -> r[dict[str, object]]:
@@ -129,11 +130,11 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         # Use u.filter() for unified filtering (DSL pattern)
         info_missing = u.Collection.filter(
             list(info_required),
-            lambda field: field not in info,  # type: ignore[arg-type]
+            lambda field: field not in info,
         )
         if info_missing:
             return r[dict[str, object]].fail(
-                f"Missing required info fields: {', '.join(info_missing)}",  # type: ignore[arg-type]
+                f"Missing required info fields: {', '.join(info_missing)}",
             )
         return r[dict[str, object]].ok(info)
 

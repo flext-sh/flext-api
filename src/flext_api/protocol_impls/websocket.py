@@ -21,9 +21,9 @@ import time
 from collections.abc import Callable
 
 import websockets
+from flext_core import r
 from pydantic import ConfigDict
 
-from flext import r
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
 from flext_api.typings import t
@@ -276,7 +276,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         # Convert request to JsonValue dict to match method signature
         json_request = dict(request.items())
         message_result = self._extract_message(
-            json_request,  # type: ignore[arg-type]
+            json_request,
             kwargs,
         )
         if message_result.is_failure:
@@ -288,7 +288,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         # Connect if not connected
         # Convert request to JsonValue dict to match method signature
-        connect_result = self._ensure_connected(json_request)  # type: ignore[arg-type]
+        connect_result = self._ensure_connected(json_request)
         if connect_result.is_failure:
             return r[dict[str, object]].fail(
                 f"WebSocket connection failed: {connect_result.error}",

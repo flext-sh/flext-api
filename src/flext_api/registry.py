@@ -16,7 +16,7 @@ from typing import cast
 
 from flext import FlextDispatcher,
     FlextRegistry,
-    r
+    r,
 from flext_core.protocols import p
 
 from flext_api.plugins import FlextApiPlugins
