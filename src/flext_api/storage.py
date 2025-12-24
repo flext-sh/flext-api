@@ -24,9 +24,9 @@ import json
 import time
 from typing import Self, override
 
+from flext_core import FlextService, r, u
 from pydantic import BaseModel, ConfigDict
 
-from flext import FlextService, r, u
 from flext_api.models import m
 from flext_api.typings import t
 
@@ -367,7 +367,8 @@ class FlextApiStorage(FlextService[bool]):
         value_json: t.JsonValue = (
             metadata.value
             if isinstance(
-                metadata.value, (str, int, float, bool, type(None), dict, list),
+                metadata.value,
+                (str, int, float, bool, type(None), dict, list),
             )
             else str(metadata.value)
         )
@@ -457,7 +458,8 @@ class FlextApiStorage(FlextService[bool]):
         except Exception as e:
             # Log cleanup errors but continue - cache functionality is preserved
             self.logger.warning(
-                "Failed to cleanup expired cache entry: %s", e,
+                "Failed to cleanup expired cache entry: %s",
+                e,
                 error=str(e),
             )
             return r[object].fail(f"Error processing key: {key}")
@@ -509,10 +511,10 @@ class FlextApiStorage(FlextService[bool]):
             return not k.startswith(f"{self._namespace}:")
 
         filtered_keys = u.Collection.filter(
-            list(self._storage.keys()),  # type: ignore[arg-type]
-            key_not_namespaced,  # type: ignore[arg-type]
+            list(self._storage.keys()),
+            key_not_namespaced,
         )
-        return r[list[str]].ok(list(filtered_keys))  # type: ignore[arg-type]
+        return r[list[str]].ok(list(filtered_keys))
 
     def items(self) -> r[list[tuple[str, object]]]:
         """Get all key-value pairs."""

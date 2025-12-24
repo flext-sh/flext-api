@@ -24,9 +24,7 @@ from __future__ import annotations
 
 import json
 
-from flext import FlextLogger
-
-from flext import r
+from flext import FlextLogger, r
 from flext_api.protocols import p
 
 

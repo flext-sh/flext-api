@@ -10,9 +10,8 @@ from __future__ import annotations
 from typing import Self
 
 import httpx
-from flext import FlextLogger
 
-from flext import r
+from flext import FlextLogger, r
 from flext_api import FlextApiConstants, FlextApiModels, p
 from flext_api.typings import t
 
