@@ -45,9 +45,6 @@ class FlextApiSerializers(FlextService[bool]):
             )
         return r[bool].ok(True)
 
-    # Protocol reference for backward compatibility
-    SerializerProtocol = p.Api.Serialization.SerializerProtocol
-
     class JSONSerializer:
         """JSON serializer using orjson for performance.
 
@@ -230,7 +227,7 @@ class FlextApiSerializers(FlextService[bool]):
         def __init__(self) -> None:
             """Initialize serializer registry."""
             self.logger = FlextLogger(__name__)
-            self._serializers: dict[str, FlextApiSerializers.SerializerProtocol] = {}
+            self._serializers: dict[str, p.Api.Serialization.SerializerProtocol] = {}
             self._default_format = FlextApiConstants.Api.HttpSerializationFormat.JSON
 
             # Register default serializers
@@ -250,7 +247,7 @@ class FlextApiSerializers(FlextService[bool]):
         def register_serializer(
             self,
             format_type: FlextApiConstants.Api.HttpSerializationFormat | str,
-            serializer: FlextApiSerializers.SerializerProtocol,
+            serializer: p.Api.Serialization.SerializerProtocol,
         ) -> r[bool]:
             """Register serializer for format.
 
@@ -292,7 +289,7 @@ class FlextApiSerializers(FlextService[bool]):
         def get_serializer(
             self,
             format_type: FlextApiConstants.Api.HttpSerializationFormat | str,
-        ) -> r[FlextApiSerializers.SerializerProtocol]:
+        ) -> r[p.Api.Serialization.SerializerProtocol]:
             """Get serializer for format or content-type.
 
             Tries to find serializer by format first, then by content-type.
