@@ -16,8 +16,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
-
 from flext_core import r, u
 
 from flext_api.plugins import FlextApiPlugins
@@ -74,7 +72,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_openapi_version(
         self,
-        schema: dict[str, t.JsonValue],
+        schema: t.JsonObject,
     ) -> r[str]:
         """Validate OpenAPI version field."""
         if "openapi" not in schema:
@@ -92,66 +90,55 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_info_field(
         self,
-        schema: dict[str, t.JsonValue],
-    ) -> r[t.JsonObject]:
-        """Validate info field in schema."""
+        schema: t.JsonObject,
+    ) -> r[bool]:
+        """Validate info field exists and has required fields.
+
+        Single Responsibility: Only validates, does not extract or transform data.
+        Caller accesses schema["info"] directly after validation passes.
+        """
         if "info" not in schema:
-            return r[t.JsonObject].fail("Missing 'info' field in schema")
+            return r[bool].fail("Missing 'info' field in schema")
 
         info_value = schema["info"]
         if not isinstance(info_value, dict):
-            return r[t.JsonObject].fail("'info' field must be a dictionary")
+            return r[bool].fail("'info' field must be a dictionary")
 
-        # Type narrowing: after isinstance check, build as JsonObject
-        info_dict: t.JsonObject = {}
-        for k, v in info_value.items():
-            # Values are already JsonValue from dict
-            info_dict[k] = cast("t.JsonValue", v)
+        # Validate required fields
         info_required = ["title", "version"]
-        # Use u.filter() for unified filtering (DSL pattern)
         info_missing = u.Collection.filter(
             list(info_required),
-            lambda field: field not in info_dict,
+            lambda field: field not in info_value,
         )
         if info_missing:
-            return r[t.JsonObject].fail(
+            return r[bool].fail(
                 f"Missing required info fields: {', '.join(info_missing)}",
             )
 
-        return r[t.JsonObject].ok(info_dict)
+        return r[bool].ok(True)
 
     def _validate_paths_field(
         self,
-        schema: dict[str, t.JsonValue],
-    ) -> r[t.JsonObject]:
-        """Validate paths field in schema."""
+        schema: t.JsonObject,
+    ) -> r[bool]:
+        """Validate paths field exists and contains valid path definitions.
+
+        Single Responsibility: Only validates, does not extract or transform data.
+        Caller accesses schema["paths"] directly after validation passes.
+        """
         if "paths" not in schema:
-            return r[t.JsonObject].fail("Missing 'paths' field in schema")
+            return r[bool].fail("Missing 'paths' field in schema")
 
         paths_value = schema["paths"]
         if not isinstance(paths_value, dict):
-            return r[t.JsonObject].fail(
-                "'paths' field must be a dictionary",
-            )
+            return r[bool].fail("'paths' field must be a dictionary")
 
-        # Type reconstruction: convert JsonValue dict to object dict for method call
-        paths_as_obj: dict[str, object] = dict(paths_value.items())
-        paths_result = self._validate_paths(paths_as_obj)
-        if paths_result.is_failure:
-            return r[t.JsonObject].fail(
-                f"Path validation failed: {paths_result.error}",
-            )
-
-        # Type narrowing: iterative assignment avoids dict() constructor overload issues
-        paths_dict: t.JsonObject = {}
-        for k, v in paths_value.items():
-            # Values are already JsonValue from dict
-            paths_dict[k] = cast("t.JsonValue", v)
-        return r[t.JsonObject].ok(paths_dict)
+        # Delegate to detailed path validation
+        return self._validate_paths(paths_value)
 
     def _validate_optional_components(
         self,
-        schema: dict[str, t.JsonValue],
+        schema: t.JsonObject,
     ) -> r[bool]:
         """Validate optional components and security schemes."""
         if "components" not in schema:
@@ -192,9 +179,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
         """
         # Validate OpenAPI version
-        version_result = self._validate_openapi_version(
-            cast("dict[str, t.JsonValue]", schema)
-        )
+        version_result = self._validate_openapi_version(schema)
         if version_result.is_failure:
             return r[t.JsonObject].fail(
                 version_result.error or "Version validation failed",
@@ -213,43 +198,44 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             )
 
         # Validate info object
-        info_result = self._validate_info_field(cast("dict[str, t.JsonValue]", schema))
+        info_result = self._validate_info_field(schema)
         if info_result.is_failure:
-            return info_result
-        info = info_result.value
+            return r[t.JsonObject].fail(info_result.error or "Info validation failed")
 
         # Validate paths
-        paths_result = self._validate_paths_field(
-            cast("dict[str, t.JsonValue]", schema)
-        )
+        paths_result = self._validate_paths_field(schema)
         if paths_result.is_failure:
-            return paths_result
-        paths_dict = paths_result.value
+            return r[t.JsonObject].fail(paths_result.error or "Paths validation failed")
 
         # Validate optional components
-        components_result = self._validate_optional_components(
-            cast("dict[str, t.JsonValue]", schema)
-        )
+        components_result = self._validate_optional_components(schema)
         if components_result.is_failure:
             return r[t.JsonObject].fail(
                 components_result.error or "Components validation failed",
             )
 
+        # Access validated schema data directly - no extraction needed
+        info_value = schema["info"]
+        paths_value = schema["paths"]
+
+        # Extract title from validated info (we know it exists after validation)
         title_str = ""
-        if "title" in info:
-            title_value = info["title"]
-            title_str = (
-                str(title_value)
-                if isinstance(title_value, (str, int, float, bool))
-                else ""
-            )
+        if isinstance(info_value, dict) and "title" in info_value:
+            title_raw = info_value["title"]
+            if isinstance(title_raw, (str, int, float, bool)):
+                title_str = str(title_raw)
+
+        # Get paths keys from validated paths
+        paths_keys: list[str] = []
+        if isinstance(paths_value, dict):
+            paths_keys = list(paths_value.keys())
 
         self.logger.info(
             "OpenAPI schema validation successful",
             extra={
                 "version": version_result.value,
                 "title": title_str,
-                "paths_count": len(paths_dict),
+                "paths_count": len(paths_keys),
             },
         )
 
@@ -257,7 +243,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             "valid": True,
             "version": version_result.value,
             "title": title_str,
-            "paths": list(paths_dict.keys()),
+            "paths": paths_keys,
         })
 
     def _validate_paths(self, paths: dict[str, object]) -> r[bool]:

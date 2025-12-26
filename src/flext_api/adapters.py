@@ -10,8 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
-
 import cbor2
 import msgpack
 from flext_core import r
@@ -69,45 +67,31 @@ class FlextApiAdapters:
         @staticmethod
         def adapt_websocket_message_to_http_response(
             message: t.JsonObject,
-        ) -> r[FlextApiModels.HttpResponse | t.JsonObject]:
-            """Adapt WebSocket message to HTTP response."""
+        ) -> r[FlextApiModels.HttpResponse]:
+            """Adapt WebSocket message to HTTP response.
+
+            Uses Pydantic 2 model_validate() for dict-to-Model conversion.
+            Model validators handle type coercion automatically.
+            """
             try:
-                # Convert WebSocket message to HTTP response
-                status_code_value: int = 200
-                if "status" in message:
-                    status_raw = message["status"]
-                    if isinstance(status_raw, int):
-                        status_code_value = status_raw
-
-                body: t.JsonObject = {}
-                if "body" in message:
-                    body_value = message["body"]
-                    if isinstance(body_value, dict):
-                        # Type narrowing: build dict with proper iteration
-                        for k, v in body_value.items():
-                            # Values are already JsonValue from JsonObject
-                            body[k] = cast("t.JsonValue", v)
-
-                headers: dict[str, str] = {}
-                if "headers" in message:
-                    headers_value = message["headers"]
-                    if isinstance(headers_value, dict):
-                        # Type narrowing: convert dict values to str
-                        headers = {
-                            k: str(v) if not isinstance(v, str) else v
-                            for k, v in headers_value.items()
-                        }
-
-                return r[FlextApiModels.HttpResponse | t.JsonObject].ok(
-                    FlextApiModels.create_response(
-                        status_code=status_code_value,
-                        body=body,
-                        headers=headers,
-                    ),
+                # Extract headers with proper type narrowing
+                headers_raw = message.get("headers")
+                headers = (
+                    {str(k): str(v) for k, v in headers_raw.items()}
+                    if isinstance(headers_raw, dict)
+                    else {}
                 )
 
+                # Pydantic 2 model_validate for dict→Model conversion
+                response = FlextApiModels.HttpResponse.model_validate({
+                    "status_code": message.get("status", 200),
+                    "headers": headers,
+                    "body": message.get("body"),
+                })
+                return r[FlextApiModels.HttpResponse].ok(response)
+
             except Exception as e:
-                return r[FlextApiModels.HttpResponse | t.JsonObject].fail(
+                return r[FlextApiModels.HttpResponse].fail(
                     f"WebSocket to HTTP adaptation failed: {e}",
                 )
 
@@ -209,28 +193,23 @@ class FlextApiAdapters:
         def transform_response_for_protocol(
             response: t.JsonObject | FlextApiModels.HttpResponse,
             source_protocol: str,
-        ) -> r[FlextApiModels.HttpResponse | t.JsonObject]:
-            """Transform response for specific protocol."""
+        ) -> r[FlextApiModels.HttpResponse]:
+            """Transform response for specific protocol.
+
+            Returns HttpResponse Model for all protocols - consistent return type.
+            """
             try:
                 if source_protocol == "websocket" and isinstance(response, dict):
-                    result = FlextApiAdapters.HttpProtocol.adapt_websocket_message_to_http_response(
+                    return FlextApiAdapters.HttpProtocol.adapt_websocket_message_to_http_response(
                         response,
-                    )
-                    if result.is_success:
-                        return result
-                    return r[FlextApiModels.HttpResponse | t.JsonObject].fail(
-                        result.error or "Adaptation failed",
                     )
                 if isinstance(response, FlextApiModels.HttpResponse):
-                    return r[FlextApiModels.HttpResponse | t.JsonObject].ok(
-                        response,
-                    )
-                return r[FlextApiModels.HttpResponse | t.JsonObject].fail(
-                    "Invalid response type",
-                )
+                    return r[FlextApiModels.HttpResponse].ok(response)
+
+                return r[FlextApiModels.HttpResponse].fail("Invalid response type")
 
             except Exception as e:
-                return r[FlextApiModels.HttpResponse | t.JsonObject].fail(
+                return r[FlextApiModels.HttpResponse].fail(
                     f"Response transformation failed: {e}",
                 )
 

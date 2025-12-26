@@ -24,7 +24,6 @@ import time
 import uuid
 from collections import deque
 from collections.abc import Callable
-from typing import cast
 
 from flext_core import (
     FlextContainer,
@@ -136,9 +135,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         """
         if kwargs:
-            self.logger.info(
-                "Execute called with kwargs: %s", cast("t.GeneralValueType", kwargs)
-            )
+            self.logger.info("Execute called with kwargs: %s", kwargs)
         return r[object].ok(True)
 
     def register_event_handler(
@@ -502,9 +499,9 @@ class FlextWebhookHandler(FlextService[object]):
         self.logger.info(
             "Retrying event",
             extra={
-                "event_id": cast("t.GeneralValueType", event["id"]),
-                "attempt": cast("t.GeneralValueType", event["attempts"]),
-                "delay": cast("t.GeneralValueType", delay),
+                "event_id": str(event["id"]),
+                "attempt": str(event["attempts"]),
+                "delay": delay,
             },
         )
 

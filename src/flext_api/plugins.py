@@ -93,9 +93,9 @@ class FlextApiPlugins:
         @abstractmethod
         def send_request(
             self,
-            request: dict[str, object],
-            **kwargs: object,
-        ) -> r[dict[str, object]]:
+            request: t.JsonObject,
+            **kwargs: t.GeneralValueType,
+        ) -> r[t.JsonObject]:
             """Send request using this protocol."""
             ...
 
@@ -130,7 +130,7 @@ class FlextApiPlugins:
             ...
 
         @abstractmethod
-        def load_schema(self, schema_source: str) -> r[object]:
+        def load_schema(self, schema_source: str) -> r[t.GeneralValueType]:
             """Load schema from source."""
             ...
 
@@ -146,21 +146,21 @@ class FlextApiPlugins:
         """Abstract transport plugin for network communication."""
 
         @abstractmethod
-        def connect(self, url: str, **options: object) -> r[bool]:
+        def connect(self, url: str, **options: t.GeneralValueType) -> r[bool]:
             """Establish connection to endpoint."""
             ...
 
         @abstractmethod
-        def disconnect(self, connection: object) -> r[bool]:
+        def disconnect(self, connection: t.GeneralValueType) -> r[bool]:
             """Close connection."""
             ...
 
         @abstractmethod
         def send(
             self,
-            connection: object,
-            data: dict[str, object] | str | bytes,
-            **options: object,
+            connection: t.GeneralValueType,
+            data: t.JsonObject | str | bytes,
+            **options: t.GeneralValueType,
         ) -> r[bool]:
             """Send data through connection."""
             ...
@@ -168,9 +168,9 @@ class FlextApiPlugins:
         @abstractmethod
         def receive(
             self,
-            connection: object,
-            **options: object,
-        ) -> r[dict[str, object] | str | bytes]:
+            connection: t.GeneralValueType,
+            **options: t.GeneralValueType,
+        ) -> r[t.JsonObject | str | bytes]:
             """Receive data from connection."""
             ...
 
@@ -212,9 +212,10 @@ class FlextApiPlugins:
 
         def refresh_credentials(
             self,
-            _credentials: t.JsonObject,
+            credentials: t.JsonObject,
         ) -> r[t.JsonObject]:
             """Refresh authentication credentials."""
+            _ = credentials  # Mark as intentionally unused
             return r[t.JsonObject].fail(
                 "Refresh not supported by this plugin",
             )

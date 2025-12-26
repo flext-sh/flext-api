@@ -26,7 +26,6 @@ from pydantic import ConfigDict
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
-from flext_api.typings import t
 
 # Asyncio utilities
 # Synchronous alternatives for async functionality
@@ -206,7 +205,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     def _extract_message(
         self,
-        request: t.JsonObject,
+        request: dict[str, object],
         kwargs: dict[str, object],
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
@@ -217,9 +216,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             if message_value is not None:
                 return r[str | bytes].ok(str(message_value))
 
-        # Type narrowing: convert JsonObject to dict[str, object]
-        request_dict: dict[str, object] = dict(request.items())
-        body = self._extract_body(request_dict)
+        body = self._extract_body(request)
         if body is not None:
             if isinstance(body, (str, bytes)):
                 return r[str | bytes].ok(body)
@@ -237,20 +234,18 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 return str(message_type_value)
         return FlextApiConstants.WebSocket.MessageType.TEXT
 
-    def _ensure_connected(self, request: t.JsonObject) -> r[bool]:
+    def _ensure_connected(self, request: dict[str, object]) -> r[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
             return r[bool].ok(True)
 
-        # Type narrowing: convert JsonObject to dict[str, object]
-        req_dict: dict[str, object] = dict(request.items())
         # Use RFC method to extract URL
-        url_result = self._extract_url(req_dict)
+        url_result = self._extract_url(request)
         if url_result.is_failure:
             return r[bool].fail(url_result.error or "URL extraction failed")
 
         # Use RFC method to extract headers
-        headers = self._extract_headers(req_dict)
+        headers = self._extract_headers(request)
 
         return self._connect(url_result.value, headers)
 
@@ -273,12 +268,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             return r[dict[str, object]].fail("Request must be a dictionary")
 
         # Extract WebSocket-specific parameters
-        # Convert request to JsonValue dict to match method signature
-        json_request = dict(request.items())
-        message_result = self._extract_message(
-            json_request,
-            kwargs,
-        )
+        message_result = self._extract_message(request, kwargs)
         if message_result.is_failure:
             return r[dict[str, object]].fail(
                 message_result.error or "Message extraction failed",
@@ -287,8 +277,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         message_type = self._extract_message_type(kwargs)
 
         # Connect if not connected
-        # Convert request to JsonValue dict to match method signature
-        connect_result = self._ensure_connected(json_request)
+        connect_result = self._ensure_connected(request)
         if connect_result.is_failure:
             return r[dict[str, object]].fail(
                 f"WebSocket connection failed: {connect_result.error}",

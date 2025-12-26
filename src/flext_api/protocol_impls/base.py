@@ -12,15 +12,18 @@ from __future__ import annotations
 
 from flext_core import FlextRuntime, FlextService, r
 
-from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import t
 
 
-class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
+class BaseProtocolImplementation(FlextService[bool]):
     """Base class for all protocol implementations.
 
     Defines the standard interface and patterns that all protocol implementations
     must follow. All protocol implementations extend this class.
+
+    This class structurally implements FlextApiPlugins.Protocol without explicit
+    inheritance to avoid MRO conflicts with FlextService[bool]. All required
+    Protocol methods are implemented here.
 
     Responsibilities:
     - Standardize initialization patterns
@@ -38,6 +41,12 @@ class BaseProtocolImplementation(FlextService[bool], FlextApiPlugins.Protocol):
     6. Follow railway-oriented error handling
 
     """
+
+    # Protocol metadata fields (set via object.__setattr__ in __init__)
+    name: str
+    version: str
+    description: str
+    _initialized: bool
 
     def __init__(
         self,
