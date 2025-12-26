@@ -312,7 +312,7 @@ class FlextApiSerializers(FlextService[bool]):
 
             # Try by format key first
             if format_key in self._serializers:
-                return r[FlextApiSerializers.SerializerProtocol].ok(
+                return r[p.Api.Serialization.SerializerProtocol].ok(
                     self._serializers[format_key],
                 )
 
@@ -322,16 +322,16 @@ class FlextApiSerializers(FlextService[bool]):
                     serializer.content_type
                     == format_key.split(";", maxsplit=1)[0].strip().lower()
                 ):
-                    return r[FlextApiSerializers.SerializerProtocol].ok(serializer)
+                    return r[p.Api.Serialization.SerializerProtocol].ok(serializer)
 
-            return r[FlextApiSerializers.SerializerProtocol].fail(
+            return r[p.Api.Serialization.SerializerProtocol].fail(
                 f"No serializer registered for format: {format_key}",
             )
 
         def get_serializer_by_content_type(
             self,
             content_type: str,
-        ) -> r[FlextApiSerializers.SerializerProtocol]:
+        ) -> r[p.Api.Serialization.SerializerProtocol]:
             """Get serializer by content type.
 
             Args:
@@ -347,9 +347,9 @@ class FlextApiSerializers(FlextService[bool]):
                     serializer.content_type
                     == content_type.split(";", maxsplit=1)[0].strip().lower()
                 ):
-                    return r[FlextApiSerializers.SerializerProtocol].ok(serializer)
+                    return r[p.Api.Serialization.SerializerProtocol].ok(serializer)
 
-            return r[FlextApiSerializers.SerializerProtocol].fail(
+            return r[p.Api.Serialization.SerializerProtocol].fail(
                 f"No serializer found for content type: {content_type}",
             )
 

@@ -110,7 +110,7 @@ class TestsFlextApiConstants(FlextTestsConstants, FlextApiConstants):
 
 # Short aliases per FLEXT convention
 tc = TestsFlextApiConstants  # Primary test constants alias
-c = TestsFlextApiConstants   # Alternative alias for compatibility
+c = TestsFlextApiConstants  # Alternative alias for compatibility
 
 __all__ = [
     "TestsFlextApiConstants",

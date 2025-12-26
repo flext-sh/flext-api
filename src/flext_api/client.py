@@ -213,7 +213,7 @@ class FlextApiClient(s[FlextApiSettings]):
 
     @staticmethod
     def _serialize_body(
-        body: t.RequestBody,
+        body: t.Api.RequestBody,
     ) -> r[bytes]:
         """Serialize request body to bytes - no None, empty dict is valid."""
         # Empty dict serializes to empty bytes
@@ -234,7 +234,7 @@ class FlextApiClient(s[FlextApiSettings]):
     @staticmethod
     def _deserialize_body(
         response: httpx.Response,
-    ) -> r[t.ResponseBody]:
+    ) -> r[t.Api.ResponseBody]:
         """Deserialize response body based on content-type."""
         # Check content-type to prioritize deserialization
         content_type = response.headers.get("content-type", "").lower()
@@ -272,60 +272,60 @@ class FlextApiClient(s[FlextApiSettings]):
         if bytes_result.is_success:
             return bytes_result.map(lambda v: v)
 
-        return r[t.ResponseBody].fail(
+        return r[t.Api.ResponseBody].fail(
             "Failed to deserialize response body: no valid format found",
         )
 
     @staticmethod
     def _deserialize_json(
         response: httpx.Response,
-    ) -> r[t.ResponseBody]:
+    ) -> r[t.Api.ResponseBody]:
         """Deserialize response as JSON."""
         try:
             json_data = response.json()
             # ResponseBody = JsonObject | str | bytes
             if isinstance(json_data, dict):
-                return r[t.ResponseBody].ok(json_data)
+                return r[t.Api.ResponseBody].ok(json_data)
             if isinstance(json_data, str):
-                return r[t.ResponseBody].ok(json_data)
+                return r[t.Api.ResponseBody].ok(json_data)
             if isinstance(json_data, bytes):
-                return r[t.ResponseBody].ok(json_data)
+                return r[t.Api.ResponseBody].ok(json_data)
             # Convert other types to dict (JsonObject)
-            return r[t.ResponseBody].ok({"value": json_data})
+            return r[t.Api.ResponseBody].ok({"value": json_data})
         except (AttributeError, ValueError, TypeError, Exception) as e:
-            return r[t.ResponseBody].fail(
+            return r[t.Api.ResponseBody].fail(
                 f"JSON deserialization failed: {e}",
             )
 
     @staticmethod
     def _deserialize_text(
         response: httpx.Response,
-    ) -> r[t.ResponseBody]:
+    ) -> r[t.Api.ResponseBody]:
         """Deserialize response as text."""
         if not hasattr(response, "text"):
-            return r[t.ResponseBody].fail(
+            return r[t.Api.ResponseBody].fail(
                 "Response does not have text attribute",
             )
         if not isinstance(response.text, str):
-            return r[t.ResponseBody].fail(
+            return r[t.Api.ResponseBody].fail(
                 f"Response text is not a string: {type(response.text)}",
             )
-        return r[t.ResponseBody].ok(response.text)
+        return r[t.Api.ResponseBody].ok(response.text)
 
     @staticmethod
     def _deserialize_bytes(
         response: httpx.Response,
-    ) -> r[t.ResponseBody]:
+    ) -> r[t.Api.ResponseBody]:
         """Deserialize response as bytes."""
         if not hasattr(response, "content"):
-            return r[t.ResponseBody].fail(
+            return r[t.Api.ResponseBody].fail(
                 "Response does not have content attribute",
             )
         if not isinstance(response.content, bytes):
-            return r[t.ResponseBody].fail(
+            return r[t.Api.ResponseBody].fail(
                 f"Response content is not bytes: {type(response.content)}",
             )
-        return r[t.ResponseBody].ok(response.content)
+        return r[t.Api.ResponseBody].ok(response.content)
 
 
 __all__ = ["FlextApiClient"]

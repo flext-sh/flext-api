@@ -176,10 +176,8 @@ class FlextApiServer(FlextService[object], x.Validation):
                         connection.close()
                 except Exception as e:
                     self._logger.warning(
-                        "Failed to close WebSocket %s: %s",
+                        "Failed to close WebSocket %s",
                         conn_id,
-                        e,
-                        conn_id=str(conn_id),
                         error=str(e),
                     )
 
@@ -189,10 +187,8 @@ class FlextApiServer(FlextService[object], x.Validation):
                         connection.close()
                 except Exception as e:
                     self._logger.warning(
-                        "Failed to close SSE %s: %s",
+                        "Failed to close SSE %s",
                         conn_id,
-                        e,
-                        conn_id=str(conn_id),
                         error=str(e),
                     )
 
@@ -594,7 +590,7 @@ class FlextApiServer(FlextService[object], x.Validation):
     def register_graphql_endpoint(
         self,
         path: str = "/graphql",
-        schema: t.SchemaValue | None = None,
+        schema: t.Api.SchemaValue | None = None,
         **options: object,
     ) -> r[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
@@ -672,7 +668,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         return self._lifecycle_manager.port
 
     @property
-    def routes(self) -> dict[str, t.RouteData]:
+    def routes(self) -> dict[str, t.Api.RouteData]:
         """Get registered routes."""
         return self._route_registry.routes
 

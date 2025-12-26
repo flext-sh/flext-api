@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 import cbor2
 import msgpack
 from flext_core import r
@@ -84,7 +86,7 @@ class FlextApiAdapters:
                         # Type narrowing: build dict with proper iteration
                         for k, v in body_value.items():
                             # Values are already JsonValue from JsonObject
-                            body[k] = v
+                            body[k] = cast("t.JsonValue", v)
 
                 headers: dict[str, str] = {}
                 if "headers" in message:

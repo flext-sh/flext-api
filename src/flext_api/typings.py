@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 
 from flext_core import FlextTypes
 
@@ -27,10 +27,10 @@ class FlextApiTypes(FlextTypes):
     """
 
     # Core type aliases for forward reference resolution
-    type JsonValue = (
+    type ApiJsonValue = (
         str | int | float | bool | None | Sequence[object] | Mapping[str, object]
     )
-    type JsonObject = dict[str, JsonValue]
+    type JsonObject = dict[str, ApiJsonValue]
 
     class Api:
         """API types namespace for cross-project access.

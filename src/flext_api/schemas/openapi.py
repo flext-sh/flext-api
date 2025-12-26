@@ -16,6 +16,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 from flext_core import r, u
 
 from flext_api.plugins import FlextApiPlugins
@@ -104,7 +106,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         info_dict: t.JsonObject = {}
         for k, v in info_value.items():
             # Values are already JsonValue from dict
-            info_dict[k] = v
+            info_dict[k] = cast("t.JsonValue", v)
         info_required = ["title", "version"]
         # Use u.filter() for unified filtering (DSL pattern)
         info_missing = u.Collection.filter(
@@ -144,7 +146,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         paths_dict: t.JsonObject = {}
         for k, v in paths_value.items():
             # Values are already JsonValue from dict
-            paths_dict[k] = v
+            paths_dict[k] = cast("t.JsonValue", v)
         return r[t.JsonObject].ok(paths_dict)
 
     def _validate_optional_components(
@@ -190,7 +192,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
         """
         # Validate OpenAPI version
-        version_result = self._validate_openapi_version(schema)
+        version_result = self._validate_openapi_version(
+            cast("dict[str, t.JsonValue]", schema)
+        )
         if version_result.is_failure:
             return r[t.JsonObject].fail(
                 version_result.error or "Version validation failed",
@@ -209,19 +213,23 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             )
 
         # Validate info object
-        info_result = self._validate_info_field(schema)
+        info_result = self._validate_info_field(cast("dict[str, t.JsonValue]", schema))
         if info_result.is_failure:
             return info_result
         info = info_result.value
 
         # Validate paths
-        paths_result = self._validate_paths_field(schema)
+        paths_result = self._validate_paths_field(
+            cast("dict[str, t.JsonValue]", schema)
+        )
         if paths_result.is_failure:
             return paths_result
         paths_dict = paths_result.value
 
         # Validate optional components
-        components_result = self._validate_optional_components(schema)
+        components_result = self._validate_optional_components(
+            cast("dict[str, t.JsonValue]", schema)
+        )
         if components_result.is_failure:
             return r[t.JsonObject].fail(
                 components_result.error or "Components validation failed",
