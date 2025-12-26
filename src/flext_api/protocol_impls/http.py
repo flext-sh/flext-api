@@ -132,7 +132,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         # Extract body using RFC method with type narrowing
         body_value = self._extract_body(request)
         # HttpRequest.body expects RequestBody type (JsonObject | str | bytes)
-        body: t.RequestBody
+        body: t.Api.RequestBody
         if body_value is not None:
             if isinstance(body_value, (dict, str, bytes)):
                 body = body_value
@@ -224,7 +224,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         headers: dict[str, str],
         params: dict[str, str],
         timeout: float | None,
-        body: t.RequestBody | None,
+        body: t.Api.RequestBody | None,
     ) -> dict[str, object]:
         """Build request kwargs based on body type."""
         kwargs: dict[str, object] = {
@@ -292,7 +292,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         headers: dict[str, str],
         params: dict[str, str],
         timeout: float | None,
-        body: t.RequestBody | None,
+        body: t.Api.RequestBody | None,
     ) -> r[FlextApiModels.HttpResponse]:
         """Execute HTTP request with retry logic."""
         last_error = "Unknown error"

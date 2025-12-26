@@ -10,7 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.schemas import (
+
+
     AsyncAPISchemaValidator,
     JSONSchemaValidator,
     OpenAPISchemaValidator,

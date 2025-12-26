@@ -385,7 +385,7 @@ class FlextApiStorage(FlextService[bool]):
             self._expiry_times[key] = time.time() + ttl_val
 
         self._operations_count += 1
-        self._stats.total_operations = self._operations_count
+        setattr(self._stats, "total_operations", self._operations_count)
         return r[bool].ok(True)
 
     def get(self, key: str) -> r[object]:
@@ -399,7 +399,7 @@ class FlextApiStorage(FlextService[bool]):
         # Try direct key first
         if key in self._storage:
             value = self._storage[key]
-            self._stats.cache_hits += 1
+            setattr(self._stats, "cache_hits", self._stats.cache_hits + 1)
             return r[object].ok(value)
 
         # Try namespaced key
@@ -409,7 +409,7 @@ class FlextApiStorage(FlextService[bool]):
             if result.is_success:
                 return result
 
-        self._stats.cache_misses += 1
+        setattr(self._stats, "cache_misses", self._stats.cache_misses + 1)
         return r[object].fail(f"Key not found: {key}")
 
     def _process_namespaced_entry(self, namespaced_key: str, key: str) -> r[object]:
@@ -445,7 +445,7 @@ class FlextApiStorage(FlextService[bool]):
                 created_at=created_at_float,
             )
             if not metadata.is_expired():
-                self._stats.cache_hits += 1
+                setattr(self._stats, "cache_hits", self._stats.cache_hits + 1)
                 return r[object].ok(metadata.value)
 
             # Clean up expired entry
@@ -458,8 +458,7 @@ class FlextApiStorage(FlextService[bool]):
         except Exception as e:
             # Log cleanup errors but continue - cache functionality is preserved
             self.logger.warning(
-                "Failed to cleanup expired cache entry: %s",
-                e,
+                "Failed to cleanup expired cache entry",
                 error=str(e),
             )
             return r[object].fail(f"Error processing key: {key}")
@@ -630,12 +629,14 @@ class FlextApiStorage(FlextService[bool]):
         """Get storage metrics using Pydantic stats model."""
         try:
             # Update stats using Pydantic model
-            self._stats.storage_size = len(self._storage)
+            setattr(self._stats, "storage_size", len(self._storage))
             if self._stats.total_operations > 0:
-                self._stats.hit_ratio = (
-                    self._stats.cache_hits / self._stats.total_operations
+                setattr(
+                    self._stats,
+                    "hit_ratio",
+                    self._stats.cache_hits / self._stats.total_operations,
                 )
-            self._stats.memory_usage = len(str(self._storage))
+            setattr(self._stats, "memory_usage", len(str(self._storage)))
 
             # Direct field access instead of model_dump
             stats_dict: dict[str, t.JsonValue] = {

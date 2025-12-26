@@ -11,7 +11,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api import __version__, __version_info__
-from flext_api.__version__ import (
+
+
     __version__ as version_module_version,
     __version_info__ as version_module_version_info,
 )
