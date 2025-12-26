@@ -22,19 +22,6 @@ from typing import Final, Literal
 
 from flext_core import FlextConstants
 
-# ═══════════════════════════════════════════════════════════════════════════
-# STRENUM + PYDANTIC 2: DEFINITIVE PATTERN FOR FLEXT-API
-# ═══════════════════════════════════════════════════════════════════════════
-
-# FUNDAMENTAL PRINCIPLE: StrEnum + Pydantic 2 = Automatic Validation!
-# - No need to create separate Literal for validation
-# - No need to create frozenset for validation
-# - No need to create AfterValidator
-# - Pydantic automatically validates against StrEnum
-
-# SUBSETS: Use Literal[Status.MEMBER] to accept only SOME values.
-# This references the enum member, does not duplicate strings!
-
 
 class FlextApiConstants(FlextConstants):
     """FlextApi domain constants extending FlextConstants.
@@ -164,35 +151,15 @@ class FlextApiConstants(FlextConstants):
         # Use to accept only SOME enum values in methods
         # References StrEnum members directly - NO string duplication!
 
-        type ActiveMethods = Literal[
-            Method.GET,
-            Method.POST,
-            Method.PUT,
-            Method.DELETE,
-        ]
+        type ActiveMethods = Literal["GET", "POST", "PUT", "DELETE"]
         """Active HTTP methods for operations."""
-        type SafeMethods = Literal[
-            Method.GET,
-            Method.HEAD,
-            Method.OPTIONS,
-            Method.TRACE,
-        ]
+        type SafeMethods = Literal["GET", "HEAD", "OPTIONS", "TRACE"]
         """Safe HTTP methods (no side effects)."""
-        type TerminalStatuses = Literal[
-            Status.COMPLETED,
-            Status.FAILED,
-            Status.ERROR,
-        ]
+        type TerminalStatuses = Literal["completed", "failed", "error"]
         """Terminal operation statuses."""
-        type SuccessStatuses = Literal[
-            Status.SUCCESS,
-            Status.COMPLETED,
-        ]
+        type SuccessStatuses = Literal["success", "completed"]
         """Success operation statuses."""
-        type JsonCompatibleTypes = Literal[
-            ContentType.JSON,
-            ContentType.TEXT,
-        ]
+        type JsonCompatibleTypes = Literal["application/json", "text/plain"]
         """Content types compatible with JSON serialization."""
 
         # ═══════════════════════════════════════════════════════════════════
@@ -394,47 +361,36 @@ class FlextApiConstants(FlextConstants):
         # All Literal types reference StrEnum members - NO string duplication!
 
         type MethodLiteral = Literal[
-            Method.GET,
-            Method.POST,
-            Method.PUT,
-            Method.DELETE,
-            Method.PATCH,
-            Method.HEAD,
-            Method.OPTIONS,
-            Method.CONNECT,
-            Method.TRACE,
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH",
+            "HEAD",
+            "OPTIONS",
+            "CONNECT",
+            "TRACE",
         ]
-        """HTTP method literal - references Method StrEnum members."""
+        """HTTP method literal - string values matching Method StrEnum."""
 
         type StatusLiteral = Literal[
-            Status.IDLE,
-            Status.PENDING,
-            Status.RUNNING,
-            Status.COMPLETED,
-            Status.FAILED,
-            Status.ERROR,
-            Status.SUCCESS,
+            "idle", "pending", "running", "completed", "failed", "error", "success"
         ]
-        """Status literal - references Status StrEnum members."""
+        """Status literal - string values matching Status StrEnum."""
 
         type ContentTypeLiteral = Literal[
-            ContentType.JSON,
-            ContentType.XML,
-            ContentType.TEXT,
-            ContentType.HTML,
-            ContentType.FORM,
-            ContentType.MULTIPART,
-            ContentType.OCTET_STREAM,
+            "application/json",
+            "application/xml",
+            "text/plain",
+            "text/html",
+            "application/x-www-form-urlencoded",
+            "multipart/form-data",
+            "application/octet-stream",
         ]
-        """Content type literal - references ContentType StrEnum members."""
+        """Content type literal - string values matching ContentType StrEnum."""
 
-        type SerializationFormatLiteral = Literal[
-            HttpSerializationFormat.JSON,
-            HttpSerializationFormat.MSGPACK,
-            HttpSerializationFormat.CBOR,
-            HttpSerializationFormat.CUSTOM,
-        ]
-        """Serialization format literal - references HttpSerializationFormat StrEnum members."""
+        type SerializationFormatLiteral = Literal["json", "msgpack", "cbor", "custom"]
+        """Serialization format literal - string values matching HttpSerializationFormat StrEnum."""
 
         # ═══════════════════════════════════════════════════════════════════
         # ADDITIONAL DOMAIN CLASSES: HTTP, Server, etc. (restaurados)

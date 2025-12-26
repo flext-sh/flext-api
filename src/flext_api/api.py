@@ -152,7 +152,7 @@ class FlextApi(s[FlextApiSettings]):
 
     def _finalize_body(
         self,
-        body_value: object,
+        body_value: t.GeneralValueType,
     ) -> t.Api.RequestBody:
         """Finalize body value to RequestBody type.
 
@@ -193,8 +193,8 @@ class FlextApi(s[FlextApiSettings]):
         r[HttpResponse]: Response or error.
 
         """
-        # Type narrowing: convert RequestKwargs to dict[str, object] | None
-        request_kwargs_dict: dict[str, object] | None = (
+        # Type narrowing: convert RequestKwargs to dict[str, t.GeneralValueType] | None
+        request_kwargs_dict: dict[str, t.GeneralValueType] | None = (
             dict(request_kwargs.items()) if request_kwargs is not None else None
         )
         # Extract body using monadic pattern

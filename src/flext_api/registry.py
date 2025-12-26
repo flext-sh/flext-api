@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, cast
+from typing import ClassVar
 
 from flext_core import FlextRegistry, r
 from flext_core.protocols import p
@@ -67,11 +67,11 @@ class FlextApiRegistry(FlextRegistry):
     def get_protocol(self, name: str) -> r[FlextApiPlugins.Protocol]:
         """Get registered protocol plugin by name."""
         result = self.get_plugin(self.PROTOCOLS, name)
-        if result.is_success:
-            return r[FlextApiPlugins.Protocol].ok(
-                cast("FlextApiPlugins.Protocol", result.value)
-            )
-        return r[FlextApiPlugins.Protocol].fail(result.error)
+        if result.is_success and isinstance(result.value, FlextApiPlugins.Protocol):
+            return r[FlextApiPlugins.Protocol].ok(result.value)
+        if result.is_failure:
+            return r[FlextApiPlugins.Protocol].fail(result.error)
+        return r[FlextApiPlugins.Protocol].fail("Plugin is not a Protocol type")
 
     def list_protocols(self) -> r[list[str]]:
         """List all registered protocol names."""
@@ -94,11 +94,11 @@ class FlextApiRegistry(FlextRegistry):
     def get_schema(self, name: str) -> r[FlextApiPlugins.Schema]:
         """Get registered schema plugin by name."""
         result = self.get_plugin(self.SCHEMAS, name)
-        if result.is_success:
-            return r[FlextApiPlugins.Schema].ok(
-                cast("FlextApiPlugins.Schema", result.value)
-            )
-        return r[FlextApiPlugins.Schema].fail(result.error)
+        if result.is_success and isinstance(result.value, FlextApiPlugins.Schema):
+            return r[FlextApiPlugins.Schema].ok(result.value)
+        if result.is_failure:
+            return r[FlextApiPlugins.Schema].fail(result.error)
+        return r[FlextApiPlugins.Schema].fail("Plugin is not a Schema type")
 
     def list_schemas(self) -> r[list[str]]:
         """List all registered schema system names."""
@@ -121,11 +121,11 @@ class FlextApiRegistry(FlextRegistry):
     def get_transport(self, name: str) -> r[FlextApiPlugins.Transport]:
         """Get registered transport plugin by name."""
         result = self.get_plugin(self.TRANSPORTS, name)
-        if result.is_success:
-            return r[FlextApiPlugins.Transport].ok(
-                cast("FlextApiPlugins.Transport", result.value)
-            )
-        return r[FlextApiPlugins.Transport].fail(result.error)
+        if result.is_success and isinstance(result.value, FlextApiPlugins.Transport):
+            return r[FlextApiPlugins.Transport].ok(result.value)
+        if result.is_failure:
+            return r[FlextApiPlugins.Transport].fail(result.error)
+        return r[FlextApiPlugins.Transport].fail("Plugin is not a Transport type")
 
     def list_transports(self) -> r[list[str]]:
         """List all registered transport names."""
@@ -148,11 +148,15 @@ class FlextApiRegistry(FlextRegistry):
     def get_auth_provider(self, name: str) -> r[FlextApiPlugins.Authentication]:
         """Get registered authentication provider by name."""
         result = self.get_plugin(self.AUTH_PROVIDERS, name)
-        if result.is_success:
-            return r[FlextApiPlugins.Authentication].ok(
-                cast("FlextApiPlugins.Authentication", result.value)
-            )
-        return r[FlextApiPlugins.Authentication].fail(result.error)
+        if result.is_success and isinstance(
+            result.value, FlextApiPlugins.Authentication
+        ):
+            return r[FlextApiPlugins.Authentication].ok(result.value)
+        if result.is_failure:
+            return r[FlextApiPlugins.Authentication].fail(result.error)
+        return r[FlextApiPlugins.Authentication].fail(
+            "Plugin is not an Authentication type"
+        )
 
     def list_auth_providers(self) -> r[list[str]]:
         """List all registered authentication provider names."""

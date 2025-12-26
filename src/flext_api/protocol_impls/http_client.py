@@ -12,7 +12,9 @@ from typing import Self
 import httpx
 from flext_core import FlextLogger, r
 
-from flext_api import FlextApiConstants, FlextApiModels, p
+from flext_api.constants import FlextApiConstants
+from flext_api.models import FlextApiModels
+from flext_api.protocols import p
 from flext_api.typings import t
 
 

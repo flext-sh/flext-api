@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -61,6 +62,7 @@ class TestFlextWebTransport:
         result = transport.connect("https://api.example.com")
 
         assert result.is_failure
+        assert result.error is not None
         assert "Connection failed" in result.error
 
     def test_disconnect_when_connected(self, transport: FlextApiTransports.FlextWebTransport) -> None:
@@ -127,6 +129,7 @@ class TestFlextWebTransport:
         result = transport.send(other_client, {"method": "GET", "url": "/test"})
 
         assert result.is_failure
+        assert result.error is not None
         assert "Connection must be an httpx.Client" in result.error
 
     def test_send_no_connection(self, transport: FlextApiTransports.FlextWebTransport) -> None:
@@ -134,13 +137,14 @@ class TestFlextWebTransport:
         result = transport.send(None, {"method": "GET", "url": "/test"})
 
         assert result.is_failure
+        assert result.error is not None
         assert "Connection must be an httpx.Client" in result.error
 
     def test_extract_request_params_with_method_and_url(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test parameter extraction with method and URL."""
         data = {"method": "POST", "url": "/api/test"}
 
-        result = transport._extract_request_params(data)
+        result = transport._extract_request_params(cast("dict[str, object]", data))
 
         assert result.is_success
         method, url, headers, params, json_data, content = result.value
@@ -153,11 +157,12 @@ class TestFlextWebTransport:
 
     def test_extract_request_params_minimal(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test parameter extraction with minimal data."""
-        data = {}
+        data: dict[str, object] = {}
 
         result = transport._extract_request_params(data)
 
         assert result.is_failure
+        assert result.error is not None
         assert "URL is required" in result.error
 
 
@@ -169,6 +174,7 @@ class TestWebSocketTransport:
         transport = FlextApiTransports.WebSocketTransport()
         result = transport.connect("ws://example.com")
         assert result.is_failure
+        assert result.error is not None
         assert "WebSocket transport not implemented" in result.error
 
     def test_disconnect_returns_not_implemented(self) -> None:
@@ -176,6 +182,7 @@ class TestWebSocketTransport:
         transport = FlextApiTransports.WebSocketTransport()
         result = transport.disconnect("dummy_connection")
         assert result.is_failure
+        assert result.error is not None
         assert "WebSocket transport not implemented" in result.error
 
     def test_send_returns_not_implemented(self) -> None:
@@ -183,6 +190,7 @@ class TestWebSocketTransport:
         transport = FlextApiTransports.WebSocketTransport()
         result = transport.send("dummy_connection", {})
         assert result.is_failure
+        assert result.error is not None
         assert "WebSocket transport not implemented" in result.error
 
 

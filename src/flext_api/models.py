@@ -33,7 +33,7 @@ class FlextApiModels(FlextModels):
     Fully compatible with Pydantic v2 with strict type safety and validation.
     """
 
-    def __init_subclass__(cls, **kwargs: object) -> None:
+    def __init_subclass__(cls, **kwargs: t.GeneralValueType) -> None:
         """Warn when FlextApiModels is subclassed directly."""
         super().__init_subclass__(**kwargs)
         u.Deprecation.warn_once(
@@ -71,7 +71,7 @@ class FlextApiModels(FlextModels):
 
         @field_validator("body", mode="before")
         @classmethod
-        def normalize_body(cls, v: object) -> t.Api.RequestBody:
+        def normalize_body(cls, v: t.GeneralValueType) -> t.Api.RequestBody:
             """Normalize body - empty dict is valid."""
             if v is None:
                 return {}
@@ -129,7 +129,7 @@ class FlextApiModels(FlextModels):
 
         @field_validator("body", mode="before")
         @classmethod
-        def normalize_body(cls, v: object) -> t.Api.ResponseBody:
+        def normalize_body(cls, v: t.GeneralValueType) -> t.Api.ResponseBody:
             """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
             if v is None:
                 return None  # Explicit None is valid (e.g., for 204 responses)
@@ -537,7 +537,7 @@ class FlextApiModels(FlextModels):
         class Metadata(FlextModels.Value):
             """Internal metadata for stored values (using Pydantic for validation)."""
 
-            value: object
+            value: t.GeneralValueType
             timestamp: str
             ttl: int | None = None
             created_at: float = Field(default_factory=time.time)

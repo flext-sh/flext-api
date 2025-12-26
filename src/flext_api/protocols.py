@@ -16,6 +16,7 @@ from flext_core import FlextResult as r
 from flext_core.protocols import FlextProtocols
 
 from flext_api.constants import FlextApiConstants
+from flext_api.typings import t
 
 
 class FlextApiProtocols(FlextProtocols):
@@ -60,7 +61,7 @@ class FlextApiProtocols(FlextProtocols):
                     method: FlextApiConstants.Api.Method | str,
                     url: str,
                     **kwargs: object,
-                ) -> r[dict[str, object]]:
+                ) -> r[t.Api.HttpResponseDict]:
                     """Execute an HTTP request."""
                     ...
 
@@ -68,7 +69,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> r[dict[str, object]]:
+                ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP GET request."""
                     ...
 
@@ -76,7 +77,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> r[dict[str, object]]:
+                ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP POST request."""
                     ...
 
@@ -84,7 +85,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> r[dict[str, object]]:
+                ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP PUT request."""
                     ...
 
@@ -92,7 +93,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     url: str,
                     **kwargs: object,
-                ) -> r[dict[str, object]]:
+                ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP DELETE request."""
                     ...
 

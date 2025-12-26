@@ -245,7 +245,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
                     # Convert other types to string representation
                     json_data[key] = str(value)
 
-        web_headers: t.WebHeaders | None = None
+        web_headers: dict[str, str | list[str]] | None = None
         if headers is not None:
             # WebHeaders is dict[str, str | list[str]], convert dict[str, str]
             web_headers = dict(headers)

@@ -30,7 +30,9 @@ class FlextApiTypes(FlextTypes):
     type ApiJsonValue = (
         str | int | float | bool | None | Sequence[object] | Mapping[str, object]
     )
-    type JsonObject = dict[str, ApiJsonValue]
+    type JsonObject = dict[
+        str, str | int | float | bool | None | Sequence[object] | Mapping[str, object]
+    ]
 
     class Api:
         """API types namespace for cross-project access.
@@ -58,31 +60,39 @@ class FlextApiTypes(FlextTypes):
 
         # Reference to top-level JsonObject for namespace consistency
         type JsonObject = FlextApiTypes.JsonObject
-        type WebData = str | bytes | JsonObject
+        type WebData = str | bytes | FlextApiTypes.JsonObject
         type WebHeaders = dict[str, str | list[str]]
         type WebParams = dict[str, str | list[str]]
-        type ResponseList = list[JsonObject]
+        type ResponseList = list[FlextApiTypes.JsonObject]
         type ResponseDict = Mapping[str, FlextTypes.JsonValue]
 
         # =========================================================================
         # HTTP REQUEST/RESPONSE TYPES - Unified request/response types
         # =========================================================================
 
-        type RequestConfig = dict[str, str | int | bool | list[str] | JsonObject]
-        type ResponseConfig = dict[str, FlextTypes.JsonValue | JsonObject]
-        type RequestBody = JsonObject | str | bytes
-        type ResponseBody = JsonObject | str | bytes | None
-        type HttpResponseDict = dict[str, int | str | dict[str, str] | ResponseBody]
+        type RequestConfig = dict[
+            str, str | int | bool | list[str] | FlextApiTypes.JsonObject
+        ]
+        type ResponseConfig = dict[str, FlextTypes.JsonValue | FlextApiTypes.JsonObject]
+        type RequestBody = FlextApiTypes.JsonObject | str | bytes
+        type ResponseBody = FlextApiTypes.JsonObject | str | bytes | None
+        type HttpResponseDict = dict[
+            str, int | str | dict[str, str] | FlextApiTypes.JsonObject | bytes | None
+        ]
         """HTTP response as dictionary (status_code, headers, body, request_id)."""
-        type ValidationResult = dict[str, bool | list[str] | JsonObject]
+        type ValidationResult = dict[str, bool | list[str] | FlextApiTypes.JsonObject]
 
         # =========================================================================
         # ENDPOINT MANAGEMENT TYPES - Route and endpoint configuration
         # =========================================================================
 
-        type EndpointConfig = dict[str, FlextTypes.JsonValue | list[str] | JsonObject]
-        type EndpointMetadata = dict[str, str | int | list[str] | JsonObject]
-        type RouteConfig = dict[str, str | list[str] | JsonObject]
+        type EndpointConfig = dict[
+            str, FlextTypes.JsonValue | list[str] | FlextApiTypes.JsonObject
+        ]
+        type EndpointMetadata = dict[
+            str, str | int | list[str] | FlextApiTypes.JsonObject
+        ]
+        type RouteConfig = dict[str, str | list[str] | FlextApiTypes.JsonObject]
 
         type RouteData = dict[
             str,
@@ -97,22 +107,26 @@ class FlextApiTypes(FlextTypes):
         # Note: ProtocolHandler moved to protocols.py -> p.Api.Server.ProtocolHandler
 
         # Schema types for GraphQL/OpenAPI
-        type SchemaValue = JsonObject | str  # GraphQL schema string or OpenAPI dict
+        type SchemaValue = (
+            FlextApiTypes.JsonObject | str
+        )  # GraphQL schema string or OpenAPI dict
 
         # =========================================================================
         # AUTHENTICATION TYPES - Auth and security configuration
         # =========================================================================
 
-        type AuthConfig = Mapping[str, str | JsonObject]
-        type AuthCredentials = Mapping[str, str | JsonObject]
+        type AuthConfig = Mapping[str, str | FlextApiTypes.JsonObject]
+        type AuthCredentials = Mapping[str, str | FlextApiTypes.JsonObject]
         type AuthTokenData = Mapping[str, FlextTypes.JsonValue | int | bool]
-        type SecurityConfig = Mapping[str, bool | str | list[str] | JsonObject]
+        type SecurityConfig = Mapping[
+            str, bool | str | list[str] | FlextApiTypes.JsonObject
+        ]
 
         # =========================================================================
         # CLIENT TYPES - HTTP client configuration with kwargs
         # =========================================================================
 
-        type ClientConfig = Mapping[str, str | int | JsonObject]
+        type ClientConfig = Mapping[str, str | int | FlextApiTypes.JsonObject]
         type ConnectionPool = Mapping[str, int | bool | Mapping[str, int | bool]]
         type TimeoutConfig = Mapping[str, int | float | Mapping[str, int | float]]
 
@@ -137,8 +151,8 @@ class FlextApiTypes(FlextTypes):
         # PROTOCOL & SCHEMA TYPES - Multi-protocol support
         # =========================================================================
 
-        type ProtocolConfig = dict[str, bool | int | str | JsonObject]
-        type ProtocolMessage = JsonObject | str | bytes
+        type ProtocolConfig = dict[str, bool | int | str | FlextApiTypes.JsonObject]
+        type ProtocolMessage = FlextApiTypes.JsonObject | str | bytes
         type SchemaDefinition = dict[str, FlextTypes.JsonValue]
         type ValidationErrors = list[dict[str, str | FlextTypes.JsonValue]]
 
@@ -149,18 +163,18 @@ class FlextApiTypes(FlextTypes):
         type ServiceConfig = dict[str, dict[str, int | float | str]]
         type ServiceHealth = dict[str, bool | str | int]
 
-        type RequestPipeline = list[JsonObject]
-        type ResponsePipeline = list[JsonObject]
-        type ProcessingResult = dict[str, bool | list[str] | JsonObject]
+        type RequestPipeline = list[FlextApiTypes.JsonObject]
+        type ResponsePipeline = list[FlextApiTypes.JsonObject]
+        type ProcessingResult = dict[str, bool | list[str] | FlextApiTypes.JsonObject]
         # Note: MiddlewareConfig inherited from t (dict[str, object])
 
         # =========================================================================
         # ERROR HANDLING TYPES - Error management and recovery
         # =========================================================================
 
-        type ErrorInfo = dict[str, int | str | JsonObject]
+        type ErrorInfo = dict[str, int | str | FlextApiTypes.JsonObject]
         type ErrorCategory = str
-        type ErrorRecovery = dict[str, str | float | JsonObject]
+        type ErrorRecovery = dict[str, str | float | FlextApiTypes.JsonObject]
         type RetryStrategy = dict[str, int | float | str]
         type CircuitBreaker = dict[str, bool | int | float | str]
 
