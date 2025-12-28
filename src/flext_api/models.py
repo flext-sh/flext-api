@@ -16,6 +16,7 @@ from typing import Self
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels
+from flext_core.models import m
 from pydantic import Field, computed_field, field_validator
 
 from flext_api.constants import c
@@ -45,7 +46,7 @@ class FlextApiModels(FlextModels):
     # HTTP REQUEST/RESPONSE VALUE OBJECTS (Immutable)
     # =========================================================================
 
-    class HttpRequest(FlextModels.Value):
+    class HttpRequest(m.Value):
         """Immutable HTTP request value object.
 
         Represents a complete HTTP request with all necessary parameters.
@@ -105,7 +106,7 @@ class FlextApiModels(FlextModels):
             # Default from Constants
             return c.Api.ContentType.JSON
 
-    class HttpResponse(FlextModels.Value):
+    class HttpResponse(m.Value):
         """Immutable HTTP response value object.
 
         Represents a complete HTTP response with all returned data.
@@ -178,7 +179,7 @@ class FlextApiModels(FlextModels):
     # URL AND PARSING MODELS
     # =========================================================================
 
-    class Url(FlextModels.Value):
+    class Url(m.Value):
         """URL parsing and validation model (immutable value object)."""
 
         url: str = Field(
@@ -249,7 +250,7 @@ class FlextApiModels(FlextModels):
     # CONFIGURATION MODELS
     # =========================================================================
 
-    class ClientConfig(FlextModels.Value):
+    class ClientConfig(m.Value):
         """HTTP client configuration model (immutable value object)."""
 
         base_url: str = Field(
@@ -286,7 +287,7 @@ class FlextApiModels(FlextModels):
     # PAGINATION MODELS
     # =========================================================================
 
-    class PaginationInfo(FlextModels.Value):
+    class PaginationInfo(m.Value):
         """Pagination information model for HTTP operations (immutable value object)."""
 
         page: int = Field(
