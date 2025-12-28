@@ -22,9 +22,9 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Self, override
+from typing import Self, cast, override
 
-from flext_core import FlextService, r, u
+from flext_core import FlextLogger, FlextService, r, u
 from pydantic import BaseModel, ConfigDict
 
 from flext_api.models import m
@@ -75,7 +75,7 @@ class FlextApiStorage(FlextService[bool]):
         """Initialize storage with config using Pydantic."""
         config_obj, storage_kwargs = self._extract_init_params(config, kwargs)
         max_size_val, default_ttl_val = self._extract_storage_kwargs(storage_kwargs)
-        # Type narrowing: convert dict[str, object] to dict[str, t.GeneralValueType]
+        # Type narrowing: dict already uses t.GeneralValueType
         storage_kwargs_typed: dict[str, t.GeneralValueType] = {
             k: v
             for k, v in storage_kwargs.items()
@@ -145,7 +145,7 @@ class FlextApiStorage(FlextService[bool]):
         if hasattr(config_obj, field_name):
             field_value = getattr(config_obj, field_name)
             if field_value is not None:
-                return field_value
+                return cast("t.GeneralValueType", field_value)
         return None
 
     def _convert_to_int(self, value: t.GeneralValueType) -> int | None:
@@ -467,7 +467,7 @@ class FlextApiStorage(FlextService[bool]):
 
         except Exception as e:
             # Log cleanup errors but continue - cache functionality is preserved
-            self.logger.warning(
+            FlextLogger(__name__).warning(
                 "Failed to cleanup expired cache entry",
                 error=str(e),
             )

@@ -540,47 +540,8 @@ class FlextApiConstants(FlextConstants):
     # after the class definition to avoid forward reference issues.
     # The StrEnum types themselves provide type safety and can be used directly.
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # ROOT-LEVEL ALIASES - Compatibility with tests expecting direct access
-    # ═══════════════════════════════════════════════════════════════════════════
-    # These provide direct access to commonly used constants without requiring .Api namespace
-
-    # Configuration constants
-    DEFAULT_TIMEOUT: Final[float] = Api.DEFAULT_TIMEOUT
-    DEFAULT_MAX_RETRIES: Final[int] = Api.DEFAULT_MAX_RETRIES
-    DEFAULT_RETRIES: Final[int] = Api.DEFAULT_RETRIES
-    DEFAULT_USER_AGENT: Final[str] = Api.DEFAULT_USER_AGENT
-    BACKOFF_FACTOR: Final[float] = Api.BACKOFF_FACTOR
-
-    # HTTP status code ranges
-    HTTP_SUCCESS_MIN: Final[int] = Api.HTTP_SUCCESS_MIN
-    HTTP_SUCCESS_MAX: Final[int] = Api.HTTP_SUCCESS_MAX
-    HTTP_REDIRECT_MIN: Final[int] = Api.HTTP_REDIRECT_MIN
-    HTTP_REDIRECT_MAX: Final[int] = Api.HTTP_REDIRECT_MAX
-    HTTP_CLIENT_ERROR_MIN: Final[int] = Api.HTTP_CLIENT_ERROR_MIN
-    HTTP_CLIENT_ERROR_MAX: Final[int] = Api.HTTP_CLIENT_ERROR_MAX
-    HTTP_SERVER_ERROR_MIN: Final[int] = Api.HTTP_SERVER_ERROR_MIN
-    HTTP_ERROR_MIN: Final[int] = Api.HTTP_ERROR_MIN
-
-    # Response templates
-    SUCCESS_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = (
-        Api.SUCCESS_RESPONSE_TEMPLATE
-    )
-    ERROR_RESPONSE_TEMPLATE: Final[Mapping[str, str | None]] = (
-        Api.ERROR_RESPONSE_TEMPLATE
-    )
-
-    # Rate limiting
-    RATE_LIMIT_REQUESTS: Final[int] = Api.RATE_LIMIT_REQUESTS
-    RATE_LIMIT_WINDOW: Final[int] = Api.RATE_LIMIT_WINDOW
-
-    # Protocol classes aliases for direct access
-    HTTPRetry = Api.HTTPRetry
-    SSE = Api.SSE
-    WebSocket = Api.WebSocket
-    GraphQL = Api.GraphQL
-    HTTPClient = Api.HTTPClient
-    HTTP = Api.HTTP
+    # NOTE: Root-level aliases removed per architecture rules.
+    # Always use full namespace: c.Api.DEFAULT_TIMEOUT, c.Api.HTTPRetry, etc.
 
 
 c = FlextApiConstants  # Runtime alias (not TypeAlias to avoid PYI042)

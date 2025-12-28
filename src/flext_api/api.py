@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import ClassVar, Self
 
-from flext_core import r, s
+from flext_core import FlextLogger, r, s
 from flext_core.runtime import FlextRuntime
 
 from flext_api.client import FlextApiClient
@@ -88,7 +88,7 @@ class FlextApi(s[FlextApiSettings]):
     ) -> r[FlextApiSettings]:
         """Execute FlextService interface."""
         if kwargs:
-            self.logger.info("Execute called with kwargs: %s", kwargs)
+            FlextLogger(__name__).info(f"Execute called with kwargs: {kwargs}")
         config = (
             self._config
             if isinstance(self._config, FlextApiSettings)
@@ -152,7 +152,7 @@ class FlextApi(s[FlextApiSettings]):
 
     def _finalize_body(
         self,
-        body_value: t.GeneralValueType,
+        body_value: object,
     ) -> t.Api.RequestBody:
         """Finalize body value to RequestBody type.
 

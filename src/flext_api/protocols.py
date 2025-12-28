@@ -251,7 +251,7 @@ class FlextApiProtocols(FlextProtocols):
                 implement when flext-grpc is integrated.
                 """
 
-                def register_methods(self) -> list[object]:
+                def register_methods(self) -> list[t.GeneralValueType]:
                     """Register service methods.
 
                     Returns:

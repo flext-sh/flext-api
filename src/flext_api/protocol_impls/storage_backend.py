@@ -7,9 +7,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 from flext_core import FlextLogger, r
 
 from flext_api.protocols import p
+from flext_api.typings import t
 
 
 class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
@@ -17,7 +20,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
 
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
-        self._storage: dict[str, object] = {}
+        self._storage: dict[str, t.GeneralValueType] = {}
         self.logger = FlextLogger(__name__)
 
     def get(self, key: str) -> r[object]:
@@ -48,7 +51,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
 
             # Acknowledge timeout parameter (not implemented in this simple backend)
             _ = timeout
-            self._storage[str(key)] = value
+            self._storage[str(key)] = cast("t.GeneralValueType", value)
             self.logger.debug("Stored data with key: %s", key)
             return r[bool].ok(True)
 

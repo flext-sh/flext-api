@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextConstants
+from flext_core import FlextConstants, FlextTypes as t
 
 from flext_api import (
     FlextApi,
@@ -71,8 +71,8 @@ def example_storage_usage() -> None:
     storage = FlextApiStorage()
 
     # Set data using FlextResult pattern
-    # CacheValue as dict[str, object] for JSON compatibility
-    cache_value: dict[str, object] = {
+    # CacheValue as dict[str, t.GeneralValueType] for JSON compatibility
+    cache_value: dict[str, t.GeneralValueType] = {
         "data": {"message": "Hello FlextAPI!"},
         "headers": {},
         "status_code": 200,

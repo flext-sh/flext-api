@@ -22,7 +22,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, r
+from flext_core import FlextLogger, FlextTypes as t, r
 
 from flext_api.protocols import p
 
@@ -40,7 +40,9 @@ class GrpcChannel:
     - Load balancing
     """
 
-    def __init__(self, target: str, options: dict[str, object] | None = None) -> None:
+    def __init__(
+        self, target: str, options: dict[str, t.GeneralValueType] | None = None
+    ) -> None:
         """Initialize gRPC channel.
 
         Args:
@@ -50,7 +52,7 @@ class GrpcChannel:
         """
         self.logger = FlextLogger(__name__)
         self._target = target
-        self._options: dict[str, object] = {}
+        self._options: dict[str, t.GeneralValueType] = {}
         if options is not None:
             self._options = options
 
@@ -209,7 +211,7 @@ class GrpcServer:
         self,
         host: str = "127.0.0.1",
         port: int = 50051,
-        options: dict[str, object] | None = None,
+        options: dict[str, t.GeneralValueType] | None = None,
     ) -> None:
         """Initialize gRPC server.
 
@@ -222,7 +224,7 @@ class GrpcServer:
         self.logger = FlextLogger(__name__)
         self._host = host
         self._port = port
-        self._options: dict[str, object] = {}
+        self._options: dict[str, t.GeneralValueType] = {}
         if options is not None:
             self._options = options
 

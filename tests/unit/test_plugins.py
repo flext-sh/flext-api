@@ -66,7 +66,7 @@ class TestFlextApiPluginsPlugin:
         # Second initialization should fail
         init_result2 = plugin.initialize()
         assert init_result2.is_failure
-        assert "already initialized" in init_result2.error
+        assert init_result2.error is not None and "already initialized" in init_result2.error
 
     def test_plugin_shutdown_without_initialization(self) -> None:
         """Test shutdown without prior initialization."""
@@ -75,7 +75,7 @@ class TestFlextApiPluginsPlugin:
         # Shutdown should fail without initialization
         shutdown_result = plugin.shutdown()
         assert shutdown_result.is_failure
-        assert "not initialized" in shutdown_result.error
+        assert shutdown_result.error is not None and "not initialized" in shutdown_result.error
 
 
 class TestFlextApiPluginsSchema:

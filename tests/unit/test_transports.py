@@ -9,10 +9,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
 from unittest.mock import MagicMock, patch
 
 import pytest
+from flext_core import FlextTypes as t
 
 from flext_api.transports import FlextApiTransports
 
@@ -142,9 +142,9 @@ class TestFlextWebTransport:
 
     def test_extract_request_params_with_method_and_url(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test parameter extraction with method and URL."""
-        data = {"method": "POST", "url": "/api/test"}
+        data: dict[str, t.GeneralValueType] = {"method": "POST", "url": "/api/test"}
 
-        result = transport._extract_request_params(cast("dict[str, object]", data))
+        result = transport._extract_request_params(data)
 
         assert result.is_success
         method, url, headers, params, json_data, content = result.value
@@ -157,7 +157,7 @@ class TestFlextWebTransport:
 
     def test_extract_request_params_minimal(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test parameter extraction with minimal data."""
-        data: dict[str, object] = {}
+        data: dict[str, t.GeneralValueType] = {}
 
         result = transport._extract_request_params(data)
 

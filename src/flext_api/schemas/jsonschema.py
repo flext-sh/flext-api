@@ -532,7 +532,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     def validate_request(
         self,
         request: t_api.JsonObject,
-        schema: t_api.Api.SchemaDefinition,
+        schema: t_api.JsonObject,
     ) -> r[bool]:
         """Validate request against JSON Schema.
 
@@ -544,8 +544,15 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         FlextResult containing validation result or error
 
         """
+        # Convert schema to SchemaDefinition for validation
+        schema_def: t_api.Api.SchemaDefinition = {
+            k: v
+            for k, v in schema.items()
+            if isinstance(v, (str, int, float, bool, type(None), list, dict))
+        }
+
         # Validate the schema first
-        schema_result = self.validate_schema(schema)
+        schema_result = self.validate_schema(schema_def)
         if schema_result.is_failure:
             return r[bool].fail(f"Invalid schema: {schema_result.error}")
 
@@ -556,7 +563,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             for k, v in request.items()
             if isinstance(v, (str, int, float, bool, type(None), list, dict))
         }
-        instance_result = self.validate_instance(request_typed, schema)
+        instance_result = self.validate_instance(request_typed, schema_def)
         if instance_result.is_failure:
             return r[bool].fail(instance_result.error or "Schema validation failed")
 
@@ -565,7 +572,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     def validate_response(
         self,
         response: t_api.JsonObject,
-        schema: t_api.Api.SchemaDefinition,
+        schema: t_api.JsonObject,
     ) -> r[bool]:
         """Validate response against JSON Schema.
 
@@ -577,8 +584,15 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         FlextResult containing validation result or error
 
         """
+        # Convert schema to SchemaDefinition for validation
+        schema_def: t_api.Api.SchemaDefinition = {
+            k: v
+            for k, v in schema.items()
+            if isinstance(v, (str, int, float, bool, type(None), list, dict))
+        }
+
         # Validate the schema first
-        schema_result = self.validate_schema(schema)
+        schema_result = self.validate_schema(schema_def)
         if schema_result.is_failure:
             return r[bool].fail(f"Invalid schema: {schema_result.error}")
 
@@ -589,7 +603,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             for k, v in response.items()
             if isinstance(v, (str, int, float, bool, type(None), list, dict))
         }
-        instance_result = self.validate_instance(response_typed, schema)
+        instance_result = self.validate_instance(response_typed, schema_def)
         if instance_result.is_failure:
             return r[bool].fail(instance_result.error or "Schema validation failed")
 
@@ -598,7 +612,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     def load_schema(
         self,
         schema_source: str,
-    ) -> r[object]:
+    ) -> r[t.GeneralValueType]:
         """Load JSON Schema from source.
 
         Args:
@@ -611,7 +625,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         # Acknowledge unused parameter (stub implementation)
         _ = schema_source
         # For string paths, would load from file
-        return r[object].fail("File loading not implemented yet")
+        return r[t.GeneralValueType].fail("File loading not implemented yet")
 
 
 __all__ = ["JSONSchemaValidator"]

@@ -41,16 +41,18 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
                 pool=client_config.timeout,
             ),
             limits=httpx.Limits(
-                max_connections=FlextApiConstants.HTTPClient.DEFAULT_MAX_CONNECTIONS,
+                max_connections=FlextApiConstants.Api.HTTPClient.DEFAULT_MAX_CONNECTIONS,
                 max_keepalive_connections=(
-                    FlextApiConstants.HTTPClient.DEFAULT_MAX_KEEPALIVE_CONNECTIONS
+                    FlextApiConstants.Api.HTTPClient.DEFAULT_MAX_KEEPALIVE_CONNECTIONS
                 ),
             ),
             follow_redirects=True,
             verify=client_config.verify_ssl,
         )
 
-    def _prepare_request_headers(self, kwargs: dict[str, object]) -> dict[str, str]:
+    def _prepare_request_headers(
+        self, kwargs: dict[str, t.GeneralValueType]
+    ) -> dict[str, str]:
         """Prepare merged headers from config and request."""
         headers = dict(self._config.headers)
         if "headers" in kwargs:
@@ -63,30 +65,39 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
 
     def _extract_request_data(
         self,
-        kwargs: dict[str, object],
-    ) -> dict[str, object | None]:
+        kwargs: dict[str, t.GeneralValueType],
+    ) -> dict[str, t.GeneralValueType | None]:
         """Extract and type request data parameters."""
         params: dict[str, str] | None = None
         if "params" in kwargs:
             params_value = kwargs["params"]
             if isinstance(params_value, dict):
-                params = params_value
+                # Convert dict values to strings
+                params = {str(k): str(v) for k, v in params_value.items()}
 
-        json_data: object | None = None
+        json_data: t.GeneralValueType | None = None
         if "json" in kwargs:
-            json_data = kwargs["json"]
+            json_val = kwargs["json"]
+            if isinstance(json_val, (str, int, float, bool, type(None), list, dict)):
+                json_data = json_val
 
-        content: object | None = None
+        content: t.GeneralValueType | None = None
         if "content" in kwargs:
-            content = kwargs["content"]
+            content_val = kwargs["content"]
+            if isinstance(content_val, (str, bytes, int, float, bool, type(None))):
+                content = content_val
 
-        data: object | None = None
+        data: t.GeneralValueType | None = None
         if "data" in kwargs:
-            data = kwargs["data"]
+            data_val = kwargs["data"]
+            if isinstance(data_val, (str, int, float, bool, type(None), list, dict)):
+                data = data_val
 
-        files: object | None = None
+        files: t.GeneralValueType | None = None
         if "files" in kwargs:
-            files = kwargs["files"]
+            files_val = kwargs["files"]
+            if isinstance(files_val, (str, bytes, dict, list)):
+                files = files_val
 
         return {
             "params": params,
@@ -147,10 +158,10 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         method: str,
         full_url: str,
         headers: dict[str, str],
-        request_data: dict[str, object],
-    ) -> dict[str, object]:
+        request_data: dict[str, t.GeneralValueType],
+    ) -> dict[str, t.GeneralValueType]:
         """Build kwargs for httpx.request call."""
-        kwargs: dict[str, object] = {
+        kwargs: dict[str, t.GeneralValueType] = {
             "method": method,
             "url": full_url,
             "headers": headers,
@@ -206,8 +217,15 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
                 )
             full_url = full_url_result.value
 
-            headers = self._prepare_request_headers(kwargs)
-            request_data = self._extract_request_data(kwargs)
+            # Convert kwargs to dict[str, GeneralValueType]
+            kwargs_typed: dict[str, t.GeneralValueType] = {}
+            for k, v in kwargs.items():
+                if isinstance(v, (str, int, float, bool, type(None), list, dict)):
+                    kwargs_typed[k] = v
+                else:
+                    kwargs_typed[k] = str(v)
+            headers = self._prepare_request_headers(kwargs_typed)
+            request_data = self._extract_request_data(kwargs_typed)
 
             httpx_kwargs = self._build_httpx_kwargs(
                 method,
@@ -228,33 +246,35 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
             )
             # Extract optional parameters with type narrowing
             params_raw = httpx_kwargs.get("params")
-            params = (
+            params_typed: dict[str, str] | None = (
                 params_raw
-                if isinstance(params_raw, (dict, list, tuple, str, type(None)))
+                if isinstance(params_raw, dict)
                 else None
             )
             json_data = httpx_kwargs.get("json")
             content_raw = httpx_kwargs.get("content")
-            content = (
+            content_typed: str | bytes | None = (
                 content_raw
                 if isinstance(content_raw, (str, bytes, type(None)))
                 else None
             )
             timeout_raw = httpx_kwargs.get("timeout")
-            timeout = (
+            timeout_typed: float | None = (
                 timeout_raw
-                if isinstance(timeout_raw, (float, tuple, type(None)))
+                if isinstance(timeout_raw, (float, int, type(None)))
                 else None
             )
+            if isinstance(timeout_typed, int):
+                timeout_typed = float(timeout_typed)
             # Call httpx.request with explicit typed parameters
             httpx_response = self._client.request(
                 method=method_str,
                 url=url_str,
                 headers=headers_dict,
-                params=params,
+                params=params_typed,
                 json=json_data,
-                content=content,
-                timeout=timeout,
+                content=content_typed,
+                timeout=timeout_typed,
             )
 
             response = self._create_response_from_httpx(httpx_response)

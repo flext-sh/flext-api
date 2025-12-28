@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r
+from flext_core import FlextTypes as t, r
 
 from flext_api.plugins import FlextApiPlugins
 from flext_api.registry import FlextApiRegistry
@@ -25,10 +25,10 @@ class TestProtocol(FlextApiPlugins.Protocol):
         super().__init__(name="test_protocol", version="1.0.0")
 
     def send_request(
-        self, request: dict[str, object], **kwargs: object
-    ) -> r[dict[str, object]]:
+        self, request: dict[str, t.GeneralValueType], **kwargs: object
+    ) -> r[dict[str, t.GeneralValueType]]:
         """Send a test request."""
-        return r[dict[str, object]].ok({"status": "ok"})
+        return r[dict[str, t.GeneralValueType]].ok({"status": "ok"})
 
     def supports_protocol(self, protocol: str) -> bool:
         """Check if protocol is supported."""
@@ -43,13 +43,13 @@ class TestSchema(FlextApiPlugins.Schema):
         super().__init__(name="test_schema", version="1.0.0")
 
     def validate_request(
-        self, request: dict[str, object], schema: dict[str, object]
+        self, request: dict[str, t.GeneralValueType], schema: dict[str, t.GeneralValueType]
     ) -> r[bool]:
         """Validate request against schema."""
         return r[bool].ok(True)
 
     def validate_response(
-        self, response: dict[str, object], schema: dict[str, object]
+        self, response: dict[str, t.GeneralValueType], schema: dict[str, t.GeneralValueType]
     ) -> r[bool]:
         """Validate response against schema."""
         return r[bool].ok(True)
@@ -77,7 +77,7 @@ class TestTransport(FlextApiPlugins.Transport):
     def send(
         self,
         connection: object,
-        data: dict[str, object] | str | bytes,
+        data: dict[str, t.GeneralValueType] | str | bytes,
         **options: object,
     ) -> r[bool]:
         """Send data through connection."""
@@ -85,9 +85,9 @@ class TestTransport(FlextApiPlugins.Transport):
 
     def receive(
         self, connection: object, **options: object
-    ) -> r[dict[str, object] | str | bytes]:
+    ) -> r[dict[str, t.GeneralValueType] | str | bytes]:
         """Receive data from connection."""
-        return r[dict[str, object] | str | bytes].ok(b"response")
+        return r[dict[str, t.GeneralValueType] | str | bytes].ok(b"response")
 
 
 class TestFlextApiRegistry:

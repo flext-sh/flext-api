@@ -40,7 +40,7 @@ class FlextApiSerializers(FlextService[bool]):
     def execute(self, **kwargs: object) -> r[bool]:
         """Execute FlextService interface - serializers are always ready."""
         if kwargs:
-            self.logger.info(
+            FlextLogger(__name__).info(
                 f"Serializer.execute received kwargs: {list(kwargs.keys())}",
             )
         return r[bool].ok(True)
@@ -62,7 +62,7 @@ class FlextApiSerializers(FlextService[bool]):
             pretty: Enable pretty printing
 
             """
-            self.logger = FlextLogger(__name__)
+            self._logger = FlextLogger(__name__)
             self._pretty = pretty
 
             # Use orjson for performance - required dependency
@@ -72,7 +72,7 @@ class FlextApiSerializers(FlextService[bool]):
                     "Install with: pip install orjson"
                 )
                 raise ImportError(error_msg)
-            self.logger.debug("Using orjson for JSON serialization")
+            self._logger.debug("Using orjson for JSON serialization")
 
         def serialize(self, data: object) -> bytes:
             """Serialize data to JSON bytes.
@@ -118,8 +118,7 @@ class FlextApiSerializers(FlextService[bool]):
 
         def __init__(self) -> None:
             """Initialize MessagePack serializer."""
-            self.logger = FlextLogger(__name__)
-
+            self._logger = FlextLogger(__name__)
             self._msgpack = msgpack
             self._available = True  # msgpack is mandatory dependency
 
@@ -174,8 +173,7 @@ class FlextApiSerializers(FlextService[bool]):
 
         def __init__(self) -> None:
             """Initialize CBOR serializer."""
-            self.logger = FlextLogger(__name__)
-
+            self._logger = FlextLogger(__name__)
             self._cbor = cbor2
             self._available = True  # cbor2 is mandatory dependency
 
@@ -226,7 +224,7 @@ class FlextApiSerializers(FlextService[bool]):
 
         def __init__(self) -> None:
             """Initialize serializer registry."""
-            self.logger = FlextLogger(__name__)
+            self._logger = FlextLogger(__name__)
             self._serializers: dict[str, p.Api.Serialization.SerializerProtocol] = {}
             self._default_format = FlextApiConstants.Api.HttpSerializationFormat.JSON
 
@@ -269,14 +267,14 @@ class FlextApiSerializers(FlextService[bool]):
             )
 
             if format_key in self._serializers:
-                self.logger.warning(
+                FlextLogger(__name__).warning(
                     "Serializer already registered for format: %s",
                     format_key,
                 )
 
             self._serializers[format_key] = serializer
 
-            self.logger.info(
+            FlextLogger(__name__).info(
                 "Serializer registered",
                 extra={
                     "format": format_key,
@@ -447,7 +445,7 @@ class FlextApiSerializers(FlextService[bool]):
 
             """
             self._default_format = format_type
-            self.logger.info(
+            FlextLogger(__name__).info(
                 f"Default serialization format set to: {format_type.value}",
             )
             return r[bool].ok(True)

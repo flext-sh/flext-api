@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import json
 
-from flext_core import FlextLogger, r
+from flext_core import FlextLogger, FlextTypes as t, r
 
 from flext_api.protocols import p
 
@@ -42,7 +42,7 @@ class ProtobufMessage:
     - Field validation
     """
 
-    def __init__(self, data: dict[str, object] | None = None) -> None:
+    def __init__(self, data: dict[str, t.GeneralValueType] | None = None) -> None:
         """Initialize Protobuf message.
 
         Args:
@@ -50,13 +50,13 @@ class ProtobufMessage:
 
         """
         self.logger = FlextLogger(__name__)
-        self._data: dict[str, object] = {}
+        self._data: dict[str, t.GeneralValueType] = {}
         if data is not None:
             self._data = data
 
         self.logger.debug("Protobuf message stub created (placeholder)")
 
-    def get_data(self) -> dict[str, object]:
+    def get_data(self) -> dict[str, t.GeneralValueType]:
         """Get message data.
 
         Returns:
@@ -94,7 +94,7 @@ class ProtobufMessage:
         )
 
     @classmethod
-    def from_dict(cls, data: dict[str, object]) -> ProtobufMessage:
+    def from_dict(cls, data: dict[str, t.GeneralValueType]) -> ProtobufMessage:
         """Create message from dictionary.
 
         Args:
@@ -150,7 +150,7 @@ class ProtobufSerializer:
     - Compression
     """
 
-    def __init__(self, schema: dict[str, object] | None = None) -> None:
+    def __init__(self, schema: dict[str, t.GeneralValueType] | None = None) -> None:
         """Initialize Protobuf serializer.
 
         Args:
@@ -158,7 +158,7 @@ class ProtobufSerializer:
 
         """
         self.logger = FlextLogger(__name__)
-        self._schema: dict[str, object] = {}
+        self._schema: dict[str, t.GeneralValueType] = {}
         if schema is not None:
             self._schema = schema
 

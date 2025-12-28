@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+from typing import cast
+from flext_core import FlextTypes as t
 
 from datetime import datetime
 
@@ -23,9 +25,11 @@ class TestFlextApiUtilitiesReal:
         )
 
         # API returns plain dict with error structure
-        assert response["success"] is False
-        assert response["error"]["message"] == "Test error"
-        assert response["error"]["status_code"] == 400
+        response_dict = cast(dict[str, t.GeneralValueType], response)
+        assert response_dict["success"] is False
+        error_dict = cast(dict[str, t.GeneralValueType], response_dict["error"])
+        assert error_dict["message"] == "Test error"
+        assert error_dict["status_code"] == 400
 
     def test_response_builder_success(self) -> None:
         """Test ResponseBuilder success response - returns FlextResult."""
@@ -55,14 +59,14 @@ class TestFlextApiUtilitiesReal:
         assert result.is_success
         response_obj = result.value
         assert isinstance(response_obj, dict)
-        response: dict[str, object] = response_obj
+        response: dict[str, t.GeneralValueType] = response_obj
         assert response["success"] is True
         assert response["data"] == [1, 2, 3]
         pagination_obj = response["pagination"]
         assert isinstance(pagination_obj, dict)
-        pagination: dict[str, object] = pagination_obj
-        assert pagination["page"] == 1
-        assert pagination["total"] == 3
+        pagination: dict[str, t.GeneralValueType] = pagination_obj
+        assert cast(dict[str, t.GeneralValueType], pagination)["page"] == 1
+        assert cast(dict[str, t.GeneralValueType], pagination)["total"] == 3
 
     def test_pagination_builder_invalid_page(self) -> None:
         """Test PaginationBuilder with invalid page."""
@@ -266,7 +270,7 @@ class TestFlextApiUtilitiesReal:
             error_code="RESOURCE_NOT_FOUND",
         )
         assert response["error"]["code"] == "RESOURCE_NOT_FOUND"
-        assert response["error"]["message"] == "Not found"
+        assert cast(dict[str, t.GeneralValueType], response["error"])["message"] == "Not found"
 
     def test_response_builder_error_various_status_codes(self) -> None:
         """Test ResponseBuilder error with various status codes."""
@@ -276,7 +280,7 @@ class TestFlextApiUtilitiesReal:
                 message=f"Error {code}",
                 status_code=code,
             )
-            assert response["error"]["status_code"] == code
+            assert cast(dict[str, t.GeneralValueType], response["error"])["status_code"] == code
 
     def test_response_builder_success_empty_data(self) -> None:
         """Test ResponseBuilder success with empty data dict."""
@@ -448,10 +452,10 @@ class TestFlextApiUtilitiesReal:
         response = result.value
         assert "pagination" in response
         pagination = response["pagination"]
-        assert pagination["page"] == 2
-        assert pagination["total"] == 100
-        assert pagination["has_next"] is True
-        assert pagination["has_prev"] is True
+        assert cast(dict[str, t.GeneralValueType], pagination)["page"] == 2
+        assert cast(dict[str, t.GeneralValueType], pagination)["total"] == 100
+        assert cast(dict[str, t.GeneralValueType], pagination)["has_next"] is True
+        assert cast(dict[str, t.GeneralValueType], pagination)["has_prev"] is True
 
     def test_pagination_build_paginated_response_no_config(self) -> None:
         """Test building paginated response without config."""
