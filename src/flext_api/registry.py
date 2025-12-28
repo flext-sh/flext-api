@@ -71,7 +71,7 @@ class FlextApiRegistry(FlextRegistry):
         """Get registered protocol plugin by name."""
         result = self.get_plugin(self.PROTOCOLS, name)
         if result.is_success and isinstance(result.value, FlextApiPlugins.Protocol):
-            return r[FlextApiPlugins.Protocol].ok(result.value)  # type: ignore[unreachable]
+            return r[FlextApiPlugins.Protocol].ok(result.value)
         if result.is_failure:
             return r[FlextApiPlugins.Protocol].fail(result.error)
         return r[FlextApiPlugins.Protocol].fail("Plugin is not a Protocol type")
@@ -100,7 +100,7 @@ class FlextApiRegistry(FlextRegistry):
         """Get registered schema plugin by name."""
         result = self.get_plugin(self.SCHEMAS, name)
         if result.is_success and isinstance(result.value, FlextApiPlugins.Schema):
-            return r[FlextApiPlugins.Schema].ok(result.value)  # type: ignore[unreachable]
+            return r[FlextApiPlugins.Schema].ok(result.value)
         if result.is_failure:
             return r[FlextApiPlugins.Schema].fail(result.error)
         return r[FlextApiPlugins.Schema].fail("Plugin is not a Schema type")
@@ -129,7 +129,7 @@ class FlextApiRegistry(FlextRegistry):
         """Get registered transport plugin by name."""
         result = self.get_plugin(self.TRANSPORTS, name)
         if result.is_success and isinstance(result.value, FlextApiPlugins.Transport):
-            return r[FlextApiPlugins.Transport].ok(result.value)  # type: ignore[unreachable]
+            return r[FlextApiPlugins.Transport].ok(result.value)
         if result.is_failure:
             return r[FlextApiPlugins.Transport].fail(result.error)
         return r[FlextApiPlugins.Transport].fail("Plugin is not a Transport type")
@@ -160,7 +160,7 @@ class FlextApiRegistry(FlextRegistry):
         if result.is_success and isinstance(
             result.value, FlextApiPlugins.Authentication
         ):
-            return r[FlextApiPlugins.Authentication].ok(result.value)  # type: ignore[unreachable]
+            return r[FlextApiPlugins.Authentication].ok(result.value)
         if result.is_failure:
             return r[FlextApiPlugins.Authentication].fail(result.error)
         return r[FlextApiPlugins.Authentication].fail(

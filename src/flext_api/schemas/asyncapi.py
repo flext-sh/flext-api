@@ -633,9 +633,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         self.logger.debug("AsyncAPI request validation completed")
         return r[bool].ok(True)
 
-    def _validate_response_channels(
-        self, schema: t.JsonObject
-    ) -> r[bool]:
+    def _validate_response_channels(self, schema: t.JsonObject) -> r[bool]:
         """Validate channels in schema for response validation."""
         if "channels" not in schema:
             return r[bool].ok(True)  # No channels to validate against
@@ -650,9 +648,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(True)
 
-    def _validate_response_status_code(
-        self, response: t.JsonObject
-    ) -> r[bool]:
+    def _validate_response_status_code(self, response: t.JsonObject) -> r[bool]:
         """Validate status code in response."""
         if "status_code" not in response:
             return r[bool].ok(True)

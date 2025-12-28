@@ -125,7 +125,7 @@ from flext_api.client import FlextApiClient
 from flext_api.constants import FlextApiConstants, c
 from flext_api.exceptions import HttpError
 from flext_api.lifecycle_manager import FlextApiLifecycleManager
-from flext_api.models import FlextApiModels, m
+from flext_api.models import FlextApiModels
 from flext_api.protocol_impls import (
     BaseProtocolImplementation,
     FlextWebClientImplementation,

@@ -126,12 +126,9 @@ class FlextApiServer(FlextService[object], x.Validation):
                 # Use FlextRuntime to normalize to t.GeneralValueType (compatible with JsonValue)
                 normalized_value = FlextRuntime.normalize_to_general_value(v)
                 # Convert SchemaValue to GeneralValueType
-                if isinstance(schema, (str, dict)):
-                    schema_normalized = FlextRuntime.normalize_to_general_value(schema)
-                else:
-                    schema_normalized = FlextRuntime.normalize_to_general_value(
-                        str(schema)
-                    )
+                # First convert schema to str to ensure it's a proper GeneralValueType
+                schema_str = schema if isinstance(schema, str) else str(schema)
+                schema_normalized = FlextRuntime.normalize_to_general_value(schema_str)
                 # Type narrowing: ensure JsonValue compatibility
                 if isinstance(
                     schema_normalized,

@@ -11,10 +11,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import cbor2
-import msgpack
 from flext_core import r
 
 from flext_api.models import FlextApiModels
+from flext_api.serializers import FlextApiSerializers
 from flext_api.typings import t
 
 
@@ -135,11 +135,11 @@ class FlextApiAdapters:
         ) -> r[bytes]:
             """Convert JSON data to MessagePack format."""
             try:
-                # msgpack.packb returns bytes for valid input
-                packed_data = msgpack.packb(data)
+                # MessagePack.packb returns bytes for valid input
+                packed_data = FlextApiSerializers.MessagePack.packb(data)
                 if not isinstance(packed_data, bytes):
-                    return r[bytes].fail("msgpack.packb did not return bytes")
-                # msgpack.packb always returns bytes for valid input
+                    return r[bytes].fail("MessagePack.packb did not return bytes")
+                # MessagePack.packb always returns bytes for valid input
                 return r[bytes].ok(packed_data)
 
             except Exception as e:

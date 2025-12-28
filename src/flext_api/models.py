@@ -562,7 +562,7 @@ class FlextApiModels(FlextModels):
             namespace: str = "flext"
 
 
-m = FlextApiModels  # Runtime alias (not TypeAlias to avoid PYI042)
+# Runtime alias (m is already imported from flext_core, so this redefines it)
+# This is intentional - flext_api re-exports FlextApiModels as m
 
-
-__all__ = ["FlextApiModels", "m"]
+__all__ = ["FlextApiModels"]

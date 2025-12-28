@@ -26,7 +26,9 @@ class FlextApiLifecycleManager:
 
     @staticmethod
     @asynccontextmanager
-    async def manage_http_resource(resource: HttpResourceProtocol) -> AsyncIterator[HttpResourceProtocol]:
+    async def manage_http_resource(
+        resource: HttpResourceProtocol,
+    ) -> AsyncIterator[HttpResourceProtocol]:
         """Manage HTTP resource lifecycle with proper cleanup."""
         try:
             yield resource
@@ -41,7 +43,9 @@ class FlextApiLifecycleManager:
                 resource.close()
 
     @staticmethod
-    def manage_sync_http_resource(resource: HttpResourceProtocol) -> HttpResourceProtocol:
+    def manage_sync_http_resource(
+        resource: HttpResourceProtocol,
+    ) -> HttpResourceProtocol:
         """Manage synchronous HTTP resource lifecycle."""
         try:
             return resource

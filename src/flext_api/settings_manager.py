@@ -16,7 +16,7 @@ from collections.abc import Mapping
 
 from flext_core import r
 
-from flext_api.models import m
+from flext_api.models import FlextApiModels
 from flext_api.typings import t
 
 
@@ -233,31 +233,31 @@ class FlextApiSettingsManager:
 
         return r[float].ok(timeout_value)
 
-    def get_client_config(self) -> r[m.ClientConfig]:
+    def get_client_config(self) -> r[FlextApiModels.ClientConfig]:
         """Get validated client configuration - no fallbacks."""
         if self._config is None:
-            return r[m.ClientConfig].fail("No configuration set")
+            return r[FlextApiModels.ClientConfig].fail("No configuration set")
 
         headers_result = self._extract_headers()
         if headers_result.is_failure:
-            return r[m.ClientConfig].fail(
+            return r[FlextApiModels.ClientConfig].fail(
                 headers_result.error or "Headers extraction failed",
             )
 
         base_url_result = self._extract_base_url()
         if base_url_result.is_failure:
-            return r[m.ClientConfig].fail(
+            return r[FlextApiModels.ClientConfig].fail(
                 base_url_result.error or "Base URL extraction failed",
             )
 
         timeout_result = self._extract_timeout_for_config()
         if timeout_result.is_failure:
-            return r[m.ClientConfig].fail(
+            return r[FlextApiModels.ClientConfig].fail(
                 timeout_result.error or "Timeout extraction failed",
             )
 
-        return r[m.ClientConfig].ok(
-            m.create_config(
+        return r[FlextApiModels.ClientConfig].ok(
+            FlextApiModels.create_config(
                 base_url=base_url_result.value,
                 timeout=timeout_result.value,
                 headers=headers_result.value,
