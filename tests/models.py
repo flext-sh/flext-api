@@ -38,6 +38,5 @@ class TestsFlextApiModels(FlextTestsModels, FlextApiModels):
 
 # Short aliases for tests
 tm = TestsFlextApiModels
-m = TestsFlextApiModels
 
-__all__ = ["TestsFlextApiModels", "m", "tm"]
+__all__ = ["TestsFlextApiModels", "tm"]

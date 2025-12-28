@@ -247,9 +247,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
             # Extract optional parameters with type narrowing
             params_raw = httpx_kwargs.get("params")
             params_typed: dict[str, str] | None = (
-                params_raw
-                if isinstance(params_raw, dict)
-                else None
+                params_raw if isinstance(params_raw, dict) else None
             )
             json_data = httpx_kwargs.get("json")
             content_raw = httpx_kwargs.get("content")

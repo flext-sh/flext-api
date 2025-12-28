@@ -575,12 +575,13 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 else:
                     message = None
 
-                # Notify message handlers
-                for handler in self._on_message_handlers:
-                    try:
-                        handler(message)
-                    except Exception:
-                        self.logger.exception("Message handler error")
+                # Notify message handlers only if we have valid message data
+                if message is not None:
+                    for handler in self._on_message_handlers:
+                        try:
+                            handler(message)
+                        except Exception:
+                            self.logger.exception("Message handler error")
 
             except Exception as e:
                 if isinstance(e, Exception):

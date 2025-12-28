@@ -27,7 +27,7 @@ from typing import Self, cast, override
 from flext_core import FlextLogger, FlextService, r, u
 from pydantic import BaseModel, ConfigDict
 
-from flext_api.models import m
+from flext_api.models import FlextApiModels
 from flext_api.typings import t
 
 
@@ -54,7 +54,7 @@ class FlextApiStorage(FlextService[bool]):
     # Type annotations for dynamically-set fields
     _storage: dict[str, t.JsonValue]
     _expiry_times: dict[str, float]
-    _stats: m.Storage.Stats
+    _stats: FlextApiModels.Storage.Stats
     _operations_count: int
     _created_at: str
 
@@ -91,7 +91,9 @@ class FlextApiStorage(FlextService[bool]):
         object.__setattr__(self, "_expiry_times", {})
 
         # Metrics using Pydantic model
-        object.__setattr__(self, "_stats", m.Storage.Stats(namespace=self._namespace))
+        object.__setattr__(
+            self, "_stats", FlextApiModels.Storage.Stats(namespace=self._namespace)
+        )
         object.__setattr__(self, "_operations_count", 0)
         object.__setattr__(self, "_created_at", u.Generators.generate_iso_timestamp())
 
@@ -353,7 +355,7 @@ class FlextApiStorage(FlextService[bool]):
 
         # Use Pydantic model for metadata validation
         try:
-            metadata = m.Storage.Metadata(
+            metadata = FlextApiModels.Storage.Metadata(
                 value=value,
                 timestamp=u.Generators.generate_iso_timestamp(),
                 ttl=ttl_val,
@@ -448,7 +450,7 @@ class FlextApiStorage(FlextService[bool]):
                 except (ValueError, TypeError):
                     created_at_float = 0.0
 
-            metadata = m.Storage.Metadata(
+            metadata = FlextApiModels.Storage.Metadata(
                 value=data.get("value"),
                 timestamp=str(data.get("timestamp", "")),
                 ttl=ttl_int,
