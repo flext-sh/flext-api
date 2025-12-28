@@ -15,6 +15,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
+from typing import cast
 
 import httpx
 from flext_core import r
@@ -75,7 +76,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         self._retry_backoff_factor = (
             retry_backoff_factor
             if retry_backoff_factor is not None
-            else c.BACKOFF_FACTOR
+            else c.Api.BACKOFF_FACTOR
         )
         self._follow_redirects = follow_redirects
         self._max_redirects = max_redirects
@@ -102,7 +103,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     def _build_http_request_from_dict(
         self,
-        request: dict[str, object],
+        request: dict[str, t.GeneralValueType],
     ) -> r[FlextApiModels.HttpRequest]:
         """Build HttpRequest from dictionary using RFC methods."""
         # Validate request using base class method
@@ -154,14 +155,14 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     def send_request(
         self,
-        request: dict[str, object],
+        request: dict[str, t.GeneralValueType],
         **kwargs: object,
-    ) -> r[dict[str, object]]:
+    ) -> r[dict[str, t.GeneralValueType]]:
         """Send HTTP request with retry logic and error handling."""
         # Build HTTP request model
         request_result = self._build_http_request_from_dict(request)
         if request_result.is_failure:
-            return r[dict[str, object]].fail(
+            return r[dict[str, t.GeneralValueType]].fail(
                 request_result.error or "Request building failed",
             )
 
@@ -172,7 +173,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         url = str(http_request.url)
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
-            return r[dict[str, object]].fail(
+            return r[dict[str, t.GeneralValueType]].fail(
                 headers_result.error or "Headers extraction failed",
             )
         headers_dict = headers_result.value
@@ -187,7 +188,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         )
 
         if conn_result.is_failure:
-            return r[dict[str, object]].fail(
+            return r[dict[str, t.GeneralValueType]].fail(
                 f"Failed to establish connection: {conn_result.error}",
             )
 
@@ -205,17 +206,19 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 body,
             )
         else:
-            return r[dict[str, object]].fail("Invalid connection type")
+            return r[dict[str, t.GeneralValueType]].fail("Invalid connection type")
 
         if result.is_success:
             response = result.value
-            return r[dict[str, object]].ok({
+            return r[dict[str, t.GeneralValueType]].ok({
                 "status_code": response.status_code,
-                "headers": response.headers,
-                "body": response.body,
+                "headers": dict(response.headers),
+                "body": str(getattr(response, "text", response.body)),
             })
 
-        return r[dict[str, object]].fail(result.error or "Request execution failed")
+        return r[dict[str, t.GeneralValueType]].fail(
+            result.error or "Request execution failed"
+        )
 
     def _build_request_kwargs(
         self,
@@ -225,9 +228,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         params: dict[str, str],
         timeout: float | None,
         body: t.Api.RequestBody | None,
-    ) -> dict[str, object]:
+    ) -> dict[str, t.GeneralValueType]:
         """Build request kwargs based on body type."""
-        kwargs: dict[str, object] = {
+        kwargs: dict[str, t.GeneralValueType] = {
             "method": method,
             "url": url,
             "headers": headers,
@@ -239,10 +242,10 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return kwargs
 
         content_type = self._get_content_type(headers)
-        if isinstance(body, dict) and c.Api.ContentType.FORM in content_type:
-            kwargs["data"] = body
-        elif isinstance(body, dict):
-            kwargs["json"] = body
+        if (
+            isinstance(body, dict) and c.Api.ContentType.FORM in content_type
+        ) or isinstance(body, dict):
+            kwargs["data"] = str(body)
         else:
             kwargs["content"] = body
 
@@ -319,9 +322,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 # Extract optional parameters with type narrowing
                 params_raw = request_kwargs.get("params")
                 # httpx.request accepts dict[str, str | list[str]] | None for params
-                request_params: dict[str, str] | None = (
-                    params_raw if isinstance(params_raw, dict) else None
-                )
+                request_params = params_raw if isinstance(params_raw, dict) else None
                 json_data = request_kwargs.get("json")
                 content_raw = request_kwargs.get("content")
                 content = (
@@ -338,8 +339,8 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 response = connection.request(
                     method=method_str,
                     url=url_str,
-                    headers=headers_dict,
-                    params=request_params,
+                    headers=cast("dict[str, str]", headers_dict),
+                    params=cast("dict[str, str] | None", request_params),
                     json=json_data,
                     content=content,
                     timeout=request_timeout,
@@ -383,7 +384,8 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
             return r[dict[str, str]].fail("Headers cannot be None")
         if not isinstance(request.headers, dict):
             return r[dict[str, str]].fail("Headers must be a dictionary")
-        # HttpRequest.headers is dict[str, str], so we can safely convert
+
+        # At this point, request.headers is guaranteed to be a dict
         headers_dict: dict[str, str] = {
             key: value
             for key, value in request.headers.items()

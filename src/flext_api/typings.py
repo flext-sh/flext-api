@@ -166,7 +166,7 @@ class FlextApiTypes(FlextTypes):
         type RequestPipeline = list[FlextApiTypes.JsonObject]
         type ResponsePipeline = list[FlextApiTypes.JsonObject]
         type ProcessingResult = dict[str, bool | list[str] | FlextApiTypes.JsonObject]
-        # Note: MiddlewareConfig inherited from t (dict[str, object])
+        # Note: MiddlewareConfig inherited from t (dict[str, t.GeneralValueType])
 
         # =========================================================================
         # ERROR HANDLING TYPES - Error management and recovery

@@ -125,7 +125,13 @@ class FlextApiServer(FlextService[object], x.Validation):
             if schema is not None:
                 # Use FlextRuntime to normalize to t.GeneralValueType (compatible with JsonValue)
                 normalized_value = FlextRuntime.normalize_to_general_value(v)
-                schema_normalized = FlextRuntime.normalize_to_general_value(schema)
+                # Convert SchemaValue to GeneralValueType
+                if isinstance(schema, (str, dict)):
+                    schema_normalized = FlextRuntime.normalize_to_general_value(schema)
+                else:
+                    schema_normalized = FlextRuntime.normalize_to_general_value(
+                        str(schema)
+                    )
                 # Type narrowing: ensure JsonValue compatibility
                 if isinstance(
                     schema_normalized,
@@ -164,15 +170,15 @@ class FlextApiServer(FlextService[object], x.Validation):
             logger: Logger instance
 
             """
-            self._websocket_connections: dict[str, object] = {}
-            self._sse_connections: dict[str, object] = {}
+            self._websocket_connections: dict[str, t.GeneralValueType] = {}
+            self._sse_connections: dict[str, t.GeneralValueType] = {}
             self._logger = logger
 
         def close_all(self) -> r[bool]:
             """Close all active connections gracefully."""
             for conn_id, connection in self._websocket_connections.items():
                 try:
-                    if hasattr(connection, "close"):
+                    if connection is not None and hasattr(connection, "close"):
                         connection.close()
                 except Exception as e:
                     self._logger.warning(
@@ -183,7 +189,7 @@ class FlextApiServer(FlextService[object], x.Validation):
 
             for conn_id, connection in self._sse_connections.items():
                 try:
-                    if hasattr(connection, "close"):
+                    if connection is not None and hasattr(connection, "close"):
                         connection.close()
                 except Exception as e:
                     self._logger.warning(
@@ -294,7 +300,7 @@ class FlextApiServer(FlextService[object], x.Validation):
                         continue
                     method: str = method_raw
                     path: str = path_raw
-                    handler: Callable = handler_raw
+                    handler: Callable[..., object] = handler_raw
 
                     if method == "WS":
                         app.websocket(path)(handler)
@@ -518,14 +524,20 @@ class FlextApiServer(FlextService[object], x.Validation):
         self,
         path: str,
         method: c.Api.Method | str,
-        handler: Callable,
+        handler: Callable[..., object],
         **options: object,
     ) -> r[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)
+            # Convert object to GeneralValueType
+            v_as_general: t.GeneralValueType = (
+                v
+                if isinstance(v, (str, int, float, bool, type(None), list, dict))
+                else str(v)
+            )
+            normalized = FlextRuntime.normalize_to_general_value(v_as_general)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:
@@ -542,14 +554,20 @@ class FlextApiServer(FlextService[object], x.Validation):
     def register_websocket_endpoint(
         self,
         path: str,
-        handler: Callable,
+        handler: Callable[..., object],
         **options: object,
     ) -> r[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)
+            # Convert object to GeneralValueType
+            v_as_general: t.GeneralValueType = (
+                v
+                if isinstance(v, (str, int, float, bool, type(None), list, dict))
+                else str(v)
+            )
+            normalized = FlextRuntime.normalize_to_general_value(v_as_general)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:
@@ -566,14 +584,20 @@ class FlextApiServer(FlextService[object], x.Validation):
     def register_sse_endpoint(
         self,
         path: str,
-        handler: Callable,
+        handler: Callable[..., object],
         **options: object,
     ) -> r[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)
+            # Convert object to GeneralValueType
+            v_as_general: t.GeneralValueType = (
+                v
+                if isinstance(v, (str, int, float, bool, type(None), list, dict))
+                else str(v)
+            )
+            normalized = FlextRuntime.normalize_to_general_value(v_as_general)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:
@@ -597,7 +621,13 @@ class FlextApiServer(FlextService[object], x.Validation):
         # Type narrowing: convert options to expected type
         options_typed: dict[str, t.JsonValue | str | int | bool] = {}
         for k, v in options.items():
-            normalized = FlextRuntime.normalize_to_general_value(v)
+            # Convert object to GeneralValueType
+            v_as_general: t.GeneralValueType = (
+                v
+                if isinstance(v, (str, int, float, bool, type(None), list, dict))
+                else str(v)
+            )
+            normalized = FlextRuntime.normalize_to_general_value(v_as_general)
             if isinstance(normalized, (str, int, float, bool, type(None), list, dict)):
                 options_typed[k] = normalized
             else:
@@ -634,7 +664,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         if start_result.is_failure:
             return r[bool].fail(f"Failed to start: {start_result.error}")
 
-        self.logger.info("Server restarted")
+        FlextLogger(__name__).info("Server restarted")
 
         return r[bool].ok(True)
 

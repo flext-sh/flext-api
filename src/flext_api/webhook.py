@@ -24,11 +24,13 @@ import time
 import uuid
 from collections import deque
 from collections.abc import Callable
+from typing import cast
 
 from flext_core import (
     FlextContainer,
     FlextContext,
     FlextDispatcher,
+    FlextLogger,
     FlextService,
     r,
 )
@@ -135,13 +137,15 @@ class FlextWebhookHandler(FlextService[object]):
 
         """
         if kwargs:
-            self.logger.info("Execute called with kwargs: %s", kwargs)
+            FlextLogger(__name__).info(
+                "Execute called with kwargs: %s", cast("t.GeneralValueType", kwargs)
+            )
         return r[object].ok(True)
 
     def register_event_handler(
         self,
         event_type: str,
-        handler: Callable,
+        handler: Callable[..., None],
     ) -> r[bool]:
         """Register event handler for webhook events.
 
@@ -158,7 +162,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         self._event_handlers[event_type].append(handler)
 
-        self.logger.info(
+        FlextLogger(__name__).info(
             "Event handler registered",
             extra={"event_type": event_type},
         )
@@ -223,7 +227,7 @@ class FlextWebhookHandler(FlextService[object]):
         }
         self._delivery_confirmations[event_id] = confirmation
 
-        self.logger.info(
+        FlextLogger(__name__).info(
             "Webhook processed successfully",
             extra={"event_id": event_id, "event_type": event_type},
         )
@@ -250,7 +254,7 @@ class FlextWebhookHandler(FlextService[object]):
         if attempts_value < self._max_retries:
             self._retry_queue.append(event)
 
-            self.logger.warning(
+            FlextLogger(__name__).warning(
                 "Webhook processing failed, added to retry queue",
                 extra={
                     "event_id": event_id,
@@ -274,7 +278,7 @@ class FlextWebhookHandler(FlextService[object]):
             failure_confirmation["error"] = process_result.error
         self._delivery_confirmations[event_id] = failure_confirmation
 
-        self.logger.error(
+        FlextLogger(__name__).error(
             "Webhook processing failed after max retries",
             extra={
                 "event_id": event_id,
@@ -439,7 +443,7 @@ class FlextWebhookHandler(FlextService[object]):
                 handlers = handlers_value
 
         if not handlers:
-            self.logger.warning(
+            FlextLogger(__name__).warning(
                 "No handlers registered for event type",
                 extra={"event_type": event_type},
             )
@@ -496,7 +500,7 @@ class FlextWebhookHandler(FlextService[object]):
         event["attempts"] = attempts_value + 1
         delay = self._retry_delay * (self._retry_backoff**attempts_value)
 
-        self.logger.info(
+        FlextLogger(__name__).info(
             "Retrying event",
             extra={
                 "event_id": str(event["id"]),

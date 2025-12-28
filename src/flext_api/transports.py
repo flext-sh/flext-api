@@ -16,6 +16,7 @@ from flext_core import r
 
 from flext_api.constants import c
 from flext_api.protocols import p
+from flext_api.typings import t
 
 # Protocol reference for backward compatibility
 TransportPlugin = p.Api.Transport.TransportPlugin
@@ -60,7 +61,7 @@ class FlextApiTransports:
 
         def _extract_request_params(
             self,
-            data: dict[str, object],
+            data: dict[str, t.GeneralValueType],
         ) -> r[tuple[str, str, dict[str, str], object, object, object]]:
             """Extract and validate request parameters from data."""
             method_str: str = c.Api.Method.GET

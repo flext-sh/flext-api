@@ -18,6 +18,7 @@ from flext_core import r
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
+from flext_api.typings import t
 
 
 class SSEProtocolPlugin(RFCProtocolImplementation):
@@ -43,10 +44,10 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     is_connected: bool
     last_event_id: str
     _connected: bool
-    _on_event_handlers: dict[str, list[Callable]]
-    _on_connect_handlers: list[Callable]
-    _on_disconnect_handlers: list[Callable]
-    _on_error_handlers: list[Callable]
+    _on_event_handlers: dict[str, list[Callable[..., None]]]
+    _on_connect_handlers: list[Callable[[], None]]
+    _on_disconnect_handlers: list[Callable[[], None]]
+    _on_error_handlers: list[Callable[[Exception], None]]
     _retry_timeout: int
     _auto_reconnect: bool
 
@@ -94,7 +95,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
             (
                 retry_timeout
                 if retry_timeout is not None
-                else FlextApiConstants.SSE.DEFAULT_RETRY_TIMEOUT
+                else FlextApiConstants.Api.SSE.DEFAULT_RETRY_TIMEOUT
             ),
         )
         object.__setattr__(self, "_auto_reconnect", auto_reconnect)
@@ -106,9 +107,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
     def send_request(
         self,
-        request: dict[str, object],
+        request: dict[str, t.GeneralValueType],
         **kwargs: object,
-    ) -> r[dict[str, object]]:
+    ) -> r[dict[str, t.GeneralValueType]]:
         """Send SSE request (stub - not implemented).
 
         Args:
@@ -122,13 +123,15 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         # Validate request using base class method
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return r[dict[str, object]].fail(
+            return r[dict[str, t.GeneralValueType]].fail(
                 validation_result.error or "Request validation failed",
             )
 
         # Acknowledge kwargs to avoid linting warnings
         _ = kwargs
-        return r[dict[str, object]].fail("SSE protocol not yet implemented (Phase 3)")
+        return r[dict[str, t.GeneralValueType]].fail(
+            "SSE protocol not yet implemented (Phase 3)"
+        )
 
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol.
@@ -142,9 +145,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         """
         protocol_lower = protocol.lower()
         return protocol_lower in {
-            FlextApiConstants.SSE.Protocol.SSE,
-            FlextApiConstants.SSE.Protocol.SERVER_SENT_EVENTS,
-            FlextApiConstants.SSE.Protocol.EVENTSOURCE,
+            FlextApiConstants.Api.SSE.Protocol.SSE,
+            FlextApiConstants.Api.SSE.Protocol.SERVER_SENT_EVENTS,
+            FlextApiConstants.Api.SSE.Protocol.EVENTSOURCE,
         }
 
     def get_supported_protocols(self) -> list[str]:
@@ -155,9 +158,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
         """
         return [
-            FlextApiConstants.SSE.Protocol.SSE,
-            FlextApiConstants.SSE.Protocol.SERVER_SENT_EVENTS,
-            FlextApiConstants.SSE.Protocol.EVENTSOURCE,
+            FlextApiConstants.Api.SSE.Protocol.SSE,
+            FlextApiConstants.Api.SSE.Protocol.SERVER_SENT_EVENTS,
+            FlextApiConstants.Api.SSE.Protocol.EVENTSOURCE,
         ]
 
     def on_event(self, event_type: str, handler: Callable[..., None]) -> None:

@@ -64,7 +64,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         """
         super().__init__(name=name, version=version, description=description, **kwargs)
 
-    def _extract_url(self, request: dict[str, object]) -> r[str]:
+    def _extract_url(self, request: dict[str, t.GeneralValueType]) -> r[str]:
         """Extract and validate URL from request (RFC 7230 compliant).
 
         Args:
@@ -90,7 +90,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             return r[str].fail("URL must start with http:// or https://")
         return r[str].ok(url_value)
 
-    def _extract_method(self, request: dict[str, object]) -> r[str]:
+    def _extract_method(self, request: dict[str, t.GeneralValueType]) -> r[str]:
         """Extract and validate HTTP method from request (RFC 7231 compliant).
 
         Args:
@@ -127,7 +127,9 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         return r[str].ok(method_upper)
 
-    def _extract_headers(self, request: dict[str, object]) -> dict[str, str]:
+    def _extract_headers(
+        self, request: dict[str, t.GeneralValueType]
+    ) -> dict[str, str]:
         """Extract headers from request (RFC 7230 compliant).
 
         Args:
@@ -152,7 +154,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         return normalized_headers
 
-    def _extract_body(self, request: dict[str, object]) -> object | None:
+    def _extract_body(self, request: dict[str, t.GeneralValueType]) -> object | None:
         """Extract body from request (RFC 7231 compliant).
 
         Args:
@@ -167,7 +169,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         return request["body"]
 
-    def _extract_timeout(self, request: dict[str, object]) -> float:
+    def _extract_timeout(self, request: dict[str, t.GeneralValueType]) -> float:
         """Extract timeout from request with defaults.
 
         Args:
@@ -190,7 +192,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         error: str,
         status_code: int = 500,
         error_code: str | None = None,
-    ) -> dict[str, object]:
+    ) -> dict[str, t.GeneralValueType]:
         """Build RFC-compliant error response (RFC 7231).
 
         Args:
@@ -203,7 +205,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         # Build error response manually
-        error_response: dict[str, object] = {
+        error_response: dict[str, t.GeneralValueType] = {
             "error": error,
             "status_code": status_code,
         }
@@ -213,10 +215,10 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
     def _build_rfc_success_response(
         self,
-        data: dict[str, object] | None = None,
+        data: dict[str, t.GeneralValueType] | None = None,
         status_code: int = 200,
         headers: dict[str, str] | None = None,
-    ) -> r[dict[str, object]]:
+    ) -> r[dict[str, t.GeneralValueType]]:
         """Build RFC-compliant success response (RFC 7231).
 
         Args:
@@ -228,9 +230,9 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         FlextResult with RFC-compliant success response
 
         """
-        # Convert dict[str, object] to JsonObject and dict[str, str] to WebHeaders
+        # Convert dict[str, t.GeneralValueType] to JsonObject and dict[str, str] to WebHeaders
         # JsonObject is dict[str, JsonValue] where JsonValue includes compatible types
-        json_data: t.JsonObject | None = None
+        json_data: t.GeneralValueType | None = None
         if data is not None:
             # Create new dict with compatible types
             # JsonValue is str | int | float | bool | None | Sequence[JsonValue] | Mapping[str, JsonValue]
@@ -251,14 +253,14 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             web_headers = dict(headers)
 
         # Build success response manually
-        success_response: dict[str, object] = {
+        success_response: dict[str, t.GeneralValueType] = {
             "status_code": status_code,
         }
         if json_data is not None:
             success_response["data"] = json_data
         if web_headers is not None:
             success_response["headers"] = web_headers
-        return r[dict[str, object]].ok(success_response)
+        return r[dict[str, t.GeneralValueType]].ok(success_response)
 
     def _validate_status_code(self, status_code: int) -> r[int]:
         """Validate HTTP status code (RFC 7231).
@@ -309,8 +311,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         """
         return (
-            status_code >= FlextApiConstants.HTTP_CLIENT_ERROR_MIN
-            and status_code < FlextApiConstants.HTTP_CLIENT_ERROR_MAX
+            status_code >= FlextApiConstants.Api.HTTP_CLIENT_ERROR_MIN
+            and status_code < FlextApiConstants.Api.HTTP_CLIENT_ERROR_MAX
         )
 
     def _is_server_error(self, status_code: int) -> bool:
@@ -323,7 +325,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         True if status code indicates server error (5xx range)
 
         """
-        return status_code >= FlextApiConstants.HTTP_SERVER_ERROR_MIN
+        return status_code >= FlextApiConstants.Api.HTTP_SERVER_ERROR_MIN
 
     def _should_retry(self, status_code: int, attempt: int, max_retries: int) -> bool:
         """Determine if request should be retried (RFC 7231).
@@ -341,7 +343,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             return False
 
         # Retry on server errors (5xx) and specific client errors (408, 429)
-        return status_code in FlextApiConstants.HTTPRetry.RETRYABLE_STATUS_CODES
+        return status_code in FlextApiConstants.Api.HTTPRetry.RETRYABLE_STATUS_CODES
 
     def _get_content_type(self, headers: dict[str, str]) -> str:
         """Extract Content-Type from headers (RFC 7231).

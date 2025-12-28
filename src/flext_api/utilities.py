@@ -8,8 +8,10 @@ from enum import StrEnum
 from typing import Annotated, TypeIs
 from urllib.parse import urlparse
 
-from flext_core import r, u
+from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator
+
+from flext_api.typings import t
 
 # Local constants to avoid circular import with constants.py
 MAX_HOSTNAME_LENGTH: int = 253
@@ -27,7 +29,7 @@ VALID_HTTP_METHODS: frozenset[str] = frozenset({
 })
 
 
-class FlextApiUtilities(u):
+class FlextApiUtilities(FlextUtilities):
     """FlextApi utilities extending FlextUtilities with API-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:
@@ -45,35 +47,35 @@ class FlextApiUtilities(u):
         """API-specific utility namespace.
 
         This namespace groups all API-specific utilities for better organization
-        and cross-project access. Access via u.Api.* pattern.
+        and cross-project access. Access via FlextUtilities.Api.* pattern.
 
         Example:
             from flext_api.utilities import u
-            result = u.Api.Collection.parse_sequence(Status, ["active", "pending"])
-            parsed = u.Api.Args.parse_kwargs(kwargs, enum_fields)
+            result = FlextUtilities.Api.Collection.parse_sequence(Status, ["active", "pending"])
+            parsed = FlextUtilities.Api.Args.parse_kwargs(kwargs, enum_fields)
 
         """
 
-        class Collection(u.Collection):
+        class Collection(FlextUtilities.Collection):
             """Collection utilities extending u_core.Collection via inheritance.
 
             Exposes all flext-core Collection methods through inheritance hierarchy.
-            Access via u.Api.Collection.* pattern.
+            Access via FlextUtilities.Api.Collection.* pattern.
             """
 
-        class Args(u.Args):
+        class Args(FlextUtilities.Args):
             """Args utilities extending u_core.Args via inheritance.
 
             Exposes all flext-core Args methods through inheritance hierarchy,
             including validated, validated_with_result, parse_kwargs, and get_enum_params.
-            Access via u.Api.Args.* pattern.
+            Access via FlextUtilities.Api.Args.* pattern.
             """
 
-        class Model(u.Model):
+        class Model(FlextUtilities.Model):
             """Model utilities extending u_core.Model via inheritance.
 
             Exposes all flext-core Model methods through inheritance hierarchy.
-            Access via u.Api.Model.* pattern.
+            Access via FlextUtilities.Api.Model.* pattern.
             """
 
         class Pydantic:
@@ -84,7 +86,7 @@ class FlextApiUtilities(u):
                 """Create Annotated type with automatic enum coercion."""
                 return Annotated[
                     enum_cls,
-                    BeforeValidator(u.Enum.coerce_validator(enum_cls)),
+                    BeforeValidator(FlextUtilities.Enum.coerce_validator(enum_cls)),
                 ]
 
         class RequestUtils:
@@ -93,7 +95,7 @@ class FlextApiUtilities(u):
             @staticmethod
             def extract_body_from_kwargs(
                 data: object | None,
-                kwargs: dict[str, object] | None,
+                kwargs: dict[str, t.GeneralValueType] | None,
             ) -> r[object]:
                 """Extract body from data or kwargs - returns empty dict if no body found."""
                 if data is not None:
@@ -107,7 +109,7 @@ class FlextApiUtilities(u):
             @staticmethod
             def merge_headers(
                 headers: dict[str, str] | None,
-                kwargs: dict[str, object] | None,
+                kwargs: dict[str, t.GeneralValueType] | None,
             ) -> r[dict[str, str]]:
                 """Merge headers from headers dict and kwargs."""
                 merged: dict[str, str] = {}
@@ -122,7 +124,7 @@ class FlextApiUtilities(u):
             @staticmethod
             def validate_and_extract_timeout(
                 timeout: float | str | None,
-                kwargs: dict[str, object] | None,
+                kwargs: dict[str, t.GeneralValueType] | None,
             ) -> r[float]:
                 """Validate and extract timeout from timeout value or kwargs.
 
@@ -165,13 +167,13 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def build_success_response(
-            data: object = None,
+            data: t.GeneralValueType = None,
             message: str = "Success",
             status_code: int = 200,
             headers: dict[str, str] | None = None,
-        ) -> r[dict[str, object]]:
+        ) -> r[dict[str, t.GeneralValueType]]:
             """Build success response with optional data and message."""
-            response: dict[str, object] = {
+            response: dict[str, t.GeneralValueType] = {
                 "status": "success",
                 "data": data,
                 "message": message,
@@ -186,11 +188,11 @@ class FlextApiUtilities(u):
         def build_error_result(
             error: str,
             status_code: int = 400,
-            data: object | None = None,
+            data: t.GeneralValueType | None = None,
             headers: dict[str, str] | None = None,
-        ) -> r[dict[str, object]]:
+        ) -> r[dict[str, t.GeneralValueType]]:
             """Build error result - returns FlextResult with error response."""
-            response: dict[str, object] = {
+            response: dict[str, t.GeneralValueType] = {
                 "error": error,
                 "status_code": status_code,
             }
@@ -205,7 +207,7 @@ class FlextApiUtilities(u):
             message: str,
             status_code: int = 400,
             error_code: str | None = None,
-        ) -> dict[str, object]:
+        ) -> dict[str, t.GeneralValueType]:
             """Build error response - returns plain dict."""
             return {
                 "success": False,
@@ -225,7 +227,7 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def extract_page_params(
-            params: dict[str, object],
+            params: dict[str, t.GeneralValueType],
         ) -> r[tuple[int, int]]:
             """Extract and validate page and page_size from params dict.
 
@@ -251,13 +253,13 @@ class FlextApiUtilities(u):
         @staticmethod
         def extract_pagination_config(
             config: object,
-        ) -> dict[str, object]:
+        ) -> dict[str, t.GeneralValueType]:
             """Extract pagination configuration from config object.
 
             Reads attributes: default_page_size, max_page_size.
             Provides defaults if not found.
             """
-            result: dict[str, object] = {}
+            result: dict[str, t.GeneralValueType] = {}
 
             if hasattr(config, "default_page_size"):
                 result["default_page_size"] = config.default_page_size
@@ -292,11 +294,11 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def prepare_pagination_data(
-            data: list[object],
+            data: list[t.GeneralValueType],
             total: int,
             page: int,
             page_size: int,
-        ) -> r[dict[str, object]]:
+        ) -> r[dict[str, t.GeneralValueType]]:
             """Prepare pagination metadata for response.
 
             Calculates total_pages, has_next, has_prev, next_page, prev_page.
@@ -324,8 +326,8 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def build_pagination_response(
-            pagination_data: dict[str, object],
-        ) -> r[dict[str, object]]:
+            pagination_data: dict[str, t.GeneralValueType],
+        ) -> r[dict[str, t.GeneralValueType]]:
             """Build full pagination response from pagination data dict."""
             if "data" not in pagination_data:
                 return r.fail("pagination_data must contain 'data' key")
@@ -337,11 +339,11 @@ class FlextApiUtilities(u):
 
         @staticmethod
         def build_paginated_response(
-            data: list[object],
+            data: list[t.GeneralValueType],
             page: int,
             page_size: int,
             total: int | None = None,
-        ) -> r[dict[str, object]]:
+        ) -> r[dict[str, t.GeneralValueType]]:
             """Build paginated response."""
             if page < 1:
                 return r.fail("Page must be >= 1")
@@ -414,8 +416,6 @@ class FlextApiUtilities(u):
         @staticmethod
         def validate_port_number(port: int) -> r[int]:
             """Validate port number range."""
-            if not isinstance(port, int):
-                return r.fail("Port must be an integer")
             if port < 1 or port > MAX_PORT:
                 return r.fail(f"Port must be between 1 and {MAX_PORT}")
             return r.ok(port)
@@ -435,6 +435,10 @@ class FlextApiUtilities(u):
             return url
 
 
+# Short alias for runtime access
+u = FlextApiUtilities
+
 __all__ = [
     "FlextApiUtilities",
+    "u",
 ]

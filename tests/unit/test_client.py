@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
+from typing import cast
 
 import httpx
 import pytest
@@ -30,10 +31,12 @@ class TestFlextApiClientInitialization:
         client = FlextApiClient(config)
 
         # base_url now has default from Constants
-        assert client._config.base_url  # Should have default value
-        assert client._config.timeout == 30.0
-        assert client._config.max_retries == 3
-        assert client._config.headers == {}
+        config = cast(FlextApiSettings, client._config)
+        assert config is not None
+        assert config.base_url  # Should have default value
+        assert config.timeout == 30.0
+        assert config.max_retries == 3
+        assert config.headers == {}
 
     def test_client_with_custom_config(self) -> None:
         """Test client initialization with custom configuration."""
@@ -45,10 +48,12 @@ class TestFlextApiClientInitialization:
         )
         client = FlextApiClient(config)
 
-        assert client._config.base_url == "https://api.example.com"
-        assert client._config.timeout == 60.0
-        assert client._config.max_retries == 5
-        assert client._config.headers["Authorization"] == "Bearer token"
+        config = cast(FlextApiSettings, client._config)
+        assert config is not None
+        assert config.base_url == "https://api.example.com"
+        assert config.timeout == 60.0
+        assert config.max_retries == 5
+        assert config.headers["Authorization"] == "Bearer token"
 
     def test_client_execute_returns_config(self) -> None:
         """Test that execute() returns configuration via FlextResult."""

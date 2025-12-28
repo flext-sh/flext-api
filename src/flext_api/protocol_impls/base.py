@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 from flext_core import FlextRuntime, FlextService, r
 
 from flext_api.typings import t
@@ -69,7 +71,9 @@ class BaseProtocolImplementation(FlextService[bool]):
         service_kwargs: dict[str, t.GeneralValueType] = {}
         for k, v in kwargs.items():
             if k not in {"name", "version", "description"}:
-                service_kwargs[k] = FlextRuntime.normalize_to_general_value(v)
+                service_kwargs[k] = FlextRuntime.normalize_to_general_value(
+                    cast("t.GeneralValueType", v)
+                )
 
         # Initialize FlextService first (establishes logger property from x)
         FlextService.__init__(self, **service_kwargs)
@@ -117,9 +121,9 @@ class BaseProtocolImplementation(FlextService[bool]):
 
     def send_request(
         self,
-        request: dict[str, object],
+        request: dict[str, t.GeneralValueType],
         **kwargs: object,
-    ) -> r[dict[str, object]]:
+    ) -> r[dict[str, t.GeneralValueType]]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -136,7 +140,7 @@ class BaseProtocolImplementation(FlextService[bool]):
         # Acknowledge parameters to avoid linting warnings
         _ = request
         _ = kwargs
-        return r[dict[str, object]].fail(
+        return r[dict[str, t.GeneralValueType]].fail(
             f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
@@ -180,7 +184,9 @@ class BaseProtocolImplementation(FlextService[bool]):
             "supported_protocols": self.get_supported_protocols(),
         }
 
-    def _validate_request(self, request: dict[str, object]) -> r[dict[str, object]]:
+    def _validate_request(
+        self, request: dict[str, t.GeneralValueType]
+    ) -> r[dict[str, t.GeneralValueType]]:
         """Validate request dictionary.
 
         Args:
@@ -190,19 +196,16 @@ class BaseProtocolImplementation(FlextService[bool]):
         FlextResult with validated request or error
 
         """
-        if not isinstance(request, dict):
-            return r[dict[str, object]].fail("Request must be a dictionary")
-
         if not request:
-            return r[dict[str, object]].fail("Request cannot be empty")
+            return r[dict[str, t.GeneralValueType]].fail("Request cannot be empty")
 
-        return r[dict[str, object]].ok(request)
+        return r[dict[str, t.GeneralValueType]].ok(request)
 
     def _build_error_response(
         self,
         error: str,
         status_code: int = 500,
-    ) -> dict[str, object]:
+    ) -> dict[str, t.GeneralValueType]:
         """Build error response dictionary.
 
         Args:
@@ -222,9 +225,9 @@ class BaseProtocolImplementation(FlextService[bool]):
 
     def _build_success_response(
         self,
-        data: dict[str, object] | None = None,
+        data: dict[str, t.GeneralValueType] | None = None,
         status_code: int = 200,
-    ) -> dict[str, object]:
+    ) -> dict[str, t.GeneralValueType]:
         """Build success response dictionary.
 
         Args:
@@ -235,7 +238,7 @@ class BaseProtocolImplementation(FlextService[bool]):
         Success response dictionary
 
         """
-        response: dict[str, object] = {
+        response: dict[str, t.GeneralValueType] = {
             "status": "success",
             "status_code": status_code,
         }

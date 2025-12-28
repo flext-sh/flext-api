@@ -68,7 +68,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         self._validate_responses = validate_responses
 
         # Cached schemas
-        self._cached_schemas: dict[str, dict[str, object]] = {}
+        self._cached_schemas: dict[str, dict[str, t.GeneralValueType]] = {}
 
     def _validate_openapi_version(
         self,
@@ -149,7 +149,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail("'components' field must be a dictionary")
 
         # Type reconstruction: convert JsonValue dict to object dict for method call
-        components_as_obj: dict[str, object] = dict(components_value.items())
+        components_as_obj: dict[str, t.GeneralValueType] = dict(
+            components_value.items()
+        )
         components_result = self._validate_components(components_as_obj)
         if components_result.is_failure:
             return components_result
@@ -246,7 +248,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             "paths": paths_keys,
         })
 
-    def _validate_paths(self, paths: dict[str, object]) -> r[bool]:
+    def _validate_paths(self, paths: dict[str, t.GeneralValueType]) -> r[bool]:
         """Validate OpenAPI paths object.
 
         Args:
@@ -297,7 +299,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_operation(
         self,
-        operation: dict[str, object],
+        operation: dict[str, t.GeneralValueType],
         path: str,
         method: str,
     ) -> r[bool]:
@@ -324,13 +326,15 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             if not isinstance(responses_value, dict):
                 return r[bool].fail(f"Responses must be a dictionary: {method} {path}")
 
-            responses: dict[str, object] = responses_value
+            responses: dict[str, t.GeneralValueType] = responses_value
             if not responses:
                 return r[bool].fail(f"Responses cannot be empty: {method} {path}")
 
         return r[bool].ok(True)
 
-    def _validate_components(self, components: dict[str, object]) -> r[bool]:
+    def _validate_components(
+        self, components: dict[str, t.GeneralValueType]
+    ) -> r[bool]:
         """Validate OpenAPI components object.
 
         Args:
@@ -369,17 +373,19 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_security_schemes_structure(
         self,
-        security_schemes: object,
-    ) -> r[dict[str, object]]:
+        security_schemes: t.GeneralValueType,
+    ) -> r[dict[str, t.GeneralValueType]]:
         """Validate basic structure of security schemes."""
         if not isinstance(security_schemes, dict):
-            return r[dict[str, object]].fail("Security schemes must be a dictionary")
-        return r[dict[str, object]].ok(security_schemes)
+            return r[dict[str, t.GeneralValueType]].fail(
+                "Security schemes must be a dictionary"
+            )
+        return r[dict[str, t.GeneralValueType]].ok(security_schemes)
 
     def _validate_single_security_scheme(
         self,
         scheme_name: str,
-        scheme: object,
+        scheme: t.GeneralValueType,
     ) -> r[bool]:
         """Validate a single security scheme."""
         if not isinstance(scheme, dict):
@@ -432,7 +438,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_security_schemes(
         self,
-        security_schemes: dict[str, object],
+        security_schemes: dict[str, t.GeneralValueType],
     ) -> r[bool]:
         """Validate OpenAPI security schemes.
 
@@ -536,7 +542,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     def load_schema(
         self,
         schema_source: str,
-    ) -> r[object]:
+    ) -> r[t.GeneralValueType]:
         """Load OpenAPI schema from source.
 
         Args:
@@ -549,7 +555,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         # Acknowledge unused parameter (stub implementation)
         _ = schema_source
         # For string paths, would load from file
-        return r[object].fail("File loading not implemented yet")
+        return r[t.GeneralValueType].fail("File loading not implemented yet")
 
 
 __all__ = ["OpenAPISchemaValidator"]

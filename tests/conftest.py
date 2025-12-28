@@ -20,7 +20,7 @@ import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from flext_core import FlextConstants, FlextContainer
+from flext_core import FlextConstants, FlextContainer, FlextTypes as t
 from flext_tests import FlextTestsDocker, FlextTestsDomains
 
 from flext_api import FlextApiClient, FlextApiSettings, FlextApiStorage
@@ -30,7 +30,7 @@ from flext_api import FlextApiClient, FlextApiSettings, FlextApiStorage
 # Type aliases for testing - use expanded types directly
 # Note: t_api.ResponseDict and .WebHeaders are PEP 695 type aliases
 # They don't exist at runtime, so we use the expanded types
-ResponseDict = dict[str, object]  # Matches t_api.ResponseDict
+ResponseDict = dict[str, t.GeneralValueType]  # Matches t_api.ResponseDict
 WebHeaders = dict[str, str | list[str]]  # Matches t_api.WebHeaders
 
 # Configure Faker for deterministic test data
@@ -263,7 +263,7 @@ def sample_service_data() -> ResponseDict:
 
 
 @pytest.fixture
-def sample_payload_data() -> dict[str, object]:
+def sample_payload_data() -> dict[str, t.GeneralValueType]:
     """Sample payload data using FlextTestsDomains.
 
     Returns:
@@ -274,7 +274,7 @@ def sample_payload_data() -> dict[str, object]:
 
 
 @pytest.fixture
-def sample_configuration_data() -> dict[str, object]:
+def sample_configuration_data() -> dict[str, t.GeneralValueType]:
     """Sample configuration data using FlextTestsDomains.
 
     Returns:
