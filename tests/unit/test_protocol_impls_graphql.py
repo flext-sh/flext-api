@@ -58,18 +58,18 @@ class TestGraphQLProtocolPlugin:
         plugin = GraphQLProtocolPlugin()
         result = plugin.send_request({"query": "test"})
         assert result.is_failure
-        assert "not yet implemented" in result.error
+        assert result.error is not None and "not yet implemented" in result.error
 
     def test_send_request_invalid_request(self) -> None:
         """Test send_request with invalid request."""
         plugin = GraphQLProtocolPlugin()
         result = plugin.send_request({})  # Empty dict
         assert result.is_failure
-        assert "cannot be empty" in result.error
+        assert result.error is not None and "cannot be empty" in result.error
 
     def test_send_request_non_dict_request(self) -> None:
         """Test send_request with non-dict request."""
         plugin = GraphQLProtocolPlugin()
-        result = plugin.send_request("not a dict")
+        result = plugin.send_request("not a dict")  # type: ignore[arg-type]
         assert result.is_failure
-        assert "must be a dictionary" in result.error
+        assert result.error is not None and "must be a dictionary" in result.error

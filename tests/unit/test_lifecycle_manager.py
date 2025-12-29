@@ -46,16 +46,16 @@ class TestFlextApiLifecycleManager:
         """Test synchronous resource management with close method."""
         resource = MockSyncResource()
 
-        result = FlextApiLifecycleManager.manage_sync_http_resource(resource)
+        result = FlextApiLifecycleManager.manage_sync_http_resource(resource)  # type: ignore[arg-type]
 
-        assert result is resource
+        assert result is resource  # type: ignore[comparison-overlap]
         assert resource.closed
 
     def test_manage_sync_http_resource_without_close(self) -> None:
         """Test synchronous resource management without close method."""
         resource = object()  # No close method
 
-        result = FlextApiLifecycleManager.manage_sync_http_resource(resource)
+        result = FlextApiLifecycleManager.manage_sync_http_resource(resource)  # type: ignore[arg-type]
 
         assert result is resource
 
@@ -64,8 +64,8 @@ class TestFlextApiLifecycleManager:
         """Test async resource management with aclose method."""
         resource = MockAsyncResource()
 
-        async with FlextApiLifecycleManager.manage_http_resource(resource) as res:
-            assert res is resource
+        async with FlextApiLifecycleManager.manage_http_resource(resource) as res:  # type: ignore[arg-type]
+            assert res is resource  # type: ignore[comparison-overlap]
             assert not resource.closed
 
         assert resource.closed
@@ -75,8 +75,8 @@ class TestFlextApiLifecycleManager:
         """Test async resource management with close method fallback."""
         resource = MockSyncResource()
 
-        async with FlextApiLifecycleManager.manage_http_resource(resource) as res:
-            assert res is resource
+        async with FlextApiLifecycleManager.manage_http_resource(resource) as res:  # type: ignore[arg-type]
+            assert res is resource  # type: ignore[comparison-overlap]
             assert not resource.closed
 
         assert resource.closed
@@ -86,7 +86,7 @@ class TestFlextApiLifecycleManager:
         """Test async resource management without close methods."""
         resource = object()  # No close or aclose
 
-        async with FlextApiLifecycleManager.manage_http_resource(resource) as res:
+        async with FlextApiLifecycleManager.manage_http_resource(resource) as res:  # type: ignore[arg-type]
             assert res is resource
 
 
