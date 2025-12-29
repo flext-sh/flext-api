@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_api.plugins import FlextApiPlugins
+from flext_api.schemas.asyncapi import AsyncAPISchemaValidator
 
 
 class TestFlextApiPluginsPlugin:
@@ -83,19 +84,26 @@ class TestFlextApiPluginsSchema:
 
     def test_schema_plugin_creation(self) -> None:
         """Test creation of Schema plugin."""
-        schema = FlextApiPlugins.Schema(
-            name="test_schema",
-            version="2.0.0",
+        # Use concrete implementation instead of abstract class
+        schema = AsyncAPISchemaValidator(
+            strict_mode=True,
+            validate_messages=True,
         )
 
-        assert schema.name == "test_schema"
-        assert schema.version == "2.0.0"
+        assert schema.name == "asyncapi"  # Fixed name from super().__init__
+        assert schema.version == "3.0.0"  # Fixed version from super().__init__
         assert hasattr(schema, "logger")
 
     def test_schema_plugin_abstract_methods(self) -> None:
         """Test that Schema plugin has expected abstract methods."""
-        schema = FlextApiPlugins.Schema(name="test_schema")
+        # Use concrete implementation to test abstract methods
+        schema = AsyncAPISchemaValidator(name="test_schema")
 
         # Should have lifecycle methods from Plugin base class
         assert hasattr(schema, "initialize")
         assert hasattr(schema, "shutdown")
+
+        # Should have abstract methods implemented
+        assert hasattr(schema, "validate_request")
+        assert hasattr(schema, "validate_response")
+        assert hasattr(schema, "load_schema")
