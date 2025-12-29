@@ -42,9 +42,8 @@ class TestSchema(FlextApiPlugins.Schema):
         """Initialize test schema."""
         super().__init__(name="test_schema", version="1.0.0")
 
-    def validate_request(
-        self, request: dict[str, str | int | float | bool | t.Sequence[object] | t.Mapping[str, object] | None],
-        schema: dict[str, str | int | float | bool | t.Sequence[object] | t.Mapping[str, object] | None]
+    def validate_request(  # type: ignore[override]
+        self, request: dict[str, t.GeneralValueType], schema: dict[str, t.GeneralValueType]
     ) -> r[bool]:
         """Validate request against schema."""
         return r[bool].ok(True)
