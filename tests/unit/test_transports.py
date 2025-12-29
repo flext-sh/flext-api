@@ -68,7 +68,7 @@ class TestFlextWebTransport:
 
     def test_disconnect_when_connected(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test disconnect when client is connected."""
-        import httpx  # CONDITIONAL
+        import httpx  # CONDITIONAL  # CONDITIONAL
         mock_client = MagicMock(spec=httpx.Client)
         transport._client = mock_client
 
@@ -82,7 +82,7 @@ class TestFlextWebTransport:
     def test_disconnect_when_not_connected(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test disconnect when no client is connected."""
         # Create a mock that behaves like httpx.Client
-        import httpx  # CONDITIONAL
+        import httpx  # CONDITIONAL  # CONDITIONAL
         mock_client = MagicMock(spec=httpx.Client)
         result = transport.disconnect(mock_client)
 
@@ -92,7 +92,7 @@ class TestFlextWebTransport:
 
     def test_disconnect_wrong_connection(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test disconnect with wrong connection object."""
-        import httpx  # CONDITIONAL
+        import httpx  # CONDITIONAL  # CONDITIONAL
         mock_client = MagicMock(spec=httpx.Client)
         transport._client = mock_client
 
@@ -105,7 +105,7 @@ class TestFlextWebTransport:
 
     def test_send_with_connection(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test sending data through connection."""
-        import httpx  # CONDITIONAL
+        import httpx  # CONDITIONAL  # CONDITIONAL
         mock_client = MagicMock(spec=httpx.Client)
         mock_response = MagicMock()
         mock_client.request.return_value = mock_response
