@@ -48,13 +48,13 @@ class TestSchema(FlextApiPlugins.Schema):
         """Validate request against schema."""
         return r[bool].ok(True)
 
-    def validate_response(
+    def validate_response(  # type: ignore[override]
         self, response: dict[str, t.GeneralValueType], schema: dict[str, t.GeneralValueType]
     ) -> r[bool]:
         """Validate response against schema."""
         return r[bool].ok(True)
 
-    def load_schema(self, schema_source: str) -> r[object]:
+    def load_schema(self, schema_source: str) -> r[object]:  # type: ignore[override]
         """Load schema from source."""
         return r[object].ok({})
 
@@ -74,7 +74,7 @@ class TestTransport(FlextApiPlugins.Transport):
         """Close connection."""
         return r[bool].ok(True)
 
-    def send(
+    def send(  # type: ignore[override]
         self,
         connection: object,
         data: dict[str, t.GeneralValueType] | str | bytes,
@@ -83,7 +83,7 @@ class TestTransport(FlextApiPlugins.Transport):
         """Send data through connection."""
         return r[bool].ok(True)
 
-    def receive(
+    def receive(  # type: ignore[override]
         self, connection: object, **options: object
     ) -> r[dict[str, t.GeneralValueType] | str | bytes]:
         """Receive data from connection."""
