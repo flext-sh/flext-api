@@ -41,7 +41,7 @@ class TestBaseProtocolImplementation:
         protocol = BaseProtocolImplementation(name="test")
         result = protocol.execute()
         assert result.is_failure
-        assert "not initialized" in result.error
+        assert result.error is not None and "not initialized" in result.error
 
     def test_initialize_success(self) -> None:
         """Test successful initialization."""
@@ -56,7 +56,7 @@ class TestBaseProtocolImplementation:
         protocol.initialize()
         result = protocol.initialize()
         assert result.is_failure
-        assert "already initialized" in result.error
+        assert result.error is not None and "already initialized" in result.error
 
     def test_execute_after_initialization(self) -> None:
         """Test execute method after initialization."""
@@ -79,14 +79,14 @@ class TestBaseProtocolImplementation:
         protocol = BaseProtocolImplementation(name="test")
         result = protocol.shutdown()
         assert result.is_failure
-        assert "not initialized" in result.error
+        assert result.error is not None and "not initialized" in result.error
 
     def test_send_request_not_implemented(self) -> None:
         """Test send_request method is not implemented in base class."""
         protocol = BaseProtocolImplementation(name="test")
         result = protocol.send_request({})
         assert result.is_failure
-        assert "must be implemented" in result.error
+        assert result.error is not None and "must be implemented" in result.error
 
     def test_supports_protocol_default(self) -> None:
         """Test supports_protocol default implementation."""
@@ -133,16 +133,16 @@ class TestBaseProtocolImplementation:
     def test_validate_request_not_dict(self) -> None:
         """Test _validate_request with non-dict request."""
         protocol = BaseProtocolImplementation(name="test")
-        result = protocol._validate_request("not a dict")
+        result = protocol._validate_request("not a dict")  # type: ignore[arg-type]
         assert result.is_failure
-        assert "must be a dictionary" in result.error
+        assert result.error is not None and "must be a dictionary" in result.error
 
     def test_validate_request_empty(self) -> None:
         """Test _validate_request with empty dict."""
         protocol = BaseProtocolImplementation(name="test")
         result = protocol._validate_request({})
         assert result.is_failure
-        assert "cannot be empty" in result.error
+        assert result.error is not None and "cannot be empty" in result.error
 
     def test_build_error_response(self) -> None:
         """Test _build_error_response method."""
@@ -167,7 +167,7 @@ class TestBaseProtocolImplementation:
         """Test _build_success_response with data."""
         protocol = BaseProtocolImplementation(name="test")
         data = {"result": "success"}
-        response = protocol._build_success_response(data, 201)
+        response = protocol._build_success_response(data, 201)  # type: ignore[arg-type]
         assert isinstance(response, dict)
         assert response["status"] == "success"
         assert response["status_code"] == 201

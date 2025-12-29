@@ -24,7 +24,7 @@ class TestProtocol(FlextApiPlugins.Protocol):
         """Initialize test protocol."""
         super().__init__(name="test_protocol", version="1.0.0")
 
-    def send_request(
+    def send_request(  # type: ignore[override]
         self, request: dict[str, t.GeneralValueType], **kwargs: object
     ) -> r[dict[str, t.GeneralValueType]]:
         """Send a test request."""
@@ -43,7 +43,8 @@ class TestSchema(FlextApiPlugins.Schema):
         super().__init__(name="test_schema", version="1.0.0")
 
     def validate_request(
-        self, request: dict[str, t.GeneralValueType], schema: dict[str, t.GeneralValueType]
+        self, request: dict[str, str | int | float | bool | t.Sequence[object] | t.Mapping[str, object] | None],
+        schema: dict[str, str | int | float | bool | t.Sequence[object] | t.Mapping[str, object] | None]
     ) -> r[bool]:
         """Validate request against schema."""
         return r[bool].ok(True)

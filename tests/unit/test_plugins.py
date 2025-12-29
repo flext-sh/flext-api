@@ -97,7 +97,7 @@ class TestFlextApiPluginsSchema:
     def test_schema_plugin_abstract_methods(self) -> None:
         """Test that Schema plugin has expected abstract methods."""
         # Use concrete implementation to test abstract methods
-        schema = AsyncAPISchemaValidator(name="test_schema")
+        schema = AsyncAPISchemaValidator()
 
         # Should have lifecycle methods from Plugin base class
         assert hasattr(schema, "initialize")
