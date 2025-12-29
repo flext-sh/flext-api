@@ -131,7 +131,7 @@ class TestFlextWebTransport:
 
         assert result.is_failure
         assert result.error is not None
-        assert result.error is not None and "Connection must be an httpx.Client" in result.error
+        assert "Connection must be an httpx.Client" in result.error
 
     def test_send_no_connection(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test sending without established connection."""
@@ -139,7 +139,7 @@ class TestFlextWebTransport:
 
         assert result.is_failure
         assert result.error is not None
-        assert result.error is not None and "Connection must be an httpx.Client" in result.error
+        assert "Connection must be an httpx.Client" in result.error
 
     def test_extract_request_params_with_method_and_url(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test parameter extraction with method and URL."""
@@ -164,7 +164,7 @@ class TestFlextWebTransport:
 
         assert result.is_failure
         assert result.error is not None
-        assert result.error is not None and "URL is required" in result.error
+        assert "URL is required" in result.error
 
 
 class TestWebSocketTransport:
@@ -176,7 +176,7 @@ class TestWebSocketTransport:
         result = transport.connect("ws://example.com")
         assert result.is_failure
         assert result.error is not None
-        assert result.error is not None and "WebSocket transport not implemented" in result.error
+        assert "WebSocket transport not implemented" in result.error
 
     def test_disconnect_returns_not_implemented(self) -> None:
         """Test WebSocket disconnect returns not implemented error."""
@@ -184,7 +184,7 @@ class TestWebSocketTransport:
         result = transport.disconnect("dummy_connection")
         assert result.is_failure
         assert result.error is not None
-        assert result.error is not None and "WebSocket transport not implemented" in result.error
+        assert "WebSocket transport not implemented" in result.error
 
     def test_send_returns_not_implemented(self) -> None:
         """Test WebSocket send returns not implemented error."""
@@ -192,7 +192,7 @@ class TestWebSocketTransport:
         result = transport.send("dummy_connection", {})
         assert result.is_failure
         assert result.error is not None
-        assert result.error is not None and "WebSocket transport not implemented" in result.error
+        assert "WebSocket transport not implemented" in result.error
 
 
 class TestSseTransport:
