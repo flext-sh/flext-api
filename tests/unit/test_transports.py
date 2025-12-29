@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock  # TEST-INFRA
+from unittest.mock import MagicMock, patch  # TEST-INFRA
 # All error checks below are safe with null checks, patch
 
 import pytest
@@ -203,21 +203,21 @@ class TestSseTransport:
         transport = FlextApiTransports.SseTransport()
         result = transport.connect("http://example.com/sse")
         assert result.is_failure
-        assert "SSE transport not implemented" in result.error  # type: ignore[union-attr]
+        assert result.error is not None and "SSE transport not implemented" in result.error
 
     def test_disconnect_returns_not_implemented(self) -> None:
         """Test SSE disconnect returns not implemented error."""
         transport = FlextApiTransports.SseTransport()
         result = transport.disconnect("dummy_connection")
         assert result.is_failure
-        assert "SSE transport not implemented" in result.error  # type: ignore[union-attr]
+        assert result.error is not None and "SSE transport not implemented" in result.error
 
     def test_send_returns_not_implemented(self) -> None:
         """Test SSE send returns not implemented error."""
         transport = FlextApiTransports.SseTransport()
         result = transport.send("dummy_connection", {})
         assert result.is_failure
-        assert "SSE transport not implemented" in result.error  # type: ignore[union-attr]
+        assert result.error is not None and "SSE transport not implemented" in result.error
 
 
 class TestGraphQLTransport:
@@ -228,21 +228,21 @@ class TestGraphQLTransport:
         transport = FlextApiTransports.GraphQLTransport()
         result = transport.connect("http://example.com/graphql")
         assert result.is_failure
-        assert "GraphQL transport not implemented" in result.error  # type: ignore[union-attr]
+        assert result.error is not None and "GraphQL transport not implemented" in result.error
 
     def test_disconnect_returns_not_implemented(self) -> None:
         """Test GraphQL disconnect returns not implemented error."""
         transport = FlextApiTransports.GraphQLTransport()
         result = transport.disconnect("dummy_connection")
         assert result.is_failure
-        assert "GraphQL transport not implemented" in result.error  # type: ignore[union-attr]
+        assert result.error is not None and "GraphQL transport not implemented" in result.error
 
     def test_send_returns_not_implemented(self) -> None:
         """Test GraphQL send returns not implemented error."""
         transport = FlextApiTransports.GraphQLTransport()
         result = transport.send("dummy_connection", {})
         assert result.is_failure
-        assert "GraphQL transport not implemented" in result.error  # type: ignore[union-attr]
+        assert result.error is not None and "GraphQL transport not implemented" in result.error
 
 
 class TestGrpcTransport:
@@ -253,18 +253,18 @@ class TestGrpcTransport:
         transport = FlextApiTransports.GrpcTransport()
         result = transport.connect("grpc://example.com")
         assert result.is_failure
-        assert "gRPC transport not implemented" in result.error  # type: ignore[union-attr]
+        assert result.error is not None and "gRPC transport not implemented" in result.error
 
     def test_disconnect_returns_not_implemented(self) -> None:
         """Test gRPC disconnect returns not implemented error."""
         transport = FlextApiTransports.GrpcTransport()
         result = transport.disconnect("dummy_connection")
         assert result.is_failure
-        assert "gRPC transport not implemented" in result.error  # type: ignore[union-attr]
+        assert result.error is not None and "gRPC transport not implemented" in result.error
 
     def test_send_returns_not_implemented(self) -> None:
         """Test gRPC send returns not implemented error."""
         transport = FlextApiTransports.GrpcTransport()
         result = transport.send("dummy_connection", {})
         assert result.is_failure
-        assert "gRPC transport not implemented" in result.error  # type: ignore[union-attr]
+        assert result.error is not None and "gRPC transport not implemented" in result.error

@@ -20,14 +20,14 @@ class TestFlextApiSerializers:
 
     def test_msgpack_packb_success(self) -> None:
         """Test MessagePack packb functionality."""
-        data = {"key": "value", "number": 42}
+        data: dict[str, str | int] = {"key": "value", "number": 42}
 
         result = FlextApiSerializers.MessagePack.packb(data)
         assert isinstance(result, bytes)
 
     def test_msgpack_unpackb_success(self) -> None:
         """Test MessagePack unpackb functionality."""
-        data = {"key": "value", "number": 42}
+        data: dict[str, str | int] = {"key": "value", "number": 42}
         packed = FlextApiSerializers.MessagePack.packb(data)
 
         unpacked = FlextApiSerializers.MessagePack.unpackb(packed)
