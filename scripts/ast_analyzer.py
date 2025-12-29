@@ -229,7 +229,7 @@ class ASTAnalyzer:
             self.analyze_file(file_path)
             print(" ✓")
 
-    def _format_section_header(self, title: str, items: list) -> list[str]:
+    def _format_section_header(self, title: str, items: list[Any]) -> list[str]:
         """Format section header with count."""
         return [
             f"{title.upper()} ({len(items)}):",
