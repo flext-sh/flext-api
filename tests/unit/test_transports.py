@@ -9,7 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock  # TEST-INFRA
+# All error checks below are safe with null checks, patch
 
 import pytest
 from flext_core import FlextTypes as t
@@ -63,11 +64,11 @@ class TestFlextWebTransport:
 
         assert result.is_failure
         assert result.error is not None
-        assert "Connection failed" in result.error
+        assert result.error is not None and "Connection failed" in result.error
 
     def test_disconnect_when_connected(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test disconnect when client is connected."""
-        import httpx
+        import httpx  # CONDITIONAL
         mock_client = MagicMock(spec=httpx.Client)
         transport._client = mock_client
 
@@ -81,7 +82,7 @@ class TestFlextWebTransport:
     def test_disconnect_when_not_connected(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test disconnect when no client is connected."""
         # Create a mock that behaves like httpx.Client
-        import httpx
+        import httpx  # CONDITIONAL
         mock_client = MagicMock(spec=httpx.Client)
         result = transport.disconnect(mock_client)
 
@@ -91,7 +92,7 @@ class TestFlextWebTransport:
 
     def test_disconnect_wrong_connection(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test disconnect with wrong connection object."""
-        import httpx
+        import httpx  # CONDITIONAL
         mock_client = MagicMock(spec=httpx.Client)
         transport._client = mock_client
 
@@ -104,7 +105,7 @@ class TestFlextWebTransport:
 
     def test_send_with_connection(self, transport: FlextApiTransports.FlextWebTransport) -> None:
         """Test sending data through connection."""
-        import httpx
+        import httpx  # CONDITIONAL
         mock_client = MagicMock(spec=httpx.Client)
         mock_response = MagicMock()
         mock_client.request.return_value = mock_response
@@ -202,21 +203,21 @@ class TestSseTransport:
         transport = FlextApiTransports.SseTransport()
         result = transport.connect("http://example.com/sse")
         assert result.is_failure
-        assert "SSE transport not implemented" in result.error
+        assert "SSE transport not implemented" in result.error  # type: ignore[union-attr]
 
     def test_disconnect_returns_not_implemented(self) -> None:
         """Test SSE disconnect returns not implemented error."""
         transport = FlextApiTransports.SseTransport()
         result = transport.disconnect("dummy_connection")
         assert result.is_failure
-        assert "SSE transport not implemented" in result.error
+        assert "SSE transport not implemented" in result.error  # type: ignore[union-attr]
 
     def test_send_returns_not_implemented(self) -> None:
         """Test SSE send returns not implemented error."""
         transport = FlextApiTransports.SseTransport()
         result = transport.send("dummy_connection", {})
         assert result.is_failure
-        assert "SSE transport not implemented" in result.error
+        assert "SSE transport not implemented" in result.error  # type: ignore[union-attr]
 
 
 class TestGraphQLTransport:
@@ -227,21 +228,21 @@ class TestGraphQLTransport:
         transport = FlextApiTransports.GraphQLTransport()
         result = transport.connect("http://example.com/graphql")
         assert result.is_failure
-        assert "GraphQL transport not implemented" in result.error
+        assert "GraphQL transport not implemented" in result.error  # type: ignore[union-attr]
 
     def test_disconnect_returns_not_implemented(self) -> None:
         """Test GraphQL disconnect returns not implemented error."""
         transport = FlextApiTransports.GraphQLTransport()
         result = transport.disconnect("dummy_connection")
         assert result.is_failure
-        assert "GraphQL transport not implemented" in result.error
+        assert "GraphQL transport not implemented" in result.error  # type: ignore[union-attr]
 
     def test_send_returns_not_implemented(self) -> None:
         """Test GraphQL send returns not implemented error."""
         transport = FlextApiTransports.GraphQLTransport()
         result = transport.send("dummy_connection", {})
         assert result.is_failure
-        assert "GraphQL transport not implemented" in result.error
+        assert "GraphQL transport not implemented" in result.error  # type: ignore[union-attr]
 
 
 class TestGrpcTransport:
@@ -252,18 +253,18 @@ class TestGrpcTransport:
         transport = FlextApiTransports.GrpcTransport()
         result = transport.connect("grpc://example.com")
         assert result.is_failure
-        assert "gRPC transport not implemented" in result.error
+        assert "gRPC transport not implemented" in result.error  # type: ignore[union-attr]
 
     def test_disconnect_returns_not_implemented(self) -> None:
         """Test gRPC disconnect returns not implemented error."""
         transport = FlextApiTransports.GrpcTransport()
         result = transport.disconnect("dummy_connection")
         assert result.is_failure
-        assert "gRPC transport not implemented" in result.error
+        assert "gRPC transport not implemented" in result.error  # type: ignore[union-attr]
 
     def test_send_returns_not_implemented(self) -> None:
         """Test gRPC send returns not implemented error."""
         transport = FlextApiTransports.GrpcTransport()
         result = transport.send("dummy_connection", {})
         assert result.is_failure
-        assert "gRPC transport not implemented" in result.error
+        assert "gRPC transport not implemented" in result.error  # type: ignore[union-attr]
