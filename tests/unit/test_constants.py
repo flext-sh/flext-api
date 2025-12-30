@@ -20,25 +20,25 @@ class TestConstants:
 
     def test_user_agent_constant(self) -> None:
         """Test user agent constant."""
-        user_agent = FlextApiConstants.DEFAULT_USER_AGENT
+        user_agent = FlextApiConstants.Api.DEFAULT_USER_AGENT
         assert isinstance(user_agent, str)
         assert "FlextAPI" in user_agent
 
     def test_timeout_constant(self) -> None:
         """Test timeout constant."""
-        timeout = FlextApiConstants.DEFAULT_TIMEOUT
+        timeout = FlextApiConstants.Api.DEFAULT_TIMEOUT
         assert isinstance(timeout, (int, float))
         assert timeout > 0
 
     def test_retries_constant(self) -> None:
         """Test max retries constant."""
-        retries = FlextApiConstants.DEFAULT_RETRIES
+        retries = FlextApiConstants.Api.DEFAULT_RETRIES
         assert isinstance(retries, int)
         assert retries >= 0
 
     def test_backoff_factor_constant(self) -> None:
         """Test backoff factor constant."""
-        factor = FlextApiConstants.BACKOFF_FACTOR
+        factor = FlextApiConstants.Api.BACKOFF_FACTOR
         assert isinstance(factor, float)
         assert factor > 0
 
@@ -53,8 +53,8 @@ class TestFlextApiConstants:
         not_found_code = http.HTTPStatus.NOT_FOUND.value
 
         # Test success range
-        success_min = FlextApiConstants.HTTP_SUCCESS_MIN
-        success_max = FlextApiConstants.HTTP_SUCCESS_MAX
+        success_min = FlextApiConstants.Api.HTTP_SUCCESS_MIN
+        success_max = FlextApiConstants.Api.HTTP_SUCCESS_MAX
 
         assert success_min <= ok_code < success_max
         assert success_min <= created_code < success_max
@@ -99,12 +99,12 @@ class TestFlextApiConstants:
             AssertionError: If rate limit constants are not properly configured.
 
         """
-        if FlextApiConstants.RATE_LIMIT_REQUESTS != 1000:
-            msg = f"Expected 1000, got {FlextApiConstants.RATE_LIMIT_REQUESTS}"
+        if FlextApiConstants.Api.RATE_LIMIT_REQUESTS != 1000:
+            msg = f"Expected 1000, got {FlextApiConstants.Api.RATE_LIMIT_REQUESTS}"
             raise AssertionError(
                 msg,
             )
-        assert FlextApiConstants.RATE_LIMIT_WINDOW == 3600
+        assert FlextApiConstants.Api.RATE_LIMIT_WINDOW == 3600
 
     def test_response_templates(self) -> None:
         """Test response templates.
@@ -113,14 +113,14 @@ class TestFlextApiConstants:
             AssertionError: If response templates are not properly configured.
 
         """
-        success_response = FlextApiConstants.SUCCESS_RESPONSE_TEMPLATE
+        success_response = FlextApiConstants.Api.SUCCESS_RESPONSE_TEMPLATE
         if success_response["status"] != "success":
             msg = f"Expected success, got {success_response['status']}"
             raise AssertionError(msg)
         assert success_response["data"] is None
         assert success_response["error"] is None
 
-        error_response = FlextApiConstants.ERROR_RESPONSE_TEMPLATE
+        error_response = FlextApiConstants.Api.ERROR_RESPONSE_TEMPLATE
         if error_response["status"] != "error":
             msg = f"Expected error, got {error_response['status']}"
             raise AssertionError(msg)

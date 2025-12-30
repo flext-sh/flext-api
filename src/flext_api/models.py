@@ -12,11 +12,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from typing import Self
+from typing import Self, cast
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels
-from flext_core.models import m
 from pydantic import Field, computed_field, field_validator
 
 from flext_api.constants import c
@@ -46,7 +45,7 @@ class FlextApiModels(FlextModels):
     # HTTP REQUEST/RESPONSE VALUE OBJECTS (Immutable)
     # =========================================================================
 
-    class HttpRequest(m.Value):
+    class HttpRequest(FlextModels.Value):
         """Immutable HTTP request value object.
 
         Represents a complete HTTP request with all necessary parameters.
@@ -60,7 +59,12 @@ class FlextApiModels(FlextModels):
             description="HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)",
             pattern=r"^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|CONNECT|TRACE)$",
         )
-        url: str = Field(..., min_length=1, max_length=2048, description="Request URL")
+        url: str = Field(
+            ...,
+            min_length=1,
+            max_length=c.Api.MAX_URL_LENGTH,
+            description="Request URL",
+        )
         headers: dict[str, str] = Field(
             default_factory=dict,
             description="HTTP request headers",
@@ -77,7 +81,7 @@ class FlextApiModels(FlextModels):
             if v is None:
                 return {}
             if isinstance(v, dict):
-                return v
+                return cast("t.Api.JsonObject", v)
             if isinstance(v, (str, bytes)):
                 return v
             return {}
@@ -106,7 +110,7 @@ class FlextApiModels(FlextModels):
             # Default from Constants
             return c.Api.ContentType.JSON
 
-    class HttpResponse(m.Value):
+    class HttpResponse(FlextModels.Value):
         """Immutable HTTP response value object.
 
         Represents a complete HTTP response with all returned data.
@@ -115,9 +119,9 @@ class FlextApiModels(FlextModels):
 
         status_code: int = Field(
             ...,
-            ge=100,
-            le=599,
-            description="HTTP status code (100-599)",
+            ge=c.Api.HTTP_STATUS_MIN,
+            le=c.Api.HTTP_STATUS_MAX,
+            description=f"HTTP status code ({c.Api.HTTP_STATUS_MIN}-{c.Api.HTTP_STATUS_MAX})",
         )
         headers: dict[str, str] = Field(
             default_factory=dict,
@@ -135,7 +139,7 @@ class FlextApiModels(FlextModels):
             if v is None:
                 return None  # Explicit None is valid (e.g., for 204 responses)
             if isinstance(v, dict):
-                return v
+                return cast("t.Api.JsonObject", v)
             if isinstance(v, (str, bytes)):
                 return v
             # Default to empty dict if not specified
@@ -179,13 +183,13 @@ class FlextApiModels(FlextModels):
     # URL AND PARSING MODELS
     # =========================================================================
 
-    class Url(m.Value):
+    class Url(FlextModels.Value):
         """URL parsing and validation model (immutable value object)."""
 
         url: str = Field(
             ...,
             min_length=1,
-            max_length=2048,
+            max_length=c.Api.MAX_URL_LENGTH,
             description="Full URL string",
         )
 
@@ -250,7 +254,7 @@ class FlextApiModels(FlextModels):
     # CONFIGURATION MODELS
     # =========================================================================
 
-    class ClientConfig(m.Value):
+    class ClientConfig(FlextModels.Value):
         """HTTP client configuration model (immutable value object)."""
 
         base_url: str = Field(
@@ -287,7 +291,7 @@ class FlextApiModels(FlextModels):
     # PAGINATION MODELS
     # =========================================================================
 
-    class PaginationInfo(m.Value):
+    class PaginationInfo(FlextModels.Value):
         """Pagination information model for HTTP operations (immutable value object)."""
 
         page: int = Field(
@@ -331,9 +335,9 @@ class FlextApiModels(FlextModels):
         message: str = Field(..., description="Human-readable error message")
         error_code: str = Field(default="", description="Machine-readable error code")
         status_code: int = Field(
-            default=500,
-            ge=100,
-            le=599,
+            default=c.Api.HTTP_SERVER_ERROR_MIN,
+            ge=c.Api.HTTP_STATUS_MIN,
+            le=c.Api.HTTP_STATUS_MAX,
             description="HTTP status code",
         )
         details: t.Api.JsonObject = Field(
