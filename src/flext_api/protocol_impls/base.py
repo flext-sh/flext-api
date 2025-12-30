@@ -53,7 +53,7 @@ class BaseProtocolImplementation:
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **_kwargs: t.Types.GeneralValueType,
+        **_kwargs: t.GeneralValueType,
     ) -> None:
         """Initialize base protocol implementation.
 
