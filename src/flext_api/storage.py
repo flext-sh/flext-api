@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Self, cast, override
+from typing import Self, cast
 
 from flext_core import FlextLogger, r, u
 from pydantic import BaseModel, ConfigDict
@@ -314,7 +314,6 @@ class FlextApiStorage:
         # Use default backend (this is OK - it's a valid default, not a fallback)
         return r[str].ok("memory")
 
-    @override
     def execute(
         self, *_args: t.GeneralValueType, **_kwargs: t.GeneralValueType
     ) -> r[bool]:

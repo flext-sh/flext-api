@@ -51,7 +51,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **kwargs: object,
+        **kwargs: t.GeneralValueType,
     ) -> None:
         """Initialize RFC protocol implementation.
 

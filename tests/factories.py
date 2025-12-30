@@ -35,11 +35,11 @@ class FlextApiFactories:
     """
 
     @staticmethod
-    def create_client_config(**overrides: object) -> t_api.ResponseDict:
+    def create_client_config(**overrides: object) -> t_api.Api.ResponseDict:
         """Create client config using FlextTestsDomains - ABSOLUTE usage.
 
         Returns:
-            t_api.ResponseDict: Client configuration dictionary.
+            t_api.Api.ResponseDict: Client configuration dictionary.
 
         """
         # Use FlextTestsDomains for base configuration
@@ -215,11 +215,11 @@ class FlextApiFactories:
         return FlextApiStorage(config)
 
     @staticmethod
-    def create_request_data(**overrides: object) -> t_api.ResponseDict:
+    def create_request_data(**overrides: object) -> t_api.Api.ResponseDict:
         """Create HTTP request data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            t_api.ResponseDict: Request data dictionary.
+            t_api.Api.ResponseDict: Request data dictionary.
 
         """
         # Use FlextTestsDomains for payload structure
@@ -269,11 +269,11 @@ class FlextApiFactories:
         return base_request
 
     @staticmethod
-    def create_response_data(**overrides: object) -> t_api.ResponseDict:
+    def create_response_data(**overrides: object) -> t_api.Api.ResponseDict:
         """Create HTTP response data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            t_api.ResponseDict: Response data dictionary.
+            t_api.Api.ResponseDict: Response data dictionary.
 
         """
         # Use FlextTestsDomains for API response structure
@@ -349,11 +349,11 @@ class FlextApiFactories:
         return response_data
 
     @staticmethod
-    def create_user_data(**overrides: object) -> t_api.ResponseDict:
+    def create_user_data(**overrides: object) -> t_api.Api.ResponseDict:
         """Create user data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            t_api.ResponseDict: User data dictionary.
+            t_api.Api.ResponseDict: User data dictionary.
 
         """
         # Filter overrides to only str | bool as required by create_user
@@ -368,55 +368,55 @@ class FlextApiFactories:
     @staticmethod
     def create_error_result(
         error_message: str = "Test error",
-    ) -> FlextResult[t_api.ResponseDict]:
+    ) -> FlextResult[t_api.Api.ResponseDict]:
         """Create error FlextResult using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            FlextResult[t_api.ResponseDict]: Error result instance.
+            FlextResult[t_api.Api.ResponseDict]: Error result instance.
 
         """
-        return r[t_api.ResponseDict].fail(error_message)
+        return r[t_api.Api.ResponseDict].fail(error_message)
 
     @staticmethod
     def create_success_result(
-        data: t_api.ResponseDict | None = None,
-    ) -> FlextResult[t_api.ResponseDict]:
+        data: t_api.Api.ResponseDict | None = None,
+    ) -> FlextResult[t_api.Api.ResponseDict]:
         """Create success FlextResult using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            FlextResult[t_api.ResponseDict]: Success result instance.
+            FlextResult[t_api.Api.ResponseDict]: Success result instance.
 
         """
         if data is None:
             data = {"success": True, "message": "Test operation successful"}
-        return r[t_api.ResponseDict].ok(data)
+        return r[t_api.Api.ResponseDict].ok(data)
 
     @staticmethod
-    def batch_request_data(count: int = 5) -> list[t_api.ResponseDict]:
+    def batch_request_data(count: int = 5) -> list[t_api.Api.ResponseDict]:
         """Create batch requests using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            list[t_api.ResponseDict]: List of request data dictionaries.
+            list[t_api.Api.ResponseDict]: List of request data dictionaries.
 
         """
         return [FlextApiFactories.create_request_data() for _ in range(count)]
 
     @staticmethod
-    def batch_response_data(count: int = 5) -> list[t_api.ResponseDict]:
+    def batch_response_data(count: int = 5) -> list[t_api.Api.ResponseDict]:
         """Create batch responses using FlextTestsUtilities - ABSOLUTE.
 
         Returns:
-            list[t_api.ResponseDict]: List of response data dictionaries.
+            list[t_api.Api.ResponseDict]: List of response data dictionaries.
 
         """
         return [FlextApiFactories.create_response_data() for _ in range(count)]
 
     @staticmethod
-    def create_service_data(**overrides: object) -> t_api.ResponseDict:
+    def create_service_data(**overrides: object) -> t_api.Api.ResponseDict:
         """Create service data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            t_api.ResponseDict: Service data dictionary.
+            t_api.Api.ResponseDict: Service data dictionary.
 
         """
         service_data = FlextTestsDomains.create_service()
@@ -435,11 +435,11 @@ class FlextApiFactories:
         return result
 
     @staticmethod
-    def create_payload_data(**overrides: object) -> t_api.ResponseDict:
+    def create_payload_data(**overrides: object) -> t_api.Api.ResponseDict:
         """Create payload data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            t_api.ResponseDict: Payload data dictionary.
+            t_api.Api.ResponseDict: Payload data dictionary.
 
         """
         payload_data = FlextTestsDomains.create_payload()
@@ -460,11 +460,11 @@ class FlextApiFactories:
     @staticmethod
     def create_configuration_data(
         **overrides: object,
-    ) -> t_api.ResponseDict:
+    ) -> t_api.Api.ResponseDict:
         """Create configuration data using FlextTestsDomains - ABSOLUTE.
 
         Returns:
-            t_api.ResponseDict: Configuration data dictionary.
+            t_api.Api.ResponseDict: Configuration data dictionary.
 
         """
         config_data = FlextTestsDomains.create_configuration()
@@ -483,7 +483,7 @@ class FlextApiFactories:
         return result
 
     @staticmethod
-    def batch_users(count: int = 5) -> list[t_api.ResponseDict]:
+    def batch_users(count: int = 5) -> list[t_api.Api.ResponseDict]:
         """Create batch users using FlextTestsDomains - ABSOLUTE.
 
         Returns:
@@ -550,14 +550,14 @@ class FlextApiFactories:
     def create_test_data(
         count: int = 10,
         prefix: str = "flext_api",
-    ) -> list[t_api.ResponseDict]:
+    ) -> list[t_api.Api.ResponseDict]:
         """Create test data using flext_tests API.
 
         Returns:
             List of test data dictionaries.
 
         """
-        result: list[t_api.ResponseDict] = []
+        result: list[t_api.Api.ResponseDict] = []
         for i in range(count):
             data = u.Tests.Factory.create_test_data(
                 id=f"{prefix}_{i}",
@@ -601,7 +601,7 @@ class FlextApiFactories:
         *,
         success: bool = True,
         data: object = None,
-    ) -> t_api.ResponseDict:
+    ) -> t_api.Api.ResponseDict:
         """Create API response using flext_tests API.
 
         Returns:
