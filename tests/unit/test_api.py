@@ -40,9 +40,7 @@ class TestFlextApiInitialization:
         assert hasattr(FlextApi.Models, "HttpRequest")
         assert hasattr(FlextApi.Models, "HttpResponse")
 
-    def test_unified_namespace_config(self) -> None:
-        """Test unified namespace access to Config."""
-        assert FlextApi.Config is FlextApiSettings
+    # Removed test for Config attribute - attribute was removed to avoid Pydantic conflicts
 
 
 class TestFlextApiExecute:
@@ -342,12 +340,4 @@ class TestFlextApiIntegration:
         assert request_type is not None
         assert response_type is not None
 
-    def test_config_class_variable_access(self) -> None:
-        """Test Config class variable is accessible."""
-        api = FlextApi()
-
-        # Access through instance
-        assert api.Config is FlextApiSettings
-
-        # Access through class
-        assert FlextApi.Config is FlextApiSettings
+    # Removed test for Config class variable - attribute was removed to avoid Pydantic conflicts
