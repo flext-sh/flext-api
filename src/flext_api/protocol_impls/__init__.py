@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 
 """
 
-from __future__ import annotations
+from __future__ import annotations  # @vulture_ignore
 
 from flext_api.protocol_impls.base import BaseProtocolImplementation
 from flext_api.protocol_impls.graphql import GraphQLProtocolPlugin

@@ -7,9 +7,9 @@ SPDX-License-Identifier: MIT
 
 """
 
-from __future__ import annotations
+from __future__ import annotations  # @vulture_ignore
 
-from flext_core import FlextLogger, r
+from flext_core import FlextLogger, r  # @vulture_ignore
 
 from flext_api.constants import c
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation

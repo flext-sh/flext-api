@@ -4,11 +4,11 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-from __future__ import annotations
+from __future__ import annotations  # @vulture_ignore
 
-from typing import cast
+from typing import cast  # @vulture_ignore
 
-from flext_core import FlextLogger, t
+from flext_core import FlextLogger, t  # @vulture_ignore
 
 from flext_api.protocols import FlextApiProtocols as api_protocols
 from flext_api.typings import t as api_t
