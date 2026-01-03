@@ -10,14 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
-
-from flext_core import FlextRuntime, FlextService, r
+from flext_core import FlextLogger, r
 
 from flext_api.typings import t
 
 
-class BaseProtocolImplementation(FlextService[bool]):
+class BaseProtocolImplementation:
     """Base class for all protocol implementations.
 
     Defines the standard interface and patterns that all protocol implementations
@@ -55,7 +53,7 @@ class BaseProtocolImplementation(FlextService[bool]):
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **kwargs: object,
+        **_kwargs: t.GeneralValueType,
     ) -> None:
         """Initialize base protocol implementation.
 
@@ -66,17 +64,8 @@ class BaseProtocolImplementation(FlextService[bool]):
         **kwargs: Additional configuration parameters
 
         """
-        # Filter out protocol-specific params before calling FlextService
-        # FlextService (Pydantic model) doesn't accept name/version/description
-        service_kwargs: dict[str, t.GeneralValueType] = {}
-        for k, v in kwargs.items():
-            if k not in {"name", "version", "description"}:
-                service_kwargs[k] = FlextRuntime.normalize_to_general_value(
-                    cast("t.GeneralValueType", v)
-                )
-
-        # Initialize FlextService first (establishes logger property from x)
-        FlextService.__init__(self, **service_kwargs)
+        # Initialize basic object - no FlextService dependency to avoid Pydantic validation conflicts
+        self.logger = FlextLogger(__name__)
 
         # Store protocol metadata as instance attributes
         object.__setattr__(self, "name", name)
@@ -87,7 +76,7 @@ class BaseProtocolImplementation(FlextService[bool]):
         object.__setattr__(self, "_initialized", False)
 
     def execute(self, **kwargs: object) -> r[bool]:
-        """Execute FlextService interface - return success if initialized."""
+        """Execute protocol - return success if initialized."""
         if not self._initialized:
             return r[bool].fail("Protocol not initialized")
         if kwargs:
@@ -190,12 +179,15 @@ class BaseProtocolImplementation(FlextService[bool]):
         """Validate request dictionary.
 
         Args:
-        request: Request dictionary to validate
+            request: Request dictionary to validate
 
         Returns:
-        FlextResult with validated request or error
+            FlextResult with validated request or error
 
         """
+        if not isinstance(request, dict):
+            return r[dict[str, t.GeneralValueType]].fail("Request must be a dictionary")
+
         if not request:
             return r[dict[str, t.GeneralValueType]].fail("Request cannot be empty")
 
