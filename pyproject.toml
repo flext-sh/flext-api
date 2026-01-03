@@ -20,8 +20,6 @@
     dependencies = [
         "cbor2 (>=5.7.0)",
         "fastapi>=0.116.0",
-        "flext-core @ file:../flext-core",
-        "flext-web @ file:../flext-web",
         "gql (>=4.0.0)",
         "httpx>=0.28.1",
         "msgpack (>=1.1.2)",
@@ -31,6 +29,9 @@
         "typing-extensions (>=4.15.0)",
         "websockets (>=15.0.1)",
         "pydantic-core (>=2.41.4)",
+        "pytest-randomly (>=4.0.1,<5.0.0)",
+        "faker (>=40.1.0,<41.0.0)",
+        "pytest-cov (>=7.0.0,<8.0.0)",
     ]
     description = "FLEXT API - High-Performance REST API with FastAPI"
     keywords = [
@@ -136,13 +137,17 @@
         [tool.poetry.group]
             [tool.poetry.group.dev.dependencies]
                 bandit = "^1.8.6"
-                faker = "^37.5.3"
+                faker = "^40.1.0"
                 pip-audit = "^2.9.0"
-                pyrefly = "^0.34.0"
-                pytest = "^8.4.1"
-                pytest-asyncio = "^0.25.0"
-                pytest-cov = "=7.0.0"
-                pytest-httpx = "^0.35.0"
+                pyrefly = "^0.46.3"
+                pytest = "^9.0.2"
+                pytest-asyncio = ">=0.27.0"
+                pytest-cov = "^7.0.0"
+                pytest-httpx = "^0.36.0"
+            opentelemetry-api = ">=1.39.1"
+            opentelemetry-sdk = ">=1.39.1"
+            prompt-toolkit = ">=3.0.52"
+            sqlparse = ">=0.5.5"
 
     [tool.pytest.ini_options]
         addopts = [
