@@ -22,16 +22,16 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Self, cast, override
+from typing import Self, cast
 
-from flext_core import FlextLogger, FlextService, r, u
+from flext_core import FlextLogger, r, u
 from pydantic import BaseModel, ConfigDict
 
 from flext_api.models import FlextApiModels
 from flext_api.typings import t
 
 
-class FlextApiStorage(FlextService[bool]):
+class FlextApiStorage:
     """Generic HTTP storage with features via library delegation.
 
     Delegates to:
@@ -73,6 +73,7 @@ class FlextApiStorage(FlextService[bool]):
         self, config: t.GeneralValueType | None = None, **kwargs: t.GeneralValueType
     ) -> None:
         """Initialize storage with config using Pydantic."""
+        self.logger = FlextLogger(__name__)
         config_obj, storage_kwargs = self._extract_init_params(config, kwargs)
         max_size_val, default_ttl_val = self._extract_storage_kwargs(storage_kwargs)
         # Type narrowing: dict already uses t.GeneralValueType
@@ -235,7 +236,7 @@ class FlextApiStorage(FlextService[bool]):
                 return r[str].fail("Namespace cannot be empty")
             return r[str].fail(f"Invalid namespace type: {type(namespace_val)}")
         # Use default namespace (this is OK - it's a valid default, not a fallback)
-        return r[str].ok("flext")
+        return r[str].ok("flext_api")
 
     def _extract_max_size(
         self,
@@ -313,7 +314,6 @@ class FlextApiStorage(FlextService[bool]):
         # Use default backend (this is OK - it's a valid default, not a fallback)
         return r[str].ok("memory")
 
-    @override
     def execute(
         self, *_args: t.GeneralValueType, **_kwargs: t.GeneralValueType
     ) -> r[bool]:
@@ -395,7 +395,16 @@ class FlextApiStorage(FlextService[bool]):
             self._expiry_times[key] = time.time() + ttl_val
 
         self._operations_count += 1
-        setattr(self._stats, "total_operations", self._operations_count)
+        # Create new Stats instance with updated values (immutable pattern)
+        self._stats = FlextApiModels.Storage.Stats(
+            total_operations=self._operations_count,
+            cache_hits=self._stats.cache_hits,
+            cache_misses=self._stats.cache_misses,
+            hit_ratio=self._stats.hit_ratio,
+            storage_size=self._stats.storage_size,
+            memory_usage=self._stats.memory_usage,
+            namespace=self._stats.namespace,
+        )
         return r[bool].ok(True)
 
     def get(self, key: str) -> r[t.GeneralValueType]:
@@ -409,7 +418,16 @@ class FlextApiStorage(FlextService[bool]):
         # Try direct key first
         if key in self._storage:
             value = self._storage[key]
-            setattr(self._stats, "cache_hits", self._stats.cache_hits + 1)
+            # Create new Stats instance with updated values (immutable pattern)
+            self._stats = FlextApiModels.Storage.Stats(
+                total_operations=self._stats.total_operations,
+                cache_hits=self._stats.cache_hits + 1,
+                cache_misses=self._stats.cache_misses,
+                hit_ratio=self._stats.hit_ratio,
+                storage_size=self._stats.storage_size,
+                memory_usage=self._stats.memory_usage,
+                namespace=self._stats.namespace,
+            )
             return r[t.GeneralValueType].ok(value)
 
         # Try namespaced key
@@ -419,7 +437,16 @@ class FlextApiStorage(FlextService[bool]):
             if result.is_success:
                 return result
 
-        setattr(self._stats, "cache_misses", self._stats.cache_misses + 1)
+        # Create new Stats instance with updated values (immutable pattern)
+        self._stats = FlextApiModels.Storage.Stats(
+            total_operations=self._stats.total_operations,
+            cache_hits=self._stats.cache_hits,
+            cache_misses=self._stats.cache_misses + 1,
+            hit_ratio=self._stats.hit_ratio,
+            storage_size=self._stats.storage_size,
+            memory_usage=self._stats.memory_usage,
+            namespace=self._stats.namespace,
+        )
         return r[t.GeneralValueType].fail(f"Key not found: {key}")
 
     def _process_namespaced_entry(
@@ -457,7 +484,16 @@ class FlextApiStorage(FlextService[bool]):
                 created_at=created_at_float,
             )
             if not metadata.is_expired():
-                setattr(self._stats, "cache_hits", self._stats.cache_hits + 1)
+                # Create new Stats instance with updated values (immutable pattern)
+                self._stats = FlextApiModels.Storage.Stats(
+                    total_operations=self._stats.total_operations,
+                    cache_hits=self._stats.cache_hits + 1,
+                    cache_misses=self._stats.cache_misses,
+                    hit_ratio=self._stats.hit_ratio,
+                    storage_size=self._stats.storage_size,
+                    memory_usage=self._stats.memory_usage,
+                    namespace=self._stats.namespace,
+                )
                 return r[t.GeneralValueType].ok(metadata.value)
 
             # Clean up expired entry
@@ -640,15 +676,20 @@ class FlextApiStorage(FlextService[bool]):
     def metrics(self) -> r[dict[str, t.JsonValue]]:
         """Get storage metrics using Pydantic stats model."""
         try:
-            # Update stats using Pydantic model
-            setattr(self._stats, "storage_size", len(self._storage))
+            # Update stats using Pydantic model (immutable pattern)
+            hit_ratio = 0.0
             if self._stats.total_operations > 0:
-                setattr(
-                    self._stats,
-                    "hit_ratio",
-                    self._stats.cache_hits / self._stats.total_operations,
-                )
-            setattr(self._stats, "memory_usage", len(str(self._storage)))
+                hit_ratio = self._stats.cache_hits / self._stats.total_operations
+
+            self._stats = FlextApiModels.Storage.Stats(
+                total_operations=self._stats.total_operations,
+                cache_hits=self._stats.cache_hits,
+                cache_misses=self._stats.cache_misses,
+                hit_ratio=hit_ratio,
+                storage_size=len(self._storage),
+                memory_usage=len(str(self._storage)),
+                namespace=self._stats.namespace,
+            )
 
             # Direct field access instead of model_dump
             stats_dict: dict[str, t.JsonValue] = {

@@ -63,13 +63,17 @@ Example 2: HTTP POST with data:
 
 Example 3: Using models with validation:
     >>> request = api.Models.HttpRequest(
-    ...     method="GET", url="https://api.example.com/users", timeout=30.0
+    ...     method="GET",
+    ...     url="https://api.example.com/users",
+    ...     timeout=c.Api.DEFAULT_TIMEOUT,
     ... )
     >>> result = api.request(request)
 
 Example 4: Configuration:
     >>> config = api.Models.ClientConfig(
-    ...     base_url="https://api.example.com", timeout=30.0, max_retries=3
+    ...     base_url="https://api.example.com",
+    ...     timeout=c.Api.DEFAULT_TIMEOUT,
+    ...     max_retries=c.Api.DEFAULT_MAX_RETRIES,
     ... )
     >>> api.reconfigure(api.Config(base_url="https://api.example.com"))
 
@@ -117,7 +121,19 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_api.__version__ import __version__, __version_info__
+# Version metadata - inline to avoid private module import issues
+try:
+    from importlib.metadata import metadata as _metadata_func
+
+    _metadata = _metadata_func("flext_api")
+    __version__ = _metadata["Version"]
+    __version_info__ = tuple(
+        int(part) if part.isdigit() else part for part in __version__.split(".")
+    )
+except Exception:
+    # Fallback for development environments
+    __version__ = "0.0.0"
+    __version_info__ = (0, 0, 0)
 from flext_api.adapters import FlextApiAdapters
 from flext_api.api import FlextApi
 from flext_api.app import FlextApiApp

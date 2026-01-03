@@ -522,7 +522,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         path: str,
         method: c.Api.Method | str,
         handler: Callable[..., object],
-        **options: object,
+        **options: t.GeneralValueType,
     ) -> r[bool]:
         """Register HTTP route (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type
@@ -552,7 +552,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         self,
         path: str,
         handler: Callable[..., object],
-        **options: object,
+        **options: t.GeneralValueType,
     ) -> r[bool]:
         """Register WebSocket endpoint (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type
@@ -582,7 +582,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         self,
         path: str,
         handler: Callable[..., object],
-        **options: object,
+        **options: t.GeneralValueType,
     ) -> r[bool]:
         """Register SSE endpoint (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type
@@ -612,7 +612,7 @@ class FlextApiServer(FlextService[object], x.Validation):
         self,
         path: str = "/graphql",
         schema: t.Api.SchemaValue | None = None,
-        **options: object,
+        **options: t.GeneralValueType,
     ) -> r[bool]:
         """Register GraphQL endpoint (delegates to RouteRegistry)."""
         # Type narrowing: convert options to expected type

@@ -61,7 +61,7 @@ class FlextApiSettings(BaseSettings):
         description="Default HTTP headers",
     )
 
-    @field_validator("headers")
+    @field_validator("headers", mode="before")
     @classmethod
     def validate_headers(cls, v: dict[str, str]) -> dict[str, str]:
         """Validate headers."""

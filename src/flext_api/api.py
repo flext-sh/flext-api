@@ -14,6 +14,7 @@ from typing import ClassVar, Self
 
 from flext_core import FlextLogger, r, s
 from flext_core.runtime import FlextRuntime
+from pydantic import ConfigDict
 
 from flext_api.client import FlextApiClient
 from flext_api.constants import FlextApiConstants
@@ -32,9 +33,17 @@ class FlextApi(s[FlextApiSettings]):
     100% GENERIC - no domain coupling.
     """
 
+    model_config = ConfigDict(use_enum_values=True)
+    """Unified HTTP API facade - pure delegation pattern.
+
+    Single responsibility: Delegate HTTP operations to FlextApiClient.
+    All configuration through FlextApiSettings model.
+    All data validation through FlextApiModels.
+    100% GENERIC - no domain coupling.
+    """
+
     # Unified namespace - direct access to FLEXT components
     Models: ClassVar = FlextApiModels
-    Config: ClassVar = FlextApiSettings
 
     def __new__(cls, config: FlextApiSettings | None = None) -> Self:
         """Intercept positional config argument and convert to kwargs.
@@ -62,7 +71,9 @@ class FlextApi(s[FlextApiSettings]):
 
         """
         # Determine which config to use
-        init_config = getattr(self, "_init_config", None)
+        init_config = getattr(
+            self, "_init_config", None
+        )  # INTENTIONAL: getattr for optional attribute
         if init_config is not None:
             api_config = init_config
         elif config is not None:
@@ -152,7 +163,7 @@ class FlextApi(s[FlextApiSettings]):
 
     def _finalize_body(
         self,
-        body_value: object,
+        body_value: t.Api.RequestBody,
     ) -> t.Api.RequestBody:
         """Finalize body value to RequestBody type.
 

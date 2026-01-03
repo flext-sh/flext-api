@@ -41,6 +41,8 @@ class FlextApiRegistry(FlextRegistry):
     def __init__(self, dispatcher: p.CommandBus | None = None) -> None:
         """Initialize API registry."""
         super().__init__(dispatcher=dispatcher)
+        # Store plugin instances directly to avoid serialization issues
+        self._plugin_instances: dict[str, FlextApiPlugins.Plugin] = {}
         self.logger.debug("FlextApiRegistry initialized")
 
     @classmethod
@@ -63,15 +65,21 @@ class FlextApiRegistry(FlextRegistry):
         plugin: FlextApiPlugins.Protocol,
     ) -> r[bool]:
         """Register a protocol plugin."""
+        key = f"{self.PROTOCOLS}::{name}"
+        self._plugin_instances[key] = plugin
         return self.register_plugin(
             self.PROTOCOLS, name, cast("t.GeneralValueType", plugin)
         )
 
     def get_protocol(self, name: str) -> r[FlextApiPlugins.Protocol]:
         """Get registered protocol plugin by name."""
+        key = f"{self.PROTOCOLS}::{name}"
+        if key in self._plugin_instances:
+            plugin = self._plugin_instances[key]
+            if isinstance(plugin, FlextApiPlugins.Protocol):
+                return r[FlextApiPlugins.Protocol].ok(plugin)
+
         result = self.get_plugin(self.PROTOCOLS, name)
-        if result.is_success and isinstance(result.value, FlextApiPlugins.Protocol):
-            return r[FlextApiPlugins.Protocol].ok(result.value)
         if result.is_failure:
             return r[FlextApiPlugins.Protocol].fail(result.error)
         return r[FlextApiPlugins.Protocol].fail("Plugin is not a Protocol type")
@@ -92,15 +100,21 @@ class FlextApiRegistry(FlextRegistry):
         plugin: FlextApiPlugins.Schema,
     ) -> r[bool]:
         """Register a schema plugin."""
+        key = f"{self.SCHEMAS}::{name}"
+        self._plugin_instances[key] = plugin
         return self.register_plugin(
             self.SCHEMAS, name, cast("t.GeneralValueType", plugin)
         )
 
     def get_schema(self, name: str) -> r[FlextApiPlugins.Schema]:
         """Get registered schema plugin by name."""
+        key = f"{self.SCHEMAS}::{name}"
+        if key in self._plugin_instances:
+            plugin = self._plugin_instances[key]
+            if isinstance(plugin, FlextApiPlugins.Schema):
+                return r[FlextApiPlugins.Schema].ok(plugin)
+
         result = self.get_plugin(self.SCHEMAS, name)
-        if result.is_success and isinstance(result.value, FlextApiPlugins.Schema):
-            return r[FlextApiPlugins.Schema].ok(result.value)
         if result.is_failure:
             return r[FlextApiPlugins.Schema].fail(result.error)
         return r[FlextApiPlugins.Schema].fail("Plugin is not a Schema type")
@@ -121,15 +135,21 @@ class FlextApiRegistry(FlextRegistry):
         plugin: FlextApiPlugins.Transport,
     ) -> r[bool]:
         """Register a transport plugin."""
+        key = f"{self.TRANSPORTS}::{name}"
+        self._plugin_instances[key] = plugin
         return self.register_plugin(
             self.TRANSPORTS, name, cast("t.GeneralValueType", plugin)
         )
 
     def get_transport(self, name: str) -> r[FlextApiPlugins.Transport]:
         """Get registered transport plugin by name."""
+        key = f"{self.TRANSPORTS}::{name}"
+        if key in self._plugin_instances:
+            plugin = self._plugin_instances[key]
+            if isinstance(plugin, FlextApiPlugins.Transport):
+                return r[FlextApiPlugins.Transport].ok(plugin)
+
         result = self.get_plugin(self.TRANSPORTS, name)
-        if result.is_success and isinstance(result.value, FlextApiPlugins.Transport):
-            return r[FlextApiPlugins.Transport].ok(result.value)
         if result.is_failure:
             return r[FlextApiPlugins.Transport].fail(result.error)
         return r[FlextApiPlugins.Transport].fail("Plugin is not a Transport type")

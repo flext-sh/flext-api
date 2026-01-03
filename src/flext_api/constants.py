@@ -248,6 +248,12 @@ class FlextApiConstants(FlextConstants):
         HTTP_CLIENT_ERROR_MAX: Final[int] = 500
         """Maximum HTTP client error status code."""
 
+        HTTP_STATUS_MIN: Final[int] = 100
+        """Minimum valid HTTP status code."""
+
+        HTTP_STATUS_MAX: Final[int] = 599
+        """Maximum valid HTTP status code."""
+
         HTTP_SERVER_ERROR_MIN: Final[int] = 500
         """Minimum HTTP server error status code."""
 

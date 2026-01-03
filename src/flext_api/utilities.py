@@ -94,17 +94,31 @@ class FlextApiUtilities(FlextUtilities):
 
             @staticmethod
             def extract_body_from_kwargs(
-                data: object | None,
+                data: t.Api.RequestBody | None,
                 kwargs: dict[str, t.GeneralValueType] | None,
-            ) -> r[object]:
+            ) -> r[t.Api.RequestBody]:
                 """Extract body from data or kwargs - returns empty dict if no body found."""
                 if data is not None:
-                    return r.ok(data)
+                    return r[t.Api.RequestBody].ok(data)
                 if kwargs is not None and "data" in kwargs:
-                    return r.ok(kwargs["data"])
+                    raw_data = kwargs["data"]
+                    # Validate extracted data is compatible with RequestBody type
+                    if isinstance(raw_data, (str, bytes, dict)):
+                        return r[t.Api.RequestBody].ok(raw_data)
+                    # Convert to string for other types
+                    return r[t.Api.RequestBody].ok(
+                        str(raw_data) if raw_data is not None else ""
+                    )
                 if kwargs is not None and "json" in kwargs:
-                    return r.ok(kwargs["json"])
-                return r.ok({})
+                    raw_json = kwargs["json"]
+                    # Validate extracted json is compatible with RequestBody type
+                    if isinstance(raw_json, (str, bytes, dict)):
+                        return r[t.Api.RequestBody].ok(raw_json)
+                    # Convert to string for other types
+                    return r[t.Api.RequestBody].ok(
+                        str(raw_json) if raw_json is not None else ""
+                    )
+                return r[t.Api.RequestBody].ok({})
 
             @staticmethod
             def merge_headers(
