@@ -24,7 +24,7 @@ import time
 import uuid
 from collections import deque
 from collections.abc import Callable
-from typing import cast
+
 
 from flext_core import (
     FlextContainer,
@@ -137,9 +137,7 @@ class FlextWebhookHandler(FlextService[object]):
 
         """
         if kwargs:
-            FlextLogger(__name__).info(
-                "Execute called with kwargs: %s", cast("t.GeneralValueType", kwargs)
-            )
+            FlextLogger(__name__).info("Execute called with kwargs: %s", str(kwargs))
         return r[object].ok(True)
 
     def register_event_handler(
