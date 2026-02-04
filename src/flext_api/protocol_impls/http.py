@@ -15,7 +15,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from typing import cast
 
 import httpx
 from flext_core import r
@@ -323,6 +322,17 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 params_raw = request_kwargs.get("params")
                 # httpx.request accepts dict[str, str | list[str]] | None for params
                 request_params = params_raw if isinstance(params_raw, dict) else None
+
+                # Transform headers to dict[str, str] for httpx compatibility
+                httpx_headers: dict[str, str] = {
+                    str(k): str(v) for k, v in headers_dict.items()
+                }
+
+                # Transform params to dict[str, str] for httpx compatibility
+                httpx_params: dict[str, str] | None = None
+                if request_params is not None:
+                    httpx_params = {str(k): str(v) for k, v in request_params.items()}
+
                 json_data = request_kwargs.get("json")
                 content_raw = request_kwargs.get("content")
                 content = (
@@ -339,8 +349,8 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
                 response = connection.request(
                     method=method_str,
                     url=url_str,
-                    headers=cast("dict[str, str]", headers_dict),
-                    params=cast("dict[str, str] | None", request_params),
+                    headers=httpx_headers,
+                    params=httpx_params,
                     json=json_data,
                     content=content,
                     timeout=request_timeout,

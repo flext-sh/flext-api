@@ -121,19 +121,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# Version metadata - inline to avoid private module import issues
-try:
-    from importlib.metadata import metadata as _metadata_func
-
-    _metadata = _metadata_func("flext_api")
-    __version__ = _metadata["Version"]
-    __version_info__ = tuple(
-        int(part) if part.isdigit() else part for part in __version__.split(".")
-    )
-except Exception:
-    # Fallback for development environments
-    __version__ = "0.0.0"
-    __version_info__ = (0, 0, 0)
+from flext_api.__version__ import __version__, __version_info__
 from flext_api.adapters import FlextApiAdapters
 from flext_api.api import FlextApi
 from flext_api.app import FlextApiApp
@@ -141,7 +129,7 @@ from flext_api.client import FlextApiClient
 from flext_api.constants import FlextApiConstants, c
 from flext_api.exceptions import HttpError
 from flext_api.lifecycle_manager import FlextApiLifecycleManager
-from flext_api.models import FlextApiModels
+from flext_api.models import FlextApiModels, FlextApiModels as m
 from flext_api.protocol_impls import (
     BaseProtocolImplementation,
     FlextWebClientImplementation,

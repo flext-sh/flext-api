@@ -14,6 +14,7 @@ from abc import abstractmethod
 
 from flext_core import r
 from flext_core.loggings import FlextLogger
+from pydantic import BaseModel, ConfigDict, PrivateAttr
 
 from flext_api.typings import t
 
@@ -21,40 +22,29 @@ from flext_api.typings import t
 class FlextApiPlugins:
     """Unified plugin system for flext-api with FLEXT-pure patterns."""
 
-    class Plugin:
-        """Base plugin with lifecycle management and metadata."""
+    class Plugin(BaseModel):
+        """Base plugin with lifecycle management and metadata using Pydantic."""
 
-        def __init__(
-            self,
-            name: str,
-            version: str = "1.0.0",
-            description: str = "",
-        ) -> None:
+        name: str
+        version: str = "1.0.0"
+        description: str = ""
+
+        # Private attributes for internal state
+        _logger: FlextLogger = PrivateAttr()
+        _initialized: bool = PrivateAttr(default=False)
+
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+
+        def __init__(self, **data: t.GeneralValueType) -> None:
             """Initialize plugin with metadata."""
-            self.name = name
-            self.version = version
-            self.description = description
-            # Set logger only if not already a property (from x via FlextService)
-            # Use object.__setattr__ to bypass property if it exists
-            try:
-                object.__setattr__(self, "logger", FlextLogger(f"{__name__}.{name}"))
-            except (AttributeError, TypeError):
-                # Logger is a property, use _plugin_logger instead
-                object.__setattr__(
-                    self,
-                    "_plugin_logger",
-                    FlextLogger(f"{__name__}.{name}"),
-                )
+            super().__init__(**data)
+            self._logger = FlextLogger(f"{__name__}.{self.name}")
             self._initialized = False
 
         @property
         def logger(self) -> FlextLogger:
             """Get the plugin logger."""
-            return getattr(
-                self,
-                "_plugin_logger",
-                FlextLogger(f"{__name__}.{self.name}"),
-            )
+            return self._logger
 
         def initialize(self) -> r[bool]:
             """Initialize plugin resources."""

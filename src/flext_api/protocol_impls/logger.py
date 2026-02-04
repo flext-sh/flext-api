@@ -6,12 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations  # @vulture_ignore
 
-from typing import cast  # @vulture_ignore
-
 from flext_core import FlextLogger, t  # @vulture_ignore
 
 from flext_api.protocols import FlextApiProtocols as api_protocols
-from flext_api.typings import t as api_t
 
 
 class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
@@ -23,12 +20,12 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
 
     def _convert_kwargs_to_context(
         self,
-        kwargs: dict[str, api_t.GeneralValueType],
+        kwargs: dict[str, object],
     ) -> dict[str, t.GeneralValueType]:
         """Convert kwargs to context dict for logger compatibility."""
         context: dict[str, t.GeneralValueType] = {}
         for key, value in kwargs.items():
-            # t.GeneralValueType accepts most object types
+            # t.GeneralValueType from flext-core accepts primitive types
             if isinstance(value, (str, int, float, bool, type(None), list, dict)):
                 context[key] = value
             else:
@@ -37,28 +34,20 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
 
     def info(self, message: str, **kwargs: object) -> None:
         """Log info message."""
-        context = self._convert_kwargs_to_context(
-            cast("dict[str, api_t.GeneralValueType]", kwargs)
-        )
+        context = self._convert_kwargs_to_context(kwargs)
         self.logger.info(message, return_result=False, **context)
 
     def error(self, message: str, **kwargs: object) -> None:
         """Log error message."""
-        context = self._convert_kwargs_to_context(
-            cast("dict[str, api_t.GeneralValueType]", kwargs)
-        )
+        context = self._convert_kwargs_to_context(kwargs)
         self.logger.error(message, return_result=False, **context)
 
     def debug(self, message: str, **kwargs: object) -> None:
         """Log debug message."""
-        context = self._convert_kwargs_to_context(
-            cast("dict[str, api_t.GeneralValueType]", kwargs)
-        )
+        context = self._convert_kwargs_to_context(kwargs)
         self.logger.debug(message, return_result=False, **context)
 
     def warning(self, message: str, **kwargs: object) -> None:
         """Log warning message."""
-        context = self._convert_kwargs_to_context(
-            cast("dict[str, api_t.GeneralValueType]", kwargs)
-        )
+        context = self._convert_kwargs_to_context(kwargs)
         self.logger.warning(message, return_result=False, **context)
