@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Self, cast
+from typing import Self
 
 from flext_core import FlextLogger, r, u
 from pydantic import BaseModel, ConfigDict
@@ -148,7 +148,13 @@ class FlextApiStorage:
         if hasattr(config_obj, field_name):
             field_value = getattr(config_obj, field_name)
             if field_value is not None:
-                return cast("t.GeneralValueType", field_value)
+                # Ensure value is compatible with t.GeneralValueType
+                if isinstance(
+                    field_value,
+                    (str, int, float, bool, list, dict, BaseModel),
+                ):
+                    return field_value
+                return str(field_value)
         return None
 
     def _convert_to_int(self, value: t.GeneralValueType) -> int | None:

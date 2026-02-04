@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from typing import Self, cast
+from typing import Self
 from urllib.parse import ParseResult, urlparse
 
 from flext_core import FlextModels
@@ -81,7 +81,14 @@ class FlextApiModels(FlextModels):
             if v is None:
                 return {}
             if isinstance(v, dict):
-                return cast("t.Api.JsonObject", v)
+                # Safe transformation to JsonObject with narrowed value types
+                result: t.Api.JsonObject = {}
+                for key, val in v.items():
+                    if isinstance(val, (str, int, float, bool, type(None), list, dict)):
+                        result[str(key)] = val
+                    else:
+                        result[str(key)] = str(val)
+                return result
             if isinstance(v, (str, bytes)):
                 return v
             return {}
@@ -139,7 +146,16 @@ class FlextApiModels(FlextModels):
             if v is None:
                 return None  # Explicit None is valid (e.g., for 204 responses)
             if isinstance(v, dict):
-                return cast("t.Api.JsonObject", v)
+                # Safe transformation to JsonObject with narrowed value types
+                result: t.Api.JsonObject = {}
+                for key, val in v.items():
+                    if isinstance(val, (str, int, float, bool, type(None), list, dict)):
+                        # Narrow to types compatible with JsonObject
+                        result[str(key)] = val
+                    else:
+                        # Fallback for incompatible types
+                        result[str(key)] = str(val)
+                return result
             if isinstance(v, (str, bytes)):
                 return v
             # Default to empty dict if not specified

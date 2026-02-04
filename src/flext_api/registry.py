@@ -9,13 +9,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, cast
+from typing import ClassVar
 
 from flext_core import FlextRegistry, r
 from flext_core.protocols import p
 
 from flext_api.plugins import FlextApiPlugins
-from flext_api.typings import t
 
 
 class FlextApiRegistry(FlextRegistry):
@@ -67,9 +66,8 @@ class FlextApiRegistry(FlextRegistry):
         """Register a protocol plugin."""
         key = f"{self.PROTOCOLS}::{name}"
         self._plugin_instances[key] = plugin
-        return self.register_plugin(
-            self.PROTOCOLS, name, cast("t.GeneralValueType", plugin)
-        )
+        # Plugin is a Pydantic model (via inheritance from Plugin), compatible with GeneralValueType
+        return self.register_plugin(self.PROTOCOLS, name, plugin)
 
     def get_protocol(self, name: str) -> r[FlextApiPlugins.Protocol]:
         """Get registered protocol plugin by name."""
@@ -102,9 +100,7 @@ class FlextApiRegistry(FlextRegistry):
         """Register a schema plugin."""
         key = f"{self.SCHEMAS}::{name}"
         self._plugin_instances[key] = plugin
-        return self.register_plugin(
-            self.SCHEMAS, name, cast("t.GeneralValueType", plugin)
-        )
+        return self.register_plugin(self.SCHEMAS, name, plugin)
 
     def get_schema(self, name: str) -> r[FlextApiPlugins.Schema]:
         """Get registered schema plugin by name."""
@@ -137,9 +133,7 @@ class FlextApiRegistry(FlextRegistry):
         """Register a transport plugin."""
         key = f"{self.TRANSPORTS}::{name}"
         self._plugin_instances[key] = plugin
-        return self.register_plugin(
-            self.TRANSPORTS, name, cast("t.GeneralValueType", plugin)
-        )
+        return self.register_plugin(self.TRANSPORTS, name, plugin)
 
     def get_transport(self, name: str) -> r[FlextApiPlugins.Transport]:
         """Get registered transport plugin by name."""
@@ -170,9 +164,7 @@ class FlextApiRegistry(FlextRegistry):
         plugin: FlextApiPlugins.Authentication,
     ) -> r[bool]:
         """Register an authentication provider plugin."""
-        return self.register_plugin(
-            self.AUTH_PROVIDERS, name, cast("t.GeneralValueType", plugin)
-        )
+        return self.register_plugin(self.AUTH_PROVIDERS, name, plugin)
 
     def get_auth_provider(self, name: str) -> r[FlextApiPlugins.Authentication]:
         """Get registered authentication provider by name."""

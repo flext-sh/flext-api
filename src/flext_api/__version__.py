@@ -11,17 +11,21 @@ from __future__ import annotations
 
 from importlib.metadata import metadata
 
-_metadata = metadata("flext_api")
-
-__version__ = _metadata["Version"]
-__version_info__ = tuple(
-    int(part) if part.isdigit() else part for part in __version__.split(".")
-)
-__title__ = _metadata["Name"]
-__description__ = _metadata["Summary"]
-__author__ = _metadata["Author"]
-__author_email__ = _metadata["Author-Email"]
-__license__ = _metadata["License"]
+try:
+    _metadata = metadata("flext_api")
+    __version__ = _metadata["Version"]
+    __version_info__ = tuple(
+        int(part) if part.isdigit() else part for part in __version__.split(".")
+    )
+except Exception:
+    __version__ = "0.0.0"
+    __version_info__ = (0, 0, 0)
+    _metadata = {}
+__title__ = _metadata.get("Name", "flext-api")
+__description__ = _metadata.get("Summary", "")
+__author__ = _metadata.get("Author", "")
+__author_email__ = _metadata.get("Author-Email", "")
+__license__ = _metadata.get("License", "")
 __url__ = ""
 if "Home-Page" in _metadata:
     url_value = _metadata["Home-Page"]
