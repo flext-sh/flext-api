@@ -238,7 +238,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     def _ensure_connected(self, request: dict[str, t.GeneralValueType]) -> r[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         # Use RFC method to extract URL
         url_result = self._extract_url(request)
@@ -394,7 +394,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
             self.logger.info("WebSocket disconnected", url=self._url)
 
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         except Exception as e:
             return r[bool].fail(f"WebSocket disconnect failed: {e}")
@@ -515,7 +515,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 },
             )
 
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         except Exception as e:
             self._connected = False
@@ -561,7 +561,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                 extra={"message_type": message_type, "size": len(message)},
             )
 
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         except Exception as e:
             return r[bool].fail(f"WebSocket send error: {e}")

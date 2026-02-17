@@ -282,7 +282,7 @@ class FlextApiClient(s[FlextApiSettings]):
     ) -> r[t.Api.ResponseBody]:
         """Deserialize response as JSON."""
         try:
-            json_data = response.json()
+            json_data = response.model_dump_json()
             # ResponseBody = JsonObject | str | bytes
             if isinstance(json_data, dict):
                 return r[t.Api.ResponseBody].ok(json_data)

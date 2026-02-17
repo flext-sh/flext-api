@@ -55,7 +55,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
             else:
                 self._storage[str(key)] = str(value)
             self.logger.debug("Stored data with key: %s", key)
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         except Exception as e:
             return r[bool].fail(f"Storage operation failed: {e}")
@@ -69,7 +69,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
             if key in self._storage:
                 del self._storage[key]
                 self.logger.debug("Deleted data with key: %s", key)
-                return r[bool].ok(True)
+                return r[bool].ok(value=True)
             return r[bool].fail(f"Key not found: {key}")
 
         except Exception as e:
@@ -88,7 +88,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
         try:
             self._storage.clear()
             self.logger.debug("Cleared all storage data")
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         except Exception as e:
             return r[bool].fail(f"Clear operation failed: {e}")
 

@@ -115,7 +115,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                 f"Missing required info fields: {', '.join(info_missing)}",
             )
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_paths_field(
         self,
@@ -142,7 +142,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     ) -> r[bool]:
         """Validate optional components and security schemes."""
         if "components" not in schema:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         components_value = schema["components"]
         if not isinstance(components_value, dict):
@@ -165,7 +165,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                 if security_result.is_failure:
                     return security_result
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def validate_schema(
         self,
@@ -295,7 +295,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                     if operation_result.is_failure:
                         return operation_result
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_operation(
         self,
@@ -330,7 +330,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             if not responses:
                 return r[bool].fail(f"Responses cannot be empty: {method} {path}")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_components(
         self, components: dict[str, t.GeneralValueType]
@@ -369,7 +369,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
                     f"Component section must be a dictionary: {section_name}",
                 )
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_security_schemes_structure(
         self,
@@ -434,7 +434,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail(
                 f"openIdConnect scheme missing 'openIdConnectUrl': {scheme_name}",
             )
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_security_schemes(
         self,
@@ -466,7 +466,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             if scheme_result.is_failure:
                 return scheme_result
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def supports_schema(self, schema_type: str) -> bool:
         """Check if this validator supports the given schema type.
@@ -512,7 +512,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         # Acknowledge unused parameters (stub implementation)
         _ = request, schema
         # Implementation would validate request against OpenAPI paths/operations
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def validate_response(
         self,
@@ -537,7 +537,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         # Acknowledge unused parameters (stub implementation)
         _ = response, schema
         # Implementation would validate response against OpenAPI response schemas
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def load_schema(
         self,

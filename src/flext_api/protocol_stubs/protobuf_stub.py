@@ -210,10 +210,10 @@ class ProtobufSerializer:
         """
         if not self._schema:
             self.logger.warning("No schema defined for validation")
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         # Schema validation would happen here with flext-grpc
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     @property
     def content_type(self) -> str:
@@ -312,7 +312,7 @@ class ProtobufField:
                 f"got {type(value).__name__}",
             )
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
 
 class ProtobufSchema:
@@ -364,7 +364,7 @@ class ProtobufSchema:
             extra={"field": field.name},
         )
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def validate_message(self, message: ProtobufMessage) -> r[bool]:
         """Validate message against schema.
@@ -393,7 +393,7 @@ class ProtobufSchema:
             if validation_result.is_failure:
                 return validation_result
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     @property
     def name(self) -> str:

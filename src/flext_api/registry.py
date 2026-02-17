@@ -221,7 +221,7 @@ class FlextApiRegistry(FlextRegistry):
                 self.unregister_plugin(category, name)
 
         self.logger.info("Cleared all registry plugins")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
 
 __all__ = ["FlextApiRegistry"]

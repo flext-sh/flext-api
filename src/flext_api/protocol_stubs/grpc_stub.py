@@ -69,7 +69,7 @@ class GrpcChannel:
 
         """
         self.logger.info("gRPC channel stub closed (placeholder)")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
 
 class GrpcStub:
@@ -243,7 +243,7 @@ class GrpcServer:
 
         """
         self.logger.info("gRPC service added (placeholder)")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def start(self) -> r[bool]:
         """Start gRPC server.
@@ -268,7 +268,7 @@ class GrpcServer:
 
         """
         self.logger.info("gRPC server stop (placeholder)")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
 
 class GrpcMethod:

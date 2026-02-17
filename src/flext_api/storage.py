@@ -324,7 +324,7 @@ class FlextApiStorage:
         self, *_args: t.GeneralValueType, **_kwargs: t.GeneralValueType
     ) -> r[bool]:
         """Service lifecycle execution."""
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _key(self, key: str) -> str:
         """Create namespaced key."""
@@ -411,7 +411,7 @@ class FlextApiStorage:
             memory_usage=self._stats.memory_usage,
             namespace=self._stats.namespace,
         )
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def get(self, key: str) -> r[t.GeneralValueType]:
         """Retrieve value with expiration checking."""
@@ -532,7 +532,7 @@ class FlextApiStorage:
         self._operations_count += 1
 
         if key_deleted or namespaced_deleted:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         return r[bool].fail(f"Key not found: {key}")
 
     def exists(self, key: str) -> r[bool]:
@@ -540,7 +540,7 @@ class FlextApiStorage:
         self._cleanup_expired()
         direct_exists = key in self._storage
         if direct_exists:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         namespaced_exists = self._key(key) in self._storage
         return r[bool].ok(namespaced_exists)
 
@@ -549,7 +549,7 @@ class FlextApiStorage:
         self._storage.clear()
         self._expiry_times.clear()
         self._operations_count = 0
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def size(self) -> r[int]:
         """Get storage size with expiration cleanup."""
@@ -590,7 +590,7 @@ class FlextApiStorage:
                 result = self.set(key, value, ttl=ttl)
                 if result.is_failure:
                     return result
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         except Exception as e:
             return r[bool].fail(str(e))
 
@@ -622,7 +622,7 @@ class FlextApiStorage:
                 if delete_result.is_failure:
                     all_deleted = False
             if all_deleted:
-                return r[bool].ok(True)
+                return r[bool].ok(value=True)
             return r[bool].fail("Some keys could not be deleted")
         except Exception as e:
             return r[bool].fail(str(e))
