@@ -517,7 +517,7 @@ class StorageBackend(ABC):
         pass
 
     @abstractmethod
-    async def delete_file(self, path: str) -> FlextResult[None]:
+    async def delete_file(self, path: str) -> FlextResult[bool]:
         """Delete file from storage."""
         pass
 

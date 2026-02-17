@@ -83,7 +83,7 @@ class BaseProtocolImplementation:
             self.logger.debug(
                 f"Protocol.execute received kwargs: {list(kwargs.keys())}",
             )
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def initialize(self) -> r[bool]:
         """Initialize protocol resources."""
@@ -92,7 +92,7 @@ class BaseProtocolImplementation:
 
         self.logger.debug(f"Initializing protocol: {self.name}")
         self._initialized = True
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def shutdown(self) -> r[bool]:
         """Shutdown protocol and release resources."""
@@ -101,7 +101,7 @@ class BaseProtocolImplementation:
 
         self.logger.debug(f"Shutting down protocol: {self.name}")
         self._initialized = False
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     @property
     def is_initialized(self) -> bool:

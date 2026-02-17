@@ -164,7 +164,7 @@ class FlextWebhookHandler(FlextService[object]):
             extra={"event_type": event_type},
         )
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _parse_payload(self, payload: bytes | str) -> r[t.JsonObject]:
         """Parse webhook payload."""
@@ -406,7 +406,7 @@ class FlextWebhookHandler(FlextService[object]):
             if not hmac.compare_digest(signature, expected):
                 return r[bool].fail("Signature mismatch")
 
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         except Exception as e:
             return r[bool].fail(f"Signature verification error: {e}")
@@ -444,7 +444,7 @@ class FlextWebhookHandler(FlextService[object]):
                 "No handlers registered for event type",
                 extra={"event_type": event_type},
             )
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         # Execute handlers
         for handler in handlers:
@@ -455,7 +455,7 @@ class FlextWebhookHandler(FlextService[object]):
             except Exception as e:
                 return r[bool].fail(f"Handler execution failed: {e}")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _get_attempts_count(self, event: t.JsonObject) -> int:
         """Extract attempts count from event with type safety."""

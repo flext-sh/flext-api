@@ -53,7 +53,7 @@ class FlextApiPlugins:
                 return r[bool].fail(msg)
             self.logger.debug(f"Initializing plugin: {self.name}")
             self._initialized = True
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         def shutdown(self) -> r[bool]:
             """Shutdown plugin and release resources."""
@@ -61,7 +61,7 @@ class FlextApiPlugins:
                 return r[bool].fail(f"Plugin '{self.name}' not initialized")
             self.logger.debug(f"Shutting down plugin: {self.name}")
             self._initialized = False
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         @property
         def is_initialized(self) -> bool:
@@ -229,7 +229,7 @@ class FlextApiPlugins:
                 )
             self._loaded_plugins[plugin.name] = plugin
             self.logger.info(f"Loaded plugin: {plugin.name} v{plugin.version}")
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         def unload_plugin(self, plugin_name: str) -> r[bool]:
             """Unload and shutdown a plugin."""
@@ -244,7 +244,7 @@ class FlextApiPlugins:
                 )
             del self._loaded_plugins[plugin_name]
             self.logger.info("Unloaded plugin: %s", plugin_name)
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         def get_plugin(self, plugin_name: str) -> r[FlextApiPlugins.Plugin]:
             """Get loaded plugin by name."""
@@ -280,7 +280,7 @@ class FlextApiPlugins:
                 return r[bool].fail(
                     f"Failed to unload plugins: {', '.join(failed_plugins)}",
                 )
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
 
 # Note: Compatibility aliases removed - use FlextApiPlugins.* directly

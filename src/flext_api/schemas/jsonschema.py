@@ -111,14 +111,14 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     ) -> r[bool]:
         """Validate $schema URI field if present."""
         if "$schema" not in schema:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         schema_uri = schema["$schema"]
         if not isinstance(schema_uri, str):
             return r[bool].fail("$schema must be a string")
         draft_result = self._validate_schema_uri(schema_uri)
         if draft_result.is_failure:
             return r[bool].fail(draft_result.error or "Schema URI validation failed")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_schema_type_field(
         self,
@@ -126,11 +126,11 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     ) -> r[bool]:
         """Validate type field if present."""
         if "type" not in schema:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         type_result = self._validate_type_field(schema["type"])
         if type_result.is_failure:
             return r[bool].fail(f"Invalid type field: {type_result.error}")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_schema_properties(
         self,
@@ -138,7 +138,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     ) -> r[bool]:
         """Validate properties field and nested schemas."""
         if "properties" not in schema:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         if not isinstance(schema["properties"], dict):
             return r[bool].fail("Properties must be a dictionary")
 
@@ -150,12 +150,12 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                     return r[bool].fail(
                         f"Invalid property schema '{prop_name}': {prop_result.error}",
                     )
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_schema_items(self, schema: t_api.Api.SchemaDefinition) -> r[bool]:
         """Validate items field for arrays."""
         if "items" not in schema:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         items = schema["items"]
         if isinstance(items, dict):
             # Type narrowing: iterative assignment avoids dict() constructor overload issues
@@ -178,7 +178,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                         return r[bool].fail(
                             f"Invalid items[{i}] schema: {item_result.error}",
                         )
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_schema_required(
         self,
@@ -186,14 +186,14 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     ) -> r[bool]:
         """Validate required field."""
         if "required" not in schema:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         if not isinstance(schema["required"], list):
             return r[bool].fail("Required must be an array")
 
         for req in schema["required"]:
             if not isinstance(req, str):
                 return r[bool].fail("Required items must be strings")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_schema_format(
         self,
@@ -201,14 +201,14 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     ) -> r[bool]:
         """Validate format field if present."""
         if "format" not in schema or not self._validate_formats:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         format_value = schema["format"]
         if not isinstance(format_value, str):
             return r[bool].fail("Format must be a string")
 
         if format_value not in self._supported_formats and self._strict_mode:
             return r[bool].fail(f"Unsupported format: {format_value}")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def validate_schema(
         self,
@@ -274,7 +274,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         schema_result = self.validate_schema(schema)
         if schema_result.is_failure:
             return r[bool].fail(f"Invalid schema: {schema_result.error}")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_type_in_schema(
         self,
@@ -283,11 +283,11 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     ) -> r[bool]:
         """Validate instance type if specified in schema."""
         if "type" not in schema:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         type_result = self._validate_instance_type(instance, schema["type"])
         if type_result.is_failure:
             return r[bool].fail(type_result.error or "Type validation failed")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_required_properties(
         self,
@@ -296,14 +296,14 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     ) -> r[bool]:
         """Validate required properties for object instances."""
         if not isinstance(instance, dict) or "required" not in schema:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         required_field = schema["required"]
         if not isinstance(required_field, list):
             return r[bool].fail("Required field must be a list")
         for required_prop in required_field:
             if isinstance(required_prop, str) and required_prop not in instance:
                 return r[bool].fail(f"Missing required property: {required_prop}")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_object_properties(
         self,
@@ -312,7 +312,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     ) -> r[bool]:
         """Validate properties for object instances."""
         if not isinstance(instance, dict) or "properties" not in schema:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         properties_field = schema["properties"]
         if not isinstance(properties_field, dict):
             return r[bool].fail("Properties field must be a dictionary")
@@ -332,7 +332,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                         return r[bool].fail(
                             f"Invalid property '{prop_name}': {prop_result.error}",
                         )
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_array_items(
         self,
@@ -341,7 +341,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
     ) -> r[bool]:
         """Validate array items."""
         if not isinstance(instance, list) or "items" not in schema:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         items_field = schema["items"]
         if not isinstance(items_field, dict):
             return r[bool].fail("Items field must be a dictionary")
@@ -356,7 +356,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
             )
             if item_result.is_failure:
                 return r[bool].fail(f"Invalid array item[{i}]: {item_result.error}")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def validate_instance(
         self,
@@ -419,7 +419,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         if schema_uri not in valid_uris and self._strict_mode:
             return r[bool].fail(f"Unsupported schema URI: {schema_uri}")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_type_field(self, type_value: t.JsonValue) -> r[bool]:
         """Validate type field value.
@@ -455,7 +455,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         else:
             return r[bool].fail("Type must be string or array of strings")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_instance_type(
         self,
@@ -506,7 +506,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         else:
             return r[bool].fail("Type value must be string or list of strings")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def supports_schema(self, schema_type: str) -> bool:
         """Check if this validator supports the given schema type.
@@ -567,7 +567,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         if instance_result.is_failure:
             return r[bool].fail(instance_result.error or "Schema validation failed")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def validate_response(
         self,
@@ -607,7 +607,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
         if instance_result.is_failure:
             return r[bool].fail(instance_result.error or "Schema validation failed")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def load_schema(
         self,

@@ -325,7 +325,7 @@ class UserApiClient(FlextApiClient):
         """Update existing user."""
         return self.put(f"/users/{user_id}", json=user_data)
 
-    def delete_user(self, user_id: int) -> FlextResult[None]:
+    def delete_user(self, user_id: int) -> FlextResult[bool]:
         """Delete user."""
         return self.delete(f"/users/{user_id}")
 

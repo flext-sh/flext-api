@@ -55,7 +55,7 @@ class FlextApiTransports:
                 if isinstance(connection, httpx.Client):
                     connection.close()
                 self._client = None
-                return r[bool].ok(True)
+                return r[bool].ok(value=True)
             except Exception as e:
                 return r[bool].fail(f"HTTP disconnect failed: {e}")
 

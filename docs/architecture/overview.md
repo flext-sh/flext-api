@@ -79,15 +79,15 @@ class FlextWebEndpoint(FlextModels.Entity):
 class EndpointService(FlextService):
     """Domain service for HTTP endpoint management."""
 
-    def validate_endpoint(self, endpoint: FlextWebEndpoint) -> FlextResult[None]:
+    def validate_endpoint(self, endpoint: FlextWebEndpoint) -> FlextResult[bool]:
         """Validate HTTP endpoint configuration."""
         if not endpoint.path.startswith("/"):
-            return FlextResult[None].fail("Path must start with /")
+            return FlextResult[bool].fail("Path must start with /")
 
         if endpoint.method not in ["GET", "POST", "PUT", "DELETE"]:
-            return FlextResult[None].fail("Invalid HTTP method")
+            return FlextResult[bool].fail("Invalid HTTP method")
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].| ok(value=True)
 ```
 
 ### Application Layer (Protocol Implementations)
@@ -379,7 +379,7 @@ class StorageBackend(ABC):
         pass
 
     @abstractmethod
-    async def delete_file(self, path: str) -> FlextResult[None]:
+    async def delete_file(self, path: str) -> FlextResult[bool]:
         """Delete file from storage."""
         pass
 

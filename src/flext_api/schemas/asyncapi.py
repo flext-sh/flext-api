@@ -115,7 +115,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         )
         if missing_fields:
             return r[bool].fail(f"Missing required fields: {', '.join(missing_fields)}")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_info_object(
         self, schema: dict[str, t.GeneralValueType]
@@ -170,7 +170,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                 return r[bool].fail(
                     f"Component validation failed: {components_result.error}",
                 )
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def validate_schema(
         self, schema: dict[str, t.GeneralValueType]
@@ -306,7 +306,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             )
             if sub_result.is_failure:
                 return sub_result
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_asyncapi_3_structure(
         self,
@@ -316,7 +316,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         """Validate AsyncAPI 3.x channel structure."""
         if "address" not in channel and self._strict_mode:
             return r[bool].fail(f"Missing 'address' in channel: {channel_name}")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_channel_messages(
         self,
@@ -337,7 +337,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             )
             if messages_result.is_failure:
                 return messages_result
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_single_channel(
         self,
@@ -374,7 +374,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         """
         # Allow empty channels for minimal schemas
         if not channels:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         for channel_name, channel in channels.items():
             # Validate basic structure
@@ -396,7 +396,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             if validation_result.is_failure:
                 return validation_result
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_operation(
         self,
@@ -427,7 +427,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             if message_result.is_failure:
                 return message_result
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_message(
         self,
@@ -454,7 +454,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                     f"Message payload must be a dictionary: {op_type} in {channel_name}",
                 )
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_messages_object(
         self,
@@ -481,7 +481,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             if message_result.is_failure:
                 return message_result
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_servers(self, servers: dict[str, t.GeneralValueType]) -> r[bool]:
         """Validate AsyncAPI servers.
@@ -515,7 +515,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             if protocol not in self._supported_protocols and self._strict_mode:
                 return r[bool].fail(f"Unsupported protocol '{protocol}': {server_name}")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_components(
         self, components: dict[str, t.GeneralValueType]
@@ -553,7 +553,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                     f"Component section must be a dictionary: {section_name}",
                 )
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def supports_schema(self, schema_type: str) -> bool:
         """Check if this validator supports the given schema type.
@@ -610,7 +610,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
         # Check if channels exist for message validation
         if "channels" not in schema:
-            return r[bool].ok(True)  # No channels to validate against
+            return r[bool].ok(value=True)  # No channels to validate against
 
         channels_value = schema["channels"]
         if not isinstance(channels_value, dict):
@@ -620,7 +620,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         channels_typed: dict[str, t.GeneralValueType] = dict(channels_value.items())
         channels = channels_typed
         if not channels:
-            return r[bool].ok(True)  # No channels to validate against
+            return r[bool].ok(value=True)  # No channels to validate against
 
         # Basic validation - request should have expected structure
         # For WebSocket/SSE requests, we expect certain fields
@@ -631,12 +631,12 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
                 pass
 
         self.logger.debug("AsyncAPI request validation completed")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_response_channels(self, schema: t.JsonObject) -> r[bool]:
         """Validate channels in schema for response validation."""
         if "channels" not in schema:
-            return r[bool].ok(True)  # No channels to validate against
+            return r[bool].ok(value=True)  # No channels to validate against
 
         channels_value = schema["channels"]
         if not isinstance(channels_value, dict):
@@ -644,14 +644,14 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
 
         # After isinstance check, channels_value is known to be dict
         if not channels_value:
-            return r[bool].ok(True)  # No channels to validate against
+            return r[bool].ok(value=True)  # No channels to validate against
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_response_status_code(self, response: t.JsonObject) -> r[bool]:
         """Validate status code in response."""
         if "status_code" not in response:
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         status_code_value = response["status_code"]
         http_status_min = 100
@@ -661,7 +661,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         ):
             return r[bool].fail("Invalid status code")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     @override
     def validate_response(
@@ -701,7 +701,7 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             return status_result
 
         self.logger.debug("AsyncAPI response validation completed")
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     @override
     def load_schema(
