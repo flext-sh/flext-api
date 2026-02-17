@@ -20,8 +20,8 @@ try:
 except Exception:
     __version__ = "0.0.0"
     __version_info__ = (0, 0, 0)
-    _metadata = {}
-__title__ = _metadata.get("Name", "flext-api")
+    _metadata = metadata.__class__.__new__(metadata.__class__) if False else None
+__title__ = _metadata.get("Name", "flext-api") if _metadata is not None else "flext-api"
 __description__ = _metadata.get("Summary", "")
 __author__ = _metadata.get("Author", "")
 __author_email__ = _metadata.get("Author-Email", "")
