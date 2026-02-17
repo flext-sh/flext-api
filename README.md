@@ -6,7 +6,9 @@
 
 **FLEXT-API** provides the core HTTP foundation for the FLEXT ecosystem, offering a unified, type-safe HTTP client and a robust factory pattern for building FastAPI applications. It integrates seamless railway-oriented error handling and strictly typed domain models to ensure reliability across enterprise services.
 
-Part of the [FLEXT](https://github.com/flext-sh/flext) ecosystem.
+**Reviewed**: 2026-02-17 | **Version**: 0.10.0-dev
+
+Part of the [FLEXT](https://github.com/flext/flext) ecosystem.
 
 ## 🚀 Key Features
 
