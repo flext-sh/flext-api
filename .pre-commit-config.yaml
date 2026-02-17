@@ -8,8 +8,8 @@ default_stages: [pre-commit, pre-push]
 default_language_version:
   python: python3.13
 
-repos: []  # DISABLED BY SCRIPT - All hooks disabled
-# 
+repos: [] # DISABLED BY SCRIPT - All hooks disabled
+#
 #   # Poetry-managed tools via local repo (most reliable)
 #   - repo: local
 #     hooks:
@@ -20,7 +20,7 @@ repos: []  # DISABLED BY SCRIPT - All hooks disabled
 #         types: [python]
 #         require_serial: true
 #         args: [--check, --diff]
-# 
+#
 #       - id: ruff-lint
 #         name: "🔥 Ruff Lint (ALL categories)"
 #         entry: poetry run ruff check
@@ -51,7 +51,7 @@ repos: []  # DISABLED BY SCRIPT - All hooks disabled
 #             EM101,
 #             EM102,
 #           ]
-# 
+#
 #       # isort import sorting
 #       - id: isort
 #         name: "📦 Import Sort"
@@ -60,7 +60,7 @@ repos: []  # DISABLED BY SCRIPT - All hooks disabled
 #         types: [python]
 #         require_serial: true
 #         args: [--check-only, --diff, --profile=ruff, --line-length=88]
-# 
+#
 #       - id: mypy
 #         name: "🛡️ MyPy Strict"
 #         entry: poetry run mypy
@@ -83,7 +83,7 @@ repos: []  # DISABLED BY SCRIPT - All hooks disabled
 #             --pretty,
 #             --python-version=3.13,
 #           ]
-# 
+#
 #       # Bandit security
 #       - id: bandit
 #         name: "🔒 Bandit Security"
@@ -94,21 +94,21 @@ repos: []  # DISABLED BY SCRIPT - All hooks disabled
 #         pass_filenames: false
 #         args: [-r, src/, --severity-level=medium, --format=txt]
 #         exclude: tests/
-# 
+#
 #       # Poetry dependency check
 #       - id: poetry-check
 #         name: "📦 Poetry Check"
 #         entry: poetry check
 #         language: system
 #         pass_filenames: false
-# 
+#
 #       # Poetry lock validation
 #       - id: poetry-lock
 #         name: "🔒 Poetry Lock"
 #         entry: poetry lock
 #         language: system
 #         pass_filenames: false
-# 
+#
 #   # Standard file checks
 #   - repo: https://github.com/pre-commit/pre-commit-hooks
 #     rev: v5.0.0
@@ -147,7 +147,7 @@ repos: []  # DISABLED BY SCRIPT - All hooks disabled
 #         name: "📜 Executable Shebangs"
 #       - id: check-shebang-scripts-are-executable
 #         name: "🔧 Shebang Executable"
-# 
+#
 #   # Python-specific checks
 #   - repo: https://github.com/pre-commit/pygrep-hooks
 #     rev: v1.10.0
@@ -162,7 +162,7 @@ repos: []  # DISABLED BY SCRIPT - All hooks disabled
 #         name: "⚠️ No log.warn"
 #       - id: python-use-type-annotations
 #         name: "📝 Type Annotations"
-# 
+#
 #   # Additional quality tools
 #   - repo: https://github.com/asottile/pyupgrade
 #     rev: v3.20.0
@@ -170,7 +170,7 @@ repos: []  # DISABLED BY SCRIPT - All hooks disabled
 #       - id: pyupgrade
 #         name: "🆙 Python Upgrade"
 #         args: [--py313-plus]
-# 
+#
 #   - repo: https://github.com/PyCQA/autoflake
 #     rev: v2.3.1
 #     hooks:
@@ -183,7 +183,7 @@ repos: []  # DISABLED BY SCRIPT - All hooks disabled
 #             --in-place,
 #             --recursive,
 #           ]
-# 
+#
 #   # Spell checking
 #   - repo: https://github.com/codespell-project/codespell
 #     rev: v2.4.1
@@ -195,14 +195,14 @@ repos: []  # DISABLED BY SCRIPT - All hooks disabled
 #             "--skip=*.json,*.lock,*.toml,*.yaml,*.yml,poetry.lock",
 #             "--ignore-words-list=Flext,api,fastapi,Config,repo,repos,pydantic",
 #           ]
-# 
+#
 #   # Validate pyproject.toml
 #   - repo: https://github.com/abravalheri/validate-pyproject
 #     rev: v0.16
 #     hooks:
 #       - id: validate-pyproject
 #         name: "📋 Validate pyproject.toml"
-# 
+#
 # CI configuration (Poetry tools disabled in CI)
 ci:
   autofix_prs: false # No automatic fixes - must be intentional
