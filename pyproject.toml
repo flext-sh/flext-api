@@ -205,6 +205,8 @@
 
     [tool.pyrefly]
         search-path = [
+            "../typings",
+            "../typings/generated",
             "src",
             "tests",
             "examples",
