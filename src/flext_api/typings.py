@@ -153,7 +153,7 @@ class FlextApiTypes(FlextTypes):
 
         type ProtocolConfig = dict[str, bool | int | str | FlextApiTypes.JsonObject]
         type ProtocolMessage = FlextApiTypes.JsonObject | str | bytes
-        type SchemaDefinition = dict[str, FlextTypes.JsonValue]
+        type SchemaDefinition = dict[str, FlextTypes.GeneralValueType]
         type ValidationErrors = list[dict[str, str | FlextTypes.JsonValue]]
 
         # =========================================================================

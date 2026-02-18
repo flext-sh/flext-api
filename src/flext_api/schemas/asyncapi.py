@@ -617,7 +617,12 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
             return r[bool].fail("'channels' field must be a dictionary")
 
         # Type reconstruction: narrow dict and assign to explicit object type
-        channels_typed: dict[str, t.GeneralValueType] = dict(channels_value.items())
+        channels_typed: dict[str, t.GeneralValueType] = {}
+        for key, value in channels_value.items():
+            if isinstance(value, (str, int, float, bool, type(None), dict, list, tuple)):
+                channels_typed[str(key)] = value
+            else:
+                channels_typed[str(key)] = str(value)
         channels = channels_typed
         if not channels:
             return r[bool].ok(value=True)  # No channels to validate against

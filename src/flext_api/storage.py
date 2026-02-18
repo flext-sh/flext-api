@@ -389,7 +389,7 @@ class FlextApiStorage:
             else str(metadata.value)
         )
         ttl_json: t.JsonValue = metadata.ttl if metadata.ttl is not None else None
-        metadata_dict: dict[str, t.JsonValue] = {
+        metadata_dict: dict[str, t.GeneralValueType] = {
             "value": value_json,
             "timestamp": metadata.timestamp,
             "ttl": ttl_json,

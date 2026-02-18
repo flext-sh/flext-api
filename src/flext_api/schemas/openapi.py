@@ -16,6 +16,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from flext_core import r, u
 
 from flext_api.plugins import FlextApiPlugins
@@ -148,10 +150,12 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         if not isinstance(components_value, dict):
             return r[bool].fail("'components' field must be a dictionary")
 
-        # Type reconstruction: convert JsonValue dict to object dict for method call
-        components_as_obj: dict[str, t.GeneralValueType] = dict(
-            components_value.items()
-        )
+        components_as_obj: dict[str, t.GeneralValueType] = {}
+        for key, value in components_value.items():
+            if isinstance(value, (str, int, float, bool, type(None), dict, list, tuple)):
+                components_as_obj[str(key)] = value
+            else:
+                components_as_obj[str(key)] = str(value)
         components_result = self._validate_components(components_as_obj)
         if components_result.is_failure:
             return components_result
@@ -248,7 +252,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
             "paths": paths_keys,
         })
 
-    def _validate_paths(self, paths: dict[str, t.GeneralValueType]) -> r[bool]:
+    def _validate_paths(self, paths: Mapping[str, object]) -> r[bool]:
         """Validate OpenAPI paths object.
 
         Args:
@@ -258,10 +262,8 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         FlextResult indicating validation success or failure
 
         """
-        if not isinstance(paths, dict):
-            return r[bool].fail("Paths must be a dictionary")
-
-        for path, path_item in paths.items():
+        for path_key, path_item in paths.items():
+            path = str(path_key)
             if not path.startswith("/"):
                 return r[bool].fail(f"Path must start with '/': {path}")
 
