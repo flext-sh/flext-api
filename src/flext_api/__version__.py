@@ -9,10 +9,13 @@ SPDX-License-Identifier: Proprietary
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from importlib.metadata import metadata
 
+_metadata_map: Mapping[str, str] = {}
 try:
     _metadata = metadata("flext_api")
+    _metadata_map = {key: value for key, value in _metadata.items()}
     __version__ = _metadata["Version"]
     __version_info__ = tuple(
         int(part) if part.isdigit() else part for part in __version__.split(".")
@@ -20,17 +23,15 @@ try:
 except Exception:
     __version__ = "0.0.0"
     __version_info__ = (0, 0, 0)
-    _metadata = metadata.__class__.__new__(metadata.__class__) if False else None
-__title__ = _metadata.get("Name", "flext-api") if _metadata is not None else "flext-api"
-__description__ = _metadata.get("Summary", "")
-__author__ = _metadata.get("Author", "")
-__author_email__ = _metadata.get("Author-Email", "")
-__license__ = _metadata.get("License", "")
+__title__ = _metadata_map.get("Name", "flext-api")
+__description__ = _metadata_map.get("Summary", "")
+__author__ = _metadata_map.get("Author", "")
+__author_email__ = _metadata_map.get("Author-Email", "")
+__license__ = _metadata_map.get("License", "")
 __url__ = ""
-if "Home-Page" in _metadata:
-    url_value = _metadata["Home-Page"]
-    if isinstance(url_value, str):
-        __url__ = url_value
+url_value = _metadata_map.get("Home-Page", "")
+if isinstance(url_value, str):
+    __url__ = url_value
 
 __all__ = [
     "__author__",

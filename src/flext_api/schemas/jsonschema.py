@@ -278,7 +278,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_type_in_schema(
         self,
-        instance: t.JsonValue,
+        instance: t.GeneralValueType,
         schema: t_api.Api.SchemaDefinition,
     ) -> r[bool]:
         """Validate instance type if specified in schema."""
@@ -291,7 +291,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_required_properties(
         self,
-        instance: t.JsonValue,
+        instance: t.GeneralValueType,
         schema: t_api.Api.SchemaDefinition,
     ) -> r[bool]:
         """Validate required properties for object instances."""
@@ -307,7 +307,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_object_properties(
         self,
-        instance: t.JsonValue,
+        instance: t.GeneralValueType,
         schema: t_api.Api.SchemaDefinition,
     ) -> r[bool]:
         """Validate properties for object instances."""
@@ -336,7 +336,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_array_items(
         self,
-        instance: t.JsonValue,
+        instance: t.GeneralValueType,
         schema: t_api.Api.SchemaDefinition,
     ) -> r[bool]:
         """Validate array items."""
@@ -360,7 +360,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
     def validate_instance(
         self,
-        instance: t.JsonValue,
+        instance: t.GeneralValueType,
         schema: t_api.Api.SchemaDefinition,
     ) -> r[t_api.Api.SchemaDefinition]:
         """Validate instance against JSON Schema.
@@ -558,7 +558,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
         # Validate request body against JSON Schema
         # Convert JsonObject to dict[str, JsonValue] for instance validation
-        request_typed: dict[str, t.JsonValue] = {
+        request_typed: dict[str, t.GeneralValueType] = {
             k: v
             for k, v in request.items()
             if isinstance(v, (str, int, float, bool, type(None), list, dict))
@@ -598,7 +598,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
         # Validate response body against JSON Schema
         # Convert JsonObject to dict[str, JsonValue] for instance validation
-        response_typed: dict[str, t.JsonValue] = {
+        response_typed: dict[str, t.GeneralValueType] = {
             k: v
             for k, v in response.items()
             if isinstance(v, (str, int, float, bool, type(None), list, dict))

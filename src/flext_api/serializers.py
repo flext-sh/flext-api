@@ -59,5 +59,8 @@ class FlextApiSerializers:
                 Unpacked object (dict, list, scalar, or None).
 
             """
+            unpackb_fn = getattr(_msgpack, "unpackb", None)
+            if unpackb_fn is None:
+                return None
             # Return the raw result; caller must narrow to GeneralValueType if needed
-            return _msgpack.unpackb(data)
+            return unpackb_fn(data)
