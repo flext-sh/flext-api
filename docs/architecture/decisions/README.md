@@ -107,14 +107,14 @@ Date: [YYYY-MM-DD]
 ### ADR Generation Script
 
 ```bash
-# Generate new ADR
-python docs-maintenance/scripts/create_adr.py "New Feature Decision"
+# Generate ADR/index artifacts
+make docs DOCS_PHASE=generate
 
-# List all ADRs
-python docs-maintenance/scripts/list_adrs.py
+# Validate ADR links and references
+make docs DOCS_PHASE=validate
 
-# Search ADRs
-python docs-maintenance/scripts/search_adrs.py "keyword"
+# Run full documentation pipeline
+make docs
 ```
 
 ### Integration with Development
