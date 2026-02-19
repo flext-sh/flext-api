@@ -1,7 +1,7 @@
 # Middleware API Reference
 
-
 <!-- TOC START -->
+
 - [HTTP Middleware System](#http-middleware-system)
   - [FlextApiMiddleware - Base Middleware Class](#flextapimiddleware-base-middleware-class)
   - [Middleware Pipeline](#middleware-pipeline)
@@ -20,6 +20,7 @@
   - [Complete Middleware Stack](#complete-middleware-stack)
   - [Custom Middleware Implementation](#custom-middleware-implementation)
   - [Middleware with Dependency Injection](#middleware-with-dependency-injection)
+
 <!-- TOC END -->
 
 This section covers the HTTP middleware and handler system for request/response processing, authentication, logging, and cross-cutting concerns.

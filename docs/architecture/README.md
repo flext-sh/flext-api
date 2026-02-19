@@ -1,39 +1,40 @@
 # Architecture Documentation
 
-
 <!-- TOC START -->
-- [📚 Documentation Structure](#-documentation-structure)
-- [🏗️ Architecture Framework](#-architecture-framework)
+
+- [📚 Documentation Structure](#documentation-structure)
+- [🏗️ Architecture Framework](#architecture-framework)
   - [Architectural Principles](#architectural-principles)
   - [Technology Stack](#technology-stack)
-- [📖 Documentation Formats](#-documentation-formats)
+- [📖 Documentation Formats](#documentation-formats)
   - [C4 Model Documentation](#c4-model-documentation)
   - [Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
   - [Visual Diagrams](#visual-diagrams)
-- [🔧 Key Architectural Decisions](#-key-architectural-decisions)
+- [🔧 Key Architectural Decisions](#key-architectural-decisions)
   - [Core Decisions](#core-decisions)
   - [Quality Attributes](#quality-attributes)
-- [🚀 Getting Started](#-getting-started)
+- [🚀 Getting Started](#getting-started)
   - [For New Team Members](#for-new-team-members)
   - [For Architects and Tech Leads](#for-architects-and-tech-leads)
   - [For Developers](#for-developers)
-- [🛠️ Tools and Automation](#-tools-and-automation)
+- [🛠️ Tools and Automation](#tools-and-automation)
   - [Documentation Maintenance](#documentation-maintenance)
   - [ADR Management](#adr-management)
   - [Diagram Generation](#diagram-generation)
-- [📋 Quality Assurance](#-quality-assurance)
+- [📋 Quality Assurance](#quality-assurance)
   - [Documentation Standards](#documentation-standards)
   - [Review Process](#review-process)
   - [Metrics and Monitoring](#metrics-and-monitoring)
-- [🔄 Evolution and Maintenance](#-evolution-and-maintenance)
+- [🔄 Evolution and Maintenance](#evolution-and-maintenance)
   - [Documentation Lifecycle](#documentation-lifecycle)
   - [Change Management](#change-management)
   - [Extension Points](#extension-points)
-- [📚 References and Resources](#-references-and-resources)
+- [📚 References and Resources](#references-and-resources)
   - [Architecture Methodologies](#architecture-methodologies)
   - [Documentation Tools](#documentation-tools)
   - [Industry Standards](#industry-standards)
-- [🎯 Architecture Vision](#-architecture-vision)
+- [🎯 Architecture Vision](#architecture-vision)
+
 <!-- TOC END -->
 
 This directory contains comprehensive architecture documentation for the FLEXT-API project, following industry best practices and modern documentation standards.
@@ -67,10 +68,10 @@ FLEXT-API follows a **Clean Architecture** with **Protocol-Based Design** and **
 ### Architectural Principles
 
 1. **Clean Architecture**: Clear separation of concerns across layers
-2. **Protocol Abstraction**: Plugin architecture for multiple communication protocols
-3. **Railway Pattern**: Type-safe error handling throughout the system
-4. **Domain-Driven Design**: Business logic organized around domain concepts
-5. **Dependency Injection**: Loose coupling through service registration
+1. **Protocol Abstraction**: Plugin architecture for multiple communication protocols
+1. **Railway Pattern**: Type-safe error handling throughout the system
+1. **Domain-Driven Design**: Business logic organized around domain concepts
+1. **Dependency Injection**: Loose coupling through service registration
 
 ### Technology Stack
 
@@ -156,23 +157,23 @@ Architecture diagrams using PlantUML:
 ### For New Team Members
 
 1. **Read the Overview**: Start with `overview.md` for high-level understanding
-2. **Explore C4 Diagrams**: Follow the C4 model from context to code level
-3. **Review ADRs**: Understand key architectural decisions in `decisions/`
-4. **Check Diagrams**: Visualize system interactions in `diagrams/`
+1. **Explore C4 Diagrams**: Follow the C4 model from context to code level
+1. **Review ADRs**: Understand key architectural decisions in `decisions/`
+1. **Check Diagrams**: Visualize system interactions in `diagrams/`
 
 ### For Architects and Tech Leads
 
 1. **System Context**: Understand how FLEXT-API fits in the enterprise ecosystem
-2. **Container Architecture**: Review technology choices and deployment patterns
-3. **Component Relationships**: Analyze internal system structure
-4. **Decision Rationale**: Review ADRs for architectural reasoning
+1. **Container Architecture**: Review technology choices and deployment patterns
+1. **Component Relationships**: Analyze internal system structure
+1. **Decision Rationale**: Review ADRs for architectural reasoning
 
 ### For Developers
 
 1. **API Structure**: Understand the protocol abstraction and client interfaces
-2. **Error Handling**: Learn the railway pattern for robust error handling
-3. **Integration Patterns**: See how FLEXT-API integrates with FLEXT-Core
-4. **Extension Points**: Learn how to add new protocols or customize behavior
+1. **Error Handling**: Learn the railway pattern for robust error handling
+1. **Integration Patterns**: See how FLEXT-API integrates with FLEXT-Core
+1. **Extension Points**: Learn how to add new protocols or customize behavior
 
 ## 🛠️ Tools and Automation
 
@@ -249,9 +250,9 @@ plantuml -tsvg diagrams/*.puml
 ### Documentation Lifecycle
 
 1. **Creation**: New features and components documented
-2. **Review**: Regular review for accuracy and completeness
-3. **Update**: Documentation updated with code changes
-4. **Archive**: Deprecated documentation properly archived
+1. **Review**: Regular review for accuracy and completeness
+1. **Update**: Documentation updated with code changes
+1. **Archive**: Deprecated documentation properly archived
 
 ### Change Management
 
@@ -290,7 +291,7 @@ The architecture supports extension in several areas:
 - [AsyncAPI](https://www.asyncapi.com/) - Event-driven API specification
 - [RFC 2119](https://tools.ietf.org/html/rfc2119) - Key words for requirements
 
----
+______________________________________________________________________
 
 ## 🎯 Architecture Vision
 
@@ -303,6 +304,6 @@ FLEXT-API aims to be the **enterprise HTTP foundation** that enables reliable, s
 - **Development Speed**: 50% faster API integration development
 - **Maintenance Cost**: 60% reduction in HTTP operation maintenance
 
----
+______________________________________________________________________
 
 _This architecture documentation is maintained using automated tools and reviewed regularly to ensure accuracy and completeness._

@@ -127,7 +127,17 @@ known_first_party = [
 ]
 
 [tool.pytest]
-ini_options.addopts = [ "--color=yes", "--strict-config", "--strict-markers", "--tb=short", "-ra" ]
+ini_options.addopts = [
+  "--strict-config",
+  "--strict-markers",
+  "--tb=short",
+  "-p no:sugar",
+  "-q",
+  "-ra",
+  "--timeout=30",
+  "--timeout-method=signal",
+  "--durations=0",
+]
 ini_options.markers = [
   "api: FastAPI endpoint tests",
   "architecture: Architectural pattern tests",

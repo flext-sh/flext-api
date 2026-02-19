@@ -1,7 +1,7 @@
 # Schema API Reference
 
-
 <!-- TOC START -->
+
 - [OpenAPI Schema Generation](#openapi-schema-generation)
   - [OpenApiSchema - OpenAPI 3.0 Specification](#openapischema-openapi-30-specification)
   - [Schema Customization](#schema-customization)
@@ -17,6 +17,7 @@
 - [Usage Examples](#usage-examples)
   - [Complete Schema Generation Workflow](#complete-schema-generation-workflow)
   - [Schema Validation in Production](#schema-validation-in-production)
+
 <!-- TOC END -->
 
 This section covers the schema generation and validation capabilities for OpenAPI, AsyncAPI, and JSON Schema specifications.

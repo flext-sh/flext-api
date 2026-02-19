@@ -1,7 +1,7 @@
 # Protocols API Reference
 
-
 <!-- TOC START -->
+
 - [Protocol Architecture](#protocol-architecture)
 - [HTTP Protocol Implementation](#http-protocol-implementation)
   - [FlextWebProtocol - HTTP/REST Implementation](#flextwebprotocol-httprest-implementation)
@@ -22,6 +22,7 @@
 - [Usage Examples](#usage-examples)
   - [Multi-Protocol API Client](#multi-protocol-api-client)
   - [Protocol Plugin System](#protocol-plugin-system)
+
 <!-- TOC END -->
 
 This section covers the protocol implementations and stubs that enable FLEXT-API to support multiple communication protocols through a plugin architecture.

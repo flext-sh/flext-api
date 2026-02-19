@@ -1,7 +1,7 @@
 # Architecture Decision Records (ADRs)
 
-
 <!-- TOC START -->
+
 - [What are ADRs](#what-are-adrs)
 - [ADR Template](#adr-template)
 - [Status](#status)
@@ -27,6 +27,7 @@
 - [Examples from Other Projects](#examples-from-other-projects)
   - [Successful ADR Implementations](#successful-adr-implementations)
   - [Lessons Learned](#lessons-learned)
+
 <!-- TOC END -->
 
 This directory contains Architecture Decision Records (ADRs) that document important architectural decisions made for the FLEXT-API project.
@@ -75,24 +76,24 @@ Date: [YYYY-MM-DD]
 
 ## Current ADRs
 
-| ADR                                     | Title                             | Status   | Date       |
-| --------------------------------------- | --------------------------------- | -------- | ---------- | --------------------------- |
-| [ADR-001](001-flext-core-dependency.md) | Mandatory FLEXT-Core Dependency   | Accepted | 2025-01-01 |
-| [ADR-002](002-railway-pattern.md)       | Railway-Oriented Error Handling   | Accepted | 2025-01-01 |
-| [ADR-003](003-protocol-abstraction.md)  | Protocol Plugin Architecture      | Accepted | 2025-01-01 |
-| ADR-004                                 | Pydantic v2 Adoption              | Accepted | 2025-01-15 | _Documentation coming soon_ |
-| ADR-005                                 | HTTPX as HTTP Client              | Accepted | 2025-01-15 | _Documentation coming soon_ |
-| ADR-006                                 | Clean Architecture Implementation | Accepted | 2025-01-20 | _Documentation coming soon_ |
+| ADR | Title | Status | Date |
+| \--------------------------------------- | --------------------------------- | -------- | ---------- | --------------------------- |
+| [ADR-001](001-flext-core-dependency.md) | Mandatory FLEXT-Core Dependency | Accepted | 2025-01-01 |
+| [ADR-002](002-railway-pattern.md) | Railway-Oriented Error Handling | Accepted | 2025-01-01 |
+| [ADR-003](003-protocol-abstraction.md) | Protocol Plugin Architecture | Accepted | 2025-01-01 |
+| ADR-004 | Pydantic v2 Adoption | Accepted | 2025-01-15 | _Documentation coming soon_ |
+| ADR-005 | HTTPX as HTTP Client | Accepted | 2025-01-15 | _Documentation coming soon_ |
+| ADR-006 | Clean Architecture Implementation | Accepted | 2025-01-20 | _Documentation coming soon_ |
 
 ## ADR Workflow
 
 ### Creating a New ADR
 
 1. **Identify Decision**: Recognize when an architectural decision needs to be made
-2. **Draft ADR**: Create a new ADR document following the template
-3. **Review**: Have the ADR reviewed by team members
-4. **Accept/Reject**: Update status based on consensus
-5. **Implement**: Implement the accepted decision
+1. **Draft ADR**: Create a new ADR document following the template
+1. **Review**: Have the ADR reviewed by team members
+1. **Accept/Reject**: Update status based on consensus
+1. **Implement**: Implement the accepted decision
 
 ### ADR Status Definitions
 
@@ -129,10 +130,10 @@ make docs
 ### Writing Effective ADRs
 
 1. **Be Specific**: Clearly state what decision was made and why
-2. **Include Context**: Explain the problem being solved
-3. **Document Alternatives**: Show what other options were considered
-4. **List Consequences**: Be honest about trade-offs and risks
-5. **Keep Current**: Update status as decisions evolve
+1. **Include Context**: Explain the problem being solved
+1. **Document Alternatives**: Show what other options were considered
+1. **List Consequences**: Be honest about trade-offs and risks
+1. **Keep Current**: Update status as decisions evolve
 
 ### When to Write an ADR
 

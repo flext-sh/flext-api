@@ -1,27 +1,28 @@
 # FLEXT-API
 
-
 <!-- TOC START -->
-- [🚀 Overview](#-overview)
-  - [🎯 Core Features](#-core-features)
-  - [🏢 Integration with FLEXT Ecosystem](#-integration-with-flext-ecosystem)
-- [🏗️ Current Source Structure](#-current-source-structure)
-  - [🎯 Key Architectural Patterns](#-key-architectural-patterns)
-- [📚 Documentation Structure](#-documentation-structure)
-  - [🏗️ Architecture & Design](#-architecture-design)
-  - [🔧 Development & Integration](#-development-integration)
-- [🚀 Quick Start](#-quick-start)
+
+- [🚀 Overview](#overview)
+  - [🎯 Core Features](#core-features)
+  - [🏢 Integration with FLEXT Ecosystem](#integration-with-flext-ecosystem)
+- [🏗️ Current Source Structure](#current-source-structure)
+  - [🎯 Key Architectural Patterns](#key-architectural-patterns)
+- [📚 Documentation Structure](#documentation-structure)
+  - [🏗️ Architecture & Design](#architecture-design)
+  - [🔧 Development & Integration](#development-integration)
+- [🚀 Quick Start](#quick-start)
   - [Installation](#installation)
   - [Basic HTTP Client Usage](#basic-http-client-usage)
   - [FastAPI Application Setup](#fastapi-application-setup)
-- [🧪 Testing](#-testing)
-- [📈 Current Status](#-current-status)
-  - [🎯 Production Readiness](#-production-readiness)
-- [🤝 Contributing](#-contributing)
-- [📋 Roadmap](#-roadmap)
+- [🧪 Testing](#testing)
+- [📈 Current Status](#current-status)
+  - [🎯 Production Readiness](#production-readiness)
+- [🤝 Contributing](#contributing)
+- [📋 Roadmap](#roadmap)
   - [Immediate (Next Release)](#immediate-next-release)
   - [Short-term (Next Month)](#short-term-next-month)
   - [Long-term (Next Quarter)](#long-term-next-quarter)
+
 <!-- TOC END -->
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
@@ -33,7 +34,7 @@
 
 > **✅ STATUS**: Version 0.9.9 - Production foundation implemented, comprehensive test coverage, ready for 1.0.0 release
 
----
+______________________________________________________________________
 
 ## 🚀 Overview
 
@@ -55,7 +56,7 @@ FLEXT-API serves as the **HTTP foundation** for FLEXT's enterprise data integrat
 - **33+ FLEXT Projects** → Unified HTTP client preventing duplicate implementations
 - **Enterprise APIs** → REST API patterns and FastAPI application hosting
 
----
+______________________________________________________________________
 
 ## 🏗️ Current Source Structure
 
@@ -110,7 +111,7 @@ src/flext_api/
 - **Plugin Architecture** - Extensible protocol implementations
 - **Configuration Management** - Environment-aware settings with validation
 
----
+______________________________________________________________________
 
 ## 📚 Documentation Structure
 
@@ -132,7 +133,7 @@ src/flext_api/
 - **[Testing Guide](guides/testing.md)** - Testing strategies and examples
 - **[Troubleshooting](guides/troubleshooting.md)** - Common issues and solutions
 
----
+______________________________________________________________________
 
 ## 🚀 Quick Start
 
@@ -184,7 +185,7 @@ async def health_check():
     return {"status": "healthy"}
 ```
 
----
+______________________________________________________________________
 
 ## 🧪 Testing
 
@@ -203,7 +204,7 @@ pytest tests/e2e/         # End-to-end tests
 
 **Current Coverage**: 100% test pass rate, MyPy strict mode passes
 
----
+______________________________________________________________________
 
 ## 📈 Current Status
 
@@ -223,16 +224,16 @@ pytest tests/e2e/         # End-to-end tests
 - **Documentation**: Complete API reference and guides
 - **Testing**: 100% test coverage with integration tests
 
----
+______________________________________________________________________
 
 ## 🤝 Contributing
 
 1. **Code Standards**: Follow FLEXT patterns and Clean Architecture principles
-2. **Testing**: Maintain 100% test coverage with comprehensive test suites
-3. **Documentation**: Update relevant guides for new features
-4. **Quality Gates**: All code must pass MyPy strict mode and comprehensive tests
+1. **Testing**: Maintain 100% test coverage with comprehensive test suites
+1. **Documentation**: Update relevant guides for new features
+1. **Quality Gates**: All code must pass MyPy strict mode and comprehensive tests
 
----
+______________________________________________________________________
 
 ## 📋 Roadmap
 
@@ -254,6 +255,6 @@ pytest tests/e2e/         # End-to-end tests
 - **API Gateway Features**: Rate limiting, caching, and routing
 - **Advanced Protocols**: gRPC-Web, HTTP/2, and QUIC support
 
----
+______________________________________________________________________
 
 **FLEXT-API** - Enterprise HTTP Foundation | Built with ❤️ for reliability and scale

@@ -1,7 +1,7 @@
 # 003. Protocol Plugin Architecture
 
-
 <!-- TOC START -->
+
 - [Status](#status)
 - [Context](#context)
 - [Decision](#decision)
@@ -41,6 +41,7 @@
   - [Phase 2: Additional Protocols](#phase-2-additional-protocols)
   - [Phase 3: Ecosystem Integration](#phase-3-ecosystem-integration)
 - [References](#references)
+
 <!-- TOC END -->
 
 Date: 2025-01-01
@@ -54,10 +55,10 @@ Accepted
 Modern applications need to communicate with various APIs using different protocols (HTTP/REST, GraphQL, WebSocket, gRPC, etc.). Each protocol has different connection patterns, message formats, and error handling. The challenge was to create a unified interface that:
 
 1. Supports multiple protocols through a consistent API
-2. Allows easy addition of new protocols
-3. Maintains protocol-specific optimizations and features
-4. Provides unified error handling and monitoring
-5. Enables protocol negotiation and fallback
+1. Allows easy addition of new protocols
+1. Maintains protocol-specific optimizations and features
+1. Provides unified error handling and monitoring
+1. Enables protocol negotiation and fallback
 
 Key considerations:
 
@@ -72,9 +73,9 @@ Key considerations:
 FLEXT-API will implement a **Protocol Plugin Architecture** with:
 
 1. **Abstract Base Protocol**: Common interface for all protocols
-2. **Protocol Registry**: Dynamic protocol discovery and instantiation
-3. **Protocol-Specific Implementations**: Optimized implementations for each protocol
-4. **Unified Client Interface**: Single client interface that delegates to protocol implementations
+1. **Protocol Registry**: Dynamic protocol discovery and instantiation
+1. **Protocol-Specific Implementations**: Optimized implementations for each protocol
+1. **Unified Client Interface**: Single client interface that delegates to protocol implementations
 
 ## Consequences
 

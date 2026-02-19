@@ -1,7 +1,7 @@
 # C4 Model - Components
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Component Diagram](#component-diagram)
 - [Component Descriptions](#component-descriptions)
@@ -19,6 +19,7 @@
   - [Reliability](#reliability)
   - [Security](#security)
   - [Maintainability](#maintainability)
+
 <!-- TOC END -->
 
 ## Overview
@@ -478,29 +479,29 @@ Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 ### Request Processing Flow
 
 1. **Client Core** receives user request
-2. **Request Builder** validates and constructs HTTP request
-3. **Authentication Handler** adds authentication credentials
-4. **Connection Pool** provides connection for request
-5. **Retry Logic** handles transient failures
-6. **Response Handler** processes and validates response
-7. **Client Core** returns final `FlextResult[T]`
+1. **Request Builder** validates and constructs HTTP request
+1. **Authentication Handler** adds authentication credentials
+1. **Connection Pool** provides connection for request
+1. **Retry Logic** handles transient failures
+1. **Response Handler** processes and validates response
+1. **Client Core** returns final `FlextResult[T]`
 
 ### Application Startup Flow
 
 1. **Application Factory** creates FastAPI instance
-2. **Config Layer** loads and validates configuration
-3. **Route Registry** registers API endpoints
-4. **Middleware Stack** configures processing pipeline
-5. **Health Checker** sets up monitoring endpoints
-6. **Application Factory** returns configured FastAPI app
+1. **Config Layer** loads and validates configuration
+1. **Route Registry** registers API endpoints
+1. **Middleware Stack** configures processing pipeline
+1. **Health Checker** sets up monitoring endpoints
+1. **Application Factory** returns configured FastAPI app
 
 ### Storage Operation Flow
 
 1. **Storage Router** selects appropriate backend
-2. **Backend Component** executes storage operation
-3. **Error handling** wraps operation in `FlextResult[T]`
-4. **Metrics collection** records operation performance
-5. **Result** returned to calling component
+1. **Backend Component** executes storage operation
+1. **Error handling** wraps operation in `FlextResult[T]`
+1. **Metrics collection** records operation performance
+1. **Result** returned to calling component
 
 ## Quality Attributes Mapping
 
@@ -528,6 +529,6 @@ Rel(secret_manager, flext_container, "Stores", "encrypted secrets")
 - **Middleware Stack**: Provides clean separation of cross-cutting concerns
 - **Config Watcher**: Supports zero-downtime configuration updates
 
----
+______________________________________________________________________
 
 **Next Level**: [Code Diagram](code.md) - Implementation details and relationships
