@@ -1,7 +1,7 @@
 # Core API Reference
 
-
 <!-- TOC START -->
+
 - [Core HTTP Client](#core-http-client)
   - [FlextApiClient - Main HTTP Client](#flextapiclient-main-http-client)
   - [HTTP Methods](#http-methods)
@@ -17,6 +17,7 @@
 - [Usage Examples](#usage-examples)
   - [Complete HTTP Client Example](#complete-http-client-example)
   - [FastAPI Application Example](#fastapi-application-example)
+
 <!-- TOC END -->
 
 This section covers the core HTTP client and server classes that form the foundation of FLEXT-API.

@@ -1,7 +1,7 @@
 # Architecture Overview
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Layer Details](#layer-details)
   - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
@@ -44,6 +44,7 @@
 - [Migration Guidelines](#migration-guidelines)
   - [Version Compatibility](#version-compatibility)
 - [References](#references)
+
 <!-- TOC END -->
 
 Comprehensive architecture guide for FLEXT-API - the HTTP client and FastAPI integration foundation for the FLEXT enterprise data integration platform.
@@ -910,9 +911,9 @@ FLEXT-API maintains backward compatibility through semantic versioning.
 **Breaking Changes Process:**
 
 1. Mark as deprecated in current version
-2. Provide migration guide and warnings
-3. Remove in next major version (2.0.0)
-4. Update ecosystem documentation
+1. Provide migration guide and warnings
+1. Remove in next major version (2.0.0)
+1. Update ecosystem documentation
 
 **Migration Example:**
 
@@ -935,6 +936,6 @@ def create_fastapi_app(config: FlextApiSettings = None) -> FastAPI:
 - **FastAPI Documentation**: Web framework patterns and best practices
 - **HTTP Specifications**: RFC standards for HTTP/1.1 and HTTP/2
 
----
+______________________________________________________________________
 
 **FLEXT-API Architecture** - Protocol-based, extensible HTTP foundation for enterprise applications.

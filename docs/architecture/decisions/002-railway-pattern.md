@@ -1,7 +1,7 @@
 # 002. Railway-Oriented Error Handling
 
-
 <!-- TOC START -->
+
 - [Status](#status)
 - [Context](#context)
 - [Decision](#decision)
@@ -26,6 +26,7 @@
   - [Error Message Standards](#error-message-standards)
   - [Performance Considerations](#performance-considerations)
 - [References](#references)
+
 <!-- TOC END -->
 
 Date: 2025-01-01
@@ -39,10 +40,10 @@ Accepted
 HTTP operations are inherently unreliable - network failures, server errors, timeouts, and malformed responses are common. Traditional exception-based error handling makes code complex and error-prone. The FLEXT ecosystem needed a consistent approach to error handling that:
 
 1. Makes error handling explicit and visible in the type system
-2. Enables composable operations that can be chained together
-3. Prevents silent failures and unhandled errors
-4. Provides clear separation between success and failure paths
-5. Integrates well with async/await patterns
+1. Enables composable operations that can be chained together
+1. Prevents silent failures and unhandled errors
+1. Provides clear separation between success and failure paths
+1. Integrates well with async/await patterns
 
 Key challenges:
 
@@ -207,10 +208,10 @@ def test_get_user_not_found():
 ### Railway Pattern Guidelines
 
 1. **Always Return FlextResult**: Every public method should return FlextResult[T]
-2. **Use Descriptive Errors**: Error messages should be user-friendly and actionable
-3. **Chain Operations**: Use `flat_map` for sequential operations, `map` for transformations
-4. **Handle Errors Early**: Validate inputs and fail fast with clear error messages
-5. **Test Both Paths**: Always test both success and failure code paths
+1. **Use Descriptive Errors**: Error messages should be user-friendly and actionable
+1. **Chain Operations**: Use `flat_map` for sequential operations, `map` for transformations
+1. **Handle Errors Early**: Validate inputs and fail fast with clear error messages
+1. **Test Both Paths**: Always test both success and failure code paths
 
 ### Error Message Standards
 

@@ -1,7 +1,7 @@
 # 001. Mandatory FLEXT-Core Dependency
 
-
 <!-- TOC START -->
+
 - [Status](#status)
 - [Context](#context)
 - [Decision](#decision)
@@ -18,6 +18,7 @@
   - [Phase 2: Ecosystem Migration (Week 3-8)](#phase-2-ecosystem-migration-week-3-8)
   - [Phase 3: Enforcement (Week 9-12)](#phase-3-enforcement-week-9-12)
 - [References](#references)
+
 <!-- TOC END -->
 
 Date: 2025-01-01

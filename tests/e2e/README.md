@@ -1,7 +1,7 @@
 # End-to-End Tests
 
-
 <!-- TOC START -->
+
 - [Test Files](#test-files)
   - [API Workflow Tests](#api-workflow-tests)
 - [Test Scope](#test-scope)
@@ -12,6 +12,7 @@
 - [Test Characteristics](#test-characteristics)
 - [Quality Standards](#quality-standards)
 - [Development](#development)
+
 <!-- TOC END -->
 
 **Complete workflow testing with full system integration**

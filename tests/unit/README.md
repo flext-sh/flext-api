@@ -1,7 +1,7 @@
 # Unit Tests
 
-
 <!-- TOC START -->
+
 - [Test Files](#test-files)
   - [Core Component Tests](#core-component-tests)
   - [Coverage Tests](#coverage-tests)
@@ -9,6 +9,7 @@
 - [Running Tests](#running-tests)
 - [Test Standards](#test-standards)
 - [Development](#development)
+
 <!-- TOC END -->
 
 **Fast isolated tests with mocks for FLEXT API components**
@@ -60,7 +61,7 @@ pytest tests/unit/ -k "api" -v
 
 ## Test Standards
 
-- Fast execution (<100ms per test)
+- Fast execution (\<100ms per test)
 - Isolated with proper mocking
 - Clear naming conventions
 - Comprehensive assertions

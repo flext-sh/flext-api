@@ -1,7 +1,7 @@
 # Storage API Reference
 
-
 <!-- TOC START -->
+
 - [HTTP Storage System](#http-storage-system)
   - [FlextApiStorage - File Storage Management](#flextapistorage-file-storage-management)
   - [Storage Configuration](#storage-configuration)
@@ -20,6 +20,7 @@
 - [Usage Examples](#usage-examples)
   - [Complete File Upload System](#complete-file-upload-system)
   - [Caching with Storage Integration](#caching-with-storage-integration)
+
 <!-- TOC END -->
 
 This section covers the HTTP storage and caching system for file uploads, downloads, and distributed storage backends.
