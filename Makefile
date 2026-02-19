@@ -1,8 +1,5 @@
 # flext-api - HTTP API Framework
 PROJECT_NAME := flext-api
-COV_DIR := flext_api
-MIN_COVERAGE := 100
-
 include ../base.mk
 
 # === PROJECT-SPECIFIC TARGETS ===
