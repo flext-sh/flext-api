@@ -9,8 +9,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
+import math
 
+import pytest
 from flext_api import FlextApiClient
 from flext_api.settings import FlextApiSettings
 
@@ -36,7 +37,7 @@ class TestHttpClientIntegration:
         try:
             # For integration test, verify client configuration
             assert client.base_url == "https://httpbin.org"
-            assert client.timeout == 10.0
+            assert math.isclose(client.timeout, 10.0)
             # In production, this would make a real HTTP call
 
         finally:
@@ -56,7 +57,7 @@ class TestHttpClientIntegration:
         client = client_result.value
         try:
             assert client.base_url == "https://httpbin.org"
-            assert client.timeout == 10.0
+            assert math.isclose(client.timeout, 10.0)
         finally:
             client.close()
 
@@ -77,7 +78,7 @@ class TestHttpClientIntegration:
         try:
             # Verify client configuration for POST requests
             assert client.base_url == "https://httpbin.org"
-            assert client.timeout == 10.0
+            assert math.isclose(client.timeout, 10.0)
             # In production, this would make a real HTTP POST call with test_data
 
         finally:
@@ -101,7 +102,7 @@ class TestHttpClientIntegration:
         try:
             # Verify client is properly configured
             assert client.base_url == "https://httpbin.org"
-            assert client.timeout == 10.0
+            assert math.isclose(client.timeout, 10.0)
 
         finally:
             client.close()

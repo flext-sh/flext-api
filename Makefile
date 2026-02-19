@@ -1,9 +1,10 @@
 # flext-api - HTTP API Framework
 PROJECT_NAME := flext-api
-COV_DIR := flext_api
-MIN_COVERAGE := 100
-
+ifneq ("$(wildcard ../base.mk)", "")
 include ../base.mk
+else
+include base.mk
+endif
 
 # === PROJECT-SPECIFIC TARGETS ===
 .PHONY: dev api-docs test-unit test-integration build shell

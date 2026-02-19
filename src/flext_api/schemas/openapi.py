@@ -152,7 +152,9 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
         components_as_obj: dict[str, t.GeneralValueType] = {}
         for key, value in components_value.items():
-            if isinstance(value, (str, int, float, bool, type(None), dict, list, tuple)):
+            if isinstance(
+                value, (str, int, float, bool, type(None), dict, list, tuple)
+            ):
                 components_as_obj[str(key)] = value
             else:
                 components_as_obj[str(key)] = str(value)

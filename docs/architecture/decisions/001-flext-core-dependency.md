@@ -1,5 +1,25 @@
 # 001. Mandatory FLEXT-Core Dependency
 
+
+<!-- TOC START -->
+- [Status](#status)
+- [Context](#context)
+- [Decision](#decision)
+- [Consequences](#consequences)
+  - [Positive](#positive)
+  - [Negative](#negative)
+  - [Risks](#risks)
+- [Alternatives Considered](#alternatives-considered)
+  - [Option 1: Standalone HTTP Library](#option-1-standalone-http-library)
+  - [Option 2: Optional flext-core Integration](#option-2-optional-flext-core-integration)
+  - [Option 3: Minimal flext-core Integration](#option-3-minimal-flext-core-integration)
+- [Implementation Plan](#implementation-plan)
+  - [Phase 1: Core Integration (Week 1-2)](#phase-1-core-integration-week-1-2)
+  - [Phase 2: Ecosystem Migration (Week 3-8)](#phase-2-ecosystem-migration-week-3-8)
+  - [Phase 3: Enforcement (Week 9-12)](#phase-3-enforcement-week-9-12)
+- [References](#references)
+<!-- TOC END -->
+
 Date: 2025-01-01
 
 ## Status

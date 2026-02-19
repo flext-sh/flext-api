@@ -1,5 +1,29 @@
 # Protocols API Reference
 
+
+<!-- TOC START -->
+- [Protocol Architecture](#protocol-architecture)
+- [HTTP Protocol Implementation](#http-protocol-implementation)
+  - [FlextWebProtocol - HTTP/REST Implementation](#flextwebprotocol-httprest-implementation)
+  - [HTTP Request/Response Models](#http-requestresponse-models)
+- [GraphQL Protocol Implementation](#graphql-protocol-implementation)
+  - [GraphQLProtocol - GraphQL Support](#graphqlprotocol-graphql-support)
+  - [GraphQL Operations](#graphql-operations)
+- [WebSocket Protocol Implementation](#websocket-protocol-implementation)
+  - [WebSocketProtocol - Real-time Communication](#websocketprotocol-real-time-communication)
+- [Server-Sent Events Protocol](#server-sent-events-protocol)
+  - [ServerSentEventProtocol - One-way Streaming](#serversenteventprotocol-one-way-streaming)
+- [Storage Backend Protocol](#storage-backend-protocol)
+  - [StorageBackendProtocol - File/Object Storage](#storagebackendprotocol-fileobject-storage)
+- [Protocol Stubs](#protocol-stubs)
+  - [GRPC Stub - gRPC Protocol Buffers](#grpc-stub-grpc-protocol-buffers)
+  - [Protobuf Stub - Binary Serialization](#protobuf-stub-binary-serialization)
+- [Quality Metrics](#quality-metrics)
+- [Usage Examples](#usage-examples)
+  - [Multi-Protocol API Client](#multi-protocol-api-client)
+  - [Protocol Plugin System](#protocol-plugin-system)
+<!-- TOC END -->
+
 This section covers the protocol implementations and stubs that enable FLEXT-API to support multiple communication protocols through a plugin architecture.
 
 ## Protocol Architecture

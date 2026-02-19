@@ -1,5 +1,24 @@
 # Core API Reference
 
+
+<!-- TOC START -->
+- [Core HTTP Client](#core-http-client)
+  - [FlextApiClient - Main HTTP Client](#flextapiclient-main-http-client)
+  - [HTTP Methods](#http-methods)
+- [FastAPI Application Factory](#fastapi-application-factory)
+  - [create_fastapi_app() - Application Factory](#createfastapiapp-application-factory)
+  - [FlextApiSettings - Configuration Model](#flextapisettings-configuration-model)
+- [HTTP Models and Schemas](#http-models-and-schemas)
+  - [Request/Response Models](#requestresponse-models)
+  - [Error Response Models](#error-response-models)
+- [HTTP Utilities](#http-utilities)
+  - [FlextApiUtilities - Helper Functions](#flextapiutilities-helper-functions)
+- [Quality Metrics](#quality-metrics)
+- [Usage Examples](#usage-examples)
+  - [Complete HTTP Client Example](#complete-http-client-example)
+  - [FastAPI Application Example](#fastapi-application-example)
+<!-- TOC END -->
+
 This section covers the core HTTP client and server classes that form the foundation of FLEXT-API.
 
 ## Core HTTP Client

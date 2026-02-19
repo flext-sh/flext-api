@@ -1,5 +1,22 @@
 # FLEXT API Examples
 
+
+<!-- TOC START -->
+- [Example Files (REAL Classes Only)](#example-files-real-classes-only)
+  - [Basic Usage](#basic-usage)
+  - [Advanced Features](#advanced-features)
+- [Key Patterns Demonstrated](#key-patterns-demonstrated)
+  - [REAL Classes Usage](#real-classes-usage)
+  - [No Aliases or Helpers](#no-aliases-or-helpers)
+- [Running Examples](#running-examples)
+- [Example Patterns](#example-patterns)
+  - [FlextResult Usage (REAL Pattern)](#flextresult-usage-real-pattern)
+  - [REAL Classes Import Pattern](#real-classes-import-pattern)
+  - [Error Handling with REAL Classes](#error-handling-with-real-classes)
+  - [Model Validation using REAL Classes](#model-validation-using-real-classes)
+- [Development Guidelines](#development-guidelines)
+<!-- TOC END -->
+
 **Usage examples demonstrating REAL classes and functionality**
 
 ## Example Files (REAL Classes Only)

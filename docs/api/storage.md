@@ -1,5 +1,27 @@
 # Storage API Reference
 
+
+<!-- TOC START -->
+- [HTTP Storage System](#http-storage-system)
+  - [FlextApiStorage - File Storage Management](#flextapistorage-file-storage-management)
+  - [Storage Configuration](#storage-configuration)
+- [File Operations](#file-operations)
+  - [Upload Operations](#upload-operations)
+  - [Download Operations](#download-operations)
+  - [File Management](#file-management)
+- [Caching System](#caching-system)
+  - [FlextApiCache - Response Caching](#flextapicache-response-caching)
+  - [Cache Strategies](#cache-strategies)
+- [Distributed Storage](#distributed-storage)
+  - [Multi-Backend Storage](#multi-backend-storage)
+- [File Processing](#file-processing)
+  - [FlextFileProcessor - File Processing Pipeline](#flextfileprocessor-file-processing-pipeline)
+- [Quality Metrics](#quality-metrics)
+- [Usage Examples](#usage-examples)
+  - [Complete File Upload System](#complete-file-upload-system)
+  - [Caching with Storage Integration](#caching-with-storage-integration)
+<!-- TOC END -->
+
 This section covers the HTTP storage and caching system for file uploads, downloads, and distributed storage backends.
 
 ## HTTP Storage System

@@ -1,26 +1,134 @@
-# Testing Guide
+<!-- Generated from docs/guides/testing.md for flext-api. -->
+<!-- Source of truth: workspace docs/guides/. -->
 
-Comprehensive guide for testing FLEXT-API applications with unit tests, integration tests, and end-to-end testing strategies.
+# flext-api - FLEXT Testing Guide
 
-## Testing Philosophy
+> Project profile: `flext-api`
 
-FLEXT-API follows a comprehensive testing strategy that ensures reliability, maintainability, and confidence in deployments.
 
-### Test Categories
 
-1. **Unit Tests** - Test individual components in isolation
-2. **Integration Tests** - Test component interactions
-3. **End-to-End Tests** - Test complete workflows
-4. **Performance Tests** - Validate performance requirements
-5. **Security Tests** - Validate security measures
+<!-- TOC START -->
+- [Table of Contents](#table-of-contents)
+- [Overview](#overview)
+- [Test Structure](#test-structure)
+- [Test Categories](#test-categories)
+  - [Unit Tests](#unit-tests)
+  - [Integration Tests](#integration-tests)
+  - [End-to-End Tests](#end-to-end-tests)
+- [Test Markers](#test-markers)
+- [Running Tests](#running-tests)
+  - [Basic Test Execution](#basic-test-execution)
+  - [Coverage Analysis](#coverage-analysis)
+  - [Parallel Test Execution](#parallel-test-execution)
+- [Test Fixtures](#test-fixtures)
+  - [Pytest Fixtures](#pytest-fixtures)
+  - [Using Fixtures](#using-fixtures)
+- [Mocking and Stubbing](#mocking-and-stubbing)
+  - [Unit Test Mocking](#unit-test-mocking)
+  - [Integration Test Stubbing](#integration-test-stubbing)
+- [Performance Testing](#performance-testing)
+  - [Load Testing](#load-testing)
+  - [Memory Testing](#memory-testing)
+- [Test Data Management](#test-data-management)
+  - [Test Fixtures Directory](#test-fixtures-directory)
+  - [Loading Test Data](#loading-test-data)
+- [Continuous Integration](#continuous-integration)
+  - [GitHub Actions Workflow](#github-actions-workflow)
+- [Best Practices](#best-practices)
+  - [1. Test Naming](#1-test-naming)
+  - [2. Test Organization](#2-test-organization)
+  - [3. Assertion Quality](#3-assertion-quality)
+  - [4. Test Independence](#4-test-independence)
+- [Troubleshooting](#troubleshooting)
+  - [Common Test Issues](#common-test-issues)
+- [Resources](#resources)
+<!-- TOC END -->
 
-## Unit Testing
+## Table of Contents
 
-### HTTP Client Testing
+- [FLEXT Testing Guide](#flext-testing-guide)
+  - [Overview](#overview)
+  - [Test Structure](#test-structure)
+  - [Test Categories](#test-categories)
+    - [Unit Tests](#unit-tests)
+    - [Integration Tests](#integration-tests)
+    - [End-to-End Tests](#end-to-end-tests)
+  - [Test Markers](#test-markers)
+  - [Running Tests](#running-tests)
+    - [Basic Test Execution](#basic-test-execution)
+- [Run all tests](#run-all-tests)
+- [Run specific test categories](#run-specific-test-categories)
+- [Run with markers](#run-with-markers)
+  - [Coverage Analysis](#coverage-analysis)
+- [Run with coverage](#run-with-coverage)
+- [Coverage with specific threshold](#coverage-with-specific-threshold)
+- [Coverage for specific module](#coverage-for-specific-module)
+  - [Parallel Test Execution](#parallel-test-execution)
+- [Run tests in parallel](#run-tests-in-parallel)
+- [Specific number of workers](#specific-number-of-workers)
+  - [Test Fixtures](#test-fixtures)
+    - [Pytest Fixtures](#pytest-fixtures)
+    - [Using Fixtures](#using-fixtures)
+  - [Mocking and Stubbing](#mocking-and-stubbing)
+    - [Unit Test Mocking](#unit-test-mocking)
+    - [Integration Test Stubbing](#integration-test-stubbing)
+  - [Performance Testing](#performance-testing)
+    - [Load Testing](#load-testing)
+    - [Memory Testing](#memory-testing)
+  - [Test Data Management](#test-data-management)
+    - [Test Fixtures Directory](#test-fixtures-directory)
+    - [Loading Test Data](#loading-test-data)
+- [Usage](#usage)
+  - [Continuous Integration](#continuous-integration)
+    - [GitHub Actions Workflow](#github-actions-workflow)
+  - [Best Practices](#best-practices)
+    - [1. Test Naming](#1-test-naming)
+- [✅ GOOD - Descriptive test names](#-good---descriptive-test-names)
+- [❌ BAD - Vague test names](#-bad---vague-test-names)
+  - [2. Test Organization](#2-test-organization)
+  - [3. Assertion Quality](#3-assertion-quality)
+- [✅ GOOD - Specific assertions](#-good---specific-assertions)
+- [❌ BAD - Vague assertions](#-bad---vague-assertions)
+  - [4. Test Independence](#4-test-independence)
+- [✅ GOOD - Independent tests](#-good---independent-tests)
+- [❌ BAD - Dependent tests](#-bad---dependent-tests)
+  - [Troubleshooting](#troubleshooting)
+    - [Common Test Issues](#common-test-issues)
+  - [Resources](#resources)
+
+This guide covers testing strategies, best practices, and procedures for FLEXT applications and libraries.
+
+## Overview
+
+FLEXT maintains comprehensive test coverage across all **33 projects** with the following standards:
+
+- **85%+ coverage** for foundation libraries (flext-core)
+- **75%+ coverage** for applications and domain libraries
+- **100% test pass rate** across all projects
+- **Zero Pyrefly errors** in strict mode (successor to MyPy)
+- **Zero Ruff violations** in production code
+
+## Test Structure
+
+FLEXT uses a hierarchical test structure:
+
+```
+tests/
+├── unit/           # Unit tests (fast, isolated)
+├── integration/    # Integration tests (component interaction)
+├── e2e/           # End-to-end tests (full workflow)
+├── fixtures/      # Test data and fixtures
+└── conftest.py    # Pytest configuration
+```
+
+## Test Categories
+
+### Unit Tests
+
+Test individual functions and classes in isolation:
 
 ```python
 import pytest
-from flext_api import FlextApiClient
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -41,60 +149,264 @@ from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
+from flext_ldif import FlextLdif
 
-class TestFlextApiClient:
-    def setup_method(self):
-        self.client = FlextApiClient(
-            base_url="https://jsonplaceholder.typicode.com"
-        )
+class TestLdifParsing:
+    def test_parse_valid_ldif(self):
+        """Test parsing valid LDIF content."""
+        ldif = FlextLdif()
+        content = """dn: cn=test,dc=example,dc=com
+cn: test
+objectClass: inetOrgPerson"""
 
-    def test_get_request_success(self):
-        """Test successful GET request."""
-        result = self.client.get("/users/1")
+        result = ldif.parse(content)
 
         assert result.is_success
-        response = result.unwrap()
-        assert response.status_code == 200
+        entries = result.unwrap()
+        assert len(entries) == 1
+        assert entries[0].dn == "cn=test,dc=example,dc=com"
 
-        user = response.json()
-        assert "id" in user
-        assert "name" in user
+    def test_parse_invalid_ldif(self):
+        """Test parsing invalid LDIF content."""
+        ldif = FlextLdif()
+        content = "invalid ldif content"
 
-    def test_get_request_not_found(self):
-        """Test 404 error handling."""
-        result = self.client.get("/users/99999")
+        result = ldif.parse(content)
 
         assert result.is_failure
-        error = result.error
-        assert error.status_code == 404
-
-    def test_post_request_with_data(self):
-        """Test POST request with JSON data."""
-        user_data = {"name": "Test User", "email": "test@example.com"}
-        result = self.client.post("/users", json=user_data)
-
-        assert result.is_success
-        response = result.unwrap()
-        assert response.status_code == 201
-
-    @pytest.mark.parametrize("invalid_data", [
-        {"name": ""},  # Empty name
-        {"email": "invalid-email"},  # Invalid email
-        {},  # Empty data
-    ])
-    def test_post_request_validation(self, invalid_data):
-        """Test POST request validation."""
-        result = self.client.post("/users", json=invalid_data)
-
-        # Should handle validation errors gracefully
-        assert isinstance(result, FlextResult)
+        assert "parsing" in str(result.failure()).lower()
 ```
 
-### Middleware Testing
+### Integration Tests
+
+Test component interactions and workflows:
 
 ```python
 import pytest
-from flext_api.middleware import LoggingMiddleware, AuthenticationMiddleware
+from flext_core import FlextBus
+from flext_core import FlextSettings
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import h
+from flext_core import FlextLogger
+from flext_core import x
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import p
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import t
+from flext_core import u
+from flext_ldif import FlextLdif, FlextLdifSettings
+
+class TestLdifIntegration:
+    def test_ldif_with_container(self):
+        """Test LDIF processing with dependency injection."""
+        container = FlextContainer.get_global()
+
+        # Register LDIF service
+        config = FlextLdifSettings(batch_size=100)
+        ldif = FlextLdif(config=config)
+        container.register("ldif", ldif)
+
+        # Retrieve and use service
+        ldif_result = container.get("ldif")
+        assert ldif_result.is_success
+
+        ldif_service = ldif_result.unwrap()
+        # Test LDIF operations
+        result = ldif_service.parse("dn: test")
+        assert result.is_success
+```
+
+### End-to-End Tests
+
+Test complete workflows and user scenarios:
+
+```python
+import pytest
+from pathlib import Path
+from flext_ldif import FlextLdif, FlextLdifSettings
+
+class TestLdifMigration:
+    def test_oid_to_oud_migration(self):
+        """Test complete OID to OUD migration workflow."""
+        # Setup test data
+        input_dir = Path("test_data/oid")
+        output_dir = Path("test_data/oud")
+
+        input_dir.mkdir(parents=True, exist_ok=True)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create sample LDIF file
+        sample_ldif = """dn: cn=test,dc=example,dc=com
+cn: test
+objectClass: inetOrgPerson"""
+
+        with open(input_dir / "test.ldif", 'w') as f:
+            f.write(sample_ldif)
+
+        # Configure and run migration
+        config = FlextLdifSettings(
+            source_server="oid",
+            target_server="oud",
+            preserve_oid_modifiers=True
+        )
+
+        ldif = FlextLdif(config=config)
+        result = ldif.migrate(input_dir, output_dir, "oid", "oud")
+
+        # Verify migration
+        assert result.is_success
+        report = result.unwrap()
+        assert report.successful_entries > 0
+        assert (output_dir / "test.ldif").exists()
+```
+
+## Test Markers
+
+FLEXT uses pytest markers to categorize tests:
+
+```python
+import pytest
+
+@pytest.mark.unit
+def test_unit_function():
+    """Unit test - fast and isolated."""
+    pass
+
+@pytest.mark.integration
+def test_integration_workflow():
+    """Integration test - component interaction."""
+    pass
+
+@pytest.mark.e2e
+def test_end_to_end_scenario():
+    """End-to-end test - complete workflow."""
+    pass
+
+@pytest.mark.slow
+def test_performance_benchmark():
+    """Slow test - performance or load testing."""
+    pass
+```
+
+## Running Tests
+
+### Basic Test Execution
+
+```bash
+# Run all tests
+make test
+
+# Run specific test categories
+pytest tests/unit/        # Unit tests only
+pytest tests/integration/ # Integration tests only
+pytest tests/e2e/         # End-to-end tests only
+
+# Run with markers
+pytest -m unit           # Unit tests
+pytest -m integration    # Integration tests
+pytest -m "not slow"     # Skip slow tests
+```
+
+### Coverage Analysis
+
+Coverage thresholds and source directories are configured in each project's `pyproject.toml` under `[tool.coverage]`. Use `make test` which reads these automatically.
+
+```bash
+# Run with coverage (reads [tool.coverage] from pyproject.toml)
+make test
+
+# HTML coverage report
+pytest --cov --cov-report=html
+```
+
+### Parallel Test Execution
+
+```bash
+# Run tests in parallel
+pytest -n auto
+
+# Specific number of workers
+pytest -n 4
+```
+
+## Test Fixtures
+
+### Pytest Fixtures
+
+```python
+import pytest
+from pathlib import Path
+from flext_ldif import FlextLdif, FlextLdifSettings
+
+@pytest.fixture
+def ldif_config():
+    """Provide LDIF configuration for tests."""
+    return FlextLdifSettings(
+        batch_size=10,
+        strict_validation=False
+    )
+
+@pytest.fixture
+def ldif_service(ldif_config):
+    """Provide LDIF service instance."""
+    return FlextLdif(config=ldif_config)
+
+@pytest.fixture
+def sample_ldif_content():
+    """Provide sample LDIF content for tests."""
+    return """dn: cn=test,dc=example,dc=com
+cn: test
+sn: user
+objectClass: inetOrgPerson"""
+
+@pytest.fixture
+def temp_directories(tmp_path):
+    """Provide temporary directories for file tests."""
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+
+    input_dir.mkdir()
+    output_dir.mkdir()
+
+    return input_dir, output_dir
+```
+
+### Using Fixtures
+
+```python
+def test_ldif_parsing(ldif_service, sample_ldif_content):
+    """Test LDIF parsing with fixtures."""
+    result = ldif_service.parse(sample_ldif_content)
+    assert result.is_success
+
+def test_file_migration(ldif_service, temp_directories):
+    """Test file migration with temporary directories."""
+    input_dir, output_dir = temp_directories
+
+    # Create test file
+    test_file = input_dir / "test.ldif"
+    test_file.write_text("dn: test")
+
+    # Run migration
+    result = ldif_service.migrate(input_dir, output_dir, "oid", "oud")
+    assert result.is_success
+```
+
+## Mocking and Stubbing
+
+### Unit Test Mocking
+
+```python
+from unittest.mock import Mock, patch
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -116,90 +428,24 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
-class TestLoggingMiddleware:
-    def setup_method(self):
-        self.logger = FlextLogger("test")
-        self.middleware = LoggingMiddleware(self.logger)
+def test_with_mocked_dependency():
+    """Test with mocked external dependency."""
+    with patch('flext_ldif.external_service') as mock_service:
+        # Configure mock
+        mock_service.process.return_value = FlextResult.ok("processed")
 
-    def test_request_logging(self, mock_request):
-        """Test that requests are logged."""
-        # Mock request object
-        mock_request.method = "GET"
-        mock_request.path = "/users"
-        mock_request.headers = {"User-Agent": "test"}
+        # Test function that uses mock
+        result = my_function()
 
-        result = await self.middleware.process_request(mock_request)
-
+        # Verify mock was called
+        mock_service.process.assert_called_once()
         assert result.is_success
-        # Verify logging was called (mock verification)
-
-    def test_response_logging(self, mock_request, mock_response):
-        """Test that responses are logged."""
-        mock_response.status_code = 200
-        mock_response.duration_ms = 150
-
-        result = await self.middleware.process_response(mock_request, mock_response)
-
-        assert result.is_success
-        # Verify logging was called (mock verification)
 ```
 
-## Integration Testing
-
-### FastAPI Application Testing
+### Integration Test Stubbing
 
 ```python
-import pytest
-from fastapi.testclient import TestClient
-from flext_api import create_fastapi_app, FlextApiSettings
-
-class TestUserAPI:
-    def setup_method(self):
-        config = FlextApiSettings(
-            title="Test API",
-            version="1.0.0",
-            debug=True
-        )
-        self.app = create_fastapi_app(config=config)
-        self.client = TestClient(self.app)
-
-    def test_get_users_endpoint(self):
-        """Test GET /users endpoint."""
-        response = self.client.get("/users")
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "users" in data
-        assert "total" in data
-
-    def test_create_user_endpoint(self):
-        """Test POST /users endpoint."""
-        user_data = {
-            "name": "Test User",
-            "email": "test@example.com"
-        }
-
-        response = self.client.post("/users", json=user_data)
-
-        assert response.status_code == 201
-        data = response.json()
-        assert data["name"] == "Test User"
-        assert "id" in data
-
-    def test_user_not_found(self):
-        """Test 404 error handling."""
-        response = self.client.get("/users/99999")
-
-        assert response.status_code == 404
-        data = response.json()
-        assert "error" in data
-```
-
-### Database Integration Testing
-
-```python
-import pytest
-from flext_api import FlextApiClient
+from unittest.mock import Mock
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -221,100 +467,20 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
-class TestDatabaseIntegration:
-    def setup_method(self):
-        # Setup test database
-        self.container = FlextContainer.get_global()
-        self.db_service = self.container.get("database").unwrap()
+def test_with_stubbed_service():
+    """Test with stubbed service in container."""
+    container = FlextContainer.get_global()
 
-        # Clear test data
-        self.db_service.clear_test_data()
+    # Create stub service
+    stub_service = Mock()
+    stub_service.process.return_value = FlextResult.ok("stubbed")
 
-        # Create test client
-        self.client = FlextApiClient(
-            base_url="http://localhost:8000"
-        )
+    # Register stub
+    container.register("external_service", stub_service)
 
-    def teardown_method(self):
-        # Cleanup test data
-        self.db_service.clear_test_data()
-
-    def test_user_creation_flow(self):
-        """Test complete user creation workflow."""
-
-        # 1. Create user via API
-        user_data = {"name": "Integration Test User", "email": "test@example.com"}
-        result = self.client.post("/users", json=user_data)
-
-        assert result.is_success
-        user_response = result.unwrap().json()
-        user_id = user_response["id"]
-
-        # 2. Verify user exists in database
-        db_user = self.db_service.get_user_by_id(user_id)
-        assert db_user is not None
-        assert db_user.name == "Integration Test User"
-
-        # 3. Retrieve user via API
-        result = self.client.get(f"/users/{user_id}")
-        assert result.is_success
-        retrieved_user = result.unwrap().json()
-        assert retrieved_user["name"] == "Integration Test User"
-```
-
-## End-to-End Testing
-
-### Complete Workflow Testing
-
-```python
-import pytest
-from playwright.sync_api import Page, expect
-
-class TestE2EUserWorkflow:
-    def setup_method(self):
-        self.client = FlextApiClient(
-            base_url="http://localhost:8000"
-        )
-
-    def test_complete_user_journey(self):
-        """Test complete user registration and profile update journey."""
-
-        # 1. Register new user
-        user_data = {
-            "name": "E2E Test User",
-            "email": "e2e@example.com",
-            "password": "secure_password"
-        }
-
-        result = self.client.post("/auth/register", json=user_data)
-        assert result.is_success
-
-        # 2. Login
-        login_data = {
-            "email": "e2e@example.com",
-            "password": "secure_password"
-        }
-
-        result = self.client.post("/auth/login", json=login_data)
-        assert result.is_success
-
-        # Extract token
-        login_response = result.unwrap().json()
-        token = login_response["access_token"]
-
-        # 3. Update profile (authenticated request)
-        headers = {"Authorization": f"Bearer {token}"}
-        update_data = {"name": "Updated E2E User"}
-
-        result = self.client.put("/users/profile", json=update_data, headers=headers)
-        assert result.is_success
-
-        # 4. Verify update
-        result = self.client.get("/users/profile", headers=headers)
-        assert result.is_success
-
-        profile = result.unwrap().json()
-        assert profile["name"] == "Updated E2E User"
+    # Test integration
+    result = integration_function()
+    assert result.is_success
 ```
 
 ## Performance Testing
@@ -322,383 +488,279 @@ class TestE2EUserWorkflow:
 ### Load Testing
 
 ```python
-import asyncio
+import pytest
 import time
-from statistics import mean, median
-from flext_api import FlextApiClient
+from concurrent.futures import ThreadPoolExecutor
 
-async def load_test_endpoint(endpoint: str, requests: int = 100):
-    """Perform load testing on an endpoint."""
-    client = FlextApiClient(base_url="http://localhost:8000")
+@pytest.mark.slow
+def test_concurrent_processing():
+    """Test concurrent processing performance."""
+    ldif = FlextLdif()
+    content = "dn: test\ncn: test"
 
+    def process_entry():
+        return ldif.parse(content)
+
+    # Run concurrent processing
     start_time = time.time()
-    results = []
 
-    # Execute requests concurrently
-    async def make_request(i: int):
-        request_start = time.time()
-        result = client.get(f"{endpoint}?request_id={i}")
-        request_time = time.time() - request_start
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(process_entry) for _ in range(100)]
+        results = [future.result() for future in futures]
 
-        return {
-            "request_id": i,
-            "success": result.is_success,
-            "status_code": result.unwrap().status_code if result.is_success else None,
-            "duration_ms": request_time * 1000,
-            "error": str(result.error) if result.is_failure else None
-        }
+    end_time = time.time()
 
-    # Run all requests
-    tasks = [make_request(i) for i in range(requests)]
-    results = await asyncio.gather(*tasks)
+    # Verify all succeeded
+    assert all(result.is_success for result in results)
 
-    total_time = time.time() - start_time
+    # Verify performance (should complete in < 1 second)
+    assert (end_time - start_time) < 1.0
+```
 
-    # Calculate metrics
-    successful_requests = [r for r in results if r["success"]]
-    failed_requests = [r for r in results if not r["success"]]
+### Memory Testing
 
-    durations = [r["duration_ms"] for r in successful_requests]
+```python
+import pytest
+import psutil
+import os
 
-    return {
-        "total_requests": requests,
-        "successful_requests": len(successful_requests),
-        "failed_requests": len(failed_requests),
-        "success_rate": len(successful_requests) / requests * 100,
-        "total_time": total_time,
-        "requests_per_second": requests / total_time,
-        "average_response_time": mean(durations) if durations else 0,
-        "median_response_time": median(durations) if durations else 0,
-        "min_response_time": min(durations) if durations else 0,
-        "max_response_time": max(durations) if durations else 0
-    }
+@pytest.mark.slow
+def test_memory_usage():
+    """Test memory usage during large file processing."""
+    process = psutil.Process(os.getpid())
+    initial_memory = process.memory_info().rss
+
+    # Process large dataset
+    ldif = FlextLdif()
+    large_content = "dn: test\ncn: test\n" * 10000
+
+    result = ldif.parse(large_content)
+    assert result.is_success
+
+    # Check memory usage (should not exceed 100MB)
+    current_memory = process.memory_info().rss
+    memory_used = current_memory - initial_memory
+
+    assert memory_used < 100 * 1024 * 1024  # 100MB
+```
+
+## Test Data Management
+
+### Test Fixtures Directory
+
+```
+tests/
+├── fixtures/
+│   ├── ldif/
+│   │   ├── valid.ldif
+│   │   ├── invalid.ldif
+│   │   └── large.ldif
+│   ├── config/
+│   │   ├── dev.yaml
+│   │   └── prod.yaml
+│   └── data/
+│       ├── users.json
+│       └── schema.json
+```
+
+### Loading Test Data
+
+```python
+import json
+from pathlib import Path
+
+def load_test_fixture(fixture_name: str) -> str:
+    """Load test fixture from fixtures directory."""
+    fixture_path = Path(__file__).parent / "fixtures" / fixture_name
+    return fixture_path.read_text()
+
+def load_json_fixture(fixture_name: str) -> dict[str, object]:
+    """Load JSON test fixture."""
+    fixture_path = Path(__file__).parent / "fixtures" / fixture_name
+    return json.loads(fixture_path.read_text())
 
 # Usage
-results = asyncio.run(load_test_endpoint("/users", 100))
-print(f"Success rate: {results['success_rate']:.2f}%")
-print(f"Average response time: {results['average_response_time']:.2f}ms")
-print(f"Requests per second: {results['requests_per_second']:.2f}")
+def test_with_fixture():
+    """Test using loaded fixture data."""
+    ldif_content = load_test_fixture("ldif/valid.ldif")
+    config_data = load_json_fixture("config/dev.yaml")
+
+    # Use fixture data in test
+    result = process_ldif(ldif_content, config_data)
+    assert result.is_success
 ```
 
-## Security Testing
+## Continuous Integration
 
-### Authentication Testing
+### GitHub Actions Workflow
 
-```python
-import pytest
-from flext_api import FlextApiClient
+```yaml
+name: Test Suite
 
-class TestAuthentication:
-    def setup_method(self):
-        self.client = FlextApiClient(base_url="http://localhost:8000")
+on: [push, pull_request]
 
-    def test_unauthorized_access(self):
-        """Test that unauthorized requests are rejected."""
-        result = self.client.get("/admin/users")
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.13]
 
-        assert result.is_failure
-        error = result.error
-        assert error.status_code == 401
+    steps:
+      - uses: actions/checkout@v3
 
-    def test_invalid_token(self):
-        """Test invalid JWT token handling."""
-        headers = {"Authorization": "Bearer invalid_token"}
-        result = self.client.get("/users/profile", headers=headers)
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
-        assert result.is_failure
-        error = result.error
-        assert error.status_code == 401
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
 
-    def test_authorized_access(self):
-        """Test successful authentication."""
-        # Login first
-        login_data = {"email": "test@example.com", "password": "password"}
-        login_result = self.client.post("/auth/login", json=login_data)
+      - name: Run tests
+        run: |
+          poetry run pytest --cov=src --cov-report=xml
 
-        assert login_result.is_success
-        token = login_result.unwrap().json()["access_token"]
-
-        # Use token for authenticated request
-        headers = {"Authorization": f"Bearer {token}"}
-        result = self.client.get("/users/profile", headers=headers)
-
-        assert result.is_success
-        assert result.unwrap().status_code == 200
-```
-
-### Input Validation Testing
-
-```python
-import pytest
-
-class TestInputValidation:
-    def setup_method(self):
-        self.client = FlextApiClient(base_url="http://localhost:8000")
-
-    @pytest.mark.parametrize("invalid_email", [
-        "invalid-email",
-        "@example.com",
-        "user@",
-        "user@.com",
-        ""
-    ])
-    def test_invalid_email_validation(self, invalid_email):
-        """Test email validation."""
-        user_data = {"name": "Test User", "email": invalid_email}
-        result = self.client.post("/users", json=user_data)
-
-        assert result.is_failure
-        error = result.error
-        assert error.status_code == 422  # Validation error
-
-    @pytest.mark.parametrize("invalid_name", [
-        "",  # Empty name
-        "a" * 101,  # Too long name
-        None,  # Missing field
-    ])
-    def test_name_validation(self, invalid_name):
-        """Test name validation."""
-        user_data = {"name": invalid_name, "email": "test@example.com"}
-        result = self.client.post("/users", json=user_data)
-
-        assert result.is_failure
-        error = result.error
-        assert error.status_code == 422
-
-    def test_sql_injection_prevention(self):
-        """Test SQL injection prevention."""
-        malicious_data = {
-            "name": "'; DROP TABLE users; --",
-            "email": "hacker@example.com"
-        }
-
-        result = self.client.post("/users", json=malicious_data)
-
-        # Should either reject the input or sanitize it
-        assert result.is_failure or result.unwrap().status_code in [201, 422]
-```
-
-## Test Infrastructure
-
-### Test Fixtures
-
-```python
-import pytest
-from flext_api import FlextApiClient
-from flext_core import FlextBus
-from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import FlextDecorators
-from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
-from flext_core import h
-from flext_core import FlextLogger
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import FlextResult
-from flext_core import FlextRuntime
-from flext_core import FlextService
-from flext_core import t
-from flext_core import u
-
-@pytest.fixture
-def api_client():
-    """Provide configured API client for tests."""
-    return FlextApiClient(
-        base_url="http://localhost:8000",
-        timeout=5.0  # Shorter timeout for tests
-    )
-
-@pytest.fixture
-def test_database():
-    """Provide test database with cleanup."""
-    container = FlextContainer.get_global()
-    db = container.get("test_database").unwrap()
-
-    # Setup test data
-    db.seed_test_data()
-
-    yield db
-
-    # Cleanup
-    db.clear_test_data()
-
-@pytest.fixture
-def authenticated_client():
-    """Provide authenticated API client."""
-    client = FlextApiClient(base_url="http://localhost:8000")
-
-    # Login and get token
-    login_result = client.post("/auth/login", json={
-        "email": "test@example.com",
-        "password": "test_password"
-    })
-
-    if login_result.is_success:
-        token = login_result.unwrap().json()["access_token"]
-        client.headers.update({"Authorization": f"Bearer {token}"})
-
-    return client
-```
-
-### Test Utilities
-
-```python
-from flext_api.testing import TestUtilities
-
-class TestHelpers:
-    """Helper methods for testing."""
-
-    @staticmethod
-    def assert_success_response(result: FlextResult, expected_status: int = 200):
-        """Assert that result is successful."""
-        assert result.is_success, f"Expected success but got error: {result.error}"
-        response = result.unwrap()
-        assert response.status_code == expected_status
-
-    @staticmethod
-    def assert_error_response(result: FlextResult, expected_status: int):
-        """Assert that result is an error."""
-        assert result.is_failure, "Expected error but got success"
-        error = result.error
-        assert error.status_code == expected_status
-
-    @staticmethod
-    def create_test_user_data(overrides: dict[str, object] = None) -> dict[str, object]:
-        """Create test user data."""
-        base_data = {
-            "name": "Test User",
-            "email": "test@example.com",
-            "password": "test_password"
-        }
-
-        if overrides:
-            base_data.update(overrides)
-
-        return base_data
-
-# Usage in tests
-def test_user_creation(api_client):
-    user_data = TestHelpers.create_test_user_data({"name": "Custom User"})
-    result = api_client.post("/users", json=user_data)
-
-    TestHelpers.assert_success_response(result, 201)
-    response_data = result.unwrap().json()
-    assert response_data["name"] == "Custom User"
-```
-
-## Running Tests
-
-### Test Execution
-
-```bash
-# Run all tests
-make test
-
-# Run specific test categories
-make test-unit         # Unit tests only
-make test-integration  # Integration tests only
-make test-e2e         # End-to-end tests only
-
-# Run with coverage
-make test-coverage
-
-# Run specific test files
-pytest tests/unit/test_client.py -v
-pytest tests/integration/test_user_api.py -v
-
-# Run with parallel execution
-pytest -n auto tests/
-
-# Run with verbose output
-pytest -v --tb=short tests/
-```
-
-### Test Configuration
-
-```python
-# pytest.ini or pyproject.toml
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q --strict-markers"
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "e2e: End-to-end tests",
-    "slow: Slow running tests",
-    "security: Security tests"
-]
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
 ```
 
 ## Best Practices
 
-### Test Organization
-
-1. **Test Structure**: Group related tests in classes
-2. **Test Naming**: Use descriptive names starting with `test_`
-3. **Test Isolation**: Each test should be independent
-4. **Setup/Teardown**: Use fixtures for common setup
-5. **Assertions**: Use specific assertions over generic ones
-
-### Error Handling in Tests
+### 1. Test Naming
 
 ```python
-def test_error_scenarios(api_client):
-    """Test various error scenarios."""
+# ✅ GOOD - Descriptive test names
+def test_parse_valid_ldif_returns_success():
+    """Test that parsing valid LDIF returns success result."""
+    pass
 
-    # Test 404 Not Found
-    result = api_client.get("/users/99999")
-    assert result.is_failure
-    assert result.error.status_code == 404
+def test_parse_invalid_ldif_returns_failure():
+    """Test that parsing invalid LDIF returns failure result."""
+    pass
 
-    # Test 400 Bad Request
-    invalid_data = {"name": ""}  # Invalid data
-    result = api_client.post("/users", json=invalid_data)
-    assert result.is_failure
-    assert result.error.status_code == 422
+# ❌ BAD - Vague test names
+def test_parse():
+    pass
 
-    # Test 500 Server Error
-    # This would require mocking a server error
-    # Implementation depends on your error simulation approach
+def test_ldif():
+    pass
 ```
 
-### Performance Testing
+### 2. Test Organization
 
 ```python
-import time
-import statistics
+class TestLdifParsing:
+    """Test LDIF parsing functionality."""
 
-def test_api_performance(api_client):
-    """Test API performance requirements."""
+    def test_parse_valid_single_entry(self):
+        """Test parsing single valid LDIF entry."""
+        pass
 
-    # Measure response time for multiple requests
-    response_times = []
+    def test_parse_valid_multiple_entries(self):
+        """Test parsing multiple valid LDIF entries."""
+        pass
 
-    for i in range(10):
-        start_time = time.time()
-        result = api_client.get("/users")
-        end_time = time.time()
+    def test_parse_invalid_format(self):
+        """Test parsing invalid LDIF format."""
+        pass
 
-        if result.is_success:
-            response_time = (end_time - start_time) * 1000  # Convert to ms
-            response_times.append(response_time)
+class TestLdifMigration:
+    """Test LDIF migration functionality."""
 
-    # Assert performance requirements
-    avg_response_time = statistics.mean(response_times)
-    max_response_time = max(response_times)
-
-    assert avg_response_time < 500, f"Average response time too slow: {avg_response_time}ms"
-    assert max_response_time < 1000, f"Max response time too slow: {max_response_time}ms"
-    assert all(t < 1000 for t in response_times), "All requests should be under 1s"
+    def test_migrate_oid_to_oud(self):
+        """Test OID to OUD migration."""
+        pass
 ```
 
-This testing guide provides comprehensive coverage of testing strategies for FLEXT-API applications, ensuring reliability and maintainability.
+### 3. Assertion Quality
+
+```python
+# ✅ GOOD - Specific assertions
+def test_parse_result():
+    result = ldif.parse(content)
+
+    assert result.is_success
+    entries = result.unwrap()
+    assert len(entries) == 1
+    assert entries[0].dn == "cn=test,dc=example,dc=com"
+    assert "cn" in entries[0].attributes
+
+# ❌ BAD - Vague assertions
+def test_parse_result():
+    result = ldif.parse(content)
+    assert result  # Too vague
+```
+
+### 4. Test Independence
+
+```python
+# ✅ GOOD - Independent tests
+def test_parse_valid_ldif():
+    ldif = FlextLdif()  # Fresh instance
+    result = ldif.parse("dn: test")
+    assert result.is_success
+
+def test_parse_invalid_ldif():
+    ldif = FlextLdif()  # Fresh instance
+    result = ldif.parse("invalid")
+    assert result.is_failure
+
+# ❌ BAD - Dependent tests
+ldif = FlextLdif()  # Shared instance
+
+def test_parse_valid_ldif():
+    result = ldif.parse("dn: test")
+    assert result.is_success
+
+def test_parse_invalid_ldif():
+    result = ldif.parse("invalid")
+    assert result.is_failure
+```
+
+## Troubleshooting
+
+### Common Test Issues
+
+1. **Import Errors**
+
+   ```bash
+   # Set PYTHONPATH
+   export PYTHONPATH=src
+   pytest
+   ```
+
+2. **Fixture Not Found**
+
+   ```python
+   # Check fixture scope and dependencies
+   @pytest.fixture(scope="function")
+   def my_fixture():
+       return "value"
+   ```
+
+3. **Test Timeout**
+
+   ```bash
+   # Increase timeout
+   pytest --timeout=300
+   ```
+
+4. **Coverage Issues**
+
+   ```bash
+   # Check coverage configuration
+   pytest --cov=src --cov-report=term-missing
+   ```
+
+## Resources
+
+- [Pytest Documentation](https://docs.pytest.org/)
+- [Coverage.py Documentation](https://coverage.readthedocs.io/)
+- [FLEXT Quality Standards](../standards/testing.md)
+- [Test Examples](../examples/testing/)
+- [CI/CD Configuration](../../.github/workflows/)
