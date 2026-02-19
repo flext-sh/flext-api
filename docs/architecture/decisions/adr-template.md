@@ -1,5 +1,26 @@
 # [Number]. [Title]
 
+
+<!-- TOC START -->
+- [Status](#status)
+- [Context](#context)
+- [Decision](#decision)
+- [Consequences](#consequences)
+  - [Positive](#positive)
+  - [Negative](#negative)
+  - [Risks](#risks)
+- [Alternatives Considered](#alternatives-considered)
+  - [Option 1: [Alternative Name]](#option-1-alternative-name)
+  - [Option 2: [Alternative Name]](#option-2-alternative-name)
+- [Implementation Plan](#implementation-plan)
+  - [Phase 1: [Phase Name]](#phase-1-phase-name)
+  - [Phase 2: [Phase Name]](#phase-2-phase-name)
+- [Testing Strategy](#testing-strategy)
+- [Monitoring and Metrics](#monitoring-and-metrics)
+- [Rollback Plan](#rollback-plan)
+- [References](#references)
+<!-- TOC END -->
+
 Date: [YYYY-MM-DD]
 
 ## Status

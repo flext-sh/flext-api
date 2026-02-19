@@ -1,5 +1,24 @@
 # Schema API Reference
 
+
+<!-- TOC START -->
+- [OpenAPI Schema Generation](#openapi-schema-generation)
+  - [OpenApiSchema - OpenAPI 3.0 Specification](#openapischema-openapi-30-specification)
+  - [Schema Customization](#schema-customization)
+- [AsyncAPI Schema Generation](#asyncapi-schema-generation)
+  - [AsyncApiSchema - AsyncAPI 2.0 Specification](#asyncapischema-asyncapi-20-specification)
+- [JSON Schema Generation](#json-schema-generation)
+  - [JsonSchema - JSON Schema Draft 2020-12](#jsonschema-json-schema-draft-2020-12)
+  - [Schema Validation](#schema-validation)
+- [Schema Integration](#schema-integration)
+  - [FastAPI Integration](#fastapi-integration)
+  - [Custom Schema Extensions](#custom-schema-extensions)
+- [Quality Metrics](#quality-metrics)
+- [Usage Examples](#usage-examples)
+  - [Complete Schema Generation Workflow](#complete-schema-generation-workflow)
+  - [Schema Validation in Production](#schema-validation-in-production)
+<!-- TOC END -->
+
 This section covers the schema generation and validation capabilities for OpenAPI, AsyncAPI, and JSON Schema specifications.
 
 ## OpenAPI Schema Generation

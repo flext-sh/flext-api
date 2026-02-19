@@ -1,769 +1,822 @@
-# Troubleshooting Guide
+<!-- Generated from docs/guides/troubleshooting.md for flext-api. -->
+<!-- Source of truth: workspace docs/guides/. -->
 
-Comprehensive guide for diagnosing and resolving common issues with FLEXT-API applications, HTTP clients, and FastAPI integrations.
+# flext-api - FLEXT Troubleshooting Guide
 
-## HTTP Client Issues
+> Project profile: `flext-api`
 
-### Connection Problems
 
-**1. Connection Timeouts**
 
-```python
-# Symptom: Requests timeout after 30 seconds
-# Solution: Increase timeout or check network connectivity
+<!-- TOC START -->
+- [Table of Contents](#table-of-contents)
+- [Quick Diagnosis](#quick-diagnosis)
+  - [Health Check Commands](#health-check-commands)
+  - [System Status](#system-status)
+- [Common Issues](#common-issues)
+  - [1. Import Errors](#1-import-errors)
+  - [r](#r)
+  - [2. Type Checking Errors](#2-type-checking-errors)
+  - [3. Test Failures](#3-test-failures)
+  - [4. Configuration Issues](#4-configuration-issues)
+  - [5. LDIF Processing Issues](#5-ldif-processing-issues)
+  - [6. Migration Issues](#6-migration-issues)
+  - [7. Performance Issues](#7-performance-issues)
+- [Debugging Techniques](#debugging-techniques)
+  - [1. Logging Configuration](#1-logging-configuration)
+  - [2. Exception Handling](#2-exception-handling)
+  - [3. Debug Mode](#3-debug-mode)
+  - [4. Step-by-Step Debugging](#4-step-by-step-debugging)
+- [Error Codes Reference](#error-codes-reference)
+  - [FLEXT Core Errors](#flext-core-errors)
+  - [LDIF Processing Errors](#ldif-processing-errors)
+  - [API Errors](#api-errors)
+- [Performance Troubleshooting](#performance-troubleshooting)
+  - [Memory Issues](#memory-issues)
+  - [CPU Issues](#cpu-issues)
+- [Getting Help](#getting-help)
+  - [Self-Service Resources](#self-service-resources)
+  - [Community Support](#community-support)
+  - [Reporting Issues](#reporting-issues)
+- [Prevention](#prevention)
+  - [Best Practices](#best-practices)
+- [Resources](#resources)
+<!-- TOC END -->
 
-# Check network connectivity
-import socket
-try:
-    socket.create_connection(("api.example.com", 443), timeout=5)
-    print("✅ Network connection OK")
-except OSError as e:
-    print(f"❌ Network connection failed: {e}")
+## Table of Contents
 
-# Increase timeout for slow APIs
-client = FlextApiClient(
-    base_url="https://slow-api.com",
-    timeout=60.0  # Increased from default 30s
-)
+This guide covers common issues, their solutions, and debugging techniques for FLEXT applications and libraries.
 
-# Check if API endpoint is reachable
-result = client.get("/health")
-if result.is_failure:
-    print(f"API health check failed: {result.error}")
-```
+## Quick Diagnosis
 
-**2. SSL Certificate Errors**
-
-```python
-# Symptom: SSL certificate verification failed
-# Solution: Check certificates or use custom SSL context
-
-# Disable SSL verification (NOT recommended for production)
-client = FlextApiClient(
-    base_url="https://api.example.com",
-    verify_ssl=False
-)
-
-# Use custom SSL context for self-signed certificates
-import ssl
-ssl_context = ssl.create_default_context()
-ssl_context.check_hostname = False
-ssl_context.verify_mode = ssl.CERT_NONE
-
-client = FlextApiClient(
-    base_url="https://internal-api.company.com",
-    ssl_context=ssl_context
-)
-
-# Check certificate details
-import requests
-try:
-    response = requests.get("https://api.example.com", timeout=5)
-    print(f"Certificate: {response.url}")
-except requests.exceptions.SSLError as e:
-    print(f"SSL Error: {e}")
-```
-
-### Request/Response Issues
-
-**1. 400 Bad Request Errors**
-
-```python
-# Symptom: Server returns 400 errors
-# Solution: Check request format and validation
-
-# Validate request data before sending
-user_data = {"name": "Test User", "email": "test@example.com"}
-
-# Check data types
-if not isinstance(user_data["name"], str):
-    print("Name must be a string")
-
-if "@" not in user_data["email"]:
-    print("Invalid email format")
-
-# Check request size limits
-import json
-request_size = len(json.dumps(user_data).encode('utf-8'))
-max_size = 1024 * 1024  # 1MB
-
-if request_size > max_size:
-    print(f"Request too large: {request_size} bytes")
-
-# Try request with detailed error logging
-result = client.post("/users", json=user_data)
-if result.is_failure:
-    error = result.error
-    print(f"Request failed: {error.message}")
-    print(f"Status code: {error.status_code}")
-    print(f"Response body: {error.response_text}")
-```
-
-**2. 404 Not Found Errors**
-
-```python
-# Symptom: API endpoints return 404
-# Solution: Check URL construction and API documentation
-
-# Verify base URL
-print(f"Base URL: {client.base_url}")
-
-# Check endpoint exists
-result = client.get("/health")
-if result.is_success:
-    print("✅ API is reachable")
-else:
-    print(f"❌ API not reachable: {result.error}")
-
-# Check URL construction
-base_url = "https://api.example.com/v1"
-endpoint = "/users/123"
-full_url = f"{base_url.rstrip('/')}{endpoint}"
-
-print(f"Full URL: {full_url}")
-
-# List available endpoints (if API supports it)
-result = client.get("/")
-if result.is_success:
-    print("Available endpoints:", result.unwrap().json())
-```
-
-**3. 429 Rate Limit Errors**
-
-```python
-# Symptom: Rate limit exceeded errors
-# Solution: Implement backoff strategy and rate limiting
-
-import time
-from flext_api import FlextApiClient
-
-class RateLimitedClient(FlextApiClient):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.request_count = 0
-        self.last_request_time = 0
-        self.rate_limit = kwargs.get("rate_limit", 60)  # requests per minute
-
-    def get(self, url, **kwargs):
-        # Simple rate limiting
-        current_time = time.time()
-        time_since_last_request = current_time - self.last_request_time
-
-        # Wait if needed to respect rate limit
-        min_interval = 60.0 / self.rate_limit
-        if time_since_last_request < min_interval:
-            sleep_time = min_interval - time_since_last_request
-            time.sleep(sleep_time)
-
-        self.last_request_time = time.time()
-        self.request_count += 1
-
-        return super().get(url, **kwargs)
-
-# Handle rate limit responses
-result = client.get("/api/data")
-if result.is_failure and result.error.status_code == 429:
-    retry_after = result.error.headers.get("Retry-After")
-    if retry_after:
-        wait_time = int(retry_after)
-        print(f"Rate limited. Retry after {wait_time} seconds")
-        time.sleep(wait_time)
-        # Retry request
-        result = client.get("/api/data")
-```
-
-## FastAPI Application Issues
-
-### Startup Problems
-
-**1. Port Already in Use**
+### Health Check Commands
 
 ```bash
-# Symptom: "Address already in use" error
-# Solution: Check what's using the port and choose different port
+# Check overall system health
+make validate
 
-# Check what's using port 8000
-lsof -i :8000
+# Check specific components
+make lint          # Code quality
+make type-check    # Type safety
+make test          # Functionality
+make security      # Security issues
 
-# Or use different port
-uvicorn main:app --port 8001 --host 0.0.0.0
-
-# Check available ports
-netstat -tulpn | grep LISTEN
+# Check individual projects
+cd flext-core && make validate
+cd flext-ldif && make validate
+cd flext-api && make validate
 ```
 
-**2. Import Errors**
+### System Status
+
+```bash
+# Check Python version
+python --version  # Should be 3.13+
+
+# Check Poetry environment
+poetry env info
+
+# Check dependencies
+poetry show --tree
+
+# Check git status
+git status
+```
+
+## Common Issues
+
+### 1. Import Errors
+
+#### Problem: ModuleNotFoundError
 
 ```python
-# Symptom: ImportError when starting application
-# Solution: Check dependencies and Python path
+# Error
+ModuleNotFoundError: No module named 'flext_core'
+```
 
-# Check if flext-core is installed
-python -c "import flext_core; print('✅ flext-core available')"
+#### Solutions
 
-# Check if flext-api is installed
-python -c "import flext_api; print('✅ flext-api available')"
+**Check PYTHONPATH:**
 
-# Check Python path
+```bash
+export PYTHONPATH=src
+python -c "import flext_core; print(flext_core.__file__)"
+```
+
+**Reinstall dependencies:**
+
+```bash
+make clean
+make setup
+```
+
+**Check Poetry environment:**
+
+```bash
+poetry env info
+poetry install
+```
+
+### r
+
+```python
+# Debug import issues
 import sys
-print("Python path:", sys.path)
+print("Python path:")
+for path in sys.path:
+    print(f"  {path}")
 
-# Install missing dependencies
-pip install -r requirements.txt
-
-# Or install from source
-pip install -e .
+print("\nTrying to import flext_core...")
+try:
+    import flext_core
+    print(f"Success: {flext_core.__file__}")
+except ImportError as e:
+    print(f"Failed: {e}")
 ```
 
-### Runtime Issues
+### 2. Type Checking Errors
 
-**1. CORS Errors**
+#### Problem: MyPy errors
 
 ```python
-# Symptom: CORS policy errors in browser
-# Solution: Configure CORS properly
-
-from flext_api import FlextApiSettings
-
-# Configure CORS in application
-config = FlextApiSettings(
-    cors_origins=[
-        "http://localhost:3000",      # React dev server
-        "http://localhost:8080",     # Vue dev server
-        "https://myapp.company.com"  # Production frontend
-    ],
-    cors_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    cors_headers=[
-        "Content-Type",
-        "Authorization",
-        "X-Requested-With"
-    ],
-    cors_credentials=True
-)
-
-# Test CORS configuration
-@app.options("/users")
-async def cors_preflight():
-    return {"message": "CORS OK"}
+# Error
+error: Argument 1 to "process" has incompatible type "str"; expected "dict[str, object]"
 ```
 
-**2. Authentication Issues**
+#### Solutions
+
+**Fix type annotations:**
 
 ```python
-# Symptom: Authentication fails unexpectedly
-# Solution: Debug JWT tokens and authentication flow
+# ❌ WRONG
+def process(data):
+    return data
 
-import jwt
-from flext_api.middleware import JwtAuthenticationMiddleware
+# ✅ CORRECT
+def process(data: dict[str, object]) -> FlextResult[ProcessedData]:
+    return FlextResult.ok(ProcessedData(**data))
+```
 
-# Debug JWT token
-def debug_jwt_token(token: str):
-    try:
-        payload = jwt.decode(token, options={"verify_signature": False})
-        print(f"Token payload: {payload}")
-        print(f"Expiration: {payload.get('exp')}")
-        print(f"Issuer: {payload.get('iss')}")
-        print(f"Subject: {payload.get('sub')}")
-    except Exception as e:
-        print(f"Invalid token: {e}")
+**Run MyPy with details:**
 
-# Check authentication middleware configuration
-auth_middleware = JwtAuthenticationMiddleware(
-    secret_key="your-secret-key",
-    algorithm="HS256"
-)
+```bash
+mypy src/module.py --show-error-codes --show-traceback
+```
 
-# Test authentication manually
-test_request = type('Request', (), {
-    'headers': {'Authorization': 'Bearer your-token'}
-})()
+**Check specific error:**
 
-result = await auth_middleware.authenticate_request(test_request)
+```bash
+mypy src/ --show-error-codes | grep "error-code"
+```
+
+### 3. Test Failures
+
+#### Problem: Tests failing
+
+```python
+# Error
+AssertionError: Expected success but got failure
+```
+
+#### Solutions
+
+**Run with verbose output:**
+
+```bash
+pytest tests/unit/test_module.py -vv --tb=long
+```
+
+**Debug specific test:**
+
+```bash
+pytest tests/unit/test_module.py::TestClass::test_method -v --pdb
+```
+
+**Check test data:**
+
+```python
+def test_with_debug():
+    result = my_function()
+    print(f"Result: {result}")
+    print(f"Success: {result.is_success}")
+    if result.is_failure:
+        print(f"Error: {result.failure()}")
+    assert result.is_success
+```
+
+### 4. Configuration Issues
+
+#### Problem: Configuration not loading
+
+```python
+# Error
+ValidationError: field required
+```
+
+#### Solutions
+
+**Check environment variables:**
+
+```bash
+env | grep FLEXT_
+```
+
+**Validate configuration:**
+
+```python
+from flext_core import FlextBus
+from flext_core import FlextSettings
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import h
+from flext_core import FlextLogger
+from flext_core import x
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import p
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import t
+from flext_core import u
+
+try:
+    config = FlextSettings()
+    print("Configuration valid")
+except ValidationError as e:
+    print(f"Configuration error: {e}")
+```
+
+**Debug configuration loading:**
+
+```python
+import os
+from flext_core import FlextBus
+from flext_core import FlextSettings
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import h
+from flext_core import FlextLogger
+from flext_core import x
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import p
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import t
+from flext_core import u
+
+# Print all FLEXT environment variables
+for key, value in os.environ.items():
+    if key.startswith('FLEXT_'):
+        print(f"{key}={value}")
+
+# Load and print configuration
+config = FlextSettings()
+print(f"Config: {config.dict()}")
+```
+
+### 5. LDIF Processing Issues
+
+#### Problem: LDIF parsing fails
+
+```python
+# Error
+LdifParsingException: Invalid LDIF format
+```
+
+#### Solutions
+
+**Check LDIF content:**
+
+```python
+from flext_ldif import FlextLdif
+
+ldif = FlextLdif()
+content = """dn: cn=test,dc=example,dc=com
+cn: test
+objectClass: inetOrgPerson"""
+
+result = ldif.parse(content)
 if result.is_failure:
-    print(f"Authentication failed: {result.error}")
+    print(f"Parse error: {result.failure()}")
+    print(f"Content: {repr(content)}")
 ```
 
-## Configuration Issues
-
-### Environment Variables
-
-**1. Missing Environment Variables**
+**Enable debug logging:**
 
 ```python
-# Symptom: Application fails to start due to missing config
-# Solution: Check environment variables and provide defaults
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
-import os
-from flext_api import FlextApiSettings
+# Your LDIF processing code
+```
 
-# Check required environment variables
-required_vars = [
-    "DATABASE_URL",
-    "JWT_SECRET",
-    "API_KEY"
-]
+**Validate LDIF format:**
 
-missing_vars = []
-for var in required_vars:
-    if not os.getenv(var):
-        missing_vars.append(var)
+```python
+# Check for common LDIF issues
+def validate_ldif_content(content: str) -> t.StringList:
+    issues = []
 
-if missing_vars:
-    raise ValueError(f"Missing required environment variables: {missing_vars}")
+    if not content.strip():
+        issues.append("Empty content")
 
-# Provide sensible defaults
-config = FlextApiSettings(
-    database_url=os.getenv("DATABASE_URL", "sqlite:///app.db"),
-    jwt_secret=os.getenv("JWT_SECRET", "development-secret"),
-    debug=os.getenv("DEBUG", "false").lower() == "true"
+    if not content.startswith("dn:"):
+        issues.append("Missing DN line")
+
+    lines = content.split('\n')
+    for i, line in enumerate(lines):
+        if line and not line.startswith(('dn:', ' ', '\t')) and ':' not in line:
+            issues.append(f"Invalid line {i+1}: {line}")
+
+    return issues
+```
+
+### 6. Migration Issues
+
+#### Problem: Migration fails
+
+```python
+# Error
+LdifMigrationException: Server compatibility error
+```
+
+#### Solutions
+
+**Check server configuration:**
+
+```python
+from flext_ldif import FlextLdifSettings
+
+config = FlextLdifSettings(
+    source_server="oid",
+    target_server="oud",
+    preserve_oid_modifiers=True,
+    handle_schema_extensions=True
+)
+
+print(f"Config: {config.dict()}")
+```
+
+**Enable server quirks:**
+
+```python
+config = FlextLdifSettings(
+    servers_enabled=True,
+    source_server="oid",
+    target_server="oud"
 )
 ```
 
-## Database Issues
-
-### Connection Problems
-
-**1. Database Connection Failures**
+**Test with sample data:**
 
 ```python
-# Symptom: Database connection fails
-# Solution: Check connection parameters and database status
+# Test migration with small sample
+sample_ldif = """dn: cn=test,dc=example,dc=com
+cn: test
+objectClass: inetOrgPerson"""
 
-from flext_core import FlextBus
-from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import FlextDecorators
-from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
-from flext_core import h
-from flext_core import FlextLogger
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import FlextResult
-from flext_core import FlextRuntime
-from flext_core import FlextService
-from flext_core import t
-from flext_core import u
-
-# Check database service registration
-container = FlextContainer.get_global()
-db_result = container.get("database")
-
-if db_result.is_failure:
-    print(f"Database service not registered: {db_result.error}")
+result = ldif.parse(sample_ldif)
+if result.is_success:
+    print("Sample parsing successful")
 else:
-    db = db_result.unwrap()
-
-    # Test database connection
-    try:
-        # This depends on your database service implementation
-        connection_test = db.test_connection()
-        if connection_test.is_success:
-            print("✅ Database connection OK")
-        else:
-            print(f"❌ Database connection failed: {connection_test.error}")
-    except Exception as e:
-        print(f"❌ Database connection error: {e}")
-
-# Check database URL format
-database_url = os.getenv("DATABASE_URL")
-if database_url:
-    print(f"Database URL: {database_url}")
-    if not database_url.startswith(("postgresql://", "mysql://", "sqlite://")):
-        print("❌ Invalid database URL format")
+    print(f"Sample parsing failed: {result.failure()}")
 ```
 
-**2. Migration Issues**
+### 7. Performance Issues
+
+#### Problem: Slow processing
 
 ```python
-# Symptom: Database migrations fail
-# Solution: Check migration status and database state
-
-# Check if migrations table exists
-try:
-    # This depends on your migration system
-    migration_status = db.check_migration_status()
-    print(f"Migration status: {migration_status}")
-except Exception as e:
-    print(f"Migration check failed: {e}")
-
-# Manual migration check
-try:
-    # Check if key tables exist
-    tables = db.list_tables()
-    expected_tables = ["users", "posts", "comments"]
-
-    for table in expected_tables:
-        if table not in tables:
-            print(f"❌ Missing table: {table}")
-        else:
-            print(f"✅ Table exists: {table}")
-except Exception as e:
-    print(f"Table check failed: {e}")
+# Symptoms
+# - High memory usage
+# - Slow response times
+# - Timeout errors
 ```
 
-## Logging Issues
+#### Solutions
 
-### Log Configuration Problems
-
-**1. Logs Not Appearing**
+**Profile memory usage:**
 
 ```python
-# Symptom: Application logs don't appear
-# Solution: Check logging configuration
-
-from flext_core import FlextBus
-from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import FlextDecorators
-from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
-from flext_core import h
-from flext_core import FlextLogger
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import FlextResult
-from flext_core import FlextRuntime
-from flext_core import FlextService
-from flext_core import t
-from flext_core import u
-import logging
-
-# Check logger configuration
-logger = FlextLogger(__name__)
-logger.info("Test log message")
-
-# Check if logging is configured
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-logger.info("Python logging test")
-
-# Check log file permissions
-import os
-log_file = "/var/log/flext-api/app.log"
-if os.path.exists(log_file):
-    # Check file permissions
-    stat = os.stat(log_file)
-    print(f"Log file permissions: {oct(stat.st_mode)}")
-else:
-    print(f"Log file does not exist: {log_file}")
-```
-
-**2. Log Format Issues**
-
-```python
-# Symptom: Logs are not in expected format
-# Solution: Check logging configuration
-
-# Configure structured logging
-logger = FlextLogger(__name__, format="json")
-
-# Test structured logging
-logger.info("User action", extra={
-    "user_id": "user_123",
-    "action": "login",
-    "ip": "192.168.1.1",
-    "user_agent": "Mozilla/5.0..."
-})
-
-# Check if JSON format is working
-import json
-test_log = logger._format_log("INFO", "Test message", {"key": "value"})
-try:
-    parsed = json.loads(test_log)
-    print("✅ JSON logging format OK")
-except json.JSONDecodeError as e:
-    print(f"❌ JSON logging format error: {e}")
-```
-
-## Performance Issues
-
-### Slow Response Times
-
-**1. Database Query Performance**
-
-```python
-# Symptom: API responses are slow
-# Solution: Check database queries and indexes
-
-import time
-
-# Measure database query time
-start_time = time.time()
-users = db.get_all_users()
-query_time = time.time() - start_time
-
-print(f"Database query took: {query_time:.2f}s")
-
-if query_time > 1.0:
-    print("❌ Slow database query detected")
-    print("Consider adding database indexes")
-    print("Check query execution plan")
-
-# Check for N+1 query problems
-def get_users_with_posts():
-    users = db.get_all_users()  # 1 query
-
-    for user in users:
-        posts = db.get_user_posts(user.id)  # N queries - BAD!
-        user.posts = posts
-
-    return users
-
-# Fix N+1 problem
-def get_users_with_posts_fixed():
-    # Single query with JOIN or use ORM relationships
-    return db.get_users_with_posts()  # 1 query - GOOD!
-```
-
-**2. Memory Usage Issues**
-
-```python
-# Symptom: High memory usage
-# Solution: Check for memory leaks and large data structures
-
 import psutil
 import os
 
-def check_memory_usage():
+def profile_memory():
+    process = psutil.Process(os.getpid())
+    initial_memory = process.memory_info().rss
+
+    # Your processing code here
+
+    final_memory = process.memory_info().rss
+    memory_used = final_memory - initial_memory
+
+    print(f"Memory used: {memory_used / 1024 / 1024:.2f} MB")
+
+profile_memory()
+```
+
+**Optimize batch size:**
+
+```python
+from flext_ldif import FlextLdifSettings
+
+# Reduce batch size for memory-constrained environments
+config = FlextLdifSettings(
+    batch_size=100,  # Instead of default 1000
+    parallel_processing=False  # Disable for memory issues
+)
+```
+
+**Enable parallel processing:**
+
+```python
+config = FlextLdifSettings(
+    parallel_processing=True,
+    max_workers=4  # Adjust based on CPU cores
+)
+```
+
+## Debugging Techniques
+
+### 1. Logging Configuration
+
+```python
+import logging
+from flext_core import FlextBus
+from flext_core import FlextSettings
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import h
+from flext_core import FlextLogger
+from flext_core import x
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import p
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import t
+from flext_core import u
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Use FLEXT logger
+logger = FlextLogger.get_logger(__name__)
+logger.debug("Debug message")
+logger.info("Info message")
+logger.warning("Warning message")
+logger.error("Error message")
+```
+
+### 2. Exception Handling
+
+```python
+from flext_core import FlextBus
+from flext_core import FlextSettings
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import h
+from flext_core import FlextLogger
+from flext_core import x
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import p
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import t
+from flext_core import u
+
+def safe_operation(data: dict) -> FlextResult[dict]:
+    try:
+        # Your operation here
+        result = process_data(data)
+        return FlextResult.ok(result)
+    except ValidationError as e:
+        logger.error(f"Validation error: {e}")
+        return FlextResult.fail(f"Validation failed: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}", exc_info=True)
+        return FlextResult.fail(f"Operation failed: {e}")
+```
+
+### 3. Debug Mode
+
+```python
+from flext_core import FlextBus
+from flext_core import FlextSettings
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import h
+from flext_core import FlextLogger
+from flext_core import x
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import p
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import t
+from flext_core import u
+
+# Enable debug mode
+config = FlextSettings(debug=True)
+
+# Debug information will be printed
+print(f"Debug mode: {config.debug}")
+print(f"Log level: {config.log_level}")
+```
+
+### 4. Step-by-Step Debugging
+
+```python
+def debug_ldif_processing(content: str):
+    """Debug LDIF processing step by step."""
+    print(f"Input content length: {len(content)}")
+    print(f"First 100 chars: {repr(content[:100])}")
+
+    # Step 1: Basic validation
+    if not content.strip():
+        print("ERROR: Empty content")
+        return
+
+    # Step 2: Check DN format
+    lines = content.split('\n')
+    dn_line = lines[0] if lines else ""
+    print(f"DN line: {repr(dn_line)}")
+
+    if not dn_line.startswith("dn:"):
+        print("ERROR: Missing or invalid DN line")
+        return
+
+    # Step 3: Try parsing
+    from flext_ldif import FlextLdif
+    ldif = FlextLdif()
+
+    result = ldif.parse(content)
+    if result.is_success:
+        entries = result.unwrap()
+        print(f"SUCCESS: Parsed {len(entries)} entries")
+    else:
+        print(f"ERROR: Parse failed: {result.failure()}")
+```
+
+## Error Codes Reference
+
+### FLEXT Core Errors
+
+| Error Code  | Description                     | Solution                                     |
+| ----------- | ------------------------------- | -------------------------------------------- |
+| `FLEXT_001` | Configuration validation failed | Check environment variables and config files |
+| `FLEXT_002` | Dependency injection failed     | Verify service registration in container     |
+| `FLEXT_003` | Type validation failed          | Fix type annotations and data types          |
+
+### LDIF Processing Errors
+
+| Error Code | Description                | Solution                                  |
+| ---------- | -------------------------- | ----------------------------------------- |
+| `LDIF_001` | Invalid LDIF format        | Check LDIF syntax and structure           |
+| `LDIF_002` | Server compatibility error | Enable server quirks or check server type |
+| `LDIF_003` | Schema validation failed   | Verify schema definitions and attributes  |
+
+### API Errors
+
+| Error Code | Description           | Solution                           |
+| ---------- | --------------------- | ---------------------------------- |
+| `API_001`  | HTTP request failed   | Check network connectivity and URL |
+| `API_002`  | Authentication failed | Verify API keys and credentials    |
+| `API_003`  | Rate limit exceeded   | Implement retry logic with backoff |
+
+## Performance Troubleshooting
+
+### Memory Issues
+
+```python
+# Monitor memory usage
+import psutil
+import os
+
+def monitor_memory():
     process = psutil.Process(os.getpid())
     memory_info = process.memory_info()
-    memory_mb = memory_info.rss / 1024 / 1024
 
-    print(f"Memory usage: {memory_mb:.1f} MB")
+    print(f"RSS: {memory_info.rss / 1024 / 1024:.2f} MB")
+    print(f"VMS: {memory_info.vms / 1024 / 1024:.2f} MB")
 
-    if memory_mb > 500:  # 500MB threshold
-        print("⚠️ High memory usage detected")
+    # Check for memory leaks
+    if memory_info.rss > 500 * 1024 * 1024:  # 500MB
+        print("WARNING: High memory usage detected")
 
-    return memory_mb
-
-# Monitor memory during request processing
-@app.middleware("http")
-async def memory_monitor(request, call_next):
-    initial_memory = check_memory_usage()
-
-    response = await call_next(request)
-
-    final_memory = check_memory_usage()
-    memory_delta = final_memory - initial_memory
-
-    if memory_delta > 10:  # 10MB increase
-        print(f"⚠️ Memory increased by {memory_delta:.1f} MB during request")
-
-    return response
+monitor_memory()
 ```
 
-## Testing Issues
-
-### Test Failures
-
-**1. Flaky Tests**
+### CPU Issues
 
 ```python
-# Symptom: Tests pass sometimes but fail randomly
-# Solution: Identify and fix race conditions
-
+# Monitor CPU usage
+import psutil
 import time
-import random
 
-def test_flaky_endpoint():
-    """Test that sometimes fails due to timing issues."""
+def monitor_cpu():
+    process = psutil.Process(os.getpid())
 
-    # Add small delay to reduce flakiness
-    time.sleep(0.1)
+    # Get CPU usage over time
+    for i in range(10):
+        cpu_percent = process.cpu_percent()
+        print(f"CPU usage: {cpu_percent}%")
+        time.sleep(1)
 
-    # Or use retry mechanism
-    max_retries = 3
-    for attempt in range(max_retries):
-        result = client.get("/unstable-endpoint")
-
-        if result.is_success:
-            break
-
-        if attempt < max_retries - 1:
-            time.sleep(random.uniform(0.1, 0.5))  # Random delay
-
-    assert result.is_success, f"Test failed after {max_retries} attempts"
+monitor_cpu()
 ```
 
-**2. Mock Setup Issues**
+## Getting Help
+
+### Self-Service Resources
+
+1. **Check Documentation**
+   - [API Reference](../api-reference/README.md)
+   - [Configuration Guide](./configuration.md)
+   - [Development Guide](./development.md)
+
+2. **Run Diagnostics**
+
+   ```bash
+   # System health check
+   make validate
+
+   # Project-specific check
+   cd flext-core && make validate
+   ```
+
+3. **Check Logs**
+
+   ```bash
+   # Enable debug logging
+   export FLEXT_LOG_LEVEL=DEBUG
+   python your_script.py
+   ```
+
+### Community Support
+
+1. **GitHub Issues**
+   - [Create Issue](https://github.com/flext-sh/flext/issues)
+   - Search existing issues
+   - Check closed issues for solutions
+
+2. **GitHub Discussions**
+   - [Ask Question](https://github.com/flext-sh/flext/discussions)
+   - Share solutions
+   - Discuss best practices
+
+3. **Email Support**
+   - <dev@flext.com> for technical issues
+   - <support@flext.com> for general questions
+
+### Reporting Issues
+
+When reporting issues, include:
+
+1. **Environment Information**
+
+   ```bash
+   python --version
+   poetry env info
+   make info
+   ```
+
+2. **Error Details**
+
+   ```python
+   # Full error traceback
+   import traceback
+   try:
+       # Your code here
+   except Exception as e:
+       traceback.print_exc()
+   ```
+
+3. **Minimal Reproduction**
+
+   ```python
+   # Minimal code that reproduces the issue
+   from flext_core import FlextBus
+   ```
+
+from flext_core import FlextSettings
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import h
+from flext_core import FlextLogger
+from flext_core import x
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import p
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import t
+from flext_core import u
+
+# Your minimal example here
+
+4. **Expected vs Actual Behavior**
+- What you expected to happen
+- What actually happened
+- Steps to reproduce
+
+## Prevention
+
+### Best Practices
+
+1. **Always Use FlextResult**
 
 ```python
-# Symptom: Mocks not working as expected
-# Solution: Check mock configuration and usage
+# ✅ GOOD
+def process(data: dict) -> FlextResult[ProcessedData]:
+    return FlextResult.ok(ProcessedData(**data))
 
-from unittest.mock import Mock, patch
-
-# Test with proper mock setup
-@patch('flext_api.client.httpx.Client')
-def test_http_client_with_mock(mock_http_client):
-    """Test HTTP client with mocked httpx.Client."""
-
-    # Setup mock response
-    mock_response = Mock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {"id": 1, "name": "Test User"}
-    mock_response.headers = {"Content-Type": "application/json"}
-
-    # Configure mock to return response
-    mock_http_client.return_value.request.return_value = mock_response
-
-    # Test client behavior
-    client = FlextApiClient(base_url="https://api.example.com")
-    result = client.get("/users/1")
-
-    # Verify mock was called correctly
-    mock_http_client.return_value.request.assert_called_once()
-    call_args = mock_http_client.return_value.request.call_args
-
-    assert result.is_success
-    user = result.unwrap()
-    assert user["name"] == "Test User"
+# ❌ BAD
+def process(data: dict) -> ProcessedData:
+    return ProcessedData(**data)
 ```
 
-## Deployment Issues
+2. **Validate Input Early**
 
-### Docker Issues
+   ```python
+   def process_data(data: dict) -> FlextResult[dict]:
+       if not data:
+           return FlextResult.fail("Data required")
 
-**1. Container Build Failures**
+       # Process data
+       return FlextResult.ok(processed_data)
+   ```
 
-```bash
-# Symptom: Docker build fails
-# Solution: Check Dockerfile and dependencies
+3. **Use Type Hints**
 
-# Check if Python version matches
-python --version  # Should match Dockerfile
+   ```python
+   # ✅ GOOD
+   def process(items: list[Item]) -> FlextResult[list[ProcessedItem]]:
+       pass
 
-# Check if all dependencies are available
-pip list | grep -E "(fastapi|uvicorn|pydantic)"
+   # ❌ BAD
+   def process(items):
+       pass
+   ```
 
-# Check if Docker can access files
-ls -la Dockerfile
-ls -la requirements.txt
+4. **Test Thoroughly**
 
-# Test build locally
-docker build -t flext-api:test .
-```
+   ```python
+   def test_process_data():
+       # Test success case
+       result = process_data({"key": "value"})
+       assert result.is_success
 
-**2. Container Runtime Issues**
+       # Test failure case
+       result = process_data(None)
+       assert result.is_failure
+   ```
 
-```python
-# Symptom: Application fails in container
-# Solution: Check environment and configuration
+## Resources
 
-# Check environment variables in container
-import os
-print(f"Environment: {os.environ.get('ENVIRONMENT', 'not set')}")
-print(f"Database URL: {os.environ.get('DATABASE_URL', 'not set')}")
-
-# Check if all required files are present
-required_files = [
-    "/app/config.toml",
-    "/app/.env",
-    "/app/database/migrations"
-]
-
-for file_path in required_files:
-    if os.path.exists(file_path):
-        print(f"✅ {file_path} exists")
-    else:
-        print(f"❌ {file_path} missing")
-```
-
-## Monitoring and Debugging
-
-### Application Monitoring
-
-```python
-# Add health check endpoint for monitoring
-@app.get("/health")
-async def health_check():
-    """Health check endpoint for load balancers."""
-
-    # Check database connectivity
-    db_healthy = await check_database_health()
-
-    # Check external service connectivity
-    api_healthy = await check_external_api_health()
-
-    # Check disk space
-    disk_healthy = check_disk_space()
-
-    if all([db_healthy, api_healthy, disk_healthy]):
-        return {
-            "status": "healthy",
-            "timestamp": time.time(),
-            "version": "1.0.0"
-        }
-    else:
-        raise HTTPException(status_code=503, detail="Service unhealthy")
-
-async def check_database_health() -> bool:
-    """Check database connectivity."""
-    try:
-        # Test database query
-        result = db.execute("SELECT 1")
-        return result.is_success
-    except Exception:
-        return False
-
-async def check_external_api_health() -> bool:
-    """Check external API connectivity."""
-    try:
-        result = client.get("/external-api/health")
-        return result.is_success
-    except Exception:
-        return False
-
-def check_disk_space() -> bool:
-    """Check available disk space."""
-    import shutil
-    total, used, free = shutil.disk_usage("/")
-    free_gb = free / (1024**3)
-    return free_gb > 1.0  # Require at least 1GB free
-```
-
-### Debug Logging
-
-```python
-# Enable debug logging for troubleshooting
-import logging
-
-# Set logging level to DEBUG
-logging.basicConfig(level=logging.DEBUG)
-
-# Create debug logger
-logger = FlextLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-# Add debug information to requests
-@app.middleware("http")
-async def debug_middleware(request, call_next):
-    logger.debug("Incoming request", extra={
-        "method": request.method,
-        "url": str(request.url),
-        "headers": dict[str, object](request.headers),
-        "client_ip": request.client.host if request.client else "unknown"
-    })
-
-    response = await call_next(request)
-
-    logger.debug("Outgoing response", extra={
-        "status_code": response.status_code,
-        "response_headers": dict[str, object](response.headers)
-    })
-
-    return response
-```
-
-This troubleshooting guide provides comprehensive solutions for common issues encountered when developing and deploying FLEXT-API applications.
+- [FLEXT Core Documentation](../api-reference/foundation.md)
+- [Configuration Guide](./configuration.md)
+- [Development Guide](./development.md)
+- [Testing Guide](./testing.md)
+- [GitHub Issues](https://github.com/flext-sh/flext/issues)
+- [GitHub Discussions](https://github.com/flext-sh/flext/discussions)

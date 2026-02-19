@@ -1,5 +1,41 @@
 # Testing Plan & Strategy
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Test Categories & Structure](#test-categories-structure)
+  - [1. Unit Tests (Primary Focus)](#1-unit-tests-primary-focus)
+  - [2. Integration Tests (Secondary Priority)](#2-integration-tests-secondary-priority)
+  - [3. End-to-End Tests (Future Phase)](#3-end-to-end-tests-future-phase)
+- [Critical Test Failures (Priority Fixes)](#critical-test-failures-priority-fixes)
+  - [High Priority (Blocking Phase 1 Completion)](#high-priority-blocking-phase-1-completion)
+  - [Medium Priority (Quality Improvements)](#medium-priority-quality-improvements)
+- [Test Infrastructure Requirements](#test-infrastructure-requirements)
+  - [Test Fixtures & Setup](#test-fixtures-setup)
+  - [Test Data Factories](#test-data-factories)
+- [Testing Strategy by Component](#testing-strategy-by-component)
+  - [HTTP Client Testing Strategy](#http-client-testing-strategy)
+  - [Model Testing Strategy](#model-testing-strategy)
+- [Test Execution Strategy](#test-execution-strategy)
+  - [Development Testing Workflow](#development-testing-workflow)
+  - [CI/CD Testing Integration](#cicd-testing-integration)
+- [Performance & Load Testing](#performance-load-testing)
+  - [HTTP Performance Benchmarks](#http-performance-benchmarks)
+- [Test Maintenance & Evolution](#test-maintenance-evolution)
+  - [Test Organization Principles](#test-organization-principles)
+  - [Test Data Management](#test-data-management)
+- [Testing Roadmap](#testing-roadmap)
+  - [Phase 1: Foundation (Current - 28% → 75%)](#phase-1-foundation-current-28-75)
+  - [Phase 2: Advanced Testing (Future)](#phase-2-advanced-testing-future)
+- [Success Metrics](#success-metrics)
+  - [Quantitative Metrics](#quantitative-metrics)
+  - [Qualitative Metrics](#qualitative-metrics)
+- [Risk Mitigation](#risk-mitigation)
+  - [Test Reliability Risks](#test-reliability-risks)
+  - [Coverage Gaps](#coverage-gaps)
+  - [Maintenance Overhead](#maintenance-overhead)
+<!-- TOC END -->
+
 ## Overview
 
 **Current Status**: 23 tests passing, 76 failing (28% pass rate) · Target: 75%+ coverage with real HTTP functionality
@@ -367,15 +403,17 @@ pytest --lf                # Run last failed tests
 #### Test Coverage Analysis
 
 ```bash
+# Run tests with coverage (thresholds configured in pyproject.toml)
+make test
+
 # Coverage report
-pytest --cov=src/flext_api --cov-report=html --cov-report=term-missing
+pytest --cov --cov-report=html --cov-report=term-missing
 
 # Coverage by module
-pytest --cov=src/flext_api --cov-report=term-missing:skip-covered
-
-# Target coverage enforcement
-pytest --cov=src/flext_api --cov-fail-under=75
+pytest --cov --cov-report=term-missing:skip-covered
 ```
+
+> Coverage thresholds are configured in `pyproject.toml` under `[tool.coverage.report]`.
 
 ### CI/CD Testing Integration
 
@@ -390,7 +428,7 @@ make test                   # ❌ 28% PASS RATE (CRITICAL)
 
 # Target quality gates (Phase 1 completion)
 make validate               # All gates passing
-pytest --cov-fail-under=75  # 75%+ coverage
+make test                   # 75%+ coverage (threshold in pyproject.toml)
 ```
 
 ## Performance & Load Testing

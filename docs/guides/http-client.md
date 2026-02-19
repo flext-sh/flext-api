@@ -1,5 +1,40 @@
 # HTTP Client Guide
 
+
+<!-- TOC START -->
+- [HTTP Client Basics](#http-client-basics)
+  - [Creating HTTP Clients](#creating-http-clients)
+  - [HTTP Methods](#http-methods)
+- [Advanced HTTP Features](#advanced-http-features)
+  - [Request/Response Interceptors](#requestresponse-interceptors)
+  - [Custom Headers and Authentication](#custom-headers-and-authentication)
+- [Error Handling](#error-handling)
+  - [Railway Pattern Error Handling](#railway-pattern-error-handling)
+  - [Error Types and Handling](#error-types-and-handling)
+- [Request Configuration](#request-configuration)
+  - [Query Parameters](#query-parameters)
+  - [Request Body Data](#request-body-data)
+  - [Custom Headers](#custom-headers)
+- [Response Handling](#response-handling)
+  - [Response Processing](#response-processing)
+  - [Response Metadata](#response-metadata)
+- [Advanced Usage Patterns](#advanced-usage-patterns)
+  - [Batch Operations](#batch-operations)
+  - [Pagination](#pagination)
+  - [Retry Logic](#retry-logic)
+- [Testing HTTP Clients](#testing-http-clients)
+  - [Test Client Setup](#test-client-setup)
+  - [Mocking External APIs](#mocking-external-apis)
+- [Performance Optimization](#performance-optimization)
+  - [Connection Pooling](#connection-pooling)
+  - [Request Batching](#request-batching)
+- [Security Best Practices](#security-best-practices)
+  - [Secure Communication](#secure-communication)
+  - [Sensitive Data Handling](#sensitive-data-handling)
+- [Troubleshooting](#troubleshooting)
+  - [Common Issues](#common-issues)
+<!-- TOC END -->
+
 Comprehensive guide for using the FLEXT-API HTTP client with railway patterns, error handling, and advanced features.
 
 ## HTTP Client Basics

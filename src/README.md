@@ -1,5 +1,16 @@
 # Source Code
 
+
+<!-- TOC START -->
+- [Directory Structure](#directory-structure)
+- [Main Components](#main-components)
+  - [Core Services](#core-services)
+  - [Data Components](#data-components)
+  - [Supporting Modules](#supporting-modules)
+  - [Architecture Layers](#architecture-layers)
+- [Development](#development)
+<!-- TOC END -->
+
 **Source code organization for FLEXT API library**
 
 ## Directory Structure

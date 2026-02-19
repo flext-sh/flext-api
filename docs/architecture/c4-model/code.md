@@ -1,5 +1,33 @@
 # C4 Model - Code
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Code Diagram](#code-diagram)
+- [Code Structure Analysis](#code-structure-analysis)
+  - [Core Module Relationships](#core-module-relationships)
+  - [Key Classes and Their Responsibilities](#key-classes-and-their-responsibilities)
+- [Protocol Implementation Details](#protocol-implementation-details)
+  - [Protocol Architecture](#protocol-architecture)
+  - [Protocol Registry Pattern](#protocol-registry-pattern)
+- [Dependency Injection Pattern](#dependency-injection-pattern)
+  - [FlextContainer Integration](#flextcontainer-integration)
+- [Error Handling Architecture](#error-handling-architecture)
+  - [Railway Pattern Implementation](#railway-pattern-implementation)
+- [Configuration Management](#configuration-management)
+  - [Pydantic-based Configuration](#pydantic-based-configuration)
+- [Storage Abstraction](#storage-abstraction)
+  - [Backend Interface Pattern](#backend-interface-pattern)
+- [Testing Architecture](#testing-architecture)
+  - [Test Structure](#test-structure)
+  - [Test Fixtures and Mocks](#test-fixtures-and-mocks)
+- [Performance Optimizations](#performance-optimizations)
+  - [Connection Pooling](#connection-pooling)
+  - [Response Caching](#response-caching)
+- [Security Implementation](#security-implementation)
+  - [Authentication Handlers](#authentication-handlers)
+<!-- TOC END -->
+
 ## Overview
 
 This document describes the **Code** level of the C4 model for FLEXT-API, showing the actual implementation details, class relationships, and code organization.

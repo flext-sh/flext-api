@@ -1,222 +1,187 @@
 [build-system]
-    build-backend = "poetry.core.masonry.api"
-    requires = [
-        "poetry-core>=1.9.0",
-    ]
+build-backend = "poetry.core.masonry.api"
+requires = [
+  "poetry-core>=2",
+]
 
 [project]
-    classifiers = [
-        "Development Status :: 5 - Production/Stable",
-        "Framework :: FastAPI",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.13",
-        "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "Typing :: Typed",
-    ]
-    dependencies = [
-        "cbor2 (>=5.7.0)",
-        "fastapi>=0.116.0",
-        "gql (>=4.0.0)",
-        "httpx>=0.28.1",
-        "msgpack (>=1.1.2)",
-        "orjson (>=3.11.3)",
-        "pydantic-settings>=2.10.1",
-        "pydantic (>=2.12.3)",
-        "typing-extensions (>=4.15.0)",
-        "websockets (>=15.0.1)",
-        "pydantic-core (>=2.41.4)",
-        "pytest-randomly (>=4.0.1,<5.0.0)",
-        "faker (>=40.1.0,<41.0.0)",
-        "pytest-cov (>=7.0.0,<8.0.0)",
-    ]
-    description = "FLEXT API - High-Performance REST API with FastAPI"
-    keywords = [
-        "enterprise",
-        "fastapi",
-        "flext",
-        "http",
-        "rest",
-        "typed",
-    ]
-    name = "flext-api"
-    readme = "README.md"
-    requires-python = ">=3.13,<3.14"
-    version = "0.10.0-dev"
-
-    [[project.authors]]
-        email = "team@flext.sh"
-        name = "FLEXT Team"
-
-    [[project.maintainers]]
-        email = "team@flext.sh"
-        name = "FLEXT Team"
-
-    [project.license]
-        text = "MIT"
-
-    [project.urls]
-        Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
-        Homepage = "https://github.com/flext-sh/flext"
-        Repository = "https://github.com/flext-sh/flext"
-
-    [project.optional-dependencies]
-        dev = [
-            "autoflake>=2.3.1",
-            "black>=25.1.0",
-            "codespell>=2.3.0",
-            "deptry>=0.23.0",
-            "isort>=6.0.1",
-            "pre-commit>=4.0.1",
-            "pylint>=3.3.0",
-            "pyupgrade>=3.19.0",
-            "radon>=6.0.1",
-            "ruff>=0.12.3",
-            "vulture>=2.13",
-        ]
-        security = [
-            "bandit>=1.8.0",
-            "pip-audit>=2.7.3",
-        ]
-        test = [
-            "factory-boy>=3.3.1",
-            "faker>=37.4.0",
-            "hypothesis>=6.125.0",
-            "pytest-asyncio>=0.25.0",
-            "pytest-benchmark>=5.1.0",
-            "pytest-clarity>=1.0.1",
-            "pytest-cov>=6.2.0",
-            "pytest-deadfixtures>=2.2.1",
-            "pytest-env>=1.1.5",
-            "pytest-mock>=3.14.0",
-            "pytest-randomly>=3.16.0",
-            "pytest-sugar>=1.0.0",
-            "pytest-timeout>=2.4.0",
-            "pytest-xdist>=3.8.0",
-            "pytest>=8.4.0",
-        ]
-        typings = [
-            "django-stubs>=5.2.2",
-            "types-ldap3>=2.9.13.20250622",
-            "types-protobuf>=6.30.2.20250703",
-            "types-psutil>=7.0.0",
-            "types-psycopg2>=2.9.21.20250718",
-            "types-python-dateutil>=2.9.0",
-            "types-pyyaml>=6.0.12",
-            "types-redis>=4.6.0",
-            "types-requests>=2.32.4",
-            "types-setuptools>=80.9.0",
-            "types-toml>=0.10.8.20240310",
-        ]
+name = "flext-api"
+version = "0.10.0-dev"
+description = "FLEXT API - High-Performance REST API with FastAPI"
+readme = "README.md"
+keywords = [
+  "enterprise",
+  "fastapi",
+  "flext",
+  "http",
+  "rest",
+  "typed",
+]
+license = "MIT"
+maintainers = [ { email = "team@flext.sh", name = "FLEXT Team" } ]
+authors = [ { email = "team@flext.sh", name = "FLEXT Team" } ]
+requires-python = ">=3.13,<3.14"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Framework :: FastAPI",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+dependencies = [
+  "cbor2>=5.7",
+  "fastapi>=0.116",
+  "flext-core @ ./.flext-deps/flext-core",
+  "flext-web @ ./.flext-deps/flext-web",
+  "gql>=4",
+  "httpx>=0.28.1",
+  "msgpack>=1.1.2",
+  "orjson>=3.11.3",
+  "pydantic>=2.12.3",
+  "pydantic-core>=2.41.4",
+  "pydantic-settings>=2.10.1",
+  "typing-extensions>=4.15",
+  "websockets>=15.0.1"
+]
+optional-dependencies.dev = [
+  "autoflake>=2.3.1",
+  "black>=25.1",
+  "codespell>=2.3",
+  "deptry>=0.23",
+  "isort>=6.0.1",
+  "pre-commit>=4.0.1",
+  "pylint>=3.3",
+  "pyupgrade>=3.19",
+  "radon>=6.0.1",
+  "ruff>=0.12.3",
+  "vulture>=2.13",
+]
+optional-dependencies.security = [
+  "bandit>=1.8",
+  "pip-audit>=2.7.3",
+]
+optional-dependencies.test = [
+  "factory-boy>=3.3.1",
+  "faker>=37.4",
+  "hypothesis>=6.125",
+  "pytest>=8.4",
+  "pytest-asyncio>=0.25",
+  "pytest-benchmark>=5.1",
+  "pytest-clarity>=1.0.1",
+  "pytest-cov>=6.2",
+  "pytest-deadfixtures>=2.2.1",
+  "pytest-env>=1.1.5",
+  "pytest-mock>=3.14",
+  "pytest-randomly>=3.16",
+  "pytest-sugar>=1",
+  "pytest-timeout>=2.4",
+  "pytest-xdist>=3.8",
+]
+optional-dependencies.typings = [
+  "django-stubs>=5.2.2",
+  "types-ldap3>=2.9.13.20250622",
+  "types-protobuf>=6.30.2.20250703",
+  "types-psutil>=7",
+  "types-psycopg2>=2.9.21.20250718",
+  "types-python-dateutil>=2.9",
+  "types-pyyaml>=6.0.12",
+  "types-redis>=4.6",
+  "types-requests>=2.32.4",
+  "types-setuptools>=80.9",
+  "types-toml>=0.10.8.20240310",
+]
+urls.Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
+urls.Homepage = "https://github.com/flext-sh/flext"
 
 [tool]
-    [tool.deptry]
-        known_first_party = [
-            "flext_api",
-        ]
+[tool.poetry]
+dependencies.python = ">=3.13,<3.14"
+dependencies.flext-core.develop = true
+dependencies.flext-core.path = ".flext-deps/flext-core"
+dependencies.flext-web.develop = true
+dependencies.flext-web.path = ".flext-deps/flext-web"
+group.dev.dependencies.bandit = "^1.8.6"
+group.dev.dependencies.faker = "^40.1.0"
+group.dev.dependencies.pip-audit = "^2.9.0"
+group.dev.dependencies.pyrefly = "^0.46.3"
+group.dev.dependencies.pytest = "^9.0.2"
+group.dev.dependencies.pytest-asyncio = ">=0.27.0"
+group.dev.dependencies.pytest-cov = "^7.0.0"
+group.dev.dependencies.pytest-httpx = "^0.36.0"
+group.dev.dependencies.opentelemetry-api = ">=1.39.1"
+group.dev.dependencies.opentelemetry-sdk = ">=1.39.1"
+group.dev.dependencies.prompt-toolkit = ">=3.0.52"
+group.dev.dependencies.sqlparse = ">=0.5.5"
+packages = [ { from = "src", include = "flext_api" } ]
 
-    [tool.poetry]
-        [[tool.poetry.packages]]
-            from = "src"
-            include = "flext_api"
+[tool.ruff]
+extend = "../ruff-shared.toml"
 
-        [tool.poetry.dependencies]
-            python = ">=3.13,<3.14"
+[tool.deptry]
+known_first_party = [
+  "flext_api",
+]
 
-            [tool.poetry.dependencies.flext-core]
-                develop = true
-                path = "../flext-core"
+[tool.pytest]
+ini_options.addopts = [ "--color=yes", "--strict-config", "--strict-markers", "--tb=short", "-ra" ]
+ini_options.markers = [
+  "api: FastAPI endpoint tests",
+  "architecture: Architectural pattern tests",
+  "asyncio: Async tests",
+  "benchmark: Performance benchmark tests",
+  "builder: Builder pattern tests",
+  "client: HTTP client tests",
+  "concurrency: Concurrency and tests",
+  "core: Core functionality tests",
+  "e2e: End-to-end tests with real services",
+  "integration: Integration tests (may require external services)",
+  "memory: Memory usage and leak tests",
+  "mock: Tests using mocks heavily",
+  "performance: Performance and load tests",
+  "race_condition: Race condition and thread safety tests",
+  "real: Tests using real external services",
+  "regression: Regression tests for bug fixes",
+  "security: Security-related tests",
+  "skip: Tests that should be skipped",
+  "slow: Slow running tests (>1s)",
+  "smoke: Quick smoke tests for CI",
+  "timeout: Tests with timeout constraints",
+  "unit: Fast unit tests with mocks",
+  "xfail: Tests expected to fail",
+]
+ini_options.minversion = "8.0"
+ini_options.python_classes = [
+  "Test*",
+]
+ini_options.python_files = [
+  "*_test.py",
+  "test_*.py",
+]
+ini_options.python_functions = [
+  "test_*",
+]
+ini_options.testpaths = [
+  "tests",
+]
 
-            [tool.poetry.dependencies.flext-web]
-                develop = true
-                path = "../flext-web"
+[tool.coverage]
+run.source = [ "src/flext_api" ]
+report.fail_under = 46
+report.precision = 2
 
-        [tool.poetry.group]
-            [tool.poetry.group.dev.dependencies]
-                bandit = "^1.8.6"
-                faker = "^40.1.0"
-                pip-audit = "^2.9.0"
-                pyrefly = "^0.46.3"
-                pytest = "^9.0.2"
-                pytest-asyncio = ">=0.27.0"
-                pytest-cov = "^7.0.0"
-                pytest-httpx = "^0.36.0"
-            opentelemetry-api = ">=1.39.1"
-            opentelemetry-sdk = ">=1.39.1"
-            prompt-toolkit = ">=3.0.52"
-            sqlparse = ">=0.5.5"
+[tool.pyrefly]
+search-path = [
+  "../typings",
+  "../typings/generated",
+  "src",
+  "tests",
+  "examples",
+  "scripts",
+]
 
-    [tool.pytest.ini_options]
-        addopts = [
-            "--color=yes",
-            "--cov-branch",
-            "--cov-context=test",
-            "--cov-report=html:htmlcov",
-            "--cov-report=term-missing:skip-covered",
-            "--cov-report=xml:reports/coverage.xml",
-            "--cov=src/flext_api",
-            "--strict-config",
-            "--strict-markers",
-            "--tb=short",
-            "-ra",
-        ]
-        markers = [
-            "api: FastAPI endpoint tests",
-            "architecture: Architectural pattern tests",
-            "asyncio: Async tests",
-            "benchmark: Performance benchmark tests",
-            "builder: Builder pattern tests",
-            "client: HTTP client tests",
-            "concurrency: Concurrency and tests",
-            "core: Core functionality tests",
-            "e2e: End-to-end tests with real services",
-            "integration: Integration tests (may require external services)",
-            "memory: Memory usage and leak tests",
-            "mock: Tests using mocks heavily",
-            "performance: Performance and load tests",
-            "race_condition: Race condition and thread safety tests",
-            "real: Tests using real external services",
-            "regression: Regression tests for bug fixes",
-            "security: Security-related tests",
-            "skip: Tests that should be skipped",
-            "slow: Slow running tests (>1s)",
-            "smoke: Quick smoke tests for CI",
-            "timeout: Tests with timeout constraints",
-            "unit: Fast unit tests with mocks",
-            "xfail: Tests expected to fail",
-        ]
-        minversion = "8.0"
-        python_classes = [
-            "Test*",
-        ]
-        python_files = [
-            "*_test.py",
-            "test_*.py",
-        ]
-        python_functions = [
-            "test_*",
-        ]
-        testpaths = [
-            "tests",
-        ]
-
-    [tool.pyrefly]
-        search-path = [
-            "../typings",
-            "../typings/generated",
-            "src",
-            "tests",
-            "examples",
-            "scripts",
-        ]
-
-    [tool.ruff]
-        extend = "../ruff-shared.toml"
-
-        [tool.ruff.lint.isort]
-            known-first-party = [
-                "flext_api",
-            ]
+[tool.bandit]
+skips = [ "B404", "B603", "B607", "B105", "B608" ]

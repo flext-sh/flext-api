@@ -1,5 +1,26 @@
 # C4 Model - Components
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Component Diagram](#component-diagram)
+- [Component Descriptions](#component-descriptions)
+  - [HTTP Client Components](#http-client-components)
+  - [FastAPI Application Components](#fastapi-application-components)
+  - [Protocol Layer Components](#protocol-layer-components)
+  - [Storage Layer Components](#storage-layer-components)
+  - [Configuration Layer Components](#configuration-layer-components)
+- [Component Interactions](#component-interactions)
+  - [Request Processing Flow](#request-processing-flow)
+  - [Application Startup Flow](#application-startup-flow)
+  - [Storage Operation Flow](#storage-operation-flow)
+- [Quality Attributes Mapping](#quality-attributes-mapping)
+  - [Performance](#performance)
+  - [Reliability](#reliability)
+  - [Security](#security)
+  - [Maintainability](#maintainability)
+<!-- TOC END -->
+
 ## Overview
 
 This document describes the **Component** level of the C4 model for FLEXT-API, showing the key components within each container and their relationships.

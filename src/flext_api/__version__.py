@@ -9,13 +9,13 @@ SPDX-License-Identifier: Proprietary
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from importlib.metadata import metadata
 
-_metadata_map: Mapping[str, str] = {}
+_metadata_map: dict[str, str] = {}
 try:
     _metadata = metadata("flext_api")
-    _metadata_map = {key: value for key, value in _metadata.items()}
+    for key in _metadata:
+        _metadata_map[key] = _metadata[key]
     __version__ = _metadata["Version"]
     __version_info__ = tuple(
         int(part) if part.isdigit() else part for part in __version__.split(".")

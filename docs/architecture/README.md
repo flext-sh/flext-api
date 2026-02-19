@@ -1,5 +1,41 @@
 # Architecture Documentation
 
+
+<!-- TOC START -->
+- [📚 Documentation Structure](#-documentation-structure)
+- [🏗️ Architecture Framework](#-architecture-framework)
+  - [Architectural Principles](#architectural-principles)
+  - [Technology Stack](#technology-stack)
+- [📖 Documentation Formats](#-documentation-formats)
+  - [C4 Model Documentation](#c4-model-documentation)
+  - [Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
+  - [Visual Diagrams](#visual-diagrams)
+- [🔧 Key Architectural Decisions](#-key-architectural-decisions)
+  - [Core Decisions](#core-decisions)
+  - [Quality Attributes](#quality-attributes)
+- [🚀 Getting Started](#-getting-started)
+  - [For New Team Members](#for-new-team-members)
+  - [For Architects and Tech Leads](#for-architects-and-tech-leads)
+  - [For Developers](#for-developers)
+- [🛠️ Tools and Automation](#-tools-and-automation)
+  - [Documentation Maintenance](#documentation-maintenance)
+  - [ADR Management](#adr-management)
+  - [Diagram Generation](#diagram-generation)
+- [📋 Quality Assurance](#-quality-assurance)
+  - [Documentation Standards](#documentation-standards)
+  - [Review Process](#review-process)
+  - [Metrics and Monitoring](#metrics-and-monitoring)
+- [🔄 Evolution and Maintenance](#-evolution-and-maintenance)
+  - [Documentation Lifecycle](#documentation-lifecycle)
+  - [Change Management](#change-management)
+  - [Extension Points](#extension-points)
+- [📚 References and Resources](#-references-and-resources)
+  - [Architecture Methodologies](#architecture-methodologies)
+  - [Documentation Tools](#documentation-tools)
+  - [Industry Standards](#industry-standards)
+- [🎯 Architecture Vision](#-architecture-vision)
+<!-- TOC END -->
+
 This directory contains comprehensive architecture documentation for the FLEXT-API project, following industry best practices and modern documentation standards.
 
 ## 📚 Documentation Structure
@@ -146,10 +182,10 @@ The project includes automated documentation maintenance tools:
 
 ```bash
 # Quick health check
-make docs-health
+make docs DOCS_PHASE=audit
 
 # Full audit
-make docs-maintenance
+make docs
 
 # Auto-fix issues
 make docs-fix

@@ -1,5 +1,51 @@
 # Architecture Overview
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Layer Details](#layer-details)
+  - [Foundation Layer (Core Primitives)](#foundation-layer-core-primitives)
+  - [Domain Layer (HTTP Business Logic)](#domain-layer-http-business-logic)
+  - [Application Layer (Protocol Implementations)](#application-layer-protocol-implementations)
+- [Protocol Plugin System](#protocol-plugin-system)
+  - [Protocol Registry](#protocol-registry)
+  - [Protocol Interface](#protocol-interface)
+- [HTTP Client Architecture](#http-client-architecture)
+  - [FlextApiClient Design](#flextapiclient-design)
+  - [Request Processing Pipeline](#request-processing-pipeline)
+- [FastAPI Integration Architecture](#fastapi-integration-architecture)
+  - [Application Factory Pattern](#application-factory-pattern)
+  - [Route Registration](#route-registration)
+- [Storage Architecture](#storage-architecture)
+  - [Multi-Backend Storage](#multi-backend-storage)
+  - [Storage Interface](#storage-interface)
+- [Caching Architecture](#caching-architecture)
+  - [Multi-Level Caching](#multi-level-caching)
+  - [Cache Configuration](#cache-configuration)
+- [Security Architecture](#security-architecture)
+  - [Authentication and Authorization](#authentication-and-authorization)
+  - [Security Middleware](#security-middleware)
+- [Performance Architecture](#performance-architecture)
+  - [Performance Optimization Strategies](#performance-optimization-strategies)
+  - [Performance Monitoring](#performance-monitoring)
+- [Deployment Architecture](#deployment-architecture)
+  - [Container Architecture](#container-architecture)
+  - [Deployment Configuration](#deployment-configuration)
+  - [Kubernetes Deployment](#kubernetes-deployment)
+- [Quality Metrics](#quality-metrics)
+  - [Current State (v0.9.9)](#current-state-v099)
+  - [Coverage by Layer](#coverage-by-layer)
+- [Extension Points](#extension-points)
+  - [Adding New Protocols](#adding-new-protocols)
+  - [Custom Middleware](#custom-middleware)
+- [Performance Considerations](#performance-considerations)
+  - [Bottlenecks and Optimization](#bottlenecks-and-optimization)
+  - [Monitoring and Optimization](#monitoring-and-optimization)
+- [Migration Guidelines](#migration-guidelines)
+  - [Version Compatibility](#version-compatibility)
+- [References](#references)
+<!-- TOC END -->
+
 Comprehensive architecture guide for FLEXT-API - the HTTP client and FastAPI integration foundation for the FLEXT enterprise data integration platform.
 
 ## Overview

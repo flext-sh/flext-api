@@ -330,7 +330,7 @@ class ASTAnalyzer:
 
 def main() -> None:
     """Main entry point."""
-    project_root = Path("/home/marlonsc/flext/flext-api")
+    project_root = Path(__file__).resolve().parent.parent
     src_dir = project_root / "src" / "flext_api"
 
     if not src_dir.exists():

@@ -421,7 +421,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
         return r[bool].ok(value=True)
 
-    def _validate_type_field(self, type_value: t.JsonValue) -> r[bool]:
+    def _validate_type_field(self, type_value: t.GeneralValueType) -> r[bool]:
         """Validate type field value.
 
         Args:
@@ -459,8 +459,8 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_instance_type(
         self,
-        instance: t.JsonValue,
-        type_value: t.JsonValue,
+        instance: t.GeneralValueType,
+        type_value: t.GeneralValueType,
     ) -> r[bool]:
         """Validate instance against type constraint.
 

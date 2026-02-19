@@ -1,5 +1,32 @@
 # C4 Model - Containers
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Container Diagram](#container-diagram)
+- [Container Descriptions](#container-descriptions)
+  - [HTTP Client Container](#http-client-container)
+  - [FastAPI Application Container](#fastapi-application-container)
+  - [Protocol Layer Container](#protocol-layer-container)
+  - [Storage Layer Container](#storage-layer-container)
+  - [Configuration Layer Container](#configuration-layer-container)
+- [Technology Choices](#technology-choices)
+  - [Core Technologies](#core-technologies)
+  - [Infrastructure Dependencies](#infrastructure-dependencies)
+- [Deployment Considerations](#deployment-considerations)
+  - [Container Packaging](#container-packaging)
+  - [Environment Configuration](#environment-configuration)
+- [Quality Attributes](#quality-attributes)
+  - [Performance](#performance)
+  - [Reliability](#reliability)
+  - [Security](#security)
+  - [Maintainability](#maintainability)
+- [Monitoring and Observability](#monitoring-and-observability)
+  - [Metrics Collection](#metrics-collection)
+  - [Logging Strategy](#logging-strategy)
+  - [Health Checks](#health-checks)
+<!-- TOC END -->
+
 ## Overview
 
 This document describes the **Container** level of the C4 model for FLEXT-API, showing the high-level technology choices and how responsibilities are distributed across containers.

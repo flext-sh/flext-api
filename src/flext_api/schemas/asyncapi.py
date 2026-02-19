@@ -619,7 +619,9 @@ class AsyncAPISchemaValidator(FlextApiPlugins.Schema):
         # Type reconstruction: narrow dict and assign to explicit object type
         channels_typed: dict[str, t.GeneralValueType] = {}
         for key, value in channels_value.items():
-            if isinstance(value, (str, int, float, bool, type(None), dict, list, tuple)):
+            if isinstance(
+                value, (str, int, float, bool, type(None), dict, list, tuple)
+            ):
                 channels_typed[str(key)] = value
             else:
                 channels_typed[str(key)] = str(value)

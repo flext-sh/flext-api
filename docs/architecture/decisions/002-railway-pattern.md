@@ -1,5 +1,33 @@
 # 002. Railway-Oriented Error Handling
 
+
+<!-- TOC START -->
+- [Status](#status)
+- [Context](#context)
+- [Decision](#decision)
+- [Consequences](#consequences)
+  - [Positive](#positive)
+  - [Negative](#negative)
+  - [Risks](#risks)
+- [Alternatives Considered](#alternatives-considered)
+  - [Option 1: Traditional Exceptions](#option-1-traditional-exceptions)
+  - [Option 2: Result Pattern (Custom Implementation)](#option-2-result-pattern-custom-implementation)
+  - [Option 3: Hybrid Approach](#option-3-hybrid-approach)
+- [Implementation Examples](#implementation-examples)
+  - [Basic HTTP Operation](#basic-http-operation)
+  - [Usage in Application Code](#usage-in-application-code)
+  - [Testing Railway Code](#testing-railway-code)
+- [Migration Strategy](#migration-strategy)
+  - [Phase 1: Core Implementation](#phase-1-core-implementation)
+  - [Phase 2: Ecosystem Migration](#phase-2-ecosystem-migration)
+  - [Phase 3: Ecosystem Adoption](#phase-3-ecosystem-adoption)
+- [Best Practices](#best-practices)
+  - [Railway Pattern Guidelines](#railway-pattern-guidelines)
+  - [Error Message Standards](#error-message-standards)
+  - [Performance Considerations](#performance-considerations)
+- [References](#references)
+<!-- TOC END -->
+
 Date: 2025-01-01
 
 ## Status

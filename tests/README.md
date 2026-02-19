@@ -1,5 +1,18 @@
 # Test Suite
 
+
+<!-- TOC START -->
+- [Directory Structure](#directory-structure)
+- [Test Categories](#test-categories)
+  - [Unit Tests (unit/)](#unit-tests-unit)
+  - [Integration Tests (integration/)](#integration-tests-integration)
+  - [End-to-End Tests (e2e/)](#end-to-end-tests-e2e)
+  - [Performance Tests (benchmarks/)](#performance-tests-benchmarks)
+- [Running Tests](#running-tests)
+- [Coverage](#coverage)
+- [Development](#development)
+<!-- TOC END -->
+
 **Test organization for FLEXT API library**
 
 ## Directory Structure

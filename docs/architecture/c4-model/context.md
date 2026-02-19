@@ -1,5 +1,26 @@
 # C4 Model - System Context
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [System Context Diagram](#system-context-diagram)
+- [Context Description](#context-description)
+  - [Primary Users](#primary-users)
+  - [External Systems](#external-systems)
+- [System Responsibilities](#system-responsibilities)
+  - [Core Responsibilities](#core-responsibilities)
+  - [Quality Attributes](#quality-attributes)
+- [System Boundaries](#system-boundaries)
+  - [Included Scope](#included-scope)
+  - [Excluded Scope](#excluded-scope)
+- [Key Constraints](#key-constraints)
+  - [Technical Constraints](#technical-constraints)
+  - [Business Constraints](#business-constraints)
+- [Risk Assessment](#risk-assessment)
+  - [High Risk Items](#high-risk-items)
+  - [Mitigation Strategies](#mitigation-strategies)
+<!-- TOC END -->
+
 ## Overview
 
 This document describes the **System Context** level of the C4 model for FLEXT-API, showing the system in relation to its users and external systems.

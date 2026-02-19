@@ -1,74 +1,152 @@
-# Getting Started with FLEXT-API
+<!-- Generated from docs/guides/getting-started.md for flext-api. -->
+<!-- Source of truth: workspace docs/guides/. -->
 
-**HTTP and FastAPI Foundation for the FLEXT Ecosystem**
+# flext-api - Getting Started with FLEXT
 
-**Version**: 0.9.9 | **Last Updated**: October 5, 2025
+> Project profile: `flext-api`
 
-This guide will help you get started with FLEXT-API, the HTTP client and FastAPI application foundation for the FLEXT enterprise data integration platform.
 
-## 📋 Prerequisites
 
-### **System Requirements**
+<!-- TOC START -->
+- [Table of Contents](#table-of-contents)
+- [What is FLEXT](#what-is-flext)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+  - [Basic Installation](#basic-installation)
+  - [Development Installation](#development-installation)
+  - [Docker Installation](#docker-installation)
+- [Your First FLEXT Application](#your-first-flext-application)
+  - [1. Basic Setup](#1-basic-setup)
+  - [2. Using flext-ldif for LDIF Processing](#2-using-flext-ldif-for-ldif-processing)
+  - [3. Railway-Oriented Error Handling](#3-railway-oriented-error-handling)
+  - [4. CQRS Pattern with Commands and Queries](#4-cqrs-pattern-with-commands-and-queries)
+- [Configuration](#configuration)
+  - [Basic Configuration](#basic-configuration)
+  - [Programmatic Configuration](#programmatic-configuration)
+- [Next Steps](#next-steps)
+  - [Explore the Ecosystem](#explore-the-ecosystem)
+  - [Learn Key Patterns](#learn-key-patterns)
+  - [Build Real Applications](#build-real-applications)
+- [Getting Help](#getting-help)
+- [What's Next](#whats-next)
+<!-- TOC END -->
 
-- **Python**: 3.13+ (required for advanced type features)
-- **Poetry**: Latest version for dependency management
-- **FLEXT Workspace**: Must be part of the FLEXT ecosystem workspace
+## Table of Contents
 
-### **FLEXT Ecosystem Integration**
+- [Getting Started with FLEXT](#getting-started-with-flext)
+  - [What is FLEXT](#what-is-flext)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+    - [Basic Installation](#basic-installation)
+- [Install core framework](#install-core-framework)
+- [Install LDIF processing (most common use case)](#install-ldif-processing-most-common-use-case)
+- [Install additional libraries as needed](#install-additional-libraries-as-needed)
+  - [Development Installation](#development-installation)
+- [Clone the repository](#clone-the-repository)
+- [Create virtual environment](#create-virtual-environment)
+- [Install in development mode](#install-in-development-mode)
+- [Install development dependencies](#install-development-dependencies)
+  - [Docker Installation](#docker-installation)
+- [Build FLEXT image](#build-flext-image)
+- [Run FLEXT container](#run-flext-container)
+  - [Your First FLEXT Application](#your-first-flext-application)
+    - [1. Basic Setup](#1-basic-setup)
+- [Create dependency injection container](#create-dependency-injection-container)
+- [Register services (example)](#register-services-example)
+- [container.register(IService, ServiceImplementation())](#containerregisteriservice-serviceimplementation)
+  - [2. Using flext-ldif for LDIF Processing](#2-using-flext-ldif-for-ldif-processing)
+- [Initialize LDIF API](#initialize-ldif-api)
+- [Parse LDIF content](#parse-ldif-content)
+  - [3. Railway-Oriented Error Handling](#3-railway-oriented-error-handling)
+- [Usage](#usage)
+  - [4. CQRS Pattern with Commands and Queries](#4-cqrs-pattern-with-commands-and-queries)
+- [Setup dispatcher](#setup-dispatcher)
+- [Use the dispatcher](#use-the-dispatcher)
+  - [Configuration](#configuration)
+    - [Basic Configuration](#basic-configuration)
+- [Set configuration](#set-configuration)
+  - [Programmatic Configuration](#programmatic-configuration)
+- [Create custom configuration](#create-custom-configuration)
+- [Use configuration](#use-configuration)
+  - [Next Steps](#next-steps)
+    - [Explore the Ecosystem](#explore-the-ecosystem)
+    - [Learn Key Patterns](#learn-key-patterns)
+    - [Build Real Applications](#build-real-applications)
+  - [Getting Help](#getting-help)
+  - [What's Next](#whats-next)
 
-FLEXT-API requires integration with the core FLEXT libraries:
+Welcome to FLEXT! This guide will help you get started with the FLEXT ecosystem quickly and efficiently.
 
-- **flext-core**: Foundation patterns and domain services
-- **Python 3.13+**: Advanced type system and performance features
-- **Poetry environment**: Workspace dependency management
+## What is FLEXT
 
-## ⚙️ Installation
+FLEXT is an enterprise-grade data integration platform built with Python 3.13+ and modern architectural patterns. It provides:
 
-### **Option 1: FLEXT Workspace Setup (Recommended)**
+- **Unified API**: Single facade pattern across all libraries
+- **Type Safety**: Full Pydantic v2 integration
+- **Enterprise Patterns**: CQRS, Railway-oriented programming, Dependency Injection
+- **Extensible**: Plugin architecture with flext-core patterns
+- **Production Ready**: Comprehensive testing, monitoring, and error handling
 
-If you're working within the FLEXT ecosystem:
+## Prerequisites
+
+- **Python 3.13+**: FLEXT requires Python 3.13 or higher
+- **pip**: For package installation
+- **virtualenv** (recommended): For isolated environments
+
+## Installation
+
+### Basic Installation
+
+Install FLEXT core and commonly used libraries:
 
 ```bash
-# Navigate to flext-api directory
-cd flext/flext-api
+# Install core framework
+pip install flext-core
 
-# Install with all development dependencies
-poetry install --with dev,test,typings,security
+# Install LDIF processing (most common use case)
+pip install flext-ldif
 
-# Set up development environment
-make setup
+# Install additional libraries as needed
+pip install flext-api flext-auth flext-ldap
 ```
 
-### **Option 2: Standalone Installation**
+### Development Installation
 
-For standalone usage:
+For development and testing:
 
 ```bash
-# Install from PyPI
-pip install flext-api
+# Clone the repository
+git clone https://github.com/flext-sh/flext.git
+cd flext
 
-# Or install from source
-git clone https://github.com/flext-sh/flext-api.git
-cd flext-api
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\\Scripts\\activate
+
+# Install in development mode
 pip install -e .
+
+# Install development dependencies
+pip install -e ".[dev]"
 ```
 
-### **Verification**
+### Docker Installation
+
+For containerized deployments:
 
 ```bash
-# Quick verification
-python -c "from flext_api import FlextApiClient; print('✅ FLEXT-API ready')"
+# Build FLEXT image
+docker build -t flext:latest -f docker/Dockerfile .
 
-# Check version
-python -c "from flext_api import __version__; print(f'FLEXT-API {__version__}')"
+# Run FLEXT container
+docker run -v $(pwd)/data:/app/data flext:latest
 ```
 
-## 🚀 Quick Start
+## Your First FLEXT Application
 
-### 1. HTTP Client Usage
+### 1. Basic Setup
 
 ```python
-from flext_api import FlextApiClient
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -90,325 +168,89 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
-# Create HTTP client
-client = FlextApiClient(
-    base_url="https://jsonplaceholder.typicode.com",
-    timeout=10.0,
-    headers={"User-Agent": "FLEXT-API/0.9.9"}
-)
+# Create dependency injection container
+container = FlextContainer()
 
-# Make HTTP requests with railway pattern
-result = client.get("/users")
+# Register services (example)
+# container.register(IService, ServiceImplementation())
+
+print("FLEXT application initialized!")
+```
+
+### 2. Using flext-ldif for LDIF Processing
+
+```python
+from flext_ldif import FlextLdif
+
+# Initialize LDIF API
+ldif = FlextLdif()
+
+# Parse LDIF content
+ldif_content = """dn: cn=test,dc=example,dc=com
+cn: test
+sn: user
+objectClass: inetOrgPerson"""
+
+result = ldif.parse(ldif_content)
 if result.is_success:
-    users = result.unwrap()
-    print(f"Found {len(users)} users")
+    entries = result.unwrap()
+    print(f"Successfully parsed {len(entries)} LDIF entries")
 else:
-    print(f"Error: {result.error}")
+    print(f"Failed to parse LDIF: {result.failure()}")
+```
 
-# POST request
-user_data = {"name": "John Doe", "email": "john@example.com"}
-result = client.post("/users", json=user_data)
+### 3. Railway-Oriented Error Handling
+
+```python
+from flext_core import FlextBus
+from flext_core import FlextSettings
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import h
+from flext_core import FlextLogger
+from flext_core import x
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import p
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import t
+from flext_core import u
+
+def process_ldif_data(content: str) -> FlextResult[str, Exception]:
+    # Parse LDIF
+    parse_result = ldif.parse(content)
+    if parse_result.is_failure:
+        return FlextResult.failure(parse_result.failure())
+
+    entries = parse_result.unwrap()
+
+    # Process entries
+    try:
+        processed_data = process_entries(entries)
+        return FlextResult.success(processed_data)
+    except Exception as e:
+        return FlextResult.failure(e)
+
+def process_entries(entries: list) -> str:
+    # Your processing logic here
+    return f"Processed {len(entries)} entries"
+
+# Usage
+result = process_ldif_data(ldif_content)
 if result.is_success:
-    new_user = result.unwrap()
-    print(f"Created user: {new_user['name']}")
-```
-
-### 2. FastAPI Application
-
-```python
-from flext_api import create_fastapi_app, FlextApiSettings
-from fastapi import FastAPI
-
-# Create configuration
-config = FlextApiSettings(
-    title="My API",
-    version="1.0.0",
-    description="My awesome API built with FLEXT-API",
-    docs_url="/docs",
-    redoc_url="/redoc"
-)
-
-# Create FastAPI application
-app = create_fastapi_app(config=config)
-
-# Define routes
-@app.get("/users")
-async def get_users():
-    """Get list of users."""
-    return {"users": [], "total": 0}
-
-@app.post("/users")
-async def create_user(user_data: dict):
-    """Create new user."""
-    return {"id": "user_123", **user_data}
-
-# Run application
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-```
-
-### 3. Protocol-Based Architecture
-
-FLEXT-API supports multiple protocols through a plugin architecture:
-
-```python
-# HTTP/REST APIs
-from flext_api.protocol_impls.http import FlextWebProtocol
-
-# GraphQL APIs
-from flext_api.protocol_impls.graphql import GraphQLProtocol
-
-# WebSocket connections
-from flext_api.protocol_impls.websocket import WebSocketProtocol
-
-# Server-sent events
-from flext_api.protocol_impls.sse import ServerSentEventProtocol
-
-# File storage
-from flext_api.protocol_impls.storage_backend import StorageBackendProtocol
-```
-
-## 🏗️ Architecture Overview
-
-FLEXT-API follows a clean, layered architecture with clear separation of concerns:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Application Layer                         │
-│   (HTTP clients, FastAPI apps, protocol implementations)    │
-│   FlextApiClient, create_fastapi_app, Protocol Classes      │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                      Domain Layer                            │
-│   (HTTP models, business logic, validation)                 │
-│   FlextApiModels, HTTP-specific domain services             │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Foundation Layer                          │
-│   (Core patterns from flext-core)                           │
-│   FlextResult, FlextContainer, FlextService, FlextModels   │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Key Principles:**
-
-- **Railway Pattern**: All operations return `FlextResult[T]` for type-safe error handling
-- **Dependency Injection**: `FlextContainer` for service management
-- **Domain-Driven Design**: `FlextModels` for HTTP-specific entities
-- **Protocol Abstraction**: Plugin architecture for multiple protocols
-
-## 🔧 Configuration
-
-### Environment-Based Configuration
-
-FLEXT-API supports configuration through multiple sources:
-
-```python
-from flext_api import FlextApiSettings
-
-# Create configuration for different environments
-dev_config = FlextApiSettings()
-prod_config = FlextApiSettings()
-
-# Custom configuration
-custom_config = FlextApiSettings(
-    title="Custom API",
-    version="2.0.0",
-    debug=True,
-    cors_origins=["http://localhost:3000"]
-)
-```
-
-### Configuration Options
-
-| Option         | Type | Default     | Description                 |
-| -------------- | ---- | ----------- | --------------------------- |
-| `title`        | str  | "FLEXT API" | API title for documentation |
-| `version`      | str  | "0.9.9"     | API version                 |
-| `description`  | str  | ""          | API description             |
-| `docs_url`     | str  | "/docs"     | OpenAPI docs URL            |
-| `redoc_url`    | str  | "/redoc"    | ReDoc URL                   |
-| `cors_origins` | list | []          | CORS allowed origins        |
-| `rate_limit`   | int  | 100         | Requests per minute limit   |
-
-## 📚 Core Concepts
-
-### Railway Pattern Integration
-
-All FLEXT-API operations use the railway pattern for error handling:
-
-```python
-# HTTP operations always return FlextResult
-result = client.get("/users/123")
-
-# Type-safe success/failure handling
-if result.is_success:
-    user = result.unwrap()  # Safe extraction
-    print(f"User: {user['name']}")
+    print(f"Success: {result.unwrap()}")
 else:
-    error = result.error    # Structured error information
-    print(f"Failed: {error.message}")
-
-# Railway composition for complex operations
-def get_user_with_posts(user_id: str) -> FlextResult[dict]:
-    return (
-        client.get(f"/users/{user_id}")
-        .flat_map(lambda user: client.get(f"/users/{user_id}/posts"))
-        .map(lambda posts: {"user": user, "posts": posts})
-        .map_error(lambda e: f"Failed to get user data: {e}")
-    )
+    print(f"Error: {result.failure()}")
 ```
 
-### Protocol Plugin System
-
-FLEXT-API uses a protocol-based architecture for extensibility:
-
-```python
-from flext_api.protocols import ProtocolRegistry
-
-# Register custom protocols
-registry = ProtocolRegistry()
-registry.register("my_protocol", MyCustomProtocol)
-
-# Use protocols dynamically
-protocol = registry.get_protocol("http")
-client = protocol.create_client({"base_url": "https://api.example.com"})
-```
-
-## 🧪 Testing
-
-### Testing HTTP Applications
-
-FLEXT-API provides comprehensive testing utilities:
-
-```python
-import pytest
-from flext_api.testing import FlextApiTestClient
-from flext_core import FlextBus
-from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import FlextDecorators
-from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
-from flext_core import h
-from flext_core import FlextLogger
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import FlextResult
-from flext_core import FlextRuntime
-from flext_core import FlextService
-from flext_core import t
-from flext_core import u
-
-class TestUserAPI:
-    def setup_method(self):
-        self.client = FlextApiTestClient(app)
-
-    def test_get_users(self):
-        """Test GET /users endpoint."""
-        result = self.client.get("/users")
-
-        assert result.is_success
-        response = result.unwrap()
-        assert response.status_code == 200
-
-    def test_create_user(self):
-        """Test POST /users endpoint."""
-        user_data = {"name": "Test User", "email": "test@example.com"}
-        result = self.client.post("/users", json=user_data)
-
-        assert result.is_success
-        response = result.unwrap()
-        assert response.status_code == 201
-        assert "id" in response.json()
-```
-
-### Running Tests
-
-```bash
-# Run all tests
-make test
-
-# Run specific test types
-make test-unit         # Unit tests only
-make test-integration  # Integration tests only
-make test-e2e         # End-to-end tests only
-
-# Run with coverage
-make test-coverage
-
-# Specific test files
-pytest tests/unit/test_client.py -v
-```
-
-## 🔍 Debugging and Troubleshooting
-
-### Common Issues
-
-**1. Import Errors**
-
-```bash
-# Ensure flext-core is available
-python -c "from flext_core import FlextBus
-from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import FlextDecorators
-from flext_core import FlextDispatcher
-from flext_core import FlextExceptions
-from flext_core import h
-from flext_core import FlextLogger
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import FlextResult
-from flext_core import FlextRuntime
-from flext_core import FlextService
-from flext_core import t
-from flext_core import u; print('✅ Core available')"
-
-# Check Python version
-python --version  # Should be 3.13+
-```
-
-**2. Configuration Issues**
-
-```bash
-# Validate configuration loading
-python -c "
-from flext_api import FlextApiSettings
-config = FlextApiSettings()
-print(f'Config loaded: {config.title}')
-"
-```
-
-**3. HTTP Connection Issues**
-
-```python
-# Test connectivity
-client = FlextApiClient(base_url="https://httpbin.org")
-result = client.get("/get")
-
-if result.is_failure:
-    error = result.error
-    print(f"Connection failed: {error.message}")
-    print(f"Error code: {error.code}")
-```
-
-### Logging
-
-FLEXT-API integrates with FLEXT-Core's structured logging:
+### 4. CQRS Pattern with Commands and Queries
 
 ```python
 from flext_core import FlextBus
@@ -431,38 +273,106 @@ from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
+from dataclasses import dataclass
 
-logger = FlextLogger("flext_api_example")
+@dataclass
+class CreateUserCommand:
+    username: str
+    email: str
 
-# Log HTTP operations
-logger.info("Making HTTP request", extra={
-    "method": "GET",
-    "url": "/users",
-    "user_id": "user_123"
-})
+@dataclass
+class GetUserQuery:
+    user_id: str
 
-# Log errors with context
-logger.error("HTTP request failed", extra={
-    "error_code": "CONNECTION_TIMEOUT",
-    "url": "/api/users",
-    "timeout": 30.0
-})
+class UserService:
+    def create_user(self, cmd: CreateUserCommand) -> FlextResult[str, Exception]:
+        # Create user logic
+        return FlextResult.success(f"User {cmd.username} created")
+
+    def get_user(self, query: GetUserQuery) -> FlextResult[str, Exception]:
+        # Get user logic
+        return FlextResult.success(f"User {query.user_id} data")
+
+# Setup dispatcher
+dispatcher = FlextDispatcher()
+user_service = UserService()
+
+dispatcher.register_handler(CreateUserCommand, user_service.create_user)
+dispatcher.register_handler(GetUserQuery, user_service.get_user)
+
+# Use the dispatcher
+create_result = dispatcher.dispatch(CreateUserCommand("john", "john@example.com"))
+get_result = dispatcher.dispatch(GetUserQuery("user123"))
 ```
 
-## 🚀 Next Steps
+## Configuration
 
-1. **Explore Examples**: Check `examples/` directory for working examples
-2. **API Reference**: See [API Reference](../api-reference/) for complete documentation
-3. **Protocol Guide**: Learn about supported protocols in [Protocols](../api/protocols.md)
-4. **Testing Guide**: See [Testing Guide](./testing.md) for comprehensive testing strategies
+### Basic Configuration
 
-## 📖 Related Documentation
+FLEXT uses environment variables for configuration:
 
-- **[FLEXT-Core Documentation](https://github.com/organization/flext/tree/main/flext-core/docs/)**: Foundation library documentation
-- **[HTTP Client Guide](./http-client.md)**: Detailed HTTP client usage
-- **[Configuration Guide](./configuration.md)**: Configuration management
-- **[Testing Guide](./testing.md)**: Testing strategies and patterns
+```bash
+# Set configuration
+export FLEXT_LOG_LEVEL=INFO
+export FLEXT_LDIF_DEFAULT_ENCODING=utf-8
+export FLEXT_LDIF_STRICT_VALIDATION=true
+```
 
----
+### Programmatic Configuration
 
-**Ready to build HTTP applications with FLEXT-API!** 🚀
+```python
+from flext_ldif import FlextLdifSettings
+
+# Create custom configuration
+config = FlextLdifSettings(
+    default_encoding="utf-8",
+    strict_validation=True,
+    servers_enabled=True,
+    batch_size=1000
+)
+
+# Use configuration
+ldif = FlextLdif(config=config)
+```
+
+## Next Steps
+
+### Explore the Ecosystem
+
+1. **flext-core**: Master the core patterns and abstractions
+2. **flext-ldif**: Learn LDIF processing and migration
+3. **flext-api**: Build REST APIs with FLEXT
+4. **flext-auth**: Implement authentication and authorization
+5. **flext-ldap**: Integrate with LDAP servers
+
+### Learn Key Patterns
+
+- **Railway-Oriented Programming**: Functional error handling
+- **CQRS**: Command Query Responsibility Segregation
+- **Dependency Injection**: Managing component dependencies
+- **Domain Events**: Event-driven architecture
+
+### Build Real Applications
+
+- **Data Migration**: Migrate LDIF data between LDAP servers
+- **API Development**: Create REST APIs with automatic documentation
+- **Data Processing**: Build data pipelines with FLEXT patterns
+- **Enterprise Integration**: Connect with existing enterprise systems
+
+## Getting Help
+
+- 📖 **Documentation**: Browse the complete documentation
+- 🐛 **Issues**: Report bugs and request features
+- 💬 **Discussions**: Ask questions and share knowledge
+- 📧 **Support**: Contact the development team
+
+## What's Next
+
+Now that you have FLEXT installed and running, explore these areas:
+
+1. **[Architecture Guide](../architecture/README.md)**: Understand FLEXT's design principles
+2. **[API Reference](../api-reference/README.md)**: Complete API documentation
+3. **[Project Guides](../projects/README.md)**: Deep dive into specific libraries
+4. **[Examples](../../../examples/)**: Real-world usage examples
+
+Happy coding with FLEXT! 🚀
