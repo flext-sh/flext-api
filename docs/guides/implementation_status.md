@@ -123,7 +123,7 @@
 
 ### Dependent Projects Impact
 
-- **ALGAR OUD Migration**: HTTP operations ready
+- **FLEXT OUD Migration**: HTTP operations ready
 - **Enterprise Identity**: HTTP APIs available
 - **Data Integration**: HTTP-based ETL pipelines
 - **33+ FLEXT Projects**: HTTP foundation prevents duplication
