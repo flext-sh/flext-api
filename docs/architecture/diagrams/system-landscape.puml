@@ -14,7 +14,7 @@ Enterprise_Boundary(flext_ecosystem, "FLEXT Ecosystem") {
     System(flext_auth, "FLEXT-Auth", "Authentication and authorization")
     System(flext_data, "FLEXT-Data", "Data integration and ETL")
 
-    System(client-a_migration, "client-a Migration", "Legacy system migration")
+    System(flext_migration, "FLEXT Migration", "Legacy system migration")
     System(identity_management, "Identity Management", "User provisioning")
     System(data_warehouse, "Data Warehouse", "Enterprise data storage")
 }
@@ -46,7 +46,7 @@ Rel(flext_api, rabbitmq, "Publishes/subscribes", "AMQP")
 Rel(flext_api, redis, "Caches data", "redis-py")
 Rel(flext_api, s3_storage, "Stores files", "boto3")
 
-Rel(client-a_migration, flext_api, "Uses HTTP client", "migration operations")
+Rel(flext_migration, flext_api, "Uses HTTP client", "migration operations")
 Rel(identity_management, flext_auth, "Uses auth services", "user provisioning")
 Rel(data_warehouse, flext_data, "Loads data via", "ETL pipelines")
 
