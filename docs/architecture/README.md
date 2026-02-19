@@ -188,10 +188,10 @@ make docs DOCS_PHASE=audit
 make docs
 
 # Auto-fix issues
-make docs-fix
+make docs
 
 # Generate reports
-make docs-dashboard
+make docs
 ```
 
 ### ADR Management
@@ -199,14 +199,14 @@ make docs-dashboard
 Automated ADR creation and management:
 
 ```bash
-# Create new ADR
-python docs-maintenance/scripts/create_adr.py "New Architectural Decision"
+# Generate ADR/index artifacts
+make docs DOCS_PHASE=generate
 
-# List ADRs
-python docs-maintenance/scripts/list_adrs.py
+# Validate ADR links and references
+make docs DOCS_PHASE=validate
 
-# Search ADRs
-python docs-maintenance/scripts/search_adrs.py "keyword"
+# Run full documentation pipeline
+make docs
 ```
 
 ### Diagram Generation
