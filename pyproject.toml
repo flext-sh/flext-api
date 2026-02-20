@@ -4,7 +4,7 @@ requires = [ "poetry-core>=2.0", "poetry-core>=2" ]
 
 [project]
 name = "flext-api"
-version = "0.10.0"
+version = "0.11.0"
 description = "FLEXT API - High-Performance REST API with FastAPI"
 readme = "README.md"
 keywords = [
