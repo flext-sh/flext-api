@@ -1212,7 +1212,7 @@ url = "../flext-core"
 
 [[package]]
 name = "flext-web"
-version = "0.10.0-dev"
+version = "0.10.0"
 description = "FLEXT Web - Modern Web Interface for FLEXT Platform"
 optional = false
 python-versions = ">=3.13,<3.14"
