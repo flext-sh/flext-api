@@ -241,14 +241,14 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
             if not url_str:
                 return r[t.Api.HttpResponseDict].fail("Invalid URL type")
             headers_raw = httpx_kwargs.get("headers", {})
-            headers_dict: dict[str, str] = (
-                headers_raw if isinstance(headers_raw, dict) else {}
-            )
+            headers_dict: dict[str, str] = {}
+            if isinstance(headers_raw, dict):
+                headers_dict = {str(k): str(v) for k, v in headers_raw.items()}
             # Extract optional parameters with type narrowing
             params_raw = httpx_kwargs.get("params")
-            params_typed: dict[str, str] | None = (
-                params_raw if isinstance(params_raw, dict) else None
-            )
+            params_typed: dict[str, str] | None = None
+            if isinstance(params_raw, dict):
+                params_typed = {str(k): str(v) for k, v in params_raw.items()}
             json_data = httpx_kwargs.get("json")
             content_raw = httpx_kwargs.get("content")
             content_typed: str | bytes | None = (

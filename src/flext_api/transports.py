@@ -87,7 +87,7 @@ class FlextApiTransports:
             if "headers" in data:
                 headers_value = data["headers"]
                 if isinstance(headers_value, dict):
-                    headers = headers_value
+                    headers = {str(k): str(v) for k, v in headers_value.items()}
 
             params = None
             if "params" in data:

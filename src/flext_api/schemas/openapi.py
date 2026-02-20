@@ -419,7 +419,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     def _validate_scheme_type_requirements(
         self,
         scheme_name: str,
-        scheme: t.JsonObject,
+        scheme: dict[str, t.GeneralValueType],
         scheme_type: str,
     ) -> r[bool]:
         """Validate type-specific requirements for security schemes."""

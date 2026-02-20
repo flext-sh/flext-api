@@ -175,7 +175,14 @@ class FlextApiStorage:
     ) -> t.Api.StorageDict:
         """Normalize config object to dictionary."""
         if isinstance(config_obj, dict):
-            return config_obj
+            normalized: t.Api.StorageDict = {}
+            for key, value in config_obj.items():
+                key_str = str(key)
+                if isinstance(value, (str, int, bool, type(None))):
+                    normalized[key_str] = value
+                elif isinstance(value, float):
+                    normalized[key_str] = int(value)
+            return normalized
         if isinstance(config_obj, BaseModel):
             namespace_str = self._extract_config_field(
                 config_obj,

@@ -132,7 +132,7 @@ class FlextApiFactories:
         # Extract base URL and parse if needed
         base_url = str(config_data.get("base_url", "https://httpbin.org"))
         if "://" in base_url:
-            base_url = base_url.split("://")[1].split(":")[0]
+            base_url = base_url.split("://")[1].split(":", maxsplit=1)[0]
 
         # Build with type-safe defaults using proper type narrowing
         base_url_override = overrides.get("base_url")

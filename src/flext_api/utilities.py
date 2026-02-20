@@ -93,6 +93,24 @@ class FlextApiUtilities(FlextUtilities):
             """Request utilities for extracting and validating HTTP request components."""
 
             @staticmethod
+            def to_request_body(value: object) -> t.Api.RequestBody:
+                """Convert arbitrary value to RequestBody-compatible payload."""
+                if isinstance(value, (str, bytes)):
+                    return value
+                if isinstance(value, dict):
+                    normalized: t.Api.JsonObject = {}
+                    for key, item in value.items():
+                        key_str = str(key)
+                        if isinstance(
+                            item, (str, int, float, bool, type(None), list, dict)
+                        ):
+                            normalized[key_str] = item
+                        else:
+                            normalized[key_str] = str(item)
+                    return normalized
+                return str(value)
+
+            @staticmethod
             def extract_body_from_kwargs(
                 data: t.Api.RequestBody | None,
                 kwargs: dict[str, t.GeneralValueType] | None,
@@ -102,21 +120,13 @@ class FlextApiUtilities(FlextUtilities):
                     return r[t.Api.RequestBody].ok(data)
                 if kwargs is not None and "data" in kwargs:
                     raw_data = kwargs["data"]
-                    # Validate extracted data is compatible with RequestBody type
-                    if isinstance(raw_data, (str, bytes, dict)):
-                        return r[t.Api.RequestBody].ok(raw_data)
-                    # Convert to string for other types
                     return r[t.Api.RequestBody].ok(
-                        str(raw_data) if raw_data is not None else ""
+                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_data)
                     )
                 if kwargs is not None and "json" in kwargs:
                     raw_json = kwargs["json"]
-                    # Validate extracted json is compatible with RequestBody type
-                    if isinstance(raw_json, (str, bytes, dict)):
-                        return r[t.Api.RequestBody].ok(raw_json)
-                    # Convert to string for other types
                     return r[t.Api.RequestBody].ok(
-                        str(raw_json) if raw_json is not None else ""
+                        FlextApiUtilities.Api.RequestUtils.to_request_body(raw_json)
                     )
                 return r[t.Api.RequestBody].ok({})
 
@@ -275,15 +285,23 @@ class FlextApiUtilities(FlextUtilities):
             """
             result: dict[str, t.GeneralValueType] = {}
 
-            if hasattr(config, "default_page_size"):
-                result["default_page_size"] = config.default_page_size
-            else:
-                result["default_page_size"] = 20
+            default_page_size = getattr(config, "default_page_size", 20)
+            max_page_size = getattr(config, "max_page_size", 1000)
 
-            if hasattr(config, "max_page_size"):
-                result["max_page_size"] = config.max_page_size
-            else:
-                result["max_page_size"] = 1000
+            result["default_page_size"] = (
+                default_page_size
+                if isinstance(
+                    default_page_size, (str, int, float, bool, type(None), list, dict)
+                )
+                else str(default_page_size)
+            )
+            result["max_page_size"] = (
+                max_page_size
+                if isinstance(
+                    max_page_size, (str, int, float, bool, type(None), list, dict)
+                )
+                else str(max_page_size)
+            )
 
             return result
 

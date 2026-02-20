@@ -123,8 +123,6 @@ class FlextApiServer(FlextService[object], x.Validation):
                 "options": options_json,
             }
             if schema is not None:
-                # Use FlextRuntime to normalize to t.GeneralValueType (compatible with JsonValue)
-                normalized_value = FlextRuntime.normalize_to_general_value(v)
                 # Convert SchemaValue to GeneralValueType
                 # First convert schema to str to ensure it's a proper GeneralValueType
                 schema_str = schema if isinstance(schema, str) else str(schema)
@@ -167,16 +165,17 @@ class FlextApiServer(FlextService[object], x.Validation):
             logger: Logger instance
 
             """
-            self._websocket_connections: dict[str, t.GeneralValueType] = {}
-            self._sse_connections: dict[str, t.GeneralValueType] = {}
+            self._websocket_connections: dict[str, object] = {}
+            self._sse_connections: dict[str, object] = {}
             self._logger = logger
 
         def close_all(self) -> r[bool]:
             """Close all active connections gracefully."""
             for conn_id, connection in self._websocket_connections.items():
                 try:
-                    if connection is not None and hasattr(connection, "close"):
-                        connection.close()
+                    close_method = getattr(connection, "close", None)
+                    if callable(close_method):
+                        close_method()
                 except Exception as e:
                     self._logger.warning(
                         "Failed to close WebSocket %s",
@@ -186,8 +185,9 @@ class FlextApiServer(FlextService[object], x.Validation):
 
             for conn_id, connection in self._sse_connections.items():
                 try:
-                    if connection is not None and hasattr(connection, "close"):
-                        connection.close()
+                    close_method = getattr(connection, "close", None)
+                    if callable(close_method):
+                        close_method()
                 except Exception as e:
                     self._logger.warning(
                         "Failed to close SSE %s",
@@ -490,11 +490,8 @@ class FlextApiServer(FlextService[object], x.Validation):
         self._protocol_handlers[protocol] = handler
 
         # Use logger from lifecycle manager
-        handler_name = ""
-        if hasattr(handler, "name"):
-            name_value = handler.name
-            if isinstance(name_value, str):
-                handler_name = name_value
+        name_value = getattr(handler, "name", "")
+        handler_name = name_value if isinstance(name_value, str) else ""
 
         self._lifecycle_manager.logger.info(
             "Protocol handler registered",

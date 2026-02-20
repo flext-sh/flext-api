@@ -379,8 +379,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             # Simplified sync disconnect - no async tasks to cancel
 
             # Close connection
-            if self._connection and hasattr(self._connection, "close"):
-                self._connection.close()
+            close_method = getattr(self._connection, "close", None)
+            if callable(close_method):
+                close_method()
 
             self._connected = False
             self._connection = None
@@ -546,13 +547,15 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             if message_type == FlextApiConstants.Api.WebSocket.MessageType.TEXT:
                 if isinstance(message, bytes):
                     message = message.decode("utf-8")
-                if hasattr(self._connection, "send"):
-                    self._connection.send(message)
+                send_method = getattr(self._connection, "send", None)
+                if callable(send_method):
+                    send_method(message)
             elif message_type == FlextApiConstants.Api.WebSocket.MessageType.BINARY:
                 if isinstance(message, str):
                     message = message.encode("utf-8")
-                if hasattr(self._connection, "send"):
-                    self._connection.send(message)
+                send_method = getattr(self._connection, "send", None)
+                if callable(send_method):
+                    send_method(message)
             else:
                 return r[bool].fail(f"Invalid message type: {message_type}")
 
@@ -571,12 +574,13 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         while self._connected and self._connection:
             try:
                 if hasattr(self._connection, "recv"):
-                    message = self._connection.recv()
+                    recv_method = getattr(self._connection, "recv", None)
+                    message = recv_method() if callable(recv_method) else None
                 else:
                     message = None
 
                 # Notify message handlers only if we have valid message data
-                if message is not None:
+                if isinstance(message, (str, bytes)):
                     for handler in self._on_message_handlers:
                         try:
                             handler(message)

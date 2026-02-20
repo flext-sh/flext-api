@@ -5,10 +5,20 @@ Provides type-safe wrappers for untyped serialization libraries like msgpack.
 
 from __future__ import annotations
 
+import importlib
 from collections.abc import Mapping, Sequence
+from types import ModuleType
 
-import msgpack as _msgpack
 from flext_core.typings import t
+
+
+def _load_msgpack() -> ModuleType | None:
+    """Load msgpack lazily to avoid static typing dependency issues."""
+    try:
+        module = importlib.import_module("msgpack")
+    except ModuleNotFoundError:
+        return None
+    return module if isinstance(module, ModuleType) else None
 
 
 class FlextApiSerializers:
@@ -40,11 +50,19 @@ class FlextApiSerializers:
                 bytes: Packed binary data.
 
             """
-            result = _msgpack.packb(obj)
+            module = _load_msgpack()
+            if module is None:
+                return b""
+            packb_fn = getattr(module, "packb", None)
+            if not callable(packb_fn):
+                return b""
+
+            result = packb_fn(obj)
             if isinstance(result, bytes):
                 return result
-            # Fallback - should not reach here with valid msgpack
-            return bytes(result) if result is not None else b""
+            if isinstance(result, bytearray | memoryview):
+                return bytes(result)
+            return b""
 
         @staticmethod
         def unpackb(
@@ -59,8 +77,17 @@ class FlextApiSerializers:
                 Unpacked object (dict, list, scalar, or None).
 
             """
-            unpackb_fn = getattr(_msgpack, "unpackb", None)
+            module = _load_msgpack()
+            if module is None:
+                return None
+            unpackb_fn = getattr(module, "unpackb", None)
             if unpackb_fn is None:
                 return None
             # Return the raw result; caller must narrow to GeneralValueType if needed
-            return unpackb_fn(data)
+            result = unpackb_fn(data)
+            if (
+                isinstance(result, str | int | float | bool | dict | list)
+                or result is None
+            ):
+                return result
+            return None
