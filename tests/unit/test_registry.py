@@ -10,8 +10,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextTypes as t, r
+from flext_core import r
 
+from flext_api import t
 from flext_api.plugins import FlextApiPlugins
 from flext_api.registry import FlextApiRegistry
 
@@ -43,13 +44,17 @@ class TestSchema(FlextApiPlugins.Schema):
         super().__init__(name="test_schema", version="1.0.0")
 
     def validate_request(  # type: ignore[override]
-        self, request: dict[str, t.GeneralValueType], schema: dict[str, t.GeneralValueType]
+        self,
+        request: dict[str, t.GeneralValueType],
+        schema: dict[str, t.GeneralValueType],
     ) -> r[bool]:
         """Validate request against schema."""
         return r[bool].ok(True)
 
     def validate_response(  # type: ignore[override]
-        self, response: dict[str, t.GeneralValueType], schema: dict[str, t.GeneralValueType]
+        self,
+        response: dict[str, t.GeneralValueType],
+        schema: dict[str, t.GeneralValueType],
     ) -> r[bool]:
         """Validate response against schema."""
         return r[bool].ok(True)

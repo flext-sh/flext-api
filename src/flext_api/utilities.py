@@ -57,14 +57,14 @@ class FlextApiUtilities(FlextUtilities):
         """
 
         class Collection(FlextUtilities.Collection):
-            """Collection utilities extending u_core.Collection via inheritance.
+            """Collection utilities extending u.Collection via inheritance.
 
             Exposes all flext-core Collection methods through inheritance hierarchy.
             Access via FlextUtilities.Api.Collection.* pattern.
             """
 
         class Args(FlextUtilities.Args):
-            """Args utilities extending u_core.Args via inheritance.
+            """Args utilities extending u.Args via inheritance.
 
             Exposes all flext-core Args methods through inheritance hierarchy,
             including validated, validated_with_result, parse_kwargs, and get_enum_params.
@@ -72,7 +72,7 @@ class FlextApiUtilities(FlextUtilities):
             """
 
         class Model(FlextUtilities.Model):
-            """Model utilities extending u_core.Model via inheritance.
+            """Model utilities extending u.Model via inheritance.
 
             Exposes all flext-core Model methods through inheritance hierarchy.
             Access via FlextUtilities.Api.Model.* pattern.

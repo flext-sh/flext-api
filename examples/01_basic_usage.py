@@ -17,7 +17,7 @@ from flext_api import (
     FlextApiStorage,
     FlextApiUtilities,
 )
-from flext_core import FlextConstants, FlextTypes as t
+from flext_core import FlextConstants, t
 
 
 def example_api_creation() -> None:

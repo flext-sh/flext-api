@@ -22,7 +22,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextTypes as t, r
+from flext_core import FlextLogger, r, t
 
 from flext_api.protocols import p
 

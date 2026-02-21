@@ -21,7 +21,7 @@ from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from flext_api import FlextApiClient, FlextApiSettings, FlextApiStorage
-from flext_core import FlextConstants, FlextContainer, FlextTypes as t
+from flext_core import FlextConstants, FlextContainer, t
 from flext_tests import FlextTestsDocker, FlextTestsDomains
 
 # Type aliases for testing - use t from typings

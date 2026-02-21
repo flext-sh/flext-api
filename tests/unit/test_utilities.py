@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 from typing import cast
-from flext_core import FlextTypes as t
+from flext_api import t
 
 from datetime import datetime
 
@@ -270,7 +270,10 @@ class TestFlextApiUtilitiesReal:
             error_code="RESOURCE_NOT_FOUND",
         )
         assert response["error"]["code"] == "RESOURCE_NOT_FOUND"
-        assert cast(dict[str, t.GeneralValueType], response["error"])["message"] == "Not found"
+        assert (
+            cast(dict[str, t.GeneralValueType], response["error"])["message"]
+            == "Not found"
+        )
 
     def test_response_builder_error_various_status_codes(self) -> None:
         """Test ResponseBuilder error with various status codes."""
@@ -280,7 +283,10 @@ class TestFlextApiUtilitiesReal:
                 message=f"Error {code}",
                 status_code=code,
             )
-            assert cast(dict[str, t.GeneralValueType], response["error"])["status_code"] == code
+            assert (
+                cast(dict[str, t.GeneralValueType], response["error"])["status_code"]
+                == code
+            )
 
     def test_response_builder_success_empty_data(self) -> None:
         """Test ResponseBuilder success with empty data dict."""
