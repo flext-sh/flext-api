@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "poetry.core.masonry.api"
-requires = [ "poetry-core>=2.0", "poetry-core>=2" ]
+requires = [ "poetry-core>=2" ]
 
 [project]
 name = "flext-api"
@@ -16,20 +16,20 @@ keywords = [
   "typed",
 ]
 license = "MIT"
-maintainers = [ {email = "team@flext.sh", name = "FLEXT Team"} ]
-authors = [ {email = "team@flext.sh", name = "FLEXT Team"} ]
+maintainers = [ { email = "team@flext.sh", name = "FLEXT Team" } ]
+authors = [ { email = "team@flext.sh", name = "FLEXT Team" } ]
 requires-python = ">=3.13,<3.14"
 classifiers = [
   "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
+  "Framework :: FastAPI",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.13",
+  "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Typing :: Typed",
-  "Development Status :: 5 - Production/Stable",
-  "Framework :: FastAPI",
-  "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
 ]
 dependencies = [
   "cbor2>=5.7",
@@ -115,7 +115,7 @@ group.dev.dependencies.opentelemetry-api = ">=1.39.1"
 group.dev.dependencies.opentelemetry-sdk = ">=1.39.1"
 group.dev.dependencies.prompt-toolkit = ">=3.0.52"
 group.dev.dependencies.sqlparse = ">=0.5.5"
-packages = [ {from = "src", include = "flext_api"} ]
+packages = [ { from = "src", include = "flext_api" } ]
 
 [tool.ruff]
 extend = "../ruff-shared.toml"
@@ -178,9 +178,9 @@ ini_options.testpaths = [
 ]
 
 [tool.coverage]
+run.source = [ "src/flext_api" ]
 report.fail_under = 100
 report.precision = 2
-run.source = [ "src/flext_api" ]
 
 [tool.pyrefly]
 project-excludes = [ "**/*_pb2*.py", "**/*_pb2_grpc*.py" ]
