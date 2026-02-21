@@ -33,14 +33,6 @@ class FlextApiModels(FlextModels):
     Fully compatible with Pydantic v2 with strict type safety and validation.
     """
 
-    def __init_subclass__(cls, **kwargs: t.GeneralValueType) -> None:
-        """Warn when FlextApiModels is subclassed directly."""
-        super().__init_subclass__(**kwargs)
-        u.Deprecation.warn_once(
-            f"subclass:{cls.__name__}",
-            "Subclassing FlextApiModels is deprecated. Use FlextModels.Api instead.",
-        )
-
     # =========================================================================
     # HTTP REQUEST/RESPONSE VALUE OBJECTS (Immutable)
     # =========================================================================
