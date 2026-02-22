@@ -434,14 +434,14 @@ class CustomProtocol(BaseProtocol):
         return ProtocolCapabilities(...)
 ```
 
-2. **Register Protocol**:
+1. **Register Protocol**:
 
 ```python
 registry = ProtocolRegistry()
 registry.register("custom", CustomProtocol)
 ```
 
-3. **Use in Client**:
+1. **Use in Client**:
 
 ```python
 client = FlextApiClient(protocol="custom", **config)
