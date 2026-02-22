@@ -15,9 +15,10 @@ from __future__ import annotations
 
 from typing import Final, TypeAlias
 
+from flext_tests.constants import FlextTestsConstants
+
 from flext_api import t
 from flext_api.constants import FlextApiConstants
-from flext_tests.constants import FlextTestsConstants
 
 
 class TestsFlextApiConstants(FlextTestsConstants, FlextApiConstants):

@@ -13,10 +13,11 @@ from __future__ import annotations
 import uuid
 
 from faker import Faker
-from flext_api import FlextApiClient, FlextApiSettings, FlextApiStorage
-from flext_api.typings import t as t_api
 from flext_core import FlextResult, r
 from flext_tests import FlextTestsDomains, u
+
+from flext_api import FlextApiClient, FlextApiSettings, FlextApiStorage
+from flext_api.typings import t as t_api
 
 # Replace all t_api. with t_api. throughout this file
 
