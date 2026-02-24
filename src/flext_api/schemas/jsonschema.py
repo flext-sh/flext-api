@@ -585,7 +585,7 @@ class JSONSchemaValidator(FlextApiPlugins.Schema):
                     return True
                 case ("boolean", bool()):
                     return True
-                case (json_mapping_type, dict()):
+                case ("object", dict()):
                     return True
                 case ("array", list()):
                     return True

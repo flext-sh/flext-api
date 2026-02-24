@@ -17,9 +17,9 @@ class TestsFlextApiProtocols(FlextTestsProtocols, FlextApiProtocols):
     """Test protocols combining FlextTestsProtocols and FlextApiProtocols.
 
     Provides access to:
-    - tp.Tests.Docker.* (from FlextTestsProtocols)
-    - tp.Tests.Factory.* (from FlextTestsProtocols)
-    - tp.Api.* (from FlextApiProtocols)
+    - p.Tests.Docker.* (from FlextTestsProtocols)
+    - p.Tests.Factory.* (from FlextTestsProtocols)
+    - p.Api.* (from FlextApiProtocols)
     """
 
     class Tests:
@@ -34,6 +34,6 @@ class TestsFlextApiProtocols(FlextTestsProtocols, FlextApiProtocols):
 
 # Runtime aliases
 p = TestsFlextApiProtocols
-tp = TestsFlextApiProtocols
+p = TestsFlextApiProtocols
 
-__all__ = ["TestsFlextApiProtocols", "p", "tp"]
+__all__ = ["TestsFlextApiProtocols", "p", "p"]

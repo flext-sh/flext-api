@@ -28,11 +28,11 @@ class TestsFlextApiConstants(FlextTestsConstants, FlextApiConstants):
     2. FlextApiConstants - for domain constants (.Api.*)
 
     Access patterns:
-    - tc.Tests.Docker.* (container testing)
-    - tc.Tests.Matcher.* (assertion messages)
-    - tc.Tests.Factory.* (test data generation)
-    - tc.Api.* (domain constants from production)
-    - tc.TestApi.* (project-specific test data)
+    - c.Tests.Docker.* (container testing)
+    - c.Tests.Matcher.* (assertion messages)
+    - c.Tests.Factory.* (test data generation)
+    - c.Api.* (domain constants from production)
+    - c.TestApi.* (project-specific test data)
 
     Rules:
     - NEVER duplicate constants from FlextTestsConstants or FlextApiConstants
@@ -109,11 +109,11 @@ class TestsFlextApiConstants(FlextTestsConstants, FlextApiConstants):
 
 
 # Short aliases per FLEXT convention
-tc = TestsFlextApiConstants  # Primary test constants alias
+c = TestsFlextApiConstants  # Primary test constants alias
 c = TestsFlextApiConstants  # Alternative alias for compatibility
 
 __all__ = [
     "TestsFlextApiConstants",
     "c",
-    "tc",
+    "c",
 ]

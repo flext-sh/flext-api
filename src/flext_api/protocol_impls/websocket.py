@@ -610,7 +610,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                     # Ping is handled automatically by websockets library
                     self.logger.debug("WebSocket heartbeat")
 
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Heartbeat error")
                 break
 

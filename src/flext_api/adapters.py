@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import cbor2
-from flext_core import FlextRuntime, r
+from flext_core import r
 
 from flext_api.models import FlextApiModels
 from flext_api.serializers import FlextApiSerializers
@@ -77,7 +77,7 @@ class FlextApiAdapters:
                 headers_raw = message.get("headers")
                 headers = (
                     {str(k): str(v) for k, v in headers_raw.items()}
-                    if FlextRuntime.is_dict_like(headers_raw)
+                    if u.is_dict_like(headers_raw)
                     else {}
                 )
 
@@ -199,7 +199,7 @@ class FlextApiAdapters:
             """
             try:
                 if source_protocol == "websocket":
-                    if not FlextRuntime.is_dict_like(response):
+                    if not u.is_dict_like(response):
                         return r[FlextApiModels.HttpResponse].fail(
                             "Invalid WebSocket response payload",
                         )

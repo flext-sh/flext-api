@@ -215,11 +215,11 @@ class FlextApiClient(s[FlextApiSettings]):
     ) -> r[bytes]:
         """Serialize request body to bytes - no None, empty dict is valid."""
         # Empty dict serializes to empty bytes
-        if FlextRuntime.is_dict_like(body) and len(body) == 0:
+        if u.is_dict_like(body) and len(body) == 0:
             return r[bytes].ok(b"")
         if body.__class__ is bytes:
             return r[bytes].ok(body)
-        if FlextRuntime.is_dict_like(body):
+        if u.is_dict_like(body):
             try:
                 serialized = json.dumps(body).encode("utf-8")
                 return r[bytes].ok(serialized)

@@ -25,7 +25,7 @@ import time
 from collections.abc import Mapping
 from typing import Self
 
-from flext_core import FlextLogger, FlextRuntime, r, u
+from flext_core import FlextLogger, FlextRuntime, r, u, x
 from pydantic import BaseModel, ConfigDict
 
 from flext_api.models import FlextApiModels
@@ -63,8 +63,9 @@ class FlextApiStorage:
     def _to_json_value(value: t.ApiJsonValue) -> t.JsonValue:
         """Convert arbitrary value to JsonValue recursively."""
         normalized = FlextRuntime.normalize_to_general_value(value)
-        if normalized is None or isinstance(normalized, (str, int, float, bool)):
-            return normalized
+        match normalized:
+            case None | str() | int() | float() | bool():
+                return normalized
         if u.is_dict_like(normalized):
             converted: t.JsonObject = {}
             for key, item in normalized.items():
@@ -154,8 +155,9 @@ class FlextApiStorage:
     ) -> str:
         """Extract string field from config object."""
         field_value = config_obj.model_dump().get(field_name)
-        if isinstance(field_value, str):
-            return field_value
+        match field_value:
+            case str() as s:
+                return s
         return default_value
 
     def _extract_optional_config_field(
@@ -184,10 +186,11 @@ class FlextApiStorage:
             normalized: t.Api.StorageDict = {}
             for key, value in config_obj.items():
                 key_str = str(key)
-                if value is None or isinstance(value, (str, int, bool)):
-                    normalized[key_str] = value
-                elif isinstance(value, float):
-                    normalized[key_str] = int(value)
+                match value:
+                    case None | str() | int() | bool():
+                        normalized[key_str] = value
+                    case float() as f:
+                        normalized[key_str] = int(f)
             return normalized
         if x.is_base_model(config_obj):
             namespace_str = self._extract_config_field(
@@ -249,10 +252,11 @@ class FlextApiStorage:
         """Extract namespace from config with validation - uses default if not specified."""
         if "namespace" in config_dict:
             namespace_val = config_dict["namespace"]
-            if isinstance(namespace_val, str):
-                if namespace_val:
-                    return r[str].ok(namespace_val)
-                return r[str].fail("Namespace cannot be empty")
+            match namespace_val:
+                case str() as s:
+                    if s:
+                        return r[str].ok(s)
+                    return r[str].fail("Namespace cannot be empty")
             return r[str].fail(f"Invalid namespace type: {type(namespace_val)}")
         # Use default namespace (this is OK - it's a valid default, not a fallback)
         return r[str].ok("flext_api")
@@ -325,10 +329,11 @@ class FlextApiStorage:
         """Extract backend from config with validation - uses default if not specified."""
         if "backend" in config_dict:
             backend_val = config_dict["backend"]
-            if isinstance(backend_val, str):
-                if backend_val:
-                    return r[str].ok(backend_val)
-                return r[str].fail("Backend cannot be empty")
+            match backend_val:
+                case str() as s:
+                    if s:
+                        return r[str].ok(s)
+                    return r[str].fail("Backend cannot be empty")
             return r[str].fail(f"Invalid backend type: {type(backend_val)}")
         # Use default backend (this is OK - it's a valid default, not a fallback)
         return r[str].ok("memory")

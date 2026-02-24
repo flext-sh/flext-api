@@ -20,7 +20,7 @@ from collections.abc import Mapping
 from typing import override
 
 from flext_core import r, u
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from flext_api.plugins import FlextApiPlugins
 from flext_api.typings import t
