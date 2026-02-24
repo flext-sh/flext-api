@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Annotated, TypeIs
@@ -103,14 +104,14 @@ class FlextApiUtilities(FlextUtilities):
                     bool,
                 ):
                     return normalized
-                if FlextRuntime.is_dict_like(normalized):
+                if u.is_dict_like(normalized):
                     converted: t.JsonObject = {}
                     for key, item in normalized.items():
                         converted[str(key)] = (
                             FlextApiUtilities.Api.RequestUtils._to_json_value(item)
                         )
                     return converted
-                if FlextRuntime.is_list_like(normalized):
+                if u.is_list_like(normalized):
                     return [
                         FlextApiUtilities.Api.RequestUtils._to_json_value(item)
                         for item in normalized
@@ -122,7 +123,7 @@ class FlextApiUtilities(FlextUtilities):
                 """Convert arbitrary value to RequestBody-compatible payload."""
                 if value.__class__ in (str, bytes):
                     return value
-                if FlextRuntime.is_dict_like(value):
+                if u.is_dict_like(value):
                     normalized: t.Api.JsonObject = {}
                     for key, item in value.items():
                         key_str = str(key)
@@ -135,7 +136,7 @@ class FlextApiUtilities(FlextUtilities):
             @staticmethod
             def extract_body_from_kwargs(
                 data: t.Api.RequestBody | None,
-                kwargs: dict[str, t.ApiJsonValue] | None,
+                kwargs: Mapping[str, t.ApiJsonValue] | None,
             ) -> r[t.Api.RequestBody]:
                 """Extract body from data or kwargs - returns empty dict if no body found."""
                 if data is not None:
@@ -154,23 +155,23 @@ class FlextApiUtilities(FlextUtilities):
 
             @staticmethod
             def merge_headers(
-                headers: dict[str, str] | None,
-                kwargs: dict[str, t.ApiJsonValue] | None,
-            ) -> r[dict[str, str]]:
+                headers: Mapping[str, str] | None,
+                kwargs: Mapping[str, t.ApiJsonValue] | None,
+            ) -> r[Mapping[str, str]]:
                 """Merge headers from headers dict and kwargs."""
                 merged: dict[str, str] = {}
                 if headers:
                     merged.update(headers)
                 if kwargs and "headers" in kwargs:
                     headers_value = kwargs["headers"]
-                    if FlextRuntime.is_dict_like(headers_value):
+                    if u.is_dict_like(headers_value):
                         merged.update({k: str(v) for k, v in headers_value.items()})
                 return r.ok(merged)
 
             @staticmethod
             def validate_and_extract_timeout(
                 timeout: float | str | None,
-                kwargs: dict[str, t.ApiJsonValue] | None,
+                kwargs: Mapping[str, t.ApiJsonValue] | None,
             ) -> r[float]:
                 """Validate and extract timeout from timeout value or kwargs.
 
@@ -214,8 +215,8 @@ class FlextApiUtilities(FlextUtilities):
             data: t.ApiJsonValue = None,
             message: str = "Success",
             status_code: int = 200,
-            headers: dict[str, str] | None = None,
-        ) -> r[dict[str, t.ApiJsonValue]]:
+            headers: Mapping[str, str] | None = None,
+        ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build success response with optional data and message."""
             response: dict[str, t.ApiJsonValue] = {
                 "status": "success",
@@ -233,8 +234,8 @@ class FlextApiUtilities(FlextUtilities):
             error: str,
             status_code: int = 400,
             data: t.ApiJsonValue | None = None,
-            headers: dict[str, str] | None = None,
-        ) -> r[dict[str, t.ApiJsonValue]]:
+            headers: Mapping[str, str] | None = None,
+        ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build error result - returns FlextResult with error response."""
             response: dict[str, t.ApiJsonValue] = {
                 "error": error,
@@ -251,7 +252,7 @@ class FlextApiUtilities(FlextUtilities):
             message: str,
             status_code: int = 400,
             error_code: str | None = None,
-        ) -> dict[str, t.ApiJsonValue]:
+        ) -> Mapping[str, t.ApiJsonValue]:
             """Build error response - returns plain dict."""
             return {
                 "success": False,
@@ -271,7 +272,7 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def extract_page_params(
-            params: dict[str, t.ApiJsonValue],
+            params: Mapping[str, t.ApiJsonValue],
         ) -> r[tuple[int, int]]:
             """Extract and validate page and page_size from params dict.
 
@@ -295,7 +296,7 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def extract_pagination_config(
             config: object,
-        ) -> dict[str, t.ApiJsonValue]:
+        ) -> Mapping[str, t.ApiJsonValue]:
             """Extract pagination configuration from config object.
 
             Reads attributes: default_page_size, max_page_size.
@@ -340,7 +341,7 @@ class FlextApiUtilities(FlextUtilities):
             total: int,
             page: int,
             page_size: int,
-        ) -> r[dict[str, t.ApiJsonValue]]:
+        ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Prepare pagination metadata for response.
 
             Calculates total_pages, has_next, has_prev, next_page, prev_page.
@@ -368,8 +369,8 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def build_pagination_response(
-            pagination_data: dict[str, t.ApiJsonValue],
-        ) -> r[dict[str, t.ApiJsonValue]]:
+            pagination_data: Mapping[str, t.ApiJsonValue],
+        ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build full pagination response from pagination data dict."""
             if "data" not in pagination_data:
                 return r.fail("pagination_data must contain 'data' key")
@@ -385,7 +386,7 @@ class FlextApiUtilities(FlextUtilities):
             page: int,
             page_size: int,
             total: int | None = None,
-        ) -> r[dict[str, t.ApiJsonValue]]:
+        ) -> r[Mapping[str, t.ApiJsonValue]]:
             """Build paginated response."""
             if page < 1:
                 return r.fail("Page must be >= 1")

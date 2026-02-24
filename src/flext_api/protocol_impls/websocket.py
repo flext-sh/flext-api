@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 import websockets
 from flext_core import r
@@ -68,7 +68,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _connection: object | None
     _connected: bool
     _url: str
-    _headers: dict[str, str]
+    _headers: Mapping[str, str]
     _on_message_handlers: list[Callable[[str | bytes], None]]
     _on_connect_handlers: list[Callable[[], None]]
     _on_disconnect_handlers: list[Callable[[], None]]
@@ -217,7 +217,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     def _extract_message(
         self,
-        request: dict[str, t.GeneralValueType],
+        request: Mapping[str, t.GeneralValueType],
         options: _SendRequestOptions,
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
@@ -238,7 +238,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """Extract message type from kwargs."""
         return options.message_type
 
-    def _ensure_connected(self, request: dict[str, t.GeneralValueType]) -> r[bool]:
+    def _ensure_connected(self, request: Mapping[str, t.GeneralValueType]) -> r[bool]:
         """Ensure WebSocket is connected."""
         if self._connected:
             return r[bool].ok(value=True)
@@ -255,9 +255,9 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
     def send_request(
         self,
-        request: dict[str, t.GeneralValueType],
+        request: Mapping[str, t.GeneralValueType],
         **kwargs: object,
-    ) -> r[dict[str, t.GeneralValueType]]:
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         """Send WebSocket request (connect and send message).
 
         Args:
@@ -274,12 +274,12 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             details = (
                 exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
             )
-            return r[dict[str, t.GeneralValueType]].fail(str(details))
+            return r[Mapping[str, t.GeneralValueType]].fail(str(details))
 
         # Extract WebSocket-specific parameters
         message_result = self._extract_message(request, options)
         if message_result.is_failure:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 message_result.error or "Message extraction failed",
             )
 
@@ -288,21 +288,21 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         # Connect if not connected
         connect_result = self._ensure_connected(request)
         if connect_result.is_failure:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 f"WebSocket connection failed: {connect_result.error}",
             )
 
         # Send message
         send_result = self._send_message(message_result.value, message_type)
         if send_result.is_failure:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 f"WebSocket send failed: {send_result.error}",
             )
 
         # Create response (WebSocket doesn't have traditional responses)
         url_result = self._extract_url(request)
         if url_result.is_failure:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 f"Failed to extract URL: {url_result.error}",
             )
 
@@ -314,7 +314,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
             "body": {"status": "message_sent", "message_type": message_type},
         }
 
-        return r[dict[str, t.GeneralValueType]].ok(response)
+        return r[Mapping[str, t.GeneralValueType]].ok(response)
 
     def supports_protocol(self, protocol: str) -> bool:
         """Check if this plugin supports the given protocol.
@@ -348,7 +348,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     def connect(
         self,
         url: str,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
     ) -> r[bool]:
         """Connect to WebSocket server.
 
@@ -461,7 +461,7 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     def _connect(
         self,
         url: str,
-        headers: dict[str, str],
+        headers: Mapping[str, str],
     ) -> r[bool]:
         """Internal connection implementation.
 

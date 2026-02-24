@@ -22,6 +22,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from flext_core import FlextLogger, r, t
 
 from flext_api.protocols import p
@@ -41,7 +43,7 @@ class GrpcChannel:
     """
 
     def __init__(
-        self, target: str, options: dict[str, t.GeneralValueType] | None = None
+        self, target: str, options: Mapping[str, t.GeneralValueType] | None = None
     ) -> None:
         """Initialize gRPC channel.
 
@@ -52,7 +54,7 @@ class GrpcChannel:
         """
         self.logger = FlextLogger(__name__)
         self._target = target
-        self._options: dict[str, t.GeneralValueType] = {}
+        self._options: Mapping[str, t.GeneralValueType] = {}
         if options is not None:
             self._options = options
 
@@ -134,7 +136,7 @@ class GrpcRequest:
         self,
         method: str,
         message: object,
-        metadata: dict[str, str] | None = None,
+        metadata: Mapping[str, str] | None = None,
     ) -> None:
         """Initialize gRPC request.
 
@@ -146,7 +148,7 @@ class GrpcRequest:
         """
         self._method = method
         self._message = message
-        self._metadata: dict[str, str] = {}
+        self._metadata: Mapping[str, str] = {}
         if metadata is not None:
             self._metadata = metadata
 
@@ -167,7 +169,7 @@ class GrpcResponse:
         self,
         message: object,
         status_code: int = 0,
-        metadata: dict[str, str] | None = None,
+        metadata: Mapping[str, str] | None = None,
     ) -> None:
         """Initialize gRPC response.
 
@@ -179,7 +181,7 @@ class GrpcResponse:
         """
         self._message = message
         self._status_code = status_code
-        self._metadata: dict[str, str] = {}
+        self._metadata: Mapping[str, str] = {}
         if metadata is not None:
             self._metadata = metadata
 
@@ -211,7 +213,7 @@ class GrpcServer:
         self,
         host: str = "127.0.0.1",
         port: int = 50051,
-        options: dict[str, t.GeneralValueType] | None = None,
+        options: Mapping[str, t.GeneralValueType] | None = None,
     ) -> None:
         """Initialize gRPC server.
 
@@ -224,7 +226,7 @@ class GrpcServer:
         self.logger = FlextLogger(__name__)
         self._host = host
         self._port = port
-        self._options: dict[str, t.GeneralValueType] = {}
+        self._options: Mapping[str, t.GeneralValueType] = {}
         if options is not None:
             self._options = options
 

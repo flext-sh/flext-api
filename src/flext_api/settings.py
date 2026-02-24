@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 
 from flext_core import FlextSettings
 from pydantic import Field, field_validator
@@ -63,7 +64,7 @@ class FlextApiSettings(BaseSettings):
 
     @field_validator("headers", mode="before")
     @classmethod
-    def validate_headers(cls, v: dict[str, str]) -> dict[str, str]:
+    def validate_headers(cls, v: Mapping[str, str]) -> Mapping[str, str]:
         """Validate headers."""
         for key, value in v.items():
             key_stripped = key.strip()
@@ -76,7 +77,7 @@ class FlextApiSettings(BaseSettings):
         return v
 
     @property
-    def default_headers(self) -> dict[str, str]:
+    def default_headers(self) -> Mapping[str, str]:
         """Default headers with MIME type from Constants."""
         return {
             c.Api.HEADER_ACCEPT: c.Api.ContentType.JSON,

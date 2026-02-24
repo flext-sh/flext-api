@@ -15,6 +15,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
+from collections.abc import Mapping
 
 import httpx
 from flext_core import r
@@ -120,7 +121,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     def _build_http_request_from_dict(
         self,
-        request: dict[str, t.GeneralValueType],
+        request: Mapping[str, t.GeneralValueType],
     ) -> r[FlextApiModels.HttpRequest]:
         """Build HttpRequest from dictionary using RFC methods."""
         # Validate request using base class method
@@ -163,14 +164,14 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
     def send_request(
         self,
-        request: dict[str, t.GeneralValueType],
+        request: Mapping[str, t.GeneralValueType],
         **kwargs: t.ApiJsonValue,
-    ) -> r[dict[str, t.GeneralValueType]]:
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         """Send HTTP request with retry logic and error handling."""
         # Build HTTP request model
         request_result = self._build_http_request_from_dict(request)
         if request_result.is_failure:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 request_result.error or "Request building failed",
             )
 
@@ -181,7 +182,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         url = str(http_request.url)
         headers_result = self._extract_headers_from_model(http_request)
         if headers_result.is_failure:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 headers_result.error or "Headers extraction failed",
             )
         headers_dict = headers_result.value
@@ -195,7 +196,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         )
 
         if conn_result.is_failure:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 f"Failed to establish connection: {conn_result.error}",
             )
 
@@ -214,13 +215,13 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
 
         if result.is_success:
             response = result.value
-            return r[dict[str, t.GeneralValueType]].ok({
+            return r[Mapping[str, t.GeneralValueType]].ok({
                 "status_code": response.status_code,
                 "headers": dict(response.headers),
                 "body": str(getattr(response, "text", response.body)),
             })
 
-        return r[dict[str, t.GeneralValueType]].fail(
+        return r[Mapping[str, t.GeneralValueType]].fail(
             result.error or "Request execution failed"
         )
 
@@ -228,11 +229,11 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         self,
         method: str,
         url: str,
-        headers: dict[str, str],
-        params: dict[str, str],
+        headers: Mapping[str, str],
+        params: Mapping[str, str],
         timeout: float | None,
         body: t.Api.RequestBody | None,
-    ) -> dict[str, t.GeneralValueType]:
+    ) -> Mapping[str, t.GeneralValueType]:
         """Build request kwargs based on body type."""
         kwargs: dict[str, t.GeneralValueType] = {
             "method": method,
@@ -279,8 +280,8 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         connection: object,
         method: str,
         url: str,
-        headers: dict[str, str],
-        params: dict[str, str],
+        headers: Mapping[str, str],
+        params: Mapping[str, str],
         timeout: float | None,
         body: t.Api.RequestBody | None,
     ) -> r[FlextApiModels.HttpResponse]:
@@ -361,9 +362,9 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
     def _extract_headers_from_model(
         self,
         request: FlextApiModels.HttpRequest,
-    ) -> r[dict[str, str]]:
+    ) -> r[Mapping[str, str]]:
         """Extract headers from HttpRequest model without fallback."""
-        return r[dict[str, str]].ok(dict(request.headers))
+        return r[Mapping[str, str]].ok(dict(request.headers))
 
     def _build_response(
         self,

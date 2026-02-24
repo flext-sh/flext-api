@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Self
 
 import httpx
@@ -65,7 +66,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
     def _prepare_request_headers(
         self,
         options: _HttpClientRequestOptions,
-    ) -> dict[str, str]:
+    ) -> Mapping[str, str]:
         """Prepare merged headers from config and request."""
         headers = dict(self._config.headers)
         headers.update(options.headers)
@@ -95,7 +96,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         }
 
     def _build_request_options(
-        self, kwargs: dict[str, object]
+        self, kwargs: Mapping[str, object]
     ) -> r[_HttpClientRequestOptions]:
         """Build typed request options from arbitrary kwargs."""
         try:
@@ -111,7 +112,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
         self,
         method: str,
         full_url: str,
-        headers: dict[str, str],
+        headers: Mapping[str, str],
         options: _HttpClientRequestOptions,
     ) -> r[t.Api.HttpResponseDict]:
         """Execute request using typed options."""

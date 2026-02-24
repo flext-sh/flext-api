@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from flext_core import FlextLogger, r
 
 from flext_api.typings import t
@@ -110,9 +112,9 @@ class BaseProtocolImplementation:
 
     def send_request(
         self,
-        request: dict[str, t.ApiJsonValue],
+        request: Mapping[str, t.ApiJsonValue],
         **kwargs: object,
-    ) -> r[dict[str, t.ApiJsonValue]]:
+    ) -> r[Mapping[str, t.ApiJsonValue]]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -129,7 +131,7 @@ class BaseProtocolImplementation:
         # Acknowledge parameters to avoid linting warnings
         _ = request
         _ = kwargs
-        return r[dict[str, t.ApiJsonValue]].fail(
+        return r[Mapping[str, t.ApiJsonValue]].fail(
             f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
@@ -174,8 +176,8 @@ class BaseProtocolImplementation:
         }
 
     def _validate_request(
-        self, request: dict[str, t.ApiJsonValue]
-    ) -> r[dict[str, t.ApiJsonValue]]:
+        self, request: Mapping[str, t.ApiJsonValue]
+    ) -> r[Mapping[str, t.ApiJsonValue]]:
         """Validate request dictionary.
 
         Args:
@@ -186,15 +188,15 @@ class BaseProtocolImplementation:
 
         """
         if not request:
-            return r[dict[str, t.ApiJsonValue]].fail("Request cannot be empty")
+            return r[Mapping[str, t.ApiJsonValue]].fail("Request cannot be empty")
 
-        return r[dict[str, t.ApiJsonValue]].ok(request)
+        return r[Mapping[str, t.ApiJsonValue]].ok(request)
 
     def _build_error_response(
         self,
         error: str,
         status_code: int = 500,
-    ) -> dict[str, t.ApiJsonValue]:
+    ) -> Mapping[str, t.ApiJsonValue]:
         """Build error response dictionary.
 
         Args:
@@ -214,9 +216,9 @@ class BaseProtocolImplementation:
 
     def _build_success_response(
         self,
-        data: dict[str, t.ApiJsonValue] | None = None,
+        data: Mapping[str, t.ApiJsonValue] | None = None,
         status_code: int = 200,
-    ) -> dict[str, t.ApiJsonValue]:
+    ) -> Mapping[str, t.ApiJsonValue]:
         """Build success response dictionary.
 
         Args:

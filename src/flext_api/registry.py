@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import ClassVar
 
 from flext_core import FlextRegistry, r
@@ -41,10 +42,10 @@ class FlextApiRegistry(FlextRegistry):
         """Initialize API registry."""
         super().__init__(dispatcher=dispatcher)
         # Typed caches per plugin category — eliminates cast/isinstance
-        self._protocol_cache: dict[str, FlextApiPlugins.Protocol] = {}
-        self._schema_cache: dict[str, FlextApiPlugins.Schema] = {}
-        self._transport_cache: dict[str, FlextApiPlugins.Transport] = {}
-        self._auth_cache: dict[str, FlextApiPlugins.Authentication] = {}
+        self._protocol_cache: Mapping[str, FlextApiPlugins.Protocol] = {}
+        self._schema_cache: Mapping[str, FlextApiPlugins.Schema] = {}
+        self._transport_cache: Mapping[str, FlextApiPlugins.Transport] = {}
+        self._auth_cache: Mapping[str, FlextApiPlugins.Authentication] = {}
         self.logger.debug("FlextApiRegistry initialized")
 
     @classmethod
@@ -179,7 +180,7 @@ class FlextApiRegistry(FlextRegistry):
 
     # Utility Methods
 
-    def get_registry_status(self) -> r[dict[str, int]]:
+    def get_registry_status(self) -> r[Mapping[str, int]]:
         """Get current registry status with plugin counts."""
         protocols = self.list_plugins(self.PROTOCOLS).value or []
         schemas = self.list_plugins(self.SCHEMAS).value or []
@@ -196,7 +197,7 @@ class FlextApiRegistry(FlextRegistry):
             + len(transports)
             + len(auth_providers),
         }
-        return r[dict[str, int]].ok(status)
+        return r[Mapping[str, int]].ok(status)
 
     def clear_all(self) -> r[bool]:
         """Clear all registered plugins (mainly for testing)."""

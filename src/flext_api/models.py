@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
+from collections.abc import Mapping
 from typing import Self
 from urllib.parse import ParseResult, urlparse
 
@@ -414,7 +415,7 @@ class FlextApiModels(FlextModels):
         cls,
         status_code: int,
         body: t.Api.ResponseBody | None = None,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
         request_id: str | None = None,
     ) -> FlextApiModels.HttpResponse:
         """Create HttpResponse from parameters.
@@ -447,7 +448,7 @@ class FlextApiModels(FlextModels):
         base_url: str | None = None,
         timeout: float | None = None,
         max_retries: int | None = None,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
         *,
         verify_ssl: bool = True,
     ) -> FlextApiModels.ClientConfig:

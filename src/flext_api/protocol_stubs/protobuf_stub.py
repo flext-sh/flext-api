@@ -23,6 +23,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 
 from flext_core import FlextLogger, r, t
 
@@ -42,7 +43,7 @@ class ProtobufMessage:
     - Field validation
     """
 
-    def __init__(self, data: dict[str, t.GeneralValueType] | None = None) -> None:
+    def __init__(self, data: Mapping[str, t.GeneralValueType] | None = None) -> None:
         """Initialize Protobuf message.
 
         Args:
@@ -50,13 +51,13 @@ class ProtobufMessage:
 
         """
         self.logger = FlextLogger(__name__)
-        self._data: dict[str, t.GeneralValueType] = {}
+        self._data: Mapping[str, t.GeneralValueType] = {}
         if data is not None:
             self._data = data
 
         self.logger.debug("Protobuf message stub created (placeholder)")
 
-    def get_data(self) -> dict[str, t.GeneralValueType]:
+    def get_data(self) -> Mapping[str, t.GeneralValueType]:
         """Get message data.
 
         Returns:
@@ -94,7 +95,7 @@ class ProtobufMessage:
         )
 
     @classmethod
-    def from_dict(cls, data: dict[str, t.GeneralValueType]) -> ProtobufMessage:
+    def from_dict(cls, data: Mapping[str, t.GeneralValueType]) -> ProtobufMessage:
         """Create message from dictionary.
 
         Args:
@@ -150,7 +151,7 @@ class ProtobufSerializer:
     - Compression
     """
 
-    def __init__(self, schema: dict[str, t.GeneralValueType] | None = None) -> None:
+    def __init__(self, schema: Mapping[str, t.GeneralValueType] | None = None) -> None:
         """Initialize Protobuf serializer.
 
         Args:
@@ -158,7 +159,7 @@ class ProtobufSerializer:
 
         """
         self.logger = FlextLogger(__name__)
-        self._schema: dict[str, t.GeneralValueType] = {}
+        self._schema: Mapping[str, t.GeneralValueType] = {}
         if schema is not None:
             self._schema = schema
 
@@ -337,7 +338,7 @@ class ProtobufSchema:
         """
         self.logger = FlextLogger(__name__)
         self._name = name
-        self._fields: dict[str, ProtobufField] = {}
+        self._fields: Mapping[str, ProtobufField] = {}
 
         self.logger.info(
             "Protobuf schema stub created (placeholder)",
@@ -395,7 +396,7 @@ class ProtobufSchema:
         return self._name
 
     @property
-    def fields(self) -> dict[str, ProtobufField]:
+    def fields(self) -> Mapping[str, ProtobufField]:
         """Get schema fields."""
         return self._fields.copy()
 

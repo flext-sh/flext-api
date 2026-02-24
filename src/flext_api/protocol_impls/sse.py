@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from flext_core import r
 
@@ -44,7 +44,7 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
     is_connected: bool
     last_event_id: str
     _connected: bool
-    _on_event_handlers: dict[str, list[Callable[..., None]]]
+    _on_event_handlers: Mapping[str, list[Callable[..., None]]]
     _on_connect_handlers: list[Callable[[], None]]
     _on_disconnect_handlers: list[Callable[[], None]]
     _on_error_handlers: list[Callable[[Exception], None]]
@@ -107,9 +107,9 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
 
     def send_request(
         self,
-        request: dict[str, t.GeneralValueType],
+        request: Mapping[str, t.GeneralValueType],
         **kwargs: object,
-    ) -> r[dict[str, t.GeneralValueType]]:
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         """Send SSE request (stub - not implemented).
 
         Args:
@@ -123,13 +123,13 @@ class SSEProtocolPlugin(RFCProtocolImplementation):
         # Validate request using base class method
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 validation_result.error or "Request validation failed",
             )
 
         # Acknowledge kwargs to avoid linting warnings
         _ = kwargs
-        return r[dict[str, t.GeneralValueType]].fail(
+        return r[Mapping[str, t.GeneralValueType]].fail(
             "SSE protocol not yet implemented (Phase 3)"
         )
 

@@ -7,6 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from flext_core import FlextLogger, FlextRuntime, r
 
 from flext_api.protocols import p
@@ -18,7 +20,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
 
     def __init__(self) -> None:
         """Initialize storage backend protocol implementation."""
-        self._storage: dict[str, t.ApiJsonValue] = {}
+        self._storage: Mapping[str, t.ApiJsonValue] = {}
         self.logger = FlextLogger(__name__)
 
     def get(self, key: str) -> r[object]:
@@ -49,7 +51,9 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
 
             # Acknowledge timeout parameter (not implemented in this simple backend)
             _ = timeout
-            self._storage[str(key)] = FlextRuntime.normalize_to_general_value(value)
+            storage_data = dict(self._storage)
+            storage_data[str(key)] = FlextRuntime.normalize_to_general_value(value)
+            self._storage = storage_data
             self.logger.debug("Stored data with key: %s", key)
             return r[bool].ok(value=True)
 
@@ -63,7 +67,9 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
                 return r[bool].fail("Storage key cannot be empty")
 
             if key in self._storage:
-                del self._storage[key]
+                storage_data = dict(self._storage)
+                del storage_data[key]
+                self._storage = storage_data
                 self.logger.debug("Deleted data with key: %s", key)
                 return r[bool].ok(value=True)
             return r[bool].fail(f"Key not found: {key}")
@@ -82,7 +88,7 @@ class StorageBackendImplementation(p.Api.Storage.StorageBackendProtocol):
     def clear(self) -> r[bool]:
         """Clear all stored values."""
         try:
-            self._storage.clear()
+            self._storage = {}
             self.logger.debug("Cleared all storage data")
             return r[bool].ok(value=True)
         except Exception as e:

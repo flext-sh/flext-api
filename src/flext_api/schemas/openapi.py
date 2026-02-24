@@ -63,14 +63,14 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         self,
         value: t.GeneralValueType,
         field_name: str,
-    ) -> r[dict[str, t.GeneralValueType]]:
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         try:
             parsed = self._DictField.model_validate({"value": value})
         except ValidationError:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 f"'{field_name}' field must be a dictionary"
             )
-        return r[dict[str, t.GeneralValueType]].ok(parsed.value)
+        return r[Mapping[str, t.GeneralValueType]].ok(parsed.value)
 
     def __init__(
         self,
@@ -99,7 +99,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         self._validate_responses = validate_responses
 
         # Cached schemas
-        self._cached_schemas: dict[str, dict[str, t.GeneralValueType]] = {}
+        self._cached_schemas: Mapping[str, Mapping[str, t.GeneralValueType]] = {}
 
     def _validate_openapi_version(
         self,
@@ -346,7 +346,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_operation(
         self,
-        operation: dict[str, t.GeneralValueType],
+        operation: Mapping[str, t.GeneralValueType],
         path: str,
         method: str,
     ) -> r[bool]:
@@ -378,7 +378,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
         return r[bool].ok(value=True)
 
     def _validate_components(
-        self, components: dict[str, t.GeneralValueType]
+        self, components: Mapping[str, t.GeneralValueType]
     ) -> r[bool]:
         """Validate OpenAPI components object.
 
@@ -417,14 +417,14 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     def _validate_security_schemes_structure(
         self,
         security_schemes: t.GeneralValueType,
-    ) -> r[dict[str, t.GeneralValueType]]:
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         """Validate basic structure of security schemes."""
         schemes_result = self._parse_dict_field(security_schemes, "security_schemes")
         if schemes_result.is_failure:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 "Security schemes must be a dictionary"
             )
-        return r[dict[str, t.GeneralValueType]].ok(schemes_result.value)
+        return r[Mapping[str, t.GeneralValueType]].ok(schemes_result.value)
 
     def _validate_single_security_scheme(
         self,
@@ -462,7 +462,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
     def _validate_scheme_type_requirements(
         self,
         scheme_name: str,
-        scheme: dict[str, t.GeneralValueType],
+        scheme: Mapping[str, t.GeneralValueType],
         scheme_type: str,
     ) -> r[bool]:
         """Validate type-specific requirements for security schemes."""
@@ -485,7 +485,7 @@ class OpenAPISchemaValidator(FlextApiPlugins.Schema):
 
     def _validate_security_schemes(
         self,
-        security_schemes: dict[str, t.GeneralValueType],
+        security_schemes: Mapping[str, t.GeneralValueType],
     ) -> r[bool]:
         """Validate OpenAPI security schemes.
 

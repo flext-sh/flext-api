@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from fastapi import FastAPI
 from flext_core import (
@@ -49,7 +49,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
     """
 
     # Type annotations for dynamically-set fields
-    _protocol_handlers: dict[str, p.Api.Server.ProtocolHandler]
+    _protocol_handlers: Mapping[str, p.Api.Server.ProtocolHandler]
     _middleware_pipeline: list[Callable[..., None]]
 
     class RouteRegistry:
@@ -65,7 +65,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
             logger: Logger instance for audit trail
 
             """
-            self._routes: dict[str, t.Api.RouteData] = {}
+            self._routes: Mapping[str, t.Api.RouteData] = {}
             self._logger = logger
 
         def register(
@@ -138,7 +138,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
             return r[bool].ok(value=True)
 
         @property
-        def routes(self) -> dict[str, t.Api.RouteData]:
+        def routes(self) -> Mapping[str, t.Api.RouteData]:
             """Get all registered routes."""
             return self._routes.copy()
 
@@ -273,7 +273,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
 
         def register_routes(
             self,
-            routes: dict[str, t.Api.RouteData],
+            routes: Mapping[str, t.Api.RouteData],
         ) -> r[bool]:
             """Register routes with FastAPI application."""
             if not self._app:
@@ -332,8 +332,8 @@ class FlextApiServer(FlextService[bool], x.Validation):
         def start(
             self,
             middleware_pipeline: list[Callable[..., None]],
-            routes: dict[str, t.Api.RouteData],
-            protocol_handlers: dict[str, p.Api.Server.ProtocolHandler],
+            routes: Mapping[str, t.Api.RouteData],
+            protocol_handlers: Mapping[str, p.Api.Server.ProtocolHandler],
         ) -> r[bool]:
             """Start server with complete initialization pipeline."""
             if self._is_running:
@@ -665,7 +665,7 @@ class FlextApiServer(FlextService[bool], x.Validation):
         return self._lifecycle_manager.port
 
     @property
-    def routes(self) -> dict[str, t.Api.RouteData]:
+    def routes(self) -> Mapping[str, t.Api.RouteData]:
         """Get registered routes."""
         return self._route_registry.routes
 

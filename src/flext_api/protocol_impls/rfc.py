@@ -11,6 +11,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
@@ -121,7 +123,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
     class _StatusCodeValue(BaseModel):
         status_code: int = Field(ge=100, le=599)
 
-    def _extract_url(self, request: dict[str, t.GeneralValueType]) -> r[str]:
+    def _extract_url(self, request: Mapping[str, t.GeneralValueType]) -> r[str]:
         """Extract and validate URL from request (RFC 7230 compliant).
 
         Args:
@@ -143,7 +145,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             return r[str].fail("URL must be a string (RFC 7230)")
         return r[str].ok(parsed.url)
 
-    def _extract_method(self, request: dict[str, t.GeneralValueType]) -> r[str]:
+    def _extract_method(self, request: Mapping[str, t.GeneralValueType]) -> r[str]:
         """Extract and validate HTTP method from request (RFC 7231 compliant).
 
         Args:
@@ -163,8 +165,8 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         return r[str].ok(parsed.method)
 
     def _extract_headers(
-        self, request: dict[str, t.GeneralValueType]
-    ) -> dict[str, str]:
+        self, request: Mapping[str, t.GeneralValueType]
+    ) -> Mapping[str, str]:
         """Extract headers from request (RFC 7230 compliant).
 
         Args:
@@ -189,7 +191,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         return normalized_headers
 
-    def _extract_body(self, request: dict[str, t.GeneralValueType]) -> object | None:
+    def _extract_body(self, request: Mapping[str, t.GeneralValueType]) -> object | None:
         """Extract body from request (RFC 7231 compliant).
 
         Args:
@@ -204,7 +206,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
         return request["body"]
 
-    def _extract_timeout(self, request: dict[str, t.GeneralValueType]) -> float:
+    def _extract_timeout(self, request: Mapping[str, t.GeneralValueType]) -> float:
         """Extract timeout from request with defaults.
 
         Args:
@@ -229,7 +231,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         error: str,
         status_code: int = 500,
         error_code: str | None = None,
-    ) -> dict[str, t.GeneralValueType]:
+    ) -> Mapping[str, t.GeneralValueType]:
         """Build RFC-compliant error response (RFC 7231).
 
         Args:
@@ -252,10 +254,10 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
 
     def _build_rfc_success_response(
         self,
-        data: dict[str, t.GeneralValueType] | None = None,
+        data: Mapping[str, t.GeneralValueType] | None = None,
         status_code: int = 200,
-        headers: dict[str, str] | None = None,
-    ) -> r[dict[str, t.GeneralValueType]]:
+        headers: Mapping[str, str] | None = None,
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         """Build RFC-compliant success response (RFC 7231).
 
         Args:
@@ -291,7 +293,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
             success_response["data"] = json_data
         if web_headers is not None:
             success_response["headers"] = web_headers
-        return r[dict[str, t.GeneralValueType]].ok(success_response)
+        return r[Mapping[str, t.GeneralValueType]].ok(success_response)
 
     def _validate_status_code(self, status_code: int) -> r[int]:
         """Validate HTTP status code (RFC 7231).
@@ -371,7 +373,7 @@ class RFCProtocolImplementation(BaseProtocolImplementation):
         # Retry on server errors (5xx) and specific client errors (408, 429)
         return status_code in FlextApiConstants.Api.HTTPRetry.RETRYABLE_STATUS_CODES
 
-    def _get_content_type(self, headers: dict[str, str]) -> str:
+    def _get_content_type(self, headers: Mapping[str, str]) -> str:
         """Extract Content-Type from headers (RFC 7231).
 
         Args:

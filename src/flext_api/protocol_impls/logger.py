@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations  # @vulture_ignore
 
+from collections.abc import Mapping
+
 from flext_core import FlextLogger, FlextRuntime, t  # @vulture_ignore
 
 from flext_api.protocols import FlextApiProtocols as api_protocols
@@ -20,8 +22,8 @@ class LoggerProtocolImplementation(api_protocols.Api.Logger.LoggerProtocol):
 
     def _convert_kwargs_to_context(
         self,
-        kwargs: dict[str, object],
-    ) -> dict[str, t.ApiJsonValue]:
+        kwargs: Mapping[str, object],
+    ) -> Mapping[str, t.ApiJsonValue]:
         """Convert kwargs to context dict for logger compatibility."""
         context: dict[str, t.ApiJsonValue] = {}
         for key, value in kwargs.items():

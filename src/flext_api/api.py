@@ -10,9 +10,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import ClassVar, Self
 
-from flext_core import FlextLogger, r, s
+from flext_core import FlextLogger, r, s, u
 from flext_core.runtime import FlextRuntime
 from pydantic import ConfigDict
 
@@ -139,7 +140,7 @@ class FlextApi(s[FlextApiSettings]):
         if params_value is None:
             return r[t.Api.WebParams].ok(query_params)
 
-        if not FlextRuntime.is_dict_like(params_value):
+        if not u.is_dict_like(params_value):
             return r[t.Api.WebParams].fail(
                 f"Invalid params type: {type(params_value)}",
             )
@@ -147,7 +148,7 @@ class FlextApi(s[FlextApiSettings]):
         # Type reconstruction: build params dict with proper narrowing
         params_result: dict[str, str | list[str]] = {}
         for k, v in params_value.items():
-            if FlextRuntime.is_list_like(v):
+            if u.is_list_like(v):
                 # Convert list elements to strings if needed
                 str_list: list[str] = [str(item) for item in v]
                 params_result[k] = str_list
@@ -160,7 +161,7 @@ class FlextApi(s[FlextApiSettings]):
         method: str,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
         timeout: float | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
@@ -238,7 +239,7 @@ class FlextApi(s[FlextApiSettings]):
     def get(
         self,
         url: str,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP GET - delegates to generic method."""
@@ -253,7 +254,7 @@ class FlextApi(s[FlextApiSettings]):
         self,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP POST - delegates to generic method."""
@@ -269,7 +270,7 @@ class FlextApi(s[FlextApiSettings]):
         self,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP PUT - delegates to generic method."""
@@ -284,7 +285,7 @@ class FlextApi(s[FlextApiSettings]):
     def delete(
         self,
         url: str,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP DELETE - delegates to generic method."""
@@ -299,7 +300,7 @@ class FlextApi(s[FlextApiSettings]):
         self,
         url: str,
         data: t.Api.RequestBody | None = None,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
         request_kwargs: t.Api.RequestKwargs | None = None,
     ) -> r[FlextApiModels.HttpResponse]:
         """HTTP PATCH - delegates to generic method."""

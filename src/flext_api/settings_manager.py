@@ -160,25 +160,25 @@ class FlextApiSettingsManager:
 
         return r.ok(value=True)
 
-    def _extract_headers(self) -> r[dict[str, str]]:
+    def _extract_headers(self) -> r[Mapping[str, str]]:
         """Extract headers from config - no fallbacks."""
         if self._config is None:
             return r.fail("No configuration set")
         if "headers" not in self._config:
-            return r[dict[str, str]].ok({})
+            return r[Mapping[str, str]].ok({})
 
         headers_value = self._config["headers"]
-        if FlextRuntime.is_dict_like(headers_value):
+        if u.is_dict_like(headers_value):
             headers_dict: dict[str, str] = {
                 str(k): str(v) for k, v in headers_value.items()
             }
-            return r[dict[str, str]].ok(headers_dict)
+            return r[Mapping[str, str]].ok(headers_dict)
         if headers_value.__class__ is str:
             try:
                 parsed_headers = json.loads(headers_value)
-                if FlextRuntime.is_dict_like(parsed_headers):
+                if u.is_dict_like(parsed_headers):
                     headers_dict = {str(k): str(v) for k, v in parsed_headers.items()}
-                    return r[dict[str, str]].ok(headers_dict)
+                    return r[Mapping[str, str]].ok(headers_dict)
                 return r.fail(
                     f"Parsed headers must be dict, got: {type(parsed_headers)}",
                 )

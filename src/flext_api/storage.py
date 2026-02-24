@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Mapping
 from typing import Self
 
 from flext_core import FlextLogger, FlextRuntime, r, u
@@ -52,8 +53,8 @@ class FlextApiStorage:
     model_config = ConfigDict(frozen=False, arbitrary_types_allowed=True)
 
     # Type annotations for dynamically-set fields
-    _storage: dict[str, t.JsonValue]
-    _expiry_times: dict[str, float]
+    _storage: Mapping[str, t.JsonValue]
+    _expiry_times: Mapping[str, float]
     _stats: FlextApiModels.Storage.Stats
     _operations_count: int
     _created_at: str
@@ -62,14 +63,14 @@ class FlextApiStorage:
     def _to_json_value(value: t.ApiJsonValue) -> t.JsonValue:
         """Convert arbitrary value to JsonValue recursively."""
         normalized = FlextRuntime.normalize_to_general_value(value)
-        if normalized is None or normalized.__class__ in (str, int, float, bool):
+        if normalized is None or isinstance(normalized, (str, int, float, bool)):
             return normalized
-        if FlextRuntime.is_dict_like(normalized):
+        if u.is_dict_like(normalized):
             converted: t.JsonObject = {}
             for key, item in normalized.items():
                 converted[str(key)] = FlextApiStorage._to_json_value(item)
             return converted
-        if FlextRuntime.is_list_like(normalized):
+        if u.is_list_like(normalized):
             return [FlextApiStorage._to_json_value(item) for item in normalized]
         return str(normalized)
 
@@ -114,8 +115,8 @@ class FlextApiStorage:
     def _extract_init_params(
         self,
         config: t.ApiJsonValue | None,
-        kwargs: dict[str, t.ApiJsonValue],
-    ) -> tuple[t.ApiJsonValue | None, dict[str, t.ApiJsonValue]]:
+        kwargs: Mapping[str, t.ApiJsonValue],
+    ) -> tuple[t.ApiJsonValue | None, Mapping[str, t.ApiJsonValue]]:
         """Extract config and kwargs from __new__ or parameters."""
         config_obj = getattr(self, "_flext_storage_config", None)
         if config_obj is None:
@@ -136,11 +137,13 @@ class FlextApiStorage:
 
     def _extract_storage_kwargs(
         self,
-        storage_kwargs: dict[str, t.ApiJsonValue],
+        storage_kwargs: Mapping[str, t.ApiJsonValue],
     ) -> tuple[t.ApiJsonValue | None, t.ApiJsonValue | None]:
         """Extract storage-specific kwargs before passing to super."""
-        max_size_val = storage_kwargs.pop("max_size", None)
-        default_ttl_val = storage_kwargs.pop("default_ttl", None)
+        storage_kwargs_dict = dict(storage_kwargs)
+        max_size_val = storage_kwargs_dict.pop("max_size", None)
+        default_ttl_val = storage_kwargs_dict.pop("default_ttl", None)
+        setattr(self, "_flext_storage_kwargs", storage_kwargs_dict)
         return max_size_val, default_ttl_val
 
     def _extract_config_field(
@@ -151,7 +154,7 @@ class FlextApiStorage:
     ) -> str:
         """Extract string field from config object."""
         field_value = config_obj.model_dump().get(field_name)
-        if field_value.__class__ is str:
+        if isinstance(field_value, str):
             return field_value
         return default_value
 
@@ -177,16 +180,16 @@ class FlextApiStorage:
 
     def _normalize_config(self, config_obj: t.ApiJsonValue | None) -> t.Api.StorageDict:
         """Normalize config object to dictionary."""
-        if FlextRuntime.is_dict_like(config_obj):
+        if u.is_dict_like(config_obj):
             normalized: t.Api.StorageDict = {}
             for key, value in config_obj.items():
                 key_str = str(key)
-                if value is None or value.__class__ in (str, int, bool):
+                if value is None or isinstance(value, (str, int, bool)):
                     normalized[key_str] = value
-                elif value.__class__ is float:
+                elif isinstance(value, float):
                     normalized[key_str] = int(value)
             return normalized
-        if FlextRuntime.is_base_model(config_obj):
+        if x.is_base_model(config_obj):
             namespace_str = self._extract_config_field(
                 config_obj,
                 "namespace",
@@ -246,7 +249,7 @@ class FlextApiStorage:
         """Extract namespace from config with validation - uses default if not specified."""
         if "namespace" in config_dict:
             namespace_val = config_dict["namespace"]
-            if namespace_val.__class__ is str:
+            if isinstance(namespace_val, str):
                 if namespace_val:
                     return r[str].ok(namespace_val)
                 return r[str].fail("Namespace cannot be empty")
@@ -322,7 +325,7 @@ class FlextApiStorage:
         """Extract backend from config with validation - uses default if not specified."""
         if "backend" in config_dict:
             backend_val = config_dict["backend"]
-            if backend_val.__class__ is str:
+            if isinstance(backend_val, str):
                 if backend_val:
                     return r[str].ok(backend_val)
                 return r[str].fail("Backend cannot be empty")
@@ -458,7 +461,7 @@ class FlextApiStorage:
         data = self._storage[namespaced_key]
         try:
             # Validate using Pydantic model
-            if not FlextRuntime.is_dict_like(data):
+            if not u.is_dict_like(data):
                 return r[t.ApiJsonValue].fail(f"Invalid data format for key: {key}")
 
             # Cast to expected types for Pydantic model construction
@@ -576,7 +579,7 @@ class FlextApiStorage:
 
     def batch_set(
         self,
-        data: dict[str, t.JsonValue],
+        data: Mapping[str, t.JsonValue],
         ttl: int | None = None,
     ) -> r[bool]:
         """Set multiple keys efficiently using Pydantic validation."""
@@ -589,7 +592,7 @@ class FlextApiStorage:
         except Exception as e:
             return r[bool].fail(str(e))
 
-    def batch_get(self, keys: list[str]) -> r[dict[str, t.JsonValue]]:
+    def batch_get(self, keys: list[str]) -> r[Mapping[str, t.JsonValue]]:
         """Get multiple keys efficiently."""
         try:
             result_dict: dict[str, t.JsonValue] = {}
@@ -598,9 +601,9 @@ class FlextApiStorage:
                 if get_result.is_success:
                     unwrapped = get_result.value
                     result_dict[key] = self._to_json_value(unwrapped)
-            return r[dict[str, t.JsonValue]].ok(result_dict)
+            return r[Mapping[str, t.JsonValue]].ok(result_dict)
         except Exception as e:
-            return r[dict[str, t.JsonValue]].fail(str(e))
+            return r[Mapping[str, t.JsonValue]].fail(str(e))
 
     def batch_delete(self, keys: list[str]) -> r[bool]:
         """Delete multiple keys efficiently."""
@@ -640,10 +643,10 @@ class FlextApiStorage:
         except Exception as e:
             return r[int].fail(f"Cleanup failed: {e}")
 
-    def info(self) -> r[dict[str, t.JsonValue]]:
+    def info(self) -> r[Mapping[str, t.JsonValue]]:
         """Get storage information using Pydantic model."""
         try:
-            return r[dict[str, t.JsonValue]].ok({
+            return r[Mapping[str, t.JsonValue]].ok({
                 "namespace": self._namespace,
                 "backend": self._backend,
                 "size": len(self._storage),
@@ -653,12 +656,12 @@ class FlextApiStorage:
                 "operations_count": self._operations_count,
             })
         except Exception as e:
-            return r[dict[str, t.JsonValue]].fail(str(e))
+            return r[Mapping[str, t.JsonValue]].fail(str(e))
 
-    def health_check(self) -> r[dict[str, t.JsonValue]]:
+    def health_check(self) -> r[Mapping[str, t.JsonValue]]:
         """Perform health check with metrics."""
         try:
-            return r[dict[str, t.JsonValue]].ok({
+            return r[Mapping[str, t.JsonValue]].ok({
                 "status": "healthy",
                 "timestamp": u.Generators.generate_iso_timestamp(),
                 "storage_accessible": True,
@@ -666,9 +669,9 @@ class FlextApiStorage:
                 "operations_count": self._operations_count,
             })
         except Exception as e:
-            return r[dict[str, t.JsonValue]].fail(str(e))
+            return r[Mapping[str, t.JsonValue]].fail(str(e))
 
-    def metrics(self) -> r[dict[str, t.JsonValue]]:
+    def metrics(self) -> r[Mapping[str, t.JsonValue]]:
         """Get storage metrics using Pydantic stats model."""
         try:
             # Update stats using Pydantic model (immutable pattern)
@@ -696,9 +699,9 @@ class FlextApiStorage:
                 "memory_usage": self._stats.memory_usage,
                 "namespace": self._stats.namespace,
             }
-            return r[dict[str, t.JsonValue]].ok(stats_dict)
+            return r[Mapping[str, t.JsonValue]].ok(stats_dict)
         except Exception as e:
-            return r[dict[str, t.JsonValue]].fail(str(e))
+            return r[Mapping[str, t.JsonValue]].fail(str(e))
 
     def get_cache_stats(self) -> r[t.Api.CacheDict]:
         """Get cache statistics using Pydantic validation."""
@@ -723,7 +726,7 @@ class FlextApiStorage:
         except Exception as e:
             return r[t.Api.MetricsDict].fail(str(e))
 
-    def get_storage_statistics(self) -> r[dict[str, float]]:
+    def get_storage_statistics(self) -> r[Mapping[str, float]]:
         """Get storage statistics with hit ratio calculation."""
         try:
             hit_ratio = (
@@ -731,7 +734,7 @@ class FlextApiStorage:
                 if self._stats.total_operations > 0
                 else 0.0
             )
-            return r[dict[str, float]].ok({
+            return r[Mapping[str, float]].ok({
                 "total_operations": float(self._operations_count),
                 "cache_hits": float(self._stats.cache_hits),
                 "cache_misses": float(self._stats.cache_misses),
@@ -740,7 +743,7 @@ class FlextApiStorage:
                 "memory_usage": float(len(str(self._storage))),
             })
         except Exception as e:
-            return r[dict[str, float]].fail(str(e))
+            return r[Mapping[str, float]].fail(str(e))
 
     # Properties for namespace and backend access
     # Note: config property inherited from FlextService base class

@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations  # @vulture_ignore
 
+from collections.abc import Mapping
+
 from flext_core import FlextLogger, r  # @vulture_ignore
 
 from flext_api.constants import c
@@ -37,9 +39,9 @@ class GraphQLProtocolPlugin(RFCProtocolImplementation):
 
     def send_request(
         self,
-        request: dict[str, t.GeneralValueType],
+        request: Mapping[str, t.GeneralValueType],
         **kwargs: object,
-    ) -> r[dict[str, t.GeneralValueType]]:
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         """Send GraphQL request (stub - not implemented).
 
         Args:
@@ -53,13 +55,13 @@ class GraphQLProtocolPlugin(RFCProtocolImplementation):
         # Validate request using base class method
         validation_result = self._validate_request(request)
         if validation_result.is_failure:
-            return r[dict[str, t.GeneralValueType]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 validation_result.error or "Request validation failed",
             )
 
         # Acknowledge kwargs to avoid linting warnings
         _ = kwargs
-        return r[dict[str, t.GeneralValueType]].fail(
+        return r[Mapping[str, t.GeneralValueType]].fail(
             "GraphQL protocol not yet implemented (Phase 2+)",
         )
 

@@ -23,9 +23,10 @@ import json
 import time
 import uuid
 from collections import deque
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from flext_core import (
+    u,
     FlextContainer,
     FlextContext,
     FlextDispatcher,
@@ -72,9 +73,9 @@ class FlextWebhookHandler(FlextService[object]):
     _max_retries: int
     _retry_delay: float
     _retry_backoff: float
-    _event_handlers: dict[str, list[Callable[..., None]]]
+    _event_handlers: Mapping[str, list[Callable[..., None]]]
     _event_queue: deque[t.JsonObject]
-    _delivery_confirmations: dict[str, t.JsonObject]
+    _delivery_confirmations: Mapping[str, t.JsonObject]
     _retry_queue: deque[t.JsonObject]
 
     @staticmethod
@@ -83,12 +84,12 @@ class FlextWebhookHandler(FlextService[object]):
         normalized = FlextRuntime.normalize_to_general_value(value)
         if normalized is None or normalized.__class__ in (str, int, float, bool):
             return normalized
-        if FlextRuntime.is_dict_like(normalized):
+        if u.is_dict_like(normalized):
             converted: t.JsonObject = {}
             for key, item in normalized.items():
                 converted[str(key)] = FlextWebhookHandler._to_json_value(item)
             return converted
-        if FlextRuntime.is_list_like(normalized):
+        if u.is_list_like(normalized):
             return [FlextWebhookHandler._to_json_value(item) for item in normalized]
         return str(normalized)
 
@@ -191,7 +192,7 @@ class FlextWebhookHandler(FlextService[object]):
                 payload_str = payload
 
             event_data = json.loads(payload_str)
-            if not FlextRuntime.is_dict_like(event_data):
+            if not u.is_dict_like(event_data):
                 return r[t.JsonObject].fail("Payload must be a JSON object")
             json_object: t.JsonObject = {}
             for key, value in event_data.items():
@@ -303,7 +304,7 @@ class FlextWebhookHandler(FlextService[object]):
     def receive_webhook(
         self,
         payload: bytes | str,
-        headers: dict[str, str],
+        headers: Mapping[str, str],
     ) -> r[t.JsonObject]:
         """Receive and process webhook request.
 
@@ -366,7 +367,7 @@ class FlextWebhookHandler(FlextService[object]):
     def _verify_signature(
         self,
         payload: bytes | str,
-        headers: dict[str, str],
+        headers: Mapping[str, str],
     ) -> r[bool]:
         """Verify webhook signature.
 
