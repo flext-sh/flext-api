@@ -1372,6 +1372,7 @@ python-on-whales = ">=0.79,<0.80"
 pyyaml = ">=6.0.2"
 returns = ">=0.26"
 structlog = ">=25.4"
+tomlkit = ">=0.13"
 wrapt = ">=1.17,<2"
 
 [package.extras]
@@ -4474,10 +4475,9 @@ files = [
 name = "tomlkit"
 version = "0.14.0"
 description = "Style preserving TOML library"
-optional = true
+optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "extra == \"dev\""
 files = [
     {file = "tomlkit-0.14.0-py3-none-any.whl", hash = "sha256:592064ed85b40fa213469f81ac584f67a4f2992509a7c3ea2d632208623a3680"},
     {file = "tomlkit-0.14.0.tar.gz", hash = "sha256:cf00efca415dbd57575befb1f6634c4f42d2d87dbba376128adb42c121b87064"},
@@ -5202,4 +5202,4 @@ dev = ["autoflake", "bandit", "black", "codespell", "deptry", "django-stubs", "f
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.14"
-content-hash = "28e14e47ec4d8bccd84bee2263f7aacfdef3ba31c7bcd2fcfb4dacf839dede3e"
+content-hash = "8cc0ff91e89b5cf13bed006a3261fdf0cbe02921ccdc420b1c116bc50998de17"
