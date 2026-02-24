@@ -121,6 +121,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import (
+    FlextDecorators as d,
+    FlextExceptions as e,
+    FlextHandlers as h,
+    FlextMixins as x,
+    FlextResult as r,
+    FlextService as s,
+)
+
 from flext_api.__version__ import __version__, __version_info__
 from flext_api.adapters import FlextApiAdapters
 from flext_api.api import FlextApi
@@ -163,12 +172,6 @@ from flext_api.settings_manager import FlextApiSettingsManager
 from flext_api.storage import FlextApiStorage
 from flext_api.typings import FlextApiTypes, t
 from flext_api.utilities import FlextApiUtilities, u
-from flext_core import FlextDecorators as d
-from flext_core import FlextExceptions as e
-from flext_core import FlextHandlers as h
-from flext_core import FlextMixins as x
-from flext_core import FlextResult as r
-from flext_core import FlextService as s
 
 __all__ = [
     "AsyncAPISchemaValidator",
