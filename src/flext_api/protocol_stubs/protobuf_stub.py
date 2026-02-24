@@ -302,11 +302,11 @@ class ProtobufField:
             return r[bool].fail(f"Required field {self._name} is missing")
 
         # Repeated check (do this before type checking for repeated fields)
-        if self._repeated and not isinstance(value, list):
+        if self._repeated and value.__class__ is not list:
             return r[bool].fail(f"Repeated field {self._name} must be a list")
 
         # Type checking (do this last, after repeated/required checks)
-        if not isinstance(value, self._field_type) and value is not None:
+        if value is not None and not issubclass(value.__class__, self._field_type):
             return r[bool].fail(
                 f"Field {self._name} expects {self._field_type.__name__}, "
                 f"got {type(value).__name__}",
@@ -376,14 +376,8 @@ class ProtobufSchema:
         FlextResult indicating validation success or failure
 
         """
-        # Access message data using public method
-        if not isinstance(message, ProtobufMessage):
-            return r[bool].fail("Message must be a ProtobufMessage instance")
-
         # Access data using public method
         message_data = message.get_data()
-        if not isinstance(message_data, dict):
-            return r[bool].fail("Message data must be a dictionary")
 
         # Validate each field
         for field_name, field in self._fields.items():

@@ -266,7 +266,7 @@ class FlextApiPlugins:
             return [
                 plugin
                 for plugin in self._loaded_plugins.values()
-                if isinstance(plugin, plugin_type)
+                if issubclass(plugin.__class__, plugin_type)
             ]
 
         def shutdown_all(self) -> r[bool]:

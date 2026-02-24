@@ -82,7 +82,7 @@ class FlextApi(s[FlextApiSettings]):
             api_config = FlextApiSettings()
 
         # Type narrowing: convert kwargs to expected type
-        kwargs_typed: dict[str, t.GeneralValueType] = {
+        kwargs_typed: dict[str, t.ApiJsonValue] = {
             k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
         }
         super().__init__(**kwargs_typed)
@@ -100,11 +100,7 @@ class FlextApi(s[FlextApiSettings]):
         """Execute FlextService interface."""
         if kwargs:
             FlextLogger(__name__).info(f"Execute called with kwargs: {kwargs}")
-        config = (
-            self._config
-            if isinstance(self._config, FlextApiSettings)
-            else FlextApiSettings()
-        )
+        config = self._config
         return r[FlextApiSettings].ok(config)
 
     def request(
@@ -143,7 +139,7 @@ class FlextApi(s[FlextApiSettings]):
         if params_value is None:
             return r[t.Api.WebParams].ok(query_params)
 
-        if not isinstance(params_value, dict):
+        if not FlextRuntime.is_dict_like(params_value):
             return r[t.Api.WebParams].fail(
                 f"Invalid params type: {type(params_value)}",
             )
@@ -151,35 +147,13 @@ class FlextApi(s[FlextApiSettings]):
         # Type reconstruction: build params dict with proper narrowing
         params_result: dict[str, str | list[str]] = {}
         for k, v in params_value.items():
-            if isinstance(v, str):
-                params_result[k] = v
-            elif isinstance(v, list):
+            if FlextRuntime.is_list_like(v):
                 # Convert list elements to strings if needed
                 str_list: list[str] = [str(item) for item in v]
                 params_result[k] = str_list
             else:
                 params_result[k] = str(v)
         return r[t.Api.WebParams].ok(params_result)
-
-    def _finalize_body(
-        self,
-        body_value: t.Api.RequestBody,
-    ) -> t.Api.RequestBody:
-        """Finalize body value to RequestBody type.
-
-        Args:
-            body_value: Raw body value from extraction.
-
-        Returns:
-            RequestBody: Finalized body value.
-
-        """
-        if isinstance(body_value, (str, bytes)):
-            return body_value
-        if isinstance(body_value, dict):
-            # dict is compatible with JsonObject which is part of RequestBody
-            return body_value
-        return str(body_value)
 
     def _http_method(
         self,
@@ -204,8 +178,8 @@ class FlextApi(s[FlextApiSettings]):
         r[HttpResponse]: Response or error.
 
         """
-        # Type narrowing: convert RequestKwargs to dict[str, t.GeneralValueType] | None
-        request_kwargs_dict: dict[str, t.GeneralValueType] | None = (
+        # Type narrowing: convert RequestKwargs to dict[str, t.ApiJsonValue] | None
+        request_kwargs_dict: dict[str, t.ApiJsonValue] | None = (
             dict(request_kwargs.items()) if request_kwargs is not None else None
         )
         # Extract body using monadic pattern
@@ -248,8 +222,7 @@ class FlextApi(s[FlextApiSettings]):
             )
 
         # Finalize body value
-        body_value = body_result.value
-        body_final = self._finalize_body(body_value)
+        body_final = body_result.value
 
         # Create request model
         http_request = FlextApiModels.HttpRequest(

@@ -24,7 +24,7 @@ import json
 import time
 from typing import Self
 
-from flext_core import FlextLogger, r, u
+from flext_core import FlextLogger, FlextRuntime, r, u
 from pydantic import BaseModel, ConfigDict
 
 from flext_api.models import FlextApiModels
@@ -58,8 +58,23 @@ class FlextApiStorage:
     _operations_count: int
     _created_at: str
 
+    @staticmethod
+    def _to_json_value(value: t.ApiJsonValue) -> t.JsonValue:
+        """Convert arbitrary value to JsonValue recursively."""
+        normalized = FlextRuntime.normalize_to_general_value(value)
+        if normalized is None or normalized.__class__ in (str, int, float, bool):
+            return normalized
+        if FlextRuntime.is_dict_like(normalized):
+            converted: t.JsonObject = {}
+            for key, item in normalized.items():
+                converted[str(key)] = FlextApiStorage._to_json_value(item)
+            return converted
+        if FlextRuntime.is_list_like(normalized):
+            return [FlextApiStorage._to_json_value(item) for item in normalized]
+        return str(normalized)
+
     def __new__(
-        cls, config: t.GeneralValueType | None = None, **kwargs: t.GeneralValueType
+        cls, config: t.ApiJsonValue | None = None, **kwargs: t.ApiJsonValue
     ) -> Self:
         """Intercept config argument and convert to kwargs for FlextService V2."""
         instance = super().__new__(cls)
@@ -70,17 +85,15 @@ class FlextApiStorage:
         return instance
 
     def __init__(
-        self, config: t.GeneralValueType | None = None, **kwargs: t.GeneralValueType
+        self, config: t.ApiJsonValue | None = None, **kwargs: t.ApiJsonValue
     ) -> None:
         """Initialize storage with config using Pydantic."""
         self.logger = FlextLogger(__name__)
         config_obj, storage_kwargs = self._extract_init_params(config, kwargs)
         max_size_val, default_ttl_val = self._extract_storage_kwargs(storage_kwargs)
-        # Type narrowing: dict already uses t.GeneralValueType
-        storage_kwargs_typed: dict[str, t.GeneralValueType] = {
-            k: v
+        storage_kwargs_typed: dict[str, t.ApiJsonValue] = {
+            k: FlextRuntime.normalize_to_general_value(v)
             for k, v in storage_kwargs.items()
-            if isinstance(v, (str, int, float, bool, type(None), dict, list))
         }
         super().__init__(**storage_kwargs_typed)
         config_dict = self._normalize_config(config_obj)
@@ -100,27 +113,31 @@ class FlextApiStorage:
 
     def _extract_init_params(
         self,
-        config: t.GeneralValueType | None,
-        kwargs: dict[str, t.GeneralValueType],
-    ) -> tuple[t.GeneralValueType | None, dict[str, t.GeneralValueType]]:
+        config: t.ApiJsonValue | None,
+        kwargs: dict[str, t.ApiJsonValue],
+    ) -> tuple[t.ApiJsonValue | None, dict[str, t.ApiJsonValue]]:
         """Extract config and kwargs from __new__ or parameters."""
         config_obj = getattr(self, "_flext_storage_config", None)
         if config_obj is None:
             config_obj = config
-        if hasattr(self, "_flext_storage_config"):
+        try:
             delattr(self, "_flext_storage_config")
+        except AttributeError:
+            pass
 
         storage_kwargs = getattr(self, "_flext_storage_kwargs", None)
         if storage_kwargs is None:
             storage_kwargs = kwargs
-        if hasattr(self, "_flext_storage_kwargs"):
+        try:
             delattr(self, "_flext_storage_kwargs")
+        except AttributeError:
+            pass
         return config_obj, storage_kwargs
 
     def _extract_storage_kwargs(
         self,
-        storage_kwargs: dict[str, t.GeneralValueType],
-    ) -> tuple[t.GeneralValueType | None, t.GeneralValueType | None]:
+        storage_kwargs: dict[str, t.ApiJsonValue],
+    ) -> tuple[t.ApiJsonValue | None, t.ApiJsonValue | None]:
         """Extract storage-specific kwargs before passing to super."""
         max_size_val = storage_kwargs.pop("max_size", None)
         default_ttl_val = storage_kwargs.pop("default_ttl", None)
@@ -133,57 +150,43 @@ class FlextApiStorage:
         default_value: str,
     ) -> str:
         """Extract string field from config object."""
-        if hasattr(config_obj, field_name):
-            field_value = getattr(config_obj, field_name)
-            if isinstance(field_value, str):
-                return field_value
+        field_value = config_obj.model_dump().get(field_name)
+        if field_value.__class__ is str:
+            return field_value
         return default_value
 
     def _extract_optional_config_field(
         self,
         config_obj: BaseModel,
         field_name: str,
-    ) -> t.GeneralValueType | None:
+    ) -> t.ApiJsonValue | None:
         """Extract optional field from config object."""
-        if hasattr(config_obj, field_name):
-            field_value = getattr(config_obj, field_name)
-            if field_value is not None:
-                # Ensure value is compatible with t.GeneralValueType
-                if isinstance(
-                    field_value,
-                    (str, int, float, bool, list, dict, BaseModel),
-                ):
-                    return field_value
-                return str(field_value)
+        field_value = config_obj.model_dump().get(field_name)
+        if field_value is not None:
+            return FlextRuntime.normalize_to_general_value(field_value)
         return None
 
-    def _convert_to_int(self, value: t.GeneralValueType) -> int | None:
+    def _convert_to_int(self, value: t.ApiJsonValue) -> int | None:
         """Convert value to int or return None if conversion fails."""
         if value is None:
             return None
-        if isinstance(value, int):
-            return value
-        if isinstance(value, str):
-            try:
-                return int(value)
-            except ValueError:
-                return None
-        return None
+        try:
+            return int(str(value))
+        except (ValueError, TypeError):
+            return None
 
-    def _normalize_config(
-        self, config_obj: t.GeneralValueType | None
-    ) -> t.Api.StorageDict:
+    def _normalize_config(self, config_obj: t.ApiJsonValue | None) -> t.Api.StorageDict:
         """Normalize config object to dictionary."""
-        if isinstance(config_obj, dict):
+        if FlextRuntime.is_dict_like(config_obj):
             normalized: t.Api.StorageDict = {}
             for key, value in config_obj.items():
                 key_str = str(key)
-                if isinstance(value, (str, int, bool, type(None))):
+                if value is None or value.__class__ in (str, int, bool):
                     normalized[key_str] = value
-                elif isinstance(value, float):
+                elif value.__class__ is float:
                     normalized[key_str] = int(value)
             return normalized
-        if isinstance(config_obj, BaseModel):
+        if FlextRuntime.is_base_model(config_obj):
             namespace_str = self._extract_config_field(
                 config_obj,
                 "namespace",
@@ -207,8 +210,8 @@ class FlextApiStorage:
     def _apply_config(
         self,
         config_dict: t.Api.StorageDict,
-        max_size_val: t.GeneralValueType | None,
-        default_ttl_val: t.GeneralValueType | None,
+        max_size_val: t.ApiJsonValue | None,
+        default_ttl_val: t.ApiJsonValue | None,
     ) -> None:
         """Apply normalized config to instance attributes - no fallbacks."""
         namespace_result = self._extract_namespace(config_dict)
@@ -243,7 +246,7 @@ class FlextApiStorage:
         """Extract namespace from config with validation - uses default if not specified."""
         if "namespace" in config_dict:
             namespace_val = config_dict["namespace"]
-            if isinstance(namespace_val, str):
+            if namespace_val.__class__ is str:
                 if namespace_val:
                     return r[str].ok(namespace_val)
                 return r[str].fail("Namespace cannot be empty")
@@ -254,7 +257,7 @@ class FlextApiStorage:
     def _extract_max_size(
         self,
         config_dict: t.Api.StorageDict,
-        max_size_val: t.GeneralValueType | None,
+        max_size_val: t.ApiJsonValue | None,
     ) -> r[int]:
         """Extract max_size preferring parameter over config - no fallbacks.
 
@@ -287,7 +290,7 @@ class FlextApiStorage:
     def _extract_default_ttl(
         self,
         config_dict: t.Api.StorageDict,
-        default_ttl_val: t.GeneralValueType | None,
+        default_ttl_val: t.ApiJsonValue | None,
     ) -> r[int]:
         """Extract default_ttl preferring parameter over config - no fallbacks.
 
@@ -319,7 +322,7 @@ class FlextApiStorage:
         """Extract backend from config with validation - uses default if not specified."""
         if "backend" in config_dict:
             backend_val = config_dict["backend"]
-            if isinstance(backend_val, str):
+            if backend_val.__class__ is str:
                 if backend_val:
                     return r[str].ok(backend_val)
                 return r[str].fail("Backend cannot be empty")
@@ -327,9 +330,7 @@ class FlextApiStorage:
         # Use default backend (this is OK - it's a valid default, not a fallback)
         return r[str].ok("memory")
 
-    def execute(
-        self, *_args: t.GeneralValueType, **_kwargs: t.GeneralValueType
-    ) -> r[bool]:
+    def execute(self, *_args: t.ApiJsonValue, **_kwargs: t.ApiJsonValue) -> r[bool]:
         """Service lifecycle execution."""
         return r[bool].ok(value=True)
 
@@ -352,7 +353,7 @@ class FlextApiStorage:
     def set(
         self,
         key: str,
-        value: t.GeneralValueType,
+        value: t.ApiJsonValue,
         timeout: int | None = None,
         ttl: int | None = None,
     ) -> r[bool]:
@@ -378,25 +379,13 @@ class FlextApiStorage:
 
         # Store with expiry tracking - direct field access
         # Convert value to JsonValue for type safety
-        json_value: t.JsonValue
-        if isinstance(value, (str, int, float, bool, type(None), list, dict)):
-            json_value = value
-        else:
-            # For complex objects, convert to string representation
-            json_value = str(value)
+        json_value = self._to_json_value(value)
 
         self._storage[key] = json_value
         # Convert metadata fields to JsonValue with proper type narrowing
-        value_json: t.JsonValue = (
-            metadata.value
-            if isinstance(
-                metadata.value,
-                (str, int, float, bool, type(None), dict, list),
-            )
-            else str(metadata.value)
-        )
+        value_json = self._to_json_value(metadata.value)
         ttl_json: t.JsonValue = metadata.ttl if metadata.ttl is not None else None
-        metadata_dict: dict[str, t.GeneralValueType] = {
+        metadata_dict: dict[str, t.ApiJsonValue] = {
             "value": value_json,
             "timestamp": metadata.timestamp,
             "ttl": ttl_json,
@@ -420,10 +409,10 @@ class FlextApiStorage:
         )
         return r[bool].ok(value=True)
 
-    def get(self, key: str) -> r[t.GeneralValueType]:
+    def get(self, key: str) -> r[t.ApiJsonValue]:
         """Retrieve value with expiration checking."""
         if not key:
-            return r[t.GeneralValueType].fail("Key must be non-empty string")
+            return r[t.ApiJsonValue].fail("Key must be non-empty string")
 
         self._cleanup_expired()
         self._operations_count += 1
@@ -441,7 +430,7 @@ class FlextApiStorage:
                 memory_usage=self._stats.memory_usage,
                 namespace=self._stats.namespace,
             )
-            return r[t.GeneralValueType].ok(value)
+            return r[t.ApiJsonValue].ok(value)
 
         # Try namespaced key
         namespaced_key = self._key(key)
@@ -460,35 +449,34 @@ class FlextApiStorage:
             memory_usage=self._stats.memory_usage,
             namespace=self._stats.namespace,
         )
-        return r[t.GeneralValueType].fail(f"Key not found: {key}")
+        return r[t.ApiJsonValue].fail(f"Key not found: {key}")
 
     def _process_namespaced_entry(
         self, namespaced_key: str, key: str
-    ) -> r[t.GeneralValueType]:
+    ) -> r[t.ApiJsonValue]:
         """Process a namespaced storage entry with metadata validation."""
         data = self._storage[namespaced_key]
         try:
             # Validate using Pydantic model
-            if not isinstance(data, dict):
-                return r[t.GeneralValueType].fail(f"Invalid data format for key: {key}")
+            if not FlextRuntime.is_dict_like(data):
+                return r[t.ApiJsonValue].fail(f"Invalid data format for key: {key}")
 
             # Cast to expected types for Pydantic model construction
             # Runtime validation ensures type safety
             ttl_value = data.get("ttl")
             ttl_int: int | None = None
-            if ttl_value is not None and isinstance(ttl_value, (int, str, float)):
+            if ttl_value is not None:
                 try:
-                    ttl_int = int(ttl_value)
+                    ttl_int = int(str(ttl_value))
                 except (ValueError, TypeError):
                     ttl_int = None
 
             created_at_value = data.get("created_at", 0.0)
             created_at_float = 0.0
-            if isinstance(created_at_value, (int, float, str)):
-                try:
-                    created_at_float = float(created_at_value)
-                except (ValueError, TypeError):
-                    created_at_float = 0.0
+            try:
+                created_at_float = float(str(created_at_value))
+            except (ValueError, TypeError):
+                created_at_float = 0.0
 
             metadata = FlextApiModels.Storage.Metadata(
                 value=data.get("value"),
@@ -507,14 +495,14 @@ class FlextApiStorage:
                     memory_usage=self._stats.memory_usage,
                     namespace=self._stats.namespace,
                 )
-                return r[t.GeneralValueType].ok(metadata.value)
+                return r[t.ApiJsonValue].ok(metadata.value)
 
             # Clean up expired entry
             if namespaced_key in self._storage:
                 del self._storage[namespaced_key]
             if key in self._expiry_times:
                 del self._expiry_times[key]
-            return r[t.GeneralValueType].fail(f"Key expired: {key}")
+            return r[t.ApiJsonValue].fail(f"Key expired: {key}")
 
         except Exception as e:
             # Log cleanup errors but continue - cache functionality is preserved
@@ -522,7 +510,7 @@ class FlextApiStorage:
                 "Failed to cleanup expired cache entry",
                 error=str(e),
             )
-            return r[t.GeneralValueType].fail(f"Error processing key: {key}")
+            return r[t.ApiJsonValue].fail(f"Error processing key: {key}")
 
     def delete(self, key: str) -> r[bool]:
         """Delete key from storage."""
@@ -609,13 +597,7 @@ class FlextApiStorage:
                 get_result = self.get(key)
                 if get_result.is_success:
                     unwrapped = get_result.value
-                    if isinstance(
-                        unwrapped,
-                        (str, int, float, bool, type(None), list, dict),
-                    ):
-                        result_dict[key] = unwrapped
-                    else:
-                        result_dict[key] = str(unwrapped)
+                    result_dict[key] = self._to_json_value(unwrapped)
             return r[dict[str, t.JsonValue]].ok(result_dict)
         except Exception as e:
             return r[dict[str, t.JsonValue]].fail(str(e))
@@ -634,7 +616,7 @@ class FlextApiStorage:
         except Exception as e:
             return r[bool].fail(str(e))
 
-    def serialize_json(self, data: t.GeneralValueType) -> r[str]:
+    def serialize_json(self, data: t.ApiJsonValue) -> r[str]:
         """Serialize to JSON using json library."""
         try:
             return r[str].ok(json.dumps(data, default=str))

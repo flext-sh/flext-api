@@ -16,6 +16,7 @@ from typing import Self
 
 import httpx
 from flext_core import FlextRuntime, r, s
+from pydantic import TypeAdapter, ValidationError
 
 from flext_api.constants import FlextApiConstants
 from flext_api.models import FlextApiModels
@@ -23,6 +24,7 @@ from flext_api.settings import FlextApiSettings
 from flext_api.typings import t
 
 # HTTP status codes
+_RESPONSE_BODY_ADAPTER = TypeAdapter(t.Api.ResponseBody)
 
 
 class FlextApiClient(s[FlextApiSettings]):
@@ -63,7 +65,7 @@ class FlextApiClient(s[FlextApiSettings]):
 
         """
         # Type narrowing: convert kwargs to expected type
-        kwargs_typed: dict[str, t.GeneralValueType] = {
+        kwargs_typed: dict[str, t.ApiJsonValue] = {
             k: FlextRuntime.normalize_to_general_value(v) for k, v in kwargs.items()
         }
         super().__init__(**kwargs_typed)
@@ -82,11 +84,7 @@ class FlextApiClient(s[FlextApiSettings]):
 
     def _get_config(self) -> FlextApiSettings:
         """Get FlextApiSettings with proper type narrowing."""
-        return (
-            self._config
-            if isinstance(self._config, FlextApiSettings)
-            else FlextApiSettings()
-        )
+        return self._config
 
     def execute(
         self,
@@ -94,7 +92,7 @@ class FlextApiClient(s[FlextApiSettings]):
     ) -> r[FlextApiSettings]:
         """Execute FlextService interface - return configuration."""
         if kwargs:
-            self.logger.info("Execute called with kwargs: %s", kwargs)
+            self.logger.info("Execute called with kwargs: %s", str(kwargs))
         return r[FlextApiSettings].ok(self._get_config())
 
     @property
@@ -217,19 +215,17 @@ class FlextApiClient(s[FlextApiSettings]):
     ) -> r[bytes]:
         """Serialize request body to bytes - no None, empty dict is valid."""
         # Empty dict serializes to empty bytes
-        if isinstance(body, dict) and len(body) == 0:
+        if FlextRuntime.is_dict_like(body) and len(body) == 0:
             return r[bytes].ok(b"")
-        if isinstance(body, bytes):
+        if body.__class__ is bytes:
             return r[bytes].ok(body)
-        if isinstance(body, str):
-            return r[bytes].ok(body.encode("utf-8"))
-        if isinstance(body, dict):
+        if FlextRuntime.is_dict_like(body):
             try:
                 serialized = json.dumps(body).encode("utf-8")
                 return r[bytes].ok(serialized)
             except (TypeError, ValueError) as e:
                 return r[bytes].fail(f"Failed to serialize body: {e}")
-        return r[bytes].fail(f"Invalid body type: {type(body)}")
+        return r[bytes].ok(body.encode("utf-8"))
 
     @staticmethod
     def _deserialize_body(
@@ -283,15 +279,13 @@ class FlextApiClient(s[FlextApiSettings]):
         """Deserialize response as JSON."""
         try:
             json_data = response.json()
-            # ResponseBody = JsonObject | str | bytes
-            if isinstance(json_data, dict):
-                return r[t.Api.ResponseBody].ok(json_data)
-            if isinstance(json_data, str):
-                return r[t.Api.ResponseBody].ok(json_data)
-            if isinstance(json_data, bytes):
-                return r[t.Api.ResponseBody].ok(json_data)
-            # Convert other types to dict (JsonObject)
-            return r[t.Api.ResponseBody].ok({"value": json_data})
+            try:
+                return r[t.Api.ResponseBody].ok(
+                    _RESPONSE_BODY_ADAPTER.validate_python(json_data),
+                )
+            except ValidationError:
+                normalized = FlextRuntime.normalize_to_general_value(json_data)
+                return r[t.Api.ResponseBody].ok({"value": str(normalized)})
         except (AttributeError, ValueError, TypeError, Exception) as e:
             return r[t.Api.ResponseBody].fail(
                 f"JSON deserialization failed: {e}",
@@ -302,14 +296,6 @@ class FlextApiClient(s[FlextApiSettings]):
         response: httpx.Response,
     ) -> r[t.Api.ResponseBody]:
         """Deserialize response as text."""
-        if not hasattr(response, "text"):
-            return r[t.Api.ResponseBody].fail(
-                "Response does not have text attribute",
-            )
-        if not isinstance(response.text, str):
-            return r[t.Api.ResponseBody].fail(
-                f"Response text is not a string: {type(response.text)}",
-            )
         return r[t.Api.ResponseBody].ok(response.text)
 
     @staticmethod
@@ -317,14 +303,6 @@ class FlextApiClient(s[FlextApiSettings]):
         response: httpx.Response,
     ) -> r[t.Api.ResponseBody]:
         """Deserialize response as bytes."""
-        if not hasattr(response, "content"):
-            return r[t.Api.ResponseBody].fail(
-                "Response does not have content attribute",
-            )
-        if not isinstance(response.content, bytes):
-            return r[t.Api.ResponseBody].fail(
-                f"Response content is not bytes: {type(response.content)}",
-            )
         return r[t.Api.ResponseBody].ok(response.content)
 
 

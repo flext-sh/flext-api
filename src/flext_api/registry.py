@@ -40,8 +40,11 @@ class FlextApiRegistry(FlextRegistry):
     def __init__(self, dispatcher: p.CommandBus | None = None) -> None:
         """Initialize API registry."""
         super().__init__(dispatcher=dispatcher)
-        # Store plugin instances directly to avoid serialization issues
-        self._plugin_instances: dict[str, FlextApiPlugins.Plugin] = {}
+        # Typed caches per plugin category — eliminates cast/isinstance
+        self._protocol_cache: dict[str, FlextApiPlugins.Protocol] = {}
+        self._schema_cache: dict[str, FlextApiPlugins.Schema] = {}
+        self._transport_cache: dict[str, FlextApiPlugins.Transport] = {}
+        self._auth_cache: dict[str, FlextApiPlugins.Authentication] = {}
         self.logger.debug("FlextApiRegistry initialized")
 
     @classmethod
@@ -64,18 +67,13 @@ class FlextApiRegistry(FlextRegistry):
         plugin: FlextApiPlugins.Protocol,
     ) -> r[bool]:
         """Register a protocol plugin."""
-        key = f"{self.PROTOCOLS}::{name}"
-        self._plugin_instances[key] = plugin
-        # Plugin is a Pydantic model (via inheritance from Plugin), compatible with GeneralValueType
+        self._protocol_cache[name] = plugin
         return self.register_plugin(self.PROTOCOLS, name, plugin)
 
     def get_protocol(self, name: str) -> r[FlextApiPlugins.Protocol]:
         """Get registered protocol plugin by name."""
-        key = f"{self.PROTOCOLS}::{name}"
-        if key in self._plugin_instances:
-            plugin = self._plugin_instances[key]
-            if isinstance(plugin, FlextApiPlugins.Protocol):
-                return r[FlextApiPlugins.Protocol].ok(plugin)
+        if name in self._protocol_cache:
+            return r[FlextApiPlugins.Protocol].ok(self._protocol_cache[name])
 
         result = self.get_plugin(self.PROTOCOLS, name)
         if result.is_failure:
@@ -98,17 +96,13 @@ class FlextApiRegistry(FlextRegistry):
         plugin: FlextApiPlugins.Schema,
     ) -> r[bool]:
         """Register a schema plugin."""
-        key = f"{self.SCHEMAS}::{name}"
-        self._plugin_instances[key] = plugin
+        self._schema_cache[name] = plugin
         return self.register_plugin(self.SCHEMAS, name, plugin)
 
     def get_schema(self, name: str) -> r[FlextApiPlugins.Schema]:
         """Get registered schema plugin by name."""
-        key = f"{self.SCHEMAS}::{name}"
-        if key in self._plugin_instances:
-            plugin = self._plugin_instances[key]
-            if isinstance(plugin, FlextApiPlugins.Schema):
-                return r[FlextApiPlugins.Schema].ok(plugin)
+        if name in self._schema_cache:
+            return r[FlextApiPlugins.Schema].ok(self._schema_cache[name])
 
         result = self.get_plugin(self.SCHEMAS, name)
         if result.is_failure:
@@ -131,17 +125,13 @@ class FlextApiRegistry(FlextRegistry):
         plugin: FlextApiPlugins.Transport,
     ) -> r[bool]:
         """Register a transport plugin."""
-        key = f"{self.TRANSPORTS}::{name}"
-        self._plugin_instances[key] = plugin
+        self._transport_cache[name] = plugin
         return self.register_plugin(self.TRANSPORTS, name, plugin)
 
     def get_transport(self, name: str) -> r[FlextApiPlugins.Transport]:
         """Get registered transport plugin by name."""
-        key = f"{self.TRANSPORTS}::{name}"
-        if key in self._plugin_instances:
-            plugin = self._plugin_instances[key]
-            if isinstance(plugin, FlextApiPlugins.Transport):
-                return r[FlextApiPlugins.Transport].ok(plugin)
+        if name in self._transport_cache:
+            return r[FlextApiPlugins.Transport].ok(self._transport_cache[name])
 
         result = self.get_plugin(self.TRANSPORTS, name)
         if result.is_failure:
@@ -164,15 +154,15 @@ class FlextApiRegistry(FlextRegistry):
         plugin: FlextApiPlugins.Authentication,
     ) -> r[bool]:
         """Register an authentication provider plugin."""
+        self._auth_cache[name] = plugin
         return self.register_plugin(self.AUTH_PROVIDERS, name, plugin)
 
     def get_auth_provider(self, name: str) -> r[FlextApiPlugins.Authentication]:
         """Get registered authentication provider by name."""
+        if name in self._auth_cache:
+            return r[FlextApiPlugins.Authentication].ok(self._auth_cache[name])
+
         result = self.get_plugin(self.AUTH_PROVIDERS, name)
-        if result.is_success and isinstance(
-            result.value, FlextApiPlugins.Authentication
-        ):
-            return r[FlextApiPlugins.Authentication].ok(result.value)
         if result.is_failure:
             return r[FlextApiPlugins.Authentication].fail(result.error)
         return r[FlextApiPlugins.Authentication].fail(

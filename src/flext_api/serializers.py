@@ -10,6 +10,12 @@ from collections.abc import Mapping, Sequence
 from types import ModuleType
 
 from flext_core.typings import t
+from pydantic import TypeAdapter, ValidationError
+
+
+_MESSAGEPACK_RESULT_ADAPTER = TypeAdapter(
+    str | int | float | bool | dict[str, object] | list[object] | None
+)
 
 
 def _load_msgpack() -> ModuleType | None:
@@ -18,7 +24,7 @@ def _load_msgpack() -> ModuleType | None:
         module = importlib.import_module("msgpack")
     except ModuleNotFoundError:
         return None
-    return module if isinstance(module, ModuleType) else None
+    return module
 
 
 class FlextApiSerializers:
@@ -39,7 +45,7 @@ class FlextApiSerializers:
                 | Mapping[str, object]
                 | None,
             ]
-            | t.GeneralValueType,
+            | t.ApiJsonValue,
         ) -> bytes:
             """Type-safe wrapper for msgpack.packb().
 
@@ -58,11 +64,12 @@ class FlextApiSerializers:
                 return b""
 
             result = packb_fn(obj)
-            if isinstance(result, bytes):
+            if result.__class__ is bytes:
                 return result
-            if isinstance(result, bytearray | memoryview):
+            try:
                 return bytes(result)
-            return b""
+            except (TypeError, ValueError):
+                return b""
 
         @staticmethod
         def unpackb(
@@ -83,11 +90,8 @@ class FlextApiSerializers:
             unpackb_fn = getattr(module, "unpackb", None)
             if unpackb_fn is None:
                 return None
-            # Return the raw result; caller must narrow to GeneralValueType if needed
             result = unpackb_fn(data)
-            if (
-                isinstance(result, str | int | float | bool | dict | list)
-                or result is None
-            ):
-                return result
-            return None
+            try:
+                return _MESSAGEPACK_RESULT_ADAPTER.validate_python(result)
+            except ValidationError:
+                return None

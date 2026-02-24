@@ -305,8 +305,20 @@ class FlextApiServer(FlextService[bool], x.Validation):
                         app.post(path)(route_handler)
                     else:
                         method_lower = method.lower()
-                        if hasattr(app, method_lower):
-                            getattr(app, method_lower)(path)(route_handler)
+                        if method_lower == "get":
+                            app.get(path)(route_handler)
+                        elif method_lower == "post":
+                            app.post(path)(route_handler)
+                        elif method_lower == "put":
+                            app.put(path)(route_handler)
+                        elif method_lower == "delete":
+                            app.delete(path)(route_handler)
+                        elif method_lower == "patch":
+                            app.patch(path)(route_handler)
+                        elif method_lower == "head":
+                            app.head(path)(route_handler)
+                        elif method_lower == "options":
+                            app.options(path)(route_handler)
 
                     self._logger.debug(
                         "Route registered",
@@ -480,10 +492,6 @@ class FlextApiServer(FlextService[bool], x.Validation):
 
         if protocol in self._protocol_handlers:
             return r[bool].fail(f"Protocol already registered: {protocol}")
-
-        # Validate handler using Flext protocols
-        if not hasattr(handler, "supports_protocol"):
-            return r[bool].fail(f"Invalid protocol handler: {type(handler)}")
 
         self._protocol_handlers[protocol] = handler
 

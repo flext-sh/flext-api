@@ -22,7 +22,7 @@ from collections.abc import Callable
 
 import websockets
 from flext_core import r
-from pydantic import ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from flext_api.constants import FlextApiConstants
 from flext_api.protocol_impls.rfc import RFCProtocolImplementation
@@ -73,6 +73,17 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     _on_connect_handlers: list[Callable[[], None]]
     _on_disconnect_handlers: list[Callable[[], None]]
     _on_error_handlers: list[Callable[[Exception], None]]
+
+    class _SendRequestOptions(BaseModel):
+        model_config = ConfigDict(extra="ignore")
+
+        message: str | bytes | None = None
+        message_type: str = Field(
+            default=FlextApiConstants.Api.WebSocket.MessageType.TEXT,
+        )
+
+    class _InboundMessage(BaseModel):
+        message: str | bytes
 
     def __init__(
         self,
@@ -207,33 +218,25 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
     def _extract_message(
         self,
         request: dict[str, t.GeneralValueType],
-        kwargs: dict[str, t.GeneralValueType],
+        options: _SendRequestOptions,
     ) -> r[str | bytes]:
         """Extract message from request or kwargs."""
-        if "message" in kwargs:
-            message_value = kwargs["message"]
-            if isinstance(message_value, (str, bytes)):
-                return r[str | bytes].ok(message_value)
-            if message_value is not None:
-                return r[str | bytes].ok(str(message_value))
+        if options.message is not None:
+            return r[str | bytes].ok(options.message)
 
         body = self._extract_body(request)
         if body is not None:
-            if isinstance(body, (str, bytes)):
-                return r[str | bytes].ok(body)
-            return r[str | bytes].ok(str(body))
+            try:
+                parsed = self._InboundMessage.model_validate({"message": body})
+                return r[str | bytes].ok(parsed.message)
+            except ValidationError:
+                return r[str | bytes].ok(str(body))
 
         return r[str | bytes].fail("Message or body is required")
 
-    def _extract_message_type(self, kwargs: dict[str, t.GeneralValueType]) -> str:
+    def _extract_message_type(self, options: _SendRequestOptions) -> str:
         """Extract message type from kwargs."""
-        if "message_type" in kwargs:
-            message_type_value = kwargs["message_type"]
-            if isinstance(message_type_value, str):
-                return message_type_value
-            if message_type_value is not None:
-                return str(message_type_value)
-        return FlextApiConstants.Api.WebSocket.MessageType.TEXT
+        return options.message_type
 
     def _ensure_connected(self, request: dict[str, t.GeneralValueType]) -> r[bool]:
         """Ensure WebSocket is connected."""
@@ -265,25 +268,22 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         FlextResult containing response or error
 
         """
-        if not isinstance(request, dict):
-            return r[dict[str, t.GeneralValueType]].fail("Request must be a dictionary")
-
-        # Convert kwargs to GeneralValueType dict
-        kwargs_typed: dict[str, t.GeneralValueType] = {}
-        for k, v in kwargs.items():
-            if isinstance(v, (str, int, float, bool, type(None), list, dict, bytes)):
-                kwargs_typed[k] = v
-            else:
-                kwargs_typed[k] = str(v)
+        try:
+            options = self._SendRequestOptions.model_validate(kwargs)
+        except ValidationError as exc:
+            details = (
+                exc.errors()[0]["msg"] if exc.errors() else "Invalid WebSocket options"
+            )
+            return r[dict[str, t.GeneralValueType]].fail(str(details))
 
         # Extract WebSocket-specific parameters
-        message_result = self._extract_message(request, kwargs_typed)
+        message_result = self._extract_message(request, options)
         if message_result.is_failure:
             return r[dict[str, t.GeneralValueType]].fail(
                 message_result.error or "Message extraction failed",
             )
 
-        message_type = self._extract_message_type(kwargs_typed)
+        message_type = self._extract_message_type(options)
 
         # Connect if not connected
         connect_result = self._ensure_connected(request)
@@ -545,17 +545,15 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
 
         try:
             if message_type == FlextApiConstants.Api.WebSocket.MessageType.TEXT:
-                if isinstance(message, bytes):
-                    message = message.decode("utf-8")
+                text_message = str(message)
                 send_method = getattr(self._connection, "send", None)
                 if callable(send_method):
-                    send_method(message)
+                    send_method(text_message)
             elif message_type == FlextApiConstants.Api.WebSocket.MessageType.BINARY:
-                if isinstance(message, str):
-                    message = message.encode("utf-8")
+                binary_message = bytes(str(message), encoding="utf-8")
                 send_method = getattr(self._connection, "send", None)
                 if callable(send_method):
-                    send_method(message)
+                    send_method(binary_message)
             else:
                 return r[bool].fail(f"Invalid message type: {message_type}")
 
@@ -573,24 +571,21 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
         """Background task to receive messages."""
         while self._connected and self._connection:
             try:
-                if hasattr(self._connection, "recv"):
-                    recv_method = getattr(self._connection, "recv", None)
-                    message = recv_method() if callable(recv_method) else None
-                else:
-                    message = None
+                recv_method = getattr(self._connection, "recv", None)
+                message = recv_method() if callable(recv_method) else None
 
                 # Notify message handlers only if we have valid message data
-                if isinstance(message, (str, bytes)):
+                try:
+                    inbound = self._InboundMessage.model_validate({"message": message})
                     for handler in self._on_message_handlers:
                         try:
-                            handler(message)
+                            handler(inbound.message)
                         except Exception:
                             self.logger.exception("Message handler error")
+                except ValidationError:
+                    pass
 
             except Exception as e:
-                if isinstance(e, Exception):
-                    break
-                self.logger.exception("WebSocket receive error")
                 self.logger.exception("WebSocket receive error")
 
                 # Notify error handlers
@@ -616,8 +611,6 @@ class WebSocketProtocolPlugin(RFCProtocolImplementation):
                     self.logger.debug("WebSocket heartbeat")
 
             except Exception as e:
-                if isinstance(e, Exception):
-                    break
                 self.logger.exception("Heartbeat error")
                 break
 

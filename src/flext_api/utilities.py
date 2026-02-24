@@ -8,7 +8,7 @@ from enum import StrEnum
 from typing import Annotated, TypeIs
 from urllib.parse import urlparse
 
-from flext_core import FlextUtilities, r
+from flext_core import FlextRuntime, FlextUtilities, r
 from pydantic import BeforeValidator
 
 from flext_api.typings import t
@@ -93,27 +93,49 @@ class FlextApiUtilities(FlextUtilities):
             """Request utilities for extracting and validating HTTP request components."""
 
             @staticmethod
+            def _to_json_value(value: object) -> t.JsonValue:
+                """Normalize arbitrary value to JsonValue."""
+                normalized = FlextRuntime.normalize_to_general_value(value)
+                if normalized is None or normalized.__class__ in (
+                    str,
+                    int,
+                    float,
+                    bool,
+                ):
+                    return normalized
+                if FlextRuntime.is_dict_like(normalized):
+                    converted: t.JsonObject = {}
+                    for key, item in normalized.items():
+                        converted[str(key)] = (
+                            FlextApiUtilities.Api.RequestUtils._to_json_value(item)
+                        )
+                    return converted
+                if FlextRuntime.is_list_like(normalized):
+                    return [
+                        FlextApiUtilities.Api.RequestUtils._to_json_value(item)
+                        for item in normalized
+                    ]
+                return str(normalized)
+
+            @staticmethod
             def to_request_body(value: object) -> t.Api.RequestBody:
                 """Convert arbitrary value to RequestBody-compatible payload."""
-                if isinstance(value, (str, bytes)):
+                if value.__class__ in (str, bytes):
                     return value
-                if isinstance(value, dict):
+                if FlextRuntime.is_dict_like(value):
                     normalized: t.Api.JsonObject = {}
                     for key, item in value.items():
                         key_str = str(key)
-                        if isinstance(
-                            item, (str, int, float, bool, type(None), list, dict)
-                        ):
-                            normalized[key_str] = item
-                        else:
-                            normalized[key_str] = str(item)
+                        normalized[key_str] = (
+                            FlextApiUtilities.Api.RequestUtils._to_json_value(item)
+                        )
                     return normalized
                 return str(value)
 
             @staticmethod
             def extract_body_from_kwargs(
                 data: t.Api.RequestBody | None,
-                kwargs: dict[str, t.GeneralValueType] | None,
+                kwargs: dict[str, t.ApiJsonValue] | None,
             ) -> r[t.Api.RequestBody]:
                 """Extract body from data or kwargs - returns empty dict if no body found."""
                 if data is not None:
@@ -133,7 +155,7 @@ class FlextApiUtilities(FlextUtilities):
             @staticmethod
             def merge_headers(
                 headers: dict[str, str] | None,
-                kwargs: dict[str, t.GeneralValueType] | None,
+                kwargs: dict[str, t.ApiJsonValue] | None,
             ) -> r[dict[str, str]]:
                 """Merge headers from headers dict and kwargs."""
                 merged: dict[str, str] = {}
@@ -141,14 +163,14 @@ class FlextApiUtilities(FlextUtilities):
                     merged.update(headers)
                 if kwargs and "headers" in kwargs:
                     headers_value = kwargs["headers"]
-                    if isinstance(headers_value, dict):
+                    if FlextRuntime.is_dict_like(headers_value):
                         merged.update({k: str(v) for k, v in headers_value.items()})
                 return r.ok(merged)
 
             @staticmethod
             def validate_and_extract_timeout(
                 timeout: float | str | None,
-                kwargs: dict[str, t.GeneralValueType] | None,
+                kwargs: dict[str, t.ApiJsonValue] | None,
             ) -> r[float]:
                 """Validate and extract timeout from timeout value or kwargs.
 
@@ -170,12 +192,10 @@ class FlextApiUtilities(FlextUtilities):
                 if kwargs and "timeout" in kwargs:
                     timeout_value = kwargs["timeout"]
                     try:
-                        if isinstance(timeout_value, (int, float, str)):
-                            timeout_float = float(timeout_value)
-                            if timeout_float > 0:
-                                return r.ok(timeout_float)
-                            return r.fail("Invalid timeout value: must be positive")
-                        return r.fail(f"Invalid timeout type: {type(timeout_value)}")
+                        timeout_float = float(timeout_value)
+                        if timeout_float > 0:
+                            return r.ok(timeout_float)
+                        return r.fail("Invalid timeout value: must be positive")
                     except (ValueError, TypeError):
                         return r.fail(f"Invalid timeout value: {timeout_value}")
 
@@ -191,13 +211,13 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def build_success_response(
-            data: t.GeneralValueType = None,
+            data: t.ApiJsonValue = None,
             message: str = "Success",
             status_code: int = 200,
             headers: dict[str, str] | None = None,
-        ) -> r[dict[str, t.GeneralValueType]]:
+        ) -> r[dict[str, t.ApiJsonValue]]:
             """Build success response with optional data and message."""
-            response: dict[str, t.GeneralValueType] = {
+            response: dict[str, t.ApiJsonValue] = {
                 "status": "success",
                 "data": data,
                 "message": message,
@@ -212,11 +232,11 @@ class FlextApiUtilities(FlextUtilities):
         def build_error_result(
             error: str,
             status_code: int = 400,
-            data: t.GeneralValueType | None = None,
+            data: t.ApiJsonValue | None = None,
             headers: dict[str, str] | None = None,
-        ) -> r[dict[str, t.GeneralValueType]]:
+        ) -> r[dict[str, t.ApiJsonValue]]:
             """Build error result - returns FlextResult with error response."""
-            response: dict[str, t.GeneralValueType] = {
+            response: dict[str, t.ApiJsonValue] = {
                 "error": error,
                 "status_code": status_code,
             }
@@ -231,7 +251,7 @@ class FlextApiUtilities(FlextUtilities):
             message: str,
             status_code: int = 400,
             error_code: str | None = None,
-        ) -> dict[str, t.GeneralValueType]:
+        ) -> dict[str, t.ApiJsonValue]:
             """Build error response - returns plain dict."""
             return {
                 "success": False,
@@ -251,7 +271,7 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def extract_page_params(
-            params: dict[str, t.GeneralValueType],
+            params: dict[str, t.ApiJsonValue],
         ) -> r[tuple[int, int]]:
             """Extract and validate page and page_size from params dict.
 
@@ -262,10 +282,8 @@ class FlextApiUtilities(FlextUtilities):
                 page_str = params.get("page", "1")
                 page_size_str = params.get("page_size", "20")
 
-                page = int(page_str) if isinstance(page_str, (str, int)) else 1
-                page_size = (
-                    int(page_size_str) if isinstance(page_size_str, (str, int)) else 20
-                )
+                page = int(page_str)
+                page_size = int(page_size_str)
 
                 if page < 1 or page_size < 1:
                     return r.fail("Page and page_size must be >= 1")
@@ -277,30 +295,22 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def extract_pagination_config(
             config: object,
-        ) -> dict[str, t.GeneralValueType]:
+        ) -> dict[str, t.ApiJsonValue]:
             """Extract pagination configuration from config object.
 
             Reads attributes: default_page_size, max_page_size.
             Provides defaults if not found.
             """
-            result: dict[str, t.GeneralValueType] = {}
+            result: dict[str, t.ApiJsonValue] = {}
 
             default_page_size = getattr(config, "default_page_size", 20)
             max_page_size = getattr(config, "max_page_size", 1000)
 
             result["default_page_size"] = (
-                default_page_size
-                if isinstance(
-                    default_page_size, (str, int, float, bool, type(None), list, dict)
-                )
-                else str(default_page_size)
+                FlextApiUtilities.Api.RequestUtils._to_json_value(default_page_size)
             )
-            result["max_page_size"] = (
+            result["max_page_size"] = FlextApiUtilities.Api.RequestUtils._to_json_value(
                 max_page_size
-                if isinstance(
-                    max_page_size, (str, int, float, bool, type(None), list, dict)
-                )
-                else str(max_page_size)
             )
 
             return result
@@ -326,11 +336,11 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def prepare_pagination_data(
-            data: list[t.GeneralValueType],
+            data: list[t.ApiJsonValue],
             total: int,
             page: int,
             page_size: int,
-        ) -> r[dict[str, t.GeneralValueType]]:
+        ) -> r[dict[str, t.ApiJsonValue]]:
             """Prepare pagination metadata for response.
 
             Calculates total_pages, has_next, has_prev, next_page, prev_page.
@@ -358,8 +368,8 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def build_pagination_response(
-            pagination_data: dict[str, t.GeneralValueType],
-        ) -> r[dict[str, t.GeneralValueType]]:
+            pagination_data: dict[str, t.ApiJsonValue],
+        ) -> r[dict[str, t.ApiJsonValue]]:
             """Build full pagination response from pagination data dict."""
             if "data" not in pagination_data:
                 return r.fail("pagination_data must contain 'data' key")
@@ -371,11 +381,11 @@ class FlextApiUtilities(FlextUtilities):
 
         @staticmethod
         def build_paginated_response(
-            data: list[t.GeneralValueType],
+            data: list[t.ApiJsonValue],
             page: int,
             page_size: int,
             total: int | None = None,
-        ) -> r[dict[str, t.GeneralValueType]]:
+        ) -> r[dict[str, t.ApiJsonValue]]:
             """Build paginated response."""
             if page < 1:
                 return r.fail("Page must be >= 1")
@@ -443,7 +453,9 @@ class FlextApiUtilities(FlextUtilities):
         @staticmethod
         def is_valid_port_number(port: object) -> TypeIs[int]:
             """Check if port is a valid port number (TypeIs for precise narrowing)."""
-            return isinstance(port, int) and 1 <= port <= MAX_PORT
+            if port.__class__ is not int:
+                return False
+            return 1 <= port <= MAX_PORT
 
         @staticmethod
         def validate_port_number(port: int) -> r[int]:

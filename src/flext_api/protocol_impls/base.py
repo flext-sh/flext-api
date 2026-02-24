@@ -53,7 +53,7 @@ class BaseProtocolImplementation:
         name: str,
         version: str = "1.0.0",
         description: str = "",
-        **_kwargs: t.GeneralValueType,
+        **_kwargs: t.ApiJsonValue,
     ) -> None:
         """Initialize base protocol implementation.
 
@@ -110,9 +110,9 @@ class BaseProtocolImplementation:
 
     def send_request(
         self,
-        request: dict[str, t.GeneralValueType],
+        request: dict[str, t.ApiJsonValue],
         **kwargs: object,
-    ) -> r[dict[str, t.GeneralValueType]]:
+    ) -> r[dict[str, t.ApiJsonValue]]:
         """Send request using this protocol.
 
         This method must be implemented by subclasses. Base implementation
@@ -129,7 +129,7 @@ class BaseProtocolImplementation:
         # Acknowledge parameters to avoid linting warnings
         _ = request
         _ = kwargs
-        return r[dict[str, t.GeneralValueType]].fail(
+        return r[dict[str, t.ApiJsonValue]].fail(
             f"send_request() must be implemented by {self.__class__.__name__}",
         )
 
@@ -174,8 +174,8 @@ class BaseProtocolImplementation:
         }
 
     def _validate_request(
-        self, request: dict[str, t.GeneralValueType]
-    ) -> r[dict[str, t.GeneralValueType]]:
+        self, request: dict[str, t.ApiJsonValue]
+    ) -> r[dict[str, t.ApiJsonValue]]:
         """Validate request dictionary.
 
         Args:
@@ -185,19 +185,16 @@ class BaseProtocolImplementation:
             FlextResult with validated request or error
 
         """
-        if not isinstance(request, dict):
-            return r[dict[str, t.GeneralValueType]].fail("Request must be a dictionary")
-
         if not request:
-            return r[dict[str, t.GeneralValueType]].fail("Request cannot be empty")
+            return r[dict[str, t.ApiJsonValue]].fail("Request cannot be empty")
 
-        return r[dict[str, t.GeneralValueType]].ok(request)
+        return r[dict[str, t.ApiJsonValue]].ok(request)
 
     def _build_error_response(
         self,
         error: str,
         status_code: int = 500,
-    ) -> dict[str, t.GeneralValueType]:
+    ) -> dict[str, t.ApiJsonValue]:
         """Build error response dictionary.
 
         Args:
@@ -217,9 +214,9 @@ class BaseProtocolImplementation:
 
     def _build_success_response(
         self,
-        data: dict[str, t.GeneralValueType] | None = None,
+        data: dict[str, t.ApiJsonValue] | None = None,
         status_code: int = 200,
-    ) -> dict[str, t.GeneralValueType]:
+    ) -> dict[str, t.ApiJsonValue]:
         """Build success response dictionary.
 
         Args:
@@ -230,7 +227,7 @@ class BaseProtocolImplementation:
         Success response dictionary
 
         """
-        response: dict[str, t.GeneralValueType] = {
+        response: dict[str, t.ApiJsonValue] = {
             "status": "success",
             "status_code": status_code,
         }

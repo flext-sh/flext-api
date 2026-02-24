@@ -28,10 +28,7 @@ __description__ = _metadata_map.get("Summary", "")
 __author__ = _metadata_map.get("Author", "")
 __author_email__ = _metadata_map.get("Author-Email", "")
 __license__ = _metadata_map.get("License", "")
-__url__ = ""
-url_value = _metadata_map.get("Home-Page", "")
-if isinstance(url_value, str):
-    __url__ = url_value
+__url__ = _metadata_map.get("Home-Page", "")
 
 __all__ = [
     "__author__",

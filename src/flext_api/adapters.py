@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import cbor2
-from flext_core import r
+from flext_core import FlextRuntime, r
 
 from flext_api.models import FlextApiModels
 from flext_api.serializers import FlextApiSerializers
@@ -37,13 +37,12 @@ class FlextApiAdapters:
                 # Convert body to string if bytes, otherwise use as-is
                 body_value: str | t.JsonObject | None = None
                 if request.body:
-                    if isinstance(request.body, bytes):
-                        try:
-                            body_value = request.body.decode("utf-8")
-                        except UnicodeDecodeError:
-                            body_value = "<binary data>"
-                    elif isinstance(request.body, (str, dict)):
+                    try:
+                        body_value = request.body.decode("utf-8")
+                    except AttributeError:
                         body_value = request.body
+                    except UnicodeDecodeError:
+                        body_value = "<binary data>"
 
                 message: t.JsonObject = {
                     "type": "request",
@@ -78,7 +77,7 @@ class FlextApiAdapters:
                 headers_raw = message.get("headers")
                 headers = (
                     {str(k): str(v) for k, v in headers_raw.items()}
-                    if isinstance(headers_raw, dict)
+                    if FlextRuntime.is_dict_like(headers_raw)
                     else {}
                 )
 
@@ -137,10 +136,10 @@ class FlextApiAdapters:
             try:
                 # MessagePack.packb returns bytes for valid input
                 packed_data = FlextApiSerializers.MessagePack.packb(data)
-                if not isinstance(packed_data, bytes):
+                try:
+                    return r[bytes].ok(bytes(packed_data))
+                except (TypeError, ValueError):
                     return r[bytes].fail("MessagePack.packb did not return bytes")
-                # MessagePack.packb always returns bytes for valid input
-                return r[bytes].ok(packed_data)
 
             except Exception as e:
                 return r[bytes].fail(f"JSON to MessagePack conversion failed: {e}")
@@ -199,14 +198,18 @@ class FlextApiAdapters:
             Returns HttpResponse Model for all protocols - consistent return type.
             """
             try:
-                if source_protocol == "websocket" and isinstance(response, dict):
+                if source_protocol == "websocket":
+                    if not FlextRuntime.is_dict_like(response):
+                        return r[FlextApiModels.HttpResponse].fail(
+                            "Invalid WebSocket response payload",
+                        )
                     return FlextApiAdapters.HttpProtocol.adapt_websocket_message_to_http_response(
-                        response,
+                        dict(response),
                     )
-                if isinstance(response, FlextApiModels.HttpResponse):
-                    return r[FlextApiModels.HttpResponse].ok(response)
 
-                return r[FlextApiModels.HttpResponse].fail("Invalid response type")
+                return r[FlextApiModels.HttpResponse].ok(
+                    FlextApiModels.HttpResponse.model_validate(response),
+                )
 
             except Exception as e:
                 return r[FlextApiModels.HttpResponse].fail(

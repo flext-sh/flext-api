@@ -68,22 +68,11 @@ class FlextApiModels(FlextModels):
 
         @field_validator("body", mode="before")
         @classmethod
-        def normalize_body(cls, v: t.GeneralValueType) -> t.Api.RequestBody:
+        def normalize_body(cls, v: t.ApiJsonValue) -> t.Api.RequestBody:
             """Normalize body - empty dict is valid."""
             if v is None:
                 return {}
-            if isinstance(v, dict):
-                # Safe transformation to JsonObject with narrowed value types
-                result: t.Api.JsonObject = {}
-                for key, val in v.items():
-                    if isinstance(val, (str, int, float, bool, type(None), list, dict)):
-                        result[str(key)] = val
-                    else:
-                        result[str(key)] = str(val)
-                return result
-            if isinstance(v, (str, bytes)):
-                return v
-            return {}
+            return u.Api.RequestUtils.to_request_body(v)
 
         query_params: t.Api.WebParams = Field(
             default_factory=dict,
@@ -133,25 +122,11 @@ class FlextApiModels(FlextModels):
 
         @field_validator("body", mode="before")
         @classmethod
-        def normalize_body(cls, v: t.GeneralValueType) -> t.Api.ResponseBody:
+        def normalize_body(cls, v: t.ApiJsonValue) -> t.Api.ResponseBody:
             """Normalize body - None is valid for empty responses (e.g., 204), default is empty dict."""
             if v is None:
                 return None  # Explicit None is valid (e.g., for 204 responses)
-            if isinstance(v, dict):
-                # Safe transformation to JsonObject with narrowed value types
-                result: t.Api.JsonObject = {}
-                for key, val in v.items():
-                    if isinstance(val, (str, int, float, bool, type(None), list, dict)):
-                        # Narrow to types compatible with JsonObject
-                        result[str(key)] = val
-                    else:
-                        # Fallback for incompatible types
-                        result[str(key)] = str(val)
-                return result
-            if isinstance(v, (str, bytes)):
-                return v
-            # Default to empty dict if not specified
-            return {}
+            return u.Api.RequestUtils.to_request_body(v)
 
         request_id: str = Field(
             default="",
@@ -550,7 +525,7 @@ class FlextApiModels(FlextModels):
         class Metadata(FlextModels.Value):
             """Internal metadata for stored values (using Pydantic for validation)."""
 
-            value: t.GeneralValueType
+            value: t.ApiJsonValue
             timestamp: str
             ttl: int | None = None
             created_at: float = Field(default_factory=time.time)
