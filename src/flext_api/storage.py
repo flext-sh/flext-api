@@ -20,6 +20,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import contextlib
 import json
 import time
 from collections.abc import Mapping
@@ -122,18 +123,14 @@ class FlextApiStorage:
         config_obj = getattr(self, "_flext_storage_config", None)
         if config_obj is None:
             config_obj = config
-        try:
+        with contextlib.suppress(AttributeError):
             delattr(self, "_flext_storage_config")
-        except AttributeError:
-            pass
 
         storage_kwargs = getattr(self, "_flext_storage_kwargs", None)
         if storage_kwargs is None:
             storage_kwargs = kwargs
-        try:
+        with contextlib.suppress(AttributeError):
             delattr(self, "_flext_storage_kwargs")
-        except AttributeError:
-            pass
         return config_obj, storage_kwargs
 
     def _extract_storage_kwargs(

@@ -15,7 +15,7 @@ import json
 from typing import Self
 
 import httpx
-from flext_core import FlextRuntime, r, s
+from flext_core import FlextRuntime, r, s, u
 from pydantic import TypeAdapter, ValidationError
 
 from flext_api.constants import FlextApiConstants
@@ -92,7 +92,7 @@ class FlextApiClient(s[FlextApiSettings]):
     ) -> r[FlextApiSettings]:
         """Execute FlextService interface - return configuration."""
         if kwargs:
-            self.logger.info("Execute called with kwargs: %s", str(kwargs))
+            self.logger.info("Execute called with kwargs: %s", kwargs)
         return r[FlextApiSettings].ok(self._get_config())
 
     @property

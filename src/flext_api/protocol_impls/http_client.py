@@ -145,7 +145,7 @@ class FlextWebClientImplementation(p.Api.Client.HttpClientProtocol):
             return r[t.Api.HttpResponseDict].fail(error_msg)
         except Exception as exc:
             error_msg = f"HTTP protocol request failed: {exc}"
-            self.logger.error(error_msg)
+            self.logger.exception(error_msg)
             return r[t.Api.HttpResponseDict].fail(error_msg)
 
     def request(

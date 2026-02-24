@@ -12,7 +12,6 @@ from types import ModuleType
 from flext_core.typings import t
 from pydantic import TypeAdapter, ValidationError
 
-
 _MESSAGEPACK_RESULT_ADAPTER = TypeAdapter(
     str | int | float | bool | Mapping[str, object] | list[object] | None
 )

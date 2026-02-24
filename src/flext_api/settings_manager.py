@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 
-from flext_core import r
+from flext_core import r, u
 
 from flext_api.models import FlextApiModels
 from flext_api.typings import t
@@ -99,7 +99,7 @@ class FlextApiSettingsManager:
             return r[float].fail("Timeout not specified in configuration")
 
         timeout_value_raw = self._config["timeout"]
-        if timeout_value_raw.__class__ in (int, float):
+        if timeout_value_raw.__class__ in {int, float}:
             timeout_value = float(timeout_value_raw)
         elif timeout_value_raw.__class__ is str:
             try:
@@ -126,7 +126,7 @@ class FlextApiSettingsManager:
         max_retries_raw = self._config["max_retries"]
         if max_retries_raw.__class__ is int:
             max_retries_value = max_retries_raw
-        elif max_retries_raw.__class__ in (float, str):
+        elif max_retries_raw.__class__ in {float, str}:
             try:
                 max_retries_value = int(max_retries_raw)
             except (ValueError, TypeError):
@@ -209,7 +209,7 @@ class FlextApiSettingsManager:
             return r.fail("Timeout not specified in configuration")
 
         timeout_raw = self._config["timeout"]
-        if timeout_raw.__class__ in (int, float):
+        if timeout_raw.__class__ in {int, float}:
             timeout_value = float(timeout_raw)
         elif timeout_raw.__class__ is str:
             try:

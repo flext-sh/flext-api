@@ -115,5 +115,4 @@ c = TestsFlextApiConstants  # Alternative alias for compatibility
 __all__ = [
     "TestsFlextApiConstants",
     "c",
-    "c",
 ]

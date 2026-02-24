@@ -165,7 +165,7 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
     def send_request(
         self,
         request: Mapping[str, t.GeneralValueType],
-        **kwargs: t.ApiJsonValue,
+        **_kwargs: t.ApiJsonValue,
     ) -> r[Mapping[str, t.GeneralValueType]]:
         """Send HTTP request with retry logic and error handling."""
         # Build HTTP request model
@@ -264,8 +264,8 @@ class FlextWebProtocolPlugin(RFCProtocolImplementation):
         e: Exception,
         url: str,
         method: str,
-        attempt: int,
-        max_retries: int,
+        _attempt: int,
+        _max_retries: int,
     ) -> str:
         """Handle request exceptions and return error message."""
         error_msg = f"Unexpected error: {e}"

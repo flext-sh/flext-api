@@ -94,26 +94,26 @@ class FlextApiUtilities(FlextUtilities):
             """Request utilities for extracting and validating HTTP request components."""
 
             @staticmethod
-            def _to_json_value(value: object) -> t.JsonValue:
+            def to_json_value(value: object) -> t.JsonValue:
                 """Normalize arbitrary value to JsonValue."""
                 normalized = FlextRuntime.normalize_to_general_value(value)
-                if normalized is None or normalized.__class__ in (
+                if normalized is None or normalized.__class__ in {
                     str,
                     int,
                     float,
                     bool,
-                ):
+                }:
                     return normalized
                 if u.is_dict_like(normalized):
                     converted: t.JsonObject = {}
                     for key, item in normalized.items():
                         converted[str(key)] = (
-                            FlextApiUtilities.Api.RequestUtils._to_json_value(item)
+                            FlextApiUtilities.Api.RequestUtils.to_json_value(item)
                         )
                     return converted
                 if u.is_list_like(normalized):
                     return [
-                        FlextApiUtilities.Api.RequestUtils._to_json_value(item)
+                        FlextApiUtilities.Api.RequestUtils.to_json_value(item)
                         for item in normalized
                     ]
                 return str(normalized)
@@ -121,14 +121,14 @@ class FlextApiUtilities(FlextUtilities):
             @staticmethod
             def to_request_body(value: object) -> t.Api.RequestBody:
                 """Convert arbitrary value to RequestBody-compatible payload."""
-                if value.__class__ in (str, bytes):
+                if value.__class__ in {str, bytes}:
                     return value
                 if u.is_dict_like(value):
                     normalized: t.Api.JsonObject = {}
                     for key, item in value.items():
                         key_str = str(key)
                         normalized[key_str] = (
-                            FlextApiUtilities.Api.RequestUtils._to_json_value(item)
+                            FlextApiUtilities.Api.RequestUtils.to_json_value(item)
                         )
                     return normalized
                 return str(value)
@@ -308,9 +308,9 @@ class FlextApiUtilities(FlextUtilities):
             max_page_size = getattr(config, "max_page_size", 1000)
 
             result["default_page_size"] = (
-                FlextApiUtilities.Api.RequestUtils._to_json_value(default_page_size)
+                FlextApiUtilities.Api.RequestUtils.to_json_value(default_page_size)
             )
-            result["max_page_size"] = FlextApiUtilities.Api.RequestUtils._to_json_value(
+            result["max_page_size"] = FlextApiUtilities.Api.RequestUtils.to_json_value(
                 max_page_size
             )
 

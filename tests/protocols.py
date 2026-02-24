@@ -36,4 +36,4 @@ class TestsFlextApiProtocols(FlextTestsProtocols, FlextApiProtocols):
 p = TestsFlextApiProtocols
 p = TestsFlextApiProtocols
 
-__all__ = ["TestsFlextApiProtocols", "p", "p"]
+__all__ = ["TestsFlextApiProtocols", "p"]

@@ -163,6 +163,12 @@ from flext_api.settings_manager import FlextApiSettingsManager
 from flext_api.storage import FlextApiStorage
 from flext_api.typings import FlextApiTypes, t
 from flext_api.utilities import FlextApiUtilities, u
+from flext_core import FlextDecorators as d
+from flext_core import FlextExceptions as e
+from flext_core import FlextHandlers as h
+from flext_core import FlextMixins as x
+from flext_core import FlextResult as r
+from flext_core import FlextService as s
 
 __all__ = [
     "AsyncAPISchemaValidator",
@@ -203,8 +209,14 @@ __all__ = [
     "__version__",
     "__version_info__",
     "c",
+    "d",
+    "e",
+    "h",
     "m",
     "p",
+    "r",
+    "s",
     "t",
     "u",
+    "x",
 ]

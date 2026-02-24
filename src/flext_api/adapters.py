@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import cbor2
-from flext_core import r
+from flext_core import r, u
 
 from flext_api.models import FlextApiModels
 from flext_api.serializers import FlextApiSerializers

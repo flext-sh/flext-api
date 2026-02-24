@@ -26,7 +26,6 @@ from collections import deque
 from collections.abc import Callable, Mapping
 
 from flext_core import (
-    u,
     FlextContainer,
     FlextContext,
     FlextDispatcher,
@@ -34,6 +33,7 @@ from flext_core import (
     FlextRuntime,
     FlextService,
     r,
+    u,
 )
 
 from flext_api.typings import t
@@ -82,7 +82,7 @@ class FlextWebhookHandler(FlextService[object]):
     def _to_json_value(value: object) -> t.JsonValue:
         """Convert arbitrary object to JsonValue recursively."""
         normalized = FlextRuntime.normalize_to_general_value(value)
-        if normalized is None or normalized.__class__ in (str, int, float, bool):
+        if normalized is None or normalized.__class__ in {str, int, float, bool}:
             return normalized
         if u.is_dict_like(normalized):
             converted: t.JsonObject = {}
