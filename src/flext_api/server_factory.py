@@ -29,7 +29,7 @@ class FlextApiServerFactory:
         port: int = 8000,
         title: str = "Flext API Server",
         version: str = "1.0.0",
-    ) -> r[object]:
+    ) -> r[FlextApiServer]:
         """Create FlextApiServer instance with protocol handler support.
 
         Single responsibility: create server instances.
@@ -51,13 +51,13 @@ class FlextApiServerFactory:
             title=title,
             version=version,
         )
-        return r[object].ok(server)
+        return r[FlextApiServer].ok(server)
 
     @staticmethod
     def create_webhook_handler(
         secret: str | None = None,
         max_retries: int = 3,
-    ) -> r[object]:
+    ) -> r[FlextWebhookHandler]:
         """Create FlextWebhookHandler instance.
 
         Single responsibility: create webhook handler instances.
@@ -75,7 +75,7 @@ class FlextApiServerFactory:
             secret=secret,
             max_retries=max_retries,
         )
-        return r[object].ok(handler)
+        return r[FlextWebhookHandler].ok(handler)
 
 
 __all__ = ["FlextApiServerFactory"]

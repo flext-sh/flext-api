@@ -8,7 +8,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-
 from flext_api import FlextApiClient
 from flext_api.settings import FlextApiSettings
 

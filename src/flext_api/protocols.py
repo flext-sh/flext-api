@@ -60,7 +60,7 @@ class FlextApiProtocols(FlextProtocols):
                     self,
                     method: FlextApiConstants.Api.Method | str,
                     url: str,
-                    **kwargs: object,
+                    **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute an HTTP request."""
                     ...
@@ -68,7 +68,7 @@ class FlextApiProtocols(FlextProtocols):
                 def get(
                     self,
                     url: str,
-                    **kwargs: object,
+                    **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP GET request."""
                     ...
@@ -76,7 +76,7 @@ class FlextApiProtocols(FlextProtocols):
                 def post(
                     self,
                     url: str,
-                    **kwargs: object,
+                    **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP POST request."""
                     ...
@@ -84,7 +84,7 @@ class FlextApiProtocols(FlextProtocols):
                 def put(
                     self,
                     url: str,
-                    **kwargs: object,
+                    **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP PUT request."""
                     ...
@@ -92,7 +92,7 @@ class FlextApiProtocols(FlextProtocols):
                 def delete(
                     self,
                     url: str,
-                    **kwargs: object,
+                    **kwargs: t.ApiJsonValue,
                 ) -> r[t.Api.HttpResponseDict]:
                     """Execute HTTP DELETE request."""
                     ...
@@ -104,14 +104,14 @@ class FlextApiProtocols(FlextProtocols):
             class StorageBackendProtocol(Protocol):
                 """Protocol for generic storage backend implementations."""
 
-                def get(self, key: str) -> r[object]:
+                def get(self, key: str) -> r[t.ApiJsonValue]:
                     """Retrieve value by key. Returns error if key not found (no fallback)."""
                     ...
 
                 def set(
                     self,
                     key: str,
-                    value: object,
+                    value: t.ApiJsonValue,
                     timeout: int | None = None,
                 ) -> r[bool]:
                     """Store value with optional timeout."""
@@ -140,16 +140,16 @@ class FlextApiProtocols(FlextProtocols):
             class LoggerProtocol(Protocol):
                 """Protocol for generic logger implementations."""
 
-                def info(self, message: str, **kwargs: object) -> None:
+                def info(self, message: str, **kwargs: t.ApiJsonValue) -> None:
                     """Log info message."""
 
-                def error(self, message: str, **kwargs: object) -> None:
+                def error(self, message: str, **kwargs: t.ApiJsonValue) -> None:
                     """Log error message."""
 
-                def debug(self, message: str, **kwargs: object) -> None:
+                def debug(self, message: str, **kwargs: t.ApiJsonValue) -> None:
                     """Log debug message."""
 
-                def warning(self, message: str, **kwargs: object) -> None:
+                def warning(self, message: str, **kwargs: t.ApiJsonValue) -> None:
                     """Log warning message."""
 
         class Serialization:
@@ -163,7 +163,7 @@ class FlextApiProtocols(FlextProtocols):
                 including JSON, MessagePack, CBOR, etc.
                 """
 
-                def serialize(self, data: object) -> bytes:
+                def serialize(self, data: t.ApiJsonValue) -> bytes:
                     """Serialize data to bytes.
 
                     Args:
@@ -175,7 +175,7 @@ class FlextApiProtocols(FlextProtocols):
                     """
                     ...
 
-                def deserialize(self, data: bytes) -> object:
+                def deserialize(self, data: bytes) -> t.ApiJsonValue:
                     """Deserialize bytes to data.
 
                     Args:
@@ -217,15 +217,23 @@ class FlextApiProtocols(FlextProtocols):
                 including HTTP, WebSocket, SSE, GraphQL, and gRPC.
                 """
 
-                def connect(self, url: str, **options: object) -> r[object]:
+                def connect(
+                    self,
+                    url: str,
+                    **options: t.ApiJsonValue,
+                ) -> r[str]:
                     """Connect to endpoint."""
                     ...
 
-                def disconnect(self, connection: object) -> r[bool]:
+                def disconnect(self, connection: str) -> r[bool]:
                     """Disconnect from endpoint."""
                     ...
 
-                def send(self, connection: object, data: object) -> r[object]:
+                def send(
+                    self,
+                    connection: str,
+                    data: t.Api.RequestConfig | t.Api.RequestBody,
+                ) -> r[t.Api.HttpResponseDict | str]:
                     """Send data through connection."""
                     ...
 
@@ -251,7 +259,7 @@ class FlextApiProtocols(FlextProtocols):
                 implement when flext-grpc is integrated.
                 """
 
-                def register_methods(self) -> list[t.GeneralValueType]:
+                def register_methods(self) -> list[t.ApiJsonValue]:
                     """Register service methods.
 
                     Returns:
@@ -262,8 +270,8 @@ class FlextApiProtocols(FlextProtocols):
 
                 def handle_request(
                     self,
-                    request: object,
-                ) -> r[object]:
+                    request: t.ApiJsonValue,
+                ) -> r[t.ApiJsonValue]:
                     """Handle gRPC request.
 
                     Args:
@@ -286,7 +294,7 @@ class FlextApiProtocols(FlextProtocols):
                 when flext-grpc is integrated.
                 """
 
-                def get_request_schema(self, method: str) -> r[object]:
+                def get_request_schema(self, method: str) -> r[t.Api.JsonObject]:
                     """Get request schema for method.
 
                     Args:
@@ -298,7 +306,7 @@ class FlextApiProtocols(FlextProtocols):
                     """
                     ...
 
-                def get_response_schema(self, method: str) -> r[object]:
+                def get_response_schema(self, method: str) -> r[t.Api.JsonObject]:
                     """Get response schema for method.
 
                     Args:
